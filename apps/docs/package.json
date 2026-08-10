@@ -1,0 +1,24 @@
+{
+  "name": "docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "marko-run",
+    "build": "marko-run build",
+    "preview": "marko-run preview"
+  },
+  "dependencies": {
+    "@zag-js/core": "1.43.0",
+    "@zag-js/dialog": "1.43.0",
+    "@zag-js/tabs": "1.43.0",
+    "@zag-js/types": "1.43.0",
+    "@zag-js/utils": "1.43.0",
+    "marko": "^6.3.34"
+  },
+  "devDependencies": {
+    "@marko/run": "0.11.8",
+    "@tailwindcss/vite": "^4.3.3",
+    "tailwindcss": "^4.3.3",
+    "vite": "^6"
+  }
+}

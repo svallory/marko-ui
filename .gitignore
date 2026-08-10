@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.marko-run/
+coverage/
+*.log
+.DS_Store
+apps/docs/public/r/

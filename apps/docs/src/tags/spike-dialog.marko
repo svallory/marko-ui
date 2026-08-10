@@ -1,0 +1,57 @@
+import * as dialog from "@zag-js/dialog";
+import { createService, normalizeProps } from "../lib/zag-marko";
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({ id: uid })/>
+<lifecycle
+  onMount() {
+    svc = createService(dialog.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<const/computeUi=() => {
+  const api = dialog.connect(svc ?? createService(dialog.machine, machineProps, () => {}), normalizeProps);
+  return {
+    open: api.open,
+    trigger: api.getTriggerProps(),
+    backdrop: api.getBackdropProps(),
+    positioner: api.getPositionerProps(),
+    content: api.getContentProps(),
+    title: api.getTitleProps(),
+    description: api.getDescriptionProps(),
+    closeTrigger: api.getCloseTriggerProps(),
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<div data-spike="dialog">
+  <button
+    ...ui.trigger
+    class="rounded bg-blue-600 px-3 py-1 text-sm text-white"
+  >
+    Open dialog
+  </button>
+  <if=ui.open>
+    <div ...ui.backdrop class="fixed inset-0 bg-black/50"/>
+    <div ...ui.positioner class="fixed inset-0 flex items-center justify-center">
+      <div ...ui.content class="w-96 rounded-lg bg-white p-6 shadow-xl">
+        <h2 ...ui.title class="text-lg font-bold">Spike dialog</h2>
+        <p ...ui.description class="mt-2 text-sm text-gray-600">
+          Esc, outside click, and focus trap should all work.
+        </p>
+        <input class="mt-3 w-full rounded border border-gray-300 px-2 py-1 text-sm" placeholder="focusable">
+        <button
+          ...ui.closeTrigger
+          class="mt-4 rounded bg-gray-200 px-3 py-1 text-sm"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </if>
+</div>

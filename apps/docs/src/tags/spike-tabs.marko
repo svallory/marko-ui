@@ -1,0 +1,68 @@
+import * as tabs from "@zag-js/tabs";
+import { createService, normalizeProps } from "../lib/zag-marko";
+
+export interface Input {
+  /** S8: controlled value from parent (optional) */
+  value?: string;
+  valueChange?: (value: string) => void;
+}
+
+static const TAB_VALUES = ["one", "two", "three"];
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  defaultValue: "one",
+  value: input.value,
+  onValueChange(details: { value: string }) {
+    input.valueChange?.(details.value);
+  },
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(tabs.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.value; // re-run when controlled value changes
+  svc?.propsChanged();
+</script>
+// The connect() api object holds functions from @zag-js modules, which Marko
+// cannot serialize. Only this plain attrs snapshot may be reactive state; the
+// api itself lives inside the closure. Handlers are stripped during SSR by
+// normalizeProps and re-appear when `rev` bumps after mount.
+<const/computeUi=() => {
+  const api = tabs.connect(svc ?? createService(tabs.machine, machineProps, () => {}), normalizeProps);
+  return {
+    value: api.value,
+    root: api.getRootProps(),
+    list: api.getListProps(),
+    triggers: Object.fromEntries(TAB_VALUES.map((v) => [v, api.getTriggerProps({ value: v })])),
+    contents: Object.fromEntries(TAB_VALUES.map((v) => [v, api.getContentProps({ value: v })])),
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<div ...ui.root class="w-80 rounded-lg border border-gray-300 p-2" data-spike="tabs">
+  <div ...ui.list class="flex gap-1 border-b border-gray-200">
+    <for|value| of=TAB_VALUES>
+      <button
+        ...ui.triggers[value]
+        class="px-3 py-1 text-sm data-[selected]:font-bold data-[selected]:text-blue-600"
+      >
+        Tab ${value}
+      </button>
+    </for>
+  </div>
+  <for|value| of=TAB_VALUES>
+    <div ...ui.contents[value] class="p-3 text-sm">
+      Content for ${value}
+    </div>
+  </for>
+</div>

@@ -1,0 +1,19 @@
+{
+  "name": "marko-ui-workspace",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "check": "bun run --filter '*' check",
+    "test": "vitest run",
+    "build:registry": "bun packages/registry/scripts/build-registry.ts",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@marko/type-check": "^1",
+    "prettier": "^3",
+    "prettier-plugin-marko": "^3",
+    "typescript": "^5",
+    "vitest": "^3"
+  }
+}
