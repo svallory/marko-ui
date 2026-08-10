@@ -6,6 +6,9 @@
       "name": "marko-ui-workspace",
       "devDependencies": {
         "@marko/type-check": "^1",
+        "@marko/vite": "^6.1.9",
+        "@zag-js/tabs": "1.43.0",
+        "marko": "^6.3.34",
         "prettier": "^3",
         "prettier-plugin-marko": "^3",
         "typescript": "^5",
@@ -21,12 +24,25 @@
         "@zag-js/types": "1.43.0",
         "@zag-js/utils": "1.43.0",
         "marko": "^6.3.34",
+        "marko-zag": "workspace:*",
       },
       "devDependencies": {
         "@marko/run": "0.11.8",
         "@tailwindcss/vite": "^4.3.3",
         "tailwindcss": "^4.3.3",
         "vite": "^6",
+      },
+    },
+    "packages/marko-zag": {
+      "name": "marko-zag",
+      "version": "0.1.0",
+      "dependencies": {
+        "@zag-js/core": "1.43.0",
+        "@zag-js/types": "1.43.0",
+        "@zag-js/utils": "1.43.0",
+      },
+      "peerDependencies": {
+        "marko": "^6.3.0",
       },
     },
   },
@@ -512,6 +528,8 @@
     "magic-string": ["magic-string@0.30.21", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.5" } }, "sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ=="],
 
     "marko": ["marko@6.3.34", "", { "dependencies": { "@marko/compiler": "^5.41.18", "csstype": "^3.2.3", "fastest-levenshtein": "^1.0.16", "magic-string": "^0.30.21" } }, "sha512-EyaQ6xdwR3lR137Zo80PNm4Zmmo3QcPoFALnPI8R49n1iqqfyCwtpFco/Tnv30AjIm6ILNpqu8CZP/zXjJhdkQ=="],
+
+    "marko-zag": ["marko-zag@workspace:packages/marko-zag"],
 
     "merge2": ["merge2@1.4.1", "", {}, "sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg=="],
 

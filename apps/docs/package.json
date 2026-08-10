@@ -13,7 +13,8 @@
     "@zag-js/tabs": "1.43.0",
     "@zag-js/types": "1.43.0",
     "@zag-js/utils": "1.43.0",
-    "marko": "^6.3.34"
+    "marko": "^6.3.34",
+    "marko-zag": "workspace:*"
   },
   "devDependencies": {
     "@marko/run": "0.11.8",

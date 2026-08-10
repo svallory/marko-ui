@@ -1,8 +1,20 @@
 /**
- * Spike proto-adapter: Zag.js v1 service protocol implemented with vanilla JS
- * plus a `notify` callback the host Marko component uses to bump a signal.
- * Ported from @zag-js/solid@1.43.0 (machine.ts/bindable.ts/refs.ts/track.ts),
- * replacing Solid primitives with plain values.
+ * Zag.js v1 service protocol for Marko 6.
+ *
+ * Every Zag-version-specific call (service construction, start/stop,
+ * transitions, connect signature) lives in this file only (design C-1).
+ *
+ * Ported from @zag-js/solid@1.43.0, replacing Solid primitives with plain
+ * values plus a `notify` callback that the host component uses to bump a
+ * `<let/rev>` signal.
+ *
+ * SSR contract (see notes/specs/marko-ui/spike-results.md):
+ * - Marko serializes reactive state and never re-runs render on resume, so
+ *   services and connect() apis must NOT be reactive state.
+ * - Server: create a throwaway service inline (`ssrService`) — never started,
+ *   so `connect` renders correct initial attrs with no DOM access.
+ * - Client: create the real service in `<lifecycle onMount>`, store it in a
+ *   `<let/svc=null>` (null serializes; the client instance never crosses).
  */
 import {
   createScope,
@@ -14,14 +26,37 @@ import {
   matchesState,
   resolveStateValue,
 } from "@zag-js/core";
-import { createNormalizer } from "@zag-js/types";
 import { callAll, compact, ensure, isFunction, isString, toArray, warn, isEqual } from "@zag-js/utils";
 
 type Dict = Record<string, any>;
 
-const access = (v: any) => (isFunction(v) ? v() : v);
+export interface MarkoService {
+  state: Dict;
+  send: (event: Dict) => void;
+  context: Dict;
+  prop: (key: string) => any;
+  scope: Dict;
+  refs: Dict;
+  computed: (key: string) => any;
+  event: Dict;
+  getStatus: () => string;
+  start: () => void;
+  stop: () => void;
+  propsChanged: () => void;
+}
 
-export function createService(machine: any, userProps: () => Dict, notify: () => void) {
+const access = (v: any) => (isFunction(v) ? v() : v);
+const noop = () => {};
+
+/**
+ * Server-render helper: a never-started service for computing initial attrs.
+ * Use in the reactive snapshot expression: `connect(svc ?? ssrService(machine, props), normalizeProps)`.
+ */
+export function ssrService(machine: any, userProps: () => Dict): MarkoService {
+  return createService(machine, userProps, noop);
+}
+
+export function createService(machine: any, userProps: () => Dict, notify: () => void): MarkoService {
   const getProps = () =>
     machine.props?.({ props: compact(access(userProps)), scope: getScope() }) ?? access(userProps);
 
@@ -284,7 +319,7 @@ export function createService(machine: any, userProps: () => Dict, notify: () =>
 
   machine.watch?.(getParams());
 
-  const service = {
+  return {
     state: getState(),
     send,
     context: ctx,
@@ -296,17 +331,17 @@ export function createService(machine: any, userProps: () => Dict, notify: () =>
     computed,
     event: getEvent(),
     getStatus: () => status,
-    /** Client-only: run entry actions/effects. Call from <lifecycle onMount>. */
+    /** Client-only: run entry actions/effects. Call from `<lifecycle onMount>`. */
     start() {
       const started = status === MachineStatus.Started;
       status = MachineStatus.Started;
       debug(started ? "rehydrating..." : "initializing...");
       state.invoke(state.initial, INIT_STATE);
-      // SSR attrs were rendered without event handlers (see normalizeProps);
+      // SSR attrs were rendered without event handlers (see normalize-props);
       // force one client recompute so handler-bearing props are applied.
       scheduleUpdate();
     },
-    /** Call from <lifecycle onDestroy>. */
+    /** Call from `<lifecycle onDestroy>`. */
     stop() {
       if (status !== MachineStatus.Started) return;
       debug("unmounting...");
@@ -324,81 +359,4 @@ export function createService(machine: any, userProps: () => Dict, notify: () =>
       notify();
     },
   };
-  return service;
 }
-
-// --- normalizeProps for Marko 6 ---------------------------------------------
-
-const propMap: Dict = {
-  className: "class",
-  htmlFor: "for",
-  defaultValue: "value",
-  defaultChecked: "checked",
-  onChange: "onInput",
-  onDoubleClick: "onDblClick",
-};
-
-const uppercasePattern = /[A-Z]/g;
-function hyphenate(name: string) {
-  if (name.startsWith("--")) return name;
-  return name.replace(uppercasePattern, (m) => "-" + m.toLowerCase());
-}
-
-function cssify(style: Dict) {
-  const css: Dict = {};
-  for (const property in style) {
-    const value = style[property];
-    if (typeof value !== "string" && typeof value !== "number") continue;
-    css[hyphenate(property)] = value;
-  }
-  return css;
-}
-
-/**
- * Marko delegates events; `event.currentTarget` is unavailable (null + console
- * error in debug builds). Marko passes the attached element as the handler's
- * 2nd argument — shadow `currentTarget` with it so Zag handlers work untouched.
- */
-function wrapHandler(fn: (event: Event) => void) {
-  return function (event: Event, el?: Element) {
-    if (el) {
-      Object.defineProperty(event, "currentTarget", {
-        get: () => el,
-        configurable: true,
-      });
-    }
-    return fn(event);
-  };
-}
-
-const isServer = typeof document === "undefined";
-
-export const normalizeProps = createNormalizer<any>((props: Dict) => {
-  const normalized: Dict = {};
-  for (const key in props) {
-    const value = props[key];
-    if (key === "readOnly" && value === false) continue;
-    if (key === "children") continue;
-    if (key === "style" && typeof value === "object" && value !== null) {
-      normalized.style = cssify(value);
-      continue;
-    }
-    const target = key in propMap ? propMap[key] : key;
-    if (/^on[A-Z]/.test(target) && isFunction(value)) {
-      // Handlers come from @zag-js modules and are not Marko-serializable.
-      // SSR output only needs the plain attrs; handlers re-attach on the
-      // client when start() bumps the rev signal and api recomputes.
-      if (!isServer) normalized[target] = wrapHandler(value);
-      continue;
-    }
-    if (isServer && isFunction(value)) continue;
-    // Marko renders boolean attrs as empty-string/omitted, but aria-* are
-    // enumerated attributes needing literal "true"/"false".
-    if (typeof value === "boolean" && target.startsWith("aria-")) {
-      normalized[target] = String(value);
-      continue;
-    }
-    normalized[target] = value;
-  }
-  return normalized;
-});

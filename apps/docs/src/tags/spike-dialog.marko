@@ -1,5 +1,5 @@
 import * as dialog from "@zag-js/dialog";
-import { createService, normalizeProps } from "../lib/zag-marko";
+import { createService, ssrService, normalizeProps } from "marko-zag";
 
 <id/uid/>
 <let/rev=0/>
@@ -15,7 +15,7 @@ import { createService, normalizeProps } from "../lib/zag-marko";
   }
 />
 <const/computeUi=() => {
-  const api = dialog.connect(svc ?? createService(dialog.machine, machineProps, () => {}), normalizeProps);
+  const api = dialog.connect(svc ?? ssrService(dialog.machine, machineProps), normalizeProps);
   return {
     open: api.open,
     trigger: api.getTriggerProps(),

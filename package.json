@@ -11,6 +11,9 @@
   },
   "devDependencies": {
     "@marko/type-check": "^1",
+    "@marko/vite": "^6.1.9",
+    "@zag-js/tabs": "1.43.0",
+    "marko": "^6.3.34",
     "prettier": "^3",
     "prettier-plugin-marko": "^3",
     "typescript": "^5",
