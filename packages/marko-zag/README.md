@@ -2,6 +2,8 @@
 
 Zag.js v1 bindings for Marko 6. SSR-safe: server renders full aria/data attributes from a never-started machine; the client builds its own service on mount and events attach on first update.
 
+Ships TypeScript and `.marko` source directly — your Marko build (Vite / `@marko/run`) compiles it like your own code, no extra config. Go-to-definition lands in real source.
+
 > ⚠️ Versions 0.0.x targeted Marko 5 + Zag 0.31 and are unrelated. There is no migration path; 0.1+ is a rewrite for Marko 6 + Zag v1.
 
 ## Usage
