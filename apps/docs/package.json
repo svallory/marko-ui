@@ -11,6 +11,7 @@
     "@marko-ui/registry": "workspace:*",
     "@zag-js/core": "1.43.0",
     "@zag-js/dialog": "1.43.0",
+    "@zag-js/switch": "1.43.0",
     "@zag-js/tabs": "1.43.0",
     "@zag-js/types": "1.43.0",
     "@zag-js/utils": "1.43.0",

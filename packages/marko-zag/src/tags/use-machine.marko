@@ -1,0 +1,54 @@
+// Restored from zag-plugin-marko's <use-machine> (Marko 5 / Zag 0.x era),
+// reshaped for Marko 6 resumability + Zag v1. Zag v1 has no [state, send]
+// tuple and no actors, so the old use-service/use-snapshot/use-actor tags
+// have no equivalent — connect(service, normalizeProps) replaced them.
+//
+// Returns { svc, rev }: svc is null during SSR (serializes trivially; the
+// client builds its own service on mount), rev bumps on every machine
+// update so anything reading the return value recomputes. Pair with an
+// api GETTER — a template closure, which Marko CAN serialize (registered
+// by the compiler), per Marko-team guidance:
+//
+//   <use-machine/m machine=switchMachine.machine props=machineProps/>
+//   <const/api=(m.rev, () => switchMachine.connect(m.svc ?? ssrService(switchMachine.machine, machineProps), normalizeProps))/>
+//   <label ...api().getRootProps()>...
+//
+// connect() is idempotent (pure read of the service), so calling the getter
+// several times per render is safe.
+import { createService, type MarkoService } from "../machine.ts";
+
+export interface Input {
+  /**
+   * GETTER for the Zag machine: `machine=() => switchMachine.machine`.
+   * Tag input is serialized for resume; a raw machine (functions from npm
+   * code) throws `Unable to serialize "input"` — verified empirically. A
+   * template closure over a module import serializes by compiler REGISTRY id.
+   */
+  machine: () => any;
+  /** machineProps closure: () => ({ id, ...mapped input }) */
+  props: () => Record<string, any>;
+}
+
+export interface Return {
+  svc: MarkoService | null;
+  rev: number;
+}
+
+<let/rev=0/>
+<let/svc=null/>
+<lifecycle
+  onMount() {
+    svc = createService(input.machine(), input.props, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  // Track every reactive read inside the caller's machineProps closure so
+  // controlled props re-notify the machine without a hand-typed dep list.
+  input.props();
+  svc?.propsChanged();
+</script>
+<return={ svc, rev }/>

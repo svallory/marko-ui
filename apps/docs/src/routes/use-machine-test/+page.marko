@@ -1,0 +1,56 @@
+// Empirical verification of the Marko-team-suggested pattern:
+// template-closure api GETTER + restored <use-machine> tag.
+// Tests: (a) machine passed as tag input survives resume,
+// (b) <script> tracks reads inside the caller's machineProps closure,
+// (c) api().getXProps() spreads recompute on machine updates.
+import * as switchMachine from "@zag-js/switch";
+import { ssrService, normalizeProps } from "marko-zag";
+
+<let/parentChecked=false/>
+
+<main class="mx-auto max-w-2xl space-y-8 p-8">
+  <h1 class="text-2xl font-bold">use-machine + api-getter test</h1>
+
+  <section class="space-y-2" data-test="uncontrolled">
+    <h2 class="font-semibold">Uncontrolled switch</h2>
+    <id/uid1/>
+    <const/props1=() => ({ id: uid1 })/>
+    <use-machine/m1 machine=() => switchMachine.machine props=props1/>
+    <const/api1=(m1.rev, () => switchMachine.connect(m1.svc ?? ssrService(switchMachine.machine, props1), normalizeProps))/>
+    <label ...api1().getRootProps()>
+      <input ...api1().getHiddenInputProps() class="sr-only">
+      <span ...api1().getControlProps() class="inline-flex h-5 w-9 items-center rounded-full bg-input p-0.5 transition-colors data-[state=checked]:bg-primary">
+        <span ...api1().getThumbProps() class="block size-4 rounded-full bg-background shadow transition-transform data-[state=checked]:translate-x-4"/>
+      </span>
+      <span class="ml-2 text-sm" data-test="u-state">checked: ${api1().checked}</span>
+    </label>
+  </section>
+
+  <section class="space-y-2" data-test="controlled">
+    <h2 class="font-semibold">Controlled switch — parent: <span data-test="parent-state">${parentChecked}</span></h2>
+    <button
+      class="rounded bg-secondary px-2 py-1 text-sm"
+      data-test="parent-toggle"
+      onClick() { parentChecked = !parentChecked }
+    >
+      Toggle from parent
+    </button>
+    <id/uid2/>
+    <const/props2=() => ({
+      id: uid2,
+      checked: parentChecked,
+      onCheckedChange(details: { checked: boolean }) {
+        parentChecked = details.checked;
+      },
+    })/>
+    <use-machine/m2 machine=() => switchMachine.machine props=props2/>
+    <const/api2=(m2.rev, () => switchMachine.connect(m2.svc ?? ssrService(switchMachine.machine, props2), normalizeProps))/>
+    <label ...api2().getRootProps()>
+      <input ...api2().getHiddenInputProps() class="sr-only">
+      <span ...api2().getControlProps() class="inline-flex h-5 w-9 items-center rounded-full bg-input p-0.5 transition-colors data-[state=checked]:bg-primary">
+        <span ...api2().getThumbProps() class="block size-4 rounded-full bg-background shadow transition-transform data-[state=checked]:translate-x-4"/>
+      </span>
+      <span class="ml-2 text-sm" data-test="c-state">child sees: ${api2().checked}</span>
+    </label>
+  </section>
+</main>

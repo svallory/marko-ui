@@ -21,6 +21,7 @@
     "vitest": "^4"
   },
   "dependencies": {
-    "@zag-js/core": "^1.43.0"
+    "@zag-js/core": "^1.43.0",
+    "@zag-js/types": "^1.43.0"
   }
 }
