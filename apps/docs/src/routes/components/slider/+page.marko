@@ -1,0 +1,28 @@
+import Slider from "@marko-ui/registry/ui/slider/index.marko";
+
+<let/controlledValue=[25]/>
+
+<component-page title="Slider" description="An input where the user selects a value from within a given range.">
+  <demo-box title="Default">
+    <Slider class="w-64" defaultValue=[50]/>
+  </demo-box>
+  <demo-box title="Range">
+    <Slider class="w-64" defaultValue=[25, 75]/>
+  </demo-box>
+  <demo-box title="Step">
+    <Slider class="w-64" defaultValue=[50] min=0 max=100 step=10/>
+  </demo-box>
+  <demo-box title="Disabled">
+    <Slider class="w-64" defaultValue=[50] disabled/>
+  </demo-box>
+  <demo-box title="Controlled">
+    <p class="text-muted-foreground mb-4 text-sm">
+      Value: ${controlledValue.join(", ")}
+    </p>
+    <Slider
+      class="w-64"
+      value=controlledValue
+      valueChange(value) { controlledValue = value; }
+    />
+  </demo-box>
+</component-page>

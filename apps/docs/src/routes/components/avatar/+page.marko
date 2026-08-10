@@ -1,0 +1,48 @@
+import Avatar from "@marko-ui/registry/ui/avatar/index.marko";
+
+export interface Input {}
+
+<let/status="unknown"/>
+<let/src="https://github.com/shadcn.png"/>
+
+<component-page title="Avatar" description="An image element with a fallback for representing the user.">
+  <demo-box title="Default">
+    <Avatar src="https://github.com/shadcn.png" alt="@shadcn"/>
+  </demo-box>
+  <demo-box title="Fallback">
+    <Avatar fallback="CN"/>
+  </demo-box>
+  <demo-box title="Broken image (falls back)">
+    <Avatar src="https://broken-image-url.example/none.png" alt="Broken" fallback="BR"/>
+  </demo-box>
+  <demo-box title="Custom fallback content">
+    <Avatar>
+      <span class="text-xs font-medium">JD</span>
+    </Avatar>
+  </demo-box>
+  <demo-box title="Controlled src">
+    <div class="flex flex-col items-start gap-3">
+      <Avatar
+        src=src
+        alt="Controlled avatar"
+        fallback="CN"
+        statusChange(s) { status = s; }
+      />
+      <div class="flex gap-2">
+        <button
+          class="border-input rounded-md border px-2 py-1 text-sm"
+          onClick() { src = "https://github.com/shadcn.png"; }
+        >
+          Valid src
+        </button>
+        <button
+          class="border-input rounded-md border px-2 py-1 text-sm"
+          onClick() { src = "https://broken-image-url.example/none.png"; }
+        >
+          Broken src
+        </button>
+      </div>
+      <p class="text-muted-foreground text-sm">Status: ${status}</p>
+    </div>
+  </demo-box>
+</component-page>

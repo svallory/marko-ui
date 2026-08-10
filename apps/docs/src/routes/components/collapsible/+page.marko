@@ -1,0 +1,60 @@
+import Collapsible from "@marko-ui/registry/ui/collapsible/index.marko";
+
+<let/open=false/>
+
+<component-page title="Collapsible" description="An interactive component which expands/collapses a panel.">
+  <demo-box title="Default">
+    <Collapsible class="w-72 space-y-2">
+      <@trigger>
+        <span class="flex w-full items-center justify-between text-sm font-semibold">
+          Can I use this in my project?
+        </span>
+      </@trigger>
+      <p class="rounded-md border px-4 py-3 text-sm text-muted-foreground">
+        Yes. Free to use for personal and commercial projects. No attribution required.
+      </p>
+    </Collapsible>
+  </demo-box>
+
+  <demo-box title="Disabled">
+    <Collapsible class="w-72 space-y-2" disabled>
+      <@trigger>
+        <span class="flex w-full items-center justify-between text-sm font-semibold">
+          This trigger is disabled
+        </span>
+      </@trigger>
+      <p class="rounded-md border px-4 py-3 text-sm text-muted-foreground">
+        You should never see this content toggle.
+      </p>
+    </Collapsible>
+  </demo-box>
+
+  <demo-box title="Controlled">
+    <div class="w-72 space-y-3">
+      <p class="text-sm text-muted-foreground">
+        State: <strong>${open ? "open" : "closed"}</strong>
+      </p>
+      <Collapsible
+        class="space-y-2"
+        open=open
+        openChange(next) { open = next; }
+      >
+        <@trigger>
+          <span class="flex w-full items-center justify-between text-sm font-semibold">
+            Controlled from the parent
+          </span>
+        </@trigger>
+        <p class="rounded-md border px-4 py-3 text-sm text-muted-foreground">
+          This panel's open state is owned by the demo page and toggled with a button below.
+        </p>
+      </Collapsible>
+      <button
+        type="button"
+        class="rounded-md border px-3 py-1.5 text-sm hover:bg-accent"
+        onClick() { open = !open; }
+      >
+        Toggle externally
+      </button>
+    </div>
+  </demo-box>
+</component-page>

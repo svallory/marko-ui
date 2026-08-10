@@ -1,0 +1,86 @@
+import * as radioGroup from "@zag-js/radio-group";
+import { createService, ssrService, normalizeProps } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface RadioGroupItem {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+export interface Input extends Omit<Marko.Input<"div">, "value"> {
+  items: RadioGroupItem[];
+  value?: string | null;
+  valueChange?: (value: string | null) => void;
+  disabled?: boolean;
+  name?: string;
+}
+
+<const/{ items, value, valueChange, disabled, name, class: className, ...rest }=input/>
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  value,
+  disabled,
+  name,
+  onValueChange(details: { value: string | null }) {
+    valueChange?.(details.value);
+  },
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(radioGroup.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.value;
+  input.disabled;
+  input.name;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = radioGroup.connect(svc ?? ssrService(radioGroup.machine, machineProps), normalizeProps);
+  return {
+    root: api.getRootProps(),
+    items: items.map((item) => ({
+      value: item.value,
+      disabled: item.disabled,
+      itemProps: api.getItemProps({ value: item.value, disabled: item.disabled }),
+      controlProps: api.getItemControlProps({ value: item.value, disabled: item.disabled }),
+      hiddenInputProps: api.getItemHiddenInputProps({ value: item.value, disabled: item.disabled }),
+      textProps: api.getItemTextProps({ value: item.value, disabled: item.disabled }),
+      checked: api.value === item.value,
+    })),
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<div ...rest ...ui.root data-slot="radio-group" class=cn("grid gap-3", className)>
+  <for|item, i| of=ui.items>
+    <label ...item.itemProps data-slot="radio-group-item-wrapper" class="flex items-center gap-2">
+      <span
+        ...item.controlProps
+        data-slot="radio-group-item"
+        class="border-input text-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 aspect-square size-4 shrink-0 rounded-full border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center"
+      >
+        <if=item.checked>
+          <span
+            data-slot="radio-group-indicator"
+            class="relative size-2 rounded-full bg-primary"
+          />
+        </if>
+      </span>
+      <input ...item.hiddenInputProps/>
+      <span ...item.textProps data-slot="radio-group-item-text" class="text-sm leading-none font-medium select-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50">
+        ${items[i].label}
+      </span>
+    </label>
+  </for>
+</div>

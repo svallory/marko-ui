@@ -1,0 +1,40 @@
+import Checkbox from "@marko-ui/registry/ui/checkbox/index.marko";
+
+<let/controlledChecked=false/>
+
+<component-page title="Checkbox" description="A control that allows the user to toggle between checked, unchecked, and indeterminate states.">
+  <demo-box title="Default">
+    <Checkbox>
+      <span>Accept terms and conditions</span>
+    </Checkbox>
+  </demo-box>
+  <demo-box title="Checked">
+    <Checkbox checked=true>
+      <span>Subscribe to newsletter</span>
+    </Checkbox>
+  </demo-box>
+  <demo-box title="Indeterminate">
+    <Checkbox indeterminate=true>
+      <span>Select all</span>
+    </Checkbox>
+  </demo-box>
+  <demo-box title="Disabled">
+    <Checkbox disabled>
+      <span>Disabled</span>
+    </Checkbox>
+    <Checkbox disabled checked=true>
+      <span>Disabled checked</span>
+    </Checkbox>
+  </demo-box>
+  <demo-box title="Controlled">
+    <p class="text-muted-foreground mb-4 text-sm">
+      Checked: ${String(controlledChecked)}
+    </p>
+    <Checkbox
+      checked=controlledChecked
+      checkedChange(checked) { controlledChecked = checked; }
+    >
+      <span>Controlled checkbox</span>
+    </Checkbox>
+  </demo-box>
+</component-page>

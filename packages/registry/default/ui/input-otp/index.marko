@@ -1,0 +1,85 @@
+import * as pinInput from "@zag-js/pin-input";
+import { createService, ssrService, normalizeProps } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Omit<Marko.Input<"div">, "value" | "onChange"> {
+  length?: number;
+  value?: string[];
+  valueChange?: (value: string[]) => void;
+  valueComplete?: (value: string[]) => void;
+  otp?: boolean;
+  mask?: boolean;
+  disabled?: boolean;
+  groupSize?: number;
+}
+
+<const/{
+  length,
+  value,
+  valueChange,
+  valueComplete,
+  otp,
+  mask,
+  disabled,
+  groupSize,
+  class: className,
+  ...rest
+}=input/>
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  count: length ?? 6,
+  value: value,
+  otp: otp ?? true,
+  mask: mask,
+  disabled: disabled,
+  onValueChange(details: { value: string[] }) {
+    valueChange?.(details.value);
+  },
+  onValueComplete(details: { value: string[] }) {
+    valueComplete?.(details.value);
+  },
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(pinInput.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.length;
+  input.value;
+  input.otp;
+  input.mask;
+  input.disabled;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = pinInput.connect(svc ?? ssrService(pinInput.machine, machineProps), normalizeProps);
+  return {
+    root: api.getRootProps(),
+    hiddenInput: api.getHiddenInputProps(),
+    inputs: api.items.map((i) => api.getInputProps({ index: i })),
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<div ...rest ...ui.root data-slot="input-otp" class=cn("flex items-center gap-2 has-disabled:opacity-50", className)>
+  <input ...ui.hiddenInput/>
+  <for|i| until=(length ?? 6)>
+    <if=(groupSize && i > 0 && i % groupSize === 0)>
+      <div data-slot="input-otp-separator" class="text-muted-foreground">-</div>
+    </if>
+    <input
+      ...ui.inputs[i]
+      data-slot="input-otp-slot"
+      class="border-input size-9 rounded-md border text-center text-sm shadow-xs outline-none focus:ring-[3px] focus:ring-ring/50 focus:border-ring"
+    />
+  </for>
+</div>

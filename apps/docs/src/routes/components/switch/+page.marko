@@ -1,0 +1,34 @@
+import Switch from "@marko-ui/registry/ui/switch/index.marko";
+import Label from "@marko-ui/registry/ui/label/index.marko";
+
+<let/controlledChecked=true/>
+
+<component-page title="Switch" description="A control that allows the user to toggle between checked and not checked.">
+  <demo-box title="Default">
+    <Switch/>
+  </demo-box>
+  <demo-box title="With label">
+    <div class="flex items-center gap-2">
+      <Switch id="airplane-mode"/>
+      <Label for="airplane-mode">Airplane Mode</Label>
+    </div>
+  </demo-box>
+  <demo-box title="Checked by default">
+    <Switch checked/>
+  </demo-box>
+  <demo-box title="Disabled">
+    <Switch disabled/>
+    <Switch checked disabled/>
+  </demo-box>
+  <demo-box title="Controlled">
+    <div class="flex items-center gap-4">
+      <Switch
+        checked=controlledChecked
+        checkedChange=(checked) => { controlledChecked = checked; }
+      />
+      <span class="text-sm text-muted-foreground">
+        checked: ${controlledChecked}
+      </span>
+    </div>
+  </demo-box>
+</component-page>

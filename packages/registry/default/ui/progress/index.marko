@@ -1,0 +1,69 @@
+import * as progress from "@zag-js/progress";
+import { createService, ssrService, normalizeProps } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  value?: number | null;
+  valueChange?: (value: number | null) => void;
+  min?: number;
+  max?: number;
+  label?: string;
+}
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  value: input.value,
+  min: input.min,
+  max: input.max,
+  onValueChange(details: { value: number | null }) {
+    input.valueChange?.(details.value);
+  },
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(progress.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.value;
+  input.min;
+  input.max;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = progress.connect(svc ?? ssrService(progress.machine, machineProps), normalizeProps);
+  return {
+    root: api.getRootProps(),
+    track: api.getTrackProps(),
+    range: api.getRangeProps(),
+    label: api.getLabelProps(),
+    valueText: api.getValueTextProps(),
+    valueAsString: api.valueAsString,
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<const/{ class: className, label, value, valueChange, min, max, ...rest }=input/>
+
+<div ...rest ...ui.root data-slot="progress" class=cn("flex flex-col gap-2", className)>
+  <if=label>
+    <div class="flex items-center justify-between text-sm">
+      <span ...ui.label>${label}</span>
+      <span ...ui.valueText>${ui.valueAsString}</span>
+    </div>
+  </if>
+  <div
+    ...ui.track
+    data-slot="progress-track"
+    class="bg-primary/20 relative h-2 w-full overflow-hidden rounded-full"
+  >
+    <div ...ui.range data-slot="progress-range" class="bg-primary h-full transition-all"/>
+  </div>
+</div>

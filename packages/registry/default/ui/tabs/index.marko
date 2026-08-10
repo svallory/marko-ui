@@ -1,0 +1,91 @@
+import * as tabs from "@zag-js/tabs";
+import { createService, ssrService, normalizeProps } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface TabItem {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+export interface Input extends Marko.Input<"div"> {
+  items: TabItem[];
+  content?: Marko.Body<[string]>;
+  defaultValue?: string;
+  value?: string;
+  valueChange?: (value: string) => void;
+  orientation?: "horizontal" | "vertical";
+  activationMode?: "manual" | "automatic";
+}
+
+<const/{
+  items,
+  content,
+  defaultValue,
+  value,
+  valueChange,
+  orientation,
+  activationMode,
+  class: className,
+  ...rest
+}=input/>
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  defaultValue: defaultValue ?? items[0]?.value,
+  value: value,
+  orientation: orientation,
+  activationMode: activationMode,
+  onValueChange(details: { value: string }) {
+    valueChange?.(details.value);
+  },
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(tabs.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.value;
+  input.orientation;
+  input.activationMode;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = tabs.connect(svc ?? ssrService(tabs.machine, machineProps), normalizeProps);
+  return {
+    root: api.getRootProps(),
+    list: api.getListProps(),
+    triggers: Object.fromEntries(
+      items.map((item) => [item.value, api.getTriggerProps({ value: item.value, disabled: item.disabled })]),
+    ),
+    contents: Object.fromEntries(items.map((item) => [item.value, api.getContentProps({ value: item.value })])),
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<div ...rest ...ui.root data-slot="tabs" class=cn("flex flex-col gap-2", className)>
+  <div ...ui.list data-slot="tabs-list" class="bg-muted text-muted-foreground inline-flex w-fit items-center justify-center rounded-lg p-[3px]">
+    <for|item| of=items>
+      <button
+        ...ui.triggers[item.value]
+        data-slot="tabs-trigger"
+        class="data-[selected]:bg-background data-[selected]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 data-[selected]:shadow-sm"
+      >
+        ${item.label}
+      </button>
+    </for>
+  </div>
+  <for|item| of=items>
+    <div ...ui.contents[item.value] data-slot="tabs-content" class="flex-1 outline-none">
+      <${content}(item.value)/>
+    </div>
+  </for>
+</div>

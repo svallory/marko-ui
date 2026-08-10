@@ -1,0 +1,26 @@
+import InputOTP from "@marko-ui/registry/ui/input-otp/index.marko";
+
+<let/controlledValue=["1", "2", "3", "", "", ""]/>
+
+<component-page title="Input OTP" description="Accessible one-time password component with copy paste functionality.">
+  <demo-box title="Default">
+    <InputOTP length=6/>
+  </demo-box>
+  <demo-box title="Grouped">
+    <InputOTP length=6 groupSize=3/>
+  </demo-box>
+  <demo-box title="Masked">
+    <InputOTP length=6 mask/>
+  </demo-box>
+  <demo-box title="Disabled">
+    <InputOTP length=6 disabled/>
+  </demo-box>
+  <demo-box title="Controlled">
+    <p class="text-muted-foreground mb-4 text-sm">Value: ${controlledValue.join("")}</p>
+    <InputOTP
+      length=6
+      value=controlledValue
+      valueChange(value) { controlledValue = value; }
+    />
+  </demo-box>
+</component-page>

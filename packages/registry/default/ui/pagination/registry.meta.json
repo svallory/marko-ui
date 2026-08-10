@@ -1,0 +1,6 @@
+{
+  "title": "Pagination",
+  "description": "Pagination with page navigation, next and previous links.",
+  "dependencies": ["@zag-js/pagination", "marko-zag", "class-variance-authority"],
+  "registryDependencies": ["utils", "button"]
+}

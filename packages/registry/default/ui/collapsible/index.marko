@@ -1,0 +1,61 @@
+import * as collapsible from "@zag-js/collapsible";
+import { createService, ssrService, normalizeProps } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  open?: boolean;
+  openChange?: (open: boolean) => void;
+  disabled?: boolean;
+  trigger?: Marko.Body;
+}
+
+<const/{ open, openChange, disabled, trigger, class: className, content, ...rest }=input/>
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  open: open,
+  disabled: disabled,
+  onOpenChange(details: { open: boolean }) {
+    openChange?.(details.open);
+  },
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(collapsible.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.open;
+  input.disabled;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = collapsible.connect(svc ?? ssrService(collapsible.machine, machineProps), normalizeProps);
+  return {
+    root: api.getRootProps(),
+    triggerProps: api.getTriggerProps(),
+    contentProps: api.getContentProps(),
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<div ...rest ...ui.root data-slot="collapsible" class=cn(className)>
+  <if=trigger>
+    <button ...ui.triggerProps data-slot="collapsible-trigger">
+      <${trigger}/>
+    </button>
+  </if>
+  <if=!trigger>
+    <button ...ui.triggerProps data-slot="collapsible-trigger">Toggle</button>
+  </if>
+  <div ...ui.contentProps data-slot="collapsible-content">
+    <${content}/>
+  </div>
+</div>

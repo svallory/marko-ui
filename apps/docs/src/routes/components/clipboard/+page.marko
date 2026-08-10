@@ -1,0 +1,24 @@
+import Clipboard from "@marko-ui/registry/ui/clipboard/index.marko";
+
+<let/controlledValue="https://marko-ui.dev/components/clipboard"/>
+
+<component-page title="Clipboard" description="Copy text to the clipboard, with a temporary confirmation state.">
+  <demo-box title="Default">
+    <Clipboard label="Link" value="https://marko-ui.dev" class="w-[400px]"/>
+  </demo-box>
+  <demo-box title="Custom timeout">
+    <Clipboard label="Coupon code" value="MARKO-UI-2026" timeout=1000 class="w-[400px]"/>
+  </demo-box>
+  <demo-box title="Disabled">
+    <Clipboard label="Link" value="https://marko-ui.dev" disabled class="w-[400px]"/>
+  </demo-box>
+  <demo-box title="Controlled">
+    <p class="text-muted-foreground mb-4 text-sm">Value: ${controlledValue}</p>
+    <Clipboard
+      label="Link"
+      value=controlledValue
+      valueChange(value) { controlledValue = value; }
+      class="w-[400px]"
+    />
+  </demo-box>
+</component-page>

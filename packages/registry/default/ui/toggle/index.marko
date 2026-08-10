@@ -1,0 +1,28 @@
+import { toggleVariants, type ToggleVariants } from "./variants.ts";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"button">, ToggleVariants {
+  pressed?: boolean;
+  pressedChange?: (pressed: boolean) => void;
+}
+
+<let/pressed=input.pressed ?? false/>
+<script>
+  if (input.pressed !== undefined) pressed = input.pressed;
+</script>
+<const/{ variant, size, class: className, content, pressed: _pressed, pressedChange, ...rest }=input/>
+
+<button
+  ...rest
+  type="button"
+  data-slot="toggle"
+  data-state=(pressed ? "on" : "off")
+  aria-pressed=String(pressed)
+  class=cn(toggleVariants({ variant, size }), className)
+  onClick() {
+    pressed = !pressed;
+    pressedChange?.(pressed);
+  }
+>
+  <${content}/>
+</button>

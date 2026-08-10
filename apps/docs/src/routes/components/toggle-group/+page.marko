@@ -1,0 +1,61 @@
+import ToggleGroup from "@marko-ui/registry/ui/toggle-group/index.marko";
+
+static const ALIGNMENT = [
+  { value: "left", label: "Left" },
+  { value: "center", label: "Center" },
+  { value: "right", label: "Right" },
+];
+
+static const FORMATTING = [
+  { value: "bold", label: "B" },
+  { value: "italic", label: "I" },
+  { value: "underline", label: "U", disabled: true },
+];
+
+<let/controlledValue=["center"]/>
+
+<component-page title="Toggle Group" description="A set of two-state buttons that can be toggled on or off.">
+  <div class="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
+    <p class="font-medium text-foreground">Array-driven API</p>
+    <p class="mt-1">
+      Like <code>RadioGroup</code>, this component takes a single
+      <code>items: {"{"} value, label, disabled? {"}"}[]</code> input and renders every item
+      internally, avoiding passing the Zag API across a tag boundary. Pass <code>multiple</code>
+      to allow more than one pressed item at once, and <code>value</code> / <code>valueChange</code>
+      for controlled use.
+    </p>
+  </div>
+
+  <demo-box title="Default (single selection)">
+    <ToggleGroup items=ALIGNMENT value=["center"]/>
+  </demo-box>
+
+  <demo-box title="Multiple selection">
+    <ToggleGroup items=FORMATTING multiple value=["bold"]/>
+  </demo-box>
+
+  <demo-box title="Outline variant">
+    <ToggleGroup items=ALIGNMENT variant="outline" value=["left"]/>
+  </demo-box>
+
+  <demo-box title="Sizes">
+    <ToggleGroup items=ALIGNMENT size="sm" value=["left"]/>
+    <ToggleGroup items=ALIGNMENT value=["left"]/>
+    <ToggleGroup items=ALIGNMENT size="lg" value=["left"]/>
+  </demo-box>
+
+  <demo-box title="Disabled">
+    <ToggleGroup items=ALIGNMENT value=["left"] disabled/>
+  </demo-box>
+
+  <demo-box title="Controlled">
+    <p class="text-muted-foreground mb-4 text-sm">
+      Selected: ${controlledValue.join(", ") || "none"}
+    </p>
+    <ToggleGroup
+      items=ALIGNMENT
+      value=controlledValue
+      valueChange(value) { controlledValue = value; }
+    />
+  </demo-box>
+</component-page>

@@ -8,10 +8,23 @@
     "./*": "./default/*"
   },
   "dependencies": {
+    "@zag-js/accordion": "1.43.0",
+    "@zag-js/avatar": "1.43.0",
+    "@zag-js/checkbox": "1.43.0",
+    "@zag-js/clipboard": "1.43.0",
+    "@zag-js/collapsible": "1.43.0",
+    "@zag-js/pagination": "1.43.0",
+    "@zag-js/pin-input": "1.43.0",
+    "@zag-js/progress": "1.43.0",
+    "@zag-js/radio-group": "1.43.0",
+    "@zag-js/slider": "1.43.0",
+    "@zag-js/switch": "1.43.0",
+    "@zag-js/tabs": "1.43.0",
+    "@zag-js/toggle-group": "1.43.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "tailwind-merge": "^3.3.1",
-    "marko-zag": "workspace:*"
+    "marko-zag": "workspace:*",
+    "tailwind-merge": "^3.3.1"
   },
   "peerDependencies": {
     "marko": "^6.3.0"

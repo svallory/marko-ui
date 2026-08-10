@@ -1,0 +1,38 @@
+import Toggle from "@marko-ui/registry/ui/toggle/index.marko";
+
+<let/controlledPressed=true/>
+
+<component-page title="Toggle" description="A two-state button that can be either on or off.">
+  <demo-box title="Default">
+    <Toggle>Toggle</Toggle>
+  </demo-box>
+  <demo-box title="Variants">
+    <Toggle>Default</Toggle>
+    <Toggle variant="outline">Outline</Toggle>
+  </demo-box>
+  <demo-box title="Sizes">
+    <Toggle size="sm">Small</Toggle>
+    <Toggle>Default</Toggle>
+    <Toggle size="lg">Large</Toggle>
+  </demo-box>
+  <demo-box title="Pressed by default">
+    <Toggle pressed>Pressed</Toggle>
+  </demo-box>
+  <demo-box title="Disabled">
+    <Toggle disabled>Disabled</Toggle>
+    <Toggle pressed disabled>Disabled pressed</Toggle>
+  </demo-box>
+  <demo-box title="Controlled">
+    <div class="flex items-center gap-4">
+      <Toggle
+        pressed=controlledPressed
+        pressedChange=(pressed) => { controlledPressed = pressed; }
+      >
+        Controlled
+      </Toggle>
+      <span class="text-sm text-muted-foreground">
+        pressed: ${controlledPressed}
+      </span>
+    </div>
+  </demo-box>
+</component-page>

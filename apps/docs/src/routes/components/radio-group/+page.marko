@@ -1,0 +1,51 @@
+import RadioGroup from "@marko-ui/registry/ui/radio-group/index.marko";
+
+static const PLANS = [
+  { value: "default", label: "Default" },
+  { value: "comfortable", label: "Comfortable" },
+  { value: "compact", label: "Compact" },
+];
+
+static const PAYMENT_METHODS = [
+  { value: "card", label: "Card" },
+  { value: "paypal", label: "PayPal" },
+  { value: "apple-pay", label: "Apple Pay", disabled: true },
+];
+
+<let/controlledValue="comfortable"/>
+
+<component-page title="Radio Group" description="A set of checkable buttons—known as radio buttons—where no more than one of the buttons can be checked at a time.">
+  <div class="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
+    <p class="font-medium text-foreground">Array-driven API</p>
+    <p class="mt-1">
+      Unlike shadcn's compound <code>RadioGroup</code> / <code>RadioGroupItem</code> pair, this
+      component takes a single <code>items: {"{"} value, label, disabled? {"}"}[]</code> input and
+      renders every item internally. This avoids passing the Zag API across a tag boundary, which
+      Marko can't serialize. Pass <code>value</code> / <code>valueChange</code> for controlled use,
+      <code>disabled</code> to disable the whole group, and <code>name</code> for form submission.
+    </p>
+  </div>
+
+  <demo-box title="Default">
+    <RadioGroup items=PLANS value="comfortable"/>
+  </demo-box>
+
+  <demo-box title="With disabled item">
+    <RadioGroup items=PAYMENT_METHODS value="card"/>
+  </demo-box>
+
+  <demo-box title="Disabled">
+    <RadioGroup items=PLANS value="default" disabled/>
+  </demo-box>
+
+  <demo-box title="Controlled">
+    <p class="text-muted-foreground mb-4 text-sm">
+      Selected: ${controlledValue ?? "none"}
+    </p>
+    <RadioGroup
+      items=PLANS
+      value=controlledValue
+      valueChange(value) { controlledValue = value; }
+    />
+  </demo-box>
+</component-page>

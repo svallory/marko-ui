@@ -1,0 +1,6 @@
+{
+  "title": "Clipboard",
+  "description": "Copy text to the clipboard, with a temporary confirmation state.",
+  "dependencies": ["@zag-js/clipboard"],
+  "registryDependencies": ["utils"]
+}

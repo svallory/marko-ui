@@ -1,0 +1,79 @@
+import * as checkbox from "@zag-js/checkbox";
+import { createService, ssrService, normalizeProps } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input {
+  checked?: boolean | "indeterminate";
+  checkedChange?: (checked: boolean | "indeterminate") => void;
+  indeterminate?: boolean;
+  disabled?: boolean;
+  name?: string;
+  value?: string;
+  class?: string;
+  content?: Marko.Body;
+}
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  checked: input.indeterminate ? "indeterminate" : input.checked,
+  disabled: input.disabled,
+  name: input.name,
+  value: input.value,
+  onCheckedChange(details: { checked: boolean | "indeterminate" }) {
+    input.checkedChange?.(details.checked);
+  },
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(checkbox.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.checked;
+  input.indeterminate;
+  input.disabled;
+  input.name;
+  input.value;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = checkbox.connect(svc ?? ssrService(checkbox.machine, machineProps), normalizeProps);
+  return {
+    root: api.getRootProps(),
+    control: api.getControlProps(),
+    indicator: api.getIndicatorProps(),
+    hiddenInput: api.getHiddenInputProps(),
+    indeterminate: api.indeterminate,
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<label ...ui.root data-slot="checkbox-root" class=cn("inline-flex items-center gap-2 text-sm leading-none", input.disabled && "cursor-not-allowed opacity-50", input.class)>
+  <input ...ui.hiddenInput/>
+  <span
+    ...ui.control
+    data-slot="checkbox"
+    class="peer border-input dark:bg-input/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 size-4 flex items-center justify-center"
+  >
+    <span ...ui.indicator data-slot="checkbox-indicator" class="flex items-center justify-center text-current transition-none">
+      <if=ui.indeterminate>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="size-3.5">
+          <path d="M5 12h14"/>
+        </svg>
+      </if>
+      <if=!ui.indeterminate>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="size-3.5">
+          <path d="M20 6 9 17l-5-5"/>
+        </svg>
+      </if>
+    </span>
+  </span>
+  <${input.content}/>
+</label>

@@ -1,0 +1,64 @@
+import * as avatar from "@zag-js/avatar";
+import { createService, ssrService, normalizeProps } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"span"> {
+  src?: string;
+  alt?: string;
+  fallback?: string;
+  content?: Marko.Body;
+  statusChange?: (status: "error" | "loaded") => void;
+}
+
+<const/{ src, alt, fallback, content, statusChange, class: className, ...rest }=input/>
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  onStatusChange(details: { status: "error" | "loaded" }) {
+    statusChange?.(details.status);
+  },
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(avatar.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.src;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = avatar.connect(svc ?? ssrService(avatar.machine, machineProps), normalizeProps);
+  return {
+    root: api.getRootProps(),
+    image: api.getImageProps(),
+    fallback: api.getFallbackProps(),
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<span
+  ...rest
+  ...ui.root
+  data-slot="avatar"
+  class=cn("relative flex size-8 shrink-0 overflow-hidden rounded-full", className)
+>
+  <if=src>
+    <img ...ui.image src=src alt=alt data-slot="avatar-image" class="aspect-square size-full"/>
+  </if>
+  <span ...ui.fallback data-slot="avatar-fallback" class="bg-muted flex size-full items-center justify-center rounded-full">
+    <if=content>
+      <${content}/>
+    </if>
+    <else>
+      ${fallback}
+    </else>
+  </span>
+</span>

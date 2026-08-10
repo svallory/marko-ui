@@ -1,0 +1,102 @@
+import * as accordion from "@zag-js/accordion";
+import { createService, ssrService, normalizeProps } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface AccordionItem {
+  value: string;
+  title: string;
+  content?: string;
+}
+
+export interface Input {
+  items: AccordionItem[];
+  content?: Marko.Body<[AccordionItem]>;
+  multiple?: boolean;
+  collapsible?: boolean;
+  value?: string[];
+  valueChange?: (value: string[]) => void;
+  class?: string;
+}
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  multiple: input.multiple,
+  collapsible: input.collapsible ?? true,
+  value: input.value,
+  onValueChange(details: { value: string[] }) {
+    input.valueChange?.(details.value);
+  },
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(accordion.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.multiple;
+  input.collapsible;
+  input.value;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = accordion.connect(svc ?? ssrService(accordion.machine, machineProps), normalizeProps);
+  return {
+    root: api.getRootProps(),
+    items: Object.fromEntries(
+      input.items.map((item) => [
+        item.value,
+        {
+          item: api.getItemProps({ value: item.value, disabled: false }),
+          trigger: api.getItemTriggerProps({ value: item.value, disabled: false }),
+          content: api.getItemContentProps({ value: item.value, disabled: false }),
+        },
+      ]),
+    ),
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<div ...ui.root data-slot="accordion" class=cn(input.class)>
+  <for|item| of=input.items>
+    <div ...ui.items[item.value].item data-slot="accordion-item" class="border-b last:border-b-0">
+      <h3 class="flex">
+        <button
+          ...ui.items[item.value].trigger
+          data-slot="accordion-trigger"
+          class="focus-visible:border-ring focus-visible:ring-ring/50 flex flex-1 items-start justify-between gap-4 rounded-md py-4 text-left text-sm font-medium transition-all outline-none hover:underline focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180"
+        >
+          ${item.title}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="text-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200"
+          >
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </button>
+      </h3>
+      <div ...ui.items[item.value].content data-slot="accordion-content" class="overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+        <div class="pt-0 pb-4">
+          <if=input.content>
+            <${input.content}(item)/>
+          </if>
+          <if=!input.content>${item.content}</if>
+        </div>
+      </div>
+    </div>
+  </for>
+</div>

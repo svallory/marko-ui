@@ -14,7 +14,7 @@ export interface Input extends Marko.Input<"li"> {}
   <if=content>
     <${content}/>
   </if>
-  <else>
+  <if=!content>
     /
-  </else>
+  </if>
 </li>
