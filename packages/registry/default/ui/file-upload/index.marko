@@ -22,7 +22,7 @@ export interface Input {
 <let/svc=null/>
 <let/files=[] as FileUploadFileInfo[]/>
 
-<const/apiRef={ current: null as InstanceType<typeof fileUpload.connect> | null }/>
+<const/apiRef={ current: null as ReturnType<typeof fileUpload.connect> | null }/>
 
 <const/machineProps=() => ({
   id: uid,

@@ -66,8 +66,8 @@ export interface Input {
 >
   ${input.trigger}
 </button>
-<if=ui.open>
-  <portal>
+<portal>
+  <if=ui.open>
     <div ...ui.positioner data-slot="menubar-positioner" style="z-index:50">
       <div
         ...ui.content
@@ -108,5 +108,5 @@ export interface Input {
         </for>
       </div>
     </div>
-  </portal>
-</if>
+  </if>
+</portal>

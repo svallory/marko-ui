@@ -66,8 +66,8 @@ export interface Input {
 <div ...ui.contextTrigger data-slot="context-menu-trigger">
   <${input.content}/>
 </div>
-<if=ui.open>
-  <portal>
+<portal>
+  <if=ui.open>
     <div ...ui.positioner data-slot="context-menu-positioner" style="z-index:50">
       <div
         ...ui.content
@@ -108,5 +108,5 @@ export interface Input {
         </for>
       </div>
     </div>
-  </portal>
-</if>
+  </if>
+</portal>

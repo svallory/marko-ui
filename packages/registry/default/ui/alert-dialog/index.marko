@@ -66,8 +66,8 @@ export interface Input {
 <if=input.trigger>
   <${input.trigger}({ ...ui.trigger, "data-slot": "alert-dialog-trigger" })/>
 </if>
-<if=ui.open>
-  <portal>
+<portal>
+  <if=ui.open>
     <div
       ...ui.backdrop
       data-slot="alert-dialog-overlay"
@@ -100,5 +100,5 @@ export interface Input {
         </div>
       </div>
     </div>
-  </portal>
-</if>
+  </if>
+</portal>

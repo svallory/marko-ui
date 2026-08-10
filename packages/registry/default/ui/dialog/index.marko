@@ -57,8 +57,8 @@ export interface Input extends Marko.Input<"div"> {
   <if=trigger>
     <${trigger}({ ...ui.trigger, "data-slot": "dialog-trigger" })/>
   </if>
-  <if=ui.open>
-    <portal>
+  <portal>
+    <if=ui.open>
       <div
         ...ui.backdrop
         data-slot="dialog-backdrop"
@@ -101,6 +101,6 @@ export interface Input extends Marko.Input<"div"> {
           </button>
         </div>
       </div>
-    </portal>
-  </if>
+    </if>
+  </portal>
 </div>

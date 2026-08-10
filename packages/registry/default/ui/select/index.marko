@@ -88,8 +88,8 @@ export interface Input extends Omit<Marko.Input<"div">, "value"> {
       <option value=entry.value disabled=entry.disabled>${entry.label}</option>
     </for>
   </select>
-  <if=ui.open>
-    <portal>
+  <portal>
+    <if=ui.open>
       <div ...ui.positioner data-slot="select-positioner" style=positionerStyle>
         <div
           ...ui.content
@@ -112,6 +112,6 @@ export interface Input extends Omit<Marko.Input<"div">, "value"> {
           </for>
         </div>
       </div>
-    </portal>
-  </if>
+    </if>
+  </portal>
 </div>

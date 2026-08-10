@@ -36,7 +36,12 @@ interface Meta {
 }
 
 async function fileEntries(dir: string, targetBase: string, registryBase: string) {
-  const names = (await readdir(dir, { withFileTypes: true }))
+  const entries = await readdir(dir, { withFileTypes: true });
+  const sub = entries.find((e) => e.isDirectory());
+  if (sub) {
+    throw new Error(`registry item dirs must be flat; found subdirectory ${dir}/${sub.name}`);
+  }
+  const names = entries
     .filter((e) => e.isFile() && e.name !== "registry.meta.json")
     .map((e) => e.name)
     .sort();
@@ -70,6 +75,7 @@ async function main() {
       type: item.type,
       title: item.title,
       description: item.description,
+      dependencies: item.dependencies,
       registryDependencies: item.registryDependencies,
       files: item.files.map(({ content: _, ...f }: any) => f),
     });
@@ -108,16 +114,22 @@ async function main() {
   for (const name of components) {
     const dir = join(UI_DIR, name);
     const meta = await readMeta(dir);
+    const files = await fileEntries(dir, `~/src/components/ui/${name}`, `ui/${name}`);
+    // derive npm deps the meta forgot: any file importing marko-zag needs it
+    const dependencies = new Set(meta.dependencies ?? []);
+    if (files.some((f) => f.content.includes('from "marko-zag"'))) {
+      dependencies.add("marko-zag");
+    }
     await write({
       $schema: ITEM_SCHEMA,
       name,
       type: "registry:ui",
       title: meta.title ?? name,
       description: meta.description,
-      dependencies: meta.dependencies,
+      dependencies: dependencies.size ? [...dependencies].sort() : undefined,
       devDependencies: meta.devDependencies,
       registryDependencies: (meta.registryDependencies ?? ["utils"]).map(selfRef),
-      files: await fileEntries(dir, `~/src/components/ui/${name}`, `ui/${name}`),
+      files,
     });
   }
 

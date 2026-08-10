@@ -64,8 +64,8 @@ export interface Input {
 <const/{ class: className, trigger }=input/>
 
 <${trigger}({ ...ui.trigger, "data-slot": "dropdown-menu-trigger" })/>
-<if=ui.open>
-  <portal>
+<portal>
+  <if=ui.open>
     <div ...ui.positioner data-slot="dropdown-menu-positioner" style="z-index:50">
       <div
         ...ui.content
@@ -106,5 +106,5 @@ export interface Input {
         </for>
       </div>
     </div>
-  </portal>
-</if>
+  </if>
+</portal>

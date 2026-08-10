@@ -21,8 +21,11 @@ export interface Input {
     if (el && el.parentNode !== target) target.appendChild(el);
   }
   onDestroy() {
-    // Marko removes tracked nodes by reference; nothing extra needed. Guard
-    // anyway in case the branch was already detached.
+    // This manual remove() is REQUIRED, not defensive: Marko's own removal
+    // walks up from the tracked node through its original parent chain, but
+    // that parent no longer contains this host once it has been reparented
+    // to the portal target. Without this, the host would be orphaned on the
+    // target instead of being cleaned up.
     host()?.remove();
   }
 />

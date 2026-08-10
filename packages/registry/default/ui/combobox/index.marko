@@ -99,8 +99,8 @@ export interface Input extends Omit<Marko.Input<"div">, "value"> {
       </svg>
     </button>
   </div>
-  <if=ui.open>
-    <portal>
+  <portal>
+    <if=ui.open>
       <div ...ui.positioner style=positionerStyle data-slot="combobox-positioner" class="z-50">
         <div
           ...ui.content
@@ -126,6 +126,6 @@ export interface Input extends Omit<Marko.Input<"div">, "value"> {
           </if>
         </div>
       </div>
-    </portal>
-  </if>
+    </if>
+  </portal>
 </div>

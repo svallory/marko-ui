@@ -57,12 +57,26 @@ export function ssrService(machine: any, userProps: () => Dict): MarkoService {
 }
 
 export function createService(machine: any, userProps: () => Dict, notify: () => void): MarkoService {
+  // Memoized: machines call prop() dozens of times per connect(); rebuilding
+  // props (and e.g. select collections) per read defeats Zag's identity
+  // checks and is O(n) jank. Invalidated on propsChanged() and each flush.
+  let propsCache: Dict | null = null;
+  let scopeCache: Dict | null = null;
+  const invalidateProps = () => {
+    propsCache = null;
+    scopeCache = null;
+  };
+
   const getProps = () =>
-    machine.props?.({ props: compact(access(userProps)), scope: getScope() }) ?? access(userProps);
+    (propsCache ??=
+      machine.props?.({ props: compact(access(userProps)), scope: getScope() }) ?? access(userProps));
 
   const getScope = () => {
-    const { id, ids, getRootNode } = access(userProps);
-    return createScope({ id, ids, getRootNode });
+    if (!scopeCache) {
+      const { id, ids, getRootNode } = access(userProps);
+      scopeCache = createScope({ id, ids, getRootNode });
+    }
+    return scopeCache;
   };
 
   const prop = (key: string) => getProps()[key];
@@ -87,12 +101,22 @@ export function createService(machine: any, userProps: () => Dict, notify: () =>
   };
 
   // --- bindable -------------------------------------------------------------
+  // prev is tracked in a dedicated ref (mirroring @zag-js/react/solid): in
+  // controlled mode re-deriving prev from the live prop double-fires onChange
+  // before the parent applies the value, and silences it (plus the render!)
+  // after. scheduleUpdate() is unconditional — a transition must always
+  // reach the DOM even when a context write is value-equal.
+  const bindablePrevSyncs: VoidFunction[] = [];
   function createBindable(props: () => Dict) {
     const initial = props().value ?? props().defaultValue;
     const eq = props().isEqual ?? Object.is;
     let value = initial;
     const controlled = () => props().value !== undefined;
     const get = () => (controlled() ? props().value : value);
+    const prevValue = { current: initial };
+    bindablePrevSyncs.push(() => {
+      prevValue.current = get();
+    });
     const ref = {
       get current() {
         return get();
@@ -102,22 +126,22 @@ export function createService(machine: any, userProps: () => Dict, notify: () =>
       },
     };
     const set = (v: any) => {
-      const prev = get();
-      const next = isFunction(v) ? v(prev) : v;
+      const next = isFunction(v) ? v(get()) : v;
+      const prev = prevValue.current;
       if (props().debug) console.log(`[bindable > ${props().debug}] setValue`, { next, prev });
       if (!controlled()) value = next;
-      if (!eq(next, prev)) {
-        props().onChange?.(next, prev);
-        scheduleUpdate();
-      }
+      prevValue.current = next;
+      if (!eq(next, prev)) props().onChange?.(next, prev);
+      scheduleUpdate();
     };
     return {
       initial,
       ref,
       get,
       set,
-      invoke(nextValue: any, prevValue: any) {
-        props().onChange?.(nextValue, prevValue);
+      invoke(nextValue: any, prevValue2: any) {
+        props().onChange?.(nextValue, prevValue2);
+        scheduleUpdate();
       },
       hash(v: any) {
         return props().hash?.(v) ?? String(v);
@@ -138,6 +162,7 @@ export function createService(machine: any, userProps: () => Dict, notify: () =>
     updateScheduled = true;
     queueMicrotask(() => {
       updateScheduled = false;
+      invalidateProps();
       runTracks();
       notify();
     });
@@ -250,12 +275,16 @@ export function createService(machine: any, userProps: () => Dict, notify: () =>
     let raf2 = 0;
     const raf1 = requestAnimationFrame(() => {
       raf2 = requestAnimationFrame(() => {
-        if (disposed) return;
         for (const s of strs) {
+          if (disposed) return;
           const fn = machine.implementations?.effects?.[s];
           if (!fn) warn(`[zag-js] No implementation found for effect "${JSON.stringify(s)}"`);
           const cleanup = fn?.(getParams());
-          if (cleanup) cleanupFns.push(cleanup);
+          if (cleanup) {
+            // if disposal happened while this effect ran, undo it immediately
+            if (disposed) cleanup();
+            else cleanupFns.push(cleanup);
+          }
         }
       });
     });
@@ -372,6 +401,8 @@ export function createService(machine: any, userProps: () => Dict, notify: () =>
     },
     /** Host calls when reactive props changed (controlled usage). */
     propsChanged() {
+      invalidateProps();
+      bindablePrevSyncs.forEach((sync) => sync());
       runTracks();
       notify();
     },

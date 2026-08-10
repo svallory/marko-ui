@@ -49,8 +49,8 @@ export interface Input {
 <const/ui=(rev, computeUi())/>
 
 <${input.trigger}({ ...ui.trigger, "data-slot": "popover-trigger" })/>
-<if=ui.open>
-  <portal>
+<portal>
+  <if=ui.open>
     <div ...ui.positioner style=positionerStyle data-slot="popover-positioner">
       <div
         ...ui.content
@@ -64,5 +64,5 @@ export interface Input {
         <${input.content}/>
       </div>
     </div>
-  </portal>
-</if>
+  </if>
+</portal>

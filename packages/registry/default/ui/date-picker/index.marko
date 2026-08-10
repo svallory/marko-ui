@@ -104,8 +104,8 @@ static function toPlain(d: DateValue) {
       <span class="sr-only">Open calendar</span>
     </button>
   </div>
-  <if=ui.open>
-    <portal>
+  <portal>
+    <if=ui.open>
       <div ...ui.positioner style=positionerStyle data-slot="date-picker-positioner" class="z-50">
         <div
           ...ui.content
@@ -181,6 +181,6 @@ static function toPlain(d: DateValue) {
           </table>
         </div>
       </div>
-    </portal>
-  </if>
+    </if>
+  </portal>
 </div>
