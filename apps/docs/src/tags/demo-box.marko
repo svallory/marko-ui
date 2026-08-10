@@ -1,0 +1,13 @@
+export interface Input {
+  title?: string;
+  content?: Marko.Body;
+}
+
+<section class="space-y-2">
+  <if=input.title>
+    <h2 class="text-sm font-semibold text-muted-foreground">${input.title}</h2>
+  </if>
+  <div class="flex flex-wrap items-center gap-4 rounded-lg border p-6">
+    <${input.content}/>
+  </div>
+</section>
