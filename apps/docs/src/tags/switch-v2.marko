@@ -4,7 +4,7 @@
 // collapsed that into connect(service, normalizeProps), and resumability
 // requires getter indirection. Like the original, the connected api is
 // exposed to parents via a tag variable: <switch-v2/api/>.
-import * as sw from "@zag-js/switch";
+import * as switchMachine from "@zag-js/switch";
 import { cn } from "@marko-ui/registry/lib/utils.ts";
 
 export interface Input {
@@ -30,11 +30,8 @@ export interface Input {
     input.checkedChange?.(details.checked);
   },
 })>
-<use-machine/api
-  machine=() => sw.machine
-  props=machineProps
-  connect=(svc, np) => sw.connect(svc, np)
-/>
+<service/switchService machine=() => switchMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) => switchMachine.connect(service, normalizeProps) service=switchService/>
 
 <label
   ...api().getRootProps()

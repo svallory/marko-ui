@@ -14,7 +14,8 @@ import * as switchMachine from "@zag-js/switch";
     <h2 class="font-semibold">Uncontrolled switch</h2>
     <id/uid1/>
     <const/props1=() => ({ id: uid1 })/>
-    <use-machine/api1 machine=() => switchMachine.machine props=props1 connect=(svc, np) => switchMachine.connect(svc, np)/>
+    <service/switchService1 machine=() => switchMachine.machine props=props1/>
+    <connect/api1=(service, normalizeProps) => switchMachine.connect(service, normalizeProps) service=switchService1/>
     <label ...api1().getRootProps()>
       <input ...api1().getHiddenInputProps() class="sr-only">
       <span ...api1().getControlProps() class="inline-flex h-5 w-9 items-center rounded-full bg-input p-0.5 transition-colors data-[state=checked]:bg-primary">
@@ -41,7 +42,8 @@ import * as switchMachine from "@zag-js/switch";
         parentChecked = details.checked;
       },
     })/>
-    <use-machine/api2 machine=() => switchMachine.machine props=props2 connect=(svc, np) => switchMachine.connect(svc, np)/>
+    <service/switchService2 machine=() => switchMachine.machine props=props2/>
+    <connect/api2=(service, normalizeProps) => switchMachine.connect(service, normalizeProps) service=switchService2/>
     <label ...api2().getRootProps()>
       <input ...api2().getHiddenInputProps() class="sr-only">
       <span ...api2().getControlProps() class="inline-flex h-5 w-9 items-center rounded-full bg-input p-0.5 transition-colors data-[state=checked]:bg-primary">
