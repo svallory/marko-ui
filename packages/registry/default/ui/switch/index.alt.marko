@@ -1,0 +1,121 @@
+import * as zagSwitch from "@zag-js/switch";
+import { Machine as SwitchMachine, Props } from "@zag-js/switch";
+import { normalizeProps } from "marko-zag/dist/normalize-props";
+
+// import styles from "./app-switch.module.css";
+export interface Input extends Props {}
+
+<const/machine={
+  checked: input.checked,
+  disabled: input.disabled,
+  form: input.form,
+  ids: input.ids,
+  invalid: input.invalid,
+  label: input.label,
+  name: input.name,
+  onCheckedChange: input.onCheckedChange,
+  required: input.required,
+  value: input.value,
+} as SwitchMachine>
+
+<use-machine/[machineState, send] machine=machine/>
+
+<const/api=zagSwitch.connect(machineState, send, normalizeProps)>
+
+<return=api>
+
+<label class="root" ...api.rootProps>
+  <input class="input" ...api.hiddenInputProps>
+  <span class="control" ...api.controlProps>
+    <span class="thumb" ...api.thumbProps/>
+  </span>
+  <span class="label" ...api.labelProps>
+    <${input.renderBody}=[api]/>
+  </span>
+</label>
+<style>
+  .root {
+    --colors-white: white;
+    --colors-transparent: transparent;
+    --colors-checked: #2ab26b;
+    --colors-unchecked: #cbd5e0;
+    --switch-track-width: 2.7rem;
+    --switch-track-height: 1.5rem;
+    --switch-track-diff: calc(
+      var(--switch-track-width) - var(--switch-track-height)
+    );
+    --switch-thumb-x: var(--switch-track-diff);
+
+    display: flex;
+    align-items: center;
+    position: relative;
+    line-height: 0;
+    width: fit-content;
+  }
+
+  .control:focus,
+  .control[data-focus] {
+    box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.6);
+  }
+  .control {
+    --switch-bg: var(--colors-unchecked);
+
+    display: inline-flex;
+    flex-shrink: 0;
+    justify-content: flex-start;
+    box-sizing: content-box;
+    cursor: pointer;
+    border-radius: 9999px;
+    padding: 0.125rem;
+    width: var(--switch-track-width);
+    height: var(--switch-track-height);
+    transition-property:
+      background-color, border-color, color, fill, stroke, opacity, box-shadow,
+      transform;
+    transition-duration: 150ms;
+    background: var(--switch-bg);
+  }
+  .control:disabled,
+  .control[disabled],
+  .control[aria-disabled="true"],
+  .control[data-disabled] {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .control[data-state="checked"] {
+    --switch-bg: var(--colors-checked);
+  }
+
+  .thumb {
+    background: var(--colors-white);
+    transition-property: transform;
+    transition-duration: 200ms;
+    border-radius: inherit;
+    width: var(--switch-track-height);
+    height: var(--switch-track-height);
+    position: relative;
+  }
+  .thumb::before {
+    --thumb-size: calc(var(--switch-track-height) + 0.7rem);
+
+    transition: background-color 0.2s ease-in-out;
+    position: absolute;
+    height: var(--thumb-size);
+    width: var(--thumb-size);
+    background-color: var(--colors-transparent);
+    content: "";
+    z-index: 1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: inherit;
+  }
+  .thumb[data-state="checked"] {
+    transform: translateX(var(--switch-thumb-x));
+  }
+
+  .label {
+    user-select: none;
+    margin-inline-start: 0.5rem;
+  }
+</style>

@@ -8,6 +8,8 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "noUncheckedIndexedAccess": true,
-    "types": ["marko"]
+    "types": ["marko", "node"],
+    "allowImportingTsExtensions": true,
+    "noEmit": true
   }
 }

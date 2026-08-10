@@ -1,5 +1,10 @@
 import * as switchMachine from "@zag-js/switch";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+import {
+  createService,
+  ssrService,
+  normalizeProps,
+  type MarkoService,
+} from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
 export interface Input extends Omit<Marko.Input<"input">, "checked" | "value"> {
@@ -11,9 +16,9 @@ export interface Input extends Omit<Marko.Input<"input">, "checked" | "value"> {
   class?: string;
 }
 
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
+<id/uid>
+<let/rev=0>
+<let/svc=null as MarkoService | null>
 <const/machineProps=() => ({
   id: uid,
   checked: input.checked,
@@ -23,16 +28,19 @@ export interface Input extends Omit<Marko.Input<"input">, "checked" | "value"> {
   onCheckedChange(details: { checked: boolean }) {
     input.checkedChange?.(details.checked);
   },
-})/>
+})>
 <lifecycle
   onMount() {
-    svc = createService(switchMachine.machine, machineProps, () => { rev += 1 });
-    svc.start();
+    svc = createService(switchMachine.machine, machineProps, () => {
+      rev += 1;
+    });
+
+    (svc as MarkoService).start();
   }
   onDestroy() {
     svc?.stop();
   }
-/>
+>
 <script>
   input.checked;
   input.disabled;
@@ -41,19 +49,29 @@ export interface Input extends Omit<Marko.Input<"input">, "checked" | "value"> {
   svc?.propsChanged();
 </script>
 <const/computeUi=() => {
-  const api = switchMachine.connect(svc ?? ssrService(switchMachine.machine, machineProps), normalizeProps);
+  // ssrService(): throwaway, never-started service, server-only, discarded
+  // immediately — connect() reads it synchronously and returns plain objects
+  const api = switchMachine.connect(
+    svc ?? ssrService(switchMachine.machine, machineProps),
+    normalizeProps,
+  );
+
   return {
     root: api.getRootProps(),
     control: api.getControlProps(),
     thumb: api.getThumbProps(),
     hiddenInput: api.getHiddenInputProps(),
   };
-}/>
-<const/ui=(rev, computeUi())/>
+}>
+<const/ui=(rev, computeUi())>
 
-<const/{ class: className, ...rest }=input/>
+<const/{ class: className, ...rest }=input>
 
-<label ...ui.root data-slot="switch-label" class="inline-flex items-center gap-2">
+<label
+  ...ui.root
+  data-slot="switch-label"
+  class="inline-flex items-center gap-2"
+>
   <span
     ...ui.control
     data-slot="switch"
@@ -68,5 +86,5 @@ export interface Input extends Omit<Marko.Input<"input">, "checked" | "value"> {
       class="pointer-events-none block size-4 rounded-full bg-background ring-0 transition-transform data-[state=unchecked]:translate-x-0 data-[state=checked]:translate-x-[calc(100%-2px)] dark:data-[state=unchecked]:bg-foreground dark:data-[state=checked]:bg-primary-foreground"
     />
   </span>
-  <input ...rest ...ui.hiddenInput/>
+  <input ...rest ...ui.hiddenInput>
 </label>
