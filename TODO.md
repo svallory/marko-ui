@@ -16,6 +16,13 @@
 - [ ] **chart** — deferred from v1 (Recharts is React-only); evaluate ECharts/observable-plot wrapper. `(decision, code)`
 - [ ] **Compound-tag DX** — array-driven APIs (menus, select, tabs, accordion…) deviate from shadcn's compound components due to the serialization constraint; investigate a Marko-idiomatic compound pattern (per-part files sharing plain snapshots via context) as a v2 API. `(research)`
 
+## Theming (shadcn parity — mechanism already compatible, tooling gaps below)
+
+- [ ] **`cssVars` in registry items** — build-registry.ts only ships globals.css as a `registry:file`; emit the schema's `cssVars` (light/dark/theme) so the shadcn CLI merges theme variables into the consumer's CSS like shadcn items do. `(code)`
+- [ ] **Base color variants** — only neutral shipped; generate zinc/slate/stone/gray globals.css variants (mechanical — sidebar/chart vars already present). `(code, decision on which to offer)`
+- [ ] **Docs theme switcher** — `.dark` mechanism works; docs app has no light/dark toggle UI yet. `(code)`
+- [ ] **Animation parity check** — utilities come from `tw-animate-css`, not shadcn's plugin chain; verify themed animations match for the deviated components (toast, drawer, scroll-area). `(code)`
+
 ## Quality
 
 - [ ] **Per-component behavioral test suites** — port Zag e2e expectations / WAI-ARIA APG keyboard contracts; vitest browser mode + playwright provider. Current coverage: SSR contract tests + adapter unit tests + manual browser verification. `(code)`
