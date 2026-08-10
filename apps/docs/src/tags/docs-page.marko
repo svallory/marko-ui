@@ -1,0 +1,27 @@
+export interface Input {
+  title: string;
+  description?: string;
+  crumbs?: Array<{ href: string; label: string }>;
+  content?: Marko.Body;
+}
+
+<main class="mx-auto max-w-4xl space-y-8 px-8 py-10 text-sm leading-relaxed [&_h2]:mt-10 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:tracking-tight [&_h3]:mt-6 [&_h3]:text-base [&_h3]:font-semibold [&_p]:my-3 [&_p]:text-gray-700 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-6 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-6 [&_li]:text-gray-700 [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:no-underline [&_pre]:my-4 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:border [&_pre]:bg-gray-50 [&_pre]:p-4 [&_pre]:text-[0.8em] [&_pre]:leading-6 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_table]:my-4 [&_table]:w-full [&_table]:border-collapse [&_table]:text-xs [&_th]:border [&_th]:border-gray-200 [&_th]:bg-gray-50 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_td]:border [&_td]:border-gray-200 [&_td]:px-3 [&_td]:py-2 [&_td]:align-top">
+  <nav class="flex items-center gap-1 text-xs text-muted-foreground">
+    <a href="/" class="hover:underline">Home</a>
+    <span>/</span>
+    <a href="/docs/zag-adapter" class="hover:underline">Zag Adapter Anatomy</a>
+    <for|crumb| of=input.crumbs>
+      <span>/</span>
+      <a href=crumb.href class="hover:underline">${crumb.label}</a>
+    </for>
+  </nav>
+
+  <div>
+    <h1 class="text-2xl font-bold tracking-tight">${input.title}</h1>
+    <if=input.description>
+      <p class="mt-2 text-muted-foreground">${input.description}</p>
+    </if>
+  </div>
+
+  <${input.content}/>
+</main>

@@ -1,0 +1,188 @@
+<docs-page
+  title="Zag.js Framework Adapter Anatomy"
+  description="What a Zag.js framework adapter must implement, derived from reading every source file in the six official adapters (react, solid, svelte, vue, preact, vanilla)."
+>
+  <p>
+    Zag.js splits every UI machine into two halves: a framework-agnostic state machine
+    (<code>packages/core</code>) and a thin per-framework binding layer
+    (<code>packages/frameworks/*</code>) that turns that machine into idiomatic, reactive
+    framework code. This document is a reverse-engineered reference for what that binding layer
+    — the &quot;adapter&quot; — must implement, built entirely from reading the adapter source
+    trees, never from prior assumptions.
+  </p>
+
+  <p>
+    <strong>Source snapshot:</strong> the clone at <code>data/zag</code> is on branch
+    <code>main</code>, 5 commits past the <code>@zag-js/accordion@1.43.0</code> tag
+    (<code>git describe --tags</code> → <code>1.43.0-5-geabc04440</code>). All six framework
+    packages report <code>"version": "1.43.0"</code> in their <code>package.json</code>. A
+    <code>v2</code> branch exists on the remote (visible via <code>git branch -a</code>, tags up
+    to <code>@zag-js/vue@2.0.0-next.1</code>) but is <strong>not checked out</strong> in this
+    tree — every claim below is about the v1.43 line. No 2.0-next code paths were read or cited.
+  </p>
+
+  <h2>Pages in this reference</h2>
+  <ul>
+    <li><a href="/docs/zag-adapter">Overview &amp; the adapter contract</a> (this page)</li>
+    <li><a href="/docs/zag-adapter/responsibilities">The five responsibilities</a> — bindable, reactivity bridge, lifecycle, normalizeProps, refs/track/watch, compared across all six frameworks</li>
+    <li><a href="/docs/zag-adapter/vanilla">The vanilla adapter deep-dive</a></li>
+    <li><a href="/docs/zag-adapter/divergence">Divergence map</a> — contract vs. framework idiom</li>
+    <li><a href="/docs/zag-adapter/checklist">Checklist for a new adapter</a></li>
+  </ul>
+
+  <h2>1. The adapter contract</h2>
+
+  <p>
+    Every framework package under <code>packages/frameworks/*/src</code> exports the same
+    minimal surface. Confirmed from each package's <code>index.ts</code>:
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Export</th><th>react</th><th>solid</th><th>svelte</th><th>vue</th><th>preact</th><th>vanilla</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>useMachine</code> (or <code>VanillaMachine</code> class)</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td><code>VanillaMachine</code></td></tr>
+      <tr><td><code>normalizeProps</code></td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+      <tr><td><code>mergeProps</code></td><td>re-export of <code>@zag-js/core</code></td><td>own impl (accessor-aware)</td><td>own impl (class handling + style)</td><td>re-export of core</td><td>re-export of core</td><td>own impl (style stringify)</td></tr>
+      <tr><td><code>useSyncExternalStore</code></td><td>re-export from <code>react</code></td><td>own impl</td><td>own impl (<code>.svelte.ts</code>)</td><td>own impl</td><td>own impl (wraps <code>preact/compat</code>)</td><td>n/a (uses <code>subscribe</code>/<code>publish</code> instead)</td></tr>
+      <tr><td><code>Portal</code> / <code>portal</code></td><td>yes (<code>portal.tsx</code>)</td><td>no</td><td>yes (Svelte action, <code>portal.ts</code>)</td><td>no (not present in <code>src/</code>)</td><td>declared in <code>index.ts</code> but no <code>portal.tsx</code> file exists in <code>src/</code></td><td>no</td></tr>
+      <tr><td><code>reflect</code></td><td>no</td><td>no</td><td>yes (<code>reflect.ts</code>, Proxy that rebinds methods each access)</td><td>no</td><td>no</td><td>no</td></tr>
+      <tr><td><code>spreadProps</code></td><td>no (JSX handles spreading)</td><td>no</td><td>no</td><td>no</td><td>no</td><td>yes (<code>spread-props.ts</code>, imperative DOM diffing)</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    Note: preact's <code>packages/frameworks/preact/src/index.ts</code> re-exports
+    <code>"./portal"</code> but no <code>portal.tsx</code> file exists under
+    <code>packages/frameworks/preact/src</code> in this tree — likely stale/broken export as of
+    this commit; flagged here rather than silently ignored.
+  </p>
+
+  <h2>The Service&lt;T&gt; protocol</h2>
+
+  <p>
+    Every adapter's <code>useMachine</code> must return an object satisfying
+    <code>Service&lt;T extends MachineSchema&gt;</code>, defined in
+    <code>packages/core/src/types.ts</code>:
+  </p>
+
+  <pre><code>export type Service&lt;T extends MachineSchema&gt; = {
+  getStatus: () =&gt; MachineStatus
+  state: State&lt;T&gt; &amp; {
+    matches: (...values: T["state"][]) =&gt; boolean
+    hasTag: (tag: T["tag"]) =&gt; boolean
+  }
+  context: BindableContext&lt;T&gt;
+  send: (event: EventType&lt;T["event"]&gt;) =&gt; void
+  prop: PropFn&lt;T&gt;
+  scope: Scope
+  computed: ComputedFn&lt;T&gt;
+  refs: BindableRefs&lt;T&gt;
+  event: EventType&lt;T["event"]&gt; &amp; {
+    current: () =&gt; EventType&lt;T["event"]&gt;
+    previous: () =&gt; EventType&lt;T["event"]&gt;
+  }
+}</code></pre>
+
+  <p>Field by field, with the core type each must satisfy:</p>
+
+  <table>
+    <thead><tr><th>Field</th><th>Type contract (core/src/types.ts)</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>state</code></td><td><code>Bindable&lt;T["state"]&gt; &amp; { matches, hasTag }</code></td><td>Current machine state as a bindable cell, plus state-value helpers</td></tr>
+      <tr><td><code>send</code></td><td><code>(event: EventType&lt;T["event"]&gt;) =&gt; void</code></td><td>Dispatch an event into the machine</td></tr>
+      <tr><td><code>context</code></td><td><code>BindableContext&lt;T&gt;</code> — <code>get/set/initial/hash</code> per key</td><td>Controlled/uncontrolled context values (bindables)</td></tr>
+      <tr><td><code>prop</code></td><td><code>PropFn&lt;T&gt;</code> — <code>&lt;K&gt;(key: K) =&gt; T["props"][K]</code></td><td>Read the live, framework-reactive props object by key</td></tr>
+      <tr><td><code>scope</code></td><td><code>Scope</code> — <code>getRootNode/getDoc/getWin/getById/getActiveElement/isActiveElement</code></td><td>DOM environment abstraction (see <code>packages/core/src/scope.ts</code>)</td></tr>
+      <tr><td><code>refs</code></td><td><code>BindableRefs&lt;T&gt;</code> — <code>get/set</code> by key</td><td>Mutable, non-reactive machine-owned refs (e.g. timers, DOM handles)</td></tr>
+      <tr><td><code>computed</code></td><td><code>ComputedFn&lt;T&gt;</code> — <code>&lt;K&gt;(key: K) =&gt; T["computed"][K]</code></td><td>Derived values recomputed on each access from <code>machine.computed</code></td></tr>
+      <tr><td><code>event</code></td><td><code>EventType&lt;T["event"]&gt; &amp; { current, previous }</code></td><td>Last dispatched event plus current/previous accessors</td></tr>
+      <tr><td><code>getStatus</code></td><td><code>() =&gt; MachineStatus</code> (<code>NotStarted | Started | Stopped</code>, an enum in <code>core/src/types.ts</code>)</td><td>Lifecycle status query, used to guard <code>send</code> before start / after stop</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    <strong>Flush semantics.</strong> The <code>Machine&lt;T&gt;.context</code> factory receives a
+    <code>flush: (fn: VoidFunction) =&gt; void</code> callback
+    (<code>ContextParams&lt;T&gt;</code> in <code>core/src/types.ts</code>). It is the adapter's
+    hook for forcing a synchronous re-render after a context mutation that must be visible
+    immediately (e.g. before a subsequent DOM read). Each adapter implements it differently — see
+    the divergence map — but all six must supply <em>some</em> implementation, even if it's a
+    same-tick no-op (Solid's <code>flush(fn) { fn() }</code> in
+    <code>packages/frameworks/solid/src/machine.ts</code>).
+  </p>
+
+  <h2>The Machine&lt;T&gt; the adapter consumes</h2>
+  <p>
+    The adapter's <code>useMachine(machine, props)</code> takes a <code>Machine&lt;T&gt;</code>
+    (built by <code>createMachine</code> in <code>packages/core/src/create-machine.ts</code>,
+    which just calls <code>ensureStateIndex(config)</code> for the state-path cache in
+    <code>packages/core/src/state.ts</code> and returns the config unchanged). The adapter must
+    read from it:
+  </p>
+  <ul>
+    <li><code>machine.props</code> — normalizes/derives user props once per render</li>
+    <li><code>machine.context</code> — factory producing one <code>Bindable</code> per context key, called with a <code>bindable</code> implementation, a <code>scope</code>, a <code>flush</code>, and getters back into the adapter's own <code>ctx</code>/<code>computed</code>/<code>refs</code>/<code>event</code> (a closure-breaking pattern every adapter repeats identically)</li>
+    <li><code>machine.computed</code> — map of derivation functions keyed by computed name</li>
+    <li><code>machine.refs</code> — factory for the refs bag</li>
+    <li><code>machine.initialState</code> — resolves the starting state value</li>
+    <li><code>machine.watch</code> — called once per render/setup with the full <code>Params&lt;T&gt;</code> object; internally calls <code>track</code></li>
+    <li><code>machine.entry</code> / <code>machine.exit</code> / <code>machine.effects</code> — top-level lifecycle actions/effects, fired around <code>INIT_STATE</code> transitions and unmount</li>
+    <li><code>machine.implementations.{actions,guards,effects}</code> — the actual function bodies looked up by string key from transitions/state defs</li>
+    <li><code>machine.states</code> / <code>machine.on</code> — consulted indirectly via <code>findTransition</code>, <code>getExitEnterStates</code>, <code>resolveStateValue</code>, <code>hasTag</code>, <code>matchesState</code> (all imported from <code>@zag-js/core</code>, never reimplemented per framework)</li>
+  </ul>
+
+  <p>
+    Every adapter's <code>useMachine</code> body is structurally the same state machine driver
+    (build <code>scope</code> → <code>prop</code> → <code>context</code>/<code>ctx</code> →
+    <code>refs</code> → <code>action</code>/<code>guard</code>/<code>effect</code>/<code>choose</code>/<code>computed</code>
+    closures → a <code>state</code> bindable whose <code>onChange</code> runs exit/entry
+    effects+actions → a lifecycle hook that calls <code>state.invoke(initial, INIT_STATE)</code> →
+    a <code>send</code> that looks up transitions and calls <code>state.set</code>). This driver
+    logic is copy-pasted per framework, not shared — see the
+    <a href="/docs/zag-adapter/divergence">divergence map</a> for exactly which lines are
+    identical versus framework-specific.
+  </p>
+
+  <h2>The consumer layer: <code>connect()</code></h2>
+  <p>
+    Reading <code>.claude/docs/framework-integration-guide.md</code> (written by the Zag team,
+    not derived from adapter source) clarifies a layer this reference otherwise wouldn't surface:
+    <code>useMachine</code>/<code>Service&lt;T&gt;</code>/<code>normalizeProps</code> are not
+    the end of the story for a component author — every machine package
+    (<code>packages/machines/{component}/src/{component}.connect.ts</code>) exports a
+    <code>connect(service, normalize)</code> function that turns the raw
+    <code>Service&lt;T&gt;</code> into a component-shaped API object (booleans like
+    <code>open</code>, methods like <code>setValue()</code>, and
+    <code>getXProps()</code> prop-getters that call <code>normalize.button(...)</code> /
+    <code>normalize.element(...)</code> internally). This file lives in the
+    <em>machine</em> package, not the framework adapter package — it is framework-agnostic
+    itself, parameterized by whichever <code>normalize: NormalizeProps&lt;T&gt;</code> the caller
+    passes in. A new framework adapter does not need to write anything for this layer beyond
+    correctly implementing <code>normalizeProps</code> — every existing <code>connect.ts</code>
+    file will work against a new adapter automatically as long as
+    <code>Service&lt;T&gt;</code> and <code>NormalizeProps&lt;T&gt;</code> are honored.
+  </p>
+  <p>
+    Per-framework, the guide documents that <code>connect()</code>'s result needs to be
+    kept reactive by the consumer, not by <code>connect()</code> itself: React uses it directly
+    (no memo needed — a plain function call per render); Vue wraps it in <code>computed()</code>;
+    Solid wraps it in <code>createMemo()</code>; Svelte 5 wraps it in <code>$derived()</code>.
+    This is a call-site convention documented by the team, not something visible from the
+    adapter source alone — a new adapter's docs/examples should state the equivalent convention
+    for its target framework.
+  </p>
+  <p>
+    <strong>One discrepancy worth flagging:</strong> the guide's Solid section claims
+    <code>normalize.button({ onClick: () =&gt; {} })</code> produces
+    <code>{ "on:click": () =&gt; {} }</code> (event-delegation syntax). Reading the actual
+    <code>packages/frameworks/solid/src/normalize-props.ts</code> in this tree shows no such
+    conversion — its <code>eventMap</code> only remaps <code>onFocus</code>,
+    <code>onBlur</code>, <code>onDoubleClick</code>, <code>onChange</code>, plus a few
+    non-event props, and passes every other <code>onX</code> key through unchanged (Solid's JSX
+    compiler handles <code>onClick</code> as a delegated event natively, without needing the
+    normalizer to rename it). This example in the internal guide appears stale relative to the
+    current source — trust the source cited throughout this reference over that one code sample.
+  </p>
+</docs-page>

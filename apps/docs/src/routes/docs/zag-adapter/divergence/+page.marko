@@ -1,0 +1,177 @@
+<docs-page
+  title="Divergence map"
+  description="Where the six implementations genuinely differ (contract-level decisions a new adapter must make) versus where they are line-for-line identical (framework idiom, safe to copy verbatim)."
+  crumbs=[{ href: "/docs/zag-adapter/divergence", label: "Divergence map" }]
+>
+  <h2>Line-for-line identical (copy verbatim)</h2>
+  <p>
+    These pieces have no framework-specific content at all — they read the same regardless of
+    which adapter you open. A new adapter can start here and get it right without inventing
+    anything:
+  </p>
+  <ul>
+    <li>
+      <strong><code>refs.ts</code> in solid/vue/svelte/vanilla</strong> — 12 lines each, a plain
+      <code>{ current: refs }</code> box with <code>get</code>/<code>set</code> by key. React and
+      preact wrap the same box in a <code>useRef</code> purely for React-idiom identity
+      stability, not because the semantics differ.
+    </li>
+    <li>
+      <strong>The <code>action</code>/<code>guard</code>/<code>effect</code>/<code>choose</code>
+      closures inside every <code>useMachine</code>/constructor</strong> — the exact same body
+      (resolve function-or-array of action keys, look up
+      <code>machine.implementations.actions[key]</code>, warn if missing, call each with
+      <code>getParams()</code>) appears in react, solid, vue, svelte, preact, and vanilla with
+      only cosmetic differences (arrow function vs class method, <code>this.</code> prefix in
+      vanilla).
+    </li>
+    <li>
+      <strong>The <code>state</code> bindable's <code>onChange</code> handler</strong> — the
+      exit-effects → exit-actions → transition-actions → entry-effects → (if
+      <code>prevState === INIT_STATE</code>: <code>machine.entry</code> +
+      <code>machine.effects</code>) → entry-actions sequence, including the
+      <code>callAll(existing, cleanup)</code> composition for effect cleanups keyed by state
+      path, is identical across all six adapters. This is core lifecycle semantics that happens
+      to live in the adapter layer rather than <code>packages/core</code>.
+    </li>
+    <li>
+      <strong>Import list from <code>@zag-js/core</code></strong> — every adapter imports the
+      exact same set: <code>createScope</code>, <code>findTransition</code>,
+      <code>getExitEnterStates</code>, <code>hasTag</code>, <code>INIT_STATE</code>,
+      <code>MachineStatus</code>, <code>matchesState</code>, <code>resolveStateValue</code>. None
+      of these are ever reimplemented per framework — a new adapter must import, not rewrite,
+      them.
+    </li>
+    <li>
+      <strong><code>normalizeProps</code>'s outer shape</strong> — every adapter calls
+      <code>createNormalizer&lt;PropTypes&gt;(fn)</code> from <code>@zag-js/types</code>; only
+      <code>fn</code>'s body differs.
+    </li>
+  </ul>
+
+  <h2>Genuinely different (a new adapter must decide)</h2>
+
+  <table>
+    <thead><tr><th>Axis</th><th>What differs</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Mount timing</strong></td>
+        <td>react defers the actual <code>state.invoke(initial, INIT_STATE)</code> by one microtask inside a layout effect; preact runs it synchronously inside the layout effect with no microtask wrapper; solid/vue/svelte use their native post-DOM-attach hook directly; vanilla has no timing at all — it's whenever <code>.start()</code> is called.</td>
+        <td>React's microtask deferral exists to let StrictMode's synchronous double-invoke of layout effects settle before the "real" state transition fires, and to play well with <code>flushSync</code> semantics. No other framework needs this because none of them double-invoke effects synchronously the way React StrictMode does.</td>
+      </tr>
+      <tr>
+        <td><strong>StrictMode / re-mount cleanup composition</strong></td>
+        <td>Only react's <code>machine.ts</code> has the explicit <code>callAll(existing, cleanup)</code> merge-with-existing-cleanup comment calling out StrictMode by name. Preact/solid/vue/svelte/vanilla assume a cleanup always starts from an empty map per state-enter.</td>
+        <td>Only React has an intentional dev-mode double-invoke of effects to catch missing cleanups; every other framework in this set runs effects exactly once per mount.</td>
+      </tr>
+      <tr>
+        <td><strong><code>flush()</code> implementation</strong></td>
+        <td>react/preact: <code>queueMicrotask(() =&gt; flushSync(() =&gt; fn()))</code>. vue:
+        <code>nextTick().then(() =&gt; fn())</code> (promise-based, one tick later). svelte:
+        <code>flushSync(() =&gt; queueMicrotask(() =&gt; fn()))</code> — note the order is reversed
+        relative to react (flush wraps the microtask scheduling, not the other way around). solid:
+        <code>(fn) =&gt; fn()</code> — same-tick, no deferral at all. vanilla:
+        <code>flush: identity</code> in <code>getParams()</code> (i.e. calls <code>fn()</code>
+        immediately, same as solid) but <code>queueMicrotask(fn)</code> in the context factory's
+        <code>flush</code> passed to <code>machine.context()</code> — vanilla actually uses
+        <em>two different</em> flush implementations depending on call site.</td>
+        <td>Each framework's own synchronous-render guarantee differs: React needs
+        <code>flushSync</code> to force a synchronous commit outside its normal batching;
+        Solid/Vue/Svelte's own reactivity is fine-grained enough that ordinary signal/ref writes
+        are effectively synchronous or resolve before the next microtask matters to the machine.</td>
+      </tr>
+      <tr>
+        <td><strong>Bindable equality default</strong></td>
+        <td>react/solid/vue/svelte/vanilla default to <code>Object.is</code>; preact defaults to
+        <code>isEqual</code> from <code>@zag-js/utils</code> (a deeper/looser comparison).</td>
+        <td>No documented rationale in source; this is a genuine, easy-to-miss inconsistency — a
+        new adapter should default to <code>Object.is</code> to match five of six existing
+        adapters unless there's a specific reason to deviate.</td>
+      </tr>
+      <tr>
+        <td><strong>Reactivity trigger for consumers</strong></td>
+        <td>react/preact: framework <code>useState</code> setter. solid: signal write. vue:
+        <code>shallowRef</code> write. svelte: <code>$state</code> rune mutation. vanilla: manual
+        <code>subscribe</code>/<code>publish</code> array iteration, no framework involvement at
+        all.</td>
+        <td>This is the single biggest axis of divergence and the one a new adapter must design
+        from scratch — pick whatever primitive the target framework/runtime offers for
+        "notify interested parties synchronously on mutation." If the target has no such
+        primitive, vanilla's manual pub/sub is the fallback pattern (see the
+        <a href="/docs/zag-adapter/vanilla">vanilla deep-dive</a>).</td>
+      </tr>
+      <tr>
+        <td><strong>Vue event buffering before mount</strong></td>
+        <td>Only vue's <code>machine.ts</code> buffers <code>send()</code> calls into
+        <code>pendingEvents</code> when called before <code>onMounted</code> fires, replaying them
+        once started. No other adapter has this — react/preact/solid/svelte/vanilla simply
+        drop/no-op a <code>send()</code> called before start (guarded by the
+        <code>status !== MachineStatus.Started</code> check).</td>
+        <td>Documented in the code comment: &quot;child mounts before parent in Vue&quot; — a
+        Vue-specific component instantiation ordering quirk that doesn't exist in the other
+        frameworks' mount orderings.</td>
+      </tr>
+      <tr>
+        <td><strong><code>normalizeProps</code> attribute renames and casing rules</strong></td>
+        <td>See the full table on the <a href="/docs/zag-adapter/responsibilities">responsibilities page</a> —
+        react/preact stay close to JSX camelCase; solid/vue/svelte/vanilla each independently
+        lowercase, hyphenate styles, and maintain separately-declared SVG-attribute-case
+        allowlists that are not textually identical to each other.</td>
+        <td>Each output target (React's synthetic DOM props, Solid's fine-grained DOM prop setter,
+        Vue's template compiler conventions, Svelte's native DOM attribute names, vanilla's raw
+        <code>setAttribute</code> calls) has different casing/serialization requirements at the
+        point props actually touch the DOM or framework runtime.</td>
+      </tr>
+      <tr>
+        <td><strong><code>children</code> handling in normalizeProps</strong></td>
+        <td>solid → <code>textContent</code> key. vue → <code>innerHTML</code> key (with a dev
+        warning for non-string children). svelte/react/preact → passthrough, no special case.
+        vanilla → no special case in <code>normalize-props.ts</code>, but <code>spread-props.ts</code>
+        sets <code>node.innerHTML</code> if it sees a literal <code>children</code> attribute key.</td>
+        <td>Each framework's rendering primitive expects text content through a different
+        channel; solid's fine-grained DOM setter recognizes a magic <code>textContent</code> prop,
+        Vue's <code>innerHTML</code> is the idiomatic escape hatch for raw string content.</td>
+      </tr>
+      <tr>
+        <td><strong>Track/watch scheduling</strong></td>
+        <td>react/preact: gated by a <code>useEffect</code> dependency array with a
+        mount-skip guard. solid/svelte: manual <code>isEqual</code> diff loop inside a single
+        reactive effect (<code>createEffect</code>/<code>$effect</code>). vue: native
+        <code>watch()</code> with a manual <code>isEqual</code> loop over its callback args.
+        vanilla: an explicit tracker array diffed inside <code>callTrackers()</code>, invoked from
+        every <code>publish()</code> — i.e. on every mutation, not once per render.</td>
+        <td>There is no shared "render pass" concept across these runtimes for track to hook into
+        uniformly; each adapter reimplements dependency diffing against whatever scheduling unit
+        its host framework exposes (effect, watcher, or — in vanilla's case — the publish
+        pipeline itself).</td>
+      </tr>
+      <tr>
+        <td><strong>Portal / spreadProps / reflect presence</strong></td>
+        <td>Only react and svelte ship a working portal primitive
+        (<code>portal.tsx</code> / <code>portal.ts</code>); vue has none; preact's
+        <code>index.ts</code> exports <code>"./portal"</code> but no such file exists in
+        <code>src/</code> in this tree (likely stale). Only vanilla ships
+        <code>spreadProps</code> (imperative DOM reconciliation has no JSX/template-compiler
+        equivalent need). Only svelte ships <code>reflect()</code> (a Proxy that keeps object
+        property reads live against a changing source — needed because Svelte templates
+        destructure/spread objects in ways that would otherwise snapshot stale values).</td>
+        <td>These are genuinely optional, framework-shaped utilities layered on top of the core
+        five responsibilities — not part of the <code>Service&lt;T&gt;</code> contract itself.
+        A new adapter only needs them if its target framework has the same structural need (a
+        template compiler that would otherwise snapshot reactive reads, or no native portal
+        concept).</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Summary heuristic</h2>
+  <p>
+    If a piece of logic references <code>machine</code>, <code>Params&lt;T&gt;</code>,
+    <code>Service&lt;T&gt;</code>, or calls into <code>@zag-js/core</code>'s exported functions —
+    it is <strong>contract</strong> and should be copied near-verbatim, adjusted only for the
+    target language's closure/class idiom. If it references a framework-specific reactive
+    primitive (a hook, a rune, a ref, a signal) or a framework-specific rendering convention
+    (JSX camelCase, Vue templates, Svelte's compiler) — it is <strong>framework idiom</strong> and
+    must be redesigned around whatever the target framework/runtime actually offers.
+  </p>
+</docs-page>

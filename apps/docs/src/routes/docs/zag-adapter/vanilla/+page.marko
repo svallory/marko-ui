@@ -1,0 +1,269 @@
+<docs-page
+  title="The vanilla adapter deep-dive"
+  description="Vanilla has no reactive runtime, making it the closest analog to a resumability-constrained target (e.g. Marko). This page documents exactly how it schedules updates, subscribes consumers, and re-applies props to the DOM."
+  crumbs=[{ href: "/docs/zag-adapter/vanilla", label: "Vanilla deep-dive" }]
+>
+  <p>
+    <code>packages/frameworks/vanilla/src/machine.ts</code> exports a class,
+    <code>VanillaMachine&lt;T&gt;</code>, rather than a hook. There is no framework scheduler, no
+    signals, no virtual DOM — every other adapter borrows a reactive primitive from its host
+    framework (<code>useState</code>, a Solid signal, a Vue ref, a Svelte rune); vanilla instead
+    builds the entire notify/subscribe/apply pipeline from three small pieces:
+    <code>@zag-js/store</code>'s <code>proxy</code>/<code>subscribe</code>, a manual
+    subscriber list, and imperative DOM diffing in <code>spread-props.ts</code>.
+  </p>
+
+  <h2>1. The bindable store</h2>
+  <p>
+    <code>packages/frameworks/vanilla/src/bindable.ts</code> backs both <code>state</code> and
+    every <code>context</code> key with a <code>@zag-js/store</code> proxy:
+  </p>
+  <pre><code>const store = proxy({ value: initial as T })
+
+return {
+  initial,
+  ref: store,
+  get() {
+    return controlled() ? (props().value as T) : store.value
+  },
+  set(nextValue) {
+    const prev = controlled() ? (props().value as T) : store.value
+    const next = isFunction(nextValue) ? nextValue(prev as T) : nextValue
+    if (!controlled()) store.value = next
+    if (!eq(next, prev)) {
+      props().onChange?.(next, prev)
+    }
+  },
+  ...
+}</code></pre>
+  <p>
+    Mutating <code>store.value</code> is what triggers downstream notification — the proxy is
+    observable via <code>subscribe()</code> from the same package. There is no debouncing or
+    batching at this layer: every <code>set()</code> call synchronously assigns
+    <code>store.value</code>.
+  </p>
+
+  <h2>2. Wiring stores to the publish pipeline</h2>
+  <p>
+    In the <code>VanillaMachine</code> constructor
+    (<code>packages/frameworks/vanilla/src/machine.ts</code>), every context bindable's
+    underlying store and the state bindable's store are individually subscribed to a single
+    <code>notify</code> callback:
+  </p>
+  <pre><code>// context stores
+if (context) {
+  Object.values(context).forEach((item: any) =&gt; {
+    const unsub = subscribe(item.ref, () =&gt; this.notify())
+    this.cleanups.push(unsub)
+  })
+}
+
+// state store (after building `state`)
+this.cleanups.push(subscribe(this.state.ref, () =&gt; this.notify()))</code></pre>
+  <p>
+    <code>notify()</code> is a one-line trampoline to <code>publish()</code>:
+  </p>
+  <pre><code>private notify = () =&gt; {
+  this.publish()
+}
+
+private publish = () =&gt; {
+  this.callTrackers()
+  this.subscriptions.forEach((fn) =&gt; fn(this.service))
+}</code></pre>
+  <p>
+    So the scheduling model is: <strong>every store mutation synchronously fans out to every
+    subscriber</strong>, no batching, no microtask deferral, no dedup across multiple mutations in
+    the same tick (contrast with react/preact's <code>flushSync</code> + <code>queueMicrotask</code>
+    combo, or Vue's <code>nextTick</code>). If a single <code>send()</code> triggers a state change
+    followed by several context mutations inside action handlers, each one calls
+    <code>publish()</code> independently and consumers are notified once per mutation, not once
+    per <code>send</code>.
+  </p>
+
+  <h2>3. Consumer subscription API</h2>
+  <p>
+    Consumers do not get reactive bindings automatically. They call <code>machine.subscribe(fn)</code>
+    (a plain array-based pub/sub, not <code>@zag-js/store</code>'s):
+  </p>
+  <pre><code>subscribe = (fn: (service: Service&lt;T&gt;) =&gt; void) =&gt; {
+  this.subscriptions.push(fn)
+  return () =&gt; {
+    const index = this.subscriptions.indexOf(fn)
+    if (index &gt; -1) this.subscriptions.splice(index, 1)
+  }
+}</code></pre>
+  <p>
+    Each invocation of <code>fn</code> receives a freshly built <code>this.service</code> getter
+    (see below) — there is no diffing of the previous service against the next; it is the
+    consumer's job to decide what changed and what DOM to touch, typically by calling
+    <code>normalizeProps</code> + <code>spreadProps</code> again on every notification.
+  </p>
+
+  <h2>4. The <code>service</code> getter</h2>
+  <p>
+    <code>VanillaMachine.service</code> is a getter, not a cached field — every access
+    (including the one performed by <code>publish()</code> right before calling each
+    subscriber) rebuilds the object fresh from current bindable/ref state:
+  </p>
+  <pre><code>get service(): Service&lt;T&gt; {
+  return {
+    state: this.getState(),
+    send: this.send,
+    context: this.context,
+    prop: this.prop,
+    scope: this.scope,
+    refs: this.refs,
+    computed: this.computed,
+    event: this.getEvent(),
+    getStatus: () =&gt; this.status,
+  } as Service&lt;T&gt;
+}</code></pre>
+
+  <h2>5. Lifecycle: explicit start/stop, no framework hook</h2>
+  <p>
+    Every other adapter ties <code>start</code>/<code>stop</code> to a framework mount hook.
+    Vanilla exposes them as plain methods the caller must invoke:
+  </p>
+  <pre><code>start() {
+  this.status = MachineStatus.Started
+  this.state.invoke(this.state.initial!, INIT_STATE)
+  this.setupTrackers()
+}
+
+stop() {
+  this.effects.forEach((fn) =&gt; fn?.())
+  this.effects.clear()
+  this.transition = null
+  this.action(this.machine.exit)
+  this.cleanups.forEach((unsub) =&gt; unsub())
+  this.cleanups = []
+  this.subscriptions = []
+  this.status = MachineStatus.Stopped
+}</code></pre>
+  <p>
+    <code>setupTrackers()</code> just calls <code>this.machine.watch?.(this.getParams())</code> —
+    same as every other adapter — but because there's no reactive scheduler, the "watch" pattern
+    here is degraded to whatever <code>track()</code> itself implements (see below), not tied to
+    a framework re-render.
+  </p>
+
+  <h2>6. Track/watch without a scheduler</h2>
+  <p>
+    <code>track(deps, fn)</code> (inlined in <code>getParams()</code>, no separate file) seeds
+    <code>fn.prev</code> immediately and pushes <code>{ deps, fn }</code> onto
+    <code>this.trackers</code>:
+  </p>
+  <pre><code>track: (deps: any[], fn: any) =&gt; {
+  fn.prev = deps.map((dep) =&gt; dep())
+  this.trackers.push({ deps, fn })
+},</code></pre>
+  <p>
+    Trackers are evaluated inside <code>callTrackers()</code>, called from <em>every</em>
+    <code>publish()</code> — i.e. on every state or context mutation, not on a fixed schedule:
+  </p>
+  <pre><code>private callTrackers = () =&gt; {
+  this.trackers.forEach(({ deps, fn }) =&gt; {
+    const next = deps.map((dep) =&gt; dep())
+    if (!isEqual(fn.prev, next)) {
+      fn()
+      fn.prev = next
+    }
+  })
+}</code></pre>
+  <p>
+    This makes vanilla's tracking O(mutations × trackers) rather than O(renders × trackers) — it
+    re-diffs every tracker's dependency array on every single notification, since there is no
+    concept of a "render pass" to batch against.
+  </p>
+
+  <h2>7. Re-applying props to the DOM: <code>spreadProps</code></h2>
+  <p>
+    This is vanilla's unique fifth file with no equivalent in any other adapter
+    (<code>packages/frameworks/vanilla/src/spread-props.ts</code>). It is the imperative
+    replacement for what JSX/Vue templates/Svelte compilers normally generate: given a DOM
+    <code>Element</code> and a plain attrs object (already run through <code>normalizeProps</code>),
+    it diffs against the previously-applied attrs for that exact element and mutates only what
+    changed.
+  </p>
+  <p>Key mechanics:</p>
+  <ul>
+    <li>
+      Previous attrs are tracked per-<code>Element</code> via a module-level
+      <code>WeakMap&lt;Element, Map&lt;string, Attrs&gt;&gt;</code>, keyed further by an optional
+      <code>machineId</code> string so multiple machines can independently own attribute sets on
+      the same node without clobbering each other.
+    </li>
+    <li>
+      <code>class</code> is set via the <code>className</code> property (faster than
+      <code>setAttribute</code>); <code>value</code>/<code>checked</code>/<code>selected</code>
+      are set as DOM properties (<code>assignableProps</code> set), not attributes, since setting
+      them as attributes doesn't reflect the live input state.
+    </li>
+    <li>
+      Boolean non-aria attributes use <code>toggleAttribute</code>; everything else uses
+      <code>setAttribute</code>/<code>removeAttribute</code>, with a
+      <code>getAttributeName()</code> helper that preserves case for a fixed list of SVG
+      attributes (<code>viewBox</code>, <code>preserveAspectRatio</code>, <code>clipPath</code>,
+      <code>clipRule</code>, <code>fillRule</code>, stroke-* — a longer, independently-maintained
+      list than the ones inside <code>normalize-props.ts</code> in vue/svelte).
+    </li>
+    <li>
+      <code>children</code> as a string sets <code>node.innerHTML</code> directly.
+    </li>
+    <li>
+      Event handlers (<code>on*</code> keys) are attached via
+      <code>addEventListener</code>/<code>removeEventListener</code> using the lowercased suffix
+      (<code>onClick → click</code>); on each <code>spreadProps</code> call, all of the
+      <em>previous</em> event listeners are removed and the new ones added — there is no
+      handler-identity diffing, only a full teardown-and-reattach per call.
+    </li>
+    <li>
+      Returns a <code>cleanup()</code> function that removes the event listeners and clears this
+      element's entry from the per-machine attrs map — callers are expected to call this cleanup
+      when they stop rendering the element (there is no automatic disposal tied to the DOM node's
+      removal).
+    </li>
+  </ul>
+
+  <h2>8. Prop reactivity without a framework: <code>updateProps</code></h2>
+  <p>
+    Since there's no framework re-render to re-derive <code>userProps</code> automatically, the
+    consumer must call <code>machine.updateProps(newProps)</code> manually whenever the input
+    props should change. This merges the new props over a snapshot of the previous ones using a
+    recursive plain-object merge (<code>packages/frameworks/vanilla/src/merge-machine-props.ts</code>,
+    <code>mergeMachineProps</code>) that skips <code>undefined</code> values so partial updates
+    don't blow away unrelated keys, then calls <code>this.notify()</code> to trigger a publish
+    pass with the new prop function result.
+  </p>
+  <pre><code>updateProps(newProps) {
+  const prevSource = this.userPropsRef.current
+  this.userPropsRef.current = () =&gt; {
+    const prev = runIfFn(prevSource)
+    const next = runIfFn(newProps)
+    return mergeMachineProps(prev, next)
+  }
+  this.notify()
+}</code></pre>
+
+  <h2>Why this matters for a resumability-constrained target</h2>
+  <p>
+    A framework without an ambient reactive runtime — most relevantly one built around
+    server-rendered, resumable output rather than a client VDOM/signal graph — will need to
+    replicate roughly this same shape:
+  </p>
+  <ol>
+    <li>A store primitive with explicit <code>get/set/subscribe</code> (vanilla borrows
+    <code>@zag-js/store</code>'s <code>proxy</code>; a from-scratch implementation only needs
+    get/set/subscribe semantics, not full proxy trapping).</li>
+    <li>A manual subscription list (<code>subscriptions: Array&lt;(service) =&gt; void&gt;</code>)
+    that <code>publish()</code> iterates synchronously.</li>
+    <li>Explicit <code>start()</code>/<code>stop()</code> lifecycle methods, called at whatever
+    point the host environment considers "mounted"/"unmounted" — there is no framework hook to
+    lean on.</li>
+    <li>An imperative DOM-attribute reconciler equivalent to <code>spreadProps</code>, keyed per
+    element so multiple machines can coexist on shared DOM.</li>
+    <li>A manual <code>updateProps</code>-style entry point since there is no reactive prop
+    pass-through from a parent component.</li>
+  </ol>
+</docs-page>

@@ -1,0 +1,198 @@
+<docs-page
+  title="Checklist for a new adapter"
+  description="Everything a seventh framework adapter must implement, in build order, each item pointing at the reference implementation file most worth copying from."
+  crumbs=[{ href: "/docs/zag-adapter/checklist", label: "Checklist" }]
+>
+  <p>
+    File paths below are relative to <code>data/zag</code>. &quot;Copy from&quot; picks the
+    adapter whose implementation is closest to contract-only (least framework-specific noise) for
+    that piece — usually vanilla or solid, since neither depends on a compiler step.
+  </p>
+
+  <h2>1. Scaffolding</h2>
+  <ol>
+    <li>
+      Create <code>packages/frameworks/&lt;name&gt;/package.json</code> with
+      <code>dependencies</code> on <code>@zag-js/core</code>, <code>@zag-js/types</code>,
+      <code>@zag-js/utils</code>, and (if you need a store-like primitive) <code>@zag-js/store</code>.
+      Copy the shape from <code>packages/frameworks/vanilla/package.json</code> — it has the
+      fewest framework-specific devDependencies of the six.
+    </li>
+    <li>
+      Create <code>src/index.ts</code> re-exporting <code>useMachine</code> (or your
+      class/constructor equivalent), <code>normalizeProps</code>, and <code>mergeProps</code> at
+      minimum. See any of the six <code>index.ts</code> files — they're all 3-6 lines.
+    </li>
+  </ol>
+
+  <h2>2. <code>refs</code> — trivial, do first</h2>
+  <ol>
+    <li>
+      Implement the <code>get</code>/<code>set</code>-by-key box. Copy verbatim from
+      <code>packages/frameworks/vanilla/src/refs.ts</code> (12 lines, no framework dependency) —
+      identical to solid/vue/svelte's versions. Only wrap in a framework ref/cell if your target
+      needs stable object identity across re-invocations of the setup function.
+    </li>
+  </ol>
+
+  <h2>3. <code>bindable</code> — the core reactive primitive</h2>
+  <ol>
+    <li>
+      Decide what reactive storage primitive your framework offers (signal, ref, rune, proxied
+      store, or — if none — a manual pub/sub store). If none, copy
+      <code>packages/frameworks/vanilla/src/bindable.ts</code>'s use of
+      <code>@zag-js/store</code>'s <code>proxy()</code> directly; it has zero framework
+      dependencies and can be reused as-is.
+    </li>
+    <li>
+      Implement the full <code>Bindable&lt;T&gt;</code> contract from
+      <code>packages/core/src/types.ts</code>: <code>initial</code>, <code>ref</code>,
+      <code>get()</code>, <code>set(value | fn)</code>, <code>invoke(next, prev)</code>,
+      <code>hash(value)</code>.
+    </li>
+    <li>
+      Support the full <code>BindableParams&lt;T&gt;</code> input: <code>defaultValue</code>,
+      <code>value</code> (controlled flag = <code>value !== undefined</code>),
+      <code>hash</code>, <code>isEqual</code> (default <code>Object.is</code> — five of six
+      adapters agree on this default; only preact uses the looser <code>isEqual</code> util,
+      likely an oversight worth avoiding), <code>onChange</code>, <code>debug</code>,
+      <code>sync</code>.
+    </li>
+    <li>
+      Attach the two static methods every adapter's <code>bindable</code> function needs:
+      <code>bindable.cleanup(fn)</code> (wire to your framework's unmount hook, or no-op if the
+      caller owns lifecycle explicitly like vanilla) and <code>bindable.ref(defaultValue)</code>
+      (a non-reactive get/set box, see vanilla's implementation — 6 lines).
+    </li>
+  </ol>
+
+  <h2>4. <code>normalizeProps</code> — output-target specific</h2>
+  <ol>
+    <li>
+      Determine what DOM-facing convention your framework's render output expects: real DOM
+      attribute names (vanilla/svelte-style, all lowercase except an SVG-case allowlist), a
+      template compiler's prop names (Vue-style), or JSX camelCase passthrough (react/preact-style).
+    </li>
+    <li>
+      Build a <code>propMap: Record&lt;string, string&gt;</code> for the handful of renames every
+      non-JSX adapter needs: <code>onFocus</code>, <code>onBlur</code>, <code>onChange</code>,
+      <code>onDoubleClick</code>, <code>htmlFor</code>, <code>className</code>,
+      <code>defaultValue</code>, <code>defaultChecked</code>. Copy the map from
+      <code>packages/frameworks/vanilla/src/normalize-props.ts</code> as the baseline if your
+      target renders to real DOM attributes.
+    </li>
+    <li>
+      Handle <code>style</code>: if your target wants a CSS string, reuse
+      <code>toStyleString()</code> from <code>packages/frameworks/vanilla/src/normalize-props.ts</code>
+      (camelCase→kebab-case except <code>--custom-props</code>); if it wants a style object, reuse
+      Solid's <code>cssify()</code> instead.
+    </li>
+    <li>
+      Handle <code>children</code>: decide whether your renderer wants
+      <code>textContent</code> (solid-style), <code>innerHTML</code> (vue-style), or passthrough
+      (react/preact/svelte-style — let the template layer deal with it).
+    </li>
+    <li>
+      Wrap the transform in <code>createNormalizer&lt;PropTypes&gt;(fn)</code> from
+      <code>@zag-js/types</code> (<code>packages/types/src/prop-types.ts</code>) — do not
+      reimplement the Proxy-based per-tag dispatch; every adapter reuses this unchanged.
+    </li>
+    <li>
+      Define a local <code>PropTypes</code> type mapping your framework's intrinsic element prop
+      types (or the raw DOM attribute shape, if untyped) to the <code>PropTypes&lt;T&gt;</code>
+      shape expected by <code>NormalizeProps&lt;T&gt;</code>.
+    </li>
+  </ol>
+
+  <h2>5. <code>mergeProps</code></h2>
+  <ol>
+    <li>
+      If your target has no special class/style merging concerns, re-export
+      <code>mergeProps</code> from <code>@zag-js/core</code> directly (react/vue/preact do this —
+      see any of their <code>index.ts</code> one-liners). Its handling of <code>on*</code>
+      handler chaining via <code>callAll</code>, <code>className</code>/<code>class</code>
+      concatenation, <code>style</code> object/string merging, and <code>data-ownedby</code>
+      union-of-tokens is already contract-correct (<code>packages/core/src/merge-props.ts</code>).
+    </li>
+    <li>
+      Only write a wrapper if your output format needs post-processing — e.g. vanilla and svelte
+      both wrap core's <code>mergeProps</code> to stringify a merged style object via
+      <code>toStyleString()</code> after the fact (<code>packages/frameworks/vanilla/src/merge-props.ts</code>
+      is 8 lines and a good template for &quot;wrap core, then normalize style&quot;).
+    </li>
+  </ol>
+
+  <h2>6. <code>track</code> — dependency-diffed side effects</h2>
+  <ol>
+    <li>
+      Implement a <code>track(deps: AnyFunction[], effect: VoidFunction)</code> matching the
+      <code>TrackFn</code> type in <code>packages/core/src/types.ts</code>. Deps are functions;
+      call each to get its current value.
+    </li>
+    <li>
+      Diff against the previous deps array with <code>isEqual</code> from <code>@zag-js/utils</code>
+      (not <code>Object.is</code> — deps are often objects/arrays). Only call <code>effect()</code>
+      when something changed, and never on the very first evaluation (every adapter skips the
+      initial run — copy the <code>isFirstRun</code> flag pattern from
+      <code>packages/frameworks/solid/src/track.ts</code>, the shortest correct implementation
+      at 20 lines).
+    </li>
+    <li>
+      Hook it to whatever your framework's smallest reactive-recompute unit is (an effect, a
+      watcher). If there is none, tie it to your <code>publish</code>/notify pipeline directly, as
+      vanilla does inline in <code>machine.ts</code>'s <code>getParams()</code>/<code>callTrackers()</code>.
+    </li>
+  </ol>
+
+  <h2>7. The machine driver (<code>useMachine</code> / constructor)</h2>
+  <p>This is the biggest single file. Build it in this internal order, referencing
+  <code>packages/frameworks/vanilla/src/machine.ts</code> as the least-framework-encumbered
+  reference implementation throughout:</p>
+  <ol>
+    <li>Build <code>scope</code> via <code>createScope({ id, ids, getRootNode })</code> from <code>@zag-js/core</code>, memoized/recomputed whenever <code>userProps</code> changes.</li>
+    <li>Build <code>prop: PropFn&lt;T&gt;</code> — a function reading the live, normalized props object by key. Call <code>machine.props?.({ props: compact(userProps), scope })</code> if defined, else fall back to raw <code>userProps</code>.</li>
+    <li>Call <code>machine.context?.({ prop, bindable, scope, flush, getContext, getComputed, getRefs, getEvent })</code> — note the getter-based back-references into your own not-yet-fully-built closures (<code>ctx</code>, <code>computed</code>, <code>refs</code>); every adapter ties these knots the same way.</li>
+    <li>Build <code>ctx: BindableContext&lt;T&gt;</code> — <code>get/set/initial/hash</code> delegating to each context bindable.</li>
+    <li>Build <code>refs</code> via your refs box (step 2), seeded from <code>machine.refs?.({ prop, context: ctx })</code>.</li>
+    <li>Build the <code>action</code>/<code>guard</code>/<code>effect</code>/<code>choose</code>/<code>computed</code> closures — copy these five almost verbatim from any adapter; they contain no framework-specific code (see the divergence map's &quot;identical&quot; section).</li>
+    <li>Build the <code>state</code> bindable with its <code>onChange</code> handler implementing the exit/entry lifecycle sequence — copy verbatim (see divergence map).</li>
+    <li>Wire your framework's mount hook (or an explicit <code>start()</code> method) to call <code>state.invoke(state.initial!, INIT_STATE)</code> and flip <code>status</code> to <code>MachineStatus.Started</code>. Decide whether you need react's microtask-deferral trick — you likely don't unless your framework has a StrictMode-like double-invoke behavior.</li>
+    <li>Wire your framework's unmount hook (or an explicit <code>stop()</code> method) to run accumulated effect cleanups, clear <code>transition</code>, and call <code>action(machine.exit)</code>.</li>
+    <li>Implement <code>send(event)</code>: guard on <code>status === Started</code>, look up the transition via <code>findTransition</code>, resolve the target via <code>resolveStateValue</code>, then either <code>state.set(target)</code> (changed), <code>state.invoke(current, current)</code> (reenter), or <code>action(transition.actions)</code> (same-state, no reenter).</li>
+    <li>Call <code>machine.watch?.(getParams())</code> once per setup/render.</li>
+    <li>Return the <code>Service&lt;T&gt;</code> object — <code>state</code>, <code>send</code>, <code>context</code>, <code>prop</code>, <code>scope</code>, <code>refs</code>, <code>computed</code>, <code>event</code>, <code>getStatus</code> — matching the exact shape in <code>packages/core/src/types.ts</code>.</li>
+  </ol>
+
+  <h2>8. Reactivity bridge (the one piece with no reference to copy)</h2>
+  <p>
+    Decide how consumers get notified. See the
+    <a href="/docs/zag-adapter/divergence">divergence map</a>'s reactivity-trigger row: this is
+    the one axis every adapter solves completely differently because it's entirely
+    framework/runtime-shaped. If your target has no ambient reactivity, replicate vanilla's
+    <code>subscribe</code>/<code>publish</code> pattern
+    (<code>packages/frameworks/vanilla/src/machine.ts</code>, <code>notify</code>/<code>publish</code>/<code>subscriptions</code>)
+    plus its <code>spreadProps</code>-style imperative DOM reconciler
+    (<code>packages/frameworks/vanilla/src/spread-props.ts</code>) for actually applying
+    normalized props to elements — see the <a href="/docs/zag-adapter/vanilla">vanilla deep-dive</a>
+    for the full breakdown.
+  </p>
+
+  <h2>9. Optional utilities — build only if your target needs them</h2>
+  <ol>
+    <li><strong>Portal</strong> — only if your framework has no native out-of-tree rendering primitive. Reference: <code>packages/frameworks/react/src/portal.tsx</code> (uses <code>createPortal</code>) or <code>packages/frameworks/svelte/src/portal.ts</code> (a Svelte action that manually calls <code>appendChild</code> and removes the node on <code>destroy</code>).</li>
+    <li><strong><code>reflect()</code></strong> — only if your template compiler snapshots destructured/spread object properties instead of keeping them live. Reference: <code>packages/frameworks/svelte/src/reflect.ts</code> (13 lines, a <code>Proxy</code> that re-reads the source object on every property access).</li>
+    <li><strong><code>spreadProps</code></strong> — only if you render to real DOM elements imperatively rather than through a compiler/VDOM. Reference: <code>packages/frameworks/vanilla/src/spread-props.ts</code>.</li>
+  </ol>
+
+  <h2>10. Verify against the test fixtures</h2>
+  <p>
+    Every existing adapter ships <code>tests/machine.test.ts</code>,
+    <code>tests/nested-states.test.ts</code>, and (where applicable)
+    <code>tests/bindable.test.ts</code> / <code>tests/normalize-props.test.ts</code> /
+    <code>tests/merge-props.test.ts</code>. These exercise the state-machine driver against real
+    machine definitions and are the fastest way to confirm a new adapter's <code>useMachine</code>
+    honors the same transition/lifecycle contract as the existing six — start from
+    <code>packages/frameworks/vanilla/tests/</code> since it requires no DOM testing library setup
+    beyond <code>jsdom</code>.
+  </p>
+</docs-page>

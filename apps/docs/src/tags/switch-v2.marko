@@ -18,7 +18,7 @@ export interface Input {
   content?: Marko.Body;
 }
 
-<id/uid/>
+<id/uid>
 <const/machineProps=() => ({
   id: uid,
   checked: input.checked,
@@ -29,14 +29,18 @@ export interface Input {
   onCheckedChange(details: { checked: boolean }) {
     input.checkedChange?.(details.checked);
   },
-})/>
+})>
 <use-machine/api
   machine=() => sw.machine
   props=machineProps
   connect=(svc, np) => sw.connect(svc, np)
 />
 
-<label ...api().getRootProps() data-slot="switch" class=cn("inline-flex items-center gap-2", input.class)>
+<label
+  ...api().getRootProps()
+  data-slot="switch"
+  class=cn("inline-flex items-center gap-2", input.class)
+>
   <input ...api().getHiddenInputProps() class="sr-only">
   <span
     ...api().getControlProps()
@@ -54,4 +58,4 @@ export interface Input {
   </if>
 </label>
 
-<return=api/>
+<return=api>
