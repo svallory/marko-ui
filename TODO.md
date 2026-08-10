@@ -2,7 +2,7 @@
 
 ## Decisions
 
-- [ ] **Project name** — `shadcn-marko` (recommended; follows shadcn-svelte/vue convention), `marko-ui`, or `markocn`. All free on npm. Blocks: repo name, registry URLs, docs branding. `(decision)`
+- [x] **Project name: `shadcn-marko`** — decided 2026-08-10. Renamed in registry.json, docs, workspace package. Repo push should use `svallory/shadcn-marko`. `(decision — made)`
 - [ ] **Registry domain** — pick host/domain for docs + registry; rebuild with `REGISTRY_BASE_URL=https://<domain>/r` (item cross-refs embed absolute URLs, currently localhost). `(decision)`
 - [x] **marko-zag exports: ship source** — no dist build; package already ships `.marko` source (compiled by the consumer), Vite transpiles `.ts` from node_modules, better IDE/agent DX. Document "requires a Marko-aware bundler" in README before publish. `(decision — made 2026-08-10)`
 

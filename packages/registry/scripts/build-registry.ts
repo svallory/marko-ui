@@ -138,8 +138,8 @@ async function main() {
     JSON.stringify(
       {
         $schema: REGISTRY_SCHEMA,
-        name: "marko-ui",
-        homepage: "https://github.com/svallory/marko-ui",
+        name: "shadcn-marko",
+        homepage: "https://github.com/svallory/shadcn-marko",
         items: index,
       },
       null,
