@@ -1,0 +1,56 @@
+import Field from "@marko-ui/registry/ui/form/index.marko";
+import Input from "@marko-ui/registry/ui/input/index.marko";
+import Button from "@marko-ui/registry/ui/button/index.marko";
+
+<let/email=""/>
+<let/submitted=false/>
+
+<component-page title="Field" description="A minimal wrapper for form fields, intentionally lighter than react-hook-form-based form components.">
+  <demo-box title="Default">
+    <Field label="Email" description="We'll never share your email.">
+      <@content|f|>
+        <Input id=f.id aria-describedby=f.describedBy aria-invalid=f.invalid type="email" placeholder="you@example.com"/>
+      </@content>
+    </Field>
+  </demo-box>
+
+  <demo-box title="With error">
+    <Field label="Username" error="This username is already taken.">
+      <@content|f|>
+        <Input id=f.id aria-describedby=f.describedBy aria-invalid=f.invalid value="taken-name"/>
+      </@content>
+    </Field>
+  </demo-box>
+
+  <demo-box title="Two fields with native validation">
+    <form
+      class="grid gap-4"
+      onSubmit(event) {
+        event.preventDefault();
+        submitted = true;
+      }
+    >
+      <Field label="Email" description="Required.">
+        <@content|f|>
+          <Input
+            id=f.id
+            aria-describedby=f.describedBy
+            aria-invalid=f.invalid
+            type="email"
+            required
+            onInput(event) { email = event.target.value; }
+          />
+        </@content>
+      </Field>
+      <Field label="Website" description="Optional, include https://.">
+        <@content|f|>
+          <Input id=f.id aria-describedby=f.describedBy aria-invalid=f.invalid type="url" placeholder="https://example.com"/>
+        </@content>
+      </Field>
+      <Button type="submit">Submit</Button>
+      <if=submitted>
+        <p class="text-sm text-muted-foreground">Submitted with email: ${email}</p>
+      </if>
+    </form>
+  </demo-box>
+</component-page>

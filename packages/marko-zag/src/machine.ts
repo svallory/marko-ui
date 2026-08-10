@@ -237,17 +237,34 @@ export function createService(machine: any, userProps: () => Dict, notify: () =>
     return fn?.(getParams());
   };
 
+  // Marko batches renders: DOM created by a state change (e.g. an opened
+  // positioner) does not exist yet when the machine's entry effects fire.
+  // Zag effects that resolve elements once (popper's getPlacement defer:raf)
+  // would then fail permanently. Deferring effects by two frames guarantees
+  // the notify → render pass has committed first.
   const effect = (keys: any) => {
     const strs = isFunction(keys) ? keys(getParams()) : keys;
     if (!strs) return;
     const cleanupFns: VoidFunction[] = [];
-    for (const s of strs) {
-      const fn = machine.implementations?.effects?.[s];
-      if (!fn) warn(`[zag-js] No implementation found for effect "${JSON.stringify(s)}"`);
-      const cleanup = fn?.(getParams());
-      if (cleanup) cleanupFns.push(cleanup);
-    }
-    return () => cleanupFns.forEach((fn) => fn?.());
+    let disposed = false;
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        if (disposed) return;
+        for (const s of strs) {
+          const fn = machine.implementations?.effects?.[s];
+          if (!fn) warn(`[zag-js] No implementation found for effect "${JSON.stringify(s)}"`);
+          const cleanup = fn?.(getParams());
+          if (cleanup) cleanupFns.push(cleanup);
+        }
+      });
+    });
+    return () => {
+      disposed = true;
+      cancelAnimationFrame(raf1);
+      if (raf2) cancelAnimationFrame(raf2);
+      cleanupFns.forEach((fn) => fn?.());
+    };
   };
 
   const choose = (transitions: any) =>

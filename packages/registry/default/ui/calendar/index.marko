@@ -1,0 +1,154 @@
+import * as datePicker from "@zag-js/date-picker";
+import { CalendarDate, type DateValue } from "@internationalized/date";
+import { createService, ssrService, normalizeProps } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  value?: { year: number; month: number; day: number }[];
+  valueChange?: (value: { year: number; month: number; day: number }[]) => void;
+}
+
+static function toDateValue(d: { year: number; month: number; day: number }): DateValue {
+  return new CalendarDate(d.year, d.month, d.day);
+}
+
+static function toPlain(d: DateValue) {
+  return { year: d.year, month: d.month, day: d.day };
+}
+
+<const/{ value, valueChange, class: className, ...rest }=input/>
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  open: true,
+  inline: true,
+  closeOnSelect: false,
+  value: value?.map(toDateValue),
+  onValueChange(details: { value: DateValue[] }) {
+    valueChange?.(details.value.map(toPlain));
+  },
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(datePicker.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.value;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = datePicker.connect(svc ?? ssrService(datePicker.machine, machineProps), normalizeProps);
+  const weeks = api.weeks.map((week) =>
+    week.map((date) => {
+      const cellState = api.getDayTableCellState({ value: date });
+      return {
+        dateValue: toPlain(date),
+        cell: api.getDayTableCellProps({ value: date }),
+        trigger: api.getDayTableCellTriggerProps({ value: date }),
+        label: String(date.day),
+        selected: cellState.selected,
+        today: cellState.today,
+        outsideRange: cellState.outsideRange,
+        disabled: cellState.disabled,
+        unavailable: cellState.unavailable,
+      };
+    }),
+  );
+  return {
+    root: api.getRootProps(),
+    content: api.getContentProps(),
+    view: api.view,
+    viewControl: api.getViewControlProps(),
+    prevTrigger: api.getPrevTriggerProps(),
+    nextTrigger: api.getNextTriggerProps(),
+    viewTrigger: api.getViewTriggerProps(),
+    viewTriggerLabel: api.visibleRangeText.formatted,
+    table: api.getTableProps(),
+    tableHead: api.getTableHeadProps(),
+    tableHeader: api.getTableHeaderProps(),
+    tableBody: api.getTableBodyProps(),
+    weekDays: api.weekDays.map((wd) => ({ narrow: wd.narrow, long: wd.long })),
+    weeks,
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<div ...rest ...ui.root data-slot="calendar" class=cn("border rounded-md p-3 w-fit", className)>
+  <div ...ui.content data-slot="calendar-content" class="space-y-4">
+    <div class="flex items-center justify-between">
+      <button
+        ...ui.prevTrigger
+        data-slot="calendar-prev-trigger"
+        class="inline-flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+          <path d="m15 18-6-6 6-6"/>
+        </svg>
+        <span class="sr-only">Previous</span>
+      </button>
+      <button
+        ...ui.viewTrigger
+        data-slot="calendar-view-trigger"
+        class="text-sm font-medium hover:underline"
+      >
+        ${ui.viewTriggerLabel}
+      </button>
+      <button
+        ...ui.nextTrigger
+        data-slot="calendar-next-trigger"
+        class="inline-flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+        <span class="sr-only">Next</span>
+      </button>
+    </div>
+    <table ...ui.table data-slot="calendar-table" class="w-full border-collapse space-y-1">
+      <thead ...ui.tableHead data-slot="calendar-table-head">
+        <tr>
+          <for|wd| of=ui.weekDays>
+            <th class="text-muted-foreground w-9 rounded-md text-[0.8rem] font-normal">
+              ${wd.narrow}
+              <span class="sr-only">${wd.long}</span>
+            </th>
+          </for>
+        </tr>
+      </thead>
+      <tbody ...ui.tableBody data-slot="calendar-table-body">
+        <for|week, i| of=ui.weeks by=(_, i) => i>
+          <tr>
+            <for|day, j| of=week by=(_, j) => j>
+              <td
+                ...day.cell
+                data-slot="calendar-cell"
+                class="p-0 text-center text-sm relative [&:has([data-in-range])]:bg-accent first:[&:has([data-in-range])]:rounded-l-md last:[&:has([data-in-range])]:rounded-r-md"
+              >
+                <button
+                  ...day.trigger
+                  data-slot="calendar-day"
+                  class=cn(
+                    "inline-flex size-9 items-center justify-center rounded-md p-0 text-sm font-normal transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+                    day.selected && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+                    day.today && !day.selected && "bg-accent text-accent-foreground",
+                    day.outsideRange && "text-muted-foreground opacity-50",
+                  )
+                >
+                  ${day.label}
+                </button>
+              </td>
+            </for>
+          </tr>
+        </for>
+      </tbody>
+    </table>
+  </div>
+</div>

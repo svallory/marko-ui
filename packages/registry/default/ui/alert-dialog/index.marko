@@ -1,0 +1,104 @@
+import * as dialog from "@zag-js/dialog";
+import { createService, ssrService, normalizeProps } from "marko-zag";
+import { buttonVariants } from "../button/variants.ts";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input {
+  open?: boolean;
+  openChange?: (open: boolean) => void;
+  trigger?: Marko.Body<[Record<string, unknown>]>;
+  title?: Marko.Body;
+  description?: Marko.Body;
+  cancelText?: string;
+  actionText?: string;
+  action?: () => void;
+  class?: string;
+}
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  role: "alertdialog",
+  closeOnInteractOutside: false,
+  closeOnEscape: false,
+  open: input.open,
+  onOpenChange(details: { open: boolean }) {
+    input.openChange?.(details.open);
+  },
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(dialog.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.open;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = dialog.connect(svc ?? ssrService(dialog.machine, machineProps), normalizeProps);
+  return {
+    open: api.open,
+    trigger: api.getTriggerProps(),
+    backdrop: api.getBackdropProps(),
+    positioner: api.getPositionerProps(),
+    content: api.getContentProps(),
+    title: api.getTitleProps(),
+    description: api.getDescriptionProps(),
+    cancelTrigger: api.getCloseTriggerProps(),
+    actionTrigger: {
+      ...api.getCloseTriggerProps(),
+      onClick(event: Event, el?: Element) {
+        input.action?.();
+        api.getCloseTriggerProps().onClick?.(event, el);
+      },
+    },
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<if=input.trigger>
+  <${input.trigger}({ ...ui.trigger, "data-slot": "alert-dialog-trigger" })/>
+</if>
+<if=ui.open>
+  <portal>
+    <div
+      ...ui.backdrop
+      data-slot="alert-dialog-overlay"
+      class="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0"
+    />
+    <div ...ui.positioner data-slot="alert-dialog-positioner" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        ...ui.content
+        data-slot="alert-dialog-content"
+        class=cn(
+          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg",
+          input.class,
+        )
+      >
+        <div data-slot="alert-dialog-header" class="flex flex-col gap-2 text-center sm:text-left">
+          <h2 ...ui.title data-slot="alert-dialog-title" class="text-lg font-semibold">
+            <${input.title}/>
+          </h2>
+          <p ...ui.description data-slot="alert-dialog-description" class="text-muted-foreground text-sm">
+            <${input.description}/>
+          </p>
+        </div>
+        <div data-slot="alert-dialog-footer" class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button ...ui.cancelTrigger data-slot="alert-dialog-cancel" class=buttonVariants({ variant: "outline" })>
+            ${input.cancelText ?? "Cancel"}
+          </button>
+          <button ...ui.actionTrigger data-slot="alert-dialog-action" class=buttonVariants({ variant: "default" })>
+            ${input.actionText ?? "Continue"}
+          </button>
+        </div>
+      </div>
+    </div>
+  </portal>
+</if>

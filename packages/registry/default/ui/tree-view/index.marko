@@ -1,0 +1,183 @@
+import * as treeView from "@zag-js/tree-view";
+import { createService, ssrService, normalizeProps } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface TreeViewItem {
+  id: string;
+  label: string;
+  children?: TreeViewItem[];
+  disabled?: boolean;
+}
+
+export interface Input {
+  items: TreeViewItem[];
+  selectionMode?: "single" | "multiple";
+  expandedValue?: string[];
+  selectedValue?: string[];
+  expandedValueChange?: (value: string[]) => void;
+  selectedValueChange?: (value: string[]) => void;
+  class?: string;
+}
+
+export interface FlatNodeUi {
+  label: string;
+  isBranch: boolean;
+  itemProps?: Record<string, unknown>;
+  itemIndicatorProps?: Record<string, unknown>;
+  branchProps?: Record<string, unknown>;
+  branchControlProps?: Record<string, unknown>;
+  branchTriggerProps?: Record<string, unknown>;
+  branchContentProps?: Record<string, unknown>;
+  branchIndicatorProps?: Record<string, unknown>;
+  children?: string[];
+}
+
+<const/{ items, class: className }=input/>
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+
+<const/buildCollection=(list: TreeViewItem[]) => treeView.collection({
+  rootNode: { id: "__root__", label: "", children: list } as TreeViewItem,
+  nodeToValue: (node: TreeViewItem) => node.id,
+  nodeToString: (node: TreeViewItem) => node.label,
+  nodeToChildren: (node: TreeViewItem) => node.children ?? [],
+  isNodeDisabled: (node: TreeViewItem) => !!node.disabled,
+})/>
+
+<const/machineProps=() => ({
+  id: uid,
+  collection: buildCollection(items),
+  selectionMode: input.selectionMode,
+  expandedValue: input.expandedValue,
+  selectedValue: input.selectedValue,
+  onExpandedChange(details: { expandedValue: string[] }) {
+    input.expandedValueChange?.(details.expandedValue);
+  },
+  onSelectionChange(details: { selectedValue: string[] }) {
+    input.selectedValueChange?.(details.selectedValue);
+  },
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(treeView.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.items;
+  input.selectionMode;
+  input.expandedValue;
+  input.selectedValue;
+  svc?.propsChanged();
+</script>
+
+<const/computeUi=() => {
+  const api = treeView.connect(svc ?? ssrService(treeView.machine, machineProps), normalizeProps);
+
+  const nodes: Record<string, FlatNodeUi> = {};
+
+  const walk = (list: TreeViewItem[], indexPath: number[]) => {
+    const ids: string[] = [];
+    list.forEach((node, i) => {
+      const path = [...indexPath, i];
+      const props = { node, indexPath: path };
+      const isBranch = !!node.children && node.children.length > 0;
+
+      if (isBranch) {
+        nodes[node.id] = {
+          label: node.label,
+          isBranch: true,
+          branchProps: api.getBranchProps(props),
+          branchControlProps: api.getBranchControlProps(props),
+          branchTriggerProps: api.getBranchTriggerProps(props),
+          branchContentProps: api.getBranchContentProps(props),
+          branchIndicatorProps: api.getBranchIndicatorProps(props),
+          children: walk(node.children!, path),
+        };
+      } else {
+        nodes[node.id] = {
+          label: node.label,
+          isBranch: false,
+          itemProps: api.getItemProps(props),
+          itemIndicatorProps: api.getItemIndicatorProps(props),
+        };
+      }
+      ids.push(node.id);
+    });
+    return ids;
+  };
+
+  const rootIds = walk(items, []);
+
+  return {
+    root: api.getRootProps(),
+    tree: api.getTreeProps(),
+    nodes,
+    rootIds,
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<define/ChevronIcon>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="text-muted-foreground pointer-events-none size-4 shrink-0 transition-transform duration-200 [[data-state=open]>&]:rotate-90"
+  >
+    <path d="m9 18 6-6-6-6"/>
+  </svg>
+</define>
+
+<define/TreeNode|{ id, nodes }: { id: string; nodes: Record<string, FlatNodeUi> }|>
+  <const/node=nodes[id]/>
+  <if=node.isBranch>
+    <li ...node.branchProps data-slot="tree-view-branch">
+      <div
+        ...node.branchControlProps
+        data-slot="tree-view-branch-control"
+        class="focus-visible:ring-ring/50 flex items-center gap-1 rounded-md px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-[3px] data-[selected]:bg-accent data-[selected]:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        style={ "padding-left": `calc(0.5rem + var(--depth) * 1rem)` }
+      >
+        <button ...node.branchTriggerProps data-slot="tree-view-branch-trigger" class="flex items-center justify-center">
+          <ChevronIcon/>
+        </button>
+        <span data-slot="tree-view-branch-text" class="truncate">${node.label}</span>
+      </div>
+      <ul ...node.branchContentProps data-slot="tree-view-branch-content" class="flex flex-col">
+        <for|childId| of=node.children>
+          <TreeNode id=childId nodes=nodes/>
+        </for>
+      </ul>
+    </li>
+  </if>
+  <else>
+    <li
+      ...node.itemProps
+      data-slot="tree-view-item"
+      class="focus-visible:ring-ring/50 flex cursor-pointer items-center gap-1 truncate rounded-md px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-[3px] data-[selected]:bg-accent data-[selected]:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+      style={ "padding-left": `calc(0.5rem + var(--depth) * 1rem)` }
+    >
+      <span data-slot="tree-view-item-text" class="truncate">${node.label}</span>
+    </li>
+  </else>
+</define>
+
+<div ...ui.root data-slot="tree-view" class=cn("w-full", className)>
+  <ul ...ui.tree data-slot="tree-view-tree" class="flex flex-col gap-0.5">
+    <for|id| of=ui.rootIds>
+      <TreeNode id=id nodes=ui.nodes/>
+    </for>
+  </ul>
+</div>

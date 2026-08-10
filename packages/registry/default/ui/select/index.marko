@@ -1,0 +1,117 @@
+import * as select from "@zag-js/select";
+import { createService, ssrService, normalizeProps, positionerStyle } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface SelectItem {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+export interface Input extends Omit<Marko.Input<"div">, "value"> {
+  items: SelectItem[];
+  value?: string[];
+  valueChange?: (value: string[]) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  name?: string;
+}
+
+<const/{ items, value, valueChange, placeholder, disabled, name, class: className, ...rest }=input/>
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  collection: select.collection({
+    items,
+    itemToValue: (item: SelectItem) => item.value,
+    itemToString: (item: SelectItem) => item.label,
+    isItemDisabled: (item: SelectItem) => !!item.disabled,
+  }),
+  value,
+  disabled,
+  name,
+  onValueChange(details: { value: string[] }) {
+    valueChange?.(details.value);
+  },
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(select.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.items;
+  input.value;
+  input.disabled;
+  input.name;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = select.connect(svc ?? ssrService(select.machine, machineProps), normalizeProps);
+  return {
+    open: api.open,
+    valueAsString: api.valueAsString,
+    root: api.getRootProps(),
+    control: api.getControlProps(),
+    trigger: api.getTriggerProps(),
+    hiddenSelect: api.getHiddenSelectProps(),
+    positioner: api.getPositionerProps(),
+    content: api.getContentProps(),
+    items: items.map((item) => ({
+      item,
+      itemProps: api.getItemProps({ item }),
+      itemTextProps: api.getItemTextProps({ item }),
+      itemIndicatorProps: api.getItemIndicatorProps({ item }),
+    })),
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<div ...rest data-slot="select" class=cn(className)>
+  <div ...ui.control data-slot="select-control">
+    <button ...ui.trigger data-slot="select-trigger" class="border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 h-9">
+      <span data-slot="select-value">${ui.valueAsString || placeholder}</span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 opacity-50">
+        <path d="m6 9 6 6 6-6"/>
+      </svg>
+    </button>
+  </div>
+  <select ...ui.hiddenSelect data-slot="select-hidden-select">
+    <for|entry| of=items>
+      <option value=entry.value disabled=entry.disabled>${entry.label}</option>
+    </for>
+  </select>
+  <if=ui.open>
+    <portal>
+      <div ...ui.positioner data-slot="select-positioner" style=positionerStyle>
+        <div
+          ...ui.content
+          data-slot="select-content"
+          class="bg-popover text-popover-foreground relative z-50 min-w-[8rem] overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-md data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
+        >
+          <for|entry| of=ui.items>
+            <div
+              ...entry.itemProps
+              data-slot="select-item"
+              class="focus:bg-accent focus:text-accent-foreground data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+            >
+              <span ...entry.itemTextProps data-slot="select-item-text">${entry.item.label}</span>
+              <span ...entry.itemIndicatorProps data-slot="select-item-indicator" class="absolute right-2 flex size-3.5 items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+                  <path d="M20 6 9 17l-5-5"/>
+                </svg>
+              </span>
+            </div>
+          </for>
+        </div>
+      </div>
+    </portal>
+  </if>
+</div>

@@ -1,0 +1,68 @@
+import * as popover from "@zag-js/popover";
+import type { PositioningOptions } from "@zag-js/popover";
+import { createService, ssrService, normalizeProps, positionerStyle } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input {
+  open?: boolean;
+  openChange?: (open: boolean) => void;
+  positioning?: PositioningOptions;
+  trigger: Marko.Body<[Record<string, unknown>]>;
+  content?: Marko.Body;
+  class?: string;
+}
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  open: input.open,
+  positioning: input.positioning,
+  onOpenChange(details: { open: boolean }) {
+    input.openChange?.(details.open);
+  },
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(popover.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.open;
+  input.positioning;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = popover.connect(svc ?? ssrService(popover.machine, machineProps), normalizeProps);
+  return {
+    open: api.open,
+    trigger: api.getTriggerProps(),
+    positioner: api.getPositionerProps(),
+    content: api.getContentProps(),
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<${input.trigger}({ ...ui.trigger, "data-slot": "popover-trigger" })/>
+<if=ui.open>
+  <portal>
+    <div ...ui.positioner style=positionerStyle data-slot="popover-positioner">
+      <div
+        ...ui.content
+        data-slot="popover-content"
+        class=cn(
+          "bg-popover text-popover-foreground z-50 w-72 rounded-md border p-4 shadow-md outline-hidden",
+          "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+          input.class,
+        )
+      >
+        <${input.content}/>
+      </div>
+    </div>
+  </portal>
+</if>

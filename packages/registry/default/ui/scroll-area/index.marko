@@ -1,0 +1,18 @@
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<div
+  ...rest
+  data-slot="scroll-area"
+  class=cn("relative overflow-hidden", className)
+>
+  <div
+    data-slot="scroll-area-viewport"
+    class="size-full overflow-auto rounded-[inherit] [scrollbar-width:thin] [scrollbar-color:var(--border)_transparent] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-solid [&::-webkit-scrollbar-thumb]:border-transparent [&::-webkit-scrollbar-thumb]:bg-clip-padding"
+  >
+    <${content}/>
+  </div>
+</div>

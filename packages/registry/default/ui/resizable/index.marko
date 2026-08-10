@@ -1,0 +1,103 @@
+import * as splitter from "@zag-js/splitter";
+import { createService, ssrService, normalizeProps } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface ResizablePanel {
+  id: string;
+  defaultSize?: number | string;
+  minSize?: number | string;
+  maxSize?: number | string;
+}
+
+export interface Input extends Omit<Marko.Input<"div">, "content"> {
+  panels: ResizablePanel[];
+  content?: Marko.Body<[ResizablePanel, number]>;
+  orientation?: "horizontal" | "vertical";
+  class?: string;
+}
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  orientation: input.orientation ?? "horizontal",
+  panels: input.panels.map((panel) => ({
+    id: panel.id,
+    minSize: panel.minSize,
+    maxSize: panel.maxSize,
+  })),
+  defaultSize: input.panels.map((panel) => panel.defaultSize ?? 100 / input.panels.length),
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(splitter.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.orientation;
+  input.panels;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = splitter.connect(svc ?? ssrService(splitter.machine, machineProps), normalizeProps);
+  return {
+    root: api.getRootProps(),
+    panels: Object.fromEntries(
+      input.panels.map((panel) => [panel.id, api.getPanelProps({ id: panel.id })]),
+    ),
+    triggers: Object.fromEntries(
+      input.panels.slice(0, -1).map((panel, index) => {
+        const nextPanel = input.panels[index + 1];
+        const triggerId = `${panel.id}:${nextPanel.id}`;
+        return [triggerId, api.getResizeTriggerProps({ id: triggerId })];
+      }),
+    ),
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<const/{ panels, content, class: className, orientation, ...rest }=input/>
+
+<div ...rest ...ui.root data-slot="resizable-panel-group" class=cn("flex h-full w-full data-[orientation=vertical]:flex-col", className)>
+  <for|panel, index| of=panels>
+    <div ...ui.panels[panel.id] data-slot="resizable-panel">
+      <if=content>
+        <${content}(panel, index)/>
+      </if>
+    </div>
+    <if=index < panels.length - 1>
+      <div
+        ...ui.triggers[`${panel.id}:${panels[index + 1].id}`]
+        data-slot="resizable-handle"
+        class="bg-border focus-visible:ring-ring relative flex w-px items-center justify-center after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:ring-1 focus-visible:ring-offset-1 focus-visible:outline-hidden data-[orientation=vertical]:h-px data-[orientation=vertical]:w-full data-[orientation=vertical]:after:left-0 data-[orientation=vertical]:after:h-1 data-[orientation=vertical]:after:w-full data-[orientation=vertical]:after:translate-x-0 data-[orientation=vertical]:after:-translate-y-1/2 [&[data-orientation=vertical]>div]:rotate-90"
+      >
+        <div class="bg-border z-10 flex h-4 w-3 items-center justify-center rounded-xs border">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="size-2.5"
+          >
+            <circle cx="9" cy="12" r="1"/>
+            <circle cx="9" cy="5" r="1"/>
+            <circle cx="9" cy="19" r="1"/>
+            <circle cx="15" cy="12" r="1"/>
+            <circle cx="15" cy="5" r="1"/>
+            <circle cx="15" cy="19" r="1"/>
+          </svg>
+        </div>
+      </div>
+    </if>
+  </for>
+</div>

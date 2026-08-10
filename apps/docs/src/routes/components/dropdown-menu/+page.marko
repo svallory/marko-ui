@@ -1,0 +1,52 @@
+import DropdownMenu from "@marko-ui/registry/ui/dropdown-menu/index.marko";
+import Button from "@marko-ui/registry/ui/button/index.marko";
+
+static const ACCOUNT_ITEMS = [
+  { type: "label", label: "My Account" },
+  { type: "separator" },
+  { value: "profile", label: "Profile", shortcut: "⇧⌘P" },
+  { value: "billing", label: "Billing", shortcut: "⌘B" },
+  { value: "settings", label: "Settings", shortcut: "⌘S" },
+  { type: "separator" },
+  { value: "team", label: "Team" },
+  { value: "invite", label: "Invite users", disabled: true },
+  { type: "separator" },
+  { value: "logout", label: "Log out", danger: true },
+];
+
+static const SIMPLE_ITEMS = [
+  { value: "edit", label: "Edit" },
+  { value: "duplicate", label: "Duplicate" },
+  { value: "archive", label: "Archive" },
+  { type: "separator" },
+  { value: "delete", label: "Delete", danger: true },
+];
+
+<let/selected=""/>
+
+<component-page title="Dropdown Menu" description="Displays a menu to the user — such as a set of actions or functions — triggered by a button.">
+  <demo-box title="Default">
+    <DropdownMenu items=ACCOUNT_ITEMS select(value) { selected = value; }>
+      <@trigger|triggerProps|>
+        <Button variant="outline" ...triggerProps>Open menu</Button>
+      </@trigger>
+    </DropdownMenu>
+  </demo-box>
+  <demo-box title="Simple">
+    <DropdownMenu items=SIMPLE_ITEMS select(value) { selected = value; }>
+      <@trigger|triggerProps|>
+        <Button variant="outline" ...triggerProps>Actions</Button>
+      </@trigger>
+    </DropdownMenu>
+  </demo-box>
+  <demo-box title="Selection">
+    <div class="flex items-center gap-4">
+      <DropdownMenu items=SIMPLE_ITEMS select(value) { selected = value; }>
+        <@trigger|triggerProps|>
+          <Button variant="outline" ...triggerProps>Open menu</Button>
+        </@trigger>
+      </DropdownMenu>
+      <span class="text-muted-foreground text-sm">selected: ${selected || "none"}</span>
+    </div>
+  </demo-box>
+</component-page>

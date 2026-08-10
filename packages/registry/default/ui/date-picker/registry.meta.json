@@ -1,0 +1,6 @@
+{
+  "title": "Date Picker",
+  "description": "A popover-style date field that combines a text input and a calendar for selecting a date.",
+  "dependencies": ["@zag-js/date-picker", "@internationalized/date"],
+  "registryDependencies": ["utils"]
+}

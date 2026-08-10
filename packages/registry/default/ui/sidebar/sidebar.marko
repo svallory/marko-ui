@@ -1,0 +1,22 @@
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  open?: boolean;
+  content?: Marko.Body;
+}
+
+<const/{ open, class: className, content, ...rest }=input/>
+
+<aside
+  ...rest
+  data-slot="sidebar"
+  data-state=(open ? "open" : "closed")
+  class=cn(
+    "flex h-svh w-(--sidebar-width) flex-col overflow-hidden border-r bg-sidebar text-sidebar-foreground transition-[width] duration-200 ease-linear data-[state=closed]:w-0 data-[state=closed]:border-r-0",
+    className,
+  )
+>
+  <div class="flex h-full w-(--sidebar-width) min-w-(--sidebar-width) flex-col">
+    <${content}/>
+  </div>
+</aside>

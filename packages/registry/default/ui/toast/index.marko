@@ -1,0 +1,91 @@
+import { toast, type ToastRecord } from "./store.ts";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {}
+
+<const/{ class: className, ...rest }=input/>
+
+<let/toasts=toast.getToasts()/>
+<lifecycle
+  onMount() {
+    const unsubscribe = toast.subscribe((next) => {
+      toasts = next;
+    });
+    return unsubscribe;
+  }
+/>
+
+<div
+  ...rest
+  data-slot="toaster"
+  role="region"
+  aria-label="Notifications"
+  tabindex="-1"
+  class=cn("fixed bottom-0 right-0 z-50 flex flex-col gap-2 p-4 sm:max-w-[356px] w-full", className)
+>
+  <for|item| of=toasts by="id">
+    <div
+      data-slot="toast"
+      data-type=item.type
+      role="status"
+      aria-atomic="true"
+      class="bg-popover text-popover-foreground pointer-events-auto relative flex w-full items-start gap-3 rounded-lg border p-4 text-sm shadow-lg"
+    >
+      <if=(item.type === "success")>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 size-4 shrink-0 text-emerald-500">
+          <path d="M21.801 10A10 10 0 1 1 17 3.335"/>
+          <path d="m9 11 3 3L22 4"/>
+        </svg>
+      </if>
+      <else-if=(item.type === "error")>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 size-4 shrink-0 text-destructive">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" x2="12" y1="8" y2="12"/>
+          <line x1="12" x2="12.01" y1="16" y2="16"/>
+        </svg>
+      </else-if>
+      <else-if=(item.type === "warning")>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 size-4 shrink-0 text-amber-500">
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+          <line x1="12" x2="12" y1="9" y2="13"/>
+          <line x1="12" x2="12.01" y1="17" y2="17"/>
+        </svg>
+      </else-if>
+      <else-if=(item.type === "info")>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 size-4 shrink-0 text-blue-500">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" x2="12.01" y1="8" y2="8"/>
+          <line x1="12" x2="12" y1="12" y2="16"/>
+        </svg>
+      </else-if>
+      <else-if=(item.type === "loading")>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 size-4 shrink-0 animate-spin text-muted-foreground">
+          <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+        </svg>
+      </else-if>
+
+      <div class="flex-1 space-y-1">
+        <if=item.title>
+          <p data-slot="toast-title" class="font-medium leading-none">${item.title}</p>
+        </if>
+        <if=item.description>
+          <p data-slot="toast-description" class="text-muted-foreground text-sm">${item.description}</p>
+        </if>
+      </div>
+
+      <button
+        data-slot="toast-close"
+        type="button"
+        aria-label="Dismiss notification"
+        onClick() { toast.dismiss(item.id); }
+        class="ring-offset-background focus:ring-ring shrink-0 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+          <path d="M18 6 6 18"/>
+          <path d="m6 6 12 12"/>
+        </svg>
+        <span class="sr-only">Close</span>
+      </button>
+    </div>
+  </for>
+</div>

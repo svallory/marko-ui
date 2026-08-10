@@ -1,0 +1,77 @@
+import * as hoverCard from "@zag-js/hover-card";
+import type { PositioningOptions } from "@zag-js/hover-card";
+import { createService, ssrService, normalizeProps, positionerStyle } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input {
+  /** Trigger render-prop — typically a link. */
+  trigger: Marko.Body<[Record<string, unknown>]>;
+  /** Card content shown when open. */
+  content: Marko.Body;
+  /** Duration (ms) from pointer-enter until the card opens. @default 600 */
+  openDelay?: number;
+  /** Duration (ms) from pointer-leave until the card closes. @default 300 */
+  closeDelay?: number;
+  /** Popper positioning options. */
+  positioning?: PositioningOptions;
+  /** Extra class for the content panel. */
+  class?: string;
+}
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  openDelay: input.openDelay,
+  closeDelay: input.closeDelay,
+  positioning: input.positioning,
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(hoverCard.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.openDelay;
+  input.closeDelay;
+  input.positioning;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = hoverCard.connect(svc ?? ssrService(hoverCard.machine, machineProps), normalizeProps);
+  return {
+    open: api.open,
+    trigger: api.getTriggerProps(),
+    positioner: api.getPositionerProps(),
+    content: api.getContentProps(),
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<span data-slot="hover-card">
+  <${input.trigger}({ ...ui.trigger, "data-slot": "hover-card-trigger" })/>
+  <portal>
+    <if=ui.open>
+      <div ...ui.positioner style=positionerStyle>
+        <div
+          ...ui.content
+          data-slot="hover-card-content"
+          class=cn(
+            "z-50 w-64 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-hidden",
+            "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+            "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+            "data-[placement^=bottom]:slide-in-from-top-2 data-[placement^=left]:slide-in-from-right-2 data-[placement^=right]:slide-in-from-left-2 data-[placement^=top]:slide-in-from-bottom-2",
+            input.class,
+          )
+        >
+          <${input.content}/>
+        </div>
+      </div>
+    </if>
+  </portal>
+</span>

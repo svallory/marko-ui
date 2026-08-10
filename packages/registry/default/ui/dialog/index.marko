@@ -1,0 +1,106 @@
+import * as dialog from "@zag-js/dialog";
+import { createService, ssrService, normalizeProps } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  open?: boolean;
+  openChange?: (open: boolean) => void;
+  trigger?: Marko.Body<[Record<string, unknown>]>;
+  title?: string;
+  description?: string;
+  content?: Marko.Body;
+  footer?: Marko.Body;
+}
+
+<const/{ open, openChange, trigger, title, description, content, footer, class: className, ...rest }=input/>
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  role: "dialog",
+  open: open,
+  onOpenChange(details: { open: boolean }) {
+    openChange?.(details.open);
+  },
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(dialog.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.open;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = dialog.connect(svc ?? ssrService(dialog.machine, machineProps), normalizeProps);
+  return {
+    open: api.open,
+    trigger: api.getTriggerProps(),
+    backdrop: api.getBackdropProps(),
+    positioner: api.getPositionerProps(),
+    content: api.getContentProps(),
+    title: api.getTitleProps(),
+    description: api.getDescriptionProps(),
+    closeTrigger: api.getCloseTriggerProps(),
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<div ...rest data-slot="dialog" class=cn(className)>
+  <if=trigger>
+    <${trigger}({ ...ui.trigger, "data-slot": "dialog-trigger" })/>
+  </if>
+  <if=ui.open>
+    <portal>
+      <div
+        ...ui.backdrop
+        data-slot="dialog-backdrop"
+        class="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0"
+      />
+      <div ...ui.positioner data-slot="dialog-positioner" class="fixed inset-0 z-50 flex items-center justify-center">
+        <div
+          ...ui.content
+          data-slot="dialog-content"
+          class="bg-background grid w-full max-w-lg gap-4 rounded-lg border p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
+        >
+          <if=title>
+            <h2 ...ui.title data-slot="dialog-title" class="text-lg leading-none font-semibold">
+              ${title}
+            </h2>
+          </if>
+          <if=description>
+            <p ...ui.description data-slot="dialog-description" class="text-muted-foreground text-sm">
+              ${description}
+            </p>
+          </if>
+          <if=content>
+            <${content}/>
+          </if>
+          <if=footer>
+            <div data-slot="dialog-footer" class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <${footer}/>
+            </div>
+          </if>
+          <button
+            ...ui.closeTrigger
+            data-slot="dialog-close"
+            class="ring-offset-background focus:ring-ring absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+              <path d="M18 6 6 18"/>
+              <path d="m6 6 12 12"/>
+            </svg>
+            <span class="sr-only">Close</span>
+          </button>
+        </div>
+      </div>
+    </portal>
+  </if>
+</div>

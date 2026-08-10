@@ -1,0 +1,122 @@
+import SidebarProvider from "@marko-ui/registry/ui/sidebar/index.marko";
+import Sidebar from "@marko-ui/registry/ui/sidebar/sidebar.marko";
+import SidebarHeader from "@marko-ui/registry/ui/sidebar/header.marko";
+import SidebarContent from "@marko-ui/registry/ui/sidebar/content.marko";
+import SidebarFooter from "@marko-ui/registry/ui/sidebar/footer.marko";
+import SidebarGroup from "@marko-ui/registry/ui/sidebar/group.marko";
+import SidebarGroupLabel from "@marko-ui/registry/ui/sidebar/group-label.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+import SidebarTrigger from "@marko-ui/registry/ui/sidebar/trigger.marko";
+
+static const NAV_ITEMS = [
+  { title: "Inbox", href: "#", active: true },
+  { title: "Calendar", href: "#" },
+  { title: "Search", href: "#" },
+  { title: "Settings", href: "#" },
+];
+
+<let/controlledOpen=true/>
+
+<component-page title="Sidebar" description="A composable, collapsible side navigation panel.">
+  <demo-box title="Default">
+    <div class="h-[420px] w-full overflow-hidden rounded-lg border">
+      <SidebarProvider width="14rem" class="min-h-0 h-full">
+        <@sidebar|{ open, toggle }|>
+          <Sidebar open=open>
+            <@content>
+              <SidebarHeader>
+                <div class="flex items-center gap-2 px-2 text-sm font-semibold">Acme Inc</div>
+              </SidebarHeader>
+              <SidebarContent>
+                <SidebarGroup>
+                  <SidebarGroupLabel>Platform</SidebarGroupLabel>
+                  <SidebarMenu>
+                    <for|item| of=NAV_ITEMS>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton href=item.href active=item.active>
+                          ${item.title}
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </for>
+                  </SidebarMenu>
+                </SidebarGroup>
+              </SidebarContent>
+              <SidebarFooter>
+                <div class="px-2 text-xs text-sidebar-foreground/70">v1.0.0</div>
+              </SidebarFooter>
+            </@content>
+          </Sidebar>
+        </@sidebar>
+        <@content|{ open, toggle }|>
+          <div class="flex min-w-0 flex-1 flex-col">
+            <header class="flex h-12 items-center gap-2 border-b px-3">
+              <SidebarTrigger open=open toggle=toggle/>
+              <span class="text-sm text-muted-foreground">
+                Sidebar is ${open ? "open" : "closed"}
+              </span>
+            </header>
+            <main class="flex-1 overflow-auto p-4 text-sm text-muted-foreground">
+              Main content area. Click the trigger to collapse the sidebar.
+            </main>
+          </div>
+        </@content>
+      </SidebarProvider>
+    </div>
+  </demo-box>
+
+  <demo-box title="Controlled">
+    <p class="mb-4 text-sm text-muted-foreground">
+      Open: ${controlledOpen}
+    </p>
+    <div class="h-[320px] w-full overflow-hidden rounded-lg border">
+      <SidebarProvider
+        width="14rem"
+        class="min-h-0 h-full"
+        open=controlledOpen
+        openChange(next) { controlledOpen = next; }
+      >
+        <@sidebar|{ open }|>
+          <Sidebar open=open>
+            <@content>
+              <SidebarHeader>
+                <div class="px-2 text-sm font-semibold">Controlled</div>
+              </SidebarHeader>
+              <SidebarContent>
+                <SidebarGroup>
+                  <SidebarGroupLabel>Menu</SidebarGroupLabel>
+                  <SidebarMenu>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton href="#" active>Home</SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton href="#">Profile</SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </SidebarMenu>
+                </SidebarGroup>
+              </SidebarContent>
+            </@content>
+          </Sidebar>
+        </@sidebar>
+        <@content|{ open, toggle }|>
+          <div class="flex min-w-0 flex-1 flex-col">
+            <header class="flex h-12 items-center gap-2 border-b px-3">
+              <SidebarTrigger open=open toggle=toggle/>
+            </header>
+            <main class="flex-1 overflow-auto p-4 text-sm text-muted-foreground">
+              This sidebar's open state is owned by the demo page.
+            </main>
+          </div>
+        </@content>
+      </SidebarProvider>
+    </div>
+    <button
+      type="button"
+      class="mt-4 rounded-md border px-3 py-1.5 text-sm hover:bg-accent"
+      onClick() { controlledOpen = !controlledOpen; }
+    >
+      Toggle externally
+    </button>
+  </demo-box>
+</component-page>

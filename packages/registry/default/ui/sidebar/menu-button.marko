@@ -1,0 +1,26 @@
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"button"> {
+  /** Renders an <a> instead of a <button> when set (with href passed through rest). */
+  asChild?: boolean;
+  active?: boolean;
+  href?: string;
+}
+
+<const/{ asChild, active, class: className, content, href, ...rest }=input/>
+
+<const/menuButtonClass=cn(
+  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground [&>svg]:size-4 [&>svg]:shrink-0",
+  className,
+)/>
+
+<if=href>
+  <a ...rest href=href data-slot="sidebar-menu-button" data-active=String(!!active) class=menuButtonClass>
+    <${content}/>
+  </a>
+</if>
+<else>
+  <button ...rest type="button" data-slot="sidebar-menu-button" data-active=String(!!active) class=menuButtonClass>
+    <${content}/>
+  </button>
+</else>

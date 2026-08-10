@@ -1,0 +1,32 @@
+import Select from "@marko-ui/registry/ui/select/index.marko";
+
+static const fruits = [
+  { value: "apple", label: "Apple" },
+  { value: "banana", label: "Banana" },
+  { value: "blueberry", label: "Blueberry" },
+  { value: "grapes", label: "Grapes" },
+  { value: "pineapple", label: "Pineapple" },
+];
+
+static const fruitsWithDisabled = [
+  { value: "apple", label: "Apple" },
+  { value: "banana", label: "Banana", disabled: true },
+  { value: "blueberry", label: "Blueberry" },
+  { value: "grapes", label: "Grapes", disabled: true },
+  { value: "pineapple", label: "Pineapple" },
+];
+
+<component-page title="Select" description="Displays a list of options for the user to pick from, triggered by a button.">
+  <demo-box title="Default">
+    <Select items=fruits placeholder="Select a fruit"/>
+  </demo-box>
+  <demo-box title="With default value">
+    <Select items=fruits value=["banana"] placeholder="Select a fruit"/>
+  </demo-box>
+  <demo-box title="Disabled items">
+    <Select items=fruitsWithDisabled placeholder="Select a fruit"/>
+  </demo-box>
+  <demo-box title="Disabled">
+    <Select items=fruits placeholder="Select a fruit" disabled/>
+  </demo-box>
+</component-page>

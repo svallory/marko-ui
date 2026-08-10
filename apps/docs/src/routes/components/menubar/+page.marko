@@ -1,0 +1,67 @@
+import Menubar from "@marko-ui/registry/ui/menubar/index.marko";
+import MenubarMenu from "@marko-ui/registry/ui/menubar/menu.marko";
+
+static const FILE_ITEMS = [
+  { value: "new-tab", label: "New Tab", shortcut: "⌘T" },
+  { value: "new-window", label: "New Window", shortcut: "⌘N" },
+  { type: "separator" },
+  { value: "share", label: "Share" },
+  { type: "separator" },
+  { value: "print", label: "Print...", shortcut: "⌘P" },
+];
+
+static const EDIT_ITEMS = [
+  { value: "undo", label: "Undo", shortcut: "⌘Z" },
+  { value: "redo", label: "Redo", shortcut: "⇧⌘Z" },
+  { type: "separator" },
+  { value: "cut", label: "Cut" },
+  { value: "copy", label: "Copy" },
+  { value: "paste", label: "Paste" },
+];
+
+static const VIEW_ITEMS = [
+  { value: "reload", label: "Reload", shortcut: "⌘R" },
+  { value: "force-reload", label: "Force Reload", disabled: true },
+  { type: "separator" },
+  { value: "fullscreen", label: "Toggle Fullscreen" },
+];
+
+static const PROFILES_ITEMS = [
+  { type: "label", label: "Profiles" },
+  { type: "separator" },
+  { value: "add", label: "Add Profile..." },
+  { type: "separator" },
+  { value: "remove", label: "Remove Profile", danger: true },
+];
+
+<let/selected=""/>
+
+<component-page title="Menubar" description="A visually persistent menu common in desktop applications that provides quick access to a consistent set of commands.">
+  <demo-box title="Default">
+    <Menubar>
+      <@content>
+        <MenubarMenu trigger="File" items=FILE_ITEMS select(value) { selected = value; }/>
+        <MenubarMenu trigger="Edit" items=EDIT_ITEMS select(value) { selected = value; }/>
+        <MenubarMenu trigger="View" items=VIEW_ITEMS select(value) { selected = value; }/>
+      </@content>
+    </Menubar>
+  </demo-box>
+  <demo-box title="With danger item">
+    <Menubar>
+      <@content>
+        <MenubarMenu trigger="Profiles" items=PROFILES_ITEMS select(value) { selected = value; }/>
+      </@content>
+    </Menubar>
+  </demo-box>
+  <demo-box title="Selection">
+    <div class="flex items-center gap-4">
+      <Menubar>
+        <@content>
+          <MenubarMenu trigger="File" items=FILE_ITEMS select(value) { selected = value; }/>
+          <MenubarMenu trigger="Edit" items=EDIT_ITEMS select(value) { selected = value; }/>
+        </@content>
+      </Menubar>
+      <span class="text-muted-foreground text-sm">selected: ${selected || "none"}</span>
+    </div>
+  </demo-box>
+</component-page>

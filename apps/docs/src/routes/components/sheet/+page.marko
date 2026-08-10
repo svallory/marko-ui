@@ -1,0 +1,71 @@
+import Sheet from "@marko-ui/registry/ui/sheet/index.marko";
+import Button from "@marko-ui/registry/ui/button/index.marko";
+
+<let/controlledOpen=false/>
+
+<component-page title="Sheet" description="Extends the Dialog component to display content that complements the main content of the screen.">
+  <demo-box title="Right (default)">
+    <Sheet>
+      <@trigger|props|>
+        <Button ...props>Open</Button>
+      </@trigger>
+      <@title>Edit profile</@title>
+      <@description>Make changes to your profile here. Click save when you're done.</@description>
+      <@content>
+        <div class="grid gap-2">
+          <label class="text-sm font-medium" for="name">Name</label>
+          <input id="name" class="border-input rounded-md border px-3 py-2 text-sm" value="Pedro Duarte" />
+        </div>
+      </@content>
+    </Sheet>
+  </demo-box>
+
+  <demo-box title="Sides">
+    <Sheet side="top">
+      <@trigger|props|>
+        <Button ...props variant="outline">Top</Button>
+      </@trigger>
+      <@title>Top sheet</@title>
+      <@description>Slides in from the top.</@description>
+    </Sheet>
+    <Sheet side="bottom">
+      <@trigger|props|>
+        <Button ...props variant="outline">Bottom</Button>
+      </@trigger>
+      <@title>Bottom sheet</@title>
+      <@description>Slides in from the bottom.</@description>
+    </Sheet>
+    <Sheet side="left">
+      <@trigger|props|>
+        <Button ...props variant="outline">Left</Button>
+      </@trigger>
+      <@title>Left sheet</@title>
+      <@description>Slides in from the left.</@description>
+    </Sheet>
+    <Sheet side="right">
+      <@trigger|props|>
+        <Button ...props variant="outline">Right</Button>
+      </@trigger>
+      <@title>Right sheet</@title>
+      <@description>Slides in from the right.</@description>
+    </Sheet>
+  </demo-box>
+
+  <demo-box title="Controlled">
+    <div class="flex items-center gap-4">
+      <Sheet
+        open=controlledOpen
+        openChange=(open) => { controlledOpen = open; }
+      >
+        <@trigger|props|>
+          <Button ...props variant="outline">Open controlled sheet</Button>
+        </@trigger>
+        <@title>Controlled sheet</@title>
+        <@description>Open state is controlled by the parent.</@description>
+      </Sheet>
+      <span class="text-sm text-muted-foreground">
+        open: ${controlledOpen}
+      </span>
+    </div>
+  </demo-box>
+</component-page>

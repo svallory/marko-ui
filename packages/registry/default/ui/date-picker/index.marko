@@ -1,0 +1,186 @@
+import * as datePicker from "@zag-js/date-picker";
+import { parse } from "@zag-js/date-picker";
+import type { DateValue } from "@internationalized/date";
+import { createService, ssrService, normalizeProps, positionerStyle } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  value?: string;
+  valueChange?: (value: string | undefined) => void;
+  locale?: string;
+}
+
+static function toPlain(d: DateValue) {
+  return { year: d.year, month: d.month, day: d.day, iso: d.toString() };
+}
+
+<const/{ value, valueChange, locale, class: className, ...rest }=input/>
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  locale: locale,
+  value: value ? [parse(value)] : undefined,
+  onValueChange(details: { value: DateValue[]; valueAsString: string[] }) {
+    valueChange?.(details.valueAsString[0]);
+  },
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(datePicker.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.value;
+  input.locale;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = datePicker.connect(svc ?? ssrService(datePicker.machine, machineProps), normalizeProps);
+  const weeks = api.weeks.map((week) =>
+    week.map((date) => {
+      const cellState = api.getDayTableCellState({ value: date });
+      return {
+        dateValue: toPlain(date),
+        cell: api.getDayTableCellProps({ value: date }),
+        trigger: api.getDayTableCellTriggerProps({ value: date }),
+        label: String(date.day),
+        selected: cellState.selected,
+        today: cellState.today,
+        outsideRange: cellState.outsideRange,
+        disabled: cellState.disabled,
+        unavailable: cellState.unavailable,
+      };
+    }),
+  );
+  return {
+    open: api.open,
+    root: api.getRootProps(),
+    control: api.getControlProps(),
+    input: api.getInputProps(),
+    trigger: api.getTriggerProps(),
+    positioner: api.getPositionerProps(),
+    content: api.getContentProps(),
+    viewControl: api.getViewControlProps(),
+    prevTrigger: api.getPrevTriggerProps(),
+    nextTrigger: api.getNextTriggerProps(),
+    viewTrigger: api.getViewTriggerProps(),
+    viewTriggerLabel: api.visibleRangeText.start,
+    table: api.getTableProps(),
+    tableHead: api.getTableHeadProps(),
+    tableHeader: api.getTableHeaderProps(),
+    tableBody: api.getTableBodyProps(),
+    weekDays: api.weekDays.map((wd) => ({ narrow: wd.narrow, long: wd.long })),
+    weeks,
+    valueAsString: api.valueAsString,
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<div ...rest ...ui.root data-slot="date-picker" class=cn(className)>
+  <div ...ui.control data-slot="date-picker-control" class="flex gap-2">
+    <input
+      ...ui.input
+      data-slot="date-picker-input"
+      class="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-[240px] min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
+    />
+    <button
+      ...ui.trigger
+      data-slot="date-picker-trigger"
+      class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 size-9"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+        <path d="M8 2v4"/>
+        <path d="M16 2v4"/>
+        <rect width="18" height="18" x="3" y="4" rx="2"/>
+        <path d="M3 10h18"/>
+      </svg>
+      <span class="sr-only">Open calendar</span>
+    </button>
+  </div>
+  <if=ui.open>
+    <portal>
+      <div ...ui.positioner style=positionerStyle data-slot="date-picker-positioner" class="z-50">
+        <div
+          ...ui.content
+          data-slot="date-picker-content"
+          class="bg-popover text-popover-foreground rounded-md border p-3 shadow-md z-50"
+        >
+          <div ...ui.viewControl data-slot="date-picker-view-control" class="flex items-center justify-between pb-2">
+            <button
+              ...ui.prevTrigger
+              data-slot="date-picker-prev-trigger"
+              class="inline-flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+                <path d="m15 18-6-6 6-6"/>
+              </svg>
+              <span class="sr-only">Previous</span>
+            </button>
+            <button
+              ...ui.viewTrigger
+              data-slot="date-picker-view-trigger"
+              class="text-sm font-medium hover:underline"
+            >
+              ${ui.viewTriggerLabel}
+            </button>
+            <button
+              ...ui.nextTrigger
+              data-slot="date-picker-next-trigger"
+              class="inline-flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+              <span class="sr-only">Next</span>
+            </button>
+          </div>
+          <table ...ui.table data-slot="date-picker-table" class="w-full border-collapse space-y-1">
+            <thead ...ui.tableHead data-slot="date-picker-table-head">
+              <tr>
+                <for|wd| of=ui.weekDays>
+                  <th class="text-muted-foreground w-9 rounded-md text-[0.8rem] font-normal">
+                    ${wd.narrow}
+                    <span class="sr-only">${wd.long}</span>
+                  </th>
+                </for>
+              </tr>
+            </thead>
+            <tbody ...ui.tableBody data-slot="date-picker-table-body">
+              <for|week, i| of=ui.weeks by=(_, i) => i>
+                <tr>
+                  <for|day, j| of=week by=(_, j) => j>
+                    <td
+                      ...day.cell
+                      data-slot="date-picker-cell"
+                      class="p-0 text-center text-sm relative"
+                    >
+                      <button
+                        ...day.trigger
+                        data-slot="date-picker-day"
+                        class=cn(
+                          "size-8 rounded-md p-0 text-sm font-normal transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+                          "data-[selected]:bg-primary data-[selected]:text-primary-foreground data-[selected]:hover:bg-primary data-[selected]:hover:text-primary-foreground",
+                          "data-[today]:bg-accent data-[today]:text-accent-foreground",
+                          "data-[outside-range]:text-muted-foreground",
+                        )
+                      >
+                        ${day.label}
+                      </button>
+                    </td>
+                  </for>
+                </tr>
+              </for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </portal>
+  </if>
+</div>

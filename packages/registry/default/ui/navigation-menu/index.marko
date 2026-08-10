@@ -1,0 +1,104 @@
+import { navigationMenuTriggerStyle } from "./variants.ts";
+import { cn } from "../../lib/utils.ts";
+
+export interface NavigationMenuLink {
+  label: string;
+  href: string;
+}
+
+export interface NavigationMenuDropdownLink {
+  title: string;
+  description?: string;
+  href: string;
+}
+
+export interface NavigationMenuDropdownItem {
+  label: string;
+  links: NavigationMenuDropdownLink[];
+}
+
+export type NavigationMenuItem =
+  | ({ type?: "link" } & NavigationMenuLink)
+  | ({ type: "dropdown" } & NavigationMenuDropdownItem);
+
+export interface Input extends Marko.Input<"nav"> {
+  items: NavigationMenuItem[];
+}
+
+<const/{ items, class: className, ...rest }=input/>
+
+<let/openIndex=null/>
+
+<script>
+  document.addEventListener(
+    "click",
+    (event) => {
+      if (openIndex === null) return;
+      if (rootRef() && !rootRef().contains(event.target as Node)) {
+        openIndex = null;
+      }
+    },
+    { signal: $signal },
+  );
+</script>
+
+<nav/rootRef ...rest data-slot="navigation-menu" class=cn("relative flex max-w-max items-center justify-center", className)>
+  <ul data-slot="navigation-menu-list" class="flex flex-1 list-none items-center justify-center gap-1">
+    <for|item, index| of=items>
+      <li data-slot="navigation-menu-item" class="relative">
+        <if=item.type === "dropdown">
+          <button
+            type="button"
+            data-slot="navigation-menu-trigger"
+            data-state=(openIndex === index ? "open" : "closed")
+            class=cn(navigationMenuTriggerStyle(), "group gap-1")
+            onClick() {
+              openIndex = openIndex === index ? null : index;
+            }
+          >
+            ${item.label}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class=cn("relative top-px size-3 shrink-0 transition-transform duration-200", openIndex === index && "rotate-180")
+              aria-hidden="true"
+            >
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </button>
+          <if=openIndex === index>
+            <div
+              data-slot="navigation-menu-content"
+              class="bg-popover text-popover-foreground absolute top-full left-0 mt-1.5 grid w-[400px] gap-1 rounded-md border p-2 shadow-md"
+            >
+              <for|link| of=item.links>
+                <a
+                  href=link.href
+                  data-slot="navigation-menu-link"
+                  class="hover:bg-accent hover:text-accent-foreground block rounded-sm p-3 transition-colors"
+                >
+                  <div class="text-sm font-medium">${link.title}</div>
+                  <if=link.description>
+                    <p class="text-muted-foreground text-sm">${link.description}</p>
+                  </if>
+                </a>
+              </for>
+            </div>
+          </if>
+        </if>
+        <else>
+          <a href=item.href data-slot="navigation-menu-link" class=navigationMenuTriggerStyle()>
+            ${item.label}
+          </a>
+        </else>
+      </li>
+    </for>
+  </ul>
+</nav>

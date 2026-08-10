@@ -1,0 +1,6 @@
+{
+  "title": "Field",
+  "description": "A minimal wrapper for form fields providing label, description, and error text, intentionally lighter than react-hook-form-based form components.",
+  "dependencies": [],
+  "registryDependencies": ["utils", "label"]
+}

@@ -1,0 +1,87 @@
+import * as tooltip from "@zag-js/tooltip";
+import type { PositioningOptions } from "@zag-js/tooltip";
+import { createService, ssrService, normalizeProps, positionerStyle } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input {
+  /** Trigger render-prop — typically the element the tooltip describes. */
+  trigger: Marko.Body<[Record<string, unknown>]>;
+  /** Tooltip content shown when open. */
+  content: string | Marko.Body;
+  /** Duration (ms) from pointer-enter/focus until the tooltip opens. @default 400 */
+  openDelay?: number;
+  /** Duration (ms) from pointer-leave/blur until the tooltip closes. @default 150 */
+  closeDelay?: number;
+  /** Popper positioning options. */
+  positioning?: PositioningOptions;
+  /** Extra class for the content panel. */
+  class?: string;
+}
+
+<id/uid/>
+<let/rev=0/>
+<let/svc=null/>
+<const/machineProps=() => ({
+  id: uid,
+  openDelay: input.openDelay,
+  closeDelay: input.closeDelay,
+  positioning: input.positioning,
+})/>
+<lifecycle
+  onMount() {
+    svc = createService(tooltip.machine, machineProps, () => { rev += 1 });
+    svc.start();
+  }
+  onDestroy() {
+    svc?.stop();
+  }
+/>
+<script>
+  input.openDelay;
+  input.closeDelay;
+  input.positioning;
+  svc?.propsChanged();
+</script>
+<const/computeUi=() => {
+  const api = tooltip.connect(svc ?? ssrService(tooltip.machine, machineProps), normalizeProps);
+  return {
+    open: api.open,
+    trigger: api.getTriggerProps(),
+    positioner: api.getPositionerProps(),
+    content: api.getContentProps(),
+    arrow: api.getArrowProps(),
+    arrowTip: api.getArrowTipProps(),
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<span data-slot="tooltip">
+  <${input.trigger}({ ...ui.trigger, "data-slot": "tooltip-trigger" })/>
+  <portal>
+    <if=ui.open>
+      <div ...ui.positioner style=positionerStyle>
+        <div
+          ...ui.content
+          data-slot="tooltip-content"
+          class=cn(
+            "bg-primary text-primary-foreground z-50 w-fit rounded-md px-3 py-1.5 text-xs text-balance",
+            "animate-in fade-in-0 zoom-in-95",
+            "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+            "data-[placement^=bottom]:slide-in-from-top-2 data-[placement^=left]:slide-in-from-right-2 data-[placement^=right]:slide-in-from-left-2 data-[placement^=top]:slide-in-from-bottom-2",
+            input.class,
+          )
+        >
+          <if=(typeof input.content === "string")>
+            ${input.content}
+          </if>
+          <else>
+            <${input.content}/>
+          </else>
+          <div ...ui.arrow>
+            <div ...ui.arrowTip class="bg-primary size-2.5 rotate-45"/>
+          </div>
+        </div>
+      </div>
+    </if>
+  </portal>
+</span>

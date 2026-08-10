@@ -1,0 +1,6 @@
+{
+  "title": "Drawer",
+  "description": "A bottom sheet overlay that slides up from the edge of the screen, built on the dialog machine. Reduced parity vs vaul: no snap points or drag-to-dismiss.",
+  "dependencies": ["@zag-js/dialog"],
+  "registryDependencies": ["utils"]
+}

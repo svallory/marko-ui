@@ -1,0 +1,25 @@
+import Drawer from "@marko-ui/registry/ui/drawer/index.marko";
+import Button from "@marko-ui/registry/ui/button/index.marko";
+
+<component-page title="Drawer" description="A bottom sheet overlay that slides up from the edge of the screen. Built on the dialog machine (vaul-lite): reduced parity vs vaul — no snap points and no drag-to-dismiss.">
+  <demo-box title="Default">
+    <Drawer title="Edit profile" description="Make changes to your profile here. Click save when you're done.">
+      <@trigger|props|>
+        <Button ...props>Open Drawer</Button>
+      </@trigger>
+      <@content>
+        <input class="w-full rounded border border-input px-3 py-2 text-sm" placeholder="Name" value="Pedro Duarte">
+      </@content>
+      <@footer>
+        <Button>Save changes</Button>
+      </@footer>
+    </Drawer>
+  </demo-box>
+  <demo-box title="Without footer">
+    <Drawer title="Notifications" description="You have 3 unread messages.">
+      <@trigger|props|>
+        <Button ...props variant="outline">View notifications</Button>
+      </@trigger>
+    </Drawer>
+  </demo-box>
+</component-page>

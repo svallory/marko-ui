@@ -1,0 +1,42 @@
+import NavigationMenu from "@marko-ui/registry/ui/navigation-menu/index.marko";
+
+<component-page title="Navigation Menu" description="A collection of links for navigating websites.">
+  <demo-box title="Default">
+    <NavigationMenu
+      items=[
+        { label: "Home", href: "#home" },
+        {
+          type: "dropdown",
+          label: "Getting Started",
+          links: [
+            {
+              title: "Introduction",
+              description: "Re-usable components built with Marko and Tailwind CSS.",
+              href: "#introduction",
+            },
+            {
+              title: "Installation",
+              description: "How to install dependencies and structure your app.",
+              href: "#installation",
+            },
+            {
+              title: "Typography",
+              description: "Styles for headings, paragraphs, lists, and more.",
+              href: "#typography",
+            },
+          ],
+        },
+        {
+          type: "dropdown",
+          label: "Components",
+          links: [
+            { title: "Button", description: "Displays a button or a component that looks like a button.", href: "#button" },
+            { title: "Dialog", description: "A window overlaid on the primary window.", href: "#dialog" },
+            { title: "Switch", description: "A control that toggles between checked and not checked.", href: "#switch" },
+          ],
+        },
+        { label: "Docs", href: "#docs" },
+      ]
+    />
+  </demo-box>
+</component-page>

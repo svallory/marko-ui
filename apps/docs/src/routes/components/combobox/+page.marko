@@ -1,0 +1,19 @@
+import Combobox from "@marko-ui/registry/ui/combobox/index.marko";
+
+static const frameworks = [
+  { value: "next", label: "Next.js" },
+  { value: "sveltekit", label: "SvelteKit" },
+  { value: "nuxt", label: "Nuxt.js" },
+  { value: "remix", label: "Remix" },
+  { value: "astro", label: "Astro" },
+  { value: "marko", label: "Marko" },
+];
+
+<component-page title="Combobox" description="Autocomplete input and command palette with a list of suggestions.">
+  <demo-box title="Default">
+    <Combobox items=frameworks placeholder="Select framework..." />
+  </demo-box>
+  <demo-box title="Disabled">
+    <Combobox items=frameworks placeholder="Select framework..." disabled />
+  </demo-box>
+</component-page>

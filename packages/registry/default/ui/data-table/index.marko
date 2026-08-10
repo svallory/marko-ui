@@ -1,0 +1,153 @@
+import {
+  createTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  type ColumnDef,
+  type SortingState,
+} from "@tanstack/table-core";
+import Table from "../table/index.marko";
+import TableHeader from "../table/header.marko";
+import TableBody from "../table/body.marko";
+import TableRow from "../table/row.marko";
+import TableHead from "../table/head.marko";
+import TableCell from "../table/cell.marko";
+import Button from "../button/index.marko";
+import { cn } from "../../lib/utils.ts";
+
+export interface DataTableColumn<TData> {
+  accessorKey: keyof TData & string;
+  header: string;
+  cell?: (row: TData) => Marko.Body | string | number;
+}
+
+export interface Input<TData extends Record<string, unknown> = Record<string, unknown>> extends Marko.Input<"div"> {
+  columns: DataTableColumn<TData>[];
+  data: TData[];
+  class?: string;
+}
+
+<let/rev=0/>
+<let/sorting=[] as SortingState/>
+
+<const/columnDefs=() =>
+  input.columns.map((col): ColumnDef<Record<string, unknown>> => ({
+    id: col.accessorKey,
+    accessorKey: col.accessorKey,
+    header: col.header,
+    cell: col.cell ? (ctx) => col.cell!(ctx.row.original) : undefined,
+  }))
+/>
+
+<const/buildTable=() => {
+  const table = createTable<Record<string, unknown>>({
+    data: input.data,
+    columns: columnDefs(),
+    state: {},
+    onSortingChange(updater) {
+      sorting = typeof updater === "function" ? updater(sorting) : updater;
+      rev += 1;
+    },
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    renderFallbackValue: null,
+    onStateChange() {},
+  });
+  table.setOptions((prev) => ({
+    ...prev,
+    state: { ...table.initialState, ...prev.state, sorting },
+  }));
+  return table;
+}/>
+
+<const/toggleSort=(columnId: string) => {
+  const table = buildTable();
+  const column = table.getColumn(columnId);
+  column?.toggleSorting(column.getIsSorted() === "asc");
+}/>
+
+<const/computeUi=() => {
+  const table = buildTable();
+  return {
+    headers: table.getHeaderGroups().flatMap((group) =>
+      group.headers.map((header) => ({
+        id: header.id,
+        label: header.isPlaceholder ? "" : String(header.column.columnDef.header ?? ""),
+        canSort: header.column.getCanSort(),
+        sortDir: header.column.getIsSorted(),
+      })),
+    ),
+    rows: table.getRowModel().rows.map((row) => ({
+      id: row.id,
+      cells: row.getVisibleCells().map((cell) => {
+        const col = input.columns.find((c) => c.accessorKey === cell.column.id);
+        return {
+          id: cell.id,
+          value: col?.cell ? col.cell(row.original) : String(cell.getValue() ?? ""),
+        };
+      }),
+    })),
+  };
+}/>
+<const/ui=(rev, computeUi())/>
+
+<const/{ class: className, columns: _columns, data: _data, ...rest }=input/>
+
+<div ...rest data-slot="data-table-container" class=cn(className)>
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <for|header| of=ui.headers>
+          <TableHead>
+            <if=header.canSort>
+              <Button variant="ghost" size="sm" class="-ml-3 h-8" onClick() { toggleSort(header.id); }>
+                ${header.label}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="ml-2 size-4"
+                >
+                  <if=header.sortDir === "asc">
+                    <path d="m18 15-6-6-6 6"/>
+                  </if>
+                  <else-if=header.sortDir === "desc">
+                    <path d="m6 9 6 6 6-6"/>
+                  </else-if>
+                  <else>
+                    <path d="m21 16-4 4-4-4"/>
+                    <path d="M17 20V4"/>
+                    <path d="m3 8 4-4 4 4"/>
+                    <path d="M7 4v16"/>
+                  </else>
+                </svg>
+              </Button>
+            </if>
+            <else>${header.label}</else>
+          </TableHead>
+        </for>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      <if=ui.rows.length === 0>
+        <TableRow>
+          <TableCell colspan=ui.headers.length class="h-24 text-center">No results.</TableCell>
+        </TableRow>
+      </if>
+      <else>
+        <for|row| of=ui.rows>
+          <TableRow>
+            <for|cell| of=row.cells>
+              <TableCell>${cell.value}</TableCell>
+            </for>
+          </TableRow>
+        </for>
+      </else>
+    </TableBody>
+  </Table>
+</div>

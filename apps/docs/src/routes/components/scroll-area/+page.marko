@@ -1,0 +1,63 @@
+import ScrollArea from "@marko-ui/registry/ui/scroll-area/index.marko";
+
+static const tags = [
+  "v1.2.0-beta.50",
+  "v1.2.0-beta.49",
+  "v1.2.0-beta.48",
+  "v1.2.0-beta.47",
+  "v1.2.0-beta.46",
+  "v1.2.0-beta.45",
+  "v1.2.0-beta.44",
+  "v1.2.0-beta.43",
+  "v1.2.0-beta.42",
+  "v1.2.0-beta.41",
+  "v1.2.0-beta.40",
+  "v1.2.0-beta.39",
+  "v1.2.0-beta.38",
+  "v1.2.0-beta.37",
+  "v1.2.0-beta.36",
+  "v1.2.0-beta.35",
+  "v1.2.0-beta.34",
+  "v1.2.0-beta.33",
+];
+
+<component-page
+  title="Scroll Area"
+  description="Augments native scroll functionality for custom, cross-browser styling."
+>
+  <demo-box title="Default">
+    <ScrollArea class="h-72 w-48 rounded-md border">
+      <div class="p-4">
+        <h4 class="mb-4 text-sm leading-none font-medium">Tags</h4>
+        <for|tag| of=tags>
+          <div class="text-sm">
+            ${tag}
+          </div>
+          <div class="my-2 h-px bg-border"/>
+        </for>
+      </div>
+    </ScrollArea>
+  </demo-box>
+
+  <demo-box title="Horizontal scrolling">
+    <ScrollArea class="w-96 rounded-md border whitespace-nowrap">
+      <div class="flex w-max space-x-4 p-4">
+        <for|i| of=Array.from({ length: 10 }, (_, idx) => idx + 1)>
+          <div class="flex h-32 w-32 shrink-0 items-center justify-center rounded-md bg-muted text-sm">
+            Item ${i}
+          </div>
+        </for>
+      </div>
+    </ScrollArea>
+  </demo-box>
+
+  <p class="text-sm text-muted-foreground">
+    Deviation from shadcn/Radix: this port uses <b>native styled scrollbars</b>
+    (via <code>scrollbar-width</code> / <code>scrollbar-color</code> and
+    <code>::-webkit-scrollbar</code> pseudo-elements) instead of a synthetic
+    Radix ScrollArea. There is no scroll thumb drag-to-scroll or custom
+    scrollbar hit-testing &mdash; behavior is 100% native browser scrolling,
+    just re-skinned to approximate the shadcn look. This keeps the component
+    CSS-only with no JS machine.
+  </p>
+</component-page>

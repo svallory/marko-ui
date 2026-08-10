@@ -1,0 +1,6 @@
+{
+  "title": "Toast",
+  "description": "A succinct message that is displayed temporarily.",
+  "dependencies": [],
+  "registryDependencies": ["utils"]
+}

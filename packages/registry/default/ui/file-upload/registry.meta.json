@@ -1,0 +1,6 @@
+{
+  "title": "File Upload",
+  "description": "A dropzone and file picker for uploading files, with drag-and-drop and a list of accepted files.",
+  "dependencies": ["@zag-js/file-upload"],
+  "registryDependencies": ["utils", "button"]
+}

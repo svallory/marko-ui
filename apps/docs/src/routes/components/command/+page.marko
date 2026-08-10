@@ -1,0 +1,28 @@
+import Command from "@marko-ui/registry/ui/command/index.marko";
+
+static const groups = [
+  {
+    label: "Suggestions",
+    items: [
+      { value: "calendar", label: "Calendar" },
+      { value: "search-emoji", label: "Search Emoji" },
+      { value: "calculator", label: "Calculator" },
+    ],
+  },
+  {
+    label: "Settings",
+    items: [
+      { value: "profile", label: "Profile", shortcut: "⌘P" },
+      { value: "billing", label: "Billing", shortcut: "⌘B" },
+      { value: "settings", label: "Settings", shortcut: "⌘S" },
+    ],
+  },
+];
+
+<component-page title="Command" description="Fast, composable, unstyled command menu.">
+  <demo-box title="Default">
+    <div class="w-full max-w-[450px]">
+      <Command groups=groups placeholder="Type a command or search..."/>
+    </div>
+  </demo-box>
+</component-page>

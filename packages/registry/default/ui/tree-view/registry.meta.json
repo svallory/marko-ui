@@ -1,0 +1,6 @@
+{
+  "title": "Tree View",
+  "description": "A hierarchical list of items that can be expanded, collapsed, and selected.",
+  "dependencies": ["@zag-js/tree-view"],
+  "registryDependencies": ["utils"]
+}
