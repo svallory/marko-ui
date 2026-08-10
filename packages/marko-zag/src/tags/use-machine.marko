@@ -1,37 +1,38 @@
 // Restored from zag-plugin-marko's <use-machine> (Marko 5 / Zag 0.x era),
-// reshaped for Marko 6 resumability + Zag v1. Zag v1 has no [state, send]
-// tuple and no actors, so the old use-service/use-snapshot/use-actor tags
-// have no equivalent — connect(service, normalizeProps) replaced them.
+// reshaped for Marko 6 resumability + Zag v1.
 //
-// Returns { svc, rev }: svc is null during SSR (serializes trivially; the
-// client builds its own service on mount), rev bumps on every machine
-// update so anything reading the return value recomputes. Pair with an
-// api GETTER — a template closure, which Marko CAN serialize (registered
-// by the compiler), per Marko-team guidance:
+// The old companion tags stay retired on evidence: Zag v1 core exports no
+// `subscribe`, no actors, no spawn — use-service (withContext/setContext/
+// SETUP), use-snapshot (service.subscribe), and use-actor ([state, send])
+// wrapped APIs that no longer exist; connect(service, normalizeProps)
+// absorbed all three roles.
 //
-//   <use-machine/m machine=switchMachine.machine props=machineProps/>
-//   <const/api=(m.rev, () => switchMachine.connect(m.svc ?? ssrService(switchMachine.machine, machineProps), normalizeProps))/>
+// Usage — returns the connected api as a serializable GETTER (per
+// Marko-team guidance: pass template-created functions, not runtime
+// objects). All machinery (svc lifecycle, rev invalidation, ssrService)
+// is internal:
+//
+//   <use-machine/api
+//     machine=() => sw.machine
+//     props=machineProps
+//     connect=(svc, np) => sw.connect(svc, np)
+//   />
 //   <label ...api().getRootProps()>...
 //
-// connect() is idempotent (pure read of the service), so calling the getter
-// several times per render is safe.
-import { createService, type MarkoService } from "../machine.ts";
+// Both `machine` and `connect` MUST be closures written in the caller's
+// template (serializable via compiler REGISTRY); passing the raw machine
+// or `sw.connect` directly as input throws `Unable to serialize "input"`
+// — verified empirically.
+import { createService, ssrService, type MarkoService } from "../machine.ts";
+import { normalizeProps } from "../normalize-props.ts";
 
 export interface Input {
-  /**
-   * GETTER for the Zag machine: `machine=() => switchMachine.machine`.
-   * Tag input is serialized for resume; a raw machine (functions from npm
-   * code) throws `Unable to serialize "input"` — verified empirically. A
-   * template closure over a module import serializes by compiler REGISTRY id.
-   */
+  /** Machine getter: `machine=() => sw.machine` (never the raw machine). */
   machine: () => any;
   /** machineProps closure: () => ({ id, ...mapped input }) */
   props: () => Record<string, any>;
-}
-
-export interface Return {
-  svc: MarkoService | null;
-  rev: number;
+  /** Connect closure: `connect=(svc, np) => sw.connect(svc, np)` */
+  connect: (svc: MarkoService, normalize: typeof normalizeProps) => any;
 }
 
 <let/rev=0/>
@@ -46,9 +47,10 @@ export interface Return {
   }
 />
 <script>
-  // Track every reactive read inside the caller's machineProps closure so
+  // Tracks every reactive read inside the caller's machineProps closure —
   // controlled props re-notify the machine without a hand-typed dep list.
   input.props();
   svc?.propsChanged();
 </script>
-<return={ svc, rev }/>
+<const/api=(rev, () => input.connect(svc ?? ssrService(input.machine(), input.props), normalizeProps))/>
+<return=api/>

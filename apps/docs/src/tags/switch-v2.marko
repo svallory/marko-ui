@@ -1,11 +1,10 @@
 // Switch in the marko-zag-components Switch.marko structure, rebuilt on the
-// v2 api-getter pattern (Marko 6 + Zag v1). Compare: the old repo did
+// v2 api-getter pattern (Marko 6 + Zag v1). The old repo did
 // <use-machine/[state, send]> + connect(state, send, normalizeProps); Zag v1
 // collapsed that into connect(service, normalizeProps), and resumability
-// requires the getter indirection. Like the original, the connected api is
-// exposed to parents via a tag variable — as a getter: <switch-v2/api/>.
+// requires getter indirection. Like the original, the connected api is
+// exposed to parents via a tag variable: <switch-v2/api/>.
 import * as sw from "@zag-js/switch";
-import { ssrService, normalizeProps } from "marko-zag";
 import { cn } from "@marko-ui/registry/lib/utils.ts";
 
 export interface Input {
@@ -31,8 +30,11 @@ export interface Input {
     input.checkedChange?.(details.checked);
   },
 })/>
-<use-machine/m machine=() => sw.machine props=machineProps/>
-<const/api=(m.rev, () => sw.connect(m.svc ?? ssrService(sw.machine, machineProps), normalizeProps))/>
+<use-machine/api
+  machine=() => sw.machine
+  props=machineProps
+  connect=(svc, np) => sw.connect(svc, np)
+/>
 
 <label ...api().getRootProps() data-slot="switch" class=cn("inline-flex items-center gap-2", input.class)>
   <input ...api().getHiddenInputProps() class="sr-only">

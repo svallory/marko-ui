@@ -4,7 +4,6 @@
 // (b) <script> tracks reads inside the caller's machineProps closure,
 // (c) api().getXProps() spreads recompute on machine updates.
 import * as switchMachine from "@zag-js/switch";
-import { ssrService, normalizeProps } from "marko-zag";
 
 <let/parentChecked=false/>
 
@@ -15,8 +14,7 @@ import { ssrService, normalizeProps } from "marko-zag";
     <h2 class="font-semibold">Uncontrolled switch</h2>
     <id/uid1/>
     <const/props1=() => ({ id: uid1 })/>
-    <use-machine/m1 machine=() => switchMachine.machine props=props1/>
-    <const/api1=(m1.rev, () => switchMachine.connect(m1.svc ?? ssrService(switchMachine.machine, props1), normalizeProps))/>
+    <use-machine/api1 machine=() => switchMachine.machine props=props1 connect=(svc, np) => switchMachine.connect(svc, np)/>
     <label ...api1().getRootProps()>
       <input ...api1().getHiddenInputProps() class="sr-only">
       <span ...api1().getControlProps() class="inline-flex h-5 w-9 items-center rounded-full bg-input p-0.5 transition-colors data-[state=checked]:bg-primary">
@@ -43,8 +41,7 @@ import { ssrService, normalizeProps } from "marko-zag";
         parentChecked = details.checked;
       },
     })/>
-    <use-machine/m2 machine=() => switchMachine.machine props=props2/>
-    <const/api2=(m2.rev, () => switchMachine.connect(m2.svc ?? ssrService(switchMachine.machine, props2), normalizeProps))/>
+    <use-machine/api2 machine=() => switchMachine.machine props=props2 connect=(svc, np) => switchMachine.connect(svc, np)/>
     <label ...api2().getRootProps()>
       <input ...api2().getHiddenInputProps() class="sr-only">
       <span ...api2().getControlProps() class="inline-flex h-5 w-9 items-center rounded-full bg-input p-0.5 transition-colors data-[state=checked]:bg-primary">

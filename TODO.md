@@ -8,6 +8,9 @@
 
 ## Rebuilds (upgrade documented deviations)
 
+- [ ] **Migrate 57 registry components to the v2 `<use-machine>` api-getter pattern** — rev/ssrService/computeUi plumbing replaced by `<use-machine/api machine=() => x.machine props=machineProps connect=(svc, np) => x.connect(svc, np)/>` + direct `api().getXProps()` spreads (verified at /use-machine-test; component-authoring.md v2 section). Delete v1 docs + switch-v2 demo tag after. use-service/use-snapshot/use-actor stay retired: Zag v1 core exports no subscribe/actors/setContext. `(code)`
+- [ ] **Investigate intermittent `bunx vitest run` hang** (vitest 4; passes in ~1s when it runs, sometimes never exits — suspect vite dev-server port/config interaction). `(bug)`
+
 - [ ] **drawer** — rebuild on `@zag-js/drawer@1.43.0` (real machine; exists since 1.34 — missed during Phase C, currently dialog-machine "vaul-lite" without drag/snap). `(code)`
 - [ ] **toast** — rebuild on Zag's toast group store (spawn one child service per toast; module store + client-side child services + per-toast snapshots). Current zag-free fallback works but lacks pause-on-hover/swipe. `(code)`
 - [ ] **navigation-menu** — partial parity (light-JS, no machine); revisit for viewport-style animated panels. `(code, decision on scope)`
