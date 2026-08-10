@@ -1,0 +1,55 @@
+// Switch in the marko-zag-components Switch.marko structure, rebuilt on the
+// v2 api-getter pattern (Marko 6 + Zag v1). Compare: the old repo did
+// <use-machine/[state, send]> + connect(state, send, normalizeProps); Zag v1
+// collapsed that into connect(service, normalizeProps), and resumability
+// requires the getter indirection. Like the original, the connected api is
+// exposed to parents via a tag variable — as a getter: <switch-v2/api/>.
+import * as sw from "@zag-js/switch";
+import { ssrService, normalizeProps } from "marko-zag";
+import { cn } from "@marko-ui/registry/lib/utils.ts";
+
+export interface Input {
+  checked?: boolean;
+  defaultChecked?: boolean;
+  checkedChange?: (checked: boolean) => void;
+  disabled?: boolean;
+  name?: string;
+  value?: string;
+  class?: string;
+  content?: Marko.Body;
+}
+
+<id/uid/>
+<const/machineProps=() => ({
+  id: uid,
+  checked: input.checked,
+  defaultChecked: input.defaultChecked,
+  disabled: input.disabled,
+  name: input.name,
+  value: input.value,
+  onCheckedChange(details: { checked: boolean }) {
+    input.checkedChange?.(details.checked);
+  },
+})/>
+<use-machine/m machine=() => sw.machine props=machineProps/>
+<const/api=(m.rev, () => sw.connect(m.svc ?? ssrService(sw.machine, machineProps), normalizeProps))/>
+
+<label ...api().getRootProps() data-slot="switch" class=cn("inline-flex items-center gap-2", input.class)>
+  <input ...api().getHiddenInputProps() class="sr-only">
+  <span
+    ...api().getControlProps()
+    class="peer inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all outline-none data-[state=checked]:bg-primary data-[state=unchecked]:bg-input data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 dark:data-[state=unchecked]:bg-input/80"
+  >
+    <span
+      ...api().getThumbProps()
+      class="pointer-events-none block size-4 rounded-full bg-background ring-0 transition-transform data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=unchecked]:translate-x-0 dark:data-[state=unchecked]:bg-foreground dark:data-[state=checked]:bg-primary-foreground"
+    />
+  </span>
+  <if=input.content>
+    <span ...api().getLabelProps() class="text-sm">
+      <${input.content}/>
+    </span>
+  </if>
+</label>
+
+<return=api/>

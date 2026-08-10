@@ -54,3 +54,9 @@ import { ssrService, normalizeProps } from "marko-zag";
     </label>
   </section>
 </main>
+
+<section class="mx-auto max-w-2xl space-y-2 px-8 pb-8" data-test="switch-v2">
+  <h2 class="font-semibold">switch-v2 component (old Switch.marko structure, v2 pattern)</h2>
+  <switch-v2/apiGetter defaultChecked=true>Airplane mode</switch-v2>
+  <p class="text-xs text-muted-foreground">parent reads api: checked = ${apiGetter().checked}</p>
+</section>
