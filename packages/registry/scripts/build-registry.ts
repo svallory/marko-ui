@@ -19,6 +19,14 @@ const OUT_DIR = join(ROOT, "../../apps/docs/public/r");
 const ITEM_SCHEMA = "https://ui.shadcn.com/schema/registry-item.json";
 const REGISTRY_SCHEMA = "https://ui.shadcn.com/schema/registry.json";
 
+// Bare registryDependencies names resolve against shadcn's own (React)
+// registry — a consumer asking for our "button" would get button.tsx. Emit
+// absolute URLs into this registry instead. Override for deploys:
+//   REGISTRY_BASE_URL=https://marko-ui.dev/r bun packages/registry/scripts/build-registry.ts
+const BASE_URL = process.env.REGISTRY_BASE_URL ?? "http://localhost:3000/r";
+const selfRef = (dep: string) =>
+  /^(https?:)?\/\//.test(dep) || dep.includes("/") ? dep : `${BASE_URL}/${dep}.json`;
+
 interface Meta {
   title?: string;
   description?: string;
@@ -108,7 +116,7 @@ async function main() {
       description: meta.description,
       dependencies: meta.dependencies,
       devDependencies: meta.devDependencies,
-      registryDependencies: meta.registryDependencies ?? ["utils"],
+      registryDependencies: (meta.registryDependencies ?? ["utils"]).map(selfRef),
       files: await fileEntries(dir, `~/src/components/ui/${name}`, `ui/${name}`),
     });
   }
