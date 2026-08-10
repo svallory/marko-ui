@@ -1,0 +1,6 @@
+{
+  "title": "Input Group",
+  "description": "Groups inputs and addons together, with a wide range of customization options.",
+  "dependencies": ["class-variance-authority"],
+  "registryDependencies": ["utils", "button", "input", "textarea"]
+}

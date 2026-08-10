@@ -1,0 +1,22 @@
+import Button from "../button/index.marko";
+import type { ButtonVariants } from "../button/variants.ts";
+import { inputGroupButtonVariants, type InputGroupButtonVariants } from "./variants.ts";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input
+  extends Omit<Marko.Input<"button">, "size">,
+    Pick<ButtonVariants, "variant">,
+    InputGroupButtonVariants {}
+
+<const/{ variant, size, class: className, content, ...rest }=input/>
+
+<Button
+  ...rest
+  type=input.type ?? "button"
+  data-slot="input-group-button"
+  variant=variant ?? "ghost"
+  size="sm"
+  class=cn(inputGroupButtonVariants({ size: size ?? "xs" }), className)
+>
+  <${content}/>
+</Button>

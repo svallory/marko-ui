@@ -1,44 +1,46 @@
-// M0 spike page: S1-S8 (see notes/specs/marko-ui/design.md)
-static function delay<T>(ms: number, value: T): Promise<T> {
-  return new Promise((resolve) => setTimeout(() => resolve(value), ms));
-}
+// Component index — regenerated centrally after each phase.
+static const COMPONENTS = [
+  "alert",
+  "aspect-ratio",
+  "badge",
+  "breadcrumb",
+  "button",
+  "button-group",
+  "card",
+  "empty",
+  "input",
+  "input-group",
+  "item",
+  "kbd",
+  "label",
+  "separator",
+  "skeleton",
+  "spinner",
+  "table",
+  "textarea",
+];
 
-<let/controlled="two"/>
-
-<main class="mx-auto max-w-2xl space-y-8 p-8">
-  <h1 class="text-2xl font-bold">marko-ui M0 spike</h1>
+<main class="mx-auto max-w-3xl space-y-8 p-8">
+  <div>
+    <h1 class="text-3xl font-bold">marko-ui</h1>
+    <p class="mt-2 text-muted-foreground">
+      shadcn-style copy-paste components for Marko 6, powered by Zag.js.
+    </p>
+  </div>
 
   <section class="space-y-2">
-    <h2 class="font-semibold">Tabs (uncontrolled)</h2>
-    <spike-tabs/>
+    <h2 class="text-lg font-semibold">Components</h2>
+    <ul id="component-list" class="grid grid-cols-2 gap-1 sm:grid-cols-3">
+      <for|name| of=COMPONENTS>
+        <li><a class="text-sm hover:underline" href=`/components/${name}`>${name}</a></li>
+      </for>
+    </ul>
   </section>
 
   <section class="space-y-2">
-    <h2 class="font-semibold">Tabs (controlled, S8) — parent value: ${controlled}</h2>
-    <button
-      class="rounded bg-gray-200 px-2 py-1 text-sm"
-      onClick() { controlled = controlled === "two" ? "three" : "two" }
-    >
-      Toggle parent value
-    </button>
-    <spike-tabs value=controlled valueChange(v: string) { controlled = v }/>
-  </section>
-
-  <section class="space-y-2">
-    <h2 class="font-semibold">Dialog (S5 without portal yet)</h2>
-    <spike-dialog/>
-  </section>
-
-  <section class="space-y-2">
-    <h2 class="font-semibold">Streamed tabs below await boundary (S6)</h2>
-    <try>
-      <await|label|=delay(800, "streamed")>
-        <p class="text-xs text-gray-500">resolved: ${label}</p>
-        <spike-tabs/>
-      </await>
-      <@placeholder>
-        <p class="text-xs text-gray-500">streaming…</p>
-      </@placeholder>
-    </try>
+    <h2 class="text-lg font-semibold">Internal</h2>
+    <ul>
+      <li><a class="text-sm text-muted-foreground hover:underline" href="/spike">M0 spike page</a></li>
+    </ul>
   </section>
 </main>

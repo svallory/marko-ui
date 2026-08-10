@@ -1,0 +1,6 @@
+{
+  "title": "Item",
+  "description": "A flexible component for displaying content in a structured item layout.",
+  "dependencies": ["class-variance-authority"],
+  "registryDependencies": ["utils"]
+}

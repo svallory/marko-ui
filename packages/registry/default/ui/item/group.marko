@@ -1,0 +1,9 @@
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<div ...rest data-slot="item-group" role="list" class=cn("group/item-group flex flex-col", className)>
+  <${content}/>
+</div>

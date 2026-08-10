@@ -1,0 +1,11 @@
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"caption"> {
+  content?: Marko.Body;
+}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<caption ...rest data-slot="table-caption" class=cn("text-muted-foreground mt-4 text-sm", className)>
+  <${content}/>
+</caption>

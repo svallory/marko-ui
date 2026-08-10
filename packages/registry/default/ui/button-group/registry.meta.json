@@ -1,0 +1,6 @@
+{
+  "title": "Button Group",
+  "description": "A container that groups related buttons together, merging their borders and corners.",
+  "dependencies": ["class-variance-authority"],
+  "registryDependencies": ["utils", "button"]
+}

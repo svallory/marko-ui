@@ -1,0 +1,13 @@
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  ratio?: number;
+}
+
+<const/{ ratio = 1, class: className, content, ...rest }=input/>
+
+<div ...rest data-slot="aspect-ratio" class=cn("relative w-full", className) style={ "aspect-ratio": String(ratio) }>
+  <div class="absolute inset-0">
+    <${content}/>
+  </div>
+</div>

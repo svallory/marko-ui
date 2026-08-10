@@ -1,0 +1,13 @@
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  content?: Marko.Body;
+}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<div ...rest data-slot="table-container" class=cn("relative w-full overflow-x-auto", className)>
+  <table data-slot="table" class="w-full caption-bottom text-sm">
+    <${content}/>
+  </table>
+</div>

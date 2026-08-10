@@ -1,0 +1,62 @@
+import Breadcrumb from "@marko-ui/registry/ui/breadcrumb/index.marko";
+import BreadcrumbItem from "@marko-ui/registry/ui/breadcrumb/item.marko";
+import BreadcrumbLink from "@marko-ui/registry/ui/breadcrumb/link.marko";
+import BreadcrumbPage from "@marko-ui/registry/ui/breadcrumb/page.marko";
+import BreadcrumbSeparator from "@marko-ui/registry/ui/breadcrumb/separator.marko";
+import BreadcrumbEllipsis from "@marko-ui/registry/ui/breadcrumb/ellipsis.marko";
+
+<component-page title="Breadcrumb" description="Displays the path to the current resource using a hierarchy of links.">
+  <demo-box title="Default">
+    <Breadcrumb>
+      <BreadcrumbItem>
+        <BreadcrumbLink href="/">Home</BreadcrumbLink>
+      </BreadcrumbItem>
+      <BreadcrumbSeparator/>
+      <BreadcrumbItem>
+        <BreadcrumbLink href="/components">Components</BreadcrumbLink>
+      </BreadcrumbItem>
+      <BreadcrumbSeparator/>
+      <BreadcrumbItem>
+        <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+      </BreadcrumbItem>
+    </Breadcrumb>
+  </demo-box>
+  <demo-box title="With ellipsis">
+    <Breadcrumb>
+      <BreadcrumbItem>
+        <BreadcrumbLink href="/">Home</BreadcrumbLink>
+      </BreadcrumbItem>
+      <BreadcrumbSeparator/>
+      <BreadcrumbItem>
+        <BreadcrumbEllipsis/>
+      </BreadcrumbItem>
+      <BreadcrumbSeparator/>
+      <BreadcrumbItem>
+        <BreadcrumbLink href="/components">Components</BreadcrumbLink>
+      </BreadcrumbItem>
+      <BreadcrumbSeparator/>
+      <BreadcrumbItem>
+        <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+      </BreadcrumbItem>
+    </Breadcrumb>
+  </demo-box>
+  <demo-box title="Custom separator">
+    <Breadcrumb>
+      <BreadcrumbItem>
+        <BreadcrumbLink href="/">Home</BreadcrumbLink>
+      </BreadcrumbItem>
+      <BreadcrumbSeparator>
+        <span>&rsaquo;</span>
+      </BreadcrumbSeparator>
+      <BreadcrumbItem>
+        <BreadcrumbLink href="/docs">Docs</BreadcrumbLink>
+      </BreadcrumbItem>
+      <BreadcrumbSeparator>
+        <span>&rsaquo;</span>
+      </BreadcrumbSeparator>
+      <BreadcrumbItem>
+        <BreadcrumbPage>Installation</BreadcrumbPage>
+      </BreadcrumbItem>
+    </Breadcrumb>
+  </demo-box>
+</component-page>

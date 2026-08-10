@@ -1,0 +1,28 @@
+import Spinner from "@marko-ui/registry/ui/spinner/index.marko";
+import Button from "@marko-ui/registry/ui/button/index.marko";
+
+<component-page title="Spinner" description="An indicator that can be used to show a loading state.">
+  <demo-box title="Default">
+    <Spinner/>
+  </demo-box>
+  <demo-box title="Sizes">
+    <div class="flex items-center gap-4">
+      <Spinner class="size-3"/>
+      <Spinner/>
+      <Spinner class="size-6"/>
+      <Spinner class="size-8"/>
+    </div>
+  </demo-box>
+  <demo-box title="With text">
+    <div class="flex items-center gap-2 text-sm text-muted-foreground">
+      <Spinner/>
+      Loading...
+    </div>
+  </demo-box>
+  <demo-box title="In a button">
+    <Button disabled>
+      <Spinner class="text-primary-foreground"/>
+      Please wait
+    </Button>
+  </demo-box>
+</component-page>

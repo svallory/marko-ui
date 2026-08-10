@@ -1,0 +1,23 @@
+import { inputGroupAddonVariants, type InputGroupAddonVariants } from "./variants.ts";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"div">, InputGroupAddonVariants {}
+
+<const/{ align, class: className, content, ...rest }=input/>
+
+<div
+  ...rest
+  role="group"
+  data-slot="input-group-addon"
+  data-align=align ?? "inline-start"
+  onClick(event) {
+    if ((event.target as HTMLElement).closest("button")) return;
+    const control = (event.currentTarget as HTMLElement)
+      .closest("[data-slot=input-group]")
+      ?.querySelector<HTMLElement>("[data-slot=input-group-control]");
+    control?.focus();
+  }
+  class=cn(inputGroupAddonVariants({ align }), className)
+>
+  <${content}/>
+</div>

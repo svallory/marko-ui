@@ -1,0 +1,6 @@
+{
+  "title": "Empty",
+  "description": "Use to display an empty state.",
+  "dependencies": ["class-variance-authority"],
+  "registryDependencies": ["utils"]
+}

@@ -1,0 +1,25 @@
+import Input from "@marko-ui/registry/ui/input/index.marko";
+
+<component-page title="Input" description="Displays a form input field or a component that looks like an input field.">
+  <demo-box title="Default">
+    <Input type="text" placeholder="Email"/>
+  </demo-box>
+  <demo-box title="Disabled">
+    <Input type="text" placeholder="Email" disabled/>
+  </demo-box>
+  <demo-box title="With value">
+    <Input type="text" value="marko-ui"/>
+  </demo-box>
+  <demo-box title="File">
+    <Input type="file"/>
+  </demo-box>
+  <demo-box title="Invalid">
+    <Input type="email" placeholder="Email" aria-invalid="true"/>
+  </demo-box>
+  <demo-box title="Number">
+    <Input type="number" placeholder="0"/>
+  </demo-box>
+  <demo-box title="Password">
+    <Input type="password" placeholder="Password"/>
+  </demo-box>
+</component-page>

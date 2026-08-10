@@ -1,0 +1,64 @@
+import Card from "@marko-ui/registry/ui/card/index.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardAction from "@marko-ui/registry/ui/card/action.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import Button from "@marko-ui/registry/ui/button/index.marko";
+
+<component-page title="Card" description="Displays a card with header, content, and footer.">
+  <demo-box title="Default">
+    <Card style="width: 350px;">
+      <CardHeader>
+        <CardTitle>Create project</CardTitle>
+        <CardDescription>Deploy your new project in one-click.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p>Choose a template or start from scratch to spin up a new environment.</p>
+      </CardContent>
+      <CardFooter class="flex justify-between">
+        <Button variant="outline">Cancel</Button>
+        <Button>Deploy</Button>
+      </CardFooter>
+    </Card>
+  </demo-box>
+
+  <demo-box title="With action">
+    <Card style="width: 350px;">
+      <CardHeader>
+        <CardTitle>Notifications</CardTitle>
+        <CardDescription>You have 3 unread messages.</CardDescription>
+        <CardAction>
+          <Button variant="ghost" size="sm">Mark all read</Button>
+        </CardAction>
+      </CardHeader>
+      <CardContent>
+        <p>Your teammate commented on the "Q3 Roadmap" document.</p>
+      </CardContent>
+    </Card>
+  </demo-box>
+
+  <demo-box title="With border footer">
+    <Card style="width: 350px;">
+      <CardHeader class="border-b">
+        <CardTitle>Payment method</CardTitle>
+        <CardDescription>Add a new payment method to your account.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p>Card details form would go here.</p>
+      </CardContent>
+      <CardFooter class="border-t">
+        <Button class="w-full">Save card</Button>
+      </CardFooter>
+    </Card>
+  </demo-box>
+
+  <demo-box title="Content only">
+    <Card style="width: 350px;">
+      <CardContent>
+        <p>A minimal card with only content, no header or footer.</p>
+      </CardContent>
+    </Card>
+  </demo-box>
+</component-page>

@@ -1,0 +1,16 @@
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<div
+  ...rest
+  data-slot="button-group-text"
+  class=cn(
+    "bg-muted flex items-center gap-2 rounded-md border px-4 text-sm font-medium shadow-xs [&_svg]:pointer-events-none [&_svg]:size-4",
+    className,
+  )
+>
+  <${content}/>
+</div>

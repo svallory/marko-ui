@@ -1,0 +1,95 @@
+import InputGroup from "@marko-ui/registry/ui/input-group/index.marko";
+import InputGroupAddon from "@marko-ui/registry/ui/input-group/addon.marko";
+import InputGroupButton from "@marko-ui/registry/ui/input-group/button.marko";
+import InputGroupInput from "@marko-ui/registry/ui/input-group/input.marko";
+import InputGroupTextarea from "@marko-ui/registry/ui/input-group/textarea.marko";
+import InputGroupText from "@marko-ui/registry/ui/input-group/text.marko";
+
+<component-page title="Input Group" description="Groups inputs and addons together, with a wide range of customization options.">
+  <demo-box title="Default">
+    <InputGroup>
+      <InputGroupInput placeholder="Search..." />
+      <InputGroupAddon>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </InputGroupAddon>
+    </InputGroup>
+  </demo-box>
+
+  <demo-box title="With inline-end addon">
+    <InputGroup>
+      <InputGroupInput placeholder="Email" type="email" />
+      <InputGroupAddon align="inline-end">
+        <InputGroupText>@company.com</InputGroupText>
+      </InputGroupAddon>
+    </InputGroup>
+  </demo-box>
+
+  <demo-box title="With button addon">
+    <InputGroup>
+      <InputGroupInput placeholder="Search documentation..." />
+      <InputGroupAddon align="inline-end">
+        <InputGroupButton size="icon-xs" aria-label="Search">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </InputGroupButton>
+      </InputGroupAddon>
+    </InputGroup>
+  </demo-box>
+
+  <demo-box title="With both addons">
+    <InputGroup>
+      <InputGroupAddon>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </InputGroupAddon>
+      <InputGroupInput placeholder="Username" />
+      <InputGroupAddon align="inline-end">
+        <InputGroupButton size="xs" variant="secondary">Check</InputGroupButton>
+      </InputGroupAddon>
+    </InputGroup>
+  </demo-box>
+
+  <demo-box title="Textarea with block addons">
+    <InputGroup>
+      <InputGroupAddon align="block-start">
+        <InputGroupText>Comment</InputGroupText>
+      </InputGroupAddon>
+      <InputGroupTextarea placeholder="Write your comment here..." />
+      <InputGroupAddon align="block-end">
+        <InputGroupButton size="sm" variant="default">Post</InputGroupButton>
+      </InputGroupAddon>
+    </InputGroup>
+  </demo-box>
+
+  <demo-box title="Disabled">
+    <InputGroup>
+      <InputGroupInput placeholder="Disabled" disabled />
+      <InputGroupAddon align="inline-end">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </InputGroupAddon>
+    </InputGroup>
+  </demo-box>
+
+  <demo-box title="Invalid">
+    <InputGroup>
+      <InputGroupInput placeholder="Invalid value" aria-invalid="true" />
+      <InputGroupAddon align="inline-end">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </InputGroupAddon>
+    </InputGroup>
+  </demo-box>
+</component-page>

@@ -1,0 +1,30 @@
+import Textarea from "@marko-ui/registry/ui/textarea/index.marko";
+import Label from "@marko-ui/registry/ui/label/index.marko";
+
+<component-page title="Textarea" description="Displays a form textarea or a component that looks like a textarea.">
+  <demo-box title="Default">
+    <Textarea placeholder="Type your message here." />
+  </demo-box>
+  <demo-box title="With label">
+    <div class="grid w-full gap-1.5">
+      <Label for="message">Your message</Label>
+      <Textarea id="message" placeholder="Type your message here." />
+    </div>
+  </demo-box>
+  <demo-box title="With text">
+    <div class="grid w-full gap-1.5">
+      <Label for="message-2">Your message</Label>
+      <Textarea id="message-2" placeholder="Type your message here." />
+      <p class="text-muted-foreground text-sm">Your message will be copied to the support team.</p>
+    </div>
+  </demo-box>
+  <demo-box title="With value">
+    <Textarea value="This is some existing feedback that a user has already typed into the textarea. It demonstrates how the field grows with field-sizing-content as content wraps across multiple lines." />
+  </demo-box>
+  <demo-box title="Disabled">
+    <Textarea disabled placeholder="Type your message here." />
+  </demo-box>
+  <demo-box title="Invalid">
+    <Textarea aria-invalid="true" placeholder="Type your message here." />
+  </demo-box>
+</component-page>

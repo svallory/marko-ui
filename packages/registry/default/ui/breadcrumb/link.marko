@@ -1,0 +1,9 @@
+import { cn } from "../../lib/utils.ts";
+
+export interface Input extends Marko.Input<"a"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<a ...rest data-slot="breadcrumb-link" class=cn("hover:text-foreground transition-colors", className)>
+  <${content}/>
+</a>
