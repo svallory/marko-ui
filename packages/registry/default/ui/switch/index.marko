@@ -3,20 +3,19 @@
 import * as switchMachine from "@zag-js/switch";
 import { cn } from "../../lib/utils.ts";
 
-// Machine-owned props come straight from Zag (drift-proof against upgrades),
-// minus what the component owns: `id`/`ids`/`getRootNode` (generated/DOM
-// concerns) and `onCheckedChange` — replaced by `checkedChange` so Marko's
-// two-way bind shorthand works: <Switch checked:=myState/>.
-export interface Input
-  extends Omit<Marko.Input<"input">, keyof switchMachine.Props>,
-    Omit<switchMachine.Props, "id" | "onCheckedChange"> {
-  /** Optional override for the generated machine id. */
-  id?: string;
+import type { MachineInput } from "marko-zag";
+
+// Native input attributes + the machine's full Props (id optional — it is
+// generated). `checkedChange` is additive sugar enabling Marko's two-way
+// bind shorthand (<Switch checked:=myState/>); Zag's own onCheckedChange
+// also works and receives the details object.
+export type Input = MachineInput<"input", switchMachine.Props> & {
   checkedChange?: (checked: boolean) => void;
-}
+};
 
 <machine-props/machineProps from=input pick=switchMachine.props
   onCheckedChange(details: switchMachine.CheckedChangeDetails) {
+    input.onCheckedChange?.(details);
     input.checkedChange?.(details.checked);
   }/>
 <service/service machine=() => switchMachine.machine props=machineProps/>
