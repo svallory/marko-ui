@@ -1,0 +1,7 @@
+{
+  "title": "Sidebar 05",
+  "description": "A sidebar with collapsible nav items and a search form.",
+  "categories": ["sidebar", "navigation"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "sidebar", "collapsible", "breadcrumb", "separator", "input", "label"]
+}

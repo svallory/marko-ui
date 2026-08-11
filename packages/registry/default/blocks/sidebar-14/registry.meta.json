@@ -1,0 +1,7 @@
+{
+  "title": "Sidebar 14",
+  "description": "A right-side sidebar with a table of contents grouped by section.",
+  "categories": ["sidebar", "navigation"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "sidebar", "breadcrumb"]
+}

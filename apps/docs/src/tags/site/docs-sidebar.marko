@@ -1,0 +1,37 @@
+export interface DocsSidebarSection {
+  title: string;
+  items: Array<{ href: string; label: string }>;
+}
+
+export interface Input {
+  sections: DocsSidebarSection[];
+  class?: string;
+}
+
+<nav/navEl class=`flex flex-col gap-6 ${input.class ?? ""}` data-slot="docs-sidebar">
+  <for|section| of=input.sections by=(section)=>section.title>
+    <div class="flex flex-col gap-1">
+      <div class="px-2 text-sm font-semibold text-foreground">${section.title}</div>
+      <for|item| of=section.items by=(item)=>item.href>
+        <a
+          href=item.href
+          data-site-nav-link
+          data-href=item.href
+          class="rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground data-active:bg-accent data-active:font-medium data-active:text-foreground"
+        >
+          ${item.label}
+        </a>
+      </for>
+    </div>
+  </for>
+</nav>
+
+<lifecycle
+  onMount() {
+    const path = window.location.pathname;
+    navEl()?.querySelectorAll("[data-site-nav-link]").forEach((link) => {
+      const href = link.getAttribute("data-href");
+      link.toggleAttribute("data-active", href === path);
+    });
+  }
+/>

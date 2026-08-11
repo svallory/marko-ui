@@ -1,0 +1,7 @@
+{
+  "title": "Sidebar 01",
+  "description": "A simple sidebar with navigation grouped by section, a version switcher, and a search form.",
+  "categories": ["sidebar", "dashboard"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "sidebar", "separator", "breadcrumb", "dropdown-menu", "input", "label"]
+}

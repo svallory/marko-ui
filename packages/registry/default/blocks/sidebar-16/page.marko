@@ -1,0 +1,52 @@
+import SidebarProvider from "@marko-ui/registry/ui/sidebar/provider.marko";
+import AppSidebar from "./app-sidebar.marko";
+import SiteHeader from "./site-header.marko";
+
+// shadcn's source structure is:
+//   SidebarProvider(flex-col, full width)
+//     > SiteHeader (full-width bar, sibling BEFORE the sidebar/inset row)
+//     > div.flex.flex-1 > [AppSidebar, SidebarInset]
+// Our SidebarProvider's root div is hardcoded to `flex` (row) and only
+// exposes `@sidebar`/`@content` slots inside that row, so it cannot host a
+// full-width sibling above the row. To reproduce the source's visual
+// structure exactly, SiteHeader is rendered as a sibling BEFORE
+// SidebarProvider (not inside it), with the outer wrapper switched to
+// `flex flex-col`; SidebarProvider's own `flex w-full` root then serves as
+// the source's `div.flex.flex-1` row. This keeps the shared provider
+// component untouched while matching the source's rendered DOM shape:
+// full-width header on top, sidebar + inset row below it. The sidebar's
+// `top-(--header-height)` offset (see app-sidebar.marko) then docks it
+// visually under the header.
+//
+// `toggle` is only exposed inside the provider's `@sidebar`/`@content`
+// render-prop scopes, so it is captured into a page-level variable via the
+// `@sidebar` slot and reused by the SiteHeader rendered outside the
+// provider. There is no SidebarInset sub-part, so the inset panel is
+// composed here from plain markup, following blocks/sidebar-07/page.marko
+// and blocks/sidebar-15/page.marko.
+
+<let/toggleSidebar=(): void => {}/>
+
+<div class="flex min-h-svh flex-col" style="--header-height:calc(var(--spacing)*14)">
+  <SiteHeader toggle=toggleSidebar/>
+  <SidebarProvider width="16rem" class="flex-1">
+    <@sidebar|{ open, toggle }|>
+      <script>
+        toggleSidebar = toggle;
+      </script>
+      <AppSidebar open=open/>
+    </@sidebar>
+    <@content|{ }|>
+      <div class="flex min-w-0 flex-1 flex-col">
+        <div class="flex flex-1 flex-col gap-4 p-4">
+          <div class="grid auto-rows-min gap-4 md:grid-cols-3">
+            <div class="aspect-video rounded-xl bg-muted/50"></div>
+            <div class="aspect-video rounded-xl bg-muted/50"></div>
+            <div class="aspect-video rounded-xl bg-muted/50"></div>
+          </div>
+          <div class="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min"></div>
+        </div>
+      </div>
+    </@content>
+  </SidebarProvider>
+</div>

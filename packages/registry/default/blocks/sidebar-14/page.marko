@@ -1,0 +1,52 @@
+import SidebarProvider from "@marko-ui/registry/ui/sidebar/provider.marko";
+import SidebarTrigger from "@marko-ui/registry/ui/sidebar/trigger.marko";
+import Breadcrumb from "@marko-ui/registry/ui/breadcrumb/breadcrumb.marko";
+import BreadcrumbItem from "@marko-ui/registry/ui/breadcrumb/item.marko";
+import BreadcrumbLink from "@marko-ui/registry/ui/breadcrumb/link.marko";
+import BreadcrumbPage from "@marko-ui/registry/ui/breadcrumb/page.marko";
+import BreadcrumbSeparator from "@marko-ui/registry/ui/breadcrumb/separator.marko";
+import AppSidebar from "./app-sidebar.marko";
+
+// NOTE: the source places <AppSidebar side="right" /> after SidebarInset,
+// rendering the sidebar on the right edge of the screen. Our SidebarProvider
+// always renders its `sidebar` slot before its `content` slot (no `side`
+// prop), so the right-side placement here is achieved by swapping which
+// slot holds which panel: the main content goes in the `sidebar` slot (so
+// it renders first / on the left) and AppSidebar goes in the `content`
+// slot (so it renders second / on the right). Both slots are functionally
+// identical body renderers, so this is purely a DOM-order trick with no
+// behavior change. Deviation from the source, noted per block-porting
+// rules.
+//
+// The source also mirrors its SidebarTrigger icon (`rotate-180`) since the
+// panel it opens is now to the right; that rotation is preserved below.
+
+<SidebarProvider width="16rem">
+  <@sidebar|{ open, toggle }|>
+    <div class="flex min-w-0 flex-1 flex-col">
+      <header class="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+        <Breadcrumb>
+          <BreadcrumbItem class="hidden md:block">
+            <BreadcrumbLink href="#">Build Your Application</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator class="hidden md:block"/>
+          <BreadcrumbItem>
+            <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+          </BreadcrumbItem>
+        </Breadcrumb>
+        <SidebarTrigger open=open toggle=toggle class="-mr-1 ml-auto rotate-180"/>
+      </header>
+      <div class="flex flex-1 flex-col gap-4 p-4">
+        <div class="grid auto-rows-min gap-4 md:grid-cols-3">
+          <div class="aspect-video rounded-xl bg-muted/50"></div>
+          <div class="aspect-video rounded-xl bg-muted/50"></div>
+          <div class="aspect-video rounded-xl bg-muted/50"></div>
+        </div>
+        <div class="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min"></div>
+      </div>
+    </div>
+  </@sidebar>
+  <@content|{ open }|>
+    <AppSidebar open=open/>
+  </@content>
+</SidebarProvider>

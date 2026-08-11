@@ -1,0 +1,7 @@
+{
+  "title": "Signup 05",
+  "description": "A centered signup form with social signup options and a field separator.",
+  "categories": ["authentication", "signup"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "button", "form", "input"]
+}

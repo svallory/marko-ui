@@ -1,0 +1,18 @@
+{
+  "title": "Sidebar 16",
+  "description": "A sidebar with a header and a search form.",
+  "categories": ["sidebar", "dashboard"],
+  "dependencies": [],
+  "registryDependencies": [
+    "utils",
+    "sidebar",
+    "collapsible",
+    "dropdown-menu",
+    "breadcrumb",
+    "separator",
+    "avatar",
+    "button",
+    "label",
+    "input"
+  ]
+}

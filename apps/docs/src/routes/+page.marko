@@ -1,40 +1,10 @@
-// Component index — regenerated centrally after each phase.
-static const COMPONENTS = [
-  "accordion", "alert", "alert-dialog", "aspect-ratio", "avatar", "badge",
-  "breadcrumb", "button", "button-group", "calendar", "card", "carousel",
-  "checkbox", "clipboard", "collapsible", "combobox", "command", "context-menu",
-  "data-table", "date-picker", "dialog", "drawer", "dropdown-menu", "empty",
-  "file-upload", "form", "hover-card", "input", "input-group", "input-otp",
-  "item", "kbd", "label", "menubar", "navigation-menu", "pagination", "popover",
-  "progress", "radio-group", "resizable", "scroll-area", "select", "separator",
-  "sheet", "sidebar", "skeleton", "slider", "spinner", "switch", "table",
-  "tabs", "textarea", "toast", "toggle", "toggle-group", "tooltip", "tree-view",
-];
+// Home page. Structure adapted from shadcn/ui `app/(app)/(root)/page.tsx`
+// (MIT): page header + a dense showcase grid of demo cards. The cards are
+// rebuilt on marko-ui's own registry components.
+import "../tags/home/home-hero.marko";
+import "../tags/home/home-showcase.marko";
 
-<main class="mx-auto max-w-3xl space-y-8 p-8">
-  <div>
-    <h1 class="text-3xl font-bold">shadcn-marko</h1>
-    <p class="mt-2 text-muted-foreground">
-      shadcn-style copy-paste components for Marko 6, powered by Zag.js.
-      ${COMPONENTS.length} components.
-    </p>
-  </div>
-
-  <section class="space-y-2">
-    <h2 class="text-lg font-semibold">Components</h2>
-    <ul id="component-list" class="grid grid-cols-2 gap-1 sm:grid-cols-3">
-      <for|name| of=COMPONENTS>
-        <li><a class="text-sm hover:underline" href=`/components/${name}`>${name}</a></li>
-      </for>
-    </ul>
-  </section>
-
-  <section class="space-y-2">
-    <h2 class="text-lg font-semibold">Internal</h2>
-    <ul>
-      <li><a class="text-sm text-muted-foreground hover:underline" href="/docs/creating-components">How to Create a Marko-Zag Component</a></li>
-      <li><a class="text-sm text-muted-foreground hover:underline" href="/spike">M0 spike page</a></li>
-      <li><a class="text-sm text-muted-foreground hover:underline" href="/docs/zag-adapter">Zag.js Framework Adapter Anatomy</a></li>
-    </ul>
-  </section>
+<main class="flex flex-1 flex-col">
+  <home-hero/>
+  <home-showcase/>
 </main>

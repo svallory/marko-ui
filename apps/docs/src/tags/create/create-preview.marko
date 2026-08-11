@@ -1,0 +1,174 @@
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Badge from "@marko-ui/registry/ui/badge/badge.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import TextInput from "@marko-ui/registry/ui/input/input.marko";
+import Label from "@marko-ui/registry/ui/label/label.marko";
+import Switch from "@marko-ui/registry/ui/switch/switch.marko";
+import Checkbox from "@marko-ui/registry/ui/checkbox/checkbox.marko";
+import Slider from "@marko-ui/registry/ui/slider/slider.marko";
+import Progress from "@marko-ui/registry/ui/progress/progress.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+import Tabs from "@marko-ui/registry/ui/tabs/tabs.marko";
+import Avatar from "@marko-ui/registry/ui/avatar/avatar.marko";
+
+export interface Input {
+  /** Resolved CSS custom properties for the current config. */
+  style: string;
+  /** Which surface the preview renders on, independent of the page theme. */
+  mode: "light" | "dark";
+  chartColors: string[];
+}
+
+static const PREVIEW_TABS = [
+  { value: "overview", label: "Overview" },
+  { value: "activity", label: "Activity" },
+];
+
+static const BAR_HEIGHTS = [42, 68, 55, 84, 61, 92, 74];
+
+<div
+  class=`${input.mode === "dark" ? "dark" : ""} h-full overflow-y-auto bg-background text-foreground`
+  style=input.style
+  data-slot="create-preview"
+>
+  <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6 md:p-8">
+    <header class="flex flex-wrap items-start justify-between gap-3">
+      <div class="flex flex-col gap-1">
+        <h2 class="text-2xl font-semibold tracking-tight">Dashboard</h2>
+        <p class="text-sm text-muted-foreground">
+          Every control below is a real marko-ui component reading your tokens.
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <Badge variant="secondary">Live</Badge>
+        <Button size="sm">Deploy</Button>
+      </div>
+    </header>
+
+    <div class="grid gap-4 sm:grid-cols-3">
+      <for|metric| of=[
+        { label: "Revenue", value: "$12,480", delta: "+14.2%" },
+        { label: "Sessions", value: "8,204", delta: "+3.1%" },
+        { label: "Churn", value: "1.8%", delta: "-0.4%" },
+      ] by=(metric) => metric.label>
+        <Card class="gap-2 py-4">
+          <CardHeader class="px-4">
+            <CardDescription>${metric.label}</CardDescription>
+            <CardTitle class="text-xl">${metric.value}</CardTitle>
+          </CardHeader>
+          <CardContent class="px-4">
+            <span class="text-xs font-medium text-muted-foreground">
+              ${metric.delta} from last week
+            </span>
+          </CardContent>
+        </Card>
+      </for>
+    </div>
+
+    <Card>
+      <CardHeader>
+        <CardTitle>Weekly traffic</CardTitle>
+        <CardDescription>Bars use your chart palette.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div class="flex h-32 items-end gap-2">
+          <for|height, index| of=BAR_HEIGHTS>
+            <div
+              class="flex-1 rounded-t-md transition-all"
+              style=`height: ${height}%; background: ${input.chartColors[index % input.chartColors.length]}`
+            />
+          </for>
+        </div>
+      </CardContent>
+    </Card>
+
+    <Tabs items=PREVIEW_TABS>
+      <@content|value|>
+        <if=(value === "overview")>
+          <div class="grid gap-4 pt-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Create project</CardTitle>
+                <CardDescription>Radius and accent apply here.</CardDescription>
+              </CardHeader>
+              <CardContent class="flex flex-col gap-4">
+                <div class="flex flex-col gap-2">
+                  <Label for="preview-name">Name</Label>
+                  <TextInput id="preview-name" placeholder="acme-dashboard"/>
+                </div>
+                <div class="flex items-center gap-2">
+                  <Checkbox id="preview-private"/>
+                  <Label for="preview-private">Make private</Label>
+                </div>
+                <div class="flex items-center justify-between">
+                  <Label for="preview-notify">Notifications</Label>
+                  <Switch id="preview-notify" checked/>
+                </div>
+              </CardContent>
+              <CardFooter class="gap-2">
+                <Button variant="outline" size="sm">Cancel</Button>
+                <Button size="sm">Create</Button>
+              </CardFooter>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Controls</CardTitle>
+                <CardDescription>Primary and ring tokens.</CardDescription>
+              </CardHeader>
+              <CardContent class="flex flex-col gap-5">
+                <Slider defaultValue=[48] max=100/>
+                <Progress value=64/>
+                <Separator/>
+                <div class="flex flex-wrap gap-2">
+                  <Button size="sm">Default</Button>
+                  <Button size="sm" variant="secondary">Secondary</Button>
+                  <Button size="sm" variant="outline">Outline</Button>
+                  <Button size="sm" variant="ghost">Ghost</Button>
+                  <Button size="sm" variant="destructive">Delete</Button>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <Badge>Badge</Badge>
+                  <Badge variant="secondary">Secondary</Badge>
+                  <Badge variant="outline">Outline</Badge>
+                  <Badge variant="destructive">Destructive</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </if>
+        <else>
+          <Card class="mt-4">
+            <CardHeader>
+              <CardTitle>Recent activity</CardTitle>
+              <CardDescription>Muted and border tokens.</CardDescription>
+            </CardHeader>
+            <CardContent class="flex flex-col gap-4">
+              <for|entry| of=[
+                { name: "Ada Lovelace", action: "merged a pull request", time: "2m ago" },
+                { name: "Grace Hopper", action: "opened an issue", time: "1h ago" },
+                { name: "Alan Turing", action: "pushed 3 commits", time: "5h ago" },
+              ] by=(entry) => entry.name>
+                <div class="flex items-center gap-3">
+                  <Avatar fallback=entry.name.slice(0, 1)/>
+                  <div class="flex min-w-0 flex-1 flex-col">
+                    <span class="truncate text-sm font-medium">${entry.name}</span>
+                    <span class="truncate text-xs text-muted-foreground">
+                      ${entry.action}
+                    </span>
+                  </div>
+                  <span class="text-xs text-muted-foreground">${entry.time}</span>
+                </div>
+              </for>
+            </CardContent>
+          </Card>
+        </else>
+      </@content>
+    </Tabs>
+  </div>
+</div>

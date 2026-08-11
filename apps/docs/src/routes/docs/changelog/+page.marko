@@ -1,0 +1,136 @@
+// Changelog — structural counterpart to shadcn's content/docs/changelog/*.mdx
+// (dated entries, newest first). Entries are drawn from the project's own
+// TODO.md milestones; marko-ui is pre-release, so this is deliberately a stub
+// rather than a fabricated release history.
+import "../../../tags/docs/docs-article.marko";
+import { COMPONENTS } from "../../../lib/components-list.ts";
+
+static const TOC = [
+  { id: "unreleased", label: "Unreleased" },
+  { id: "2026-08-11", label: "August 2026" },
+  { id: "versioning", label: "Versioning" },
+];
+
+export interface ChangelogEntry {
+  date: string;
+  title: string;
+  summary: string;
+  changes: string[];
+}
+
+static const ENTRIES: ChangelogEntry[] = [
+  {
+    date: "2026-08-11",
+    title: "Attribute-tag composition and the three-tag pattern",
+    summary:
+      "Every Zag-backed component moved onto a single consistent authoring pattern, and multi-part components gained attribute-tag composition.",
+    changes: [
+      "All 31 Zag-backed components migrated to the <machine-props> / <service> / <connect> pattern with MachineInput typing and typed chained callbacks.",
+      "Attribute tags (<@trigger>, <@content>) adopted as the primary API for multi-part components; array-style items= remains as sugar where it reads better.",
+      "Drawer rebuilt on @zag-js/drawer with the full 10-part anatomy, snap points, and logical swipe directions.",
+      "Toast rebuilt on Zag's toast group store: module store, group service, and per-toast child services, with pause-on-hover and stacking.",
+      "Form grown into the full Field anatomy, validation-library-agnostic — errors accept plain strings or Standard Schema issues.",
+    ],
+  },
+  {
+    date: "2026-08-11",
+    title: "Theming and registry",
+    summary:
+      "The registry learned to ship theme tokens the shadcn CLI can merge, and picked up the four extra base colors.",
+    changes: [
+      "Registry items now carry cssVars, parsed directly out of globals.css (:root, .dark, and @theme inline).",
+      "Base color variants shipped: neutral (default), zinc, slate, stone, and gray.",
+      "No-flash dark mode: an <html-script> head script plus a theme toggle, verified across reloads.",
+      "Registry output moved to absolute self-referencing URLs so registryDependencies never resolve against shadcn's React registry.",
+    ],
+  },
+  {
+    date: "2026-08-11",
+    title: "Accessibility and correctness testing",
+    summary: "Behavioral and hydration test suites landed, and caught a real adapter bug.",
+    changes: [
+      "61 WAI-ARIA APG keyboard tests across tabs, dialog, accordion, switch, checkbox, radio-group, select, and slider.",
+      "Fixed a marko-zag adapter bug: normalize-props now maps Zag's React-style tabIndex to tabindex. The verbatim camelCase key caused a remove-then-add on every update, blurring focus and breaking keyboard navigation on every roving-focus widget.",
+      "Hydration-invariant helper comparing JS-off against JS-on markup across all [data-scope] elements; 33 of 33 components pass.",
+    ],
+  },
+  {
+    date: "2026-08-11",
+    title: "Renamed to marko-ui",
+    summary: "The project was renamed from shadcn-marko, and the registry got a permanent home.",
+    changes: [
+      "Renamed across the registry output, the docs, and the workspace package. \"shadcn for Marko\" stays as the tagline.",
+      "Registry domain fixed at marko-ui.saulo.tech; local dev keeps a localhost base URL for CLI smoke tests.",
+      "marko-zag ships Marko source rather than a dist build — it requires a Marko-aware bundler.",
+    ],
+  },
+];
+
+<docs-article
+  title="Changelog"
+  description="Notable changes to marko-ui components, the registry, and the marko-zag adapter."
+  href="/docs/changelog"
+  toc=TOC
+>
+  <h2 id="unreleased">Unreleased</h2>
+
+  <p>
+    <strong>marko-ui has not had a tagged release yet.</strong> The registry at
+    <code>marko-ui.saulo.tech/r</code> tracks the main branch, and
+    <code>marko-zag</code> is not yet on npm. Until <code>0.1.0</code> ships, treat component APIs
+    as subject to change and pin your installed files by committing them — which, given that you own
+    them, you get for free.
+  </p>
+
+  <p>Currently in the registry: ${COMPONENTS.length} components, plus the theme and utils items.</p>
+
+  <p>Known gaps on the way to a first release:</p>
+
+  <ul>
+    <li><strong>chart</strong> — evaluated and specified (d3 primitives with Marko emitting SVG), not yet built.</li>
+    <li><strong>navigation-menu</strong> — light-JS implementation; the animated viewport panels are not done.</li>
+    <li><strong>scroll-area</strong> — styled native scrollbars rather than a synthetic draggable thumb.</li>
+  </ul>
+
+  <h2 id="2026-08-11">August 2026</h2>
+
+  <for|entry| of=ENTRIES by=(entry)=>entry.title>
+    <div class="mt-8 border-l-2 border-border pl-5">
+      <div class="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+        ${entry.date}
+      </div>
+      <h3 class="mt-1 text-base font-semibold tracking-tight">${entry.title}</h3>
+      <p>${entry.summary}</p>
+      <ul>
+        <for|change| of=entry.changes>
+          <li>${change}</li>
+        </for>
+      </ul>
+    </div>
+  </for>
+
+  <h2 id="versioning">Versioning</h2>
+
+  <p>
+    Because component source lives in your repo rather than in a package you upgrade, marko-ui has
+    two independent version surfaces:
+  </p>
+
+  <ul>
+    <li>
+      <strong>The registry</strong> is unversioned and always reflects the current main branch.
+      Components you already installed are unaffected by changes here — you take an update only by
+      re-running <code>add --overwrite</code>.
+    </li>
+    <li>
+      <strong><code>marko-zag</code></strong> is a normal npm package and follows semver. It is the
+      adapter binding Zag machines into Marko, and it is the dependency that actually ships fixes
+      to you.
+    </li>
+  </ul>
+
+  <p>
+    Before taking a component update, use <code>add --diff</code> to see exactly what would change.
+    See <a href="/docs/cli">CLI</a>.
+  </p>
+</docs-article>

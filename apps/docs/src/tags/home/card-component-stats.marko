@@ -1,0 +1,45 @@
+// Structure adapted from shadcn/ui's home dashboard cards (MIT); content is
+// marko-ui's real registry coverage.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Badge from "@marko-ui/registry/ui/badge/badge.marko";
+import { COMPONENTS } from "../../lib/components-list.ts";
+
+static const HIGHLIGHTED = [
+  "accordion",
+  "combobox",
+  "date-picker",
+  "drawer",
+  "toast",
+  "tree-view",
+];
+
+<Card class="w-full">
+  <CardHeader>
+    <CardTitle class="flex items-baseline gap-2">
+      <span class="text-2xl tabular-nums">${COMPONENTS.length}</span>
+      components
+    </CardTitle>
+    <CardDescription>
+      Every one is a Zag.js state machine wired to Marko 6 — accessible,
+      server-rendered first.
+    </CardDescription>
+  </CardHeader>
+  <CardContent class="flex flex-wrap gap-2">
+    <for|name| of=HIGHLIGHTED by=(name) => name>
+      <a href=`/components/${name}` class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+        <Badge variant="secondary" class="hover:bg-accent">${name}</Badge>
+      </a>
+    </for>
+  </CardContent>
+  <CardFooter>
+    <a href="#components" class="w-full">
+      <Button variant="outline" size="sm" class="w-full">Browse all components</Button>
+    </a>
+  </CardFooter>
+</Card>

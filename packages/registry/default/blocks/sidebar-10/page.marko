@@ -1,0 +1,36 @@
+import SidebarProvider from "@marko-ui/registry/ui/sidebar/provider.marko";
+import SidebarTrigger from "@marko-ui/registry/ui/sidebar/trigger.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+import Breadcrumb from "@marko-ui/registry/ui/breadcrumb/breadcrumb.marko";
+import BreadcrumbItem from "@marko-ui/registry/ui/breadcrumb/item.marko";
+import BreadcrumbPage from "@marko-ui/registry/ui/breadcrumb/page.marko";
+import AppSidebar from "./app-sidebar.marko";
+import NavActions from "./nav-actions.marko";
+
+<SidebarProvider width="16rem">
+  <@sidebar|{ open }|>
+    <AppSidebar open=open/>
+  </@sidebar>
+  <@content|{ open, toggle }|>
+    <div class="flex min-w-0 flex-1 flex-col">
+      <header class="flex h-14 shrink-0 items-center gap-2">
+        <div class="flex flex-1 items-center gap-2 px-3">
+          <SidebarTrigger open=open toggle=toggle/>
+          <Separator orientation="vertical" class="mr-2 h-4"/>
+          <Breadcrumb>
+            <BreadcrumbItem>
+              <BreadcrumbPage class="line-clamp-1">Project Management &amp; Task Tracking</BreadcrumbPage>
+            </BreadcrumbItem>
+          </Breadcrumb>
+        </div>
+        <div class="ml-auto px-3">
+          <NavActions/>
+        </div>
+      </header>
+      <div class="flex flex-1 flex-col gap-4 px-4 py-10">
+        <div class="mx-auto h-24 w-full max-w-3xl rounded-xl bg-muted/50"></div>
+        <div class="mx-auto h-full w-full max-w-3xl rounded-xl bg-muted/50"></div>
+      </div>
+    </div>
+  </@content>
+</SidebarProvider>

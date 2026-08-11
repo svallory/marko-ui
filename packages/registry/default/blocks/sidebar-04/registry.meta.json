@@ -1,0 +1,11 @@
+{
+  "title": "Sidebar 04",
+  "description": "A documentation sidebar with nested navigation sections and a breadcrumb header.",
+  "categories": ["sidebar", "dashboard"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "sidebar", "separator", "breadcrumb"],
+  "deviations": [
+    "shadcn source renders <Sidebar variant=\"floating\"> for a padded, rounded, shadowed card look; our ui/sidebar/sidebar.marko has no `variant` prop (only open/class/content), so this block renders as a flush, bordered sidebar instead. Kit gap: sidebar.marko needs a variant prop (floating/inset) to reach parity.",
+    "shadcn source uses SidebarMenuSub/SidebarMenuSubItem/SidebarMenuSubButton for the nested nav items; our ui/sidebar kit has no menu-sub* primitives. This block falls back to a plain <ul>/<li> wrapper and reuses SidebarMenuButton (smaller size, via class override) for the sub-links so active/hover/focus styling stays sourced from the design system. Kit gap: a SidebarMenuSub family should be built."
+  ]
+}

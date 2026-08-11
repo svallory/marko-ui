@@ -1,0 +1,51 @@
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+import Breadcrumb from "@marko-ui/registry/ui/breadcrumb/breadcrumb.marko";
+import BreadcrumbItem from "@marko-ui/registry/ui/breadcrumb/item.marko";
+import BreadcrumbLink from "@marko-ui/registry/ui/breadcrumb/link.marko";
+import BreadcrumbPage from "@marko-ui/registry/ui/breadcrumb/page.marko";
+import BreadcrumbSeparator from "@marko-ui/registry/ui/breadcrumb/separator.marko";
+import SearchForm from "./search-form.marko";
+
+export interface Input {
+  toggle?: () => void;
+}
+
+<header class="sticky top-0 z-50 flex w-full items-center border-b bg-background">
+  <div class="flex h-(--header-height) w-full items-center gap-2 px-4">
+    <Button
+      class="h-8 w-8"
+      variant="ghost"
+      size="icon"
+      onClick() {
+        input.toggle?.();
+      }
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <rect width="18" height="18" x="3" y="3" rx="2"/>
+        <path d="M9 3v18"/>
+      </svg>
+    </Button>
+    <Separator orientation="vertical" class="mr-2 h-4"/>
+    <Breadcrumb class="hidden sm:block">
+      <BreadcrumbItem>
+        <BreadcrumbLink href="#">Build Your Application</BreadcrumbLink>
+      </BreadcrumbItem>
+      <BreadcrumbSeparator/>
+      <BreadcrumbItem>
+        <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+      </BreadcrumbItem>
+    </Breadcrumb>
+    <SearchForm class="w-full sm:ml-auto sm:w-auto"/>
+  </div>
+</header>

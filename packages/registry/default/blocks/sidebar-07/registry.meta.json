@@ -1,0 +1,7 @@
+{
+  "title": "Sidebar 07",
+  "description": "A collapsible sidebar with a team switcher, collapsible nav groups, a projects list, and a user menu.",
+  "categories": ["sidebar", "dashboard"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "sidebar", "collapsible", "dropdown-menu", "breadcrumb", "separator", "avatar"]
+}

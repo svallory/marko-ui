@@ -1,0 +1,36 @@
+import DataTable from "@marko-ui/registry/ui/data-table/data-table.marko";
+
+// NOTE: no `extends Record<string, unknown>` here — a bare generic at
+// top level of a .marko file trips the parser ("Attribute cannot contain
+// type parameters"). Plain interface keeps the parser happy.
+export interface DocumentRow {
+  id: number;
+  header: string;
+  section: string;
+  status: string;
+  reviewer: string;
+  limit: number;
+}
+
+static const COLUMNS = [
+  { accessorKey: "header", header: "Header" },
+  { accessorKey: "section", header: "Section Type" },
+  { accessorKey: "status", header: "Status" },
+  { accessorKey: "reviewer", header: "Reviewer" },
+  { accessorKey: "limit", header: "Limit" },
+];
+
+static const ROWS: DocumentRow[] = [
+  { id: 1, header: "Cover page", section: "Cover page", status: "In Process", reviewer: "Eddie Lake", limit: 18 },
+  { id: 2, header: "Table of contents", section: "Table of contents", status: "Done", reviewer: "Eddie Lake", limit: 29 },
+  { id: 3, header: "Executive summary", section: "Narrative", status: "Done", reviewer: "Eddie Lake", limit: 10 },
+  { id: 4, header: "Technical approach", section: "Narrative", status: "Done", reviewer: "Jamik Tashpulatov", limit: 27 },
+  { id: 5, header: "Design", section: "Narrative", status: "In Process", reviewer: "Jamik Tashpulatov", limit: 2 },
+  { id: 6, header: "Capabilities", section: "Narrative", status: "In Process", reviewer: "Assign reviewer", limit: 20 },
+];
+
+<div class="px-4 lg:px-6">
+  <div class="overflow-hidden rounded-lg border">
+    <DataTable columns=COLUMNS data=ROWS/>
+  </div>
+</div>

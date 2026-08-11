@@ -1,0 +1,77 @@
+import Sidebar from "@marko-ui/registry/ui/sidebar/sidebar.marko";
+import SidebarHeader from "@marko-ui/registry/ui/sidebar/header.marko";
+import SidebarContent from "@marko-ui/registry/ui/sidebar/content.marko";
+import SidebarFooter from "@marko-ui/registry/ui/sidebar/footer.marko";
+import SidebarGroup from "@marko-ui/registry/ui/sidebar/group.marko";
+import SidebarGroupLabel from "@marko-ui/registry/ui/sidebar/group-label.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+
+export interface Input {
+  open?: boolean;
+}
+
+static const PLATFORM_ITEMS = [
+  { id: "dashboard", title: "Dashboard", active: true },
+  { id: "lifecycle", title: "Lifecycle" },
+  { id: "analytics", title: "Analytics" },
+  { id: "projects", title: "Projects" },
+  { id: "team", title: "Team" },
+];
+
+static const DOCUMENT_ITEMS = [
+  { id: "data-library", title: "Data Library" },
+  { id: "reports", title: "Reports" },
+  { id: "assistant", title: "Word Assistant" },
+];
+
+<Sidebar open=input.open>
+  <@content>
+    <SidebarHeader>
+      <div class="flex items-center gap-2 px-2 py-1.5">
+        <span
+          class="flex size-6 items-center justify-center rounded-md bg-sidebar-primary text-xs font-bold text-sidebar-primary-foreground"
+        >
+          A
+        </span>
+        <span class="text-sm font-semibold">Acme Inc.</span>
+      </div>
+    </SidebarHeader>
+    <SidebarContent>
+      <SidebarGroup>
+        <SidebarGroupLabel>Platform</SidebarGroupLabel>
+        <SidebarMenu>
+          <for|item| of=PLATFORM_ITEMS by=(item) => item.id>
+            <SidebarMenuItem>
+              <SidebarMenuButton href="#" active=item.active>${item.title}</SidebarMenuButton>
+            </SidebarMenuItem>
+          </for>
+        </SidebarMenu>
+      </SidebarGroup>
+      <SidebarGroup>
+        <SidebarGroupLabel>Documents</SidebarGroupLabel>
+        <SidebarMenu>
+          <for|item| of=DOCUMENT_ITEMS by=(item) => item.id>
+            <SidebarMenuItem>
+              <SidebarMenuButton href="#">${item.title}</SidebarMenuButton>
+            </SidebarMenuItem>
+          </for>
+        </SidebarMenu>
+      </SidebarGroup>
+    </SidebarContent>
+    <SidebarFooter>
+      <div class="flex items-center gap-2 rounded-md px-2 py-1.5">
+        <span
+          class="flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium"
+        >
+          SV
+        </span>
+        <div class="min-w-0 flex-1 leading-tight">
+          <div class="truncate text-sm font-medium">shadcn</div>
+          <div class="truncate text-xs text-sidebar-foreground/70">m@example.com</div>
+        </div>
+      </div>
+    </SidebarFooter>
+  </@content>
+</Sidebar>

@@ -1,0 +1,8 @@
+{
+  "title": "Signup 02",
+  "description": "A signup page with a full-height split layout, form on one side and a cover image on the other.",
+  "type": "registry:block",
+  "categories": ["authentication", "signup"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "button", "form", "input", "label", "separator"]
+}

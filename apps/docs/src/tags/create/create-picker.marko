@@ -1,0 +1,148 @@
+export interface PickerOption {
+  name: string;
+  label: string;
+  swatch?: string;
+}
+
+export interface Input {
+  label: string;
+  options: PickerOption[];
+  value: string;
+  /**
+   * Which config field this picker edits. Passed back to the parent's handlers
+   * rather than captured in a per-picker closure — closures built inline at
+   * render time are not serializable across Marko's resume boundary.
+   */
+  field: string;
+  valueChange: (field: string, value: string) => void;
+  /** Live preview while hovering an option; `null` value clears it. */
+  previewChange: (field: string, value: string | null) => void;
+}
+
+<id/pickerId/>
+<let/isOpen=false/>
+// Fixed-position coordinates for the portaled listbox, computed from the
+// trigger button's rect on open. A portal is required because the
+// customizer panel scrolls (overflow-y-auto) at md+, which clips any
+// absolutely-positioned descendant that flies out past its bounds.
+<let/menuPos={ top: 0, left: 0, width: 0 }/>
+
+<const/selectedOption=input.options.find(
+  (option) => option.name === input.value,
+) ?? input.options[0]/>
+
+<const/close=() => {
+  isOpen = false;
+  input.previewChange(input.field, null);
+}/>
+
+<const/openAt=(triggerEl: HTMLElement) => {
+  const rect = triggerEl.getBoundingClientRect();
+  menuPos = { top: rect.bottom + 6, left: rect.left, width: rect.width };
+  isOpen = true;
+}/>
+
+<div class="group/picker relative" data-slot="picker">
+  <button/triggerButton
+    type="button"
+    id=pickerId
+    aria-haspopup="listbox"
+    aria-expanded=isOpen
+    class="relative flex h-11 w-full items-center gap-2 rounded-lg border border-border/60 bg-background/40 px-3 text-left transition-colors hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+    onClick() {
+      if (isOpen) {
+        isOpen = false;
+        input.previewChange(input.field, null);
+      } else {
+        const el = triggerButton();
+        if (el) openAt(el);
+      }
+    }
+  >
+    <span class="flex min-w-0 flex-col justify-start">
+      <span class="text-xs text-muted-foreground">${input.label}</span>
+      <span class="truncate text-sm font-medium text-foreground">
+        ${selectedOption?.label}
+      </span>
+    </span>
+    <span class="pointer-events-none absolute top-1/2 right-3 flex -translate-y-1/2 items-center">
+      <if=selectedOption?.swatch>
+        <span
+          class="size-4 rounded-full border border-border/50"
+          style=`background: ${selectedOption.swatch}`
+        />
+      </if>
+      <else>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="size-4 text-muted-foreground"
+        >
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      </else>
+    </span>
+  </button>
+
+  <if=isOpen>
+    <portal>
+      // Click-catcher: closing on outside click without wiring a document
+      // listener keeps this tag free of lifecycle teardown. z-[60] clears the
+      // site header's sticky z-50 stacking context now that this is portaled
+      // to <body> as a sibling instead of a descendant of the header.
+      <div class="fixed inset-0 z-[60]" onClick=close/>
+      <div
+        role="listbox"
+        aria-labelledby=pickerId
+        class="fixed z-[61] max-h-72 w-full min-w-44 overflow-y-auto rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg"
+        style=`top: ${menuPos.top}px; left: ${menuPos.left}px; width: ${menuPos.width}px;`
+        onMouseLeave() {
+          input.previewChange(input.field, null);
+        }
+      >
+        <for|option| of=input.options by=(option) => option.name>
+        <button
+          type="button"
+          role="option"
+          aria-selected=(option.name === input.value)
+          class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-popover-foreground transition-colors hover:bg-accent hover:text-accent-foreground aria-selected:bg-accent aria-selected:text-accent-foreground"
+          onMouseEnter() {
+            input.previewChange(input.field, option.name);
+          }
+          onClick() {
+            input.valueChange(input.field, option.name);
+            close();
+          }
+        >
+          <if=option.swatch>
+            <span
+              class="size-3.5 shrink-0 rounded-full border border-border/50"
+              style=`background: ${option.swatch}`
+            />
+          </if>
+          <span class="flex-1 truncate">${option.label}</span>
+          <if=(option.name === input.value)>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="size-3.5 shrink-0"
+            >
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+          </if>
+        </button>
+      </for>
+      </div>
+    </portal>
+  </if>
+</div>

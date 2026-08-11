@@ -1,0 +1,7 @@
+{
+  "title": "Login 01",
+  "description": "A simple login form on a centered card.",
+  "categories": ["authentication", "login"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "button", "card", "input", "label"]
+}

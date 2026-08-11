@@ -1,0 +1,15 @@
+{
+  "title": "Sidebar 08",
+  "description": "A sidebar with collapsible sections, projects with a dropdown menu, secondary nav, and a user menu.",
+  "categories": ["sidebar", "navigation"],
+  "dependencies": [],
+  "registryDependencies": [
+    "utils",
+    "sidebar",
+    "collapsible",
+    "dropdown-menu",
+    "avatar",
+    "breadcrumb",
+    "separator"
+  ]
+}

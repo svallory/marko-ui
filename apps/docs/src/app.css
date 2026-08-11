@@ -1,3 +1,4 @@
 @import "@marko-ui/registry/styles/globals.css";
+@import "./tags/typeset/typeset.css";
 @source "../../**/*.marko";
 @source "../../../packages/registry/default/**/*.{marko,ts}";

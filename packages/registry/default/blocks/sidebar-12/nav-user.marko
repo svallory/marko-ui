@@ -1,0 +1,59 @@
+import Avatar from "@marko-ui/registry/ui/avatar/avatar.marko";
+import DropdownMenu from "@marko-ui/registry/ui/dropdown-menu/dropdown-menu.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+
+export interface NavUserData {
+  name: string;
+  email: string;
+  avatar: string;
+}
+
+export interface Input {
+  user: NavUserData;
+}
+
+static const MENU_ITEMS = [
+  { type: "item" as const, value: "upgrade", label: "Upgrade to Pro" },
+  { type: "separator" as const },
+  { type: "item" as const, value: "account", label: "Account" },
+  { type: "item" as const, value: "billing", label: "Billing" },
+  { type: "item" as const, value: "notifications", label: "Notifications" },
+  { type: "separator" as const },
+  { type: "item" as const, value: "logout", label: "Log out" },
+];
+
+<SidebarMenu>
+  <SidebarMenuItem>
+    <DropdownMenu items=MENU_ITEMS class="min-w-56 rounded-lg">
+      <@trigger|triggerProps|>
+        <SidebarMenuButton
+          ...triggerProps
+          class="h-12 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+        >
+          <Avatar src=input.user.avatar alt=input.user.name fallback="CN" class="h-8 w-8 rounded-lg"/>
+          <div class="grid flex-1 text-left text-sm leading-tight">
+            <span class="truncate font-medium">${input.user.name}</span>
+            <span class="truncate text-xs">${input.user.email}</span>
+          </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="ml-auto size-4"
+          >
+            <path d="m7 15 5 5 5-5"/>
+            <path d="m7 9 5-5 5 5"/>
+          </svg>
+        </SidebarMenuButton>
+      </@trigger>
+    </DropdownMenu>
+  </SidebarMenuItem>
+</SidebarMenu>

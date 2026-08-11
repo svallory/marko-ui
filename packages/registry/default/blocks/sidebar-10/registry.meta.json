@@ -1,0 +1,7 @@
+{
+  "title": "Sidebar 10",
+  "description": "A sidebar with a team switcher, favorites, collapsible workspaces, and secondary navigation, plus a header with page actions.",
+  "categories": ["sidebar", "navigation"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "sidebar", "dropdown-menu", "popover", "collapsible", "breadcrumb", "separator", "button"]
+}

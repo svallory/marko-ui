@@ -1,0 +1,45 @@
+export interface Input {
+  class?: string;
+}
+
+static const NAV_ITEMS = [
+  { href: "/", label: "Home" },
+  { href: "/docs", label: "Docs" },
+  { href: "/blocks", label: "Blocks" },
+  { href: "/typeset", label: "Typeset" },
+  { href: "/create", label: "Create" },
+];
+
+<details class=`relative ${input.class ?? ""}` data-slot="mobile-nav">
+  <summary
+    class="flex h-8 w-8 cursor-pointer list-none items-center justify-center rounded-md text-foreground [&::-webkit-details-marker]:hidden"
+    aria-label="Toggle menu"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 6h16"/>
+      <path d="M4 12h16"/>
+      <path d="M4 18h16"/>
+    </svg>
+  </summary>
+  <nav class="absolute left-0 top-full z-50 mt-2 flex w-48 flex-col gap-1 rounded-md border border-border bg-popover p-2 shadow-md">
+    <for|item| of=NAV_ITEMS by=(item)=>item.href>
+      <a
+        href=item.href
+        class="rounded-sm px-2 py-1.5 text-sm font-medium text-popover-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+      >
+        ${item.label}
+      </a>
+    </for>
+  </nav>
+</details>

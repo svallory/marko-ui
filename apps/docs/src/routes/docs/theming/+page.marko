@@ -1,0 +1,348 @@
+// Theming — adapted from shadcn's content/docs/(root)/theming.mdx. The token
+// table and the base-color list are read off our own
+// packages/registry/default/styles/*.css, so the values here are ours, not
+// shadcn's (notably: our radius scale uses +/- px offsets, not multipliers).
+import "../../../tags/docs/docs-article.marko";
+import "../../../tags/docs/code-block.marko";
+
+static const TOC = [
+  { id: "convention", label: "Token Convention" },
+  { id: "tokens", label: "Theme Tokens" },
+  { id: "base-colors", label: "Base Colors" },
+  { id: "radius", label: "Radius Scale" },
+  { id: "customizing", label: "Customizing" },
+  { id: "adding-tokens", label: "Adding New Tokens" },
+  { id: "dark", label: "Dark Mode" },
+];
+
+static const USAGE = `<div class="bg-background text-foreground">
+  <div class="bg-primary text-primary-foreground rounded-md p-4">
+    Primary surface
+  </div>
+</div>`;
+
+static const PAIR = `--primary: oklch(0.205 0 0);
+--primary-foreground: oklch(0.985 0 0);`;
+
+static const RADIUS_SCALE = `:root {
+  --radius: 0.625rem;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}`;
+
+static const OVERRIDE = `@import "@marko-ui/registry/styles/globals.css";
+@source "./**/*.marko";
+
+/* Your overrides come after the import so they win. */
+:root {
+  --primary: oklch(0.55 0.22 264);
+  --primary-foreground: oklch(0.985 0 0);
+  --radius: 0.375rem;
+}
+
+.dark {
+  --primary: oklch(0.7 0.19 264);
+  --primary-foreground: oklch(0.15 0 0);
+}`;
+
+static const ADD_TOKEN = `:root {
+  --warning: oklch(0.84 0.16 84);
+  --warning-foreground: oklch(0.25 0.05 84);
+}
+
+.dark {
+  --warning: oklch(0.55 0.14 84);
+  --warning-foreground: oklch(0.98 0 0);
+}
+
+/* Expose it to Tailwind so bg-warning / text-warning-foreground exist. */
+@theme inline {
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+}`;
+
+static const INSTALL_BASE = `# neutral (the default)
+bunx shadcn@latest add https://marko-ui.saulo.tech/r/style.json
+
+# or pick another base color
+bunx shadcn@latest add https://marko-ui.saulo.tech/r/style-slate.json`;
+
+// Token reference. "Used by" names real components in our registry.
+static const TOKENS = [
+  {
+    token: "background / foreground",
+    controls: "The default page surface and body text.",
+    usedBy: "The page shell, prose, default text.",
+  },
+  {
+    token: "card / card-foreground",
+    controls: "Elevated surfaces and the content on them.",
+    usedBy: "Card, panels, Item.",
+  },
+  {
+    token: "popover / popover-foreground",
+    controls: "Floating surfaces and their content.",
+    usedBy: "Popover, DropdownMenu, ContextMenu, Menubar, HoverCard, Combobox, Select.",
+  },
+  {
+    token: "primary / primary-foreground",
+    controls: "High-emphasis actions and selected states.",
+    usedBy: "Default Button, Switch (checked), Badge, active accents.",
+  },
+  {
+    token: "secondary / secondary-foreground",
+    controls: "Lower-emphasis filled actions.",
+    usedBy: "Secondary Button, secondary Badge.",
+  },
+  {
+    token: "muted / muted-foreground",
+    controls: "Subtle surfaces and de-emphasized content.",
+    usedBy: "Descriptions, placeholders, Skeleton, Empty, table headers.",
+  },
+  {
+    token: "accent / accent-foreground",
+    controls: "Hover, focus, and highlighted states.",
+    usedBy: "Ghost Button, menu item highlight, hovered rows, sidebar links.",
+  },
+  {
+    token: "destructive / destructive-foreground",
+    controls: "Destructive actions and error emphasis.",
+    usedBy: "Destructive Button, invalid form fields, destructive menu items.",
+  },
+  {
+    token: "border",
+    controls: "Default borders and dividers.",
+    usedBy: "Card, Table, Separator, layout dividers.",
+  },
+  {
+    token: "input",
+    controls: "Form-control borders and the unchecked control surface.",
+    usedBy: "Input, Textarea, Select, Switch (unchecked).",
+  },
+  {
+    token: "ring",
+    controls: "Focus rings.",
+    usedBy: "Every focusable control.",
+  },
+  {
+    token: "chart-1 … chart-5",
+    controls: "The default categorical chart palette.",
+    usedBy: "Chart-driven blocks.",
+  },
+  {
+    token: "sidebar / sidebar-foreground",
+    controls: "The sidebar surface and its default text.",
+    usedBy: "Sidebar container and content.",
+  },
+  {
+    token: "sidebar-primary / sidebar-primary-foreground",
+    controls: "High-emphasis items inside the sidebar.",
+    usedBy: "Active sidebar items, icon tiles.",
+  },
+  {
+    token: "sidebar-accent / sidebar-accent-foreground",
+    controls: "Hover and selected states inside the sidebar.",
+    usedBy: "Sidebar menu hover, open groups.",
+  },
+  {
+    token: "sidebar-border / sidebar-ring",
+    controls: "Sidebar-specific borders and focus rings.",
+    usedBy: "Sidebar headers, groups, focused sidebar controls.",
+  },
+  {
+    token: "radius",
+    controls: "The base corner-radius, which the radius-* scale derives from.",
+    usedBy: "Buttons, inputs, cards, popovers.",
+  },
+];
+
+static const BASE_COLORS = [
+  { name: "neutral", item: "style", note: "The default. Pure greys — chroma 0 on every neutral token." },
+  { name: "zinc", item: "style-zinc", note: "Greys with a faint violet cast." },
+  { name: "slate", item: "style-slate", note: "Greys with a distinct blue cast — the coolest option." },
+  { name: "stone", item: "style-stone", note: "Greys with a warm, slightly brown cast." },
+  { name: "gray", item: "style-gray", note: "Greys with a subtle blue-green cast." },
+];
+
+static const SWATCHES = [
+  { label: "background", surface: "bg-background text-foreground border border-border" },
+  { label: "card", surface: "bg-card text-card-foreground border border-border" },
+  { label: "primary", surface: "bg-primary text-primary-foreground" },
+  { label: "secondary", surface: "bg-secondary text-secondary-foreground" },
+  { label: "muted", surface: "bg-muted text-muted-foreground" },
+  { label: "accent", surface: "bg-accent text-accent-foreground" },
+  { label: "destructive", surface: "bg-destructive text-destructive-foreground" },
+];
+
+<docs-article
+  title="Theming"
+  description="marko-ui components are styled entirely with semantic CSS variables. Change the variables to change the look — you never have to touch component classes."
+  href="/docs/theming"
+  toc=TOC
+>
+  <p>
+    Every component in the registry uses semantic Tailwind utilities like
+    <code>bg-background</code>, <code>text-muted-foreground</code>, and
+    <code>border-border</code>. Those map to CSS custom properties defined in
+    <code>packages/registry/default/styles/globals.css</code>, which the registry ships to your
+    project as its own <code>globals.css</code>.
+  </p>
+
+  <code-block language="marko" code=USAGE/>
+
+  <h2 id="convention">Token Convention</h2>
+
+  <p>
+    Tokens come in background/foreground pairs. The base token is the surface color; the
+    <code>-foreground</code> token is the text and icon color that sits on that surface. The
+    <code>-background</code> suffix is omitted from the surface token, so <code>primary</code>
+    pairs with <code>primary-foreground</code>.
+  </p>
+
+  <code-block language="css" code=PAIR/>
+
+  <p>
+    Given those two variables, <code>bg-primary text-primary-foreground</code> is guaranteed to be
+    a legible combination in both light and dark mode. Sticking to the pairs is what keeps a
+    re-themed app readable without auditing every component.
+  </p>
+
+  <div class="my-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <for|swatch| of=SWATCHES by=(swatch)=>swatch.label>
+      <div class=`flex h-20 flex-col justify-end rounded-lg p-3 text-xs font-medium ${swatch.surface}`>
+        ${swatch.label}
+      </div>
+    </for>
+  </div>
+
+  <p>
+    The swatches above are rendered with the live tokens on this page — toggle the theme in the
+    header and they follow.
+  </p>
+
+  <h2 id="tokens">Theme Tokens</h2>
+
+  <p>
+    These are defined under <code>:root</code> and re-defined under <code>.dark</code>, then
+    exposed to Tailwind through <code>@theme inline</code>.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Token</th>
+        <th>What it controls</th>
+        <th>Used by</th>
+      </tr>
+    </thead>
+    <tbody>
+      <for|entry| of=TOKENS by=(entry)=>entry.token>
+        <tr>
+          <td><code>${entry.token}</code></td>
+          <td>${entry.controls}</td>
+          <td>${entry.usedBy}</td>
+        </tr>
+      </for>
+    </tbody>
+  </table>
+
+  <h2 id="base-colors">Base Colors</h2>
+
+  <p>
+    The registry publishes five theme items, one per shadcn base color. They differ only in the hue
+    and chroma of the neutral ramp — every token name is identical, so components behave the same
+    whichever you pick.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Base color</th>
+        <th>Registry item</th>
+        <th>Character</th>
+      </tr>
+    </thead>
+    <tbody>
+      <for|base| of=BASE_COLORS by=(base)=>base.name>
+        <tr>
+          <td><code>${base.name}</code></td>
+          <td><code>${base.item}</code></td>
+          <td>${base.note}</td>
+        </tr>
+      </for>
+    </tbody>
+  </table>
+
+  <code-block language="bash" code=INSTALL_BASE/>
+
+  <p>
+    Each item carries its palette twice: as the full <code>globals.css</code> file, and as
+    <code>cssVars</code> in the registry JSON so the shadcn CLI can merge the variables into a
+    stylesheet you already have. Whichever you install, the file lands at
+    <code>src/styles/globals.css</code>.
+  </p>
+
+  <h2 id="radius">Radius Scale</h2>
+
+  <p>
+    <code>--radius</code> is the single source of truth for corner rounding. The scale is derived
+    from it with fixed pixel offsets, so changing one value re-rounds the whole UI.
+  </p>
+
+  <code-block language="css" filename="src/styles/globals.css" code=RADIUS_SCALE/>
+
+  <p>
+    Set <code>--radius: 0</code> for square corners, or push it up to <code>1rem</code> for a
+    softer look. Because the small sizes subtract a fixed amount rather than scaling
+    proportionally, very small <code>--radius</code> values clamp to square rather than going
+    negative.
+  </p>
+
+  <h2 id="customizing">Customizing</h2>
+
+  <p>
+    Override tokens in your own stylesheet, after the registry import. You do not need to fork
+    <code>globals.css</code> to change a color.
+  </p>
+
+  <code-block language="css" filename="src/styles/globals.css" code=OVERRIDE/>
+
+  <p>
+    Remember to override the <code>.dark</code> value too. A brand color tuned for a white
+    background is usually too dark on a near-black one — that is why every token in the file is
+    defined twice.
+  </p>
+
+  <h2 id="adding-tokens">Adding New Tokens</h2>
+
+  <p>
+    A new token takes three steps: define it for light, define it for dark, and register it with
+    Tailwind so utilities are generated.
+  </p>
+
+  <code-block language="css" code=ADD_TOKEN/>
+
+  <p>
+    <code>@theme inline</code> matters here. Without the <code>--color-*</code> entry, Tailwind
+    has no <code>bg-warning</code> utility to emit and the class silently does nothing.
+  </p>
+
+  <h2 id="dark">Dark Mode</h2>
+
+  <p>
+    Dark mode is the same tokens redefined under a <code>.dark</code> class. Our stylesheet
+    declares the variant explicitly:
+  </p>
+
+  <code-block language="css" code="@custom-variant dark (&:is(.dark *));"/>
+
+  <p>
+    Everything about toggling that class — including the inline script that prevents a flash of the
+    wrong theme — is covered in <a href="/docs/dark-mode">Dark Mode</a>.
+  </p>
+</docs-article>

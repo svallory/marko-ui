@@ -1,0 +1,33 @@
+export interface Input {
+  class?: string;
+}
+
+static const NAV_ITEMS = [
+  { href: "/", label: "Home" },
+  { href: "/docs", label: "Docs" },
+  { href: "/blocks", label: "Blocks" },
+  { href: "/typeset", label: "Typeset" },
+  { href: "/create", label: "Create" },
+];
+
+<nav class=`items-center gap-0 ${input.class ?? ""}` data-slot="main-nav">
+  <for|item| of=NAV_ITEMS by=(item)=>item.href>
+    <a
+      href=item.href
+      data-site-nav-link
+      data-href=item.href
+      class="inline-flex h-8 items-center rounded-md px-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground data-active:text-foreground"
+    >
+      ${item.label}
+    </a>
+  </for>
+</nav>
+
+<script>
+  const path = window.location.pathname;
+  document.querySelectorAll("[data-site-nav-link]").forEach((link) => {
+    const href = link.getAttribute("data-href");
+    const isActive = href === "/" ? path === "/" : path === href || path.startsWith(href + "/");
+    link.toggleAttribute("data-active", Boolean(isActive));
+  });
+</script>

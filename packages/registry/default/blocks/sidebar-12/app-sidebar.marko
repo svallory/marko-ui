@@ -1,0 +1,79 @@
+import Sidebar from "@marko-ui/registry/ui/sidebar/sidebar.marko";
+import SidebarHeader from "@marko-ui/registry/ui/sidebar/header.marko";
+import SidebarContent from "@marko-ui/registry/ui/sidebar/content.marko";
+import SidebarFooter from "@marko-ui/registry/ui/sidebar/footer.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+import DatePicker from "./date-picker.marko";
+import Calendars from "./calendars.marko";
+import NavUser from "./nav-user.marko";
+import type { CalendarGroup } from "./calendars.marko";
+
+export interface Input {
+  open?: boolean;
+}
+
+// NOTE: shadcn's SidebarRail (a hover/drag handle on the sidebar's right
+// edge for resizing/toggling) has no equivalent in our sidebar sub-parts
+// yet, so it is omitted here, matching the sidebar-05/06 precedent.
+// SidebarTrigger in the page header covers open/close.
+
+// This is sample data.
+static const USER = {
+  name: "shadcn",
+  email: "m@example.com",
+  avatar: "/avatars/shadcn.jpg",
+};
+
+static const CALENDARS: CalendarGroup[] = [
+  {
+    name: "My Calendars",
+    items: ["Personal", "Work", "Family"],
+  },
+  {
+    name: "Favorites",
+    items: ["Holidays", "Birthdays"],
+  },
+  {
+    name: "Other",
+    items: ["Travel", "Reminders", "Deadlines"],
+  },
+];
+
+<Sidebar open=input.open>
+  <@content>
+    <SidebarHeader class="h-16 border-b border-sidebar-border">
+      <NavUser user=USER/>
+    </SidebarHeader>
+    <SidebarContent>
+      <DatePicker/>
+      <Separator class="mx-0"/>
+      <Calendars calendars=CALENDARS/>
+    </SidebarContent>
+    <SidebarFooter>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M5 12h14"/>
+              <path d="M12 5v14"/>
+            </svg>
+            <span>New Calendar</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarFooter>
+  </@content>
+</Sidebar>

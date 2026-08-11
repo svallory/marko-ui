@@ -1,0 +1,16 @@
+{
+  "title": "Sidebar 15",
+  "description": "A dual sidebar layout with a collapsible left navigation panel and a static right panel showing a calendar and events.",
+  "categories": ["sidebar", "dashboard"],
+  "dependencies": [],
+  "registryDependencies": [
+    "utils",
+    "sidebar",
+    "separator",
+    "breadcrumb",
+    "collapsible",
+    "calendar",
+    "avatar",
+    "dropdown-menu"
+  ]
+}

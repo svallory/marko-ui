@@ -1,4 +1,13 @@
 import "../app.css";
+import "../tags/site/site-header.marko";
+import "../tags/site/site-footer.marko";
+
+// Block previews under /blocks/view/ render chrome-free: each block IS a
+// full page, so site header/footer would frame it wrongly inside the
+// gallery's preview iframes (mirrors shadcn's isolated /view route).
+// Resolved from the request URL server-side so the chrome is absent from
+// the SSR payload rather than hidden after hydration.
+<const/isBlockPreview=$global.url.pathname.startsWith("/blocks/view/")/>
 
 <!doctype html>
 <html lang="en">
@@ -18,11 +27,15 @@ import "../app.css";
       })();
     </html-script>
   </head>
-  <body class="min-h-screen bg-background text-foreground antialiased">
-    <header class="flex items-center justify-between border-b border-border px-8 py-4">
-      <a href="/" class="text-sm font-semibold tracking-tight">marko-ui</a>
-      <theme-toggle/>
-    </header>
-    <${input.content}/>
+  <body class="flex min-h-screen flex-col bg-background text-foreground antialiased">
+    <if=!isBlockPreview>
+      <site-header/>
+    </if>
+    <div class="flex-1">
+      <${input.content}/>
+    </div>
+    <if=!isBlockPreview>
+      <site-footer/>
+    </if>
   </body>
 </html>

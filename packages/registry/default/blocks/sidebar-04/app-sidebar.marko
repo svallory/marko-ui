@@ -1,0 +1,144 @@
+import Sidebar from "@marko-ui/registry/ui/sidebar/sidebar.marko";
+import SidebarHeader from "@marko-ui/registry/ui/sidebar/header.marko";
+import SidebarContent from "@marko-ui/registry/ui/sidebar/content.marko";
+import SidebarGroup from "@marko-ui/registry/ui/sidebar/group.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+
+export interface Input {
+  open?: boolean;
+}
+
+static const NAV_MAIN = [
+  {
+    id: "getting-started",
+    title: "Getting Started",
+    url: "#",
+    items: [
+      { id: "installation", title: "Installation", url: "#" },
+      { id: "project-structure", title: "Project Structure", url: "#" },
+    ],
+  },
+  {
+    id: "build-your-application",
+    title: "Build Your Application",
+    url: "#",
+    items: [
+      { id: "routing", title: "Routing", url: "#" },
+      { id: "data-fetching", title: "Data Fetching", url: "#", active: true },
+      { id: "rendering", title: "Rendering", url: "#" },
+      { id: "caching", title: "Caching", url: "#" },
+      { id: "styling", title: "Styling", url: "#" },
+      { id: "optimizing", title: "Optimizing", url: "#" },
+      { id: "configuring", title: "Configuring", url: "#" },
+      { id: "testing", title: "Testing", url: "#" },
+      { id: "authentication", title: "Authentication", url: "#" },
+      { id: "deploying", title: "Deploying", url: "#" },
+      { id: "upgrading", title: "Upgrading", url: "#" },
+      { id: "examples", title: "Examples", url: "#" },
+    ],
+  },
+  {
+    id: "api-reference",
+    title: "API Reference",
+    url: "#",
+    items: [
+      { id: "components", title: "Components", url: "#" },
+      { id: "file-conventions", title: "File Conventions", url: "#" },
+      { id: "functions", title: "Functions", url: "#" },
+      { id: "next-config", title: "next.config.js Options", url: "#" },
+      { id: "cli", title: "CLI", url: "#" },
+      { id: "edge-runtime", title: "Edge Runtime", url: "#" },
+    ],
+  },
+  {
+    id: "architecture",
+    title: "Architecture",
+    url: "#",
+    items: [
+      { id: "accessibility", title: "Accessibility", url: "#" },
+      { id: "fast-refresh", title: "Fast Refresh", url: "#" },
+      { id: "compiler", title: "Next.js Compiler", url: "#" },
+      { id: "browsers", title: "Supported Browsers", url: "#" },
+      { id: "turbopack", title: "Turbopack", url: "#" },
+    ],
+  },
+  {
+    id: "community",
+    title: "Community",
+    url: "#",
+    items: [{ id: "contribution-guide", title: "Contribution Guide", url: "#" }],
+  },
+];
+
+<Sidebar open=input.open>
+  <@content>
+    <SidebarHeader>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton href="#" class="h-12">
+            <div
+              class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="size-4"
+              >
+                <path d="M21 7v6h-6"/>
+                <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/>
+                <path d="M3 7v6h6"/>
+                <path d="M21 17a9 9 0 0 1-9 9 9 9 0 0 1-6-2.3L3 21"/>
+              </svg>
+            </div>
+            <div class="flex flex-col gap-0.5 leading-none">
+              <span class="font-medium">Documentation</span>
+              <span>v1.0.0</span>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarHeader>
+    <SidebarContent>
+      <SidebarGroup>
+        <SidebarMenu class="gap-2">
+          <for|section| of=NAV_MAIN by=(section) => section.id>
+            <SidebarMenuItem>
+              <SidebarMenuButton href=section.url class="font-medium">
+                ${section.title}
+              </SidebarMenuButton>
+              <if=section.items.length !== 0>
+                <!-- Kit gap: ui/sidebar has no SidebarMenuSub/SidebarMenuSubItem/SidebarMenuSubButton
+                     primitives (shadcn source uses those here). Falling back to a plain <ul>/<li>
+                     border wrapper and reusing SidebarMenuButton at a smaller size for the sub-links,
+                     so active/hover/focus styling stays sourced from the design system instead of a
+                     hand-duplicated class list. See registry.meta.json "deviations". -->
+                <ul class="ml-0 flex min-w-0 flex-col gap-1 border-l-0 px-1.5 py-0.5">
+                  <for|item| of=section.items by=(item) => item.id>
+                    <li>
+                      <SidebarMenuButton
+                        href=item.url
+                        active=item.active
+                        class="h-7 text-sidebar-foreground/70 data-[active=true]:font-normal"
+                      >
+                        ${item.title}
+                      </SidebarMenuButton>
+                    </li>
+                  </for>
+                </ul>
+              </if>
+            </SidebarMenuItem>
+          </for>
+        </SidebarMenu>
+      </SidebarGroup>
+    </SidebarContent>
+  </@content>
+</Sidebar>

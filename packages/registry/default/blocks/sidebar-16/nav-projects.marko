@@ -1,0 +1,107 @@
+import SidebarGroup from "@marko-ui/registry/ui/sidebar/group.marko";
+import SidebarGroupLabel from "@marko-ui/registry/ui/sidebar/group-label.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+import DropdownMenu from "@marko-ui/registry/ui/dropdown-menu/dropdown-menu.marko";
+
+export interface ProjectItem {
+  id: string;
+  name: string;
+  url: string;
+  /** SVG path `d` attribute(s) for a 24x24 lucide-style icon, rendered inline. */
+  icon: string;
+}
+
+export interface Input {
+  projects: ProjectItem[];
+  class?: string;
+}
+
+// NOTE: our sidebar sub-parts have no SidebarMenuAction equivalent, so the
+// "more" trigger button is composed here from plain markup, following the
+// pattern in blocks/sidebar-07/nav-projects.marko. The source's
+// isMobile-aware dropdown side/align (bottom+end on mobile, right+start on
+// desktop) has no equivalent in our zag-based DropdownMenu input, so it is
+// omitted; the menu positions itself automatically. Deviation from the
+// source, noted per block-porting rules.
+
+<SidebarGroup class=input.class>
+  <SidebarGroupLabel>Projects</SidebarGroupLabel>
+  <SidebarMenu>
+    <for|project| of=input.projects by=(project) => project.id>
+      <const/dropdownItems=[
+        { type: "item" as const, value: "view", label: "View Project" },
+        { type: "item" as const, value: "share", label: "Share Project" },
+        { type: "separator" as const },
+        { type: "item" as const, value: "delete", label: "Delete Project", danger: true },
+      ]/>
+      <SidebarMenuItem>
+        <SidebarMenuButton href=project.url>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d=project.icon/>
+          </svg>
+          <span>${project.name}</span>
+        </SidebarMenuButton>
+        <DropdownMenu items=dropdownItems class="w-48">
+          <@trigger|attrs|>
+            <button
+              ...attrs
+              type="button"
+              data-slot="sidebar-menu-action"
+              class="absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground group-hover/menu-item:opacity-100 md:opacity-0"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="size-4"
+              >
+                <circle cx="12" cy="12" r="1"/>
+                <circle cx="19" cy="12" r="1"/>
+                <circle cx="5" cy="12" r="1"/>
+              </svg>
+              <span class="sr-only">More</span>
+            </button>
+          </@trigger>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </for>
+    <SidebarMenuItem>
+      <SidebarMenuButton>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="1"/>
+          <circle cx="19" cy="12" r="1"/>
+          <circle cx="5" cy="12" r="1"/>
+        </svg>
+        <span>More</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  </SidebarMenu>
+</SidebarGroup>

@@ -1,0 +1,16 @@
+import "../../tags/site/main-nav.marko";
+import "../../tags/site/mobile-nav.marko";
+import "../../tags/site/github-link.marko";
+import "../../tags/theme-toggle.marko";
+
+<header class="sticky top-0 z-50 w-full border-b border-border bg-background" data-slot="site-header">
+  <div class="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+    <mobile-nav class="flex lg:hidden"/>
+    <a href="/" class="text-sm font-semibold tracking-tight">marko-ui</a>
+    <main-nav class="hidden lg:flex"/>
+    <div class="ml-auto flex items-center gap-1">
+      <github-link/>
+      <theme-toggle/>
+    </div>
+  </div>
+</header>
