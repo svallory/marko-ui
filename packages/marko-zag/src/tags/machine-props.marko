@@ -3,7 +3,7 @@
 // (overridable via input.id), and merges every other attribute written on
 // this tag — callback adaptations and inline overrides alike:
 //
-//   <machine-props/machineProps props=input pick=switchMachine.props
+//   <machine-props/machineProps from=input pick=switchMachine.props
 //     onCheckedChange(details) {
 //       input.checkedChange?.(details.checked);
 //     }/>
@@ -16,7 +16,7 @@
 // purpose: it is the component's public contract.
 export interface Input {
   /** The component's full input object. */
-  props: Record<string, any>;
+  from: Record<string, any>;
   /** Machine prop names — the machine module's exported `props` array. */
   pick: readonly string[];
   /** Anything else: callback adaptations and machine-prop overrides. */
@@ -25,11 +25,11 @@ export interface Input {
 
 <id/generatedId/>
 <const/machineProps=() => {
-  const { props, pick, ...overrides } = input;
+  const { from, pick, ...overrides } = input;
   const picked: Record<string, any> = {};
   for (const name of pick) {
-    if (props[name] !== undefined) picked[name] = props[name];
+    if (from[name] !== undefined) picked[name] = from[name];
   }
-  return { id: props.id ?? generatedId, ...picked, ...overrides };
+  return { id: from.id ?? generatedId, ...picked, ...overrides };
 }/>
 <return=machineProps/>

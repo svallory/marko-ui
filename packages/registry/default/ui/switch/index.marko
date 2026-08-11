@@ -20,7 +20,7 @@ export interface Input
   checkedChange?: (checked: boolean) => void;
 }
 
-<machine-props/machineProps props=input pick=switchMachine.props
+<machine-props/machineProps from=input pick=switchMachine.props
   onCheckedChange(details: switchMachine.CheckedChangeDetails) {
     input.checkedChange?.(details.checked);
   }/>
