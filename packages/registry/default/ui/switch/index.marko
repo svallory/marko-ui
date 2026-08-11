@@ -20,14 +20,10 @@ export interface Input
   checkedChange?: (checked: boolean) => void;
 }
 
-<id/uid>
-<const/machineProps=(): switchMachine.Props => ({
-  ...switchMachine.splitProps(input)[0],
-  id: input.id ?? uid,
-  onCheckedChange(details) {
+<machine-props/machineProps props=input pick=switchMachine.props
+  onCheckedChange(details: switchMachine.CheckedChangeDetails) {
     input.checkedChange?.(details.checked);
-  },
-})>
+  }/>
 <service/service machine=() => switchMachine.machine props=machineProps/>
 <connect/api=(service, normalizeProps) =>
   switchMachine.connect(service, normalizeProps)
