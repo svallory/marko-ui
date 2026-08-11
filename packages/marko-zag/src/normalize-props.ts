@@ -25,6 +25,15 @@ const propMap: Dict = {
   defaultChecked: "checked",
   onChange: "onInput",
   onDoubleClick: "onDblClick",
+  // Zag emits the React-style `tabIndex`. Marko writes attribute keys verbatim,
+  // so the camelCase spelling is treated as a *different* attribute from the
+  // `tabindex` already on the element: each update removes the old one and adds
+  // the new. Removing `tabindex` from the focused element blurs it in Chromium
+  // (setting it in place does not), which made every roving-focus widget go
+  // keyboard-dead after one keypress — the slider lost focus to <body> after a
+  // single arrow press. Mapping to the canonical lowercase name keeps it a
+  // single in-place attribute write.
+  tabIndex: "tabindex",
 };
 
 const uppercasePattern = /[A-Z]/g;
