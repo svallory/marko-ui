@@ -1,0 +1,156 @@
+// One live Zag toast child service, rendered by <Toaster> for each entry in the
+// group machine's `toasts` context.
+//
+// Serialization contract: this component is only ever instantiated on the
+// client (the toaster region server-renders empty, because toasts are created
+// by user interaction). Its inputs are two closures created in the parent's
+// template — `options` and `parent` — plus a number. Template-created closures
+// are serializable currency in Marko; the unserializable values they close over
+// (the running group service, the Zag option object) never appear as tag input
+// themselves.
+import * as toastMachine from "@zag-js/toast";
+import type { MarkoService } from "marko-zag";
+import { cn } from "../../lib/utils.ts";
+
+export interface Input {
+  /** Getter for this toast's options as held by the group machine. */
+  options: () => toastMachine.Props;
+  /** Getter for the running group service that owns this toast. */
+  parent: () => MarkoService;
+  /** This toast's position in the group, front-most first. */
+  index: number;
+  /**
+   * The group service's update counter.
+   *
+   * Half of this machine's rendered geometry comes from the PARENT's context —
+   * `computed("height")`, `heightIndex`, `heightBefore` and `zIndex` all read
+   * `prop("parent").context`. A group update therefore has to invalidate this
+   * child's connected api, and reading the counter inside `machineProps` is
+   * what makes `<service>`'s tracking script call `propsChanged()` here.
+   */
+  groupRevision: number;
+}
+
+<const/machineProps=() => ({
+  ...input.options(),
+  index: input.index,
+  parent: input.parent(),
+  groupRevision: input.groupRevision,
+})/>
+<service/service machine=() => toastMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  toastMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+// The machine measures this toast in a microtask fired by its entry action —
+// which in Marko lands before the browser has laid the new element out, so the
+// measurement reads 0 and the whole stack collapses onto one offset. Re-send
+// the machine's own MEASURE event once layout has actually happened.
+<lifecycle
+  onMount() {
+    const frame = requestAnimationFrame(() => {
+      requestAnimationFrame(() => service.service?.send({ type: "MEASURE" }));
+    });
+    return () => cancelAnimationFrame(frame);
+  }
+/>
+
+<div
+  ...api().getRootProps()
+  data-slot="toast"
+  class=cn(
+    // Zag drives placement/stacking through CSS custom properties on this
+    // element (--x/--y/--scale/--z-index/--height/--opacity). They must be
+    // consumed by the `translate`/`scale` PROPERTIES, not by Tailwind's
+    // `transform` utilities, which would overwrite them.
+    "group pointer-events-auto relative flex w-[356px] max-w-[calc(100vw-2rem)] items-start gap-3 rounded-lg border border-border bg-popover p-4 text-sm text-popover-foreground shadow-lg outline-none",
+    // `--scale` is only set for background toasts in overlap mode, so it needs
+    // an identity fallback. `--height` is deliberately NOT consumed: Zag
+    // measures each toast with `offsetHeight`, and binding the CSS `height` to
+    // the measurement it feeds produces a 0px fixed point on first paint.
+    // `min-h` keeps the stack offsets stable while the content sizes itself.
+    "min-h-14 [translate:var(--x)_var(--y)] [scale:var(--scale,1)] [z-index:var(--z-index)] opacity-[var(--opacity)]",
+    "[will-change:translate,opacity,scale] [transition:translate_400ms,scale_400ms,opacity_400ms] [transition-timing-function:cubic-bezier(0.21,1.02,0.73,1)]",
+    "data-[state=closed]:[transition:translate_400ms,scale_400ms,opacity_200ms]",
+    "focus-visible:ring-[3px] focus-visible:ring-ring/50",
+    "data-[type=error]:border-destructive/50 data-[type=error]:text-destructive",
+  )
+>
+  // Ghost elements keep hover/pointer state stable across the gap between
+  // toasts and during exit transitions. The "before" ghost is scaled to twice
+  // the root height, so every real part must stack above it to stay clickable.
+  <span ...api().getGhostBeforeProps()/>
+
+  <if=(api().type === "success")>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-slot="toast-icon" class="mt-0.5 size-4 shrink-0 relative z-[1] text-emerald-500">
+      <path d="M21.801 10A10 10 0 1 1 17 3.335"/>
+      <path d="m9 11 3 3L22 4"/>
+    </svg>
+  </if>
+  <else-if=(api().type === "error")>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-slot="toast-icon" class="mt-0.5 size-4 shrink-0 relative z-[1] text-destructive">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" x2="12" y1="8" y2="12"/>
+      <line x1="12" x2="12.01" y1="16" y2="16"/>
+    </svg>
+  </else-if>
+  <else-if=(api().type === "warning")>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-slot="toast-icon" class="mt-0.5 size-4 shrink-0 relative z-[1] text-amber-500">
+      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+      <line x1="12" x2="12" y1="9" y2="13"/>
+      <line x1="12" x2="12.01" y1="17" y2="17"/>
+    </svg>
+  </else-if>
+  <else-if=(api().type === "info")>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-slot="toast-icon" class="mt-0.5 size-4 shrink-0 relative z-[1] text-blue-500">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" x2="12.01" y1="8" y2="8"/>
+      <line x1="12" x2="12" y1="12" y2="16"/>
+    </svg>
+  </else-if>
+  <else-if=(api().type === "loading")>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-slot="toast-icon" class="mt-0.5 size-4 shrink-0 relative z-[1] animate-spin text-muted-foreground">
+      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+    </svg>
+  </else-if>
+
+  <div class="relative z-[1] flex min-w-0 flex-1 flex-col gap-1">
+    <if=api().title>
+      <div ...api().getTitleProps() data-slot="toast-title" class="font-medium leading-none">
+        ${api().title}
+      </div>
+    </if>
+    <if=api().description>
+      <div ...api().getDescriptionProps() data-slot="toast-description" class="text-sm text-muted-foreground">
+        ${api().description}
+      </div>
+    </if>
+  </div>
+
+  <if=input.options().action>
+    <button
+      ...api().getActionTriggerProps()
+      data-slot="toast-action"
+      class="relative z-[1] inline-flex h-8 shrink-0 items-center rounded-md border border-border bg-transparent px-3 text-xs font-medium transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+    >
+      ${input.options().action?.label}
+    </button>
+  </if>
+
+  <if=api().closable>
+    <button
+      ...api().getCloseTriggerProps()
+      data-slot="toast-close"
+      aria-label="Dismiss notification"
+      class="relative z-[1] shrink-0 rounded-xs text-muted-foreground opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+        <path d="M18 6 6 18"/>
+        <path d="m6 6 12 12"/>
+      </svg>
+    </button>
+  </if>
+
+  <span ...api().getGhostAfterProps()/>
+</div>
