@@ -6,8 +6,23 @@ import "../app.css";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>shadcn-marko</title>
+    <html-script>
+      (function () {
+        var storedTheme = null;
+        try {
+          storedTheme = localStorage.getItem("theme");
+        } catch (error) {}
+        var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        var isDark = storedTheme ? storedTheme === "dark" : prefersDark;
+        document.documentElement.classList.toggle("dark", isDark);
+      })();
+    </html-script>
   </head>
-  <body class="min-h-screen bg-white text-gray-900 antialiased">
+  <body class="min-h-screen bg-background text-foreground antialiased">
+    <header class="flex items-center justify-between border-b border-border px-8 py-4">
+      <a href="/" class="text-sm font-semibold tracking-tight">shadcn-marko</a>
+      <theme-toggle/>
+    </header>
     <${input.content}/>
   </body>
 </html>
