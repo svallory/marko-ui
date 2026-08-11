@@ -1,0 +1,155 @@
+<docs-page title="How to Create a Marko-Zag Component" description="The complete recipe, using Switch — the reference implementation — as the worked example.">
+  <section class="space-y-3">
+    <h2 class="text-lg font-semibold">The mental model</h2>
+    <p>
+      A marko-zag component is three layers: a <strong>Zag machine</strong> supplies behavior and
+      accessibility, three <strong>marko-zag tags</strong> wire it into Marko's resumability model,
+      and <strong>Tailwind classes</strong> supply the look. The one rule everything else derives
+      from: Marko resumes pages by <em>serializing reactive state</em> — it never re-runs your
+      template in the browser. Zag's service and api objects contain functions from npm code and
+      cannot be serialized, so they must never become reactive state or cross a tag boundary as raw
+      values. Template-written closures <em>can</em> be serialized, which is why everything below
+      passes machines and apis around as <strong>getters</strong>.
+    </p>
+  </section>
+
+  <section class="space-y-3">
+    <h2 class="text-lg font-semibold">1. Name the files</h2>
+    <p>
+      A component lives in <code>ui/&lt;name&gt;/&lt;name&gt;.marko</code> (never
+      <code>index.marko</code> — tabs and conversations need real names). Multi-part components add
+      one file per part in the same directory (<code>header.marko</code>,
+      <code>content.marko</code>…) plus <code>variants.ts</code> when there are cva variants, and
+      <code>registry.meta.json</code> for registry metadata.
+    </p>
+  </section>
+
+  <section class="space-y-3">
+    <h2 class="text-lg font-semibold">2. Type the Input</h2>
+    <pre class="overflow-x-auto rounded-lg border bg-muted/50 p-4 text-sm"><code>import * as switchMachine from "@zag-js/switch";
+import type { MachineInput } from "marko-zag";
+
+export type Input = MachineInput&lt;"input", switchMachine.Props&gt; &amp; {
+  checkedChange?: (checked: boolean) =&gt; void;
+};</code></pre>
+    <p>
+      <code>MachineInput&lt;Tag, Props&gt;</code> is the native tag's attributes intersected with
+      the machine's full <code>Props</code>, with only <code>id</code> made optional (it is
+      generated). Everything Zag supports is automatically part of your API. Add one
+      <code>xxxChange</code> prop per Zag <code>onXxxChange</code> callback — it enables Marko's
+      two-way bind shorthand (<code>&lt;Switch checked:=state/&gt;</code>) and receives the plain
+      value; Zag's original callback remains available and receives the details object.
+    </p>
+  </section>
+
+  <section class="space-y-3">
+    <h2 class="text-lg font-semibold">3. Wire the machine — three tags</h2>
+    <pre class="overflow-x-auto rounded-lg border bg-muted/50 p-4 text-sm"><code>&lt;machine-props/machineProps from=input pick=switchMachine.props
+  onCheckedChange(details: switchMachine.CheckedChangeDetails) {
+    input.onCheckedChange?.(details);
+    input.checkedChange?.(details.checked);
+  }/&gt;
+&lt;service/service machine=() =&gt; switchMachine.machine props=machineProps/&gt;
+&lt;connect/api=(service, normalizeProps) =&gt;
+  switchMachine.connect(service, normalizeProps)
+  service=service
+/&gt;</code></pre>
+    <ul class="list-disc space-y-2 pl-6 text-sm">
+      <li>
+        <strong><code>&lt;machine-props&gt;</code></strong> builds the machine's props closure:
+        picks machine-owned props out of <code>input</code> by name
+        (<code>pick=switchMachine.props</code> — the machine's exported name array; a split
+        <em>function</em> would be unserializable tag input), injects a generated stable
+        <code>id</code>, and merges every attribute you write on the tag. Callback adaptations go
+        here, visibly — they are the component's public contract. Type the
+        <code>details</code> params with the machine's exported types.
+      </li>
+      <li>
+        <strong><code>&lt;service&gt;</code></strong> creates and owns the running machine on the
+        client; during SSR it stays unstarted and connect reads a throwaway instance — which is how
+        correct <code>aria-*</code>/<code>data-*</code> attributes appear in server HTML before any
+        JS runs. Controlled props re-notify automatically: the tag tracks whatever your
+        <code>machineProps</code> closure reads.
+      </li>
+      <li>
+        <strong><code>&lt;connect&gt;</code></strong> returns <code>api</code> as a
+        <strong>getter</strong>. Call it at every use site: <code>api().getRootProps()</code>. The
+        getter has fresh identity per machine update, so every spread that reads it recomputes.
+      </li>
+    </ul>
+    <p class="text-sm">
+      Both <code>machine=</code> and the <code>&lt;connect&gt;</code> value <em>must</em> be
+      closures written in your template. Passing <code>switchMachine.machine</code> or
+      <code>switchMachine.connect</code> directly throws
+      <code>Unable to serialize "input"</code>.
+    </p>
+  </section>
+
+  <section class="space-y-3">
+    <h2 class="text-lg font-semibold">4. Render with api() spreads</h2>
+    <pre class="overflow-x-auto rounded-lg border bg-muted/50 p-4 text-sm"><code>&lt;label ...api().getRootProps() data-slot="switch-label" class="..."&gt;
+  &lt;span ...api().getControlProps() data-slot="switch" class=cn("...", input.class)&gt;
+    &lt;span ...api().getThumbProps() data-slot="switch-thumb" class="..."/&gt;
+  &lt;/span&gt;
+  &lt;input ...nativeAttrs() ...api().getHiddenInputProps()&gt;
+&lt;/label&gt;
+
+&lt;return=api&gt;</code></pre>
+    <ul class="list-disc space-y-2 pl-6 text-sm">
+      <li>Faithful shadcn Tailwind classes; semantic tokens only — never raw colors.</li>
+      <li>Every part carries a <code>data-slot</code>; style states via Zag's
+        <code>data-[state=...]</code> attributes.</li>
+      <li>
+        Native pass-through (<code>aria-*</code>, <code>data-*</code>, form attributes) =
+        <code>splitProps(input)[1]</code> minus <code>class</code> and your
+        <code>xxxChange</code> props, spread onto the appropriate native element.
+      </li>
+      <li><code>&lt;return=api&gt;</code> exposes the live api getter to parents.</li>
+    </ul>
+  </section>
+
+  <section class="space-y-3">
+    <h2 class="text-lg font-semibold">5. Overlay components</h2>
+    <ul class="list-disc space-y-2 pl-6 text-sm">
+      <li>
+        Floating content goes in <code>&lt;portal&gt;&lt;if=api().open&gt;...</code> — portal
+        outside, condition inside (stable host, no orphan accumulation).
+      </li>
+      <li>
+        Popper-positioned parts (popover, tooltip, menu, select…) spread
+        <code>...api().getPositionerProps()</code> then add STATIC
+        <code>style=positionerStyle</code> (from marko-zag): Zag positions via imperative
+        <code>--x/--y</code> CSS vars that a reactive style attribute would wipe.
+      </li>
+      <li>
+        Never wrap caller-supplied triggers in your own <code>&lt;button&gt;</code> — nested
+        buttons get un-nested by the HTML parser and corrupt hydration. Use a render-prop:
+        <code>trigger: Marko.Body&lt;[Record&lt;string, unknown&gt;]&gt;</code>, rendered as
+        <code>&lt;${"$"}{input.trigger}(api().getTriggerProps())/&gt;</code>.
+      </li>
+    </ul>
+  </section>
+
+  <section class="space-y-3">
+    <h2 class="text-lg font-semibold">6. Verify</h2>
+    <ul class="list-disc space-y-2 pl-6 text-sm">
+      <li><code>curl</code> the demo route: 200, SSR carries the expected
+        <code>aria-*</code>/<code>data-state</code> attributes, and no
+        <code>Unable to serialize</code> anywhere.</li>
+      <li>Real-browser check: interactions need window focus (machines often require
+        focus-then-click); synthetic <code>element.click()</code> can miss.</li>
+      <li>Formatter landmine: prettier-plugin-marko can turn multi-line attribute arrows into
+        block bodies <em>without a return</em> — keep attribute closures single-expression and
+        re-verify after formatting.</li>
+    </ul>
+  </section>
+
+  <section class="space-y-3">
+    <h2 class="text-lg font-semibold">Reference</h2>
+    <p class="text-sm">
+      The living version of all of this is
+      <code>packages/registry/default/ui/switch/switch.marko</code> — copy it. Adapter internals:
+      <a class="underline" href="/docs/zag-adapter">the Zag adapter anatomy</a>.
+    </p>
+  </section>
+</docs-page>

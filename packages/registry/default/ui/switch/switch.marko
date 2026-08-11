@@ -1,18 +1,28 @@
-// Reference implementation of the <service>/<connect> pattern.
-// See notes/component-authoring.md (v2) and /docs/zag-adapter.
+// Reference implementation of a marko-zag component.
+// Guide: /docs/creating-components · adapter internals: /docs/zag-adapter
+// Authoring rules: notes/component-authoring.md (v2 pattern)
 import * as switchMachine from "@zag-js/switch";
+import type { MachineInput } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
-import type { MachineInput } from "marko-zag";
-
-// Native input attributes + the machine's full Props (id optional — it is
-// generated). `checkedChange` is additive sugar enabling Marko's two-way
-// bind shorthand (<Switch checked:=myState/>); Zag's own onCheckedChange
-// also works and receives the details object.
+// MachineInput = native <input> attributes ∩ the machine's full Props, with
+// `id` made optional (generated below, overridable). `checkedChange` is
+// additive sugar enabling Marko's two-way bind shorthand
+// (<Switch checked:=myState/>); Zag's own `onCheckedChange` also works and
+// receives the details object.
 export type Input = MachineInput<"input", switchMachine.Props> & {
   checkedChange?: (checked: boolean) => void;
 };
 
+// The three-tag wiring (see /docs/creating-components):
+// 1. <machine-props> picks the machine's props out of `input` by name and
+//    merges the attributes written on it — callback adaptations live HERE,
+//    visibly, because they are this component's public contract.
+// 2. <service> creates and owns the running machine (client-only; SSR
+//    renders from a throwaway never-started instance).
+// 3. <connect> returns `api` as a GETTER — call it at every use site.
+//    Getters are the serializable currency of Marko's resumability: the
+//    api object itself must never become reactive state.
 <machine-props/machineProps from=input pick=switchMachine.props
   onCheckedChange(details: switchMachine.CheckedChangeDetails) {
     input.onCheckedChange?.(details);
@@ -24,12 +34,13 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
   service=service
 />
 
-// Everything that is neither machine-owned nor component-owned passes
-// through to the native hidden input (aria-*, data-*, form attributes...).
+// Whatever is neither machine-owned (splitProps) nor component-owned
+// (class, checkedChange) passes through to the hidden input: aria-*,
+// data-*, form attributes...
 <const/nativeAttrs=() => {
   const {
     class: ownClass,
-    checkedChange: ownHandler,
+    checkedChange: ownChangeHandler,
     ...native
   } = switchMachine.splitProps(input)[1];
   return native;
@@ -57,4 +68,6 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
   <input ...nativeAttrs() ...api().getHiddenInputProps()>
 </label>
 
+// Parents can receive the api getter: <Switch/switchApi/> then
+// `switchApi().checked` — it stays live across machine updates.
 <return=api>
