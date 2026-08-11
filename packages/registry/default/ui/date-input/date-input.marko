@@ -1,0 +1,125 @@
+import * as dateInputMachine from "@zag-js/date-input";
+import { parse } from "@zag-js/date-input";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+// `value`/`placeholderValue` (and their `xxxChange` sugar) use plain ISO
+// strings instead of Zag's DateValue so consumers don't need to depend on
+// @internationalized/date directly — mirrors the date-picker component.
+export type Input = Omit<
+  MachineInput<"div", dateInputMachine.Props>,
+  "value" | "defaultValue" | "placeholderValue" | "defaultPlaceholderValue"
+> & {
+  value?: string[];
+  defaultValue?: string[];
+  placeholderValue?: string;
+  defaultPlaceholderValue?: string;
+  valueChange?: (value: string[]) => void;
+  placeholderValueChange?: (value: string) => void;
+  focusChange?: (focused: boolean) => void;
+};
+
+// The three-tag wiring (see /docs/creating-components):
+// 1. <machine-props> picks the machine's props out of `input` by name and
+//    merges the attributes written on it — callback adaptations live HERE,
+//    visibly, because they are this component's public contract.
+// 2. <service> creates and owns the running machine (client-only; SSR
+//    renders from a throwaway never-started instance).
+// 3. <connect> returns `api` as a GETTER — call it at every use site.
+//    Getters are the serializable currency of Marko's resumability: the
+//    api object itself must never become reactive state.
+<machine-props/pickedProps from=input pick=dateInputMachine.props
+  onValueChange(details: dateInputMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value.map((date) => date.toString()));
+  }
+  onPlaceholderChange(details: dateInputMachine.PlaceholderChangeDetails) {
+    input.onPlaceholderChange?.(details);
+    input.placeholderValueChange?.(details.placeholderValue.toString());
+  }
+  onFocusChange(details: dateInputMachine.FocusChangeDetails) {
+    input.onFocusChange?.(details);
+    input.focusChange?.(details.focused);
+  }/>
+<const/machineProps=() => ({
+  ...pickedProps(),
+  value: input.value ? parse(input.value) : undefined,
+  defaultValue: input.defaultValue ? parse(input.defaultValue) : undefined,
+  placeholderValue: input.placeholderValue ? parse(input.placeholderValue) : undefined,
+  defaultPlaceholderValue: input.defaultPlaceholderValue ? parse(input.defaultPlaceholderValue) : undefined,
+})/>
+<service/service machine=() => dateInputMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  dateInputMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+// Number of date groups: 2 for range selection, 1 otherwise.
+<const/groupCount=input.selectionMode === "range" ? 2 : 1>
+
+// Whatever is neither machine-owned (splitProps) nor component-owned
+// (class, valueChange, placeholderValueChange, focusChange) passes through
+// to the root div: aria-*, data-*, form attributes...
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    valueChange: ownValueChangeHandler,
+    placeholderValueChange: ownPlaceholderValueChangeHandler,
+    focusChange: ownFocusChangeHandler,
+    ...native
+  } = dateInputMachine.splitProps(input)[1];
+  return native;
+}>
+
+<div
+  ...nativeAttrs()
+  ...api().getRootProps()
+  data-slot="date-input"
+  class=cn("flex flex-col gap-1", input.class)
+>
+  <div
+    ...api().getControlProps()
+    data-slot="date-input-control"
+    class=cn(
+      "border-input flex h-9 w-fit min-w-0 items-center gap-1 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none md:text-sm",
+      "has-[[data-part=segment-group][data-focus=true]]:border-ring has-[[data-part=segment-group][data-focus=true]]:ring-ring/50 has-[[data-part=segment-group][data-focus=true]]:ring-[3px]",
+      "data-[invalid=true]:ring-destructive/20 dark:data-[invalid=true]:ring-destructive/40 data-[invalid=true]:border-destructive",
+      "data-[disabled=true]:pointer-events-none data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50",
+    )
+  >
+    <for|groupIndex| of=Array.from({ length: groupCount }, (_, i) => i)>
+      <if=(groupCount > 1 && groupIndex > 0)>
+        <span data-slot="date-input-range-separator" class="text-muted-foreground px-1 text-sm">
+          –
+        </span>
+      </if>
+      <label ...api().getLabelProps({ index: groupIndex }) class="sr-only">
+        ${groupCount > 1 ? (groupIndex === 0 ? "Start date" : "End date") : "Date"}
+      </label>
+      <div
+        ...api().getSegmentGroupProps({ index: groupIndex })
+        data-slot="date-input-segment-group"
+        class="flex items-center gap-0.5"
+      >
+        <for|segment| of=api().getSegments({ index: groupIndex })>
+          <span
+            ...api().getSegmentProps({ segment, index: groupIndex })
+            data-slot="date-input-segment"
+            class=cn(
+              "rounded-sm px-0.5 tabular-nums outline-none",
+              "data-[placeholder-shown=true]:text-muted-foreground",
+              "data-[editable=true]:focus:bg-accent data-[editable=true]:focus:text-accent-foreground",
+            )
+          >
+            ${segment.isPlaceholder ? segment.placeholder : segment.text}
+          </span>
+        </for>
+      </div>
+      <input ...api().getHiddenInputProps({ index: groupIndex })>
+    </for>
+  </div>
+</div>
+
+// Parents can receive the api getter: <DateInput/dateInputApi/> then
+// `dateInputApi().value` — it stays live across machine updates.
+<return=api>

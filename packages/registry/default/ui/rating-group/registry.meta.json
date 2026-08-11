@@ -1,0 +1,6 @@
+{
+  "title": "Rating Group",
+  "description": "A star rating input with hover preview, half-star support, and keyboard navigation.",
+  "dependencies": ["@zag-js/rating-group", "marko-ui"],
+  "registryDependencies": ["utils"]
+}

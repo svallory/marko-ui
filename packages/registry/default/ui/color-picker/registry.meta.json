@@ -1,0 +1,6 @@
+{
+  "title": "Color Picker",
+  "description": "A color picker with a saturation area, channel sliders, channel inputs, an eyedropper and preset swatches.",
+  "dependencies": ["@zag-js/color-picker"],
+  "registryDependencies": ["utils"]
+}

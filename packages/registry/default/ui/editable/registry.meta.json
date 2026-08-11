@@ -1,0 +1,6 @@
+{
+  "title": "Editable",
+  "description": "An inline editable text field that switches from a preview to an input on activation, with submit/cancel/edit triggers.",
+  "dependencies": ["@zag-js/editable"],
+  "registryDependencies": ["utils"]
+}

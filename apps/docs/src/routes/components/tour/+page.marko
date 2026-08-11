@@ -1,0 +1,201 @@
+import Tour from "@marko-ui/registry/ui/tour/tour.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+static const TOUR_STEPS = [
+  {
+    id: "welcome",
+    title: "Welcome aboard",
+    description:
+      "This short tour walks you through the main areas of the dashboard.",
+    type: "dialog",
+    actions: [
+      { label: "Skip", action: "skip" },
+      { label: "Start", action: "next" },
+    ],
+  },
+  {
+    id: "search",
+    title: "Search everything",
+    description: "Find projects, people and settings from a single input.",
+    target: "#tour-search",
+    placement: "bottom",
+    arrow: true,
+    actions: [
+      { label: "Back", action: "prev" },
+      { label: "Next", action: "next" },
+    ],
+  },
+  {
+    id: "notifications",
+    title: "Stay in the loop",
+    description: "Unread activity shows up here as soon as it happens.",
+    target: "#tour-notifications",
+    placement: "bottom-end",
+    arrow: true,
+    actions: [
+      { label: "Back", action: "prev" },
+      { label: "Next", action: "next" },
+    ],
+  },
+  {
+    id: "publish",
+    title: "Ship it",
+    description: "When you are happy with your changes, publish them here.",
+    target: "#tour-publish",
+    placement: "top",
+    arrow: true,
+    actions: [
+      { label: "Back", action: "prev" },
+      { label: "Finish", action: "dismiss" },
+    ],
+  },
+];
+
+static const COMPACT_STEPS = [
+  {
+    id: "filters",
+    title: "Filters",
+    description: "Narrow the list down to what matters right now.",
+    target: "#tour-filters",
+    placement: "right",
+    arrow: true,
+    actions: [{ label: "Next", action: "next" }],
+  },
+  {
+    id: "export",
+    title: "Export",
+    description: "Download the current view as CSV.",
+    target: "#tour-export",
+    placement: "left",
+    arrow: true,
+    actions: [
+      { label: "Back", action: "prev" },
+      { label: "Done", action: "dismiss" },
+    ],
+  },
+];
+
+static const CONTROLLED_STEPS = [
+  {
+    id: "controlled-one",
+    title: "First",
+    description: "The parent owns the current step id.",
+    target: "#tour-controlled-target",
+    placement: "bottom",
+    arrow: true,
+    actions: [{ label: "Next", action: "next" }],
+  },
+  {
+    id: "controlled-two",
+    title: "Second",
+    description: "Driven entirely from parent state.",
+    target: "#tour-controlled-target",
+    placement: "top",
+    arrow: true,
+    actions: [
+      { label: "Back", action: "prev" },
+      { label: "Done", action: "dismiss" },
+    ],
+  },
+];
+
+<let/currentStepId=null as string | null/>
+<let/tourStatus="idle" as string/>
+
+<component-page
+  title="Tour"
+  description="A guided product tour: spotlighted targets, a dimmed backdrop, and positioned step popovers with next/prev/skip/finish actions and progress dots."
+>
+  <demo-box title="Product tour">
+    <div class="flex w-full flex-col gap-4">
+      <div class="flex items-center gap-3">
+        <input
+          id="tour-search"
+          class="border-input bg-background h-9 w-56 rounded-md border px-3 text-sm"
+          placeholder="Search…"
+        />
+        <button
+          id="tour-notifications"
+          class="border-input bg-background hover:bg-accent h-9 rounded-md border px-3 text-sm"
+        >
+          Notifications
+        </button>
+        <div class="grow"/>
+        <button
+          id="tour-publish"
+          class="bg-primary text-primary-foreground h-9 rounded-md px-4 text-sm font-medium"
+        >
+          Publish
+        </button>
+      </div>
+      <p class="text-muted-foreground text-sm">
+        The tour highlights the toolbar controls above, one step at a time.
+      </p>
+      <div>
+        <Tour items=TOUR_STEPS>
+          <@trigger|props|>
+            <Button ...props id="start-tour" variant="outline">Start tour</Button>
+          </@trigger>
+        </Tour>
+      </div>
+    </div>
+  </demo-box>
+
+  <demo-box title="Two steps, side placement">
+    <div class="flex w-full flex-col gap-4">
+      <div class="flex items-center gap-3">
+        <button
+          id="tour-filters"
+          class="border-input bg-background hover:bg-accent h-9 rounded-md border px-3 text-sm"
+        >
+          Filters
+        </button>
+        <button
+          id="tour-export"
+          class="border-input bg-background hover:bg-accent h-9 rounded-md border px-3 text-sm"
+        >
+          Export
+        </button>
+      </div>
+      <div>
+        <Tour items=COMPACT_STEPS>
+          <@trigger|props|>
+            <Button ...props id="start-compact-tour" variant="outline">
+              Start short tour
+            </Button>
+          </@trigger>
+        </Tour>
+      </div>
+    </div>
+  </demo-box>
+
+  <demo-box title="Controlled">
+    <div class="flex w-full flex-col gap-4">
+      <div>
+        <span
+          id="tour-controlled-target"
+          class="border-input bg-background inline-block rounded-md border px-3 py-2 text-sm"
+        >
+          Controlled target
+        </span>
+      </div>
+      <p id="tour-state" class="text-muted-foreground text-sm">
+        stepId: ${currentStepId ?? "none"} · status: ${tourStatus}
+      </p>
+      <div>
+        <Tour
+          items=CONTROLLED_STEPS
+          stepId=currentStepId
+          stepIdChange=(stepId) => { currentStepId = stepId; }
+          statusChange=(status) => { tourStatus = status; }
+        >
+          <@trigger|props|>
+            <Button ...props id="start-controlled-tour" variant="outline">
+              Start controlled tour
+            </Button>
+          </@trigger>
+        </Tour>
+      </div>
+    </div>
+  </demo-box>
+</component-page>

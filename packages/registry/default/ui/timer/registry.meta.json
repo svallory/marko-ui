@@ -1,0 +1,6 @@
+{
+  "title": "Timer",
+  "description": "A countdown or stopwatch timer with segmented digit display and start/pause/resume/reset controls.",
+  "dependencies": ["@zag-js/timer"],
+  "registryDependencies": ["utils"]
+}

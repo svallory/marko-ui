@@ -1,0 +1,6 @@
+{
+  "title": "QR Code",
+  "description": "Renders a QR code for a given value, with size variants and an optional center logo overlay.",
+  "dependencies": ["@zag-js/qr-code", "marko-ui"],
+  "registryDependencies": ["utils"]
+}

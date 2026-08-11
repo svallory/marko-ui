@@ -1,0 +1,129 @@
+// Image crop tool built on the REAL @zag-js/image-cropper machine:
+// draggable/resizable crop selection with eight handles, rule-of-thirds grid,
+// aspect-ratio lock, zoom, rotation and flip.
+// Reference implementation: packages/registry/default/ui/switch/switch.marko
+// Authoring rules: notes/component-authoring.md (v2 pattern)
+import * as imageCropperMachine from "@zag-js/image-cropper";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+export type Input = MachineInput<"div", imageCropperMachine.Props> & {
+  /** Source of the image to crop. */
+  src?: string;
+  /** Accessible description of the image being cropped. */
+  alt?: string;
+  /** Hide the rule-of-thirds grid drawn inside the crop selection. */
+  hideGrid?: boolean;
+  /** Sugar for onZoomChange — receives the plain zoom, enables `zoom:=state`. */
+  zoomChange?: (zoom: number) => void;
+  /** Sugar for onRotationChange — receives the plain rotation in degrees. */
+  rotationChange?: (rotation: number) => void;
+  /** Sugar for onFlipChange — receives the plain flip state. */
+  flipChange?: (flip: imageCropperMachine.FlipState) => void;
+  /** Sugar for onCropChange — receives the plain crop rect. */
+  cropChange?: (crop: imageCropperMachine.CropChangeDetails["crop"]) => void;
+};
+
+// The eight resize handles, in the order Zag exports them.
+static const HANDLE_POSITIONS = imageCropperMachine.handles;
+
+// The three-tag wiring (see /docs/creating-components):
+// 1. <machine-props> picks the machine's props out of `input` by name and
+//    merges the attributes written on it — callback adaptations live HERE,
+//    visibly, because they are this component's public contract.
+// 2. <service> creates and owns the running machine (client-only; SSR
+//    renders from a throwaway never-started instance).
+// 3. <connect> returns `api` as a GETTER — call it at every use site.
+<machine-props/machineProps from=input pick=imageCropperMachine.props
+  onZoomChange(details: imageCropperMachine.ZoomChangeDetails) {
+    input.onZoomChange?.(details);
+    input.zoomChange?.(details.zoom);
+  }
+  onRotationChange(details: imageCropperMachine.RotationChangeDetails) {
+    input.onRotationChange?.(details);
+    input.rotationChange?.(details.rotation);
+  }
+  onFlipChange(details: imageCropperMachine.FlipChangeDetails) {
+    input.onFlipChange?.(details);
+    input.flipChange?.(details.flip);
+  }
+  onCropChange(details: imageCropperMachine.CropChangeDetails) {
+    input.onCropChange?.(details);
+    input.cropChange?.(details.crop);
+  }/>
+<service/service machine=() => imageCropperMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  imageCropperMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+// Whatever is neither machine-owned (splitProps) nor component-owned
+// (class, src, alt, hideGrid, the xxxChange sugar) passes through to the
+// root element: aria-*, data-*...
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    src: ownSource,
+    alt: ownAlt,
+    hideGrid: ownHideGrid,
+    zoomChange: ownZoomChange,
+    rotationChange: ownRotationChange,
+    flipChange: ownFlipChange,
+    cropChange: ownCropChange,
+    ...native
+  } = imageCropperMachine.splitProps(input)[1];
+  return native;
+}>
+
+<div
+  ...nativeAttrs()
+  ...api().getRootProps()
+  data-slot="image-cropper"
+  class=cn(
+    "bg-muted relative w-full overflow-hidden rounded-lg border shadow-xs",
+    input.class,
+  )
+>
+  <div
+    ...api().getViewportProps()
+    data-slot="image-cropper-viewport"
+    class="relative size-full touch-none"
+  >
+    <img
+      ...api().getImageProps()
+      src=input.src
+      alt=input.alt
+      data-slot="image-cropper-image"
+      class="absolute inset-0 m-auto max-h-full max-w-full select-none"
+    />
+    <div
+      ...api().getSelectionProps()
+      data-slot="image-cropper-selection"
+      class="border-background border-2 shadow-[0_0_0_9999px_var(--color-black)]/50 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 data-[shape=circle]:rounded-full data-[disabled]:cursor-not-allowed"
+    >
+      <if=!input.hideGrid>
+        <div
+          ...api().getGridProps({ axis: "horizontal" })
+          data-slot="image-cropper-grid"
+          class="border-background/60 border-y"
+        />
+        <div
+          ...api().getGridProps({ axis: "vertical" })
+          data-slot="image-cropper-grid"
+          class="border-background/60 border-x"
+        />
+      </if>
+      <for|position| of=HANDLE_POSITIONS>
+        <div
+          ...api().getHandleProps({ position })
+          data-slot="image-cropper-handle"
+          class="bg-background ring-foreground/20 size-3 rounded-full shadow-sm ring-1 data-[position=e]:h-auto data-[position=w]:h-auto data-[position=n]:w-auto data-[position=s]:w-auto data-[position=e]:w-1.5 data-[position=w]:w-1.5 data-[position=n]:h-1.5 data-[position=s]:h-1.5 data-[position=e]:rounded-full data-[position=w]:rounded-full data-[position=n]:rounded-full data-[position=s]:rounded-full data-[position=e]:bg-transparent data-[position=w]:bg-transparent data-[position=n]:bg-transparent data-[position=s]:bg-transparent data-[position=e]:ring-0 data-[position=w]:ring-0 data-[position=n]:ring-0 data-[position=s]:ring-0 data-[disabled]:opacity-40"
+        />
+      </for>
+    </div>
+  </div>
+</div>
+
+// Parents can receive the api getter: <ImageCropper/cropperApi/> then
+// `cropperApi().getCroppedImage()` — it stays live across machine updates.
+<return=api>

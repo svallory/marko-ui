@@ -1,8 +1,8 @@
 // Reference implementation: packages/registry/default/ui/switch/switch.marko
 // Guide: /docs/creating-components · Authoring rules: v2 pattern
 import * as avatarMachine from "@zag-js/avatar";
-import type { MachineInput } from "marko-zag";
-import { cn } from "../../lib/utils.ts";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
 
 export type Input = MachineInput<"span", avatarMachine.Props> & {
   src?: string;

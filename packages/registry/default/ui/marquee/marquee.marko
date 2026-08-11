@@ -1,0 +1,92 @@
+import * as marqueeMachine from "@zag-js/marquee";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
+  items: T[];
+  content?: Marko.Body<[T, number]>;
+  pausedChange?: (paused: boolean) => void;
+};
+
+<machine-props/machineProps from=input pick=marqueeMachine.props
+  onPauseChange(details: marqueeMachine.PauseStatusDetails) {
+    input.onPauseChange?.(details);
+    input.pausedChange?.(details.paused);
+  }/>
+<service/service machine=() => marqueeMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  marqueeMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    items: ownItems,
+    content: ownContent,
+    pausedChange: ownChangeHandler,
+    ...native
+  } = marqueeMachine.splitProps(input)[1];
+  return native;
+}>
+
+<style>
+  @keyframes marko-ui-marquee-scroll-x {
+    from { transform: translateX(0); }
+    to { transform: translateX(var(--marquee-translate)); }
+  }
+  @keyframes marko-ui-marquee-scroll-y {
+    from { transform: translateY(0); }
+    to { transform: translateY(var(--marquee-translate)); }
+  }
+  [data-scope="marquee"][data-part="content"] {
+    animation-name: marko-ui-marquee-scroll-x;
+    animation-duration: var(--marquee-duration);
+    animation-delay: var(--marquee-delay);
+    animation-timing-function: linear;
+    animation-iteration-count: var(--marquee-loop-count);
+    animation-direction: normal;
+  }
+  [data-scope="marquee"][data-part="content"][data-orientation="vertical"] {
+    animation-name: marko-ui-marquee-scroll-y;
+  }
+  [data-scope="marquee"][data-part="content"][data-reverse] {
+    animation-direction: reverse;
+  }
+  [data-scope="marquee"][data-state="paused"] [data-part="content"] {
+    animation-play-state: paused;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-scope="marquee"][data-part="content"] {
+      animation-play-state: paused;
+    }
+  }
+</style>
+
+<div
+  ...nativeAttrs()
+  ...api().getRootProps()
+  data-slot="marquee"
+  class=cn("relative overflow-hidden", input.class)
+>
+  <div ...api().getEdgeProps({ side: "start" }) data-slot="marquee-edge-start" class="pointer-events-none absolute inset-y-0 start-0 z-10 w-12 bg-gradient-to-r from-background to-transparent"/>
+  <div ...api().getEdgeProps({ side: "end" }) data-slot="marquee-edge-end" class="pointer-events-none absolute inset-y-0 end-0 z-10 w-12 bg-gradient-to-l from-background to-transparent"/>
+  <div ...api().getViewportProps() data-slot="marquee-viewport" class="flex w-full">
+    <for|_, index| of=Array.from({ length: api().contentCount })>
+      <div ...api().getContentProps({ index }) data-slot="marquee-content" class="flex shrink-0 items-center">
+        <for|item, itemIndex| of=input.items>
+          <div ...api().getItemProps() data-slot="marquee-item" class="flex shrink-0 items-center">
+            <if=input.content>
+              <${input.content}(item, itemIndex)/>
+            </if>
+            <else>
+              ${item}
+            </else>
+          </div>
+        </for>
+      </div>
+    </for>
+  </div>
+</div>
+
+<return=api>

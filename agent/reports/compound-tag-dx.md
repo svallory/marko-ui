@@ -15,7 +15,7 @@ code.
 
 ## 1. The constraint, restated precisely
 
-From `apps/docs/src/routes/docs/creating-components/+page.marko` and `packages/marko-zag/src/machine.ts`:
+From `apps/docs/src/routes/docs/creating-components/+page.marko` and `packages/marko-ui/src/machine.ts`:
 
 Marko 6 resumes a page by **serializing reactive state**; it never re-runs the template in the
 browser. Zag's `service` and the connected `api` object are full of functions from npm code, so

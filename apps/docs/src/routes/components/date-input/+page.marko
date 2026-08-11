@@ -1,0 +1,28 @@
+import DateInput from "@marko-ui/registry/ui/date-input/date-input.marko";
+
+<let/controlledValue=["2026-08-10"]/>
+
+<component-page title="Date Input" description="A segmented date input with keyboard editing and locale-aware formatting.">
+  <demo-box title="Default">
+    <DateInput/>
+  </demo-box>
+  <demo-box title="With value">
+    <DateInput value=["2026-08-10"]/>
+  </demo-box>
+  <demo-box title="Custom locale">
+    <DateInput locale="fr-FR" value=["2026-08-10"]/>
+  </demo-box>
+  <demo-box title="Disabled">
+    <DateInput disabled value=["2026-08-10"]/>
+  </demo-box>
+  <demo-box title="Date range">
+    <DateInput selectionMode="range"/>
+  </demo-box>
+  <demo-box title="Controlled">
+    <p class="text-muted-foreground mb-4 text-sm">Value: ${controlledValue.join(", ") || "(empty)"}</p>
+    <DateInput
+      value=controlledValue
+      valueChange(value) { controlledValue = value; }
+    />
+  </demo-box>
+</component-page>

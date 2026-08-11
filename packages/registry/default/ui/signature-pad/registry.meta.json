@@ -1,0 +1,6 @@
+{
+  "title": "Signature Pad",
+  "description": "A draw-to-sign pad for capturing handwritten signatures via pointer input.",
+  "dependencies": ["@zag-js/signature-pad"],
+  "registryDependencies": ["utils", "button"]
+}

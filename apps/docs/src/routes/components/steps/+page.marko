@@ -1,0 +1,76 @@
+import Steps from "@marko-ui/registry/ui/steps/steps.marko";
+
+static const WIZARD_STEPS = [
+  { title: "Account", description: "Provide your account details" },
+  { title: "Profile", description: "Tell us about yourself" },
+  { title: "Review", description: "Confirm and finish" },
+];
+
+static const SHIPPING_STEPS = [
+  { title: "Cart" },
+  { title: "Shipping" },
+  { title: "Payment" },
+  { title: "Confirm" },
+];
+
+<let/controlledStep=0/>
+
+<component-page title="Steps" description="Numbered indicators with connecting separators, prev/next triggers, content per step, and a complete state — for wizard-style flows.">
+  <demo-box title="Horizontal">
+    <Steps items=WIZARD_STEPS class="w-[560px]">
+      <@content|index|>
+        <p class="text-muted-foreground text-sm">
+          Step ${index + 1}: ${WIZARD_STEPS[index].title} content goes here.
+        </p>
+      </@content>
+      <@completedContent>
+        <p class="text-muted-foreground text-sm">All steps complete — thanks!</p>
+      </@completedContent>
+    </Steps>
+  </demo-box>
+
+  <demo-box title="Vertical">
+    <Steps items=SHIPPING_STEPS orientation="vertical" class="w-[560px]">
+      <@content|index|>
+        <p class="text-muted-foreground text-sm">
+          ${SHIPPING_STEPS[index].title} step content.
+        </p>
+      </@content>
+      <@completedContent>
+        <p class="text-muted-foreground text-sm">Order complete.</p>
+      </@completedContent>
+    </Steps>
+  </demo-box>
+
+  <demo-box title="Linear (must complete in order)">
+    <Steps items=WIZARD_STEPS linear class="w-[560px]">
+      <@content|index|>
+        <p class="text-muted-foreground text-sm">
+          Step ${index + 1}: ${WIZARD_STEPS[index].title} content goes here.
+        </p>
+      </@content>
+      <@completedContent>
+        <p class="text-muted-foreground text-sm">All steps complete — thanks!</p>
+      </@completedContent>
+    </Steps>
+  </demo-box>
+
+  <demo-box title="Controlled">
+    <p class="text-muted-foreground mb-4 text-sm">Current step: ${controlledStep + 1}</p>
+    <Steps
+      items=SHIPPING_STEPS
+      step=controlledStep
+      stepChange(step) { controlledStep = step; }
+      class="w-[560px]"
+    >
+      <@content|index|>
+        <p class="text-muted-foreground text-sm">
+          ${SHIPPING_STEPS[index].title} step content.
+        </p>
+      </@content>
+      <@completedContent>
+        <p class="text-muted-foreground text-sm">Order complete.</p>
+      </@completedContent>
+    </Steps>
+  </demo-box>
+</component-page>

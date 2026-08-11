@@ -1,0 +1,36 @@
+import RatingGroup from "@marko-ui/registry/ui/rating-group/rating-group.marko";
+
+<let/controlledValue=3/>
+
+<component-page title="Rating Group" description="A star rating input with hover preview, half-star support, and keyboard navigation.">
+  <demo-box title="Default">
+    <RatingGroup label="Rate this" defaultValue=3/>
+  </demo-box>
+
+  <demo-box title="Half stars">
+    <RatingGroup label="Rate this" defaultValue=3.5 allowHalf/>
+  </demo-box>
+
+  <demo-box title="Custom count">
+    <RatingGroup label="Out of 10" count=10 defaultValue=7/>
+  </demo-box>
+
+  <demo-box title="Readonly">
+    <RatingGroup label="Average rating" defaultValue=4.5 allowHalf readOnly/>
+  </demo-box>
+
+  <demo-box title="Disabled">
+    <RatingGroup label="Rate this" defaultValue=2 disabled/>
+  </demo-box>
+
+  <demo-box title="Controlled">
+    <p class="text-muted-foreground mb-4 text-sm">
+      Selected: ${controlledValue}
+    </p>
+    <RatingGroup
+      label="Rate this"
+      value=controlledValue
+      valueChange(value) { controlledValue = value; }
+    />
+  </demo-box>
+</component-page>

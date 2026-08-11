@@ -1,4 +1,4 @@
-# marko-zag
+# marko-ui
 
 Zag.js v1 bindings for Marko 6. SSR-safe: server renders full aria/data attributes from a never-started machine; the client builds its own service on mount and events attach on first update.
 
@@ -10,7 +10,7 @@ Ships TypeScript and `.marko` source directly — your Marko build (Vite / `@mar
 
 ```marko
 import * as tabs from "@zag-js/tabs";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+import { createService, ssrService, normalizeProps } from "marko-ui";
 
 <id/uid/>
 <let/rev=0/>

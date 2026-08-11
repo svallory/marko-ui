@@ -1,0 +1,6 @@
+{
+  "title": "Listbox",
+  "description": "An always-visible list of options with single or multiple selection and keyboard navigation.",
+  "dependencies": ["@zag-js/listbox"],
+  "registryDependencies": ["utils"]
+}

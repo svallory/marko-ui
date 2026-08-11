@@ -1,6 +1,6 @@
 {
   "title": "Navigation Menu",
   "description": "A collection of links for navigating websites.",
-  "dependencies": ["class-variance-authority"],
+  "dependencies": ["@zag-js/navigation-menu", "class-variance-authority"],
   "registryDependencies": ["utils"]
 }

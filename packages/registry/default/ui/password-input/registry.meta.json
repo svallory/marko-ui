@@ -1,0 +1,6 @@
+{
+  "title": "Password Input",
+  "description": "A password input field with a visibility toggle button and correct autocomplete handling.",
+  "dependencies": ["@zag-js/password-input"],
+  "registryDependencies": ["utils"]
+}

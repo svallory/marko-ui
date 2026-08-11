@@ -1,7 +1,7 @@
 import * as paginationMachine from "@zag-js/pagination";
-import type { MachineInput } from "marko-zag";
+import type { MachineInput } from "marko-ui";
 import { buttonVariants } from "../button/variants.ts";
-import { cn } from "../../lib/utils.ts";
+import { cn } from "#lib/utils.ts";
 
 export type Input = MachineInput<"nav", paginationMachine.Props> & {
   pageChange?: (page: number) => void;

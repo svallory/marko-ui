@@ -1,0 +1,137 @@
+// Reference implementation of a marko-ui component.
+// Guide: /docs/creating-components · adapter internals: /docs/zag-adapter
+// Authoring rules: notes/component-authoring.md (v2 pattern)
+import * as stepsMachine from "@zag-js/steps";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+export interface StepItem {
+  title: string;
+  description?: string;
+}
+
+// MachineInput = native <div> attributes ∩ the machine's full Props, with
+// `id` made optional (generated below, overridable). `stepChange` is
+// additive sugar enabling Marko's two-way bind shorthand
+// (<Steps step:=myState/>); Zag's own `onStepChange` also works and
+// receives the details object.
+export type Input = MachineInput<"div", stepsMachine.Props> & {
+  items: StepItem[];
+  content?: Marko.Body<[number]>;
+  completedContent?: Marko.Body;
+  stepChange?: (step: number) => void;
+};
+
+<const/{ items, content, completedContent }=input/>
+
+// The three-tag wiring (see /docs/creating-components):
+// 1. <machine-props> picks the machine's props out of `input` by name and
+//    merges the attributes written on it — callback adaptations live HERE,
+//    visibly, because they are this component's public contract.
+// 2. <service> creates and owns the running machine (client-only; SSR
+//    renders from a throwaway never-started instance).
+// 3. <connect> returns `api` as a GETTER — call it at every use site.
+//    Getters are the serializable currency of Marko's resumability: the
+//    api object itself must never become reactive state.
+<machine-props/machineProps from=input pick=stepsMachine.props
+  count=input.count ?? items.length
+  onStepChange(details: stepsMachine.StepChangeDetails) {
+    input.onStepChange?.(details);
+    input.stepChange?.(details.step);
+  }/>
+<service/service machine=() => stepsMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  stepsMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+// Whatever is neither machine-owned (splitProps) nor component-owned
+// (class, items, content, completedContent, stepChange) passes through to
+// the root div.
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    items: ownItems,
+    content: ownContent,
+    completedContent: ownCompletedContent,
+    stepChange: ownChangeHandler,
+    ...native
+  } = stepsMachine.splitProps(input)[1];
+  return native;
+}>
+
+<div
+  ...nativeAttrs()
+  ...api().getRootProps()
+  data-slot="steps"
+  class=cn("flex flex-col gap-6 data-[orientation=horizontal]:w-full data-[orientation=vertical]:flex-row", input.class)
+>
+  <div ...api().getListProps() data-slot="steps-list" class="flex data-[orientation=horizontal]:w-full data-[orientation=horizontal]:items-center data-[orientation=vertical]:shrink-0 data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-start data-[orientation=vertical]:gap-1 data-[orientation=vertical]:pr-8">
+    <for|item, index| of=items>
+      <const/itemState=api().getItemState({ index })>
+      <div ...api().getItemProps({ index }) data-slot="steps-item" class="flex items-center data-[orientation=horizontal]:flex-1 data-[orientation=horizontal]:last:flex-none data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-start">
+        <button
+          ...api().getTriggerProps({ index })
+          data-slot="steps-trigger"
+          class="flex items-center gap-2 rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
+        >
+          <div
+            ...api().getIndicatorProps({ index })
+            data-slot="steps-indicator"
+            class="flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-medium data-complete:border-primary data-complete:bg-primary data-complete:text-primary-foreground data-current:border-primary data-current:text-primary data-incomplete:border-input data-incomplete:text-muted-foreground"
+          >
+            <if=itemState.completed>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </if>
+            <else>
+              ${index + 1}
+            </else>
+          </div>
+          <span class="flex flex-col items-start text-left">
+            <span class=cn("text-sm font-medium", itemState.incomplete && "text-muted-foreground")>
+              ${item.title}
+            </span>
+            <if=item.description>
+              <span class="text-xs text-muted-foreground">${item.description}</span>
+            </if>
+          </span>
+        </button>
+        <div ...api().getSeparatorProps({ index }) data-slot="steps-separator" class="bg-border data-[orientation=horizontal]:mx-2 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:flex-1 data-[orientation=vertical]:ml-4 data-[orientation=vertical]:w-px data-[orientation=vertical]:flex-1 data-complete:bg-primary"/>
+      </div>
+    </for>
+  </div>
+
+  <div class="flex-1">
+    <for|item, index| of=items>
+      <div ...api().getContentProps({ index }) data-slot="steps-content">
+        <${content}(index)/>
+      </div>
+    </for>
+    <div ...api().getContentProps({ index: items.length }) data-slot="steps-completed-content">
+      <${completedContent}/>
+    </div>
+
+    <div data-slot="steps-actions" class="mt-6 flex items-center justify-between gap-2">
+      <button
+        ...api().getPrevTriggerProps()
+        data-slot="steps-prev-trigger"
+        class="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
+      >
+        Previous
+      </button>
+      <button
+        ...api().getNextTriggerProps()
+        data-slot="steps-next-trigger"
+        class="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-xs transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+</div>
+
+// Parents can receive the api getter: <Steps/stepsApi/> then
+// `stepsApi().value` — it stays live across machine updates.
+<return=api>

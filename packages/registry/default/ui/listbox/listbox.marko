@@ -1,0 +1,102 @@
+import * as listboxMachine from "@zag-js/listbox";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+export interface ListboxItem {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+// Module-scope cache for built collections, keyed by the `items` array
+// reference. `serviceProps` (below) is a closure re-invoked on every
+// reactive recompute; rebuilding the Zag collection fresh each time hands
+// <service> a new collection identity on every read, which thrashes Zag's
+// props diffing and made selection updates lag or silently fail to land
+// (verified 2026-08-11). A WeakMap keyed by the `items` reference is safe to
+// share at module scope: distinct <Listbox> instances always pass distinct
+// `items` arrays, so cache entries never collide across instances, and
+// entries are garbage-collected once an instance's `items` array is no
+// longer referenced. Not stored in a <let>/<const> tag-variable — a Zag
+// collection carries functions and isn't SSR-serializable.
+static const collectionCache = new WeakMap<ListboxItem[], ReturnType<typeof listboxMachine.collection<ListboxItem>>>();
+
+// `items` drives the generated `collection` (machine-owned, derived, so it
+// is omitted from the public Input and rebuilt below); `value` keeps the
+// plain string[] shape the machine already uses.
+export type Input = Omit<MachineInput<"div", listboxMachine.Props<ListboxItem>>, "collection"> & {
+  items: ListboxItem[];
+  valueChange?: (value: string[]) => void;
+  highlightedValueChange?: (highlightedValue: string | null) => void;
+  label?: string;
+};
+
+<const/{ items, label, class: className }=input/>
+
+<const/buildCollection=(list: ListboxItem[]) => {
+  const cached = collectionCache.get(list);
+  if (cached) return cached;
+  const built = listboxMachine.collection({
+    items: list,
+    itemToValue: (item: ListboxItem) => item.value,
+    itemToString: (item: ListboxItem) => item.label,
+    isItemDisabled: (item: ListboxItem) => !!item.disabled,
+  });
+  collectionCache.set(list, built);
+  return built;
+}/>
+
+<machine-props/machineProps from=input pick=listboxMachine.props
+  onValueChange(details: listboxMachine.ValueChangeDetails<ListboxItem>) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }
+  onHighlightChange(details: listboxMachine.HighlightChangeDetails<ListboxItem>) {
+    input.onHighlightChange?.(details);
+    input.highlightedValueChange?.(details.highlightedValue);
+  }/>
+// `collection` is derived state (rebuilt whenever `items` changes), not a
+// plain input field, so it cannot be picked/overridden inside <machine-props>
+// (that tag's overrides are evaluated eagerly at the tag-input boundary).
+// Wrap machineProps in a closure that layers it in for <service>.
+<const/serviceProps=() => ({ ...machineProps(), collection: buildCollection(items) })/>
+<service/service machine=() => listboxMachine.machine props=serviceProps/>
+<connect/api=(service, normalizeProps) =>
+  listboxMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    items: ownItems,
+    valueChange: ownValueChange,
+    highlightedValueChange: ownHighlightedValueChange,
+    label: ownLabel,
+    ...native
+  } = listboxMachine.splitProps(input)[1];
+  return native;
+}>
+
+<div ...nativeAttrs() ...api().getRootProps() data-slot="listbox" class=cn("flex flex-col gap-1.5", className)>
+  <if=label>
+    <div ...api().getLabelProps() data-slot="listbox-label" class="text-sm font-medium">${label}</div>
+  </if>
+  <div
+    ...api().getContentProps()
+    data-slot="listbox-content"
+    class="bg-popover text-popover-foreground max-h-80 w-full min-w-[8rem] overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-xs"
+  >
+    <for|entry| of=items>
+      <div
+        ...api().getItemProps({ item: entry })
+        data-slot="listbox-item"
+        class="data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 relative flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+      >
+        <span data-slot="listbox-item-text">${entry.label}</span>
+      </div>
+    </for>
+  </div>
+</div>
+
+<return=api>

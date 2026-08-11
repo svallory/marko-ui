@@ -1,0 +1,86 @@
+import QrCode from "@marko-ui/registry/ui/qr-code/qr-code.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+export interface Input {}
+
+<let/controlledValue="https://marko-ui.dev"/>
+<let/lastValue="—"/>
+
+<component-page
+  title="QR Code"
+  description="Renders a QR code for a given value, with size variants and an optional center logo overlay."
+>
+  <demo-box title="Default">
+    <QrCode value="https://marko-ui.dev"/>
+  </demo-box>
+
+  <demo-box title="Sizes">
+    <div class="flex items-end gap-6">
+      <QrCode value="https://marko-ui.dev" size="sm"/>
+      <QrCode value="https://marko-ui.dev" size="default"/>
+      <QrCode value="https://marko-ui.dev" size="lg"/>
+    </div>
+  </demo-box>
+
+  <demo-box title="With center logo overlay">
+    <QrCode value="https://marko-ui.dev" size="lg">
+      <@overlay>
+        <div class="flex size-8 items-center justify-center rounded-sm bg-primary text-xs font-bold text-primary-foreground">
+          UI
+        </div>
+      </@overlay>
+    </QrCode>
+  </demo-box>
+
+  <demo-box title="Download as PNG">
+    <QrCode/qrCodeApi value="https://marko-ui.dev" size="lg">
+      <@overlay>
+        <div class="flex size-8 items-center justify-center rounded-sm bg-primary text-xs font-bold text-primary-foreground">
+          UI
+        </div>
+      </@overlay>
+    </QrCode>
+    <div class="mt-4">
+      <Button
+        size="sm"
+        variant="outline"
+        onClick() {
+          qrCodeApi()
+            .getDataUrl("image/png")
+            .then((dataUrl: string) => {
+              const anchor = document.createElement("a");
+              anchor.href = dataUrl;
+              anchor.download = "qr-code.png";
+              anchor.click();
+            });
+        }
+      >
+        Download PNG
+      </Button>
+    </div>
+  </demo-box>
+
+  <demo-box title="Controlled value">
+    <div class="flex flex-col items-start gap-3">
+      <QrCode
+        value=controlledValue
+        valueChange(value) { lastValue = value; }
+      />
+      <div class="flex gap-2">
+        <button
+          class="rounded-md border border-input px-2 py-1 text-sm"
+          onClick() { controlledValue = "https://marko-ui.dev"; }
+        >
+          marko-ui.dev
+        </button>
+        <button
+          class="rounded-md border border-input px-2 py-1 text-sm"
+          onClick() { controlledValue = "https://zagjs.com"; }
+        >
+          zagjs.com
+        </button>
+      </div>
+      <p class="text-sm text-muted-foreground">Last onValueChange: ${lastValue}</p>
+    </div>
+  </demo-box>
+</component-page>

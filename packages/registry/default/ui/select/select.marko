@@ -1,7 +1,7 @@
 import * as select from "@zag-js/select";
-import type { MachineInput } from "marko-zag";
-import { positionerStyle } from "marko-zag";
-import { cn } from "../../lib/utils.ts";
+import type { MachineInput } from "marko-ui";
+import { positionerStyle } from "marko-ui";
+import { cn } from "#lib/utils.ts";
 
 export interface SelectItem {
   value: string;
@@ -100,5 +100,39 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
     </if>
   </portal>
 </div>
+
+<script>
+  // Restore keyboard control when the listbox is opened BY MOUSE.
+  //
+  // Zag's `setInitialFocus` is an ACTION that schedules its DOM read with a
+  // single `raf()`. Every framework adapter Zag ships renders synchronously on
+  // a state write, so the content element exists by that frame. Marko batches:
+  // the machine's `notify()` bumps its rev on a microtask and the render lands
+  // a frame later, so on the mouse path Zag's raf fires while the content is
+  // still absent (verified live: Zag's raf at +350ms with content=null, content
+  // mounts at +399ms). `element?.focus()` then no-ops, focus stays on the
+  // trigger, and arrow keys do nothing. The keyboard path happens to win the
+  // race because its keydown route reaches the machine a tick later.
+  //
+  // Reading `api().open` makes this block re-run on every open/close. The
+  // double rAF matches the deferral marko-ui already applies to machine
+  // effects, which is the point at which the portalled content is committed.
+  const isOpen = api().open;
+  if (isOpen) {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const content = document.getElementById(api().getContentProps().id);
+        // Only intervene if Zag's own attempt lost the race; never steal focus
+        // from an element inside the content the user has already reached.
+        if (!content || content.contains(document.activeElement)) return;
+        // Mirrors @zag-js/dom-query getInitialFocus(): an explicit autofocus
+        // target wins, otherwise the content itself (it carries tabindex=0 and
+        // select items are intentionally not tabbable).
+        const target = content.querySelector<HTMLElement>("[data-autofocus],[autofocus]") ?? content;
+        target.focus({ preventScroll: true });
+      });
+    });
+  }
+</script>
 
 <return=api>

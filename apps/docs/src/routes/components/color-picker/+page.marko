@@ -1,0 +1,56 @@
+import ColorPicker from "@marko-ui/registry/ui/color-picker/color-picker.marko";
+
+static const PRESETS = [
+  "#ef4444",
+  "#f97316",
+  "#eab308",
+  "#22c55e",
+  "#06b6d4",
+  "#3b82f6",
+  "#8b5cf6",
+  "#ec4899",
+  "#000000",
+  "#ffffff",
+];
+
+<let/controlledValue="#3b82f6"/>
+
+<component-page
+  title="Color Picker"
+  description="Pick a color from a saturation area, channel sliders, channel inputs, the screen eyedropper or a preset swatch."
+>
+  <demo-box title="Default">
+    <ColorPicker defaultValue="#8b5cf6">
+      <@label>Brand color</@label>
+    </ColorPicker>
+  </demo-box>
+
+  <demo-box title="With swatch presets">
+    <ColorPicker defaultValue="#22c55e" swatches=PRESETS>
+      <@label>Accent</@label>
+    </ColorPicker>
+  </demo-box>
+
+  <demo-box title="HSL format, no eyedropper">
+    <ColorPicker defaultValue="hsl(200, 90%, 50%)" defaultFormat="hsla" hideEyeDropper>
+      <@label>Background</@label>
+    </ColorPicker>
+  </demo-box>
+
+  <demo-box title="Controlled">
+    <div class="flex flex-col gap-3">
+      <ColorPicker value:=controlledValue swatches=PRESETS>
+        <@label>Controlled color</@label>
+      </ColorPicker>
+      <span class="text-muted-foreground text-sm">
+        value: ${controlledValue}
+      </span>
+    </div>
+  </demo-box>
+
+  <demo-box title="Disabled">
+    <ColorPicker defaultValue="#64748b" disabled>
+      <@label>Disabled</@label>
+    </ColorPicker>
+  </demo-box>
+</component-page>

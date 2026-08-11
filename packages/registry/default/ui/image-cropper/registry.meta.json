@@ -1,0 +1,6 @@
+{
+  "title": "Image Cropper",
+  "description": "An image editor with a draggable, resizable crop region, aspect-ratio lock, zoom, rotation and flip.",
+  "dependencies": ["@zag-js/image-cropper", "marko-ui"],
+  "registryDependencies": ["utils"]
+}

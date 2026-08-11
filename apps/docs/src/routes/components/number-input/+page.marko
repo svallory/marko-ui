@@ -1,0 +1,27 @@
+import NumberInput from "@marko-ui/registry/ui/number-input/number-input.marko";
+
+<let/controlledValue="42"/>
+
+<component-page title="Number Input" description="A number input with increment/decrement steppers, min/max/step constraints, and a scrub area.">
+  <demo-box title="Default">
+    <NumberInput defaultValue="0"/>
+  </demo-box>
+  <demo-box title="Min / max / step">
+    <NumberInput defaultValue="10" min=0 max=100 step=5/>
+  </demo-box>
+  <demo-box title="Disabled">
+    <NumberInput defaultValue="0" disabled/>
+  </demo-box>
+  <demo-box title="Controlled">
+    <div class="flex items-center gap-4">
+      <NumberInput
+        value:=controlledValue
+        min=0
+        max=999
+      />
+      <span class="text-sm text-muted-foreground">
+        value: ${controlledValue}
+      </span>
+    </div>
+  </demo-box>
+</component-page>

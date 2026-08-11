@@ -1,0 +1,48 @@
+import Timer from "@marko-ui/registry/ui/timer/timer.marko";
+
+<let/controlledParts=["minutes", "seconds"]/>
+
+<component-page title="Timer" description="A countdown or stopwatch timer with a segmented digit display and start/pause/resume/reset controls.">
+  <demo-box title="Countdown">
+    <Timer countdown targetMs=0 startMs=(5 * 60 * 1000) parts=["minutes", "seconds"]/>
+  </demo-box>
+  <demo-box title="Stopwatch">
+    <Timer parts=["minutes", "seconds"]/>
+  </demo-box>
+  <demo-box title="Days / hours / mins / secs">
+    <Timer
+      countdown
+      targetMs=0
+      startMs=(2 * 24 * 60 * 60 * 1000)
+      parts=["days", "hours", "minutes", "seconds"]
+    />
+  </demo-box>
+  <demo-box title="Controlled parts">
+    <div class="flex flex-col items-center gap-3">
+      <Timer parts=controlledParts/>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          class="rounded-md border px-2 py-1 text-sm"
+          onClick() { controlledParts = ["seconds"]; }
+        >
+          Seconds only
+        </button>
+        <button
+          type="button"
+          class="rounded-md border px-2 py-1 text-sm"
+          onClick() { controlledParts = ["minutes", "seconds"]; }
+        >
+          Min:Sec
+        </button>
+        <button
+          type="button"
+          class="rounded-md border px-2 py-1 text-sm"
+          onClick() { controlledParts = ["hours", "minutes", "seconds"]; }
+        >
+          Hr:Min:Sec
+        </button>
+      </div>
+    </div>
+  </demo-box>
+</component-page>

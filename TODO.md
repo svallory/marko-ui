@@ -4,7 +4,7 @@
 
 - [x] **Project name: `marko-ui`** — renamed 2026-08-11 (was shadcn-marko; scope now exceeds shadcn — "shadcn for Marko" stays as marketing tagline). Renamed in registry output, docs, workspace package. Repo push should use `svallory/marko-ui`. `(decision — made)`
 - [x] **Registry domain: `marko-ui.saulo.tech`** — decided 2026-08-11. Deploy pipeline must build with `REGISTRY_BASE_URL=https://marko-ui.saulo.tech/r` (local dev keeps localhost default for shadcn-CLI smoke tests). `(decision — made)`
-- [x] **marko-zag exports: ship source** — no dist build; package already ships `.marko` source (compiled by the consumer), Vite transpiles `.ts` from node_modules, better IDE/agent DX. Document "requires a Marko-aware bundler" in README before publish. `(decision — made 2026-08-10)`
+- [x] **marko-ui exports: ship source** — no dist build; package already ships `.marko` source (compiled by the consumer), Vite transpiles `.ts` from node_modules, better IDE/agent DX. Document "requires a Marko-aware bundler" in README before publish. `(decision — made 2026-08-10)`
 
 ## Rebuilds (upgrade documented deviations)
 
@@ -18,6 +18,26 @@
 - [x] **form** — grown into the full shadcn Field anatomy (10 parts), validation-library-agnostic. Zag has no form machine (verified), so this is a static pattern. Errors accept plain strings or Standard Schema issues; demo shows valibot on the server via `Run.POST({ form })` (progressive enhancement) plus native `ValidityState` on blur. See `agent/reports/form-validation.md`.
 - [ ] **chart** — evaluated 2026-08-11 (`agent/reports/chart-evaluation.md`): recommendation is d3 primitives (d3-scale/shape/array) with Marko emitting SVG — 10.8-17KB gzip vs ECharts' 194KB on the same feature set (18x), and true SSR: charts render with zero JS, theming via `var(--chart-N)` in markup (pure CSS cascade, no observer). Per-chart tags, not polymorphic `<Chart type=>`. ECharts stays an opt-in escape hatch for heavy analytics. NEXT: implement chart-container + bar/line/area/pie tags (~400-600 lines incl. axes/tooltip). `(code — evaluated, awaiting build)`
 - [ ] **Compound-tag DX** — researched 2026-08-11 (`agent/reports/compound-tag-dx.md`, spikes at /compound-spike): premise was wrong — api getters DO cross tag boundaries; the real gap is Marko 6 has NO context API. Three spikes verified: attr-tags (<@trigger>/<@panel>) WORK and are shorter than the array API; per-part tag files work but silently drop ARIA when a consumer forgets api= (disqualifying); $global is silently dead client-side. Recommendation: adopt attr-tags as primary v2 API, keep items= as sugar; combobox/command/tree-view stay array-primary. NEXT: user decision on adopting, then mechanical per-component rollout. `(decision — research done)`
+
+## Blocks (port ALL shadcn v4 blocks — decided 2026-08-11)
+
+Source: space clone `data/shadcn-ui/apps/v4/registry/new-york-v4/blocks/<name>/` (MIT; adapt to our components with attribution). Infra (gallery, chrome-free view routes, registry:block emission) landed in the docs-site branch with 3 proof blocks (login-01, dashboard-01, calendar-01 — the calendar block is ours, shadcn keeps calendars in a separate site section not the blocks registry). Remaining 26 to port, each = page.marko + sub-part tags + registry.meta.json + view route:
+
+- [ ] **login-02..05** (4) — variants of the login screen (split panels, image side, muted background)
+- [ ] **signup-01..05** (5) — signup screens mirroring the login variants
+- [ ] **sidebar-01..16** (16) — the full sidebar showcase family (collapsible variants, submenus, calendars-in-sidebar, settings dialogs; heaviest reuse of our sidebar component's sub-parts)
+- [ ] **charts blocks** — `registry/new-york-v4/charts/` has the chart demo set; blocked on the chart component build (see chart entry above)
+- [ ] Also available for later: `examples/` (per-component demo variants — useful for the data-driven component docs pages) and `internal/` sink pages for QA.
+
+`(code — fleet work; gallery "more coming" note stays until done)`
+
+## Tooling
+
+- [ ] **marko-ui CLI** — inspired by (and improving on) Meta Astryx's CLI (https://astryx.atmeta.com/docs/cli, mechanics surveyed 2026-08-11). Their command surface: discovery (`search` ranked across components/docs/templates, `component` with `--props`/`--source`/`--list`, `docs` for tokens/theming, `template --skeleton`), setup (`init` — installs packages, theming, AND generates agent docs like AGENTS.md/CLAUDE.md; `swizzle` to copy component source in; `upgrade` with codemods), and health (`doctor` with CI exit codes). Their agent-oriented mechanics worth copying: `--json` typed envelopes with response-type discriminators, `--dense` token-efficient output, `--detail brief|compact|full`, a self-describing manifest call (every command + flags + types in one response), stable append-only error codes, and a programmatic API mirroring the CLI. Our angles to improve: we already have a live shadcn-format registry (so `add` can wrap/replace the shadcn CLI dependency and fix its React-registry pitfalls), our components ship as readable source (swizzle is nearly free), the CLI can share data with the planned `/docs/components/$name` pages + llms.txt generation (one data layer, many renderers — see `notes/plans/component-docs-pages.md`), and a future registry MCP server can be the same code behind `search`/`get`. Suggested MVP order: `init` (project setup + agent-docs generation) → `add` (registry install, no shadcn-CLI dependency) → `component`/`search` with `--dense`/`--json` → `doctor` → manifest + programmatic API → `upgrade` codemods later. `(design, then code)`
+
+## Docs
+
+- [ ] **Data-driven component docs pages (`/docs/components/$name`)** — draft plan at `notes/plans/component-docs-pages.md` (space root). One dynamic route + per-component data + TS-extracted API reference + demo-per-file (demo IS the code sample). Includes an OPEN RESEARCH step before building: storage format for AI agents (marko vs JSON/TOML/TOON per layer), llms.txt/AGENTS.md generation from the same data, possible registry MCP server, and an Astryx-style agent-knowledge benchmark (Meta's Astryx precedent documented in the plan). `(research, then code)`
 
 ## Theming (shadcn parity — mechanism already compatible, tooling gaps below)
 
@@ -33,6 +53,6 @@
 
 ## Release (user)
 
-- [ ] Push repo to GitHub (no remote configured); archive `svallory/marko-zag-components` with pointer README. `(ops)`
-- [ ] `npm publish marko-zag@0.1.0` + `npm deprecate marko-zag@0.0.2 "Marko 5/Zag 0.x era — unrelated to 0.1+"`. `(ops)`
+- [ ] Push repo to GitHub (no remote configured); archive `svallory/marko-ui-components` with pointer README. `(ops)`
+- [ ] `npm publish marko-ui@0.1.0` + `npm deprecate marko-ui@0.0.2 "Marko 5/Zag 0.x era — unrelated to 0.1+"`. `(ops)`
 - [ ] Deploy docs app + registry; CI: `bun run build:registry && git diff --exit-code` + shadcn-CLI smoke test. `(ops)`

@@ -46,7 +46,7 @@ function defaultTrigger(page: Page): Locator {
  *
  * `waitFor({ state: "visible" })` resolves as soon as the surface paints, but
  * Zag installs the trap in a machine entry effect that the Marko adapter defers
- * by two animation frames (see marko-zag/src/machine.ts). Tabbing in that window
+ * by two animation frames (see marko-ui/src/machine.ts). Tabbing in that window
  * genuinely escapes the dialog, so tests that assert on the trap must wait for
  * initial focus to have moved inside — the observable signal that the effect ran.
  */

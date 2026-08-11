@@ -90,6 +90,37 @@ function parseCssVars(css: string): CssVars {
   return cssVars;
 }
 
+// Maps each package.json "imports" subpath prefix used in registry source to
+// the target path its files land on in a consumer app. Source uses `#lib/...`
+// so components never carry a relative path that only happens to be right for
+// our own directory depth; consumers have no such subpath imports, so every
+// `#` specifier must leave here as a plain relative path.
+const SUBPATH_IMPORT_TARGETS: Record<string, string> = {
+  "#lib/": "~/src/lib/",
+};
+
+// Rewrites `#alias/...` specifiers into paths relative to the emitting file's
+// own target directory. A component targeting ~/src/components/ui/switch and a
+// utils file targeting ~/src/lib/utils.ts are three levels apart, while in our
+// source tree (default/ui/switch → default/lib) they are only two — emitting
+// the source-relative path verbatim is what shipped a broken import.
+function rewriteSubpathImports(content: string, targetBase: string): string {
+  return content.replace(/(["'])#([^"']+)\1/g, (original, quote: string, specifier: string) => {
+    const full = `#${specifier}`;
+    const prefix = Object.keys(SUBPATH_IMPORT_TARGETS).find((p) => full.startsWith(p));
+    if (!prefix) {
+      throw new Error(
+        `no consumer target mapped for subpath import "${full}"; add it to SUBPATH_IMPORT_TARGETS ` +
+          `(emitting it verbatim would ship an unresolvable import to consumers)`,
+      );
+    }
+    const targetPath = SUBPATH_IMPORT_TARGETS[prefix] + full.slice(prefix.length);
+    let rel = relative(targetBase, targetPath);
+    if (!rel.startsWith(".")) rel = `./${rel}`;
+    return `${quote}${rel}${quote}`;
+  });
+}
+
 async function fileEntries(dir: string, targetBase: string, registryBase: string) {
   const entries = await readdir(dir, { withFileTypes: true });
   const sub = entries.find((e) => e.isDirectory());
@@ -105,7 +136,7 @@ async function fileEntries(dir: string, targetBase: string, registryBase: string
       path: `${registryBase}/${name}`,
       type: "registry:file" as const,
       target: `${targetBase}/${name}`,
-      content: await readFile(join(dir, name), "utf8"),
+      content: rewriteSubpathImports(await readFile(join(dir, name), "utf8"), targetBase),
     })),
   );
 }
@@ -172,7 +203,7 @@ async function main() {
       title: name === "style" ? "Theme" : `Theme (${name.replace("style-", "")})`,
       description:
         "Tailwind v4 globals.css with shadcn-compatible CSS variables. Add `@source` directives for your .marko files.",
-      dependencies: ["tailwindcss", "tw-animate-css", "marko-zag"],
+      dependencies: ["tailwindcss", "tw-animate-css", "marko-ui"],
       cssVars: parseCssVars(css),
       // Ship only this variant's CSS, always targeted as globals.css so a
       // consumer picking any base color gets a normal `~/src/styles/globals.css`.
@@ -197,10 +228,10 @@ async function main() {
     const dir = join(UI_DIR, name);
     const meta = await readMeta(dir);
     const files = await fileEntries(dir, `~/src/components/ui/${name}`, `ui/${name}`);
-    // derive npm deps the meta forgot: any file importing marko-zag needs it
+    // derive npm deps the meta forgot: any file importing marko-ui needs it
     const dependencies = new Set(meta.dependencies ?? []);
-    if (files.some((f) => f.content.includes('from "marko-zag"'))) {
-      dependencies.add("marko-zag");
+    if (files.some((f) => f.content.includes('from "marko-ui"'))) {
+      dependencies.add("marko-ui");
     }
     await write({
       $schema: ITEM_SCHEMA,

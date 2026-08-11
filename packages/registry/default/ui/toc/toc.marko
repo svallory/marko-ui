@@ -1,0 +1,72 @@
+import * as tocMachine from "@zag-js/toc";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+// Zag's TocItem only carries `value` (heading slug) and `depth`; the display
+// text is this component's own concern, so items may carry an optional
+// `label` alongside them (falls back to the slug when omitted).
+export interface TocItem extends tocMachine.TocItem {
+  label?: string;
+}
+
+export type Input = MachineInput<"nav", tocMachine.Props> & {
+  items: TocItem[];
+  activeIdsChange?: (activeIds: string[]) => void;
+  activeItemsChange?: (activeItems: TocItem[]) => void;
+  title?: string;
+};
+
+<machine-props/machineProps from=input pick=tocMachine.props
+  onActiveChange(details: tocMachine.ActiveChangeDetails) {
+    input.onActiveChange?.(details);
+    input.activeIdsChange?.(details.activeIds);
+    input.activeItemsChange?.(details.activeItems as TocItem[]);
+  }/>
+<service/service machine=() => tocMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  tocMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+<const/tocItems=() => api().items as TocItem[]>
+
+<const/nativeAttrs=() => {
+  const { class: ownClass, activeIdsChange: ownActiveIdsChangeHandler, activeItemsChange: ownActiveItemsChangeHandler, items: ownItems, title: ownTitle, ...native } = tocMachine.splitProps(input)[1];
+  return native;
+}>
+
+<nav
+  ...nativeAttrs()
+  ...api().getRootProps()
+  data-slot="toc-root"
+  class=cn("relative text-sm", input.class)
+>
+  <if=input.title>
+    <p ...api().getTitleProps() data-slot="toc-title" class="mb-3 font-medium text-foreground">${input.title}</p>
+  </if>
+  <ul ...api().getListProps() data-slot="toc-list" class="relative space-y-2 border-l border-border">
+    <span
+      ...api().getIndicatorProps()
+      data-slot="toc-indicator"
+      class="w-px bg-foreground transition-[top,height] duration-200 [top:var(--top)] [height:var(--height)]"
+    />
+    <for|item| of=tocItems()>
+      <li
+        ...api().getItemProps({ item })
+        data-slot="toc-item"
+        class="pl-[calc(0.75rem*var(--depth))]"
+      >
+        <a
+          href=`#${item.value}`
+          ...api().getLinkProps({ item })
+          data-slot="toc-link"
+          class="block text-muted-foreground transition-colors hover:text-foreground data-[active]:font-medium data-[active]:text-foreground"
+        >
+          ${item.label ?? item.value}
+        </a>
+      </li>
+    </for>
+  </ul>
+</nav>
+
+<return=api>

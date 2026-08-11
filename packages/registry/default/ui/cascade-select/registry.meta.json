@@ -1,0 +1,6 @@
+{
+  "title": "Cascade Select",
+  "description": "A hierarchical select with cascading panels for drilling down through nested options, e.g. Region > Country > City.",
+  "dependencies": ["@zag-js/cascade-select"],
+  "registryDependencies": ["utils"]
+}

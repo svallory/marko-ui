@@ -1,0 +1,61 @@
+import * as angleSliderMachine from "@zag-js/angle-slider";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+export type Input = MachineInput<"div", angleSliderMachine.Props> & {
+  valueChange?: (value: number) => void;
+};
+
+<machine-props/machineProps from=input pick=angleSliderMachine.props
+  onValueChange(details: angleSliderMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }/>
+<service/service machine=() => angleSliderMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  angleSliderMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    valueChange: ownChangeHandler,
+    ...native
+  } = angleSliderMachine.splitProps(input)[1];
+  return native;
+}>
+
+<div
+  ...nativeAttrs()
+  ...api().getRootProps()
+  data-slot="angle-slider"
+  class=cn("flex flex-col items-center gap-2", input.class)
+>
+  <label ...api().getLabelProps() data-slot="angle-slider-label" class="sr-only">
+    Angle
+  </label>
+  <div
+    ...api().getControlProps()
+    data-slot="angle-slider-control"
+    class="relative size-24 rounded-full border border-input bg-muted"
+  >
+    <input ...api().getHiddenInputProps()>
+    <div
+      ...api().getThumbProps()
+      data-slot="angle-slider-thumb"
+      class="absolute top-1/2 left-1/2 h-1/2 w-0.5 -translate-x-1/2 origin-top -translate-y-0 bg-transparent outline-none"
+    >
+      <span data-slot="angle-slider-thumb-knob" class="mx-auto block size-3 -translate-x-1/2 translate-y-[-2px] rounded-full border border-primary bg-background shadow-sm ring-0 focus-visible:ring-[3px] focus-visible:ring-ring/50"></span>
+    </div>
+  </div>
+  <span
+    ...api().getValueTextProps()
+    data-slot="angle-slider-value-text"
+    class="text-sm text-muted-foreground tabular-nums"
+  >
+    ${api().value}&deg;
+  </span>
+</div>
+
+<return=api>

@@ -40,7 +40,7 @@ static const tags = [
   </demo-box>
 
   <demo-box title="Horizontal scrolling">
-    <ScrollArea class="w-96 rounded-md border whitespace-nowrap">
+    <ScrollArea horizontal class="w-96 rounded-md border whitespace-nowrap">
       <div class="flex w-max space-x-4 p-4">
         <for|i| of=Array.from({ length: 10 }, (_, idx) => idx + 1)>
           <div class="flex h-32 w-32 shrink-0 items-center justify-center rounded-md bg-muted text-sm">
@@ -50,14 +50,4 @@ static const tags = [
       </div>
     </ScrollArea>
   </demo-box>
-
-  <p class="text-sm text-muted-foreground">
-    Deviation from shadcn/Radix: this port uses <b>native styled scrollbars</b>
-    (via <code>scrollbar-width</code> / <code>scrollbar-color</code> and
-    <code>::-webkit-scrollbar</code> pseudo-elements) instead of a synthetic
-    Radix ScrollArea. There is no scroll thumb drag-to-scroll or custom
-    scrollbar hit-testing &mdash; behavior is 100% native browser scrolling,
-    just re-skinned to approximate the shadcn look. This keeps the component
-    CSS-only with no JS machine.
-  </p>
 </component-page>

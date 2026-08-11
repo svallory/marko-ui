@@ -1,0 +1,215 @@
+// Draggable, resizable desktop-app style floating panel.
+// Built on the REAL @zag-js/floating-panel machine (drag via header, edge and
+// corner resize handles, minimize/maximize/restore stages, viewport clamping).
+// Authoring rules: notes/component-authoring.md (v2 pattern)
+import * as floatingPanelMachine from "@zag-js/floating-panel";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+export type Input = Omit<
+  MachineInput<"div", floatingPanelMachine.Props>,
+  "title"
+> & {
+  /** Sugar for onOpenChange — receives the plain boolean, enables `open:=state`. */
+  openChange?: (open: boolean) => void;
+  /** Sugar for onPositionChange — receives the plain point. */
+  positionChange?: (position: floatingPanelMachine.Point) => void;
+  /** Sugar for onPositionChangeEnd — receives the plain point. */
+  positionEndChange?: (position: floatingPanelMachine.Point) => void;
+  /** Sugar for onSizeChange — receives the plain size. */
+  sizeChange?: (size: floatingPanelMachine.Size) => void;
+  /** Sugar for onSizeChangeEnd — receives the plain size. */
+  sizeEndChange?: (size: floatingPanelMachine.Size) => void;
+  /** Sugar for onStageChange — receives the plain stage. */
+  stageChange?: (stage: floatingPanelMachine.Stage) => void;
+  /** Render-prop trigger: `<@trigger|props|><Button ...props/></@trigger>`. */
+  trigger?: Marko.Body<[Record<string, unknown>]>;
+  /** Header title content. */
+  title?: Marko.Body;
+  /** Panel body content. */
+  content?: Marko.Body;
+  /** Extra controls rendered before the stage/close buttons in the header. */
+  actions?: Marko.Body;
+  /** Hide the minimize/maximize/restore stage buttons. */
+  hideStageTriggers?: boolean;
+  /** Hide the close button. */
+  hideCloseTrigger?: boolean;
+};
+
+<machine-props/machineProps from=input pick=floatingPanelMachine.props
+  onOpenChange(details: floatingPanelMachine.OpenChangeDetails) {
+    input.onOpenChange?.(details);
+    input.openChange?.(details.open);
+  }
+  onPositionChange(details: floatingPanelMachine.PositionChangeDetails) {
+    input.onPositionChange?.(details);
+    input.positionChange?.(details.position);
+  }
+  onPositionChangeEnd(details: floatingPanelMachine.PositionChangeDetails) {
+    input.onPositionChangeEnd?.(details);
+    input.positionEndChange?.(details.position);
+  }
+  onSizeChange(details: floatingPanelMachine.SizeChangeDetails) {
+    input.onSizeChange?.(details);
+    input.sizeChange?.(details.size);
+  }
+  onSizeChangeEnd(details: floatingPanelMachine.SizeChangeDetails) {
+    input.onSizeChangeEnd?.(details);
+    input.sizeEndChange?.(details.size);
+  }
+  onStageChange(details: floatingPanelMachine.StageChangeDetails) {
+    input.onStageChange?.(details);
+    input.stageChange?.(details.stage);
+  }/>
+<service/service machine=() => floatingPanelMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  floatingPanelMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+// Everything that is neither machine-owned (splitProps) nor component-owned
+// passes through to the panel content. Leaking a component-owned prop here
+// would render it as a bogus DOM attribute.
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    openChange: ownOpenChange,
+    positionChange: ownPositionChange,
+    positionEndChange: ownPositionEndChange,
+    sizeChange: ownSizeChange,
+    sizeEndChange: ownSizeEndChange,
+    stageChange: ownStageChange,
+    trigger: ownTrigger,
+    title: ownTitle,
+    content: ownContent,
+    actions: ownActions,
+    hideStageTriggers: ownHideStageTriggers,
+    hideCloseTrigger: ownHideCloseTrigger,
+    ...native
+  } = floatingPanelMachine.splitProps(input)[1];
+  return native;
+}>
+
+<if=input.trigger>
+  <${input.trigger}({
+    ...api().getTriggerProps(),
+    "data-slot": "floating-panel-trigger",
+  })/>
+</if>
+<portal>
+  <if=api().open>
+    // The positioner owns --x/--y/--width/--height plus `position` in its own
+    // reactive style object; the content owns width/height/overflow. Adding a
+    // style attribute of our own on either part would wipe them.
+    <div ...api().getPositionerProps() data-slot="floating-panel-positioner" class="z-50">
+      <div
+        ...nativeAttrs()
+        ...api().getContentProps()
+        data-slot="floating-panel"
+        class=cn(
+          "bg-card text-card-foreground relative flex flex-col overflow-hidden rounded-xl border shadow-lg outline-none",
+          "data-[dragging]:shadow-xl data-[behind]:opacity-95 data-[minimized]:h-auto!",
+          "focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+          input.class,
+        )
+      >
+        <div
+          ...api().getHeaderProps()
+          data-slot="floating-panel-header"
+          class="bg-muted/40 flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2"
+        >
+          // The drag trigger owns cursor/user-select/touch-action styles.
+          <div
+            ...api().getDragTriggerProps()
+            data-slot="floating-panel-drag-trigger"
+            class="flex min-w-0 flex-1 items-center gap-2 data-[disabled]:cursor-default"
+          >
+            <h2
+              ...api().getTitleProps()
+              data-slot="floating-panel-title"
+              class="truncate text-sm leading-none font-semibold"
+            >
+              <if=input.title>
+                <${input.title}/>
+              </if>
+            </h2>
+          </div>
+          <div
+            ...api().getControlProps()
+            data-slot="floating-panel-control"
+            class="flex shrink-0 items-center gap-0.5"
+          >
+            <if=input.actions>
+              <${input.actions}/>
+            </if>
+            <if=!input.hideStageTriggers>
+              <button
+                ...api().getStageTriggerProps({ stage: "minimized" })
+                data-slot="floating-panel-stage-trigger"
+                class="text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring/50 inline-flex size-6 items-center justify-center rounded-sm transition-colors focus-visible:ring-[3px] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5" aria-hidden="true">
+                  <path d="M5 12h14"/>
+                </svg>
+              </button>
+              <button
+                ...api().getStageTriggerProps({ stage: "maximized" })
+                data-slot="floating-panel-stage-trigger"
+                class="text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring/50 inline-flex size-6 items-center justify-center rounded-sm transition-colors focus-visible:ring-[3px] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5" aria-hidden="true">
+                  <rect width="16" height="16" x="4" y="4" rx="2"/>
+                </svg>
+              </button>
+              <button
+                ...api().getStageTriggerProps({ stage: "default" })
+                data-slot="floating-panel-stage-trigger"
+                class="text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring/50 inline-flex size-6 items-center justify-center rounded-sm transition-colors focus-visible:ring-[3px] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5" aria-hidden="true">
+                  <path d="M8 3v3a2 2 0 0 1-2 2H3"/>
+                  <path d="M21 8h-3a2 2 0 0 1-2-2V3"/>
+                  <path d="M3 16h3a2 2 0 0 1 2 2v3"/>
+                  <path d="M16 21v-3a2 2 0 0 1 2-2h3"/>
+                </svg>
+              </button>
+            </if>
+            <if=!input.hideCloseTrigger>
+              <button
+                ...api().getCloseTriggerProps()
+                data-slot="floating-panel-close-trigger"
+                class="text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring/50 inline-flex size-6 items-center justify-center rounded-sm transition-colors focus-visible:ring-[3px] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5" aria-hidden="true">
+                  <path d="M18 6 6 18"/>
+                  <path d="m6 6 12 12"/>
+                </svg>
+                <span class="sr-only">Close</span>
+              </button>
+            </if>
+          </div>
+        </div>
+        <div
+          ...api().getBodyProps()
+          data-slot="floating-panel-body"
+          class="min-h-0 flex-1 overflow-auto p-4 text-sm"
+        >
+          <if=input.content>
+            <${input.content}/>
+          </if>
+        </div>
+        // Resize handles own position/cursor/touch-action plus their per-axis
+        // offsets in the machine's style object — only sizing classes here.
+        <for|axis| of=floatingPanelMachine.resizeTriggerAxes>
+          <div
+            ...api().getResizeTriggerProps({ axis })
+            data-slot="floating-panel-resize-trigger"
+            class="z-10 data-[disabled]:pointer-events-none data-[axis=n]:h-1 data-[axis=s]:h-1 data-[axis=e]:w-1 data-[axis=w]:w-1 data-[axis=ne]:size-3 data-[axis=nw]:size-3 data-[axis=se]:size-3 data-[axis=sw]:size-3"
+          />
+        </for>
+      </div>
+    </div>
+  </if>
+</portal>
+
+<return=api>

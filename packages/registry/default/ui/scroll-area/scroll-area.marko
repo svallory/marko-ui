@@ -1,18 +1,83 @@
-import { cn } from "../../lib/utils.ts";
+// Built on the REAL @zag-js/scroll-area machine (synthetic draggable thumb,
+// auto-hiding scrollbars) — not native browser scrollbars re-skinned.
+// Authoring rules: notes/component-authoring.md (v2 pattern)
+import * as scrollAreaMachine from "@zag-js/scroll-area";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
 
-export interface Input extends Marko.Input<"div"> {}
+export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
+  content?: Marko.Body;
+  /** Render a horizontal scrollbar + thumb in addition to the vertical one. */
+  horizontal?: boolean;
+};
 
-<const/{ class: className, content, ...rest }=input/>
+// scroll-area has no onXxxChange callbacks in its Props — nothing to adapt,
+// <machine-props> just picks the machine's own props off input.
+<machine-props/machineProps from=input pick=scrollAreaMachine.props/>
+<service/service machine=() => scrollAreaMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  scrollAreaMachine.connect(service, normalizeProps)
+  service=service
+/>
 
+// Everything that is neither machine-owned (splitProps) nor component-owned
+// (class, content, horizontal) passes through to the root wrapper.
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    content: ownContent,
+    horizontal: ownHorizontal,
+    ...native
+  } = scrollAreaMachine.splitProps(input)[1];
+  return native;
+}>
+
+// root/scrollbar/thumb/corner all carry Zag-owned reactive `style` objects
+// (imperative --corner-width/--thumb-height CSS vars, absolute positioning) —
+// do NOT add a style attribute of our own to any of them; only `class`.
 <div
-  ...rest
+  ...nativeAttrs()
+  ...api().getRootProps()
   data-slot="scroll-area"
-  class=cn("relative overflow-hidden", className)
+  class=cn("relative", input.class)
 >
   <div
+    ...api().getViewportProps()
     data-slot="scroll-area-viewport"
-    class="size-full overflow-auto rounded-[inherit] [scrollbar-width:thin] [scrollbar-color:var(--border)_transparent] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-solid [&::-webkit-scrollbar-thumb]:border-transparent [&::-webkit-scrollbar-thumb]:bg-clip-padding"
+    class="size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1"
   >
-    <${content}/>
+    <div ...api().getContentProps()>
+      <${input.content}/>
+    </div>
   </div>
+
+  <div
+    ...api().getScrollbarProps({ orientation: "vertical" })
+    data-slot="scroll-area-scrollbar"
+    class="flex h-full w-2.5 touch-none border-l border-l-transparent p-px transition-colors select-none"
+  >
+    <div
+      ...api().getThumbProps({ orientation: "vertical" })
+      data-slot="scroll-area-thumb"
+      class="relative flex-1 rounded-full bg-border"
+    />
+  </div>
+
+  <if=input.horizontal>
+    <div
+      ...api().getScrollbarProps({ orientation: "horizontal" })
+      data-slot="scroll-area-scrollbar"
+      class="flex h-2.5 w-full touch-none flex-col border-t border-t-transparent p-px transition-colors select-none"
+    >
+      <div
+        ...api().getThumbProps({ orientation: "horizontal" })
+        data-slot="scroll-area-thumb"
+        class="relative flex-1 rounded-full bg-border"
+      />
+    </div>
+  </if>
+
+  <div ...api().getCornerProps() data-slot="scroll-area-corner"/>
 </div>
+
+<return=api>

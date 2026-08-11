@@ -1,0 +1,222 @@
+import * as tourMachine from "@zag-js/tour";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+// A step whose target is a CSS SELECTOR instead of a live element getter.
+// Zag's own StepDetails.target is `() => HTMLElement | null`, and functions
+// cannot cross Marko tag input (input is serialized for resume — passing a
+// getter throws `Unable to serialize "input" (reading steps[n].target)`).
+// The selector is resolved into Zag's getter below, inside the component.
+export interface TourStep
+  extends Omit<tourMachine.StepDetails, "target" | "effect"> {
+  /** CSS selector of the element this step highlights. Omit for a modal step. */
+  target?: string | undefined;
+}
+
+// MachineInput = native <div> attributes ∩ the machine's full Props, with
+// `id` made optional (generated below, overridable). `stepIdChange` is
+// additive sugar enabling Marko's two-way bind shorthand
+// (<Tour stepId:=currentStepId/>); Zag's own `onStepChange` also works and
+// receives the details object. Zag's `steps` is replaced by `items`: its
+// `target` getters are functions, and tag input is serialized for resume, so
+// they cannot cross the boundary.
+export type Input = Omit<
+  MachineInput<"div", tourMachine.Props>,
+  "steps"
+> & {
+  /** Steps with selector targets — the serializable way to describe a tour. */
+  items?: TourStep[];
+  /** Sugar for onStepChange — receives the plain step id. */
+  stepIdChange?: (stepId: string | null) => void;
+  /** Sugar for onStatusChange — receives the plain status. */
+  statusChange?: (status: tourMachine.StepStatus) => void;
+  /** Render-prop for the tour trigger (usually a "Start tour" button). */
+  trigger?: Marko.Body<[Record<string, unknown>]>;
+};
+
+static function resolveSteps(
+  items: TourStep[] | undefined,
+): tourMachine.StepDetails[] {
+  if (!items) return [];
+  return items.map(({ target, ...step }) => ({
+    ...step,
+    target: target
+      ? () =>
+          typeof document === "undefined"
+            ? null
+            : document.querySelector<HTMLElement>(target)
+      : undefined,
+  }));
+}
+
+// `steps` is layered on OUTSIDE <machine-props> on purpose: the resolved
+// steps carry target getter functions, and anything written as a tag
+// attribute becomes serialized input. A template closure is the serializable
+// currency here — the getters are created when the closure runs, never
+// stored in input.
+<machine-props/baseProps from=input pick=tourMachine.props
+  onStepChange(details: tourMachine.StepChangeDetails) {
+    input.onStepChange?.(details);
+    input.stepIdChange?.(details.stepId);
+  }
+  onStatusChange(details: tourMachine.StatusChangeDetails) {
+    input.onStatusChange?.(details);
+    input.statusChange?.(details.status);
+  }/>
+<const/machineProps=() => ({
+  ...baseProps(),
+  steps: resolveSteps(input.items),
+})/>
+<service/service machine=() => tourMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  tourMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+// Whatever is neither machine-owned (splitProps) nor component-owned
+// (class, sugar callbacks, trigger) passes through to the content element.
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    items: ownItems,
+    stepIdChange: ownStepIdChange,
+    statusChange: ownStatusChange,
+    trigger: ownTrigger,
+    ...native
+  } = tourMachine.splitProps(input)[1];
+  return native;
+}>
+
+<if=input.trigger>
+  <${input.trigger}({
+    "data-slot": "tour-trigger",
+    onClick: () => api().start(),
+  })/>
+</if>
+
+// The tour machine carries its own position/size CSS vars inside each part's
+// props style object (backdrop clip-path, spotlight rect, positioner
+// transform) — so NO style attribute of our own goes on those parts.
+<portal>
+  <if=api().open>
+    <div
+      ...api().getBackdropProps()
+      data-slot="tour-backdrop"
+      class="z-[calc(50+var(--tour-layer,0))] bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0"
+    />
+    <div
+      ...api().getSpotlightProps()
+      data-slot="tour-spotlight"
+      class="z-[calc(50+var(--tour-layer,0))] ring-2 ring-ring/40"
+    />
+    <div
+      ...api().getPositionerProps()
+      data-slot="tour-positioner"
+      class="[--tour-z-index:50] z-[calc(50+var(--tour-layer,0))] data-[type=dialog]:fixed data-[type=dialog]:inset-0 data-[type=dialog]:grid data-[type=dialog]:place-items-center data-[type=floating]:fixed data-[type=floating]:inset-0 data-[type=floating]:grid data-[type=floating]:place-items-center"
+    >
+      <div
+        ...nativeAttrs()
+        ...api().getContentProps()
+        data-slot="tour-content"
+        class=cn(
+          "group bg-popover text-popover-foreground relative flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-3 rounded-lg border p-4 shadow-lg outline-hidden",
+          "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+          input.class,
+        )
+      >
+        <if=api().step?.arrow>
+          // Zag sizes/paints the arrow from `--arrow-size` /
+          // `--arrow-background`, which it expects the consumer to define, and
+          // the tour machine (unlike the popover/tooltip machines) runs no
+          // popper arrow middleware — nothing writes the arrow's offset. So
+          // the side placement is done here in CSS, keyed off the content's
+          // own `data-side`, with arbitrary-property classes rather than a
+          // style attribute of our own (the arrow's style object is Zag's).
+          <div
+            ...api().getArrowProps()
+            data-slot="tour-arrow"
+            class="[--arrow-background:var(--popover)] [--arrow-size:10px] group-data-[side=bottom]:top-[calc(var(--arrow-size)/-2)] group-data-[side=bottom]:left-[calc(50%-var(--arrow-size)/2)] group-data-[side=top]:bottom-[calc(var(--arrow-size)/-2)] group-data-[side=top]:left-[calc(50%-var(--arrow-size)/2)] group-data-[side=left]:right-[calc(var(--arrow-size)/-2)] group-data-[side=left]:top-[calc(50%-var(--arrow-size)/2)] group-data-[side=right]:left-[calc(var(--arrow-size)/-2)] group-data-[side=right]:top-[calc(50%-var(--arrow-size)/2)]"
+          >
+            <div ...api().getArrowTipProps() data-slot="tour-arrow-tip"/>
+          </div>
+        </if>
+
+        <div class="flex items-start justify-between gap-2">
+          <p
+            ...api().getTitleProps()
+            data-slot="tour-title"
+            class="text-sm leading-none font-semibold"
+          >
+            ${api().step?.title}
+          </p>
+          <button
+            ...api().getCloseTriggerProps()
+            data-slot="tour-close"
+            class="ring-offset-background focus-visible:ring-ring -mt-1 -mr-1 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+              <path d="M18 6 6 18"/>
+              <path d="m6 6 12 12"/>
+            </svg>
+            <span class="sr-only">Close tour</span>
+          </button>
+        </div>
+
+        <p
+          ...api().getDescriptionProps()
+          data-slot="tour-description"
+          class="text-muted-foreground text-sm"
+        >
+          ${api().step?.description}
+        </p>
+
+        <div class="flex items-center justify-between gap-3 pt-1">
+          <div data-slot="tour-progress" class="flex items-center gap-1.5">
+            <for|index| from=0 to=api().totalSteps - 1>
+              <span
+                data-slot="tour-progress-dot"
+                data-current=index === api().stepIndex ? "" : undefined
+                class=cn(
+                  "size-1.5 rounded-full transition-colors",
+                  index === api().stepIndex ? "bg-primary" : "bg-muted-foreground/30",
+                )
+              />
+            </for>
+            <span
+              ...api().getProgressTextProps()
+              data-slot="tour-progress-text"
+              class="text-muted-foreground ml-1.5 text-xs tabular-nums"
+            >
+              ${api().stepIndex + 1} / ${api().totalSteps}
+            </span>
+          </div>
+
+          <div data-slot="tour-actions" class="flex items-center gap-2">
+            <for|action| of=api().step?.actions ?? []>
+              <button
+                ...api().getActionTriggerProps({ action })
+                data-slot="tour-action-trigger"
+                class=cn(
+                  "inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50",
+                  "data-[type=next]:bg-primary data-[type=next]:text-primary-foreground data-[type=next]:hover:bg-primary/90",
+                  "data-[type=prev]:border data-[type=prev]:border-input data-[type=prev]:bg-background data-[type=prev]:hover:bg-accent data-[type=prev]:hover:text-accent-foreground",
+                  "data-[type=skip]:text-muted-foreground data-[type=skip]:hover:bg-accent data-[type=skip]:hover:text-accent-foreground",
+                  // `dismiss` is how a tour finishes, so it reads as primary —
+                  // the muted ✕ is a separate part (closeTrigger).
+                  "data-[type=close]:bg-primary data-[type=close]:text-primary-foreground data-[type=close]:hover:bg-primary/90",
+                  "data-[type=custom]:bg-primary data-[type=custom]:text-primary-foreground data-[type=custom]:hover:bg-primary/90",
+                )
+              >
+                ${action.label}
+              </button>
+            </for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </if>
+</portal>
+
+// Parents can receive the api getter: <Tour/tourApi/> then
+// `tourApi().start()` — it stays live across machine updates.
+<return=api>

@@ -1,0 +1,6 @@
+{
+  "title": "Marquee",
+  "description": "A continuously scrolling strip of content that pauses on hover.",
+  "dependencies": ["@zag-js/marquee"],
+  "registryDependencies": ["utils"]
+}

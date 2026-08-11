@@ -149,6 +149,42 @@ describe("select keyboard contract (APG)", () => {
     });
   });
 
+  // Regression: opening by MOUSE used to leave focus on the trigger, so arrow
+  // keys did nothing and the listbox was keyboard-dead. Every other test here
+  // opens with the keyboard, which happened to win the race and hid the bug.
+  it("supports arrow navigation after opening with the mouse", { timeout: 60_000 }, async () => {
+    await withSelectPage(async (page) => {
+      const demo = demoByTitle(page, "Default");
+
+      await triggerIn(demo).click();
+      const listbox = openListbox(page);
+      await listbox.waitFor({ state: "visible" });
+      await settle(page);
+
+      const highlighted = () =>
+        page.locator('[data-scope="select"][data-part="item"][data-highlighted]:visible').first();
+
+      await pressKey(page, "ArrowDown");
+      const firstHighlighted = await attributeOf(highlighted(), "data-value");
+      expect(firstHighlighted).toBeTruthy();
+
+      await pressKey(page, "ArrowDown");
+      const secondHighlighted = await attributeOf(highlighted(), "data-value");
+      expect(secondHighlighted).toBeTruthy();
+      expect(secondHighlighted).not.toBe(firstHighlighted);
+
+      // Enter must commit the mouse-opened, keyboard-navigated choice.
+      await pressKey(page, "Enter");
+      await listbox.waitFor({ state: "hidden" });
+
+      const trigger = triggerIn(demo);
+      expect(await attributeOf(trigger, "aria-expanded")).toBe("false");
+      expect((await trigger.textContent())?.toLowerCase()).toContain(
+        secondHighlighted!.toLowerCase(),
+      );
+    });
+  });
+
   it("closes on Escape without changing the selection", { timeout: 60_000 }, async () => {
     await withSelectPage(async (page) => {
       const demo = demoByTitle(page, "With default value");

@@ -1,60 +1,112 @@
-import { navigationMenuTriggerStyle } from "./variants.ts";
-import { cn } from "../../lib/utils.ts";
+// Navigation menu backed by @zag-js/navigation-menu.
+// Authoring rules: notes/component-authoring.md
+import * as navigationMenu from "@zag-js/navigation-menu";
+import type { MachineInput } from "marko-ui";
+import { navigationMenuTriggerStyle, navigationMenuLinkStyle } from "./variants.ts";
+import { cn } from "#lib/utils.ts";
 
-export interface NavigationMenuLink {
+// A link rendered directly in the menu bar, with no content panel.
+export interface NavigationMenuLinkItem {
+  type?: "link";
+  value: string;
   label: string;
   href: string;
+  current?: boolean;
+  disabled?: boolean;
 }
 
-export interface NavigationMenuDropdownLink {
+// A link rendered inside a content panel. `featured` renders the tall,
+// full-height card used as the lead item in rich panels.
+export interface NavigationMenuPanelLink {
   title: string;
   description?: string;
   href: string;
+  current?: boolean;
+  featured?: boolean;
 }
 
-export interface NavigationMenuDropdownItem {
+// A trigger that opens a content panel in the shared viewport. `links` are
+// rendered and wired by the component; the `content` body adds extra markup.
+export interface NavigationMenuMenuItem {
+  type: "menu";
+  value: string;
   label: string;
-  links: NavigationMenuDropdownLink[];
+  disabled?: boolean;
+  links?: NavigationMenuPanelLink[];
 }
 
-export type NavigationMenuItem =
-  | ({ type?: "link" } & NavigationMenuLink)
-  | ({ type: "dropdown" } & NavigationMenuDropdownItem);
+// Passed to the `content` body so callers can add arbitrary markup to a panel
+// (headings, promos, footers). Branch on `value` to render per item. Links must
+// come from the item's `links` array so the machine can wire them — anything
+// rendered here is plain, unwired markup.
+export interface NavigationMenuContentContext {
+  value: string;
+}
 
-export interface Input extends Marko.Input<"nav"> {
+export type NavigationMenuItem = NavigationMenuLinkItem | NavigationMenuMenuItem;
+
+export type Input = MachineInput<"nav", navigationMenu.Props> & {
   items: NavigationMenuItem[];
-}
+  /** Alignment of the shared viewport relative to the active trigger. */
+  align?: "start" | "center" | "end";
+  /**
+   * Extra markup appended to every open panel — headings, promos, footers.
+   * Receives the item's value; branch on it to render per item. Links belong in
+   * the item's `links` array so the machine can wire them.
+   */
+  content?: Marko.Body<[NavigationMenuContentContext]>;
+  valueChange?: (value: string) => void;
+};
 
-<const/{ items, class: className, ...rest }=input/>
+<machine-props/machineProps from=input pick=navigationMenu.props
+  onValueChange(details: navigationMenu.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }/>
+<service/service machine=() => navigationMenu.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  navigationMenu.connect(service, normalizeProps)
+  service=service
+/>
 
-<let/openIndex=null/>
+// Machine-owned props go to the machine; component-owned props are stripped so
+// they never stringify onto the <nav>.
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    items: ownItems,
+    align: ownAlign,
+    content: ownContent,
+    valueChange: ownChangeHandler,
+    ...native
+  } = navigationMenu.splitProps(input)[1];
+  return native;
+}>
 
-<script>
-  document.addEventListener(
-    "click",
-    (event) => {
-      if (openIndex === null) return;
-      if (rootRef() && !rootRef().contains(event.target as Node)) {
-        openIndex = null;
-      }
-    },
-    { signal: $signal },
-  );
-</script>
+<const/menuItems=() => input.items.filter((item) => item.type === "menu") as NavigationMenuMenuItem[]>
 
-<nav/rootRef ...rest data-slot="navigation-menu" class=cn("relative flex max-w-max items-center justify-center", className)>
-  <ul data-slot="navigation-menu-list" class="flex flex-1 list-none items-center justify-center gap-1">
-    <for|item, index| of=items>
-      <li data-slot="navigation-menu-item" class="relative">
-        <if=item.type === "dropdown">
+// Render-prop context for a content panel. Keep it plain data: anything closing
+// over the machine service is unserializable across the body boundary.
+<const/contentContext=(value: string) => ({ value })>
+
+<const/featuredLinks=(item: NavigationMenuMenuItem) => (item.links ?? []).filter((link) => link.featured)>
+<const/plainLinks=(item: NavigationMenuMenuItem) => (item.links ?? []).filter((link) => !link.featured)>
+<const/hasFeatured=(item: NavigationMenuMenuItem) => featuredLinks(item).length !== 0>
+
+<nav
+  ...nativeAttrs()
+  ...api().getRootProps()
+  data-slot="navigation-menu"
+  class=cn("group/navigation-menu relative flex max-w-max flex-1 items-center justify-center", input.class)
+>
+  <ul ...api().getListProps() data-slot="navigation-menu-list" class="group flex flex-1 list-none items-center justify-center gap-1">
+    <for|item| of=input.items>
+      <li ...api().getItemProps({ value: item.value, disabled: item.disabled }) data-slot="navigation-menu-item">
+        <if=item.type === "menu">
           <button
-            type="button"
+            ...api().getTriggerProps({ value: item.value, disabled: item.disabled })
             data-slot="navigation-menu-trigger"
-            data-state=(openIndex === index ? "open" : "closed")
-            class=cn(navigationMenuTriggerStyle(), "group gap-1")
-            onClick() {
-              openIndex = openIndex === index ? null : index;
-            }
+            class=cn(navigationMenuTriggerStyle(), "gap-1")
           >
             ${item.label}
             <svg
@@ -67,38 +119,103 @@ export interface Input extends Marko.Input<"nav"> {
               stroke-width="2"
               stroke-linecap="round"
               stroke-linejoin="round"
-              class=cn("relative top-px size-3 shrink-0 transition-transform duration-200", openIndex === index && "rotate-180")
+              class="relative top-px size-3 shrink-0 transition-transform duration-300 group-data-[state=open]:rotate-180"
               aria-hidden="true"
             >
               <path d="m6 9 6 6 6-6"/>
             </svg>
           </button>
-          <if=openIndex === index>
-            <div
-              data-slot="navigation-menu-content"
-              class="bg-popover text-popover-foreground absolute top-full left-0 mt-1.5 grid w-[400px] gap-1 rounded-md border p-2 shadow-md"
-            >
-              <for|link| of=item.links>
-                <a
-                  href=link.href
-                  data-slot="navigation-menu-link"
-                  class="hover:bg-accent hover:text-accent-foreground block rounded-sm p-3 transition-colors"
-                >
-                  <div class="text-sm font-medium">${link.title}</div>
-                  <if=link.description>
-                    <p class="text-muted-foreground text-sm">${link.description}</p>
-                  </if>
-                </a>
-              </for>
-            </div>
-          </if>
+          // Keeps Tab order coherent when focus moves between trigger and panel.
+          <span ...api().getTriggerProxyProps({ value: item.value, disabled: item.disabled })/>
         </if>
         <else>
-          <a href=item.href data-slot="navigation-menu-link" class=navigationMenuTriggerStyle()>
+          <a
+            ...api().getLinkProps({ value: item.value, current: item.current })
+            href=item.href
+            data-slot="navigation-menu-link"
+            class=navigationMenuTriggerStyle()
+          >
             ${item.label}
           </a>
         </else>
       </li>
     </for>
+
+    // Caret that slides to sit under the active trigger. The machine positions it
+    // through --trigger-x/--trigger-width on the root, so those vars drive real UI.
+    <div
+      ...api().getIndicatorProps()
+      data-slot="navigation-menu-indicator"
+      class="bottom-0 left-0 z-1 flex h-1.5 w-[var(--trigger-width)] items-end justify-center overflow-hidden [translate:var(--trigger-x)_0] transition-[translate,width] duration-250 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:animate-in data-[state=open]:fade-in"
+    >
+      <div
+        ...api().getArrowProps()
+        data-slot="navigation-menu-arrow"
+        class="relative top-[60%] size-2 rotate-45 rounded-tl-[2px] border-t border-l bg-popover shadow-md"
+      />
+    </div>
   </ul>
+
+  // Shared animated viewport: every panel renders inside it, and the machine
+  // drives its size/position through CSS vars in its own style object — so this
+  // part carries no style attribute of ours.
+  <div
+    ...api().getViewportPositionerProps({ align: input.align })
+    data-slot="navigation-menu-viewport-positioner"
+    class="absolute top-full left-0 isolate z-50 flex justify-center"
+  >
+    <div
+      ...api().getViewportProps({ align: input.align })
+      data-slot="navigation-menu-viewport"
+      class="relative mt-1.5 h-[var(--viewport-height)] w-[var(--viewport-width)] origin-top overflow-hidden rounded-md border bg-popover text-popover-foreground shadow duration-200 data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:zoom-in-90 data-[state=open]:fade-in-0"
+    >
+      <for|item| of=menuItems()>
+        <div
+          ...api().getContentProps({ value: item.value })
+          data-slot="navigation-menu-content"
+          class="absolute top-0 left-0 w-max p-2 duration-200 data-[motion=from-end]:slide-in-from-right-52 data-[motion=from-start]:slide-in-from-left-52 data-[motion=to-end]:slide-out-to-right-52 data-[motion=to-start]:slide-out-to-left-52 data-[motion^=from-]:animate-in data-[motion^=from-]:fade-in data-[motion^=to-]:animate-out data-[motion^=to-]:fade-out"
+        >
+          <if=item.links?.length>
+            <div class=cn("grid gap-2", hasFeatured(item) ? "w-[500px] grid-cols-[.75fr_1fr]" : "w-[400px]")>
+              <for|link| of=featuredLinks(item)>
+                <a
+                  ...api().getLinkProps({ value: item.value, current: link.current })
+                  href=link.href
+                  data-slot="navigation-menu-link"
+                  class="from-muted/50 to-muted flex h-full w-full select-none flex-col justify-end rounded-md bg-linear-to-b p-6 no-underline outline-none transition-all hover:shadow-md focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                >
+                  <div class="mt-4 mb-2 text-lg font-medium">${link.title}</div>
+                  <if=link.description>
+                    <p class="text-muted-foreground text-sm leading-tight">${link.description}</p>
+                  </if>
+                </a>
+              </for>
+              <ul class=cn("grid gap-1", !hasFeatured(item) && "md:grid-cols-2")>
+                <for|link| of=plainLinks(item)>
+                  <li>
+                    <a
+                      ...api().getLinkProps({ value: item.value, current: link.current })
+                      href=link.href
+                      data-slot="navigation-menu-link"
+                      class=navigationMenuLinkStyle()
+                    >
+                      <div class="text-sm font-medium leading-none">${link.title}</div>
+                      <if=link.description>
+                        <p class="text-muted-foreground line-clamp-2 text-sm leading-snug">${link.description}</p>
+                      </if>
+                    </a>
+                  </li>
+                </for>
+              </ul>
+            </div>
+          </if>
+          <if=input.content>
+            <${input.content}(contentContext(item.value))/>
+          </if>
+        </div>
+      </for>
+    </div>
+  </div>
 </nav>
+
+<return=api>

@@ -86,7 +86,7 @@ export async function isFocused(locator: Locator): Promise<boolean> {
  *
  * Zag dispatches transitions through queueMicrotask and the Marko host commits
  * the resulting render on the next frame; the adapter additionally defers entry
- * effects by two animation frames (see marko-zag/src/machine.ts). Waiting for
+ * effects by two animation frames (see marko-ui/src/machine.ts). Waiting for
  * two frames after the keypress covers that worst case, keeping assertions
  * deterministic without arbitrary sleeps.
  */

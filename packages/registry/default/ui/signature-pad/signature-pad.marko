@@ -1,0 +1,99 @@
+import * as signaturePadMachine from "@zag-js/signature-pad";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+import { buttonVariants } from "../button/variants.ts";
+
+export type Input = MachineInput<"input", signaturePadMachine.Props> & {
+  drawChange?: (paths: string[]) => void;
+  drawEndChange?: (paths: string[]) => void;
+};
+
+<machine-props/machineProps from=input pick=signaturePadMachine.props
+  onDraw(details: signaturePadMachine.DrawDetails) {
+    input.onDraw?.(details);
+    input.drawChange?.(details.paths);
+  }
+  onDrawEnd(details: signaturePadMachine.DrawEndDetails) {
+    input.onDrawEnd?.(details);
+    input.drawEndChange?.(details.paths);
+  }/>
+<service/service machine=() => signaturePadMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  signaturePadMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    drawChange: ownDrawChangeHandler,
+    drawEndChange: ownDrawEndChangeHandler,
+    ...native
+  } = signaturePadMachine.splitProps(input)[1];
+  return native;
+}>
+
+<div
+  ...api().getRootProps()
+  data-slot="signature-pad"
+  class=cn("bg-card text-card-foreground flex w-full max-w-sm flex-col gap-2 rounded-xl border p-4 shadow-sm", input.class)
+>
+  <label ...api().getLabelProps() data-slot="signature-pad-label" class="text-sm font-medium">
+    Sign here
+  </label>
+
+  <div
+    ...api().getControlProps()
+    data-slot="signature-pad-control"
+    class="border-input bg-muted/30 relative h-32 w-full overflow-hidden rounded-md border"
+  >
+    <svg ...api().getSegmentProps() data-slot="signature-pad-segment">
+      <for|path| of=api().paths>
+        <path ...api().getSegmentPathProps({ path }) data-slot="signature-pad-segment-path"/>
+      </for>
+      <if=api().currentPath>
+        <path ...api().getSegmentPathProps({ path: api().currentPath as string }) data-slot="signature-pad-segment-path"/>
+      </if>
+    </svg>
+
+    <button
+      ...api().getClearTriggerProps()
+      data-slot="signature-pad-clear-trigger"
+      class=cn(buttonVariants({ variant: "ghost", size: "icon" }), "absolute top-1 right-1 size-7")
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="size-4"
+      >
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+        <path d="M3 3v5h5"/>
+      </svg>
+      <span class="sr-only">Clear signature</span>
+    </button>
+
+    <div ...api().getGuideProps() data-slot="signature-pad-guide" class="border-border pointer-events-none absolute right-4 bottom-6 left-4 border-b border-dashed"/>
+  </div>
+
+  <input/hiddenInput
+    ...nativeAttrs()
+    ...api().getHiddenInputProps({ value: JSON.stringify(api().paths) })
+    data-slot="signature-pad-hidden-input"
+  >
+</div>
+
+<script>
+  // Marko patches `value` as the input's default-value ATTRIBUTE, not the
+  // live DOM property forms actually submit. Set the property imperatively
+  // whenever the committed paths change so form submission stays correct.
+  hiddenInput().value = JSON.stringify(api().paths);
+</script>
+
+<return=api>

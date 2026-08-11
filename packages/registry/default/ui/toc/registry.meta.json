@@ -1,0 +1,6 @@
+{
+  "title": "Table of Contents",
+  "description": "Tracks headings in a scroll container, highlights the active section while scrolling, and smooth-scrolls to a heading on click.",
+  "dependencies": ["@zag-js/toc"],
+  "registryDependencies": ["utils"]
+}

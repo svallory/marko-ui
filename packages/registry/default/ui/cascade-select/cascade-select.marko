@@ -1,0 +1,147 @@
+import * as cascadeSelect from "@zag-js/cascade-select";
+import type { MachineInput } from "marko-ui";
+import { positionerStyle } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+export interface CascadeSelectItem {
+  value: string;
+  label: string;
+  disabled?: boolean;
+  children?: CascadeSelectItem[];
+}
+
+// `items` builds the machine's tree `collection`; `value` is the plain
+// string[][] path-list the caller works with (each selected leaf is a full
+// value path, e.g. ["asia", "india", "mumbai"]).
+export type Input = Omit<MachineInput<"div", cascadeSelect.Props<CascadeSelectItem>>, "collection"> & {
+  items: CascadeSelectItem[];
+  valueChange?: (value: string[][]) => void;
+  placeholder?: string;
+  label?: string;
+};
+
+<const/{ items, placeholder, label, class: className }=input/>
+
+<const/buildCollection=(list: CascadeSelectItem[]) =>
+  cascadeSelect.collection({
+    rootNode: { value: "", label: "", children: list },
+    nodeToValue: (node: CascadeSelectItem) => node.value,
+    nodeToString: (node: CascadeSelectItem) => node.label,
+    nodeToChildren: (node: CascadeSelectItem) => node.children ?? [],
+    isNodeDisabled: (node: CascadeSelectItem) => !!node.disabled,
+  })
+/>
+
+<machine-props/machineProps from=input pick=cascadeSelect.props
+  onValueChange(details: cascadeSelect.ValueChangeDetails<CascadeSelectItem>) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }/>
+// `collection` is derived state (rebuilt whenever `items` changes), not a
+// plain input field, so it cannot be picked/overridden inside <machine-props>
+// (that tag's overrides are evaluated eagerly at the tag-input boundary).
+<const/serviceProps=() => ({ ...machineProps(), collection: buildCollection(items) })/>
+<service/service machine=() => cascadeSelect.machine props=serviceProps/>
+<connect/api=(service, normalizeProps) =>
+  cascadeSelect.connect(service, normalizeProps)
+  service=service
+/>
+
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    valueChange: ownChangeHandler,
+    items: ownItems,
+    placeholder: ownPlaceholder,
+    label: ownLabel,
+    ...native
+  } = cascadeSelect.splitProps(input)[1];
+  return native;
+}>
+
+// The panels along the currently highlighted path: the root list, plus one
+// list per ancestor of the highlighted item that has children. Each panel
+// shows the children of the node at that depth. `indexPath`/`valuePath` are
+// the REAL tree coordinates of the panel's parent node (empty for the root
+// panel) — the machine resolves nodes from the collection by indexPath, so
+// these must match the actual tree structure, not panel-local positions.
+<const/panels=() => {
+  const highlightedItems = api().highlightedItems;
+  const result: { indexPath: number[]; valuePath: string[]; children: CascadeSelectItem[] }[] = [{
+    indexPath: [],
+    valuePath: [],
+    children: items,
+  }];
+  let siblings = items;
+  for (const node of highlightedItems) {
+    const childItems = node.children ?? [];
+    const nodeIndex = siblings.indexOf(node);
+    if (childItems.length > 0 && nodeIndex !== -1) {
+      const parent = result[result.length - 1];
+      result.push({
+        indexPath: [...parent.indexPath, nodeIndex],
+        valuePath: [...parent.valuePath, node.value],
+        children: childItems,
+      });
+      siblings = childItems;
+    }
+  }
+  return result;
+}>
+
+<div ...nativeAttrs() ...api().getRootProps() data-slot="cascade-select" class=cn(className)>
+  <label ...api().getLabelProps() data-slot="cascade-select-label" class=(label ? "text-sm font-medium" : "sr-only")>${label || placeholder || "Select an option"}</label>
+  <div ...api().getControlProps() data-slot="cascade-select-control">
+    <button ...api().getTriggerProps() data-slot="cascade-select-trigger" class="border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 h-9">
+      <span data-slot="cascade-select-value">${api().valueAsString || placeholder}</span>
+      <svg ...api().getIndicatorProps() xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 opacity-50">
+        <path d="m6 9 6 6 6-6"/>
+      </svg>
+    </button>
+  </div>
+  <input ...api().getHiddenInputProps() data-slot="cascade-select-hidden-input">
+  <portal>
+    <if=api().open>
+      <div ...api().getPositionerProps() data-slot="cascade-select-positioner" style=positionerStyle>
+        <div
+          ...api().getContentProps()
+          data-slot="cascade-select-content"
+          class="bg-popover text-popover-foreground relative z-50 flex overflow-hidden rounded-md border shadow-md data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
+        >
+          <for|panel| of=panels()>
+            <div
+              ...api().getListProps({ item: { value: "", label: "", children: panel.children }, indexPath: panel.indexPath, value: panel.valuePath })
+              data-slot="cascade-select-list"
+              class="min-w-[8rem] overflow-x-hidden overflow-y-auto border-r p-1 last:border-r-0"
+            >
+              <for|entry, index| of=panel.children>
+                <const/itemProps={ item: entry, indexPath: [...panel.indexPath, index], value: [...panel.valuePath, entry.value] }/>
+                <div
+                  ...api().getItemProps(itemProps)
+                  data-slot="cascade-select-item"
+                  class="focus:bg-accent focus:text-accent-foreground data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 relative flex w-full cursor-default items-center justify-between gap-2 rounded-sm py-1.5 pr-2 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                >
+                  <span ...api().getItemTextProps(itemProps) data-slot="cascade-select-item-text">${entry.label}</span>
+                  <if=(entry.children && entry.children.length > 0)>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5 opacity-50">
+                      <path d="m9 18 6-6-6-6"/>
+                    </svg>
+                  </if>
+                  <else>
+                    <span ...api().getItemIndicatorProps(itemProps) data-slot="cascade-select-item-indicator" class="flex size-3.5 items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+                        <path d="M20 6 9 17l-5-5"/>
+                      </svg>
+                    </span>
+                  </else>
+                </div>
+              </for>
+            </div>
+          </for>
+        </div>
+      </div>
+    </if>
+  </portal>
+</div>
+
+<return=api>

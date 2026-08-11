@@ -2,8 +2,8 @@
   <section class="space-y-3">
     <h2 class="text-lg font-semibold">The mental model</h2>
     <p>
-      A marko-zag component is three layers: a <strong>Zag machine</strong> supplies behavior and
-      accessibility, three <strong>marko-zag tags</strong> wire it into Marko's resumability model,
+      A marko-ui component is three layers: a <strong>Zag machine</strong> supplies behavior and
+      accessibility, three <strong>marko-ui tags</strong> wire it into Marko's resumability model,
       and <strong>Tailwind classes</strong> supply the look. The one rule everything else derives
       from: Marko resumes pages by <em>serializing reactive state</em> — it never re-runs your
       template in the browser. Zag's service and api objects contain functions from npm code and
@@ -27,7 +27,7 @@
   <section class="space-y-3">
     <h2 class="text-lg font-semibold">2. Type the Input</h2>
     <pre class="overflow-x-auto rounded-lg border bg-muted/50 p-4 text-sm"><code>import * as switchMachine from "@zag-js/switch";
-import type { MachineInput } from "marko-zag";
+import type { MachineInput } from "marko-ui";
 
 export type Input = MachineInput&lt;"input", switchMachine.Props&gt; &amp; {
   checkedChange?: (checked: boolean) =&gt; void;
@@ -118,7 +118,7 @@ export type Input = MachineInput&lt;"input", switchMachine.Props&gt; &amp; {
       <li>
         Popper-positioned parts (popover, tooltip, menu, select…) spread
         <code>...api().getPositionerProps()</code> then add STATIC
-        <code>style=positionerStyle</code> (from marko-zag): Zag positions via imperative
+        <code>style=positionerStyle</code> (from marko-ui): Zag positions via imperative
         <code>--x/--y</code> CSS vars that a reactive style attribute would wipe.
       </li>
       <li>

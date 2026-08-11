@@ -1,0 +1,109 @@
+import * as editableMachine from "@zag-js/editable";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+export type Input = MachineInput<"input", editableMachine.Props> & {
+  valueChange?: (value: string) => void;
+  editChange?: (editing: boolean) => void;
+  valueCommit?: (value: string) => void;
+  valueRevert?: (value: string) => void;
+  placeholder?: string | { edit: string; preview: string };
+  trigger?: Marko.Body<[Record<string, unknown>]>;
+};
+
+<machine-props/machineProps from=input pick=editableMachine.props
+  onValueChange(details: editableMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }
+  onEditChange(details: editableMachine.EditChangeDetails) {
+    input.onEditChange?.(details);
+    input.editChange?.(details.edit);
+  }
+  onValueCommit(details: editableMachine.ValueChangeDetails) {
+    input.onValueCommit?.(details);
+    input.valueCommit?.(details.value);
+  }
+  onValueRevert(details: editableMachine.ValueChangeDetails) {
+    input.onValueRevert?.(details);
+    input.valueRevert?.(details.value);
+  }/>
+<service/service machine=() => editableMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  editableMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    valueChange: ownValueChangeHandler,
+    editChange: ownEditChangeHandler,
+    valueCommit: ownValueCommitHandler,
+    valueRevert: ownValueRevertHandler,
+    trigger: ownTrigger,
+    ...native
+  } = editableMachine.splitProps(input)[1];
+  return native;
+}>
+
+<div ...api().getRootProps() data-slot="editable-root" class=cn("flex items-center gap-1.5", input.class)>
+  <div ...api().getAreaProps() data-slot="editable-area" class="flex-1">
+    <input
+      ...nativeAttrs()
+      ...api().getInputProps()
+      data-slot="editable-input"
+      class="border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+    />
+    <span
+      ...api().getPreviewProps()
+      data-slot="editable-preview"
+      class="flex h-9 w-full min-w-0 items-center rounded-md border border-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none hover:bg-accent/50 data-[disabled]:pointer-events-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-[placeholder-shown]:text-muted-foreground md:text-sm"
+    >
+      ${api().valueText}
+    </span>
+  </div>
+  <div ...api().getControlProps() data-slot="editable-control" class="flex items-center gap-1">
+    <button
+      ...api().getSubmitTriggerProps()
+      data-slot="editable-submit-trigger"
+      type="button"
+      class="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex size-8 shrink-0 items-center justify-center gap-2 rounded-md border shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-4"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 6 9 17l-5-5"/>
+      </svg>
+      <span class="sr-only">Submit</span>
+    </button>
+    <button
+      ...api().getCancelTriggerProps()
+      data-slot="editable-cancel-trigger"
+      type="button"
+      class="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex size-8 shrink-0 items-center justify-center gap-2 rounded-md border shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-4"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6 6 18"/>
+        <path d="m6 6 12 12"/>
+      </svg>
+      <span class="sr-only">Cancel</span>
+    </button>
+    <if=input.trigger>
+      <${input.trigger}({ ...api().getEditTriggerProps(), "data-slot": "editable-trigger" })/>
+    </if>
+    <else>
+      <button
+        ...api().getEditTriggerProps()
+        data-slot="editable-edit-trigger"
+        type="button"
+        class="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex size-8 shrink-0 items-center justify-center gap-2 rounded-md border shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-4"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+        </svg>
+        <span class="sr-only">Edit</span>
+      </button>
+    </else>
+  </div>
+</div>
+
+<return=api>

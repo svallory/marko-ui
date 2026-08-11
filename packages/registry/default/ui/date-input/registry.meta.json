@@ -1,0 +1,6 @@
+{
+  "title": "Date Input",
+  "description": "A segmented date input with keyboard editing and locale-aware formatting.",
+  "dependencies": ["@zag-js/date-input"],
+  "registryDependencies": ["utils"]
+}

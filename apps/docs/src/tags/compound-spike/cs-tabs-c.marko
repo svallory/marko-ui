@@ -5,7 +5,7 @@
 // Written to FAIL LOUDLY if it does not survive resumption: the child prints
 // a marker when it cannot find the api.
 import * as tabsMachine from "@zag-js/tabs";
-import type { MachineInput } from "marko-zag";
+import type { MachineInput } from "marko-ui";
 
 export type Input = MachineInput<"div", tabsMachine.Props> & {
   content?: Marko.Body;

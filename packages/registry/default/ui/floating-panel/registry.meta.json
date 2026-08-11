@@ -1,0 +1,6 @@
+{
+  "title": "Floating Panel",
+  "description": "A draggable and resizable floating window with minimize, maximize and close controls.",
+  "dependencies": ["@zag-js/floating-panel"],
+  "registryDependencies": ["utils"]
+}

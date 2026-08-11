@@ -1,0 +1,318 @@
+// Full color picker built on the REAL @zag-js/color-picker machine:
+// saturation/brightness area, channel sliders, channel inputs, eyedropper,
+// format switching and swatch presets.
+// Authoring rules: notes/component-authoring.md (v2 pattern)
+import * as colorPickerMachine from "@zag-js/color-picker";
+import type { MachineInput } from "marko-ui";
+import { positionerStyle } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+export type Input = Omit<
+  MachineInput<"div", colorPickerMachine.Props>,
+  "value" | "defaultValue"
+> & {
+  /** Color value — a CSS color string or a Zag `Color` object. */
+  value?: string | colorPickerMachine.Color;
+  /** Initial color value — a CSS color string or a Zag `Color` object. */
+  defaultValue?: string | colorPickerMachine.Color;
+  /** Sugar for onValueChange — receives the color as a string, enables `value:=state`. */
+  valueChange?: (valueAsString: string) => void;
+  /** Sugar for onValueChangeEnd — fires when the user stops dragging. */
+  valueChangeEnd?: (valueAsString: string) => void;
+  /** Sugar for onOpenChange — receives the plain boolean, enables `open:=state`. */
+  openChange?: (open: boolean) => void;
+  /** Sugar for onFormatChange — receives the plain format. */
+  formatChange?: (format: colorPickerMachine.ColorFormat) => void;
+  /** Visible label rendered above the control. */
+  label?: Marko.Body;
+  /** Preset swatch colors rendered under the channel inputs. */
+  swatches?: string[];
+  /** Hide the eyedropper button even where the browser supports it. */
+  hideEyeDropper?: boolean;
+  /** Hide the format select shown next to the channel inputs. */
+  hideFormatSelect?: boolean;
+};
+
+static const FORMATS = ["rgba", "hsla", "hsba"] as const;
+
+// Which channel inputs to render for the active format. `hex` + `alpha` is the
+// compact default the shadcn visual language wants; the other formats expose
+// their three numeric channels plus alpha.
+static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
+  rgba: ["hex", "alpha"],
+  hsla: ["hue", "saturation", "lightness", "alpha"],
+  hsba: ["hue", "saturation", "brightness", "alpha"],
+};
+
+<machine-props/machineProps from=input pick=colorPickerMachine.props
+  onValueChange(details: colorPickerMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.valueAsString);
+  }
+  onValueChangeEnd(details: colorPickerMachine.ValueChangeDetails) {
+    input.onValueChangeEnd?.(details);
+    input.valueChangeEnd?.(details.valueAsString);
+  }
+  onOpenChange(details: colorPickerMachine.OpenChangeDetails) {
+    input.onOpenChange?.(details);
+    input.openChange?.(details.open);
+  }
+  onFormatChange(details: colorPickerMachine.FormatChangeDetails) {
+    input.onFormatChange?.(details);
+    input.formatChange?.(details.format);
+  }/>
+// `value`/`defaultValue` are widened to accept CSS color strings, but the
+// machine only understands `Color` objects — and a `Color` may never cross tag
+// input (it is not Marko-serializable). Parsing therefore happens INSIDE this
+// props closure, which <service> calls rather than serializes.
+// The keys must be OMITTED rather than set to undefined when unset: the
+// machine spreads the caller's props over its own defaults, so an explicit
+// `defaultValue: undefined` would clobber Zag's DEFAULT_COLOR and crash.
+<const/colorProps=() => {
+  const resolved: Record<string, unknown> = { ...machineProps() };
+  for (const key of ["value", "defaultValue"]) {
+    const raw = resolved[key];
+    if (raw === undefined) delete resolved[key];
+    else if (typeof raw === "string") resolved[key] = colorPickerMachine.parse(raw);
+  }
+  return resolved;
+}>
+<service/service machine=() => colorPickerMachine.machine props=colorProps/>
+<connect/api=(service, normalizeProps) =>
+  colorPickerMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+// Whatever is neither machine-owned (splitProps) nor component-owned passes
+// through to the hidden input: aria-*, data-*, form attributes... Leaking a
+// component-owned prop here would stringify it into a bogus DOM attribute.
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    valueChange: ownValueChange,
+    valueChangeEnd: ownValueChangeEnd,
+    openChange: ownOpenChange,
+    formatChange: ownFormatChange,
+    label: ownLabel,
+    swatches: ownSwatches,
+    hideEyeDropper: ownHideEyeDropper,
+    hideFormatSelect: ownHideFormatSelect,
+    ...native
+  } = colorPickerMachine.splitProps(input)[1];
+  return native;
+}>
+
+<const/channels=() => CHANNELS_BY_FORMAT[api().format] ?? CHANNELS_BY_FORMAT.rgba>
+
+<div
+  ...api().getRootProps()
+  data-slot="color-picker"
+  class=cn("flex w-56 flex-col gap-2", input.class)
+>
+  <if=input.label>
+    <label
+      ...api().getLabelProps()
+      data-slot="color-picker-label"
+      class="text-sm leading-none font-medium select-none data-[disabled]:opacity-50"
+    >
+      <${input.label}/>
+    </label>
+  </if>
+
+  <div
+    ...api().getControlProps()
+    data-slot="color-picker-control"
+    class="flex items-center gap-2"
+  >
+    // Render-prop-free trigger: this button IS the swatch, so it owns no
+    // caller content and cannot nest another button.
+    <button
+      ...api().getTriggerProps()
+      data-slot="color-picker-trigger"
+      class="border-input focus-visible:border-ring focus-visible:ring-ring/50 relative size-9 shrink-0 overflow-hidden rounded-md border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <div ...api().getTransparencyGridProps({ size: "8px" }) data-slot="color-picker-transparency-grid"/>
+      <div
+        ...api().getSwatchProps({ value: api().value })
+        data-slot="color-picker-swatch"
+        class="absolute inset-0 size-full"
+      />
+    </button>
+    <span
+      ...api().getValueTextProps()
+      data-slot="color-picker-value-text"
+      class="text-foreground truncate font-mono text-sm tabular-nums"
+    >
+      ${api().valueAsString}
+    </span>
+  </div>
+
+  <input ...nativeAttrs() ...api().getHiddenInputProps()>
+
+  <portal>
+    <if=api().open>
+      <div ...api().getPositionerProps() style=positionerStyle data-slot="color-picker-positioner">
+        <div
+          ...api().getContentProps()
+          data-slot="color-picker-content"
+          class="bg-popover text-popover-foreground z-50 flex w-64 flex-col gap-3 rounded-md border p-3 shadow-md outline-hidden data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
+        >
+          // Zag owns the gradient/position styles on the area parts — no style
+          // attribute of our own may go on them.
+          <div
+            ...api().getAreaProps()
+            data-slot="color-picker-area"
+            class="h-32 w-full overflow-hidden rounded-md"
+          >
+            <div
+              ...api().getAreaBackgroundProps()
+              data-slot="color-picker-area-background"
+              class="size-full"
+            />
+            <div
+              ...api().getAreaThumbProps()
+              data-slot="color-picker-area-thumb"
+              class="ring-ring/50 size-4 rounded-full border-2 border-white shadow-sm outline-none focus-visible:ring-[3px]"
+            />
+          </div>
+
+          <div class="flex items-center gap-2">
+            <if=!input.hideEyeDropper>
+              <button
+                ...api().getEyeDropperTriggerProps()
+                data-slot="color-picker-eye-dropper-trigger"
+                class="border-input hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-ring/50 inline-flex size-8 shrink-0 items-center justify-center rounded-md border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="size-4"
+                >
+                  <path d="m2 22 1-1h3l9-9"/>
+                  <path d="M3 21v-3l9-9"/>
+                  <path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/>
+                </svg>
+              </button>
+            </if>
+
+            <div class="flex min-w-0 flex-1 flex-col gap-2">
+              <div
+                ...api().getChannelSliderProps({ channel: "hue", format: "hsla" })
+                data-slot="color-picker-channel-slider"
+                class="h-3 w-full"
+              >
+                <div
+                  ...api().getChannelSliderTrackProps({ channel: "hue", format: "hsla" })
+                  data-slot="color-picker-channel-slider-track"
+                  class="h-3 w-full rounded-full"
+                />
+                <div
+                  ...api().getChannelSliderThumbProps({ channel: "hue", format: "hsla" })
+                  data-slot="color-picker-channel-slider-thumb"
+                  class="ring-ring/50 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-sm outline-none focus-visible:ring-[3px]"
+                />
+              </div>
+              <div
+                ...api().getChannelSliderProps({ channel: "alpha" })
+                data-slot="color-picker-channel-slider"
+                class="h-3 w-full"
+              >
+                <div ...api().getTransparencyGridProps({ size: "8px" }) data-slot="color-picker-transparency-grid" class="rounded-full"/>
+                <div
+                  ...api().getChannelSliderTrackProps({ channel: "alpha" })
+                  data-slot="color-picker-channel-slider-track"
+                  class="h-3 w-full rounded-full"
+                />
+                <div
+                  ...api().getChannelSliderThumbProps({ channel: "alpha" })
+                  data-slot="color-picker-channel-slider-thumb"
+                  class="ring-ring/50 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-sm outline-none focus-visible:ring-[3px]"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <if=!input.hideFormatSelect>
+              <select
+                ...api().getFormatSelectProps()
+                data-slot="color-picker-format-select"
+                class="border-input bg-transparent focus-visible:border-ring focus-visible:ring-ring/50 h-8 shrink-0 rounded-md border px-1.5 text-xs uppercase shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
+              >
+                <for|format| of=FORMATS>
+                  <option value=format>${format.toUpperCase()}</option>
+                </for>
+              </select>
+            </if>
+            <for|channel| of=channels()>
+              <div class="flex min-w-0 flex-1 flex-col gap-1">
+                <input
+                  ...api().getChannelInputProps({
+                    channel: channel as colorPickerMachine.ExtendedColorChannel,
+                  })
+                  data-slot="color-picker-channel-input"
+                  class="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-8 w-full min-w-0 rounded-md border bg-transparent px-2 text-center font-mono text-xs shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                <span class="text-muted-foreground text-center text-[10px] uppercase">
+                  ${channel === "hex" ? "hex" : channel.slice(0, 1)}
+                </span>
+              </div>
+            </for>
+          </div>
+
+          <if=input.swatches?.length>
+            <div
+              ...api().getSwatchGroupProps()
+              data-slot="color-picker-swatch-group"
+              class="flex flex-wrap gap-1.5"
+            >
+              <for|swatchValue| of=input.swatches ?? []>
+                <button
+                  ...api().getSwatchTriggerProps({ value: swatchValue })
+                  data-slot="color-picker-swatch-trigger"
+                  class="border-input focus-visible:border-ring focus-visible:ring-ring/50 size-6 overflow-hidden rounded-md border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <div
+                    ...api().getSwatchProps({ value: swatchValue })
+                    data-slot="color-picker-swatch"
+                    class="size-full"
+                  >
+                    <div
+                      ...api().getSwatchIndicatorProps({ value: swatchValue })
+                      data-slot="color-picker-swatch-indicator"
+                      class="flex size-full items-center justify-center text-white mix-blend-difference"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="size-3.5"
+                      >
+                        <path d="M20 6 9 17l-5-5"/>
+                      </svg>
+                    </div>
+                  </div>
+                </button>
+              </for>
+            </div>
+          </if>
+        </div>
+      </div>
+    </if>
+  </portal>
+</div>
+
+<return=api>

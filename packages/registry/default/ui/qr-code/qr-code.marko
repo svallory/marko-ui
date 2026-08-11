@@ -1,0 +1,76 @@
+// Reference implementation: packages/registry/default/ui/switch/switch.marko
+// Guide: /docs/creating-components · Authoring rules: v2 pattern
+import * as qrCodeMachine from "@zag-js/qr-code";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+import { qrCodeVariants, qrCodePixelSizeBySize, type QrCodeVariants } from "./variants.ts";
+
+// `size` is chrome-only sugar: it sets the box (variants.ts) AND feeds the
+// machine's own `pixelSize` prop (module size in px) unless the caller
+// passes `pixelSize` explicitly, which always wins.
+export type Input = MachineInput<"div", qrCodeMachine.Props> &
+  QrCodeVariants & {
+    /** Rendered centered over the code (logo overlay slot). */
+    overlay?: Marko.Body;
+    valueChange?: (value: string) => void;
+  };
+
+// The three-tag wiring (see /docs/creating-components):
+// 1. <machine-props> picks the machine's props out of `input` by name and
+//    merges the attributes written on it — callback adaptations live HERE,
+//    visibly, because they are this component's public contract.
+// 2. <service> creates and owns the running machine (client-only; SSR
+//    renders from a throwaway never-started instance).
+// 3. <connect> returns `api` as a GETTER — call it at every use site.
+//    Getters are the serializable currency of Marko's resumability: the
+//    api object itself must never become reactive state.
+<machine-props/machineProps from=input pick=qrCodeMachine.props
+  pixelSize=input.pixelSize ?? qrCodePixelSizeBySize[input.size ?? "default"]
+  onValueChange(details: qrCodeMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }/>
+<service/service machine=() => qrCodeMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  qrCodeMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+// Whatever is neither machine-owned (splitProps) nor component-owned
+// (class, size, overlay, valueChange) passes through to the root div.
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    size: ownSize,
+    overlay: ownOverlay,
+    valueChange: ownChangeHandler,
+    pixelSize: ownPixelSize,
+    ...native
+  } = qrCodeMachine.splitProps(input)[1];
+  return native;
+}>
+
+<div
+  ...nativeAttrs()
+  ...api().getRootProps()
+  data-slot="qr-code"
+  class=cn(qrCodeVariants({ size: input.size }), input.class)
+>
+  <svg ...api().getFrameProps() data-slot="qr-code-frame" class="h-full w-full">
+    <path ...api().getPatternProps() data-slot="qr-code-pattern" class="fill-foreground"/>
+  </svg>
+  <if=input.overlay>
+    <div
+      ...api().getOverlayProps()
+      data-slot="qr-code-overlay"
+      class="flex items-center justify-center rounded-sm bg-background p-1 shadow-xs"
+    >
+      <${input.overlay}/>
+    </div>
+  </if>
+</div>
+
+// Parents can receive the api getter: <QrCode/qrCodeApi/> then
+// `qrCodeApi().getDataUrl("image/png")` — it stays live across machine
+// updates. Used by the download demo to build a downloadable data URL.
+<return=api>
