@@ -1,56 +1,220 @@
 import Field from "@marko-ui/registry/ui/form/form.marko";
+import FieldSet from "@marko-ui/registry/ui/form/field-set.marko";
+import FieldLegend from "@marko-ui/registry/ui/form/field-legend.marko";
+import FieldGroup from "@marko-ui/registry/ui/form/field-group.marko";
+import FieldLabel from "@marko-ui/registry/ui/form/field-label.marko";
+import FieldTitle from "@marko-ui/registry/ui/form/field-title.marko";
+import FieldContent from "@marko-ui/registry/ui/form/field-content.marko";
+import FieldDescription from "@marko-ui/registry/ui/form/field-description.marko";
+import FieldSeparator from "@marko-ui/registry/ui/form/field-separator.marko";
+import FieldError from "@marko-ui/registry/ui/form/field-error.marko";
 import Input from "@marko-ui/registry/ui/input/input.marko";
 import Button from "@marko-ui/registry/ui/button/button.marko";
 
-<let/email=""/>
-<let/submitted=false/>
+// Errors and values from the POST handler, present only after a no-JavaScript submit.
+<const/serverErrors=$global.data?.errors ?? {}/>
+<const/serverValues=$global.data?.values ?? {}/>
+<const/serverSubmitted=$global.data?.submitted/>
 
-<component-page title="Field" description="A minimal wrapper for form fields, intentionally lighter than react-hook-form-based form components.">
+// Client-side mirror of the same errors. Seeded from the server so a progressively
+// enhanced page and a plain one start from the same state.
+<let/errors={ ...serverErrors }/>
+<let/submitted=!!serverSubmitted/>
+
+// Native ValidityState is the client-side baseline: zero dependencies, and it already
+// knows about `required`, `type=email`, `minlength` and `pattern`.
+<const/messageFor=(control) => (control.validity.valid ? undefined : control.validationMessage)/>
+
+// Revalidates a single control on blur.
+<const/validateField=(control) => {
+  const message = messageFor(control);
+  errors = { ...errors, [control.name]: message ? [message] : undefined };
+  return !message;
+}/>
+
+// Revalidates every named control in one atomic state update. Doing this field by field
+// would make each update overwrite the previous one's result, leaving stale errors.
+<const/validateForm=(form) => {
+  const next = {};
+  let valid = true;
+
+  for (const control of form.elements) {
+    if (!control.name) continue;
+    const message = messageFor(control);
+    if (message) {
+      next[control.name] = [message];
+      valid = false;
+    }
+  }
+
+  errors = next;
+  return valid;
+}/>
+
+<component-page
+  title="Field"
+  description="Validation-library-agnostic form field primitives. Pass plain error strings or Standard Schema issues from any validator."
+>
   <demo-box title="Default">
-    <Field label="Email" description="We'll never share your email.">
-      <@content|f|>
-        <Input id=f.id aria-describedby=f.describedBy aria-invalid=f.invalid type="email" placeholder="you@example.com"/>
-      </@content>
+    <Field class="max-w-sm">
+      <FieldLabel for="field-default-email">Email</FieldLabel>
+      <Input id="field-default-email" type="email" placeholder="you@example.com"/>
+      <FieldDescription>We'll never share your email.</FieldDescription>
     </Field>
   </demo-box>
 
-  <demo-box title="With error">
-    <Field label="Username" error="This username is already taken.">
-      <@content|f|>
-        <Input id=f.id aria-describedby=f.describedBy aria-invalid=f.invalid value="taken-name"/>
-      </@content>
+  <demo-box title="Invalid">
+    <Field class="max-w-sm" invalid>
+      <FieldLabel for="field-invalid-username">Username</FieldLabel>
+      <Input id="field-invalid-username" value="taken-name" aria-invalid="true" aria-describedby="field-invalid-username-error"/>
+      <FieldError id="field-invalid-username-error" errors="This username is already taken."/>
     </Field>
   </demo-box>
 
-  <demo-box title="Two fields with native validation">
+  <demo-box title="Multiple errors">
+    <Field class="max-w-sm" invalid>
+      <FieldLabel for="field-multi-password">Password</FieldLabel>
+      <Input id="field-multi-password" type="password" value="abc" aria-invalid="true" aria-describedby="field-multi-password-error"/>
+      <FieldError
+        id="field-multi-password-error"
+        errors=[
+          { message: "Password must be at least 8 characters." },
+          { message: "Password must contain a number." },
+        ]
+      />
+    </Field>
+  </demo-box>
+
+  <demo-box title="Horizontal orientation">
+    <Field class="max-w-sm" orientation="horizontal">
+      <FieldContent>
+        <FieldTitle>Email notifications</FieldTitle>
+        <FieldDescription>Send an email when someone mentions you.</FieldDescription>
+      </FieldContent>
+      <Input id="field-horizontal-toggle" type="checkbox" class="size-4 shrink-0"/>
+    </Field>
+  </demo-box>
+
+  <demo-box title="Field set with legend and separator">
+    <FieldSet class="max-w-sm">
+      <FieldLegend>Profile</FieldLegend>
+      <FieldDescription>This information is shown on your public profile.</FieldDescription>
+      <FieldGroup>
+        <Field>
+          <FieldLabel for="field-set-name">Display name</FieldLabel>
+          <Input id="field-set-name" placeholder="Ada Lovelace"/>
+        </Field>
+        <FieldSeparator>or</FieldSeparator>
+        <Field>
+          <FieldLabel for="field-set-handle">Handle</FieldLabel>
+          <Input id="field-set-handle" placeholder="@ada"/>
+        </Field>
+      </FieldGroup>
+    </FieldSet>
+  </demo-box>
+
+  <demo-box title="Sign up — live validation">
     <form
-      class="grid gap-4"
-      onSubmit(event) {
+      id="signup-form"
+      method="post"
+      novalidate
+      class="w-full max-w-sm"
+      onSubmit(event, form) {
+        // Client-side pass. Without JavaScript this handler never runs and the POST
+        // handler validates the same rules with valibot on the server.
         event.preventDefault();
-        submitted = true;
+        submitted = validateForm(form);
       }
     >
-      <Field label="Email" description="Required.">
-        <@content|f|>
-          <Input
-            id=f.id
-            aria-describedby=f.describedBy
-            aria-invalid=f.invalid
-            type="email"
-            required
-            onInput(event) { email = event.target.value; }
-          />
-        </@content>
-      </Field>
-      <Field label="Website" description="Optional, include https://.">
-        <@content|f|>
-          <Input id=f.id aria-describedby=f.describedBy aria-invalid=f.invalid type="url" placeholder="https://example.com"/>
-        </@content>
-      </Field>
-      <Button type="submit">Submit</Button>
-      <if=submitted>
-        <p class="text-sm text-muted-foreground">Submitted with email: ${email}</p>
-      </if>
+      <FieldSet>
+        <FieldLegend>Create an account</FieldLegend>
+        <FieldDescription>All fields are required.</FieldDescription>
+        <FieldGroup>
+          <Field invalid=!!errors.username>
+            <FieldLabel for="signup-username">Username</FieldLabel>
+            <Input
+              id="signup-username"
+              name="username"
+              value=serverValues.username
+              required
+              minlength=3
+              maxlength=20
+              pattern="[A-Za-z0-9_]+"
+              autocomplete="username"
+              aria-invalid=(errors.username ? "true" : undefined)
+              aria-describedby=(errors.username ? "signup-username-error" : "signup-username-description")
+              onBlur(event, control) { validateField(control); }
+            />
+            <FieldDescription id="signup-username-description">
+              3-20 characters: letters, numbers and underscores.
+            </FieldDescription>
+            <FieldError id="signup-username-error" errors=errors.username/>
+          </Field>
+
+          <Field invalid=!!errors.email>
+            <FieldLabel for="signup-email">Email</FieldLabel>
+            <Input
+              id="signup-email"
+              name="email"
+              type="email"
+              value=serverValues.email
+              required
+              autocomplete="email"
+              aria-invalid=(errors.email ? "true" : undefined)
+              aria-describedby=(errors.email ? "signup-email-error" : undefined)
+              onBlur(event, control) { validateField(control); }
+            />
+            <FieldError id="signup-email-error" errors=errors.email/>
+          </Field>
+
+          <Field invalid=!!errors.password>
+            <FieldLabel for="signup-password">Password</FieldLabel>
+            <Input
+              id="signup-password"
+              name="password"
+              type="password"
+              required
+              minlength=8
+              pattern=".*[0-9].*"
+              autocomplete="new-password"
+              aria-invalid=(errors.password ? "true" : undefined)
+              aria-describedby=(errors.password ? "signup-password-error" : "signup-password-description")
+              onBlur(event, control) { validateField(control); }
+            />
+            <FieldDescription id="signup-password-description">
+              At least 8 characters and one number.
+            </FieldDescription>
+            <FieldError id="signup-password-error" errors=errors.password/>
+          </Field>
+
+          <Field invalid=!!errors.plan>
+            <FieldLabel for="signup-plan">Plan</FieldLabel>
+            <select
+              id="signup-plan"
+              name="plan"
+              required
+              aria-invalid=(errors.plan ? "true" : undefined)
+              aria-describedby=(errors.plan ? "signup-plan-error" : undefined)
+              data-slot="input"
+              class="border-input flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:border-destructive aria-invalid:ring-destructive/20"
+              onBlur(event, control) { validateField(control); }
+            >
+              <option value="">Select a plan</option>
+              <option value="free" selected=(serverValues.plan === "free")>Free</option>
+              <option value="pro" selected=(serverValues.plan === "pro")>Pro</option>
+            </select>
+            <FieldError id="signup-plan-error" errors=errors.plan/>
+          </Field>
+
+          <Button type="submit">Create account</Button>
+
+          <if=submitted>
+            <p data-slot="signup-success" class="text-sm font-medium text-primary">
+              Account created. Welcome aboard!
+            </p>
+          </if>
+        </FieldGroup>
+      </FieldSet>
     </form>
   </demo-box>
 </component-page>

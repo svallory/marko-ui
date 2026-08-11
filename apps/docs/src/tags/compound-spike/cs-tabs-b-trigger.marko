@@ -1,0 +1,17 @@
+// EXPERIMENTAL SPIKE — see agent/reports/compound-tag-dx.md
+import type { TabsApi } from "./cs-tabs-b.marko";
+
+export interface Input {
+  api: TabsApi;
+  value: string;
+  disabled?: boolean;
+  content?: Marko.Body;
+}
+
+<button
+  ...input.api().getTriggerProps({ value: input.value, disabled: input.disabled })
+  data-slot="tabs-trigger"
+  class="data-[selected]:bg-background data-[selected]:text-foreground inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 data-[selected]:shadow-sm"
+>
+  <${input.content}/>
+</button>

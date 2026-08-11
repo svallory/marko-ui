@@ -1,44 +1,34 @@
+import { fieldVariants, type FieldVariants } from "./variants.ts";
 import { cn } from "../../lib/utils.ts";
 
-export interface FieldContentProps {
-  id: string;
-  describedBy: string | undefined;
-  invalid: boolean;
+export interface Input extends Marko.Input<"div">, FieldVariants {
+  /**
+   * Marks the field as invalid. Sets `data-invalid` on the wrapper, which every
+   * descendant part restyles against via `group-data-*` selectors. The matching
+   * `aria-invalid` belongs on the control itself.
+   */
+  invalid?: boolean;
+  /** Sets `data-disabled`, dimming the label and title. */
+  disabled?: boolean;
 }
 
-export interface Input {
-  label?: string;
-  description?: string;
-  error?: string;
-  content: Marko.Body<[FieldContentProps]>;
-  class?: string;
-}
+<const/{
+  orientation = "vertical",
+  invalid,
+  disabled,
+  class: className,
+  content,
+  ...rest
+}=input/>
 
-<id/uid/>
-<const/descriptionId=input.description ? `${uid}-description` : undefined/>
-<const/errorId=input.error ? `${uid}-error` : undefined/>
-<const/describedBy=[descriptionId, errorId].filter(Boolean).join(" ") || undefined/>
-<const/invalid=!!input.error/>
-
-<div data-slot="field" class=cn("grid gap-2", input.class)>
-  <if=input.label>
-    <label
-      for=uid
-      data-slot="field-label"
-      class=cn("text-sm font-medium leading-none", invalid && "text-destructive")
-    >
-      ${input.label}
-    </label>
-  </if>
-  <${input.content}({ id: uid, describedBy, invalid })/>
-  <if=input.description>
-    <p id=descriptionId data-slot="field-description" class="text-muted-foreground text-sm">
-      ${input.description}
-    </p>
-  </if>
-  <if=input.error>
-    <p id=errorId data-slot="field-error" class="text-destructive text-sm font-medium">
-      ${input.error}
-    </p>
-  </if>
+<div
+  ...rest
+  role="group"
+  data-slot="field"
+  data-orientation=orientation
+  data-invalid=(invalid ? "true" : undefined)
+  data-disabled=(disabled ? "true" : undefined)
+  class=cn(fieldVariants({ orientation }), className)
+>
+  <${content}/>
 </div>

@@ -1,0 +1,59 @@
+// EXPERIMENTAL SPIKE ROUTE — throwaway research for TODO "Compound-tag DX".
+// NOT production code, NOT part of the registry. See
+// agent/reports/compound-tag-dx.md for the findings.
+<let/controlledB="two"/>
+
+<main class="mx-auto max-w-3xl space-y-10 p-8">
+  <div class="rounded-lg border border-destructive/40 bg-destructive/5 p-4">
+    <h1 class="text-xl font-bold">Compound-tag DX spike (EXPERIMENTAL)</h1>
+    <p class="text-sm text-muted-foreground">
+      Throwaway variants comparing compound-child APIs against the shipped array-driven API.
+      Not registry code.
+    </p>
+  </div>
+
+  <section class="space-y-3" id="variant-a">
+    <h2 class="font-semibold">Variant A — attr-tags (&lt;@trigger&gt; / &lt;@panel&gt;)</h2>
+    <cs-tabs-a>
+      <@trigger value="one">One</@trigger>
+      <@trigger value="two">Two</@trigger>
+      <@trigger value="three" disabled>Three (disabled)</@trigger>
+      <@panel value="one"><p class="text-sm">Panel A-one content.</p></@panel>
+      <@panel value="two"><p class="text-sm">Panel A-two content.</p></@panel>
+      <@panel value="three"><p class="text-sm">Panel A-three content.</p></@panel>
+    </cs-tabs-a>
+  </section>
+
+  <section class="space-y-3" id="variant-b">
+    <h2 class="font-semibold">
+      Variant B — real child tags, api getter via body param (parent value: ${controlledB})
+    </h2>
+    <button
+      id="b-external-set"
+      class="rounded border px-2 py-1 text-sm"
+      onClick() { controlledB = controlledB === "two" ? "three" : "two" }
+    >
+      Set from outside
+    </button>
+    <cs-tabs-b|tabs| value=controlledB valueChange(v: string) { controlledB = v }>
+            <cs-tabs-b-list api=tabs>
+        <cs-tabs-b-trigger api=tabs value="one">One</cs-tabs-b-trigger>
+        <cs-tabs-b-trigger api=tabs value="two">Two</cs-tabs-b-trigger>
+        <cs-tabs-b-trigger api=tabs value="three">Three</cs-tabs-b-trigger>
+      </cs-tabs-b-list>
+      <cs-tabs-b-panel api=tabs value="one"><p class="text-sm">Panel B-one content.</p></cs-tabs-b-panel>
+      <cs-tabs-b-panel api=tabs value="two"><p class="text-sm">Panel B-two content.</p></cs-tabs-b-panel>
+      <cs-tabs-b-panel api=tabs value="three"><p class="text-sm">Panel B-three content.</p></cs-tabs-b-panel>
+    </cs-tabs-b>
+  </section>
+
+  <section class="space-y-3" id="variant-c">
+    <h2 class="font-semibold">Variant C — implicit $global "context" (expected to break)</h2>
+    <cs-tabs-c defaultValue="one">
+      <div data-slot="tabs-list" class="bg-muted inline-flex w-fit items-center rounded-lg p-[3px]">
+        <cs-tabs-c-trigger value="one">One</cs-tabs-c-trigger>
+        <cs-tabs-c-trigger value="two">Two</cs-tabs-c-trigger>
+      </div>
+    </cs-tabs-c>
+  </section>
+</main>

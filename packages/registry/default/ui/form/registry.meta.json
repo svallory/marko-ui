@@ -1,6 +1,6 @@
 {
   "title": "Field",
-  "description": "A minimal wrapper for form fields providing label, description, and error text, intentionally lighter than react-hook-form-based form components.",
-  "dependencies": [],
-  "registryDependencies": ["utils", "label"]
+  "description": "Validation-library-agnostic form field primitives — field, label, description, error, group, set, legend, separator, content and title — wired for aria-invalid and data-invalid states. Accepts plain error strings or Standard Schema issues from any validator.",
+  "dependencies": ["class-variance-authority"],
+  "registryDependencies": ["utils", "label", "separator"]
 }

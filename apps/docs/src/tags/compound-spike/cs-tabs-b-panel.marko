@@ -1,0 +1,12 @@
+// EXPERIMENTAL SPIKE — see agent/reports/compound-tag-dx.md
+import type { TabsApi } from "./cs-tabs-b.marko";
+
+export interface Input {
+  api: TabsApi;
+  value: string;
+  content?: Marko.Body;
+}
+
+<div ...input.api().getContentProps({ value: input.value }) data-slot="tabs-content" class="flex-1 outline-none">
+  <${input.content}/>
+</div>

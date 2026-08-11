@@ -1,0 +1,41 @@
+// EXPERIMENTAL SPIKE — not production code. See agent/reports/compound-tag-dx.md
+//
+// VARIANT B: real child TAG files, api getter shared via body parameter.
+//   <tabs-b|tabs|>
+//     <tabs-b-list>
+//       <tabs-b-trigger api=tabs value="one">One</tabs-b-trigger>
+//     </tabs-b-list>
+//     <tabs-b-panel api=tabs value="one">...</tabs-b-panel>
+//   </tabs-b>
+//
+// Marko has NO context/provide API (marko cheatsheet: "there is no
+// provider/consumer context API"). The only downward channel is `input`, so
+// the api getter is handed to the body as a tag parameter and re-passed to
+// every part. This is the closest possible analog to Radix context — the
+// getter IS serializable because it is a template-created closure.
+import * as tabsMachine from "@zag-js/tabs";
+import type { MachineInput } from "marko-zag";
+
+export type TabsApi = () => tabsMachine.Api;
+
+export type Input = MachineInput<"div", tabsMachine.Props> & {
+  content?: Marko.Body<[TabsApi]>;
+  valueChange?: (value: string) => void;
+};
+
+<machine-props/machineProps from=input pick=tabsMachine.props
+  onValueChange(details: tabsMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }/>
+<service/service machine=() => tabsMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  tabsMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+<div ...api().getRootProps() data-slot="tabs" data-variant="b" class="flex flex-col gap-2">
+  <${input.content}(api)/>
+</div>
+
+<return=api>

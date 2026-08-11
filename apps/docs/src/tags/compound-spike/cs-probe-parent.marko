@@ -1,0 +1,9 @@
+// EXPERIMENTAL SPIKE probe — is a tag-parameter closure usable by nested child tags?
+export interface Input {
+  content?: Marko.Body<[() => string]>;
+}
+
+<const/getter=() => "from-parent"/>
+<div data-probe="parent">
+  <${input.content}(getter)/>
+</div>

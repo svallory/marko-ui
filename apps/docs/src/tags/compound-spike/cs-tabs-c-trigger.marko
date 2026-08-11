@@ -1,0 +1,23 @@
+// EXPERIMENTAL SPIKE — see agent/reports/compound-tag-dx.md
+// Consumes the api from $global with no explicit prop (variant C).
+export interface Input {
+  value: string;
+  content?: Marko.Body;
+}
+
+<const/api=($global as any).__tabsApi/>
+
+<if=!api>
+  <button data-slot="tabs-trigger" data-context-missing="true">
+    CONTEXT MISSING
+  </button>
+</if>
+<else>
+  <button
+    ...api().getTriggerProps({ value: input.value })
+    data-slot="tabs-trigger"
+    class="data-[selected]:bg-background data-[selected]:text-foreground inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] data-[selected]:shadow-sm"
+  >
+    <${input.content}/>
+  </button>
+</else>

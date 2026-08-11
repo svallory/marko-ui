@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+dist
+**/dist
+.marko-run
+**/.marko-run
+coverage
+**/coverage
+*.log
+.DS_Store
+.git
+tsconfig.tsbuildinfo
+apps/docs/public/r

@@ -1,5 +1,5 @@
 {
-  "name": "shadcn-marko-workspace",
+  "name": "marko-ui-workspace",
   "private": true,
   "type": "module",
   "workspaces": ["packages/*", "apps/*"],

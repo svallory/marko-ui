@@ -1,0 +1,33 @@
+// EXPERIMENTAL SPIKE — see agent/reports/compound-tag-dx.md
+//
+// VARIANT C: implicit "context" via $global — the closest thing Marko has to
+// a provider. Children read $global.__tabsApi with NO explicit prop.
+// Written to FAIL LOUDLY if it does not survive resumption: the child prints
+// a marker when it cannot find the api.
+import * as tabsMachine from "@zag-js/tabs";
+import type { MachineInput } from "marko-zag";
+
+export type Input = MachineInput<"div", tabsMachine.Props> & {
+  content?: Marko.Body;
+  valueChange?: (value: string) => void;
+};
+
+<machine-props/machineProps from=input pick=tabsMachine.props
+  onValueChange(details: tabsMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }/>
+<service/service machine=() => tabsMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  tabsMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+// The "provide" step: stash the getter on the request-scoped global.
+<const/provided=(($global as any).__tabsApi = api)/>
+
+<div ...api().getRootProps() data-slot="tabs" data-variant="c" class="flex flex-col gap-2">
+  <${input.content}/>
+</div>
+
+<return=api>

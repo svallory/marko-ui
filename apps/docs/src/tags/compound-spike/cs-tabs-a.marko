@@ -1,0 +1,64 @@
+// EXPERIMENTAL SPIKE — not production code. See agent/reports/compound-tag-dx.md
+//
+// VARIANT A: attr-tags compound.
+//   <tabs-a>
+//     <@trigger value="one">One</@trigger>
+//     <@panel value="one">...</@panel>
+//   </tabs-a>
+//
+// The parent owns the machine; parts are DATA (attr tags), not tags. The api
+// getter never crosses a tag boundary, so the serialization wall is never hit.
+import * as tabsMachine from "@zag-js/tabs";
+import type { MachineInput } from "marko-zag";
+
+export interface TriggerAttrs {
+  value: string;
+  disabled?: boolean;
+  content?: Marko.Body;
+}
+export interface PanelAttrs {
+  value: string;
+  content?: Marko.Body;
+}
+
+export type Input = MachineInput<"div", tabsMachine.Props> & {
+  trigger?: Marko.AttrTag<TriggerAttrs>;
+  panel?: Marko.AttrTag<PanelAttrs>;
+  valueChange?: (value: string) => void;
+};
+
+<const/triggers=[...(input.trigger ?? [])]/>
+<const/panels=[...(input.panel ?? [])]/>
+
+<machine-props/machineProps from=input pick=tabsMachine.props
+  defaultValue=input.defaultValue ?? triggers[0]?.value
+  onValueChange(details: tabsMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }/>
+<service/service machine=() => tabsMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  tabsMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+<div ...api().getRootProps() data-slot="tabs" data-variant="a" class="flex flex-col gap-2">
+  <div ...api().getListProps() data-slot="tabs-list" class="bg-muted text-muted-foreground inline-flex w-fit items-center justify-center rounded-lg p-[3px]">
+    <for|trigger| of=triggers>
+      <button
+        ...api().getTriggerProps({ value: trigger.value, disabled: trigger.disabled })
+        data-slot="tabs-trigger"
+        class="data-[selected]:bg-background data-[selected]:text-foreground inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 data-[selected]:shadow-sm"
+      >
+        <${trigger.content}/>
+      </button>
+    </for>
+  </div>
+  <for|panel| of=panels>
+    <div ...api().getContentProps({ value: panel.value }) data-slot="tabs-content" class="flex-1 outline-none">
+      <${panel.content}/>
+    </div>
+  </for>
+</div>
+
+<return=api>

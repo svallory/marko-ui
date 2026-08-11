@@ -1,0 +1,6 @@
+// EXPERIMENTAL SPIKE probe child.
+export interface Input {
+  api: () => string;
+}
+
+<span data-probe="child" data-api-type=typeof input.api data-value=(typeof input.api === "function" ? input.api() : "MISSING")/>
