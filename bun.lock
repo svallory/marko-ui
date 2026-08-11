@@ -26,8 +26,10 @@
         "@marko-ui/registry": "workspace:*",
         "@zag-js/core": "1.43.0",
         "@zag-js/dialog": "1.43.0",
+        "@zag-js/drawer": "1.43.0",
         "@zag-js/switch": "1.43.0",
         "@zag-js/tabs": "1.43.0",
+        "@zag-js/tooltip": "1.43.0",
         "@zag-js/types": "1.43.0",
         "@zag-js/utils": "1.43.0",
         "marko": "^6.3.34",
@@ -68,6 +70,7 @@
         "@zag-js/combobox": "1.43.0",
         "@zag-js/date-picker": "1.43.0",
         "@zag-js/dialog": "1.43.0",
+        "@zag-js/drawer": "1.43.0",
         "@zag-js/file-upload": "1.43.0",
         "@zag-js/hover-card": "1.43.0",
         "@zag-js/menu": "1.43.0",
@@ -374,6 +377,8 @@
     "@zag-js/dismissable": ["@zag-js/dismissable@1.43.0", "", { "dependencies": { "@zag-js/dom-query": "1.43.0", "@zag-js/interact-outside": "1.43.0", "@zag-js/utils": "1.43.0" } }, "sha512-bf19aG9iLxwivpC+lntS2Lzkr4OB73zzPJWI21eIeyMDOX5+QDAZEX9gwNZRKYh1AkEq/oVHYWu71aZKNmdR8w=="],
 
     "@zag-js/dom-query": ["@zag-js/dom-query@1.43.0", "", { "dependencies": { "@zag-js/types": "1.43.0" } }, "sha512-yQDR00jJj0tgrRH43QJx7NtQH+EBxQtEdFKMzG7c88xL1ZRtqXYpqNNSmCuGj5RTsEceQjEhAxeTJikUYp9M0g=="],
+
+    "@zag-js/drawer": ["@zag-js/drawer@1.43.0", "", { "dependencies": { "@zag-js/anatomy": "1.43.0", "@zag-js/aria-hidden": "1.43.0", "@zag-js/core": "1.43.0", "@zag-js/dismissable": "1.43.0", "@zag-js/dom-query": "1.43.0", "@zag-js/focus-trap": "1.43.0", "@zag-js/remove-scroll": "1.43.0", "@zag-js/types": "1.43.0", "@zag-js/utils": "1.43.0" } }, "sha512-h5FY7XN53hxgMZCIl+ftQclY2YVPqJAkBnA5r5qFhwFh66gnzZUnsrbdHL2H09pcA60fTYm46mD2GjaF3S5Seg=="],
 
     "@zag-js/file-upload": ["@zag-js/file-upload@1.43.0", "", { "dependencies": { "@zag-js/anatomy": "1.43.0", "@zag-js/core": "1.43.0", "@zag-js/dom-query": "1.43.0", "@zag-js/file-utils": "1.43.0", "@zag-js/i18n-utils": "1.43.0", "@zag-js/types": "1.43.0", "@zag-js/utils": "1.43.0" } }, "sha512-3DoyQ+NRWkYYNbKFyuK60Ral5P7Fd+58YPDIQTX2RgjGgGzMzkfGMQWmLdGUe+aISHPjuNU6/iH1+MGhC+xwVg=="],
 

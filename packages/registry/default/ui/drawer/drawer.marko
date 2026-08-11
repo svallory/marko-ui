@@ -1,107 +1,208 @@
-import * as dialog from "@zag-js/dialog";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+// Built on the REAL @zag-js/drawer machine (drag-to-dismiss, snap points,
+// swipe-to-open areas) — not the dialog machine.
+// Authoring rules: notes/component-authoring.md (v2 pattern)
+import * as drawerMachine from "@zag-js/drawer";
+import type { MachineInput } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
+import {
+  drawerContentVariants,
+  drawerGrabberVariants,
+  drawerGrabberIndicatorVariants,
+} from "./variants.ts";
 
-export interface Input extends Marko.Input<"div"> {
-  open?: boolean;
+export type Input = MachineInput<"div", drawerMachine.Props> & {
+  /** Sugar for onOpenChange — receives the plain boolean, enables `open:=state`. */
   openChange?: (open: boolean) => void;
+  /** Sugar for onSnapPointChange — receives the plain snap point. */
+  snapPointChange?: (snapPoint: drawerMachine.SnapPoint | null) => void;
+  /** Sugar for onTriggerValueChange — receives the plain trigger value. */
+  triggerValueChange?: (value: string | null) => void;
+  /** Render-prop trigger: `<@trigger|props|><Button ...props/></@trigger>`. */
   trigger?: Marko.Body<[Record<string, unknown>]>;
-  title?: string;
-  description?: string;
+  title?: Marko.Body;
+  description?: Marko.Body;
   content?: Marko.Body;
   footer?: Marko.Body;
-}
+  /** Hide the vaul-style grab handle (dragging the content body still works). */
+  hideGrabber?: boolean;
+  /** Whether the content body itself is draggable, or only the grabber. */
+  draggable?: boolean;
+  /** Render an edge swipe area that opens the drawer by swiping inward. */
+  swipeArea?: boolean;
+  /** Show the top-right close button. */
+  hideCloseTrigger?: boolean;
+};
 
-<const/{ open, openChange, trigger, title, description, content, footer, class: className, ...rest }=input/>
-
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  role: "dialog",
-  open: open,
-  onOpenChange(details: { open: boolean }) {
-    openChange?.(details.open);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(dialog.machine, machineProps, () => { rev += 1 });
-    svc.start();
+<machine-props/machineProps from=input pick=drawerMachine.props
+  onOpenChange(details: drawerMachine.OpenChangeDetails) {
+    input.onOpenChange?.(details);
+    input.openChange?.(details.open);
   }
-  onDestroy() {
-    svc?.stop();
+  onSnapPointChange(details: drawerMachine.SnapPointChangeDetails) {
+    input.onSnapPointChange?.(details);
+    input.snapPointChange?.(details.snapPoint);
   }
+  onTriggerValueChange(details: drawerMachine.TriggerValueChangeDetails) {
+    input.onTriggerValueChange?.(details);
+    input.triggerValueChange?.(details.value);
+  }/>
+<service/service machine=() => drawerMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  drawerMachine.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.open;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = dialog.connect(svc ?? ssrService(dialog.machine, machineProps), normalizeProps);
-  return {
-    open: api.open,
-    trigger: api.getTriggerProps(),
-    backdrop: api.getBackdropProps(),
-    positioner: api.getPositionerProps(),
-    content: api.getContentProps(),
-    title: api.getTitleProps(),
-    description: api.getDescriptionProps(),
-    closeTrigger: api.getCloseTriggerProps(),
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<div ...rest data-slot="drawer" class=cn(className)>
-  <if=trigger>
-    <${trigger}({ ...ui.trigger, "data-slot": "drawer-trigger" })/>
+// Everything that is neither machine-owned (splitProps) nor component-owned
+// passes through to the root wrapper. Leaking a component-owned prop here
+// would render it as a bogus DOM attribute.
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    openChange: ownOpenChange,
+    snapPointChange: ownSnapPointChange,
+    triggerValueChange: ownTriggerValueChange,
+    trigger: ownTrigger,
+    title: ownTitle,
+    description: ownDescription,
+    content: ownContent,
+    footer: ownFooter,
+    hideGrabber: ownHideGrabber,
+    draggable: ownDraggable,
+    swipeArea: ownSwipeArea,
+    hideCloseTrigger: ownHideCloseTrigger,
+    ...native
+  } = drawerMachine.splitProps(input)[1];
+  return native;
+}>
+
+// The machine resolves logical `start`/`end` against `dir`, so the physical
+// direction that drives our layout classes must be read back off the api.
+<const/contentProps=() => api().getContentProps({ draggable: input.draggable ?? true })>
+<const/swipeDirection=() =>
+  contentProps()["data-swipe-direction"] as "up" | "down" | "left" | "right">
+
+<div ...nativeAttrs() data-slot="drawer">
+  <if=input.trigger>
+    <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "drawer-trigger" })/>
   </if>
+
+  <if=input.swipeArea>
+    <div
+      ...api().getSwipeAreaProps()
+      data-slot="drawer-swipe-area"
+      class="fixed z-40 data-[swipe-direction=down]:inset-x-0 data-[swipe-direction=down]:bottom-0 data-[swipe-direction=down]:h-6 data-[swipe-direction=up]:inset-x-0 data-[swipe-direction=up]:top-0 data-[swipe-direction=up]:h-6 data-[swipe-direction=left]:inset-y-0 data-[swipe-direction=left]:left-0 data-[swipe-direction=left]:w-6 data-[swipe-direction=right]:inset-y-0 data-[swipe-direction=right]:right-0 data-[swipe-direction=right]:w-6"
+    />
+  </if>
+
   <portal>
-    <if=ui.open>
+    <if=api().open>
       <div
-        ...ui.backdrop
+        ...api().getBackdropProps()
         data-slot="drawer-backdrop"
         class="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0"
       />
-      <div ...ui.positioner data-slot="drawer-positioner" class="fixed inset-0 z-50 flex items-end justify-center">
+      <div
+        ...api().getPositionerProps()
+        data-slot="drawer-positioner"
+        class="fixed inset-0 z-50"
+      >
+        // No style= attribute on this element, ever: Zag owns its inline
+        // transform and every --drawer-* custom property here.
         <div
-          ...ui.content
+          ...contentProps()
           data-slot="drawer-content"
-          class="bg-background flex w-full max-w-lg flex-col gap-4 rounded-t-lg border p-6 shadow-lg duration-300 data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom"
+          class=cn(
+            drawerContentVariants({ swipeDirection: swipeDirection() }),
+            "border shadow-lg",
+            input.class,
+          )
         >
-          <div class="mx-auto mt-4 h-2 w-[100px] shrink-0 rounded-full bg-muted" data-slot="drawer-handle"/>
-          <if=title>
-            <h2 ...ui.title data-slot="drawer-title" class="text-lg leading-none font-semibold">
-              ${title}
-            </h2>
-          </if>
-          <if=description>
-            <p ...ui.description data-slot="drawer-description" class="text-muted-foreground text-sm">
-              ${description}
-            </p>
-          </if>
-          <if=content>
-            <${content}/>
-          </if>
-          <if=footer>
-            <div data-slot="drawer-footer" class="flex flex-col gap-2">
-              <${footer}/>
+          <if=!input.hideGrabber>
+            <div
+              ...api().getGrabberProps()
+              data-slot="drawer-grabber"
+              class=drawerGrabberVariants({ swipeDirection: swipeDirection() })
+            >
+              <div
+                ...api().getGrabberIndicatorProps()
+                data-slot="drawer-grabber-indicator"
+                class=drawerGrabberIndicatorVariants({
+                  swipeDirection: swipeDirection(),
+                })
+              />
             </div>
           </if>
-          <button
-            ...ui.closeTrigger
-            data-slot="drawer-close"
-            class="ring-offset-background focus:ring-ring absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
-              <path d="M18 6 6 18"/>
-              <path d="m6 6 12 12"/>
-            </svg>
-            <span class="sr-only">Close</span>
-          </button>
+
+          // Inner column so header/body/footer stack the same way regardless of
+          // which axis the outer content flexes along for the grabber.
+          <div class="flex min-h-0 min-w-0 flex-1 flex-col">
+            <if=input.title || input.description>
+              <div data-slot="drawer-header" class="flex flex-col gap-1.5 p-4">
+                <if=input.title>
+                  <h2
+                    ...api().getTitleProps()
+                    data-slot="drawer-title"
+                    class="text-foreground text-lg leading-none font-semibold"
+                  >
+                    <${input.title}/>
+                  </h2>
+                </if>
+                <if=input.description>
+                  <p
+                    ...api().getDescriptionProps()
+                    data-slot="drawer-description"
+                    class="text-muted-foreground text-sm"
+                  >
+                    <${input.description}/>
+                  </p>
+                </if>
+              </div>
+            </if>
+
+            <if=input.content>
+              <div data-slot="drawer-body" class="min-h-0 flex-1 overflow-auto px-4">
+                <${input.content}/>
+              </div>
+            </if>
+
+            <if=input.footer>
+              <div
+                data-slot="drawer-footer"
+                class="mt-auto flex flex-col gap-2 p-4"
+              >
+                <${input.footer}/>
+              </div>
+            </if>
+          </div>
+
+          <if=!input.hideCloseTrigger>
+            <button
+              ...api().getCloseTriggerProps()
+              data-slot="drawer-close"
+              class="ring-offset-background focus:ring-ring absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="size-4"
+              >
+                <path d="M18 6 6 18"/>
+                <path d="m6 6 12 12"/>
+              </svg>
+              <span class="sr-only">Close</span>
+            </button>
+          </if>
         </div>
       </div>
     </if>
   </portal>
 </div>
+
+<return=api>

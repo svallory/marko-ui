@@ -1,6 +1,6 @@
 {
   "title": "Drawer",
-  "description": "A bottom sheet overlay that slides up from the edge of the screen, built on the dialog machine. Reduced parity vs vaul: no snap points or drag-to-dismiss.",
-  "dependencies": ["@zag-js/dialog"],
+  "description": "A vaul-style bottom sheet with drag-to-dismiss, snap points, and swipe-to-open edge areas. Built on the @zag-js/drawer machine.",
+  "dependencies": ["@zag-js/drawer"],
   "registryDependencies": ["utils"]
 }
