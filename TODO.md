@@ -8,11 +8,11 @@
 
 ## Rebuilds (upgrade documented deviations)
 
-- [ ] **Migrate 57 registry components to the v2 `<use-machine>` api-getter pattern** — rev/ssrService/computeUi plumbing replaced by `<use-machine/api machine=() => x.machine props=machineProps connect=(svc, np) => x.connect(svc, np)/>` + direct `api().getXProps()` spreads (verified at /use-machine-test; component-authoring.md v2 section). Delete v1 docs + switch-v2 demo tag after. use-service/use-snapshot/use-actor stay retired: Zag v1 core exports no subscribe/actors/setContext. `(code)`
-- [ ] **Investigate intermittent `bunx vitest run` hang** (vitest 4; passes in ~1s when it runs, sometimes never exits — suspect vite dev-server port/config interaction). `(bug)`
+- [x] **Migrate registry components to the `<machine-props>`/`<service>`/`<connect>` pattern** — done 2026-08-11 via 32-agent fleet + adversarial review + fix round: all 31 Zag components on the three-tag pattern with `MachineInput` typing, chained typed callbacks, splitProps native pass-through (data-table is TanStack-based, correctly keeps its own store integration). v1 docs deleted from component-authoring.md. `(code — done)`
+- [x] **Investigate intermittent `bunx vitest run` hang** — resolved 2026-08-11: not a bug. Measured cause: CPU starvation under parallel-agent load (load avg ~30 on 10 cores; 9s stall was pre-run scheduler wait, ~90% idle-wait by `/usr/bin/time`; port/pool/teardown hypotheses disproven). 40+ consecutive clean runs, 9/9 passing. Config unchanged. Optional speedups: call `./node_modules/.bin/vitest` directly (skips ~1.5s proto-shim/bunx resolution). `(bug — closed)`
 
-- [ ] **drawer** — rebuild on `@zag-js/drawer@1.43.0` (real machine; exists since 1.34 — missed during Phase C, currently dialog-machine "vaul-lite" without drag/snap). `(code)`
-- [ ] **toast** — rebuild on Zag's toast group store (spawn one child service per toast; module store + client-side child services + per-toast snapshots). Current zag-free fallback works but lacks pause-on-hover/swipe. `(code)`
+- [x] **drawer** — rebuilt 2026-08-11 on `@zag-js/drawer@1.43.0`: full 10-part anatomy (grabber/swipeArea/backdrop), snap points, logical swipeDirection, drag verified with real mouse in Playwright. NOTE: drawer machine carries position vars inside getContentProps()'s reactive style — no own style attr allowed on content/backdrop/positioner (documented in variants.ts). `(code — done)`
+- [x] **toast** — rebuilt 2026-08-11 on Zag's toast group store: module store + group service + per-toast child services in `<for>`; pause-on-hover, stacking, targeted close, promise API all Playwright-verified. Cross-machine reactivity threaded via `groupRevision=service.rev`. `(code — done)`
 - [ ] **navigation-menu** — partial parity (light-JS, no machine); revisit for viewport-style animated panels. `(code, decision on scope)`
 - [ ] **scroll-area** — styled native scrollbars instead of synthetic draggable thumb; decide if parity matters. `(decision)`
 - [ ] **form** — minimal field primitives by design; decide whether to grow toward a validation story. `(decision)`
@@ -21,9 +21,9 @@
 
 ## Theming (shadcn parity — mechanism already compatible, tooling gaps below)
 
-- [ ] **`cssVars` in registry items** — build-registry.ts only ships globals.css as a `registry:file`; emit the schema's `cssVars` (light/dark/theme) so the shadcn CLI merges theme variables into the consumer's CSS like shadcn items do. `(code)`
+- [x] **`cssVars` in registry items** — done 2026-08-11: build-registry.ts parses globals.css (`:root`→light, `.dark`→dark, `@theme inline`→theme) and emits schema-shaped `cssVars` on the style item; values verified verbatim against globals.css. `(code — done)`
 - [ ] **Base color variants** — only neutral shipped; generate zinc/slate/stone/gray globals.css variants (mechanical — sidebar/chart vars already present). `(code, decision on which to offer)`
-- [ ] **Docs theme switcher** — `.dark` mechanism works; docs app has no light/dark toggle UI yet. `(code)`
+- [x] **Docs theme switcher** — done 2026-08-11: no-flash `<html-script>` head script (localStorage + prefers-color-scheme) + `<theme-toggle/>` header button; Playwright-verified toggle + persistence across reload. `(code — done)`
 - [ ] **Animation parity check** — utilities come from `tw-animate-css`, not shadcn's plugin chain; verify themed animations match for the deviated components (toast, drawer, scroll-area). `(code)`
 
 ## Quality
