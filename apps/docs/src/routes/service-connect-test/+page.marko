@@ -4,6 +4,7 @@
 // (b) <script> tracks reads inside the caller's machineProps closure,
 // (c) api().getXProps() spreads recompute on machine updates.
 import * as switchMachine from "@zag-js/switch";
+import Switch from "@marko-ui/registry/ui/switch/index.marko";
 
 <let/parentChecked=false/>
 
@@ -14,8 +15,8 @@ import * as switchMachine from "@zag-js/switch";
     <h2 class="font-semibold">Uncontrolled switch</h2>
     <id/uid1/>
     <const/props1=() => ({ id: uid1 })/>
-    <service/switchService1 machine=() => switchMachine.machine props=props1/>
-    <connect/api1=(service, normalizeProps) => switchMachine.connect(service, normalizeProps) service=switchService1/>
+    <service/service1 machine=() => switchMachine.machine props=props1/>
+    <connect/api1=(service, normalizeProps) => switchMachine.connect(service, normalizeProps) service=service1/>
     <label ...api1().getRootProps()>
       <input ...api1().getHiddenInputProps() class="sr-only">
       <span ...api1().getControlProps() class="inline-flex h-5 w-9 items-center rounded-full bg-input p-0.5 transition-colors data-[state=checked]:bg-primary">
@@ -42,8 +43,8 @@ import * as switchMachine from "@zag-js/switch";
         parentChecked = details.checked;
       },
     })/>
-    <service/switchService2 machine=() => switchMachine.machine props=props2/>
-    <connect/api2=(service, normalizeProps) => switchMachine.connect(service, normalizeProps) service=switchService2/>
+    <service/service2 machine=() => switchMachine.machine props=props2/>
+    <connect/api2=(service, normalizeProps) => switchMachine.connect(service, normalizeProps) service=service2/>
     <label ...api2().getRootProps()>
       <input ...api2().getHiddenInputProps() class="sr-only">
       <span ...api2().getControlProps() class="inline-flex h-5 w-9 items-center rounded-full bg-input p-0.5 transition-colors data-[state=checked]:bg-primary">
@@ -55,7 +56,7 @@ import * as switchMachine from "@zag-js/switch";
 </main>
 
 <section class="mx-auto max-w-2xl space-y-2 px-8 pb-8" data-test="switch-v2">
-  <h2 class="font-semibold">switch-v2 component (old Switch.marko structure, v2 pattern)</h2>
-  <switch-v2/apiGetter defaultChecked=true>Airplane mode</switch-v2>
+  <h2 class="font-semibold">registry switch (reference implementation)</h2>
+  <Switch/apiGetter defaultChecked=true/>
   <p class="text-xs text-muted-foreground">parent reads api: checked = ${apiGetter().checked}</p>
 </section>

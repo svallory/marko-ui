@@ -1,79 +1,57 @@
+// Reference implementation of the <service>/<connect> pattern.
+// See notes/component-authoring.md (v2) and /docs/zag-adapter.
 import * as switchMachine from "@zag-js/switch";
-import {
-  createService,
-  ssrService,
-  normalizeProps,
-  type MarkoService,
-} from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
-export interface Input extends Omit<Marko.Input<"input">, "checked" | "value"> {
-  checked?: boolean;
+export interface Input
+  extends Omit<Marko.Input<"input">, "checked" | "value">,
+    Pick<
+      switchMachine.Props,
+      "checked" | "defaultChecked" | "disabled" | "name" | "value" | "required" | "invalid" | "readOnly"
+    > {
   checkedChange?: (checked: boolean) => void;
-  disabled?: boolean;
-  name?: string;
-  value?: string;
   class?: string;
 }
 
-<id/uid>
-<let/rev=0>
-<let/svc=null as MarkoService | null>
-<const/machineProps=() => ({
+<id/uid/>
+<const/machineProps=(): switchMachine.Props => ({
   id: uid,
   checked: input.checked,
+  defaultChecked: input.defaultChecked,
   disabled: input.disabled,
   name: input.name,
   value: input.value,
-  onCheckedChange(details: { checked: boolean }) {
+  required: input.required,
+  invalid: input.invalid,
+  readOnly: input.readOnly,
+  onCheckedChange(details) {
     input.checkedChange?.(details.checked);
   },
-})>
-<lifecycle
-  onMount() {
-    svc = createService(switchMachine.machine, machineProps, () => {
-      rev += 1;
-    });
+})/>
+<service/service machine=() => switchMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) => switchMachine.connect(service, normalizeProps) service=service/>
 
-    (svc as MarkoService).start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
->
-<script>
-  input.checked;
-  input.disabled;
-  input.name;
-  input.value;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  // ssrService(): throwaway, never-started service, server-only, discarded
-  // immediately — connect() reads it synchronously and returns plain objects
-  const api = switchMachine.connect(
-    svc ?? ssrService(switchMachine.machine, machineProps),
-    normalizeProps,
-  );
-
-  return {
-    root: api.getRootProps(),
-    control: api.getControlProps(),
-    thumb: api.getThumbProps(),
-    hiddenInput: api.getHiddenInputProps(),
-  };
-}>
-<const/ui=(rev, computeUi())>
-
-<const/{ class: className, ...rest }=input>
+<const/{
+  class: className,
+  checked,
+  defaultChecked,
+  disabled,
+  name,
+  value,
+  required,
+  invalid,
+  readOnly,
+  checkedChange,
+  ...rest
+}=input/>
 
 <label
-  ...ui.root
+  ...api().getRootProps()
   data-slot="switch-label"
   class="inline-flex items-center gap-2"
 >
   <span
-    ...ui.control
+    ...api().getControlProps()
     data-slot="switch"
     class=cn(
       "peer inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input dark:data-[state=unchecked]:bg-input/80",
@@ -81,10 +59,12 @@ export interface Input extends Omit<Marko.Input<"input">, "checked" | "value"> {
     )
   >
     <span
-      ...ui.thumb
+      ...api().getThumbProps()
       data-slot="switch-thumb"
       class="pointer-events-none block size-4 rounded-full bg-background ring-0 transition-transform data-[state=unchecked]:translate-x-0 data-[state=checked]:translate-x-[calc(100%-2px)] dark:data-[state=unchecked]:bg-foreground dark:data-[state=checked]:bg-primary-foreground"
     />
   </span>
-  <input ...rest ...ui.hiddenInput>
+  <input ...rest ...api().getHiddenInputProps()>
 </label>
+
+<return=api/>
