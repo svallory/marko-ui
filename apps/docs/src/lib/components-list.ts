@@ -1,14 +1,18 @@
 // Component index — regenerated centrally after each phase.
 export const COMPONENTS = [
-  "accordion", "alert", "alert-dialog", "aspect-ratio", "avatar", "badge",
-  "breadcrumb", "button", "button-group", "calendar", "card", "carousel",
-  "checkbox", "clipboard", "collapsible", "combobox", "command", "context-menu",
-  "data-table", "date-picker", "dialog", "drawer", "dropdown-menu", "empty",
-  "file-upload", "form", "hover-card", "input", "input-group", "input-otp",
-  "item", "kbd", "label", "menubar", "navigation-menu", "pagination", "popover",
-  "progress", "radio-group", "resizable", "scroll-area", "select", "separator",
-  "sheet", "sidebar", "skeleton", "slider", "spinner", "switch", "table",
-  "tabs", "textarea", "toast", "toggle", "toggle-group", "tooltip", "tree-view",
+  "accordion", "alert", "alert-dialog", "angle-slider", "aspect-ratio", "avatar",
+  "badge", "breadcrumb", "button", "button-group", "calendar", "card",
+  "carousel", "cascade-select", "checkbox", "clipboard", "collapsible", "color-picker",
+  "combobox", "command", "context-menu", "data-table", "date-input", "date-picker",
+  "dialog", "drawer", "dropdown-menu", "editable", "empty", "file-upload",
+  "floating-panel", "form", "hover-card", "image-cropper", "input", "input-group",
+  "input-otp", "item", "kbd", "label", "listbox", "marquee",
+  "menubar", "navigation-menu", "number-input", "pagination", "password-input", "popover",
+  "progress", "qr-code", "radio-group", "rating-group", "resizable", "scroll-area",
+  "select", "separator", "sheet", "sidebar", "signature-pad", "skeleton",
+  "slider", "spinner", "steps", "switch", "table", "tabs",
+  "tags-input", "textarea", "timer", "toast", "toc", "toggle",
+  "toggle-group", "tooltip", "tour", "tree-view",
 ];
 
 // Components marko-ui ships that shadcn/ui has no equivalent for. Every name

@@ -50,7 +50,7 @@ static const ENTRIES: ChangelogEntry[] = [
     summary: "Behavioral and hydration test suites landed, and caught a real adapter bug.",
     changes: [
       "61 WAI-ARIA APG keyboard tests across tabs, dialog, accordion, switch, checkbox, radio-group, select, and slider.",
-      "Fixed a marko-zag adapter bug: normalize-props now maps Zag's React-style tabIndex to tabindex. The verbatim camelCase key caused a remove-then-add on every update, blurring focus and breaking keyboard navigation on every roving-focus widget.",
+      "Fixed a marko-ui adapter bug: normalize-props now maps Zag's React-style tabIndex to tabindex. The verbatim camelCase key caused a remove-then-add on every update, blurring focus and breaking keyboard navigation on every roving-focus widget.",
       "Hydration-invariant helper comparing JS-off against JS-on markup across all [data-scope] elements; 33 of 33 components pass.",
     ],
   },
@@ -61,14 +61,14 @@ static const ENTRIES: ChangelogEntry[] = [
     changes: [
       "Renamed across the registry output, the docs, and the workspace package. \"shadcn for Marko\" stays as the tagline.",
       "Registry domain fixed at marko-ui.saulo.tech; local dev keeps a localhost base URL for CLI smoke tests.",
-      "marko-zag ships Marko source rather than a dist build — it requires a Marko-aware bundler.",
+      "marko-ui ships Marko source rather than a dist build — it requires a Marko-aware bundler.",
     ],
   },
 ];
 
 <docs-article
   title="Changelog"
-  description="Notable changes to marko-ui components, the registry, and the marko-zag adapter."
+  description="Notable changes to marko-ui components, the registry, and the marko-ui adapter."
   href="/docs/changelog"
   toc=TOC
 >
@@ -77,7 +77,7 @@ static const ENTRIES: ChangelogEntry[] = [
   <p>
     <strong>marko-ui has not had a tagged release yet.</strong> The registry at
     <code>marko-ui.saulo.tech/r</code> tracks the main branch, and
-    <code>marko-zag</code> is not yet on npm. Until <code>0.1.0</code> ships, treat component APIs
+    <code>marko-ui</code> is not yet on npm. Until <code>0.1.0</code> ships, treat component APIs
     as subject to change and pin your installed files by committing them — which, given that you own
     them, you get for free.
   </p>
@@ -123,7 +123,7 @@ static const ENTRIES: ChangelogEntry[] = [
       re-running <code>add --overwrite</code>.
     </li>
     <li>
-      <strong><code>marko-zag</code></strong> is a normal npm package and follows semver. It is the
+      <strong><code>marko-ui</code></strong> is a normal npm package and follows semver. It is the
       adapter binding Zag machines into Marko, and it is the dependency that actually ships fixes
       to you.
     </li>

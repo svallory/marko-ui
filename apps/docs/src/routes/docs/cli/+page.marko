@@ -41,7 +41,7 @@ static const ITEM = `{
   "type": "registry:ui",
   "title": "Switch",
   "description": "A control that allows the user to toggle between checked and not checked.",
-  "dependencies": ["@zag-js/switch", "marko-zag"],
+  "dependencies": ["@zag-js/switch", "marko-ui"],
   "registryDependencies": ["https://marko-ui.saulo.tech/r/utils.json"],
   "files": [
     {
@@ -209,7 +209,7 @@ static const REGISTRY_INDEX = `curl -s https://marko-ui.saulo.tech/r/registry.js
   <code-block language="json" filename="/r/switch.json" code=ITEM/>
 
   <p>
-    Note <code>marko-zag</code> in <code>dependencies</code>: the build script scans each file for
+    Note <code>marko-ui</code> in <code>dependencies</code>: the build script scans each file for
     an import of it and adds the package automatically, so a component's declared dependencies
     cannot drift out of sync with what its source actually imports.
   </p>

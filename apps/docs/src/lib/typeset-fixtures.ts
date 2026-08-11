@@ -5,7 +5,7 @@
 
 export const DOCS_HTML = `
 <h1>Building a Marko-Zag Component</h1>
-<p>The <code>marko-zag</code> package makes it straightforward to wire a Zag.js state machine into a Marko 6 template. It supplies the tags that keep the machine's reactive state serializable, and updates the DOM automatically as state changes.</p>
+<p>The <code>marko-ui</code> package makes it straightforward to wire a Zag.js state machine into a Marko 6 template. It supplies the tags that keep the machine's reactive state serializable, and updates the DOM automatically as state changes.</p>
 <p>To summarize, the pattern provides the following features:</p>
 <ul>
 <li><strong>Serializable state</strong>: Machine context that needs to survive resumption is exposed as plain, serializable values.</li>
@@ -21,7 +21,7 @@ export const DOCS_HTML = `
 <li>The template reads from <code>api</code> and forwards user events back into the service.</li>
 </ol>
 <pre><code>import * as switchMachine from '@zag-js/switch';
-import type { MachineInput } from 'marko-zag';
+import type { MachineInput } from 'marko-ui';
 
 export type Input = MachineInput&lt;'input', switchMachine.Props&gt; &amp; {
   checkedChange?: (checked: boolean) =&gt; void;
