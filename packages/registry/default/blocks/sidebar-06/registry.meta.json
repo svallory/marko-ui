@@ -1,0 +1,7 @@
+{
+  "title": "Sidebar 06",
+  "description": "A documentation sidebar with dropdown navigation sections and a newsletter opt-in card in the footer.",
+  "categories": ["sidebar", "navigation"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "sidebar", "dropdown-menu", "breadcrumb", "separator", "card", "input", "button"]
+}

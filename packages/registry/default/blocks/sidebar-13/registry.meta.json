@@ -1,0 +1,7 @@
+{
+  "title": "Sidebar 13",
+  "description": "A settings dialog with a static navigation sidebar and a scrollable content pane.",
+  "categories": ["sidebar", "dialog"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "sidebar", "dialog", "breadcrumb", "button"]
+}

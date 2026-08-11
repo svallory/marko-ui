@@ -1,0 +1,183 @@
+// Dark Mode — replaces shadcn's per-framework dark-mode/*.mdx (next, vite,
+// astro, remix, tanstack) with the one approach that applies to Marko 6.
+// Code here is transcribed from this site's own src/routes/+layout.marko and
+// src/tags/theme-toggle.marko — it is running on the page you are reading.
+import "../../../tags/docs/docs-article.marko";
+import "../../../tags/docs/code-block.marko";
+
+static const TOC = [
+  { id: "how-it-works", label: "How It Works" },
+  { id: "blocking-script", label: "The Blocking Script" },
+  { id: "toggle", label: "The Toggle" },
+  { id: "system-only", label: "System Preference Only" },
+  { id: "notes", label: "Notes" },
+];
+
+static const VARIANT = `@custom-variant dark (&:is(.dark *));`;
+
+static const BLOCKING_SCRIPT = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>my-app</title>
+    <html-script>
+      (function () {
+        var storedTheme = null;
+        try {
+          storedTheme = localStorage.getItem("theme");
+        } catch (error) {}
+        var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        var isDark = storedTheme ? storedTheme === "dark" : prefersDark;
+        document.documentElement.classList.toggle("dark", isDark);
+      })();
+    </html-script>
+  </head>
+  <body>
+    <\${input.content}/>
+  </body>
+</html>`;
+
+static const TOGGLE = `<let/isDark=false/>
+
+<script>
+  isDark = document.documentElement.classList.contains("dark");
+</script>
+
+<button
+  type="button"
+  aria-label="Toggle theme"
+  class="inline-flex size-8 items-center justify-center rounded-md text-foreground hover:bg-accent hover:text-accent-foreground"
+  onClick() {
+    const nextIsDark = !document.documentElement.classList.contains("dark");
+    document.documentElement.classList.toggle("dark", nextIsDark);
+    try {
+      localStorage.setItem("theme", nextIsDark ? "dark" : "light");
+    } catch (error) {}
+    isDark = nextIsDark;
+  }
+>
+  <if=isDark>Light mode</if>
+  <else>Dark mode</else>
+</button>`;
+
+static const SYSTEM_ONLY = `@custom-variant dark (&:where(.dark, .dark *), @media (prefers-color-scheme: dark));`;
+
+<docs-article
+  title="Dark Mode"
+  description="Toggle between light and dark themes by putting a .dark class on the root element, with no flash of the wrong theme on first paint."
+  href="/docs/dark-mode"
+  toc=TOC
+>
+  <p>
+    marko-ui has no theme provider and no context. Dark mode is a single class on
+    <code>&lt;html&gt;</code>, because every token in the stylesheet is redefined under a
+    <code>.dark</code> selector. Anything that reads those tokens — which is every component in the
+    registry — follows automatically.
+  </p>
+
+  <h2 id="how-it-works">How It Works</h2>
+
+  <p>
+    The stylesheet you install from the registry declares the Tailwind v4 dark variant explicitly:
+  </p>
+
+  <code-block language="css" filename="src/styles/globals.css" code=VARIANT/>
+
+  <p>
+    So <code>dark:bg-muted</code> applies whenever an ancestor carries <code>.dark</code>. Your
+    only job is putting that class on the document element and keeping it in sync with the user's
+    choice.
+  </p>
+
+  <h2 id="blocking-script">The Blocking Script</h2>
+
+  <p>
+    Reading the stored preference has to happen <strong>before the first paint</strong>, or the
+    page renders light and then snaps to dark — the flash-of-wrong-theme. That means a synchronous
+    script in <code>&lt;head&gt;</code>, which is where Marko 6 has a specific gotcha.
+  </p>
+
+  <p>
+    <strong>In Marko 6, a bare <code>&lt;script&gt;</code> tag is not an HTML script tag.</strong>
+    It is a client effect: a block of code Marko runs in the browser and re-runs when the state it
+    references changes. To emit a literal <code>&lt;script&gt;</code> element into your markup, use
+    <code>&lt;html-script&gt;</code>.
+  </p>
+
+  <code-block language="marko" filename="src/routes/+layout.marko" code=BLOCKING_SCRIPT/>
+
+  <p>The script does three things, in this order:</p>
+
+  <ol>
+    <li>Reads <code>localStorage.theme</code>, wrapped in a <code>try</code> because storage throws in private-mode and sandboxed contexts.</li>
+    <li>Falls back to the OS preference via <code>prefers-color-scheme</code> when nothing is stored.</li>
+    <li>Toggles <code>.dark</code> on <code>document.documentElement</code> synchronously, before the body renders.</li>
+  </ol>
+
+  <p>
+    Keep it inline. An external script file is fetched asynchronously and defeats the entire point.
+  </p>
+
+  <h2 id="toggle">The Toggle</h2>
+
+  <p>
+    The toggle flips the class, persists the choice, and mirrors the result into local state so the
+    button can show the right icon. Note that it reads the current theme from the DOM rather than
+    from state — the server has no idea which theme the user prefers, so state is initialized in a
+    client effect after resumption.
+  </p>
+
+  <code-block language="marko" filename="src/tags/theme-toggle.marko" code=TOGGLE/>
+
+  <p>
+    The <code>&lt;script&gt;</code> block near the top is a Marko client effect (see above): it
+    runs in the browser once, after the component resumes, and seeds <code>isDark</code> from
+    whatever the blocking script decided. Rendering the icon from server-side state instead would
+    produce a mismatch on every dark-mode visitor.
+  </p>
+
+  <p>
+    This is the exact component in this site's header — the theme control at the top right of this
+    page is running that code.
+  </p>
+
+  <h2 id="system-only">System Preference Only</h2>
+
+  <p>
+    If you do not want a toggle at all and would rather follow the OS setting, drop the script and
+    the button entirely and widen the variant to include the media query:
+  </p>
+
+  <code-block language="css" code=SYSTEM_ONLY/>
+
+  <p>
+    This is simpler and has no flash by construction, at the cost of users being unable to override
+    their system setting for your site.
+  </p>
+
+  <h2 id="notes">Notes</h2>
+
+  <h3>Why not store the theme in a cookie?</h3>
+  <p>
+    You can, and it lets the server render the correct class in the initial HTML, removing the need
+    for the blocking script. It costs a cookie on every request and makes the page uncacheable per
+    theme. The inline script is the simpler default; the cookie approach is worth it if you are
+    already reading cookies in a middleware.
+  </p>
+
+  <h3>Do components need a dark-mode prop?</h3>
+  <p>
+    No. Components reference semantic tokens only, so a component authored without a single
+    <code>dark:</code> utility still themes correctly. The <code>dark:</code> variants that do
+    appear in the registry are for cases where a surface needs a different opacity or elevation in
+    dark mode, not a different color.
+  </p>
+
+  <h3>The theme flashes on route changes</h3>
+  <p>
+    If the class is being reset, the blocking script is probably in a nested layout that re-renders
+    rather than in the root layout. It belongs in the single root <code>+layout.marko</code> that
+    owns the <code>&lt;html&gt;</code> element.
+  </p>
+</docs-article>

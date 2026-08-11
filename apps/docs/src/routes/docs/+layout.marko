@@ -1,0 +1,15 @@
+// Docs shell: sticky left sidebar (chrome's docs-sidebar tag, fed by the
+// DOCS_NAV tree) + the page body. Pages supply their own center column via
+// <docs-article>, so this layout only owns the two-column frame.
+import "../../tags/site/docs-sidebar.marko";
+import { DOCS_NAV } from "../../tags/docs/docs-nav.ts";
+
+<div class="mx-auto flex w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+  <aside class="hidden w-56 shrink-0 border-r border-border lg:block">
+    <div class="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto py-8 pr-4">
+      <docs-sidebar sections=DOCS_NAV/>
+    </div>
+  </aside>
+
+  <${input.content}/>
+</div>

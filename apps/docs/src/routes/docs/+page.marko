@@ -1,0 +1,182 @@
+// Introduction — adapted from shadcn/ui's content/docs/(root)/index.mdx.
+// Same argument (open code / composition / distribution), rewritten for the
+// Marko 6 + Zag.js reality of marko-ui.
+import "../../tags/docs/docs-article.marko";
+import "../../tags/docs/code-block.marko";
+import { COMPONENTS } from "../../lib/components-list.ts";
+
+static const DIALOG_EXAMPLE = `import Dialog from "../components/ui/dialog/dialog.marko";
+import Button from "../components/ui/button/button.marko";
+
+<Dialog>
+  <@trigger|props|>
+    <Button ...props>Edit Profile</Button>
+  </@trigger>
+  <@title>Edit profile</@title>
+  <@description>Make changes to your profile here.</@description>
+  <@content>
+    <p>Form fields go here.</p>
+  </@content>
+</Dialog>`;
+
+static const TOC = [
+  { id: "open-code", label: "Open Code" },
+  { id: "composition", label: "Composition" },
+  { id: "distribution", label: "Distribution" },
+  { id: "behavior-from-zag", label: "Behavior from Zag" },
+  { id: "resumability", label: "Built for Resumability" },
+  { id: "faq", label: "FAQ" },
+];
+
+static const USAGE_EXAMPLE = `import Switch from "../components/ui/switch/switch.marko";
+import Label from "../components/ui/label/label.marko";
+
+<let/notifications=false/>
+
+<div class="flex items-center gap-2">
+  <Switch id="notifications" checked:=notifications/>
+  <Label for="notifications">Email notifications</Label>
+</div>`;
+
+<docs-article
+  title="Introduction"
+  description="marko-ui is a set of accessible, copy-paste components for Marko 6, styled with Tailwind v4 and driven by Zag.js state machines. Open Source. Open Code."
+  href="/docs"
+  toc=TOC
+>
+  <p>
+    <strong>This is not a component library. It is how you build your component library.</strong>
+  </p>
+
+  <p>
+    marko-ui is a port of <a href="https://ui.shadcn.com" target="_blank" rel="noreferrer">shadcn/ui</a>
+    to Marko 6. It keeps the idea that made shadcn/ui work — you own the component source — and
+    swaps the React/Radix half for Marko tags backed by
+    <a href="https://zagjs.com" target="_blank" rel="noreferrer">Zag.js</a> state machines. There
+    are ${COMPONENTS.length} components in the registry today.
+  </p>
+
+  <ul>
+    <li><strong>Open Code:</strong> the component source lands in your repo, not in node_modules.</li>
+    <li><strong>Composition:</strong> every component is a Marko tag with attribute tags for its parts.</li>
+    <li><strong>Distribution:</strong> a shadcn-compatible registry served over HTTP, installed with the shadcn CLI.</li>
+    <li><strong>Behavior from Zag:</strong> keyboard handling, focus management, and ARIA come from framework-agnostic machines.</li>
+    <li><strong>Resumable:</strong> components are written to survive Marko's serialize-and-resume model, not just to render.</li>
+  </ul>
+
+  <h2 id="open-code">Open Code</h2>
+
+  <p>
+    Installing a component copies its <code>.marko</code> files into
+    <code>src/components/ui/&lt;name&gt;/</code> in your project. There is no
+    <code>@marko-ui/components</code> package to import from, and no wrapper layer to fight when a
+    design calls for something the default styling does not do.
+  </p>
+
+  <ul>
+    <li><strong>Full transparency:</strong> the markup, the classes, and the machine wiring are all right there.</li>
+    <li><strong>Easy customization:</strong> change the Tailwind classes in the file; nothing overrides you.</li>
+    <li><strong>AI-friendly:</strong> a model reading your repo sees the real component, not a compiled dependency.</li>
+  </ul>
+
+  <p>
+    The tradeoff is the same one shadcn/ui makes: upstream fixes to <em>styling</em> do not flow to
+    you automatically. Behavior fixes largely do, because the behavior lives in the
+    <code>@zag-js/*</code> packages you install from npm, and those you can bump like any other
+    dependency.
+  </p>
+
+  <h2 id="composition">Composition</h2>
+
+  <p>
+    Multi-part components use Marko's attribute tags rather than a separate exported subcomponent
+    per part. A dialog is one import and a nested structure, which keeps the parts scoped to the
+    parent that owns their state.
+  </p>
+
+  <code-block language="marko" code=DIALOG_EXAMPLE/>
+
+  <p>
+    The <code>|props|</code> parameter on <code>@trigger</code> is how a part hands its machine
+    props to whatever element you choose to render — spread them onto a
+    <code>&lt;Button&gt;</code>, an <code>&lt;a&gt;</code>, or anything else. It is marko-ui's
+    equivalent of Radix's <code>asChild</code>.
+  </p>
+
+  <p>
+    Simple controls follow Marko's two-way binding convention: state props are bound with
+    <code>value:=</code> or <code>checked:=</code>, and every Zag <code>onXxxChange</code> callback
+    is also exposed as a plain <code>xxxChange</code> attribute when you want the callback form.
+  </p>
+
+  <code-block language="marko" code=USAGE_EXAMPLE/>
+
+  <h2 id="distribution">Distribution</h2>
+
+  <p>
+    The registry is published as static JSON in the
+    <a href="https://ui.shadcn.com/schema/registry.json" target="_blank" rel="noreferrer">shadcn registry-item format</a>,
+    which means the official <code>shadcn</code> CLI installs marko-ui components without knowing
+    anything about Marko. Every file ships as a plain <code>registry:file</code> with an explicit
+    target path, so the CLI never runs its React-specific transforms over our templates.
+  </p>
+
+  <code-block
+    language="bash"
+    code="bunx shadcn@latest add https://marko-ui.saulo.tech/r/switch.json"
+  />
+
+  <p>
+    See <a href="/docs/installation">Installation</a> for project setup and
+    <a href="/docs/cli">CLI</a> for the full command reference.
+  </p>
+
+  <h2 id="behavior-from-zag">Behavior from Zag</h2>
+
+  <p>
+    Zag.js implements each interactive widget as a framework-agnostic state machine that already
+    handles roving focus, typeahead, dismiss layers, scroll locking, and the ARIA attributes each
+    pattern requires. marko-ui binds those machines into Marko through the
+    <code>marko-zag</code> package, so an accordion behaves identically here and in the React,
+    Vue, or Solid ports of the same machine.
+  </p>
+
+  <p>
+    A practical consequence: when you customize a component you are editing markup and classes, not
+    keyboard handling. It is hard to break accessibility by restyling.
+  </p>
+
+  <h2 id="resumability">Built for Resumability</h2>
+
+  <p>
+    Marko 6 resumes a page by <em>serializing reactive state</em> — it does not re-run your template
+    in the browser the way React hydration does. Zag's service and API objects contain functions
+    from npm code and cannot be serialized, so marko-ui components pass machines and APIs around as
+    getters rather than as raw values. This is the single constraint that shapes most of the
+    component internals, and it is documented in detail in
+    <a href="/docs/creating-components">Creating Components</a>.
+  </p>
+
+  <h2 id="faq">FAQ</h2>
+
+  <h3>Do I need Zag.js knowledge to use marko-ui?</h3>
+  <p>
+    No. Every Zag prop is surfaced as a normal Marko attribute on the component, and the defaults
+    are set for you. Zag knowledge matters when you write a <em>new</em> component, not when you
+    use one.
+  </p>
+
+  <h3>Can I use marko-ui with plain Marko, without @marko/run?</h3>
+  <p>
+    Yes. The components are ordinary Marko tags and only need Marko 6, Tailwind v4, and the
+    relevant <code>@zag-js/*</code> packages. @marko/run is what this documentation site uses and
+    what the installation guide assumes, but nothing in the components depends on it.
+  </p>
+
+  <h3>How do I get upstream component updates?</h3>
+  <p>
+    Re-run <code>bunx shadcn@latest add</code> for the component with <code>--overwrite</code>, then
+    diff. Because the files are yours, this is a merge you perform deliberately rather than a
+    version bump that silently changes your UI.
+  </p>
+</docs-article>

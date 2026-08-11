@@ -1,0 +1,39 @@
+import SidebarProvider from "@marko-ui/registry/ui/sidebar/provider.marko";
+import SidebarTrigger from "@marko-ui/registry/ui/sidebar/trigger.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+import Breadcrumb from "@marko-ui/registry/ui/breadcrumb/breadcrumb.marko";
+import BreadcrumbItem from "@marko-ui/registry/ui/breadcrumb/item.marko";
+import BreadcrumbLink from "@marko-ui/registry/ui/breadcrumb/link.marko";
+import BreadcrumbPage from "@marko-ui/registry/ui/breadcrumb/page.marko";
+import BreadcrumbSeparator from "@marko-ui/registry/ui/breadcrumb/separator.marko";
+import AppSidebar from "./app-sidebar.marko";
+
+static const PLACEHOLDER_ROWS = Array.from({ length: 24 });
+
+<SidebarProvider width="350px">
+  <@sidebar|{ open, toggle }|>
+    <AppSidebar open=open toggle=toggle/>
+  </@sidebar>
+  <@content|{ open, toggle }|>
+    <div class="flex min-w-0 flex-1 flex-col">
+      <header class="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
+        <SidebarTrigger open=open toggle=toggle class="-ml-1"/>
+        <Separator orientation="vertical" class="mr-2 h-4"/>
+        <Breadcrumb>
+          <BreadcrumbItem class="hidden md:block">
+            <BreadcrumbLink href="#">All Inboxes</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator class="hidden md:block"/>
+          <BreadcrumbItem>
+            <BreadcrumbPage>Inbox</BreadcrumbPage>
+          </BreadcrumbItem>
+        </Breadcrumb>
+      </header>
+      <div class="flex flex-1 flex-col gap-4 p-4">
+        <for|_row, index| of=PLACEHOLDER_ROWS>
+          <div class="aspect-video h-12 w-full rounded-lg bg-muted/50"/>
+        </for>
+      </div>
+    </div>
+  </@content>
+</SidebarProvider>

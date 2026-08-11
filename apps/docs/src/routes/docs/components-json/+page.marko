@@ -1,0 +1,253 @@
+// components.json — adapted from shadcn's content/docs/(root)/components-json.mdx.
+// The file belongs to the shadcn CLI, not to marko-ui, so the honest framing
+// is "here is what each field means for a Marko project, and which ones are
+// React-shaped and inert for us".
+import "../../../tags/docs/docs-article.marko";
+import "../../../tags/docs/code-block.marko";
+
+static const TOC = [
+  { id: "whats-it-for", label: "What It Is For" },
+  { id: "example", label: "A Marko components.json" },
+  { id: "tailwind", label: "tailwind" },
+  { id: "aliases", label: "aliases" },
+  { id: "inert", label: "Fields That Do Not Apply" },
+  { id: "registries", label: "registries" },
+];
+
+static const CREATE = `bunx shadcn@latest init https://marko-ui.saulo.tech/r/style.json`;
+
+static const EXAMPLE = `{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/styles/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "~/src/components",
+    "ui": "~/src/components/ui",
+    "lib": "~/src/lib",
+    "utils": "~/src/lib/utils"
+  }
+}`;
+
+static const TSCONFIG = `{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./*"]
+    }
+  }
+}`;
+
+static const REGISTRIES = `{
+  "registries": {
+    "@marko-ui": "https://marko-ui.saulo.tech/r/{name}.json"
+  }
+}`;
+
+static const NAMESPACED = `bunx shadcn@latest add @marko-ui/dialog
+bunx shadcn@latest search @marko-ui -q "menu"`;
+
+<docs-article
+  title="components.json"
+  description="Configuration for the shadcn CLI. It tells the CLI where your stylesheet lives and where installed components should land."
+  href="/docs/components-json"
+  toc=TOC
+>
+  <h2 id="whats-it-for">What It Is For</h2>
+
+  <p>
+    <code>components.json</code> is the shadcn CLI's config file, not a marko-ui runtime config.
+    Nothing in the components reads it. It exists so the CLI knows where to write files and which
+    stylesheet to merge theme variables into.
+  </p>
+
+  <p>
+    <strong>It is only needed if you use the CLI.</strong> Installing components by copying files
+    from the registry JSON by hand works without it — see
+    <a href="/docs/installation">Installation</a>.
+  </p>
+
+  <p>Create it by running init against a marko-ui theme item:</p>
+
+  <code-block language="bash" code=CREATE/>
+
+  <h2 id="example">A Marko components.json</h2>
+
+  <p>
+    Here is what a working config looks like for a @marko/run project. The CLI's prompts assume a
+    React project, so it is worth reviewing the generated file against this one.
+  </p>
+
+  <code-block language="json" filename="components.json" code=EXAMPLE/>
+
+  <h2 id="tailwind">tailwind</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>What to set</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>tailwind.config</code></td>
+        <td>Leave empty. Tailwind v4 has no JS config file, and marko-ui requires v4.</td>
+      </tr>
+      <tr>
+        <td><code>tailwind.css</code></td>
+        <td>
+          Path to the stylesheet holding your theme tokens — <code>src/styles/globals.css</code> in
+          the layout the installation guide sets up. The CLI merges <code>cssVars</code> into this
+          file.
+        </td>
+      </tr>
+      <tr>
+        <td><code>tailwind.baseColor</code></td>
+        <td>
+          <code>neutral</code>, <code>zinc</code>, <code>slate</code>, <code>stone</code>, or
+          <code>gray</code>. Match whichever theme item you installed. Changing it later does not
+          retheme anything already on disk.
+        </td>
+      </tr>
+      <tr>
+        <td><code>tailwind.cssVariables</code></td>
+        <td>
+          Must be <code>true</code>. marko-ui components are written entirely against semantic
+          tokens; the <code>false</code> path emits literal color utilities and would produce
+          components that ignore your theme.
+        </td>
+      </tr>
+      <tr>
+        <td><code>tailwind.prefix</code></td>
+        <td>
+          Leave empty unless you run a prefixed Tailwind setup. Our component source is not
+          prefix-aware, so a prefix requires editing the installed files.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="aliases">aliases</h2>
+
+  <p>
+    Aliases decide where files land. They must resolve through your
+    <code>tsconfig.json</code> paths, because the installed <code>.marko</code> files import
+    <code>cn()</code> relative to where they were written.
+  </p>
+
+  <code-block language="json" filename="tsconfig.json" code=TSCONFIG/>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Alias</th>
+        <th>What lands there</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>aliases.ui</code></td>
+        <td>
+          Component directories. <code>dialog.json</code> writes
+          <code>&lt;ui&gt;/dialog/dialog.marko</code>. Each component gets its own folder, since
+          multi-part components ship several files plus a <code>variants.ts</code>.
+        </td>
+      </tr>
+      <tr>
+        <td><code>aliases.utils</code></td>
+        <td>The <code>cn()</code> helper from <code>utils.json</code>.</td>
+      </tr>
+      <tr>
+        <td><code>aliases.lib</code></td>
+        <td>Other library code. In practice only <code>utils</code> uses it today.</td>
+      </tr>
+      <tr>
+        <td><code>aliases.components</code></td>
+        <td>The parent of <code>ui</code>. Nothing in our registry writes here directly.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    <code>aliases.hooks</code> appears in shadcn's schema but has no meaning here — Marko has no
+    hooks, and no marko-ui item writes to it.
+  </p>
+
+  <h2 id="inert">Fields That Do Not Apply</h2>
+
+  <p>
+    The CLI will write these whether or not they mean anything. They are harmless; do not spend
+    time tuning them.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Why it is inert</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>style</code></td>
+        <td>
+          Selects between shadcn's React style variants. marko-ui has exactly one implementation of
+          each component, so this changes nothing. Leave whatever init wrote.
+        </td>
+      </tr>
+      <tr>
+        <td><code>rsc</code></td>
+        <td>
+          React Server Components. Set <code>false</code>; it only controls whether a
+          <code>"use client"</code> directive is prepended, which is meaningless in a
+          <code>.marko</code> file.
+        </td>
+      </tr>
+      <tr>
+        <td><code>tsx</code></td>
+        <td>
+          Chooses <code>.tsx</code> over <code>.jsx</code> output. Our files ship as
+          <code>.marko</code> with explicit targets, so the extension is never derived from this.
+        </td>
+      </tr>
+      <tr>
+        <td><code>iconLibrary</code></td>
+        <td>
+          Picks a React icon package. Our components inline their SVGs rather than depending on an
+          icon library.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    This is the tradeoff of reusing someone else's CLI instead of writing our own: a handful of
+    fields describe a framework we are not using. In exchange, marko-ui does not have to ship,
+    version, or maintain a CLI.
+  </p>
+
+  <h2 id="registries">registries</h2>
+
+  <p>
+    Registering marko-ui under a namespace saves typing full URLs on every command:
+  </p>
+
+  <code-block language="json" filename="components.json" code=REGISTRIES/>
+
+  <p>Then reference items by short name:</p>
+
+  <code-block language="bash" code=NAMESPACED/>
+
+  <p>
+    The <code>{name}</code> placeholder is expanded by the CLI. This is purely a convenience —
+    the full-URL form in the rest of these docs keeps working either way.
+  </p>
+</docs-article>

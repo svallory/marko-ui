@@ -1,0 +1,36 @@
+// Structure adapted from shadcn/ui's home dashboard cards (MIT); content
+// describes marko-ui's real install flow.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import Tabs from "@marko-ui/registry/ui/tabs/tabs.marko";
+
+static const PACKAGE_MANAGERS = [
+  { value: "bun", label: "bun" },
+  { value: "pnpm", label: "pnpm" },
+  { value: "yarn", label: "yarn" },
+];
+
+static const COMMANDS = {
+  bun: "bunx --bun shadcn@latest add https://marko-ui.saulo.tech/r/switch.json",
+  pnpm: "pnpm dlx shadcn@latest add https://marko-ui.saulo.tech/r/switch.json",
+  yarn: "yarn dlx shadcn@latest add https://marko-ui.saulo.tech/r/switch.json",
+};
+
+// min-w-0 all the way down so the long install command scrolls inside its own
+// <pre> instead of widening the card (and the page) on narrow viewports.
+<Card class="w-full min-w-0">
+  <CardHeader>
+    <CardTitle>Add a component</CardTitle>
+    <CardDescription>
+      The shadcn CLI copies the source straight into your project.
+    </CardDescription>
+  </CardHeader>
+  <CardContent class="min-w-0">
+    <Tabs|value| items=PACKAGE_MANAGERS class="w-full min-w-0">
+      <pre class="bg-muted mt-2 max-w-full overflow-x-auto rounded-md p-3"><code class="text-xs whitespace-pre">${COMMANDS[value as keyof typeof COMMANDS]}</code></pre>
+    </Tabs>
+  </CardContent>
+</Card>

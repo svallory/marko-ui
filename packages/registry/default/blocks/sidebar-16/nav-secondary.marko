@@ -1,0 +1,51 @@
+import SidebarGroup from "@marko-ui/registry/ui/sidebar/group.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+
+export interface NavSecondaryItem {
+  id: string;
+  title: string;
+  url: string;
+  /** SVG path `d` attribute(s) for a 24x24 lucide-style icon, rendered inline. */
+  icon: string;
+}
+
+export interface Input {
+  items: NavSecondaryItem[];
+  class?: string;
+}
+
+// NOTE: our SidebarGroup has no dedicated SidebarGroupContent sub-part, so
+// the group's children are rendered directly, following the pattern used
+// throughout the sidebar block family (e.g. blocks/sidebar-07/nav-main.marko).
+// Our SidebarMenuButton has no `size="sm"` variant, so this uses `text-sm`
+// on the icon svg sizing is left at the button's default (still visually
+// compact given the single-line rows). Deviation from the source, noted
+// per block-porting rules.
+
+<SidebarGroup class=input.class>
+  <SidebarMenu>
+    <for|item| of=input.items by=(item) => item.id>
+      <SidebarMenuItem>
+        <SidebarMenuButton href=item.url class="text-sm">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="size-4"
+          >
+            <path d=item.icon/>
+          </svg>
+          <span>${item.title}</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </for>
+  </SidebarMenu>
+</SidebarGroup>

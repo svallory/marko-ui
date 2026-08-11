@@ -1,0 +1,29 @@
+import SidebarProvider from "@marko-ui/registry/ui/sidebar/provider.marko";
+import SidebarTrigger from "@marko-ui/registry/ui/sidebar/trigger.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import AppSidebar from "./app-sidebar.marko";
+import SectionCards from "./section-cards.marko";
+import DocumentsTable from "./documents-table.marko";
+
+<SidebarProvider width="16rem">
+  <@sidebar|{ open }|>
+    <AppSidebar open=open/>
+  </@sidebar>
+  <@content|{ open, toggle }|>
+    <div class="flex min-w-0 flex-1 flex-col">
+      <header class="flex h-12 shrink-0 items-center gap-2 border-b px-4">
+        <SidebarTrigger open=open toggle=toggle/>
+        <Separator orientation="vertical" class="mx-1 h-4"/>
+        <h1 class="text-base font-medium">Documents</h1>
+        <div class="ml-auto">
+          <Button variant="outline" size="sm">Quick Create</Button>
+        </div>
+      </header>
+      <main class="flex flex-1 flex-col gap-4 overflow-auto py-4 md:gap-6 md:py-6">
+        <SectionCards/>
+        <DocumentsTable/>
+      </main>
+    </div>
+  </@content>
+</SidebarProvider>

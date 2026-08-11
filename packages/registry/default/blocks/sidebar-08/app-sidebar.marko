@@ -1,0 +1,138 @@
+import Sidebar from "@marko-ui/registry/ui/sidebar/sidebar.marko";
+import SidebarHeader from "@marko-ui/registry/ui/sidebar/header.marko";
+import SidebarContent from "@marko-ui/registry/ui/sidebar/content.marko";
+import SidebarFooter from "@marko-ui/registry/ui/sidebar/footer.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+import NavMain, { type NavMainItem } from "./nav-main.marko";
+import NavProjects, { type ProjectItem } from "./nav-projects.marko";
+import NavSecondary, { type NavSecondaryItem } from "./nav-secondary.marko";
+import NavUser, { type NavUser as NavUserData } from "./nav-user.marko";
+
+export interface Input {
+  open?: boolean;
+}
+
+// NOTE: shadcn's SidebarRail (a hover/drag handle on the sidebar's right
+// edge for resizing/toggling) has no equivalent in our sidebar sub-parts
+// yet, so it is omitted here, following the precedent set in
+// blocks/sidebar-05/app-sidebar.marko. SidebarTrigger in the page header
+// covers open/close.
+
+// This is sample data.
+static const USER: NavUserData = {
+  name: "shadcn",
+  email: "m@example.com",
+  avatar: "",
+};
+
+static const NAV_MAIN: NavMainItem[] = [
+  {
+    id: "playground",
+    title: "Playground",
+    url: "#",
+    icon: "square-terminal",
+    isActive: true,
+    items: [
+      { id: "history", title: "History", url: "#" },
+      { id: "starred", title: "Starred", url: "#" },
+      { id: "settings", title: "Settings", url: "#" },
+    ],
+  },
+  {
+    id: "models",
+    title: "Models",
+    url: "#",
+    icon: "bot",
+    items: [
+      { id: "genesis", title: "Genesis", url: "#" },
+      { id: "explorer", title: "Explorer", url: "#" },
+      { id: "quantum", title: "Quantum", url: "#" },
+    ],
+  },
+  {
+    id: "documentation",
+    title: "Documentation",
+    url: "#",
+    icon: "book-open",
+    items: [
+      { id: "introduction", title: "Introduction", url: "#" },
+      { id: "get-started", title: "Get Started", url: "#" },
+      { id: "tutorials", title: "Tutorials", url: "#" },
+      { id: "changelog", title: "Changelog", url: "#" },
+    ],
+  },
+  {
+    id: "settings",
+    title: "Settings",
+    url: "#",
+    icon: "settings",
+    items: [
+      { id: "general", title: "General", url: "#" },
+      { id: "team", title: "Team", url: "#" },
+      { id: "billing", title: "Billing", url: "#" },
+      { id: "limits", title: "Limits", url: "#" },
+    ],
+  },
+];
+
+static const NAV_SECONDARY: NavSecondaryItem[] = [
+  { id: "support", title: "Support", url: "#", icon: "life-buoy" },
+  { id: "feedback", title: "Feedback", url: "#", icon: "send" },
+];
+
+static const PROJECTS: ProjectItem[] = [
+  { id: "design-engineering", name: "Design Engineering", url: "#", icon: "frame" },
+  { id: "sales-marketing", name: "Sales & Marketing", url: "#", icon: "pie-chart" },
+  { id: "travel", name: "Travel", url: "#", icon: "map" },
+];
+
+<Sidebar open=input.open>
+  <@content>
+    <SidebarHeader>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton href="#" class="h-12">
+            <div
+              class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="size-4"
+              >
+                <rect width="18" height="18" x="3" y="3" rx="2"/>
+                <path d="M7 7h.01"/>
+                <path d="M11 7h6"/>
+                <path d="M7 11h.01"/>
+                <path d="M11 11h6"/>
+                <path d="M7 15h.01"/>
+                <path d="M11 15h6"/>
+              </svg>
+            </div>
+            <div class="grid flex-1 text-left text-sm leading-tight">
+              <span class="truncate font-medium">Acme Inc</span>
+              <span class="truncate text-xs">Enterprise</span>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarHeader>
+    <SidebarContent>
+      <NavMain items=NAV_MAIN/>
+      <NavProjects projects=PROJECTS class="group-data-[collapsible=icon]:hidden"/>
+      <NavSecondary items=NAV_SECONDARY class="mt-auto"/>
+    </SidebarContent>
+    <SidebarFooter>
+      <NavUser user=USER/>
+    </SidebarFooter>
+  </@content>
+</Sidebar>

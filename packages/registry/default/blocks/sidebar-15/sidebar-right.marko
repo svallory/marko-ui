@@ -1,0 +1,76 @@
+import Sidebar from "@marko-ui/registry/ui/sidebar/sidebar.marko";
+import SidebarHeader from "@marko-ui/registry/ui/sidebar/header.marko";
+import SidebarContent from "@marko-ui/registry/ui/sidebar/content.marko";
+import SidebarFooter from "@marko-ui/registry/ui/sidebar/footer.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+import DatePicker from "./date-picker.marko";
+import Calendars, { type CalendarGroup } from "./calendars.marko";
+import NavUser, { type NavUserData } from "./nav-user.marko";
+
+// NOTE: the source's right sidebar is `collapsible="none"` — a static,
+// always-visible desktop-only panel that never participates in the
+// provider's open/toggle state. Our `Sidebar` component always renders
+// with `open=true` here (no `open` input passed) so it never collapses;
+// visibility on desktop-only is handled with `hidden lg:flex` below,
+// matching the source exactly.
+
+// This is sample data.
+static const USER: NavUserData = {
+  name: "shadcn",
+  email: "m@example.com",
+  avatar: "",
+};
+
+static const CALENDARS: CalendarGroup[] = [
+  {
+    name: "My Calendars",
+    items: ["Personal", "Work", "Family"],
+  },
+  {
+    name: "Favorites",
+    items: ["Holidays", "Birthdays"],
+  },
+  {
+    name: "Other",
+    items: ["Travel", "Reminders", "Deadlines"],
+  },
+];
+
+<Sidebar open=true class="sticky top-0 hidden h-svh border-l lg:flex">
+  <@content>
+    <SidebarHeader class="h-16 border-b border-sidebar-border">
+      <NavUser user=USER/>
+    </SidebarHeader>
+    <SidebarContent>
+      <DatePicker/>
+      <Separator class="mx-0"/>
+      <Calendars calendars=CALENDARS/>
+    </SidebarContent>
+    <SidebarFooter>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M5 12h14"/>
+              <path d="M12 5v14"/>
+            </svg>
+            <span>New Calendar</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarFooter>
+  </@content>
+</Sidebar>

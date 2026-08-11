@@ -1,0 +1,247 @@
+// CLI — a full rewrite of shadcn's content/docs/(root)/cli.mdx. marko-ui does
+// not ship a CLI of its own; it publishes a shadcn-format registry that the
+// official `shadcn` CLI consumes. Commands are bun-only per project convention.
+import "../../../tags/docs/docs-article.marko";
+import "../../../tags/docs/code-block.marko";
+
+static const TOC = [
+  { id: "no-cli", label: "There Is No marko-ui CLI" },
+  { id: "init", label: "init" },
+  { id: "add", label: "add" },
+  { id: "view-diff", label: "view and diff" },
+  { id: "urls", label: "Registry URLs" },
+  { id: "item-format", label: "Registry Item Format" },
+  { id: "build", label: "Building the Registry" },
+];
+
+static const INIT = `bunx shadcn@latest init https://marko-ui.saulo.tech/r/style.json`;
+
+static const ADD = `bunx shadcn@latest add https://marko-ui.saulo.tech/r/dialog.json`;
+
+static const ADD_OPTIONS = `-y, --yes          skip the confirmation prompt
+-o, --overwrite    overwrite existing files
+-c, --cwd <cwd>    working directory (defaults to the current one)
+-p, --path <path>  where to write the component
+-s, --silent       mute output
+    --dry-run      preview the changes without writing
+    --diff [path]  show a diff against what is already on disk
+    --view [path]  print the file contents without writing`;
+
+static const VIEW = `# print a component's source without installing it
+bunx shadcn@latest view https://marko-ui.saulo.tech/r/switch.json
+
+# see what an upgrade would change before taking it
+bunx shadcn@latest add --diff https://marko-ui.saulo.tech/r/switch.json`;
+
+static const OVERWRITE = `bunx shadcn@latest add --overwrite https://marko-ui.saulo.tech/r/switch.json`;
+
+static const ITEM = `{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "switch",
+  "type": "registry:ui",
+  "title": "Switch",
+  "description": "A control that allows the user to toggle between checked and not checked.",
+  "dependencies": ["@zag-js/switch", "marko-zag"],
+  "registryDependencies": ["https://marko-ui.saulo.tech/r/utils.json"],
+  "files": [
+    {
+      "path": "ui/switch/switch.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/switch/switch.marko",
+      "content": "…"
+    }
+  ]
+}`;
+
+static const BUILD = `# from the repo root
+REGISTRY_BASE_URL=https://marko-ui.saulo.tech/r \\
+  bun packages/registry/scripts/build-registry.ts`;
+
+static const REGISTRY_INDEX = `curl -s https://marko-ui.saulo.tech/r/registry.json | jq '.items[].name'`;
+
+<docs-article
+  title="CLI"
+  description="marko-ui is distributed as a shadcn-compatible registry. You install components with the official shadcn CLI, pointed at our registry URLs."
+  href="/docs/cli"
+  toc=TOC
+>
+  <h2 id="no-cli">There Is No marko-ui CLI</h2>
+
+  <p>
+    This is the one place where marko-ui deliberately does less than shadcn/ui. Rather than ship
+    and maintain our own command-line tool, we publish the registry in the
+    <a href="https://ui.shadcn.com/schema/registry.json" target="_blank" rel="noreferrer">shadcn registry format</a>
+    and let the official <code>shadcn</code> CLI do the work.
+  </p>
+
+  <p>The trick that makes this work for a non-React framework:</p>
+
+  <ul>
+    <li>
+      Every file ships as <code>"type": "registry:file"</code> with an explicit
+      <code>target</code> path, rather than as <code>registry:ui</code>. That is the non-React path
+      through the CLI, so it copies our <code>.marko</code> files verbatim instead of running
+      React-specific codemods over them.
+    </li>
+    <li>
+      Every <code>registryDependencies</code> entry is an absolute URL into our registry. A bare
+      name like <code>"utils"</code> would resolve against shadcn's own React registry and give you
+      a <code>.tsx</code> file.
+    </li>
+  </ul>
+
+  <p>
+    The consequence is that any tool speaking the shadcn registry protocol works with marko-ui —
+    the CLI, editors, and agents that already know the format.
+  </p>
+
+  <h2 id="init">init</h2>
+
+  <p>
+    <code>init</code> sets up a project: it writes <code>components.json</code>, installs the
+    <code>cn()</code> helper, and merges the theme's CSS variables into your stylesheet. Point it
+    at a theme item so it picks up our tokens rather than shadcn's defaults.
+  </p>
+
+  <code-block language="bash" code=INIT/>
+
+  <p>
+    Swap <code>style.json</code> for <code>style-zinc.json</code>, <code>style-slate.json</code>,
+    <code>style-stone.json</code>, or <code>style-gray.json</code> to start from a different base
+    color. See <a href="/docs/theming">Theming</a>.
+  </p>
+
+  <p>
+    Review the generated <code>components.json</code> afterwards — a few of its fields describe a
+    React project and need adjusting for Marko. That is covered in
+    <a href="/docs/components-json">components.json</a>.
+  </p>
+
+  <h2 id="add">add</h2>
+
+  <p>Install a component by its registry URL:</p>
+
+  <code-block language="bash" code=ADD/>
+
+  <p>The CLI then:</p>
+
+  <ol>
+    <li>Fetches the item JSON.</li>
+    <li>Follows <code>registryDependencies</code> — most components pull in <code>utils</code>.</li>
+    <li>Installs each entry in <code>dependencies</code> with your project's package manager.</li>
+    <li>Writes every file to its <code>target</code> path.</li>
+  </ol>
+
+  <p><strong>Useful options:</strong></p>
+
+  <code-block language="text" code=ADD_OPTIONS/>
+
+  <p>
+    <code>--dry-run</code> is worth reaching for the first time you install into an existing
+    project — it lists every path that would be touched without touching any of them.
+  </p>
+
+  <h2 id="view-diff">view and --diff</h2>
+
+  <p>
+    Because you own the installed files, upgrades are a merge rather than a version bump.
+    <code>view</code> is a top-level command that prints an item without writing anything;
+    <code>--diff</code> is an option on <code>add</code> that compares the registry version against
+    what is already on disk. Together they make that merge deliberate.
+  </p>
+
+  <code-block language="bash" code=VIEW/>
+
+  <p>
+    Once you have read the diff and decided you want it, re-add with <code>--overwrite</code>:
+  </p>
+
+  <code-block language="bash" code=OVERWRITE/>
+
+  <p>
+    <strong>This discards your local edits to that component.</strong> Commit first, overwrite,
+    then re-apply your changes from the diff — the same routine as any vendored dependency.
+  </p>
+
+  <h2 id="urls">Registry URLs</h2>
+
+  <p>Every item is a static JSON file under the same base URL:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>URL</th>
+        <th>What it is</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>/r/registry.json</code></td>
+        <td>The index — every item's name, type, and file list, without file contents.</td>
+      </tr>
+      <tr>
+        <td><code>/r/&lt;component&gt;.json</code></td>
+        <td>A single component, contents included. For example <code>/r/dialog.json</code>.</td>
+      </tr>
+      <tr>
+        <td><code>/r/utils.json</code></td>
+        <td>The <code>cn()</code> helper. Nearly every component depends on it.</td>
+      </tr>
+      <tr>
+        <td><code>/r/style.json</code></td>
+        <td>The theme: <code>globals.css</code> plus <code>cssVars</code> for the CLI to merge.</td>
+      </tr>
+      <tr>
+        <td><code>/r/style-&lt;color&gt;.json</code></td>
+        <td>The same theme in <code>zinc</code>, <code>slate</code>, <code>stone</code>, or <code>gray</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>To list everything available:</p>
+
+  <code-block language="bash" code=REGISTRY_INDEX/>
+
+  <h2 id="item-format">Registry Item Format</h2>
+
+  <p>A component item looks like this:</p>
+
+  <code-block language="json" filename="/r/switch.json" code=ITEM/>
+
+  <p>
+    Note <code>marko-zag</code> in <code>dependencies</code>: the build script scans each file for
+    an import of it and adds the package automatically, so a component's declared dependencies
+    cannot drift out of sync with what its source actually imports.
+  </p>
+
+  <p>
+    Theme items carry one extra field, <code>cssVars</code>, holding the parsed
+    <code>:root</code>, <code>.dark</code>, and <code>@theme inline</code> declarations. That is
+    what lets <code>init</code> merge our tokens into a stylesheet you already have instead of
+    overwriting it.
+  </p>
+
+  <h2 id="build">Building the Registry</h2>
+
+  <p>
+    If you are contributing to marko-ui, or forking it to host your own registry, the JSON is
+    generated from <code>packages/registry/default/</code> by one script:
+  </p>
+
+  <code-block language="bash" code=BUILD/>
+
+  <p>
+    It emits one item per directory under <code>default/ui/</code>, plus <code>utils</code>, the
+    five theme items, and the <code>registry.json</code> index, into
+    <code>apps/docs/public/r/</code>. <code>REGISTRY_BASE_URL</code> controls the absolute URLs
+    written into <code>registryDependencies</code>; it defaults to
+    <code>http://localhost:3000/r</code> so you can smoke-test the real CLI against a local dev
+    server.
+  </p>
+
+  <p>
+    Component metadata — title, description, and extra dependencies — comes from a
+    <code>registry.meta.json</code> file next to the component source. Component directories must
+    be flat; the build fails loudly on a nested directory rather than silently dropping files.
+  </p>
+</docs-article>

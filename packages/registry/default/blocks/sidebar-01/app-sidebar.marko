@@ -1,0 +1,98 @@
+import Sidebar from "@marko-ui/registry/ui/sidebar/sidebar.marko";
+import SidebarHeader from "@marko-ui/registry/ui/sidebar/header.marko";
+import SidebarContent from "@marko-ui/registry/ui/sidebar/content.marko";
+import SidebarGroup from "@marko-ui/registry/ui/sidebar/group.marko";
+import SidebarGroupLabel from "@marko-ui/registry/ui/sidebar/group-label.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+import VersionSwitcher from "./version-switcher.marko";
+import SearchForm from "./search-form.marko";
+
+export interface Input {
+  open?: boolean;
+}
+
+export interface NavItem {
+  title: string;
+  url: string;
+  active?: boolean;
+}
+
+export interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+
+static const VERSIONS = ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"];
+
+static const NAV_MAIN: NavGroup[] = [
+  {
+    title: "Getting Started",
+    items: [
+      { title: "Installation", url: "#" },
+      { title: "Project Structure", url: "#" },
+    ],
+  },
+  {
+    title: "Build Your Application",
+    items: [
+      { title: "Routing", url: "#" },
+      { title: "Data Fetching", url: "#", active: true },
+      { title: "Rendering", url: "#" },
+      { title: "Caching", url: "#" },
+      { title: "Styling", url: "#" },
+      { title: "Optimizing", url: "#" },
+      { title: "Configuring", url: "#" },
+      { title: "Testing", url: "#" },
+      { title: "Authentication", url: "#" },
+      { title: "Deploying", url: "#" },
+      { title: "Upgrading", url: "#" },
+      { title: "Examples", url: "#" },
+    ],
+  },
+  {
+    title: "API Reference",
+    items: [
+      { title: "Components", url: "#" },
+      { title: "File Conventions", url: "#" },
+      { title: "Functions", url: "#" },
+      { title: "marko.config.js Options", url: "#" },
+      { title: "CLI", url: "#" },
+      { title: "Edge Runtime", url: "#" },
+    ],
+  },
+  {
+    title: "Architecture",
+    items: [
+      { title: "Accessibility", url: "#" },
+      { title: "Fast Refresh", url: "#" },
+      { title: "Marko Compiler", url: "#" },
+      { title: "Supported Browsers", url: "#" },
+      { title: "Turbopack", url: "#" },
+    ],
+  },
+];
+
+<Sidebar open=input.open>
+  <@content>
+    <SidebarHeader>
+      <VersionSwitcher versions=VERSIONS defaultVersion=VERSIONS[0]/>
+      <SearchForm/>
+    </SidebarHeader>
+    <SidebarContent>
+      <for|group| of=NAV_MAIN by=(group) => group.title>
+        <SidebarGroup>
+          <SidebarGroupLabel>${group.title}</SidebarGroupLabel>
+          <SidebarMenu>
+            <for|item| of=group.items by=(item) => item.title>
+              <SidebarMenuItem>
+                <SidebarMenuButton href=item.url active=item.active>${item.title}</SidebarMenuButton>
+              </SidebarMenuItem>
+            </for>
+          </SidebarMenu>
+        </SidebarGroup>
+      </for>
+    </SidebarContent>
+  </@content>
+</Sidebar>

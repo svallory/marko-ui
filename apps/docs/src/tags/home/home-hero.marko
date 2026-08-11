@@ -1,0 +1,89 @@
+import Badge from "@marko-ui/registry/ui/badge/badge.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import { COMPONENTS } from "../../lib/components-list.ts";
+
+export interface Input {
+  announcement?: string;
+  announcementHref?: string;
+}
+
+static const HEADLINE = "The Foundation for your Marko Design System";
+static const DESCRIPTION =
+  "A set of beautifully designed components that you can customize, extend, and build on. Copy the code into your Marko 6 app, own it, and make it yours. Open Source. Open Code.";
+
+<const/announcementHref=input.announcementHref ?? "/docs/changelog"/>
+<const/announcementLabel=input.announcement ?? "shadcn for Marko — now with Zag.js machines"/>
+
+<section class="border-b border-border" data-slot="home-hero">
+  <div class="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 py-12 text-center md:py-16 lg:py-20">
+    <a href=announcementHref class="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+      <Badge variant="secondary" class="bg-muted gap-1">
+        ${announcementLabel}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="size-3"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14"/>
+          <path d="m12 5 7 7-7 7"/>
+        </svg>
+      </Badge>
+    </a>
+
+    <h1 class="leading-tighter max-w-3xl text-3xl font-semibold tracking-tight text-balance text-primary lg:leading-[1.1] xl:text-5xl xl:tracking-tighter">
+      ${HEADLINE}
+    </h1>
+
+    <p class="max-w-2xl text-base text-balance text-muted-foreground sm:text-lg">
+      ${DESCRIPTION}
+    </p>
+
+    <div class="flex w-full flex-wrap items-center justify-center gap-2 pt-2">
+      <a href="/docs">
+        <Button class="rounded-lg">
+          Get Started
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="size-4"
+            aria-hidden="true"
+          >
+            <path d="M5 12h14"/>
+            <path d="m12 5 7 7-7 7"/>
+          </svg>
+        </Button>
+      </a>
+      <a href="#components">
+        <Button variant="outline" class="rounded-lg">
+          Browse Components
+        </Button>
+      </a>
+    </div>
+
+    <dl class="mt-4 grid grid-cols-3 gap-6 text-center sm:gap-10">
+      <div>
+        <dt class="text-xs font-medium tracking-wide text-muted-foreground uppercase">Components</dt>
+        <dd class="mt-1 text-2xl font-semibold tabular-nums">${COMPONENTS.length}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium tracking-wide text-muted-foreground uppercase">Runtime</dt>
+        <dd class="mt-1 text-2xl font-semibold">Marko 6</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium tracking-wide text-muted-foreground uppercase">No-JS</dt>
+        <dd class="mt-1 text-2xl font-semibold">Works</dd>
+      </div>
+    </dl>
+  </div>
+</section>

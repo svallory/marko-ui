@@ -1,0 +1,54 @@
+import "../../tags/typeset/type-scale.marko";
+import "../../tags/typeset/typeset-specimen.marko";
+
+<main class="mx-auto max-w-4xl space-y-10 px-6 py-10 sm:px-8">
+  <div class="space-y-2">
+    <p class="text-sm font-medium text-muted-foreground">Typeset</p>
+    <h1 class="text-3xl font-bold tracking-tight">Typography for markdown you don't control</h1>
+    <p class="max-w-2xl text-muted-foreground">
+      A drop-in <code class="rounded bg-muted px-1 py-0.5 font-mono text-sm">.typeset</code> class for
+      prose you didn't author yourself — CMS fields, READMEs, streamed model output. It styles raw HTML
+      headings, lists, tables, code, and everything in between using marko-ui's own semantic tokens, so
+      it always matches your theme.
+    </p>
+  </div>
+
+  <section class="space-y-3">
+    <h2 class="text-lg font-semibold">Type scale</h2>
+    <p class="text-sm text-muted-foreground">
+      Headings scale from a 1.75em <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">h1</code>
+      down to an uppercase, letter-spaced <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">h6</code>,
+      each carrying its own line height and top margin (<code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">--typeset-flow</code>).
+    </p>
+    <type-scale/>
+  </section>
+
+  <section class="space-y-3">
+    <h2 class="text-lg font-semibold">Specimen</h2>
+    <p class="text-sm text-muted-foreground">
+      Two full documents rendered through the same stylesheet: prose, nested lists, a blockquote,
+      inline and block code, a reference table, task lists, definition lists, and footnotes.
+    </p>
+    <typeset-specimen/>
+  </section>
+
+  <section class="space-y-3 border-t border-border pt-8">
+    <h2 class="text-lg font-semibold">Usage</h2>
+    <p class="text-sm text-muted-foreground">
+      Wrap any block of untrusted or externally-authored HTML in <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">.typeset</code>.
+      Opt individual elements out with <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">.not-typeset</code>
+      or <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">data-not-typeset</code> when you need
+      a component (like a live demo) to keep its own styling instead.
+    </p>
+    <pre class="overflow-x-auto rounded-lg border border-border bg-muted/50 p-4 text-sm"><code>&lt;div class="typeset"&gt;
+  &#36;!{markdownHtml}
+&lt;/div&gt;
+
+&lt;div class="typeset"&gt;
+  &lt;p&gt;Styled by .typeset.&lt;/p&gt;
+  &lt;div class="not-typeset"&gt;
+    &lt;Button&gt;Untouched — keeps its own classes&lt;/Button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+  </section>
+</main>

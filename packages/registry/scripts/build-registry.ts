@@ -14,6 +14,7 @@ import { join, relative } from "node:path";
 const ROOT = new URL("../", import.meta.url).pathname;
 const DEFAULT_DIR = join(ROOT, "default");
 const UI_DIR = join(DEFAULT_DIR, "ui");
+const BLOCKS_DIR = join(DEFAULT_DIR, "blocks");
 const OUT_DIR = join(ROOT, "../../apps/docs/public/r");
 
 const ITEM_SCHEMA = "https://ui.shadcn.com/schema/registry-item.json";
@@ -33,6 +34,8 @@ interface Meta {
   dependencies?: string[];
   devDependencies?: string[];
   registryDependencies?: string[];
+  /** Blocks only: shadcn registry categories (e.g. ["dashboard"]). */
+  categories?: string[];
 }
 
 interface CssVars {
@@ -161,6 +164,7 @@ async function main() {
       type: item.type,
       title: item.title,
       description: item.description,
+      categories: item.categories,
       dependencies: item.dependencies,
       registryDependencies: item.registryDependencies,
       files: item.files.map(({ content: _, ...f }: any) => f),
@@ -239,6 +243,50 @@ async function main() {
       type: "registry:ui",
       title: meta.title ?? name,
       description: meta.description,
+      dependencies: dependencies.size ? [...dependencies].sort() : undefined,
+      devDependencies: meta.devDependencies,
+      registryDependencies: (meta.registryDependencies ?? ["utils"]).map(selfRef),
+      files,
+    });
+  }
+
+  // blocks — whole-page compositions built from the ui items above. Unlike
+  // components (which land in ~/src/components/ui/<name>), a block's page.marko
+  // is a *route*, so it targets the consumer's routes directory the way
+  // shadcn targets `app/<name>/page.tsx`. Supporting parts sit beside it.
+  const blocks = await readdir(BLOCKS_DIR, { withFileTypes: true })
+    .then((entries) => entries.filter((e) => e.isDirectory()).map((e) => e.name).sort())
+    .catch(() => [] as string[]);
+
+  for (const name of blocks) {
+    const dir = join(BLOCKS_DIR, name);
+    const meta = await readMeta(dir);
+    const files = (await fileEntries(dir, `~/src/routes/${name}`, `blocks/${name}`)).map((file) => ({
+      ...file,
+      // In this monorepo a block imports its components through the workspace
+      // package (`@marko-ui/registry/ui/card/card.marko`) so the docs app can
+      // render it straight from source. A consumer has no such package: the
+      // CLI drops components in ~/src/components/ui/ and this block in
+      // ~/src/routes/<name>/, so rewrite to the relative path that resolves
+      // there. Keep both layouts working from one source file.
+      content: file.content
+        .replace(/@marko-ui\/registry\/ui\//g, "../../components/ui/")
+        .replace(/@marko-ui\/registry\/lib\//g, "../../lib/"),
+      target: file.path.endsWith("/page.marko")
+        ? `~/src/routes/${name}/+page.marko`
+        : file.target,
+    }));
+    const dependencies = new Set(meta.dependencies ?? []);
+    if (files.some((f) => f.content.includes('from "marko-zag"'))) {
+      dependencies.add("marko-zag");
+    }
+    await write({
+      $schema: ITEM_SCHEMA,
+      name,
+      type: "registry:block",
+      title: meta.title ?? name,
+      description: meta.description,
+      categories: meta.categories,
       dependencies: dependencies.size ? [...dependencies].sort() : undefined,
       devDependencies: meta.devDependencies,
       registryDependencies: (meta.registryDependencies ?? ["utils"]).map(selfRef),

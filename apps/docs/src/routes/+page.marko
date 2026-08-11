@@ -1,72 +1,10 @@
-// Component index — regenerated centrally after each phase.
-static const BEYOND_SHADCN = [
-  "angle-slider", "cascade-select", "color-picker", "date-input", "editable",
-  "floating-panel", "image-cropper", "listbox", "marquee", "number-input",
-  "password-input", "qr-code", "rating-group", "signature-pad", "steps",
-  "tags-input", "timer", "toc", "tour",
-];
+// Home page. Structure adapted from shadcn/ui `app/(app)/(root)/page.tsx`
+// (MIT): page header + a dense showcase grid of demo cards. The cards are
+// rebuilt on marko-ui's own registry components.
+import "../tags/home/home-hero.marko";
+import "../tags/home/home-showcase.marko";
 
-static const COMPONENTS = [
-  "accordion", "alert", "alert-dialog", "angle-slider", "aspect-ratio", "avatar", "badge",
-  "breadcrumb", "button", "button-group", "calendar", "card", "carousel",
-  "cascade-select", "checkbox", "clipboard", "collapsible", "color-picker", "combobox",
-  "command", "context-menu", "data-table", "date-input", "date-picker", "dialog",
-  "drawer", "dropdown-menu", "editable", "empty", "file-upload", "floating-panel",
-  "form", "hover-card", "image-cropper", "input", "input-group", "input-otp",
-  "item", "kbd", "label", "listbox", "marquee", "menubar", "navigation-menu",
-  "number-input", "pagination", "password-input", "popover", "progress", "qr-code",
-  "radio-group", "rating-group", "resizable", "scroll-area", "select", "separator",
-  "sheet", "sidebar", "signature-pad", "skeleton", "slider", "spinner", "steps",
-  "switch", "table", "tabs", "tags-input", "textarea", "timer", "toast", "toc",
-  "toggle", "toggle-group", "tooltip", "tour", "tree-view",
-];
-
-static const beyondShadcnSet = new Set(BEYOND_SHADCN);
-
-<main class="mx-auto max-w-3xl space-y-8 p-8">
-  <div>
-    <h1 class="text-3xl font-bold">marko-ui</h1>
-    <p class="mt-2 text-muted-foreground">
-      shadcn for Marko — copy-paste components for Marko 6, powered by Zag.js
-      state machines. ${COMPONENTS.length} components, correct before
-      JavaScript arrives.
-    </p>
-  </div>
-
-  <section class="space-y-2 rounded-lg border bg-muted/30 p-4">
-    <h2 class="text-lg font-semibold">Beyond shadcn</h2>
-    <p class="text-sm text-muted-foreground">
-      ${BEYOND_SHADCN.length} components shadcn doesn't have — full Zag.js
-      machine coverage, from a color picker and product tours to draggable
-      floating panels and signature pads.
-    </p>
-    <ul class="grid grid-cols-2 gap-1 sm:grid-cols-3">
-      <for|name| of=BEYOND_SHADCN>
-        <li><a class="text-sm font-medium hover:underline" href=`/components/${name}`>${name}</a></li>
-      </for>
-    </ul>
-  </section>
-
-  <section class="space-y-2">
-    <h2 class="text-lg font-semibold">All components</h2>
-    <ul id="component-list" class="grid grid-cols-2 gap-1 sm:grid-cols-3">
-      <for|name| of=COMPONENTS>
-        <li>
-          <a class="text-sm hover:underline" href=`/components/${name}`>
-            ${name}<if=beyondShadcnSet.has(name)><span class="text-muted-foreground" title="Beyond shadcn">*</span></if>
-          </a>
-        </li>
-      </for>
-    </ul>
-  </section>
-
-  <section class="space-y-2">
-    <h2 class="text-lg font-semibold">Internal</h2>
-    <ul>
-      <li><a class="text-sm text-muted-foreground hover:underline" href="/docs/creating-components">How to Create a Marko-Zag Component</a></li>
-      <li><a class="text-sm text-muted-foreground hover:underline" href="/docs/zag-adapter">Zag.js Framework Adapter Anatomy</a></li>
-      <li><a class="text-sm text-muted-foreground hover:underline" href="/compound-spike">Compound-tag API spike (experimental)</a></li>
-      <li><a class="text-sm text-muted-foreground hover:underline" href="/spike">M0 spike page</a></li>
-    </ul>
-  </section>
+<main class="flex flex-1 flex-col">
+  <home-hero/>
+  <home-showcase/>
 </main>

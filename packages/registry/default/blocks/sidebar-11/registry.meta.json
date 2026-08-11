@@ -1,0 +1,7 @@
+{
+  "title": "Sidebar 11",
+  "description": "A sidebar with a recursive file tree and a list of changed files, each with a status badge.",
+  "categories": ["sidebar", "dashboard"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "sidebar", "separator", "breadcrumb", "collapsible"]
+}

@@ -1,0 +1,236 @@
+// Installation — structurally follows shadcn's content/docs/installation/*.mdx
+// (create project → deps → Tailwind → path aliases → add a component), but the
+// steps are the real @marko/run + Vite + shadcn-CLI steps for marko-ui.
+import "../../../tags/docs/docs-article.marko";
+import "../../../tags/docs/code-block.marko";
+
+static const TOC = [
+  { id: "marko-run", label: "@marko/run" },
+  { id: "vite", label: "Vite" },
+  { id: "add-components", label: "Adding Components" },
+  { id: "manual", label: "Manual Installation" },
+  { id: "troubleshooting", label: "Troubleshooting" },
+];
+
+static const CREATE_APP = `bun create marko my-app
+cd my-app
+bun install`;
+
+static const RUN_DEPS = `bun add -d tailwindcss @tailwindcss/vite`;
+
+static const RUN_VITE_CONFIG = `import { defineConfig } from "vite";
+import marko from "@marko/run/vite";
+import tailwindcss from "@tailwindcss/vite";
+
+export default defineConfig({
+  plugins: [tailwindcss(), marko()],
+});`;
+
+static const RUN_CSS = `@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Tailwind v4 scans the files you point it at. Marko templates are not
+   picked up by the default content detection, so list them explicitly. */
+@source "../**/*.marko";`;
+
+static const RUN_LAYOUT = `import "../styles/globals.css";
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>my-app</title>
+  </head>
+  <body>
+    <\${input.content}/>
+  </body>
+</html>`;
+
+static const INIT_COMMAND = `bunx shadcn@latest init https://marko-ui.saulo.tech/r/style.json`;
+
+static const ADD_COMMAND = `bunx shadcn@latest add https://marko-ui.saulo.tech/r/button.json`;
+
+static const ADD_MANY = `bunx shadcn@latest add \\
+  https://marko-ui.saulo.tech/r/dialog.json \\
+  https://marko-ui.saulo.tech/r/select.json \\
+  https://marko-ui.saulo.tech/r/toast.json`;
+
+static const VITE_STRUCTURE = `src/
+├── components/
+│   └── ui/
+│       └── button/
+│           ├── button.marko
+│           └── variants.ts
+├── lib/
+│   └── utils.ts
+├── styles/
+│   └── globals.css
+└── routes/
+    ├── +layout.marko
+    └── +page.marko`;
+
+static const MANUAL_UTILS = `import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}`;
+
+static const MANUAL_DEPS = `bun add clsx tailwind-merge class-variance-authority marko-zag`;
+
+// Components whose name collides with a native HTML tag (button, dialog,
+// select, label…) must be imported under a capitalized local name.
+static const USE_BUTTON = `import Button from "../components/ui/button/button.marko";
+
+<Button variant="outline">Click me</Button>`;
+
+<docs-article
+  title="Installation"
+  description="Set up marko-ui in a @marko/run or Vite project, then install components from the registry with the shadcn CLI."
+  href="/docs/installation"
+  toc=TOC
+>
+  <p>
+    marko-ui needs three things in your project: <strong>Marko 6</strong>,
+    <strong>Tailwind v4</strong>, and the <code>cn()</code> helper the components import. The
+    registry ships the theme CSS and the helper as installable items, so the CLI can set both up
+    for you.
+  </p>
+
+  <h2 id="marko-run">@marko/run</h2>
+
+  <p>
+    <a href="https://github.com/marko-js/run" target="_blank" rel="noreferrer">@marko/run</a> is the
+    file-based router for Marko 6 and the setup this site itself uses. Start from a fresh app:
+  </p>
+
+  <code-block language="bash" code=CREATE_APP/>
+
+  <h3>1. Install Tailwind v4</h3>
+
+  <code-block language="bash" code=RUN_DEPS/>
+
+  <p>Add the Tailwind plugin to your Vite config, before the Marko plugin:</p>
+
+  <code-block language="ts" filename="vite.config.ts" code=RUN_VITE_CONFIG/>
+
+  <h3>2. Create your stylesheet</h3>
+
+  <p>
+    Create <code>src/styles/globals.css</code>. The <code>@source</code> directive is the part
+    people miss: Tailwind v4's automatic content detection does not know about
+    <code>.marko</code> files, so classes used in your templates get stripped from the build
+    unless you point at them.
+  </p>
+
+  <code-block language="css" filename="src/styles/globals.css" code=RUN_CSS/>
+
+  <h3>3. Import it from your root layout</h3>
+
+  <code-block language="marko" filename="src/routes/+layout.marko" code=RUN_LAYOUT/>
+
+  <h3>4. Initialize the registry</h3>
+
+  <p>
+    Point the shadcn CLI at the marko-ui theme item. This writes a
+    <code>components.json</code>, merges the theme tokens into your
+    <code>globals.css</code>, and installs the <code>cn()</code> helper.
+  </p>
+
+  <code-block language="bash" code=INIT_COMMAND/>
+
+  <p>
+    Prefer a different base color? Use <code>style-zinc</code>, <code>style-slate</code>,
+    <code>style-stone</code>, or <code>style-gray</code> in place of <code>style</code>. See
+    <a href="/docs/theming">Theming</a> for what each one changes.
+  </p>
+
+  <h2 id="vite">Vite</h2>
+
+  <p>
+    For a plain Vite + Marko 6 project without the router, the steps are identical except that you
+    import <code>globals.css</code> from your entry module instead of a route layout, and you use
+    <code>@marko/vite</code> rather than <code>@marko/run/vite</code>. The registry does not care
+    which one you picked — it only writes files.
+  </p>
+
+  <p>Either way, you end up with this shape:</p>
+
+  <code-block language="text" code=VITE_STRUCTURE/>
+
+  <h2 id="add-components">Adding Components</h2>
+
+  <p>Install any component by its registry URL:</p>
+
+  <code-block language="bash" code=ADD_COMMAND/>
+
+  <p>Several at once:</p>
+
+  <code-block language="bash" code=ADD_MANY/>
+
+  <p>
+    The CLI resolves each item's <code>registryDependencies</code> — most components depend on
+    <code>utils</code> — installs the <code>@zag-js/*</code> packages that component needs, and
+    writes the <code>.marko</code> files under <code>src/components/ui/&lt;name&gt;/</code>.
+  </p>
+
+  <p>Then import the tag by path and use it:</p>
+
+  <code-block language="marko" code=USE_BUTTON/>
+
+  <p>
+    Every component's page in the <a href="/components/button">Components</a> section shows the
+    exact install command and a live demo.
+  </p>
+
+  <h2 id="manual">Manual Installation</h2>
+
+  <p>
+    If you would rather not run the CLI, the registry JSON is just files with target paths — you
+    can copy them by hand.
+  </p>
+
+  <ol>
+    <li>Install the runtime dependencies.</li>
+    <li>Add the <code>cn()</code> helper.</li>
+    <li>Copy the theme tokens into your <code>globals.css</code>.</li>
+    <li>Copy the component directory you want.</li>
+  </ol>
+
+  <code-block language="bash" code=MANUAL_DEPS/>
+
+  <code-block language="ts" filename="src/lib/utils.ts" code=MANUAL_UTILS/>
+
+  <p>
+    For the theme tokens, open
+    <a href="https://marko-ui.saulo.tech/r/style.json" target="_blank" rel="noreferrer">/r/style.json</a>
+    and copy the contents of its single file into your stylesheet. For a component, open
+    <code>/r/&lt;name&gt;.json</code>, and write each entry in <code>files</code> to the path in its
+    <code>target</code> field. Install anything listed in <code>dependencies</code> with
+    <code>bun add</code>.
+  </p>
+
+  <h2 id="troubleshooting">Troubleshooting</h2>
+
+  <h3>Components render unstyled</h3>
+  <p>
+    Almost always a missing <code>@source</code> directive. Tailwind v4 has to be told where your
+    <code>.marko</code> files live, and it needs a second directive if your components were
+    installed outside the directory the first one covers.
+  </p>
+
+  <h3>"Cannot find module" for a @zag-js package</h3>
+  <p>
+    The CLI installs a component's declared dependencies, but if you copied files manually you have
+    to install them yourself. The list is in the component's registry JSON under
+    <code>dependencies</code>.
+  </p>
+
+  <h3>Serialization errors on interaction</h3>
+  <p>
+    A Zag service or API object escaped into reactive state. This is a component-authoring mistake
+    rather than an installation problem — see <a href="/docs/creating-components">Creating Components</a>
+    for the rule and the fix.
+  </p>
+</docs-article>

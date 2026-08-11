@@ -1,0 +1,68 @@
+// Adapted from shadcn/ui `app/(app)/(root)/cards/ui-elements.tsx` (MIT),
+// rebuilt on marko-ui's own registry components.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Badge from "@marko-ui/registry/ui/badge/badge.marko";
+import Input from "@marko-ui/registry/ui/input/input.marko";
+import Textarea from "@marko-ui/registry/ui/textarea/textarea.marko";
+import Checkbox from "@marko-ui/registry/ui/checkbox/checkbox.marko";
+import Switch from "@marko-ui/registry/ui/switch/switch.marko";
+import Dialog from "@marko-ui/registry/ui/dialog/dialog.marko";
+
+<Card class="w-full">
+  <CardContent class="flex flex-col gap-6">
+    <div class="flex flex-wrap gap-2">
+      <Button size="sm">
+        Button
+        <svg
+          class="size-3.5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14"/>
+          <path d="m12 5 7 7-7 7"/>
+        </svg>
+      </Button>
+      <Button size="sm" variant="secondary">Secondary</Button>
+      <Button size="sm" variant="outline">Outline</Button>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <Input placeholder="Name" aria-label="Name"/>
+      <Textarea placeholder="Message" class="min-h-16 resize-none" aria-label="Message"/>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <Badge>Badge</Badge>
+      <Badge variant="secondary">Secondary</Badge>
+      <Badge variant="outline">Outline</Badge>
+      <div class="ml-auto flex items-center gap-3">
+        <Checkbox defaultChecked aria-label="Enable email alerts"/>
+        <Switch defaultChecked aria-label="Enable compact notifications"/>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <Dialog>
+        <@trigger|triggerProps|>
+          <Button ...triggerProps size="sm" variant="outline">Dialog</Button>
+        </@trigger>
+        <@title>Allow accessory to connect?</@title>
+        <@description>
+          Do you want to allow the USB accessory to connect to this device and
+          your data?
+        </@description>
+        <@footer>
+          <Button size="sm" variant="outline">Don't allow</Button>
+          <Button size="sm">Allow</Button>
+        </@footer>
+      </Dialog>
+    </div>
+  </CardContent>
+</Card>

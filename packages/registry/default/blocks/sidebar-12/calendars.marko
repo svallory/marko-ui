@@ -1,0 +1,80 @@
+import Collapsible from "@marko-ui/registry/ui/collapsible/collapsible.marko";
+import SidebarGroup from "@marko-ui/registry/ui/sidebar/group.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+
+export interface CalendarGroup {
+  name: string;
+  items: string[];
+}
+
+export interface Input {
+  calendars: CalendarGroup[];
+}
+
+<for|calendar, groupIndex| of=input.calendars by=(entry) => entry.name>
+  <SidebarGroup class="py-0">
+    <Collapsible defaultOpen=(groupIndex === 0) class="group/collapsible">
+      <@trigger|triggerProps|>
+        // No SidebarGroupLabel `asChild` equivalent — our group-label.marko
+        // is a fixed <div>, so the collapsible trigger button is composed
+        // here directly, matching group-label.marko's own classes.
+        <button
+          ...triggerProps
+          type="button"
+          data-slot="sidebar-group-label"
+          class="group/label flex h-8 w-full shrink-0 items-center rounded-md px-2 text-sm text-sidebar-foreground outline-none hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        >
+          ${calendar.name}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90"
+          >
+            <path d="m9 18 6-6-6-6"/>
+          </svg>
+        </button>
+      </@trigger>
+      <@content>
+        <SidebarMenu>
+          <for|item, itemIndex| of=calendar.items by=(_item, index) => index>
+            <SidebarMenuItem>
+              <SidebarMenuButton>
+                <div
+                  data-active=(itemIndex < 2)
+                  class="group/calendar-item flex aspect-square size-4 shrink-0 items-center justify-center rounded-sm border border-sidebar-border text-sidebar-primary-foreground data-[active=true]:border-sidebar-primary data-[active=true]:bg-sidebar-primary"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="hidden size-3 group-data-[active=true]/calendar-item:block"
+                  >
+                    <path d="M20 6 9 17l-5-5"/>
+                  </svg>
+                </div>
+                ${item}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </for>
+        </SidebarMenu>
+      </@content>
+    </Collapsible>
+  </SidebarGroup>
+  <Separator class="mx-0"/>
+</for>

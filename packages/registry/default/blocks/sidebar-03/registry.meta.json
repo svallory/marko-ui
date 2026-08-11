@@ -1,0 +1,7 @@
+{
+  "title": "Sidebar 03",
+  "description": "A sidebar with submenus and breadcrumb navigation.",
+  "categories": ["sidebar"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "sidebar", "separator", "breadcrumb"]
+}

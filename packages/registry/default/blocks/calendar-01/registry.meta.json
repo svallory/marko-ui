@@ -1,0 +1,7 @@
+{
+  "title": "Calendar 01",
+  "description": "An appointment booking card pairing an inline calendar with selectable time slots.",
+  "categories": ["calendar"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "calendar", "card", "button", "separator"]
+}

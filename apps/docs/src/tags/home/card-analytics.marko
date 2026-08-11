@@ -1,0 +1,42 @@
+// Adapted from shadcn/ui `app/(app)/(root)/cards/analytics-card.tsx` (MIT).
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardAction from "@marko-ui/registry/ui/card/action.marko";
+import Badge from "@marko-ui/registry/ui/badge/badge.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+static const AREA_PATH = "M0 52L18 40L36 46L54 70L72 50L100 49V86H0Z";
+static const STROKE_PATH = "M0 52L18 40L36 46L54 70L72 50L100 49";
+
+// overflow-hidden so the full-bleed sparkline is clipped by the card's
+// rounded bottom corners instead of spilling past them.
+<Card class="w-full gap-4 overflow-hidden pb-0">
+  <CardHeader>
+    <CardTitle>Analytics</CardTitle>
+    <CardDescription class="flex items-center gap-2">
+      418.2K Visitors
+      <Badge>+10%</Badge>
+    </CardDescription>
+    <CardAction>
+      <Button variant="outline" size="sm">View</Button>
+    </CardAction>
+  </CardHeader>
+  <svg
+    viewBox="0 0 100 86"
+    preserveAspectRatio="none"
+    class="aspect-[1/0.35] w-full text-chart-1"
+    role="img"
+    aria-label="Visitor trend"
+  >
+    <path d=AREA_PATH fill="currentColor" opacity="0.28"/>
+    <path
+      d=STROKE_PATH
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      vector-effect="non-scaling-stroke"
+    />
+  </svg>
+</Card>

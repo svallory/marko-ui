@@ -1,0 +1,56 @@
+// Adapted from shadcn/ui `app/(app)/(root)/cards/notification-settings.tsx` (MIT),
+// rebuilt on marko-ui's own registry components.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Checkbox from "@marko-ui/registry/ui/checkbox/checkbox.marko";
+import Label from "@marko-ui/registry/ui/label/label.marko";
+
+static const NOTIFICATIONS = [
+  {
+    id: "releases",
+    label: "New releases",
+    description: "Components added to the registry.",
+    defaultChecked: true,
+  },
+  {
+    id: "breaking",
+    label: "Breaking changes",
+    description: "API changes that need a migration.",
+    defaultChecked: true,
+  },
+  {
+    id: "digest",
+    label: "Weekly digest",
+    description: "A summary of everything that shipped.",
+    defaultChecked: false,
+  },
+];
+
+<Card class="w-full">
+  <CardHeader>
+    <CardTitle>Notifications</CardTitle>
+    <CardDescription>Choose which updates you want to receive.</CardDescription>
+  </CardHeader>
+  <CardContent class="flex flex-col gap-4">
+    <for|notification| of=NOTIFICATIONS by=(notification) => notification.id>
+      <div class="flex items-start gap-3">
+        <Checkbox
+          id=`notify-${notification.id}`
+          defaultChecked=notification.defaultChecked
+        />
+        <div class="grid gap-1 leading-none">
+          <Label for=`notify-${notification.id}`>${notification.label}</Label>
+          <p class="text-muted-foreground text-sm">${notification.description}</p>
+        </div>
+      </div>
+    </for>
+  </CardContent>
+  <CardFooter>
+    <Button class="w-full" size="sm">Save preferences</Button>
+  </CardFooter>
+</Card>

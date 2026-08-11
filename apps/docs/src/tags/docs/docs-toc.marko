@@ -1,0 +1,98 @@
+// Right-hand "On This Page" table of contents. Headings are supplied by the
+// page as data (no MDX AST to walk), and the active entry is tracked in the
+// browser with an IntersectionObserver.
+export interface DocsTocEntry {
+  id: string;
+  label: string;
+  level?: number;
+}
+
+export interface Input {
+  entries?: DocsTocEntry[];
+  class?: string;
+}
+
+// Level 3 headings sit one step further in than level 2.
+static function indentClass(level: number) {
+  return level < 3 ? "pl-4" : "pl-7";
+}
+
+<if=(input.entries && input.entries.length !== 0)>
+  <nav/tocEl
+    class=`text-sm ${input.class ?? ""}`
+    data-slot="docs-toc"
+    aria-label="On this page"
+  >
+    <div class="mb-3 font-medium text-foreground">On This Page</div>
+    <ul class="flex flex-col gap-2 border-l border-border">
+      <for|entry| of=input.entries by=(entry)=>entry.id>
+        <li>
+          <a
+            href=`#${entry.id}`
+            data-toc-link
+            data-target=entry.id
+            class=`-ml-px block border-l border-transparent text-muted-foreground transition-colors hover:text-foreground data-active:border-foreground data-active:text-foreground ${indentClass(entry.level ?? 2)}`
+          >
+            ${entry.label}
+          </a>
+        </li>
+      </for>
+    </ul>
+  </nav>
+
+  <let/observer=null/>
+  <let/onScroll=null/>
+  <lifecycle
+    onMount() {
+      const tocLinks = Array.from(tocEl()?.querySelectorAll("[data-toc-link]") ?? []);
+      if (tocLinks.length === 0) return;
+
+      const headings = tocLinks
+        .map((link) => document.getElementById(link.getAttribute("data-target")))
+        .filter(Boolean);
+
+      const setActive = (id) => {
+        tocLinks.forEach((link) => {
+          link.toggleAttribute("data-active", link.getAttribute("data-target") === id);
+        });
+      };
+
+      const visible = new Set();
+      observer = new IntersectionObserver(
+        (records) => {
+          records.forEach((record) => {
+            if (record.isIntersecting) visible.add(record.target.id);
+            else visible.delete(record.target.id);
+          });
+          const firstVisible = headings.find((heading) => visible.has(heading.id));
+          if (firstVisible) setActive(firstVisible.id);
+        },
+        { rootMargin: "-80px 0px -70% 0px", threshold: 0 },
+      );
+
+      headings.forEach((heading) => observer.observe(heading));
+      setActive(headings[0]?.id);
+
+      // The observer's bottom rootMargin means the final short section can
+      // never be pushed into the detection band — the page runs out of scroll
+      // first. At the bottom of the page, activate the last heading directly.
+      const atBottomOfPage = () => {
+        const remaining =
+          document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
+        return remaining < 4;
+      };
+
+      onScroll = () => {
+        if (atBottomOfPage()) {
+          const lastHeading = headings[headings.length - 1];
+          if (lastHeading) setActive(lastHeading.id);
+        }
+      };
+      window.addEventListener("scroll", onScroll, { passive: true });
+    }
+    onDestroy() {
+      observer?.disconnect();
+      if (onScroll) window.removeEventListener("scroll", onScroll);
+    }
+  />
+</if>

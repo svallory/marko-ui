@@ -1,0 +1,48 @@
+// Static code block with a copy button. Replaces shadcn's rehype-highlighted
+// MDX <pre> — no syntax highlighting pipeline here, just the chrome.
+export interface Input {
+  code: string;
+  language?: string;
+  filename?: string;
+  class?: string;
+}
+
+<id/blockId/>
+
+<div/blockEl class=`group relative my-4 overflow-hidden rounded-lg border border-border bg-muted/40 ${input.class ?? ""}` data-slot="code-block">
+  <if=input.filename>
+    <div class="flex items-center justify-between border-b border-border px-4 py-2 text-xs font-medium text-muted-foreground">
+      <span>${input.filename}</span>
+      <if=input.language>
+        <span class="uppercase tracking-wide opacity-70">${input.language}</span>
+      </if>
+    </div>
+  </if>
+  <pre class="overflow-x-auto p-4 text-[0.8125rem] leading-6"><code id=blockId class="font-mono">${input.code}</code></pre>
+  <button
+    type="button"
+    data-copy-code
+    data-source=blockId
+    aria-label="Copy code"
+    class="absolute right-2 top-2 inline-flex h-7 items-center rounded-md border border-border bg-background px-2 text-xs font-medium text-muted-foreground opacity-0 transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
+  >
+    Copy
+  </button>
+</div>
+
+<lifecycle
+  onMount() {
+    const button = blockEl()?.querySelector("[data-copy-code]");
+    if (!button) return;
+    button.addEventListener("click", () => {
+      const source = document.getElementById(button.getAttribute("data-source"));
+      if (!source) return;
+      navigator.clipboard.writeText(source.textContent ?? "").then(() => {
+        button.textContent = "Copied";
+        setTimeout(() => {
+          button.textContent = "Copy";
+        }, 1500);
+      });
+    });
+  }
+/>

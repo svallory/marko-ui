@@ -1,0 +1,11 @@
+import "../../../tags/blocks/blocks-gallery.marko";
+import { BLOCK_CATEGORIES } from "../../../lib/blocks-list.ts";
+
+// Route params live on the marko-run context ($global), not on `input`.
+// Unknown slugs fall back to the featured view rather than 404.
+<const/requestedSlug=$global.params.category/>
+<const/slug=BLOCK_CATEGORIES.some((category) => category.slug === requestedSlug)
+  ? requestedSlug
+  : ""/>
+
+<blocks-gallery categorySlug=slug/>

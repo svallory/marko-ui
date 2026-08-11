@@ -1,0 +1,16 @@
+{
+  "title": "Sidebar 12",
+  "description": "A sidebar with a calendar and a list of favorite calendars.",
+  "categories": ["sidebar", "dashboard"],
+  "dependencies": [],
+  "registryDependencies": [
+    "utils",
+    "sidebar",
+    "separator",
+    "breadcrumb",
+    "calendar",
+    "collapsible",
+    "avatar",
+    "dropdown-menu"
+  ]
+}

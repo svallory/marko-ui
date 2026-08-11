@@ -1,0 +1,35 @@
+static const SCALE = [
+  { tag: "h1", label: "Heading 1", size: "1.75em", leading: "1.3" },
+  { tag: "h2", label: "Heading 2", size: "1.25em", leading: "1.4" },
+  { tag: "h3", label: "Heading 3", size: "1.125em", leading: "1.45" },
+  { tag: "h4", label: "Heading 4", size: "1em", leading: "1.5" },
+  { tag: "h5", label: "Heading 5", size: "0.875em", leading: "1.5" },
+  { tag: "h6", label: "Heading 6", size: "0.8125em", leading: "1.5" },
+];
+
+<div class="not-typeset overflow-x-auto rounded-lg border border-border">
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="border-b border-border bg-muted/40">
+        <th class="px-4 py-2 text-left font-medium text-muted-foreground">Element</th>
+        <th class="px-4 py-2 text-left font-medium text-muted-foreground">Size</th>
+        <th class="px-4 py-2 text-left font-medium text-muted-foreground">Line height</th>
+        <th class="px-4 py-2 text-left font-medium text-muted-foreground">Sample</th>
+      </tr>
+    </thead>
+    <tbody>
+      <for|row| of=SCALE by=(row)=>row.tag>
+        <tr class="border-b border-border last:border-b-0">
+          <td class="px-4 py-3 align-middle font-mono text-xs text-muted-foreground">${row.tag}</td>
+          <td class="px-4 py-3 align-middle font-mono text-xs text-muted-foreground">${row.size}</td>
+          <td class="px-4 py-3 align-middle font-mono text-xs text-muted-foreground">${row.leading}</td>
+          <td class="px-4 py-3 align-middle">
+            <span class=`font-semibold text-foreground` style=`font-size: ${row.size}; line-height: ${row.leading};`>
+              The quick brown fox
+            </span>
+          </td>
+        </tr>
+      </for>
+    </tbody>
+  </table>
+</div>

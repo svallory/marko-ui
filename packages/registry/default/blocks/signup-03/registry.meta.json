@@ -1,0 +1,7 @@
+{
+  "title": "Signup 03",
+  "description": "A signup form with name, email, and password fields on a centered card.",
+  "categories": ["authentication", "signup"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "button", "card", "input", "label"]
+}

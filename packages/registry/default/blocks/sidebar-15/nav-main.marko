@@ -1,0 +1,52 @@
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+
+export interface NavMainItem {
+  id: string;
+  title: string;
+  url: string;
+  /** SVG path `d` attribute(s) for a 24x24 lucide-style icon, rendered inline. */
+  icon: string;
+  isActive?: boolean;
+  badge?: string;
+}
+
+export interface Input {
+  items: NavMainItem[];
+}
+
+// NOTE: our SidebarMenuButton has no SidebarMenuBadge sibling slot, so an
+// item's badge count is rendered as a plain trailing <span> here instead
+// of a dedicated badge sub-component. Deviation from the source, noted
+// per block-porting rules.
+
+<SidebarMenu>
+  <for|item| of=input.items by=(entry) => entry.id>
+    <SidebarMenuItem>
+      <SidebarMenuButton href=item.url active=item.isActive>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d=item.icon/>
+        </svg>
+        <span>${item.title}</span>
+      </SidebarMenuButton>
+      <if=item.badge>
+        <span
+          class="pointer-events-none absolute right-1 top-1.5 flex h-5 min-w-5 select-none items-center justify-center rounded-md px-1 text-xs font-medium tabular-nums text-sidebar-foreground"
+        >
+          ${item.badge}
+        </span>
+      </if>
+    </SidebarMenuItem>
+  </for>
+</SidebarMenu>

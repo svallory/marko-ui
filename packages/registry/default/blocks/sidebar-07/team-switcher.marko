@@ -1,0 +1,92 @@
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+import DropdownMenu from "@marko-ui/registry/ui/dropdown-menu/dropdown-menu.marko";
+
+export interface Team {
+  id: string;
+  name: string;
+  plan: string;
+  /** SVG path `d` attribute(s) for a 24x24 lucide-style icon, rendered inline. */
+  logo: string;
+}
+
+export interface Input {
+  teams: Team[];
+}
+
+// NOTE: our DropdownMenu items are a flat data list (type: item | separator
+// | label) with a single `label` string, so the source's per-team logo
+// icon inside each menu row and the ⌘N keyboard-shortcut hint have no
+// equivalent slot to render into. Both are dropped here; a faithful port
+// would need a DropdownMenu item-body slot, which our primitive does not
+// expose. Deviation from the source, noted per block-porting rules.
+
+<let/activeTeamId=input.teams[0]?.id/>
+<const/activeTeam=input.teams.find((team) => team.id === activeTeamId) ?? input.teams[0]/>
+
+<const/menuItems=[
+  { type: "label" as const, label: "Teams" },
+  ...input.teams.map((team) => ({ type: "item" as const, value: team.id, label: team.name })),
+  { type: "separator" as const },
+  { type: "item" as const, value: "add-team", label: "Add team" },
+]/>
+
+<if=activeTeam>
+  <SidebarMenu>
+    <SidebarMenuItem>
+      <DropdownMenu
+        items=menuItems
+        class="w-56 rounded-lg"
+        select(value: string) {
+          if (value !== "add-team") activeTeamId = value;
+        }
+      >
+        <@trigger|attrs|>
+          <SidebarMenuButton
+            ...attrs
+            class="h-12 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          >
+            <div
+              class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="size-4"
+              >
+                <path d=activeTeam.logo/>
+              </svg>
+            </div>
+            <div class="grid flex-1 text-left text-sm leading-tight">
+              <span class="truncate font-medium">${activeTeam.name}</span>
+              <span class="truncate text-xs">${activeTeam.plan}</span>
+            </div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="ml-auto"
+            >
+              <path d="m7 15 5 5 5-5"/>
+              <path d="m7 9 5-5 5 5"/>
+            </svg>
+          </SidebarMenuButton>
+        </@trigger>
+      </DropdownMenu>
+    </SidebarMenuItem>
+  </SidebarMenu>
+</if>

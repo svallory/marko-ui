@@ -1,0 +1,7 @@
+{
+  "title": "Login 02",
+  "description": "A two-column login page with a form on one side and an image on the other.",
+  "categories": ["authentication", "login"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "button", "input", "label", "separator", "form"]
+}

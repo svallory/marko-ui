@@ -1,0 +1,7 @@
+{
+  "title": "Sidebar 09",
+  "description": "A collapsible sidebar with a two-panel layout: an icon rail for primary navigation and a secondary list panel, plus a user menu in the footer.",
+  "categories": ["sidebar"],
+  "dependencies": [],
+  "registryDependencies": ["utils", "sidebar", "separator", "breadcrumb", "label", "switch", "input", "avatar", "dropdown-menu"]
+}

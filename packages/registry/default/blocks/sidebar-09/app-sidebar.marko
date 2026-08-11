@@ -1,0 +1,268 @@
+import Sidebar from "@marko-ui/registry/ui/sidebar/sidebar.marko";
+import SidebarHeader from "@marko-ui/registry/ui/sidebar/header.marko";
+import SidebarContent from "@marko-ui/registry/ui/sidebar/content.marko";
+import SidebarFooter from "@marko-ui/registry/ui/sidebar/footer.marko";
+import SidebarGroup from "@marko-ui/registry/ui/sidebar/group.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+import Label from "@marko-ui/registry/ui/label/label.marko";
+import Switch from "@marko-ui/registry/ui/switch/switch.marko";
+import TextInput from "@marko-ui/registry/ui/input/input.marko";
+import NavUser from "./nav-user.marko";
+
+export interface NavMainItem {
+  id: string;
+  title: string;
+}
+
+export interface MailItem {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  date: string;
+  teaser: string;
+}
+
+export interface Input {
+  open?: boolean;
+  toggle?: () => void;
+}
+
+static const USER = {
+  name: "shadcn",
+  email: "m@example.com",
+  avatar: "/avatars/shadcn.jpg",
+};
+
+static const NAV_MAIN: NavMainItem[] = [
+  { id: "inbox", title: "Inbox" },
+  { id: "drafts", title: "Drafts" },
+  { id: "sent", title: "Sent" },
+  { id: "junk", title: "Junk" },
+  { id: "trash", title: "Trash" },
+];
+
+static const NAV_ICONS: Record<string, string> = {
+  inbox:
+    "M22 12h-6l-2 3h-4l-2-3H2 M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z",
+  drafts:
+    "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z M14 2v4a2 2 0 0 0 2 2h4",
+  sent: "m22 2-7 20-4-9-9-4Z m22 2-11 11",
+  junk: "m5 12-2.4 6.6a1 1 0 0 0 1.4 1.28L12 16l7.9 3.87a1 1 0 0 0 1.4-1.27L19 12M2 8l2.4-6.6A1 1 0 0 1 5.8 1l6.2 3 6.2-3a1 1 0 0 1 1.4 1.28L22 8",
+  trash: "M3 6h18 M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2",
+};
+
+static const MAILS: MailItem[] = [
+  {
+    id: "williamsmith@example.com",
+    name: "William Smith",
+    email: "williamsmith@example.com",
+    subject: "Meeting Tomorrow",
+    date: "09:34 AM",
+    teaser:
+      "Hi team, just a reminder about our meeting tomorrow at 10 AM.\nPlease come prepared with your project updates.",
+  },
+  {
+    id: "alicesmith@example.com",
+    name: "Alice Smith",
+    email: "alicesmith@example.com",
+    subject: "Re: Project Update",
+    date: "Yesterday",
+    teaser:
+      "Thanks for the update. The progress looks great so far.\nLet's schedule a call to discuss the next steps.",
+  },
+  {
+    id: "bobjohnson@example.com",
+    name: "Bob Johnson",
+    email: "bobjohnson@example.com",
+    subject: "Weekend Plans",
+    date: "2 days ago",
+    teaser:
+      "Hey everyone! I'm thinking of organizing a team outing this weekend.\nWould you be interested in a hiking trip or a beach day?",
+  },
+  {
+    id: "emilydavis@example.com",
+    name: "Emily Davis",
+    email: "emilydavis@example.com",
+    subject: "Re: Question about Budget",
+    date: "2 days ago",
+    teaser:
+      "I've reviewed the budget numbers you sent over.\nCan we set up a quick call to discuss some potential adjustments?",
+  },
+  {
+    id: "michaelwilson@example.com",
+    name: "Michael Wilson",
+    email: "michaelwilson@example.com",
+    subject: "Important Announcement",
+    date: "1 week ago",
+    teaser:
+      "Please join us for an all-hands meeting this Friday at 3 PM.\nWe have some exciting news to share about the company's future.",
+  },
+  {
+    id: "sarahbrown@example.com",
+    name: "Sarah Brown",
+    email: "sarahbrown@example.com",
+    subject: "Re: Feedback on Proposal",
+    date: "1 week ago",
+    teaser:
+      "Thank you for sending over the proposal. I've reviewed it and have some thoughts.\nCould we schedule a meeting to discuss my feedback in detail?",
+  },
+  {
+    id: "davidlee@example.com",
+    name: "David Lee",
+    email: "davidlee@example.com",
+    subject: "New Project Idea",
+    date: "1 week ago",
+    teaser:
+      "I've been brainstorming and came up with an interesting project concept.\nDo you have time this week to discuss its potential impact and feasibility?",
+  },
+  {
+    id: "oliviawilson@example.com",
+    name: "Olivia Wilson",
+    email: "oliviawilson@example.com",
+    subject: "Vacation Plans",
+    date: "1 week ago",
+    teaser:
+      "Just a heads up that I'll be taking a two-week vacation next month.\nI'll make sure all my projects are up to date before I leave.",
+  },
+  {
+    id: "jamesmartin@example.com",
+    name: "James Martin",
+    email: "jamesmartin@example.com",
+    subject: "Re: Conference Registration",
+    date: "1 week ago",
+    teaser:
+      "I've completed the registration for the upcoming tech conference.\nLet me know if you need any additional information from my end.",
+  },
+  {
+    id: "sophiawhite@example.com",
+    name: "Sophia White",
+    email: "sophiawhite@example.com",
+    subject: "Team Dinner",
+    date: "1 week ago",
+    teaser:
+      "To celebrate our recent project success, I'd like to organize a team dinner.\nAre you available next Friday evening? Please let me know your preferences.",
+  },
+];
+
+// Note: mirroring the source's "IRL you should use the url/router" caveat —
+// active item is local UI state here, not routing.
+<let/activeItemId="inbox"/>
+<let/visibleMails=MAILS/>
+
+<const/selectItem=(itemId: string) => {
+  activeItemId = itemId;
+  const shuffled = [...MAILS].sort(() => Math.random() - 0.5);
+  const count = Math.max(5, Math.floor(Math.random() * 10) + 1);
+  visibleMails = shuffled.slice(0, count);
+  if (!input.open) input.toggle?.();
+}/>
+
+<const/activeItem=NAV_MAIN.find((item) => item.id === activeItemId) ?? NAV_MAIN[0]/>
+
+<div class="flex h-full overflow-hidden *:data-[slot=sidebar]:flex-row">
+  <!-- Icon rail: fixed-width, always visible (not affected by the outer open/close state). -->
+  <Sidebar open=true class="w-[calc(var(--sidebar-width-icon,3rem)+1px)]! border-r">
+    <SidebarHeader>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton href="#" class="md:h-8 md:p-0">
+            <div class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="size-4"
+              >
+                <path d="m16 6-8.414 8.586a2 2 0 0 0 0 2.828 2 2 0 0 0 2.828 0l8.414-8.586a4 4 0 0 0 0-5.656 4 4 0 0 0-5.656 0l-8.415 8.585a6 6 0 1 0 8.486 8.486"/>
+              </svg>
+            </div>
+            <div class="grid flex-1 text-left text-sm leading-tight">
+              <span class="truncate font-medium">Acme Inc</span>
+              <span class="truncate text-xs">Enterprise</span>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarHeader>
+    <SidebarContent>
+      <SidebarGroup>
+        <div class="px-1.5 md:px-0">
+          <SidebarMenu>
+            <for|item| of=NAV_MAIN by=(item) => item.id>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  href="#"
+                  active=(item.id === activeItemId)
+                  title=item.title
+                  class="px-2.5 md:px-2"
+                  onClick(event: Event) {
+                    event.preventDefault();
+                    selectItem(item.id);
+                  }
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d=NAV_ICONS[item.id]/>
+                  </svg>
+                  <span>${item.title}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </for>
+          </SidebarMenu>
+        </div>
+      </SidebarGroup>
+    </SidebarContent>
+    <SidebarFooter>
+      <NavUser user=USER/>
+    </SidebarFooter>
+  </Sidebar>
+
+  <!-- Mail list: fills remaining space, hidden on small screens. -->
+  <Sidebar open=true class="hidden flex-1 md:flex">
+    <SidebarHeader class="gap-3.5 border-b p-4">
+      <div class="flex w-full items-center justify-between">
+        <div class="text-base font-medium text-foreground">${activeItem.title}</div>
+        <Label class="flex items-center gap-2 text-sm">
+          <span>Unreads</span>
+          <Switch class="shadow-none"/>
+        </Label>
+      </div>
+      <TextInput placeholder="Type to search..." class="h-8 shadow-none"/>
+    </SidebarHeader>
+    <SidebarContent>
+      <SidebarGroup class="px-0">
+        <for|mail| of=visibleMails by=(mail) => mail.id>
+          <a
+            href="#"
+            class="flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          >
+            <div class="flex w-full items-center gap-2">
+              <span>${mail.name}</span>
+              <span class="ml-auto text-xs">${mail.date}</span>
+            </div>
+            <span class="font-medium">${mail.subject}</span>
+            <span class="line-clamp-2 w-[260px] text-xs whitespace-break-spaces">${mail.teaser}</span>
+          </a>
+        </for>
+      </SidebarGroup>
+    </SidebarContent>
+  </Sidebar>
+</div>
