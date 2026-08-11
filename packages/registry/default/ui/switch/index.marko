@@ -8,28 +8,42 @@ import { cn } from "../../lib/utils.ts";
 // concerns) and `onCheckedChange` — replaced by `checkedChange` so Marko's
 // two-way bind shorthand works: <Switch checked:=myState/>.
 export interface Input
-  extends Omit<Marko.Input<"input">, "checked" | "value" | "dir" | keyof switchMachine.Props>,
-    Omit<switchMachine.Props, "id" | "ids" | "getRootNode" | "onCheckedChange"> {
+  extends
+    Omit<
+      Marko.Input<"input">,
+      "checked" | "value" | "dir" | keyof switchMachine.Props
+    >,
+    Omit<
+      switchMachine.Props,
+      "id" | "ids" | "getRootNode" | "onCheckedChange"
+    > {
   checkedChange?: (checked: boolean) => void;
 }
 
-<id/uid/>
+<id/uid>
 <const/machineProps=(): switchMachine.Props => ({
   ...switchMachine.splitProps(input)[0],
   id: input.id ?? uid,
   onCheckedChange(details) {
     input.checkedChange?.(details.checked);
   },
-})/>
+})>
 <service/service machine=() => switchMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) => switchMachine.connect(service, normalizeProps) service=service/>
+<connect/api=(service, normalizeProps) =>
+  switchMachine.connect(service, normalizeProps)
+  service=service
+/>
 
 // Everything that is neither machine-owned nor component-owned passes
 // through to the native hidden input (aria-*, data-*, form attributes...).
 <const/nativeAttrs=() => {
-  const { class: ownClass, checkedChange: ownHandler, ...native } = switchMachine.splitProps(input)[1];
+  const {
+    class: ownClass,
+    checkedChange: ownHandler,
+    ...native
+  } = switchMachine.splitProps(input)[1];
   return native;
-}/>
+}>
 
 <label
   ...api().getRootProps()
@@ -53,4 +67,4 @@ export interface Input
   <input ...nativeAttrs() ...api().getHiddenInputProps()>
 </label>
 
-<return=api/>
+<return=api>
