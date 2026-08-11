@@ -1,69 +1,47 @@
-import * as progress from "@zag-js/progress";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+import * as progressMachine from "@zag-js/progress";
+import type { MachineInput } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
-export interface Input extends Marko.Input<"div"> {
-  value?: number | null;
+export type Input = MachineInput<"div", progressMachine.Props> & {
   valueChange?: (value: number | null) => void;
-  min?: number;
-  max?: number;
   label?: string;
-}
+};
 
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  value: input.value,
-  min: input.min,
-  max: input.max,
-  onValueChange(details: { value: number | null }) {
+<machine-props/machineProps from=input pick=progressMachine.props
+  onValueChange(details: progressMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
     input.valueChange?.(details.value);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(progress.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+  }/>
+<service/service machine=() => progressMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  progressMachine.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.value;
-  input.min;
-  input.max;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = progress.connect(svc ?? ssrService(progress.machine, machineProps), normalizeProps);
-  return {
-    root: api.getRootProps(),
-    track: api.getTrackProps(),
-    range: api.getRangeProps(),
-    label: api.getLabelProps(),
-    valueText: api.getValueTextProps(),
-    valueAsString: api.valueAsString,
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<const/{ class: className, label, value, valueChange, min, max, ...rest }=input/>
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    valueChange: ownChangeHandler,
+    label: ownLabel,
+    ...native
+  } = progressMachine.splitProps(input)[1];
+  return native;
+}>
 
-<div ...rest ...ui.root data-slot="progress" class=cn("flex flex-col gap-2", className)>
-  <if=label>
+<div ...nativeAttrs() ...api().getRootProps() data-slot="progress" class=cn("flex flex-col gap-2", input.class)>
+  <if=input.label>
     <div class="flex items-center justify-between text-sm">
-      <span ...ui.label>${label}</span>
-      <span ...ui.valueText>${ui.valueAsString}</span>
+      <span ...api().getLabelProps()>${input.label}</span>
+      <span ...api().getValueTextProps()>${api().valueAsString}</span>
     </div>
   </if>
   <div
-    ...ui.track
+    ...api().getTrackProps()
     data-slot="progress-track"
     class="bg-primary/20 relative h-2 w-full overflow-hidden rounded-full"
   >
-    <div ...ui.range data-slot="progress-range" class="bg-primary h-full transition-all"/>
+    <div ...api().getRangeProps() data-slot="progress-range" class="bg-primary h-full transition-all"/>
   </div>
 </div>
+
+<return=api>

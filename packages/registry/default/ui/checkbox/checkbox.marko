@@ -1,79 +1,91 @@
-import * as checkbox from "@zag-js/checkbox";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+// Guide: /docs/creating-components · adapter internals: /docs/zag-adapter
+// Authoring rules: notes/component-authoring.md (v2 pattern)
+import * as checkboxMachine from "@zag-js/checkbox";
+import type { MachineInput } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
-export interface Input {
-  checked?: boolean | "indeterminate";
+// MachineInput = native <input> attributes ∩ the machine's full Props, with
+// `id` made optional (generated below, overridable). `checkedChange` is
+// additive sugar enabling Marko's two-way bind shorthand
+// (<Checkbox checked:=myState/>); Zag's own `onCheckedChange` also works and
+// receives the details object.
+export type Input = MachineInput<"input", checkboxMachine.Props> & {
   checkedChange?: (checked: boolean | "indeterminate") => void;
-  indeterminate?: boolean;
-  disabled?: boolean;
-  name?: string;
-  value?: string;
-  class?: string;
-  content?: Marko.Body;
-}
+};
 
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  checked: input.indeterminate ? "indeterminate" : input.checked,
-  disabled: input.disabled,
-  name: input.name,
-  value: input.value,
-  onCheckedChange(details: { checked: boolean | "indeterminate" }) {
+// The three-tag wiring (see /docs/creating-components):
+// 1. <machine-props> picks the machine's props out of `input` by name and
+//    merges the attributes written on it — callback adaptations live HERE,
+//    visibly, because they are this component's public contract.
+// 2. <service> creates and owns the running machine (client-only; SSR
+//    renders from a throwaway never-started instance).
+// 3. <connect> returns `api` as a GETTER — call it at every use site.
+//    Getters are the serializable currency of Marko's resumability: the
+//    api object itself must never become reactive state.
+<machine-props/machineProps from=input pick=checkboxMachine.props
+  onCheckedChange(details: checkboxMachine.CheckedChangeDetails) {
+    input.onCheckedChange?.(details);
     input.checkedChange?.(details.checked);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(checkbox.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+  }/>
+<service/service machine=() => checkboxMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  checkboxMachine.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.checked;
-  input.indeterminate;
-  input.disabled;
-  input.name;
-  input.value;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = checkbox.connect(svc ?? ssrService(checkbox.machine, machineProps), normalizeProps);
-  return {
-    root: api.getRootProps(),
-    control: api.getControlProps(),
-    indicator: api.getIndicatorProps(),
-    hiddenInput: api.getHiddenInputProps(),
-    indeterminate: api.indeterminate,
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<label ...ui.root data-slot="checkbox-root" class=cn("inline-flex items-center gap-2 text-sm leading-none", input.disabled && "cursor-not-allowed opacity-50", input.class)>
-  <input ...ui.hiddenInput/>
+// Whatever is neither machine-owned (splitProps) nor component-owned
+// (class, checkedChange) passes through to the hidden input: aria-*,
+// data-*, form attributes...
+//
+// NOTE: Zag's CheckboxProps has no `indeterminate` input — indeterminate is
+// expressed as `checked="indeterminate"` (CheckedState = boolean |
+// "indeterminate"). Because `indeterminate` isn't in checkboxMachine.props,
+// <machine-props pick=checkboxMachine.props> never forwards it to the
+// machine, so a stray `indeterminate` attribute would otherwise fall
+// through splitProps into nativeAttrs and land as a bogus static HTML
+// attribute on the native <input>. Strip it defensively here; the supported
+// API for tri-state is `checked`.
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    checkedChange: ownChangeHandler,
+    indeterminate: unsupportedIndeterminate,
+    ...native
+  } = checkboxMachine.splitProps(input)[1] as typeof input;
+  return native;
+}>
+
+<label
+  ...api().getRootProps()
+  data-slot="checkbox-root"
+  class=cn(
+    "inline-flex items-center gap-2 text-sm leading-none",
+    input.disabled && "cursor-not-allowed opacity-50",
+    input.class,
+  )
+>
+  <input ...nativeAttrs() ...api().getHiddenInputProps()>
   <span
-    ...ui.control
+    ...api().getControlProps()
     data-slot="checkbox"
     class="peer border-input dark:bg-input/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 size-4 flex items-center justify-center"
   >
-    <span ...ui.indicator data-slot="checkbox-indicator" class="flex items-center justify-center text-current transition-none">
-      <if=ui.indeterminate>
+    <span ...api().getIndicatorProps() data-slot="checkbox-indicator" class="flex items-center justify-center text-current transition-none">
+      <if=api().indeterminate>
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="size-3.5">
           <path d="M5 12h14"/>
         </svg>
       </if>
-      <if=!ui.indeterminate>
+      <else-if=api().checked>
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="size-3.5">
           <path d="M20 6 9 17l-5-5"/>
         </svg>
-      </if>
+      </else-if>
     </span>
   </span>
   <${input.content}/>
 </label>
+
+// Parents can receive the api getter: <Checkbox/checkboxApi/> then
+// `checkboxApi().checked` — it stays live across machine updates.
+<return=api>

@@ -1,64 +1,82 @@
-import * as avatar from "@zag-js/avatar";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+// Reference implementation: packages/registry/default/ui/switch/switch.marko
+// Guide: /docs/creating-components · Authoring rules: v2 pattern
+import * as avatarMachine from "@zag-js/avatar";
+import type { MachineInput } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
-export interface Input extends Marko.Input<"span"> {
+export type Input = MachineInput<"span", avatarMachine.Props> & {
   src?: string;
   alt?: string;
   fallback?: string;
   content?: Marko.Body;
-  statusChange?: (status: "error" | "loaded") => void;
-}
+  statusChange?: (status: avatarMachine.LoadStatus) => void;
+};
 
-<const/{ src, alt, fallback, content, statusChange, class: className, ...rest }=input/>
-
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  onStatusChange(details: { status: "error" | "loaded" }) {
-    statusChange?.(details.status);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(avatar.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+// The three-tag wiring (see /docs/creating-components):
+// 1. <machine-props> picks the machine's props out of `input` by name and
+//    merges the attributes written on it — callback adaptations live HERE,
+//    visibly, because they are this component's public contract.
+// 2. <service> creates and owns the running machine (client-only; SSR
+//    renders from a throwaway never-started instance).
+// 3. <connect> returns `api` as a GETTER — call it at every use site.
+//    Getters are the serializable currency of Marko's resumability: the
+//    api object itself must never become reactive state.
+<machine-props/machineProps from=input pick=avatarMachine.props
+  onStatusChange(details: avatarMachine.StatusChangeDetails) {
+    input.onStatusChange?.(details);
+    input.statusChange?.(details.status);
+  }/>
+<service/service machine=() => avatarMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  avatarMachine.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.src;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = avatar.connect(svc ?? ssrService(avatar.machine, machineProps), normalizeProps);
-  return {
-    root: api.getRootProps(),
-    image: api.getImageProps(),
-    fallback: api.getFallbackProps(),
-  };
-}/>
-<const/ui=(rev, computeUi())/>
+
+// Whatever is neither machine-owned (splitProps) nor component-owned
+// (class, src, alt, fallback, content, statusChange) passes through to the
+// root span: aria-*, data-*...
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    src: ownSrc,
+    alt: ownAlt,
+    fallback: ownFallback,
+    content: ownContent,
+    statusChange: ownChangeHandler,
+    ...native
+  } = avatarMachine.splitProps(input)[1];
+  return native;
+}>
 
 <span
-  ...rest
-  ...ui.root
+  ...nativeAttrs()
+  ...api().getRootProps()
   data-slot="avatar"
-  class=cn("relative flex size-8 shrink-0 overflow-hidden rounded-full", className)
+  class=cn("relative flex size-8 shrink-0 overflow-hidden rounded-full", input.class)
 >
-  <if=src>
-    <img ...ui.image src=src alt=alt data-slot="avatar-image" class="aspect-square size-full"/>
+  <if=input.src>
+    <img
+      ...api().getImageProps()
+      src=input.src
+      alt=input.alt
+      data-slot="avatar-image"
+      class="aspect-square size-full"
+    />
   </if>
-  <span ...ui.fallback data-slot="avatar-fallback" class="bg-muted flex size-full items-center justify-center rounded-full">
-    <if=content>
-      <${content}/>
+  <span
+    ...api().getFallbackProps()
+    data-slot="avatar-fallback"
+    class="bg-muted flex size-full items-center justify-center rounded-full"
+  >
+    <if=input.content>
+      <${input.content}/>
     </if>
     <else>
-      ${fallback}
+      ${input.fallback}
     </else>
   </span>
 </span>
+
+// Parents can receive the api getter: <Avatar/avatarApi/> then
+// `avatarApi().loaded` — it stays live across machine updates.
+<return=api>

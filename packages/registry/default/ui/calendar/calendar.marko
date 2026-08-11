@@ -1,91 +1,72 @@
-import * as datePicker from "@zag-js/date-picker";
+import * as datePickerMachine from "@zag-js/date-picker";
 import { CalendarDate, type DateValue } from "@internationalized/date";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+import type { MachineInput } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
-export interface Input extends Marko.Input<"div"> {
+// Calendar is an inline, always-open date-picker: `open`/`inline`/
+// `closeOnSelect` are fixed by this component, not exposed to callers.
+// `value`/`valueChange` use plain { year, month, day } objects instead of
+// Zag's DateValue so consumers don't need @internationalized/date.
+export type Input = Omit<
+  MachineInput<"div", datePickerMachine.Props>,
+  "open" | "inline" | "closeOnSelect" | "value"
+> & {
   value?: { year: number; month: number; day: number }[];
   valueChange?: (value: { year: number; month: number; day: number }[]) => void;
+};
+
+static function toDateValue(date: { year: number; month: number; day: number }): DateValue {
+  return new CalendarDate(date.year, date.month, date.day);
 }
 
-static function toDateValue(d: { year: number; month: number; day: number }): DateValue {
-  return new CalendarDate(d.year, d.month, d.day);
+static function toPlain(date: DateValue) {
+  return { year: date.year, month: date.month, day: date.day };
 }
 
-static function toPlain(d: DateValue) {
-  return { year: d.year, month: d.month, day: d.day };
-}
-
-<const/{ value, valueChange, class: className, ...rest }=input/>
-
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
+<machine-props/pickedProps from=input pick=datePickerMachine.props
+  open=true
+  inline=true
+  closeOnSelect=false
+  onValueChange(details: datePickerMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value.map(toPlain));
+  }/>
 <const/machineProps=() => ({
-  id: uid,
-  open: true,
-  inline: true,
-  closeOnSelect: false,
-  value: value?.map(toDateValue),
-  onValueChange(details: { value: DateValue[] }) {
-    valueChange?.(details.value.map(toPlain));
-  },
+  ...pickedProps(),
+  value: input.value?.map(toDateValue),
 })/>
-<lifecycle
-  onMount() {
-    svc = createService(datePicker.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+<service/service machine=() => datePickerMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  datePickerMachine.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.value;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = datePicker.connect(svc ?? ssrService(datePicker.machine, machineProps), normalizeProps);
-  const weeks = api.weeks.map((week) =>
+
+<const/nativeAttrs=() => {
+  const { class: ownClass, valueChange: ownChangeHandler, ...native } = datePickerMachine.splitProps(input)[1];
+  return native;
+}>
+
+<const/weeks=() =>
+  api().weeks.map((week) =>
     week.map((date) => {
-      const cellState = api.getDayTableCellState({ value: date });
+      const cellState = api().getDayTableCellState({ value: date });
       return {
-        dateValue: toPlain(date),
-        cell: api.getDayTableCellProps({ value: date }),
-        trigger: api.getDayTableCellTriggerProps({ value: date }),
+        cell: api().getDayTableCellProps({ value: date }),
+        trigger: api().getDayTableCellTriggerProps({ value: date }),
         label: String(date.day),
         selected: cellState.selected,
         today: cellState.today,
         outsideRange: cellState.outsideRange,
-        disabled: cellState.disabled,
-        unavailable: cellState.unavailable,
       };
     }),
-  );
-  return {
-    root: api.getRootProps(),
-    content: api.getContentProps(),
-    view: api.view,
-    viewControl: api.getViewControlProps(),
-    prevTrigger: api.getPrevTriggerProps(),
-    nextTrigger: api.getNextTriggerProps(),
-    viewTrigger: api.getViewTriggerProps(),
-    viewTriggerLabel: api.visibleRangeText.formatted,
-    table: api.getTableProps(),
-    tableHead: api.getTableHeadProps(),
-    tableHeader: api.getTableHeaderProps(),
-    tableBody: api.getTableBodyProps(),
-    weekDays: api.weekDays.map((wd) => ({ narrow: wd.narrow, long: wd.long })),
-    weeks,
-  };
-}/>
-<const/ui=(rev, computeUi())/>
+  )
+/>
 
-<div ...rest ...ui.root data-slot="calendar" class=cn("border rounded-md p-3 w-fit", className)>
-  <div ...ui.content data-slot="calendar-content" class="space-y-4">
+<div ...nativeAttrs() ...api().getRootProps() data-slot="calendar" class=cn("border rounded-md p-3 w-fit", input.class)>
+  <div ...api().getContentProps() data-slot="calendar-content" class="space-y-4">
     <div class="flex items-center justify-between">
       <button
-        ...ui.prevTrigger
+        ...api().getPrevTriggerProps()
         data-slot="calendar-prev-trigger"
         class="inline-flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
       >
@@ -95,14 +76,14 @@ static function toPlain(d: DateValue) {
         <span class="sr-only">Previous</span>
       </button>
       <button
-        ...ui.viewTrigger
+        ...api().getViewTriggerProps()
         data-slot="calendar-view-trigger"
         class="text-sm font-medium hover:underline"
       >
-        ${ui.viewTriggerLabel}
+        ${api().visibleRangeText.formatted}
       </button>
       <button
-        ...ui.nextTrigger
+        ...api().getNextTriggerProps()
         data-slot="calendar-next-trigger"
         class="inline-flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
       >
@@ -112,19 +93,19 @@ static function toPlain(d: DateValue) {
         <span class="sr-only">Next</span>
       </button>
     </div>
-    <table ...ui.table data-slot="calendar-table" class="w-full border-collapse space-y-1">
-      <thead ...ui.tableHead data-slot="calendar-table-head">
+    <table ...api().getTableProps() data-slot="calendar-table" class="w-full border-collapse space-y-1">
+      <thead ...api().getTableHeadProps() data-slot="calendar-table-head">
         <tr>
-          <for|wd| of=ui.weekDays>
+          <for|weekDay| of=api().weekDays>
             <th class="text-muted-foreground w-9 rounded-md text-[0.8rem] font-normal">
-              ${wd.narrow}
-              <span class="sr-only">${wd.long}</span>
+              ${weekDay.narrow}
+              <span class="sr-only">${weekDay.long}</span>
             </th>
           </for>
         </tr>
       </thead>
-      <tbody ...ui.tableBody data-slot="calendar-table-body">
-        <for|week, i| of=ui.weeks by=(_, i) => i>
+      <tbody ...api().getTableBodyProps() data-slot="calendar-table-body">
+        <for|week, i| of=weeks() by=(_, i) => i>
           <tr>
             <for|day, j| of=week by=(_, j) => j>
               <td
@@ -152,3 +133,5 @@ static function toPlain(d: DateValue) {
     </table>
   </div>
 </div>
+
+<return=api>

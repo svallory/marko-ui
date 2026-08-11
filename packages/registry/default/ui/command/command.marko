@@ -1,5 +1,5 @@
-import * as combobox from "@zag-js/combobox";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+import * as commandMachine from "@zag-js/combobox";
+import type { MachineInput } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
 export interface CommandItem {
@@ -13,121 +13,108 @@ export interface CommandGroup {
   items: CommandItem[];
 }
 
-export interface Input extends Omit<Marko.Input<"div">, "select"> {
+// `collection`, `value`, and `inputValue` are machine-owned in
+// combobox.Props but this component derives its own collection from
+// `groups` and manages the search query internally, so they are omitted
+// here rather than exposed on the public Input.
+export type Input = Omit<
+  MachineInput<"div", commandMachine.Props>,
+  "collection" | "value" | "inputValue"
+> & {
   groups: CommandGroup[];
-  placeholder?: string;
-  select?: (value: string) => void;
-  class?: string;
-}
+  valueChange?: (value: string) => void;
+};
 
 static function filterGroups(groups: CommandGroup[], query: string): CommandGroup[] {
-  const q = query.trim().toLowerCase();
-  if (!q) return groups;
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) return groups;
   return groups
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => item.label.toLowerCase().includes(q)),
+      items: group.items.filter((item) => item.label.toLowerCase().includes(normalizedQuery)),
     }))
     .filter((group) => group.items.length > 0);
 }
 
-<let/rev=0/>
-<let/svc=null/>
 <let/query=""/>
 <const/filteredGroups=filterGroups(input.groups, query)/>
 <const/allItems=filteredGroups.flatMap((group) => group.items)/>
 
-<id/uid/>
-<const/machineProps=() => ({
-  id: uid,
-  open: true,
-  inputBehavior: "autohighlight",
-  selectionBehavior: "clear",
-  placeholder: input.placeholder,
-  collection: combobox.collection({
+// `collection` is machine-owned but derived from `groups`/`query`, not a
+// pass-through of `input`, so it is built here and merged into the props
+// closure below rather than passed through <machine-props>'s override
+// mechanism — overrides are copied as plain tag input, and a Zag collection
+// carries methods that would fail serialization if it crossed that boundary.
+<machine-props/machineProps from=input pick=commandMachine.props
+  open=true
+  inputBehavior="autohighlight"
+  selectionBehavior="clear"
+  onInputValueChange(details: commandMachine.InputValueChangeDetails) {
+    input.onInputValueChange?.(details);
+    query = details.inputValue;
+  }
+  onValueChange(details: commandMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    if (details.value[0] != null) {
+      input.valueChange?.(details.value[0]);
+    }
+  }/>
+<const/serviceProps=() => ({
+  ...machineProps(),
+  collection: commandMachine.collection({
     items: allItems,
     itemToValue: (item: CommandItem) => item.value,
     itemToString: (item: CommandItem) => item.label,
   }),
-  onInputValueChange(details: { inputValue: string }) {
-    query = details.inputValue;
-  },
-  onValueChange(details: { value: string[] }) {
-    if (details.value[0] != null) {
-      input.select?.(details.value[0]);
-    }
-  },
 })/>
-<lifecycle
-  onMount() {
-    svc = createService(combobox.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+<service/service machine=() => commandMachine.machine props=serviceProps/>
+<connect/api=(service, normalizeProps) =>
+  commandMachine.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.groups;
-  input.placeholder;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = combobox.connect(svc ?? ssrService(combobox.machine, machineProps), normalizeProps);
-  return {
-    root: api.getRootProps(),
-    control: api.getControlProps(),
-    input: api.getInputProps(),
-    content: api.getContentProps(),
-    groups: filteredGroups.map((group, groupIndex) => ({
-      label: group.label,
-      groupProps: api.getItemGroupProps({ id: `group-${groupIndex}` }),
-      labelProps: api.getItemGroupLabelProps({ htmlFor: `group-${groupIndex}` }),
-      items: group.items.map((item) => ({
-        item,
-        itemProps: api.getItemProps({ item }),
-        itemState: api.getItemState({ item }),
-      })),
-    })),
-    isEmpty: allItems.length === 0,
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<const/{ groups: _groups, placeholder, select: _select, class: className, ...rest }=input/>
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    groups: ownGroups,
+    valueChange: ownValueChange,
+    ...native
+  } = commandMachine.splitProps(input)[1];
+  return native;
+}>
 
-<div ...rest ...ui.root data-slot="command" class=cn("bg-popover text-popover-foreground flex w-full flex-col overflow-hidden rounded-lg border shadow-md", className)>
-  <div ...ui.control data-slot="command-input-wrapper" class="flex h-9 items-center gap-2 border-b px-3">
+<div ...nativeAttrs() ...api().getRootProps() data-slot="command" class=cn("bg-popover text-popover-foreground flex w-full flex-col overflow-hidden rounded-lg border shadow-md", input.class)>
+  <div ...api().getControlProps() data-slot="command-input-wrapper" class="flex h-9 items-center gap-2 border-b px-3">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 shrink-0 opacity-50">
       <path d="m21 21-4.34-4.34"/>
       <circle cx="11" cy="11" r="8"/>
     </svg>
     <input
-      ...ui.input
+      ...api().getInputProps()
       data-slot="command-input"
-      placeholder=placeholder
+      placeholder=input.placeholder
       class="placeholder:text-muted-foreground h-9 w-full bg-transparent text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50"
     />
   </div>
-  <div ...ui.content data-slot="command-list" class="max-h-80 scroll-py-1 overflow-y-auto overflow-x-hidden p-1">
-    <if=ui.isEmpty>
+  <div ...api().getContentProps() data-slot="command-list" class="max-h-80 scroll-py-1 overflow-y-auto overflow-x-hidden p-1">
+    <if=(allItems.length === 0)>
       <div data-slot="command-empty" class="py-6 text-center text-sm">No results found.</div>
     </if>
     <else>
-      <for|group| of=ui.groups>
-        <div ...group.groupProps data-slot="command-group" class="text-foreground overflow-hidden p-1">
-          <div ...group.labelProps data-slot="command-group-label" class="text-muted-foreground px-2 py-1.5 text-xs font-medium">
+      <for|group, groupIndex| of=filteredGroups>
+        <div ...api().getItemGroupProps({ id: `group-${groupIndex}` }) data-slot="command-group" class="text-foreground overflow-hidden p-1">
+          <div ...api().getItemGroupLabelProps({ htmlFor: `group-${groupIndex}` }) data-slot="command-group-label" class="text-muted-foreground px-2 py-1.5 text-xs font-medium">
             ${group.label}
           </div>
-          <for|entry| of=group.items>
+          <for|item| of=group.items>
             <div
-              ...entry.itemProps
+              ...api().getItemProps({ item })
               data-slot="command-item"
               class="data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
             >
-              <span>${entry.item.label}</span>
-              <if=entry.item.shortcut>
-                <span data-slot="command-shortcut" class="text-muted-foreground ml-auto text-xs tracking-widest">${entry.item.shortcut}</span>
+              <span>${item.label}</span>
+              <if=item.shortcut>
+                <span data-slot="command-shortcut" class="text-muted-foreground ml-auto text-xs tracking-widest">${item.shortcut}</span>
               </if>
             </div>
           </for>
@@ -136,3 +123,5 @@ static function filterGroups(groups: CommandGroup[], query: string): CommandGrou
     </else>
   </div>
 </div>
+
+<return=api>

@@ -1,67 +1,63 @@
-import * as tooltip from "@zag-js/tooltip";
-import type { PositioningOptions } from "@zag-js/tooltip";
-import { createService, ssrService, normalizeProps, positionerStyle } from "marko-zag";
+import * as tooltipMachine from "@zag-js/tooltip";
+import type { MachineInput } from "marko-zag";
+import { positionerStyle } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
-export interface Input {
+// MachineInput = native <div> attributes ∩ the machine's full Props, with
+// `id` made optional (generated below, overridable). `openChange` is
+// additive sugar enabling Marko's two-way bind shorthand
+// (<Tooltip open:=myState/>); Zag's own `onOpenChange` also works and
+// receives the details object.
+export type Input = MachineInput<"div", tooltipMachine.Props> & {
   /** Trigger render-prop — typically the element the tooltip describes. */
   trigger: Marko.Body<[Record<string, unknown>]>;
   /** Tooltip content shown when open. */
   content: string | Marko.Body;
-  /** Duration (ms) from pointer-enter/focus until the tooltip opens. @default 400 */
-  openDelay?: number;
-  /** Duration (ms) from pointer-leave/blur until the tooltip closes. @default 150 */
-  closeDelay?: number;
-  /** Popper positioning options. */
-  positioning?: PositioningOptions;
-  /** Extra class for the content panel. */
-  class?: string;
-}
+  openChange?: (open: boolean) => void;
+};
 
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  openDelay: input.openDelay,
-  closeDelay: input.closeDelay,
-  positioning: input.positioning,
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(tooltip.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+// The three-tag wiring (see /docs/creating-components):
+// 1. <machine-props> picks the machine's props out of `input` by name and
+//    merges the attributes written on it — callback adaptations live HERE,
+//    visibly, because they are this component's public contract.
+// 2. <service> creates and owns the running machine (client-only; SSR
+//    renders from a throwaway never-started instance).
+// 3. <connect> returns `api` as a GETTER — call it at every use site.
+//    Getters are the serializable currency of Marko's resumability: the
+//    api object itself must never become reactive state.
+<machine-props/machineProps from=input pick=tooltipMachine.props
+  onOpenChange(details: tooltipMachine.OpenChangeDetails) {
+    input.onOpenChange?.(details);
+    input.openChange?.(details.open);
+  }/>
+<service/service machine=() => tooltipMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  tooltipMachine.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.openDelay;
-  input.closeDelay;
-  input.positioning;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = tooltip.connect(svc ?? ssrService(tooltip.machine, machineProps), normalizeProps);
-  return {
-    open: api.open,
-    trigger: api.getTriggerProps(),
-    positioner: api.getPositionerProps(),
-    content: api.getContentProps(),
-    arrow: api.getArrowProps(),
-    arrowTip: api.getArrowTipProps(),
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<span data-slot="tooltip">
-  <${input.trigger}({ ...ui.trigger, "data-slot": "tooltip-trigger" })/>
+// Whatever is neither machine-owned (splitProps) nor component-owned
+// (class, openChange, trigger, content) passes through to the root span:
+// aria-*, data-*, arbitrary attributes callers attach to the tooltip as
+// a whole.
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    openChange: ownChangeHandler,
+    trigger: ownTrigger,
+    content: ownContent,
+    ...native
+  } = tooltipMachine.splitProps(input)[1];
+  return native;
+}>
+
+<span ...nativeAttrs() data-slot="tooltip">
+  <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "tooltip-trigger" })/>
   <portal>
-    <if=ui.open>
-      <div ...ui.positioner style=positionerStyle>
+    <if=api().open>
+      <div ...api().getPositionerProps() style=positionerStyle data-slot="tooltip-positioner">
         <div
-          ...ui.content
+          ...api().getContentProps()
           data-slot="tooltip-content"
           class=cn(
             "bg-primary text-primary-foreground z-50 w-fit rounded-md px-3 py-1.5 text-xs text-balance",
@@ -77,11 +73,15 @@ export interface Input {
           <else>
             <${input.content}/>
           </else>
-          <div ...ui.arrow>
-            <div ...ui.arrowTip class="bg-primary size-2.5 rotate-45"/>
+          <div ...api().getArrowProps() data-slot="tooltip-arrow">
+            <div ...api().getArrowTipProps() data-slot="tooltip-arrow-tip" class="bg-primary size-2.5 rotate-45"/>
           </div>
         </div>
       </div>
     </if>
   </portal>
 </span>
+
+// Parents can receive the api getter: <Tooltip/tooltipApi/> then
+// `tooltipApi().open` — it stays live across machine updates.
+<return=api>

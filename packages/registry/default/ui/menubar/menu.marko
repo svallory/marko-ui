@@ -1,76 +1,33 @@
 import * as menu from "@zag-js/menu";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+import { positionerStyle } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 import type { DropdownMenuItem } from "../dropdown-menu/dropdown-menu.marko";
 
 export interface Input {
-  trigger: string;
+  trigger: Marko.Body<[Record<string, unknown>]>;
   items: DropdownMenuItem[];
   select?: (value: string) => void;
   class?: string;
 }
 
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  onSelect(details: { value: string }) {
+<machine-props/machineProps from=input pick=menu.props
+  onSelect(details: menu.SelectionDetails) {
     input.select?.(details.value);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(menu.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+  }/>
+<service/service machine=() => menu.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  menu.connect(service, normalizeProps)
+  service=service
 />
-<const/computeUi=() => {
-  const api = menu.connect(svc ?? ssrService(menu.machine, machineProps), normalizeProps);
-  return {
-    open: api.open,
-    trigger: api.getTriggerProps(),
-    positioner: api.getPositionerProps(),
-    content: api.getContentProps(),
-    items: input.items.map((item, index) => {
-      if (item.type === "separator") {
-        return { type: "separator" as const, key: `sep-${index}`, props: api.getSeparatorProps() };
-      }
-      if (item.type === "label") {
-        return { type: "label" as const, key: `label-${index}`, label: item.label };
-      }
-      return {
-        type: "item" as const,
-        key: item.value ?? `item-${index}`,
-        item,
-        props: api.getItemProps({ value: item.value ?? `item-${index}`, disabled: item.disabled }),
-      };
-    }),
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<const/{ class: className }=input/>
+<const/{ class: className, trigger }=input/>
 
-<button
-  ...ui.trigger
-  data-slot="menubar-trigger"
-  class=cn(
-    "flex items-center rounded-sm px-2 py-1 text-sm font-medium outline-none select-none",
-    "focus:bg-accent focus:text-accent-foreground",
-    "data-[state=open]:bg-accent data-[state=open]:text-accent-foreground",
-  )
->
-  ${input.trigger}
-</button>
+<${trigger}({ ...api().getTriggerProps(), "data-slot": "menubar-trigger" })/>
 <portal>
-  <if=ui.open>
-    <div ...ui.positioner data-slot="menubar-positioner" style="z-index:50">
+  <if=api().open>
+    <div ...api().getPositionerProps() style=positionerStyle data-slot="menubar-positioner">
       <div
-        ...ui.content
+        ...api().getContentProps()
         data-slot="menubar-content"
         class=cn(
           "bg-popover text-popover-foreground z-50 min-w-[12rem] overflow-hidden rounded-md border p-1 shadow-md",
@@ -78,9 +35,9 @@ export interface Input {
           className,
         )
       >
-        <for|entry| of=ui.items>
+        <for|entry, index| of=input.items>
           <if=entry.type === "separator">
-            <div ...entry.props data-slot="menubar-separator" class="bg-border -mx-1 my-1 h-px"/>
+            <div ...api().getSeparatorProps() data-slot="menubar-separator" class="bg-border -mx-1 my-1 h-px"/>
           </if>
           <else if=entry.type === "label">
             <div data-slot="menubar-label" class="px-2 py-1.5 text-xs font-medium text-muted-foreground">
@@ -89,9 +46,9 @@ export interface Input {
           </else>
           <else>
             <div
-              ...entry.props
+              ...api().getItemProps({ value: entry.value ?? `item-${index}`, disabled: entry.disabled })
               data-slot="menubar-item"
-              data-danger=entry.item.danger || undefined
+              data-danger=entry.danger || undefined
               class=cn(
                 "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none",
                 "data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
@@ -99,9 +56,9 @@ export interface Input {
                 "data-[danger]:text-destructive data-[danger]:data-[highlighted]:bg-destructive/10",
               )
             >
-              <span>${entry.item.label}</span>
-              <if=entry.item.shortcut>
-                <span class="ml-auto text-xs tracking-widest text-muted-foreground">${entry.item.shortcut}</span>
+              <span>${entry.label}</span>
+              <if=entry.shortcut>
+                <span class="ml-auto text-xs tracking-widest text-muted-foreground">${entry.shortcut}</span>
               </if>
             </div>
           </else>
@@ -110,3 +67,5 @@ export interface Input {
     </div>
   </if>
 </portal>
+
+<return=api>

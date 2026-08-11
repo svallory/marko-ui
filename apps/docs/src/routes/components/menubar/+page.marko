@@ -40,16 +40,40 @@ static const PROFILES_ITEMS = [
   <demo-box title="Default">
     <Menubar>
       <@content>
-        <MenubarMenu trigger="File" items=FILE_ITEMS select(value) { selected = value; }/>
-        <MenubarMenu trigger="Edit" items=EDIT_ITEMS select(value) { selected = value; }/>
-        <MenubarMenu trigger="View" items=VIEW_ITEMS select(value) { selected = value; }/>
+        <MenubarMenu items=FILE_ITEMS select(value) { selected = value; }>
+          <@trigger|triggerProps|>
+            <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+              File
+            </button>
+          </@trigger>
+        </MenubarMenu>
+        <MenubarMenu items=EDIT_ITEMS select(value) { selected = value; }>
+          <@trigger|triggerProps|>
+            <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+              Edit
+            </button>
+          </@trigger>
+        </MenubarMenu>
+        <MenubarMenu items=VIEW_ITEMS select(value) { selected = value; }>
+          <@trigger|triggerProps|>
+            <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+              View
+            </button>
+          </@trigger>
+        </MenubarMenu>
       </@content>
     </Menubar>
   </demo-box>
   <demo-box title="With danger item">
     <Menubar>
       <@content>
-        <MenubarMenu trigger="Profiles" items=PROFILES_ITEMS select(value) { selected = value; }/>
+        <MenubarMenu items=PROFILES_ITEMS select(value) { selected = value; }>
+          <@trigger|triggerProps|>
+            <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+              Profiles
+            </button>
+          </@trigger>
+        </MenubarMenu>
       </@content>
     </Menubar>
   </demo-box>
@@ -57,8 +81,20 @@ static const PROFILES_ITEMS = [
     <div class="flex items-center gap-4">
       <Menubar>
         <@content>
-          <MenubarMenu trigger="File" items=FILE_ITEMS select(value) { selected = value; }/>
-          <MenubarMenu trigger="Edit" items=EDIT_ITEMS select(value) { selected = value; }/>
+          <MenubarMenu items=FILE_ITEMS select(value) { selected = value; }>
+            <@trigger|triggerProps|>
+              <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+                File
+              </button>
+            </@trigger>
+          </MenubarMenu>
+          <MenubarMenu items=EDIT_ITEMS select(value) { selected = value; }>
+            <@trigger|triggerProps|>
+              <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+                Edit
+              </button>
+            </@trigger>
+          </MenubarMenu>
         </@content>
       </Menubar>
       <span class="text-muted-foreground text-sm">selected: ${selected || "none"}</span>

@@ -1,5 +1,5 @@
 import * as treeView from "@zag-js/tree-view";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+import type { MachineInput } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
 export interface TreeViewItem {
@@ -9,34 +9,20 @@ export interface TreeViewItem {
   disabled?: boolean;
 }
 
-export interface Input {
+// MachineInput = native <div> attributes ∩ the machine's full Props, with
+// `id` made optional (generated below, overridable). `collection` is
+// derived from `items` below rather than accepted directly, so it is
+// omitted here. `expandedValueChange`/`selectedValueChange` are additive
+// sugar enabling Marko's two-way bind shorthand; Zag's own
+// `onExpandedChange`/`onSelectionChange` also work and receive the details
+// object.
+export type Input = Omit<MachineInput<"div", treeView.Props>, "collection"> & {
   items: TreeViewItem[];
-  selectionMode?: "single" | "multiple";
-  expandedValue?: string[];
-  selectedValue?: string[];
   expandedValueChange?: (value: string[]) => void;
   selectedValueChange?: (value: string[]) => void;
-  class?: string;
-}
-
-export interface FlatNodeUi {
-  label: string;
-  isBranch: boolean;
-  itemProps?: Record<string, unknown>;
-  itemIndicatorProps?: Record<string, unknown>;
-  branchProps?: Record<string, unknown>;
-  branchControlProps?: Record<string, unknown>;
-  branchTriggerProps?: Record<string, unknown>;
-  branchContentProps?: Record<string, unknown>;
-  branchIndicatorProps?: Record<string, unknown>;
-  children?: string[];
-}
-
-<const/{ items, class: className }=input/>
+};
 
 <id/uid/>
-<let/rev=0/>
-<let/svc=null/>
 
 <const/buildCollection=(list: TreeViewItem[]) => treeView.collection({
   rootNode: { id: "__root__", label: "", children: list } as TreeViewItem,
@@ -46,82 +32,49 @@ export interface FlatNodeUi {
   isNodeDisabled: (node: TreeViewItem) => !!node.disabled,
 })/>
 
-<const/machineProps=() => ({
-  id: uid,
-  collection: buildCollection(items),
-  selectionMode: input.selectionMode,
-  expandedValue: input.expandedValue,
-  selectedValue: input.selectedValue,
-  onExpandedChange(details: { expandedValue: string[] }) {
+// The three-tag wiring (see /docs/creating-components):
+// 1. <machine-props> picks the machine's props out of `input` by name and
+//    merges the attributes written on it — callback adaptations live HERE,
+//    visibly, because they are this component's public contract.
+// 2. <service> creates and owns the running machine (client-only; SSR
+//    renders from a throwaway never-started instance).
+// 3. <connect> returns `api` as a GETTER — call it at every use site.
+//    Getters are the serializable currency of Marko's resumability: the
+//    api object itself must never become reactive state.
+<machine-props/pickedProps from=input pick=treeView.props
+  id=uid
+  onExpandedChange(details: treeView.ExpandedChangeDetails) {
+    input.onExpandedChange?.(details);
     input.expandedValueChange?.(details.expandedValue);
-  },
-  onSelectionChange(details: { selectedValue: string[] }) {
+  }
+  onSelectionChange(details: treeView.SelectionChangeDetails) {
+    input.onSelectionChange?.(details);
     input.selectedValueChange?.(details.selectedValue);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(treeView.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+  }/>
+// `collection` is derived from `items` on every read (rather than picked
+// off `input`) and must stay inside a closure like the rest of
+// machineProps: the built TreeCollection holds functions and is not
+// serializable as a bare tag-input value.
+<const/machineProps=() => ({ ...pickedProps(), collection: buildCollection(input.items) })/>
+<service/service machine=() => treeView.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  treeView.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.items;
-  input.selectionMode;
-  input.expandedValue;
-  input.selectedValue;
-  svc?.propsChanged();
-</script>
 
-<const/computeUi=() => {
-  const api = treeView.connect(svc ?? ssrService(treeView.machine, machineProps), normalizeProps);
-
-  const nodes: Record<string, FlatNodeUi> = {};
-
-  const walk = (list: TreeViewItem[], indexPath: number[]) => {
-    const ids: string[] = [];
-    list.forEach((node, i) => {
-      const path = [...indexPath, i];
-      const props = { node, indexPath: path };
-      const isBranch = !!node.children && node.children.length > 0;
-
-      if (isBranch) {
-        nodes[node.id] = {
-          label: node.label,
-          isBranch: true,
-          branchProps: api.getBranchProps(props),
-          branchControlProps: api.getBranchControlProps(props),
-          branchTriggerProps: api.getBranchTriggerProps(props),
-          branchContentProps: api.getBranchContentProps(props),
-          branchIndicatorProps: api.getBranchIndicatorProps(props),
-          children: walk(node.children!, path),
-        };
-      } else {
-        nodes[node.id] = {
-          label: node.label,
-          isBranch: false,
-          itemProps: api.getItemProps(props),
-          itemIndicatorProps: api.getItemIndicatorProps(props),
-        };
-      }
-      ids.push(node.id);
-    });
-    return ids;
-  };
-
-  const rootIds = walk(items, []);
-
-  return {
-    root: api.getRootProps(),
-    tree: api.getTreeProps(),
-    nodes,
-    rootIds,
-  };
-}/>
-<const/ui=(rev, computeUi())/>
+// Whatever is neither machine-owned (splitProps) nor component-owned
+// (class, items, expandedValueChange, selectedValueChange) passes through
+// to the root element: aria-*, data-*...
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    items: ownItems,
+    expandedValueChange: ownExpandedChangeHandler,
+    selectedValueChange: ownSelectedChangeHandler,
+    ...native
+  } = treeView.splitProps(input)[1];
+  return native;
+}>
 
 <define/ChevronIcon>
   <svg
@@ -140,31 +93,36 @@ export interface FlatNodeUi {
   </svg>
 </define>
 
-<define/TreeNode|{ id, nodes }: { id: string; nodes: Record<string, FlatNodeUi> }|>
-  <const/node=nodes[id]/>
-  <if=node.isBranch>
-    <li ...node.branchProps data-slot="tree-view-branch">
+<define/TreeNode|{ node, indexPath }: { node: TreeViewItem; indexPath: number[] }|>
+  <const/nodeProps={ node, indexPath }/>
+  <const/isBranch=(!!node.children && node.children.length > 0)/>
+  <if=isBranch>
+    <li ...api().getBranchProps(nodeProps) data-slot="tree-view-branch">
       <div
-        ...node.branchControlProps
+        ...api().getBranchControlProps(nodeProps)
         data-slot="tree-view-branch-control"
         class="focus-visible:ring-ring/50 flex items-center gap-1 rounded-md px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-[3px] data-[selected]:bg-accent data-[selected]:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
         style={ "padding-left": `calc(0.5rem + var(--depth) * 1rem)` }
       >
-        <button ...node.branchTriggerProps data-slot="tree-view-branch-trigger" class="flex items-center justify-center">
+        <button
+          ...api().getBranchTriggerProps(nodeProps)
+          data-slot="tree-view-branch-trigger"
+          class="flex items-center justify-center"
+        >
           <ChevronIcon/>
         </button>
         <span data-slot="tree-view-branch-text" class="truncate">${node.label}</span>
       </div>
-      <ul ...node.branchContentProps data-slot="tree-view-branch-content" class="flex flex-col">
-        <for|childId| of=node.children>
-          <TreeNode id=childId nodes=nodes/>
+      <ul ...api().getBranchContentProps(nodeProps) data-slot="tree-view-branch-content" class="flex flex-col">
+        <for|childNode, childIndex| of=node.children>
+          <TreeNode node=childNode indexPath=[...indexPath, childIndex]/>
         </for>
       </ul>
     </li>
   </if>
   <else>
     <li
-      ...node.itemProps
+      ...api().getItemProps(nodeProps)
       data-slot="tree-view-item"
       class="focus-visible:ring-ring/50 flex cursor-pointer items-center gap-1 truncate rounded-md px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-[3px] data-[selected]:bg-accent data-[selected]:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
       style={ "padding-left": `calc(0.5rem + var(--depth) * 1rem)` }
@@ -174,10 +132,14 @@ export interface FlatNodeUi {
   </else>
 </define>
 
-<div ...ui.root data-slot="tree-view" class=cn("w-full", className)>
-  <ul ...ui.tree data-slot="tree-view-tree" class="flex flex-col gap-0.5">
-    <for|id| of=ui.rootIds>
-      <TreeNode id=id nodes=ui.nodes/>
+<div ...nativeAttrs() ...api().getRootProps() data-slot="tree-view" class=cn("w-full", input.class)>
+  <ul ...api().getTreeProps() data-slot="tree-view-tree" class="flex flex-col gap-0.5">
+    <for|node, index| of=input.items>
+      <TreeNode node=node indexPath=[index]/>
     </for>
   </ul>
 </div>
+
+// Parents can receive the api getter: <TreeView/treeViewApi/> then
+// `treeViewApi().selectedValue` — it stays live across machine updates.
+<return=api>

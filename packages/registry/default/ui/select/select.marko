@@ -1,5 +1,6 @@
 import * as select from "@zag-js/select";
-import { createService, ssrService, normalizeProps, positionerStyle } from "marko-zag";
+import type { MachineInput } from "marko-zag";
+import { positionerStyle } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
 export interface SelectItem {
@@ -8,102 +9,86 @@ export interface SelectItem {
   disabled?: boolean;
 }
 
-export interface Input extends Omit<Marko.Input<"div">, "value"> {
+// `items`/`value` are narrowed vs. the raw machine Props: `items` drives the
+// generated `collection`, and `value` is typed as the plain string[] the
+// caller works with (the machine's own `value` type matches already).
+export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collection"> & {
   items: SelectItem[];
-  value?: string[];
   valueChange?: (value: string[]) => void;
   placeholder?: string;
-  disabled?: boolean;
-  name?: string;
-}
+  label?: string;
+};
 
-<const/{ items, value, valueChange, placeholder, disabled, name, class: className, ...rest }=input/>
+<const/{ items, placeholder, label, class: className }=input/>
 
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  collection: select.collection({
-    items,
+<const/buildCollection=(list: SelectItem[]) =>
+  select.collection({
+    items: list,
     itemToValue: (item: SelectItem) => item.value,
     itemToString: (item: SelectItem) => item.label,
     isItemDisabled: (item: SelectItem) => !!item.disabled,
-  }),
-  value,
-  disabled,
-  name,
-  onValueChange(details: { value: string[] }) {
-    valueChange?.(details.value);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(select.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+  })
 />
-<script>
-  input.items;
-  input.value;
-  input.disabled;
-  input.name;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = select.connect(svc ?? ssrService(select.machine, machineProps), normalizeProps);
-  return {
-    open: api.open,
-    valueAsString: api.valueAsString,
-    root: api.getRootProps(),
-    control: api.getControlProps(),
-    trigger: api.getTriggerProps(),
-    hiddenSelect: api.getHiddenSelectProps(),
-    positioner: api.getPositionerProps(),
-    content: api.getContentProps(),
-    items: items.map((item) => ({
-      item,
-      itemProps: api.getItemProps({ item }),
-      itemTextProps: api.getItemTextProps({ item }),
-      itemIndicatorProps: api.getItemIndicatorProps({ item }),
-    })),
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<div ...rest data-slot="select" class=cn(className)>
-  <div ...ui.control data-slot="select-control">
-    <button ...ui.trigger data-slot="select-trigger" class="border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 h-9">
-      <span data-slot="select-value">${ui.valueAsString || placeholder}</span>
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 opacity-50">
+<machine-props/machineProps from=input pick=select.props
+  onValueChange(details: select.ValueChangeDetails<SelectItem>) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }/>
+// `collection` is derived state (rebuilt whenever `items` changes), not a
+// plain input field, so it cannot be picked/overridden inside <machine-props>
+// (that tag's overrides are evaluated eagerly at the tag-input boundary).
+// Wrap machineProps in a closure that layers it in for <service>.
+<const/serviceProps=() => ({ ...machineProps(), collection: buildCollection(items) })/>
+<service/service machine=() => select.machine props=serviceProps/>
+<connect/api=(service, normalizeProps) =>
+  select.connect(service, normalizeProps)
+  service=service
+/>
+
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    valueChange: ownChangeHandler,
+    items: ownItems,
+    placeholder: ownPlaceholder,
+    label: ownLabel,
+    ...native
+  } = select.splitProps(input)[1];
+  return native;
+}>
+
+<div ...nativeAttrs() ...api().getRootProps() data-slot="select" class=cn(className)>
+  <label ...api().getLabelProps() data-slot="select-label" class=(label ? "text-sm font-medium" : "sr-only")>${label || placeholder || "Select an option"}</label>
+  <div ...api().getControlProps() data-slot="select-control">
+    <button ...api().getTriggerProps() data-slot="select-trigger" class="border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 h-9">
+      <span data-slot="select-value">${api().valueAsString || placeholder}</span>
+      <svg ...api().getIndicatorProps() xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 opacity-50">
         <path d="m6 9 6 6 6-6"/>
       </svg>
     </button>
   </div>
-  <select ...ui.hiddenSelect data-slot="select-hidden-select">
+  <select ...api().getHiddenSelectProps() data-slot="select-hidden-select">
     <for|entry| of=items>
       <option value=entry.value disabled=entry.disabled>${entry.label}</option>
     </for>
   </select>
   <portal>
-    <if=ui.open>
-      <div ...ui.positioner data-slot="select-positioner" style=positionerStyle>
+    <if=api().open>
+      <div ...api().getPositionerProps() data-slot="select-positioner" style=positionerStyle>
         <div
-          ...ui.content
+          ...api().getContentProps()
           data-slot="select-content"
           class="bg-popover text-popover-foreground relative z-50 min-w-[8rem] overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-md data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
         >
-          <for|entry| of=ui.items>
+          <for|entry| of=items>
             <div
-              ...entry.itemProps
+              ...api().getItemProps({ item: entry })
               data-slot="select-item"
               class="focus:bg-accent focus:text-accent-foreground data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
             >
-              <span ...entry.itemTextProps data-slot="select-item-text">${entry.item.label}</span>
-              <span ...entry.itemIndicatorProps data-slot="select-item-indicator" class="absolute right-2 flex size-3.5 items-center justify-center">
+              <span ...api().getItemTextProps({ item: entry }) data-slot="select-item-text">${entry.label}</span>
+              <span ...api().getItemIndicatorProps({ item: entry }) data-slot="select-item-indicator" class="absolute right-2 flex size-3.5 items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
                   <path d="M20 6 9 17l-5-5"/>
                 </svg>
@@ -115,3 +100,5 @@ export interface Input extends Omit<Marko.Input<"div">, "value"> {
     </if>
   </portal>
 </div>
+
+<return=api>

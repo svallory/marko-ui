@@ -1,108 +1,101 @@
-import * as dialog from "@zag-js/dialog";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+import * as dialogMachine from "@zag-js/dialog";
+import type { MachineInput } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 import { sheetVariants, type SheetVariants } from "./variants.ts";
 
-export interface Input extends SheetVariants {
-  open?: boolean;
-  openChange?: (open: boolean) => void;
-  trigger?: Marko.Body<[Record<string, unknown>]>;
-  title?: Marko.Body;
-  description?: Marko.Body;
-  content?: Marko.Body;
-  class?: string;
-}
-
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  open: input.open,
-  onOpenChange(details: { open: boolean }) {
-    input.openChange?.(details.open);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(dialog.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
-/>
-<script>
-  input.open;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = dialog.connect(svc ?? ssrService(dialog.machine, machineProps), normalizeProps);
-  return {
-    open: api.open,
-    trigger: api.getTriggerProps(),
-    backdrop: api.getBackdropProps(),
-    positioner: api.getPositionerProps(),
-    content: api.getContentProps(),
-    title: api.getTitleProps(),
-    description: api.getDescriptionProps(),
-    closeTrigger: api.getCloseTriggerProps(),
+export type Input = MachineInput<"div", dialogMachine.Props> &
+  SheetVariants & {
+    openChange?: (open: boolean) => void;
+    trigger?: Marko.Body<[Record<string, unknown>]>;
+    title?: Marko.Body;
+    description?: Marko.Body;
+    content?: Marko.Body;
   };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<const/{ side, class: className }=input/>
+<machine-props/machineProps from=input pick=dialogMachine.props
+  role="dialog"
+  onOpenChange(details: dialogMachine.OpenChangeDetails) {
+    input.onOpenChange?.(details);
+    input.openChange?.(details.open);
+  }/>
+<service/service machine=() => dialogMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  dialogMachine.connect(service, normalizeProps)
+  service=service
+/>
 
-<if=input.trigger>
-  <${input.trigger}({ ...ui.trigger, "data-slot": "sheet-trigger" })/>
-</if>
-<portal>
-  <if=ui.open>
-    <div
-      ...ui.backdrop
-      data-slot="sheet-overlay"
-      class="fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
-    />
-    <div ...ui.positioner data-slot="sheet-positioner" class="contents">
-      <div ...ui.content data-slot="sheet-content" class=cn(sheetVariants({ side }), className)>
-        <div class="flex flex-col gap-1.5 p-4">
-          <if=input.title>
-            <h2 ...ui.title data-slot="sheet-title" class="text-foreground font-semibold">
-              <${input.title}/>
-            </h2>
-          </if>
-          <if=input.description>
-            <p ...ui.description data-slot="sheet-description" class="text-muted-foreground text-sm">
-              <${input.description}/>
-            </p>
-          </if>
-        </div>
-        <div class="flex-1 overflow-auto px-4">
-          <${input.content}/>
-        </div>
-        <button
-          ...ui.closeTrigger
-          data-slot="sheet-close"
-          class="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="size-4"
-          >
-            <path d="M18 6 6 18"/>
-            <path d="m6 6 12 12"/>
-          </svg>
-          <span class="sr-only">Close</span>
-        </button>
-      </div>
-    </div>
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    openChange: ownChangeHandler,
+    trigger: ownTrigger,
+    title: ownTitle,
+    description: ownDescription,
+    content: ownContent,
+    side: ownSide,
+    ...native
+  } = dialogMachine.splitProps(input)[1];
+  return native;
+}>
+
+<div ...nativeAttrs() data-slot="sheet">
+  <if=input.trigger>
+    <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "sheet-trigger" })/>
   </if>
-</portal>
+  <portal>
+    <if=api().open>
+      <div
+        ...api().getBackdropProps()
+        data-slot="sheet-overlay"
+        class="fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+      />
+      <div ...api().getPositionerProps() data-slot="sheet-positioner" class="contents">
+        <div
+          ...api().getContentProps()
+          data-slot="sheet-content"
+          class=cn(sheetVariants({ side: input.side }), input.class)
+        >
+          <div class="flex flex-col gap-1.5 p-4">
+            <if=input.title>
+              <h2 ...api().getTitleProps() data-slot="sheet-title" class="text-foreground font-semibold">
+                <${input.title}/>
+              </h2>
+            </if>
+            <if=input.description>
+              <p ...api().getDescriptionProps() data-slot="sheet-description" class="text-muted-foreground text-sm">
+                <${input.description}/>
+              </p>
+            </if>
+          </div>
+          <div class="flex-1 overflow-auto px-4">
+            <${input.content}/>
+          </div>
+          <button
+            ...api().getCloseTriggerProps()
+            data-slot="sheet-close"
+            class="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="size-4"
+            >
+              <path d="M18 6 6 18"/>
+              <path d="m6 6 12 12"/>
+            </svg>
+            <span class="sr-only">Close</span>
+          </button>
+        </div>
+      </div>
+    </if>
+  </portal>
+</div>
+
+<return=api>

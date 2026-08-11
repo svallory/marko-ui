@@ -1,59 +1,38 @@
-import * as popover from "@zag-js/popover";
-import type { PositioningOptions } from "@zag-js/popover";
-import { createService, ssrService, normalizeProps, positionerStyle } from "marko-zag";
+import * as popoverMachine from "@zag-js/popover";
+import type { MachineInput } from "marko-zag";
+import { positionerStyle } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
-export interface Input {
-  open?: boolean;
-  openChange?: (open: boolean) => void;
-  positioning?: PositioningOptions;
+// MachineInput = native <div> attributes ∩ the machine's full Props, with
+// `id` made optional (generated below, overridable). `openChange` is
+// additive sugar enabling Marko's two-way bind shorthand
+// (<Popover open:=myState/>); Zag's own `onOpenChange` also works and
+// receives the details object.
+export type Input = MachineInput<"div", popoverMachine.Props> & {
+  /** Trigger render-prop — the element that opens the popover. */
   trigger: Marko.Body<[Record<string, unknown>]>;
-  content?: Marko.Body;
-  class?: string;
-}
+  /** Popover content shown when open. */
+  content: Marko.Body;
+  openChange?: (open: boolean) => void;
+};
 
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  open: input.open,
-  positioning: input.positioning,
-  onOpenChange(details: { open: boolean }) {
+<machine-props/machineProps from=input pick=popoverMachine.props
+  onOpenChange(details: popoverMachine.OpenChangeDetails) {
+    input.onOpenChange?.(details);
     input.openChange?.(details.open);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(popover.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+  }/>
+<service/service machine=() => popoverMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  popoverMachine.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.open;
-  input.positioning;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = popover.connect(svc ?? ssrService(popover.machine, machineProps), normalizeProps);
-  return {
-    open: api.open,
-    trigger: api.getTriggerProps(),
-    positioner: api.getPositionerProps(),
-    content: api.getContentProps(),
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<${input.trigger}({ ...ui.trigger, "data-slot": "popover-trigger" })/>
+<${input.trigger}({ ...api().getTriggerProps(), "data-slot": "popover-trigger" })/>
 <portal>
-  <if=ui.open>
-    <div ...ui.positioner style=positionerStyle data-slot="popover-positioner">
+  <if=api().open>
+    <div ...api().getPositionerProps() style=positionerStyle data-slot="popover-positioner">
       <div
-        ...ui.content
+        ...api().getContentProps()
         data-slot="popover-content"
         class=cn(
           "bg-popover text-popover-foreground z-50 w-72 rounded-md border p-4 shadow-md outline-hidden",
@@ -66,3 +45,5 @@ export interface Input {
     </div>
   </if>
 </portal>
+
+<return=api>

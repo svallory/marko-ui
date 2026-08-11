@@ -1,85 +1,70 @@
-import * as pinInput from "@zag-js/pin-input";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+import * as pinInputMachine from "@zag-js/pin-input";
+import type { MachineInput } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
-export interface Input extends Omit<Marko.Input<"div">, "value" | "onChange"> {
-  length?: number;
-  value?: string[];
+// MachineInput = native <div> attributes ∩ the machine's full Props, with
+// `id` made optional (generated below, overridable). `valueChange` and
+// `valueCompleteChange` are additive sugar enabling Marko's two-way bind
+// shorthand; Zag's own `onValueChange`/`onValueComplete` also work and
+// receive the details object.
+export type Input = MachineInput<"div", pinInputMachine.PinInputProps> & {
   valueChange?: (value: string[]) => void;
-  valueComplete?: (value: string[]) => void;
-  otp?: boolean;
-  mask?: boolean;
-  disabled?: boolean;
+  valueCompleteChange?: (value: string[]) => void;
   groupSize?: number;
-}
+  // Sugar alias for the machine's `count` prop.
+  length?: number;
+};
 
-<const/{
-  length,
-  value,
-  valueChange,
-  valueComplete,
-  otp,
-  mask,
-  disabled,
-  groupSize,
-  class: className,
-  ...rest
-}=input/>
-
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  count: length ?? 6,
-  value: value,
-  otp: otp ?? true,
-  mask: mask,
-  disabled: disabled,
-  onValueChange(details: { value: string[] }) {
-    valueChange?.(details.value);
-  },
-  onValueComplete(details: { value: string[] }) {
-    valueComplete?.(details.value);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(pinInput.machine, machineProps, () => { rev += 1 });
-    svc.start();
+<machine-props/machineProps from=input pick=pinInputMachine.props
+  count=input.count ?? input.length
+  onValueChange(details: pinInputMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
   }
-  onDestroy() {
-    svc?.stop();
-  }
+  onValueComplete(details: pinInputMachine.ValueChangeDetails) {
+    input.onValueComplete?.(details);
+    input.valueCompleteChange?.(details.value);
+  }/>
+<service/service machine=() => pinInputMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  pinInputMachine.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.length;
-  input.value;
-  input.otp;
-  input.mask;
-  input.disabled;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = pinInput.connect(svc ?? ssrService(pinInput.machine, machineProps), normalizeProps);
-  return {
-    root: api.getRootProps(),
-    hiddenInput: api.getHiddenInputProps(),
-    inputs: api.items.map((i) => api.getInputProps({ index: i })),
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<div ...rest ...ui.root data-slot="input-otp" class=cn("flex items-center gap-2 has-disabled:opacity-50", className)>
-  <input ...ui.hiddenInput/>
-  <for|i| until=(length ?? 6)>
-    <if=(groupSize && i > 0 && i % groupSize === 0)>
+// Whatever is neither machine-owned (splitProps) nor component-owned
+// (class, valueChange, valueCompleteChange, groupSize, length) passes
+// through to the root div: aria-*, data-*, form attributes...
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    valueChange: ownValueChangeHandler,
+    valueCompleteChange: ownValueCompleteChangeHandler,
+    groupSize: ownGroupSize,
+    length: ownLength,
+    ...native
+  } = pinInputMachine.splitProps(input)[1];
+  return native;
+}>
+
+<div
+  ...nativeAttrs()
+  ...api().getRootProps()
+  data-slot="input-otp"
+  class=cn("flex items-center gap-2 has-disabled:opacity-50", input.class)
+>
+  <input ...api().getHiddenInputProps()>
+  <for|index| of=api().items>
+    <if=(input.groupSize && index > 0 && index % input.groupSize === 0)>
       <div data-slot="input-otp-separator" class="text-muted-foreground">-</div>
     </if>
     <input
-      ...ui.inputs[i]
+      ...api().getInputProps({ index })
       data-slot="input-otp-slot"
       class="border-input size-9 rounded-md border text-center text-sm shadow-xs outline-none focus:ring-[3px] focus:ring-ring/50 focus:border-ring"
     />
   </for>
 </div>
+
+// Parents can receive the api getter: <InputOtp/inputOtpApi/> then
+// `inputOtpApi().value` — it stays live across machine updates.
+<return=api>

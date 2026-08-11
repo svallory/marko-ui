@@ -1,5 +1,5 @@
-import * as radioGroup from "@zag-js/radio-group";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+import * as radioGroupMachine from "@zag-js/radio-group";
+import type { MachineInput } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
 export interface RadioGroupItem {
@@ -8,79 +8,82 @@ export interface RadioGroupItem {
   disabled?: boolean;
 }
 
-export interface Input extends Omit<Marko.Input<"div">, "value"> {
+// The root is a native <div>; `value` is overridden to drop the native
+// string-attribute type in favor of the machine's `string | null`.
+// `valueChange` is additive sugar enabling Marko's two-way bind shorthand
+// (<RadioGroup value:=myState/>); Zag's own `onValueChange` also works and
+// receives the details object.
+export type Input = Omit<MachineInput<"div", radioGroupMachine.Props>, "value"> & {
   items: RadioGroupItem[];
   value?: string | null;
   valueChange?: (value: string | null) => void;
-  disabled?: boolean;
-  name?: string;
-}
+};
 
-<const/{ items, value, valueChange, disabled, name, class: className, ...rest }=input/>
+<const/{ items }=input/>
 
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  value,
-  disabled,
-  name,
-  onValueChange(details: { value: string | null }) {
-    valueChange?.(details.value);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(radioGroup.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+// The three-tag wiring (see /docs/creating-components):
+// 1. <machine-props> picks the machine's props out of `input` by name and
+//    merges the attributes written on it — callback adaptations live HERE,
+//    visibly, because they are this component's public contract.
+// 2. <service> creates and owns the running machine (client-only; SSR
+//    renders from a throwaway never-started instance).
+// 3. <connect> returns `api` as a GETTER — call it at every use site.
+//    Getters are the serializable currency of Marko's resumability: the
+//    api object itself must never become reactive state.
+<machine-props/machineProps from=input pick=radioGroupMachine.props
+  onValueChange(details: radioGroupMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }/>
+<service/service machine=() => radioGroupMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  radioGroupMachine.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.value;
-  input.disabled;
-  input.name;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = radioGroup.connect(svc ?? ssrService(radioGroup.machine, machineProps), normalizeProps);
-  return {
-    root: api.getRootProps(),
-    items: items.map((item) => ({
-      value: item.value,
-      disabled: item.disabled,
-      itemProps: api.getItemProps({ value: item.value, disabled: item.disabled }),
-      controlProps: api.getItemControlProps({ value: item.value, disabled: item.disabled }),
-      hiddenInputProps: api.getItemHiddenInputProps({ value: item.value, disabled: item.disabled }),
-      textProps: api.getItemTextProps({ value: item.value, disabled: item.disabled }),
-      checked: api.value === item.value,
-    })),
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<div ...rest ...ui.root data-slot="radio-group" class=cn("grid gap-3", className)>
-  <for|item, i| of=ui.items>
-    <label ...item.itemProps data-slot="radio-group-item-wrapper" class="flex items-center gap-2">
+// Whatever is neither machine-owned (splitProps) nor component-owned
+// (class, items, valueChange) passes through to the root div.
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    items: ownItems,
+    valueChange: ownChangeHandler,
+    ...native
+  } = radioGroupMachine.splitProps(input)[1];
+  return native;
+}>
+
+<div ...nativeAttrs() ...api().getRootProps() data-slot="radio-group" class=cn("grid gap-3", input.class)>
+  <for|item| of=items by=(item) => item.value>
+    <label
+      ...api().getItemProps({ value: item.value, disabled: item.disabled })
+      data-slot="radio-group-item-wrapper"
+      class="flex items-center gap-2"
+    >
       <span
-        ...item.controlProps
+        ...api().getItemControlProps({ value: item.value, disabled: item.disabled })
         data-slot="radio-group-item"
         class="border-input text-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 aspect-square size-4 shrink-0 rounded-full border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center"
       >
-        <if=item.checked>
+        <if=api().getItemState({ value: item.value, disabled: item.disabled }).checked>
           <span
             data-slot="radio-group-indicator"
             class="relative size-2 rounded-full bg-primary"
           />
         </if>
       </span>
-      <input ...item.hiddenInputProps/>
-      <span ...item.textProps data-slot="radio-group-item-text" class="text-sm leading-none font-medium select-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50">
-        ${items[i].label}
+      <input ...api().getItemHiddenInputProps({ value: item.value, disabled: item.disabled })>
+      <span
+        ...api().getItemTextProps({ value: item.value, disabled: item.disabled })
+        data-slot="radio-group-item-text"
+        class="text-sm leading-none font-medium select-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+      >
+        ${item.label}
       </span>
     </label>
   </for>
 </div>
+
+// Parents can receive the api getter: <RadioGroup/radioGroupApi/> then
+// `radioGroupApi().value` — it stays live across machine updates.
+<return=api>

@@ -1,73 +1,46 @@
-import * as slider from "@zag-js/slider";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+import * as sliderMachine from "@zag-js/slider";
+import type { MachineInput } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
-export interface Input extends Marko.Input<"div"> {
-  value?: number[];
-  defaultValue?: number[];
+export type Input = MachineInput<"div", sliderMachine.Props> & {
   valueChange?: (value: number[]) => void;
-  min?: number;
-  max?: number;
-  step?: number;
-  disabled?: boolean;
-}
+};
 
-<const/{ value, defaultValue, valueChange, min, max, step, disabled, class: className, ...rest }=input/>
-
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  defaultValue: defaultValue ?? value ?? [min ?? 0],
-  value: value,
-  min: min,
-  max: max,
-  step: step,
-  disabled: disabled,
-  onValueChange(details: { value: number[] }) {
-    valueChange?.(details.value);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(slider.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+<machine-props/machineProps from=input pick=sliderMachine.props
+  onValueChange(details: sliderMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }/>
+<service/service machine=() => sliderMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  sliderMachine.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.value;
-  input.min;
-  input.max;
-  input.step;
-  input.disabled;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = slider.connect(svc ?? ssrService(slider.machine, machineProps), normalizeProps);
-  return {
-    root: api.getRootProps(),
-    control: api.getControlProps(),
-    track: api.getTrackProps(),
-    range: api.getRangeProps(),
-    value: api.value,
-    thumbs: api.value.map((_, i) => api.getThumbProps({ index: i })),
-    hiddenInputs: api.value.map((_, i) => api.getHiddenInputProps({ index: i })),
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<div ...rest ...ui.root data-slot="slider" class=cn("relative flex w-full touch-none items-center select-none", className)>
-  <div ...ui.control data-slot="slider-control" class="relative flex grow touch-none items-center select-none">
-    <div ...ui.track data-slot="slider-track" class="bg-muted relative grow rounded-full h-1.5 w-full">
-      <div ...ui.range data-slot="slider-range" class="bg-primary absolute h-full"></div>
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    valueChange: ownChangeHandler,
+    ...native
+  } = sliderMachine.splitProps(input)[1];
+  return native;
+}>
+
+<div
+  ...nativeAttrs()
+  ...api().getRootProps()
+  data-slot="slider"
+  class=cn("relative flex w-full touch-none items-center select-none", input.class)
+>
+  <div ...api().getControlProps() data-slot="slider-control" class="relative flex grow touch-none items-center select-none">
+    <div ...api().getTrackProps() data-slot="slider-track" class="bg-muted relative grow rounded-full h-1.5 w-full">
+      <div ...api().getRangeProps() data-slot="slider-range" class="bg-primary absolute h-full"></div>
     </div>
-    <for|_, i| of=ui.value>
-      <input ...ui.hiddenInputs[i]/>
-      <div ...ui.thumbs[i] data-slot="slider-thumb" class="size-4 rounded-full border-primary bg-background border shadow-sm block shrink-0"></div>
+    <for|_, i| of=api().value>
+      <input ...api().getHiddenInputProps({ index: i })>
+      <div ...api().getThumbProps({ index: i }) data-slot="slider-thumb" class="size-4 rounded-full border-primary bg-background border shadow-sm block shrink-0"></div>
     </for>
   </div>
 </div>
+
+<return=api>

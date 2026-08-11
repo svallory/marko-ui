@@ -1,61 +1,42 @@
-import * as collapsible from "@zag-js/collapsible";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+import * as collapsibleMachine from "@zag-js/collapsible";
+import type { MachineInput } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
-export interface Input extends Marko.Input<"div"> {
-  open?: boolean;
+export type Input = MachineInput<"div", collapsibleMachine.Props> & {
   openChange?: (open: boolean) => void;
-  disabled?: boolean;
-  trigger?: Marko.Body;
-}
+  trigger?: Marko.Body<[Record<string, unknown>]>;
+  content: Marko.Body;
+};
 
-<const/{ open, openChange, disabled, trigger, class: className, content, ...rest }=input/>
-
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  open: open,
-  disabled: disabled,
-  onOpenChange(details: { open: boolean }) {
-    openChange?.(details.open);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(collapsible.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+<machine-props/machineProps from=input pick=collapsibleMachine.props
+  onOpenChange(details: collapsibleMachine.OpenChangeDetails) {
+    input.onOpenChange?.(details);
+    input.openChange?.(details.open);
+  }/>
+<service/service machine=() => collapsibleMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  collapsibleMachine.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.open;
-  input.disabled;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = collapsible.connect(svc ?? ssrService(collapsible.machine, machineProps), normalizeProps);
-  return {
-    root: api.getRootProps(),
-    triggerProps: api.getTriggerProps(),
-    contentProps: api.getContentProps(),
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<div ...rest ...ui.root data-slot="collapsible" class=cn(className)>
-  <if=trigger>
-    <button ...ui.triggerProps data-slot="collapsible-trigger">
-      <${trigger}/>
-    </button>
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    openChange: ownChangeHandler,
+    trigger: ownTrigger,
+    content: ownContent,
+    ...native
+  } = collapsibleMachine.splitProps(input)[1];
+  return native;
+}>
+
+<div ...nativeAttrs() ...api().getRootProps() data-slot="collapsible" class=cn(input.class)>
+  <if=input.trigger>
+    <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "collapsible-trigger" })/>
   </if>
-  <if=!trigger>
-    <button ...ui.triggerProps data-slot="collapsible-trigger">Toggle</button>
-  </if>
-  <div ...ui.contentProps data-slot="collapsible-content">
-    <${content}/>
+  <div ...api().getContentProps() data-slot="collapsible-content">
+    <${input.content}/>
   </div>
 </div>
+
+<return=api>

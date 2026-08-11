@@ -1,5 +1,6 @@
 import * as combobox from "@zag-js/combobox";
-import { createService, ssrService, normalizeProps, positionerStyle } from "marko-zag";
+import type { MachineInput } from "marko-zag";
+import { positionerStyle } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
 export interface ComboboxItem {
@@ -8,89 +9,89 @@ export interface ComboboxItem {
   disabled?: boolean;
 }
 
-export interface Input extends Omit<Marko.Input<"div">, "value"> {
+// `items`/`value` are narrowed vs. the raw machine Props: `items` drives the
+// generated `collection`, and `value` is typed as the plain string[] the
+// caller works with (the machine's own `value` type matches already).
+export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
   items: ComboboxItem[];
-  value?: string[];
   valueChange?: (value: string[]) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  name?: string;
-}
+  inputValueChange?: (inputValue: string) => void;
+  highlightChange?: (highlightedValue: string | null) => void;
+};
 
-<const/{ items, value, valueChange, placeholder, disabled, name, class: className, ...rest }=input/>
+<const/{ items, class: className }=input/>
 
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
 <let/filtered=items/>
 
-<const/buildCollection=(list: ComboboxItem[]) => combobox.collection({ items: list, itemToValue: (item: ComboboxItem) => item.value, itemToString: (item: ComboboxItem) => item.label, isItemDisabled: (item: ComboboxItem) => !!item.disabled })/>
+<const/buildCollection=(list: ComboboxItem[]) =>
+  combobox.collection({
+    items: list,
+    itemToValue: (item: ComboboxItem) => item.value,
+    itemToString: (item: ComboboxItem) => item.label,
+    isItemDisabled: (item: ComboboxItem) => !!item.disabled,
+  })
+/>
 
-<const/machineProps=() => ({
-  id: uid,
-  collection: buildCollection(filtered),
-  value,
-  disabled,
-  name,
-  onInputValueChange(details: { inputValue: string }) {
+<machine-props/machineProps from=input pick=combobox.props
+  onInputValueChange(details: combobox.InputValueChangeDetails) {
+    input.onInputValueChange?.(details);
+    input.inputValueChange?.(details.inputValue);
+    // Only narrow the list while the user is typing. Zag also fires this
+    // with reason "item-select" (writing the chosen label into the input),
+    // which would otherwise re-filter the list down to the selection and
+    // leave the reopened dropdown showing a single item.
+    if (details.reason !== "input-change") {
+      filtered = items;
+      return;
+    }
     const query = details.inputValue.trim().toLowerCase();
     filtered = query === "" ? items : items.filter((item) => item.label.toLowerCase().includes(query));
-  },
-  onValueChange(details: { value: string[] }) {
-    valueChange?.(details.value);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(combobox.machine, machineProps, () => { rev += 1 });
-    svc.start();
   }
-  onDestroy() {
-    svc?.stop();
+  onValueChange(details: combobox.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+    filtered = items;
   }
+  onHighlightChange(details: combobox.HighlightChangeDetails) {
+    input.onHighlightChange?.(details);
+    input.highlightChange?.(details.highlightedValue);
+  }/>
+// `collection` is derived state (rebuilt whenever `filtered` changes), not a
+// plain input field, so it cannot be picked/overridden inside <machine-props>
+// (that tag's overrides are evaluated eagerly at the tag-input boundary).
+// Wrap machineProps in a closure that layers it in for <service>.
+<const/serviceProps=() => ({ ...machineProps(), collection: buildCollection(filtered) })/>
+<service/service machine=() => combobox.machine props=serviceProps/>
+<connect/api=(service, normalizeProps) =>
+  combobox.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.items;
-  input.value;
-  input.disabled;
-  input.name;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = combobox.connect(svc ?? ssrService(combobox.machine, machineProps), normalizeProps);
-  return {
-    open: api.open,
-    inputValue: api.inputValue,
-    root: api.getRootProps(),
-    control: api.getControlProps(),
-    input: api.getInputProps(),
-    trigger: api.getTriggerProps(),
-    positioner: api.getPositionerProps(),
-    content: api.getContentProps(),
-    items: filtered.map((item) => ({
-      item,
-      itemProps: api.getItemProps({ item }),
-      itemTextProps: api.getItemTextProps({ item }),
-      itemIndicatorProps: api.getItemIndicatorProps({ item }),
-    })),
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<div ...rest ...ui.root data-slot="combobox" class=cn(className)>
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    items: ownItems,
+    valueChange: ownValueChange,
+    inputValueChange: ownInputValueChange,
+    highlightChange: ownHighlightChange,
+    ...native
+  } = combobox.splitProps(input)[1];
+  return native;
+}>
+
+<div ...nativeAttrs() ...api().getRootProps() data-slot="combobox" class=cn(className)>
   <div
-    ...ui.control
+    ...api().getControlProps()
     data-slot="combobox-control"
     class="border-input relative flex items-center rounded-md border shadow-xs focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50"
   >
     <input
-      ...ui.input
+      ...api().getInputProps()
       data-slot="combobox-input"
-      placeholder=placeholder
       class="h-9 flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
     />
     <button
-      ...ui.trigger
+      ...api().getTriggerProps()
       data-slot="combobox-trigger"
       class="flex h-9 w-9 items-center justify-center text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
     >
@@ -100,28 +101,28 @@ export interface Input extends Omit<Marko.Input<"div">, "value"> {
     </button>
   </div>
   <portal>
-    <if=ui.open>
-      <div ...ui.positioner style=positionerStyle data-slot="combobox-positioner" class="z-50">
+    <if=api().open>
+      <div ...api().getPositionerProps() style=positionerStyle data-slot="combobox-positioner" class="z-50">
         <div
-          ...ui.content
+          ...api().getContentProps()
           data-slot="combobox-content"
           class="bg-popover text-popover-foreground relative z-50 min-w-[8rem] overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-md data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
         >
-          <for|entry| of=ui.items>
+          <for|item| of=filtered>
             <div
-              ...entry.itemProps
+              ...api().getItemProps({ item })
               data-slot="combobox-item"
               class="focus:bg-accent focus:text-accent-foreground data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
             >
-              <span ...entry.itemTextProps data-slot="combobox-item-text">${entry.item.label}</span>
-              <span ...entry.itemIndicatorProps data-slot="combobox-item-indicator" class="absolute right-2 flex size-3.5 items-center justify-center">
+              <span ...api().getItemTextProps({ item }) data-slot="combobox-item-text">${item.label}</span>
+              <span ...api().getItemIndicatorProps({ item }) data-slot="combobox-item-indicator" class="absolute right-2 flex size-3.5 items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
                   <path d="M20 6 9 17l-5-5"/>
                 </svg>
               </span>
             </div>
           </for>
-          <if=(ui.items.length === 0)>
+          <if=(filtered.length === 0)>
             <div data-slot="combobox-empty" class="text-muted-foreground py-1.5 px-2 text-sm">No results found.</div>
           </if>
         </div>
@@ -129,3 +130,5 @@ export interface Input extends Omit<Marko.Input<"div">, "value"> {
     </if>
   </portal>
 </div>
+
+<return=api>

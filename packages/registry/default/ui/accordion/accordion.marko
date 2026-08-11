@@ -1,5 +1,5 @@
-import * as accordion from "@zag-js/accordion";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+import * as accordionMachine from "@zag-js/accordion";
+import type { MachineInput } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
 export interface AccordionItem {
@@ -8,67 +8,44 @@ export interface AccordionItem {
   content?: string;
 }
 
-export interface Input {
+export type Input = MachineInput<"div", accordionMachine.Props> & {
   items: AccordionItem[];
   content?: Marko.Body<[AccordionItem]>;
-  multiple?: boolean;
-  collapsible?: boolean;
-  value?: string[];
   valueChange?: (value: string[]) => void;
-  class?: string;
-}
+};
 
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  multiple: input.multiple,
-  collapsible: input.collapsible ?? true,
-  value: input.value,
-  onValueChange(details: { value: string[] }) {
+<machine-props/machineProps from=input pick=accordionMachine.props
+  onValueChange(details: accordionMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
     input.valueChange?.(details.value);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(accordion.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+  }/>
+<service/service machine=() => accordionMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  accordionMachine.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.multiple;
-  input.collapsible;
-  input.value;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = accordion.connect(svc ?? ssrService(accordion.machine, machineProps), normalizeProps);
-  return {
-    root: api.getRootProps(),
-    items: Object.fromEntries(
-      input.items.map((item) => [
-        item.value,
-        {
-          item: api.getItemProps({ value: item.value, disabled: false }),
-          trigger: api.getItemTriggerProps({ value: item.value, disabled: false }),
-          content: api.getItemContentProps({ value: item.value, disabled: false }),
-        },
-      ]),
-    ),
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<div ...ui.root data-slot="accordion" class=cn(input.class)>
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    valueChange: ownChangeHandler,
+    items: ownItems,
+    content: ownContent,
+    ...native
+  } = accordionMachine.splitProps(input)[1];
+  return native;
+}>
+
+<div ...nativeAttrs() ...api().getRootProps() data-slot="accordion" class=cn(input.class)>
   <for|item| of=input.items>
-    <div ...ui.items[item.value].item data-slot="accordion-item" class="border-b last:border-b-0">
+    <div
+      ...api().getItemProps({ value: item.value })
+      data-slot="accordion-item"
+      class="border-b last:border-b-0"
+    >
       <h3 class="flex">
         <button
-          ...ui.items[item.value].trigger
+          ...api().getItemTriggerProps({ value: item.value })
           data-slot="accordion-trigger"
           class="focus-visible:border-ring focus-visible:ring-ring/50 flex flex-1 items-start justify-between gap-4 rounded-md py-4 text-left text-sm font-medium transition-all outline-none hover:underline focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180"
         >
@@ -89,7 +66,11 @@ export interface Input {
           </svg>
         </button>
       </h3>
-      <div ...ui.items[item.value].content data-slot="accordion-content" class="overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+      <div
+        ...api().getItemContentProps({ value: item.value })
+        data-slot="accordion-content"
+        class="overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+      >
         <div class="pt-0 pb-4">
           <if=input.content>
             <${input.content}(item)/>
@@ -100,3 +81,5 @@ export interface Input {
     </div>
   </for>
 </div>
+
+<return=api>

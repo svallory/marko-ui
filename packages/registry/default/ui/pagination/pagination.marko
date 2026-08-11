@@ -1,67 +1,37 @@
-import * as pagination from "@zag-js/pagination";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+import * as paginationMachine from "@zag-js/pagination";
+import type { MachineInput } from "marko-zag";
 import { buttonVariants } from "../button/variants.ts";
 import { cn } from "../../lib/utils.ts";
 
-export interface Input extends Omit<Marko.Input<"nav">, "count"> {
-  count: number;
-  pageSize?: number;
-  siblingCount?: number;
-  page?: number;
-  pageChange?: (details: { page: number; pageSize: number }) => void;
-}
+export type Input = MachineInput<"nav", paginationMachine.Props> & {
+  pageChange?: (page: number) => void;
+};
 
-<const/{ count, pageSize, siblingCount, page, pageChange, class: className, ...rest }=input/>
-
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  count,
-  pageSize,
-  siblingCount,
-  page,
-  onPageChange(details: { page: number; pageSize: number }) {
-    pageChange?.(details);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(pagination.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+<machine-props/machineProps from=input pick=paginationMachine.props
+  onPageChange(details: paginationMachine.PageChangeDetails) {
+    input.onPageChange?.(details);
+    input.pageChange?.(details.page);
+  }/>
+<service/service machine=() => paginationMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  paginationMachine.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.count;
-  input.pageSize;
-  input.siblingCount;
-  input.page;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = pagination.connect(svc ?? ssrService(pagination.machine, machineProps), normalizeProps);
-  return {
-    root: api.getRootProps(),
-    prevTrigger: api.getPrevTriggerProps(),
-    nextTrigger: api.getNextTriggerProps(),
-    pages: api.pages.map((p, index) =>
-      p.type === "page"
-        ? { type: "page" as const, value: p.value, itemProps: api.getItemProps({ value: p.value, type: "page" }) }
-        : { type: "ellipsis" as const, index, ellipsisProps: api.getEllipsisProps({ index }) },
-    ),
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<nav ...rest ...ui.root data-slot="pagination" class=cn(className)>
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    pageChange: ownChangeHandler,
+    ...native
+  } = paginationMachine.splitProps(input)[1];
+  return native;
+}>
+
+<nav ...nativeAttrs() ...api().getRootProps() data-slot="pagination" class=cn(input.class)>
   <ul class="flex flex-row items-center gap-1">
     <li>
       <button
-        ...ui.prevTrigger
+        ...api().getPrevTriggerProps()
         data-slot="pagination-prev"
         class=cn(buttonVariants({ variant: "ghost", size: "default" }), "gap-1 px-2.5 sm:pl-2.5")
       >
@@ -82,13 +52,13 @@ export interface Input extends Omit<Marko.Input<"nav">, "count"> {
         <span class="hidden sm:block">Previous</span>
       </button>
     </li>
-    <for|item| of=ui.pages by=(item) => item.type === "page" ? `page-${item.value}` : `ellipsis-${item.index}`>
+    <for|item, index| of=api().pages by=(item, index) => item.type === "page" ? `page-${item.value}` : `ellipsis-${index}`>
       <if=item.type === "page">
         <li>
           <button
-            ...item.itemProps
+            ...api().getItemProps({ type: "page", value: item.value })
             data-slot="pagination-item"
-            class=buttonVariants({ variant: item.itemProps["data-selected"] !== undefined ? "outline" : "ghost", size: "icon" })
+            class=buttonVariants({ variant: item.value === api().page ? "outline" : "ghost", size: "icon" })
           >
             ${item.value}
           </button>
@@ -97,7 +67,7 @@ export interface Input extends Omit<Marko.Input<"nav">, "count"> {
       <else>
         <li>
           <span
-            ...item.ellipsisProps
+            ...api().getEllipsisProps({ index })
             data-slot="pagination-ellipsis"
             class="flex size-9 items-center justify-center"
           >
@@ -108,7 +78,7 @@ export interface Input extends Omit<Marko.Input<"nav">, "count"> {
     </for>
     <li>
       <button
-        ...ui.nextTrigger
+        ...api().getNextTriggerProps()
         data-slot="pagination-next"
         class=cn(buttonVariants({ variant: "ghost", size: "default" }), "gap-1 px-2.5 sm:pr-2.5")
       >
@@ -131,3 +101,5 @@ export interface Input extends Omit<Marko.Input<"nav">, "count"> {
     </li>
   </ul>
 </nav>
+
+<return=api>

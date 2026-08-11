@@ -1,65 +1,42 @@
-import * as hoverCard from "@zag-js/hover-card";
-import type { PositioningOptions } from "@zag-js/hover-card";
-import { createService, ssrService, normalizeProps, positionerStyle } from "marko-zag";
+import * as hoverCardMachine from "@zag-js/hover-card";
+import type { MachineInput } from "marko-zag";
+import { positionerStyle } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 
-export interface Input {
+// MachineInput = native <span> attributes ∩ the machine's full Props, with
+// `id` made optional (generated below, overridable). `openChange` is
+// additive sugar enabling Marko's two-way bind shorthand
+// (<HoverCard open:=myState/>); Zag's own `onOpenChange` also works and
+// receives the details object.
+export type Input = MachineInput<"span", hoverCardMachine.Props> & {
   /** Trigger render-prop — typically a link. */
   trigger: Marko.Body<[Record<string, unknown>]>;
   /** Card content shown when open. */
   content: Marko.Body;
-  /** Duration (ms) from pointer-enter until the card opens. @default 600 */
-  openDelay?: number;
-  /** Duration (ms) from pointer-leave until the card closes. @default 300 */
-  closeDelay?: number;
-  /** Popper positioning options. */
-  positioning?: PositioningOptions;
   /** Extra class for the content panel. */
   class?: string;
-}
+  /** Fires when the open state changes; receives the plain open value. */
+  openChange?: (open: boolean) => void;
+};
 
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  openDelay: input.openDelay,
-  closeDelay: input.closeDelay,
-  positioning: input.positioning,
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(hoverCard.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+<machine-props/machineProps from=input pick=hoverCardMachine.props
+  onOpenChange(details: hoverCardMachine.OpenChangeDetails) {
+    input.onOpenChange?.(details);
+    input.openChange?.(details.open);
+  }/>
+<service/service machine=() => hoverCardMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  hoverCardMachine.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.openDelay;
-  input.closeDelay;
-  input.positioning;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = hoverCard.connect(svc ?? ssrService(hoverCard.machine, machineProps), normalizeProps);
-  return {
-    open: api.open,
-    trigger: api.getTriggerProps(),
-    positioner: api.getPositionerProps(),
-    content: api.getContentProps(),
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
 <span data-slot="hover-card">
-  <${input.trigger}({ ...ui.trigger, "data-slot": "hover-card-trigger" })/>
+  <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "hover-card-trigger" })/>
   <portal>
-    <if=ui.open>
-      <div ...ui.positioner style=positionerStyle>
+    <if=api().open>
+      <div ...api().getPositionerProps() style=positionerStyle>
         <div
-          ...ui.content
+          ...api().getContentProps()
           data-slot="hover-card-content"
           class=cn(
             "z-50 w-64 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-hidden",
@@ -75,3 +52,5 @@ export interface Input {
     </if>
   </portal>
 </span>
+
+<return=api>

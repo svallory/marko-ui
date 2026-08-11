@@ -1,5 +1,5 @@
-import * as fileUpload from "@zag-js/file-upload";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+import * as fileUploadMachine from "@zag-js/file-upload";
+import type { MachineInput } from "marko-zag";
 import { cn } from "../../lib/utils.ts";
 import { buttonVariants } from "../button/variants.ts";
 
@@ -9,88 +9,45 @@ export interface FileUploadFileInfo {
   type: string;
 }
 
-export interface Input {
-  accept?: string | string[] | Record<string, string[]>;
-  maxFiles?: number;
-  maxFileSize?: number;
+export type Input = MachineInput<"input", fileUploadMachine.Props> & {
   filesChange?: (files: FileUploadFileInfo[]) => void;
-  class?: string;
-}
+};
 
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<let/files=[] as FileUploadFileInfo[]/>
-
-<const/apiRef={ current: null as ReturnType<typeof fileUpload.connect> | null }/>
-
-<const/machineProps=() => ({
-  id: uid,
-  accept: input.accept,
-  maxFiles: input.maxFiles,
-  maxFileSize: input.maxFileSize,
-  onFileChange(details: { acceptedFiles: File[] }) {
-    files = details.acceptedFiles.map((file) => ({
-      name: file.name,
-      size: file.size,
-      type: file.type,
-    }));
-    input.filesChange?.(files);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(fileUpload.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
+<machine-props/machineProps from=input pick=fileUploadMachine.props
+  onFileChange(details: fileUploadMachine.FileChangeDetails) {
+    input.onFileChange?.(details);
+    input.filesChange?.(
+      details.acceptedFiles.map((file) => ({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      })),
+    );
+  }/>
+<service/service machine=() => fileUploadMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  fileUploadMachine.connect(service, normalizeProps)
+  service=service
 />
-<script>
-  input.accept;
-  input.maxFiles;
-  input.maxFileSize;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = fileUpload.connect(svc ?? ssrService(fileUpload.machine, machineProps), normalizeProps);
-  return {
-    root: api.getRootProps(),
-    dropzone: api.getDropzoneProps(),
-    hiddenInput: api.getHiddenInputProps(),
-    trigger: api.getTriggerProps(),
-    itemGroup: api.getItemGroupProps(),
-    dragging: api.dragging,
-  };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<script>
-  // Keep a live (client-only) api reference for imperative delete actions.
-  // Never assigned during SSR, so it never enters serialized state.
-  rev;
-  if (svc) {
-    apiRef.current = fileUpload.connect(svc, normalizeProps);
-  }
-</script>
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    filesChange: ownChangeHandler,
+    ...native
+  } = fileUploadMachine.splitProps(input)[1];
+  return native;
+}>
 
 <const/formatSize=(bytes: number) => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}/>
+}>
 
-<const/removeFile=(name: string) => {
-  const api = apiRef.current;
-  if (!api) return;
-  const file = api.acceptedFiles.find((f: File) => f.name === name);
-  if (file) api.deleteFile(file);
-}/>
-
-<div ...ui.root data-slot="file-upload" class=cn("flex w-full flex-col gap-4", input.class)>
+<div ...api().getRootProps() data-slot="file-upload" class=cn("flex w-full flex-col gap-4", input.class)>
   <div
-    ...ui.dropzone
+    ...api().getDropzoneProps()
     data-slot="file-upload-dropzone"
     class="border-input hover:bg-accent/50 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-6 text-center transition-colors data-[dragging]:border-primary data-[dragging]:bg-accent/50"
   >
@@ -114,25 +71,24 @@ export interface Input {
       <span class="font-medium">Drag and drop files here</span>
     </div>
     <p class="text-muted-foreground text-xs">or click browse to choose files</p>
-    <button ...ui.trigger data-slot="file-upload-trigger" class=cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-2")>
+    <button ...api().getTriggerProps() data-slot="file-upload-trigger" class=cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-2")>
       Browse files
     </button>
-    <input ...ui.hiddenInput data-slot="file-upload-hidden-input"/>
+    <input ...nativeAttrs() ...api().getHiddenInputProps() data-slot="file-upload-hidden-input"/>
   </div>
 
-  <if=files.length>
-    <ul ...ui.itemGroup data-slot="file-upload-item-group" class="flex flex-col gap-2">
-      <for|file| of=files>
-        <li data-slot="file-upload-item" class="border-input bg-background flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm">
+  <if=api().acceptedFiles.length>
+    <ul ...api().getItemGroupProps() data-slot="file-upload-item-group" class="flex flex-col gap-2">
+      <for|file| of=api().acceptedFiles>
+        <li ...api().getItemProps({ file }) data-slot="file-upload-item" class="border-input bg-background flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm">
           <div class="flex min-w-0 flex-col">
-            <span data-slot="file-upload-item-name" class="truncate font-medium">${file.name}</span>
-            <span data-slot="file-upload-item-size-text" class="text-muted-foreground text-xs">${formatSize(file.size)}</span>
+            <span ...api().getItemNameProps({ file }) data-slot="file-upload-item-name" class="truncate font-medium">${file.name}</span>
+            <span ...api().getItemSizeTextProps({ file }) data-slot="file-upload-item-size-text" class="text-muted-foreground text-xs">${formatSize(file.size)}</span>
           </div>
           <button
-            type="button"
+            ...api().getItemDeleteTriggerProps({ file })
             data-slot="file-upload-item-delete-trigger"
             class=cn(buttonVariants({ variant: "ghost", size: "icon" }), "size-7 shrink-0")
-            onClick() { removeFile(file.name); }
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -156,3 +112,5 @@ export interface Input {
     </ul>
   </if>
 </div>
+
+<return=api>

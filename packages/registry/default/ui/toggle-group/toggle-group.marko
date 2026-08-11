@@ -1,5 +1,5 @@
-import * as toggleGroup from "@zag-js/toggle-group";
-import { createService, ssrService, normalizeProps } from "marko-zag";
+import * as toggleGroupMachine from "@zag-js/toggle-group";
+import type { MachineInput } from "marko-zag";
 import { toggleVariants, type ToggleVariants } from "../toggle/variants.ts";
 import { cn } from "../../lib/utils.ts";
 
@@ -9,65 +9,50 @@ export interface ToggleGroupItem {
   disabled?: boolean;
 }
 
-export interface Input extends Omit<Marko.Input<"div">, "value">, ToggleVariants {
-  items: ToggleGroupItem[];
-  multiple?: boolean;
-  value?: string[];
-  valueChange?: (value: string[]) => void;
-  disabled?: boolean;
-}
-
-<const/{ items, multiple, value, valueChange, disabled, variant, size, class: className, ...rest }=input/>
-
-<id/uid/>
-<let/rev=0/>
-<let/svc=null/>
-<const/machineProps=() => ({
-  id: uid,
-  multiple,
-  value,
-  disabled,
-  onValueChange(details: { value: string[] }) {
-    valueChange?.(details.value);
-  },
-})/>
-<lifecycle
-  onMount() {
-    svc = createService(toggleGroup.machine, machineProps, () => { rev += 1 });
-    svc.start();
-  }
-  onDestroy() {
-    svc?.stop();
-  }
-/>
-<script>
-  input.multiple;
-  input.value;
-  input.disabled;
-  svc?.propsChanged();
-</script>
-<const/computeUi=() => {
-  const api = toggleGroup.connect(svc ?? ssrService(toggleGroup.machine, machineProps), normalizeProps);
-  return {
-    root: api.getRootProps(),
-    items: items.map((item) => ({
-      value: item.value,
-      itemProps: api.getItemProps({ value: item.value, disabled: item.disabled }),
-      state: api.getItemState({ value: item.value, disabled: item.disabled }),
-    })),
+export type Input = MachineInput<"div", toggleGroupMachine.Props> &
+  ToggleVariants & {
+    items: ToggleGroupItem[];
+    valueChange?: (value: string[]) => void;
   };
-}/>
-<const/ui=(rev, computeUi())/>
 
-<div ...rest ...ui.root data-slot="toggle-group" class=cn("flex items-center gap-1", className)>
-  <for|item, i| of=ui.items by=(item) => item.value>
+<machine-props/machineProps from=input pick=toggleGroupMachine.props
+  onValueChange(details: toggleGroupMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }/>
+<service/service machine=() => toggleGroupMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  toggleGroupMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    items: ownItems,
+    variant: ownVariant,
+    size: ownSize,
+    valueChange: ownChangeHandler,
+    ...native
+  } = toggleGroupMachine.splitProps(input)[1];
+  return native;
+}>
+
+<div
+  ...nativeAttrs()
+  ...api().getRootProps()
+  data-slot="toggle-group"
+  class=cn("flex items-center gap-1", input.class)
+>
+  <for|item| of=input.items by=(item) => item.value>
     <button
-      ...item.itemProps
+      ...api().getItemProps({ value: item.value, disabled: item.disabled })
       data-slot="toggle-group-item"
-      data-state=(item.state.pressed ? "on" : "off")
-      class=toggleVariants({ variant, size })
+      class=toggleVariants({ variant: input.variant, size: input.size })
     >
-      ${items[i].label}
+      ${item.label}
     </button>
   </for>
 </div>
+
+<return=api>
