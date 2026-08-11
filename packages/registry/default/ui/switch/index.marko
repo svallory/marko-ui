@@ -3,27 +3,20 @@
 import * as switchMachine from "@zag-js/switch";
 import { cn } from "../../lib/utils.ts";
 
+// Machine-owned props come straight from Zag (drift-proof against upgrades),
+// minus what the component owns: `id`/`ids`/`getRootNode` (generated/DOM
+// concerns) and `onCheckedChange` — replaced by `checkedChange` so Marko's
+// two-way bind shorthand works: <Switch checked:=myState/>.
 export interface Input
-  extends Omit<Marko.Input<"input">, "checked" | "value">,
-    Pick<
-      switchMachine.Props,
-      "checked" | "defaultChecked" | "disabled" | "name" | "value" | "required" | "invalid" | "readOnly"
-    > {
+  extends Omit<Marko.Input<"input">, "checked" | "value" | "dir" | keyof switchMachine.Props>,
+    Omit<switchMachine.Props, "id" | "ids" | "getRootNode" | "onCheckedChange"> {
   checkedChange?: (checked: boolean) => void;
-  class?: string;
 }
 
 <id/uid/>
 <const/machineProps=(): switchMachine.Props => ({
-  id: uid,
-  checked: input.checked,
-  defaultChecked: input.defaultChecked,
-  disabled: input.disabled,
-  name: input.name,
-  value: input.value,
-  required: input.required,
-  invalid: input.invalid,
-  readOnly: input.readOnly,
+  ...switchMachine.splitProps(input)[0],
+  id: input.id ?? uid,
   onCheckedChange(details) {
     input.checkedChange?.(details.checked);
   },
@@ -31,19 +24,12 @@ export interface Input
 <service/service machine=() => switchMachine.machine props=machineProps/>
 <connect/api=(service, normalizeProps) => switchMachine.connect(service, normalizeProps) service=service/>
 
-<const/{
-  class: className,
-  checked,
-  defaultChecked,
-  disabled,
-  name,
-  value,
-  required,
-  invalid,
-  readOnly,
-  checkedChange,
-  ...rest
-}=input/>
+// Everything that is neither machine-owned nor component-owned passes
+// through to the native hidden input (aria-*, data-*, form attributes...).
+<const/nativeAttrs=() => {
+  const { class: ownClass, checkedChange: ownHandler, ...native } = switchMachine.splitProps(input)[1];
+  return native;
+}/>
 
 <label
   ...api().getRootProps()
@@ -55,7 +41,7 @@ export interface Input
     data-slot="switch"
     class=cn(
       "peer inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input dark:data-[state=unchecked]:bg-input/80",
-      className,
+      input.class,
     )
   >
     <span
@@ -64,7 +50,7 @@ export interface Input
       class="pointer-events-none block size-4 rounded-full bg-background ring-0 transition-transform data-[state=unchecked]:translate-x-0 data-[state=checked]:translate-x-[calc(100%-2px)] dark:data-[state=unchecked]:bg-foreground dark:data-[state=checked]:bg-primary-foreground"
     />
   </span>
-  <input ...rest ...api().getHiddenInputProps()>
+  <input ...nativeAttrs() ...api().getHiddenInputProps()>
 </label>
 
 <return=api/>
