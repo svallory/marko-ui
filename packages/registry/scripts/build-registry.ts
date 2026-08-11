@@ -35,6 +35,60 @@ interface Meta {
   registryDependencies?: string[];
 }
 
+interface CssVars {
+  theme?: Record<string, string>;
+  light?: Record<string, string>;
+  dark?: Record<string, string>;
+}
+
+// Parses top-level custom-property declarations (`--name: value;`) out of a
+// single CSS block body. Values are taken verbatim (comments stripped,
+// whitespace trimmed) — no reformatting, no color conversion.
+function parseDeclarations(blockBody: string): Record<string, string> {
+  const withoutComments = blockBody.replace(/\/\*[\s\S]*?\*\//g, "");
+  const declarations: Record<string, string> = {};
+  const declarationPattern = /--([a-zA-Z0-9-]+)\s*:\s*([^;]+);/g;
+  let match: RegExpExecArray | null;
+  while ((match = declarationPattern.exec(withoutComments))) {
+    const [, name, value] = match;
+    declarations[name] = value.trim();
+  }
+  return declarations;
+}
+
+// Extracts the body of the first top-level block matching `selector { ... }`
+// (e.g. `:root`, `.dark`, `@theme inline`). Matches braces by depth so
+// nested rules/functions inside the block don't confuse the boundary.
+function extractBlock(css: string, selectorPattern: RegExp): string | undefined {
+  const opening = selectorPattern.exec(css);
+  if (!opening) return undefined;
+  const start = css.indexOf("{", opening.index);
+  if (start === -1) return undefined;
+  let depth = 0;
+  for (let i = start; i < css.length; i++) {
+    if (css[i] === "{") depth++;
+    else if (css[i] === "}") {
+      depth--;
+      if (depth === 0) return css.slice(start + 1, i);
+    }
+  }
+  return undefined;
+}
+
+// Parses `:root` → light vars, `.dark` → dark vars, and `@theme inline` →
+// theme vars out of globals.css, mirroring how shadcn's own registry
+// items carry cssVars for the shadcn CLI to merge into a consumer's CSS.
+function parseCssVars(css: string): CssVars {
+  const cssVars: CssVars = {};
+  const root = extractBlock(css, /:root\s*{/);
+  if (root) cssVars.light = parseDeclarations(root);
+  const dark = extractBlock(css, /\.dark\s*{/);
+  if (dark) cssVars.dark = parseDeclarations(dark);
+  const theme = extractBlock(css, /@theme\s+inline\s*{/);
+  if (theme) cssVars.theme = parseDeclarations(theme);
+  return cssVars;
+}
+
 async function fileEntries(dir: string, targetBase: string, registryBase: string) {
   const entries = await readdir(dir, { withFileTypes: true });
   const sub = entries.find((e) => e.isDirectory());
@@ -94,6 +148,7 @@ async function main() {
   });
 
   // style/theme
+  const globalsCss = await readFile(join(DEFAULT_DIR, "styles", "globals.css"), "utf8");
   await write({
     $schema: ITEM_SCHEMA,
     name: "style",
@@ -102,6 +157,7 @@ async function main() {
     description:
       "Tailwind v4 globals.css with shadcn-compatible CSS variables. Add `@source` directives for your .marko files.",
     dependencies: ["tailwindcss", "tw-animate-css", "marko-zag"],
+    cssVars: parseCssVars(globalsCss),
     files: await fileEntries(join(DEFAULT_DIR, "styles"), "~/src/styles", "styles"),
   });
 
