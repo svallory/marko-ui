@@ -22,7 +22,7 @@ const REGISTRY_SCHEMA = "https://ui.shadcn.com/schema/registry.json";
 // Bare registryDependencies names resolve against shadcn's own (React)
 // registry — a consumer asking for our "button" would get button.tsx. Emit
 // absolute URLs into this registry instead. Override for deploys:
-//   REGISTRY_BASE_URL=https://marko-ui.dev/r bun packages/registry/scripts/build-registry.ts
+//   REGISTRY_BASE_URL=https://marko-ui.saulo.tech/r bun packages/registry/scripts/build-registry.ts
 const BASE_URL = process.env.REGISTRY_BASE_URL ?? "http://localhost:3000/r";
 const selfRef = (dep: string) =>
   /^(https?:)?\/\//.test(dep) || dep.includes("/") ? dep : `${BASE_URL}/${dep}.json`;
@@ -51,6 +51,7 @@ function parseDeclarations(blockBody: string): Record<string, string> {
   let match: RegExpExecArray | null;
   while ((match = declarationPattern.exec(withoutComments))) {
     const [, name, value] = match;
+    if (name === undefined || value === undefined) continue;
     declarations[name] = value.trim();
   }
   return declarations;
@@ -147,19 +148,44 @@ async function main() {
     files: await fileEntries(join(DEFAULT_DIR, "lib"), "~/src/lib", "lib"),
   });
 
-  // style/theme
-  const globalsCss = await readFile(join(DEFAULT_DIR, "styles", "globals.css"), "utf8");
-  await write({
-    $schema: ITEM_SCHEMA,
-    name: "style",
-    type: "registry:file",
-    title: "Theme",
-    description:
-      "Tailwind v4 globals.css with shadcn-compatible CSS variables. Add `@source` directives for your .marko files.",
-    dependencies: ["tailwindcss", "tw-animate-css", "marko-zag"],
-    cssVars: parseCssVars(globalsCss),
-    files: await fileEntries(join(DEFAULT_DIR, "styles"), "~/src/styles", "styles"),
-  });
+  // style/theme — one item per shadcn base color, each carrying its own
+  // globals-{color}.css as cssVars. "style" (no suffix) is the neutral
+  // base color, mirroring shadcn's own default (new-york + neutral).
+  // Suffixed names (style-zinc, style-slate, ...) follow shadcn's own
+  // "<name>-<variant>" convention used for blocks (e.g. dashboard-01,
+  // login-02) since shadcn has no standalone per-base-color registry item
+  // naming precedent of its own.
+  const STYLE_VARIANTS: Array<{ name: string; file: string }> = [
+    { name: "style", file: "globals.css" },
+    { name: "style-zinc", file: "globals-zinc.css" },
+    { name: "style-slate", file: "globals-slate.css" },
+    { name: "style-stone", file: "globals-stone.css" },
+    { name: "style-gray", file: "globals-gray.css" },
+  ];
+
+  for (const { name, file } of STYLE_VARIANTS) {
+    const css = await readFile(join(DEFAULT_DIR, "styles", file), "utf8");
+    await write({
+      $schema: ITEM_SCHEMA,
+      name,
+      type: "registry:file",
+      title: name === "style" ? "Theme" : `Theme (${name.replace("style-", "")})`,
+      description:
+        "Tailwind v4 globals.css with shadcn-compatible CSS variables. Add `@source` directives for your .marko files.",
+      dependencies: ["tailwindcss", "tw-animate-css", "marko-zag"],
+      cssVars: parseCssVars(css),
+      // Ship only this variant's CSS, always targeted as globals.css so a
+      // consumer picking any base color gets a normal `~/src/styles/globals.css`.
+      files: [
+        {
+          path: `styles/${file}`,
+          type: "registry:file" as const,
+          target: "~/src/styles/globals.css",
+          content: css,
+        },
+      ],
+    });
+  }
 
   // components
   const components = (await readdir(UI_DIR, { withFileTypes: true }))
@@ -194,8 +220,8 @@ async function main() {
     JSON.stringify(
       {
         $schema: REGISTRY_SCHEMA,
-        name: "shadcn-marko",
-        homepage: "https://github.com/svallory/shadcn-marko",
+        name: "marko-ui",
+        homepage: "https://marko-ui.saulo.tech",
         items: index,
       },
       null,
