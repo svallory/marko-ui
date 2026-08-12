@@ -1,0 +1,128 @@
+// Adapted from shadcn/ui `app/(app)/(root)/cards/payments.tsx` (MIT),
+// rebuilt on marko-ui's own registry components.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Breadcrumb from "@marko-ui/registry/ui/breadcrumb/breadcrumb.marko";
+import BreadcrumbItem from "@marko-ui/registry/ui/breadcrumb/item.marko";
+import BreadcrumbLink from "@marko-ui/registry/ui/breadcrumb/link.marko";
+import BreadcrumbPage from "@marko-ui/registry/ui/breadcrumb/page.marko";
+import BreadcrumbSeparator from "@marko-ui/registry/ui/breadcrumb/separator.marko";
+import DropdownMenu from "@marko-ui/registry/ui/dropdown-menu/dropdown-menu.marko";
+import ItemGroup from "@marko-ui/registry/ui/item/group.marko";
+import Item from "@marko-ui/registry/ui/item/item.marko";
+import ItemMedia from "@marko-ui/registry/ui/item/media.marko";
+import ItemContent from "@marko-ui/registry/ui/item/content.marko";
+import ItemTitle from "@marko-ui/registry/ui/item/title.marko";
+import ItemDescription from "@marko-ui/registry/ui/item/description.marko";
+
+static const ACCOUNT_ACTIONS = [
+  { value: "profile", label: "Profile" },
+  { value: "statements", label: "Statements" },
+  { value: "documents", label: "Documents" },
+];
+
+static const PAYMENT_ROWS = [
+  {
+    id: "transfer-limit",
+    title: "Change transfer limit",
+    description: "Adjust how much you can send from your balance.",
+  },
+  {
+    id: "scheduled",
+    title: "Scheduled transfers",
+    description: "Set up a transfer to send at a later date.",
+  },
+  {
+    id: "recurring",
+    title: "Recurring card payments",
+    description: "Manage your repeated card transactions.",
+  },
+];
+
+<Card class="w-full min-w-0">
+  <CardHeader class="flex flex-col gap-3">
+    <Breadcrumb>
+      <BreadcrumbItem>
+        <BreadcrumbLink href="#">Home</BreadcrumbLink>
+      </BreadcrumbItem>
+      <BreadcrumbSeparator/>
+      <BreadcrumbItem>
+        <DropdownMenu items=ACCOUNT_ACTIONS>
+          <@trigger|triggerProps|>
+            <Button
+              ...triggerProps
+              size="icon"
+              variant="ghost"
+              class="size-7"
+              aria-label="Account options"
+            >
+              <svg
+                class="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="1"/>
+                <circle cx="19" cy="12" r="1"/>
+                <circle cx="5" cy="12" r="1"/>
+              </svg>
+            </Button>
+          </@trigger>
+        </DropdownMenu>
+      </BreadcrumbItem>
+      <BreadcrumbSeparator/>
+      <BreadcrumbItem>
+        <BreadcrumbPage>Payments</BreadcrumbPage>
+      </BreadcrumbItem>
+    </Breadcrumb>
+  </CardHeader>
+  <CardContent>
+    <ItemGroup>
+      <for|row| of=PAYMENT_ROWS by=(row) => row.id>
+        <div role="listitem" class="w-full">
+          <a href="#" class="block w-full">
+            <Item variant="muted">
+              <ItemMedia variant="icon">
+                <svg
+                  class="size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect width="20" height="14" x="2" y="5" rx="2"/>
+                  <path d="M2 10h20"/>
+                </svg>
+              </ItemMedia>
+              <ItemContent>
+                <ItemTitle>${row.title}</ItemTitle>
+                <ItemDescription>${row.description}</ItemDescription>
+              </ItemContent>
+              <svg
+                class="text-muted-foreground size-4 shrink-0"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+            </Item>
+          </a>
+        </div>
+      </for>
+    </ItemGroup>
+  </CardContent>
+</Card>

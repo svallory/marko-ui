@@ -1,36 +1,32 @@
-import RatingGroup from "@marko-ui/registry/ui/rating-group/rating-group.marko";
-
-<let/controlledValue=3/>
+import Default from "../../../demos/rating-group/default.marko";
+import HalfStars from "../../../demos/rating-group/half-stars.marko";
+import CustomCount from "../../../demos/rating-group/custom-count.marko";
+import Readonly from "../../../demos/rating-group/readonly.marko";
+import Disabled from "../../../demos/rating-group/disabled.marko";
+import Controlled from "../../../demos/rating-group/controlled.marko";
 
 <component-page title="Rating Group" description="A star rating input with hover preview, half-star support, and keyboard navigation.">
   <demo-box title="Default">
-    <RatingGroup label="Rate this" defaultValue=3/>
+    <Default/>
   </demo-box>
 
   <demo-box title="Half stars">
-    <RatingGroup label="Rate this" defaultValue=3.5 allowHalf/>
+    <HalfStars/>
   </demo-box>
 
   <demo-box title="Custom count">
-    <RatingGroup label="Out of 10" count=10 defaultValue=7/>
+    <CustomCount/>
   </demo-box>
 
   <demo-box title="Readonly">
-    <RatingGroup label="Average rating" defaultValue=4.5 allowHalf readOnly/>
+    <Readonly/>
   </demo-box>
 
   <demo-box title="Disabled">
-    <RatingGroup label="Rate this" defaultValue=2 disabled/>
+    <Disabled/>
   </demo-box>
 
   <demo-box title="Controlled">
-    <p class="text-muted-foreground mb-4 text-sm">
-      Selected: ${controlledValue}
-    </p>
-    <RatingGroup
-      label="Rate this"
-      value=controlledValue
-      valueChange(value) { controlledValue = value; }
-    />
+    <Controlled/>
   </demo-box>
 </component-page>

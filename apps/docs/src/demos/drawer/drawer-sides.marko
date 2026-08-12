@@ -1,0 +1,10 @@
+import Drawer from "@marko-ui/registry/ui/drawer/drawer.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+<Drawer swipeDirection="end">
+  <@trigger|props|>
+    <Button ...props variant="outline">Open from the right</Button>
+  </@trigger>
+  <@title>Side drawer</@title>
+  <@description>Logical `end` resolves to right in LTR, left in RTL.</@description>
+</Drawer>

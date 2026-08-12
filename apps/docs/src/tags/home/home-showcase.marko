@@ -1,34 +1,93 @@
-// Layout adapted from shadcn/ui `app/(app)/(root)/cards/index.tsx` (MIT).
-// The decorative skeleton "rails" are intentionally dropped.
-import "./card-ui-elements.marko";
-import "./card-analytics.marko";
-import "./card-notifications.marko";
-import "./card-install.marko";
-import "./card-component-stats.marko";
+// Layout adapted from shadcn/ui `app/(app)/(root)/cards/index.tsx` (MIT):
+// a dense, full-width multi-column masonry of real interactive demo cards,
+// on a muted section background with a top gradient wash, decorative
+// skeleton "rails" flanking the grid past ~2200px, and a bottom fade. Every
+// real card below is a rebuild of the same-named shadcn card on marko-ui's
+// own registry components; the rails reuse a small set of representative
+// skeleton shapes (see rail-card.marko) rather than porting all sixteen.
+import CardUiElements from "./card-ui-elements.marko";
+import CardSidebarNav from "./card-sidebar-nav.marko";
+import CardSavingsTargets from "./card-savings-targets.marko";
+import CardContributionHistory from "./card-contribution-history.marko";
+import CardClaimableBalance from "./card-claimable-balance.marko";
+import CardDividendIncome from "./card-dividend-income.marko";
+import CardNewMilestone from "./card-new-milestone.marko";
+import CardPayoutThreshold from "./card-payout-threshold.marko";
+import CardAccountAccess from "./card-account-access.marko";
+import CardQrConnect from "./card-qr-connect.marko";
+import CardPayments from "./card-payments.marko";
+import CardEmptyDistribute from "./card-empty-distribute.marko";
+import CardAnalytics from "./card-analytics.marko";
+import CardNotifications from "./card-notifications.marko";
+import CardPowerUsage from "./card-power-usage.marko";
+import CardInstall from "./card-install.marko";
+import CardComponentStats from "./card-component-stats.marko";
+import RailCard from "./rail-card.marko";
 
+// min-w-0 on every column: grid tracks default to min-width:auto, which lets
+// wide children (the install command <pre>, the QR svg) push the track past
+// the viewport instead of scrolling inside their own box.
 <section
   id="components"
   data-slot="home-showcase"
-  class="relative w-full overflow-hidden bg-muted p-6 lg:p-10 dark:bg-background"
+  class="bg-muted dark:bg-background relative w-full overflow-hidden px-4 py-8 sm:px-6 lg:px-10"
 >
-  <div class="relative z-10 mx-auto grid max-w-6xl gap-6 md:grid-cols-2 xl:grid-cols-3">
-    // min-w-0 on every column: grid tracks default to min-width:auto, which
-    // lets wide children (the install command <pre>) push the track past the
-    // viewport instead of scrolling inside their own box.
-    <div class="flex min-w-0 flex-col gap-6">
-      <card-ui-elements/>
-    </div>
-    <div class="flex min-w-0 flex-col gap-6">
-      <card-notifications/>
-      <card-analytics/>
-    </div>
-    <div class="flex min-w-0 flex-col gap-6 md:col-span-2 xl:col-span-1">
-      <card-install/>
-      <card-component-stats/>
-    </div>
-  </div>
+  <!-- Decorative skeleton rails: shadcn shows these past min-[2200px] only,
+       muted and non-interactive, to suggest a much larger component grid
+       continuing off-screen. -->
   <div
     aria-hidden="true"
-    class="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-24 bg-linear-to-t from-background to-transparent"
-  />
+    class="pointer-events-none absolute inset-x-0 top-8 z-0 hidden min-[2200px]:block"
+  >
+    <div class="absolute top-0 left-[calc(50%-950px-21rem)] grid w-80 grid-cols-1 gap-6 opacity-40">
+      <RailCard variant="chart"/>
+      <RailCard variant="list"/>
+      <RailCard variant="header-form"/>
+    </div>
+    <div class="absolute top-0 right-[calc(50%-950px-21rem)] grid w-80 grid-cols-1 gap-6 opacity-40">
+      <RailCard variant="qr"/>
+      <RailCard variant="tiles"/>
+      <RailCard variant="profile"/>
+    </div>
+  </div>
+
+  <div class="relative z-10 mx-auto grid max-w-[1900px] min-w-0 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+    <div class="flex min-w-0 flex-col gap-6">
+      <CardUiElements/>
+      <CardSidebarNav/>
+      <CardSavingsTargets/>
+    </div>
+    <div class="flex min-w-0 flex-col gap-6">
+      <CardContributionHistory/>
+      <CardClaimableBalance/>
+      <CardDividendIncome/>
+    </div>
+    <div class="flex min-w-0 flex-col gap-6">
+      <CardNewMilestone/>
+      <CardPayoutThreshold/>
+      <CardAccountAccess/>
+    </div>
+    <div class="flex min-w-0 flex-col gap-6">
+      <CardQrConnect/>
+      <CardPayments/>
+      <CardInstall/>
+    </div>
+    <div class="flex min-w-0 flex-col gap-6">
+      <CardEmptyDistribute/>
+      <CardAnalytics/>
+      <CardNotifications/>
+      <CardPowerUsage/>
+      <CardComponentStats/>
+    </div>
+  </div>
+
+  <!-- Top-light gradient wash: the section background bleeds from the page
+       background into the muted showcase tone. Light-mode only, like
+       shadcn's own (their dark variant relies on bg-background already
+       matching the wash, so it is simply hidden). -->
+  <div class="pointer-events-none absolute inset-x-0 top-0 z-[1] h-32 bg-linear-to-b from-background via-muted to-transparent dark:hidden"/>
+
+  <!-- Bottom fade: the grid dissolves into transparent at the section's
+       lower edge instead of ending on a hard line. -->
+  <div class="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-32 bg-linear-to-t from-muted via-muted/80 to-transparent lg:h-48 dark:from-background dark:via-background/80"/>
 </section>

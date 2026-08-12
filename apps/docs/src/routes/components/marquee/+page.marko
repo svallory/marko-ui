@@ -1,51 +1,27 @@
-import Marquee from "@marko-ui/registry/ui/marquee/marquee.marko";
-
-static const LOGOS = ["Acme", "Globex", "Initech", "Umbrella", "Soylent", "Stark", "Wayne", "Wonka"];
-
-<let/controlledPaused=false/>
+import MarqueeDemo from "../../../demos/marquee/marquee-demo.marko";
+import MarqueeReverse from "../../../demos/marquee/marquee-reverse.marko";
+import MarqueeSpeed from "../../../demos/marquee/marquee-speed.marko";
+import MarqueeVertical from "../../../demos/marquee/marquee-vertical.marko";
+import MarqueeAutoFill from "../../../demos/marquee/marquee-auto-fill.marko";
+import MarqueeControlled from "../../../demos/marquee/marquee-controlled.marko";
 
 <component-page title="Marquee" description="A continuously scrolling strip of content that pauses on hover.">
   <demo-box title="Default">
-    <Marquee items=LOGOS pauseOnInteraction class="w-full max-w-lg mx-auto">
-      <@content|logo|>
-        <span class="px-6 text-lg font-semibold text-muted-foreground">${logo}</span>
-      </@content>
-    </Marquee>
+    <MarqueeDemo/>
   </demo-box>
   <demo-box title="Reverse direction">
-    <Marquee items=LOGOS reverse pauseOnInteraction class="w-full max-w-lg mx-auto">
-      <@content|logo|>
-        <span class="px-6 text-lg font-semibold text-muted-foreground">${logo}</span>
-      </@content>
-    </Marquee>
+    <MarqueeReverse/>
   </demo-box>
   <demo-box title="Fast speed">
-    <Marquee items=LOGOS speed=150 pauseOnInteraction class="w-full max-w-lg mx-auto">
-      <@content|logo|>
-        <span class="px-6 text-lg font-semibold text-muted-foreground">${logo}</span>
-      </@content>
-    </Marquee>
+    <MarqueeSpeed/>
+  </demo-box>
+  <demo-box title="Vertical">
+    <MarqueeVertical/>
+  </demo-box>
+  <demo-box title="Auto fill">
+    <MarqueeAutoFill/>
   </demo-box>
   <demo-box title="Controlled">
-    <p class="text-muted-foreground mb-4 text-sm">
-      Paused: ${controlledPaused ? "yes" : "no"}
-    </p>
-    <button
-      type="button"
-      class="mb-4 inline-flex h-9 items-center rounded-md border border-input bg-background px-3 text-sm shadow-xs hover:bg-accent hover:text-accent-foreground"
-      onClick() { controlledPaused = !controlledPaused; }
-    >
-      Toggle pause
-    </button>
-    <Marquee
-      items=LOGOS
-      paused=controlledPaused
-      pausedChange(paused) { controlledPaused = paused; }
-      class="w-full max-w-lg mx-auto"
-    >
-      <@content|logo|>
-        <span class="px-6 text-lg font-semibold text-muted-foreground">${logo}</span>
-      </@content>
-    </Marquee>
+    <MarqueeControlled/>
   </demo-box>
 </component-page>

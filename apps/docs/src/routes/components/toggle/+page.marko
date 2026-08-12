@@ -1,38 +1,23 @@
-import Toggle from "@marko-ui/registry/ui/toggle/toggle.marko";
-
-<let/controlledPressed=true/>
+import DefaultDemo from "../../../demos/toggle/default.marko";
+import OutlineDemo from "../../../demos/toggle/outline.marko";
+import SizesDemo from "../../../demos/toggle/sizes.marko";
+import DisabledDemo from "../../../demos/toggle/disabled.marko";
+import ControlledDemo from "../../../demos/toggle/controlled.marko";
 
 <component-page title="Toggle" description="A two-state button that can be either on or off.">
   <demo-box title="Default">
-    <Toggle>Toggle</Toggle>
+    <DefaultDemo/>
   </demo-box>
-  <demo-box title="Variants">
-    <Toggle>Default</Toggle>
-    <Toggle variant="outline">Outline</Toggle>
+  <demo-box title="Outline">
+    <OutlineDemo/>
   </demo-box>
   <demo-box title="Sizes">
-    <Toggle size="sm">Small</Toggle>
-    <Toggle>Default</Toggle>
-    <Toggle size="lg">Large</Toggle>
-  </demo-box>
-  <demo-box title="Pressed by default">
-    <Toggle pressed>Pressed</Toggle>
+    <SizesDemo/>
   </demo-box>
   <demo-box title="Disabled">
-    <Toggle disabled>Disabled</Toggle>
-    <Toggle pressed disabled>Disabled pressed</Toggle>
+    <DisabledDemo/>
   </demo-box>
   <demo-box title="Controlled">
-    <div class="flex items-center gap-4">
-      <Toggle
-        pressed=controlledPressed
-        pressedChange=(pressed) => { controlledPressed = pressed; }
-      >
-        Controlled
-      </Toggle>
-      <span class="text-sm text-muted-foreground">
-        pressed: ${controlledPressed}
-      </span>
-    </div>
+    <ControlledDemo/>
   </demo-box>
 </component-page>

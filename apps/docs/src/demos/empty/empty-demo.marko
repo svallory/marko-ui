@@ -1,0 +1,28 @@
+import Empty from "@marko-ui/registry/ui/empty/empty.marko";
+import EmptyHeader from "@marko-ui/registry/ui/empty/header.marko";
+import EmptyMedia from "@marko-ui/registry/ui/empty/media.marko";
+import EmptyTitle from "@marko-ui/registry/ui/empty/title.marko";
+import EmptyDescription from "@marko-ui/registry/ui/empty/description.marko";
+import EmptyContent from "@marko-ui/registry/ui/empty/content.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+<Empty>
+  <EmptyHeader>
+    <EmptyMedia variant="icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+        <path d="m9 13 2 2 4-4"/>
+      </svg>
+    </EmptyMedia>
+    <EmptyTitle>No projects yet</EmptyTitle>
+    <EmptyDescription>
+      You haven't created any projects yet. Get started by creating your first project.
+    </EmptyDescription>
+  </EmptyHeader>
+  <EmptyContent>
+    <div class="flex gap-2">
+      <Button>Create project</Button>
+      <Button variant="outline">Import project</Button>
+    </div>
+  </EmptyContent>
+</Empty>

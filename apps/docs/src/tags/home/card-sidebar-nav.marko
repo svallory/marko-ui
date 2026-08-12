@@ -1,0 +1,61 @@
+// Adapted from shadcn/ui `app/(app)/(root)/cards/sidebar-nav.tsx` (MIT).
+// The sidebar registry component's <SidebarProvider> is a full-page shell
+// (min-h-svh) — a card-sized nav uses the menu parts directly instead.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import SidebarGroupLabel from "@marko-ui/registry/ui/sidebar/group-label.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+
+export interface Input {}
+
+static const SECTIONS = [
+  {
+    label: "Overview",
+    items: [
+      { label: "Analytics", active: true },
+      { label: "Transactions", active: false },
+      { label: "Investments", active: false },
+      { label: "Accounts", active: false },
+    ],
+  },
+  {
+    label: "Account",
+    items: [
+      { label: "Profile", active: false },
+      { label: "Billing", active: true },
+      { label: "Notifications", active: false },
+      { label: "Security", active: false },
+    ],
+  },
+];
+
+<div class="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2">
+  <for|section| of=SECTIONS by=(section) => section.label>
+    <Card class="w-full min-w-0 overflow-hidden bg-sidebar py-3">
+      <div class="flex flex-col gap-1 px-2">
+        <SidebarGroupLabel>${section.label}</SidebarGroupLabel>
+        <SidebarMenu class="gap-1">
+          <for|entry| of=section.items by=(entry) => entry.label>
+            <SidebarMenuItem>
+              <SidebarMenuButton active=entry.active>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="9"/>
+                </svg>
+                ${entry.label}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </for>
+        </SidebarMenu>
+      </div>
+    </Card>
+  </for>
+</div>

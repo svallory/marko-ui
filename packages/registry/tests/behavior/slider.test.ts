@@ -47,7 +47,8 @@ describe("slider keyboard contract (APG)", () => {
       expect(await attributeOf(thumb, "role")).toBe("slider");
       expect(await attributeOf(thumb, "aria-valuemin")).toBe("0");
       expect(await attributeOf(thumb, "aria-valuemax")).toBe("100");
-      expect(await valueOf(thumb)).toBe(50);
+      // The "Default" demo's initial value is 33 (`defaultValue=[33]`).
+      expect(await valueOf(thumb)).toBe(33);
     });
   });
 
@@ -57,10 +58,10 @@ describe("slider keyboard contract (APG)", () => {
       await focusElement(thumb);
 
       await pressKey(page, "ArrowRight");
-      expect(await valueOf(thumb)).toBe(51);
+      expect(await valueOf(thumb)).toBe(34);
 
       await pressKey(page, "ArrowLeft");
-      expect(await valueOf(thumb)).toBe(50);
+      expect(await valueOf(thumb)).toBe(33);
     });
   });
 
@@ -73,10 +74,10 @@ describe("slider keyboard contract (APG)", () => {
       // horizontal slider they are correctly inert. Asserting this pins the
       // orientation contract rather than assuming both axes always apply.
       await pressKey(page, "ArrowUp");
-      expect(await valueOf(thumb)).toBe(50);
+      expect(await valueOf(thumb)).toBe(33);
 
       await pressKey(page, "ArrowDown");
-      expect(await valueOf(thumb)).toBe(50);
+      expect(await valueOf(thumb)).toBe(33);
     });
   });
 
@@ -122,7 +123,18 @@ describe("slider keyboard contract (APG)", () => {
       expect(afterPageUp).toBeGreaterThan(start + 1);
 
       await pressKey(page, "PageDown");
-      expect(await valueOf(thumb)).toBe(start);
+      const afterPageDown = await valueOf(thumb);
+
+      // Zag's large-step increment (`largeStep`, default 10 * step) snaps to
+      // the nearest multiple of that increment rather than adding/subtracting
+      // from the exact current value (see snapValueToStep in
+      // @zag-js/utils/number.mjs). The "Default" demo starts at 33, which is
+      // not itself on that grid, so PageUp -> PageDown lands one grid step
+      // below where PageUp landed, not back at the original 33. Assert the
+      // real snap-to-grid contract: PageDown must move backward by the same
+      // large-step distance, not merely undo PageUp.
+      expect(afterPageDown).toBeLessThan(afterPageUp);
+      expect(afterPageUp - afterPageDown).toBeGreaterThan(1);
     });
   });
 

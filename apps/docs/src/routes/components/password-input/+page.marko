@@ -1,29 +1,23 @@
-import PasswordInput from "@marko-ui/registry/ui/password-input/password-input.marko";
-
-<let/controlledVisible=false/>
+import PasswordInputDemo from "../../../demos/password-input/password-input-demo.marko";
+import PasswordInputNewPassword from "../../../demos/password-input/password-input-new-password.marko";
+import PasswordInputDisabled from "../../../demos/password-input/password-input-disabled.marko";
+import PasswordInputInvalid from "../../../demos/password-input/password-input-invalid.marko";
+import PasswordInputControlled from "../../../demos/password-input/password-input-controlled.marko";
 
 <component-page title="Password Input" description="A password input field with a visibility toggle button and correct autocomplete handling.">
   <demo-box title="Default">
-    <PasswordInput label="Password" placeholder="Enter your password" name="password" class="w-[320px]"/>
+    <PasswordInputDemo/>
   </demo-box>
   <demo-box title="New password">
-    <PasswordInput label="New password" placeholder="Create a password" name="new-password" autoComplete="new-password" class="w-[320px]"/>
+    <PasswordInputNewPassword/>
   </demo-box>
   <demo-box title="Disabled">
-    <PasswordInput label="Password" value="hunter2" disabled name="password" class="w-[320px]"/>
+    <PasswordInputDisabled/>
   </demo-box>
   <demo-box title="Invalid">
-    <PasswordInput label="Password" value="short" invalid name="password" class="w-[320px]"/>
+    <PasswordInputInvalid/>
   </demo-box>
   <demo-box title="Controlled">
-    <p class="text-muted-foreground mb-4 text-sm">Visible: ${controlledVisible}</p>
-    <PasswordInput
-      label="Password"
-      placeholder="Enter your password"
-      name="password"
-      visible=controlledVisible
-      visibleChange(visible) { controlledVisible = visible; }
-      class="w-[320px]"
-    />
+    <PasswordInputControlled/>
   </demo-box>
 </component-page>

@@ -25,8 +25,17 @@ export interface Input<Api = any> {
   service: ServiceHandle;
 }
 
+// The comma expression's leading reads are api's reactive dependencies:
+// the handle (fresh identity per machine update via rev), AND an eager
+// props() call so every tracked read inside the caller's machineProps
+// closure invalidates api too. Without the latter, a controlled prop that
+// only feeds Zag `computed(...)` values (qr-code's encoded pattern
+// deriving from prop("value")) re-derives without any bindable write — the
+// machine never notifies, rev never bumps, and every api() read stays
+// stale. Reads only, no writes — cannot loop.
 <const/api=(
   input.service,
+  input.service.props(),
   () => input.value(
     input.service.service ?? ssrService(input.service.machine(), input.service.props),
     normalizeProps,

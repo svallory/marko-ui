@@ -1,54 +1,129 @@
-import "../../tags/typeset/type-scale.marko";
-import "../../tags/typeset/typeset-specimen.marko";
+import "../../tags/typeset/typeset-customizer.marko";
+import "../../tags/typeset/typeset-preview.marko";
+import { FIXTURES } from "../../lib/typeset-fixtures.ts";
+import {
+  DEFAULT_CONFIG,
+  buildTypesetVariables,
+  toStyleString,
+  toCssBlock,
+  parseConfig,
+  serializeConfig,
+  MEASURES,
+  FONTS,
+  SIZES,
+  LEADINGS,
+  FLOWS,
+  type TypesetConfig,
+} from "../../tags/typeset/typeset-options.ts";
 
-<main class="mx-auto max-w-4xl space-y-10 px-6 py-10 sm:px-8">
-  <div class="space-y-2">
-    <p class="text-sm font-medium text-muted-foreground">Typeset</p>
-    <h1 class="text-3xl font-bold tracking-tight">Typography for markdown you don't control</h1>
-    <p class="max-w-2xl text-muted-foreground">
-      A drop-in <code class="rounded bg-muted px-1 py-0.5 font-mono text-sm">.typeset</code> class for
-      prose you didn't author yourself — CMS fields, READMEs, streamed model output. It styles raw HTML
-      headings, lists, tables, code, and everything in between using marko-ui's own semantic tokens, so
-      it always matches your theme.
-    </p>
+<let/config=DEFAULT_CONFIG/>
+<let/overlay=null as Partial<TypesetConfig> | null/>
+<let/active="docs" as keyof typeof FIXTURES/>
+<let/copyState="Copy CSS"/>
+
+// Restore a shared configuration from the query string on first paint, same
+// pattern as /create — settings are shareable via URL, nothing server-side.
+<script>
+  const restored = parseConfig(window.location.search);
+  config = restored;
+</script>
+
+<const/effectiveConfig=overlay ? { ...config, ...overlay } : config/>
+<const/previewVariables=buildTypesetVariables(effectiveConfig)/>
+<const/previewStyle=toStyleString(previewVariables)/>
+<const/measureWidth=(
+  MEASURES.find((measure) => measure.name === effectiveConfig.measure) ?? MEASURES[2]
+).width/>
+
+<const/commitConfig=(next: TypesetConfig) => {
+  config = next;
+  overlay = null;
+  copyState = "Copy CSS";
+  window.history.replaceState(
+    null,
+    "",
+    window.location.pathname + serializeConfig(next),
+  );
+}/>
+
+<const/shuffle=() => {
+  const pick = (options: { name: string }[]) =>
+    options[Math.floor(Math.random() * options.length)].name;
+  commitConfig({
+    heading: pick(FONTS),
+    body: pick(FONTS.filter((font) => font.name !== "inherit")),
+    mono: pick(FONTS.filter((font) => font.name !== "inherit")),
+    scale: pick(SIZES),
+    leading: pick(LEADINGS),
+    flow: pick(FLOWS),
+    measure: effectiveConfig.measure,
+  });
+}/>
+
+<const/applyOverlay=(next: Partial<TypesetConfig> | null) => {
+  overlay = next;
+}/>
+
+<const/resetConfig=() => {
+  commitConfig(DEFAULT_CONFIG);
+}/>
+
+<const/setActive=(value: string) => {
+  active = value as keyof typeof FIXTURES;
+}/>
+
+<const/copyCss=() => {
+  navigator.clipboard
+    .writeText(toCssBlock(config))
+    .then(() => {
+      copyState = "Copied!";
+    })
+    .catch(() => {
+      copyState = "Copy failed";
+    });
+}/>
+
+<div
+  class="relative flex flex-col [--customizer-width:18rem] [--gap:1rem] md:h-[calc(100vh-8rem)] md:overflow-hidden md:[--gap:1.5rem]"
+>
+  <div class="flex flex-col gap-2 px-(--gap) pt-(--gap)">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div class="flex flex-col gap-1">
+        <h1 class="text-2xl font-semibold tracking-tight">Typeset</h1>
+        <p class="max-w-2xl text-sm text-muted-foreground">
+          Typography for markdown you don't control. A single
+          <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">.typeset</code>
+          class styles headings, lists, tables, code, and everything in between —
+          tune it live below, then copy the CSS.
+        </p>
+      </div>
+      <span class="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+        Preview — settings live in the URL, nothing is saved server-side
+      </span>
+    </div>
   </div>
 
-  <section class="space-y-3">
-    <h2 class="text-lg font-semibold">Type scale</h2>
-    <p class="text-sm text-muted-foreground">
-      Headings scale from a 1.75em <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">h1</code>
-      down to an uppercase, letter-spaced <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">h6</code>,
-      each carrying its own line height and top margin (<code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">--typeset-flow</code>).
-    </p>
-    <type-scale/>
-  </section>
+  <div
+    data-slot="designer"
+    class="flex flex-col gap-(--gap) p-(--gap) md:min-h-0 md:flex-1 md:flex-row-reverse"
+  >
+    <typeset-customizer
+      config=config
+      configChange=commitConfig
+      previewChange=applyOverlay
+      onShuffle=shuffle
+      onReset=resetConfig
+      onCopy=copyCss
+      copyState=copyState
+    />
 
-  <section class="space-y-3">
-    <h2 class="text-lg font-semibold">Specimen</h2>
-    <p class="text-sm text-muted-foreground">
-      Two full documents rendered through the same stylesheet: prose, nested lists, a blockquote,
-      inline and block code, a reference table, task lists, definition lists, and footnotes.
-    </p>
-    <typeset-specimen/>
-  </section>
-
-  <section class="space-y-3 border-t border-border pt-8">
-    <h2 class="text-lg font-semibold">Usage</h2>
-    <p class="text-sm text-muted-foreground">
-      Wrap any block of untrusted or externally-authored HTML in <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">.typeset</code>.
-      Opt individual elements out with <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">.not-typeset</code>
-      or <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">data-not-typeset</code> when you need
-      a component (like a live demo) to keep its own styling instead.
-    </p>
-    <pre class="overflow-x-auto rounded-lg border border-border bg-muted/50 p-4 text-sm"><code>&lt;div class="typeset"&gt;
-  &#36;!{markdownHtml}
-&lt;/div&gt;
-
-&lt;div class="typeset"&gt;
-  &lt;p&gt;Styled by .typeset.&lt;/p&gt;
-  &lt;div class="not-typeset"&gt;
-    &lt;Button&gt;Untouched — keeps its own classes&lt;/Button&gt;
-  &lt;/div&gt;
-&lt;/div&gt;</code></pre>
-  </section>
-</main>
+    <div class="relative min-h-[32rem] flex-1 overflow-hidden rounded-2xl border border-border md:min-h-0">
+      <typeset-preview
+        active=active
+        activeChange=setActive
+        style=previewStyle
+        measureWidth=measureWidth
+      />
+    </div>
+  </div>
+</div>

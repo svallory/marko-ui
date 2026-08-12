@@ -1,0 +1,11 @@
+import Carousel from "@marko-ui/registry/ui/carousel/carousel.marko";
+
+static const SLIDES = [1, 2, 3, 4, 5];
+
+<Carousel items=SLIDES orientation="vertical" class="mx-auto h-[16rem] w-full max-w-xs">
+  <@content|item|>
+    <div class="flex h-24 items-center justify-center rounded-lg border bg-card">
+      <span class="text-3xl font-semibold">${item}</span>
+    </div>
+  </@content>
+</Carousel>

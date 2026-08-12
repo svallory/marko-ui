@@ -1,0 +1,45 @@
+// Monospace ASCII tree of a compound component's parts, matching shadcn's
+// ```text Composition block. Derived from api-reference.json's part list
+// rather than hand-authored per component.
+//
+// The extraction gives a flat set of parts with no nesting information, so
+// the tree renders one level: root, then every other part beneath it. That is
+// honest about what is known — an invented hierarchy would be worse than a
+// flat one.
+export interface CompositionPart {
+  file: string;
+  name: string;
+}
+
+export interface Input {
+  componentName: string;
+  parts: CompositionPart[];
+  class?: string;
+}
+
+// `card.marko` is the root of the `card` component; the rest are children.
+<const/childParts=input.parts.filter((part) => part.name !== input.componentName)/>
+
+// Tag names as an author writes them: `header.marko` in `card` → CardHeader.
+static function pascalCase(value: string) {
+  return value
+    .split(/[^A-Za-z0-9]+/)
+    .filter(Boolean)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join("");
+}
+
+<const/rootTag=pascalCase(input.componentName)/>
+
+// A part named with the component's own prefix (e.g. toast's "toast-item")
+// would double up as <ToastToastItem/> — strip the prefix before joining.
+static function childTagSuffix(componentName: string, partName: string) {
+  return partName.startsWith(`${componentName}-`)
+    ? partName.slice(componentName.length + 1)
+    : partName;
+}
+
+<div class=`my-4 overflow-x-auto rounded-lg border border-border bg-muted/40 p-4 ${input.class ?? ""}` data-slot="composition-tree">
+  <pre class="font-mono text-[0.8125rem] leading-6"><code>${"<"}${rootTag}${">"}
+<for|part, index| of=childParts by=(part) => part.file>${index === childParts.length - 1 ? "└── " : "├── "}${"<"}${rootTag}${pascalCase(childTagSuffix(input.componentName, part.name))}${" />"}${index === childParts.length - 1 ? "" : "\n"}</for></code></pre>
+</div>

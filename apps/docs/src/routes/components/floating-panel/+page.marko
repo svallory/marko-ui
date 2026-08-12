@@ -1,92 +1,22 @@
-import FloatingPanel from "@marko-ui/registry/ui/floating-panel/floating-panel.marko";
-import Button from "@marko-ui/registry/ui/button/button.marko";
+import FloatingPanelDemo from "../../../demos/floating-panel/floating-panel-demo.marko";
+import FloatingPanelNotResizable from "../../../demos/floating-panel/floating-panel-not-resizable.marko";
+import FloatingPanelConstrained from "../../../demos/floating-panel/floating-panel-constrained.marko";
+import FloatingPanelControlled from "../../../demos/floating-panel/floating-panel-controlled.marko";
 
 <component-page title="Floating Panel" description="A draggable and resizable floating window with minimize, maximize and close controls.">
   <demo-box title="Default">
-    <FloatingPanel defaultPosition={ x: 380, y: 200 } defaultSize={ width: 360, height: 260 }>
-      <@trigger|props|>
-        <Button ...props variant="outline">Open panel</Button>
-      </@trigger>
-      <@title>Layers</@title>
-      <@content>
-        <p class="text-muted-foreground">
-          Drag the header to move this panel. Grab any edge or corner to resize
-          it. Use the header buttons to minimize, maximize or close.
-        </p>
-      </@content>
-    </FloatingPanel>
+    <FloatingPanelDemo/>
   </demo-box>
 
   <demo-box title="Drag only (not resizable)">
-    <FloatingPanel
-      resizable=false
-      defaultPosition={ x: 380, y: 520 }
-      defaultSize={ width: 320, height: 200 }
-    >
-      <@trigger|props|>
-        <Button ...props variant="outline">Open inspector</Button>
-      </@trigger>
-      <@title>Inspector</@title>
-      <@content>
-        <div class="grid gap-2">
-          <div class="flex items-center justify-between">
-            <span class="text-muted-foreground">Width</span>
-            <span class="font-medium">320px</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-muted-foreground">Resizable</span>
-            <span class="font-medium">No</span>
-          </div>
-        </div>
-      </@content>
-    </FloatingPanel>
+    <FloatingPanelNotResizable/>
   </demo-box>
 
   <demo-box title="Size constraints">
-    <FloatingPanel
-      minSize={ width: 260, height: 180 }
-      maxSize={ width: 560, height: 480 }
-      defaultPosition={ x: 700, y: 200 }
-      defaultSize={ width: 340, height: 240 }
-    >
-      <@trigger|props|>
-        <Button ...props variant="secondary">Open constrained panel</Button>
-      </@trigger>
-      <@title>Constrained</@title>
-      <@content>
-        <p class="text-muted-foreground">
-          This panel cannot be resized below 260×180 or above 560×480.
-        </p>
-      </@content>
-    </FloatingPanel>
+    <FloatingPanelConstrained/>
   </demo-box>
 
   <demo-box title="Controlled">
-    <let/panelOpen=false>
-    <let/panelStage="default">
-    <div class="flex flex-col gap-3">
-      <div class="flex items-center gap-2">
-        <Button variant="outline" onClick() { panelOpen = !panelOpen }>
-          ${panelOpen ? "Close" : "Open"} controlled panel
-        </Button>
-        <span class="text-muted-foreground text-sm">
-          open: ${String(panelOpen)} · stage: ${panelStage}
-        </span>
-      </div>
-      <FloatingPanel
-        open:=panelOpen
-        stageChange=(stage) => (panelStage = stage)
-        defaultPosition={ x: 1000, y: 200 }
-        defaultSize={ width: 340, height: 220 }
-      >
-        <@title>Controlled panel</@title>
-        <@content>
-          <p class="text-muted-foreground">
-            The button above owns this panel's open state, and the stage is
-            mirrored back into the page.
-          </p>
-        </@content>
-      </FloatingPanel>
-    </div>
+    <FloatingPanelControlled/>
   </demo-box>
 </component-page>

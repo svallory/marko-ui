@@ -1,0 +1,11 @@
+import Select from "@marko-ui/registry/ui/select/select.marko";
+
+static const fruits = [
+  { value: "apple", label: "Apple" },
+  { value: "banana", label: "Banana", disabled: true },
+  { value: "blueberry", label: "Blueberry" },
+  { value: "grapes", label: "Grapes", disabled: true },
+  { value: "pineapple", label: "Pineapple" },
+];
+
+<Select items=fruits placeholder="Select a fruit"/>

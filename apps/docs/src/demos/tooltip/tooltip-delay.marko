@@ -1,0 +1,8 @@
+import Tooltip from "@marko-ui/registry/ui/tooltip/tooltip.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+<Tooltip content="Appears quickly" openDelay=0 closeDelay=0>
+  <@trigger|props|>
+    <Button ...props variant="outline">No delay</Button>
+  </@trigger>
+</Tooltip>

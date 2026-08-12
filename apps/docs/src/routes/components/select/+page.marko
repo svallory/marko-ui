@@ -1,32 +1,27 @@
-import Select from "@marko-ui/registry/ui/select/select.marko";
-
-static const fruits = [
-  { value: "apple", label: "Apple" },
-  { value: "banana", label: "Banana" },
-  { value: "blueberry", label: "Blueberry" },
-  { value: "grapes", label: "Grapes" },
-  { value: "pineapple", label: "Pineapple" },
-];
-
-static const fruitsWithDisabled = [
-  { value: "apple", label: "Apple" },
-  { value: "banana", label: "Banana", disabled: true },
-  { value: "blueberry", label: "Blueberry" },
-  { value: "grapes", label: "Grapes", disabled: true },
-  { value: "pineapple", label: "Pineapple" },
-];
+import SelectDemo from "../../../demos/select/select-demo.marko";
+import SelectWithLabel from "../../../demos/select/select-with-label.marko";
+import SelectDefaultValue from "../../../demos/select/select-default-value.marko";
+import SelectDisabledItems from "../../../demos/select/select-disabled-items.marko";
+import SelectDisabled from "../../../demos/select/select-disabled.marko";
+import SelectControlled from "../../../demos/select/select-controlled.marko";
 
 <component-page title="Select" description="Displays a list of options for the user to pick from, triggered by a button.">
   <demo-box title="Default">
-    <Select items=fruits placeholder="Select a fruit"/>
+    <SelectDemo/>
   </demo-box>
-  <demo-box title="With default value">
-    <Select items=fruits value=["banana"] placeholder="Select a fruit"/>
+  <demo-box title="With label">
+    <SelectWithLabel/>
+  </demo-box>
+  <demo-box title="Default value">
+    <SelectDefaultValue/>
   </demo-box>
   <demo-box title="Disabled items">
-    <Select items=fruitsWithDisabled placeholder="Select a fruit"/>
+    <SelectDisabledItems/>
   </demo-box>
   <demo-box title="Disabled">
-    <Select items=fruits placeholder="Select a fruit" disabled/>
+    <SelectDisabled/>
+  </demo-box>
+  <demo-box title="Controlled">
+    <SelectControlled/>
   </demo-box>
 </component-page>

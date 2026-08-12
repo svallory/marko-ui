@@ -1,0 +1,64 @@
+import SidebarProvider from "@marko-ui/registry/ui/sidebar/provider.marko";
+import Sidebar from "@marko-ui/registry/ui/sidebar/sidebar.marko";
+import SidebarHeader from "@marko-ui/registry/ui/sidebar/header.marko";
+import SidebarContent from "@marko-ui/registry/ui/sidebar/content.marko";
+import SidebarGroup from "@marko-ui/registry/ui/sidebar/group.marko";
+import SidebarGroupLabel from "@marko-ui/registry/ui/sidebar/group-label.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+import SidebarTrigger from "@marko-ui/registry/ui/sidebar/trigger.marko";
+
+<let/open=true/>
+
+<p class="mb-4 text-sm text-muted-foreground">Open: ${open}</p>
+
+<div class="h-[320px] w-full overflow-hidden rounded-lg border">
+  <SidebarProvider
+    width="14rem"
+    class="min-h-0 h-full"
+    open=open
+    openChange(next) { open = next; }
+  >
+    <@sidebar|{ open }|>
+      <Sidebar open=open>
+        <@content>
+          <SidebarHeader>
+            <div class="px-2 text-sm font-semibold">Controlled</div>
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupLabel>Menu</SidebarGroupLabel>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton href="#" active>Home</SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton href="#">Profile</SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroup>
+          </SidebarContent>
+        </@content>
+      </Sidebar>
+    </@sidebar>
+    <@content|{ open, toggle }|>
+      <div class="flex min-w-0 flex-1 flex-col">
+        <header class="flex h-12 items-center gap-2 border-b px-3">
+          <SidebarTrigger open=open toggle=toggle/>
+        </header>
+        <main class="flex-1 overflow-auto p-4 text-sm text-muted-foreground">
+          This sidebar's open state is owned by the demo page.
+        </main>
+      </div>
+    </@content>
+  </SidebarProvider>
+</div>
+
+<button
+  type="button"
+  class="mt-4 rounded-md border px-3 py-1.5 text-sm hover:bg-accent"
+  onClick() { open = !open; }
+>
+  Toggle externally
+</button>

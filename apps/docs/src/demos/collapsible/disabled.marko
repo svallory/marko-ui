@@ -1,0 +1,15 @@
+import Collapsible from "@marko-ui/registry/ui/collapsible/collapsible.marko";
+
+<Collapsible class="w-72 space-y-2" disabled>
+  <@trigger|triggerProps|>
+    <button
+      ...triggerProps
+      class="flex w-full items-center justify-between text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      This trigger is disabled
+    </button>
+  </@trigger>
+  <p class="rounded-md border px-4 py-3 text-sm text-muted-foreground">
+    You should never see this content toggle.
+  </p>
+</Collapsible>

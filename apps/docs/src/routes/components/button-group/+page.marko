@@ -1,52 +1,37 @@
-import ButtonGroup from "@marko-ui/registry/ui/button-group/button-group.marko";
-import ButtonGroupSeparator from "@marko-ui/registry/ui/button-group/separator.marko";
-import ButtonGroupText from "@marko-ui/registry/ui/button-group/text.marko";
-import Button from "@marko-ui/registry/ui/button/button.marko";
+import ButtonGroupDefault from "../../../demos/button-group/default.marko";
+import ButtonGroupOrientation from "../../../demos/button-group/orientation.marko";
+import ButtonGroupSizes from "../../../demos/button-group/sizes.marko";
+import ButtonGroupNested from "../../../demos/button-group/nested.marko";
+import ButtonGroupSeparatorDemo from "../../../demos/button-group/separator.marko";
+import ButtonGroupSplit from "../../../demos/button-group/split.marko";
+import ButtonGroupText from "../../../demos/button-group/text.marko";
 
 <component-page title="Button Group" description="A container that groups related buttons together, merging their borders and corners.">
   <demo-box title="Default">
-    <ButtonGroup>
-      <Button variant="outline">Back</Button>
-      <Button variant="outline">Next</Button>
-    </ButtonGroup>
+    <ButtonGroupDefault/>
   </demo-box>
 
   <demo-box title="Vertical Orientation">
-    <ButtonGroup orientation="vertical">
-      <Button variant="outline">Copy</Button>
-      <Button variant="outline">Paste</Button>
-      <Button variant="outline">Duplicate</Button>
-    </ButtonGroup>
+    <ButtonGroupOrientation/>
+  </demo-box>
+
+  <demo-box title="Sizes">
+    <ButtonGroupSizes/>
+  </demo-box>
+
+  <demo-box title="Nested">
+    <ButtonGroupNested/>
   </demo-box>
 
   <demo-box title="With Separator">
-    <ButtonGroup>
-      <Button variant="outline">Bold</Button>
-      <Button variant="outline">Italic</Button>
-      <ButtonGroupSeparator/>
-      <Button variant="outline">Underline</Button>
-    </ButtonGroup>
+    <ButtonGroupSeparatorDemo/>
+  </demo-box>
+
+  <demo-box title="Split">
+    <ButtonGroupSplit/>
   </demo-box>
 
   <demo-box title="With Text Label">
-    <ButtonGroup>
-      <ButtonGroupText>Page 1 of 10</ButtonGroupText>
-      <Button variant="outline">Prev</Button>
-      <Button variant="outline">Next</Button>
-    </ButtonGroup>
-  </demo-box>
-
-  <demo-box title="Multiple Groups">
-    <ButtonGroup>
-      <ButtonGroup>
-        <Button variant="outline">Cut</Button>
-        <Button variant="outline">Copy</Button>
-        <Button variant="outline">Paste</Button>
-      </ButtonGroup>
-      <ButtonGroup>
-        <Button variant="outline">Undo</Button>
-        <Button variant="outline">Redo</Button>
-      </ButtonGroup>
-    </ButtonGroup>
+    <ButtonGroupText/>
   </demo-box>
 </component-page>

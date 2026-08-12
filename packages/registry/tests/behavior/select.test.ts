@@ -138,7 +138,7 @@ describe("select keyboard contract (APG)", () => {
 
   it("marks the selected option with aria-selected when reopened", { timeout: 60_000 }, async () => {
     await withSelectPage(async (page) => {
-      const demo = demoByTitle(page, "With default value");
+      const demo = demoByTitle(page, "Default value");
       await openWithKeyboard(page, demo);
 
       const selectedItems = page.locator(
@@ -187,7 +187,7 @@ describe("select keyboard contract (APG)", () => {
 
   it("closes on Escape without changing the selection", { timeout: 60_000 }, async () => {
     await withSelectPage(async (page) => {
-      const demo = demoByTitle(page, "With default value");
+      const demo = demoByTitle(page, "Default value");
       const trigger = triggerIn(demo);
       const textBefore = await trigger.textContent();
 

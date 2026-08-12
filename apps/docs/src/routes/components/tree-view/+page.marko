@@ -1,54 +1,26 @@
-import TreeView from "@marko-ui/registry/ui/tree-view/tree-view.marko";
-
-static const FILE_TREE = [
-  {
-    id: "src",
-    label: "src",
-    children: [
-      {
-        id: "components",
-        label: "components",
-        children: [
-          { id: "button.tsx", label: "button.tsx" },
-          { id: "input.tsx", label: "input.tsx" },
-        ],
-      },
-      { id: "index.ts", label: "index.ts" },
-      { id: "app.ts", label: "app.ts" },
-    ],
-  },
-  {
-    id: "public",
-    label: "public",
-    children: [
-      { id: "favicon.ico", label: "favicon.ico" },
-      { id: "robots.txt", label: "robots.txt" },
-    ],
-  },
-  { id: "package.json", label: "package.json" },
-  { id: "readme.md", label: "README.md" },
-];
-
-<let/controlledSelected=["index.ts"]/>
+// Legacy standalone demo page. Renders the same demo files used by the
+// generated docs page at /docs/components/tree-view — see
+// apps/docs/src/demos/tree-view/ for the source of truth.
+import Default from "../../../demos/tree-view/default.marko";
+import MultipleSelection from "../../../demos/tree-view/multiple-selection.marko";
+import Expanded from "../../../demos/tree-view/expanded.marko";
+import ControlledSelection from "../../../demos/tree-view/controlled-selection.marko";
+import Disabled from "../../../demos/tree-view/disabled.marko";
 
 <component-page title="Tree View" description="A hierarchical list of items that can be expanded, collapsed, and selected.">
   <demo-box title="Default">
-    <TreeView items=FILE_TREE/>
+    <Default/>
   </demo-box>
   <demo-box title="Multiple selection">
-    <TreeView items=FILE_TREE selectionMode="multiple"/>
+    <MultipleSelection/>
   </demo-box>
   <demo-box title="Default expanded">
-    <TreeView items=FILE_TREE expandedValue=["src", "components"]/>
+    <Expanded/>
   </demo-box>
   <demo-box title="Controlled selection">
-    <p class="text-muted-foreground mb-4 text-sm">
-      Selected: ${controlledSelected.join(", ") || "none"}
-    </p>
-    <TreeView
-      items=FILE_TREE
-      selectedValue=controlledSelected
-      selectedValueChange(value) { controlledSelected = value; }
-    />
+    <ControlledSelection/>
+  </demo-box>
+  <demo-box title="Disabled items">
+    <Disabled/>
   </demo-box>
 </component-page>

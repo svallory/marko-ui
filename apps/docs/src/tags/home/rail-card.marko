@@ -1,0 +1,106 @@
+// Decorative skeleton card used only in the wide-screen "rails" flanking the
+// showcase grid (see home-showcase.marko). Adapted from shadcn/ui
+// `app/(app)/(root)/cards/skeleton/*.tsx` (MIT): a handful of representative
+// placeholder shapes rather than a 1:1 port of all sixteen skeleton files —
+// the rails are decorative and aria-hidden, so shape variety matters more
+// than completeness.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import Skeleton from "@marko-ui/registry/ui/skeleton/skeleton.marko";
+
+export interface Input {
+  variant?:
+    | "header-form"
+    | "chart"
+    | "list"
+    | "qr"
+    | "tiles"
+    | "profile";
+}
+
+<const/variant=input.variant ?? "header-form"/>
+
+<Card class="w-full">
+  <if=variant === "header-form">
+    <CardHeader class="gap-2">
+      <Skeleton class="h-5 w-36"/>
+      <Skeleton class="h-4 w-56"/>
+    </CardHeader>
+    <CardContent>
+      <div class="flex flex-col gap-3">
+        <Skeleton class="h-9 w-full rounded-lg"/>
+        <Skeleton class="h-9 w-full rounded-lg"/>
+      </div>
+    </CardContent>
+    <CardFooter>
+      <Skeleton class="h-9 w-full rounded-lg"/>
+    </CardFooter>
+  </if>
+  <else-if=variant === "chart">
+    <CardHeader class="gap-2">
+      <Skeleton class="h-5 w-44"/>
+      <Skeleton class="h-4 w-52"/>
+    </CardHeader>
+    <CardContent>
+      <div class="flex h-32 w-full items-end gap-2">
+        <for|height| of=[60, 80, 65, 95, 50, 100]>
+          <Skeleton class="w-full rounded-t-md rounded-b-none" style=`height:${height}%`/>
+        </for>
+      </div>
+    </CardContent>
+  </else-if>
+  <else-if=variant === "list">
+    <CardHeader class="gap-2">
+      <Skeleton class="h-4 w-20"/>
+    </CardHeader>
+    <CardContent>
+      <div class="flex flex-col gap-2">
+        <for|row| of=[0, 1, 2]>
+          <div class="flex items-center gap-3 rounded-xl bg-muted p-3">
+            <Skeleton class="size-9 shrink-0 rounded-lg bg-muted-foreground/15"/>
+            <div class="flex flex-1 flex-col gap-2">
+              <Skeleton class="h-4 w-3/4 bg-muted-foreground/15"/>
+              <Skeleton class="h-3 w-full bg-muted-foreground/15"/>
+            </div>
+          </div>
+        </for>
+      </div>
+    </CardContent>
+  </else-if>
+  <else-if=variant === "qr">
+    <CardContent class="flex justify-center pt-6">
+      <Skeleton class="size-32 rounded-xl"/>
+    </CardContent>
+    <CardHeader class="items-center gap-2 text-center">
+      <Skeleton class="h-5 w-40"/>
+      <Skeleton class="h-4 w-48"/>
+    </CardHeader>
+  </else-if>
+  <else-if=variant === "tiles">
+    <CardContent class="flex flex-col gap-4">
+      <Skeleton class="h-8 w-full rounded-2xl"/>
+      <div class="flex flex-wrap gap-2">
+        <Skeleton class="h-9 w-20 rounded-lg"/>
+        <Skeleton class="h-9 w-24 rounded-lg"/>
+        <Skeleton class="h-9 w-16 rounded-lg"/>
+      </div>
+      <Skeleton class="h-20 w-full rounded-lg"/>
+    </CardContent>
+  </else-if>
+  <else>
+    <CardHeader class="gap-2">
+      <Skeleton class="h-5 w-36"/>
+      <Skeleton class="h-4 w-64"/>
+    </CardHeader>
+    <CardContent class="flex flex-col gap-3">
+      <Skeleton class="h-3 w-24"/>
+      <Skeleton class="h-9 w-full rounded-lg"/>
+    </CardContent>
+    <CardFooter class="flex-col gap-3">
+      <Skeleton class="h-9 w-full rounded-lg"/>
+      <Skeleton class="h-14 w-full rounded-xl"/>
+    </CardFooter>
+  </else>
+</Card>

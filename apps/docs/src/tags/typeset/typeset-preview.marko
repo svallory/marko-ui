@@ -1,0 +1,22 @@
+import { FIXTURES } from "../../lib/typeset-fixtures.ts";
+import "./typeset-toolbar.marko";
+
+export interface Input {
+  active: keyof typeof FIXTURES;
+  activeChange: (value: string) => void;
+  /** Resolved `--typeset-*` custom properties, as an inline style string. */
+  style: string;
+  measureWidth: string;
+}
+
+<div class="relative isolate flex size-full min-h-0 flex-1 overflow-hidden rounded-2xl bg-background ring-1 ring-foreground/10">
+  <div class="size-full overflow-y-auto p-6 pb-16 sm:p-10 sm:pb-20 md:p-14 md:pb-24">
+    <div
+      class="typeset mx-auto"
+      style=`${input.style}; max-width: ${input.measureWidth};`
+    >
+      $!{FIXTURES[input.active]}
+    </div>
+  </div>
+  <typeset-toolbar active=input.active activeChange=input.activeChange/>
+</div>

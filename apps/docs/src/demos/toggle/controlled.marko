@@ -1,0 +1,16 @@
+import Toggle from "@marko-ui/registry/ui/toggle/toggle.marko";
+
+<let/pressed=true/>
+
+<div class="flex items-center gap-4">
+  <Toggle
+    pressed=pressed
+    pressedChange=(next) => { pressed = next; }
+    aria-label="Toggle italic"
+  >
+    Controlled
+  </Toggle>
+  <span class="text-sm text-muted-foreground">
+    pressed: ${pressed}
+  </span>
+</div>

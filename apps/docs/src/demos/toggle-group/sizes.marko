@@ -1,0 +1,13 @@
+import ToggleGroup from "@marko-ui/registry/ui/toggle-group/toggle-group.marko";
+
+static const ALIGNMENT = [
+  { value: "left", label: "Left" },
+  { value: "center", label: "Center" },
+  { value: "right", label: "Right" },
+];
+
+<div class="flex flex-col items-start gap-4">
+  <ToggleGroup items=ALIGNMENT size="sm" value=["left"]/>
+  <ToggleGroup items=ALIGNMENT value=["left"]/>
+  <ToggleGroup items=ALIGNMENT size="lg" value=["left"]/>
+</div>

@@ -1,0 +1,8 @@
+import Editable from "@marko-ui/registry/ui/editable/editable.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+<Editable defaultValue="Edit via custom trigger" class="w-[280px]">
+  <@trigger|props|>
+    <Button ...props variant="outline" size="sm">Edit</Button>
+  </@trigger>
+</Editable>

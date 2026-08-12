@@ -1,0 +1,86 @@
+// One example: the demo rendered live in a bordered stage, with a Preview /
+// Code tab pair over it. shadcn's ComponentPreview + ComponentPreviewTabs.
+//
+// Both panels render server-side and the tabs are a DOM toggle, so the code
+// is in the HTML for search engines and works without JavaScript (the Code
+// panel is reachable by anchor even if the toggle never wires up).
+import "./expandable-code.marko";
+
+export interface Input {
+  /** The demo component itself, from the generated manifest. */
+  component: Marko.Template;
+  /** Raw .marko text of that demo. */
+  source: string;
+  /** Alignment of the demo inside the stage. */
+  align?: "center" | "start";
+  class?: string;
+}
+
+<const/align=input.align ?? "center"/>
+
+<id/previewPanelId/>
+<id/codePanelId/>
+
+<div/previewEl class=`my-4 ${input.class ?? ""}` data-slot="component-preview">
+  <div class="flex items-center gap-1 border-b border-border" role="tablist" aria-label="Example view">
+    <button
+      type="button"
+      role="tab"
+      data-preview-tab
+      data-view="preview"
+      aria-selected="true"
+      aria-controls=previewPanelId
+      class="border-b-2 border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground aria-selected:border-foreground aria-selected:text-foreground"
+    >
+      Preview
+    </button>
+    <button
+      type="button"
+      role="tab"
+      data-preview-tab
+      data-view="code"
+      aria-selected="false"
+      aria-controls=codePanelId
+      class="border-b-2 border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground aria-selected:border-foreground aria-selected:text-foreground"
+    >
+      Code
+    </button>
+  </div>
+
+  <div id=previewPanelId role="tabpanel" data-preview-panel data-view="preview">
+    <div
+      class=`mt-4 flex min-h-[350px] w-full justify-center overflow-x-auto rounded-lg border border-border p-10 ${align === "center" ? "items-center" : "items-start"}`
+    >
+      <${input.component}/>
+    </div>
+  </div>
+
+  <div id=codePanelId role="tabpanel" data-preview-panel data-view="code" hidden>
+    <expandable-code code=input.source collapsedLines=14/>
+  </div>
+</div>
+
+<lifecycle
+  onMount() {
+    const root = previewEl();
+    if (!root) return;
+
+    const tabs = Array.from(root.querySelectorAll("[data-preview-tab]"));
+    const panels = Array.from(root.querySelectorAll("[data-preview-panel]"));
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const view = tab.getAttribute("data-view");
+        tabs.forEach((candidate) => {
+          candidate.setAttribute(
+            "aria-selected",
+            String(candidate.getAttribute("data-view") === view),
+          );
+        });
+        panels.forEach((panel) => {
+          panel.hidden = panel.getAttribute("data-view") !== view;
+        });
+      });
+    });
+  }
+/>

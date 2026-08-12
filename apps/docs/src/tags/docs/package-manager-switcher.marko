@@ -1,0 +1,129 @@
+// Package-manager tab strip over a single command, with the choice persisted
+// in localStorage so it survives navigation between component pages — the
+// behaviour of shadcn's `useConfig().packageManager`.
+//
+// Deliberately NOT the <Tabs> component: this needs to render every command
+// server-side and pick one in the browser, so an SSR-inert Zag machine would
+// mean the wrong manager flashes before hydration. Plain buttons + [hidden]
+// keep the correct choice a one-frame DOM toggle.
+
+export interface PackageManagerCommand {
+  manager: string;
+  command: string;
+}
+
+export interface Input {
+  commands: PackageManagerCommand[];
+  class?: string;
+}
+
+// Server render shows the first entry; onMount swaps in the stored choice.
+<const/defaultManager=input.commands[0]?.manager ?? ""/>
+
+<id/switcherId/>
+
+<div/switcherEl
+  class=`group relative my-4 overflow-hidden rounded-lg border border-border bg-muted/40 ${input.class ?? ""}`
+  data-slot="package-manager-switcher"
+  data-default-manager=defaultManager
+>
+  <div class="flex items-center justify-between gap-2 border-b border-border pr-2">
+    <div class="flex items-center overflow-x-auto" role="tablist" aria-label="Package manager">
+      <for|entry| of=input.commands by=(entry) => entry.manager>
+        <button
+          type="button"
+          role="tab"
+          data-manager-tab
+          data-manager=entry.manager
+          aria-selected=String(entry.manager === defaultManager)
+          aria-controls=`${switcherId}-${entry.manager}`
+          class="border-b-2 border-transparent px-3 py-2 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground aria-selected:border-foreground aria-selected:text-foreground"
+        >
+          ${entry.manager}
+        </button>
+      </for>
+    </div>
+    <button
+      type="button"
+      data-manager-copy
+      aria-label="Copy command"
+      class="shrink-0 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+    >
+      Copy
+    </button>
+  </div>
+
+  <for|entry| of=input.commands by=(entry) => entry.manager>
+    <pre
+      id=`${switcherId}-${entry.manager}`
+      role="tabpanel"
+      data-manager-panel
+      data-manager=entry.manager
+      hidden=entry.manager !== defaultManager
+      class="overflow-x-auto p-4 text-[0.8125rem] leading-6"
+    ><code class="font-mono whitespace-pre">${entry.command}</code></pre>
+  </for>
+</div>
+
+<let/onStorage=null/>
+
+<lifecycle
+  onMount() {
+    const root = switcherEl();
+    if (!root) return;
+
+    const STORAGE_KEY = "marko-ui.packageManager";
+    const tabs = Array.from(root.querySelectorAll("[data-manager-tab]"));
+    const panels = Array.from(root.querySelectorAll("[data-manager-panel]"));
+    const known = tabs.map((tab) => tab.getAttribute("data-manager"));
+
+    const select = (manager) => {
+      if (!known.includes(manager)) return;
+      tabs.forEach((tab) => {
+        tab.setAttribute("aria-selected", String(tab.getAttribute("data-manager") === manager));
+      });
+      panels.forEach((panel) => {
+        panel.hidden = panel.getAttribute("data-manager") !== manager;
+      });
+    };
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const manager = tab.getAttribute("data-manager");
+        select(manager);
+        try {
+          localStorage.setItem(STORAGE_KEY, manager);
+        } catch {
+          // Private-mode / blocked storage: the choice just does not persist.
+        }
+      });
+    });
+
+    const copyButton = root.querySelector("[data-manager-copy]");
+    copyButton?.addEventListener("click", () => {
+      const panel = panels.find((candidate) => !candidate.hidden);
+      navigator.clipboard.writeText(panel?.textContent?.trim() ?? "").then(() => {
+        copyButton.textContent = "Copied";
+        setTimeout(() => {
+          copyButton.textContent = "Copy";
+        }, 1500);
+      });
+    });
+
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) select(stored);
+    } catch {
+      // Ignore: fall back to the server-rendered default.
+    }
+
+    // Keep every switcher on the page (and other tabs) in agreement.
+    onStorage = (storageEvent) => {
+      if (storageEvent.key === STORAGE_KEY && storageEvent.newValue) select(storageEvent.newValue);
+    };
+    window.addEventListener("storage", onStorage);
+  }
+  onDestroy() {
+    if (onStorage) window.removeEventListener("storage", onStorage);
+  }
+/>

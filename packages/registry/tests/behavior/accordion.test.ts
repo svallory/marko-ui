@@ -40,7 +40,13 @@ afterAll(async () => {
 describe("accordion keyboard contract (APG)", () => {
   it("starts collapsed with every trigger reporting aria-expanded=false", { timeout: 60_000 }, async () => {
     await withAccordionPage(async (page) => {
-      const demo = demoByTitle(page, "Default");
+      // The "Default" demo now ships with an intentional pre-opened section
+      // (`defaultValue=["item-1"]`) to showcase the expanded look on first
+      // paint, so it is no longer the demo that exercises a from-scratch
+      // collapsed baseline. "Disabled" sets no default value and is only
+      // read here (never interacted with), so it is an accurate stand-in for
+      // "an accordion with nothing configured open starts fully collapsed."
+      const demo = demoByTitle(page, "Disabled");
       expect(await expandedStates(demo)).toEqual([false, false, false]);
     });
   });
@@ -61,12 +67,16 @@ describe("accordion keyboard contract (APG)", () => {
 
   it("expands the focused section with Enter", { timeout: 60_000 }, async () => {
     await withAccordionPage(async (page) => {
+      // The "Default" demo's first trigger starts pre-opened
+      // (`defaultValue=["item-1"]`), so the expand half of the Enter
+      // contract is exercised on the second trigger, which starts closed.
       const demo = demoByTitle(page, "Default");
-      const firstTrigger = triggersIn(demo).first();
+      const secondTrigger = triggersIn(demo).nth(1);
+      expect(await attributeOf(secondTrigger, "aria-expanded")).toBe("false");
 
-      await focusElement(firstTrigger);
+      await focusElement(secondTrigger);
       await pressKey(page, "Enter");
-      expect(await attributeOf(firstTrigger, "aria-expanded")).toBe("true");
+      expect(await attributeOf(secondTrigger, "aria-expanded")).toBe("true");
     });
   });
 
@@ -75,12 +85,15 @@ describe("accordion keyboard contract (APG)", () => {
       // Zag defaults `collapsible: false`, so the single-select "Default" demo
       // deliberately keeps its open section open. The "Multiple" demo permits
       // closing, which is where the collapse half of the contract is exercised.
+      //
+      // The "Multiple" demo starts with its first section already open
+      // (`defaultValue=["notifications"]`), which is exactly the pre-opened
+      // starting state this test needs: Enter on an already-open, collapsible
+      // trigger must close it.
       const firstTrigger = triggersIn(demoByTitle(page, "Multiple")).first();
-
-      await focusElement(firstTrigger);
-      await pressKey(page, "Enter");
       expect(await attributeOf(firstTrigger, "aria-expanded")).toBe("true");
 
+      await focusElement(firstTrigger);
       await pressKey(page, "Enter");
       expect(await attributeOf(firstTrigger, "aria-expanded")).toBe("false");
     });
@@ -88,11 +101,13 @@ describe("accordion keyboard contract (APG)", () => {
 
   it("toggles with Space", { timeout: 60_000 }, async () => {
     await withAccordionPage(async (page) => {
-      const firstTrigger = triggersIn(demoByTitle(page, "Default")).first();
+      // Same reasoning as the Enter test above: the first trigger already
+      // starts open, so Space's expand behavior is exercised on the second.
+      const secondTrigger = triggersIn(demoByTitle(page, "Default")).nth(1);
 
-      await focusElement(firstTrigger);
+      await focusElement(secondTrigger);
       await pressKey(page, "Space");
-      expect(await attributeOf(firstTrigger, "aria-expanded")).toBe("true");
+      expect(await attributeOf(secondTrigger, "aria-expanded")).toBe("true");
     });
   });
 
@@ -139,11 +154,14 @@ describe("accordion keyboard contract (APG)", () => {
 
   it("keeps at most one section open in single mode", { timeout: 60_000 }, async () => {
     await withAccordionPage(async (page) => {
+      // The "Default" demo starts with item 0 already open
+      // (`defaultValue=["item-1"]`); opening item 1 must still collapse it,
+      // since single mode allows at most one open section regardless of
+      // which one was open first.
       const demo = demoByTitle(page, "Default");
       const triggers = triggersIn(demo);
+      expect(await expandedStates(demo)).toEqual([true, false, false]);
 
-      await focusElement(triggers.nth(0));
-      await pressKey(page, "Enter");
       await focusElement(triggers.nth(1));
       await pressKey(page, "Enter");
 
@@ -154,11 +172,13 @@ describe("accordion keyboard contract (APG)", () => {
 
   it("allows several sections open at once in multiple mode", { timeout: 60_000 }, async () => {
     await withAccordionPage(async (page) => {
+      // The "Multiple" demo starts with item 0 already open
+      // (`defaultValue=["notifications"]`); opening item 1 on top of it must
+      // leave both open, since multiple mode does not collapse siblings.
       const demo = demoByTitle(page, "Multiple");
       const triggers = triggersIn(demo);
+      expect(await expandedStates(demo)).toEqual([true, false, false]);
 
-      await focusElement(triggers.nth(0));
-      await pressKey(page, "Enter");
       await focusElement(triggers.nth(1));
       await pressKey(page, "Enter");
 

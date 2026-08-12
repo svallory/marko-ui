@@ -1,10 +1,14 @@
 // Home page. Structure adapted from shadcn/ui `app/(app)/(root)/page.tsx`
-// (MIT): page header + a dense showcase grid of demo cards. The cards are
-// rebuilt on marko-ui's own registry components.
+// (MIT): page header + a dense showcase grid of demo cards. The showcase
+// rebuilds shadcn's own home cards one-for-one on marko-ui's registry; the
+// "Beyond shadcn" section below it showcases the components marko-ui ships
+// that shadcn/ui has no equivalent for.
 import "../tags/home/home-hero.marko";
 import "../tags/home/home-showcase.marko";
+import "../tags/home/home-beyond.marko";
 
 <main class="flex flex-1 flex-col">
   <home-hero/>
   <home-showcase/>
+  <home-beyond/>
 </main>

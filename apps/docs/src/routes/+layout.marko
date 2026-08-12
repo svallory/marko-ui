@@ -1,6 +1,7 @@
 import "../app.css";
 import "../tags/site/site-header.marko";
 import "../tags/site/site-footer.marko";
+import { resolveMeta, SITE_NAME, DEFAULT_OG_IMAGE } from "../lib/site-meta.ts";
 
 // Block previews under /blocks/view/ render chrome-free: each block IS a
 // full page, so site header/footer would frame it wrongly inside the
@@ -9,12 +10,36 @@ import "../tags/site/site-footer.marko";
 // the SSR payload rather than hidden after hydration.
 <const/isBlockPreview=$global.url.pathname.startsWith("/blocks/view/")/>
 
+// Per-route title/description/canonical/OG, looked up by pathname. See
+// ../lib/site-meta.ts for why this is a lookup table rather than a
+// page-supplied prop (@marko/run layouts don't receive one).
+<const/meta=resolveMeta($global.url.pathname)/>
+
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>marko-ui</title>
+    <title>${meta.title}</title>
+    <meta name="description" content=meta.description>
+    <link rel="canonical" href=meta.canonical>
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+    <meta property="og:title" content=meta.title>
+    <meta property="og:description" content=meta.description>
+    <meta property="og:type" content=meta.ogType>
+    <meta property="og:url" content=meta.canonical>
+    <meta property="og:site_name" content=SITE_NAME>
+    <meta property="og:image" content=DEFAULT_OG_IMAGE>
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content=meta.title>
+    <meta name="twitter:description" content=meta.description>
+    <meta name="twitter:image" content=DEFAULT_OG_IMAGE>
+
     <html-script>
       (function () {
         var storedTheme = null;

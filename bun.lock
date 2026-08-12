@@ -23,6 +23,7 @@
     "apps/docs": {
       "name": "docs",
       "dependencies": {
+        "@internationalized/date": "^3.12.3",
         "@marko-ui/registry": "workspace:*",
         "@zag-js/accordion": "1.43.0",
         "@zag-js/angle-slider": "1.43.0",

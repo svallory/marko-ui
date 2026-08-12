@@ -1,0 +1,18 @@
+import Sheet from "@marko-ui/registry/ui/sheet/sheet.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+<let/open=false/>
+
+<div class="flex items-center gap-4">
+  <Sheet
+    open=open
+    openChange=(next) => { open = next; }
+  >
+    <@trigger|props|>
+      <Button ...props variant="outline">Open controlled sheet</Button>
+    </@trigger>
+    <@title>Controlled sheet</@title>
+    <@description>This sheet's open state is held in the parent and can be toggled from outside too.</@description>
+  </Sheet>
+  <span class="text-sm text-muted-foreground">open: ${String(open)}</span>
+</div>

@@ -1,0 +1,25 @@
+import Command from "@marko-ui/registry/ui/command/command.marko";
+
+static const groups = [
+  {
+    label: "Team",
+    items: [
+      { value: "alice", label: "Alice Chen" },
+      { value: "bilal", label: "Bilal Ahmed" },
+      { value: "carmen", label: "Carmen Diaz" },
+      { value: "diego", label: "Diego Fernandez" },
+      { value: "elena", label: "Elena Ivanova" },
+      { value: "farid", label: "Farid Haidari" },
+      { value: "grace", label: "Grace Kim" },
+      { value: "hassan", label: "Hassan Malik" },
+      { value: "irene", label: "Irene Novak" },
+      { value: "james", label: "James O'Connor" },
+      { value: "keiko", label: "Keiko Tanaka" },
+      { value: "liam", label: "Liam Murphy" },
+    ],
+  },
+];
+
+<div class="w-full max-w-[450px]">
+  <Command groups=groups placeholder="Search team members..." class="rounded-lg border shadow-md"/>
+</div>

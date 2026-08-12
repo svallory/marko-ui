@@ -7,14 +7,16 @@ import { cn } from "#lib/utils.ts";
 // `value`/`valueChange` use a plain ISO string instead of Zag's DateValue so
 // consumers don't need @internationalized/date.
 export type Input = Omit<MachineInput<"div", datePickerMachine.Props>, "value"> & {
+  /** The selected date as an ISO date string (`YYYY-MM-DD`). */
   value?: string;
+  /** Function called when the value changes. Receives the new ISO date string, or `undefined` when cleared. */
   valueChange?: (value: string | undefined) => void;
 };
 
 <machine-props/pickedProps from=input pick=datePickerMachine.props
   onValueChange(details: datePickerMachine.ValueChangeDetails) {
     input.onValueChange?.(details);
-    input.valueChange?.(details.valueAsString[0]);
+    input.valueChange?.(details.value[0]?.toString());
   }/>
 <const/machineProps=() => ({
   ...pickedProps(),

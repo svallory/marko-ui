@@ -1,0 +1,184 @@
+// Title block for a component page: heading, description, the Copy Page
+// split button (with its View-as-Markdown / Open-in-AI menu), and the
+// prev/next component arrows. Mirrors shadcn's docs-nav + DocsCopyPage row.
+export interface ComponentNeighbour {
+  name: string;
+  title: string;
+}
+
+export interface Input {
+  title: string;
+  description?: string;
+  /** Absolute path of this page, e.g. /docs/components/switch. */
+  href: string;
+  previous?: ComponentNeighbour | null;
+  next?: ComponentNeighbour | null;
+}
+
+// See the +handler comment: @marko/run reserves `.` as a route separator, so
+// the raw-markdown twin lives at /<page>/md rather than /<page>.md.
+<const/markdownHref=`${input.href}/md`/>
+
+<id/menuId/>
+
+<div/headerEl class="space-y-2" data-slot="component-page-header" data-page-href=input.href>
+  <div class="flex items-start justify-between gap-4">
+    <h1 class="scroll-m-20 text-3xl font-bold tracking-tight">${input.title}</h1>
+
+    <div class="flex shrink-0 items-center gap-2">
+      <!-- Copy Page split button: primary copies the markdown, chevron opens the menu. -->
+      <div class="relative flex items-center rounded-md border border-border">
+        <button
+          type="button"
+          data-copy-page
+          data-markdown-href=markdownHref
+          class="inline-flex h-8 items-center rounded-l-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          Copy Page
+        </button>
+        <button
+          type="button"
+          data-copy-menu-trigger
+          aria-haspopup="menu"
+          aria-expanded="false"
+          aria-controls=menuId
+          aria-label="More page actions"
+          class="inline-flex h-8 items-center rounded-r-md border-l border-border px-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          <span aria-hidden="true">▾</span>
+        </button>
+
+        <div
+          id=menuId
+          data-copy-menu
+          role="menu"
+          hidden
+          class="absolute right-0 top-full z-50 mt-1 w-56 overflow-hidden rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md"
+        >
+          <a
+            role="menuitem"
+            href=markdownHref
+            class="block rounded-sm px-2 py-1.5 text-xs transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            View as Markdown
+          </a>
+          <a
+            role="menuitem"
+            data-ai-link
+            data-ai-base="https://claude.ai/new"
+            target="_blank"
+            rel="noreferrer"
+            href="https://claude.ai/new"
+            class="block rounded-sm px-2 py-1.5 text-xs transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            Open in Claude
+          </a>
+          <a
+            role="menuitem"
+            data-ai-link
+            data-ai-base="https://chatgpt.com/"
+            target="_blank"
+            rel="noreferrer"
+            href="https://chatgpt.com/"
+            class="block rounded-sm px-2 py-1.5 text-xs transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            Open in ChatGPT
+          </a>
+        </div>
+      </div>
+
+      <!-- Prev/next component arrows. -->
+      <div class="hidden items-center gap-1 sm:flex">
+        <if=input.previous>
+          <a
+            href=`/docs/components/${input.previous.name}`
+            aria-label=`Previous: ${input.previous.title}`
+            title=input.previous.title
+            class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <span aria-hidden="true">←</span>
+          </a>
+        </if>
+        <if=input.next>
+          <a
+            href=`/docs/components/${input.next.name}`
+            aria-label=`Next: ${input.next.title}`
+            title=input.next.title
+            class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <span aria-hidden="true">→</span>
+          </a>
+        </if>
+      </div>
+    </div>
+  </div>
+
+  <if=input.description>
+    <p class="max-w-2xl text-base text-muted-foreground">${input.description}</p>
+  </if>
+</div>
+
+<let/onDocumentClick=null/>
+
+<lifecycle
+  onMount() {
+    const root = headerEl();
+    if (!root) return;
+
+    const menu = root.querySelector("[data-copy-menu]");
+    const trigger = root.querySelector("[data-copy-menu-trigger]");
+    const copyButton = root.querySelector("[data-copy-page]");
+
+    // The .md endpoint is same-origin, so the raw markdown the AI links and
+    // the clipboard both use comes from exactly one source of truth.
+    const markdownUrl = new URL(
+      copyButton.getAttribute("data-markdown-href"),
+      window.location.href,
+    ).href;
+
+    root.querySelectorAll("[data-ai-link]").forEach((link) => {
+      const prompt =
+        `I'm looking at this marko-ui documentation: ${markdownUrl}. ` +
+        `Help me understand how to use this component.`;
+      link.href = `${link.getAttribute("data-ai-base")}?q=${encodeURIComponent(prompt)}`;
+    });
+
+    const closeMenu = () => {
+      menu.hidden = true;
+      trigger.setAttribute("aria-expanded", "false");
+    };
+
+    trigger.addEventListener("click", (clickEvent) => {
+      clickEvent.stopPropagation();
+      const nowOpen = menu.hidden;
+      menu.hidden = !nowOpen;
+      trigger.setAttribute("aria-expanded", String(nowOpen));
+    });
+
+    copyButton.addEventListener("click", async () => {
+      copyButton.textContent = "Copying…";
+      try {
+        const response = await fetch(markdownUrl);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        await navigator.clipboard.writeText(await response.text());
+        copyButton.textContent = "Copied";
+      } catch {
+        copyButton.textContent = "Failed";
+      }
+      setTimeout(() => {
+        copyButton.textContent = "Copy Page";
+      }, 1500);
+    });
+
+    onDocumentClick = (documentEvent) => {
+      if (!menu.hidden && !menu.contains(documentEvent.target)) closeMenu();
+    };
+    document.addEventListener("click", onDocumentClick);
+    root.addEventListener("keydown", (keyEvent) => {
+      if (keyEvent.key === "Escape") closeMenu();
+    });
+  }
+  onDestroy() {
+    if (onDocumentClick) document.removeEventListener("click", onDocumentClick);
+  }
+/>

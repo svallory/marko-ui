@@ -1,0 +1,77 @@
+// Adapted from shadcn/ui `app/(app)/(root)/cards/dividend-income.tsx` (MIT),
+// rebuilt on marko-ui's own registry components.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardAction from "@marko-ui/registry/ui/card/action.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import ItemGroup from "@marko-ui/registry/ui/item/group.marko";
+import Item from "@marko-ui/registry/ui/item/item.marko";
+import ItemContent from "@marko-ui/registry/ui/item/content.marko";
+import ItemTitle from "@marko-ui/registry/ui/item/title.marko";
+import ItemDescription from "@marko-ui/registry/ui/item/description.marko";
+
+static const HOLDINGS = [
+  { name: "Vanguard", shares: "450 Shares", data: [380, 420, 390, 652] },
+  { name: "S&P 500 VOO", shares: "112 Shares", data: [180, 210, 320, 218] },
+  { name: "Apple AAPL", shares: "85 Shares", data: [60, 70, 120, 90] },
+  { name: "Realty Income", shares: "320 Shares", data: [240, 260, 280, 360] },
+];
+
+<Card class="w-full min-w-0">
+  <CardHeader>
+    <CardTitle>Q2 Dividend Income</CardTitle>
+    <CardDescription>
+      Quarterly dividend payouts across your portfolio holdings.
+    </CardDescription>
+    <CardAction>
+      <Button
+        variant="ghost"
+        size="icon"
+        class="bg-muted size-8"
+        aria-label="Dismiss dividend income"
+      >
+        <svg
+          class="size-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M18 6 6 18"/>
+          <path d="m6 6 12 12"/>
+        </svg>
+      </Button>
+    </CardAction>
+  </CardHeader>
+  <CardContent>
+    <ItemGroup>
+      <for|holding| of=HOLDINGS by=(holding) => holding.name>
+        <const/peak=Math.max(...holding.data)/>
+        <Item role="listitem" variant="muted">
+          <ItemContent>
+            <ItemTitle>${holding.name}</ItemTitle>
+            <ItemDescription>${holding.shares}</ItemDescription>
+          </ItemContent>
+          <div
+            class="hidden h-8 w-24 items-end gap-1 sm:flex"
+            role="img"
+            aria-label=`${holding.name} quarterly dividends`
+          >
+            <for|point, index| of=holding.data by=(point, index) => index>
+              <div
+                class="bg-chart-2 min-h-1 flex-1 rounded-t-sm"
+                style={ height: `${(point / peak) * 100}%` }
+              />
+            </for>
+          </div>
+        </Item>
+      </for>
+    </ItemGroup>
+  </CardContent>
+</Card>

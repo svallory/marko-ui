@@ -1,0 +1,13 @@
+import TagsInput from "@marko-ui/registry/ui/tags-input/tags-input.marko";
+
+<let/value=["react", "marko"]/>
+
+<div class="flex flex-col gap-2">
+  <TagsInput
+    value=value
+    valueChange(next) { value = next; }
+    placeholder="Add tag..."
+    class="w-[320px]"
+  />
+  <span class="text-sm text-muted-foreground">Value: ${value.join(", ")}</span>
+</div>

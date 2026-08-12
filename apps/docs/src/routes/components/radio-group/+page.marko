@@ -1,18 +1,7 @@
-import RadioGroup from "@marko-ui/registry/ui/radio-group/radio-group.marko";
-
-static const PLANS = [
-  { value: "default", label: "Default" },
-  { value: "comfortable", label: "Comfortable" },
-  { value: "compact", label: "Compact" },
-];
-
-static const PAYMENT_METHODS = [
-  { value: "card", label: "Card" },
-  { value: "paypal", label: "PayPal" },
-  { value: "apple-pay", label: "Apple Pay", disabled: true },
-];
-
-<let/controlledValue="comfortable"/>
+import RadioGroupDemo from "../../../demos/radio-group/radio-group-demo.marko";
+import RadioGroupDisabledItem from "../../../demos/radio-group/radio-group-disabled-item.marko";
+import RadioGroupDisabled from "../../../demos/radio-group/radio-group-disabled.marko";
+import RadioGroupControlled from "../../../demos/radio-group/radio-group-controlled.marko";
 
 <component-page title="Radio Group" description="A set of checkable buttons—known as radio buttons—where no more than one of the buttons can be checked at a time.">
   <div class="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
@@ -27,25 +16,18 @@ static const PAYMENT_METHODS = [
   </div>
 
   <demo-box title="Default">
-    <RadioGroup items=PLANS value="comfortable"/>
+    <RadioGroupDemo/>
   </demo-box>
 
   <demo-box title="With disabled item">
-    <RadioGroup items=PAYMENT_METHODS value="card"/>
+    <RadioGroupDisabledItem/>
   </demo-box>
 
   <demo-box title="Disabled">
-    <RadioGroup items=PLANS value="default" disabled/>
+    <RadioGroupDisabled/>
   </demo-box>
 
   <demo-box title="Controlled">
-    <p class="text-muted-foreground mb-4 text-sm">
-      Selected: ${controlledValue ?? "none"}
-    </p>
-    <RadioGroup
-      items=PLANS
-      value=controlledValue
-      valueChange(value) { controlledValue = value; }
-    />
+    <RadioGroupControlled/>
   </demo-box>
 </component-page>

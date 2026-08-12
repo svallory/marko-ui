@@ -1,30 +1,22 @@
-import Pagination from "@marko-ui/registry/ui/pagination/pagination.marko";
-
-<let/controlledPage=3/>
+import Default from "../../../demos/pagination/default.marko";
+import SiblingCount from "../../../demos/pagination/sibling-count.marko";
+import FewPages from "../../../demos/pagination/few-pages.marko";
+import Controlled from "../../../demos/pagination/controlled.marko";
 
 <component-page title="Pagination" description="Pagination with page navigation, next and previous links.">
   <demo-box title="Default">
-    <Pagination count=100 pageSize=10 page=1/>
+    <Default/>
   </demo-box>
 
   <demo-box title="Sibling count">
-    <p class="text-muted-foreground mb-4 text-sm">
-      <code>siblingCount</code> controls how many pages are shown around the active page.
-    </p>
-    <Pagination count=500 pageSize=10 page=10 siblingCount=2/>
+    <SiblingCount/>
   </demo-box>
 
   <demo-box title="Few pages (no ellipsis)">
-    <Pagination count=30 pageSize=10 page=2/>
+    <FewPages/>
   </demo-box>
 
   <demo-box title="Controlled">
-    <p class="text-muted-foreground mb-4 text-sm">Current page: ${controlledPage}</p>
-    <Pagination
-      count=200
-      pageSize=10
-      page=controlledPage
-      pageChange(details) { controlledPage = details.page; }
-    />
+    <Controlled/>
   </demo-box>
 </component-page>

@@ -1,105 +1,31 @@
-import Empty from "@marko-ui/registry/ui/empty/empty.marko";
-import EmptyHeader from "@marko-ui/registry/ui/empty/header.marko";
-import EmptyMedia from "@marko-ui/registry/ui/empty/media.marko";
-import EmptyTitle from "@marko-ui/registry/ui/empty/title.marko";
-import EmptyDescription from "@marko-ui/registry/ui/empty/description.marko";
-import EmptyContent from "@marko-ui/registry/ui/empty/content.marko";
-import Button from "@marko-ui/registry/ui/button/button.marko";
-import Input from "@marko-ui/registry/ui/input/input.marko";
+import EmptyDemo from "../../../demos/empty/empty-demo.marko";
+import EmptyOutline from "../../../demos/empty/empty-outline.marko";
+import EmptyBackground from "../../../demos/empty/empty-background.marko";
+import EmptyAvatar from "../../../demos/empty/empty-avatar.marko";
+import EmptyAvatarGroup from "../../../demos/empty/empty-avatar-group.marko";
+import EmptyInputGroup from "../../../demos/empty/empty-input-group.marko";
+import EmptyIcon from "../../../demos/empty/empty-icon.marko";
 
 <component-page title="Empty" description="Use to display an empty state.">
   <demo-box title="Default">
-    <Empty>
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="m21 21-4.3-4.3"/>
-          </svg>
-        </EmptyMedia>
-        <EmptyTitle>No results found</EmptyTitle>
-        <EmptyDescription>Try adjusting your search or filter to find what you're looking for.</EmptyDescription>
-      </EmptyHeader>
-    </Empty>
+    <EmptyDemo/>
   </demo-box>
-
-  <demo-box title="With content and actions">
-    <Empty>
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 5v14M5 12h14"/>
-          </svg>
-        </EmptyMedia>
-        <EmptyTitle>No projects yet</EmptyTitle>
-        <EmptyDescription>Get started by creating your first project.</EmptyDescription>
-      </EmptyHeader>
-      <EmptyContent>
-        <div class="flex gap-2">
-          <Button>Create project</Button>
-          <Button variant="outline">Import</Button>
-        </div>
-      </EmptyContent>
-    </Empty>
+  <demo-box title="Outline">
+    <EmptyOutline/>
   </demo-box>
-
-  <demo-box title="With avatar media">
-    <Empty>
-      <EmptyHeader>
-        <EmptyMedia>
-          <div class="bg-muted flex size-12 items-center justify-center rounded-full">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-muted-foreground">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-          </div>
-        </EmptyMedia>
-        <EmptyTitle>No team members</EmptyTitle>
-        <EmptyDescription>Invite teammates to collaborate on this workspace.</EmptyDescription>
-      </EmptyHeader>
-      <EmptyContent>
-        <Button size="sm">Invite members</Button>
-      </EmptyContent>
-    </Empty>
+  <demo-box title="Background">
+    <EmptyBackground/>
   </demo-box>
-
-  <demo-box title="With input">
-    <Empty>
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect width="20" height="16" x="2" y="4" rx="2"/>
-            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-          </svg>
-        </EmptyMedia>
-        <EmptyTitle>Subscribe to updates</EmptyTitle>
-        <EmptyDescription>Enter your email to get notified when we launch new features.</EmptyDescription>
-      </EmptyHeader>
-      <EmptyContent>
-        <div class="flex w-full gap-2">
-          <Input type="email" placeholder="Email address"/>
-          <Button>Subscribe</Button>
-        </div>
-      </EmptyContent>
-    </Empty>
+  <demo-box title="Avatar">
+    <EmptyAvatar/>
   </demo-box>
-
-  <demo-box title="Error state">
-    <Empty>
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" x2="12" y1="8" y2="12"/>
-            <line x1="12" x2="12.01" y1="16" y2="16"/>
-          </svg>
-        </EmptyMedia>
-        <EmptyTitle>Something went wrong</EmptyTitle>
-        <EmptyDescription>We couldn't load this page. Please try again.</EmptyDescription>
-      </EmptyHeader>
-      <EmptyContent>
-        <Button variant="outline">Retry</Button>
-      </EmptyContent>
-    </Empty>
+  <demo-box title="Avatar group">
+    <EmptyAvatarGroup/>
+  </demo-box>
+  <demo-box title="Input group">
+    <EmptyInputGroup/>
+  </demo-box>
+  <demo-box title="Icon">
+    <EmptyIcon/>
   </demo-box>
 </component-page>

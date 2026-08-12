@@ -59,6 +59,28 @@ export type Input = Omit<MachineInput<"div", cascadeSelect.Props<CascadeSelectIt
   return native;
 }>
 
+// `api().valueAsString` derives from the machine's internal `selectedItems`
+// context, which the @zag-js/cascade-select machine (verified through
+// 1.43.0) only populates inside the `set.value` action — i.e. on
+// interactive selection. It is NOT recomputed from `value`/`defaultValue`
+// when the `value` bindable seeds at machine init, so on first mount with
+// an initial value, `valueAsString` is empty even though `api().value`
+// itself is correctly seeded. We rebuild the label ourselves from
+// `api().value` (proven correct at init) walked against `items`, mirroring
+// the machine's own single-mode formatter (path labels joined by " / ").
+<const/pathLabel=(path: string[]) => {
+  const labels: string[] = [];
+  let siblings = items;
+  for (const segmentValue of path) {
+    const node = siblings.find((candidate) => candidate.value === segmentValue);
+    if (!node) break;
+    labels.push(node.label);
+    siblings = node.children ?? [];
+  }
+  return labels.join(" / ");
+}>
+<const/triggerLabel=() => api().value.map(pathLabel).join(", ")>
+
 // The panels along the currently highlighted path: the root list, plus one
 // list per ancestor of the highlighted item that has children. Each panel
 // shows the children of the node at that depth. `indexPath`/`valuePath` are
@@ -93,7 +115,7 @@ export type Input = Omit<MachineInput<"div", cascadeSelect.Props<CascadeSelectIt
   <label ...api().getLabelProps() data-slot="cascade-select-label" class=(label ? "text-sm font-medium" : "sr-only")>${label || placeholder || "Select an option"}</label>
   <div ...api().getControlProps() data-slot="cascade-select-control">
     <button ...api().getTriggerProps() data-slot="cascade-select-trigger" class="border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 h-9">
-      <span data-slot="cascade-select-value">${api().valueAsString || placeholder}</span>
+      <span data-slot="cascade-select-value">${triggerLabel() || placeholder}</span>
       <svg ...api().getIndicatorProps() xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 opacity-50">
         <path d="m6 9 6 6 6-6"/>
       </svg>

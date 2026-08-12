@@ -1,0 +1,33 @@
+import Sheet from "@marko-ui/registry/ui/sheet/sheet.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+<div class="flex flex-wrap items-center gap-2">
+  <Sheet side="top">
+    <@trigger|props|>
+      <Button ...props variant="outline">Top</Button>
+    </@trigger>
+    <@title>Top sheet</@title>
+    <@description>Slides in from the top edge of the screen.</@description>
+  </Sheet>
+  <Sheet side="right">
+    <@trigger|props|>
+      <Button ...props variant="outline">Right</Button>
+    </@trigger>
+    <@title>Right sheet</@title>
+    <@description>Slides in from the right edge of the screen.</@description>
+  </Sheet>
+  <Sheet side="bottom">
+    <@trigger|props|>
+      <Button ...props variant="outline">Bottom</Button>
+    </@trigger>
+    <@title>Bottom sheet</@title>
+    <@description>Slides in from the bottom edge of the screen.</@description>
+  </Sheet>
+  <Sheet side="left">
+    <@trigger|props|>
+      <Button ...props variant="outline">Left</Button>
+    </@trigger>
+    <@title>Left sheet</@title>
+    <@description>Slides in from the left edge of the screen.</@description>
+  </Sheet>
+</div>

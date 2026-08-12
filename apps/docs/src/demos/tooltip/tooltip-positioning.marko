@@ -1,0 +1,25 @@
+import Tooltip from "@marko-ui/registry/ui/tooltip/tooltip.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+<div class="flex gap-4">
+  <Tooltip content="Top tooltip" positioning={ placement: "top" }>
+    <@trigger|props|>
+      <Button ...props variant="outline">Top</Button>
+    </@trigger>
+  </Tooltip>
+  <Tooltip content="Right tooltip" positioning={ placement: "right" }>
+    <@trigger|props|>
+      <Button ...props variant="outline">Right</Button>
+    </@trigger>
+  </Tooltip>
+  <Tooltip content="Bottom tooltip" positioning={ placement: "bottom" }>
+    <@trigger|props|>
+      <Button ...props variant="outline">Bottom</Button>
+    </@trigger>
+  </Tooltip>
+  <Tooltip content="Left tooltip" positioning={ placement: "left" }>
+    <@trigger|props|>
+      <Button ...props variant="outline">Left</Button>
+    </@trigger>
+  </Tooltip>
+</div>

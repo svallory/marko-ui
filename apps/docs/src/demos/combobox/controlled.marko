@@ -1,0 +1,24 @@
+import Combobox from "@marko-ui/registry/ui/combobox/combobox.marko";
+
+static const frameworks = [
+  { value: "next", label: "Next.js" },
+  { value: "sveltekit", label: "SvelteKit" },
+  { value: "nuxt", label: "Nuxt.js" },
+  { value: "remix", label: "Remix" },
+  { value: "astro", label: "Astro" },
+  { value: "marko", label: "Marko" },
+];
+
+<let/value=["marko"]/>
+
+<div class="flex flex-col gap-2">
+  <Combobox
+    items=frameworks
+    placeholder="Select framework..."
+    value=value
+    valueChange=(next) => { value = next; }
+  />
+  <span class="text-sm text-muted-foreground">
+    value: ${value.join(", ") || "(none)"}
+  </span>
+</div>

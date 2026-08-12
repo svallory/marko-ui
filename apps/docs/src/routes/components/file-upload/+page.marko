@@ -1,21 +1,19 @@
-import FileUpload from "@marko-ui/registry/ui/file-upload/file-upload.marko";
-
-<let/lastFiles=[] as { name: string; size: number; type: string }[]/>
+import FileUploadDemo from "../../../demos/file-upload/file-upload-demo.marko";
+import FileUploadAccept from "../../../demos/file-upload/file-upload-accept.marko";
+import FileUploadMaxSize from "../../../demos/file-upload/file-upload-max-size.marko";
+import FileUploadControlled from "../../../demos/file-upload/file-upload-controlled.marko";
 
 <component-page title="File Upload" description="A dropzone and file picker for uploading files.">
   <demo-box title="Default">
-    <FileUpload/>
+    <FileUploadDemo/>
   </demo-box>
   <demo-box title="Accept images only, max 3 files">
-    <FileUpload accept="image/*" maxFiles=3/>
+    <FileUploadAccept/>
   </demo-box>
   <demo-box title="Max file size (1 MB)">
-    <FileUpload maxFileSize=1000000/>
+    <FileUploadMaxSize/>
   </demo-box>
   <demo-box title="With change callback">
-    <p class="text-muted-foreground mb-4 text-sm">
-      Files: ${lastFiles.map((f) => f.name).join(", ") || "none"}
-    </p>
-    <FileUpload filesChange(files) { lastFiles = files; }/>
+    <FileUploadControlled/>
   </demo-box>
 </component-page>

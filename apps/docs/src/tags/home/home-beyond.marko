@@ -1,0 +1,321 @@
+// "Beyond shadcn" showcase — one live, interactive tile per component that
+// marko-ui ships and shadcn/ui has no equivalent for. The list is derived
+// from lib/components-list.ts so the section can never advertise a component
+// that has not actually landed in the registry.
+import BeyondCard from "./beyond-card.marko";
+import { BEYOND_SHADCN_AVAILABLE } from "../../lib/components-list.ts";
+
+import AngleSlider from "@marko-ui/registry/ui/angle-slider/angle-slider.marko";
+import CascadeSelect from "@marko-ui/registry/ui/cascade-select/cascade-select.marko";
+import ColorPicker from "@marko-ui/registry/ui/color-picker/color-picker.marko";
+import DateInput from "@marko-ui/registry/ui/date-input/date-input.marko";
+import Editable from "@marko-ui/registry/ui/editable/editable.marko";
+import FloatingPanel from "@marko-ui/registry/ui/floating-panel/floating-panel.marko";
+import ImageCropper from "@marko-ui/registry/ui/image-cropper/image-cropper.marko";
+import Listbox from "@marko-ui/registry/ui/listbox/listbox.marko";
+import Marquee from "@marko-ui/registry/ui/marquee/marquee.marko";
+import NumberInput from "@marko-ui/registry/ui/number-input/number-input.marko";
+import PasswordInput from "@marko-ui/registry/ui/password-input/password-input.marko";
+import QrCode from "@marko-ui/registry/ui/qr-code/qr-code.marko";
+import RatingGroup from "@marko-ui/registry/ui/rating-group/rating-group.marko";
+import SignaturePad from "@marko-ui/registry/ui/signature-pad/signature-pad.marko";
+import Steps from "@marko-ui/registry/ui/steps/steps.marko";
+import TagsInput from "@marko-ui/registry/ui/tags-input/tags-input.marko";
+import Timer from "@marko-ui/registry/ui/timer/timer.marko";
+import Toc from "@marko-ui/registry/ui/toc/toc.marko";
+import Tour from "@marko-ui/registry/ui/tour/tour.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Badge from "@marko-ui/registry/ui/badge/badge.marko";
+
+static const REGION_ITEMS = [
+  {
+    value: "europe",
+    label: "Europe",
+    children: [
+      { value: "portugal", label: "Portugal" },
+      { value: "germany", label: "Germany" },
+    ],
+  },
+  {
+    value: "americas",
+    label: "Americas",
+    children: [
+      { value: "brazil", label: "Brazil" },
+      { value: "canada", label: "Canada" },
+    ],
+  },
+];
+
+static const FRAMEWORK_ITEMS = [
+  { value: "marko", label: "Marko 6" },
+  { value: "zag", label: "Zag.js" },
+  { value: "tailwind", label: "Tailwind 4" },
+];
+
+static const STEP_ITEMS = [
+  { title: "Install", description: "Add the CLI" },
+  { title: "Add", description: "Copy a component" },
+  { title: "Ship", description: "Own the code" },
+];
+
+static const TOC_ITEMS = [
+  { value: "overview", depth: 1, label: "Overview" },
+  { value: "installation", depth: 2, label: "Installation" },
+  { value: "usage", depth: 2, label: "Usage" },
+];
+
+static const MARQUEE_ITEMS = [
+  "resumable",
+  "no-hydration",
+  "zag machines",
+  "server-first",
+];
+
+static const TOUR_ITEMS = [
+  {
+    id: "welcome",
+    type: "dialog" as const,
+    title: "Guided tours, built in",
+    description:
+      "The tour component drives a spotlighted, multi-step walkthrough of any page.",
+    actions: [{ label: "Done", action: "dismiss" as const }],
+  },
+];
+
+// A tiny inline SVG stands in as the image-cropper source: a data URI keeps
+// the demo self-contained (no network fetch, no missing-asset 404).
+static const CROP_SOURCE =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="240">' +
+      '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+      '<stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#ec4899"/>' +
+      "</linearGradient></defs>" +
+      '<rect width="320" height="240" fill="url(#g)"/>' +
+      '<circle cx="160" cy="120" r="60" fill="rgba(255,255,255,0.35)"/>' +
+      "</svg>",
+  );
+
+<section
+  id="beyond-shadcn"
+  data-slot="home-beyond"
+  class="bg-muted dark:bg-background relative w-full overflow-hidden border-t border-border px-4 py-12 sm:px-6 lg:px-10"
+>
+  <div class="relative z-10 mx-auto flex max-w-[1900px] flex-col gap-8">
+    <div class="flex flex-col gap-3">
+      <h2 class="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+        Beyond shadcn — ${BEYOND_SHADCN_AVAILABLE.length} components shadcn/ui
+        does not ship
+      </h2>
+      <p class="text-muted-foreground max-w-3xl text-base text-balance">
+        Every tile below is a live, interactive instance backed by a real Zag.js
+        state machine. None of them have an equivalent in shadcn/ui.
+      </p>
+    </div>
+
+    <div class="grid min-w-0 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <BeyondCard
+        name="angle-slider"
+        title="Angle Slider"
+        description="Drag the dial to set a rotation."
+      >
+        <AngleSlider defaultValue=45/>
+      </BeyondCard>
+
+      <BeyondCard
+        name="color-picker"
+        title="Color Picker"
+        description="Saturation area, channel sliders and swatches."
+      >
+        <ColorPicker defaultValue="#6366f1" class="w-full"/>
+      </BeyondCard>
+
+      <BeyondCard
+        name="tour"
+        title="Tour"
+        description="Spotlighted, multi-step product walkthroughs."
+      >
+        <Tour items=TOUR_ITEMS>
+          <@trigger|triggerProps|>
+            <Button ...triggerProps variant="outline" size="sm">Start tour</Button>
+          </@trigger>
+        </Tour>
+      </BeyondCard>
+
+      <BeyondCard
+        name="floating-panel"
+        title="Floating Panel"
+        description="Draggable, resizable desktop-style panel."
+      >
+        <FloatingPanel>
+          <@trigger|triggerProps|>
+            <Button ...triggerProps variant="outline" size="sm">Open panel</Button>
+          </@trigger>
+          <@title>Layers</@title>
+          <p class="text-muted-foreground p-3 text-sm">
+            Drag the header, or grab any edge to resize.
+          </p>
+        </FloatingPanel>
+      </BeyondCard>
+
+      <BeyondCard
+        name="signature-pad"
+        title="Signature Pad"
+        description="Draw with a pointer; exports to an image."
+      >
+        <SignaturePad class="max-w-none"/>
+      </BeyondCard>
+
+      <BeyondCard
+        name="qr-code"
+        title="QR Code"
+        description="Real QR encoding, rendered as SVG."
+      >
+        <QrCode defaultValue="https://marko-ui.saulo.tech" size="sm"/>
+      </BeyondCard>
+
+      <BeyondCard
+        name="rating-group"
+        title="Rating Group"
+        description="Keyboard-accessible star rating with halves."
+      >
+        <RatingGroup defaultValue=3 allowHalf/>
+      </BeyondCard>
+
+      <BeyondCard
+        name="number-input"
+        title="Number Input"
+        description="Steppers, scrubbing and clamped ranges."
+      >
+        <NumberInput defaultValue="8" min=0 max=99 aria-label="Quantity"/>
+      </BeyondCard>
+
+      <BeyondCard
+        name="tags-input"
+        title="Tags Input"
+        description="Type to add, backspace to remove."
+      >
+        <TagsInput
+          defaultValue=["marko", "zag"]
+          placeholder="Add a tag..."
+          class="w-full"
+        />
+      </BeyondCard>
+
+      <BeyondCard
+        name="timer"
+        title="Timer"
+        description="Countdown and stopwatch with controls."
+      >
+        <Timer
+          startMs=90000
+          targetMs=0
+          countdown
+          parts=["minutes", "seconds"]
+          class="w-full border-0 bg-transparent py-0 shadow-none"
+        />
+      </BeyondCard>
+
+      <BeyondCard
+        name="steps"
+        title="Steps"
+        description="A guided, navigable multi-step flow."
+      >
+        <Steps items=STEP_ITEMS class="w-full">
+          <@content|index|>
+            <p class="text-muted-foreground text-sm">
+              Step ${index + 1} of ${STEP_ITEMS.length}.
+            </p>
+          </@content>
+          <@completedContent>
+            <p class="text-muted-foreground text-sm">All done.</p>
+          </@completedContent>
+        </Steps>
+      </BeyondCard>
+
+      <BeyondCard
+        name="editable"
+        title="Editable"
+        description="Click the text to edit it inline."
+      >
+        <Editable defaultValue="Click to rename" class="w-full"/>
+      </BeyondCard>
+
+      <BeyondCard
+        name="password-input"
+        title="Password Input"
+        description="Masked field with a reveal toggle."
+      >
+        <PasswordInput value="correct-horse" aria-label="Password"/>
+      </BeyondCard>
+
+      <BeyondCard
+        name="date-input"
+        title="Date Input"
+        description="Segmented, locale-aware date entry."
+      >
+        <DateInput defaultValue=["2026-01-15"] class="w-full"/>
+      </BeyondCard>
+
+      <BeyondCard
+        name="listbox"
+        title="Listbox"
+        description="Selectable list with roving focus."
+      >
+        <Listbox items=FRAMEWORK_ITEMS defaultValue=["marko"] class="w-full"/>
+      </BeyondCard>
+
+      <BeyondCard
+        name="cascade-select"
+        title="Cascade Select"
+        description="Drill through nested option trees."
+      >
+        <CascadeSelect
+          items=REGION_ITEMS
+          placeholder="Pick a region"
+          class="w-full"
+        />
+      </BeyondCard>
+
+      <BeyondCard
+        name="marquee"
+        title="Marquee"
+        description="Looping ticker that pauses on hover."
+      >
+        <Marquee items=MARQUEE_ITEMS class="w-full">
+          <@content|item|>
+            <Badge variant="secondary" class="mx-1">${item}</Badge>
+          </@content>
+        </Marquee>
+      </BeyondCard>
+
+      <BeyondCard
+        name="toc"
+        title="Table of Contents"
+        description="Tracks the active heading while scrolling."
+      >
+        <Toc items=TOC_ITEMS title="On this page" class="w-full"/>
+      </BeyondCard>
+
+      <BeyondCard
+        name="image-cropper"
+        title="Image Cropper"
+        description="Drag the handles to reframe the image."
+      >
+        // The cropper root sizes itself from its container: without an
+        // explicit height the viewport collapses to 0px and the image never
+        // becomes visible.
+        <ImageCropper
+          src=CROP_SOURCE
+          alt="Gradient placeholder"
+          class="h-40 w-full"
+        />
+      </BeyondCard>
+    </div>
+  </div>
+
+  <!-- Top gradient wash and bottom fade, matching home-showcase.marko so the
+       two sections read as one continuous visual system. -->
+  <div class="pointer-events-none absolute inset-x-0 top-0 z-[1] h-32 bg-linear-to-b from-background via-muted to-transparent dark:hidden"/>
+  <div class="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-32 bg-linear-to-t from-muted via-muted/80 to-transparent lg:h-48 dark:from-background dark:via-background/80"/>
+</section>

@@ -1,0 +1,24 @@
+import Field from "@marko-ui/registry/ui/form/form.marko";
+import FieldSet from "@marko-ui/registry/ui/form/field-set.marko";
+import FieldLegend from "@marko-ui/registry/ui/form/field-legend.marko";
+import FieldGroup from "@marko-ui/registry/ui/form/field-group.marko";
+import FieldLabel from "@marko-ui/registry/ui/form/field-label.marko";
+import FieldDescription from "@marko-ui/registry/ui/form/field-description.marko";
+import FieldSeparator from "@marko-ui/registry/ui/form/field-separator.marko";
+import Input from "@marko-ui/registry/ui/input/input.marko";
+
+<FieldSet class="max-w-sm">
+  <FieldLegend>Profile</FieldLegend>
+  <FieldDescription>This information is shown on your public profile.</FieldDescription>
+  <FieldGroup>
+    <Field>
+      <FieldLabel for="field-set-name">Display name</FieldLabel>
+      <Input id="field-set-name" placeholder="Ada Lovelace"/>
+    </Field>
+    <FieldSeparator>or</FieldSeparator>
+    <Field>
+      <FieldLabel for="field-set-handle">Handle</FieldLabel>
+      <Input id="field-set-handle" placeholder="@ada"/>
+    </Field>
+  </FieldGroup>
+</FieldSet>

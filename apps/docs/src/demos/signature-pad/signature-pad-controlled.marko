@@ -1,0 +1,8 @@
+import SignaturePad from "@marko-ui/registry/ui/signature-pad/signature-pad.marko";
+
+<let/paths=[] as string[]/>
+
+<div class="flex flex-col gap-2">
+  <SignaturePad drawEndChange=(next) => { paths = next; }/>
+  <span class="text-sm text-muted-foreground">committed strokes: ${paths.length}</span>
+</div>

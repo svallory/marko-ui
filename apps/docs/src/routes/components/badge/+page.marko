@@ -1,20 +1,23 @@
-import Badge from "@marko-ui/registry/ui/badge/badge.marko";
+import Default from "../../../demos/badge/default.marko";
+import Variants from "../../../demos/badge/variants.marko";
+import Status from "../../../demos/badge/status.marko";
+import WithIcon from "../../../demos/badge/with-icon.marko";
+import Numeric from "../../../demos/badge/numeric.marko";
 
 <component-page title="Badge" description="Displays a badge or a component that looks like a badge.">
+  <demo-box title="Default">
+    <Default/>
+  </demo-box>
   <demo-box title="Variants">
-    <Badge>Default</Badge>
-    <Badge variant="secondary">Secondary</Badge>
-    <Badge variant="destructive">Destructive</Badge>
-    <Badge variant="outline">Outline</Badge>
+    <Variants/>
   </demo-box>
   <demo-box title="Status examples">
-    <Badge variant="default">Active</Badge>
-    <Badge variant="secondary">Pending</Badge>
-    <Badge variant="destructive">Failed</Badge>
-    <Badge variant="outline">Draft</Badge>
+    <Status/>
+  </demo-box>
+  <demo-box title="With icon">
+    <WithIcon/>
   </demo-box>
   <demo-box title="Numeric">
-    <Badge>8</Badge>
-    <Badge variant="destructive">99+</Badge>
+    <Numeric/>
   </demo-box>
 </component-page>

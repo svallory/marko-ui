@@ -1,0 +1,19 @@
+import Breadcrumb from "@marko-ui/registry/ui/breadcrumb/breadcrumb.marko";
+import BreadcrumbItem from "@marko-ui/registry/ui/breadcrumb/item.marko";
+import BreadcrumbLink from "@marko-ui/registry/ui/breadcrumb/link.marko";
+import BreadcrumbPage from "@marko-ui/registry/ui/breadcrumb/page.marko";
+import BreadcrumbSeparator from "@marko-ui/registry/ui/breadcrumb/separator.marko";
+
+<Breadcrumb>
+  <BreadcrumbItem>
+    <BreadcrumbLink href="/">Home</BreadcrumbLink>
+  </BreadcrumbItem>
+  <BreadcrumbSeparator/>
+  <BreadcrumbItem>
+    <BreadcrumbLink href="/docs/components">Components</BreadcrumbLink>
+  </BreadcrumbItem>
+  <BreadcrumbSeparator/>
+  <BreadcrumbItem>
+    <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+  </BreadcrumbItem>
+</Breadcrumb>

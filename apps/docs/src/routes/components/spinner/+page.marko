@@ -1,28 +1,27 @@
-import Spinner from "@marko-ui/registry/ui/spinner/spinner.marko";
-import Button from "@marko-ui/registry/ui/button/button.marko";
+import SpinnerDemo from "../../../demos/spinner/spinner-demo.marko";
+import SpinnerSize from "../../../demos/spinner/spinner-size.marko";
+import SpinnerColor from "../../../demos/spinner/spinner-color.marko";
+import SpinnerText from "../../../demos/spinner/spinner-text.marko";
+import SpinnerButton from "../../../demos/spinner/spinner-button.marko";
+import SpinnerBadge from "../../../demos/spinner/spinner-badge.marko";
 
 <component-page title="Spinner" description="An indicator that can be used to show a loading state.">
   <demo-box title="Default">
-    <Spinner/>
+    <SpinnerDemo/>
   </demo-box>
   <demo-box title="Sizes">
-    <div class="flex items-center gap-4">
-      <Spinner class="size-3"/>
-      <Spinner/>
-      <Spinner class="size-6"/>
-      <Spinner class="size-8"/>
-    </div>
+    <SpinnerSize/>
+  </demo-box>
+  <demo-box title="Color">
+    <SpinnerColor/>
   </demo-box>
   <demo-box title="With text">
-    <div class="flex items-center gap-2 text-sm text-muted-foreground">
-      <Spinner/>
-      Loading...
-    </div>
+    <SpinnerText/>
   </demo-box>
   <demo-box title="In a button">
-    <Button disabled>
-      <Spinner class="text-primary-foreground"/>
-      Please wait
-    </Button>
+    <SpinnerButton/>
+  </demo-box>
+  <demo-box title="In a badge">
+    <SpinnerBadge/>
   </demo-box>
 </component-page>

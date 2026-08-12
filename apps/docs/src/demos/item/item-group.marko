@@ -1,0 +1,39 @@
+import Item from "@marko-ui/registry/ui/item/item.marko";
+import ItemGroup from "@marko-ui/registry/ui/item/group.marko";
+import ItemSeparator from "@marko-ui/registry/ui/item/separator.marko";
+import ItemMedia from "@marko-ui/registry/ui/item/media.marko";
+import ItemContent from "@marko-ui/registry/ui/item/content.marko";
+import ItemTitle from "@marko-ui/registry/ui/item/title.marko";
+import ItemDescription from "@marko-ui/registry/ui/item/description.marko";
+
+<ItemGroup style="width: 400px; border: 1px solid var(--border); border-radius: 0.5rem; overflow: hidden;">
+  <Item>
+    <ItemMedia variant="icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+    </ItemMedia>
+    <ItemContent>
+      <ItemTitle>Profile updated</ItemTitle>
+      <ItemDescription>Your profile picture was changed.</ItemDescription>
+    </ItemContent>
+  </Item>
+  <ItemSeparator/>
+  <Item>
+    <ItemMedia variant="icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+    </ItemMedia>
+    <ItemContent>
+      <ItemTitle>New message</ItemTitle>
+      <ItemDescription>You received a message from support.</ItemDescription>
+    </ItemContent>
+  </Item>
+  <ItemSeparator/>
+  <Item>
+    <ItemMedia variant="icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+    </ItemMedia>
+    <ItemContent>
+      <ItemTitle>Task completed</ItemTitle>
+      <ItemDescription>Deployment finished successfully.</ItemDescription>
+    </ItemContent>
+  </Item>
+</ItemGroup>

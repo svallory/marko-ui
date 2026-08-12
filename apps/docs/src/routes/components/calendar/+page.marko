@@ -1,10 +1,27 @@
-import Calendar from "@marko-ui/registry/ui/calendar/calendar.marko";
+import Default from "../../../demos/calendar/default.marko";
+import Controlled from "../../../demos/calendar/controlled.marko";
+import Multiple from "../../../demos/calendar/multiple.marko";
+import Range from "../../../demos/calendar/range.marko";
+import MinMax from "../../../demos/calendar/min-max.marko";
+import Disabled from "../../../demos/calendar/disabled.marko";
 
 <component-page title="Calendar" description="An inline, always-open date field component that allows users to select a date.">
   <demo-box title="Default">
-    <Calendar/>
+    <Default/>
   </demo-box>
-  <demo-box title="With initial value">
-    <Calendar value=[{ year: 2026, month: 8, day: 10 }]/>
+  <demo-box title="Controlled">
+    <Controlled/>
+  </demo-box>
+  <demo-box title="Multiple">
+    <Multiple/>
+  </demo-box>
+  <demo-box title="Range">
+    <Range/>
+  </demo-box>
+  <demo-box title="Min / Max">
+    <MinMax/>
+  </demo-box>
+  <demo-box title="Disabled">
+    <Disabled/>
   </demo-box>
 </component-page>

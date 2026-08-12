@@ -1,0 +1,42 @@
+// Adapted from shadcn/ui `app/(app)/(root)/cards/empty-distribute-track.tsx`
+// (MIT), rebuilt on marko-ui's own registry components.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Empty from "@marko-ui/registry/ui/empty/empty.marko";
+import EmptyMedia from "@marko-ui/registry/ui/empty/media.marko";
+import EmptyHeader from "@marko-ui/registry/ui/empty/header.marko";
+import EmptyTitle from "@marko-ui/registry/ui/empty/title.marko";
+import EmptyDescription from "@marko-ui/registry/ui/empty/description.marko";
+import EmptyContent from "@marko-ui/registry/ui/empty/content.marko";
+
+<Card class="w-full min-w-0">
+  <CardContent>
+    <Empty class="p-4">
+      <EmptyMedia variant="icon">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14"/>
+          <path d="M12 5v14"/>
+        </svg>
+      </EmptyMedia>
+      <EmptyHeader>
+        <EmptyTitle>Distribute Track</EmptyTitle>
+        <EmptyDescription>
+          Upload your first master to start reaching listeners on every major
+          streaming service.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button>Create Release</Button>
+      </EmptyContent>
+    </Empty>
+  </CardContent>
+</Card>

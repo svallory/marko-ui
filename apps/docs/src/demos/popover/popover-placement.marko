@@ -1,0 +1,11 @@
+import Popover from "@marko-ui/registry/ui/popover/popover.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+<Popover positioning={ placement: "right-start" }>
+  <@trigger|props|>
+    <Button ...props variant="outline">Right start</Button>
+  </@trigger>
+  <@content>
+    <p class="text-sm">Positioned to the right of the trigger.</p>
+  </@content>
+</Popover>

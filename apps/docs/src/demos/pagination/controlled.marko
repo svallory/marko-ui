@@ -1,0 +1,11 @@
+import Pagination from "@marko-ui/registry/ui/pagination/pagination.marko";
+
+<let/page=3/>
+
+<p class="text-muted-foreground mb-4 text-sm">Current page: ${page}</p>
+<Pagination
+  count=200
+  pageSize=10
+  page=page
+  pageChange(details) { page = details.page; }
+/>

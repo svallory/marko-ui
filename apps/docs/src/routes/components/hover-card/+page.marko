@@ -1,31 +1,19 @@
-import HoverCard from "@marko-ui/registry/ui/hover-card/hover-card.marko";
+import Default from "../../../demos/hover-card/default.marko";
+import Positioning from "../../../demos/hover-card/positioning.marko";
+import CustomDelays from "../../../demos/hover-card/custom-delays.marko";
+import Disabled from "../../../demos/hover-card/disabled.marko";
 
 <component-page title="Hover Card" description="For sighted users to preview content available behind a link.">
   <demo-box title="Default">
-    <HoverCard>
-      <@trigger|props|>
-        <a ...props href="#" class="text-sm font-medium underline underline-offset-4">@marko-ui</a>
-      </@trigger>
-      <@content>
-        <div class="flex justify-between gap-4">
-          <div class="space-y-1">
-            <h4 class="text-sm font-semibold">@marko-ui</h4>
-            <p class="text-sm text-muted-foreground">
-              A shadcn-inspired component registry for Marko 6.
-            </p>
-          </div>
-        </div>
-      </@content>
-    </HoverCard>
+    <Default/>
+  </demo-box>
+  <demo-box title="Positioning">
+    <Positioning/>
   </demo-box>
   <demo-box title="Custom delays">
-    <HoverCard openDelay=100 closeDelay=100>
-      <@trigger|props|>
-        <a ...props href="#" class="text-sm font-medium underline underline-offset-4">Fast hover</a>
-      </@trigger>
-      <@content>
-        <p class="text-sm">This card opens and closes quickly.</p>
-      </@content>
-    </HoverCard>
+    <CustomDelays/>
+  </demo-box>
+  <demo-box title="Disabled">
+    <Disabled/>
   </demo-box>
 </component-page>

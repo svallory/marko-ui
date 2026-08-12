@@ -1,28 +1,27 @@
-import Slider from "@marko-ui/registry/ui/slider/slider.marko";
-
-<let/controlledValue=[25]/>
+import SliderDemo from "../../../demos/slider/slider-demo.marko";
+import SliderRange from "../../../demos/slider/slider-range.marko";
+import SliderMultiple from "../../../demos/slider/slider-multiple.marko";
+import SliderStep from "../../../demos/slider/slider-step.marko";
+import SliderDisabled from "../../../demos/slider/slider-disabled.marko";
+import SliderControlled from "../../../demos/slider/slider-controlled.marko";
 
 <component-page title="Slider" description="An input where the user selects a value from within a given range.">
   <demo-box title="Default">
-    <Slider class="w-64" defaultValue=[50]/>
+    <SliderDemo/>
   </demo-box>
   <demo-box title="Range">
-    <Slider class="w-64" defaultValue=[25, 75]/>
+    <SliderRange/>
+  </demo-box>
+  <demo-box title="Multiple Thumbs">
+    <SliderMultiple/>
   </demo-box>
   <demo-box title="Step">
-    <Slider class="w-64" defaultValue=[50] min=0 max=100 step=10/>
+    <SliderStep/>
   </demo-box>
   <demo-box title="Disabled">
-    <Slider class="w-64" defaultValue=[50] disabled/>
+    <SliderDisabled/>
   </demo-box>
   <demo-box title="Controlled">
-    <p class="text-muted-foreground mb-4 text-sm">
-      Value: ${controlledValue.join(", ")}
-    </p>
-    <Slider
-      class="w-64"
-      value=controlledValue
-      valueChange(value) { controlledValue = value; }
-    />
+    <SliderControlled/>
   </demo-box>
 </component-page>

@@ -1,36 +1,15 @@
-import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+import SeparatorDemo from "../../../demos/separator/separator-demo.marko";
+import SeparatorVertical from "../../../demos/separator/separator-vertical.marko";
+import SeparatorSemantic from "../../../demos/separator/separator-semantic.marko";
 
 <component-page title="Separator" description="Visually or semantically separates content.">
   <demo-box title="Horizontal (default)">
-    <div class="w-full max-w-sm">
-      <div class="space-y-1">
-        <h4 class="text-sm font-medium leading-none">Marko UI</h4>
-        <p class="text-sm text-muted-foreground">An open-source component library.</p>
-      </div>
-      <Separator class="my-4"/>
-      <div class="flex h-5 items-center gap-4 text-sm">
-        <div>Blog</div>
-        <Separator orientation="vertical"/>
-        <div>Docs</div>
-        <Separator orientation="vertical"/>
-        <div>Source</div>
-      </div>
-    </div>
+    <SeparatorDemo/>
   </demo-box>
   <demo-box title="Vertical">
-    <div class="flex h-8 items-center gap-4 text-sm">
-      <div>Blog</div>
-      <Separator orientation="vertical"/>
-      <div>Docs</div>
-      <Separator orientation="vertical"/>
-      <div>Source</div>
-    </div>
+    <SeparatorVertical/>
   </demo-box>
   <demo-box title="Semantic (non-decorative)">
-    <div class="w-full max-w-sm space-y-4">
-      <p class="text-sm">Section one content goes here.</p>
-      <Separator decorative=false/>
-      <p class="text-sm">Section two content goes here.</p>
-    </div>
+    <SeparatorSemantic/>
   </demo-box>
 </component-page>

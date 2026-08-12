@@ -1,3 +1,11 @@
+// Rebuilt to match shadcn/ui's `/create` page (MIT): the canvas IS the real
+// component showcase grid — the same dense, multi-column masonry of cards
+// used on the home page — filling the viewport edge to edge, with a
+// floating dark customizer panel pinned over the top-left corner. Token
+// choices apply live by setting CSS custom properties on a wrapper div
+// around the reused `<home-showcase>` grid, exactly like shadcn swaps CSS
+// variables on its preview iframe's document root.
+import "../../tags/home/home-showcase.marko";
 import {
   BASE_COLORS,
   ACCENTS,
@@ -19,7 +27,7 @@ import {
 <let/copyState="Copy CSS"/>
 
 // Restore a shared configuration from the query string on first paint, and
-// follow the page's own theme for the initial preview surface.
+// follow the page's own theme for the initial canvas surface.
 <script>
   const restored = parseConfig(window.location.search);
   config = restored;
@@ -29,13 +37,7 @@ import {
 </script>
 
 <const/effectiveConfig=overlay ? { ...config, ...overlay } : config/>
-<const/previewStyle=toStyleString(
-  buildThemeVariables(effectiveConfig, previewMode),
-)/>
-<const/chartColors=(
-  CHART_PALETTES.find((palette) => palette.name === effectiveConfig.chart) ??
-  CHART_PALETTES[0]
-).colors/>
+<const/canvasStyle=toStyleString(buildThemeVariables(effectiveConfig, previewMode))/>
 
 <const/commitConfig=(next: DesignSystemConfig) => {
   config = next;
@@ -56,6 +58,7 @@ import {
     baseColor: pick(BASE_COLORS),
     accent: pick(ACCENTS),
     radius: pick(RADII),
+    fontHeading: pick(FONTS),
     font: pick(FONTS),
     chart: pick(CHART_PALETTES),
   });
@@ -84,30 +87,33 @@ import {
     });
 }/>
 
-<div
-  class="relative flex min-h-[calc(100vh-8rem)] flex-col [--customizer-width:18rem] [--gap:1rem] md:[--gap:1.5rem]"
->
-  <div class="flex flex-col gap-2 px-(--gap) pt-(--gap)">
-    <div class="flex flex-wrap items-end justify-between gap-3">
-      <div class="flex flex-col gap-1">
-        <h1 class="text-2xl font-semibold tracking-tight">Create</h1>
-        <p class="max-w-2xl text-sm text-muted-foreground">
-          Tune the marko-ui token set and watch real components react. Copy the
-          result straight into your
-          <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">globals.css</code>.
-        </p>
-      </div>
-      <span class="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
-        Preview — settings live in the URL, nothing is saved server-side
-      </span>
-    </div>
+<div class="relative isolate min-h-[calc(100vh-3.5rem)]" data-slot="create-page">
+  <!-- Headings/card titles read --font-heading, which the "Heading" picker
+       sets; nothing else in the registry consumes that variable yet, so it
+       is scoped here rather than added globally. -->
+  <style>
+    [data-slot="create-canvas"] h1,
+    [data-slot="create-canvas"] h2,
+    [data-slot="create-canvas"] h3,
+    [data-slot="create-canvas"] h4,
+    [data-slot="create-canvas"] [data-slot="card-title"] {
+      font-family: var(--font-heading);
+    }
+  </style>
+
+  <div
+    class=`${previewMode === "dark" ? "dark" : ""} relative w-full overflow-x-hidden bg-background text-foreground`
+    style=canvasStyle
+    data-slot="create-canvas"
+  >
+    <home-showcase/>
   </div>
 
   <div
-    data-slot="designer"
-    class="flex min-h-0 flex-1 flex-col gap-(--gap) p-(--gap) md:flex-row-reverse"
+    class="pointer-events-none fixed inset-x-0 top-[3.5rem] bottom-0 z-40 flex items-start p-4 md:p-6"
   >
     <create-customizer
+      class="pointer-events-auto"
       config=config
       configChange=commitConfig
       previewChange=applyOverlay
@@ -118,13 +124,5 @@ import {
       onCopy=copyCss
       copyState=copyState
     />
-
-    <div class="relative min-h-[32rem] flex-1 overflow-hidden rounded-2xl border border-border md:min-h-0">
-      <create-preview
-        style=previewStyle
-        mode=previewMode
-        chartColors=chartColors
-      />
-    </div>
   </div>
 </div>

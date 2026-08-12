@@ -1,27 +1,19 @@
-import Label from "@marko-ui/registry/ui/label/label.marko";
+import LabelDemo from "../../../demos/label/label-demo.marko";
+import InputWithLabel from "../../../demos/label/input-with-label.marko";
+import Required from "../../../demos/label/required.marko";
+import Disabled from "../../../demos/label/disabled.marko";
 
-<component-page title="Label" description="Renders an accessible label associated with controls.">
-  <demo-box title="Default">
-    <Label for="demo-email">Email address</Label>
+<component-page title="Label" description="Renders an accessible label associated with a control.">
+  <demo-box title="Basic">
+    <LabelDemo/>
   </demo-box>
   <demo-box title="With input">
-    <div class="flex flex-col gap-2">
-      <Label for="demo-name">Name</Label>
-      <input id="demo-name" type="text" placeholder="Enter your name" class="border-input h-9 rounded-md border px-3 text-sm" />
-    </div>
-  </demo-box>
-  <demo-box title="With checkbox (peer-disabled)">
-    <div class="flex items-center gap-2">
-      <input id="demo-terms" type="checkbox" disabled class="peer" />
-      <Label for="demo-terms">Accept terms and conditions</Label>
-    </div>
+    <InputWithLabel/>
   </demo-box>
   <demo-box title="Required field">
-    <div class="flex flex-col gap-2">
-      <Label for="demo-username">
-        Username <span class="text-destructive">*</span>
-      </Label>
-      <input id="demo-username" type="text" placeholder="jdoe" class="border-input h-9 rounded-md border px-3 text-sm" />
-    </div>
+    <Required/>
+  </demo-box>
+  <demo-box title="Disabled">
+    <Disabled/>
   </demo-box>
 </component-page>

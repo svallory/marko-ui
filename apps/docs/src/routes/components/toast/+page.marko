@@ -1,68 +1,27 @@
-import Toaster from "@marko-ui/registry/ui/toast/toast.marko";
-import { toast } from "@marko-ui/registry/ui/toast/store.ts";
+import ToastDemo from "../../../demos/toast/toast-demo.marko";
+import ToastTypes from "../../../demos/toast/toast-types.marko";
+import ToastDescription from "../../../demos/toast/toast-description.marko";
+import ToastPromise from "../../../demos/toast/toast-promise.marko";
+import ToastDismiss from "../../../demos/toast/toast-dismiss.marko";
 
 <component-page title="Toast" description="A succinct message that is displayed temporarily.">
   <demo-box title="Default">
-    <button
-      onClick() { toast.message({ title: "Event has been created" }); }
-      class="border-input rounded-md border px-4 py-2 text-sm font-medium"
-    >
-      Show Toast
-    </button>
+    <ToastDemo/>
   </demo-box>
 
   <demo-box title="Types">
-    <div class="flex flex-wrap gap-2">
-      <button
-        onClick() { toast.success({ title: "Success", description: "Your changes have been saved." }); }
-        class="border-input rounded-md border px-4 py-2 text-sm font-medium"
-      >
-        Success
-      </button>
-      <button
-        onClick() { toast.error({ title: "Error", description: "Something went wrong." }); }
-        class="border-input rounded-md border px-4 py-2 text-sm font-medium"
-      >
-        Error
-      </button>
-      <button
-        onClick() { toast.info({ title: "Heads up", description: "This is an informational message." }); }
-        class="border-input rounded-md border px-4 py-2 text-sm font-medium"
-      >
-        Info
-      </button>
-      <button
-        onClick() { toast.warning({ title: "Warning", description: "Please double check this." }); }
-        class="border-input rounded-md border px-4 py-2 text-sm font-medium"
-      >
-        Warning
-      </button>
-      <button
-        onClick() { toast.loading({ title: "Loading", description: "Fetching your data..." }); }
-        class="border-input rounded-md border px-4 py-2 text-sm font-medium"
-      >
-        Loading
-      </button>
-    </div>
+    <ToastTypes/>
   </demo-box>
 
   <demo-box title="With description only">
-    <button
-      onClick() { toast.message({ description: "The file has been uploaded successfully." }); }
-      class="border-input rounded-md border px-4 py-2 text-sm font-medium"
-    >
-      Show Toast
-    </button>
+    <ToastDescription/>
+  </demo-box>
+
+  <demo-box title="Promise">
+    <ToastPromise/>
   </demo-box>
 
   <demo-box title="Dismiss all">
-    <button
-      onClick() { toast.dismiss(); }
-      class="border-input rounded-md border px-4 py-2 text-sm font-medium"
-    >
-      Dismiss all
-    </button>
+    <ToastDismiss/>
   </demo-box>
-
-  <Toaster/>
 </component-page>

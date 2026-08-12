@@ -1,0 +1,15 @@
+import AlertDialog from "@marko-ui/registry/ui/alert-dialog/alert-dialog.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+<let/open=false/>
+
+<div class="flex items-center gap-4">
+  <AlertDialog open=open openChange=(o) => { open = o; }>
+    <@trigger|props|>
+      <Button ...props variant="outline">${open ? "Close" : "Open"}</Button>
+    </@trigger>
+    <@title>Controlled alert dialog</@title>
+    <@description>The open state is controlled by the parent component.</@description>
+  </AlertDialog>
+  <span class="text-sm text-muted-foreground">open: ${String(open)}</span>
+</div>

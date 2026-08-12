@@ -1,0 +1,24 @@
+import Accordion from "@marko-ui/registry/ui/accordion/accordion.marko";
+
+static const items = [
+  {
+    value: "item-1",
+    title: "Can I access my account history?",
+    content:
+      "Yes, you can view your complete account history including all transactions, plan changes, and support tickets in the Account History section of your dashboard.",
+  },
+  {
+    value: "item-2",
+    title: "Premium feature information",
+    content:
+      "This section contains information about premium features. Upgrade your plan to access this content.",
+  },
+  {
+    value: "item-3",
+    title: "How do I update my email address?",
+    content:
+      "You can update your email address in your account settings. You'll receive a verification email at your new address to confirm the change.",
+  },
+];
+
+<Accordion items=items collapsible disabled class="w-full max-w-md"/>

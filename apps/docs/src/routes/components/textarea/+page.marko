@@ -1,30 +1,27 @@
-import Textarea from "@marko-ui/registry/ui/textarea/textarea.marko";
-import Label from "@marko-ui/registry/ui/label/label.marko";
+import Default from "../../../demos/textarea/default.marko";
+import WithLabel from "../../../demos/textarea/with-label.marko";
+import WithText from "../../../demos/textarea/with-text.marko";
+import WithValue from "../../../demos/textarea/with-value.marko";
+import Disabled from "../../../demos/textarea/disabled.marko";
+import Invalid from "../../../demos/textarea/invalid.marko";
 
 <component-page title="Textarea" description="Displays a form textarea or a component that looks like a textarea.">
   <demo-box title="Default">
-    <Textarea placeholder="Type your message here." />
+    <Default/>
   </demo-box>
   <demo-box title="With label">
-    <div class="grid w-full gap-1.5">
-      <Label for="message">Your message</Label>
-      <Textarea id="message" placeholder="Type your message here." />
-    </div>
+    <WithLabel/>
   </demo-box>
   <demo-box title="With text">
-    <div class="grid w-full gap-1.5">
-      <Label for="message-2">Your message</Label>
-      <Textarea id="message-2" placeholder="Type your message here." />
-      <p class="text-muted-foreground text-sm">Your message will be copied to the support team.</p>
-    </div>
+    <WithText/>
   </demo-box>
   <demo-box title="With value">
-    <Textarea value="This is some existing feedback that a user has already typed into the textarea. It demonstrates how the field grows with field-sizing-content as content wraps across multiple lines." />
+    <WithValue/>
   </demo-box>
   <demo-box title="Disabled">
-    <Textarea disabled placeholder="Type your message here." />
+    <Disabled/>
   </demo-box>
   <demo-box title="Invalid">
-    <Textarea aria-invalid="true" placeholder="Type your message here." />
+    <Invalid/>
   </demo-box>
 </component-page>

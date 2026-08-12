@@ -1,0 +1,10 @@
+import Drawer from "@marko-ui/registry/ui/drawer/drawer.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+<Drawer>
+  <@trigger|props|>
+    <Button ...props variant="outline">View notifications</Button>
+  </@trigger>
+  <@title>Notifications</@title>
+  <@description>You have 3 unread messages.</@description>
+</Drawer>

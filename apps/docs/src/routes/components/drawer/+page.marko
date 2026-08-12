@@ -1,65 +1,22 @@
-import Drawer from "@marko-ui/registry/ui/drawer/drawer.marko";
-import Button from "@marko-ui/registry/ui/button/button.marko";
+import DrawerDemo from "../../../demos/drawer/drawer-demo.marko";
+import DrawerNoFooter from "../../../demos/drawer/drawer-no-footer.marko";
+import DrawerSnapPoints from "../../../demos/drawer/drawer-snap-points.marko";
+import DrawerSides from "../../../demos/drawer/drawer-sides.marko";
 
 <component-page title="Drawer" description="A vaul-style bottom sheet built on the @zag-js/drawer machine: drag-to-dismiss, snap points, grab handle, and swipe-to-open edge areas.">
   <demo-box title="Default">
-    <Drawer>
-      <@trigger|props|>
-        <Button ...props>Open Drawer</Button>
-      </@trigger>
-      <@title>Edit profile</@title>
-      <@description>Make changes to your profile here. Click save when you're done.</@description>
-      <@content>
-        <input class="border-input w-full rounded border px-3 py-2 text-sm" placeholder="Name" value="Pedro Duarte">
-      </@content>
-      <@footer>
-        <Button>Save changes</Button>
-      </@footer>
-    </Drawer>
+    <DrawerDemo/>
   </demo-box>
 
   <demo-box title="Without footer">
-    <Drawer>
-      <@trigger|props|>
-        <Button ...props variant="outline">View notifications</Button>
-      </@trigger>
-      <@title>Notifications</@title>
-      <@description>You have 3 unread messages.</@description>
-    </Drawer>
+    <DrawerNoFooter/>
   </demo-box>
 
   <demo-box title="Snap points">
-    <Drawer snapPoints=[0.4, 0.7, 1] defaultSnapPoint=0.4>
-      <@trigger|props|>
-        <Button ...props variant="secondary">Open with snap points</Button>
-      </@trigger>
-      <@title>Snap points</@title>
-      <@description>Drag the handle to snap between 40%, 70% and full height.</@description>
-      <@content>
-        // Snap points are clamped to min(contentSize, viewportSize), so the
-        // content has to be tall enough for the points to differ.
-        <div class="h-[85vh] space-y-3">
-          <p class="text-muted-foreground text-sm">
-            The drawer resolves each snap point against the viewport and settles
-            on the nearest one when you release the drag.
-          </p>
-          <for|index| from=1 to=12>
-            <div class="bg-muted/50 rounded-md px-3 py-2 text-sm">
-              Row ${index}
-            </div>
-          </for>
-        </div>
-      </@content>
-    </Drawer>
+    <DrawerSnapPoints/>
   </demo-box>
 
   <demo-box title="Swipe direction: right">
-    <Drawer swipeDirection="end">
-      <@trigger|props|>
-        <Button ...props variant="outline">Open from the right</Button>
-      </@trigger>
-      <@title>Side drawer</@title>
-      <@description>Logical `end` resolves to right in LTR, left in RTL.</@description>
-    </Drawer>
+    <DrawerSides/>
   </demo-box>
 </component-page>

@@ -1,35 +1,19 @@
-import Listbox from "@marko-ui/registry/ui/listbox/listbox.marko";
-
-static const fruits = [
-  { value: "apple", label: "Apple" },
-  { value: "banana", label: "Banana" },
-  { value: "blueberry", label: "Blueberry" },
-  { value: "grapes", label: "Grapes" },
-  { value: "pineapple", label: "Pineapple" },
-];
-
-static const fruitsWithDisabled = [
-  { value: "apple", label: "Apple" },
-  { value: "banana", label: "Banana", disabled: true },
-  { value: "blueberry", label: "Blueberry" },
-  { value: "grapes", label: "Grapes", disabled: true },
-  { value: "pineapple", label: "Pineapple" },
-];
-
-<let/controlledValue=["banana"]/>
+import ListboxDemo from "../../../demos/listbox/listbox-demo.marko";
+import ListboxMultiple from "../../../demos/listbox/listbox-multiple.marko";
+import ListboxDisabled from "../../../demos/listbox/listbox-disabled.marko";
+import ListboxControlled from "../../../demos/listbox/listbox-controlled.marko";
 
 <component-page title="Listbox" description="An always-visible list of options with single or multiple selection and keyboard navigation.">
-  <demo-box title="Single selection">
-    <Listbox items=fruits label="Favorite fruit" defaultValue=["apple"]/>
+  <demo-box title="Basic">
+    <ListboxDemo/>
   </demo-box>
   <demo-box title="Multiple selection">
-    <Listbox items=fruits label="Fruits" selectionMode="multiple" defaultValue=["apple", "grapes"]/>
+    <ListboxMultiple/>
   </demo-box>
   <demo-box title="Disabled items">
-    <Listbox items=fruitsWithDisabled label="Favorite fruit" defaultValue=["apple"]/>
+    <ListboxDisabled/>
   </demo-box>
   <demo-box title="Controlled">
-    <Listbox items=fruits label="Favorite fruit" value:=controlledValue/>
-    <p class="mt-2 text-sm text-muted-foreground">Selected: ${controlledValue.join(", ") || "none"}</p>
+    <ListboxControlled/>
   </demo-box>
 </component-page>

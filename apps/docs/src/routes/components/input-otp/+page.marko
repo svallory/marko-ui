@@ -1,26 +1,23 @@
-import InputOTP from "@marko-ui/registry/ui/input-otp/input-otp.marko";
-
-<let/controlledValue=["1", "2", "3", "", "", ""]/>
+import Demo from "../../../demos/input-otp/input-otp-demo.marko";
+import DemoSeparator from "../../../demos/input-otp/input-otp-separator.marko";
+import DemoMasked from "../../../demos/input-otp/input-otp-masked.marko";
+import DemoDisabled from "../../../demos/input-otp/input-otp-disabled.marko";
+import DemoControlled from "../../../demos/input-otp/input-otp-controlled.marko";
 
 <component-page title="Input OTP" description="Accessible one-time password component with copy paste functionality.">
   <demo-box title="Default">
-    <InputOTP length=6/>
+    <Demo/>
   </demo-box>
   <demo-box title="Grouped">
-    <InputOTP length=6 groupSize=3/>
+    <DemoSeparator/>
   </demo-box>
   <demo-box title="Masked">
-    <InputOTP length=6 mask/>
+    <DemoMasked/>
   </demo-box>
   <demo-box title="Disabled">
-    <InputOTP length=6 disabled/>
+    <DemoDisabled/>
   </demo-box>
   <demo-box title="Controlled">
-    <p class="text-muted-foreground mb-4 text-sm">Value: ${controlledValue.join("")}</p>
-    <InputOTP
-      length=6
-      value=controlledValue
-      valueChange(value) { controlledValue = value; }
-    />
+    <DemoControlled/>
   </demo-box>
 </component-page>

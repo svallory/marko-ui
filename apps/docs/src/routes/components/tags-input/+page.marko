@@ -1,32 +1,27 @@
-import TagsInput from "@marko-ui/registry/ui/tags-input/tags-input.marko";
-
-<let/controlledValue=["react", "marko"]/>
+import DefaultDemo from "../../../demos/tags-input/default.marko";
+import LabelDemo from "../../../demos/tags-input/label.marko";
+import MaxDemo from "../../../demos/tags-input/max.marko";
+import PasteDemo from "../../../demos/tags-input/paste.marko";
+import DisabledDemo from "../../../demos/tags-input/disabled.marko";
+import ControlledDemo from "../../../demos/tags-input/controlled.marko";
 
 <component-page title="Tags Input" description="Tag chips input: type + Enter adds, Backspace deletes, double-click edits inline, supports a max tag count and paste splitting.">
   <demo-box title="Default">
-    <TagsInput defaultValue=["shadcn", "marko", "zag-js"] placeholder="Add tag..." class="w-[320px]"/>
+    <DefaultDemo/>
   </demo-box>
   <demo-box title="With label">
-    <TagsInput label="Skills" defaultValue=["typescript"] placeholder="Add a skill..." class="w-[320px]"/>
+    <LabelDemo/>
   </demo-box>
   <demo-box title="Max 3 tags">
-    <TagsInput defaultValue=["one", "two"] max=3 placeholder="Add tag..." class="w-[320px]"/>
+    <MaxDemo/>
   </demo-box>
   <demo-box title="Paste splitting (comma-delimited)">
-    <TagsInput addOnPaste defaultValue=[] placeholder="Paste a comma-separated list..." class="w-[320px]"/>
+    <PasteDemo/>
   </demo-box>
   <demo-box title="Disabled">
-    <TagsInput defaultValue=["locked", "read-only"] disabled class="w-[320px]"/>
+    <DisabledDemo/>
   </demo-box>
   <demo-box title="Controlled">
-    <div class="flex flex-col gap-2">
-      <TagsInput
-        value=controlledValue
-        valueChange(value) { controlledValue = value; }
-        placeholder="Add tag..."
-        class="w-[320px]"
-      />
-      <span class="text-sm text-muted-foreground">Value: ${controlledValue.join(", ")}</span>
-    </div>
+    <ControlledDemo/>
   </demo-box>
 </component-page>

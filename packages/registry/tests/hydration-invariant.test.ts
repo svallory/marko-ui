@@ -120,6 +120,29 @@ const ALLOWED_DIFFERENCES: Partial<Record<string, AllowedDifference[]>> = {
       attributeName: "data-side",
       reason: "Derived from the same measured popper placement as data-placement above.",
     },
+    {
+      scope: "combobox",
+      part: "content",
+      attributeName: "data-has-nested",
+      // Set by @zag-js/dismissable's layer-stack module (layer-stack.mjs):
+      // when a dismissable layer (popover/dialog/combobox content, etc.) mounts,
+      // it registers itself in a page-wide, in-memory layer stack and marks
+      // itself `data-has-nested="<type>"` (plus a `--nested-layer-count` CSS
+      // var) if OTHER layers are already registered on top of it. This
+      // registry only exists client-side — there is no way to know "how many
+      // other dismissable layers are open elsewhere on the page" during SSR,
+      // since SSR renders each route in isolation with no shared runtime.
+      //
+      // The command demo route hardcodes `open=true` on all 4 Command demos
+      // (default.marko's `open=true` on <machine-props>, so the palette is
+      // always visible for documentation purposes) instead of gating on real
+      // user interaction, so all 4 combobox content layers mount simultaneously
+      // and the layer stack detects nesting on the first one client-side. A
+      // route with normally-triggered (click-to-open) layers would not hit
+      // this, since only one layer is ever open at a time.
+      reason:
+        "layer-stack nesting detection requires a client-side, page-wide layer registry that cannot exist during SSR; this route's demos intentionally keep several combobox layers open at once.",
+    },
   ],
   carousel: [
     {
@@ -159,6 +182,26 @@ const ALLOWED_DIFFERENCES: Partial<Record<string, AllowedDifference[]>> = {
       // design, not a markup bug.
       reason:
         "pageSnapPoints is re-derived from measured scroll-snap positions on machine start; SSR only has the arithmetic estimate.",
+    },
+    {
+      scope: "carousel",
+      part: "next-trigger",
+      attributeName: "disabled",
+      // `canScrollNext` (which drives the next-trigger's `disabled` attribute)
+      // is `page < pageSnapPoints.length - 1`, i.e. it is derived from the same
+      // `pageSnapPoints` estimate documented on the indicator entry above.
+      //
+      // The "Spacing" demo (5 slides, slidesPerPage=3) hits the arithmetic
+      // estimate's edge case directly: `if (i + slidesPerPage > totalSlides)
+      // break` yields exactly ONE page server-side (3 + 3 > 5), so
+      // pageSnapPoints.length === 1 and canScrollNext is false — SSR renders
+      // next-trigger disabled. The measured client-side layout finds a second,
+      // partial-page snap position, so pageSnapPoints.length === 2 post-hydration
+      // and the trigger becomes enabled. Same measurement-dependent mechanism as
+      // the indicator entry, surfacing through a derived attribute instead of
+      // element count.
+      reason:
+        "next-trigger's disabled state is derived from pageSnapPoints.length, which is only an arithmetic estimate at SSR and is corrected by client-side measurement on machine start.",
     },
   ],
 };

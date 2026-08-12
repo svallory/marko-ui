@@ -1,0 +1,13 @@
+import DateInput from "@marko-ui/registry/ui/date-input/date-input.marko";
+
+<let/value=["2026-08-10"]/>
+
+<div class="flex flex-col gap-4">
+  <DateInput
+    value=value
+    valueChange(next) { value = next; }
+  />
+  <span class="text-muted-foreground text-sm">
+    value: ${value.join(", ") || "(empty)"}
+  </span>
+</div>

@@ -1,0 +1,24 @@
+import { CONTENT_OPTIONS } from "../../lib/typeset-fixtures.ts";
+
+export interface Input {
+  active: string;
+  activeChange: (value: string) => void;
+}
+
+<div class="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center justify-center gap-1.5">
+  <div class="dark flex items-center gap-1 rounded-xl bg-card/90 p-1 shadow-xl backdrop-blur-xl">
+    <for|option, index| of=CONTENT_OPTIONS by=(option) => option.value>
+      <button
+        type="button"
+        data-active=String(input.active === option.value)
+        title=option.label
+        class="h-7 min-w-7 cursor-pointer rounded-lg px-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+        onClick() {
+          input.activeChange(option.value);
+        }
+      >
+        ${option.label}
+      </button>
+    </for>
+  </div>
+</div>

@@ -1,0 +1,9 @@
+import ToggleGroup from "@marko-ui/registry/ui/toggle-group/toggle-group.marko";
+
+static const FORMATTING = [
+  { value: "bold", label: "B" },
+  { value: "italic", label: "I" },
+  { value: "underline", label: "U", disabled: true },
+];
+
+<ToggleGroup items=FORMATTING multiple value=["bold"]/>

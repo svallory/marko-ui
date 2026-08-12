@@ -1,23 +1,19 @@
-import SignaturePad from "@marko-ui/registry/ui/signature-pad/signature-pad.marko";
-
-<let/lastDrawEndPaths=[] as string[]/>
+import SignaturePadDemo from "../../../demos/signature-pad/signature-pad-demo.marko";
+import SignaturePadForm from "../../../demos/signature-pad/signature-pad-form.marko";
+import SignaturePadDisabled from "../../../demos/signature-pad/signature-pad-disabled.marko";
+import SignaturePadControlled from "../../../demos/signature-pad/signature-pad-controlled.marko";
 
 <component-page title="Signature Pad" description="A draw-to-sign pad for capturing handwritten signatures via pointer input.">
   <demo-box title="Default">
-    <SignaturePad/>
+    <SignaturePadDemo/>
   </demo-box>
   <demo-box title="With name (form value)">
-    <SignaturePad name="signature"/>
+    <SignaturePadForm/>
   </demo-box>
   <demo-box title="Disabled">
-    <SignaturePad disabled/>
+    <SignaturePadDisabled/>
   </demo-box>
   <demo-box title="Controlled draw-end">
-    <div class="flex flex-col gap-2">
-      <SignaturePad drawEndChange=(paths) => { lastDrawEndPaths = paths; }/>
-      <span class="text-sm text-muted-foreground">
-        committed strokes: ${lastDrawEndPaths.length}
-      </span>
-    </div>
+    <SignaturePadControlled/>
   </demo-box>
 </component-page>

@@ -1,0 +1,10 @@
+import Toaster from "@marko-ui/registry/ui/toast/toast.marko";
+import { toast } from "@marko-ui/registry/ui/toast/store.ts";
+
+<button
+  onClick() { toast.message({ description: "The file has been uploaded successfully." }); }
+  class="border-input rounded-md border px-4 py-2 text-sm font-medium"
+>
+  Show Toast
+</button>
+<Toaster/>

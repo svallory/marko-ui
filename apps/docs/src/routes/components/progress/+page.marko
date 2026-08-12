@@ -1,42 +1,23 @@
-import Progress from "@marko-ui/registry/ui/progress/progress.marko";
-
-<let/controlledValue=45/>
+import ProgressDemo from "../../../demos/progress/progress-demo.marko";
+import ProgressLabel from "../../../demos/progress/progress-label.marko";
+import ProgressMinMax from "../../../demos/progress/progress-min-max.marko";
+import ProgressIndeterminate from "../../../demos/progress/progress-indeterminate.marko";
+import ProgressControlled from "../../../demos/progress/progress-controlled.marko";
 
 <component-page title="Progress" description="Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.">
   <demo-box title="Default">
-    <Progress value=66 class="w-64"/>
+    <ProgressDemo/>
   </demo-box>
   <demo-box title="With label">
-    <Progress value=40 label="Uploading..." class="w-64"/>
+    <ProgressLabel/>
   </demo-box>
   <demo-box title="Min / Max">
-    <Progress value=150 min=0 max=200 label="Storage used" class="w-64"/>
+    <ProgressMinMax/>
   </demo-box>
   <demo-box title="Indeterminate">
-    <Progress value=null label="Loading..." class="w-64"/>
+    <ProgressIndeterminate/>
   </demo-box>
   <demo-box title="Controlled">
-    <div class="flex w-64 flex-col gap-3">
-      <Progress value=controlledValue label="Progress"/>
-      <div class="flex gap-2">
-        <button
-          type="button"
-          class="rounded-md border px-2 py-1 text-sm"
-          onClick() { controlledValue = Math.max(0, controlledValue - 10); }
-        >
-          -10
-        </button>
-        <button
-          type="button"
-          class="rounded-md border px-2 py-1 text-sm"
-          onClick() { controlledValue = Math.min(100, controlledValue + 10); }
-        >
-          +10
-        </button>
-        <span class="self-center text-sm text-muted-foreground">
-          value: ${controlledValue}
-        </span>
-      </div>
-    </div>
+    <ProgressControlled/>
   </demo-box>
 </component-page>

@@ -3,20 +3,40 @@
 import Card from "@marko-ui/registry/ui/card/card.marko";
 import CardContent from "@marko-ui/registry/ui/card/content.marko";
 import Button from "@marko-ui/registry/ui/button/button.marko";
+import ButtonGroup from "@marko-ui/registry/ui/button-group/button-group.marko";
 import Badge from "@marko-ui/registry/ui/badge/badge.marko";
-import Input from "@marko-ui/registry/ui/input/input.marko";
+import InputGroup from "@marko-ui/registry/ui/input-group/input-group.marko";
+import InputGroupInput from "@marko-ui/registry/ui/input-group/input.marko";
+import InputGroupAddon from "@marko-ui/registry/ui/input-group/addon.marko";
+import InputGroupText from "@marko-ui/registry/ui/input-group/text.marko";
 import Textarea from "@marko-ui/registry/ui/textarea/textarea.marko";
 import Checkbox from "@marko-ui/registry/ui/checkbox/checkbox.marko";
 import Switch from "@marko-ui/registry/ui/switch/switch.marko";
-import Dialog from "@marko-ui/registry/ui/dialog/dialog.marko";
+import RadioGroup from "@marko-ui/registry/ui/radio-group/radio-group.marko";
+import AlertDialog from "@marko-ui/registry/ui/alert-dialog/alert-dialog.marko";
+import DropdownMenu from "@marko-ui/registry/ui/dropdown-menu/dropdown-menu.marko";
 
-<Card class="w-full">
-  <CardContent class="flex flex-col gap-6">
+static const FRUIT_OPTIONS = [
+  { value: "apple", label: "Apple" },
+  { value: "banana", label: "Banana" },
+];
+
+static const QUICK_ACTIONS = [
+  { type: "label" as const, label: "Quick Actions" },
+  { value: "mute", label: "Mute Conversation" },
+  { value: "read", label: "Mark as Read" },
+  { value: "block", label: "Block User" },
+  { type: "separator" as const },
+  { value: "delete", label: "Delete Conversation", danger: true },
+];
+
+<Card class="w-full min-w-0">
+  <CardContent class="flex min-w-0 flex-col gap-6">
     <div class="flex flex-wrap gap-2">
-      <Button size="sm">
+      <Button>
         Button
         <svg
-          class="size-3.5"
+          class="size-4"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -29,12 +49,30 @@ import Dialog from "@marko-ui/registry/ui/dialog/dialog.marko";
           <path d="m12 5 7 7-7 7"/>
         </svg>
       </Button>
-      <Button size="sm" variant="secondary">Secondary</Button>
-      <Button size="sm" variant="outline">Outline</Button>
+      <Button variant="secondary">Secondary</Button>
+      <Button variant="outline">Outline</Button>
     </div>
 
-    <div class="flex flex-col gap-3">
-      <Input placeholder="Name" aria-label="Name"/>
+    <div class="flex min-w-0 flex-col gap-4">
+      <InputGroup>
+        <InputGroupInput placeholder="Name" aria-label="Name"/>
+        <InputGroupAddon align="inline-end">
+          <InputGroupText>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.3-4.3"/>
+            </svg>
+          </InputGroupText>
+        </InputGroupAddon>
+      </InputGroup>
       <Textarea placeholder="Message" class="min-h-16 resize-none" aria-label="Message"/>
     </div>
 
@@ -43,26 +81,55 @@ import Dialog from "@marko-ui/registry/ui/dialog/dialog.marko";
       <Badge variant="secondary">Secondary</Badge>
       <Badge variant="outline">Outline</Badge>
       <div class="ml-auto flex items-center gap-3">
+        <RadioGroup
+          items=FRUIT_OPTIONS
+          defaultValue="apple"
+          orientation="horizontal"
+          aria-label="Fruit preference"
+        />
         <Checkbox defaultChecked aria-label="Enable email alerts"/>
         <Switch defaultChecked aria-label="Enable compact notifications"/>
       </div>
     </div>
 
-    <div class="flex items-center gap-2">
-      <Dialog>
+    <div class="flex flex-wrap items-center gap-2">
+      <AlertDialog cancelText="Don't allow" actionText="Allow">
         <@trigger|triggerProps|>
-          <Button ...triggerProps size="sm" variant="outline">Dialog</Button>
+          <Button ...triggerProps variant="outline">Alert Dialog</Button>
         </@trigger>
         <@title>Allow accessory to connect?</@title>
         <@description>
           Do you want to allow the USB accessory to connect to this device and
           your data?
         </@description>
-        <@footer>
-          <Button size="sm" variant="outline">Don't allow</Button>
-          <Button size="sm">Allow</Button>
-        </@footer>
-      </Dialog>
+      </AlertDialog>
+
+      <ButtonGroup class="ml-auto">
+        <Button variant="outline">Button Group</Button>
+        <DropdownMenu items=QUICK_ACTIONS>
+          <@trigger|triggerProps|>
+            <Button
+              ...triggerProps
+              variant="outline"
+              size="icon"
+              aria-label="Open quick actions"
+            >
+              <svg
+                class="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m18 15-6-6-6 6"/>
+              </svg>
+            </Button>
+          </@trigger>
+        </DropdownMenu>
+      </ButtonGroup>
     </div>
   </CardContent>
 </Card>

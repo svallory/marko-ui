@@ -1,42 +1,31 @@
-import Editable from "@marko-ui/registry/ui/editable/editable.marko";
-import Button from "@marko-ui/registry/ui/button/button.marko";
-
-<let/controlledValue="Saulo Vallory"/>
-<let/lastCommitted="Click submit to see this update"/>
+import Default from "../../../demos/editable/default.marko";
+import Placeholder from "../../../demos/editable/placeholder.marko";
+import SubmitMode from "../../../demos/editable/submit-mode.marko";
+import ActivationMode from "../../../demos/editable/activation-mode.marko";
+import Disabled from "../../../demos/editable/disabled.marko";
+import CustomTrigger from "../../../demos/editable/custom-trigger.marko";
+import Controlled from "../../../demos/editable/controlled.marko";
 
 <component-page title="Editable" description="Inline editable text: preview mode that switches to input on click/focus, submit on Enter/blur, cancel on Escape.">
   <demo-box title="Default">
-    <Editable defaultValue="Edit this text" class="w-[280px]"/>
+    <Default/>
   </demo-box>
   <demo-box title="Placeholder">
-    <Editable placeholder="Enter your name" class="w-[280px]"/>
+    <Placeholder/>
   </demo-box>
   <demo-box title="Submit on Enter only">
-    <Editable defaultValue="Press Enter to submit" submitMode="enter" class="w-[280px]"/>
+    <SubmitMode/>
   </demo-box>
   <demo-box title="Activation: double-click">
-    <Editable defaultValue="Double-click to edit" activationMode="dblclick" class="w-[280px]"/>
+    <ActivationMode/>
   </demo-box>
   <demo-box title="Disabled">
-    <Editable defaultValue="Can't touch this" disabled class="w-[280px]"/>
+    <Disabled/>
   </demo-box>
   <demo-box title="Custom trigger">
-    <Editable defaultValue="Edit via custom trigger" class="w-[280px]">
-      <@trigger|props|>
-        <Button ...props variant="outline" size="sm">Edit</Button>
-      </@trigger>
-    </Editable>
+    <CustomTrigger/>
   </demo-box>
   <demo-box title="Controlled">
-    <div class="flex flex-col gap-2">
-      <Editable
-        value=controlledValue
-        valueChange(value) { controlledValue = value; }
-        valueCommit(value) { lastCommitted = value; }
-        class="w-[280px]"
-      />
-      <span class="text-sm text-muted-foreground">Live value: ${controlledValue}</span>
-      <span class="text-sm text-muted-foreground">Last committed: ${lastCommitted}</span>
-    </div>
+    <Controlled/>
   </demo-box>
 </component-page>

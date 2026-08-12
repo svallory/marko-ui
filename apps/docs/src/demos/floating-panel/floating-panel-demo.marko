@@ -1,0 +1,15 @@
+import FloatingPanel from "@marko-ui/registry/ui/floating-panel/floating-panel.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+<FloatingPanel defaultPosition={ x: 380, y: 200 } defaultSize={ width: 360, height: 260 }>
+  <@trigger|props|>
+    <Button ...props variant="outline">Open panel</Button>
+  </@trigger>
+  <@title>Layers</@title>
+  <@content>
+    <p class="text-muted-foreground">
+      Drag the header to move this panel. Grab any edge or corner to resize
+      it. Use the header buttons to minimize, maximize or close.
+    </p>
+  </@content>
+</FloatingPanel>

@@ -1,0 +1,25 @@
+import DataTable from "@marko-ui/registry/ui/data-table/data-table.marko";
+
+static const payments = [
+  { id: "728ed52f", amount: 100, status: "pending", email: "m@example.com" },
+  { id: "489e1d42", amount: 125, status: "processing", email: "example@gmail.com" },
+  { id: "a1b2c3d4", amount: 250, status: "success", email: "jane@example.com" },
+];
+
+static const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+
+static const columns = [
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: (row: (typeof payments)[number]) => row.status[0].toUpperCase() + row.status.slice(1),
+  },
+  { accessorKey: "email", header: "Email" },
+  {
+    accessorKey: "amount",
+    header: "Amount",
+    cell: (row: (typeof payments)[number]) => currency.format(row.amount),
+  },
+];
+
+<DataTable columns=columns data=payments/>

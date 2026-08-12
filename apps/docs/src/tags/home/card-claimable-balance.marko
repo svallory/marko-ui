@@ -1,0 +1,69 @@
+// Adapted from shadcn/ui `app/(app)/(root)/cards/claimable-balance.tsx`
+// (MIT), rebuilt on marko-ui's own registry components.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import Badge from "@marko-ui/registry/ui/badge/badge.marko";
+import Item from "@marko-ui/registry/ui/item/item.marko";
+import ItemContent from "@marko-ui/registry/ui/item/content.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+
+static const NET_ROYALTIES = 1248.75;
+static const PROCESSING_FEE = 37.46;
+static const TOTAL_CLAIMABLE = NET_ROYALTIES - PROCESSING_FEE;
+
+static function formatCurrency(amount: number) {
+  return amount.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+<Card class="w-full min-w-0">
+  <CardHeader>
+    <CardDescription>Claimable Balance</CardDescription>
+    <CardTitle class="text-4xl tabular-nums">
+      $${formatCurrency(TOTAL_CLAIMABLE)}
+    </CardTitle>
+    <div>
+      <Badge variant="outline" class="gap-1.5">
+        <span class="size-2 rounded-full bg-yellow-500"/>
+        Pending Setup
+      </Badge>
+    </div>
+  </CardHeader>
+  <CardContent class="flex flex-1 flex-col justify-end">
+    <Item variant="muted" class="flex-col items-stretch">
+      <ItemContent class="gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-muted-foreground text-sm">Net Royalties</span>
+          <span class="text-sm font-medium tabular-nums">
+            $${formatCurrency(NET_ROYALTIES)}
+          </span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-muted-foreground text-sm">Processing Fee</span>
+          <span class="text-sm font-medium tabular-nums">
+            -$${formatCurrency(PROCESSING_FEE)}
+          </span>
+        </div>
+        <Separator/>
+        <div class="flex items-center justify-between">
+          <span class="text-muted-foreground text-sm">Total Ready to Claim</span>
+          <span class="text-sm font-semibold tabular-nums">
+            $${formatCurrency(TOTAL_CLAIMABLE)} USD
+          </span>
+        </div>
+      </ItemContent>
+    </Item>
+  </CardContent>
+  <CardFooter>
+    <CardDescription>
+      Once your bank is connected, balances over $10.00 are automatically
+      eligible for monthly distribution on the 15th of each month.
+    </CardDescription>
+  </CardFooter>
+</Card>

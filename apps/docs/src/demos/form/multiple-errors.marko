@@ -1,0 +1,22 @@
+import Field from "@marko-ui/registry/ui/form/form.marko";
+import FieldLabel from "@marko-ui/registry/ui/form/field-label.marko";
+import FieldError from "@marko-ui/registry/ui/form/field-error.marko";
+import Input from "@marko-ui/registry/ui/input/input.marko";
+
+<Field class="max-w-sm" invalid>
+  <FieldLabel for="field-multi-password">Password</FieldLabel>
+  <Input
+    id="field-multi-password"
+    type="password"
+    value="abc"
+    aria-invalid="true"
+    aria-describedby="field-multi-password-error"
+  />
+  <FieldError
+    id="field-multi-password-error"
+    errors=[
+      { message: "Password must be at least 8 characters." },
+      { message: "Password must contain a number." },
+    ]
+  />
+</Field>

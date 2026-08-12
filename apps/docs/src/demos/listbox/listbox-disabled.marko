@@ -1,0 +1,11 @@
+import Listbox from "@marko-ui/registry/ui/listbox/listbox.marko";
+
+static const fruitsWithDisabled = [
+  { value: "apple", label: "Apple" },
+  { value: "banana", label: "Banana", disabled: true },
+  { value: "blueberry", label: "Blueberry" },
+  { value: "grapes", label: "Grapes", disabled: true },
+  { value: "pineapple", label: "Pineapple" },
+];
+
+<Listbox items=fruitsWithDisabled label="Favorite fruit" defaultValue=["apple"]/>

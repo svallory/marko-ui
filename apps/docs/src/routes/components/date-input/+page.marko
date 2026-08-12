@@ -1,28 +1,27 @@
-import DateInput from "@marko-ui/registry/ui/date-input/date-input.marko";
-
-<let/controlledValue=["2026-08-10"]/>
+import DateInputDemo from "../../../demos/date-input/date-input-demo.marko";
+import DateInputValue from "../../../demos/date-input/date-input-value.marko";
+import DateInputLocale from "../../../demos/date-input/date-input-locale.marko";
+import DateInputDisabled from "../../../demos/date-input/date-input-disabled.marko";
+import DateInputRange from "../../../demos/date-input/date-input-range.marko";
+import DateInputControlled from "../../../demos/date-input/date-input-controlled.marko";
 
 <component-page title="Date Input" description="A segmented date input with keyboard editing and locale-aware formatting.">
   <demo-box title="Default">
-    <DateInput/>
+    <DateInputDemo/>
   </demo-box>
   <demo-box title="With value">
-    <DateInput value=["2026-08-10"]/>
+    <DateInputValue/>
   </demo-box>
   <demo-box title="Custom locale">
-    <DateInput locale="fr-FR" value=["2026-08-10"]/>
+    <DateInputLocale/>
   </demo-box>
   <demo-box title="Disabled">
-    <DateInput disabled value=["2026-08-10"]/>
+    <DateInputDisabled/>
   </demo-box>
   <demo-box title="Date range">
-    <DateInput selectionMode="range"/>
+    <DateInputRange/>
   </demo-box>
   <demo-box title="Controlled">
-    <p class="text-muted-foreground mb-4 text-sm">Value: ${controlledValue.join(", ") || "(empty)"}</p>
-    <DateInput
-      value=controlledValue
-      valueChange(value) { controlledValue = value; }
-    />
+    <DateInputControlled/>
   </demo-box>
 </component-page>

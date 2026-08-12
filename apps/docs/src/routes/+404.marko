@@ -1,0 +1,37 @@
+// 404 page. @marko/run only allows +404.marko at the routes root, and it
+// still renders through this directory's +layout.marko, so it automatically
+// gets the site header/footer/theme script like every other page — no
+// separate chrome to maintain here.
+import { COMPONENTS } from "../lib/components-list.ts";
+
+<main class="mx-auto flex max-w-2xl flex-1 flex-col items-center justify-center gap-6 px-4 py-24 text-center sm:px-6 lg:px-8">
+  <p class="font-mono text-sm text-muted-foreground">404</p>
+  <div class="space-y-2">
+    <h1 class="text-3xl font-bold tracking-tight">Page not found</h1>
+    <p class="text-muted-foreground">
+      The page you're looking for doesn't exist or may have moved.
+    </p>
+  </div>
+
+  <div class="flex flex-wrap items-center justify-center gap-3">
+    <a
+      href="/"
+      class="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+    >
+      Back home
+    </a>
+    <a
+      href="/docs"
+      class="inline-flex h-9 items-center justify-center rounded-md border border-border px-4 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+    >
+      Browse the docs
+    </a>
+  </div>
+
+  <p class="text-sm text-muted-foreground">
+    Looking for a component? There are ${COMPONENTS.length} in the registry — try
+    <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">/components/&lt;name&gt;</code>,
+    e.g. <a href="/components/button" class="font-medium text-foreground underline underline-offset-4">button</a>
+    or <a href="/components/dialog" class="font-medium text-foreground underline underline-offset-4">dialog</a>.
+  </p>
+</main>

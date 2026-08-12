@@ -1,0 +1,26 @@
+// Adapted from shadcn/ui `app/(app)/(root)/cards/qr-connect.tsx` (MIT).
+// The original hand-rolls a fake QR matrix as <rect> elements; marko-ui has a
+// real QrCode component (@zag-js/qr-code), so this encodes an actual URL.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import QrCode from "@marko-ui/registry/ui/qr-code/qr-code.marko";
+
+<Card class="w-full min-w-0">
+  <CardContent class="flex justify-center pt-6">
+    <div class="rounded-xl border bg-white p-4">
+      <QrCode
+        defaultValue="https://marko-ui.saulo.tech"
+        aria-label="Connect device QR code"
+      />
+    </div>
+  </CardContent>
+  <CardHeader class="text-center">
+    <CardTitle>Scan to connect your mobile device</CardTitle>
+    <CardDescription class="text-balance">
+      Open the companion app and scan this code to link your device.
+    </CardDescription>
+  </CardHeader>
+</Card>

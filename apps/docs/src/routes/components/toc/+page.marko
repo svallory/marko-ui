@@ -1,91 +1,19 @@
-import Toc from "@marko-ui/registry/ui/toc/toc.marko";
-
-static const items = [
-  { value: "introduction", depth: 2, label: "Introduction" },
-  { value: "installation", depth: 2, label: "Installation" },
-  { value: "prerequisites", depth: 3, label: "Prerequisites" },
-  { value: "quick-start", depth: 3, label: "Quick start" },
-  { value: "usage", depth: 2, label: "Usage" },
-  { value: "basic-example", depth: 3, label: "Basic example" },
-  { value: "advanced-example", depth: 3, label: "Advanced example" },
-  { value: "api-reference", depth: 2, label: "API reference" },
-  { value: "faq", depth: 2, label: "FAQ" },
-];
+import TocDemo from "../../../demos/toc/toc-demo.marko";
+import TocWithTitle from "../../../demos/toc/toc-with-title.marko";
+import TocNested from "../../../demos/toc/toc-nested.marko";
+import TocControlled from "../../../demos/toc/toc-controlled.marko";
 
 <component-page title="Table of Contents" description="Tracks headings in a scroll container, highlights the active section while scrolling, and smooth-scrolls to a heading on click.">
   <demo-box title="Default">
-    <div class="grid w-full grid-cols-[1fr_200px] gap-8">
-      <div/scrollContainer class="h-96 overflow-y-auto rounded-lg border p-6">
-        <div class="space-y-6">
-          <h2 id="introduction" class="text-lg font-semibold">Introduction</h2>
-          <p class="text-sm text-muted-foreground">
-            This library provides a set of copy-paste components built on top of Zag.js state machines,
-            adapted for Marko 6. Every component ships as plain source you own and can edit freely, in
-            the spirit of shadcn/ui but for the Marko ecosystem.
-          </p>
-          <p class="text-sm text-muted-foreground">
-            Scroll this panel and watch the table of contents on the right track which section is
-            currently in view, highlighting the active heading and smooth-scrolling when you click a
-            link.
-          </p>
-
-          <h2 id="installation" class="text-lg font-semibold">Installation</h2>
-          <p class="text-sm text-muted-foreground">
-            Components are added to your project with the CLI, which copies the source files directly
-            into your registry directory so you can modify them as needed.
-          </p>
-
-          <h3 id="prerequisites" class="text-base font-semibold">Prerequisites</h3>
-          <p class="text-sm text-muted-foreground">
-            You will need a Marko 6 project with Tailwind CSS configured, along with the
-            <code class="rounded bg-muted px-1 py-0.5 text-xs">marko-ui</code> adapter package installed.
-          </p>
-
-          <h3 id="quick-start" class="text-base font-semibold">Quick start</h3>
-          <p class="text-sm text-muted-foreground">
-            Run the CLI command for the component you want, import it into your route, and start
-            customizing the class names or markup to fit your design.
-          </p>
-
-          <h2 id="usage" class="text-lg font-semibold">Usage</h2>
-          <p class="text-sm text-muted-foreground">
-            Every interactive component follows the same three-tag wiring pattern: machine props,
-            service, and connect. This keeps behavior fully owned by Zag while markup stays entirely
-            in your hands.
-          </p>
-
-          <h3 id="basic-example" class="text-base font-semibold">Basic example</h3>
-          <p class="text-sm text-muted-foreground">
-            Import the component, pass the required props, and render it like any other Marko tag.
-            No providers or context wrappers are required.
-          </p>
-
-          <h3 id="advanced-example" class="text-base font-semibold">Advanced example</h3>
-          <p class="text-sm text-muted-foreground">
-            Controlled usage is supported throughout: pass the machine's controlled prop alongside its
-            change handler, or use the additive `xxxChange` sugar prop for Marko's two-way bind
-            shorthand.
-          </p>
-
-          <h2 id="api-reference" class="text-lg font-semibold">API reference</h2>
-          <p class="text-sm text-muted-foreground">
-            Each component's props mirror its underlying Zag machine's props exactly, plus a small set
-            of additive sugar props documented on its page.
-          </p>
-
-          <h2 id="faq" class="text-lg font-semibold">FAQ</h2>
-          <p class="text-sm text-muted-foreground">
-            Common questions about theming, accessibility, and framework support are answered on the
-            main documentation site.
-          </p>
-        </div>
-      </div>
-      <Toc
-        items=items
-        scrollEl=() => scrollContainer()
-        title="On this page"
-        class="sticky top-6 self-start"
-      />
-    </div>
+    <TocDemo/>
+  </demo-box>
+  <demo-box title="With title">
+    <TocWithTitle/>
+  </demo-box>
+  <demo-box title="Nested headings">
+    <TocNested/>
+  </demo-box>
+  <demo-box title="Controlled">
+    <TocControlled/>
   </demo-box>
 </component-page>

@@ -1,52 +1,27 @@
-import Carousel from "@marko-ui/registry/ui/carousel/carousel.marko";
-
-static const SLIDES = [1, 2, 3, 4, 5];
-
-<let/controlledPage=0/>
+import CarouselDemo from "../../../demos/carousel/carousel-demo.marko";
+import CarouselLoop from "../../../demos/carousel/carousel-loop.marko";
+import CarouselSize from "../../../demos/carousel/carousel-size.marko";
+import CarouselSpacing from "../../../demos/carousel/carousel-spacing.marko";
+import CarouselOrientation from "../../../demos/carousel/carousel-orientation.marko";
+import CarouselControlled from "../../../demos/carousel/carousel-controlled.marko";
 
 <component-page title="Carousel" description="A slideshow component for cycling through elements, images, or slides of content.">
   <demo-box title="Default">
-    <Carousel items=SLIDES class="w-full max-w-xs mx-auto">
-      <@content|item|>
-        <div class="flex aspect-square items-center justify-center rounded-lg border bg-card">
-          <span class="text-4xl font-semibold">${item}</span>
-        </div>
-      </@content>
-    </Carousel>
+    <CarouselDemo/>
   </demo-box>
   <demo-box title="Loop">
-    <Carousel items=SLIDES loop class="w-full max-w-xs mx-auto">
-      <@content|item|>
-        <div class="flex aspect-square items-center justify-center rounded-lg border bg-card">
-          <span class="text-4xl font-semibold">${item}</span>
-        </div>
-      </@content>
-    </Carousel>
+    <CarouselLoop/>
   </demo-box>
   <demo-box title="Multiple slides per page">
-    <Carousel items=SLIDES slidesPerPage=2 class="w-full max-w-sm mx-auto">
-      <@content|item|>
-        <div class="flex aspect-square items-center justify-center rounded-lg border bg-card mx-1">
-          <span class="text-4xl font-semibold">${item}</span>
-        </div>
-      </@content>
-    </Carousel>
+    <CarouselSize/>
+  </demo-box>
+  <demo-box title="Spacing">
+    <CarouselSpacing/>
+  </demo-box>
+  <demo-box title="Orientation">
+    <CarouselOrientation/>
   </demo-box>
   <demo-box title="Controlled">
-    <p class="text-muted-foreground mb-4 text-sm">
-      Page: ${controlledPage}
-    </p>
-    <Carousel
-      items=SLIDES
-      page=controlledPage
-      pageChange(page) { controlledPage = page; }
-      class="w-full max-w-xs mx-auto"
-    >
-      <@content|item|>
-        <div class="flex aspect-square items-center justify-center rounded-lg border bg-card">
-          <span class="text-4xl font-semibold">${item}</span>
-        </div>
-      </@content>
-    </Carousel>
+    <CarouselControlled/>
   </demo-box>
 </component-page>

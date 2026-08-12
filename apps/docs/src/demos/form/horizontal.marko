@@ -1,0 +1,13 @@
+import Field from "@marko-ui/registry/ui/form/form.marko";
+import FieldContent from "@marko-ui/registry/ui/form/field-content.marko";
+import FieldTitle from "@marko-ui/registry/ui/form/field-title.marko";
+import FieldDescription from "@marko-ui/registry/ui/form/field-description.marko";
+import Input from "@marko-ui/registry/ui/input/input.marko";
+
+<Field class="max-w-sm" orientation="horizontal">
+  <FieldContent>
+    <FieldTitle>Email notifications</FieldTitle>
+    <FieldDescription>Send an email when someone mentions you.</FieldDescription>
+  </FieldContent>
+  <Input id="field-horizontal-toggle" type="checkbox" class="size-4 shrink-0"/>
+</Field>

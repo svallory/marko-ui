@@ -1,0 +1,10 @@
+import Dialog from "@marko-ui/registry/ui/dialog/dialog.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+<Dialog>
+  <@trigger|props|>
+    <Button ...props variant="destructive">Delete account</Button>
+  </@trigger>
+  <@title>Are you absolutely sure?</@title>
+  <@description>This action cannot be undone. This will permanently delete your account and remove your data from our servers.</@description>
+</Dialog>

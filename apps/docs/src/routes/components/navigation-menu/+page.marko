@@ -1,146 +1,22 @@
-import NavigationMenu from "@marko-ui/registry/ui/navigation-menu/navigation-menu.marko";
-
-<let/activeValue=""/>
+// Kept as a lightweight smoke-test route: renders the same demo files that
+// back /docs/components/navigation-menu (see apps/docs/src/demos/navigation-menu/)
+// so nothing is duplicated between the two.
+import Default from "../../../demos/navigation-menu/default.marko";
+import Panel from "../../../demos/navigation-menu/panel.marko";
+import Disabled from "../../../demos/navigation-menu/disabled.marko";
+import Controlled from "../../../demos/navigation-menu/controlled.marko";
 
 <component-page title="Navigation Menu" description="A collection of links for navigating websites.">
   <demo-box title="Default">
-    <NavigationMenu
-      items=[
-        {
-          type: "menu",
-          value: "getting-started",
-          label: "Getting Started",
-          links: [
-            {
-              title: "Introduction",
-              description: "Re-usable components built with Marko and Tailwind CSS.",
-              href: "#introduction",
-            },
-            {
-              title: "Installation",
-              description: "How to install dependencies and structure your app.",
-              href: "#installation",
-            },
-            {
-              title: "Typography",
-              description: "Styles for headings, paragraphs, lists, and more.",
-              href: "#typography",
-            },
-            {
-              title: "Theming",
-              description: "Customize tokens for light and dark color schemes.",
-              href: "#theming",
-            },
-          ],
-        },
-        {
-          type: "menu",
-          value: "components",
-          label: "Components",
-          links: [
-            { title: "Button", description: "Displays a button or a component that looks like a button.", href: "#button" },
-            { title: "Dialog", description: "A window overlaid on the primary window.", href: "#dialog" },
-            { title: "Switch", description: "A control that toggles between checked and not checked.", href: "#switch" },
-            { title: "Tooltip", description: "A popup that displays information on hover.", href: "#tooltip" },
-          ],
-        },
-        { value: "docs", label: "Docs", href: "#docs" },
-      ]
-    />
+    <Default/>
   </demo-box>
-
   <demo-box title="Rich content panel">
-    <NavigationMenu|panel|
-      items=[
-        {
-          type: "menu",
-          value: "product",
-          label: "Product",
-          links: [
-            {
-              featured: true,
-              title: "marko-ui",
-              description: "Accessible components for Marko 6, powered by Zag.js state machines.",
-              href: "#overview",
-            },
-            { title: "Introduction", description: "What marko-ui is and why it exists.", href: "#introduction" },
-            { title: "Installation", description: "Add components to your app with the CLI.", href: "#installation" },
-            { title: "Theming", description: "Semantic tokens for light and dark modes.", href: "#theming" },
-          ],
-        },
-        { value: "pricing", label: "Pricing", href: "#pricing" },
-      ]
-    >
-      <if=panel.value === "product">
-        <p class="text-muted-foreground mt-2 border-t px-2 pt-2 text-xs">
-          Everything is copy-paste — no runtime package to install.
-        </p>
-      </if>
-    </NavigationMenu>
+    <Panel/>
   </demo-box>
-
   <demo-box title="Disabled item">
-    <NavigationMenu
-      items=[
-        {
-          type: "menu",
-          value: "resources",
-          label: "Resources",
-          links: [
-            { title: "Blog", description: "Read the latest posts from the team.", href: "#blog" },
-            { title: "Changelog", description: "See what shipped in every release.", href: "#changelog" },
-          ],
-        },
-        {
-          type: "menu",
-          value: "enterprise",
-          label: "Enterprise",
-          disabled: true,
-          links: [{ title: "Contact sales", description: "Talk to us about volume plans.", href: "#sales" }],
-        },
-        { value: "support", label: "Support", href: "#support" },
-      ]
-    />
+    <Disabled/>
   </demo-box>
-
   <demo-box title="Controlled">
-    <div class="space-y-4">
-      <NavigationMenu
-        value:=activeValue
-        items=[
-          {
-            type: "menu",
-            value: "account",
-            label: "Account",
-            links: [
-              { title: "Profile", description: "Manage your public profile and avatar.", href: "#profile" },
-              { title: "Billing", description: "Update payment methods and invoices.", href: "#billing" },
-            ],
-          },
-          {
-            type: "menu",
-            value: "team",
-            label: "Team",
-            links: [
-              { title: "Members", description: "Invite and manage teammates.", href: "#members" },
-              { title: "Roles", description: "Configure permissions per role.", href: "#roles" },
-            ],
-          },
-        ]
-      />
-      <p data-testid="controlled-value" class="text-sm text-muted-foreground">
-        Open panel: ${activeValue || "none"}
-      </p>
-      <button
-        type="button"
-        data-testid="open-team"
-        class="inline-flex h-9 items-center justify-center rounded-md border bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
-        onClick() {
-          activeValue = activeValue === "team" ? "" : "team";
-        }
-      >
-        Toggle Team panel
-      </button>
-    </div>
+    <Controlled/>
   </demo-box>
 </component-page>

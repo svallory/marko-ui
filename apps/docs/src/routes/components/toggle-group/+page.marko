@@ -1,18 +1,9 @@
-import ToggleGroup from "@marko-ui/registry/ui/toggle-group/toggle-group.marko";
-
-static const ALIGNMENT = [
-  { value: "left", label: "Left" },
-  { value: "center", label: "Center" },
-  { value: "right", label: "Right" },
-];
-
-static const FORMATTING = [
-  { value: "bold", label: "B" },
-  { value: "italic", label: "I" },
-  { value: "underline", label: "U", disabled: true },
-];
-
-<let/controlledValue=["center"]/>
+import Default from "../../../demos/toggle-group/default.marko";
+import Multiple from "../../../demos/toggle-group/multiple.marko";
+import Outline from "../../../demos/toggle-group/outline.marko";
+import Sizes from "../../../demos/toggle-group/sizes.marko";
+import Disabled from "../../../demos/toggle-group/disabled.marko";
+import Controlled from "../../../demos/toggle-group/controlled.marko";
 
 <component-page title="Toggle Group" description="A set of two-state buttons that can be toggled on or off.">
   <div class="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
@@ -27,35 +18,26 @@ static const FORMATTING = [
   </div>
 
   <demo-box title="Default (single selection)">
-    <ToggleGroup items=ALIGNMENT value=["center"]/>
+    <Default/>
   </demo-box>
 
   <demo-box title="Multiple selection">
-    <ToggleGroup items=FORMATTING multiple value=["bold"]/>
+    <Multiple/>
   </demo-box>
 
   <demo-box title="Outline variant">
-    <ToggleGroup items=ALIGNMENT variant="outline" value=["left"]/>
+    <Outline/>
   </demo-box>
 
   <demo-box title="Sizes">
-    <ToggleGroup items=ALIGNMENT size="sm" value=["left"]/>
-    <ToggleGroup items=ALIGNMENT value=["left"]/>
-    <ToggleGroup items=ALIGNMENT size="lg" value=["left"]/>
+    <Sizes/>
   </demo-box>
 
   <demo-box title="Disabled">
-    <ToggleGroup items=ALIGNMENT value=["left"] disabled/>
+    <Disabled/>
   </demo-box>
 
   <demo-box title="Controlled">
-    <p class="text-muted-foreground mb-4 text-sm">
-      Selected: ${controlledValue.join(", ") || "none"}
-    </p>
-    <ToggleGroup
-      items=ALIGNMENT
-      value=controlledValue
-      valueChange(value) { controlledValue = value; }
-    />
+    <Controlled/>
   </demo-box>
 </component-page>

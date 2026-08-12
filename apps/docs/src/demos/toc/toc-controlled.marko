@@ -1,0 +1,39 @@
+import Toc from "@marko-ui/registry/ui/toc/toc.marko";
+
+static const items = [
+  { value: "one", depth: 2, label: "Section one" },
+  { value: "two", depth: 2, label: "Section two" },
+  { value: "three", depth: 2, label: "Section three" },
+];
+
+<let/activeIds=[]/>
+
+<div class="grid w-full grid-cols-[1fr_200px] gap-8">
+  <div/scrollContainer class="h-64 overflow-y-auto rounded-lg border border-border p-6">
+    <div class="space-y-6">
+      <h2 id="one" class="text-lg font-semibold">Section one</h2>
+      <p class="text-sm text-muted-foreground">
+        Listen for <code class="rounded bg-muted px-1 py-0.5 text-xs">activeIdsChange</code> to
+        read which headings are currently active, without taking over control of the list.
+      </p>
+
+      <h2 id="two" class="text-lg font-semibold">Section two</h2>
+      <p class="text-sm text-muted-foreground">
+        The active heading below reflects the same value the indicator bar is tracking.
+      </p>
+
+      <h2 id="three" class="text-lg font-semibold">Section three</h2>
+      <p class="text-sm text-muted-foreground">
+        Scroll to the bottom to see the active id list update.
+      </p>
+    </div>
+  </div>
+  <div class="sticky top-6 flex flex-col gap-3 self-start">
+    <Toc
+      items=items
+      scrollEl=() => scrollContainer()
+      activeIdsChange=(next) => { activeIds = next; }
+    />
+    <span class="text-xs text-muted-foreground">active: ${activeIds.join(", ") || "none"}</span>
+  </div>
+</div>

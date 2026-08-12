@@ -24,6 +24,12 @@ const playwright = requireFromHere(PLAYWRIGHT_MODULE_PATH) as typeof import("pla
  * Base URL of the running docs app. The dev server is expected to be already
  * running — these are integration tests against the real SSR + hydration stack,
  * not a mocked renderer. Overridable so CI can point at a preview deployment.
+ *
+ * The dev server's actual port varies by worktree/session (multiple worktrees
+ * can each run their own server on a random high port to avoid collisions).
+ * When running locally, check the scratchpad's DEV_SERVER_PORT.txt convention
+ * — or whatever the current session's coordinator has posted — for the live
+ * port, and pass it via DOCS_BASE_URL rather than assuming the default below.
  */
 export const DOCS_BASE_URL = process.env.DOCS_BASE_URL ?? "http://localhost:3000";
 

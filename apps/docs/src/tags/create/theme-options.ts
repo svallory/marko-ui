@@ -134,6 +134,43 @@ export const BASE_COLORS: BaseColorOption[] = [
     },
   },
   {
+    name: "gray",
+    title: "Gray",
+    swatch: "oklch(0.551 0.027 264.364)",
+    light: {
+      background: "oklch(1 0 0)",
+      foreground: "oklch(0.13 0.028 261.692)",
+      card: "oklch(1 0 0)",
+      "card-foreground": "oklch(0.13 0.028 261.692)",
+      popover: "oklch(1 0 0)",
+      "popover-foreground": "oklch(0.13 0.028 261.692)",
+      secondary: "oklch(0.967 0.003 264.542)",
+      "secondary-foreground": "oklch(0.21 0.034 264.665)",
+      muted: "oklch(0.967 0.003 264.542)",
+      "muted-foreground": "oklch(0.551 0.027 264.364)",
+      accent: "oklch(0.967 0.003 264.542)",
+      "accent-foreground": "oklch(0.21 0.034 264.665)",
+      border: "oklch(0.928 0.006 264.531)",
+      input: "oklch(0.928 0.006 264.531)",
+    },
+    dark: {
+      background: "oklch(0.13 0.028 261.692)",
+      foreground: "oklch(0.985 0.002 247.839)",
+      card: "oklch(0.21 0.034 264.665)",
+      "card-foreground": "oklch(0.985 0.002 247.839)",
+      popover: "oklch(0.21 0.034 264.665)",
+      "popover-foreground": "oklch(0.985 0.002 247.839)",
+      secondary: "oklch(0.278 0.033 256.848)",
+      "secondary-foreground": "oklch(0.985 0.002 247.839)",
+      muted: "oklch(0.278 0.033 256.848)",
+      "muted-foreground": "oklch(0.707 0.022 261.325)",
+      accent: "oklch(0.278 0.033 256.848)",
+      "accent-foreground": "oklch(0.985 0.002 247.839)",
+      border: "oklch(1 0 0 / 10%)",
+      input: "oklch(1 0 0 / 15%)",
+    },
+  },
+  {
     name: "zinc",
     title: "Zinc",
     swatch: "oklch(0.552 0.016 285.938)",
@@ -385,6 +422,7 @@ export interface DesignSystemConfig {
   baseColor: string;
   accent: string;
   radius: string;
+  fontHeading: string;
   font: string;
   chart: string;
 }
@@ -393,6 +431,7 @@ export const DEFAULT_CONFIG: DesignSystemConfig = {
   baseColor: "neutral",
   accent: "base",
   radius: "default",
+  fontHeading: "sans",
   font: "sans",
   chart: "default",
 };
@@ -414,6 +453,7 @@ export function buildThemeVariables(
   const baseColor = findOption(BASE_COLORS, config.baseColor);
   const accent = findOption(ACCENTS, config.accent);
   const radius = findOption(RADII, config.radius);
+  const fontHeading = findOption(FONTS, config.fontHeading);
   const font = findOption(FONTS, config.font);
   const chart = findOption(CHART_PALETTES, config.chart);
 
@@ -422,6 +462,7 @@ export function buildThemeVariables(
     ...accent[mode],
     "--radius": radius.value,
     "--font-sans": font.stack,
+    "--font-heading": fontHeading.stack,
   };
 
   // Base/accent maps are keyed by bare token name; prefix them for CSS.
@@ -471,6 +512,7 @@ export function parseConfig(search: string): DesignSystemConfig {
     baseColor: read("baseColor", BASE_COLORS),
     accent: read("accent", ACCENTS),
     radius: read("radius", RADII),
+    fontHeading: read("fontHeading", FONTS),
     font: read("font", FONTS),
     chart: read("chart", CHART_PALETTES),
   };

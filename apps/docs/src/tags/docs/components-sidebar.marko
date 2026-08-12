@@ -1,0 +1,52 @@
+// Left rail on component pages: the docs sections above, then every registry
+// component. Components without a docs page yet are listed but not linked —
+// the reader sees the real shape of the library instead of a list that
+// silently omits three quarters of it.
+import { DOCS_NAV } from "./docs-nav.ts";
+import { SIDEBAR_COMPONENTS } from "../../lib/component-page-data.ts";
+
+export interface Input {
+  /** Component name whose entry should read as current, e.g. "switch". */
+  activeComponent?: string;
+  class?: string;
+}
+
+<nav class=`flex flex-col gap-6 ${input.class ?? ""}` data-slot="components-sidebar">
+  <for|section| of=DOCS_NAV by=(section) => section.title>
+    <div class="flex flex-col gap-1">
+      <div class="px-2 text-sm font-semibold text-foreground">${section.title}</div>
+      <for|item| of=section.items by=(item) => item.href>
+        <a
+          href=item.href
+          class="rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        >
+          ${item.label}
+        </a>
+      </for>
+    </div>
+  </for>
+
+  <div class="flex flex-col gap-1">
+    <div class="px-2 text-sm font-semibold text-foreground">Components</div>
+    <for|component| of=SIDEBAR_COMPONENTS by=(component) => component.name>
+      <if=component.documented>
+        <a
+          href=`/docs/components/${component.name}`
+          aria-current=component.name === input.activeComponent ? "page" : undefined
+          data-active=component.name === input.activeComponent ? "" : undefined
+          class="rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground data-active:bg-accent data-active:font-medium data-active:text-foreground"
+        >
+          ${component.title}
+        </a>
+      </if>
+      <else>
+        <span
+          title="Documentation in progress"
+          class="cursor-default rounded-md px-2 py-1.5 text-sm text-muted-foreground/50"
+        >
+          ${component.title}
+        </span>
+      </else>
+    </for>
+  </div>
+</nav>

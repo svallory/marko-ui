@@ -1,43 +1,15 @@
-import Tooltip from "@marko-ui/registry/ui/tooltip/tooltip.marko";
-import Button from "@marko-ui/registry/ui/button/button.marko";
+import TooltipDemo from "../../../demos/tooltip/tooltip-demo.marko";
+import TooltipPositioning from "../../../demos/tooltip/tooltip-positioning.marko";
+import TooltipDelay from "../../../demos/tooltip/tooltip-delay.marko";
 
 <component-page title="Tooltip" description="A popup that displays information related to an element when it receives keyboard focus or the mouse hovers over it.">
   <demo-box title="Default">
-    <Tooltip content="Add to library">
-      <@trigger|props|>
-        <Button ...props variant="outline">Hover me</Button>
-      </@trigger>
-    </Tooltip>
+    <TooltipDemo/>
   </demo-box>
   <demo-box title="Positioning">
-    <div class="flex gap-4">
-      <Tooltip content="Top tooltip" positioning={ placement: "top" }>
-        <@trigger|props|>
-          <Button ...props variant="outline">Top</Button>
-        </@trigger>
-      </Tooltip>
-      <Tooltip content="Right tooltip" positioning={ placement: "right" }>
-        <@trigger|props|>
-          <Button ...props variant="outline">Right</Button>
-        </@trigger>
-      </Tooltip>
-      <Tooltip content="Bottom tooltip" positioning={ placement: "bottom" }>
-        <@trigger|props|>
-          <Button ...props variant="outline">Bottom</Button>
-        </@trigger>
-      </Tooltip>
-      <Tooltip content="Left tooltip" positioning={ placement: "left" }>
-        <@trigger|props|>
-          <Button ...props variant="outline">Left</Button>
-        </@trigger>
-      </Tooltip>
-    </div>
+    <TooltipPositioning/>
   </demo-box>
   <demo-box title="Custom delay">
-    <Tooltip content="Appears quickly" openDelay=0 closeDelay=0>
-      <@trigger|props|>
-        <Button ...props variant="outline">No delay</Button>
-      </@trigger>
-    </Tooltip>
+    <TooltipDelay/>
   </demo-box>
 </component-page>

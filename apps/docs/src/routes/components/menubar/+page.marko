@@ -1,103 +1,19 @@
-import Menubar from "@marko-ui/registry/ui/menubar/menubar.marko";
-import MenubarMenu from "@marko-ui/registry/ui/menubar/menu.marko";
-
-static const FILE_ITEMS = [
-  { value: "new-tab", label: "New Tab", shortcut: "⌘T" },
-  { value: "new-window", label: "New Window", shortcut: "⌘N" },
-  { type: "separator" },
-  { value: "share", label: "Share" },
-  { type: "separator" },
-  { value: "print", label: "Print...", shortcut: "⌘P" },
-];
-
-static const EDIT_ITEMS = [
-  { value: "undo", label: "Undo", shortcut: "⌘Z" },
-  { value: "redo", label: "Redo", shortcut: "⇧⌘Z" },
-  { type: "separator" },
-  { value: "cut", label: "Cut" },
-  { value: "copy", label: "Copy" },
-  { value: "paste", label: "Paste" },
-];
-
-static const VIEW_ITEMS = [
-  { value: "reload", label: "Reload", shortcut: "⌘R" },
-  { value: "force-reload", label: "Force Reload", disabled: true },
-  { type: "separator" },
-  { value: "fullscreen", label: "Toggle Fullscreen" },
-];
-
-static const PROFILES_ITEMS = [
-  { type: "label", label: "Profiles" },
-  { type: "separator" },
-  { value: "add", label: "Add Profile..." },
-  { type: "separator" },
-  { value: "remove", label: "Remove Profile", danger: true },
-];
-
-<let/selected=""/>
+import MenubarDemo from "../../../demos/menubar/menubar-demo.marko";
+import MenubarDanger from "../../../demos/menubar/menubar-danger.marko";
+import MenubarDisabled from "../../../demos/menubar/menubar-disabled.marko";
+import MenubarControlled from "../../../demos/menubar/menubar-controlled.marko";
 
 <component-page title="Menubar" description="A visually persistent menu common in desktop applications that provides quick access to a consistent set of commands.">
   <demo-box title="Default">
-    <Menubar>
-      <@content>
-        <MenubarMenu items=FILE_ITEMS select(value) { selected = value; }>
-          <@trigger|triggerProps|>
-            <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
-              File
-            </button>
-          </@trigger>
-        </MenubarMenu>
-        <MenubarMenu items=EDIT_ITEMS select(value) { selected = value; }>
-          <@trigger|triggerProps|>
-            <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
-              Edit
-            </button>
-          </@trigger>
-        </MenubarMenu>
-        <MenubarMenu items=VIEW_ITEMS select(value) { selected = value; }>
-          <@trigger|triggerProps|>
-            <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
-              View
-            </button>
-          </@trigger>
-        </MenubarMenu>
-      </@content>
-    </Menubar>
+    <MenubarDemo/>
   </demo-box>
   <demo-box title="With danger item">
-    <Menubar>
-      <@content>
-        <MenubarMenu items=PROFILES_ITEMS select(value) { selected = value; }>
-          <@trigger|triggerProps|>
-            <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
-              Profiles
-            </button>
-          </@trigger>
-        </MenubarMenu>
-      </@content>
-    </Menubar>
+    <MenubarDanger/>
+  </demo-box>
+  <demo-box title="Disabled item">
+    <MenubarDisabled/>
   </demo-box>
   <demo-box title="Selection">
-    <div class="flex items-center gap-4">
-      <Menubar>
-        <@content>
-          <MenubarMenu items=FILE_ITEMS select(value) { selected = value; }>
-            <@trigger|triggerProps|>
-              <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
-                File
-              </button>
-            </@trigger>
-          </MenubarMenu>
-          <MenubarMenu items=EDIT_ITEMS select(value) { selected = value; }>
-            <@trigger|triggerProps|>
-              <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
-                Edit
-              </button>
-            </@trigger>
-          </MenubarMenu>
-        </@content>
-      </Menubar>
-      <span class="text-muted-foreground text-sm">selected: ${selected || "none"}</span>
-    </div>
+    <MenubarControlled/>
   </demo-box>
 </component-page>

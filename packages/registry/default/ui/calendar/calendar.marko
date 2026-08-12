@@ -9,10 +9,16 @@ import { cn } from "#lib/utils.ts";
 // Zag's DateValue so consumers don't need @internationalized/date.
 export type Input = Omit<
   MachineInput<"div", datePickerMachine.Props>,
-  "open" | "inline" | "closeOnSelect" | "value"
+  "open" | "inline" | "closeOnSelect" | "value" | "min" | "max"
 > & {
+  /** Selected date(s) as plain objects — one entry per selected date (single mode uses a one-element array). */
   value?: { year: number; month: number; day: number }[];
+  /** Fires with the full selection as plain date objects whenever it changes; enables `value:=` two-way binding. */
   valueChange?: (value: { year: number; month: number; day: number }[]) => void;
+  /** Earliest selectable date (inclusive); days before it render disabled. */
+  min?: { year: number; month: number; day: number };
+  /** Latest selectable date (inclusive); days after it render disabled. */
+  max?: { year: number; month: number; day: number };
 };
 
 static function toDateValue(date: { year: number; month: number; day: number }): DateValue {
@@ -34,6 +40,8 @@ static function toPlain(date: DateValue) {
 <const/machineProps=() => ({
   ...pickedProps(),
   value: input.value?.map(toDateValue),
+  min: input.min ? toDateValue(input.min) : undefined,
+  max: input.max ? toDateValue(input.max) : undefined,
 })/>
 <service/service machine=() => datePickerMachine.machine props=machineProps/>
 <connect/api=(service, normalizeProps) =>

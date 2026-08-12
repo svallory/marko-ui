@@ -7,6 +7,8 @@
     "check": "bun run --filter '*' check",
     "test": "vitest run",
     "build:registry": "bun packages/registry/scripts/build-registry.ts",
+    "extract:api": "bun packages/registry/scripts/extract-api.ts",
+    "build:demos": "bun apps/docs/scripts/build-demos-manifest.ts",
     "format": "prettier --write ."
   },
   "devDependencies": {

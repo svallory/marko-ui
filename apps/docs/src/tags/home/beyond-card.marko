@@ -1,0 +1,45 @@
+// Small live-demo tile used by the "Beyond shadcn" grid: a muted-caps
+// component-name label above a titled card whose body is a real,
+// interactive instance of one marko-ui component, with both the label and
+// the card linking through to that component's documentation page.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+
+export interface Input {
+  name: string;
+  title: string;
+  description: string;
+  content?: Marko.Body;
+}
+
+<const/{ name, title, description, content }=input/>
+
+<div class="flex w-full min-w-0 flex-col gap-2" data-beyond-card=name>
+  <a
+    href=`/components/${name}`
+    class="text-muted-foreground hover:text-foreground focus-visible:outline-ring w-fit rounded-md font-mono text-xs font-medium tracking-wide uppercase focus-visible:outline-2 focus-visible:outline-offset-2"
+  >
+    ${name}
+  </a>
+  <Card class="w-full min-w-0">
+    <CardHeader>
+      <CardTitle class="flex items-center justify-between gap-2 text-base">
+        ${title}
+        <a
+          href=`/components/${name}`
+          class="text-muted-foreground hover:text-foreground focus-visible:outline-ring rounded-md text-xs font-medium focus-visible:outline-2 focus-visible:outline-offset-2"
+          aria-label=`View ${title} documentation`
+        >
+          View
+        </a>
+      </CardTitle>
+      <CardDescription>${description}</CardDescription>
+    </CardHeader>
+    <CardContent class="flex min-w-0 flex-col items-start gap-3">
+      <${content}/>
+    </CardContent>
+  </Card>
+</div>

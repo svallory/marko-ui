@@ -1,0 +1,18 @@
+import RadioGroup from "@marko-ui/registry/ui/radio-group/radio-group.marko";
+
+static const ITEMS = [
+  { value: "default", label: "Default" },
+  { value: "comfortable", label: "Comfortable" },
+  { value: "compact", label: "Compact" },
+];
+
+<let/value="comfortable"/>
+
+<div class="flex flex-col gap-4">
+  <RadioGroup
+    items=ITEMS
+    value=value
+    valueChange=(next) => { value = next; }
+  />
+  <span class="text-sm text-muted-foreground">value: ${value ?? "none"}</span>
+</div>
