@@ -3,11 +3,10 @@
 // period as the flat-route segment separator (see
 // ../../docs/components/$name/md/+handler.ts), so `/typeset.css` cannot be
 // declared directly; `/typeset/css` is the closest reachable URL.
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-
-const CSS_PATH = fileURLToPath(new URL("../../../tags/typeset/typeset.css", import.meta.url));
-const CSS_TEXT = readFileSync(CSS_PATH, "utf-8");
+// Imported with Vite's `?raw` so the text is inlined at BUILD time — a
+// module-scope readFileSync of the source path crashed the production
+// container on boot (the source tree does not ship in dist/index.mjs).
+import CSS_TEXT from "../../../tags/typeset/typeset.css?raw";
 
 export const GET = () => {
   return new Response(CSS_TEXT, {
