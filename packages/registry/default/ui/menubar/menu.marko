@@ -3,32 +3,24 @@ import { positionerStyle } from "marko-ui";
 import { cn } from "#lib/utils.ts";
 import type { DropdownMenuItem } from "../dropdown-menu/dropdown-menu.marko";
 
-// Attr-tag "parts" — additive sugar alongside `items=`. See
-// agent/reports/compound-tag-dx.md (Variant A). Each attr tag name is
-// collected into its own separate array by Marko (no shared index across
-// different attr-tag names exists), so relative order between `<@item>`,
-// `<@separator>`, and `<@label>` tags at the call site is NOT preserved —
-// items render first, then separators, then labels, mirroring the
-// same-name grouping every other migrated menu component uses. Callers
-// that need precise interleaved ordering should use `items=` instead.
-export interface ItemAttrs {
-  value?: string;
-  disabled?: boolean;
-  danger?: boolean;
-  shortcut?: string;
-  content?: Marko.Body;
-}
-export interface SeparatorAttrs {}
-export interface LabelAttrs {
+// Attr-tag form of DropdownMenuItem. A SINGLE attr tag name (`item`) carries
+// all three kinds (discriminated by `type`) rather than separate
+// `item`/`separator`/`label` attr tags: Marko collects each attr-tag NAME
+// into its own independent iterable on `input` with no shared ordering
+// between differently-named siblings, so distinct tag names could not
+// preserve call-site interleaving. One name with a `type` discriminant
+// keeps document order intact by construction (same design as
+// dropdown-menu.marko). `content` lets an item or label carry a markup
+// body; the plain `label` string renders as the fallback when no body is
+// supplied.
+export interface MenubarItemAttrs extends DropdownMenuItem {
   content?: Marko.Body;
 }
 
 export interface Input {
   trigger: Marko.Body<[Record<string, unknown>]>;
   items?: DropdownMenuItem[];
-  item?: Marko.AttrTag<ItemAttrs>;
-  separator?: Marko.AttrTag<SeparatorAttrs>;
-  label?: Marko.AttrTag<LabelAttrs>;
+  item?: Marko.AttrTag<MenubarItemAttrs>;
   select?: (value: string) => void;
   class?: string;
 }
@@ -43,11 +35,16 @@ export interface Input {
   service=service
 />
 
-<const/{ class: className, trigger, items }=input/>
-<const/itemAttrs=[...(input.item ?? [])]/>
-<const/separatorAttrs=[...(input.separator ?? [])]/>
-<const/labelAttrs=[...(input.label ?? [])]/>
-<const/usingAttrTags=(itemAttrs.length > 0 || separatorAttrs.length > 0 || labelAttrs.length > 0)/>
+<const/{ class: className, trigger }=input/>
+// Normalize whichever source was supplied into ONE entries list so the
+// render path below never branches. Attr tags win when present (compound is
+// primary per the compound-tag-dx report); `items=` is the fallback. The
+// single `<@item>` tag name preserves true document order by construction,
+// so interleaved item/separator/label entries render exactly as written.
+// `items=` entries never carry a body, so the MenubarItemAttrs shape covers
+// both sources.
+<const/attrItems=[...(input.item ?? [])]/>
+<const/entries=(attrItems.length > 0 ? attrItems : ((input.items ?? []) as MenubarItemAttrs[]))/>
 
 <${trigger}({ ...api().getTriggerProps(), "data-slot": "menubar-trigger" })/>
 <portal>
@@ -63,17 +60,25 @@ export interface Input {
           className,
         )
       >
-        <if=usingAttrTags>
-          <for|label, index| of=labelAttrs>
+        <for|entry, index| of=entries>
+          <if=entry.type === "separator">
+            <div ...api().getSeparatorProps() data-slot="menubar-separator" class="bg-border -mx-1 my-1 h-px"/>
+          </if>
+          <else if=entry.type === "label">
             <div data-slot="menubar-label" class="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-              <${label.content}/>
+              <if=entry.content>
+                <${entry.content}/>
+              </if>
+              <else>
+                ${entry.label}
+              </else>
             </div>
-          </for>
-          <for|item, index| of=itemAttrs>
+          </else>
+          <else>
             <div
-              ...api().getItemProps({ value: item.value ?? `item-${index}`, disabled: item.disabled })
+              ...api().getItemProps({ value: entry.value ?? `item-${index}`, disabled: entry.disabled })
               data-slot="menubar-item"
-              data-danger=item.danger || undefined
+              data-danger=entry.danger || undefined
               class=cn(
                 "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none",
                 "data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
@@ -81,46 +86,18 @@ export interface Input {
                 "data-[danger]:text-destructive data-[danger]:data-[highlighted]:bg-destructive/10",
               )
             >
-              <span><${item.content}/></span>
-              <if=item.shortcut>
-                <span class="ml-auto text-xs tracking-widest text-muted-foreground">${item.shortcut}</span>
+              <if=entry.content>
+                <span><${entry.content}/></span>
+              </if>
+              <else>
+                <span>${entry.label}</span>
+              </else>
+              <if=entry.shortcut>
+                <span class="ml-auto text-xs tracking-widest text-muted-foreground">${entry.shortcut}</span>
               </if>
             </div>
-          </for>
-          <for|separator, index| of=separatorAttrs>
-            <div ...api().getSeparatorProps() data-slot="menubar-separator" class="bg-border -mx-1 my-1 h-px"/>
-          </for>
-        </if>
-        <else>
-          <for|entry, index| of=(items ?? [])>
-            <if=entry.type === "separator">
-              <div ...api().getSeparatorProps() data-slot="menubar-separator" class="bg-border -mx-1 my-1 h-px"/>
-            </if>
-            <else if=entry.type === "label">
-              <div data-slot="menubar-label" class="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                ${entry.label}
-              </div>
-            </else>
-            <else>
-              <div
-                ...api().getItemProps({ value: entry.value ?? `item-${index}`, disabled: entry.disabled })
-                data-slot="menubar-item"
-                data-danger=entry.danger || undefined
-                class=cn(
-                  "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none",
-                  "data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
-                  "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-                  "data-[danger]:text-destructive data-[danger]:data-[highlighted]:bg-destructive/10",
-                )
-              >
-                <span>${entry.label}</span>
-                <if=entry.shortcut>
-                  <span class="ml-auto text-xs tracking-widest text-muted-foreground">${entry.shortcut}</span>
-                </if>
-              </div>
-            </else>
-          </for>
-        </else>
+          </else>
+        </for>
       </div>
     </div>
   </if>

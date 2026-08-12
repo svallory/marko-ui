@@ -44,11 +44,16 @@ export type Input = Omit<MachineInput<"div", listboxMachine.Props<ListboxItem>>,
 
 <const/{ label, class: className }=input/>
 
-// Normalize whichever source was supplied into ONE array reference so the
-// WeakMap cache below (keyed by array identity) is only ever fed a single,
-// stable reference per render — never build a second array from the same
-// source, that would defeat the cache exactly like a fresh `items` array
-// would.
+// Normalize whichever source was supplied into ONE array reference. What the
+// WeakMap cache below actually needs is stability ACROSS serviceProps()
+// re-reads within a computation: both paths get that, because `items` is a
+// <const> whose reference only changes when its inputs change. The two paths
+// differ across input changes: `items=` callers who pass the same array
+// reference keep the cached collection forever, while the attr-tag path
+// spreads a FRESH optionTags array whenever `input.option` changes identity
+// (any parent re-render), rebuilding the collection once per input change.
+// That rebuild is intentional and cheap at attr-tag list sizes — the cache's
+// hard guarantee only holds for `items=` callers.
 <const/optionTags=[...(input.option ?? [])]/>
 <const/items=(optionTags.length > 0 ? optionTags : (input.items ?? []))/>
 

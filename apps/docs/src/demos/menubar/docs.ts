@@ -45,7 +45,7 @@ import MenubarMenu from "@/components/ui/menubar/menu.marko";`,
       name: "menubar-compound",
       title: "Compound (attr tags)",
       description:
-        "Use `<@item>`, `<@separator>`, and `<@label>` attribute tags on `MenubarMenu` instead of `items=` to compose the menu directly in markup.",
+        "Use `<@item>` attribute tags on `MenubarMenu` instead of `items=` to compose the menu directly in markup — pass `type=\"separator\"` for a divider or `type=\"label\"` for a group label. Entries render in the order they are written.",
     },
   ],
 };

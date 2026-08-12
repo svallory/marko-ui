@@ -36,7 +36,7 @@ export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
 // below never branches. Attr tags win if both are present (compound is
 // primary per the compound-tag-dx report).
 <const/itemTags=[...(input.item ?? [])]/>
-<const/entries=(itemTags.length > 0 ? itemTags : input.items)/>
+<const/entries=(itemTags.length > 0 ? itemTags : (input.items ?? []))/>
 
 <style>
   @keyframes marko-ui-marquee-scroll-x {

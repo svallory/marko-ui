@@ -1,6 +1,10 @@
 import NavigationMenu from "@marko-ui/registry/ui/navigation-menu/navigation-menu.marko";
 
 <NavigationMenu>
+  // <@link> tags always render before <@menu> tags in the bar (Marko collects
+  // each attr-tag name separately, so cross-name document order is not
+  // recoverable) — place links first so source order matches rendered order.
+  <@link value="docs" label="Docs" href="#docs"/>
   <@menu value="getting-started" label="Getting Started">
     <@content>
       <div class="grid w-[400px] gap-1">
@@ -19,5 +23,4 @@ import NavigationMenu from "@marko-ui/registry/ui/navigation-menu/navigation-men
       </div>
     </@content>
   </@menu>
-  <@link value="docs" label="Docs" href="#docs"/>
 </NavigationMenu>

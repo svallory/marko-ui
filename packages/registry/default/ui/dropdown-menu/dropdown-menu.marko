@@ -38,7 +38,11 @@ export interface Input {
 />
 
 <const/{ class: className, trigger }=input/>
-<const/entries=[...(input.items ?? []), ...(input.item ?? [])]/>
+// Normalize whichever source was supplied into ONE entries list so the
+// render path below never branches. Attr tags win when present (compound is
+// primary per the compound-tag-dx report); `items=` is the fallback.
+<const/attrItems=[...(input.item ?? [])]/>
+<const/entries=(attrItems.length > 0 ? attrItems : (input.items ?? []))/>
 
 <${trigger}({ ...api().getTriggerProps(), "data-slot": "dropdown-menu-trigger" })/>
 <portal>

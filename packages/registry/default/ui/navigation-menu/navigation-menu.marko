@@ -81,9 +81,10 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
    * Compound attr-tag API (primary, Marko-idiomatic form). Renders directly in
    * the bar, no panel. If either `link` or `menu` attr tags are supplied they
    * replace `items` entirely for this render — order is preserved within each
-   * tag name but NOT guaranteed across `link`/`menu` (Marko has no merged,
-   * cross-name ordering primitive for attr tags), so links and menus are
-   * grouped by kind rather than interleaved.
+   * tag name but NOT across `link`/`menu` (Marko has no merged, cross-name
+   * ordering primitive for attr tags): ALL `<@link>` entries render before
+   * ALL `<@menu>` entries, so write links first. Use `items=` if links must
+   * come after or between menus.
    */
   link?: Marko.AttrTag<NavigationMenuLinkAttrs>;
   /**
@@ -123,10 +124,17 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
 
 // Normalize whichever source was supplied into one items array so the render
 // path below never branches. Attr tags win if either is present (compound is
-// primary per the compound-tag-dx report); order is preserved within each
-// attr-tag name, links grouped before menus (cross-name order is not
-// recoverable from Marko's attr-tag data model — each name is its own
-// separate iterable with no shared position).
+// primary per the compound-tag-dx report).
+//
+// ORDERING RULE (do not change casually): ALL `<@link>` tags render before
+// ALL `<@menu>` tags — `[...linkTags, ...menuTags]` below. Cross-name
+// document order is NOT recoverable from Marko's attr-tag data model (each
+// tag name is its own separate iterable with no shared position), so a
+// caller interleaving `<@link>` between `<@menu>` tags would silently get a
+// different order than written. Demos and docs must therefore always place
+// `<@link>` tags before `<@menu>` tags so source order matches rendered
+// order; order IS preserved within each tag name. Callers needing links
+// after or between menus must use `items=`.
 <const/linkTags=[...(input.link ?? [])]/>
 <const/menuTags=[...(input.menu ?? [])]/>
 <const/items=((linkTags.length > 0 || menuTags.length > 0) ? [...linkTags.map((tag): NavigationMenuLinkItem => ({ type: "link", ...tag })), ...menuTags.map((tag): NavigationMenuMenuItem => ({ type: "menu", value: tag.value, label: tag.label, disabled: tag.disabled }))] : (input.items ?? []))/>
