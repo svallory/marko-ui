@@ -41,5 +41,11 @@ import MenubarMenu from "@/components/ui/menubar/menu.marko";`,
       description:
         "Pass a `select` handler to each `MenubarMenu` to react to the chosen item's `value`.",
     },
+    {
+      name: "menubar-compound",
+      title: "Compound (attr tags)",
+      description:
+        "Use `<@item>`, `<@separator>`, and `<@label>` attribute tags on `MenubarMenu` instead of `items=` to compose the menu directly in markup.",
+    },
   ],
 };

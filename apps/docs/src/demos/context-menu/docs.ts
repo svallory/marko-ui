@@ -48,5 +48,11 @@ export const docs: ComponentDocs = {
       title: "Controlled",
       description: "Pass a `select` handler to react to the chosen item's `value`.",
     },
+    {
+      name: "compound",
+      title: "Compound (attr tags)",
+      description:
+        "Use `<@item>`, `<@separator>`, and `<@label>` attribute tags instead of `items=` to compose the menu directly in markup.",
+    },
   ],
 };

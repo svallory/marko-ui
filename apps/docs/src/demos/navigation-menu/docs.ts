@@ -30,5 +30,11 @@ export const docs: ComponentDocs = {
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, or use Marko's bind shorthand `value:=state`.",
     },
+    {
+      name: "compound",
+      title: "Compound (attr tags)",
+      description:
+        "Use `<@menu>` and `<@link>` attribute tags instead of `items=` to compose each entry — and `<@content>` inside `<@menu>` for the panel body — directly in markup.",
+    },
   ],
 };

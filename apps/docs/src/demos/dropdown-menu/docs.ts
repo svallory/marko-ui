@@ -40,5 +40,11 @@ export const docs: ComponentDocs = {
       title: "Danger action",
       description: "Mark an item `danger` to style it as a destructive action, such as deleting a resource.",
     },
+    {
+      name: "dropdown-menu-compound",
+      title: "Compound (attr tags)",
+      description:
+        "Use `<@item>` attribute tags instead of `items=` to compose the menu directly in markup — pass `type=\"separator\"` on an item to render a divider.",
+    },
   ],
 };

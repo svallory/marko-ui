@@ -46,5 +46,11 @@ export const docs: ComponentDocs = {
       description:
         "The carousel is controlled: a `page` prop without `pageChange` never moves. Pair the two to drive the current page from your own state.",
     },
+    {
+      name: "carousel-compound",
+      title: "Compound (attr tags)",
+      description:
+        "Use `<@slide>` attribute tags instead of `items=` to compose each slide's markup directly.",
+    },
   ],
 };
