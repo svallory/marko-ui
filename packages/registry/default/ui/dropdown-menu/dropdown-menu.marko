@@ -11,18 +11,24 @@ export interface DropdownMenuItem {
   danger?: boolean;
 }
 
-// A SINGLE attr tag name (`item`) carries all three kinds (discriminated by
-// `type`) rather than separate `item`/`separator`/`label` attr tags: Marko
-// collects each attr-tag NAME into its own independent iterable on `input`
-// with no shared ordering between differently-named siblings, so
+// Attr-tag form of DropdownMenuItem. A SINGLE attr tag name (`item`) carries
+// all three kinds (discriminated by `type`) rather than separate
+// `item`/`separator`/`label` attr tags: Marko collects each attr-tag NAME
+// into its own independent iterable on `input` with no shared ordering
+// between differently-named siblings, so
 // `<@item>`/`<@separator>`/`<@label>` as distinct tag names could not
 // preserve call-site interleaving. One name with a `type` discriminant
-// keeps document order intact by construction, and reuses DropdownMenuItem
-// as-is so `items=` and `<@item>` render through the same entries below.
+// keeps document order intact by construction (same design as
+// context-menu.marko). `content` lets an item or label carry a markup body;
+// the plain `label` string renders as the fallback when no body is supplied.
+export interface DropdownMenuItemAttrs extends DropdownMenuItem {
+  content?: Marko.Body;
+}
+
 export interface Input {
   trigger: Marko.Body<[Record<string, unknown>]>;
   items?: DropdownMenuItem[];
-  item?: Marko.AttrTag<DropdownMenuItem>;
+  item?: Marko.AttrTag<DropdownMenuItemAttrs>;
   select?: (value: string) => void;
   class?: string;
 }
@@ -41,8 +47,10 @@ export interface Input {
 // Normalize whichever source was supplied into ONE entries list so the
 // render path below never branches. Attr tags win when present (compound is
 // primary per the compound-tag-dx report); `items=` is the fallback.
+// `items=` entries never carry a body, so the DropdownMenuItemAttrs shape
+// covers both sources.
 <const/attrItems=[...(input.item ?? [])]/>
-<const/entries=(attrItems.length > 0 ? attrItems : (input.items ?? []))/>
+<const/entries=(attrItems.length > 0 ? attrItems : ((input.items ?? []) as DropdownMenuItemAttrs[]))/>
 
 <${trigger}({ ...api().getTriggerProps(), "data-slot": "dropdown-menu-trigger" })/>
 <portal>
@@ -64,7 +72,12 @@ export interface Input {
           </if>
           <else if=entry.type === "label">
             <div data-slot="dropdown-menu-label" class="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-              ${entry.label}
+              <if=entry.content>
+                <${entry.content}/>
+              </if>
+              <else>
+                ${entry.label}
+              </else>
             </div>
           </else>
           <else>
@@ -79,10 +92,15 @@ export interface Input {
                 "data-[danger]:text-destructive data-[danger]:data-[highlighted]:bg-destructive/10",
               )
             >
-              <span>${entry.label}</span>
-              <if=entry.shortcut>
-                <span class="ml-auto text-xs tracking-widest text-muted-foreground">${entry.shortcut}</span>
+              <if=entry.content>
+                <${entry.content}/>
               </if>
+              <else>
+                <span>${entry.label}</span>
+                <if=entry.shortcut>
+                  <span class="ml-auto text-xs tracking-widest text-muted-foreground">${entry.shortcut}</span>
+                </if>
+              </else>
             </div>
           </else>
         </for>

@@ -9,12 +9,6 @@
           "name": "accordion",
           "properties": [
             {
-              "name": "items",
-              "type": "AccordionItem[]",
-              "required": true,
-              "kind": "own"
-            },
-            {
               "name": "collapsible",
               "type": "boolean | undefined",
               "required": false,
@@ -61,6 +55,18 @@
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the accordion. Useful for composition."
+            },
+            {
+              "name": "item",
+              "type": "Marko.AttrTag<AccordionItemAttrs>",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "items",
+              "type": "AccordionItem[]",
+              "required": false,
+              "kind": "own"
             },
             {
               "name": "multiple",
@@ -1096,12 +1102,6 @@
           "name": "carousel",
           "properties": [
             {
-              "name": "items",
-              "type": "T[]",
-              "required": true,
-              "kind": "own"
-            },
-            {
               "name": "allowMouseDrag",
               "type": "boolean | undefined",
               "required": false,
@@ -1164,6 +1164,12 @@
               "description": "The threshold for determining if an item is in view."
             },
             {
+              "name": "items",
+              "type": "T[]",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "loop",
               "type": "boolean | undefined",
               "required": false,
@@ -1219,6 +1225,12 @@
               "kind": "own"
             },
             {
+              "name": "slide",
+              "type": "Marko.AttrTag<CarouselSlideAttrs>",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "slidesPerMove",
               "type": "number | 'auto' | undefined",
               "required": false,
@@ -1267,12 +1279,6 @@
           "file": "cascade-select.marko",
           "name": "cascade-select",
           "properties": [
-            {
-              "name": "items",
-              "type": "CascadeSelectItem[]",
-              "required": true,
-              "kind": "own"
-            },
             {
               "name": "allowParentSelection",
               "type": "boolean",
@@ -1372,6 +1378,12 @@
               "description": "Whether the cascade-select is invalid"
             },
             {
+              "name": "items",
+              "type": "CascadeSelectItem[]",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "label",
               "type": "string",
               "required": false,
@@ -1446,6 +1458,12 @@
               "required": false,
               "kind": "machine",
               "description": "The controlled open state of the cascade-select"
+            },
+            {
+              "name": "option",
+              "type": "Marko.AttrTag<CascadeSelectOptionAttrs>",
+              "required": false,
+              "kind": "own"
             },
             {
               "name": "placeholder",
@@ -3313,14 +3331,20 @@
               "kind": "own"
             },
             {
-              "name": "items",
-              "type": "ContextMenuItem[]",
-              "required": true,
+              "name": "class",
+              "type": "string",
+              "required": false,
               "kind": "own"
             },
             {
-              "name": "class",
-              "type": "string",
+              "name": "item",
+              "type": "Marko.AttrTag<ContextMenuItemAttrs>",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "items",
+              "type": "ContextMenuItem[]",
               "required": false,
               "kind": "own"
             },
@@ -4498,12 +4522,6 @@
           "name": "dropdown-menu",
           "properties": [
             {
-              "name": "items",
-              "type": "DropdownMenuItem[]",
-              "required": true,
-              "kind": "own"
-            },
-            {
               "name": "trigger",
               "type": "Marko.Body<[Record<string, unknown>], void>",
               "required": true,
@@ -4512,6 +4530,18 @@
             {
               "name": "class",
               "type": "string",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "item",
+              "type": "Marko.AttrTag<DropdownMenuItemAttrs>",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "items",
+              "type": "DropdownMenuItem[]",
               "required": false,
               "kind": "own"
             },
@@ -6120,12 +6150,6 @@
           "name": "listbox",
           "properties": [
             {
-              "name": "items",
-              "type": "ListboxItem[]",
-              "required": true,
-              "kind": "own"
-            },
-            {
               "name": "defaultHighlightedValue",
               "type": "string | null | undefined",
               "required": false,
@@ -6195,6 +6219,12 @@
               "description": "The ids of the elements in the listbox. Useful for composition."
             },
             {
+              "name": "items",
+              "type": "ListboxItem[]",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "label",
               "type": "string",
               "required": false,
@@ -6227,6 +6257,12 @@
               "required": false,
               "kind": "machine",
               "description": "The callback fired when the selected item changes."
+            },
+            {
+              "name": "option",
+              "type": "Marko.AttrTag<ListboxOptionAttrs>",
+              "required": false,
+              "kind": "own"
             },
             {
               "name": "orientation",
@@ -6291,12 +6327,6 @@
           "name": "marquee",
           "properties": [
             {
-              "name": "items",
-              "type": "T[]",
-              "required": true,
-              "kind": "own"
-            },
-            {
               "name": "autoFill",
               "type": "boolean | undefined",
               "required": false,
@@ -6343,6 +6373,18 @@
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the marquee. Useful for composition."
+            },
+            {
+              "name": "item",
+              "type": "Marko.AttrTag<{ content?: Marko.Body; }>",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "items",
+              "type": "T[]",
+              "required": false,
+              "kind": "own"
             },
             {
               "name": "loopCount",
@@ -6442,12 +6484,6 @@
           "name": "menu",
           "properties": [
             {
-              "name": "items",
-              "type": "DropdownMenuItem[]",
-              "required": true,
-              "kind": "own"
-            },
-            {
               "name": "trigger",
               "type": "Marko.Body<[Record<string, unknown>], void>",
               "required": true,
@@ -6456,6 +6492,18 @@
             {
               "name": "class",
               "type": "string",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "item",
+              "type": "Marko.AttrTag<MenubarItemAttrs>",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "items",
+              "type": "DropdownMenuItem[]",
               "required": false,
               "kind": "own"
             },
@@ -6521,12 +6569,6 @@
           "name": "navigation-menu",
           "properties": [
             {
-              "name": "items",
-              "type": "NavigationMenuItem[]",
-              "required": true,
-              "kind": "own"
-            },
-            {
               "name": "align",
               "type": "'start' | 'end' | 'center'",
               "required": false,
@@ -6583,6 +6625,13 @@
               "description": "Whether to disable the pointer leave close"
             },
             {
+              "name": "entry",
+              "type": "Marko.AttrTag<NavigationMenuEntryAttrs>",
+              "required": false,
+              "kind": "own",
+              "description": "Compound attr-tag API (primary, Marko-idiomatic form). One tag name\ncarries both kinds — `<@entry .../>` is a bar link (the default kind) and\n`<@entry type=\"menu\">` opens a content panel in the shared viewport (its\nbody renders directly inside the panel) — so entries render in exactly\nthe order written: links may sit before, between, or after menus. When\nany `<@entry>` tags are supplied they replace `items=` entirely for this\nrender."
+            },
+            {
               "name": "getRootNode",
               "type": "(() => ShadowRoot | Document | Node) | undefined",
               "required": false,
@@ -6595,6 +6644,12 @@
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the machine."
+            },
+            {
+              "name": "items",
+              "type": "NavigationMenuItem[]",
+              "required": false,
+              "kind": "own"
             },
             {
               "name": "onValueChange",
@@ -7545,12 +7600,6 @@
           "name": "radio-group",
           "properties": [
             {
-              "name": "items",
-              "type": "RadioGroupItem[]",
-              "required": true,
-              "kind": "own"
-            },
-            {
               "name": "defaultValue",
               "type": "string | null | undefined",
               "required": false,
@@ -7598,6 +7647,18 @@
               "required": false,
               "kind": "machine",
               "description": "If `true`, the radio group is marked as invalid."
+            },
+            {
+              "name": "item",
+              "type": "Marko.AttrTag<RadioGroupItemAttrs>",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "items",
+              "type": "RadioGroupItem[]",
+              "required": false,
+              "kind": "own"
             },
             {
               "name": "name",
@@ -7939,12 +8000,6 @@
           "name": "select",
           "properties": [
             {
-              "name": "items",
-              "type": "SelectItem[]",
-              "required": true,
-              "kind": "own"
-            },
-            {
               "name": "autoComplete",
               "type": "string | undefined",
               "required": false,
@@ -8043,6 +8098,12 @@
               "description": "Whether the select is invalid"
             },
             {
+              "name": "items",
+              "type": "SelectItem[]",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "label",
               "type": "string",
               "required": false,
@@ -8124,6 +8185,12 @@
               "required": false,
               "kind": "machine",
               "description": "Whether the select menu is open"
+            },
+            {
+              "name": "option",
+              "type": "Marko.AttrTag<SelectItem>",
+              "required": false,
+              "kind": "own"
             },
             {
               "name": "placeholder",
@@ -9299,12 +9366,6 @@
           "name": "tabs",
           "properties": [
             {
-              "name": "items",
-              "type": "TabItem[]",
-              "required": true,
-              "kind": "own"
-            },
-            {
               "name": "activationMode",
               "type": "'manual' | 'automatic' | undefined",
               "required": false,
@@ -9360,6 +9421,12 @@
               "description": "The ids of the elements in the tabs. Useful for composition."
             },
             {
+              "name": "items",
+              "type": "TabItem[]",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "loopFocus",
               "type": "boolean | undefined",
               "required": false,
@@ -9395,11 +9462,23 @@
               "description": "The orientation of the tabs. Can be `horizontal` or `vertical`\n- `horizontal`: only left and right arrow key navigation will work.\n- `vertical`: only up and down arrow key navigation will work."
             },
             {
+              "name": "panel",
+              "type": "Marko.AttrTag<TabsPanelAttrs>",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "translations",
               "type": "IntlTranslations | undefined",
               "required": false,
               "kind": "machine",
               "description": "Specifies the localized strings that identifies the accessibility elements and their states"
+            },
+            {
+              "name": "trigger",
+              "type": "Marko.AttrTag<TabsTriggerAttrs>",
+              "required": false,
+              "kind": "own"
             },
             {
               "name": "value",
@@ -10038,12 +10117,6 @@
           "name": "toggle-group",
           "properties": [
             {
-              "name": "items",
-              "type": "ToggleGroupItem[]",
-              "required": true,
-              "kind": "own"
-            },
-            {
               "name": "defaultValue",
               "type": "string[] | undefined",
               "required": false,
@@ -10084,6 +10157,18 @@
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the toggle. Useful for composition."
+            },
+            {
+              "name": "item",
+              "type": "Marko.AttrTag<ToggleGroupItemAttrs>",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "items",
+              "type": "ToggleGroupItem[]",
+              "required": false,
+              "kind": "own"
             },
             {
               "name": "loopFocus",

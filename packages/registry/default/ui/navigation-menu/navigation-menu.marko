@@ -45,9 +45,17 @@ export interface NavigationMenuContentContext {
 
 export type NavigationMenuItem = NavigationMenuLinkItem | NavigationMenuMenuItem;
 
-// Compound attr-tag form of NavigationMenuLinkItem: a link rendered directly
-// in the bar, no content panel.
+// Attr-tag entry kinds. A SINGLE attr tag name (`entry`) carries both kinds
+// (discriminated by `type`, defaulting to "link") rather than separate
+// `link`/`menu` attr tags: Marko collects each attr-tag NAME into its own
+// independent iterable on `input` with no shared ordering between
+// differently-named siblings, so distinct tag names could not preserve
+// call-site interleaving. One name with a `type` discriminant keeps document
+// order intact by construction (same design as dropdown-menu.marko and
+// context-menu.marko).
 export interface NavigationMenuLinkAttrs {
+  /** Discriminant; omit (or "link") for a link rendered directly in the bar. */
+  type?: "link";
   value: string;
   label: string;
   href: string;
@@ -55,16 +63,19 @@ export interface NavigationMenuLinkAttrs {
   disabled?: boolean;
 }
 
-// Compound attr-tag form of NavigationMenuMenuItem. Unlike the items=/links[]
-// path, this does NOT drive the featured/plain link grid — its `content` body
-// renders directly into the panel, same as the items= path's `content`
-// render-prop fallback does when an item has no `links`.
+// Menu kind: opens a content panel in the shared viewport. Unlike the
+// items=/links[] path, this does NOT drive the featured/plain link grid — its
+// `content` body renders directly into the panel, same as the items= path's
+// `content` render-prop fallback does when an item has no `links`.
 export interface NavigationMenuMenuAttrs {
+  type: "menu";
   value: string;
   label: string;
   disabled?: boolean;
   content?: Marko.Body;
 }
+
+export type NavigationMenuEntryAttrs = NavigationMenuLinkAttrs | NavigationMenuMenuAttrs;
 
 export type Input = MachineInput<"nav", navigationMenu.Props> & {
   items?: NavigationMenuItem[];
@@ -78,21 +89,15 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
   content?: Marko.Body<[NavigationMenuContentContext]>;
   valueChange?: (value: string) => void;
   /**
-   * Compound attr-tag API (primary, Marko-idiomatic form). Renders directly in
-   * the bar, no panel. If either `link` or `menu` attr tags are supplied they
-   * replace `items` entirely for this render — order is preserved within each
-   * tag name but NOT across `link`/`menu` (Marko has no merged, cross-name
-   * ordering primitive for attr tags): ALL `<@link>` entries render before
-   * ALL `<@menu>` entries, so write links first. Use `items=` if links must
-   * come after or between menus.
+   * Compound attr-tag API (primary, Marko-idiomatic form). One tag name
+   * carries both kinds — `<@entry .../>` is a bar link (the default kind) and
+   * `<@entry type="menu">` opens a content panel in the shared viewport (its
+   * body renders directly inside the panel) — so entries render in exactly
+   * the order written: links may sit before, between, or after menus. When
+   * any `<@entry>` tags are supplied they replace `items=` entirely for this
+   * render.
    */
-  link?: Marko.AttrTag<NavigationMenuLinkAttrs>;
-  /**
-   * Compound attr-tag API: opens a content panel in the shared viewport. The
-   * `content` body renders directly inside the panel — this replaces the
-   * links[]-array-driven featured/plain grid for the attr-tag path.
-   */
-  menu?: Marko.AttrTag<NavigationMenuMenuAttrs>;
+  entry?: Marko.AttrTag<NavigationMenuEntryAttrs>;
 };
 
 <machine-props/machineProps from=input pick=navigationMenu.props
@@ -115,34 +120,24 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
     align: ownAlign,
     content: ownContent,
     valueChange: ownChangeHandler,
-    link: ownLink,
-    menu: ownMenu,
+    entry: ownEntry,
     ...native
   } = navigationMenu.splitProps(input)[1];
   return native;
 }>
 
 // Normalize whichever source was supplied into one items array so the render
-// path below never branches. Attr tags win if either is present (compound is
-// primary per the compound-tag-dx report).
-//
-// ORDERING RULE (do not change casually): ALL `<@link>` tags render before
-// ALL `<@menu>` tags — `[...linkTags, ...menuTags]` below. Cross-name
-// document order is NOT recoverable from Marko's attr-tag data model (each
-// tag name is its own separate iterable with no shared position), so a
-// caller interleaving `<@link>` between `<@menu>` tags would silently get a
-// different order than written. Demos and docs must therefore always place
-// `<@link>` tags before `<@menu>` tags so source order matches rendered
-// order; order IS preserved within each tag name. Callers needing links
-// after or between menus must use `items=`.
-<const/linkTags=[...(input.link ?? [])]/>
-<const/menuTags=[...(input.menu ?? [])]/>
-<const/items=((linkTags.length > 0 || menuTags.length > 0) ? [...linkTags.map((tag): NavigationMenuLinkItem => ({ type: "link", ...tag })), ...menuTags.map((tag): NavigationMenuMenuItem => ({ type: "menu", value: tag.value, label: tag.label, disabled: tag.disabled }))] : (input.items ?? []))/>
+// path below never branches. Attr tags win if present (compound is primary
+// per the compound-tag-dx report). The single `<@entry>` tag name preserves
+// true document order by construction, so links and menus render exactly as
+// interleaved at the call site.
+<const/entryTags=[...(input.entry ?? [])]/>
+<const/items=(entryTags.length > 0 ? entryTags.map((tag): NavigationMenuItem => (tag.type === "menu" ? { type: "menu", value: tag.value, label: tag.label, disabled: tag.disabled } : { type: "link", value: tag.value, label: tag.label, href: tag.href, current: tag.current, disabled: tag.disabled })) : (input.items ?? []))/>
 
-// Attr-tag <@menu> content bodies, keyed by value — looked up when rendering
-// the panel so the attr-tag path renders its content body directly instead of
-// the items=/links[]-driven featured/plain grid.
-<const/menuContentByValue=new Map(menuTags.map((tag) => [tag.value, tag.content]))>
+// Attr-tag `<@entry type="menu">` content bodies, keyed by value — looked up
+// when rendering the panel so the attr-tag path renders its content body
+// directly instead of the items=/links[]-driven featured/plain grid.
+<const/menuContentByValue=new Map(entryTags.filter((tag): tag is NavigationMenuMenuAttrs => tag.type === "menu").map((tag) => [tag.value, tag.content] as const))>
 
 <const/menuItems=() => items.filter((item) => item.type === "menu") as NavigationMenuMenuItem[]>
 
@@ -231,6 +226,7 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
       class="relative mt-1.5 h-[var(--viewport-height)] w-[var(--viewport-width)] origin-top overflow-hidden rounded-md border bg-popover text-popover-foreground shadow duration-200 data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:zoom-in-90 data-[state=open]:fade-in-0"
     >
       <for|item| of=menuItems()>
+        <const/menuContent=menuContentByValue.get(item.value)/>
         <div
           ...api().getContentProps({ value: item.value })
           data-slot="navigation-menu-content"
@@ -270,8 +266,8 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
               </ul>
             </div>
           </if>
-          <if=menuContentByValue.get(item.value)>
-            <${menuContentByValue.get(item.value)}/>
+          <if=menuContent>
+            <${menuContent}/>
           </if>
           <else-if=input.content>
             <${input.content}(contentContext(item.value))/>

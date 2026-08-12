@@ -24,12 +24,13 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
   valueChange?: (value: string[]) => void;
 };
 
-// Normalize whichever source(s) were supplied into one array so the render
-// path below always iterates the same shape. `usingAttrTags` records which
-// source won so content resolution below knows whether `item.content` is a
-// Marko.Body (attr-tag mode) or a plain string (items= mode).
-<const/usingAttrTags=input.item != null/>
-<const/normalizedItems=[...(input.item ?? input.items ?? [])]/>
+// Normalize BOTH sources into ONE explicit common shape (mirrors
+// radio-group.marko) so the render path below never branches on the source
+// and needs no casts: `body` carries the attr-tag markup body, `text` the
+// items= string content, and `source` the plain-data item handed to the
+// `content` render prop. Attr tags win if both are present.
+<const/itemTags=[...(input.item ?? [])].map((item) => ({ value: item.value, title: item.title, body: item.content, text: undefined as string | undefined, source: { value: item.value, title: item.title } }))/>
+<const/normalizedItems=(itemTags.length > 0 ? itemTags : (input.items ?? []).map((item) => ({ value: item.value, title: item.title, body: undefined as Marko.Body | undefined, text: item.content, source: item })))/>
 
 <machine-props/machineProps from=input pick=accordionMachine.props
   onValueChange(details: accordionMachine.ValueChangeDetails) {
@@ -225,13 +226,13 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
         class="overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
       >
         <div class="pt-0 pb-4">
-          <if=usingAttrTags>
-            <${item.content as Marko.Body}/>
+          <if=item.body>
+            <${item.body}/>
           </if>
           <else-if=input.content>
-            <${input.content}(item as AccordionItem)/>
+            <${input.content}(item.source)/>
           </else-if>
-          <else>${item.content as string | undefined}</else>
+          <else>${item.text}</else>
         </div>
       </div>
     </div>

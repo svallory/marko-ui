@@ -32,11 +32,14 @@ export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
   return native;
 }>
 
-// Normalize whichever source was supplied into one list so the render path
-// below never branches. Attr tags win if both are present (compound is
-// primary per the compound-tag-dx report).
-<const/itemTags=[...(input.item ?? [])]/>
-<const/entries=(itemTags.length > 0 ? itemTags : (input.items ?? []))/>
+// Normalize BOTH sources into ONE explicit common shape (mirrors
+// carousel.marko / radio-group.marko) so the render path below never
+// branches on the source and needs no casts: `body` carries the attr-tag
+// markup body, `item` the items=-derived datum handed to the `content`
+// render prop (or rendered as text). Attr tags win if both are present
+// (compound is primary per the compound-tag-dx report).
+<const/itemTags=[...(input.item ?? [])].map((tag) => ({ body: tag.content, item: undefined as unknown }))/>
+<const/entries=(itemTags.length > 0 ? itemTags : (input.items ?? []).map((item) => ({ body: undefined as Marko.Body | undefined, item: item as unknown })))/>
 
 <style>
   @keyframes marko-ui-marquee-scroll-x {
@@ -84,14 +87,14 @@ export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
       <div ...api().getContentProps({ index }) data-slot="marquee-content" class="flex shrink-0 items-center">
         <for|entry, itemIndex| of=entries>
           <div ...api().getItemProps() data-slot="marquee-item" class="flex shrink-0 items-center">
-            <if=(entry as { content?: Marko.Body }).content>
-              <${(entry as { content?: Marko.Body }).content}/>
+            <if=entry.body>
+              <${entry.body}/>
             </if>
             <else if=input.content>
-              <${input.content}(entry as T, itemIndex)/>
+              <${input.content}(entry.item, itemIndex)/>
             </else>
             <else>
-              ${entry}
+              ${entry.item}
             </else>
           </div>
         </for>

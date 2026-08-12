@@ -25,10 +25,12 @@ export type Input = MachineInput<"div", toggleGroupMachine.Props> &
     valueChange?: (value: string[]) => void;
   };
 
-// Normalize whichever source was supplied into one shape so the render path
-// below never branches. Attr tags win if both are present.
-<const/itemTags=[...(input.item ?? [])]/>
-<const/items=(itemTags.length > 0 ? itemTags : (input.items ?? []))/>
+// Normalize BOTH sources into ONE explicit common shape (mirrors
+// radio-group.marko) so the render path below never branches on the source
+// and needs no casts: `content` carries the attr-tag markup body, `label`
+// the items= string fallback. Attr tags win if both are present.
+<const/itemTags=[...(input.item ?? [])].map((item) => ({ value: item.value, disabled: item.disabled, label: undefined as string | undefined, content: item.content }))/>
+<const/items=(itemTags.length > 0 ? itemTags : (input.items ?? []).map((item) => ({ value: item.value, disabled: item.disabled, label: item.label as string | undefined, content: undefined as Marko.Body | undefined })))/>
 
 <machine-props/machineProps from=input pick=toggleGroupMachine.props
   onValueChange(details: toggleGroupMachine.ValueChangeDetails) {
@@ -66,11 +68,11 @@ export type Input = MachineInput<"div", toggleGroupMachine.Props> &
       data-slot="toggle-group-item"
       class=toggleVariants({ variant: input.variant, size: input.size })
     >
-      <if=(item as ToggleGroupItemAttrs).content>
-        <${(item as ToggleGroupItemAttrs).content}/>
+      <if=item.content>
+        <${item.content}/>
       </if>
       <else>
-        ${(item as ToggleGroupItem).label}
+        ${item.label}
       </else>
     </button>
   </for>

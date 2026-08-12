@@ -34,7 +34,7 @@ export const docs: ComponentDocs = {
       name: "compound",
       title: "Compound (attr tags)",
       description:
-        "Use `<@menu>` and `<@link>` attribute tags instead of `items=` to compose each entry — and `<@content>` inside `<@menu>` for the panel body — directly in markup. All `<@link>` entries render before `<@menu>` entries in the bar, so write links first; use `items=` if links must come after or between menus.",
+        "Use `<@entry>` attribute tags instead of `items=` to compose each entry directly in markup: `type=\"menu\"` opens a shared content panel (the tag body renders inside it), and the default kind is a plain bar link. One tag name means entries render in exactly the order written — links can sit before, between, or after menus.",
     },
   ],
 };

@@ -41,6 +41,12 @@ export type Input = MachineInput<"div", tabsMachine.Props> & {
 // Normalize whichever source was supplied into one shape so the render path
 // below never branches. Attr tags win if both are present (compound is
 // primary per the compound-tag-dx report).
+//
+// NOTE: `trigger` and `panel` normalize INDEPENDENTLY — the "attr tags win"
+// rule applies per tag name, not to the component as a whole. Mixing
+// `<@trigger>` tags with `items=` (and no `<@panel>` tags) therefore yields
+// attr-tag-derived triggers paired with items=-derived panels — a hybrid;
+// supply both tag names (or neither) to stay on one source.
 <const/triggerTags=[...(input.trigger ?? [])]/>
 <const/panelTags=[...(input.panel ?? [])]/>
 <const/triggers=(triggerTags.length > 0 ? triggerTags : (items ?? []).map((item) => ({ value: item.value, disabled: item.disabled, label: item.label })))/>

@@ -1,26 +1,23 @@
 import NavigationMenu from "@marko-ui/registry/ui/navigation-menu/navigation-menu.marko";
 
+// A single <@entry> tag name carries both kinds — type="menu" opens a panel
+// (its body renders inside), the default kind is a plain bar link — so
+// entries render in exactly the order written: here the "Docs" link sits
+// between the two menus.
 <NavigationMenu>
-  // <@link> tags always render before <@menu> tags in the bar (Marko collects
-  // each attr-tag name separately, so cross-name document order is not
-  // recoverable) — place links first so source order matches rendered order.
-  <@link value="docs" label="Docs" href="#docs"/>
-  <@menu value="getting-started" label="Getting Started">
-    <@content>
-      <div class="grid w-[400px] gap-1">
-        <a href="#introduction" class="rounded-md p-2 text-sm hover:bg-accent">Introduction</a>
-        <a href="#installation" class="rounded-md p-2 text-sm hover:bg-accent">Installation</a>
-        <a href="#theming" class="rounded-md p-2 text-sm hover:bg-accent">Theming</a>
-      </div>
-    </@content>
-  </@menu>
-  <@menu value="components" label="Components">
-    <@content>
-      <div class="grid w-[400px] gap-1">
-        <a href="#button" class="rounded-md p-2 text-sm hover:bg-accent">Button</a>
-        <a href="#dialog" class="rounded-md p-2 text-sm hover:bg-accent">Dialog</a>
-        <a href="#tooltip" class="rounded-md p-2 text-sm hover:bg-accent">Tooltip</a>
-      </div>
-    </@content>
-  </@menu>
+  <@entry type="menu" value="getting-started" label="Getting Started">
+    <div class="grid w-[400px] gap-1">
+      <a href="#introduction" class="rounded-md p-2 text-sm hover:bg-accent">Introduction</a>
+      <a href="#installation" class="rounded-md p-2 text-sm hover:bg-accent">Installation</a>
+      <a href="#theming" class="rounded-md p-2 text-sm hover:bg-accent">Theming</a>
+    </div>
+  </@entry>
+  <@entry value="docs" label="Docs" href="#docs"/>
+  <@entry type="menu" value="components" label="Components">
+    <div class="grid w-[400px] gap-1">
+      <a href="#button" class="rounded-md p-2 text-sm hover:bg-accent">Button</a>
+      <a href="#dialog" class="rounded-md p-2 text-sm hover:bg-accent">Dialog</a>
+      <a href="#tooltip" class="rounded-md p-2 text-sm hover:bg-accent">Tooltip</a>
+    </div>
+  </@entry>
 </NavigationMenu>
