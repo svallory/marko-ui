@@ -14,7 +14,7 @@ export const docs: ComponentDocs = {
       name: "radio-group-demo",
       title: "Basic",
       description:
-        "Pass an `items: { value, label, disabled? }[]` array; the component renders every item internally instead of a compound `RadioGroup` / `RadioGroupItem` pair.",
+        "Pass an `items: { value, label, disabled? }[]` array and the component renders every item internally — or compose options in markup with `<@item>` attribute tags (see the Compound example).",
     },
     {
       name: "radio-group-disabled-item",

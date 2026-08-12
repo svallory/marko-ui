@@ -131,10 +131,18 @@ describe("menu family <@item> ordering", () => {
         "dropdown-menu-item",
       ]);
       expect(await textSequence(content, '[data-slot="dropdown-menu-item"]')).toEqual([
-        "Edit",
+        "Edit⌘E",
         "Duplicate",
         "Archive",
         "Delete",
+      ]);
+
+      // Regression guard: the "Edit" item is BODY-based (markup child, no
+      // label=) AND carries shortcut="⌘E". The shortcut span must render for
+      // body-based items too — it used to live only inside the label-fallback
+      // branch, so body items silently dropped their shortcut.
+      expect(await textSequence(content, '[data-slot="dropdown-menu-item"] > span.ml-auto')).toEqual([
+        "⌘E",
       ]);
     });
   });

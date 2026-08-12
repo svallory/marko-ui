@@ -99,14 +99,14 @@ export interface Input {
               )
             >
               <if=entry.content>
-                <${entry.content}/>
+                <span><${entry.content}/></span>
               </if>
               <else>
                 <span>${entry.label}</span>
-                <if=entry.shortcut>
-                  <span class="ml-auto text-xs tracking-widest text-muted-foreground">${entry.shortcut}</span>
-                </if>
               </else>
+              <if=entry.shortcut>
+                <span class="ml-auto text-xs tracking-widest text-muted-foreground">${entry.shortcut}</span>
+              </if>
             </div>
           </else>
         </for>
