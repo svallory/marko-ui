@@ -3,8 +3,9 @@ import type { MachineInput } from "marko-ui";
 import { cn } from "#lib/utils.ts";
 
 export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
-  items: T[];
+  items?: T[];
   content?: Marko.Body<[T, number]>;
+  item?: Marko.AttrTag<{ content?: Marko.Body }>;
   pausedChange?: (paused: boolean) => void;
 };
 
@@ -24,11 +25,18 @@ export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
     class: ownClass,
     items: ownItems,
     content: ownContent,
+    item: ownItem,
     pausedChange: ownChangeHandler,
     ...native
   } = marqueeMachine.splitProps(input)[1];
   return native;
 }>
+
+// Normalize whichever source was supplied into one list so the render path
+// below never branches. Attr tags win if both are present (compound is
+// primary per the compound-tag-dx report).
+<const/itemTags=[...(input.item ?? [])]/>
+<const/entries=(itemTags.length > 0 ? itemTags : input.items)/>
 
 <style>
   @keyframes marko-ui-marquee-scroll-x {
@@ -74,13 +82,16 @@ export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
   <div ...api().getViewportProps() data-slot="marquee-viewport" class="flex w-full">
     <for|_, index| of=Array.from({ length: api().contentCount })>
       <div ...api().getContentProps({ index }) data-slot="marquee-content" class="flex shrink-0 items-center">
-        <for|item, itemIndex| of=input.items>
+        <for|entry, itemIndex| of=entries>
           <div ...api().getItemProps() data-slot="marquee-item" class="flex shrink-0 items-center">
-            <if=input.content>
-              <${input.content}(item, itemIndex)/>
+            <if=(entry as { content?: Marko.Body }).content>
+              <${(entry as { content?: Marko.Body }).content}/>
             </if>
+            <else if=input.content>
+              <${input.content}(entry as T, itemIndex)/>
+            </else>
             <else>
-              ${item}
+              ${entry}
             </else>
           </div>
         </for>

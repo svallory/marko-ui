@@ -11,9 +11,37 @@ export interface ContextMenuItem {
   danger?: boolean;
 }
 
+export interface ContextMenuItemAttrs {
+  value?: string;
+  label: string;
+  disabled?: boolean;
+  shortcut?: string;
+  danger?: boolean;
+  content?: Marko.Body;
+}
+
+export interface ContextMenuLabelAttrs {
+  content?: Marko.Body;
+}
+
+// Attr-tag compound API (v2, additive sugar alongside `items=`). Marko attr
+// tags of different names arrive as separate `input.<name>` fields with no
+// shared ordering info between names (verified against
+// node_modules/marko/cheatsheet.md — repeated attr tags are collected per
+// tag name only; nothing carries a cross-name document-order index into
+// `input`). A single component cannot recover true interleaved call-site
+// order across `<@item>`/`<@separator>`/`<@label>` from three separate
+// fields. `items=` stays the PRIMARY path for interleaved/ordered menus
+// because array position already encodes order unambiguously. The attr-tag
+// forms are documented sugar for the common case (all items, or items then
+// a trailing separator/label group) and render in item -> separator ->
+// label PRIORITY-GROUP order when used standalone, NOT true document order.
 export interface Input {
   content: Marko.Body;
-  items: ContextMenuItem[];
+  items?: ContextMenuItem[];
+  item?: Marko.AttrTag<ContextMenuItemAttrs>;
+  separator?: Marko.AttrTag<Record<string, never>>;
+  label?: Marko.AttrTag<ContextMenuLabelAttrs>;
   select?: (value: string) => void;
   class?: string;
 }
@@ -29,6 +57,20 @@ export interface Input {
 />
 
 <const/{ class: className }=input/>
+
+// `items=` is the PRIMARY, order-correct path: array position already
+// interleaves item/separator/label entries the way the author wrote them.
+// The `<@item>`/`<@separator>`/`<@label>` attr tags are equivalent per-entry
+// sugar for the common case, used only when `items=` is not supplied —
+// because Marko collects differently-named attr tags into separate
+// `input.<name>` fields with no shared ordering key, they render in
+// item -> separator -> label PRIORITY GROUPS, not necessarily true
+// call-site document order, when literally interleaved. Document this on
+// the demo page.
+<const/useItems=!!input.items/>
+<const/attrItems=[...(input.item ?? [])]/>
+<const/attrSeparators=[...(input.separator ?? [])]/>
+<const/attrLabels=[...(input.label ?? [])]/>
 
 <div ...api().getContextTriggerProps() data-slot="context-menu-trigger">
   <${input.content}/>
@@ -46,16 +88,38 @@ export interface Input {
           className,
         )
       >
-        <for|entry, index| of=input.items>
-          <if=entry.type === "separator">
-            <div ...api().getSeparatorProps() data-slot="context-menu-separator" class="bg-border -mx-1 my-1 h-px"/>
-          </if>
-          <else if=entry.type === "label">
-            <div data-slot="context-menu-label" class="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-              ${entry.label}
-            </div>
-          </else>
-          <else>
+        <if=useItems>
+          <for|entry, index| of=input.items>
+            <if=entry.type === "separator">
+              <div ...api().getSeparatorProps() data-slot="context-menu-separator" class="bg-border -mx-1 my-1 h-px"/>
+            </if>
+            <else if=entry.type === "label">
+              <div data-slot="context-menu-label" class="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                ${entry.label}
+              </div>
+            </else>
+            <else>
+              <div
+                ...api().getItemProps({ value: entry.value ?? `item-${index}`, disabled: entry.disabled })
+                data-slot="context-menu-item"
+                data-danger=entry.danger || undefined
+                class=cn(
+                  "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none",
+                  "data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
+                  "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+                  "data-[danger]:text-destructive data-[danger]:data-[highlighted]:bg-destructive/10",
+                )
+              >
+                <span>${entry.label}</span>
+                <if=entry.shortcut>
+                  <span class="ml-auto text-xs tracking-widest text-muted-foreground">${entry.shortcut}</span>
+                </if>
+              </div>
+            </else>
+          </for>
+        </if>
+        <else>
+          <for|entry, index| of=attrItems>
             <div
               ...api().getItemProps({ value: entry.value ?? `item-${index}`, disabled: entry.disabled })
               data-slot="context-menu-item"
@@ -67,13 +131,28 @@ export interface Input {
                 "data-[danger]:text-destructive data-[danger]:data-[highlighted]:bg-destructive/10",
               )
             >
-              <span>${entry.label}</span>
-              <if=entry.shortcut>
-                <span class="ml-auto text-xs tracking-widest text-muted-foreground">${entry.shortcut}</span>
+              <if=entry.content>
+                <${entry.content}/>
+              </if>
+              <else>
+                <span>${entry.label}</span>
+                <if=entry.shortcut>
+                  <span class="ml-auto text-xs tracking-widest text-muted-foreground">${entry.shortcut}</span>
+                </if>
+              </else>
+            </div>
+          </for>
+          <for|_entry| of=attrSeparators>
+            <div ...api().getSeparatorProps() data-slot="context-menu-separator" class="bg-border -mx-1 my-1 h-px"/>
+          </for>
+          <for|entry| of=attrLabels>
+            <div data-slot="context-menu-label" class="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+              <if=entry.content>
+                <${entry.content}/>
               </if>
             </div>
-          </else>
-        </for>
+          </for>
+        </else>
       </div>
     </div>
   </if>

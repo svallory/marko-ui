@@ -109,7 +109,66 @@ export type Input = MachineInput&lt;"input", switchMachine.Props&gt; &amp; {
   </section>
 
   <section class="space-y-3">
-    <h2 class="text-lg font-semibold">5. Overlay components</h2>
+    <h2 class="text-lg font-semibold">5. Multi-part components: attr tags, not arrays</h2>
+    <p>
+      When a component repeats a part per caller-supplied entry (tabs triggers, accordion items,
+      menu items…), prefer an <strong>attr-tag compound API</strong> over an
+      <code>items=[...]</code> array. Marko has no context/provider primitive, so per-part sibling
+      tags (Radix-style <code>&lt;TabsTrigger&gt;</code>) can't share the parent's live
+      <code>api</code> getter safely — a caller who forgets to thread it gets either a 500 or a
+      silently unwired, inaccessible part. Attr tags avoid the problem entirely: they're
+      <em>data</em> collected by the parent's own render, so the api getter never crosses a tag
+      boundary.
+    </p>
+    <pre class="overflow-x-auto rounded-lg border bg-muted/50 p-4 text-sm"><code>export interface TriggerAttrs { value: string; disabled?: boolean; content?: Marko.Body }
+
+export type Input = MachineInput&lt;"div", tabsMachine.Props&gt; &amp; {
+  items?: TabItem[];                              // sugar for the data-driven case
+  trigger?: Marko.AttrTag&lt;TriggerAttrs&gt;;      // primary compound API
+  content?: Marko.Body&lt;[string]&gt;;
+};
+
+// Repeated attr tags collect into an ITERABLE, not an array — spread it.
+&lt;const/triggerTags=[...(input.trigger ?? [])]/&gt;
+
+// Normalize whichever source was supplied into ONE shape, once, up front —
+// the render path below never branches. Attr tags win if both are present.
+&lt;const/triggers=(triggerTags.length &gt; 0 ? triggerTags : (input.items ?? []).map((item) =&gt; ({ value: item.value, disabled: item.disabled })))/&gt;</code></pre>
+    <p class="text-sm">
+      Call site: <code>&lt;Tabs&gt;&lt;@trigger value="one"&gt;One&lt;/@trigger&gt;...&lt;/Tabs&gt;</code>.
+      Keep <code>items=</code> working unchanged for the data-driven case (a select bound to
+      fetched options should stay array-driven, not compound) — both paths render through the same
+      normalized list, so there's no branching duplicated downstream.
+    </p>
+    <p class="text-sm font-medium">Landmine: wrap ternaries used as a `&lt;const&gt;` value in parens.</p>
+    <p class="text-sm">
+      <code>&lt;const/x=a &gt; 0 ? a : b/&gt;</code> is broken two different ways depending on
+      formatting, and Marko does not always catch it at compile time:
+    </p>
+    <ul class="list-disc space-y-2 pl-6 text-sm">
+      <li>
+        A multi-line ternary with indented continuation lines fails to compile:
+        <code>Line has extra indentation at the beginning</code>.
+      </li>
+      <li>
+        A single-line ternary with a bare <code>&gt;</code> comparison is <strong>ambiguous
+        attribute syntax</strong> — Marko may parse the tag as ending at that <code>&gt;</code>,
+        silently truncating the expression. This does not always throw: it can compile clean and
+        just assign the wrong runtime value (e.g. a length number instead of the ternary result),
+        breaking a downstream <code>&lt;for&gt;</code> with
+        <code>must be an iterable, but received `3`</code>.
+      </li>
+    </ul>
+    <p class="text-sm">
+      Always wrap the whole ternary in parens on one line:
+      <code>&lt;const/x=(a &gt; 0 ? a : b)/&gt;</code>. Re-verify by curling the route and grepping
+      rendered output after any edit to a normalization <code>&lt;const&gt;</code> — a 200 status
+      alone does not prove the value was computed correctly.
+    </p>
+  </section>
+
+  <section class="space-y-3">
+    <h2 class="text-lg font-semibold">6. Overlay components</h2>
     <ul class="list-disc space-y-2 pl-6 text-sm">
       <li>
         Floating content goes in <code>&lt;portal&gt;&lt;if=api().open&gt;...</code> — portal
@@ -131,7 +190,7 @@ export type Input = MachineInput&lt;"input", switchMachine.Props&gt; &amp; {
   </section>
 
   <section class="space-y-3">
-    <h2 class="text-lg font-semibold">6. Verify</h2>
+    <h2 class="text-lg font-semibold">7. Verify</h2>
     <ul class="list-disc space-y-2 pl-6 text-sm">
       <li><code>curl</code> the demo route: 200, SSR carries the expected
         <code>aria-*</code>/<code>data-state</code> attributes, and no

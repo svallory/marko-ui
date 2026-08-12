@@ -11,9 +11,18 @@ export interface DropdownMenuItem {
   danger?: boolean;
 }
 
+// A SINGLE attr tag name (`item`) carries all three kinds (discriminated by
+// `type`) rather than separate `item`/`separator`/`label` attr tags: Marko
+// collects each attr-tag NAME into its own independent iterable on `input`
+// with no shared ordering between differently-named siblings, so
+// `<@item>`/`<@separator>`/`<@label>` as distinct tag names could not
+// preserve call-site interleaving. One name with a `type` discriminant
+// keeps document order intact by construction, and reuses DropdownMenuItem
+// as-is so `items=` and `<@item>` render through the same entries below.
 export interface Input {
   trigger: Marko.Body<[Record<string, unknown>]>;
-  items: DropdownMenuItem[];
+  items?: DropdownMenuItem[];
+  item?: Marko.AttrTag<DropdownMenuItem>;
   select?: (value: string) => void;
   class?: string;
 }
@@ -29,6 +38,7 @@ export interface Input {
 />
 
 <const/{ class: className, trigger }=input/>
+<const/entries=[...(input.items ?? []), ...(input.item ?? [])]/>
 
 <${trigger}({ ...api().getTriggerProps(), "data-slot": "dropdown-menu-trigger" })/>
 <portal>
@@ -44,7 +54,7 @@ export interface Input {
           className,
         )
       >
-        <for|entry, index| of=input.items>
+        <for|entry, index| of=entries>
           <if=entry.type === "separator">
             <div ...api().getSeparatorProps() data-slot="dropdown-menu-separator" class="bg-border -mx-1 my-1 h-px"/>
           </if>

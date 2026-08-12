@@ -1,0 +1,16 @@
+import Tabs from "@marko-ui/registry/ui/tabs/tabs.marko";
+
+<Tabs class="w-[400px]">
+  <@trigger value="account">Account</@trigger>
+  <@trigger value="password">Password</@trigger>
+  <@panel value="account">
+    <p class="text-muted-foreground text-sm">
+      Make changes to your account here. Click save when you're done.
+    </p>
+  </@panel>
+  <@panel value="password">
+    <p class="text-muted-foreground text-sm">
+      Change your password here. After saving, you'll be logged out.
+    </p>
+  </@panel>
+</Tabs>

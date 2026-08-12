@@ -8,18 +8,35 @@ export interface RadioGroupItem {
   disabled?: boolean;
 }
 
+export interface RadioGroupItemAttrs {
+  value: string;
+  disabled?: boolean;
+  content?: Marko.Body;
+}
+
 // The root is a native <div>; `value` is overridden to drop the native
 // string-attribute type in favor of the machine's `string | null`.
 // `valueChange` is additive sugar enabling Marko's two-way bind shorthand
 // (<RadioGroup value:=myState/>); Zag's own `onValueChange` also works and
 // receives the details object.
+//
+// Dual API: compound attr tags (`<@item>`) are the primary, Marko-idiomatic
+// form; `items=` remains as sugar for the data-driven case. If both are
+// supplied, attr tags win.
 export type Input = Omit<MachineInput<"div", radioGroupMachine.Props>, "value"> & {
-  items: RadioGroupItem[];
+  items?: RadioGroupItem[];
+  item?: Marko.AttrTag<RadioGroupItemAttrs>;
   value?: string | null;
   valueChange?: (value: string | null) => void;
 };
 
 <const/{ items }=input/>
+
+// Normalize whichever source was supplied into one shape so the render path
+// below never branches. Attr tags win if both are present (compound is
+// primary per the compound-tag-dx report).
+<const/itemTags=[...(input.item ?? [])].map((item) => ({ value: item.value, disabled: item.disabled, label: undefined as string | undefined, content: item.content }))/>
+<const/normalizedItems=(itemTags.length > 0 ? itemTags : (items ?? []).map((item) => ({ value: item.value, disabled: item.disabled, label: item.label as string | undefined, content: undefined as Marko.Body | undefined })))/>
 
 // The three-tag wiring (see /docs/creating-components):
 // 1. <machine-props> picks the machine's props out of `input` by name and
@@ -47,6 +64,7 @@ export type Input = Omit<MachineInput<"div", radioGroupMachine.Props>, "value"> 
   const {
     class: ownClass,
     items: ownItems,
+    item: ownItem,
     valueChange: ownChangeHandler,
     ...native
   } = radioGroupMachine.splitProps(input)[1];
@@ -54,7 +72,7 @@ export type Input = Omit<MachineInput<"div", radioGroupMachine.Props>, "value"> 
 }>
 
 <div ...nativeAttrs() ...api().getRootProps() data-slot="radio-group" class=cn("grid gap-3", input.class)>
-  <for|item| of=items by=(item) => item.value>
+  <for|item| of=normalizedItems by=(item) => item.value>
     <label
       ...api().getItemProps({ value: item.value, disabled: item.disabled })
       data-slot="radio-group-item-wrapper"
@@ -78,7 +96,12 @@ export type Input = Omit<MachineInput<"div", radioGroupMachine.Props>, "value"> 
         data-slot="radio-group-item-text"
         class="text-sm leading-none font-medium select-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
       >
-        ${item.label}
+        <if=item.content>
+          <${item.content}/>
+        </if>
+        <else>
+          ${item.label}
+        </else>
       </span>
     </label>
   </for>

@@ -8,6 +8,12 @@ export interface ListboxItem {
   disabled?: boolean;
 }
 
+export interface ListboxOptionAttrs {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
 // Module-scope cache for built collections, keyed by the `items` array
 // reference. `serviceProps` (below) is a closure re-invoked on every
 // reactive recompute; rebuilding the Zag collection fresh each time hands
@@ -24,14 +30,27 @@ static const collectionCache = new WeakMap<ListboxItem[], ReturnType<typeof list
 // `items` drives the generated `collection` (machine-owned, derived, so it
 // is omitted from the public Input and rebuilt below); `value` keeps the
 // plain string[] shape the machine already uses.
+//
+// Dual API: the compound attr tag (`<@option>`) is the primary,
+// Marko-idiomatic form; `items=` remains as sugar for the data-driven case.
+// If both are supplied, attr tags win.
 export type Input = Omit<MachineInput<"div", listboxMachine.Props<ListboxItem>>, "collection"> & {
-  items: ListboxItem[];
+  items?: ListboxItem[];
+  option?: Marko.AttrTag<ListboxOptionAttrs>;
   valueChange?: (value: string[]) => void;
   highlightedValueChange?: (highlightedValue: string | null) => void;
   label?: string;
 };
 
-<const/{ items, label, class: className }=input/>
+<const/{ label, class: className }=input/>
+
+// Normalize whichever source was supplied into ONE array reference so the
+// WeakMap cache below (keyed by array identity) is only ever fed a single,
+// stable reference per render — never build a second array from the same
+// source, that would defeat the cache exactly like a fresh `items` array
+// would.
+<const/optionTags=[...(input.option ?? [])]/>
+<const/items=(optionTags.length > 0 ? optionTags : (input.items ?? []))/>
 
 <const/buildCollection=(list: ListboxItem[]) => {
   const cached = collectionCache.get(list);
@@ -70,6 +89,7 @@ export type Input = Omit<MachineInput<"div", listboxMachine.Props<ListboxItem>>,
   const {
     class: ownClass,
     items: ownItems,
+    option: ownOption,
     valueChange: ownValueChange,
     highlightedValueChange: ownHighlightedValueChange,
     label: ownLabel,
