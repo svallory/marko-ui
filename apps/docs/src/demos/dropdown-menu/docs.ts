@@ -44,7 +44,7 @@ export const docs: ComponentDocs = {
       name: "dropdown-menu-compound",
       title: "Compound (attr tags)",
       description:
-        "Use `<@item>` attribute tags instead of `items=` to compose the menu directly in markup — pass `type=\"separator\"` on an item to render a divider.",
+        "Use `<@item>` attribute tags instead of `items=` to compose the menu directly in markup — pass `type=\"separator\"` on an item to render a divider. An item's text can come from either a `label=` attribute or a markup body, whichever you prefer.",
     },
   ],
 };

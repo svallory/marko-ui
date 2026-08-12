@@ -42,7 +42,7 @@ export const docs: ComponentDocs = {
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, or use Marko's bind shorthand `value:=state`.",
     },
     {
-      name: "compound",
+      name: "toggle-group-compound",
       title: "Compound (attr tags)",
       description:
         "Use `<@item>` attribute tags instead of `items=` to compose each option directly in markup.",

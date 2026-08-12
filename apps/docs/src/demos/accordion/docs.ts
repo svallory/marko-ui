@@ -17,8 +17,8 @@ export const docs: ComponentDocs = {
         "A single item at a time can be open. Pass `collapsible` to allow closing the open item.",
     },
     {
-      name: "attr-tags",
-      title: "Attribute tags",
+      name: "accordion-compound",
+      title: "Compound (attr tags)",
       description:
         "Use `<@item>` attribute tags instead of `items=` to compose each item's title and content directly in markup.",
     },

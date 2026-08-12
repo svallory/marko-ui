@@ -37,7 +37,7 @@ export const docs: ComponentDocs = {
       description: "Pass `disabled` to disable the whole control.",
     },
     {
-      name: "compound",
+      name: "cascade-select-compound",
       title: "Compound (attr tags)",
       description:
         "Use `<@option>` attr tags for a flat list of options instead of `items=`. Attr tags don't recurse into children — use `items=` for real trees.",

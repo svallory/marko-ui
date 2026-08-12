@@ -13,6 +13,9 @@
  *   menus), and `<@entry>` replaces `items=` entirely when both are supplied.
  * - dropdown-menu / context-menu / menubar menu: interleaved
  *   item/separator/label `<@item>` entries render in source order.
+ * - tabs: `<@trigger>`/`<@panel>` win over `items=` when both are supplied,
+ *   and the documented HYBRID gotcha (each tag name normalizes independently)
+ *   behaves exactly as documented.
  *
  * These assert against the same live SSR + hydration stack as the other
  * behavior suites (DOCS_BASE_URL must point at a running docs dev server).
@@ -71,6 +74,36 @@ describe("navigation-menu <@entry> ordering", () => {
         .locator('[data-slot="navigation-menu-item"]')
         .evaluateAll((elements) => elements.map((element) => element.getAttribute("data-value")));
       expect(values).toEqual(["wins"]);
+    });
+  });
+});
+
+describe("tabs <@trigger>/<@panel> precedence over items=", () => {
+  it("gives attr tags precedence for both triggers and panels when both sources are supplied", { timeout: 60_000 }, async () => {
+    await withPage({}, async (page) => {
+      await gotoHydrated(page, "tabs");
+      const demo = demoByTitle(page, "Precedence");
+
+      // items= supplies { value: "ignored", label: "Ignored" }; the attr tags
+      // must replace it entirely — for the trigger strip AND the panel list.
+      expect(await textSequence(demo, '[data-slot="tabs-trigger"]')).toEqual(["Wins"]);
+      expect(await textSequence(demo, '[data-slot="tabs-content"]')).toEqual(["Attr panel wins"]);
+    });
+  });
+
+  it("hybrid: <@trigger> with items= and no <@panel> pairs attr-tag triggers with items=-derived panels", { timeout: 60_000 }, async () => {
+    await withPage({}, async (page) => {
+      await gotoHydrated(page, "tabs");
+      const demo = demoByTitle(page, "Hybrid");
+
+      // `trigger` and `panel` normalize independently (documented gotcha):
+      // triggers come from the attr tags, panels fall back to items=, whose
+      // values feed the default body render prop.
+      expect(await textSequence(demo, '[data-slot="tabs-trigger"]')).toEqual(["Tag One", "Tag Two"]);
+      expect(await textSequence(demo, '[data-slot="tabs-content"]')).toEqual([
+        "Panel for one",
+        "Panel for two",
+      ]);
     });
   });
 });

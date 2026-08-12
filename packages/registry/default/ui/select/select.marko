@@ -27,7 +27,8 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
 };
 
 <const/{ placeholder, label, class: className }=input/>
-<const/items=input.option ? [...input.option] : (input.items ?? [])/>
+<const/optionTags=[...(input.option ?? [])]/>
+<const/items=(optionTags.length > 0 ? optionTags : (input.items ?? []))/>
 
 <const/buildCollection=(list: SelectItem[]) =>
   select.collection({

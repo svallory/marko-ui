@@ -31,7 +31,7 @@ export const docs: ComponentDocs = {
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, or use Marko's bind shorthand `value:=state`.",
     },
     {
-      name: "compound",
+      name: "navigation-menu-compound",
       title: "Compound (attr tags)",
       description:
         "Use `<@entry>` attribute tags instead of `items=` to compose each entry directly in markup: `type=\"menu\"` opens a shared content panel (the tag body renders inside it), and the default kind is a plain bar link. One tag name means entries render in exactly the order written — links can sit before, between, or after menus.",

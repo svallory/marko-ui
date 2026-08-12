@@ -41,10 +41,11 @@ export interface Input {
 // primary per the compound-tag-dx report); `items=` is the fallback. The
 // single `<@item>` tag name preserves true document order by construction,
 // so interleaved item/separator/label entries render exactly as written.
-// `items=` entries never carry a body, so the MenubarItemAttrs shape covers
-// both sources.
+// `items=` entries never carry a body, so each is mapped into the
+// MenubarItemAttrs shape with an explicit undefined `content` — no casts
+// needed (mirrors accordion/toggle-group).
 <const/attrItems=[...(input.item ?? [])]/>
-<const/entries=(attrItems.length > 0 ? attrItems : ((input.items ?? []) as MenubarItemAttrs[]))/>
+<const/entries=(attrItems.length > 0 ? attrItems : (input.items ?? []).map((item) => ({ ...item, content: undefined as Marko.Body | undefined })))/>
 
 <${trigger}({ ...api().getTriggerProps(), "data-slot": "menubar-trigger" })/>
 <portal>
