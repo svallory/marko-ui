@@ -23,23 +23,31 @@ export interface BlockEntry {
   previewHeight: number;
 }
 
+// shadcn's registryCategories (data/shadcn-ui/apps/v4/lib/categories.ts), in
+// their exact order. shadcn marks Dashboard and Authentication `hidden` and
+// filters them out of its blocks-nav — we render every category, so there is
+// no `hidden` flag here at all.
 export const BLOCK_CATEGORIES: BlockCategory[] = [
   { name: "Featured", slug: "" },
-  { name: "Dashboard", slug: "dashboard" },
   { name: "Sidebar", slug: "sidebar" },
+  { name: "Dashboard", slug: "dashboard" },
+  { name: "Authentication", slug: "authentication" },
   { name: "Login", slug: "login" },
   { name: "Signup", slug: "signup" },
-  { name: "Calendar", slug: "calendar" },
-  { name: "Navigation", slug: "navigation" },
-  { name: "Dialog", slug: "dialog" },
 ];
 
 export const BLOCKS: BlockEntry[] = [
   {
+    // Not part of shadcn's registry (data/shadcn-ui/apps/v4/registry/new-york-v4/blocks
+    // has no calendar-01 and __blocks__.json doesn't list one) — this block is
+    // marko-ui's own. Left uncategorized, matching shadcn's rendering behavior
+    // for uncategorized blocks: getAllBlocks's category filter is skipped when
+    // `categories` is empty, so an uncategorized block still appears on the
+    // Featured ("") view but on no category page.
     name: "calendar-01",
     title: "Calendar 01",
     description: "An appointment booking card pairing an inline calendar with selectable time slots.",
-    categories: ["calendar"],
+    categories: [],
     registryDependencies: ["utils", "calendar", "card", "button", "separator"],
     previewHeight: 780,
   },
@@ -103,7 +111,7 @@ export const BLOCKS: BlockEntry[] = [
     name: "sidebar-02",
     title: "Sidebar 02",
     description: "A collapsible sidebar with a version switcher, search form, and collapsible nav groups.",
-    categories: ["sidebar", "navigation"],
+    categories: ["sidebar", "dashboard"],
     registryDependencies: ["utils", "sidebar", "collapsible", "dropdown-menu", "breadcrumb", "separator", "input", "label"],
     previewHeight: 900,
   },
@@ -111,7 +119,7 @@ export const BLOCKS: BlockEntry[] = [
     name: "sidebar-03",
     title: "Sidebar 03",
     description: "A sidebar with submenus and breadcrumb navigation.",
-    categories: ["sidebar"],
+    categories: ["sidebar", "dashboard"],
     registryDependencies: ["utils", "sidebar", "separator", "breadcrumb"],
     previewHeight: 900,
   },
@@ -127,7 +135,7 @@ export const BLOCKS: BlockEntry[] = [
     name: "sidebar-05",
     title: "Sidebar 05",
     description: "A sidebar with collapsible nav items and a search form.",
-    categories: ["sidebar", "navigation"],
+    categories: ["sidebar", "dashboard"],
     registryDependencies: ["utils", "sidebar", "collapsible", "breadcrumb", "separator", "input", "label"],
     previewHeight: 900,
   },
@@ -135,7 +143,7 @@ export const BLOCKS: BlockEntry[] = [
     name: "sidebar-06",
     title: "Sidebar 06",
     description: "A documentation sidebar with dropdown navigation sections and a newsletter opt-in card in the footer.",
-    categories: ["sidebar", "navigation"],
+    categories: ["sidebar", "dashboard"],
     registryDependencies: ["utils", "sidebar", "dropdown-menu", "breadcrumb", "separator", "card", "input", "button"],
     previewHeight: 900,
   },
@@ -151,7 +159,7 @@ export const BLOCKS: BlockEntry[] = [
     name: "sidebar-08",
     title: "Sidebar 08",
     description: "A sidebar with collapsible sections, projects with a dropdown menu, secondary nav, and a user menu.",
-    categories: ["sidebar", "navigation"],
+    categories: ["sidebar", "dashboard"],
     registryDependencies: ["utils", "sidebar", "collapsible", "dropdown-menu", "avatar", "breadcrumb", "separator"],
     previewHeight: 900,
   },
@@ -159,7 +167,7 @@ export const BLOCKS: BlockEntry[] = [
     name: "sidebar-09",
     title: "Sidebar 09",
     description: "A collapsible sidebar with a two-panel layout: an icon rail for primary navigation and a secondary list panel, plus a user menu in the footer.",
-    categories: ["sidebar"],
+    categories: ["sidebar", "dashboard"],
     registryDependencies: ["utils", "sidebar", "separator", "breadcrumb", "label", "switch", "input", "avatar", "dropdown-menu"],
     previewHeight: 900,
   },
@@ -167,7 +175,7 @@ export const BLOCKS: BlockEntry[] = [
     name: "sidebar-10",
     title: "Sidebar 10",
     description: "A sidebar with a team switcher, favorites, collapsible workspaces, and secondary navigation, plus a header with page actions.",
-    categories: ["sidebar", "navigation"],
+    categories: ["sidebar", "dashboard"],
     registryDependencies: ["utils", "sidebar", "dropdown-menu", "popover", "collapsible", "breadcrumb", "separator", "button"],
     previewHeight: 900,
   },
@@ -191,7 +199,7 @@ export const BLOCKS: BlockEntry[] = [
     name: "sidebar-13",
     title: "Sidebar 13",
     description: "A settings dialog with a static navigation sidebar and a scrollable content pane.",
-    categories: ["sidebar", "dialog"],
+    categories: ["sidebar", "dashboard"],
     registryDependencies: ["utils", "sidebar", "dialog", "breadcrumb", "button"],
     previewHeight: 900,
   },
@@ -199,7 +207,7 @@ export const BLOCKS: BlockEntry[] = [
     name: "sidebar-14",
     title: "Sidebar 14",
     description: "A right-side sidebar with a table of contents grouped by section.",
-    categories: ["sidebar", "navigation"],
+    categories: ["sidebar", "dashboard"],
     registryDependencies: ["utils", "sidebar", "breadcrumb"],
     previewHeight: 900,
   },
