@@ -1,0 +1,26 @@
+// Ported verbatim from shadcn/ui
+// app/(app)/(typeset)/components/typeset-skeleton.tsx — every class string
+// unchanged, including the outer wrapper's --customizer-width / --gap custom
+// properties.
+//
+// Upstream this paints as the Suspense fallback while TypesetHistoryProvider
+// resolves useSearchParams() (a Next prerender boundary). This app has no
+// such boundary — the route renders synchronously with URL-derived defaults —
+// so, exactly as /create's port did with create-skeleton.marko, this tag is
+// ported faithfully and kept available but is not reachable from the route.
+//
+// The `--spacing(n)` Tailwind-v4 function tokens upstream are spelled as the
+// literal rem values they compute to (n * 0.25rem), matching how
+// routes/create/+page.marko already handles the same wrapper.
+import Skeleton from "@marko-ui/registry/ui/skeleton/skeleton.marko";
+
+<div class="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden section-soft [--customizer-width:12rem] [--gap:1rem] md:[--gap:1.5rem] 2xl:[--customizer-width:14rem]">
+  <div
+    data-slot="designer"
+    class="flex min-h-0 flex-1 flex-col items-start gap-(--gap) p-(--gap) pt-[calc(var(--gap)*0.25)] md:flex-row-reverse"
+  >
+    <Skeleton class="isolate hidden w-80 shrink-0 self-stretch rounded-2xl xl:block 2xl:w-96"/>
+    <Skeleton class="min-h-0 w-full flex-1 self-stretch rounded-2xl"/>
+    <Skeleton class="min-h-[151px] w-full self-start rounded-2xl md:h-full md:max-h-full md:min-h-0 md:w-(--customizer-width)"/>
+  </div>
+</div>

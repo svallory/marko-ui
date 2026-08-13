@@ -1,0 +1,75 @@
+// Ported from shadcn/ui app/(app)/(typeset)/components/main-menu.tsx.
+// Trigger class string, item labels, shortcut hints, group order and
+// separator placement are verbatim:
+//   Shuffle (R) / Light-Dark (D)
+//   -- separator --
+//   Undo (⌘Z) / Redo (⇧⌘Z)
+//   -- separator --
+//   Reset (⇧R)
+//
+// Upstream calls useHistory/useShuffle/useThemeToggle directly and binds the
+// R/⇧R keydown listener itself. Here the actions and the canGoBack/
+// canGoForward flags arrive as attrs from the typeset-app state container,
+// which owns the single document keydown listener for every shortcut (R, ⇧R,
+// D, ⌘Z, ⇧⌘Z) — same consolidation /create's port made, and the same reason:
+// Marko has no context to hang per-hook listeners off.
+import Picker from "./picker.marko";
+import { cn } from "@marko-ui/registry/lib/utils.ts";
+
+export interface Input {
+  canGoBack: boolean;
+  canGoForward: boolean;
+  isMac: boolean;
+  onShuffle: () => void;
+  onToggleTheme: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  onReset: () => void;
+  class?: string;
+}
+
+<const/actions=[
+  { value: "shuffle", label: "Shuffle", shortcut: "R" },
+  { value: "toggle-theme", label: "Light/Dark", shortcut: "D" },
+  {
+    value: "undo",
+    label: "Undo",
+    shortcut: (input.isMac ? "⌘Z" : "Ctrl+Z"),
+    disabled: !input.canGoBack,
+    startsGroup: true,
+  },
+  {
+    value: "redo",
+    label: "Redo",
+    shortcut: (input.isMac ? "⇧⌘Z" : "Ctrl+Shift+Z"),
+    disabled: !input.canGoForward,
+  },
+  { value: "reset", label: "Reset", shortcut: "⇧R", startsGroup: true },
+]/>
+
+<Picker
+  side="right"
+  align="start"
+  actions=actions
+  class=cn(
+    "flex items-center justify-between gap-2 rounded-lg px-1.75 ring-1 ring-foreground/10 focus-visible:ring-1",
+    input.class,
+  )
+  onActionSelect(value: string) {
+    if (value === "shuffle") input.onShuffle();
+    else if (value === "toggle-theme") input.onToggleTheme();
+    else if (value === "undo") input.onUndo();
+    else if (value === "redo") input.onRedo();
+    else if (value === "reset") input.onReset();
+  }
+>
+  <@trigger>
+    <span class="font-medium">Menu</span>
+    // hugeicons Menu09Icon
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-5">
+      <path d="M4 5H20"/>
+      <path d="M4 12H20"/>
+      <path d="M4 19H20"/>
+    </svg>
+  </@trigger>
+</Picker>

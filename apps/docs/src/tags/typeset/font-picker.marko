@@ -1,0 +1,85 @@
+// Ported from shadcn/ui app/(app)/(typeset)/components/font-picker.tsx.
+// Structure, class strings and data-slots verbatim.
+//
+// Differences from /create's font-picker (../create/font-picker.marko), which
+// is why this is its own file rather than a reuse:
+// - typeset's groups are FIXED and explicit — Sans, Serif, Mono, in that
+//   order, each listing every font of that type ("Every picker offers every
+//   font (no type filter); grouping is just labels", upstream comment).
+//   create's derives its groups by first-seen order from the font list.
+// - the "inherit" entry exists only for `heading` and is labeled with the
+//   BODY font's name; create's equivalent param is `fontHeading`.
+// - the Aa preview swatch uses the resolved typeset font `value` string.
+//
+// Upstream reads params from useTypesetSearchParams and locks from useLocks;
+// here both arrive as attrs from the typeset-app state container (Marko has
+// no context).
+import Picker from "./picker.marko";
+import LockButton from "./lock-button.marko";
+import { FONTS, findFont } from "./lib/fonts.ts";
+
+export interface Input {
+  label: string;
+  param: "body" | "heading" | "mono";
+  /** Committed value for this param. */
+  value: string;
+  /** Committed body font id — resolves the "inherit" label and swatch. */
+  bodyValue: string;
+  onValueChange: (value: string) => void;
+  onItemPreview?: (value: string | null) => void;
+  locked: boolean;
+  onToggleLock: () => void;
+  isMobile?: boolean;
+}
+
+<const/bodyFont=(findFont(input.bodyValue) ?? FONTS[0])/>
+<const/inheritsBodyFont=(input.param === "heading" && input.value === "inherit")/>
+<const/currentFont=(inheritsBodyFont ? bodyFont : (findFont(input.value) ?? bodyFont))/>
+
+// Every picker offers every font (no type filter); grouping is just labels.
+<const/groupedFonts=[
+  { label: "Sans", fonts: FONTS.filter((font) => font.type === "sans") },
+  { label: "Serif", fonts: FONTS.filter((font) => font.type === "serif") },
+  { label: "Mono", fonts: FONTS.filter((font) => font.type === "mono") },
+]/>
+
+<const/sections=[
+  ...(input.param === "heading"
+    ? [{ options: [{ value: "inherit", label: bodyFont.label }] }]
+    : []),
+  ...groupedFonts.map((group) => ({
+    label: group.label,
+    options: group.fonts.map((font) => ({ value: font.id, label: font.label })),
+  })),
+]/>
+
+<div class="group/picker relative">
+  <Picker
+    value=input.value
+    onValueChange=input.onValueChange
+    onItemPreview=input.onItemPreview
+    closeOnClick=input.isMobile
+    side=(input.isMobile ? "top" : "right")
+    align=(input.isMobile ? "center" : "start")
+    contentClass="max-h-96"
+    sections=sections
+  >
+    <@trigger>
+      <div class="flex flex-col justify-start text-left">
+        <div class="text-xs text-muted-foreground">${input.label}</div>
+        <div class="line-clamp-1 max-w-[80%] truncate text-sm font-medium text-foreground">${currentFont.label}</div>
+      </div>
+      <div
+        class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-base text-foreground select-none md:right-2.5"
+        style=`font-family: ${currentFont.value}`
+      >
+        Aa
+      </div>
+    </@trigger>
+  </Picker>
+  <LockButton
+    locked=input.locked
+    onToggle=input.onToggleLock
+    class="absolute top-1/2 right-8 -translate-y-1/2"
+  />
+</div>

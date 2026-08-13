@@ -1,0 +1,200 @@
+// Ported from shadcn/ui app/(app)/(typeset)/components/picker.tsx.
+//
+// Upstream that file is itself "a copy of create's picker with lucide icons
+// instead of IconPlaceholder" — and our /create port already has the same
+// primitive at ../create/picker.marko, built on @zag-js/menu instead of Base
+// UI. This file is the TYPESET variant of it rather than a reuse, because
+// typeset's picker.tsx exposes two parts create's does not use and which
+// typeset's main-menu.tsx depends on: PickerItem (a plain action item, not a
+// radio item) and PickerShortcut (the right-aligned ⌘Z/R hint). Supporting
+// both action items and radio sections in one tag needs a different input
+// shape than create's `sections`-only API, so extending create's file in
+// place would have changed a primitive /create depends on.
+//
+// Class strings, data-slot names and structure are shadcn's, verbatim, from
+// picker.tsx: PickerTrigger, PickerContent (popup), PickerGroup, PickerLabel,
+// PickerItem, PickerRadioItem (with its absolutely-positioned check
+// indicator), PickerSeparator, PickerShortcut.
+//
+// Behavioral notes:
+// - Hover-preview: upstream PickerRadioItem fires onItemPreview from
+//   onMouseMove + onFocus (Base UI moves DOM focus to the highlighted item).
+//   zag's `onHighlightChange` already derives the highlighted value from both
+//   pointer and keyboard navigation, so it maps 1:1 and needs no separate
+//   mousemove/focus wiring. Same as ../create/picker.marko.
+// - The upstream PickerContent renders an extra transparent `left-54` shield
+//   div inside the portal to catch outside-clicks that land over the preview
+//   iframe (clicks inside an iframe never reach this document). Ported below
+//   — the same hazard exists here, our preview is an iframe too.
+import * as menu from "@zag-js/menu";
+import { positionerStyle } from "marko-ui";
+import { cn } from "@marko-ui/registry/lib/utils.ts";
+
+export interface PickerRadioOption {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+export interface PickerSection {
+  /** Optional group label (PickerLabel upstream). */
+  label?: string;
+  options: PickerRadioOption[];
+}
+
+export interface PickerAction {
+  /** Stable id — zag needs a value per item. */
+  value: string;
+  label: string;
+  /** Right-aligned shortcut hint (PickerShortcut upstream). */
+  shortcut?: string;
+  disabled?: boolean;
+  /** Start a new group after a separator (PickerSeparator upstream). */
+  startsGroup?: boolean;
+}
+
+export interface Input {
+  /** Trigger content — renders inside the styled trigger button. */
+  trigger: Marko.Body;
+  /** Radio sections; mutually exclusive with `actions` in practice. */
+  sections?: PickerSection[];
+  /** Plain action items (main-menu). */
+  actions?: PickerAction[];
+  /** Currently committed radio value. */
+  value?: string;
+  onValueChange?: (value: string) => void;
+  onActionSelect?: (value: string) => void;
+  /**
+   * Fired when the highlighted (hovered/focused) item changes; `null` when
+   * nothing is highlighted. Mirrors shadcn's onItemPreview / clearOverride.
+   */
+  onItemPreview?: (value: string | null) => void;
+  closeOnClick?: boolean;
+  side?: "top" | "bottom" | "left" | "right";
+  align?: "start" | "center" | "end";
+  disabled?: boolean;
+  class?: string;
+  contentClass?: string;
+}
+
+<machine-props/machineProps from=input pick=menu.props
+  onSelect(details: menu.SelectionDetails) {
+    if (input.actions?.some((action) => action.value === details.value)) {
+      input.onActionSelect?.(details.value);
+      return;
+    }
+    input.onValueChange?.(details.value);
+  }
+  onHighlightChange(details: menu.HighlightChangeDetails) {
+    input.onItemPreview?.(details.highlightedValue);
+  }
+  onOpenChange(details: menu.OpenChangeDetails) {
+    if (!details.open) input.onItemPreview?.(null);
+  }
+  positioning={
+    placement: `${input.side ?? "bottom"}${input.align && input.align !== "center" ? `-${input.align}` : ""}`,
+    gutter: 20,
+  }
+/>
+<service/service machine=() => menu.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  menu.connect(service, normalizeProps)
+  service=service
+/>
+
+<const/{ class: className, contentClass, trigger, value, closeOnClick }=input/>
+<const/sections=(input.sections ?? [])/>
+<const/actions=(input.actions ?? [])/>
+
+<button
+  ...api().getTriggerProps()
+  disabled=input.disabled
+  data-slot="dropdown-menu-trigger"
+  class=cn(
+    "relative w-36 shrink-0 touch-manipulation rounded-xl p-3 ring-1 ring-foreground/10 select-none hover:bg-muted focus-visible:ring-foreground/50 focus-visible:outline-none disabled:opacity-50 data-[state=open]:bg-muted md:w-full md:rounded-lg md:px-2.5 md:py-2",
+    className,
+  )
+>
+  <${trigger}/>
+</button>
+<portal>
+  <if=api().open>
+    <div ...api().getPositionerProps() style=positionerStyle class="isolate z-50 outline-none">
+      <div
+        ...api().getContentProps()
+        data-slot="dropdown-menu-content"
+        class=cn(
+          "cn-menu-target z-50 no-scrollbar max-h-(--available-height,24rem) w-[calc(var(--available-width,16rem)-1.5rem)] min-w-32 overflow-x-hidden overflow-y-auto rounded-xl border-0 bg-neutral-950/80 p-1.5 text-neutral-100 ring-1 ring-neutral-950/80 backdrop-blur-xl outline-none md:w-52 dark:bg-neutral-800/90 dark:ring-neutral-700/50",
+          contentClass,
+        )
+      >
+        <for|action, actionIndex| of=actions by=(action) => action.value>
+          <if=(action.startsGroup && actionIndex > 0)>
+            <div data-slot="dropdown-menu-separator" class="-mx-1.5 my-1.5 h-px bg-neutral-600 dark:bg-neutral-700"/>
+          </if>
+          <div
+            ...api().getItemProps({ value: action.value, disabled: action.disabled })
+            data-slot="dropdown-menu-item"
+            data-variant="default"
+            class="group/dropdown-menu-item relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+          >
+            ${action.label}
+            <if=action.shortcut>
+              <span
+                data-slot="dropdown-menu-shortcut"
+                class="ml-auto text-xs tracking-widest text-neutral-400! group-focus/dropdown-menu-item:text-neutral-100"
+              >
+                ${action.shortcut}
+              </span>
+            </if>
+          </div>
+        </for>
+        <for|section, sectionIndex| of=sections>
+          <if=(sectionIndex > 0)>
+            <div data-slot="dropdown-menu-separator" class="-mx-1.5 my-1.5 h-px bg-neutral-600 dark:bg-neutral-700"/>
+          </if>
+          <div ...api().getItemGroupProps({ id: `picker-group-${sectionIndex}` }) data-slot="dropdown-menu-group">
+            <if=section.label>
+              <div
+                ...api().getItemGroupLabelProps({ htmlFor: `picker-group-${sectionIndex}` })
+                data-slot="dropdown-menu-label"
+                class="px-2 py-1.5 text-xs font-medium text-neutral-400"
+              >
+                ${section.label}
+              </div>
+            </if>
+            <for|option| of=section.options by=(option) => option.value>
+              <div
+                ...api().getOptionItemProps({
+                  type: "radio",
+                  value: option.value,
+                  checked: option.value === value,
+                  disabled: option.disabled,
+                  closeOnSelect: closeOnClick,
+                })
+                data-slot="dropdown-menu-radio-item"
+                class="relative flex cursor-default items-center gap-2 rounded-lg py-1.5 pr-8 pl-2 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+              >
+                <span
+                  class="pointer-events-none absolute right-2 flex items-center justify-center"
+                  data-slot="dropdown-menu-radio-item-indicator"
+                >
+                  <if=(option.value === value)>
+                    // lucide CheckIcon
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 pointer-coarse:size-5">
+                      <path d="M20 6 9 17l-5-5"/>
+                    </svg>
+                  </if>
+                </span>
+                ${option.label}
+              </div>
+            </for>
+          </div>
+        </for>
+      </div>
+    </div>
+    // Clicks inside the preview iframe never reach this document, so this
+    // shield catches outside-clicks over it. left-54 clears the card.
+    <div class="absolute inset-y-0 right-0 left-54 z-40 bg-transparent"/>
+  </if>
+</portal>
