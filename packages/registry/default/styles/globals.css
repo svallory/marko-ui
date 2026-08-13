@@ -121,3 +121,34 @@
     @apply bg-background text-foreground;
   }
 }
+
+/*
+ * Measured-height accordion animation (parity with Radix's
+ * `--radix-accordion-content-height`, which Radix computes via
+ * ResizeObserver in `@radix-ui/react-collapsible` and re-exports through
+ * `@radix-ui/react-accordion`). `accordion.marko` publishes
+ * `--marko-accordion-content-height` on each content panel from its own
+ * ResizeObserver; these keyframes override tw-animate-css's upstream
+ * `accordion-down`/`accordion-up` (which only knows Radix/Bits/Reka/Kobalte/
+ * ng-primitives var names) so `height: 0 -> auto` becomes
+ * `height: 0 -> <measured px>` in every browser, not just ones supporting
+ * `calc-size()`/`interpolate-size`.
+ */
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--marko-accordion-content-height, auto);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--marko-accordion-content-height, auto);
+  }
+  to {
+    height: 0;
+  }
+}
+
