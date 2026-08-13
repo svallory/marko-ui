@@ -80,11 +80,51 @@ Skips / deviations (rule 5 — no approximations, log instead):
 
 `(code — done; verified production build + live browser, see agent/reports/blocks-parity.md if written)`
 
+## /charts — skipped (2026-08-13, branch charts-pages)
+
+Ported `/charts`, `/charts/area`, `/charts/bar`, `/charts/line`, `/charts/pie`
+in full (41/41 demos across the 4 supported types — see commit history on
+`charts-pages`). Not ported, with reasons:
+
+- **Radar charts (14 demos)** — shadcn source `data/shadcn-ui/apps/v4/
+  registry/new-york-v4/charts/chart-radar-*.tsx`. Missing primitive: no
+  radar-chart component (`packages/registry/default/ui/chart/` has no
+  polar-grid/radar geometry at all — would need a whole new primitive, not a
+  small extension). `/charts/radar` route not created; charts-nav.marko
+  omits the "Radar Charts" link (a dead link would be worse than omitting).
+- **Radial charts (6 demos)** — shadcn source `.../chart-radial-*.tsx`.
+  Missing primitive: no radial-bar chart component (same reasoning as
+  radar — a distinct polar-coordinate primitive we don't have). `/charts/
+  radial` route not created; charts-nav.marko omits the "Radial Charts" link.
+- **Tooltip gallery (9 demos)** — shadcn source `.../chart-tooltip-*.tsx`.
+  Technically portable with our EXISTING bar.marko/tooltip.marko (no new
+  primitive needed) but explicitly OUT OF SCOPE for this task (only area/
+  bar/line/pie were requested). Not a missing-primitive skip — a scope
+  boundary. `/charts/tooltip` route not created; charts-nav.marko omits the
+  "Tooltips" link. Could be picked up later as a 5th gallery page.
+
+Within the 4 supported types, one approximation worth flagging (not a skip —
+the demo IS ported, just not pixel-for-pixel on one interaction detail):
+
+- **chart-pie-stacked** (`apps/docs/src/demos/charts-gallery/pie/
+  chart-pie-stacked.marko`) — two concentric donut rings via pie.marko's new
+  `rings` input. Ring geometry matches shadcn's version exactly. The ONE
+  divergence: shadcn's tooltip is a single Recharts tooltip context shared
+  across both `<Pie>` elements, so hovering either ring shows a synced
+  cross-ring tooltip. Our pie.marko tracks one `activeIndex` hover state per
+  `<PieChart>` instance (by design — it has no concept of "which ring" a
+  pointer event originated from), so the tooltip here only reflects the
+  hovered ring's own sector, not both rings at once. Documented inline in
+  the demo file. Judged not worth a deeper primitive rework for one demo's
+  tooltip edge case.
+
+`(code — done; verified production build + live browser under real pointer input)`
+
 ## Site polish (from agent/reports/site-diff-adoption.md, 2026-08-11)
 
 - [ ] **Container utilities + full-width sweep** — root cause of the width gap: shadcn composes two shared container utilities (max 1400px → screen-2xl at 3xl) everywhere; we copy-pasted a fixed 1152px cap across 6+ files, leaving huge dead margins and a header floating narrower than the content. Add the utilities to globals, sweep all sections. MUST land after the current fleets (touches files they own). `(code — S/M, do first per the report's sequencing)`
 - [ ] **In flight**: meta/OG/favicon + styled 404 (agent running); component pages into docs IA + home 16-card density (covered by the running docs-pages workflow + home agent).
-- [ ] Remaining adoption items ranked in the report: command-menu search (M), GitHub stars in navbar (S), resizable block-preview viewer (S given our /view routes), prev/next pager everywhere, colors page (M), themes page (M). Skips (with reasons in report): charts gallery until chart components land, directory, examples page, base switcher, decorative skeleton rails.
+- [ ] Remaining adoption items ranked in the report: command-menu search (M), GitHub stars in navbar (S), resizable block-preview viewer (S given our /view routes), prev/next pager everywhere, colors page (M), themes page (M). Skips (with reasons in report): ~~charts gallery until chart components land~~ (done 2026-08-13, see "/charts — skipped" section above), directory, examples page, base switcher, decorative skeleton rails.
 
 ## Tooling
 
