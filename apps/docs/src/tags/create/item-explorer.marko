@@ -42,7 +42,7 @@ static const ITEMS = [
           <li>
             <button
               type="button"
-              data-active=(input.item === entry.name)
+              data-active=String(input.item === entry.name)
               class="h-[26px] w-full cursor-pointer rounded-md border border-transparent px-2 text-left text-[0.8rem] font-normal data-[active=true]:border-accent data-[active=true]:bg-accent"
               on-click() { input.onItemChange(entry.name); }
             >

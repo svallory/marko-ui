@@ -7,7 +7,15 @@ import CardHeader from "@marko-ui/registry/ui/card/header.marko";
 import CardTitle from "@marko-ui/registry/ui/card/title.marko";
 import Marquee from "@marko-ui/registry/ui/marquee/marquee.marko";
 
-static const LOGOS = ["Acme", "Globex", "Initech", "Umbrella", "Stark", "Wayne"];
+// autoFill is intentionally NOT used: its measure-and-clone loop pegged the
+// CPU inside this page's [content-visibility:auto] column (verified in the
+// phase-D browser check — the renderer stalled in bursts whenever
+// preview-04 was the loaded item). A doubled item list fills the track
+// statically instead.
+static const LOGOS = [
+  "Acme", "Globex", "Initech", "Umbrella", "Stark", "Wayne",
+  "Acme", "Globex", "Initech", "Umbrella", "Stark", "Wayne",
+];
 
 <Card>
   <CardHeader>
@@ -17,7 +25,7 @@ static const LOGOS = ["Acme", "Globex", "Initech", "Umbrella", "Stark", "Wayne"]
     </CardDescription>
   </CardHeader>
   <CardContent>
-    <Marquee items=LOGOS autoFill pauseOnInteraction class="w-full">
+    <Marquee items=LOGOS pauseOnInteraction class="w-full">
       <@content|logo|>
         <span class="px-6 text-lg font-semibold text-muted-foreground">${logo}</span>
       </@content>
