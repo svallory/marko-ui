@@ -1502,6 +1502,599 @@
       "machineModule": "@zag-js/cascade-select"
     },
     {
+      "name": "chart",
+      "parts": [
+        {
+          "file": "area.marko",
+          "name": "area",
+          "properties": [
+            {
+              "name": "config",
+              "type": "ChartConfig",
+              "required": true,
+              "kind": "own",
+              "description": "Same object passed to <Chart> — Marko has no context, so it's passed twice."
+            },
+            {
+              "name": "data",
+              "type": "Row[]",
+              "required": true,
+              "kind": "own"
+            },
+            {
+              "name": "xKey",
+              "type": "string",
+              "required": true,
+              "kind": "own",
+              "description": "Category field for the x axis, e.g. \"month\"."
+            },
+            {
+              "name": "class",
+              "type": "string",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "cursor",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Vertical cursor line on hover (recharts default). Shadcn area demos pass false."
+            },
+            {
+              "name": "grid",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Horizontal grid lines (recharts <CartesianGrid vertical={false}/>)."
+            },
+            {
+              "name": "height",
+              "type": "number",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "indicator",
+              "type": "'line' | 'dot' | 'dashed'",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "legend",
+              "type": "boolean | 'top' | 'bottom'",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "margin",
+              "type": "Partial<Margin>",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "series",
+              "type": "Marko.AttrTag<AreaSeriesAttrs>",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "tooltip",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "width",
+              "type": "number",
+              "required": false,
+              "kind": "own",
+              "description": "viewBox size — the container's CSS aspect scales the drawing."
+            },
+            {
+              "name": "xTickFormatter",
+              "type": "(value: string) => string",
+              "required": false,
+              "kind": "own",
+              "description": "Applied to axis tick labels only (like recharts' XAxis tickFormatter)."
+            },
+            {
+              "name": "yAxis",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            }
+          ]
+        },
+        {
+          "file": "bar.marko",
+          "name": "bar",
+          "properties": [
+            {
+              "name": "config",
+              "type": "ChartConfig",
+              "required": true,
+              "kind": "own",
+              "description": "Same object passed to <Chart> — Marko has no context, so it is passed twice."
+            },
+            {
+              "name": "data",
+              "type": "Row[]",
+              "required": true,
+              "kind": "own"
+            },
+            {
+              "name": "xKey",
+              "type": "string",
+              "required": true,
+              "kind": "own"
+            },
+            {
+              "name": "class",
+              "type": "string",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "cursor",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Tooltip cursor rect behind the hovered band (recharts default)."
+            },
+            {
+              "name": "grid",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Horizontal grid lines (recharts <CartesianGrid vertical={false}/>). Default true."
+            },
+            {
+              "name": "height",
+              "type": "number",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "hideLabel",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "indicator",
+              "type": "'line' | 'dot' | 'dashed'",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "layout",
+              "type": "'horizontal'",
+              "required": false,
+              "kind": "own",
+              "description": "Reserved for a future horizontal layout — v1 renders vertical bars only."
+            },
+            {
+              "name": "legend",
+              "type": "boolean | 'top' | 'bottom'",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "margin",
+              "type": "Partial<Margin>",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "series",
+              "type": "Marko.AttrTag<BarSeries>",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "stacked",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "tickMargin",
+              "type": "number",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "tooltip",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Default true. `false` ⇒ no tooltip panel and no cursor."
+            },
+            {
+              "name": "width",
+              "type": "number",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "xTickFormatter",
+              "type": "(value: string) => string",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "yAxis",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Render the y axis (default false — shadcn demos hide it)."
+            }
+          ]
+        },
+        {
+          "file": "chart.marko",
+          "name": "chart",
+          "properties": [
+            {
+              "name": "config",
+              "type": "ChartConfig",
+              "required": true,
+              "kind": "own"
+            },
+            {
+              "name": "content",
+              "type": "Marko.Body<[], void>",
+              "required": false,
+              "kind": "own"
+            }
+          ],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "grid.marko",
+          "name": "grid",
+          "properties": [
+            {
+              "name": "ctx",
+              "type": "CartesianCtx",
+              "required": true,
+              "kind": "own"
+            },
+            {
+              "name": "horizontal",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Horizontal grid lines (default on — recharts <CartesianGrid vertical={false}/>)."
+            },
+            {
+              "name": "vertical",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            }
+          ]
+        },
+        {
+          "file": "legend.marko",
+          "name": "legend",
+          "properties": [
+            {
+              "name": "items",
+              "type": "LegendItem[]",
+              "required": true,
+              "kind": "own"
+            },
+            {
+              "name": "hideIcon",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "verticalAlign",
+              "type": "'top' | 'bottom'",
+              "required": false,
+              "kind": "own"
+            }
+          ],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "line.marko",
+          "name": "line",
+          "properties": [
+            {
+              "name": "config",
+              "type": "ChartConfig",
+              "required": true,
+              "kind": "own",
+              "description": "Same object passed to <chart> — Marko has no context, so it travels twice."
+            },
+            {
+              "name": "data",
+              "type": "Row[]",
+              "required": true,
+              "kind": "own"
+            },
+            {
+              "name": "xKey",
+              "type": "string",
+              "required": true,
+              "kind": "own"
+            },
+            {
+              "name": "class",
+              "type": "string",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "cursor",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "false ⇒ no hover cursor line. Default true."
+            },
+            {
+              "name": "grid",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Horizontal grid lines (recharts <CartesianGrid vertical={false}/>). Default true."
+            },
+            {
+              "name": "height",
+              "type": "number",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "hideLabel",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "indicator",
+              "type": "'line' | 'dot' | 'dashed'",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "legend",
+              "type": "boolean | 'top' | 'bottom'",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "margin",
+              "type": "Partial<Margin>",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "series",
+              "type": "Marko.AttrTag<LineSeriesAttrs>",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "tooltip",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "false ⇒ no tooltip (and no hover state at all). Default true."
+            },
+            {
+              "name": "width",
+              "type": "number",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "xTickFormatter",
+              "type": "(value: string) => string",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "yAxis",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Default false — matches the shadcn demos."
+            }
+          ]
+        },
+        {
+          "file": "pie.marko",
+          "name": "pie",
+          "properties": [
+            {
+              "name": "config",
+              "type": "ChartConfig",
+              "required": true,
+              "kind": "own",
+              "description": "Same object passed to <Chart> — Marko has no context, so it's passed twice."
+            },
+            {
+              "name": "data",
+              "type": "Row[]",
+              "required": true,
+              "kind": "own"
+            },
+            {
+              "name": "dataKey",
+              "type": "string",
+              "required": true,
+              "kind": "own",
+              "description": "Value field, e.g. \"visitors\"."
+            },
+            {
+              "name": "nameKey",
+              "type": "string",
+              "required": true,
+              "kind": "own",
+              "description": "Category field, e.g. \"browser\"."
+            },
+            {
+              "name": "centerLabel",
+              "type": "Marko.Body<[{ cx: number; cy: number; }], void>",
+              "required": false,
+              "kind": "own",
+              "description": "Rendered inside the svg, receives the pie center — for donut text."
+            },
+            {
+              "name": "class",
+              "type": "string",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "height",
+              "type": "number",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "indicator",
+              "type": "'line' | 'dot' | 'dashed'",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "innerRadius",
+              "type": "number",
+              "required": false,
+              "kind": "own",
+              "description": "Donut when > 0 (recharts default 0)."
+            },
+            {
+              "name": "legend",
+              "type": "boolean | 'top' | 'bottom'",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "outerRadius",
+              "type": "number",
+              "required": false,
+              "kind": "own",
+              "description": "Defaults to 80% of the max radius, like recharts."
+            },
+            {
+              "name": "paddingAngle",
+              "type": "number",
+              "required": false,
+              "kind": "own",
+              "description": "Degrees between sectors, like recharts' paddingAngle."
+            },
+            {
+              "name": "tooltip",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "width",
+              "type": "number",
+              "required": false,
+              "kind": "own",
+              "description": "viewBox size — the container's CSS aspect scales the drawing."
+            }
+          ]
+        },
+        {
+          "file": "tooltip.marko",
+          "name": "tooltip",
+          "properties": [
+            {
+              "name": "rows",
+              "type": "TooltipRow[]",
+              "required": true,
+              "kind": "own"
+            },
+            {
+              "name": "hideIndicator",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "hideLabel",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "indicator",
+              "type": "'line' | 'dot' | 'dashed'",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "required": false,
+              "kind": "own",
+              "description": "Resolved x label — already run through the chart config by the caller."
+            }
+          ],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "x-axis.marko",
+          "name": "x-axis",
+          "properties": [
+            {
+              "name": "ctx",
+              "type": "CartesianCtx",
+              "required": true,
+              "kind": "own"
+            },
+            {
+              "name": "tickMargin",
+              "type": "number",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "ticks",
+              "type": "XTick[]",
+              "required": false,
+              "kind": "own"
+            }
+          ]
+        },
+        {
+          "file": "y-axis.marko",
+          "name": "y-axis",
+          "properties": [
+            {
+              "name": "ctx",
+              "type": "CartesianCtx",
+              "required": true,
+              "kind": "own"
+            },
+            {
+              "name": "tickMargin",
+              "type": "number",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "ticks",
+              "type": "YTick[]",
+              "required": false,
+              "kind": "own"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "checkbox",
       "parts": [
         {

@@ -1,0 +1,164 @@
+// <chart-pie-chart> — pie/donut chart with recharts-parity SVG markup.
+// d3 (via math.ts pieArcs) is geometry only; every visible class and
+// attribute matches what recharts renders inside shadcn's ChartContainer:
+// sectors are `class="recharts-sector" stroke="#fff"` (literal — the
+// container CSS turns it into stroke-transparent), layers are
+// `recharts-layer`, the svg is `recharts-surface`. Slice colors come from
+// each row's `fill` (shadcn pie demos put `fill: "var(--color-chrome)"` in
+// the data) or fall back to `var(--color-<row[nameKey]>)` — never resolved
+// in JS, so a shadcn theme's --chart-1..5 variables restyle everything.
+import { pieArcs, type Row } from "./math.ts";
+import { configFor, type ChartConfig } from "./config.ts";
+import { cn } from "#lib/utils.ts";
+import ChartTooltip from "./tooltip.marko";
+import ChartLegend from "./legend.marko";
+
+export interface Input {
+  /** Same object passed to <Chart> — Marko has no context, so it's passed twice. */
+  config: ChartConfig;
+  data: Row[];
+  /** Value field, e.g. "visitors". */
+  dataKey: string;
+  /** Category field, e.g. "browser". */
+  nameKey: string;
+  /** viewBox size — the container's CSS aspect scales the drawing. */
+  width?: number;
+  height?: number;
+  /** Donut when > 0 (recharts default 0). */
+  innerRadius?: number;
+  /** Defaults to 80% of the max radius, like recharts. */
+  outerRadius?: number;
+  /** Degrees between sectors, like recharts' paddingAngle. */
+  paddingAngle?: number;
+  tooltip?: boolean;
+  indicator?: "line" | "dot" | "dashed";
+  legend?: boolean | "top" | "bottom";
+  /** Rendered inside the svg, receives the pie center — for donut text. */
+  centerLabel?: Marko.Body<[{ cx: number; cy: number }]>;
+  class?: string;
+}
+
+static function sliceColor(row: Row, nameKey: string): string {
+  const fill = row["fill"];
+  if (typeof fill === "string" && fill !== "") return fill;
+  return `var(--color-${String(row[nameKey])})`;
+}
+
+static function sliceLabel(
+  config: ChartConfig,
+  row: Row,
+  nameKey: string,
+): string {
+  const name = String(row[nameKey]);
+  return configFor(config, name)?.label ?? name;
+}
+
+static function legendItemsFor(
+  config: ChartConfig,
+  data: Row[],
+  nameKey: string,
+): { key: string; label: string; color: string }[] {
+  return data.map((row) => ({
+    key: String(row[nameKey]),
+    label: sliceLabel(config, row, nameKey),
+    color: sliceColor(row, nameKey),
+  }));
+}
+
+static function tooltipRowsFor(
+  config: ChartConfig,
+  row: Row,
+  nameKey: string,
+  value: number,
+): { key: string; label: string; value: number; color: string }[] {
+  return [
+    {
+      key: String(row[nameKey]),
+      label: sliceLabel(config, row, nameKey),
+      value,
+      color: sliceColor(row, nameKey),
+    },
+  ];
+}
+
+<const/{
+  config,
+  data,
+  dataKey,
+  nameKey,
+  width = 250,
+  height = 250,
+  innerRadius = 0,
+  outerRadius,
+  paddingAngle,
+  tooltip: showTooltip = true,
+  indicator = "dot",
+  legend,
+  centerLabel,
+  class: className,
+}=input/>
+<const/cx=(width / 2)/>
+<const/cy=(height / 2)/>
+<const/outer=(outerRadius ?? Math.min(width, height) * 0.4)/>
+<const/arcs=pieArcs(data, dataKey, { innerRadius, outerRadius: outer, paddingAngle })/>
+<let/activeIndex=(-1)/>
+<const/activeArc=(showTooltip && activeIndex >= 0 ? arcs[activeIndex] : undefined)/>
+
+<div
+  class=cn("recharts-wrapper flex h-full w-full flex-col", className)
+  style={ position: "relative" }
+  onPointerleave() { activeIndex = -1; }
+>
+  <if=(legend === "top")>
+    <ChartLegend
+      items=legendItemsFor(config, data, nameKey)
+      verticalAlign="top"
+    />
+  </if>
+  <svg
+    class="recharts-surface"
+    width="100%"
+    height="100%"
+    viewBox=`0 0 ${width} ${height}`
+  >
+    <g class="recharts-layer recharts-pie" transform=`translate(${cx}, ${cy})`>
+      <for|arcDatum| of=arcs>
+        <g class="recharts-layer recharts-pie-sector">
+          <path
+            class="recharts-sector"
+            stroke="#fff"
+            fill=sliceColor(arcDatum.row, nameKey)
+            d=arcDatum.path
+            onPointerenter() { activeIndex = arcDatum.index; }
+          />
+        </g>
+      </for>
+    </g>
+    <if=centerLabel>
+      <${centerLabel}({ cx, cy })/>
+    </if>
+  </svg>
+  <if=(legend === true || legend === "bottom")>
+    <ChartLegend
+      items=legendItemsFor(config, data, nameKey)
+      verticalAlign="bottom"
+    />
+  </if>
+  <if=activeArc>
+    <div
+      style={
+        position: "absolute",
+        left: "50%",
+        top: "12px",
+        transform: "translateX(-50%)",
+        "pointer-events": "none",
+      }
+    >
+      <ChartTooltip
+        rows=tooltipRowsFor(config, activeArc.row, nameKey, activeArc.value)
+        indicator=indicator
+        hideLabel
+      />
+    </div>
+  </if>
+</div>

@@ -108,7 +108,10 @@ const SUBPATH_IMPORT_TARGETS: Record<string, string> = {
 // source tree (default/ui/switch → default/lib) they are only two — emitting
 // the source-relative path verbatim is what shipped a broken import.
 function rewriteSubpathImports(content: string, targetBase: string): string {
-  return content.replace(/(["'])#([^"']+)\1/g, (original, quote: string, specifier: string) => {
+  // Require a "/" in the specifier: every real subpath import here is
+  // `#alias/...`, while chart sources contain literal color strings like
+  // "#ccc"/"#666" (recharts-parity SVG attributes) that must ship verbatim.
+  return content.replace(/(["'])#([^"']*\/[^"']*)\1/g, (original, quote: string, specifier: string) => {
     const full = `#${specifier}`;
     const prefix = Object.keys(SUBPATH_IMPORT_TARGETS).find((p) => full.startsWith(p));
     if (!prefix) {

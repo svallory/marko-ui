@@ -2,7 +2,7 @@
 export const COMPONENTS = [
   "accordion", "alert", "alert-dialog", "angle-slider", "aspect-ratio", "avatar",
   "badge", "breadcrumb", "button", "button-group", "calendar", "card",
-  "carousel", "cascade-select", "checkbox", "clipboard", "collapsible", "color-picker",
+  "carousel", "cascade-select", "chart", "checkbox", "clipboard", "collapsible", "color-picker",
   "combobox", "command", "context-menu", "data-table", "date-input", "date-picker",
   "dialog", "drawer", "dropdown-menu", "editable", "empty", "file-upload",
   "floating-panel", "form", "hover-card", "image-cropper", "input", "input-group",
