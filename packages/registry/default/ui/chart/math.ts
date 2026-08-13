@@ -10,6 +10,7 @@ import {
   line,
   pie,
   stack,
+  stackOffsetExpand,
   curveLinear,
   curveMonotoneX,
   curveNatural,
@@ -74,6 +75,8 @@ export interface CartesianCtxOptions {
    */
   paddingInner?: number;
   paddingOuter?: number;
+  /** "expand" ⇒ y domain is fixed to [0, 1] (100% stacked), like recharts' stackOffset="expand". */
+  stackOffset?: "expand";
 }
 
 export function cartesianCtx(opts: CartesianCtxOptions): CartesianCtx {
@@ -92,6 +95,9 @@ export function cartesianCtx(opts: CartesianCtxOptions): CartesianCtx {
     .paddingOuter(opts.paddingOuter ?? 0.1);
 
   let domain = opts.yDomain;
+  if (!domain && opts.stackOffset === "expand") {
+    domain = [0, 1];
+  }
   if (!domain) {
     let dataMax: number;
     let dataMin: number;
@@ -171,11 +177,23 @@ export function areaPaths(
   return { area: areaGenerator(data) ?? "", line: lineGenerator(data) ?? "" };
 }
 
-/** d3 stack over `keys` — for stacked bars/areas. Output[s][i] = [y0, y1]. */
-export function stackSeries(data: Row[], keys: string[]): Series<Row, string>[] {
+/**
+ * d3 stack over `keys` — for stacked bars/areas. Output[s][i] = [y0, y1].
+ * `offset: "expand"` normalizes each row's stack to [0, 1] (recharts'
+ * `stackOffset="expand"`, used by chart-area-stacked-expand) — every layer's
+ * [y0, y1] becomes a fraction of that row's total.
+ */
+export function stackSeries(
+  data: Row[],
+  keys: string[],
+  options?: { offset?: "expand" },
+): Series<Row, string>[] {
   const generator = stack<Row, string>()
     .keys(keys)
     .value((row, key) => numberAt(row, key));
+  if (options?.offset === "expand") {
+    generator.offset(stackOffsetExpand);
+  }
   return generator(data);
 }
 
@@ -275,6 +293,27 @@ export interface XTick {
   x: number;
 }
 
+/**
+ * Thins a list of x-position ticks so consecutive kept ticks are at least
+ * `minGap` pixels apart — recharts' XAxis `minTickGap` (used by every
+ * shadcn chart with a dense date-series x axis, e.g. chart-area-interactive's
+ * 90 daily points). Always keeps the first tick; each subsequent tick is
+ * kept only if it's `minGap` past the last KEPT tick's x position.
+ */
+export function thinTicksByGap<T extends { x: number }>(ticks: T[], minGap: number): T[] {
+  if (minGap <= 0 || ticks.length === 0) return ticks;
+  const kept: T[] = [ticks[0]];
+  let lastX = ticks[0].x;
+  for (let i = 1; i < ticks.length; i++) {
+    const tick = ticks[i];
+    if (tick.x - lastX >= minGap) {
+      kept.push(tick);
+      lastX = tick.x;
+    }
+  }
+  return kept;
+}
+
 export interface YTick {
   value: number;
   y: number;
@@ -334,4 +373,149 @@ export function bandCursorPath(ctx: CartesianCtx, index: number): string {
   const step = ctx.xBand.step();
   const x = (ctx.xBand(value) ?? 0) - ctx.xBand.paddingInner() * step * 0.5;
   return roundedRectPath(x, ctx.plot.y, step, ctx.plot.height, 0);
+}
+
+// ---------------------------------------------------------------------------
+// Horizontal layout (recharts' <BarChart layout="vertical">, which despite
+// the name draws horizontal bars: a category scale banded on the Y axis, a
+// linear value scale on the X axis, bars extending rightward from x=0).
+// A separate context type rather than an `orientation` flag on CartesianCtx:
+// the two contexts have genuinely different roles for x/y (band-on-y vs
+// band-on-x), so reusing one shape would need every consumer to branch on
+// orientation. Keeping them distinct means bar.marko's vertical path is
+// untouched and the horizontal path is additive.
+export interface HorizontalCtx {
+  width: number;
+  height: number;
+  margin: Margin;
+  plot: PlotArea;
+  /** Category scale, banded on the Y axis. */
+  yBand: ScaleBand<string>;
+  /** Value scale, linear on the X axis — bars run from x(0) to x(value). */
+  x: ScaleLinear<number, number>;
+  data: Row[];
+  yKey: string;
+  seriesKeys: string[];
+}
+
+export interface HorizontalCtxOptions {
+  data: Row[];
+  /** Category field, e.g. "browser" — becomes the Y-axis band. */
+  yKey: string;
+  seriesKeys: string[];
+  width: number;
+  height: number;
+  margin?: Partial<Margin>;
+  /** Horizontal space reserved for the (hidden or visible) Y axis labels. */
+  yAxisWidth?: number;
+  stacked?: boolean;
+  xDomain?: [number, number];
+  paddingInner?: number;
+  paddingOuter?: number;
+}
+
+export function horizontalCtx(opts: HorizontalCtxOptions): HorizontalCtx {
+  const margin: Margin = { ...ZERO_MARGIN, ...opts.margin };
+  const yAxisWidth = opts.yAxisWidth ?? 0;
+  const plot: PlotArea = {
+    x: margin.left + yAxisWidth,
+    y: margin.top,
+    width: opts.width - margin.left - margin.right - yAxisWidth,
+    height: opts.height - margin.top - margin.bottom,
+  };
+
+  const yBand = scaleBand<string>()
+    .domain(opts.data.map((row) => String(row[opts.yKey])))
+    .range([plot.y, plot.y + plot.height])
+    .paddingInner(opts.paddingInner ?? 0.2)
+    .paddingOuter(opts.paddingOuter ?? 0.1);
+
+  let domain = opts.xDomain;
+  if (!domain) {
+    let dataMax: number;
+    let dataMin: number;
+    if (opts.stacked) {
+      const sums = opts.data.map((row) =>
+        opts.seriesKeys.reduce((total, key) => total + numberAt(row, key), 0),
+      );
+      dataMax = max(sums) ?? 0;
+      dataMin = min(sums.map((sum) => Math.min(sum, 0))) ?? 0;
+    } else {
+      const values = opts.data.flatMap((row) =>
+        opts.seriesKeys.map((key) => numberAt(row, key)),
+      );
+      dataMax = max(values) ?? 0;
+      dataMin = min(values) ?? 0;
+    }
+    domain = [Math.min(0, dataMin), dataMax];
+  }
+
+  const x = scaleLinear()
+    .domain(domain)
+    .range([plot.x, plot.x + plot.width])
+    .nice();
+
+  return {
+    width: opts.width,
+    height: opts.height,
+    margin,
+    plot,
+    yBand,
+    x,
+    data: opts.data,
+    yKey: opts.yKey,
+    seriesKeys: opts.seriesKeys,
+  };
+}
+
+export interface HTick {
+  value: string;
+  y: number;
+}
+
+/** One tick per band, positioned at the band center — for the Y (category) axis. */
+export function hBandTicks(ctx: HorizontalCtx): HTick[] {
+  const halfBand = ctx.yBand.bandwidth() / 2;
+  return ctx.yBand.domain().map((value) => ({
+    value,
+    y: (ctx.yBand(value) ?? 0) + halfBand,
+  }));
+}
+
+/** Center y of a band by data index. */
+export function hBandCenter(ctx: HorizontalCtx, index: number): number {
+  const value = ctx.yBand.domain()[index];
+  if (value === undefined) return ctx.plot.y;
+  return (ctx.yBand(value) ?? 0) + ctx.yBand.bandwidth() / 2;
+}
+
+/**
+ * Pointer offsetY (CSS pixels) -> data index, for horizontal-layout hover.
+ * Mirrors bandIndexFromPointer but on the Y axis.
+ */
+export function hBandIndexFromPointer(
+  offsetY: number,
+  clientHeight: number,
+  ctx: HorizontalCtx,
+): number {
+  const domain = ctx.yBand.domain();
+  const firstValue = domain[0];
+  if (firstValue === undefined || clientHeight <= 0) return -1;
+  const scaledY = offsetY * (ctx.height / clientHeight);
+  if (scaledY < ctx.plot.y || scaledY > ctx.plot.y + ctx.plot.height) return -1;
+  const step = ctx.yBand.step();
+  const first = ctx.yBand(firstValue) ?? 0;
+  const start = first - ctx.yBand.paddingInner() * step * 0.5;
+  const index = Math.floor((scaledY - start) / step);
+  return Math.max(0, Math.min(domain.length - 1, index));
+}
+
+/** Tooltip cursor rect for the whole band at `index`, spanning the plot width. */
+export function hBandCursorPath(ctx: HorizontalCtx, index: number): string {
+  const domain = ctx.yBand.domain();
+  const value = domain[index];
+  if (value === undefined) return "";
+  const step = ctx.yBand.step();
+  const y = (ctx.yBand(value) ?? 0) - ctx.yBand.paddingInner() * step * 0.5;
+  return roundedRectPath(ctx.plot.x, y, ctx.plot.width, step, 0);
 }

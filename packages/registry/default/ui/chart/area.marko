@@ -11,6 +11,7 @@ import {
   areaPaths,
   cartesianCtx,
   stackSeries,
+  thinTicksByGap,
   type CartesianCtx,
   type CurveType,
   type Margin,
@@ -49,12 +50,21 @@ export interface Input {
   /** Vertical cursor line on hover (recharts default). Shadcn area demos pass false. */
   cursor?: boolean;
   indicator?: "line" | "dot" | "dashed";
+  hideLabel?: boolean;
   /** Horizontal grid lines (recharts <CartesianGrid vertical={false}/>). */
   grid?: boolean;
   yAxis?: boolean;
+  /** Approximate number of y-axis ticks (recharts YAxis tickCount). Default 5. */
+  yAxisTickCount?: number;
   legend?: boolean | "top" | "bottom";
   /** Applied to axis tick labels only (like recharts' XAxis tickFormatter). */
   xTickFormatter?: (value: string) => string;
+  /** Minimum pixel gap between kept x-axis ticks (recharts XAxis minTickGap) — thins dense date-series ticks. */
+  xTickMinGap?: number;
+  /** Applied to the tooltip's label row only (recharts ChartTooltipContent labelFormatter). */
+  tooltipLabelFormatter?: (value: string) => string;
+  /** "expand" ⇒ 100% stacked (recharts stackOffset="expand"). Requires stacked series. */
+  stackOffset?: "expand";
   series?: Marko.AttrTag<AreaSeriesAttrs>;
   class?: string;
 }
@@ -85,11 +95,14 @@ static function buildAreas(
   ctx: CartesianCtx,
   seriesList: AreaSeriesAttrs[],
   positions: number[],
+  stackOffset?: "expand",
 ): AreaGeom[] {
   const stackedKeys = seriesList
     .filter((series) => series.stackId != null)
     .map((series) => series.dataKey);
-  const stacks = stackedKeys.length ? stackSeries(ctx.data, stackedKeys) : [];
+  const stacks = stackedKeys.length
+    ? stackSeries(ctx.data, stackedKeys, { offset: stackOffset })
+    : [];
   const baselineY = ctx.y(Math.max(0, ctx.y.domain()[0] ?? 0));
   return seriesList.map((series) => {
     const curve = series.type ?? "natural";
@@ -133,11 +146,12 @@ static function tooltipRowsFor(
 static function legendItemsFor(
   config: ChartConfig,
   seriesList: AreaSeriesAttrs[],
-): { key: string; label: string; color: string }[] {
+): { key: string; label: string; color: string; icon?: Marko.Renderable }[] {
   return seriesList.map((series) => ({
     key: series.dataKey,
     label: seriesLabel(config, series.dataKey),
     color: seriesColor(series.dataKey),
+    icon: configFor(config, series.dataKey)?.icon,
   }));
 }
 
@@ -172,10 +186,14 @@ static function pointerIndex(
   tooltip: showTooltip = true,
   cursor = true,
   indicator = "dot",
+  hideLabel,
   grid: showGrid = true,
   yAxis: showYAxis = false,
+  yAxisTickCount,
   legend,
   xTickFormatter,
+  tooltipLabelFormatter,
+  stackOffset,
   class: className,
 }=input/>
 <id/uid/>
@@ -191,17 +209,19 @@ static function pointerIndex(
   margin: { left: 12, right: 12, ...input.margin },
   xAxisHeight: 30,
   stacked,
+  stackOffset,
   paddingInner: 0,
   paddingOuter: 0,
 })/>
 // Everything the client (hover state) touches must be plain data — the d3
 // scales inside ctx are not serializable, so precompute per-index geometry.
 <const/centers=pointPositions(ctx, data.length)/>
-<const/areas=buildAreas(ctx, seriesList, centers)/>
-<const/ticks=data.map((row, index) => ({
+<const/areas=buildAreas(ctx, seriesList, centers, stackOffset)/>
+<const/allTicks=data.map((row, index) => ({
   value: (xTickFormatter ? xTickFormatter(String(row[xKey])) : String(row[xKey])),
   x: centers[index] ?? 0,
 }))/>
+<const/ticks=(input.xTickMinGap ? thinTicksByGap(allTicks, input.xTickMinGap) : allTicks)/>
 <const/gradients=areas.filter((geom) => geom.gradient)/>
 <const/plotTop=ctx.plot.y/>
 <const/plotBottom=(ctx.plot.y + ctx.plot.height)/>
@@ -212,7 +232,7 @@ static function pointerIndex(
   count: data.length,
 }/>
 <const/tooltipItems=data.map((row) => ({
-  label: String(row[xKey]),
+  label: (tooltipLabelFormatter ? tooltipLabelFormatter(String(row[xKey])) : String(row[xKey])),
   rows: tooltipRowsFor(config, seriesList, row),
 }))/>
 <let/activeIndex=(-1)/>
@@ -265,7 +285,7 @@ static function pointerIndex(
     </if>
     <ChartXAxis ctx=ctx ticks=ticks/>
     <if=showYAxis>
-      <ChartYAxis ctx=ctx/>
+      <ChartYAxis ctx=ctx tickCount=yAxisTickCount/>
     </if>
     <if=(showTooltip && cursor !== false && activeIndex >= 0)>
       <g class="recharts-layer">
@@ -313,6 +333,7 @@ static function pointerIndex(
         rows=activeItem.rows
         label=activeItem.label
         indicator=indicator
+        hideLabel=hideLabel
       />
     </div>
   </if>

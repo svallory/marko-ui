@@ -1,0 +1,13 @@
+// Standalone icon template so it can be stashed as a ChartConfig.icon value
+// (a plain runtime object field) and rendered via Marko's dynamic-tag syntax
+// (`<${item.icon}/>` in chart/legend.marko and chart/tooltip.marko) — a
+// Marko.Body attr-tag can only be captured at the point it's consumed, but
+// a .marko file's default export is a Template, which Marko.Renderable also
+// accepts, so this is the only way to put "an icon" into plain config data.
+// lucide-react is not a dependency here; path data matches lucide's
+// TrendingUp icon (hand-authored inline SVG, this project's existing
+// convention — see demos/chart/area-default.marko's footer icon).
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M16 7h6v6"/>
+  <path d="m22 7-8.5 8.5-5-5L2 15"/>
+</svg>

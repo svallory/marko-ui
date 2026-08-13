@@ -4,6 +4,13 @@
 // default attributes) so the shadcn ChartContainer selectors restyle it
 // identically. Series colors are always `var(--color-<dataKey>)` — resolved
 // by the container's scoped <style>, never in JS.
+//
+// `layout="horizontal"` mirrors recharts' own (confusing) naming: passing
+// this renders HORIZONTAL bars (category axis on Y, value axis on X) — it
+// is recharts' <BarChart layout="vertical"> equivalent. It runs through a
+// wholly separate render branch built on math.ts' horizontalCtx family
+// rather than reusing CartesianCtx, since the two contexts assign x/y to
+// opposite roles (band-on-x vs band-on-y).
 import {
   bandCenter,
   bandCursorPath,
@@ -11,8 +18,15 @@ import {
   roundedRectPath,
   stackSeries,
   xTicks,
+  thinTicksByGap,
+  horizontalCtx,
+  hBandTicks,
+  hBandCenter,
+  hBandCursorPath,
+  hBandIndexFromPointer,
   type CartesianCtx,
   type CornerRadius,
+  type HorizontalCtx,
   type Margin,
   type Row,
   type XTick,
@@ -31,10 +45,35 @@ export interface BarSeries {
   radius?: CornerRadius;
 }
 
+/** Per-row color override: row.fill (like pie.marko's sliceColor) wins over the series/config color. */
+static function barColor(row: Row, dataKey: string): string {
+  const fill = row["fill"];
+  if (typeof fill === "string" && fill !== "") return fill;
+  return seriesColor(dataKey);
+}
+
+export interface LabelSpec {
+  /** Which field to render — defaults to the bar's own dataKey (value labels). */
+  dataKey?: string;
+  position?: "top" | "right" | "insideLeft";
+  /** CSS color (e.g. "var(--foreground)" or "var(--color-label)"). Default currentColor via fill-foreground parity class. */
+  color?: string;
+  formatter?: (value: string) => string;
+}
+
 export interface PointerGeometry {
   width: number;
   plotX: number;
   plotRight: number;
+  start: number;
+  step: number;
+  count: number;
+}
+
+export interface HPointerGeometry {
+  height: number;
+  plotY: number;
+  plotBottom: number;
   start: number;
   step: number;
   count: number;
@@ -61,11 +100,22 @@ export interface Input {
   cursor?: boolean;
   indicator?: "line" | "dot" | "dashed";
   hideLabel?: boolean;
+  hideIndicator?: boolean;
   tickMargin?: number;
   xTickFormatter?: (value: string) => string;
+  /** Minimum pixel gap between kept x-axis ticks (recharts XAxis minTickGap) — thins dense date-series ticks. */
+  xTickMinGap?: number;
+  /** Applied to the tooltip's label row only (recharts ChartTooltipContent labelFormatter). */
+  tooltipLabelFormatter?: (value: string) => string;
   class?: string;
-  /** Reserved for a future horizontal layout — v1 renders vertical bars only. */
+  /** recharts' own (confusing) naming: "horizontal" renders HORIZONTAL bars. */
   layout?: "horizontal";
+  /** category-axis tick formatter (Y axis in horizontal layout, X axis otherwise). */
+  categoryTickFormatter?: (value: string) => string;
+  /** Bar (or, in horizontal layout, the single-series bar) LabelList-equivalents. */
+  labels?: LabelSpec[];
+  /** Highlights one bar (fill-opacity 0.8, dashed stroke in its own row.fill color) — mirrors chart-bar-active. */
+  activeIndex?: number;
 }
 
 // recharts default gap between series bars within a band (barGap: 4).
@@ -111,6 +161,23 @@ static function computeBars(
   });
 }
 
+/** Single-series bar geometry (per-bar x/top/height/width), for the row-colored / labeled / active-highlight paths. */
+static function computeSingleBars(
+  ctx: CartesianCtx,
+  dataKey: string,
+  radius: CornerRadius | undefined,
+): { x: number; top: number; width: number; height: number; path: string }[] {
+  const bandwidth = ctx.xBand.bandwidth();
+  const baseline = ctx.y(0);
+  return ctx.data.map((row) => {
+    const x = ctx.xBand(String(row[ctx.xKey])) ?? 0;
+    const value = Number(row[dataKey] ?? 0);
+    const top = Math.min(ctx.y(value), baseline);
+    const height = Math.abs(baseline - ctx.y(value));
+    return { x, top, width: bandwidth, height, path: roundedRectPath(x, top, bandwidth, height, radius ?? 0) };
+  });
+}
+
 static function formatTicks(
   ctx: CartesianCtx,
   formatter?: (value: string) => string,
@@ -130,7 +197,7 @@ static function tooltipRowsByIndex(
       key: series.dataKey,
       label: String(config[series.dataKey]?.label ?? series.dataKey),
       value: Number(row[series.dataKey] ?? 0),
-      color: seriesColor(series.dataKey),
+      color: barColor(row, series.dataKey),
     })),
   );
 }
@@ -182,6 +249,57 @@ static function indexFromPointer(
   return Math.max(0, Math.min(geometry.count - 1, index));
 }
 
+static function hPointerGeometry(ctx: HorizontalCtx): HPointerGeometry {
+  const domain = ctx.yBand.domain();
+  const step = ctx.yBand.step();
+  const first = ctx.yBand(domain[0] ?? "") ?? 0;
+  return {
+    height: ctx.height,
+    plotY: ctx.plot.y,
+    plotBottom: ctx.plot.y + ctx.plot.height,
+    start: first - ctx.yBand.paddingInner() * step * 0.5,
+    step,
+    count: domain.length,
+  };
+}
+
+static function hIndexFromPointer(
+  offsetY: number,
+  clientHeight: number,
+  geometry: HPointerGeometry,
+): number {
+  if (clientHeight <= 0 || geometry.count === 0) return -1;
+  const scaledY = offsetY * (geometry.height / clientHeight);
+  if (scaledY < geometry.plotY || scaledY > geometry.plotBottom) return -1;
+  const index = Math.floor((scaledY - geometry.start) / geometry.step);
+  return Math.max(0, Math.min(geometry.count - 1, index));
+}
+
+static function hComputeBars(
+  ctx: HorizontalCtx,
+  dataKey: string,
+  radius: CornerRadius | undefined,
+): { y: number; left: number; width: number; height: number; path: string }[] {
+  const bandwidth = ctx.yBand.bandwidth();
+  const baseline = ctx.x(0);
+  return ctx.data.map((row) => {
+    const y = ctx.yBand(String(row[ctx.yKey])) ?? 0;
+    const value = Number(row[dataKey] ?? 0);
+    const left = Math.min(ctx.x(value), baseline);
+    const width = Math.abs(baseline - ctx.x(value));
+    return { y, left, width, height: bandwidth, path: roundedRectPath(left, y, width, bandwidth, radius ?? 0) };
+  });
+}
+
+static function hFormatTicks(
+  ctx: HorizontalCtx,
+  formatter?: (value: string) => string,
+): { value: string; y: number }[] {
+  const ticks = hBandTicks(ctx);
+  if (!formatter) return ticks;
+  return ticks.map((tick) => ({ value: formatter(tick.value), y: tick.y }));
+}
+
 <const/{
   config,
   data,
@@ -195,12 +313,62 @@ static function indexFromPointer(
   cursor: cursorEnabled = true,
   indicator,
   hideLabel,
+  hideIndicator,
   tickMargin = 8,
   class: className,
+  layout,
+  labels: labelSpecs,
+  activeIndex: staticActiveIndex,
 }=input/>
+<const/horizontal=(layout === "horizontal")/>
 
 <const/seriesList=[...(input.series ?? [])]/>
 <const/seriesKeys=seriesList.map((series) => series.dataKey)/>
+<const/singleKey=(seriesKeys[0] ?? "")/>
+<const/singleRadius=(seriesList[0]?.radius)/>
+
+// Both layout branches' full const chains are computed UNCONDITIONALLY,
+// every render, rather than nested inside `<if=horizontal>`/`<else>`.
+//
+// LANDMINE: a `<const>` chain nested inside an `<if>/<else>` branch does
+// not reliably survive Marko 6's fine-grained reactive updates when only a
+// DESCENDANT attr-tag input changes (not the branch's own condition). Bar
+// charts nested their vertical-layout `ctx` (and everything derived from
+// it: cursorPaths, geometry, etc.) inside `<else>` here during the
+// horizontal-layout extension; the moment `chart-bar-interactive`'s
+// `<@series dataKey=activeChart/>` toggled `activeChart` (a demo-file
+// `<let>`, `horizontal` itself never changes), the reactive update that
+// recomputed `cursorPaths` ran with `ctx` unresolved, crashing on
+// `ctx.xBand.domain()` inside `bandCursorPath`. line.marko/area.marko
+// never nest their core const chain in an `<if>` and never hit this.
+// Fix: compute both `ctx` and `hCtx` (and their downstream consts) at the
+// template's top level, unconditionally; branch ONLY in the markup below.
+<const/hCtx=horizontalCtx({
+  data,
+  yKey: xKey,
+  seriesKeys,
+  width,
+  height,
+  margin: { top: 5, right: 5, bottom: 5, left: 5, ...input.margin },
+  yAxisWidth: (showYAxis ? 60 : 0),
+  stacked,
+})/>
+<const/hBars=hComputeBars(hCtx, singleKey, singleRadius)/>
+<const/hTicks=hFormatTicks(hCtx, input.categoryTickFormatter)/>
+<const/hRowsByIndex=data.map((row) => [{
+  key: singleKey,
+  label: String(config[singleKey]?.label ?? singleKey),
+  value: Number(row[singleKey] ?? 0),
+  color: barColor(row, singleKey),
+}])/>
+<const/hLabels=data.map((row) => String(row[xKey]))/>
+<const/hCursorPaths=data.map((row, index) => hBandCursorPath(hCtx, index))/>
+<const/hGeometry=hPointerGeometry(hCtx)/>
+<const/hTops=data.map((row, index) => {
+  const percent = Math.max(0, Math.min(78, (hBandCenter(hCtx, index) / hCtx.height) * 100));
+  return `${percent.toFixed(2)}%`;
+})/>
+
 <const/ctx=cartesianCtx({
   data,
   xKey,
@@ -211,92 +379,242 @@ static function indexFromPointer(
   xAxisHeight: 30,
   stacked,
 })/>
-<const/bars=computeBars(ctx, seriesList, stacked)/>
-<const/ticks=formatTicks(ctx, input.xTickFormatter)/>
+<const/multiSeries=(seriesList.length > 1 || stacked)/>
+<const/bars=(multiSeries ? computeBars(ctx, seriesList, stacked) : [])/>
+<const/singleBars=(multiSeries ? [] : computeSingleBars(ctx, singleKey, singleRadius))/>
+<const/allTicks=formatTicks(ctx, input.xTickFormatter)/>
+<const/ticks=(input.xTickMinGap ? thinTicksByGap(allTicks, input.xTickMinGap) : allTicks)/>
 <const/rowsByIndex=tooltipRowsByIndex(ctx, seriesList, config)/>
-<const/labels=data.map((row) => String(row[xKey]))/>
+<const/labels=data.map((row) => (input.tooltipLabelFormatter ? input.tooltipLabelFormatter(String(row[xKey])) : String(row[xKey])))/>
 <const/lefts=tooltipLefts(ctx)/>
 <const/cursorPaths=data.map((row, index) => bandCursorPath(ctx, index))/>
 <const/geometry=pointerGeometry(ctx)/>
 <const/showLegend=(input.legend === true || input.legend === "top" || input.legend === "bottom")/>
 <const/legendAlign=(input.legend === "top" ? "top" : "bottom")/>
 
+<let/hActiveIndex=(-1)/>
 <let/activeIndex=(-1)/>
 
-<div
-  class=cn("recharts-wrapper", className)
-  style={ position: "relative", width: "100%", height: "100%" }
-  onPointermove(event: PointerEvent, el: HTMLDivElement) {
-    if (tooltipEnabled) {
-      const rect = el.getBoundingClientRect();
-      activeIndex = indexFromPointer(event.clientX - rect.left, rect.width, geometry);
+<if=horizontal>
+  // ---- Horizontal layout: category axis on Y, value axis on X ----
+  <div
+    class=cn("recharts-wrapper", className)
+    style={ position: "relative", width: "100%", height: "100%" }
+    onPointermove(event: PointerEvent, el: HTMLDivElement) {
+      if (tooltipEnabled) {
+        const rect = el.getBoundingClientRect();
+        hActiveIndex = hIndexFromPointer(event.clientY - rect.top, rect.height, hGeometry);
+      }
     }
-  }
-  onPointerleave() {
-    if (tooltipEnabled) {
-      activeIndex = -1;
+    onPointerleave() {
+      if (tooltipEnabled) {
+        hActiveIndex = -1;
+      }
     }
-  }
->
-  <if=(showLegend && legendAlign === "top")>
-    <ChartLegend items=legendItemsFor(seriesList, config) verticalAlign="top"/>
-  </if>
-  <svg
-    class="recharts-surface"
-    width="100%"
-    height="100%"
-    viewBox=`0 0 ${width} ${height}`
   >
-    <if=showGrid>
-      <ChartGrid ctx=ctx/>
-    </if>
-    <if=(tooltipEnabled && cursorEnabled && activeIndex >= 0)>
-      <g class="recharts-layer">
-        <path
-          class="recharts-rectangle recharts-tooltip-cursor"
-          fill="#ccc"
-          d=cursorPaths[activeIndex]
-        />
-      </g>
-    </if>
-    <ChartXAxis ctx=ctx ticks=ticks tickMargin=tickMargin/>
-    <if=showYAxis>
-      <ChartYAxis ctx=ctx/>
-    </if>
-    <for|series| of=bars>
-      <g class="recharts-layer recharts-bar">
-        <g class="recharts-layer recharts-bar-rectangles">
-          <for|path| of=series.paths>
+    <svg
+      class="recharts-surface"
+      width="100%"
+      height="100%"
+      viewBox=`0 0 ${width} ${height}`
+    >
+      <if=(tooltipEnabled && cursorEnabled && hActiveIndex >= 0)>
+        <g class="recharts-layer">
+          <path
+            class="recharts-rectangle recharts-tooltip-cursor"
+            fill="#ccc"
+            d=hCursorPaths[hActiveIndex]
+          />
+        </g>
+      </if>
+      <if=showYAxis>
+        <g class="recharts-cartesian-axis recharts-yAxis yAxis">
+          <g class="recharts-cartesian-axis-ticks">
+            <for|tick| of=hTicks>
+              <g class="recharts-layer recharts-cartesian-axis-tick">
+                <text orientation="left" stroke="none" fill="#666" class="recharts-text recharts-cartesian-axis-tick-value" x=(hCtx.plot.x - tickMargin) y=tick.y text-anchor="end"><tspan x=(hCtx.plot.x - tickMargin) dy="0.355em">${tick.value}</tspan></text>
+              </g>
+            </for>
+          </g>
+        </g>
+      </if>
+      <for|bar,index| of=hBars>
+        <g class="recharts-layer recharts-bar">
+          <g class="recharts-layer recharts-bar-rectangles">
             <g class="recharts-layer recharts-bar-rectangle">
               <path
                 class="recharts-rectangle"
-                fill=`var(--color-${series.dataKey})`
-                d=path
+                fill=barColor(data[index], singleKey)
+                d=bar.path
               />
             </g>
-          </for>
+          </g>
+          <if=labelSpecs>
+            <for|spec| of=labelSpecs>
+              <const/labelValue=(spec.dataKey ? String(data[index][spec.dataKey] ?? "") : String(data[index][singleKey] ?? ""))/>
+              <const/labelText=(spec.formatter ? spec.formatter(labelValue) : labelValue)/>
+              <const/labelPos=(spec.position ?? "right")/>
+              <const/labelX=(labelPos === "insideLeft"
+                ? bar.left + 8
+                : labelPos === "right"
+                  ? bar.left + bar.width + 8
+                  : bar.left + bar.width / 2)/>
+              <const/labelAnchor=(labelPos === "insideLeft" ? "start" : labelPos === "right" ? "start" : "middle")/>
+              <g class="recharts-layer recharts-label-list">
+                <text
+                  x=labelX
+                  y=(bar.y + bar.height / 2)
+                  text-anchor=labelAnchor
+                  dominant-baseline="central"
+                  fill=(spec.color ?? "var(--foreground)")
+                  font-size="12"
+                  class="recharts-text"
+                >${labelText}</text>
+              </g>
+            </for>
+          </if>
         </g>
-      </g>
-    </for>
-  </svg>
-  <if=(showLegend && legendAlign === "bottom")>
-    <ChartLegend items=legendItemsFor(seriesList, config) verticalAlign="bottom"/>
-  </if>
-  <if=(tooltipEnabled && activeIndex >= 0)>
-    <div
-      style={
-        position: "absolute",
-        left: lefts[activeIndex],
-        top: "12px",
-        "pointer-events": "none",
+      </for>
+    </svg>
+    <if=(tooltipEnabled && hActiveIndex >= 0)>
+      <div
+        style={
+          position: "absolute",
+          left: "12px",
+          top: hTops[hActiveIndex],
+          "pointer-events": "none",
+        }
+      >
+        <ChartTooltip
+          rows=hRowsByIndex[hActiveIndex]
+          label=hLabels[hActiveIndex]
+          indicator=indicator
+          hideLabel=hideLabel
+          hideIndicator=hideIndicator
+        />
+      </div>
+    </if>
+  </div>
+</if>
+<else>
+  // ---- Vertical layout (default): category axis on X, value axis on Y ----
+  // ctx and its whole const chain are hoisted above the <if=horizontal> —
+  // see the LANDMINE note near the top of this file.
+  <div
+    class=cn("recharts-wrapper", className)
+    style={ position: "relative", width: "100%", height: "100%" }
+    onPointermove(event: PointerEvent, el: HTMLDivElement) {
+      if (tooltipEnabled) {
+        const rect = el.getBoundingClientRect();
+        activeIndex = indexFromPointer(event.clientX - rect.left, rect.width, geometry);
       }
+    }
+    onPointerleave() {
+      if (tooltipEnabled) {
+        activeIndex = -1;
+      }
+    }
+  >
+    <if=(showLegend && legendAlign === "top")>
+      <ChartLegend items=legendItemsFor(seriesList, config) verticalAlign="top"/>
+    </if>
+    <svg
+      class="recharts-surface"
+      width="100%"
+      height="100%"
+      viewBox=`0 0 ${width} ${height}`
     >
-      <ChartTooltip
-        rows=rowsByIndex[activeIndex]
-        label=labels[activeIndex]
-        indicator=indicator
-        hideLabel=hideLabel
-      />
-    </div>
-  </if>
-</div>
+      <if=showGrid>
+        <ChartGrid ctx=ctx/>
+      </if>
+      <if=(tooltipEnabled && cursorEnabled && activeIndex >= 0)>
+        <g class="recharts-layer">
+          <path
+            class="recharts-rectangle recharts-tooltip-cursor"
+            fill="#ccc"
+            d=cursorPaths[activeIndex]
+          />
+        </g>
+      </if>
+      <ChartXAxis ctx=ctx ticks=ticks tickMargin=tickMargin/>
+      <if=showYAxis>
+        <ChartYAxis ctx=ctx/>
+      </if>
+      <if=multiSeries>
+        <for|series| of=bars>
+          <g class="recharts-layer recharts-bar">
+            <g class="recharts-layer recharts-bar-rectangles">
+              <for|path| of=series.paths>
+                <g class="recharts-layer recharts-bar-rectangle">
+                  <path
+                    class="recharts-rectangle"
+                    fill=`var(--color-${series.dataKey})`
+                    d=path
+                  />
+                </g>
+              </for>
+            </g>
+          </g>
+        </for>
+      </if>
+      <else>
+        <g class="recharts-layer recharts-bar">
+          <g class="recharts-layer recharts-bar-rectangles">
+            <for|bar,index| of=singleBars>
+              <const/isActive=(staticActiveIndex != null && staticActiveIndex === index)/>
+              <g class="recharts-layer recharts-bar-rectangle">
+                <path
+                  class="recharts-rectangle"
+                  fill=barColor(data[index], singleKey)
+                  fill-opacity=(isActive ? 0.8 : undefined)
+                  stroke=(isActive ? barColor(data[index], singleKey) : undefined)
+                  stroke-dasharray=(isActive ? 4 : undefined)
+                  d=bar.path
+                />
+              </g>
+              <if=labelSpecs>
+                <for|spec| of=labelSpecs>
+                  <const/labelValue=(spec.dataKey ? String(data[index][spec.dataKey] ?? "") : String(data[index][singleKey] ?? ""))/>
+                  <const/labelText=(spec.formatter ? spec.formatter(labelValue) : labelValue)/>
+                  <const/labelPos=(spec.position ?? "top")/>
+                  <const/labelY=(labelPos === "top" ? bar.top - 12 : bar.top + bar.height / 2)/>
+                  <g class="recharts-layer recharts-label-list">
+                    <text
+                      x=(bar.x + bar.width / 2)
+                      y=labelY
+                      text-anchor="middle"
+                      fill=(spec.color ?? "var(--foreground)")
+                      font-size="12"
+                      class="recharts-text"
+                    >${labelText}</text>
+                  </g>
+                </for>
+              </if>
+            </for>
+          </g>
+        </g>
+      </else>
+    </svg>
+    <if=(showLegend && legendAlign === "bottom")>
+      <ChartLegend items=legendItemsFor(seriesList, config) verticalAlign="bottom"/>
+    </if>
+    <if=(tooltipEnabled && activeIndex >= 0)>
+      <div
+        style={
+          position: "absolute",
+          left: lefts[activeIndex],
+          top: "12px",
+          "pointer-events": "none",
+        }
+      >
+        <ChartTooltip
+          rows=rowsByIndex[activeIndex]
+          label=labels[activeIndex]
+          indicator=indicator
+          hideLabel=hideLabel
+          hideIndicator=hideIndicator
+        />
+      </div>
+    </if>
+  </div>
+</else>

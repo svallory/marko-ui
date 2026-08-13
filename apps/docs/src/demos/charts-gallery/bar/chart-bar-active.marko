@@ -1,0 +1,65 @@
+// Port of shadcn's chart-bar-active.tsx — bar.marko's activeIndex input
+// highlights ACTIVE_INDEX with fill-opacity 0.8 + dashed stroke in its own
+// row.fill color.
+import Chart from "@marko-ui/registry/ui/chart/chart.marko";
+import BarChart from "@marko-ui/registry/ui/chart/bar.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+
+static const chartData = [
+  { browser: "chrome", visitors: 187, fill: "var(--color-chrome)" },
+  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
+  { browser: "firefox", visitors: 275, fill: "var(--color-firefox)" },
+  { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
+  { browser: "other", visitors: 90, fill: "var(--color-other)" },
+];
+
+static const chartConfig = {
+  visitors: { label: "Visitors" },
+  chrome: { label: "Chrome", color: "var(--chart-1)" },
+  safari: { label: "Safari", color: "var(--chart-2)" },
+  firefox: { label: "Firefox", color: "var(--chart-3)" },
+  edge: { label: "Edge", color: "var(--chart-4)" },
+  other: { label: "Other", color: "var(--chart-5)" },
+};
+
+static const ACTIVE_INDEX = 2;
+
+<Card>
+  <CardHeader>
+    <CardTitle>Bar Chart - Active</CardTitle>
+    <CardDescription>January - June 2024</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <Chart config=chartConfig>
+      <BarChart
+        data=chartData
+        config=chartConfig
+        xKey="browser"
+        xTickFormatter=(value) => chartConfig[value]?.label ?? value
+        tickMargin=10
+        hideLabel
+        cursor=false
+        activeIndex=ACTIVE_INDEX
+      >
+        <@series dataKey="visitors" radius=8/>
+      </BarChart>
+    </Chart>
+  </CardContent>
+  <CardFooter class="flex-col items-start gap-2 text-sm">
+    <div class="flex gap-2 leading-none font-medium">
+      Trending up by 5.2% this month
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+        <path d="M16 7h6v6"/>
+        <path d="m22 7-8.5 8.5-5-5L2 15"/>
+      </svg>
+    </div>
+    <div class="leading-none text-muted-foreground">
+      Showing total visitors for the last 6 months
+    </div>
+  </CardFooter>
+</Card>

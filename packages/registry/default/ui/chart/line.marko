@@ -15,6 +15,7 @@ import { configFor, seriesColor, type ChartConfig } from "./config.ts";
 import {
   cartesianCtx,
   linePath,
+  thinTicksByGap,
   type CartesianCtx,
   type CurveType,
   type Margin,
@@ -27,6 +28,12 @@ import ChartYAxis from "./y-axis.marko";
 import ChartTooltip from "./tooltip.marko";
 import ChartLegend from "./legend.marko";
 
+export interface LabelSpec {
+  dataKey?: string;
+  color?: string;
+  formatter?: (value: string) => string;
+}
+
 export interface LineSeriesAttrs {
   dataKey: string;
   /** Curve type (default "natural" — the shadcn line-default demo). */
@@ -34,6 +41,12 @@ export interface LineSeriesAttrs {
   strokeWidth?: number;
   /** Render point markers (default false — shadcn demos hide dots). */
   dot?: boolean;
+  /** Dot fill comes from each row's own `fill` field instead of the series color (chart-line-dots-colors). */
+  dotColorByRow?: boolean;
+  /** Replaces the default <circle> dot with custom content per point (chart-line-dots-custom). */
+  dotContent?: Marko.Body<[{ x: number; y: number; row: Row }]>;
+  /** LabelList-equivalent: value (or another field) rendered above each point. */
+  labels?: LabelSpec[];
 }
 
 export interface Input {
@@ -56,6 +69,10 @@ export interface Input {
   yAxis?: boolean;
   legend?: boolean | "top" | "bottom";
   xTickFormatter?: (value: string) => string;
+  /** Minimum pixel gap between kept x-axis ticks (recharts XAxis minTickGap) — thins dense date-series ticks. */
+  xTickMinGap?: number;
+  /** Applied to the tooltip's label row only (recharts ChartTooltipContent labelFormatter). */
+  tooltipLabelFormatter?: (value: string) => string;
   class?: string;
   series?: Marko.AttrTag<LineSeriesAttrs>;
 }
@@ -111,8 +128,17 @@ export interface SeriesRender {
   color: string;
   strokeWidth: number;
   dot: boolean;
+  dotColorByRow: boolean;
+  dotContent?: Marko.Body<[{ x: number; y: number; row: Row }]>;
+  labels?: LabelSpec[];
   path: string;
-  points: { x: number; y: number }[];
+  points: { x: number; y: number; row: Row }[];
+}
+
+static function dotColor(row: Row, fallback: string): string {
+  const fill = row["fill"];
+  if (typeof fill === "string" && fill !== "") return fill;
+  return fallback;
 }
 
 static function buildSeries(
@@ -128,6 +154,9 @@ static function buildSeries(
       color: seriesColor(series.dataKey),
       strokeWidth: series.strokeWidth ?? 2,
       dot: series.dot === true,
+      dotColorByRow: series.dotColorByRow === true,
+      dotContent: series.dotContent,
+      labels: series.labels,
       path: linePath(
         data,
         (row, index) => centers[index] ?? 0,
@@ -137,6 +166,7 @@ static function buildSeries(
       points: data.map((row, index) => ({
         x: centers[index] ?? 0,
         y: yFor(row),
+        row,
       })),
     };
   });
@@ -159,7 +189,7 @@ static function buildTooltipRows(
       key: series.dataKey,
       label: labelOf(config, series.dataKey),
       value: Number(row[series.dataKey] ?? 0),
-      color: seriesColor(series.dataKey),
+      color: series.dotColorByRow ? dotColor(row, seriesColor(series.dataKey)) : seriesColor(series.dataKey),
     })),
   );
 }
@@ -192,14 +222,15 @@ static function buildTooltipRows(
 })/>
 <const/centers=pointPositions(ctx, data.length)/>
 <const/renderSeries=buildSeries(seriesList, data, centers, ctx.y)/>
-<const/ticks=data.map((row, index) => ({ value: (formatter ? formatter(String(row[xKey])) : String(row[xKey])), x: centers[index] ?? 0 }))/>
+<const/allTicks=data.map((row, index) => ({ value: (formatter ? formatter(String(row[xKey])) : String(row[xKey])), x: centers[index] ?? 0 }))/>
+<const/ticks=(input.xTickMinGap ? thinTicksByGap(allTicks, input.xTickMinGap) : allTicks)/>
 <const/legendItems=seriesList.map((series) => ({ key: series.dataKey, label: labelOf(config, series.dataKey), color: seriesColor(series.dataKey) }))/>
 
 // Plain serializable arrays for the client-reactive region (see header note).
 <const/cursorPaths=centers.map((x) => (`M ${x},${ctx.plot.y} L ${x},${ctx.plot.y + ctx.plot.height}`))/>
 <const/leftPcts=centers.map((x) => Math.min(88, Math.max(12, (x / width) * 100)))/>
 <const/tooltipRows=buildTooltipRows(seriesList, data, config)/>
-<const/xLabels=data.map((row) => String(row[xKey]))/>
+<const/xLabels=data.map((row) => (input.tooltipLabelFormatter ? input.tooltipLabelFormatter(String(row[xKey])) : String(row[xKey])))/>
 <const/geo={ width, plotX: ctx.plot.x, plotWidth: ctx.plot.width, count: data.length }/>
 
 <let/activeIndex=(-1)/>
@@ -255,7 +286,14 @@ static function buildTooltipRows(
           stroke-width=series.strokeWidth
           d=series.path
         />
-        <if=series.dot>
+        <if=series.dotContent>
+          <g class="recharts-layer recharts-line-dots">
+            <for|point| of=series.points>
+              <${series.dotContent}({ x: point.x, y: point.y, row: point.row })/>
+            </for>
+          </g>
+        </if>
+        <else-if=series.dot>
           <g class="recharts-layer recharts-line-dots">
             <for|point| of=series.points>
               <circle
@@ -263,10 +301,28 @@ static function buildTooltipRows(
                 r="3"
                 stroke="#fff"
                 stroke-width="1"
-                fill=series.color
+                fill=(series.dotColorByRow ? dotColor(point.row, series.color) : series.color)
                 cx=point.x
                 cy=point.y
               />
+            </for>
+          </g>
+        </else-if>
+        <if=series.labels>
+          <g class="recharts-layer recharts-label-list">
+            <for|point| of=series.points>
+              <for|spec| of=series.labels>
+                <const/labelValue=(spec.dataKey ? String(point.row[spec.dataKey] ?? "") : String(point.row[series.dataKey] ?? ""))/>
+                <const/labelText=(spec.formatter ? spec.formatter(labelValue) : labelValue)/>
+                <text
+                  x=point.x
+                  y=(point.y - 12)
+                  text-anchor="middle"
+                  fill=(spec.color ?? "var(--foreground)")
+                  font-size="12"
+                  class="recharts-text"
+                >${labelText}</text>
+              </for>
             </for>
           </g>
         </if>

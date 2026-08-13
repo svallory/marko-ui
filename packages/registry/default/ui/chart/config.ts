@@ -12,8 +12,17 @@ export type ChartTheme = { light: string; dark: string };
 
 export type ChartConfigEntry = {
   label?: string;
-  /** Optional icon renderer — mirrors shadcn's `icon?: ComponentType`. */
-  icon?: Marko.Body;
+  /**
+   * Optional icon renderer — mirrors shadcn's `icon?: ComponentType`.
+   * Typed as `Marko.Renderable` (not `Marko.Body`): ChartConfig is a plain
+   * runtime object, not a tag input, so an icon can't be captured as an
+   * attr-tag body at the point it's consumed here — the only renderable a
+   * plain object field CAN hold is an imported .marko file's default export
+   * (a `Marko.Template`), which `Marko.Renderable` also covers. Consumers
+   * (legend.marko, tooltip.marko) render it via the dynamic-tag syntax
+   * `<${entry.icon}/>`, which accepts either shape identically.
+   */
+  icon?: Marko.Renderable;
   /** e.g. "var(--chart-1)". Mutually exclusive with `theme`, like shadcn. */
   color?: string;
   theme?: ChartTheme;

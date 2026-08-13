@@ -1,0 +1,30 @@
+// Faithful port of shadcn/ui's components/charts-nav.tsx, on our real
+// ScrollArea primitive (Zag scroll-area machine) rather than Radix's — same
+// pattern as blocks-nav.marko. Only the 4 supported types (Area/Bar/Line/
+// Pie) are linked; Radar/Radial/Tooltips are omitted per TODO.md.
+import ScrollArea from "@marko-ui/registry/ui/scroll-area/scroll-area.marko";
+import { CHART_TYPES } from "../../lib/charts-list.ts";
+
+export interface Input {
+  activeSlug: string;
+}
+
+<div class="relative overflow-hidden">
+  <ScrollArea class="max-w-[600px] lg:max-w-none">
+    <@content>
+      <div class="flex items-center">
+        <for|type| of=CHART_TYPES by=(type) => type.slug>
+          <a
+            href=`/charts/${type.slug}#charts`
+            // String, not boolean: Marko renders `true` as a bare `data-active`
+            // attribute, which the `data-[active=true]:` Tailwind variant misses.
+            data-active=String(type.slug === input.activeSlug)
+            class="flex h-7 shrink-0 items-center justify-center px-4 text-center text-base font-medium text-muted-foreground transition-colors hover:text-primary data-[active=true]:text-primary"
+          >
+            ${type.label}
+          </a>
+        </for>
+      </div>
+    </@content>
+  </ScrollArea>
+</div>

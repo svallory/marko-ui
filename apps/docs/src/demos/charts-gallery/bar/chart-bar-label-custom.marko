@@ -1,0 +1,66 @@
+// Port of shadcn's chart-bar-label-custom.tsx — horizontal layout with two
+// LabelLists: category name insideLeft in --background color, value at the
+// bar's right end in --foreground. bar.marko's `labels: LabelSpec[]` array
+// (used identically for chart-bar-label/-negative/line-label) supports both
+// in one pass — attempted and it works cleanly, no skip needed here.
+import Chart from "@marko-ui/registry/ui/chart/chart.marko";
+import BarChart from "@marko-ui/registry/ui/chart/bar.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+
+static const chartData = [
+  { month: "January", desktop: 186, mobile: 80 },
+  { month: "February", desktop: 305, mobile: 200 },
+  { month: "March", desktop: 237, mobile: 120 },
+  { month: "April", desktop: 73, mobile: 190 },
+  { month: "May", desktop: 209, mobile: 130 },
+  { month: "June", desktop: 214, mobile: 140 },
+];
+
+static const chartConfig = {
+  desktop: { label: "Desktop", color: "var(--chart-2)" },
+  mobile: { label: "Mobile", color: "var(--chart-2)" },
+  label: { color: "var(--background)" },
+};
+
+<Card>
+  <CardHeader>
+    <CardTitle>Bar Chart - Custom Label</CardTitle>
+    <CardDescription>January - June 2024</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <Chart config=chartConfig>
+      <BarChart
+        data=chartData
+        config=chartConfig
+        xKey="month"
+        layout="horizontal"
+        indicator="line"
+        cursor=false
+        margin={ right: 16 }
+        labels=[
+          { dataKey: "month", position: "insideLeft", color: "var(--color-label)" },
+          { dataKey: "desktop", position: "right" },
+        ]
+      >
+        <@series dataKey="desktop" radius=4/>
+      </BarChart>
+    </Chart>
+  </CardContent>
+  <CardFooter class="flex-col items-start gap-2 text-sm">
+    <div class="flex gap-2 leading-none font-medium">
+      Trending up by 5.2% this month
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+        <path d="M16 7h6v6"/>
+        <path d="m22 7-8.5 8.5-5-5L2 15"/>
+      </svg>
+    </div>
+    <div class="leading-none text-muted-foreground">
+      Showing total visitors for the last 6 months
+    </div>
+  </CardFooter>
+</Card>

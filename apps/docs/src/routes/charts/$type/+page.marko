@@ -1,0 +1,12 @@
+import "../../../tags/charts/charts-gallery.marko";
+import { CHART_TYPES } from "../../../lib/charts-list.ts";
+
+// Route params live on the marko-run context ($global), not on `input`.
+// Unknown slugs fall back to "area" — same fallback pattern as
+// /blocks/$category falling back to "" for unknown category slugs.
+<const/requestedSlug=$global.params.type/>
+<const/slug=(CHART_TYPES.some((entry) => entry.slug === requestedSlug)
+  ? requestedSlug
+  : "area")/>
+
+<charts-gallery type=slug/>

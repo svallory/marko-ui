@@ -7,11 +7,21 @@
 // each row's `fill` (shadcn pie demos put `fill: "var(--color-chrome)"` in
 // the data) or fall back to `var(--color-<row[nameKey]>)` — never resolved
 // in JS, so a shadcn theme's --chart-1..5 variables restyle everything.
-import { pieArcs, type Row } from "./math.ts";
+import { pieArcs, type PieArc, type Row } from "./math.ts";
 import { configFor, type ChartConfig } from "./config.ts";
 import { cn } from "#lib/utils.ts";
 import ChartTooltip from "./tooltip.marko";
 import ChartLegend from "./legend.marko";
+
+/** A second (or further) concentric ring — e.g. chart-pie-stacked's two donuts. */
+export interface PieRing {
+  data: Row[];
+  dataKey: string;
+  nameKey?: string;
+  innerRadius?: number;
+  outerRadius?: number;
+  paddingAngle?: number;
+}
 
 export interface Input {
   /** Same object passed to <Chart> — Marko has no context, so it's passed twice. */
@@ -30,11 +40,22 @@ export interface Input {
   outerRadius?: number;
   /** Degrees between sectors, like recharts' paddingAngle. */
   paddingAngle?: number;
+  /** Sector border width (recharts Pie strokeWidth, default 1). 0 removes the white separator. */
+  strokeWidth?: number;
   tooltip?: boolean;
   indicator?: "line" | "dot" | "dashed";
   legend?: boolean | "top" | "bottom";
   /** Rendered inside the svg, receives the pie center — for donut text. */
   centerLabel?: Marko.Body<[{ cx: number; cy: number }]>;
+  /** Plain numeric-value label with a leader line, positioned outside each slice (recharts' bare `label` prop). */
+  outsideLabel?: boolean;
+  /** Custom label rendered at each slice's centroid — e.g. value-in-foreground-color or category-name-in-background-color. */
+  sliceLabel?: Marko.Body<[{ x: number; y: number; row: Row; value: number; index: number }]>;
+  /** Highlights one sector at outerRadius + activeOuterRadiusDelta (default 10) — mirrors chart-pie-donut-active / chart-pie-interactive. */
+  activeIndex?: number;
+  activeOuterRadiusDelta?: number;
+  /** Additional concentric rings — e.g. chart-pie-stacked's inner/outer donut pair. `data`'s own ring uses `dataKey`/`nameKey`/`innerRadius`/`outerRadius` above as ring 0. */
+  rings?: PieRing[];
   class?: string;
 }
 
@@ -44,7 +65,7 @@ static function sliceColor(row: Row, nameKey: string): string {
   return `var(--color-${String(row[nameKey])})`;
 }
 
-static function sliceLabel(
+static function sliceLabelText(
   config: ChartConfig,
   row: Row,
   nameKey: string,
@@ -60,7 +81,7 @@ static function legendItemsFor(
 ): { key: string; label: string; color: string }[] {
   return data.map((row) => ({
     key: String(row[nameKey]),
-    label: sliceLabel(config, row, nameKey),
+    label: sliceLabelText(config, row, nameKey),
     color: sliceColor(row, nameKey),
   }));
 }
@@ -74,11 +95,34 @@ static function tooltipRowsFor(
   return [
     {
       key: String(row[nameKey]),
-      label: sliceLabel(config, row, nameKey),
+      label: sliceLabelText(config, row, nameKey),
       value,
       color: sliceColor(row, nameKey),
     },
   ];
+}
+
+// Outside-label leader-line geometry, mirroring recharts' default Pie label
+// line: from the arc's midpoint outward a short distance, then horizontal.
+static function outsideLabelGeometry(
+  arc: PieArc,
+  cx: number,
+  cy: number,
+  outer: number,
+): { line: string; x: number; y: number; anchor: "start" | "end" } {
+  const midAngle = (arc.startAngle + arc.endAngle) / 2;
+  // d3 pie angles: 0 at 12 o'clock, clockwise. Convert to standard trig.
+  const sin = Math.sin(midAngle);
+  const cos = -Math.cos(midAngle);
+  const startR = outer;
+  const bendR = outer + 12;
+  const sx = cx + startR * sin;
+  const sy = cy + startR * cos;
+  const bx = cx + bendR * sin;
+  const by = cy + bendR * cos;
+  const anchor: "start" | "end" = sin >= 0 ? "start" : "end";
+  const ex = bx + (anchor === "start" ? 16 : -16);
+  return { line: `M ${sx},${sy} L ${bx},${by} L ${ex},${by}`, x: ex, y: by, anchor };
 }
 
 <const/{
@@ -91,17 +135,32 @@ static function tooltipRowsFor(
   innerRadius = 0,
   outerRadius,
   paddingAngle,
+  strokeWidth,
   tooltip: showTooltip = true,
   indicator = "dot",
   legend,
   centerLabel,
+  outsideLabel,
+  sliceLabel,
+  activeIndex: staticActiveIndex,
+  activeOuterRadiusDelta = 10,
+  rings,
   class: className,
 }=input/>
 <const/cx=(width / 2)/>
 <const/cy=(height / 2)/>
 <const/outer=(outerRadius ?? Math.min(width, height) * 0.4)/>
 <const/arcs=pieArcs(data, dataKey, { innerRadius, outerRadius: outer, paddingAngle })/>
+<const/ringArcs=(rings ?? []).map((ring) => ({
+  ring,
+  arcs: pieArcs(ring.data, ring.dataKey, {
+    innerRadius: ring.innerRadius ?? 0,
+    outerRadius: ring.outerRadius ?? outer,
+    paddingAngle: ring.paddingAngle,
+  }),
+}))/>
 <let/activeIndex=(-1)/>
+<const/effectiveActive=(staticActiveIndex != null ? staticActiveIndex : activeIndex)/>
 <const/activeArc=(showTooltip && activeIndex >= 0 ? arcs[activeIndex] : undefined)/>
 
 <div
@@ -123,17 +182,59 @@ static function tooltipRowsFor(
   >
     <g class="recharts-layer recharts-pie" transform=`translate(${cx}, ${cy})`>
       <for|arcDatum| of=arcs>
+        <const/isActive=(effectiveActive === arcDatum.index)/>
         <g class="recharts-layer recharts-pie-sector">
           <path
             class="recharts-sector"
             stroke="#fff"
+            stroke-width=strokeWidth
             fill=sliceColor(arcDatum.row, nameKey)
-            d=arcDatum.path
+            d=(isActive
+              ? pieArcs(data, dataKey, { innerRadius, outerRadius: outer + activeOuterRadiusDelta, paddingAngle })[arcDatum.index]?.path ?? arcDatum.path
+              : arcDatum.path)
             onPointerenter() { activeIndex = arcDatum.index; }
           />
         </g>
       </for>
     </g>
+    <for|entry| of=ringArcs>
+      <const/ringCx=cx/>
+      <const/ringCy=cy/>
+      <g class="recharts-layer recharts-pie" transform=`translate(${ringCx}, ${ringCy})`>
+        <for|arcDatum| of=entry.arcs>
+          <g class="recharts-layer recharts-pie-sector">
+            <path
+              class="recharts-sector"
+              stroke="#fff"
+              fill=sliceColor(arcDatum.row, entry.ring.nameKey ?? nameKey)
+              d=arcDatum.path
+            />
+          </g>
+        </for>
+      </g>
+    </for>
+    <if=outsideLabel>
+      <g class="recharts-layer">
+        <for|arcDatum| of=arcs>
+          <const/geom=outsideLabelGeometry(arcDatum, cx, cy, outer)/>
+          <path class="recharts-curve recharts-pie-label-line" stroke="#666" fill="none" d=geom.line/>
+          <text
+            class="recharts-text recharts-pie-label-text"
+            x=geom.x
+            y=geom.y
+            text-anchor=geom.anchor
+            dominant-baseline="central"
+          >${arcDatum.value}</text>
+        </for>
+      </g>
+    </if>
+    <if=sliceLabel>
+      <g class="recharts-layer recharts-label-list">
+        <for|arcDatum| of=arcs>
+          <${sliceLabel}({ x: cx + arcDatum.centroid[0], y: cy + arcDatum.centroid[1], row: arcDatum.row, value: arcDatum.value, index: arcDatum.index })/>
+        </for>
+      </g>
+    </if>
     <if=centerLabel>
       <${centerLabel}({ cx, cy })/>
     </if>
