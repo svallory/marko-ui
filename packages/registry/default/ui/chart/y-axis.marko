@@ -8,10 +8,12 @@ export interface Input {
   ctx: CartesianCtx;
   ticks?: YTick[];
   tickMargin?: number;
+  /** Approximate number of ticks (d3 `ticks()` count) — recharts' tickCount. Default 5. */
+  tickCount?: number;
 }
 
 <const/{ ctx, tickMargin = 8 }=input/>
-<const/ticks=(input.ticks ?? yTicks(ctx))/>
+<const/ticks=(input.ticks ?? yTicks(ctx, input.tickCount))/>
 <const/tickX=(ctx.plot.x - tickMargin)/>
 
 <g class="recharts-cartesian-axis recharts-yAxis yAxis">
