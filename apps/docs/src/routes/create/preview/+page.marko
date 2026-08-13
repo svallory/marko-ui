@@ -111,8 +111,18 @@ static function applyParams(params: DesignSystemSearchParams) {
       radius: effectiveRadius,
     } as DesignSystemConfig;
 
-    const registryTheme = buildRegistryTheme(config);
-    if (registryTheme.cssVars) {
+    // buildRegistryTheme throws on a baseColor/theme it doesn't recognize.
+    // This handler runs directly off an unvalidated postMessage payload
+    // (see the message listener below), so a malformed/stale message must
+    // not throw uncaught out of the listener and silently kill the rest of
+    // this event's processing (e.g. the dark-class toggle that already ran).
+    let registryTheme: ReturnType<typeof buildRegistryTheme> | null = null;
+    try {
+      registryTheme = buildRegistryTheme(config);
+    } catch (error) {
+      console.error("[create/preview] failed to build theme", error);
+    }
+    if (registryTheme?.cssVars) {
       let styleElement = document.getElementById(THEME_STYLE_ELEMENT_ID) as HTMLStyleElement | null;
       if (!styleElement) {
         styleElement = document.createElement("style");
