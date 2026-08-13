@@ -60,3 +60,31 @@
 @utility container {
   @apply mx-auto max-w-[1400px] px-4 lg:px-8;
 }
+
+/* Hides scrollbars on the container it's applied to, ported verbatim from
+   shadcn's app/globals.css @utility no-scrollbar. shadcn applies this
+   per-container (sidebar content, code panels, customizer, TOC), not
+   globally on html/body — same mechanism used here. */
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* `scrollbar-none` is used in several of our tags (docs-article, docs-toc,
+   typeset docs-content) as if it were a Tailwind built-in — it is not (v4
+   core ships no such utility, and shadcn's own source doesn't define it
+   either, so their equivalent usages are the same latent no-op). Defining
+   it here as an alias of no-scrollbar makes those call sites work rather
+   than silently doing nothing, without having to touch every call site. */
+@utility scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
