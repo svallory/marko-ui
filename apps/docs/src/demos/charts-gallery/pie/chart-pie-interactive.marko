@@ -1,0 +1,84 @@
+// Port of shadcn's chart-pie-interactive.tsx — Select filters which month's
+// sector is "active" (highlighted donut sector via pie.marko's activeIndex,
+// same mechanism as chart-pie-donut-active) plus a center total-visitors
+// label for the active month (pie.marko's existing centerLabel slot). The
+// data itself doesn't change per month here (matches shadcn: `desktopData`
+// is a fixed 5-slice array; the Select changes which SLICE is highlighted +
+// what number the center label shows, not the chart's data set).
+import Chart from "@marko-ui/registry/ui/chart/chart.marko";
+import PieChart from "@marko-ui/registry/ui/chart/pie.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import Select from "@marko-ui/registry/ui/select/select.marko";
+
+static const desktopData = [
+  { month: "january", desktop: 186, fill: "var(--color-january)" },
+  { month: "february", desktop: 305, fill: "var(--color-february)" },
+  { month: "march", desktop: 237, fill: "var(--color-march)" },
+  { month: "april", desktop: 173, fill: "var(--color-april)" },
+  { month: "may", desktop: 209, fill: "var(--color-may)" },
+];
+
+static const chartConfig = {
+  visitors: { label: "Visitors" },
+  desktop: { label: "Desktop" },
+  mobile: { label: "Mobile" },
+  january: { label: "January", color: "var(--chart-1)" },
+  february: { label: "February", color: "var(--chart-2)" },
+  march: { label: "March", color: "var(--chart-3)" },
+  april: { label: "April", color: "var(--chart-4)" },
+  may: { label: "May", color: "var(--chart-5)" },
+};
+
+static const monthItems = desktopData.map((item) => ({
+  value: item.month,
+  label: chartConfig[item.month].label,
+}));
+
+<let/activeMonth="january"/>
+<const/activeIndex=desktopData.findIndex((item) => item.month === activeMonth)/>
+
+<Card class="flex flex-col">
+  <CardHeader class="flex-row items-start space-y-0 pb-0">
+    <div class="grid gap-1">
+      <CardTitle>Pie Chart - Interactive</CardTitle>
+      <CardDescription>January - June 2024</CardDescription>
+    </div>
+    <Select
+      items=monthItems
+      value=[activeMonth]
+      valueChange=(value) => { activeMonth = value[0] ?? "january"; }
+      class="ml-auto h-7 w-[130px] rounded-lg pl-2.5"
+      aria-label="Select a value"
+      placeholder="Select month"
+    />
+  </CardHeader>
+  <CardContent class="flex flex-1 justify-center pb-0">
+    <Chart config=chartConfig class="mx-auto aspect-square w-full max-w-[300px]">
+      <PieChart
+        data=desktopData
+        config=chartConfig
+        dataKey="desktop"
+        nameKey="month"
+        innerRadius=60
+        strokeWidth=5
+        activeIndex=activeIndex
+        activeOuterRadiusDelta=15
+      >
+        <@centerLabel|{ cx, cy }|>
+          <text x=cx y=cy text-anchor="middle" dominant-baseline="middle">
+            <tspan x=cx y=cy class="fill-foreground text-3xl font-bold">
+              ${(desktopData[activeIndex]?.desktop ?? 0).toLocaleString()}
+            </tspan>
+            <tspan x=cx y=(cy + 24) class="fill-muted-foreground">
+              Visitors
+            </tspan>
+          </text>
+        </@centerLabel>
+      </PieChart>
+    </Chart>
+  </CardContent>
+</Card>

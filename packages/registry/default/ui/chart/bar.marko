@@ -99,8 +99,11 @@ export interface Input {
   cursor?: boolean;
   indicator?: "line" | "dot" | "dashed";
   hideLabel?: boolean;
+  hideIndicator?: boolean;
   tickMargin?: number;
   xTickFormatter?: (value: string) => string;
+  /** Applied to the tooltip's label row only (recharts ChartTooltipContent labelFormatter). */
+  tooltipLabelFormatter?: (value: string) => string;
   class?: string;
   /** recharts' own (confusing) naming: "horizontal" renders HORIZONTAL bars. */
   layout?: "horizontal";
@@ -307,6 +310,7 @@ static function hFormatTicks(
   cursor: cursorEnabled = true,
   indicator,
   hideLabel,
+  hideIndicator,
   tickMargin = 8,
   class: className,
   layout,
@@ -329,6 +333,7 @@ static function hFormatTicks(
     width,
     height,
     margin: { top: 5, right: 5, bottom: 5, left: 5, ...input.margin },
+    yAxisWidth: (showYAxis ? 60 : 0),
     stacked,
   })/>
   <const/hBars=hComputeBars(hCtx, singleKey, singleRadius)/>
@@ -442,6 +447,7 @@ static function hFormatTicks(
           label=hLabels[hActiveIndex]
           indicator=indicator
           hideLabel=hideLabel
+          hideIndicator=hideIndicator
         />
       </div>
     </if>
@@ -464,7 +470,7 @@ static function hFormatTicks(
   <const/singleBars=(multiSeries ? [] : computeSingleBars(ctx, singleKey, singleRadius))/>
   <const/ticks=formatTicks(ctx, input.xTickFormatter)/>
   <const/rowsByIndex=tooltipRowsByIndex(ctx, seriesList, config)/>
-  <const/labels=data.map((row) => String(row[xKey]))/>
+  <const/labels=data.map((row) => (input.tooltipLabelFormatter ? input.tooltipLabelFormatter(String(row[xKey])) : String(row[xKey])))/>
   <const/lefts=tooltipLefts(ctx)/>
   <const/cursorPaths=data.map((row, index) => bandCursorPath(ctx, index))/>
   <const/geometry=pointerGeometry(ctx)/>
@@ -585,6 +591,7 @@ static function hFormatTicks(
           label=labels[activeIndex]
           indicator=indicator
           hideLabel=hideLabel
+          hideIndicator=hideIndicator
         />
       </div>
     </if>

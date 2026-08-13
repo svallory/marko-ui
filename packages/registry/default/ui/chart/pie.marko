@@ -40,6 +40,8 @@ export interface Input {
   outerRadius?: number;
   /** Degrees between sectors, like recharts' paddingAngle. */
   paddingAngle?: number;
+  /** Sector border width (recharts Pie strokeWidth, default 1). 0 removes the white separator. */
+  strokeWidth?: number;
   tooltip?: boolean;
   indicator?: "line" | "dot" | "dashed";
   legend?: boolean | "top" | "bottom";
@@ -133,6 +135,7 @@ static function outsideLabelGeometry(
   innerRadius = 0,
   outerRadius,
   paddingAngle,
+  strokeWidth,
   tooltip: showTooltip = true,
   indicator = "dot",
   legend,
@@ -184,6 +187,7 @@ static function outsideLabelGeometry(
           <path
             class="recharts-sector"
             stroke="#fff"
+            stroke-width=strokeWidth
             fill=sliceColor(arcDatum.row, nameKey)
             d=(isActive
               ? pieArcs(data, dataKey, { innerRadius, outerRadius: outer + activeOuterRadiusDelta, paddingAngle })[arcDatum.index]?.path ?? arcDatum.path

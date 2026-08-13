@@ -1,0 +1,76 @@
+// Port of shadcn's chart-pie-stacked.tsx — two concentric donut rings via
+// pie.marko's `rings` input (a clean multi-ring extension rather than
+// compositing two <PieChart> instances, which would double-render the
+// tooltip/container machinery incorrectly). The tooltip's label/value come
+// from whichever ring is hovered — our pie.marko only tracks a hover index
+// on the base ring, so the tooltip here reflects ring 0 (desktop) on hover;
+// shadcn's version shows a shared tooltip across BOTH rings via a single
+// synced Recharts tooltip context, which our simpler two-ring model does not
+// reproduce pixel-for-pixel. Visually the two donut rings match; the
+// hover-tooltip's exact cross-ring behavior is the one approximation here.
+import Chart from "@marko-ui/registry/ui/chart/chart.marko";
+import PieChart from "@marko-ui/registry/ui/chart/pie.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+
+static const desktopData = [
+  { month: "january", desktop: 186, fill: "var(--color-january)" },
+  { month: "february", desktop: 305, fill: "var(--color-february)" },
+  { month: "march", desktop: 237, fill: "var(--color-march)" },
+  { month: "april", desktop: 173, fill: "var(--color-april)" },
+  { month: "may", desktop: 209, fill: "var(--color-may)" },
+];
+
+static const mobileData = [
+  { month: "january", mobile: 80, fill: "var(--color-january)" },
+  { month: "february", mobile: 200, fill: "var(--color-february)" },
+  { month: "march", mobile: 120, fill: "var(--color-march)" },
+  { month: "april", mobile: 190, fill: "var(--color-april)" },
+  { month: "may", mobile: 130, fill: "var(--color-may)" },
+];
+
+static const chartConfig = {
+  visitors: { label: "Visitors" },
+  desktop: { label: "Desktop" },
+  mobile: { label: "Mobile" },
+  january: { label: "January", color: "var(--chart-1)" },
+  february: { label: "February", color: "var(--chart-2)" },
+  march: { label: "March", color: "var(--chart-3)" },
+  april: { label: "April", color: "var(--chart-4)" },
+  may: { label: "May", color: "var(--chart-5)" },
+};
+
+<Card class="flex flex-col">
+  <CardHeader class="items-center pb-0">
+    <CardTitle>Pie Chart - Stacked</CardTitle>
+    <CardDescription>January - June 2024</CardDescription>
+  </CardHeader>
+  <CardContent class="flex-1 pb-0">
+    <Chart config=chartConfig class="mx-auto aspect-square max-h-[250px]">
+      <PieChart
+        data=desktopData
+        config=chartConfig
+        dataKey="desktop"
+        nameKey="month"
+        outerRadius=60
+        rings=[{ data: mobileData, dataKey: "mobile", nameKey: "month", innerRadius: 70, outerRadius: 90 }]
+      />
+    </Chart>
+  </CardContent>
+  <CardFooter class="flex-col gap-2 text-sm">
+    <div class="flex items-center gap-2 leading-none font-medium">
+      Trending up by 5.2% this month
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+        <path d="M16 7h6v6"/>
+        <path d="m22 7-8.5 8.5-5-5L2 15"/>
+      </svg>
+    </div>
+    <div class="leading-none text-muted-foreground">
+      Showing total visitors for the last 6 months
+    </div>
+  </CardFooter>
+</Card>
