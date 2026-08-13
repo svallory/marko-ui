@@ -1,0 +1,34 @@
+// preview-page-3 card: demos marko-ui's `marquee` (no shadcn equivalent) in a
+// "trusted by" social-proof scenario.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Marquee from "@marko-ui/registry/ui/marquee/marquee.marko";
+
+// autoFill is intentionally NOT used: its measure-and-clone loop pegged the
+// CPU inside this page's [content-visibility:auto] column (verified in the
+// phase-D browser check — the renderer stalled in bursts whenever
+// preview-page-3 was the loaded item). A doubled item list fills the track
+// statically instead.
+static const LOGOS = [
+  "Acme", "Globex", "Initech", "Umbrella", "Stark", "Wayne",
+  "Acme", "Globex", "Initech", "Umbrella", "Stark", "Wayne",
+];
+
+<Card>
+  <CardHeader>
+    <CardTitle>Trusted by 2,400+ teams</CardTitle>
+    <CardDescription>
+      From seed-stage startups to the Fortune 500.
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    <Marquee items=LOGOS pauseOnInteraction class="w-full">
+      <@content|logo|>
+        <span class="px-6 text-lg font-semibold text-muted-foreground">${logo}</span>
+      </@content>
+    </Marquee>
+  </CardContent>
+</Card>

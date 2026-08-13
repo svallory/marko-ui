@@ -1,0 +1,90 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/usage-card.tsx
+// (the CircularGauge SVG is part of the source card itself, ported as-is).
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Item from "@marko-ui/registry/ui/item/item.marko";
+import ItemActions from "@marko-ui/registry/ui/item/actions.marko";
+import ItemContent from "@marko-ui/registry/ui/item/content.marko";
+import ItemGroup from "@marko-ui/registry/ui/item/group.marko";
+import ItemMedia from "@marko-ui/registry/ui/item/media.marko";
+import ItemTitle from "@marko-ui/registry/ui/item/title.marko";
+
+static const ITEMS = [
+  { name: "Edge Requests", value: "$1.83K", percentage: 67.34 },
+  { name: "Fast Data Transfer", percentage: 52.18, value: "$952.51" },
+  { name: "Monitoring data points", percentage: 89.42, value: "$901.20" },
+  { name: "Web Analytics Events", percentage: 45.67, value: "$603.71" },
+  { name: "ISR Writes", percentage: 26.23, value: "524.52K / 2M" },
+  { name: "Function Duration", percentage: 5.11, value: "5.11 GB Hrs / 1K GB Hrs" },
+];
+
+static const CIRCUMFERENCE = 2 * Math.PI * 42.5;
+
+static function strokePercent(percentage: number) {
+  const normalized = Math.min(Math.max(percentage, 0), 100);
+  return (normalized / 100) * CIRCUMFERENCE;
+}
+
+<Card class="w-full max-w-sm gap-4">
+  <CardHeader>
+    <CardTitle class="px-1 text-sm">
+      5 days remaining in cycle
+    </CardTitle>
+  </CardHeader>
+  <CardContent>
+    <ItemGroup class="gap-0">
+      <for|entry| of=ITEMS by=(entry) => entry.name>
+        <a href="#" data-slot="item-link">
+          <Item size="sm" class="px-0 group-hover/item-group:bg-transparent">
+            <ItemMedia variant="icon" class="text-primary">
+              <svg
+                aria-hidden="true"
+                fill="none"
+                height="16"
+                width="16"
+                stroke-width="2"
+                viewBox="0 0 100 100"
+                class="-rotate-90"
+              >
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="42.5"
+                  stroke-width="12"
+                  stroke-dashoffset="0"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="opacity-20"
+                  stroke="currentColor"
+                  style={ "stroke-dasharray": `${CIRCUMFERENCE} ${CIRCUMFERENCE}` }
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="42.5"
+                  stroke-width="12"
+                  stroke-dashoffset="0"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke="currentColor"
+                  class="transition-all duration-300"
+                  style={ "stroke-dasharray": `${strokePercent(entry.percentage)} ${CIRCUMFERENCE}` }
+                />
+              </svg>
+            </ItemMedia>
+            <ItemContent class="inline-block truncate">
+              <ItemTitle class="inline">${entry.name}</ItemTitle>
+            </ItemContent>
+            <ItemActions>
+              <span class="font-mono text-xs font-medium text-muted-foreground tabular-nums">
+                ${entry.value}
+              </span>
+            </ItemActions>
+          </Item>
+        </a>
+      </for>
+    </ItemGroup>
+  </CardContent>
+</Card>

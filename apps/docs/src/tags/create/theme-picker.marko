@@ -1,0 +1,63 @@
+// Ported from shadcn/ui app/(app)/(create)/components/theme-picker.tsx.
+// Two radio sections: base-color themes first, then the remaining colored
+// themes, separated by a divider — matching the source's two-group split via
+// BASE_COLORS membership. Swatch uses dark muted-foreground for base-color
+// themes, dark primary otherwise (verbatim source logic).
+//
+// Deviation: LockButton restored in phase 3 (locked/onToggleLock attrs from the design-system container).
+import { BASE_COLORS, type Theme, type ThemeName } from "./lib/registry-config.ts";
+import Picker from "./picker.marko";
+import LockButton from "./lock-button.marko";
+
+export interface Input {
+  themes: readonly Theme[];
+  value: ThemeName;
+  onValueChange: (value: ThemeName) => void;
+  onItemPreview?: (value: ThemeName | null) => void;
+  locked: boolean;
+  onToggleLock: () => void;
+  isMobile?: boolean;
+}
+
+<const/currentTheme=input.themes.find((theme) => theme.name === input.value)/>
+<const/currentThemeIsBaseColor=BASE_COLORS.find((baseColor) => baseColor.name === input.value)/>
+<const/swatchColor=currentTheme?.cssVars?.dark?.[currentThemeIsBaseColor ? "muted-foreground" : "primary"]/>
+
+<const/baseColorThemes=input.themes.filter(
+  (theme) => BASE_COLORS.find((baseColor) => baseColor.name === theme.name),
+)/>
+<const/otherThemes=input.themes.filter(
+  (theme) => !BASE_COLORS.find((baseColor) => baseColor.name === theme.name),
+)/>
+
+<div class="group/picker relative">
+  <Picker
+    value=input.value
+    onValueChange=(value) => input.onValueChange(value as ThemeName)
+    onItemPreview=(value) => input.onItemPreview?.(value as ThemeName | null)
+    closeOnClick=input.isMobile
+    side=(input.isMobile ? "top" : "right")
+    align=(input.isMobile ? "center" : "start")
+    contentClass="max-h-92"
+    sections=[
+      { options: baseColorThemes.map((theme) => ({ value: theme.name, label: theme.title })) },
+      { options: otherThemes.map((theme) => ({ value: theme.name, label: theme.title })) },
+    ]
+  >
+    <@trigger>
+      <div class="flex flex-col justify-start text-left">
+        <div class="text-xs text-muted-foreground">Theme</div>
+        <div class="text-sm font-medium text-foreground">${currentTheme?.title}</div>
+      </div>
+      <div
+        class="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 rounded-full select-none md:right-2.5"
+        style=`background: ${swatchColor}`
+      />
+    </@trigger>
+  </Picker>
+  <LockButton
+    locked=input.locked
+    onToggle=input.onToggleLock
+    class="absolute top-1/2 right-8 -translate-y-1/2"
+  />
+</div>

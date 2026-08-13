@@ -32,8 +32,9 @@ export interface Input {
 <const/flowOptions=FLOWS.map((flow) => ({ name: flow.name, label: flow.label }))/>
 <const/measureOptions=MEASURES.map((measure) => ({ name: measure.name, label: measure.label }))/>
 
-// Single stable handlers keyed by field name — see create-customizer.marko for
-// why this must be a stable closure rather than a per-picker factory.
+// Single stable handlers keyed by field name — closures built inline per
+// picker at render time are not serializable across Marko's resume
+// boundary (see create-picker.marko's Input doc comment on `field`).
 <const/update=(field: string, value: string) => {
   input.configChange({ ...input.config, [field]: value });
 }/>

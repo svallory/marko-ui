@@ -1,0 +1,245 @@
+// Ported from shadcn/ui app/(app)/(create)/components/customizer.tsx.
+// The floating sidebar panel that composes all pickers together. Field
+// order, grouping, and separators below are IDENTICAL to the source:
+//   MainMenu (header)
+//   StylePicker | BaseColorPicker | ThemePicker | ChartColorPicker
+//   -- separator --
+//   FontPicker(Heading) | FontPicker(Body)
+//   -- separator --
+//   IconLibraryPicker | RadiusPicker
+//   -- separator --
+//   MenuColorPicker | MenuAccentPicker | BasePicker (mobile only)
+//   footer: CopyPreset | OpenPreset | RandomButton | ActionMenu | ResetDialog
+//   footer: ProjectForm ("Get Code", desktop only)
+//
+// Phase 3: state moved from local <let>s to the design-system container
+// (design-system.marko), which passes committed params + setters down as
+// attrs — the Marko equivalent of the source's useDesignSystemSearchParams/
+// useLocks/useHistory/usePreviewOverride context hooks. Commits (clicks)
+// call input.setParams (URL-encoded as ?preset=<code>, pushState); hover
+// previews call input.setPreview (debounced overlay, never touches the URL).
+//
+// Phase 4: the footer "Actions" button now opens the real ActionMenu
+// (design-system.marko owns its open state, same pattern as OpenPreset) —
+// matches source's customizer.tsx footer wiring useActionMenuTrigger()'s
+// openActionMenu to that button's onClick.
+//
+// Remaining stub:
+// - ProjectForm ("Get Code") — project generator, still a visible-but-
+//   disabled stub button (this repo has no CLI/project-scaffolding backend
+//   to wire it to).
+//
+// Note: v0-button.tsx and share-button.tsx exist in the shadcn source tree
+// but are never imported/mounted anywhere under app/(app)/(create) — grepped
+// the whole subtree for both component names and the only matches are their
+// own definition files. They are not part of the real page and there is
+// nothing to port for them.
+import type { DesignSystemSearchParams } from "./lib/search-params.ts";
+import type { LockableParam } from "./lib/design-system-state.ts";
+import type {
+  BaseColorName,
+  BaseName,
+  ChartColorName,
+  IconLibraryName,
+  MenuAccentValue,
+  RadiusValue,
+  StyleName,
+  ThemeName,
+} from "./lib/registry-config.ts";
+import { getThemesForBaseColor } from "./lib/registry-config.ts";
+import { FONTS, FONT_HEADING_OPTIONS } from "./lib/fonts.ts";
+import MainMenu from "./main-menu.marko";
+import StylePicker from "./style-picker.marko";
+import BaseColorPicker from "./base-color-picker.marko";
+import ThemePicker from "./theme-picker.marko";
+import ChartColorPicker from "./chart-color-picker.marko";
+import FontPicker from "./font-picker.marko";
+import IconLibraryPicker from "./icon-library-picker.marko";
+import RadiusPicker from "./radius-picker.marko";
+import MenuPicker from "./menu-picker.marko";
+import AccentPicker from "./accent-picker.marko";
+import BasePicker from "./base-picker.marko";
+import CopyPreset from "./copy-preset.marko";
+
+export interface Input {
+  isMobile?: boolean;
+  params: DesignSystemSearchParams;
+  setParams: (updates: Partial<DesignSystemSearchParams>) => void;
+  setPreview: (patch: Partial<DesignSystemSearchParams> | null) => void;
+  locks: Set<LockableParam>;
+  toggleLock: (param: LockableParam) => void;
+  canGoBack: boolean;
+  canGoForward: boolean;
+  onUndo: () => void;
+  onRedo: () => void;
+  onShuffle: () => void;
+  onToggleTheme: () => void;
+  onOpenPreset: () => void;
+  onShowResetDialog: () => void;
+  onNavigate: () => void;
+  presetCode: string;
+  isDark: boolean;
+}
+
+<const/config=input.params/>
+<const/availableThemes=getThemesForBaseColor(config.baseColor)/>
+
+<const/setPreview=input.setPreview/>
+
+<div class="dark relative isolate z-10 flex max-h-full min-h-0 w-full flex-col self-start rounded-2xl bg-card/90 backdrop-blur-xl md:w-(--customizer-width,12rem)" data-slot="customizer">
+  <div class="hidden items-center justify-between gap-2 border-b p-3 md:flex">
+    <MainMenu
+      canGoBack=input.canGoBack
+      canGoForward=input.canGoForward
+      onUndo=input.onUndo
+      onRedo=input.onRedo
+      onShuffle=input.onShuffle
+      onToggleTheme=input.onToggleTheme
+      onOpenPreset=input.onOpenPreset
+      onShowResetDialog=input.onShowResetDialog
+      onNavigate=input.onNavigate
+    />
+  </div>
+  <div class="no-scrollbar min-h-0 flex-1 overflow-x-auto overflow-y-hidden p-3 md:overflow-y-auto">
+    <div class="flex flex-row gap-2.5 py-px md:flex-col md:gap-3.25">
+      <StylePicker
+        value=config.style
+        onValueChange=(value) => input.setParams({ style: value as StyleName })
+        onItemPreview=(value) => setPreview(value ? { style: value as StyleName } : null)
+        locked=input.locks.has("style")
+        onToggleLock=() => input.toggleLock("style")
+        isMobile=input.isMobile
+      />
+      <div class="hidden h-px bg-border md:block"/>
+      <BaseColorPicker
+        value=config.baseColor
+        onValueChange=(value) => input.setParams({ baseColor: value as BaseColorName })
+        onItemPreview=(value) => setPreview(value ? { baseColor: value as BaseColorName } : null)
+        locked=input.locks.has("baseColor")
+        onToggleLock=() => input.toggleLock("baseColor")
+        isMobile=input.isMobile
+      />
+      <ThemePicker
+        themes=availableThemes
+        value=config.theme
+        onValueChange=(value) => input.setParams({ theme: value as ThemeName })
+        onItemPreview=(value) => setPreview(value ? { theme: value as ThemeName } : null)
+        locked=input.locks.has("theme")
+        onToggleLock=() => input.toggleLock("theme")
+        isMobile=input.isMobile
+      />
+      <ChartColorPicker
+        baseColor=config.baseColor
+        value=config.chartColor
+        onValueChange=(value) => input.setParams({ chartColor: value as ChartColorName })
+        onItemPreview=(value) => setPreview(value ? { chartColor: value as ChartColorName } : null)
+        locked=input.locks.has("chartColor")
+        onToggleLock=() => input.toggleLock("chartColor")
+        isMobile=input.isMobile
+      />
+      <div class="hidden h-px bg-border md:block"/>
+      <FontPicker
+        label="Heading"
+        param="fontHeading"
+        fonts=FONT_HEADING_OPTIONS
+        bodyFontValue=config.font
+        value=config.fontHeading
+        onValueChange=(value) => input.setParams({ fontHeading: value })
+        onItemPreview=(value) => setPreview(value ? { fontHeading: value } : null)
+        locked=input.locks.has("fontHeading")
+        onToggleLock=() => input.toggleLock("fontHeading")
+        isMobile=input.isMobile
+      />
+      <FontPicker
+        label="Font"
+        param="font"
+        fonts=FONTS
+        bodyFontValue=config.font
+        value=config.font
+        onValueChange=(value) => input.setParams({ font: value })
+        onItemPreview=(value) => setPreview(value ? { font: value } : null)
+        locked=input.locks.has("font")
+        onToggleLock=() => input.toggleLock("font")
+        isMobile=input.isMobile
+      />
+      <div class="hidden h-px bg-border md:block"/>
+      <IconLibraryPicker
+        value=config.iconLibrary
+        onValueChange=(value) => input.setParams({ iconLibrary: value as IconLibraryName })
+        onItemPreview=(value) => setPreview(value ? { iconLibrary: value as IconLibraryName } : null)
+        locked=input.locks.has("iconLibrary")
+        onToggleLock=() => input.toggleLock("iconLibrary")
+        isMobile=input.isMobile
+      />
+      <RadiusPicker
+        style=config.style
+        value=config.radius
+        onValueChange=(value) => input.setParams({ radius: value as RadiusValue })
+        onItemPreview=(value) => setPreview(value ? { radius: value as RadiusValue } : null)
+        locked=input.locks.has("radius")
+        onToggleLock=() => input.toggleLock("radius")
+        isMobile=input.isMobile
+      />
+      <div class="hidden h-px bg-border md:block"/>
+      <MenuPicker
+        menuColor=config.menuColor
+        menuAccent=config.menuAccent
+        onChange=(next) => input.setParams(next)
+        onItemPreview=(next) => setPreview(next)
+        locked=input.locks.has("menuColor")
+        onToggleLock=() => input.toggleLock("menuColor")
+        isDark=input.isDark
+        isMobile=input.isMobile
+      />
+      <AccentPicker
+        value=config.menuAccent
+        menuColor=config.menuColor
+        onValueChange=(value) => input.setParams({ menuAccent: value as MenuAccentValue })
+        onItemPreview=(value) => setPreview(value ? { menuAccent: value as MenuAccentValue } : null)
+        locked=input.locks.has("menuAccent")
+        onToggleLock=() => input.toggleLock("menuAccent")
+        isMobile=input.isMobile
+      />
+      <if=input.isMobile>
+        <BasePicker
+          value=config.base
+          onValueChange=(value) => input.setParams({ base: value as BaseName })
+          isMobile=input.isMobile
+        />
+      </if>
+    </div>
+  </div>
+  <div class="flex min-w-0 gap-2 border-t p-3 md:flex-col md:**:[button,a]:w-full">
+    <CopyPreset presetCode=input.presetCode class="min-w-0 flex-1 md:flex-none"/>
+    <button
+      type="button"
+      class="inline-flex h-8 max-w-20 min-w-0 flex-1 touch-manipulation items-center justify-center rounded-md border border-input bg-transparent px-2 py-0 text-sm font-medium shadow-xs transition-none select-none hover:bg-muted sm:max-w-none md:flex-none pointer-coarse:h-10"
+      on-click=input.onOpenPreset
+    >
+      ${input.isMobile ? "Open" : "Open Preset"}
+    </button>
+    <button
+      type="button"
+      class="inline-flex h-8 max-w-20 min-w-0 flex-1 touch-manipulation items-center justify-center rounded-md border border-input bg-transparent px-2 py-0 text-sm font-medium transition-none select-none hover:bg-muted sm:max-w-none md:flex-none pointer-coarse:h-10"
+      on-click=input.onShuffle
+    >
+      <span class="w-full truncate text-center font-medium">Shuffle</span>
+    </button>
+    <button
+      type="button"
+      class="inline-flex h-8 items-center justify-center rounded-md border border-input bg-transparent px-2 text-sm font-medium hover:bg-muted"
+      on-click=input.onNavigate
+    >
+      Actions
+    </button>
+    // Note: the source's footer renders <ResetDialog /> here, which is the
+    // confirm dialog only (no trigger button) — the dialog now lives in
+    // design-system.marko; reset is reachable via main-menu or Shift+R,
+    // matching source.
+  </div>
+  <div class="hidden -mt-3 min-w-0 gap-2 p-3 md:flex md:flex-col md:**:[button,a]:w-full">
+    // TODO: ProjectForm ("Get Code") — dialog that generates a downloadable
+    // project/registry command (out of phase-3 scope).
+    <button type="button" disabled class="w-full rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground opacity-50">Get Code</button>
+  </div>
+</div>

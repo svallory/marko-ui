@@ -1,0 +1,45 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/shortcuts.tsx
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import Item from "@marko-ui/registry/ui/item/item.marko";
+import ItemActions from "@marko-ui/registry/ui/item/actions.marko";
+import ItemGroup from "@marko-ui/registry/ui/item/group.marko";
+import ItemHeader from "@marko-ui/registry/ui/item/header.marko";
+import ItemSeparator from "@marko-ui/registry/ui/item/separator.marko";
+import ItemTitle from "@marko-ui/registry/ui/item/title.marko";
+import Kbd from "@marko-ui/registry/ui/kbd/kbd.marko";
+
+static const SHORTCUTS = [
+  { label: "Search", keys: ["⌘", "K"] },
+  { label: "Quick Actions", keys: ["⌘", "J"] },
+  { label: "New File", keys: ["⌘", "N"] },
+  { label: "Save", keys: ["⌘", "S"] },
+  { label: "Toggle Sidebar", keys: ["⌘", "B"] },
+];
+
+<Card>
+  <CardContent>
+    <div class="flex flex-col gap-3">
+      <div class="text-sm font-medium">Shortcuts</div>
+      <ItemGroup class="gap-2 text-muted-foreground" data-size="xs">
+        <for|shortcut, i| of=SHORTCUTS by=(shortcut) => shortcut.label>
+          <if=(i > 0)>
+            <ItemSeparator/>
+          </if>
+          <Item variant="default" size="sm" class="border-0 px-0 py-0">
+            <ItemHeader>
+              <ItemTitle class="font-normal">${shortcut.label}</ItemTitle>
+              <ItemActions>
+                <div class="flex gap-1">
+                  <for|key| of=shortcut.keys by=(key) => key>
+                    <Kbd>${key}</Kbd>
+                  </for>
+                </div>
+              </ItemActions>
+            </ItemHeader>
+          </Item>
+        </for>
+      </ItemGroup>
+    </div>
+  </CardContent>
+</Card>

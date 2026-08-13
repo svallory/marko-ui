@@ -1,0 +1,59 @@
+// Ported from shadcn registry/bases/base/blocks/preview/index.tsx — the
+// "02" pager page of /create.
+//
+// Reduced card set: 17 of the source's 31 mounted cards depend on
+// primitives this registry does not have (ui/field composition,
+// recharts/ui-chart, canvas/animation, icon-set content) and are skipped
+// per the no-approximations directive — see TODO.md
+// "## /create preview — skipped cards (missing primitives)". The grid is
+// rebalanced from the source's 7 columns (grid-cols-7,
+// w-[2400px]/md:w-[3000px], lyra/mira md:w-[2600px]) to 4 columns
+// (grid-cols-4, w-[1370px]/md:w-[1715px], lyra/mira md:w-[1485px] — the
+// source widths scaled by 4/7). All cards are static tag references (no
+// dynamic tags — see notes/bug-marko-dynamic-tag-hydration-crash.md).
+import ActivateAgentDialog from "./cards/activate-agent-dialog.marko";
+import AnomalyAlert from "./cards/anomaly-alert.marko";
+import Contributors from "./cards/contributors.marko";
+import EnvironmentVariables from "./cards/environment-variables.marko";
+import FileUpload from "./cards/file-upload.marko";
+import Invoice from "./cards/invoice.marko";
+import NoTeamMembers from "./cards/no-team-members.marko";
+import NotFound from "./cards/not-found.marko";
+import ObservabilityCard from "./cards/observability-card.marko";
+import Shortcuts from "./cards/shortcuts.marko";
+import SkeletonLoading from "./cards/skeleton-loading.marko";
+import StyleOverview from "./cards/style-overview.marko";
+import UsageCard from "./cards/usage-card.marko";
+import WeeklyFitnessSummary from "./cards/weekly-fitness-summary.marko";
+
+<div class="overflow-x-auto overflow-y-hidden bg-muted contain-[paint] [--gap:--spacing(4)] 3xl:[--gap:--spacing(12)] md:[--gap:--spacing(10)] dark:bg-background style-lyra:md:[--gap:--spacing(6)] style-mira:md:[--gap:--spacing(6)]">
+  <div class="flex w-full min-w-max justify-center">
+    <div
+      class="grid w-[1370px] grid-cols-4 items-start gap-(--gap) bg-muted p-(--gap) md:w-[1715px] dark:bg-background style-lyra:md:w-[1485px] style-mira:md:w-[1485px] *:[div]:gap-(--gap)"
+      data-slot="capture-target"
+    >
+      <div class="flex flex-col p-px [contain-intrinsic-size:380px_1200px] [content-visibility:auto]">
+        <StyleOverview/>
+        <Invoice/>
+        <EnvironmentVariables/>
+      </div>
+      <div class="flex flex-col p-px [contain-intrinsic-size:380px_1200px] [content-visibility:auto]">
+        <SkeletonLoading/>
+        <NoTeamMembers/>
+        <Contributors/>
+        <Shortcuts/>
+      </div>
+      <div class="flex flex-col p-px [contain-intrinsic-size:380px_1200px] [content-visibility:auto]">
+        <FileUpload/>
+        <ObservabilityCard/>
+        <ActivateAgentDialog/>
+      </div>
+      <div class="flex flex-col p-px [contain-intrinsic-size:380px_1200px] [content-visibility:auto]">
+        <WeeklyFitnessSummary/>
+        <UsageCard/>
+        <AnomalyAlert/>
+        <NotFound/>
+      </div>
+    </div>
+  </div>
+</div>

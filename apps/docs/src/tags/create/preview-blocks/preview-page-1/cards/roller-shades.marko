@@ -1,0 +1,64 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/roller-shades.tsx
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Slider from "@marko-ui/registry/ui/slider/slider.marko";
+import ToggleGroup from "@marko-ui/registry/ui/toggle-group/toggle-group.marko";
+
+static const PRESETS = [
+  { value: "open", label: "Open" },
+  { value: "half", label: "Half" },
+  { value: "closed", label: "Closed" },
+];
+
+<let/position=[50]/>
+
+<const/preset=(
+  position[0] <= 10 ? "open" : position[0] >= 90 ? "closed" : "half"
+)/>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Living Room</CardTitle>
+    <CardDescription>Roller Shades</CardDescription>
+  </CardHeader>
+  <CardContent class="flex flex-col gap-4">
+    <div class="flex h-32 flex-col overflow-hidden rounded-lg border bg-muted">
+      <div
+        class="bg-muted-foreground transition-all duration-300"
+        style={ height: `${position[0]}%` }
+      />
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+        Open
+      </span>
+      <Slider
+        value=position
+        valueChange=(value: number[]) => { position = [...value]; }
+        max=100
+        class="flex-1"
+      />
+      <span class="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+        Close
+      </span>
+    </div>
+  </CardContent>
+  <CardFooter>
+    <ToggleGroup
+      value=[preset]
+      valueChange=(value: string[]) => {
+        const v = value[0];
+        if (v === "open") position = [0];
+        if (v === "half") position = [50];
+        if (v === "closed") position = [100];
+      }
+      variant="outline"
+      class="w-full *:flex-1"
+      items=PRESETS
+    />
+  </CardFooter>
+</Card>

@@ -1,0 +1,72 @@
+// Ported from shadcn/ui app/(app)/(create)/components/radius-picker.tsx.
+// RADII's "default" entry is rendered alone in its own first section, the
+// rest in a second section, separated by a divider — verbatim source split.
+// The whole trigger is disabled when style is "lyra" or "sera" (radius is
+// forced to "none" for those styles); the "large" option is disabled when
+// style is "rhea" (mirrors source's isRadiusLocked / disabled logic).
+//
+// Deviation: LockButton restored in phase 3 (locked/onToggleLock attrs from the design-system container).
+import { RADII, type RadiusValue, type StyleName } from "./lib/registry-config.ts";
+import Picker from "./picker.marko";
+import LockButton from "./lock-button.marko";
+
+export interface Input {
+  style: StyleName;
+  value: RadiusValue;
+  onValueChange: (value: RadiusValue) => void;
+  onItemPreview?: (value: RadiusValue | null) => void;
+  locked: boolean;
+  onToggleLock: () => void;
+  isMobile?: boolean;
+}
+
+<const/isRadiusLocked=input.style === "lyra" || input.style === "sera"/>
+<const/selectedRadiusName=isRadiusLocked ? "none" : input.value/>
+<const/currentRadius=RADII.find((radius) => radius.name === selectedRadiusName)/>
+<const/defaultRadius=RADII.find((radius) => radius.name === "default")/>
+<const/otherRadii=RADII.filter((radius) => radius.name !== "default")/>
+
+<div class="group/picker relative">
+  <Picker
+    value=currentRadius?.name
+    onValueChange=(value) => {
+      if (isRadiusLocked) return;
+      input.onValueChange(value as RadiusValue);
+    }
+    onItemPreview=(value) => {
+      if (input.isMobile || isRadiusLocked) return;
+      input.onItemPreview?.(value as RadiusValue | null);
+    }
+    closeOnClick=input.isMobile
+    side=(input.isMobile ? "top" : "right")
+    align=(input.isMobile ? "center" : "start")
+    disabled=isRadiusLocked
+    sections=[
+      { options: defaultRadius ? [{ value: defaultRadius.name, label: defaultRadius.label }] : [] },
+      {
+        options: otherRadii.map((radius) => ({
+          value: radius.name,
+          label: radius.label,
+          disabled: input.style === "rhea" && radius.name === "large",
+        })),
+      },
+    ]
+  >
+    <@trigger>
+      <div class="flex flex-col justify-start text-left">
+        <div class="text-xs text-muted-foreground">Radius</div>
+        <div class="text-sm font-medium text-foreground">${currentRadius?.label}</div>
+      </div>
+      <div class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 rotate-90 items-center justify-center text-base text-foreground select-none md:right-2.5">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="text-foreground">
+          <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 20v-5C4 8.925 8.925 4 15 4h5"/>
+        </svg>
+      </div>
+    </@trigger>
+  </Picker>
+  <LockButton
+    locked=input.locked
+    onToggle=input.onToggleLock
+    class="absolute top-1/2 right-8 -translate-y-1/2"
+  />
+</div>

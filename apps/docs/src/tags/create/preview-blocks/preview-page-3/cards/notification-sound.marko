@@ -1,0 +1,34 @@
+// preview-page-3 card: demos marko-ui's `listbox` (no shadcn equivalent) in a
+// notification-sound preferences scenario.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Listbox from "@marko-ui/registry/ui/listbox/listbox.marko";
+
+static const SOUNDS = [
+  { value: "chime", label: "Chime" },
+  { value: "ping", label: "Ping" },
+  { value: "bubble", label: "Bubble" },
+  { value: "glass", label: "Glass" },
+  { value: "none", label: "None (silent)" },
+];
+
+<let/value=["chime"]/>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Notification Sound</CardTitle>
+    <CardDescription>Played when a new message arrives.</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <Listbox items=SOUNDS label="Sound" value:=value/>
+  </CardContent>
+  <CardFooter>
+    <CardDescription>
+      Current: ${value[0] === "none" ? "Silent" : (SOUNDS.find((s) => s.value === value[0])?.label ?? "Chime")}
+    </CardDescription>
+  </CardFooter>
+</Card>

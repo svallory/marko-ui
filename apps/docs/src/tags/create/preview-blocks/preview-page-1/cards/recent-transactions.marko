@@ -1,0 +1,81 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/recent-transactions.tsx
+// API adaptation: items-driven DropdownMenu with trigger render-prop.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardAction from "@marko-ui/registry/ui/card/action.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import DropdownMenu, { type DropdownMenuItem } from "@marko-ui/registry/ui/dropdown-menu/dropdown-menu.marko";
+import Table from "@marko-ui/registry/ui/table/table.marko";
+import TableBody from "@marko-ui/registry/ui/table/body.marko";
+import TableCell from "@marko-ui/registry/ui/table/cell.marko";
+import TableRow from "@marko-ui/registry/ui/table/row.marko";
+import Icon from "../../lib/icon.marko";
+
+static const ROW_MENU: DropdownMenuItem[] = [
+  { value: "details", label: "View details" },
+  { value: "note", label: "Add note" },
+  { value: "categorize", label: "Categorize" },
+  { type: "separator" },
+  { value: "dispute", label: "Dispute" },
+];
+
+static const TRANSACTIONS = [
+  { icon: "CoffeeIcon", name: "Blue Bottle Coffee", category: "Food & Drink", date: "Today, 10:24 AM", amount: "-$6.50", amountClass: "" },
+  { icon: "ShoppingCartIcon", name: "Whole Foods Market", category: "Groceries", date: "Yesterday", amount: "-$142.30", amountClass: "" },
+  { icon: "WalletIcon", name: "Stripe Payout", category: "Income", date: "Oct 12", amount: "+$4,200.00", amountClass: "text-emerald-500" },
+  { icon: "CarIcon", name: "Uber Technologies", category: "Transport", date: "Oct 11", amount: "-$24.10", amountClass: "" },
+  { icon: "TvIcon", name: "Netflix Subscription", category: "Entertainment", date: "Oct 10", amount: "-$19.99", amountClass: "" },
+];
+
+<Card>
+  <CardHeader>
+    <CardTitle>Recent Transactions</CardTitle>
+    <CardDescription>Your latest account activity.</CardDescription>
+    <CardAction>
+      <Button variant="outline" size="sm">
+        View All
+      </Button>
+    </CardAction>
+  </CardHeader>
+  <CardContent>
+    <Table>
+      <TableBody>
+        <for|tx| of=TRANSACTIONS by=(tx) => tx.name>
+          <TableRow>
+            <TableCell class="w-10">
+              <div class="flex size-10 items-center justify-center rounded-lg bg-muted">
+                <Icon name=tx.icon class="size-4 shrink-0"/>
+              </div>
+            </TableCell>
+            <TableCell>
+              <div class="flex flex-col">
+                <span class="font-medium">${tx.name}</span>
+                <span class="text-sm text-muted-foreground">${tx.category}</span>
+              </div>
+            </TableCell>
+            <TableCell class="text-sm text-muted-foreground">
+              ${tx.date}
+            </TableCell>
+            <TableCell class="text-right">
+              <span class=`text-sm font-semibold tabular-nums ${tx.amountClass}`>
+                ${tx.amount}
+              </span>
+            </TableCell>
+            <TableCell class="w-8">
+              <DropdownMenu items=ROW_MENU>
+                <@trigger|triggerProps|>
+                  <Button ...triggerProps variant="ghost" size="icon-sm">
+                    <Icon name="MoreHorizontalIcon"/>
+                  </Button>
+                </@trigger>
+              </DropdownMenu>
+            </TableCell>
+          </TableRow>
+        </for>
+      </TableBody>
+    </Table>
+  </CardContent>
+</Card>

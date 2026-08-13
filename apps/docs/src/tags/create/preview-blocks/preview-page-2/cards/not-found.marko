@@ -1,0 +1,40 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/not-found.tsx
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import Empty from "@marko-ui/registry/ui/empty/empty.marko";
+import EmptyContent from "@marko-ui/registry/ui/empty/content.marko";
+import EmptyDescription from "@marko-ui/registry/ui/empty/description.marko";
+import EmptyHeader from "@marko-ui/registry/ui/empty/header.marko";
+import EmptyTitle from "@marko-ui/registry/ui/empty/title.marko";
+import InputGroup from "@marko-ui/registry/ui/input-group/input-group.marko";
+import InputGroupAddon from "@marko-ui/registry/ui/input-group/addon.marko";
+import InputGroupInput from "@marko-ui/registry/ui/input-group/input.marko";
+import Kbd from "@marko-ui/registry/ui/kbd/kbd.marko";
+import Icon from "../../lib/icon.marko";
+
+<Card>
+  <CardContent>
+    <Empty class="h-72">
+      <EmptyHeader>
+        <EmptyTitle>404 - Not Found</EmptyTitle>
+        <EmptyDescription>
+          The page you're looking for doesn't exist. Try searching
+          for what you need below.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <InputGroup class="w-3/4">
+          <InputGroupInput placeholder="Try searching for pages..."/>
+          <InputGroupAddon>
+            <Icon name="SearchIcon"/>
+          </InputGroupAddon>
+          <InputGroupAddon align="inline-end">
+            <Kbd>/</Kbd>
+          </InputGroupAddon>
+        </InputGroup>
+        <Button variant="link">Go to homepage</Button>
+      </EmptyContent>
+    </Empty>
+  </CardContent>
+</Card>

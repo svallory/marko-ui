@@ -1,0 +1,56 @@
+// Ported from shadcn/ui app/(app)/(create)/components/item-explorer.tsx.
+// A grouped, collapsible list of registry items for switching the preview's
+// `item` param.
+//
+// IMPORTANT — dead code in the real product, kept dead here: grepping
+// shadcn's entire app tree shows ItemExplorer is defined but rendered
+// NOWHERE (create/page.tsx renders only Preview/Customizer/PresetHandler/
+// WelcomeDialog; the live "browse all items" surface is the ⌘P action menu,
+// hooks/use-action-menu.ts -> our action-menu.marko). This tag is likewise
+// not composed into design-system.marko. It is kept as an available tag for
+// parity, with its item list aligned to what the preview route actually
+// renders: the three position-named preview pages.
+export interface Input {
+  item: string;
+  onItemChange: (item: string) => void;
+  class?: string;
+}
+
+static const ITEMS = [
+  { name: "preview-page-1", title: "Preview Page 1" },
+  { name: "preview-page-2", title: "Preview Page 2" },
+  { name: "preview-page-3", title: "Preview Page 3" },
+];
+
+<let/blocksOpen=true/>
+
+<nav data-slot="item-explorer" class=`no-scrollbar w-56 shrink-0 overflow-x-hidden overflow-y-auto text-sm ${input.class ?? ""}`>
+  <div class="mb-3">
+    <button
+      type="button"
+      class="flex w-full items-center gap-1 py-1.5 text-[0.8rem] font-medium text-muted-foreground"
+      on-click() { blocksOpen = !blocksOpen; }
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=`size-3.5 transition-transform ${blocksOpen ? "rotate-90" : ""}`>
+        <path d="m9 18 6-6-6-6"/>
+      </svg>
+      <span>Blocks</span>
+    </button>
+    <if=blocksOpen>
+      <ul class="relative ml-1.5 border-l border-border/50 pl-2">
+        <for|entry| of=ITEMS by=(entry) => entry.name>
+          <li>
+            <button
+              type="button"
+              data-active=String(input.item === entry.name)
+              class="h-[26px] w-full cursor-pointer rounded-md border border-transparent px-2 text-left text-[0.8rem] font-normal data-[active=true]:border-accent data-[active=true]:bg-accent"
+              on-click() { input.onItemChange(entry.name); }
+            >
+              ${entry.title}
+            </button>
+          </li>
+        </for>
+      </ul>
+    </if>
+  </div>
+</nav>

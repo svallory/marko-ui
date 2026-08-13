@@ -1,0 +1,51 @@
+// Ported from shadcn/ui app/(app)/(create)/components/style-picker.tsx.
+// Renders STYLES from lib/registry-config.ts as a radio picker with the
+// selected style's inline SVG icon shown on the trigger.
+//
+// LockButton restored in phase 3: the source reads lock state via the
+// useLocks context; here the design-system container passes locked +
+// onToggleLock down as attrs. The trigger/content/radio-item markup and
+// className strings are otherwise verbatim.
+import { STYLES, type StyleName } from "./lib/registry-config.ts";
+import Picker from "./picker.marko";
+import LockButton from "./lock-button.marko";
+
+export interface Input {
+  value: StyleName;
+  onValueChange: (value: StyleName) => void;
+  onItemPreview?: (value: StyleName | null) => void;
+  locked: boolean;
+  onToggleLock: () => void;
+  isMobile?: boolean;
+}
+
+<const/currentStyle=STYLES.find((style) => style.name === input.value)/>
+
+<div class="group/picker relative">
+  <Picker
+    value=input.value
+    onValueChange=(value) => input.onValueChange(value as StyleName)
+    onItemPreview=(value) => input.onItemPreview?.(value as StyleName | null)
+    closeOnClick=input.isMobile
+    side=(input.isMobile ? "top" : "right")
+    align=(input.isMobile ? "center" : "start")
+    sections=[{ options: STYLES.map((style) => ({ value: style.name, label: style.title })) }]
+  >
+    <@trigger>
+      <div class="flex flex-col justify-start text-left">
+        <div class="text-xs text-muted-foreground">Style</div>
+        <div class="text-sm font-medium text-foreground">${currentStyle?.title}</div>
+      </div>
+      <if=currentStyle?.icon>
+        <div class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center select-none md:right-2.5">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" class="size-4" innerHTML=currentStyle.icon/>
+        </div>
+      </if>
+    </@trigger>
+  </Picker>
+  <LockButton
+    locked=input.locked
+    onToggle=input.onToggleLock
+    class="absolute top-1/2 right-8 -translate-y-1/2"
+  />
+</div>

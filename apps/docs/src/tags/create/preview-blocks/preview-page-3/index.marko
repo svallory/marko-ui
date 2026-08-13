@@ -1,0 +1,58 @@
+// preview-page-3 — the "03" pager page of /create. NOT a shadcn port: this
+// page showcases components the marko-ui registry has that shadcn's
+// registry does NOT (confirmed by diffing
+// packages/registry/default/ui/ against shadcn's new-york-v4/ui and
+// bases/base/ui).
+//
+// Same visual language as the preview-page-1/2 ports: wide multi-column
+// card grid, horizontal scroll container, content-visibility hints,
+// static tag references only.
+//
+// Cards (component each demos): brand-marquee (marquee), delivery-region
+// (cascade-select), notification-sound (listbox), contract-signature
+// (signature-pad), session-countdown (timer), date-of-birth (date-input),
+// product-review (rating-group), topic-tags (tags-input), order-quantity
+// (number-input), api-key (clipboard), account-password (password-input),
+// project-files (tree-view).
+import AccountPassword from "./cards/account-password.marko";
+import ApiKey from "./cards/api-key.marko";
+import BrandMarquee from "./cards/brand-marquee.marko";
+import ContractSignature from "./cards/contract-signature.marko";
+import DateOfBirth from "./cards/date-of-birth.marko";
+import DeliveryRegion from "./cards/delivery-region.marko";
+import NotificationSound from "./cards/notification-sound.marko";
+import OrderQuantity from "./cards/order-quantity.marko";
+import ProductReview from "./cards/product-review.marko";
+import ProjectFiles from "./cards/project-files.marko";
+import SessionCountdown from "./cards/session-countdown.marko";
+import TopicTags from "./cards/topic-tags.marko";
+
+<div class="overflow-x-auto overflow-y-hidden bg-muted contain-[paint] [--gap:--spacing(4)] 3xl:[--gap:--spacing(12)] md:[--gap:--spacing(10)] dark:bg-background style-lyra:md:[--gap:--spacing(6)] style-mira:md:[--gap:--spacing(6)]">
+  <div class="flex w-full min-w-max justify-center">
+    <div
+      class="grid w-[1370px] grid-cols-4 items-start gap-(--gap) bg-muted p-(--gap) md:w-[1715px] dark:bg-background style-lyra:md:w-[1485px] style-mira:md:w-[1485px] *:[div]:gap-(--gap)"
+      data-slot="capture-target"
+    >
+      <div class="flex flex-col p-px [contain-intrinsic-size:380px_1200px] [content-visibility:auto]">
+        <BrandMarquee/>
+        <DeliveryRegion/>
+        <ContractSignature/>
+      </div>
+      <div class="flex flex-col p-px [contain-intrinsic-size:380px_1200px] [content-visibility:auto]">
+        <NotificationSound/>
+        <SessionCountdown/>
+        <TopicTags/>
+      </div>
+      <div class="flex flex-col p-px [contain-intrinsic-size:380px_1200px] [content-visibility:auto]">
+        <DateOfBirth/>
+        <ProductReview/>
+        <ApiKey/>
+      </div>
+      <div class="flex flex-col p-px [contain-intrinsic-size:380px_1200px] [content-visibility:auto]">
+        <OrderQuantity/>
+        <AccountPassword/>
+        <ProjectFiles/>
+      </div>
+    </div>
+  </div>
+</div>

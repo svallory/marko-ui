@@ -2,3 +2,16 @@
 @import "./tags/typeset/typeset.css";
 @source "../../**/*.marko";
 @source "../../../packages/registry/default/**/*.{marko,ts}";
+
+/* Style-variant scoping used by the /create preview showcase cards
+   (ported verbatim from shadcn's app/globals.css) — the preview iframe
+   route adds a `style-<name>` class to <body>, making these conditional
+   classes live. */
+@custom-variant style-vega (&:where(.style-vega *));
+@custom-variant style-nova (&:where(.style-nova *));
+@custom-variant style-lyra (&:where(.style-lyra *));
+@custom-variant style-maia (&:where(.style-maia *));
+@custom-variant style-mira (&:where(.style-mira *));
+@custom-variant style-luma (&:where(.style-luma *));
+@custom-variant style-sera (&:where(.style-sera *));
+@custom-variant style-rhea (&:where(.style-rhea *));

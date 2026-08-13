@@ -1,0 +1,88 @@
+// Ported from shadcn/ui app/(app)/(create)/components/open-preset.tsx
+// (desktop Dialog variant; the source's mobile Drawer variant is collapsed
+// into the same dialog — this repo has no drawer primitive and the fields,
+// validation, and submit flow are identical between the two).
+//
+// Controlled from the design-system container (open + openChange) so the
+// customizer footer button, the main-menu item, and the "o" shortcut can
+// all open it — the Marko equivalent of the source's useSWR-keyed
+// useOpenPreset() shared open state. Input validation is live via
+// parsePresetInput: accepts a bare code ("b2D0wqNxT") or a
+// "--preset b2D0wqNxT" CLI flag, marks the field invalid otherwise, and
+// disables Open until the input parses.
+import { parsePresetInput } from "./lib/parse-preset-input.ts";
+import Dialog from "@marko-ui/registry/ui/dialog/dialog.marko";
+
+export interface Input {
+  open: boolean;
+  openChange: (open: boolean) => void;
+  onSubmitPreset: (preset: string) => void;
+}
+
+static const PRESET_EXAMPLE = "b2D0wqNxT";
+static const PRESET_TITLE = "Open Preset";
+static const PRESET_DESCRIPTION =
+  "Paste a preset code to load a saved configuration.";
+
+<let/inputValue=""/>
+
+<const/nextPreset=parsePresetInput(inputValue)/>
+<const/isInvalid=(inputValue.trim().length > 0 && nextPreset === null)/>
+
+<const/handleOpenChange=(open: boolean) => {
+  input.openChange(open);
+  if (!open) {
+    inputValue = "";
+  }
+}/>
+
+<const/handleSubmit=(event: Event) => {
+  event.preventDefault();
+  if (!nextPreset) {
+    return;
+  }
+  input.onSubmitPreset(nextPreset);
+  handleOpenChange(false);
+}/>
+
+<Dialog open=input.open openChange=handleOpenChange class="dark sm:max-w-md">
+  <@title>${PRESET_TITLE}</@title>
+  <@description>${PRESET_DESCRIPTION}</@description>
+  <@content>
+    <form on-submit=handleSubmit data-slot="open-preset-form">
+      <div class="py-4">
+        <label for="preset-code" class="sr-only">Preset code</label>
+        <input
+          id="preset-code"
+          type="text"
+          value=inputValue
+          on-input(event: Event) {
+            inputValue = (event.target as HTMLInputElement).value;
+          }
+          placeholder=`${PRESET_EXAMPLE} or --preset ${PRESET_EXAMPLE}`
+          autocapitalize="none"
+          autocorrect="off"
+          spellcheck="false"
+          aria-invalid=String(isInvalid)
+          class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring aria-[invalid=true]:border-destructive md:h-8"
+        />
+      </div>
+      <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-md border border-input bg-transparent px-4 py-2 text-sm font-medium shadow-xs hover:bg-muted"
+          on-click() { handleOpenChange(false); }
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled=!nextPreset
+          class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-xs hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+        >
+          Open
+        </button>
+      </div>
+    </form>
+  </@content>
+</Dialog>

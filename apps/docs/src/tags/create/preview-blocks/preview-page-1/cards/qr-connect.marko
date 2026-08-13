@@ -1,0 +1,33 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/qr-connect.tsx
+// Deviation: source uses react-qr-code; this registry has its own
+// zag-powered ui/qr-code component, used here with the same value.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import QrCode from "@marko-ui/registry/ui/qr-code/qr-code.marko";
+
+<Card>
+  <CardContent class="flex justify-center pt-6">
+    <div class="rounded-xl border bg-white p-4">
+      <QrCode
+        value="https://ledger.app/connect/jd-4829"
+        class="size-[160px] text-black"
+      />
+    </div>
+  </CardContent>
+  <CardHeader class="text-center">
+    <CardTitle>Scan to connect your mobile device</CardTitle>
+    <CardDescription>
+      Open the Ledger mobile app and scan this code to link your device.
+    </CardDescription>
+  </CardHeader>
+  <CardFooter>
+    <Button variant="secondary" class="w-full">
+      Got it
+    </Button>
+  </CardFooter>
+</Card>

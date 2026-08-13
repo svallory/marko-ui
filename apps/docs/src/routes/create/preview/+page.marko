@@ -1,0 +1,190 @@
+// The /create preview iframe target. Ported from shadcn's
+// app/(view)/preview/[base]/[name]/page.tsx — a chrome-free route that
+// renders shadcn's real preview showcase content, themed by CSS vars the
+// parent window pushes in via postMessage.
+//
+// Real shadcn /create shows exactly TWO purpose-built dashboard-style
+// showcase pages, switched by the bottom-right "01"/"02" pager
+// (components/preview-switcher.tsx): registry items `preview-02` (their
+// default — search-params.ts: parseAsString.withDefault("preview-02")) and
+// `preview`. A third `preview-03` exists on disk there but is dead code
+// (not in PREVIEW_ITEMS), so it is not ported. This port uses
+// position-based item names instead of shadcn's registry names:
+// preview-page-1 (ports shadcn's preview-02, the default), preview-page-2
+// (ports shadcn's preview), preview-page-3 (our own marko-ui-unique
+// showcase). The earlier phase's 28-block/12-demo `block:`/`component:`
+// if-chain was an invention and is replaced by this scheme.
+//
+// The item pick is a static <if>/<else> — dynamic tags (`<${Component}/>`)
+// crash production DOM hydration, see
+// notes/bug-marko-dynamic-tag-hydration-crash.md.
+//
+// Theme sync: the iframe-side half of hooks/use-iframe-sync.tsx +
+// components/preview-style.tsx + the DOM-effect logic in
+// design-system-provider.tsx. It listens for `design-system-params`
+// postMessages from the parent (../../../tags/create/preview.marko) and
+// writes the same #design-system-theme-vars <style> + body classes +
+// --font-sans/--font-heading vars design-system.marko writes on the host
+// document, so the identical DOM-effect logic runs in both places.
+import {
+  DEFAULT_CONFIG,
+  buildRegistryTheme,
+  POINTER_CURSOR_SELECTOR,
+  type DesignSystemConfig,
+} from "../../../tags/create/lib/registry-config.ts";
+import { FONTS } from "../../../tags/create/lib/fonts.ts";
+import type { DesignSystemSearchParams } from "../../../tags/create/lib/search-params.ts";
+
+import PreviewPage1 from "../../../tags/create/preview-blocks/preview-page-1/index.marko";
+import PreviewPage2 from "../../../tags/create/preview-blocks/preview-page-2/index.marko";
+import PreviewPage3 from "../../../tags/create/preview-blocks/preview-page-3/index.marko";
+
+static const THEME_STYLE_ELEMENT_ID = "design-system-theme-vars";
+static const MANAGED_BODY_CLASS_PREFIXES = ["style-", "base-color-"] as const;
+
+static function removeManagedBodyClasses(body: Element) {
+  for (const className of Array.from(body.classList)) {
+    if (MANAGED_BODY_CLASS_PREFIXES.some((prefix) => className.startsWith(prefix))) {
+      body.classList.remove(className);
+    }
+  }
+}
+
+static function buildCssRule(selector: string, cssVars?: Record<string, string>) {
+  const declarations = Object.entries(cssVars ?? {})
+    .filter(([, value]) => Boolean(value))
+    .map(([key, value]) => `  --${key}: ${value};`)
+    .join("\n");
+  if (!declarations) return `${selector} {}\n`;
+  return `${selector} {\n${declarations}\n}\n`;
+}
+
+static const POINTER_CURSOR_CSS = `@layer base {
+  ${POINTER_CURSOR_SELECTOR} {
+    cursor: pointer;
+  }
+}
+`;
+
+static function applyParams(params: DesignSystemSearchParams) {
+  const { style, theme, font, fontHeading, baseColor, radius, menuAccent, pointer } = params;
+
+  if (style && theme && font && baseColor) {
+    const body = document.body;
+    removeManagedBodyClasses(body);
+    body.classList.add(`style-${style}`, `base-color-${baseColor}`);
+
+    const selectedFont = FONTS.find((option) => option.value === font);
+    const selectedHeadingFont =
+      fontHeading === "inherit" || fontHeading === font
+        ? selectedFont
+        : FONTS.find((option) => option.value === fontHeading);
+
+    if (selectedFont) {
+      document.documentElement.style.setProperty("--font-sans", selectedFont.font.style.fontFamily);
+    }
+    if (selectedHeadingFont) {
+      document.documentElement.style.setProperty("--font-heading", selectedHeadingFont.font.style.fontFamily);
+    }
+
+    for (const option of [selectedFont, selectedHeadingFont]) {
+      if (!option || !option.font.googleFontsUrl) continue;
+      const id = `design-system-font-${option.value}`;
+      if (!document.getElementById(id)) {
+        const link = document.createElement("link");
+        link.id = id;
+        link.rel = "stylesheet";
+        link.href = option.font.googleFontsUrl;
+        document.head.appendChild(link);
+      }
+    }
+  }
+
+  const effectiveRadius = style === "lyra" ? "none" : radius;
+  if (baseColor && theme && menuAccent && effectiveRadius) {
+    const config = {
+      ...DEFAULT_CONFIG,
+      baseColor,
+      theme,
+      chartColor: params.chartColor,
+      menuAccent,
+      radius: effectiveRadius,
+    } as DesignSystemConfig;
+
+    // buildRegistryTheme throws on a baseColor/theme it doesn't recognize.
+    // This handler runs directly off an unvalidated postMessage payload
+    // (see the message listener below), so a malformed/stale message must
+    // not throw uncaught out of the listener and silently kill the rest of
+    // this event's processing (e.g. the dark-class toggle that already ran).
+    let registryTheme: ReturnType<typeof buildRegistryTheme> | null = null;
+    try {
+      registryTheme = buildRegistryTheme(config);
+    } catch (error) {
+      console.error("[create/preview] failed to build theme", error);
+    }
+    if (registryTheme?.cssVars) {
+      let styleElement = document.getElementById(THEME_STYLE_ELEMENT_ID) as HTMLStyleElement | null;
+      if (!styleElement) {
+        styleElement = document.createElement("style");
+        styleElement.id = THEME_STYLE_ELEMENT_ID;
+        document.head.appendChild(styleElement);
+      }
+      styleElement.textContent = [
+        buildCssRule(":root", { ...(registryTheme.cssVars.theme ?? {}), ...(registryTheme.cssVars.light ?? {}) }),
+        buildCssRule(".dark", registryTheme.cssVars.dark),
+        pointer ? POINTER_CURSOR_CSS : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+    }
+  }
+}
+
+// No `Input.item`: marko-run route files don't map query-string params onto
+// a page's `input`. Read the query string from `$global.url`, matching how
+// `+handler.ts` files in this app already do it. Default mirrors shadcn's
+// parseAsString.withDefault("preview-02") — our position-named equivalent
+// is preview-page-1; unknown values fall back to it exactly like an
+// unmatched dynamic route would 404 to the default there.
+<const/rawItem=$global.url.searchParams.get("item")/>
+<const/item=(
+  rawItem === "preview-page-2" || rawItem === "preview-page-3" ? rawItem : "preview-page-1"
+)/>
+
+// No own <!doctype html>/<html>/<head>/<body>: this route renders inside
+// ../../../routes/+layout.marko like every other page (that layout supplies
+// the document shell and excludes header/footer chrome for this path
+// prefix — see its `isBlockPreview` check, extended to also match
+// `/create/preview/`).
+<div class="bg-background text-foreground antialiased" data-preview-item=item>
+  <if=(item === "preview-page-2")>
+    <PreviewPage2/>
+  </if>
+  <else-if=(item === "preview-page-3")>
+    <PreviewPage3/>
+  </else-if>
+  <else>
+    <PreviewPage1/>
+  </else>
+</div>
+
+<let/mounted=false/>
+<script>
+  if (!mounted && typeof window !== "undefined") {
+    mounted = true;
+    window.addEventListener("message", (event: MessageEvent) => {
+      if (!event.data || typeof event.data !== "object") return;
+      if (event.data.type !== "design-system-params") return;
+      const data = event.data.data as DesignSystemSearchParams & { __isDark?: boolean };
+      document.documentElement.classList.toggle("dark", Boolean(data.__isDark));
+      applyParams(data);
+    });
+
+    // Announce readiness so the parent's <iframe onload> re-send (which
+    // already fires) has a matching signal for the loading-skeleton swap
+    // in ../../../tags/create/preview.marko.
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: "design-system-preview-ready" }, "*");
+    }
+  }
+</script>

@@ -1,0 +1,140 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/kitchen-island.tsx
+// API adaptation: this registry's ToggleGroup/Slider/Switch are
+// items/value-driven Zag machines; the scene-preset state logic is
+// preserved via <let>s.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardAction from "@marko-ui/registry/ui/card/action.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Item from "@marko-ui/registry/ui/item/item.marko";
+import ItemActions from "@marko-ui/registry/ui/item/actions.marko";
+import ItemContent from "@marko-ui/registry/ui/item/content.marko";
+import ItemGroup from "@marko-ui/registry/ui/item/group.marko";
+import ItemMedia from "@marko-ui/registry/ui/item/media.marko";
+import ItemTitle from "@marko-ui/registry/ui/item/title.marko";
+import Slider from "@marko-ui/registry/ui/slider/slider.marko";
+import Switch from "@marko-ui/registry/ui/switch/switch.marko";
+import ToggleGroup from "@marko-ui/registry/ui/toggle-group/toggle-group.marko";
+import Icon from "../../lib/icon.marko";
+
+static const SCENES = {
+  cooking: { brightness: [90], colorTemp: [70], volume: [30], fade: [0] },
+  dining: { brightness: [50], colorTemp: [40], volume: [20], fade: [60] },
+  nightlight: { brightness: [15], colorTemp: [20], volume: [0], fade: [80] },
+  focus: { brightness: [100], colorTemp: [85], volume: [0], fade: [0] },
+} as Record<string, { brightness: number[]; colorTemp: number[]; volume: number[]; fade: number[] }>;
+
+<let/enabled=true/>
+<let/scene="cooking"/>
+<let/brightness=[90]/>
+<let/colorTemp=[70]/>
+<let/volume=[30]/>
+<let/fade=[0]/>
+
+<const/sceneItems=[
+  { value: "cooking", label: "Cooking", disabled: !enabled },
+  { value: "dining", label: "Dining", disabled: !enabled },
+  { value: "nightlight", label: "Nightlight", disabled: !enabled },
+  { value: "focus", label: "Focus", disabled: !enabled },
+]/>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Kitchen Island</CardTitle>
+    <CardDescription>Hue Color Ambient</CardDescription>
+    <CardAction>
+      <Switch checked=enabled checkedChange=(value: boolean) => { enabled = value; }/>
+    </CardAction>
+  </CardHeader>
+  <CardContent class="flex flex-col gap-4">
+    <div class="flex flex-col gap-2">
+      <span class="sr-only">Scenes</span>
+      <ToggleGroup
+        value=[scene]
+        variant="outline"
+        class="flex-wrap"
+        items=sceneItems
+        valueChange=(value: string[]) => {
+          const next = value[0] ?? "cooking";
+          scene = next;
+          const preset = SCENES[next];
+          if (preset) {
+            brightness = [...preset.brightness];
+            colorTemp = [...preset.colorTemp];
+            volume = [...preset.volume];
+            fade = [...preset.fade];
+          }
+        }
+      />
+    </div>
+    <ItemGroup>
+      <Item size="sm" variant="outline">
+        <ItemMedia variant="icon">
+          <Icon name="SunIcon"/>
+        </ItemMedia>
+        <ItemContent class="flex-row items-center gap-3">
+          <ItemTitle class="shrink-0">Brightness</ItemTitle>
+        </ItemContent>
+        <ItemActions class="flex-1">
+          <Slider
+            value=brightness
+            valueChange=(value: number[]) => { brightness = [...value]; }
+            max=100
+            disabled=!enabled
+            class="w-full"
+          />
+        </ItemActions>
+      </Item>
+      <Item size="sm" variant="outline">
+        <ItemMedia variant="icon">
+          <Icon name="ThermometerIcon"/>
+        </ItemMedia>
+        <ItemContent class="flex-row items-center gap-3">
+          <ItemTitle class="shrink-0">Color Temp</ItemTitle>
+        </ItemContent>
+        <ItemActions class="flex-1">
+          <Slider
+            value=colorTemp
+            valueChange=(value: number[]) => { colorTemp = [...value]; }
+            max=100
+            disabled=!enabled
+          />
+        </ItemActions>
+      </Item>
+      <Item size="sm" variant="outline">
+        <ItemMedia variant="icon">
+          <Icon name="Volume2Icon"/>
+        </ItemMedia>
+        <ItemContent class="flex-row items-center gap-3">
+          <ItemTitle class="shrink-0">Volume</ItemTitle>
+        </ItemContent>
+        <ItemActions class="flex-1">
+          <Slider
+            value=volume
+            valueChange=(value: number[]) => { volume = [...value]; }
+            max=100
+            disabled=!enabled
+          />
+        </ItemActions>
+      </Item>
+      <Item size="sm" variant="outline">
+        <ItemMedia variant="icon">
+          <Icon name="TimerIcon"/>
+        </ItemMedia>
+        <ItemContent class="flex-row items-center gap-3">
+          <ItemTitle class="shrink-0">Fade</ItemTitle>
+        </ItemContent>
+        <ItemActions class="flex-1">
+          <Slider
+            value=fade
+            valueChange=(value: number[]) => { fade = [...value]; }
+            max=100
+            disabled=!enabled
+          />
+        </ItemActions>
+      </Item>
+    </ItemGroup>
+  </CardContent>
+</Card>

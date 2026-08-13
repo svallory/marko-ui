@@ -1,0 +1,59 @@
+// Ported from shadcn/ui app/(app)/(create)/components/action-menu.tsx +
+// hooks/use-action-menu.ts. A ⌘K/⌘P-style command palette for jumping the
+// preview's `item` straight to a registry item — grouped by registry type
+// (source's groupItemsByType: registry:block -> "Blocks" first).
+//
+// Item scope: the source lists every allowed registry item for the current
+// base via getAllItems() (create/page.tsx -> Customizer -> useActionMenu).
+// This port lists exactly what our preview route can actually render: the
+// three position-named preview pages (preview-page-1 ports shadcn's
+// `preview-02`, preview-page-2 ports shadcn's `preview`, preview-page-3 is
+// our marko-ui-unique showcase) — the same values the preview-switcher
+// pager sets. The earlier `block:`/`component:` scheme pointed at content
+// the rewritten route no longer serves and is gone.
+//
+// Deviations from source:
+// - Source keys this off a global useSWR("create:action-menu-open") cache
+//   entry so useActionMenuTrigger() (customizer.tsx's "Actions" footer
+//   button) and the ⌘P keydown listener can open it from anywhere without
+//   React context. Marko has no context OR a SWR-equivalent global mutable
+//   cache; open state instead lives in design-system.marko like every other
+//   dialog on this page (openPresetOpen, showResetDialog) and is passed
+//   down as `open`/`onOpenChange`.
+// - No per-type SEARCH_KEYWORDS synonym boosting (source's "block blocks
+//   component components" hidden search terms) — Command's own
+//   label-substring filter (packages/registry/default/ui/command/command.marko)
+//   is used as-is.
+import Dialog from "@marko-ui/registry/ui/dialog/dialog.marko";
+import Command, { type CommandGroup } from "@marko-ui/registry/ui/command/command.marko";
+
+export interface Input {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelectItem: (item: string) => void;
+}
+
+static const GROUPS: CommandGroup[] = [
+  {
+    label: "Blocks",
+    items: [
+      { value: "preview-page-1", label: "Preview Page 1" },
+      { value: "preview-page-2", label: "Preview Page 2" },
+      { value: "preview-page-3", label: "Preview Page 3" },
+    ],
+  },
+];
+
+<Dialog open=input.open openChange=input.onOpenChange class="max-w-lg gap-0 overflow-hidden p-0">
+  <@content>
+    <Command
+      groups=GROUPS
+      placeholder="Search blocks and components..."
+      class="border-none shadow-none"
+      valueChange=(value: string) => {
+        input.onSelectItem(value);
+        input.onOpenChange(false);
+      }
+    />
+  </@content>
+</Dialog>

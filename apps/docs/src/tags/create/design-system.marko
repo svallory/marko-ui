@@ -1,0 +1,850 @@
+// The /create page's state container. Marko-6 replacement for the React
+// provider stack in shadcn's app/(app)/(create):
+//   design-system-provider.tsx  → URL-derived params + DOM theme effects
+//   preview-override.tsx        → debounced hover-preview overlay
+//   hooks/use-history.tsx       → undo/redo stack of settled preset codes
+//   hooks/use-locks.tsx         → in-memory Set of locked params
+//   hooks/use-random.tsx        → curated-preset shuffle (locks respected)
+//   hooks/use-reset.tsx         → reset-to-preset-defaults + confirm dialog
+//   hooks/use-theme-toggle.tsx  → light/dark toggle (D key)
+//   hooks/use-open-preset.tsx   → open-preset dialog state (O key)
+//   components/preset-handler.tsx → ?preset=random + legacy-preset handling
+//
+// Marko 6 has no context, so this single top-level component owns all of
+// that state in <let>s and passes values + setters down as attrs to
+// <customizer> (which forwards them to the pickers and <main-menu>).
+// The URL remains the source of truth exactly as in the source: committed
+// changes re-encode into ?preset=<code> (history.pushState, matching the
+// source hook's default `history: "push"`), undo/redo rewrite the preset
+// param with replaceState, and hover-previews never touch the URL.
+//
+// Deviations from source, all noted per line below:
+// - No iframe: the source renders the preview in an iframe and forwards
+//   keyboard events via postMessage (HistoryScript/RandomizeScript/...).
+//   Here the page itself is the preview, so one document-level keydown
+//   listener covers everything and the *Script forwarders are not needed.
+// - next-themes → the docs site's own dark-class-on-<html> + localStorage
+//   mechanism (see apps/docs/src/tags/theme-toggle.marko), which is what
+//   next-themes resolves to at the DOM level anyway.
+// - Fonts: next/font preloads every font at build time; here the selected
+//   fonts are loaded on demand via the Google Fonts stylesheet URLs that
+//   lib/fonts.ts provides for exactly this purpose.
+// - The source provider returns null until isReady; we always render (no
+//   iframe hand-off to flash-guard) and let the mount effects catch up.
+import {
+  DESIGN_SYSTEM_SEARCH_PARAM_DEFAULTS,
+  isTranslucentMenuColor,
+  type DesignSystemSearchParams,
+} from "./lib/search-params.ts";
+import {
+  applyRawUrlUpdate,
+  computeRawUpdate,
+  getUrlPresetEntry,
+  getUrlSearchParams,
+  isEditableTarget,
+  readDesignSystemParams,
+  type LockableParam,
+  type UrlHistoryMode,
+} from "./lib/design-system-state.ts";
+import {
+  BASE_COLORS,
+  DEFAULT_CONFIG,
+  getThemesForBaseColor,
+  iconLibraries,
+  MENU_ACCENTS,
+  MENU_COLORS,
+  POINTER_CURSOR_SELECTOR,
+  PRESETS,
+  RADII,
+  STYLES,
+  buildRegistryTheme,
+  type BaseColorName,
+  type ChartColorName,
+  type DesignSystemConfig,
+  type FontHeadingValue,
+  type FontValue,
+  type IconLibraryName,
+  type MenuAccentValue,
+  type MenuColorValue,
+  type RadiusValue,
+  type StyleName,
+  type ThemeName,
+} from "./lib/registry-config.ts";
+import { FONTS } from "./lib/fonts.ts";
+import { getPresetCode } from "./lib/preset-code.ts";
+import {
+  decodePreset,
+  generateRandomPreset,
+  isPresetCode,
+} from "./lib/preset.ts";
+import {
+  applyBias,
+  RANDOMIZE_BIASES,
+  type RandomizeContext,
+} from "./lib/randomize-biases.ts";
+import { SHUFFLE_PRESETS } from "./lib/shuffle-presets.ts";
+import Customizer from "./customizer.marko";
+import OpenPreset from "./open-preset.marko";
+import Preview from "./preview.marko";
+import WelcomeDialog from "./welcome-dialog.marko";
+import ActionMenu from "./action-menu.marko";
+import AlertDialog from "@marko-ui/registry/ui/alert-dialog/alert-dialog.marko";
+
+export interface Input {
+  isMobile?: boolean;
+}
+
+static const THEME_STYLE_ELEMENT_ID = "design-system-theme-vars";
+static const MANAGED_BODY_CLASS_PREFIXES = ["style-", "base-color-"] as const;
+// See design-system-provider.tsx PREVIEW_OVERRIDE_DEBOUNCE_MS.
+static const PREVIEW_OVERRIDE_DEBOUNCE_MS = 50;
+
+static function removeManagedBodyClasses(body: Element) {
+  for (const className of Array.from(body.classList)) {
+    if (
+      MANAGED_BODY_CLASS_PREFIXES.some((prefix) => className.startsWith(prefix))
+    ) {
+      body.classList.remove(className);
+    }
+  }
+}
+
+static function buildCssRule(selector: string, cssVars?: Record<string, string>) {
+  const declarations = Object.entries(cssVars ?? {})
+    .filter(([, value]) => Boolean(value))
+    .map(([key, value]) => `  --${key}: ${value};`)
+    .join("\n");
+
+  if (!declarations) {
+    return `${selector} {}\n`;
+  }
+
+  return `${selector} {\n${declarations}\n}\n`;
+}
+
+static const POINTER_CURSOR_CSS = `@layer base {
+  ${POINTER_CURSOR_SELECTOR} {
+    cursor: pointer;
+  }
+}
+`;
+
+static function randomItem(array: readonly unknown[]) {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+static function isSameOverride(
+  a: Partial<DesignSystemSearchParams> | null,
+  b: Partial<DesignSystemSearchParams> | null,
+) {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const aKeys = Object.keys(a) as (keyof DesignSystemSearchParams)[];
+  const bKeys = Object.keys(b) as (keyof DesignSystemSearchParams)[];
+  return aKeys.length === bKeys.length && aKeys.every((key) => a[key] === b[key]);
+}
+
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+
+// Committed params — derived from the URL (server render uses defaults, the
+// mount script below reads the real URL immediately on the client).
+<let/params=DESIGN_SYSTEM_SEARCH_PARAM_DEFAULTS as DesignSystemSearchParams/>
+// Hover-preview overlay (preview-override.tsx): replaces, never merges.
+<let/previewOverride=null as Partial<DesignSystemSearchParams> | null/>
+// Locks (use-locks.tsx): in-memory only, reset on reload — same as source.
+<let/locks=(new Set()) as Set<LockableParam>/>
+// History (use-history.tsx): stack of settled preset codes. First entry ""
+// = "no preset in the URL", matching entriesRef's initial [preset=""].
+<let/historyEntries=[""] as string[]/>
+<let/historyIndex=0/>
+<let/historyMaxIndex=0/>
+<let/showResetDialog=false/>
+<let/openPresetOpen=false/>
+// use-action-menu.tsx's ACTION_MENU_OPEN_KEY SWR cache, moved to a plain
+// <let> here (see action-menu.marko's header comment on the SWR deviation).
+<let/actionMenuOpen=false/>
+<let/isDark=false/>
+// Non-reactive mutable refs (React useRef equivalents).
+<let/refs={
+  navigating: false,
+  previewTimer: 0,
+  menuObserver: null as MutationObserver | null,
+  menuFrame: 0,
+  initialFontSans: null as string | null,
+  initialFontHeading: null as string | null,
+  lastMenuColor: undefined as MenuColorValue | undefined,
+}/>
+
+// ---------------------------------------------------------------------------
+// Core setters (search-params hook + history provider)
+// ---------------------------------------------------------------------------
+
+// Record the settled preset code as a history entry — the effect body of
+// HistoryProvider (use-history.tsx), run synchronously after URL writes
+// instead of via useSearchParams subscription.
+<const/recordHistoryEntry=() => {
+  const preset = getUrlPresetEntry();
+
+  if (refs.navigating) {
+    refs.navigating = false;
+    return;
+  }
+
+  if (preset === historyEntries[historyIndex]) {
+    return;
+  }
+
+  const nextEntries = historyEntries.slice(0, historyIndex + 1);
+  nextEntries.push(preset);
+  historyEntries = nextEntries;
+  historyIndex = nextEntries.length - 1;
+  historyMaxIndex = nextEntries.length - 1;
+}/>
+
+<const/rawSetParams=(update: Record<string, unknown>, historyMode: UrlHistoryMode) => {
+  applyRawUrlUpdate(update, historyMode);
+  params = readDesignSystemParams();
+  recordHistoryEntry();
+}/>
+
+<const/setParams=(
+  updates: Partial<DesignSystemSearchParams> | Record<string, unknown>,
+  options?: { history?: UrlHistoryMode },
+) => {
+  rawSetParams(computeRawUpdate(params, updates), options?.history ?? "push");
+}/>
+
+// ---------------------------------------------------------------------------
+// Preview overlay (preview-override.tsx)
+// ---------------------------------------------------------------------------
+
+<const/clearPreview=() => {
+  if (refs.previewTimer) {
+    window.clearTimeout(refs.previewTimer);
+    refs.previewTimer = 0;
+  }
+  previewOverride = null;
+}/>
+
+<const/setPreview=(patch: Partial<DesignSystemSearchParams> | null) => {
+  if (!patch) {
+    clearPreview();
+    return;
+  }
+  if (refs.previewTimer) {
+    window.clearTimeout(refs.previewTimer);
+  }
+  refs.previewTimer = window.setTimeout(() => {
+    refs.previewTimer = 0;
+    if (!isSameOverride(previewOverride, patch)) {
+      previewOverride = patch;
+    }
+  }, PREVIEW_OVERRIDE_DEBOUNCE_MS);
+}/>
+
+// ---------------------------------------------------------------------------
+// History navigation (use-history.tsx)
+// ---------------------------------------------------------------------------
+
+<const/canGoBack=(historyIndex > 0)/>
+<const/canGoForward=(historyIndex < historyMaxIndex)/>
+
+<const/goBack=() => {
+  if (historyIndex <= 0) return;
+  refs.navigating = true;
+  const nextIndex = historyIndex - 1;
+  historyIndex = nextIndex;
+  // "" (first entry) → null clears the preset param, restoring defaults.
+  setParams({ preset: historyEntries[nextIndex] || null }, { history: "replace" });
+}/>
+
+<const/goForward=() => {
+  if (historyIndex >= historyMaxIndex) return;
+  refs.navigating = true;
+  const nextIndex = historyIndex + 1;
+  historyIndex = nextIndex;
+  setParams({ preset: historyEntries[nextIndex] || null }, { history: "replace" });
+}/>
+
+// ---------------------------------------------------------------------------
+// Locks (use-locks.tsx)
+// ---------------------------------------------------------------------------
+
+<const/toggleLock=(param: LockableParam) => {
+  const next = new Set(locks);
+  if (next.has(param)) {
+    next.delete(param);
+  } else {
+    next.add(param);
+  }
+  locks = next;
+}/>
+
+// ---------------------------------------------------------------------------
+// Randomize (use-random.tsx) — curated shuffle + true-random, locks honored
+// ---------------------------------------------------------------------------
+
+// Picks a random preset from the curated list. Locked params are preserved
+// over the decoded preset values. One setParams call → one history entry.
+<const/randomize=() => {
+  const currentCode = getPresetCode(params);
+  const availableCodes = SHUFFLE_PRESETS.filter((code) => code !== currentCode);
+  const decoded = decodePreset(
+    randomItem(availableCodes.length > 0 ? availableCodes : SHUFFLE_PRESETS) as string,
+  );
+
+  if (!decoded) {
+    return;
+  }
+
+  const current = params;
+  setParams({
+    style: locks.has("style") ? current.style : (decoded.style as StyleName),
+    baseColor: locks.has("baseColor")
+      ? current.baseColor
+      : (decoded.baseColor as BaseColorName),
+    theme: locks.has("theme") ? current.theme : (decoded.theme as ThemeName),
+    chartColor: locks.has("chartColor")
+      ? current.chartColor
+      : ((decoded.chartColor ?? decoded.theme) as ChartColorName),
+    iconLibrary: locks.has("iconLibrary")
+      ? current.iconLibrary
+      : (decoded.iconLibrary as IconLibraryName),
+    font: locks.has("font") ? current.font : (decoded.font as FontValue),
+    fontHeading: locks.has("fontHeading")
+      ? current.fontHeading
+      : (decoded.fontHeading as FontHeadingValue),
+    menuAccent: locks.has("menuAccent")
+      ? current.menuAccent
+      : (decoded.menuAccent as MenuAccentValue),
+    menuColor: locks.has("menuColor")
+      ? current.menuColor
+      : (decoded.menuColor as MenuColorValue),
+    radius: locks.has("radius")
+      ? current.radius
+      : (decoded.radius as RadiusValue),
+  });
+}/>
+
+// True-random implementation with the bias tables. Kept (as in source) but
+// shuffle is wired to the curated preset list above.
+<const/randomizeTrueRandom=() => {
+  const selectedStyle = locks.has("style")
+    ? params.style
+    : (randomItem(STYLES) as (typeof STYLES)[number]).name;
+
+  const context = { style: selectedStyle } as RandomizeContext;
+
+  const availableBaseColors = applyBias(
+    BASE_COLORS,
+    context,
+    RANDOMIZE_BIASES.baseColors,
+  );
+  const baseColor = locks.has("baseColor")
+    ? params.baseColor
+    : (randomItem(availableBaseColors) as (typeof BASE_COLORS)[number]).name;
+  context.baseColor = baseColor;
+
+  const availableThemes = getThemesForBaseColor(baseColor);
+  const availableFonts = applyBias(FONTS, context, RANDOMIZE_BIASES.fonts);
+  const availableRadii = applyBias(RADII, context, RANDOMIZE_BIASES.radius);
+
+  const selectedTheme = locks.has("theme")
+    ? params.theme
+    : ((randomItem(availableThemes) as { name: string }).name as ThemeName);
+  context.theme = selectedTheme;
+
+  const availableChartColors = applyBias(
+    getThemesForBaseColor(baseColor),
+    context,
+    RANDOMIZE_BIASES.chartColors,
+  );
+  const selectedChartColor = locks.has("chartColor")
+    ? params.chartColor
+    : ((randomItem(availableChartColors) as { name: string }).name as ChartColorName);
+  context.chartColor = selectedChartColor;
+  const selectedFont = locks.has("font")
+    ? params.font
+    : ((randomItem(availableFonts) as { value: string }).value as FontValue);
+  context.font = selectedFont;
+
+  // Pick heading font: ~70% inherit, ~30% distinct with cross-category contrast.
+  let selectedFontHeading: FontHeadingValue;
+  if (locks.has("fontHeading")) {
+    selectedFontHeading = params.fontHeading;
+  } else if (Math.random() < 0.7) {
+    selectedFontHeading = "inherit";
+  } else {
+    const bodyType = availableFonts.find((f) => f.value === selectedFont)?.type;
+    const contrastFonts = availableFonts.filter(
+      (f) => f.type !== bodyType && f.value !== selectedFont,
+    );
+    selectedFontHeading = (
+      contrastFonts.length > 0
+        ? (randomItem(contrastFonts) as { value: string })
+        : (randomItem(availableFonts) as { value: string })
+    ).value as FontHeadingValue;
+  }
+  const selectedRadius = locks.has("radius")
+    ? params.radius
+    : ((randomItem(availableRadii) as { name: string }).name as RadiusValue);
+  const selectedIconLibrary = locks.has("iconLibrary")
+    ? params.iconLibrary
+    : ((randomItem(Object.values(iconLibraries)) as { name: string })
+        .name as IconLibraryName);
+  const lockedMenuAccent = locks.has("menuAccent") ? params.menuAccent : undefined;
+  const availableMenuColors =
+    !locks.has("menuColor") && lockedMenuAccent === "bold"
+      ? MENU_COLORS.filter((menuColor) => !isTranslucentMenuColor(menuColor.value))
+      : MENU_COLORS;
+  const selectedMenuColor = locks.has("menuColor")
+    ? params.menuColor
+    : ((randomItem(availableMenuColors) as { value: string }).value as MenuColorValue);
+  const selectedMenuAccent =
+    locks.has("menuAccent") || isTranslucentMenuColor(selectedMenuColor)
+      ? params.menuAccent === "bold" && isTranslucentMenuColor(selectedMenuColor)
+        ? "subtle"
+        : params.menuAccent
+      : ((randomItem(MENU_ACCENTS) as { value: string }).value as MenuAccentValue);
+
+  context.radius = selectedRadius;
+
+  setParams({
+    style: selectedStyle,
+    baseColor,
+    theme: selectedTheme,
+    chartColor: selectedChartColor,
+    iconLibrary: selectedIconLibrary,
+    font: selectedFont,
+    fontHeading: selectedFontHeading,
+    menuAccent: selectedMenuAccent,
+    menuColor: selectedMenuColor,
+    radius: selectedRadius,
+  });
+}/>
+
+// ---------------------------------------------------------------------------
+// Reset (use-reset.tsx)
+// ---------------------------------------------------------------------------
+
+<const/reset=() => {
+  const preset =
+    PRESETS.find(
+      (candidate) =>
+        candidate.base === params.base && candidate.style === params.style,
+    ) ?? DEFAULT_CONFIG;
+
+  setParams({
+    base: params.base,
+    style: params.style,
+    baseColor: preset.baseColor,
+    theme: preset.theme,
+    chartColor: preset.chartColor,
+    iconLibrary: preset.iconLibrary,
+    font: preset.font,
+    fontHeading: preset.fontHeading,
+    menuAccent: preset.menuAccent,
+    menuColor: preset.menuColor,
+    radius: preset.radius,
+    template: DEFAULT_CONFIG.template,
+    item: params.item,
+  });
+}/>
+
+<const/confirmReset=() => {
+  reset();
+  showResetDialog = false;
+}/>
+
+// ---------------------------------------------------------------------------
+// Theme toggle (use-theme-toggle.tsx via the site's dark-class mechanism)
+// ---------------------------------------------------------------------------
+
+<const/toggleTheme=() => {
+  const nextIsDark = !document.documentElement.classList.contains("dark");
+  document.documentElement.classList.toggle("dark", nextIsDark);
+  try {
+    localStorage.setItem("theme", nextIsDark ? "dark" : "light");
+  } catch (error) {}
+  isDark = nextIsDark;
+}/>
+
+// ---------------------------------------------------------------------------
+// Mount: URL read, preset-handler, one-time preset sync, listeners
+// ---------------------------------------------------------------------------
+
+<lifecycle
+  onMount() {
+    isDark = document.documentElement.classList.contains("dark");
+    refs.initialFontSans =
+      document.documentElement.style.getPropertyValue("--font-sans");
+    refs.initialFontHeading =
+      document.documentElement.style.getPropertyValue("--font-heading");
+
+    const searchParams = getUrlSearchParams();
+    const presetParam = searchParams.get("preset");
+
+    // PresetHandler: ?preset=random → replace with a generated random code.
+    if (presetParam === "random") {
+      applyRawUrlUpdate({ preset: generateRandomPreset() }, "replace");
+    } else if (presetParam && !isPresetCode(presetParam)) {
+      // PresetHandler: legacy named presets fall back to base defaults.
+      applyRawUrlUpdate({ preset: null }, "replace");
+    }
+
+    params = readDesignSystemParams();
+
+    // One-time preset→URL sync (search-params.ts hook): when the URL has no
+    // preset param, write the canonical encoded state with replaceState.
+    if (!getUrlSearchParams().has("preset")) {
+      rawSetParams(computeRawUpdate(params, { style: params.style }), "replace");
+    } else {
+      recordHistoryEntry();
+    }
+
+    const onKeydown = (e: KeyboardEvent) => {
+      if (isEditableTarget(e.target)) {
+        return;
+      }
+
+      // use-history.tsx: ⌘/Ctrl+Z undo, ⇧⌘Z / Ctrl+Y redo.
+      // use-action-menu.tsx: ⌘/Ctrl+P opens the action menu (item navigator).
+      if (e.metaKey || e.ctrlKey) {
+        const key = e.key.toLowerCase();
+        if (key === "p") {
+          e.preventDefault();
+          actionMenuOpen = !actionMenuOpen;
+          return;
+        }
+        if ((key === "z" && e.shiftKey) || (key === "y" && e.ctrlKey)) {
+          e.preventDefault();
+          goForward();
+          return;
+        }
+        if (key === "z") {
+          e.preventDefault();
+          goBack();
+        }
+        return;
+      }
+
+      // use-random.tsx: plain "r" shuffles.
+      if (e.key === "r" && !e.shiftKey && !e.altKey) {
+        e.preventDefault();
+        randomize();
+        return;
+      }
+
+      // use-reset.tsx: Shift+R opens the reset dialog; again = confirm.
+      if (e.key === "R" && e.shiftKey) {
+        e.preventDefault();
+        if (showResetDialog) {
+          confirmReset();
+          return;
+        }
+        showResetDialog = true;
+        return;
+      }
+
+      // use-theme-toggle.tsx: "d" toggles light/dark.
+      if ((e.key === "d" || e.key === "D") && !e.altKey) {
+        e.preventDefault();
+        toggleTheme();
+        return;
+      }
+
+      // use-open-preset.tsx: "o" opens the Open Preset dialog.
+      if (e.key === "o" && !e.shiftKey && !e.altKey) {
+        e.preventDefault();
+        openPresetOpen = true;
+      }
+    };
+
+    // Browser back/forward: re-derive state from the URL (nuqs does this
+    // internally) and let the history stack record the settled preset.
+    const onPopState = () => {
+      params = readDesignSystemParams();
+      recordHistoryEntry();
+    };
+
+    document.addEventListener("keydown", onKeydown);
+    window.addEventListener("popstate", onPopState);
+
+    (refs as unknown as Record<string, unknown>).removeListeners = () => {
+      document.removeEventListener("keydown", onKeydown);
+      window.removeEventListener("popstate", onPopState);
+    };
+  }
+  onDestroy() {
+    const remove = (refs as unknown as Record<string, unknown>).removeListeners;
+    if (typeof remove === "function") remove();
+    if (refs.previewTimer) window.clearTimeout(refs.previewTimer);
+    if (refs.menuObserver) refs.menuObserver.disconnect();
+    if (refs.menuFrame) window.cancelAnimationFrame(refs.menuFrame);
+
+    // Provider cleanup: restore body classes, theme style element, fonts.
+    removeManagedBodyClasses(document.body);
+    document.getElementById(THEME_STYLE_ELEMENT_ID)?.remove();
+    if (refs.initialFontSans) {
+      document.documentElement.style.setProperty("--font-sans", refs.initialFontSans);
+    } else {
+      document.documentElement.style.removeProperty("--font-sans");
+    }
+    if (refs.initialFontHeading) {
+      document.documentElement.style.setProperty("--font-heading", refs.initialFontHeading);
+    } else {
+      document.documentElement.style.removeProperty("--font-heading");
+    }
+  }
+/>
+
+// ---------------------------------------------------------------------------
+// Derived state + DOM effects (design-system-provider.tsx)
+// ---------------------------------------------------------------------------
+
+// effectiveConfig = committed params + hover-preview overlay.
+<const/effective={ ...params, ...(previewOverride ?? {}) } as DesignSystemSearchParams/>
+<const/presetCode=getPresetCode(params)/>
+
+// Radius guard effect (provider): lyra forces "none", sera only supports
+// "none", rhea does not support "large". Extra no-op guard added so we
+// don't push an identical URL (the React original relies on setState
+// dedupe for the same outcome).
+<script>
+  if (params.style === "lyra" || params.style === "sera") {
+    if (params.radius !== "none") {
+      setParams({ radius: "none" });
+    }
+  } else if (params.style === "rhea" && params.radius === "large") {
+    setParams({ radius: "default" });
+  }
+</script>
+
+// Body classes + font vars (provider's first useLayoutEffect).
+<script>
+  const { style, theme, font, fontHeading, baseColor } = effective;
+  if (style && theme && font && baseColor) {
+    const body = document.body;
+    removeManagedBodyClasses(body);
+    body.classList.add(`style-${style}`, `base-color-${baseColor}`);
+
+    const selectedFont = FONTS.find((option) => option.value === font);
+    const selectedHeadingFont =
+      fontHeading === "inherit" || fontHeading === font
+        ? selectedFont
+        : FONTS.find((option) => option.value === fontHeading);
+
+    // Always set --font-sans so the selected font is visible; the font type
+    // (sans/serif/mono) is metadata for the CLI updater.
+    if (selectedFont) {
+      document.documentElement.style.setProperty(
+        "--font-sans",
+        selectedFont.font.style.fontFamily,
+      );
+    }
+    if (selectedHeadingFont) {
+      document.documentElement.style.setProperty(
+        "--font-heading",
+        selectedHeadingFont.font.style.fontFamily,
+      );
+    }
+
+    // Load the actual font files (next/font replacement, see header note).
+    for (const option of [selectedFont, selectedHeadingFont]) {
+      if (!option || !option.font.googleFontsUrl) continue;
+      const id = `design-system-font-${option.value}`;
+      if (!document.getElementById(id)) {
+        const link = document.createElement("link");
+        link.id = id;
+        link.rel = "stylesheet";
+        link.href = option.font.googleFontsUrl;
+        document.head.appendChild(link);
+      }
+    }
+  }
+</script>
+
+// Theme CSS vars <style> element (provider's second useLayoutEffect).
+<script>
+  const effectiveRadius = effective.style === "lyra" ? "none" : effective.radius;
+  if (effective.baseColor && effective.theme && effective.menuAccent && effectiveRadius) {
+    const config = {
+      ...DEFAULT_CONFIG,
+      baseColor: effective.baseColor,
+      theme: effective.theme,
+      chartColor: effective.chartColor,
+      menuAccent: effective.menuAccent,
+      radius: effectiveRadius,
+    } as DesignSystemConfig;
+
+    const registryTheme = buildRegistryTheme(config);
+    if (registryTheme.cssVars) {
+      let styleElement = document.getElementById(
+        THEME_STYLE_ELEMENT_ID,
+      ) as HTMLStyleElement | null;
+      if (!styleElement) {
+        styleElement = document.createElement("style");
+        styleElement.id = THEME_STYLE_ELEMENT_ID;
+        document.head.appendChild(styleElement);
+      }
+      styleElement.textContent = [
+        buildCssRule(":root", {
+          ...(registryTheme.cssVars.theme ?? {}),
+          ...(registryTheme.cssVars.light ?? {}),
+        }),
+        buildCssRule(".dark", registryTheme.cssVars.dark),
+        effective.pointer ? POINTER_CURSOR_CSS : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+    }
+  }
+</script>
+
+// Menu color inversion/translucency (provider's third useLayoutEffect):
+// toggles the `dark` class / translucent class on .cn-menu-target elements,
+// watching the DOM for new menu elements. Source scopes this effect to
+// `[menuColor]` — mirrored here via the lastMenuColor guard so unrelated
+// `effective` changes (e.g. hover-preview on any other picker, which
+// rebuilds the whole `effective` const) don't tear down and rebuild the
+// MutationObserver + force a synchronous reflow on every keystroke/hover.
+<script>
+  const menuColor = effective.menuColor;
+  if (menuColor !== refs.lastMenuColor) {
+    refs.lastMenuColor = menuColor;
+
+    if (menuColor) {
+      const isInvertedMenu =
+        menuColor === "inverted" || menuColor === "inverted-translucent";
+      const isTranslucentMenu =
+        menuColor === "default-translucent" || menuColor === "inverted-translucent";
+
+      const updateMenuElements = () => {
+        const allElements = document.querySelectorAll(
+          ".cn-menu-target, [data-menu-translucent]",
+        ) as NodeListOf<HTMLElement>;
+        if (allElements.length === 0) {
+          return;
+        }
+        allElements.forEach((element) => {
+          element.style.transition = "none";
+        });
+        allElements.forEach((element) => {
+          if (element.classList.contains("cn-menu-target")) {
+            if (isInvertedMenu) {
+              element.classList.add("dark");
+            } else {
+              element.classList.remove("dark");
+            }
+          }
+          if (isTranslucentMenu) {
+            element.classList.add("cn-menu-translucent");
+            element.removeAttribute("data-menu-translucent");
+          } else if (element.classList.contains("cn-menu-translucent")) {
+            element.classList.remove("cn-menu-translucent");
+            element.setAttribute("data-menu-translucent", "");
+          }
+        });
+        void document.body.offsetHeight;
+        allElements.forEach((element) => {
+          element.style.transition = "";
+        });
+      };
+
+      updateMenuElements();
+
+      if (refs.menuObserver) {
+        refs.menuObserver.disconnect();
+      }
+      refs.menuObserver = new MutationObserver(() => {
+        if (refs.menuFrame) return;
+        refs.menuFrame = window.requestAnimationFrame(() => {
+          refs.menuFrame = 0;
+          updateMenuElements();
+        });
+      });
+      refs.menuObserver.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+</script>
+
+// ---------------------------------------------------------------------------
+// Render
+// ---------------------------------------------------------------------------
+
+<div
+  data-slot="design-system"
+  class="relative z-10 flex min-h-0 flex-1 flex-col gap-(--gap,1rem) md:flex-row-reverse"
+>
+  // PreviewOverrideProvider wraps <Preview /> + <Customizer /> in source
+  // (create/page.tsx); here both simply read/write the same container
+  // state, so no provider wrapper is needed — see design-system.marko's
+  // header comment.
+  <Preview
+    params=params
+    previewOverride=previewOverride
+    isDark=isDark
+    onItemChange=(item: string) => { setParams({ item }); }
+  />
+  <Customizer
+    isMobile=input.isMobile
+    params=params
+    setParams=setParams
+    setPreview=setPreview
+    locks=locks
+    toggleLock=toggleLock
+    canGoBack=canGoBack
+    canGoForward=canGoForward
+    onUndo=goBack
+    onRedo=goForward
+    onShuffle=randomize
+    onToggleTheme=toggleTheme
+    onOpenPreset=() => { openPresetOpen = true; }
+    onShowResetDialog=() => { showResetDialog = true; }
+    onNavigate=() => { actionMenuOpen = true; }
+    presetCode=presetCode
+    isDark=isDark
+  />
+</div>
+
+// ResetDialog (reset-button.tsx): confirm-before-reset alert dialog.
+<AlertDialog
+  open=showResetDialog
+  openChange=(open: boolean) => { showResetDialog = open; }
+  cancelText="Cancel"
+  actionText="Reset"
+  action=confirmReset
+>
+  <@title>Reset to defaults?</@title>
+  <@description>
+    This will reset all customization options to their default values.
+  </@description>
+</AlertDialog>
+
+// OpenPreset (open-preset.tsx): paste-a-preset-code dialog. Its trigger
+// button lives in the customizer footer; open state is shared here so the
+// main-menu item and the "o" shortcut can open it too (useSWR-key
+// equivalent).
+<OpenPreset
+  open=openPresetOpen
+  openChange=(open: boolean) => { openPresetOpen = open; }
+  onSubmitPreset=(preset: string) => {
+    setParams({ preset });
+    openPresetOpen = false;
+  }
+/>
+
+// ActionMenu (action-menu.tsx): ⌘/Ctrl+P item navigator, mirroring the
+// OpenPreset wiring above.
+<ActionMenu
+  open=actionMenuOpen
+  onOpenChange=(open: boolean) => { actionMenuOpen = open; }
+  onSelectItem=(item: string) => { setParams({ item }); }
+/>
+
+// WelcomeDialog (welcome-dialog.tsx): first-visit-only, mounted once at the
+// page level exactly like source's create/page.tsx (a sibling of the
+// designer div, not nested inside it).
+<WelcomeDialog/>

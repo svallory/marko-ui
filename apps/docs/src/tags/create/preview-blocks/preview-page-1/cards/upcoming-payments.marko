@@ -1,0 +1,46 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/upcoming-payments.tsx
+// API adaptation: this registry's Calendar is zag date-picker based and
+// uncontrolled here (source's selected-date state has no other consumer).
+import Badge from "@marko-ui/registry/ui/badge/badge.marko";
+import Calendar from "@marko-ui/registry/ui/calendar/calendar.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Item from "@marko-ui/registry/ui/item/item.marko";
+import ItemContent from "@marko-ui/registry/ui/item/content.marko";
+import ItemDescription from "@marko-ui/registry/ui/item/description.marko";
+import ItemGroup from "@marko-ui/registry/ui/item/group.marko";
+import ItemTitle from "@marko-ui/registry/ui/item/title.marko";
+
+static const PAYMENTS = [
+  { title: "Netflix Subscription", date: "Apr 15, 2024", amount: "$19.99" },
+  { title: "Rent Payment", date: "Apr 1, 2024", amount: "$2,400.00" },
+  { title: "Auto Insurance", date: "Apr 22, 2024", amount: "$186.00" },
+];
+
+<Card>
+  <CardHeader>
+    <CardTitle>Upcoming Payments</CardTitle>
+    <CardDescription>
+      Select a date to view scheduled payments.
+    </CardDescription>
+  </CardHeader>
+  <CardContent class="flex flex-col gap-4">
+    <Item variant="outline" class="justify-center">
+      <Calendar class="w-full [--cell-size:--spacing(8)] md:[--cell-size:--spacing(10)] style-sera:md:[--cell-size:--spacing(9)]"/>
+    </Item>
+    <ItemGroup class="w-full">
+      <for|payment| of=PAYMENTS by=(payment) => payment.title>
+        <Item variant="muted">
+          <ItemContent>
+            <ItemTitle>${payment.title}</ItemTitle>
+            <ItemDescription>${payment.date}</ItemDescription>
+          </ItemContent>
+          <Badge variant="secondary">${payment.amount}</Badge>
+        </Item>
+      </for>
+    </ItemGroup>
+  </CardContent>
+</Card>

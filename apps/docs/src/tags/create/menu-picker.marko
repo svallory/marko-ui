@@ -1,0 +1,217 @@
+// Ported from shadcn/ui app/(app)/(create)/components/menu-picker.tsx
+// (exported there as MenuColorPicker). Two independent radio groups —
+// "Color" (default/inverted) and "Appearance" (solid/translucent) — combine
+// into a single MenuColorValue via getMenuColorValue, matching source
+// exactly. Because both groups live in one popover, this picker does NOT
+// reuse the generic <picker> primitive (which renders exactly one radio
+// group across its sections) — it opens its own zag-js menu machine with two
+// independent option-item groups instead, mirroring how the source nests two
+// PickerRadioGroups inside one PickerContent.
+//
+// Phase 3 restorations:
+// - LockButton restored (locked/onToggleLock attrs from the design-system
+//   container, param="menuColor" in the source).
+// - The source's `isDark` (next-themes resolvedTheme) disabling "Inverted"
+//   when already in dark mode is restored: the container passes its isDark
+//   state down (tracked from the site's dark class on <html>).
+// Remaining notes:
+// - `lastSolidMenuAccentRef` (remembering the pre-translucent menuAccent so
+//   toggling translucency off restores it) is reproduced with local <let>
+//   state scoped to this component, same behavior as the source's ref.
+import * as menu from "@zag-js/menu";
+import { positionerStyle } from "marko-ui";
+import { cn } from "@marko-ui/registry/lib/utils.ts";
+import { isTranslucentMenuColor } from "./lib/search-params.ts";
+import type { MenuAccentValue, MenuColorValue } from "./lib/registry-config.ts";
+import LockButton from "./lock-button.marko";
+
+export type ColorChoice = "default" | "inverted";
+export type SurfaceChoice = "solid" | "translucent";
+
+static function getMenuColorValue(color: ColorChoice, translucent: boolean): MenuColorValue {
+  if (color === "default") {
+    return translucent ? "default-translucent" : "default";
+  }
+  return translucent ? "inverted-translucent" : "inverted";
+}
+
+static const MENU_OPTIONS: { value: MenuColorValue; label: string }[] = [
+  { value: "default", label: "Default / Solid" },
+  { value: "default-translucent", label: "Default / Translucent" },
+  { value: "inverted", label: "Inverted / Solid" },
+  { value: "inverted-translucent", label: "Inverted / Translucent" },
+];
+
+export interface Input {
+  menuColor: MenuColorValue;
+  menuAccent: MenuAccentValue;
+  onChange: (next: { menuColor: MenuColorValue; menuAccent?: MenuAccentValue }) => void;
+  onItemPreview?: (next: { menuColor: MenuColorValue; menuAccent?: MenuAccentValue } | null) => void;
+  locked: boolean;
+  onToggleLock: () => void;
+  /** Disables "Inverted" while the site is already in dark mode (source: next-themes resolvedTheme). */
+  isDark?: boolean;
+  isMobile?: boolean;
+}
+
+<let/lastSolidMenuAccent=(input.menuAccent === "subtle" && isTranslucentMenuColor(input.menuColor)
+  ? "subtle"
+  : input.menuAccent)/>
+
+<const/currentMenu=MENU_OPTIONS.find((option) => option.value === input.menuColor)/>
+<const/colorChoice=(
+  (input.menuColor === "inverted" || input.menuColor === "inverted-translucent") ? "inverted" : "default"
+) as ColorChoice/>
+<const/surfaceChoice=(
+  (input.menuColor === "default-translucent" || input.menuColor === "inverted-translucent") ? "translucent" : "solid"
+) as SurfaceChoice/>
+
+<script>
+  if (surfaceChoice === "solid") lastSolidMenuAccent = input.menuAccent;
+</script>
+
+<const/setColor=(color: ColorChoice) => {
+  const nextMenuColor = getMenuColorValue(color, surfaceChoice === "translucent");
+  input.onChange({
+    menuColor: nextMenuColor,
+    ...(isTranslucentMenuColor(nextMenuColor) && { menuAccent: "subtle" as const }),
+  });
+}/>
+
+<const/setSurface=(choice: SurfaceChoice) => {
+  const isTranslucent = choice === "translucent";
+  const nextMenuColor = getMenuColorValue(colorChoice, isTranslucent);
+  input.onChange({
+    menuColor: nextMenuColor,
+    menuAccent: isTranslucent ? "subtle" : lastSolidMenuAccent,
+  });
+}/>
+
+<const/previewColor=(color: ColorChoice) => {
+  const nextMenuColor = getMenuColorValue(color, surfaceChoice === "translucent");
+  input.onItemPreview?.({
+    menuColor: nextMenuColor,
+    ...(isTranslucentMenuColor(nextMenuColor) && { menuAccent: "subtle" as const }),
+  });
+}/>
+
+<const/previewSurface=(choice: SurfaceChoice) => {
+  const isTranslucent = choice === "translucent";
+  input.onItemPreview?.({
+    menuColor: getMenuColorValue(colorChoice, isTranslucent),
+    menuAccent: isTranslucent ? "subtle" : lastSolidMenuAccent,
+  });
+}/>
+
+<machine-props/machineProps from=input pick=menu.props
+  onSelect(details: menu.SelectionDetails) {
+    if (details.value === "default" || details.value === "inverted") {
+      setColor(details.value as ColorChoice);
+    } else {
+      setSurface(details.value as SurfaceChoice);
+    }
+  }
+  onHighlightChange(details: menu.HighlightChangeDetails) {
+    const value = details.highlightedValue;
+    if (!value) {
+      input.onItemPreview?.(null);
+      return;
+    }
+    if (value === "default" || value === "inverted") {
+      previewColor(value as ColorChoice);
+    } else {
+      previewSurface(value as SurfaceChoice);
+    }
+  }
+  onOpenChange(details: menu.OpenChangeDetails) {
+    if (!details.open) input.onItemPreview?.(null);
+  }
+  positioning={
+    placement: `${input.isMobile ? "top" : "right"}`,
+    gutter: 8,
+  }
+/>
+<service/service machine=() => menu.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  menu.connect(service, normalizeProps)
+  service=service
+/>
+
+<div class="group/picker relative">
+  <button
+    ...api().getTriggerProps()
+    data-slot="picker-trigger"
+    class="relative w-36 shrink-0 touch-manipulation rounded-xl p-3 ring-1 ring-foreground/10 select-none hover:bg-muted focus-visible:ring-foreground/50 focus-visible:outline-none disabled:opacity-50 data-[state=open]:bg-muted md:w-full md:rounded-lg md:px-2.5 md:py-2"
+  >
+    <div class="flex flex-col justify-start text-left">
+      <div class="text-xs text-muted-foreground">Menu</div>
+      <div class="line-clamp-1 max-w-[80%] truncate text-sm font-medium text-foreground">${currentMenu?.label}</div>
+    </div>
+    <div class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-base text-foreground select-none md:right-2.5">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" class="size-4">
+        <rect x="3" y="4" width="18" height="16" rx="2"/>
+        <path d="M3 9h18"/>
+      </svg>
+    </div>
+  </button>
+  <portal>
+    <if=api().open>
+      <div ...api().getPositionerProps() style=positionerStyle data-slot="picker-positioner">
+        <div
+          ...api().getContentProps()
+          data-slot="picker-content"
+          class="no-scrollbar z-50 max-h-[24rem] w-[calc(var(--available-width,16rem)-1.5rem)] min-w-32 overflow-x-hidden overflow-y-auto rounded-xl border-0 bg-neutral-950/80 p-1.5 text-neutral-100 ring-1 ring-neutral-950/80 backdrop-blur-xl outline-none md:w-52 dark:bg-neutral-800/90 dark:ring-neutral-700/50"
+        >
+          <div ...api().getItemGroupProps({ id: "menu-picker-color" }) data-slot="picker-group">
+            <div ...api().getItemGroupLabelProps({ htmlFor: "menu-picker-color" }) data-slot="picker-label" class="px-2 py-1.5 text-xs font-medium text-neutral-400">
+              Color
+            </div>
+            <for|option| of=[{ value: "default", label: "Default" }, { value: "inverted", label: "Inverted" }]>
+              <div
+                ...api().getOptionItemProps({ type: "radio", value: option.value, checked: option.value === colorChoice, closeOnSelect: input.isMobile, disabled: option.value === "inverted" && Boolean(input.isDark) })
+                data-slot="picker-radio-item"
+                class="relative flex cursor-default items-center gap-2 rounded-lg py-1.5 pr-8 pl-2 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+              >
+                <span class="pointer-events-none absolute right-2 flex items-center justify-center" data-slot="picker-radio-item-indicator">
+                  <if=option.value === colorChoice>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 pointer-coarse:size-5">
+                      <path d="M20 6 9 17l-5-5"/>
+                    </svg>
+                  </if>
+                </span>
+                ${option.label}
+              </div>
+            </for>
+          </div>
+          <div data-slot="picker-separator" class="-mx-1.5 my-1.5 h-px bg-neutral-600 dark:bg-neutral-700"/>
+          <div ...api().getItemGroupProps({ id: "menu-picker-surface" }) data-slot="picker-group">
+            <div ...api().getItemGroupLabelProps({ htmlFor: "menu-picker-surface" }) data-slot="picker-label" class="px-2 py-1.5 text-xs font-medium text-neutral-400">
+              Appearance
+            </div>
+            <for|option| of=[{ value: "solid", label: "Solid" }, { value: "translucent", label: "Translucent" }]>
+              <div
+                ...api().getOptionItemProps({ type: "radio", value: option.value, checked: option.value === surfaceChoice, closeOnSelect: input.isMobile })
+                data-slot="picker-radio-item"
+                class="relative flex cursor-default items-center gap-2 rounded-lg py-1.5 pr-8 pl-2 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+              >
+                <span class="pointer-events-none absolute right-2 flex items-center justify-center" data-slot="picker-radio-item-indicator">
+                  <if=option.value === surfaceChoice>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 pointer-coarse:size-5">
+                      <path d="M20 6 9 17l-5-5"/>
+                    </svg>
+                  </if>
+                </span>
+                ${option.label}
+              </div>
+            </for>
+          </div>
+        </div>
+      </div>
+    </if>
+  </portal>
+  <LockButton
+    locked=input.locked
+    onToggle=input.onToggleLock
+    class="absolute top-1/2 right-8 -translate-y-1/2"
+  />
+</div>

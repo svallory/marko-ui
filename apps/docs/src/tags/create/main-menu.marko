@@ -1,0 +1,163 @@
+// Ported from shadcn/ui app/(app)/(create)/components/main-menu.tsx.
+// Top menu bar of the customizer card header: a single trigger button that
+// opens a dropdown with Navigate/Open Preset/Shuffle/Light-Dark actions, a
+// separator, then Undo/Redo/Reset. The source wires these to context hooks
+// (useHistory/useActionMenuTrigger/useOpenPreset/useRandom/useReset/
+// useThemeToggle); Marko has no context, so the design-system container
+// passes the equivalent callbacks + canGoBack/canGoForward down as attrs.
+// "Navigate..." (useActionMenuTrigger → item-explorer command palette) is
+// wired in phase 4 to design-system.marko's ActionMenu, via onNavigate.
+import { positionerStyle } from "marko-ui";
+import * as menu from "@zag-js/menu";
+import { cn } from "@marko-ui/registry/lib/utils.ts";
+
+export interface Input {
+  class?: string;
+  canGoBack: boolean;
+  canGoForward: boolean;
+  onUndo: () => void;
+  onRedo: () => void;
+  onShuffle: () => void;
+  onToggleTheme: () => void;
+  onOpenPreset: () => void;
+  onShowResetDialog: () => void;
+  onNavigate: () => void;
+}
+
+<let/isMac=false/>
+<lifecycle
+  onMount() {
+    const platform = navigator.platform;
+    const userAgent = navigator.userAgent;
+    isMac = /Mac|iPhone|iPad|iPod/.test(platform || userAgent);
+  }
+/>
+
+<machine-props/machineProps from=input pick=menu.props
+  onSelect(details: menu.SelectionDetails) {
+    switch (details.value) {
+      case "navigate":
+        input.onNavigate();
+        break;
+      case "open-preset":
+        input.onOpenPreset();
+        break;
+      case "shuffle":
+        input.onShuffle();
+        break;
+      case "toggle-theme":
+        input.onToggleTheme();
+        break;
+      case "undo":
+        input.onUndo();
+        break;
+      case "redo":
+        input.onRedo();
+        break;
+      case "reset":
+        input.onShowResetDialog();
+        break;
+    }
+  }
+  positioning={ placement: "right-start", gutter: 8 }
+/>
+<service/service machine=() => menu.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  menu.connect(service, normalizeProps)
+  service=service
+/>
+
+<const/canGoBack=input.canGoBack/>
+<const/canGoForward=input.canGoForward/>
+
+<div data-slot="main-menu">
+  <button
+    ...api().getTriggerProps()
+    data-slot="picker-trigger"
+    class=cn(
+      "flex items-center justify-between gap-2 rounded-lg px-1.75 ring-1 ring-foreground/10 focus-visible:ring-1",
+      input.class,
+    )
+  >
+    <span class="font-medium">Menu</span>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-5">
+      <line x1="4" x2="20" y1="6" y2="6"/>
+      <line x1="4" x2="20" y1="12" y2="12"/>
+      <line x1="4" x2="20" y1="18" y2="18"/>
+    </svg>
+  </button>
+  <portal>
+    <if=api().open>
+      <div ...api().getPositionerProps() style=positionerStyle data-slot="picker-positioner">
+        <div
+          ...api().getContentProps()
+          data-slot="picker-content"
+          class="no-scrollbar z-50 max-h-[24rem] w-[calc(var(--available-width,16rem)-1.5rem)] min-w-32 overflow-x-hidden overflow-y-auto rounded-xl border-0 bg-neutral-950/80 p-1.5 text-neutral-100 ring-1 ring-neutral-950/80 backdrop-blur-xl outline-none md:w-52 dark:bg-neutral-800/90 dark:ring-neutral-700/50"
+        >
+          <div data-slot="picker-group">
+            <div
+              ...api().getItemProps({ value: "navigate" })
+              data-slot="picker-item"
+              class="group/dropdown-menu-item relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base"
+            >
+              Navigate...
+              <span class="ml-auto text-xs tracking-widest text-neutral-400! group-focus/dropdown-menu-item:text-neutral-100">${isMac ? "⌘P" : "Ctrl+P"}</span>
+            </div>
+            <div
+              ...api().getItemProps({ value: "open-preset" })
+              data-slot="picker-item"
+              class="group/dropdown-menu-item relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base"
+            >
+              Open Preset...
+              <span class="ml-auto text-xs tracking-widest text-neutral-400! group-focus/dropdown-menu-item:text-neutral-100">O</span>
+            </div>
+            <div
+              ...api().getItemProps({ value: "shuffle" })
+              data-slot="picker-item"
+              class="group/dropdown-menu-item relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base"
+            >
+              Shuffle
+              <span class="ml-auto text-xs tracking-widest text-neutral-400! group-focus/dropdown-menu-item:text-neutral-100">R</span>
+            </div>
+            <div
+              ...api().getItemProps({ value: "toggle-theme" })
+              data-slot="picker-item"
+              class="group/dropdown-menu-item relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base"
+            >
+              Light/Dark
+              <span class="ml-auto text-xs tracking-widest text-neutral-400! group-focus/dropdown-menu-item:text-neutral-100">D</span>
+            </div>
+          </div>
+          <div data-slot="picker-separator" class="-mx-1.5 my-1.5 h-px bg-neutral-600 dark:bg-neutral-700"/>
+          <div data-slot="picker-group">
+            <div
+              ...api().getItemProps({ value: "undo", disabled: !canGoBack })
+              data-slot="picker-item"
+              class="group/dropdown-menu-item relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+            >
+              Undo
+              <span class="ml-auto text-xs tracking-widest text-neutral-400! group-focus/dropdown-menu-item:text-neutral-100">${isMac ? "⌘Z" : "Ctrl+Z"}</span>
+            </div>
+            <div
+              ...api().getItemProps({ value: "redo", disabled: !canGoForward })
+              data-slot="picker-item"
+              class="group/dropdown-menu-item relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+            >
+              Redo
+              <span class="ml-auto text-xs tracking-widest text-neutral-400! group-focus/dropdown-menu-item:text-neutral-100">${isMac ? "⇧⌘Z" : "Ctrl+Shift+Z"}</span>
+            </div>
+            <div data-slot="picker-separator" class="-mx-1.5 my-1.5 h-px bg-neutral-600 dark:bg-neutral-700"/>
+            <div
+              ...api().getItemProps({ value: "reset" })
+              data-slot="picker-item"
+              class="group/dropdown-menu-item relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base"
+            >
+              Reset
+              <span class="ml-auto text-xs tracking-widest text-neutral-400! group-focus/dropdown-menu-item:text-neutral-100">⇧R</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </if>
+  </portal>
+</div>

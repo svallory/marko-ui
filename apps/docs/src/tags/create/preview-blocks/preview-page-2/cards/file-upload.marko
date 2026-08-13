@@ -1,0 +1,35 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/file-upload.tsx
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Empty from "@marko-ui/registry/ui/empty/empty.marko";
+import EmptyContent from "@marko-ui/registry/ui/empty/content.marko";
+import EmptyDescription from "@marko-ui/registry/ui/empty/description.marko";
+import EmptyHeader from "@marko-ui/registry/ui/empty/header.marko";
+import EmptyMedia from "@marko-ui/registry/ui/empty/media.marko";
+import EmptyTitle from "@marko-ui/registry/ui/empty/title.marko";
+import Icon from "../../lib/icon.marko";
+
+<Card>
+  <CardHeader>
+    <CardTitle>File Upload</CardTitle>
+    <CardDescription>Drag and drop or browse</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <Empty class="border">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Icon name="UploadCloudIcon"/>
+        </EmptyMedia>
+        <EmptyTitle>Upload files</EmptyTitle>
+        <EmptyDescription>PNG, JPG, PDF up to 10MB</EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button>Browse Files</Button>
+      </EmptyContent>
+    </Empty>
+  </CardContent>
+</Card>

@@ -1,0 +1,94 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/faq.tsx
+// API adaptation: this registry's Tabs/Accordion are items-driven (single
+// tag + data arrays) rather than compound React components; content and
+// styling are identical.
+import Accordion from "@marko-ui/registry/ui/accordion/accordion.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import Tabs from "@marko-ui/registry/ui/tabs/tabs.marko";
+
+static const GENERAL_QUESTIONS = [
+  {
+    value: "g-0",
+    title: "How secure is my financial data with Ledger?",
+    content: "We use bank-level AES-256 encryption, SOC 2 Type II certified infrastructure, and never store your credentials. All connections use read-only access tokens. We are a SEC registered investment advisor.",
+  },
+  {
+    value: "g-1",
+    title: "How do I connect my bank or investment accounts?",
+    content: "Go to Settings > Linked Accounts and search for your institution. We support over 12,000 banks and brokerages via Plaid and MX.",
+  },
+  {
+    value: "g-2",
+    title: "Can I export my data for tax purposes?",
+    content: "Yes. Navigate to Reports > Tax Export to download a CSV or PDF summary of your transactions, dividends, and capital gains for any tax year.",
+  },
+];
+
+static const BILLING_QUESTIONS = [
+  {
+    value: "b-0",
+    title: "What is the difference between Basic and Pro pricing tiers?",
+    content: "Basic includes budgeting, goal tracking, and up to 3 linked accounts. Pro adds unlimited accounts, dividend tracking, portfolio analysis, and priority support.",
+  },
+  {
+    value: "b-1",
+    title: "How do I cancel my subscription?",
+    content: "Go to Settings > Billing > Manage Plan and click Cancel. Your access continues until the end of your current billing period.",
+  },
+  {
+    value: "b-2",
+    title: "Do you offer a free trial?",
+    content: "Yes. All new accounts start with a 14-day Pro trial. No credit card required.",
+  },
+];
+
+static const GOALS_QUESTIONS = [
+  {
+    value: "go-0",
+    title: "How do I set up a custom financial goal?",
+    content: "Click New Goal from the Savings Targets card. Choose a category, set a target amount and date, and we'll calculate the monthly contribution needed.",
+  },
+  {
+    value: "go-1",
+    title: "Can I track multiple goals at once?",
+    content: "Yes. Pro accounts can track unlimited goals. Basic accounts support up to 3 active goals.",
+  },
+  {
+    value: "go-2",
+    title: "How are monthly contributions calculated?",
+    content: "We divide the remaining amount by the number of months until your target date, adjusted for your current savings rate and any auto-transfer schedules.",
+  },
+];
+
+static const TABS = [
+  { value: "general", label: "General" },
+  { value: "billing", label: "Billing" },
+  { value: "goals", label: "Goals" },
+];
+
+<Card>
+  <CardContent>
+    <Tabs|value| items=TABS defaultValue="general">
+      <if=(value === "general")>
+        <Accordion items=GENERAL_QUESTIONS defaultValue=["g-0"]/>
+      </if>
+      <if=(value === "billing")>
+        <Accordion items=BILLING_QUESTIONS defaultValue=["b-0"]/>
+      </if>
+      <if=(value === "goals")>
+        <Accordion items=GOALS_QUESTIONS defaultValue=["go-0"]/>
+      </if>
+    </Tabs>
+  </CardContent>
+  <CardFooter>
+    <Button variant="outline" class="w-full">
+      Contact Support
+    </Button>
+    <Button variant="link" class="w-full">
+      Learn More
+    </Button>
+  </CardFooter>
+</Card>

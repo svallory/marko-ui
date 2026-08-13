@@ -1,0 +1,49 @@
+// Ported from shadcn/ui app/(app)/(create)/components/base-color-picker.tsx.
+// Renders BASE_COLORS from lib/registry-config.ts with a color swatch (the
+// theme's dark muted-foreground color) on the trigger.
+//
+// Deviation: LockButton restored in phase 3 (locked/onToggleLock attrs from the design-system container)
+// (no phase-2 lock/global-state container to bind to yet).
+import { BASE_COLORS, type BaseColorName } from "./lib/registry-config.ts";
+import Picker from "./picker.marko";
+import LockButton from "./lock-button.marko";
+
+export interface Input {
+  value: BaseColorName;
+  onValueChange: (value: BaseColorName) => void;
+  onItemPreview?: (value: BaseColorName | null) => void;
+  locked: boolean;
+  onToggleLock: () => void;
+  isMobile?: boolean;
+}
+
+<const/currentBaseColor=BASE_COLORS.find((baseColor) => baseColor.name === input.value)/>
+<const/swatchColor=currentBaseColor?.cssVars?.dark?.["muted-foreground"]/>
+
+<div class="group/picker relative">
+  <Picker
+    value=input.value
+    onValueChange=(value) => input.onValueChange(value as BaseColorName)
+    onItemPreview=(value) => input.onItemPreview?.(value as BaseColorName | null)
+    closeOnClick=input.isMobile
+    side=(input.isMobile ? "top" : "right")
+    align=(input.isMobile ? "center" : "start")
+    sections=[{ options: BASE_COLORS.map((baseColor) => ({ value: baseColor.name, label: baseColor.title })) }]
+  >
+    <@trigger>
+      <div class="flex flex-col justify-start text-left">
+        <div class="text-xs text-muted-foreground">Base Color</div>
+        <div class="text-sm font-medium text-foreground">${currentBaseColor?.title}</div>
+      </div>
+      <div
+        class="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 rounded-full select-none md:right-2.5"
+        style=`background: ${swatchColor}`
+      />
+    </@trigger>
+  </Picker>
+  <LockButton
+    locked=input.locked
+    onToggle=input.onToggleLock
+    class="absolute top-1/2 right-8 -translate-y-1/2"
+  />
+</div>

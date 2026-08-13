@@ -1,0 +1,103 @@
+// Ported from shadcn/ui app/(app)/(create)/components/preview.tsx +
+// hooks/use-iframe-sync.tsx + components/preview-override.tsx's iframe-host
+// half. Renders the iframe pointed at ../../routes/create/preview/+page.marko
+// (this repo's equivalent of shadcn's `/preview/[base]/[item]` route) and
+// keeps it themed live: every time `effective` (design-system.marko's
+// committed params + hover-preview overlay) changes, this posts a
+// `design-system-params` message into the iframe — the exact same
+// postMessage channel and message shape as the source's `sendToIframe`,
+// firing on hover-preview changes too, not just commits (see the header
+// comment in ../../routes/create/preview/+page.marko for the DOM-effect
+// half — inlined there rather than a separate custom tag, see that file's
+// header comment for why).
+//
+// Deviations from source, noted inline:
+// - No CMD_K/RANDOMIZE/UNDO/REDO/RESET/DARK_MODE forwarders: those exist in
+//   source because shadcn's *customizer* buttons live inside the iframe
+//   document (a genuinely separate window needing keyboard events relayed
+//   out to the parent). Here the customizer is a sibling DOM node in the
+//   SAME document as design-system.marko's keydown listener, so no
+//   iframe→parent forwarding is needed — only parent→iframe theme sync.
+// - PreviewSwitcher (desktop/tablet/mobile viewport toggle) is
+//   `preview-switcher.marko`, rendered here at the same absolute position.
+// - No CreateDevtools (the source's debug corner button): out of scope,
+//   it's a hidden dev-only feature behind `NODE_ENV==="development"` in
+//   the original and has no user-facing behavior to preserve.
+import PreviewSwitcher from "./preview-switcher.marko";
+import type { DesignSystemSearchParams } from "./lib/search-params.ts";
+import { serializeDesignSystemSearchParams } from "./lib/search-params.ts";
+
+export interface Input {
+  params: DesignSystemSearchParams;
+  previewOverride: Partial<DesignSystemSearchParams> | null;
+  isDark: boolean;
+  onItemChange: (item: string) => void;
+}
+
+<const/mergedParams={ ...input.params, ...(input.previewOverride ?? {}) } as DesignSystemSearchParams/>
+
+// The iframe src carries the initial item only (item is a bare registry
+// item name — "preview-page-1", "preview-page-2", or "preview-page-3", see
+// ../../routes/create/preview/+page.marko) — re-keying the
+// src on every param change would reload the iframe and flash/lose state,
+// exactly the tradeoff the source's comment documents. Style/color/font
+// updates flow only through postMessage below.
+<const/iframeSrc=`/create/preview${serializeDesignSystemSearchParams({ item: input.params.item })}`/>
+
+<let/ready=false/>
+<let/lastSentKey=null as string | null/>
+<let/lastSrc=null as string | null/>
+
+<script>
+  // Reset the loading skeleton whenever navigation changes the iframe's src
+  // (item changed) — the on-load handler flips it back once the new
+  // document is ready, matching create-skeleton.tsx's role as the pre-ready
+  // placeholder.
+  if (iframeSrc !== lastSrc) {
+    lastSrc = iframeSrc;
+    ready = false;
+  }
+</script>
+
+// NOTE: `iframeEl` is the <iframe>'s tag variable — in Marko 6 native tag
+// variables are FUNCTIONS returning the DOM node (see e.g.
+// ../docs/install-tabs.marko's installEl()). The earlier phase shadowed it
+// with a `<let/iframeEl=null/>` and read `.contentWindow` off the function,
+// so every send silently no-op'd and the iframe never received a single
+// design-system-params message (found in phase-D browser verification).
+<const/sendParams=() => {
+  const iframe = iframeEl();
+  if (!iframe?.contentWindow) return;
+  const payload = { ...mergedParams, __isDark: input.isDark };
+  iframe.contentWindow.postMessage({ type: "design-system-params", data: payload }, "*");
+  lastSentKey = JSON.stringify(payload);
+}/>
+
+<script>
+  // Re-send whenever the merged (committed + preview-override) params or
+  // dark-mode state changes — mirrors the source's mergedParams effect,
+  // including hover-preview overrides (not just committed changes).
+  const key = JSON.stringify({ ...mergedParams, __isDark: input.isDark });
+  if (iframeEl()?.contentWindow && key !== lastSentKey) {
+    sendParams();
+  }
+</script>
+
+<div class="relative flex flex-1 flex-col justify-center overflow-hidden rounded-2xl ring ring-foreground/10 md:ring-muted dark:ring-foreground/10" data-slot="preview">
+  <div class="relative z-0 mx-auto flex w-full flex-1 flex-col overflow-hidden">
+    <div class="absolute inset-0 bg-muted dark:bg-muted/30"/>
+    <if=!ready>
+      <div class="absolute inset-0 z-20 animate-pulse bg-accent" data-slot="preview-loading"/>
+    </if>
+    <iframe/iframeEl
+      src=iframeSrc
+      class="z-10 size-full flex-1"
+      title="Preview"
+      on-load() {
+        ready = true;
+        sendParams();
+      }
+    />
+  </div>
+  <PreviewSwitcher item=input.params.item onItemChange=input.onItemChange/>
+</div>
