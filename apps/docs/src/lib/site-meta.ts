@@ -12,7 +12,7 @@
  */
 import { DOCS_NAV_FLAT } from "../tags/docs/docs-nav.ts";
 import { COMPONENTS } from "./components-list.ts";
-import { BLOCK_CATEGORIES } from "./blocks-list.ts";
+import { BLOCK_CATEGORIES, BLOCKS } from "./blocks-list.ts";
 
 export const SITE_NAME = "marko-ui";
 export const SITE_TAGLINE = "shadcn for Marko";
@@ -122,6 +122,19 @@ for (const category of BLOCK_CATEGORIES) {
       description: `${category.name} page compositions built from marko-ui registry components.`,
     };
   }
+}
+
+// /blocks/view/<name> is the chrome-free full-page render each block's
+// preview iframe points at (mirrors shadcn's /view/[style]/[name], whose
+// generateMetadata titles the page with the block's own name/description —
+// see data/shadcn-ui/apps/v4/app/(view)/view/[style]/[name]/page.tsx).
+// Previously had no ROUTE_META entry at all, so every one of these pages
+// showed "Page Not Found — marko-ui" in its <title>.
+for (const block of BLOCKS) {
+  ROUTE_META[`/blocks/view/${block.name}`] = {
+    title: block.title,
+    description: block.description,
+  };
 }
 
 for (const name of COMPONENTS) {

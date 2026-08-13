@@ -1,23 +1,30 @@
+// Faithful port of shadcn/ui's components/blocks-nav.tsx, on our real
+// ScrollArea primitive (Zag scroll-area machine) rather than Radix's, per
+// the port's hard parity constraint: DOM structure and Tailwind classes
+// match; only the underlying primitive implementation differs, invisibly.
+import ScrollArea from "@marko-ui/registry/ui/scroll-area/scroll-area.marko";
 import { BLOCK_CATEGORIES } from "../../lib/blocks-list.ts";
 
 export interface Input {
   activeSlug: string;
 }
 
-<nav
-  class="flex items-center overflow-x-auto"
-  data-slot="blocks-nav"
-  aria-label="Block categories"
->
-  <for|category| of=BLOCK_CATEGORIES by=(category) => category.slug>
-    <a
-      href=(category.slug === "" ? "/blocks" : `/blocks/${category.slug}`)
-      // String, not boolean: Marko renders `true` as a bare `data-active`
-      // attribute, which the `data-[active=true]:` Tailwind variant misses.
-      data-active=String(category.slug === input.activeSlug)
-      class="flex h-7 shrink-0 items-center justify-center px-4 text-center text-base font-medium text-muted-foreground transition-colors hover:text-primary data-[active=true]:text-primary"
-    >
-      ${category.name}
-    </a>
-  </for>
-</nav>
+<div class="relative overflow-hidden">
+  <ScrollArea class="max-w-none">
+    <@content>
+      <div class="flex items-center">
+        <for|category| of=BLOCK_CATEGORIES by=(category) => category.slug>
+          <a
+            href=(category.slug === "" ? "/blocks" : `/blocks/${category.slug}`)
+            // String, not boolean: Marko renders `true` as a bare `data-active`
+            // attribute, which the `data-[active=true]:` Tailwind variant misses.
+            data-active=String(category.slug === input.activeSlug)
+            class="flex h-7 shrink-0 items-center justify-center px-4 text-center text-base font-medium text-muted-foreground transition-colors hover:text-primary data-[active=true]:text-primary"
+          >
+            ${category.name}
+          </a>
+        </for>
+      </div>
+    </@content>
+  </ScrollArea>
+</div>

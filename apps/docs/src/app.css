@@ -15,3 +15,48 @@
 @custom-variant style-luma (&:where(.style-luma *));
 @custom-variant style-sera (&:where(.style-sera *));
 @custom-variant style-rhea (&:where(.style-rhea *));
+
+/* Docs-site chrome tokens, ported verbatim from shadcn's app/globals.css —
+   NOT part of the registry theme a consumer app installs (packages/registry
+   /default/styles/globals.css), only used by this docs site's own layout
+   (block viewer code panel, container helpers below). */
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-code: var(--code);
+  --color-code-foreground: var(--code-foreground);
+}
+
+:root {
+  --surface: oklch(0.98 0 0);
+  --surface-foreground: var(--foreground);
+  --code: var(--surface);
+  --code-foreground: var(--surface-foreground);
+}
+
+.dark {
+  --surface: oklch(0.2 0 0);
+  --surface-foreground: oklch(0.708 0 0);
+  --code: var(--surface);
+  --code-foreground: var(--surface-foreground);
+}
+
+/* Docs-site layout utilities, ported verbatim from shadcn's
+   components/page-header.tsx / page-nav.tsx / app/globals.css — the
+   /blocks page chrome (PageHeader, PageNav, block list container) uses
+   these; no registry component depends on them. */
+@utility border-grid {
+  @apply border-border/50 dark:border-border;
+}
+
+@utility section-soft {
+  @apply bg-linear-to-b from-background to-surface/40 dark:bg-background;
+}
+
+@utility container-wrapper {
+  @apply mx-auto w-full px-2;
+}
+
+@utility container {
+  @apply mx-auto max-w-[1400px] px-4 lg:px-8;
+}

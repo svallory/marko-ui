@@ -1,70 +1,87 @@
+// Faithful port of shadcn/ui's app/(app)/blocks/layout.tsx (PageHeader +
+// PageNav chrome) and page.tsx / [...categories]/page.tsx (the block list
+// itself), merged into one tag since our router calls this the same way for
+// both the featured "/blocks" route and "/blocks/$category". shadcn's
+// FEATURED_BLOCKS constant (dashboard-01, sidebar-07, sidebar-03, login-03,
+// login-04) is mirrored for the featured/"" slug; every other slug lists the
+// full category, matching [...categories]/page.tsx's getAllBlockIds.
 import "./blocks-nav.marko";
-import "./block-preview.marko";
-import { blocksInCategory, BLOCK_CATEGORIES } from "../../lib/blocks-list.ts";
+import "./block-viewer.marko";
+import { buttonVariants } from "@marko-ui/registry/ui/button/variants.ts";
+import { badgeVariants } from "@marko-ui/registry/ui/badge/variants.ts";
+import { cn } from "@marko-ui/registry/lib/utils.ts";
+import { blocksInCategory, findBlock, BLOCK_CATEGORIES } from "../../lib/blocks-list.ts";
 
 export interface Input {
   /** "" for the featured/all view, otherwise a category slug. */
   categorySlug: string;
 }
 
-<const/blocks=blocksInCategory(input.categorySlug)/>
-<const/categoryName=BLOCK_CATEGORIES.find((category) => category.slug === input.categorySlug)?.name
-  ?? "Blocks"/>
+// shadcn/app/(app)/blocks/page.tsx's FEATURED_BLOCKS, in that order.
+static const FEATURED_BLOCK_NAMES = ["dashboard-01", "sidebar-07", "sidebar-03", "login-03", "login-04"];
 
-<main data-slot="blocks-page">
-  <div class="border-b">
-    <div class="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-      <h1 class="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
-        Building Blocks for Marko
+<const/isFeatured=input.categorySlug === ""/>
+<const/blocks=isFeatured
+  ? FEATURED_BLOCK_NAMES.map((name) => findBlock(name)).filter((block) => block !== undefined)
+  : blocksInCategory(input.categorySlug)/>
+
+// ---- PageHeader (shadcn components/page-header.tsx, via blocks/layout.tsx) ----
+<section class="border-grid">
+  <div class="container-wrapper">
+    <div class="container flex flex-col items-center gap-2 px-6 py-8 text-center md:py-16 lg:py-20 xl:gap-4">
+      <a href="/docs" data-slot="badge" class=cn(badgeVariants({ variant: "secondary" }), "bg-muted")>
+        Built on the marko-ui registry
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+      <h1 class="leading-tighter max-w-3xl text-3xl font-semibold tracking-tight text-balance text-primary lg:leading-[1.1] lg:font-semibold xl:text-5xl xl:tracking-tighter">
+        Building Blocks for the Web
       </h1>
-      <p class="mt-3 max-w-2xl text-base text-muted-foreground text-balance">
-        Whole-page compositions built from marko-ui components. Copy and paste them into
-        your @marko/run app, or install them with the shadcn CLI. Open source. Free forever.
+      <p class="max-w-4xl text-base text-balance text-foreground sm:text-lg">
+        Clean, modern building blocks. Copy and paste into your apps. Works with all Marko frameworks. Open Source. Free forever.
       </p>
-      <div class="mt-6 flex flex-wrap items-center gap-2">
-        <a
-          href="#blocks"
-          class="inline-flex h-8 items-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          Browse Blocks
-        </a>
-        <a
-          href="/"
-          class="inline-flex h-8 items-center rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-        >
-          View Components
-        </a>
+      <div class="flex w-full items-center justify-center gap-2 pt-2 **:data-[slot=button]:shadow-none">
+        <a href="#blocks" data-slot="button" class=buttonVariants({ size: "sm" })>Browse Blocks</a>
+        <a href="/docs/components" data-slot="button" class=buttonVariants({ variant: "ghost", size: "sm" })>View Components</a>
       </div>
     </div>
   </div>
+</section>
 
-  <div id="blocks" class="sticky top-14 z-40 border-b bg-background/95 backdrop-blur">
-    <div class="mx-auto flex max-w-6xl items-center px-4 py-2 sm:px-6 lg:px-8">
-      <blocks-nav activeSlug=input.categorySlug/>
-    </div>
+// ---- PageNav (shadcn components/page-nav.tsx) ----
+<div id="blocks" class="container-wrapper scroll-mt-24">
+  <div class="container flex items-center justify-between gap-4 py-4">
+    <blocks-nav activeSlug=input.categorySlug/>
+    <a
+      href="/blocks/sidebar"
+      data-slot="button"
+      class=cn(buttonVariants({ variant: "secondary", size: "sm" }), "mr-7 hidden shadow-none lg:flex")
+    >
+      Browse all blocks
+    </a>
   </div>
+</div>
 
-  <div class="bg-muted/30">
-    <div class="mx-auto max-w-6xl space-y-16 px-4 py-10 sm:px-6 lg:px-8 md:py-14">
-      <if=blocks.length === 0>
-        <p class="text-sm text-muted-foreground">
-          No blocks in the ${categoryName} category yet.
-        </p>
-      </if>
-      <else>
-        <for|block| of=blocks by=(block) => block.name>
-          <block-preview block=block/>
-        </for>
-      </else>
-
-      <div class="rounded-xl border border-dashed bg-background p-8 text-center">
-        <h2 class="text-base font-semibold">Chart blocks coming</h2>
-        <p class="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
-          The full shadcn block catalog — dashboard, sidebar shells, login and
-          signup screens, and calendar — is ported. Chart blocks arrive with the
-          zero-JavaScript chart components currently in development.
-        </p>
+// ---- Block list (shadcn app/(app)/blocks/page.tsx and [...categories]/page.tsx) ----
+<div class="container-wrapper section-soft flex-1 md:py-12">
+  <div class="container flex flex-col gap-12 md:gap-24">
+    <if=blocks.length === 0>
+      <p class="text-sm text-muted-foreground">
+        No blocks in the ${BLOCK_CATEGORIES.find((category) => category.slug === input.categorySlug)?.name ?? "Blocks"} category yet.
+      </p>
+    </if>
+    <else>
+      <for|block| of=blocks by=(block) => block.name>
+        <block-viewer block=block/>
+      </for>
+    </else>
+    <if=isFeatured>
+      <div class="container-wrapper">
+        <div class="container flex justify-center py-6">
+          <a href="/blocks/sidebar" data-slot="button" class=buttonVariants({ variant: "outline" })>
+            Browse more blocks
+          </a>
+        </div>
       </div>
-    </div>
+    </if>
   </div>
-</main>
+</div>
