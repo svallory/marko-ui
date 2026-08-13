@@ -1,0 +1,7 @@
+import NavigationMenu from "@marko-ui/registry/ui/navigation-menu/navigation-menu.marko";
+
+// Exercises the documented precedence rule (attr tags replace items= when
+// both are supplied) so the behavior suite can assert it against real SSR.
+<NavigationMenu items=[{ type: "link", value: "ignored", label: "Ignored", href: "#ignored" }]>
+  <@entry value="wins" label="Wins" href="#wins"/>
+</NavigationMenu>

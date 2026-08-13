@@ -8,18 +8,49 @@ export interface TabItem {
   disabled?: boolean;
 }
 
+export interface TabsTriggerAttrs {
+  value: string;
+  disabled?: boolean;
+  content?: Marko.Body;
+}
+
+export interface TabsPanelAttrs {
+  value: string;
+  content?: Marko.Body;
+}
+
 // MachineInput = native <div> attributes ∩ the machine's full Props, with
 // `id` made optional (generated below, overridable). `valueChange` is
 // additive sugar enabling Marko's two-way bind shorthand
 // (<Tabs value:=myState/>); Zag's own `onValueChange` also works and
 // receives the details object.
+//
+// Dual API: compound attr tags (`<@trigger>`/`<@panel>`) are the primary,
+// Marko-idiomatic form; `items=` + `content` remain as sugar for the
+// data-driven case. If both are supplied, attr tags win.
 export type Input = MachineInput<"div", tabsMachine.Props> & {
-  items: TabItem[];
+  items?: TabItem[];
   content?: Marko.Body<[string]>;
+  trigger?: Marko.AttrTag<TabsTriggerAttrs>;
+  panel?: Marko.AttrTag<TabsPanelAttrs>;
   valueChange?: (value: string) => void;
 };
 
 <const/{ items, content }=input/>
+
+// Normalize whichever source was supplied into one shape so the render path
+// below never branches. Attr tags win if both are present (compound is
+// primary per the compound-tag-dx report).
+//
+// NOTE: `trigger` and `panel` normalize INDEPENDENTLY — the "attr tags win"
+// rule applies per tag name, not to the component as a whole. Mixing
+// `<@trigger>` tags with `items=` (and no `<@panel>` tags) therefore yields
+// attr-tag-derived triggers paired with items=-derived panels — a hybrid;
+// supply both tag names (or neither) to stay on one source.
+<const/triggerTags=[...(input.trigger ?? [])]/>
+<const/panelTags=[...(input.panel ?? [])]/>
+<const/triggers=(triggerTags.length > 0 ? triggerTags : (items ?? []).map((item) => ({ value: item.value, disabled: item.disabled, label: item.label })))/>
+<const/panels=(panelTags.length > 0 ? panelTags : (items ?? []).map((item) => ({ value: item.value })))/>
 
 // The three-tag wiring (see /docs/creating-components):
 // 1. <machine-props> picks the machine's props out of `input` by name and
@@ -31,7 +62,7 @@ export type Input = MachineInput<"div", tabsMachine.Props> & {
 //    Getters are the serializable currency of Marko's resumability: the
 //    api object itself must never become reactive state.
 <machine-props/machineProps from=input pick=tabsMachine.props
-  defaultValue=input.defaultValue ?? items[0]?.value
+  defaultValue=input.defaultValue ?? triggers[0]?.value
   onValueChange(details: tabsMachine.ValueChangeDetails) {
     input.onValueChange?.(details);
     input.valueChange?.(details.value);
@@ -49,6 +80,8 @@ export type Input = MachineInput<"div", tabsMachine.Props> & {
     class: ownClass,
     items: ownItems,
     content: ownContent,
+    trigger: ownTrigger,
+    panel: ownPanel,
     valueChange: ownChangeHandler,
     ...native
   } = tabsMachine.splitProps(input)[1];
@@ -57,19 +90,29 @@ export type Input = MachineInput<"div", tabsMachine.Props> & {
 
 <div ...nativeAttrs() ...api().getRootProps() data-slot="tabs" class=cn("flex flex-col gap-2", input.class)>
   <div ...api().getListProps() data-slot="tabs-list" class="bg-muted text-muted-foreground inline-flex w-fit items-center justify-center rounded-lg p-[3px]">
-    <for|item| of=items>
+    <for|trigger| of=triggers>
       <button
-        ...api().getTriggerProps({ value: item.value, disabled: item.disabled })
+        ...api().getTriggerProps({ value: trigger.value, disabled: trigger.disabled })
         data-slot="tabs-trigger"
         class="data-[selected]:bg-background data-[selected]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 data-[selected]:shadow-sm"
       >
-        ${item.label}
+        <if=trigger.content>
+          <${trigger.content}/>
+        </if>
+        <else>
+          ${trigger.label}
+        </else>
       </button>
     </for>
   </div>
-  <for|item| of=items>
-    <div ...api().getContentProps({ value: item.value }) data-slot="tabs-content" class="flex-1 outline-none">
-      <${content}(item.value)/>
+  <for|panel| of=panels>
+    <div ...api().getContentProps({ value: panel.value }) data-slot="tabs-content" class="flex-1 outline-none">
+      <if=panel.content>
+        <${panel.content}/>
+      </if>
+      <else>
+        <${content}(panel.value)/>
+      </else>
     </div>
   </for>
 </div>

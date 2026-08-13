@@ -9,11 +9,28 @@ export interface ToggleGroupItem {
   disabled?: boolean;
 }
 
+export interface ToggleGroupItemAttrs {
+  value: string;
+  disabled?: boolean;
+  content?: Marko.Body;
+}
+
+// Dual API: compound attr tags (`<@item>`) are the primary, Marko-idiomatic
+// form; `items=` remains as sugar for the data-driven case. If both are
+// supplied, attr tags win (see agent/reports/compound-tag-dx.md).
 export type Input = MachineInput<"div", toggleGroupMachine.Props> &
   ToggleVariants & {
-    items: ToggleGroupItem[];
+    items?: ToggleGroupItem[];
+    item?: Marko.AttrTag<ToggleGroupItemAttrs>;
     valueChange?: (value: string[]) => void;
   };
+
+// Normalize BOTH sources into ONE explicit common shape (mirrors
+// radio-group.marko) so the render path below never branches on the source
+// and needs no casts: `content` carries the attr-tag markup body, `label`
+// the items= string fallback. Attr tags win if both are present.
+<const/itemTags=[...(input.item ?? [])].map((item) => ({ value: item.value, disabled: item.disabled, label: undefined as string | undefined, content: item.content }))/>
+<const/items=(itemTags.length > 0 ? itemTags : (input.items ?? []).map((item) => ({ value: item.value, disabled: item.disabled, label: item.label as string | undefined, content: undefined as Marko.Body | undefined })))/>
 
 <machine-props/machineProps from=input pick=toggleGroupMachine.props
   onValueChange(details: toggleGroupMachine.ValueChangeDetails) {
@@ -30,6 +47,7 @@ export type Input = MachineInput<"div", toggleGroupMachine.Props> &
   const {
     class: ownClass,
     items: ownItems,
+    item: ownItem,
     variant: ownVariant,
     size: ownSize,
     valueChange: ownChangeHandler,
@@ -44,13 +62,18 @@ export type Input = MachineInput<"div", toggleGroupMachine.Props> &
   data-slot="toggle-group"
   class=cn("flex items-center gap-1", input.class)
 >
-  <for|item| of=input.items by=(item) => item.value>
+  <for|item| of=items by=(item) => item.value>
     <button
       ...api().getItemProps({ value: item.value, disabled: item.disabled })
       data-slot="toggle-group-item"
       class=toggleVariants({ variant: input.variant, size: input.size })
     >
-      ${item.label}
+      <if=item.content>
+        <${item.content}/>
+      </if>
+      <else>
+        ${item.label}
+      </else>
     </button>
   </for>
 </div>

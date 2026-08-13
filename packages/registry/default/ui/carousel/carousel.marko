@@ -2,17 +2,33 @@ import * as carouselMachine from "@zag-js/carousel";
 import type { MachineInput } from "marko-ui";
 import { cn } from "#lib/utils.ts";
 
+export interface CarouselSlideAttrs {
+  content?: Marko.Body;
+}
+
+// Dual API: compound attr tags (`<@slide>`) are the primary, Marko-idiomatic
+// form for static/manual slide lists; `items=` + `content` remain as sugar
+// for the data-driven, generic-T case. If both are supplied, attr tags win.
 export type Input<T = unknown> = Omit<
   MachineInput<"div", carouselMachine.Props>,
   "slideCount"
 > & {
-  items: T[];
+  items?: T[];
   content?: Marko.Body<[T, number]>;
+  slide?: Marko.AttrTag<CarouselSlideAttrs>;
   pageChange?: (page: number) => void;
 };
 
+// Normalize whichever source was supplied into one shape so the render path
+// below never branches: a list of `{ content, item }` entries, where `item`
+// (data-driven path only) is rendered through the shared `content` render
+// prop at render time. Attr tags win if both are present (compound is
+// primary per the compound-tag-dx report).
+<const/slideTags=[...(input.slide ?? [])]/>
+<const/slides=(slideTags.length > 0 ? slideTags.map((slide) => ({ content: slide.content, item: undefined as unknown })) : (input.items ?? []).map((item) => ({ content: undefined, item })))/>
+
 <machine-props/machineProps from=input pick=carouselMachine.props
-  slideCount=input.items.length
+  slideCount=slides.length
   onPageChange(details: carouselMachine.PageChangeDetails) {
     input.onPageChange?.(details);
     input.pageChange?.(details.page);
@@ -28,6 +44,7 @@ export type Input<T = unknown> = Omit<
     class: ownClass,
     items: ownItems,
     content: ownContent,
+    slide: ownSlide,
     pageChange: ownChangeHandler,
     ...native
   } = carouselMachine.splitProps(input)[1];
@@ -36,17 +53,24 @@ export type Input<T = unknown> = Omit<
 
 <div ...nativeAttrs() ...api().getRootProps() data-slot="carousel" class=cn("relative", input.class)>
   <div ...api().getItemGroupProps() data-slot="carousel-item-group" class="overflow-hidden">
-    <for|item, index| of=input.items>
+    <for|slide, index| of=slides>
       <div
         ...api().getItemProps({ index })
         data-slot="carousel-item"
         class="min-w-0 shrink-0 grow-0 basis-full"
       >
-        <if=input.content>
-          <${input.content}(item, index)/>
+        <if=slide.content>
+          <${slide.content}/>
         </if>
+        // A bodyless `<@slide/>` has no `content` and an undefined `item`, so
+        // when the caller also passed a `content` render prop it is invoked
+        // with `undefined` here — intentional and safe: the render prop owns
+        // placeholder slides, and the `${slide.item}` fallback renders nothing.
+        <else-if=input.content>
+          <${input.content}(slide.item, index)/>
+        </else-if>
         <else>
-          ${item}
+          ${slide.item}
         </else>
       </div>
     </for>

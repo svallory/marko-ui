@@ -3,9 +3,24 @@ import { positionerStyle } from "marko-ui";
 import { cn } from "#lib/utils.ts";
 import type { DropdownMenuItem } from "../dropdown-menu/dropdown-menu.marko";
 
+// Attr-tag form of DropdownMenuItem. A SINGLE attr tag name (`item`) carries
+// all three kinds (discriminated by `type`) rather than separate
+// `item`/`separator`/`label` attr tags: Marko collects each attr-tag NAME
+// into its own independent iterable on `input` with no shared ordering
+// between differently-named siblings, so distinct tag names could not
+// preserve call-site interleaving. One name with a `type` discriminant
+// keeps document order intact by construction (same design as
+// dropdown-menu.marko). `content` lets an item or label carry a markup
+// body; the plain `label` string renders as the fallback when no body is
+// supplied.
+export interface MenubarItemAttrs extends DropdownMenuItem {
+  content?: Marko.Body;
+}
+
 export interface Input {
   trigger: Marko.Body<[Record<string, unknown>]>;
-  items: DropdownMenuItem[];
+  items?: DropdownMenuItem[];
+  item?: Marko.AttrTag<MenubarItemAttrs>;
   select?: (value: string) => void;
   class?: string;
 }
@@ -21,6 +36,16 @@ export interface Input {
 />
 
 <const/{ class: className, trigger }=input/>
+// Normalize whichever source was supplied into ONE entries list so the
+// render path below never branches. Attr tags win when present (compound is
+// primary per the compound-tag-dx report); `items=` is the fallback. The
+// single `<@item>` tag name preserves true document order by construction,
+// so interleaved item/separator/label entries render exactly as written.
+// `items=` entries never carry a body, so each is mapped into the
+// MenubarItemAttrs shape with an explicit undefined `content` — no casts
+// needed (mirrors accordion/toggle-group).
+<const/attrItems=[...(input.item ?? [])]/>
+<const/entries=(attrItems.length > 0 ? attrItems : (input.items ?? []).map((item) => ({ ...item, content: undefined as Marko.Body | undefined })))/>
 
 <${trigger}({ ...api().getTriggerProps(), "data-slot": "menubar-trigger" })/>
 <portal>
@@ -36,13 +61,18 @@ export interface Input {
           className,
         )
       >
-        <for|entry, index| of=input.items>
+        <for|entry, index| of=entries>
           <if=entry.type === "separator">
             <div ...api().getSeparatorProps() data-slot="menubar-separator" class="bg-border -mx-1 my-1 h-px"/>
           </if>
           <else if=entry.type === "label">
             <div data-slot="menubar-label" class="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-              ${entry.label}
+              <if=entry.content>
+                <${entry.content}/>
+              </if>
+              <else>
+                ${entry.label}
+              </else>
             </div>
           </else>
           <else>
@@ -57,7 +87,12 @@ export interface Input {
                 "data-[danger]:text-destructive data-[danger]:data-[highlighted]:bg-destructive/10",
               )
             >
-              <span>${entry.label}</span>
+              <if=entry.content>
+                <span><${entry.content}/></span>
+              </if>
+              <else>
+                <span>${entry.label}</span>
+              </else>
               <if=entry.shortcut>
                 <span class="ml-auto text-xs tracking-widest text-muted-foreground">${entry.shortcut}</span>
               </if>

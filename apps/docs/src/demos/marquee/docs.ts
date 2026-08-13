@@ -45,5 +45,11 @@ export const docs: ComponentDocs = {
       description:
         "Zag machines are controlled: a `paused` prop without a change handler never moves. Pair it with `pausedChange`, or use Marko's bind shorthand `paused:=state`.",
     },
+    {
+      name: "marquee-compound",
+      title: "Compound (attr tags)",
+      description:
+        "Use `<@item>` attribute tags instead of `items=` to compose each entry's markup directly.",
+    },
   ],
 };

@@ -13,7 +13,7 @@ export const docs: ComponentDocs = {
       name: "default",
       title: "Default",
       description:
-        "Pass an `items: { value, label, disabled? }[]` array; the component renders every item internally instead of a compound `ToggleGroup` / `ToggleGroupItem` pair. By default only one item can be pressed at a time.",
+        "Pass an `items: { value, label, disabled? }[]` array and the component renders every item internally — or compose items in markup with `<@item>` attribute tags (see the Compound example). By default only one item can be pressed at a time.",
     },
     {
       name: "multiple",
@@ -40,6 +40,12 @@ export const docs: ComponentDocs = {
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, or use Marko's bind shorthand `value:=state`.",
+    },
+    {
+      name: "toggle-group-compound",
+      title: "Compound (attr tags)",
+      description:
+        "Use `<@item>` attribute tags instead of `items=` to compose each option directly in markup.",
     },
   ],
 };

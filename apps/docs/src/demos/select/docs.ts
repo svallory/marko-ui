@@ -40,5 +40,11 @@ export const docs: ComponentDocs = {
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`.",
     },
+    {
+      name: "select-compound",
+      title: "Compound (attr tags)",
+      description:
+        "Use `<@option>` attribute tags instead of `items=` to compose each option directly in markup.",
+    },
   ],
 };

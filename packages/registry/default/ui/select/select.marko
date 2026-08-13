@@ -12,14 +12,23 @@ export interface SelectItem {
 // `items`/`value` are narrowed vs. the raw machine Props: `items` drives the
 // generated `collection`, and `value` is typed as the plain string[] the
 // caller works with (the machine's own `value` type matches already).
+//
+// `option` is the attr-tag compound API (flat: no per-item render-prop needed
+// since select items are plain strings today). When present it is normalized
+// into the same SelectItem[] shape `items` already uses, and that normalized
+// array feeds buildCollection/serviceProps and both <for> loops unchanged —
+// `items=` keeps working as-is for the data-driven case.
 export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collection"> & {
-  items: SelectItem[];
+  items?: SelectItem[];
+  option?: Marko.AttrTag<SelectItem>;
   valueChange?: (value: string[]) => void;
   placeholder?: string;
   label?: string;
 };
 
-<const/{ items, placeholder, label, class: className }=input/>
+<const/{ placeholder, label, class: className }=input/>
+<const/optionTags=[...(input.option ?? [])]/>
+<const/items=(optionTags.length > 0 ? optionTags : (input.items ?? []))/>
 
 <const/buildCollection=(list: SelectItem[]) =>
   select.collection({
@@ -51,6 +60,7 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
     class: ownClass,
     valueChange: ownChangeHandler,
     items: ownItems,
+    option: ownOption,
     placeholder: ownPlaceholder,
     label: ownLabel,
     ...native

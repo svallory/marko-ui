@@ -8,11 +8,29 @@ export interface AccordionItem {
   content?: string;
 }
 
+export interface AccordionItemAttrs {
+  value: string;
+  title: string;
+  content?: Marko.Body;
+}
+
+// Dual API: compound attr tags (`<@item>`) are the primary, Marko-idiomatic
+// form; `items=` remains as sugar for the data-driven case. Both sources are
+// merged into one normalized array below.
 export type Input = MachineInput<"div", accordionMachine.Props> & {
-  items: AccordionItem[];
+  items?: AccordionItem[];
+  item?: Marko.AttrTag<AccordionItemAttrs>;
   content?: Marko.Body<[AccordionItem]>;
   valueChange?: (value: string[]) => void;
 };
+
+// Normalize BOTH sources into ONE explicit common shape (mirrors
+// radio-group.marko) so the render path below never branches on the source
+// and needs no casts: `body` carries the attr-tag markup body, `text` the
+// items= string content, and `source` the plain-data item handed to the
+// `content` render prop. Attr tags win if both are present.
+<const/itemTags=[...(input.item ?? [])].map((item) => ({ value: item.value, title: item.title, body: item.content, text: undefined as string | undefined, source: { value: item.value, title: item.title } }))/>
+<const/normalizedItems=(itemTags.length > 0 ? itemTags : (input.items ?? []).map((item) => ({ value: item.value, title: item.title, body: undefined as Marko.Body | undefined, text: item.content, source: item })))/>
 
 <machine-props/machineProps from=input pick=accordionMachine.props
   onValueChange(details: accordionMachine.ValueChangeDetails) {
@@ -30,6 +48,7 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
     class: ownClass,
     valueChange: ownChangeHandler,
     items: ownItems,
+    item: ownItem,
     content: ownContent,
     ...native
   } = accordionMachine.splitProps(input)[1];
@@ -166,7 +185,7 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
 />
 
 <div ...nativeAttrs() ...api().getRootProps() data-slot="accordion" class=cn(input.class)>
-  <for|item| of=input.items>
+  <for|item| of=normalizedItems>
     <const/expanded=api().getItemState({ value: item.value }).expanded/>
     <const/itemContentProps=api().getItemContentProps({ value: item.value })/>
     <const/isClosing=closingValues.includes(item.value)/>
@@ -207,10 +226,13 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
         class="overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
       >
         <div class="pt-0 pb-4">
-          <if=input.content>
-            <${input.content}(item)/>
+          <if=item.body>
+            <${item.body}/>
           </if>
-          <if=!input.content>${item.content}</if>
+          <else-if=input.content>
+            <${input.content}(item.source)/>
+          </else-if>
+          <else>${item.text}</else>
         </div>
       </div>
     </div>

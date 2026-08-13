@@ -38,5 +38,11 @@ export const docs: ComponentDocs = {
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`.",
     },
+    {
+      name: "accordion-compound",
+      title: "Compound (attr tags)",
+      description:
+        "Use `<@item>` attribute tags instead of `items=` to compose each item's title and content directly in markup.",
+    },
   ],
 };

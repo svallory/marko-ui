@@ -3,8 +3,9 @@ import type { MachineInput } from "marko-ui";
 import { cn } from "#lib/utils.ts";
 
 export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
-  items: T[];
+  items?: T[];
   content?: Marko.Body<[T, number]>;
+  item?: Marko.AttrTag<{ content?: Marko.Body }>;
   pausedChange?: (paused: boolean) => void;
 };
 
@@ -24,11 +25,21 @@ export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
     class: ownClass,
     items: ownItems,
     content: ownContent,
+    item: ownItem,
     pausedChange: ownChangeHandler,
     ...native
   } = marqueeMachine.splitProps(input)[1];
   return native;
 }>
+
+// Normalize BOTH sources into ONE explicit common shape (mirrors
+// carousel.marko / radio-group.marko) so the render path below never
+// branches on the source and needs no casts: `body` carries the attr-tag
+// markup body, `item` the items=-derived datum handed to the `content`
+// render prop (or rendered as text). Attr tags win if both are present
+// (compound is primary per the compound-tag-dx report).
+<const/itemTags=[...(input.item ?? [])].map((tag) => ({ body: tag.content, item: undefined as unknown }))/>
+<const/entries=(itemTags.length > 0 ? itemTags : (input.items ?? []).map((item) => ({ body: undefined as Marko.Body | undefined, item: item as unknown })))/>
 
 <style>
   @keyframes marko-ui-marquee-scroll-x {
@@ -74,13 +85,16 @@ export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
   <div ...api().getViewportProps() data-slot="marquee-viewport" class="flex w-full">
     <for|_, index| of=Array.from({ length: api().contentCount })>
       <div ...api().getContentProps({ index }) data-slot="marquee-content" class="flex shrink-0 items-center">
-        <for|item, itemIndex| of=input.items>
+        <for|entry, itemIndex| of=entries>
           <div ...api().getItemProps() data-slot="marquee-item" class="flex shrink-0 items-center">
-            <if=input.content>
-              <${input.content}(item, itemIndex)/>
+            <if=entry.body>
+              <${entry.body}/>
             </if>
+            <else if=input.content>
+              <${input.content}(entry.item, itemIndex)/>
+            </else>
             <else>
-              ${item}
+              ${entry.item}
             </else>
           </div>
         </for>

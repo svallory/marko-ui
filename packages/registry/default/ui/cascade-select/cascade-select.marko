@@ -10,17 +10,31 @@ export interface CascadeSelectItem {
   children?: CascadeSelectItem[];
 }
 
+export interface CascadeSelectOptionAttrs {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
 // `items` builds the machine's tree `collection`; `value` is the plain
 // string[][] path-list the caller works with (each selected leaf is a full
 // value path, e.g. ["asia", "india", "mumbai"]).
+//
+// Dual API: `<@option>` attr tags are a flat, Marko-idiomatic convenience
+// for the common non-nested case; `items=` remains the way to describe a
+// real tree (attr tags don't recurse into children per the compound-tag-dx
+// report). If `<@option>` tags are present they win over `items`.
 export type Input = Omit<MachineInput<"div", cascadeSelect.Props<CascadeSelectItem>>, "collection"> & {
-  items: CascadeSelectItem[];
+  items?: CascadeSelectItem[];
+  option?: Marko.AttrTag<CascadeSelectOptionAttrs>;
   valueChange?: (value: string[][]) => void;
   placeholder?: string;
   label?: string;
 };
 
-<const/{ items, placeholder, label, class: className }=input/>
+<const/optionTags=[...(input.option ?? [])]/>
+<const/items=(optionTags.length > 0 ? optionTags.map((option) => ({ value: option.value, label: option.label, disabled: option.disabled })) : (input.items ?? []))/>
+<const/{ placeholder, label, class: className }=input/>
 
 <const/buildCollection=(list: CascadeSelectItem[]) =>
   cascadeSelect.collection({
@@ -52,6 +66,7 @@ export type Input = Omit<MachineInput<"div", cascadeSelect.Props<CascadeSelectIt
     class: ownClass,
     valueChange: ownChangeHandler,
     items: ownItems,
+    option: ownOption,
     placeholder: ownPlaceholder,
     label: ownLabel,
     ...native

@@ -45,8 +45,40 @@ export interface NavigationMenuContentContext {
 
 export type NavigationMenuItem = NavigationMenuLinkItem | NavigationMenuMenuItem;
 
+// Attr-tag entry kinds. A SINGLE attr tag name (`entry`) carries both kinds
+// (discriminated by `type`, defaulting to "link") rather than separate
+// `link`/`menu` attr tags: Marko collects each attr-tag NAME into its own
+// independent iterable on `input` with no shared ordering between
+// differently-named siblings, so distinct tag names could not preserve
+// call-site interleaving. One name with a `type` discriminant keeps document
+// order intact by construction (same design as dropdown-menu.marko and
+// context-menu.marko).
+export interface NavigationMenuLinkAttrs {
+  /** Discriminant; omit (or "link") for a link rendered directly in the bar. */
+  type?: "link";
+  value: string;
+  label: string;
+  href: string;
+  current?: boolean;
+  disabled?: boolean;
+}
+
+// Menu kind: opens a content panel in the shared viewport. Unlike the
+// items=/links[] path, this does NOT drive the featured/plain link grid — its
+// `content` body renders directly into the panel, same as the items= path's
+// `content` render-prop fallback does when an item has no `links`.
+export interface NavigationMenuMenuAttrs {
+  type: "menu";
+  value: string;
+  label: string;
+  disabled?: boolean;
+  content?: Marko.Body;
+}
+
+export type NavigationMenuEntryAttrs = NavigationMenuLinkAttrs | NavigationMenuMenuAttrs;
+
 export type Input = MachineInput<"nav", navigationMenu.Props> & {
-  items: NavigationMenuItem[];
+  items?: NavigationMenuItem[];
   /** Alignment of the shared viewport relative to the active trigger. */
   align?: "start" | "center" | "end";
   /**
@@ -56,6 +88,16 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
    */
   content?: Marko.Body<[NavigationMenuContentContext]>;
   valueChange?: (value: string) => void;
+  /**
+   * Compound attr-tag API (primary, Marko-idiomatic form). One tag name
+   * carries both kinds — `<@entry .../>` is a bar link (the default kind) and
+   * `<@entry type="menu">` opens a content panel in the shared viewport (its
+   * body renders directly inside the panel) — so entries render in exactly
+   * the order written: links may sit before, between, or after menus. When
+   * any `<@entry>` tags are supplied they replace `items=` entirely for this
+   * render.
+   */
+  entry?: Marko.AttrTag<NavigationMenuEntryAttrs>;
 };
 
 <machine-props/machineProps from=input pick=navigationMenu.props
@@ -78,12 +120,26 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
     align: ownAlign,
     content: ownContent,
     valueChange: ownChangeHandler,
+    entry: ownEntry,
     ...native
   } = navigationMenu.splitProps(input)[1];
   return native;
 }>
 
-<const/menuItems=() => input.items.filter((item) => item.type === "menu") as NavigationMenuMenuItem[]>
+// Normalize whichever source was supplied into one items array so the render
+// path below never branches. Attr tags win if present (compound is primary
+// per the compound-tag-dx report). The single `<@entry>` tag name preserves
+// true document order by construction, so links and menus render exactly as
+// interleaved at the call site.
+<const/entryTags=[...(input.entry ?? [])]/>
+<const/items=(entryTags.length > 0 ? entryTags.map((tag): NavigationMenuItem => (tag.type === "menu" ? { type: "menu", value: tag.value, label: tag.label, disabled: tag.disabled } : { type: "link", value: tag.value, label: tag.label, href: tag.href, current: tag.current, disabled: tag.disabled })) : (input.items ?? []))/>
+
+// Attr-tag `<@entry type="menu">` content bodies, keyed by value — looked up
+// when rendering the panel so the attr-tag path renders its content body
+// directly instead of the items=/links[]-driven featured/plain grid.
+<const/menuContentByValue=new Map(entryTags.filter((tag): tag is NavigationMenuMenuAttrs => tag.type === "menu").map((tag) => [tag.value, tag.content] as const))>
+
+<const/menuItems=() => items.filter((item) => item.type === "menu") as NavigationMenuMenuItem[]>
 
 // Render-prop context for a content panel. Keep it plain data: anything closing
 // over the machine service is unserializable across the body boundary.
@@ -100,7 +156,7 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
   class=cn("group/navigation-menu relative flex max-w-max flex-1 items-center justify-center", input.class)
 >
   <ul ...api().getListProps() data-slot="navigation-menu-list" class="group flex flex-1 list-none items-center justify-center gap-1">
-    <for|item| of=input.items>
+    <for|item| of=items>
       <li ...api().getItemProps({ value: item.value, disabled: item.disabled }) data-slot="navigation-menu-item">
         <if=item.type === "menu">
           <button
@@ -170,6 +226,7 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
       class="relative mt-1.5 h-[var(--viewport-height)] w-[var(--viewport-width)] origin-top overflow-hidden rounded-md border bg-popover text-popover-foreground shadow duration-200 data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:zoom-in-90 data-[state=open]:fade-in-0"
     >
       <for|item| of=menuItems()>
+        <const/menuContent=menuContentByValue.get(item.value)/>
         <div
           ...api().getContentProps({ value: item.value })
           data-slot="navigation-menu-content"
@@ -209,9 +266,12 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
               </ul>
             </div>
           </if>
-          <if=input.content>
-            <${input.content}(contentContext(item.value))/>
+          <if=menuContent>
+            <${menuContent}/>
           </if>
+          <else-if=input.content>
+            <${input.content}(contentContext(item.value))/>
+          </else-if>
         </div>
       </for>
     </div>

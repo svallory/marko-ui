@@ -1,0 +1,8 @@
+import Tabs from "@marko-ui/registry/ui/tabs/tabs.marko";
+
+// Exercises the documented precedence rule (attr tags replace items= when
+// both are supplied) so the behavior suite can assert it against real SSR.
+<Tabs items=[{ value: "ignored", label: "Ignored" }]>
+  <@trigger value="wins">Wins</@trigger>
+  <@panel value="wins">Attr panel wins</@panel>
+</Tabs>
