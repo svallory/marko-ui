@@ -1,0 +1,59 @@
+// Framework-agnostic port of shadcn/ui's multi-library icon system
+// (registry/icons/*.tsx + create-icon-loader.tsx). shadcn resolves an
+// abstract icon name against the CURRENT icon-library React component
+// (IconLucide/IconTabler/IconHugeicons/IconPhosphor/IconRemixicon), each
+// lazily importing a generated `__<library>__.ts` name -> icon-component
+// map. This port has no React and no per-icon components to lazy-import;
+// instead packages/registry/scripts/build-icons.ts generates per-library
+// maps of abstract name -> raw SVG inner-markup (or, for hugeicons, an
+// [tag, attrs][] node array — the same shape shadcn's own HugeiconsIcon
+// consumes), and ./lib/render.ts resolves (name, library) to wrapper attrs
+// + inner markup for both this component's SSR output AND the /create
+// preview iframe's client-side icon-library swap (see that route's header
+// comment — Marko has no React-style context re-render, so switching
+// iconLibrary on an already-mounted page needs a manual DOM patch reusing
+// this exact same data; render.ts is the single source of truth so the two
+// never drift).
+//
+// SSR-first: markup is interpolated with `$!{}` (unescaped) at render time,
+// not injected client-side via .innerHTML (see the create-page-fixes
+// lesson in notes/ — client-side innerHTML injection breaks hydration and
+// is exactly the anti-pattern this component avoids for its own render).
+// The interpolated content is build-time-generated from trusted npm
+// packages, never user input. `data-icon-name`/`data-icon-library` markers
+// let the preview iframe's OWN opt-in re-render script (not this
+// component) find and patch icons after the initial SSR paint.
+import { cn } from "#lib/utils.ts";
+import { resolveIconInner } from "./resolve.ts";
+import { ICON_WRAPPER_ATTRS } from "./render.ts";
+import type { IconLibraryName, IconName } from "./icon-names.ts";
+
+export interface Input extends Marko.Input<"svg"> {
+  /** Abstract icon name, e.g. "SearchIcon" — shared across all 5 libraries. */
+  name: IconName | string;
+  /** Which icon library to render from. Defaults to "lucide". */
+  library?: IconLibraryName;
+  class?: string;
+}
+
+<const/library=(input.library ?? "lucide") as IconLibraryName/>
+<const/{ name, library: _library, class: className, ...rest }=input/>
+<const/wrapperAttrs=ICON_WRAPPER_ATTRS[library]/>
+
+<svg
+  ...rest
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox=wrapperAttrs.viewBox
+  width="24"
+  height="24"
+  fill=wrapperAttrs.fill
+  stroke=wrapperAttrs.stroke
+  stroke-width=wrapperAttrs["stroke-width"]
+  stroke-linecap=wrapperAttrs["stroke-linecap"]
+  stroke-linejoin=wrapperAttrs["stroke-linejoin"]
+  class=cn("size-4", className)
+  data-icon-name=name
+  data-icon-library=library
+>
+  $!{resolveIconInner(name, library)}
+</svg>

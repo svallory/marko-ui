@@ -1,0 +1,47 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/icon-preview-grid.tsx.
+// UNBLOCKED 2026-08-13 — see TODO.md's now-resolved "Unblock icon-preview-grid"
+// entry: the icon system landed (packages/registry/default/ui/icon/), so
+// this card is now a direct port instead of a skip. Renders the same 16
+// PREVIEW_ICONS grid as shadcn, one abstract lucide name per cell, through
+// the shared preview-blocks Icon wrapper (../../lib/icon.marko) so it
+// responds to the iconLibrary picker exactly like every other icon in the
+// preview showcase (SSR from the URL param, live swap via the preview
+// route's postMessage handler — see that route's header comment).
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import Icon from "../../lib/icon.marko";
+
+// shadcn's PREVIEW_ICONS list (lucide names only here — the per-library
+// names in the source are dead weight once resolution goes through the
+// generated maps by abstract name, same simplification icon.marko already
+// makes for every other preview card's `<Icon name="...">` call).
+static const PREVIEW_ICONS = [
+  "CopyIcon",
+  "CircleAlertIcon",
+  "TrashIcon",
+  "ShareIcon",
+  "ShoppingBagIcon",
+  "MoreHorizontalIcon",
+  "Loader2Icon",
+  "PlusIcon",
+  "MinusIcon",
+  "ArrowLeftIcon",
+  "ArrowRightIcon",
+  "CheckIcon",
+  "ChevronDownIcon",
+  "ChevronRightIcon",
+  "SearchIcon",
+  "SettingsIcon",
+];
+
+<Card>
+  <CardContent>
+    <div class="grid grid-cols-8 place-items-center gap-4">
+      <for|iconName| of=PREVIEW_ICONS by=(name) => name>
+        <div class="flex size-8 items-center justify-center rounded-md ring ring-border style-sera:rounded-none *:[svg]:size-4">
+          <Icon name=iconName/>
+        </div>
+      </for>
+    </div>
+  </CardContent>
+</Card>

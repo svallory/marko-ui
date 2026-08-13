@@ -34,6 +34,20 @@ import {
 } from "../../../tags/create/lib/registry-config.ts";
 import { FONTS } from "../../../tags/create/lib/fonts.ts";
 import type { DesignSystemSearchParams } from "../../../tags/create/lib/search-params.ts";
+import { ICON_WRAPPER_ATTRS } from "@marko-ui/registry/ui/icon/render.ts";
+// client-swap.ts, not resolve.ts: resolve.ts statically imports all 5
+// generated icon maps for SSR's synchronous render (fine server-side, never
+// shipped to the browser); this route runs in the browser and must lazily
+// `import()` only the library actually being switched to, mirroring
+// shadcn's own create-icon-loader.tsx per-library React.lazy — see
+// client-swap.ts's header comment. Using resolve.ts here would defeat the
+// whole point and bundle every library's ~360KB combined into this page's
+// client chunk.
+import {
+  resolveIconInnerAsync,
+  preloadAllIconLibraries,
+} from "@marko-ui/registry/ui/icon/client-swap.ts";
+import type { IconLibraryName } from "@marko-ui/registry/ui/icon/icon-names.ts";
 
 import PreviewPage1 from "../../../tags/create/preview-blocks/preview-page-1/index.marko";
 import PreviewPage2 from "../../../tags/create/preview-blocks/preview-page-2/index.marko";
@@ -140,6 +154,54 @@ static function applyParams(params: DesignSystemSearchParams) {
   }
 }
 
+// Swaps every rendered icon's markup + wrapper attrs to the newly-selected
+// library, in place — the manual-DOM-patch half of the icon-library picker
+// (see packages/registry/default/ui/icon/icon.marko's header comment: SSR
+// renders the initial iconLibrary from the URL, and this is the ONLY path
+// that updates it afterward, since re-keying the iframe src would reload
+// and flash/lose state — same tradeoff as every other design-system param
+// here). `[data-icon-name]`/`[data-icon-library]` are written by icon.marko
+// specifically so this loop can find and patch them; resolveIconInnerAsync/
+// ICON_WRAPPER_ATTRS are the exact same generated, trusted (non-user-input)
+// data icon.marko's own SSR render uses (via resolve.ts server-side, via
+// client-swap.ts's lazy import() here), so this can never drift from it.
+// Async because client-swap.ts dynamically imports the target library's map
+// on first use (code-splitting — see that file's header); each icon is
+// patched as soon as its own resolution resolves rather than waiting for
+// the slowest one, so already-loaded libraries (e.g. switching back to one
+// used earlier this session) still feel instant.
+static let latestRequestedLibrary: IconLibraryName | null = null;
+
+static async function applyIconLibrary(iconLibrary: IconLibraryName) {
+  latestRequestedLibrary = iconLibrary;
+  const attrs = ICON_WRAPPER_ATTRS[iconLibrary];
+  const icons = document.querySelectorAll<SVGSVGElement>("[data-icon-name]");
+  await Promise.all(
+    Array.from(icons).map(async (svg) => {
+      if (svg.getAttribute("data-icon-library") === iconLibrary) return;
+      const name = svg.getAttribute("data-icon-name");
+      if (!name) return;
+
+      const inner = await resolveIconInnerAsync(name, iconLibrary);
+      // A newer picker change may have superseded this in-flight request
+      // (fast repeated hover-preview) — bail so a slow-resolving stale
+      // swap can't clobber a more recent one.
+      if (latestRequestedLibrary !== iconLibrary) return;
+
+      svg.setAttribute("viewBox", attrs.viewBox);
+      for (const attr of ["fill", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin"] as const) {
+        if (attrs[attr]) {
+          svg.setAttribute(attr, attrs[attr]!);
+        } else {
+          svg.removeAttribute(attr);
+        }
+      }
+      svg.innerHTML = inner;
+      svg.setAttribute("data-icon-library", iconLibrary);
+    })
+  );
+}
+
 // No `Input.item`: marko-run route files don't map query-string params onto
 // a page's `input`. Read the query string from `$global.url`, matching how
 // `+handler.ts` files in this app already do it. Default mirrors shadcn's
@@ -172,12 +234,21 @@ static function applyParams(params: DesignSystemSearchParams) {
 <script>
   if (!mounted && typeof window !== "undefined") {
     mounted = true;
+
+    // Warm every icon library's module cache in the background (mirrors
+    // shadcn's icon-placeholder.tsx: `void import(...)` for all 5 libraries
+    // unconditionally on mount) so the first picker switch is instant.
+    preloadAllIconLibraries();
+
     window.addEventListener("message", (event: MessageEvent) => {
       if (!event.data || typeof event.data !== "object") return;
       if (event.data.type !== "design-system-params") return;
       const data = event.data.data as DesignSystemSearchParams & { __isDark?: boolean };
       document.documentElement.classList.toggle("dark", Boolean(data.__isDark));
       applyParams(data);
+      if (data.iconLibrary) {
+        applyIconLibrary(data.iconLibrary);
+      }
     });
 
     // Announce readiness so the parent's <iframe onload> re-send (which

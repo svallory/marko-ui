@@ -11,7 +11,10 @@
     "#lib/*": "./default/lib/*"
   },
   "dependencies": {
+    "@hugeicons/core-free-icons": "^4.2.3",
     "@internationalized/date": "3.12.3",
+    "@phosphor-icons/core": "^2.1.1",
+    "@tabler/icons": "^3.46.0",
     "@tanstack/table-core": "^9.1.2",
     "@zag-js/accordion": "1.43.0",
     "@zag-js/angle-slider": "1.43.0",
@@ -66,7 +69,9 @@
     "d3-array": "^3.2.4",
     "d3-scale": "^4.0.2",
     "d3-shape": "^3.2.0",
+    "lucide-static": "^1.31.0",
     "marko-ui": "workspace:*",
+    "remixicon": "^4.9.1",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3"
   },
