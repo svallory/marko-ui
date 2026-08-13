@@ -144,3 +144,9 @@ Not ported (dead files upstream, never mounted by their index.tsx): `preview-02/
 - [ ] Push repo to GitHub (no remote configured); archive `svallory/marko-ui-components` with pointer README. `(ops)`
 - [ ] `npm publish marko-ui@0.1.0` + `npm deprecate marko-ui@0.0.2 "Marko 5/Zag 0.x era — unrelated to 0.1+"`. `(ops)`
 - [ ] Deploy docs app + registry; CI: `bun run build:registry && git diff --exit-code` + shadcn-CLI smoke test. `(ops)`
+
+## Docs sidebar parity follow-ups (found during 2026-08-13 layout-polish review; all pre-existing)
+
+- [ ] **Sidebar scroll-to-active + scroll restore** — shadcn's docs-sidebar.tsx scrolls the active item into view on load (getActiveItem/scrollTop) and restores sidebar scroll position across navigations via sessionStorage; neither mechanism was ever ported. Port both to docs-sidebar.marko + components-sidebar.marko. `(code — small)`
+- [ ] **"New" indicator dots** — shadcn marks new docs pages/components with a colored dot (PAGES_NEW list). No equivalent here. Port the mechanism + decide our own "new" list. `(code — small)`
+- [ ] **Define `scroll-fade` utility** — referenced in docs-content.marko/docs-article.marko but never defined (same latent no-op class as `no-scrollbar` was before 2026-08-13). Copy shadcn's implementation or remove the dead references. `(code — tiny)`
