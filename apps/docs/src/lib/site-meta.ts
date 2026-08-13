@@ -13,6 +13,7 @@
 import { DOCS_NAV_FLAT } from "../tags/docs/docs-nav.ts";
 import { COMPONENTS } from "./components-list.ts";
 import { BLOCK_CATEGORIES, BLOCKS } from "./blocks-list.ts";
+import { CHART_TYPES } from "./charts-list.ts";
 
 export const SITE_NAME = "marko-ui";
 export const SITE_TAGLINE = "shadcn for Marko";
@@ -53,6 +54,11 @@ const ROUTE_META: Record<string, { title: string; description: string }> = {
     title: "Blocks",
     description:
       "Ready-to-use page compositions built from marko-ui registry components — dashboards, sidebars, login and signup flows, calendars, and more.",
+  },
+  "/charts": {
+    title: "Beautiful Charts & Graphs",
+    description:
+      "A collection of ready-to-use chart components built with Recharts. From basic charts to rich data displays, copy and paste into your apps.",
   },
   "/typeset": {
     title: "Typeset",
@@ -122,6 +128,13 @@ for (const category of BLOCK_CATEGORIES) {
       description: `${category.name} page compositions built from marko-ui registry components.`,
     };
   }
+}
+
+for (const type of CHART_TYPES) {
+  ROUTE_META[`/charts/${type.slug}`] = {
+    title: type.label,
+    description: `${type.label} built with our chart primitives — copy and paste into your apps.`,
+  };
 }
 
 // /blocks/view/<name> is the chrome-free full-page render each block's
