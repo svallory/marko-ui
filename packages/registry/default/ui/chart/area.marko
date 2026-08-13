@@ -223,7 +223,7 @@ static function pointerIndex(
   style={ position: "relative", width: "100%", height: "100%" }
   onPointermove(event, el) {
     const bounds = el.getBoundingClientRect();
-    activeIndex = pointerIndex(event.clientX - bounds.left, el.clientWidth, pointerGeom);
+    activeIndex = pointerIndex(event.clientX - bounds.left, bounds.width, pointerGeom);
   }
   onPointerleave() { activeIndex = -1; }
 >
