@@ -31,6 +31,55 @@ Source: space clone `data/shadcn-ui/apps/v4/registry/new-york-v4/blocks/<name>/`
 
 `(code — fleet work; gallery "more coming" note stays until done)`
 
+## Blocks docs-site machinery — faithful port (2026-08-13, branch blocks-parity)
+
+Replaced the approximation (static card + fake terminal-dot chrome, no code
+view, no viewport switcher) with a faithful port of shadcn's block-viewer.tsx
+/ blocks-nav.tsx / page-header.tsx / page-nav.tsx / block-display.tsx, per
+`.claude/skills/port-shadcn-resource/SKILL.md`. New: `apps/docs/src/tags/blocks/
+block-viewer.marko` (toolbar with Preview/Code tabs, resizable Desktop/Tablet/
+Mobile viewport switcher via `@zag-js/splitter`'s `setSizes`, file tree +
+code panel, install-command/copy, mobile fallback), `block-viewer-tree-node.marko`
+(recursive file/folder tree on `Collapsible`), `apps/docs/scripts/
+build-blocks-manifest.ts` (generates the committed `src/lib/blocks-manifest.ts`
+— each block's `files[]` + tree, inlined at generation time so there's no
+request-time filesystem read; mirrors `build-demos-manifest.ts`'s established
+pattern and the exact bug it was created to avoid, see commit 55f21c4).
+Fixed the pre-existing `/blocks/view/<name>` title bug (`site-meta.ts` had no
+`ROUTE_META` entries for that path, so every one of the 28 pages showed
+"Page Not Found — marko-ui"): titles/descriptions are now derived from
+`BLOCKS` in `blocks-list.ts`, mirroring how shadcn's `/view/[style]/[name]`
+titles itself off the registry item.
+
+Skips / deviations (rule 5 — no approximations, log instead):
+- **Open in v0** — visible but disabled button (`title="v0 is not available
+  for marko-ui"`). No v0 integration exists for this project; a functioning
+  look-alike would silently point at someone else's product. Real shadcn:
+  `components/open-in-v0-button.tsx`.
+- **Mobile screenshot fallback** — shadcn's `BlockViewerMobile` shows a static
+  `<name>-{light,dark}.png` screenshot on narrow viewports unless a block's
+  registry `meta.mobile === "component"` (none of ours set it either). We
+  don't generate those PNGs, so mobile always renders the live iframe
+  instead — strictly more functional than a missing image, not a fake
+  stand-in, but a deviation from the source worth naming.
+- **No syntax highlighting in the code panel** — plain `<pre><code>`, same as
+  every other code block on this site (`tags/docs/code-block.marko`'s header
+  comment explains why: no rehype-highlight equivalent here). Pre-existing
+  project decision, not introduced by this port.
+- **`no-scrollbar` utility class is a no-op** — used on the code panel and
+  preview iframes (matching shadcn's own class name) but, like every other
+  existing usage of this class in the codebase (`create/item-explorer.marko`,
+  `create/customizer.marko`, etc.), there's no `@utility no-scrollbar`
+  definition anywhere, so native scrollbars still show. Pre-existing gap,
+  left consistent with the rest of the app rather than fixed unprompted.
+- **`3xl:fixed:` responsive variants dropped** from `container-wrapper`/
+  `section-soft` — shadcn's `theme-container`/wide-layout toggle machinery
+  (a separate `fixed`/`3xl` custom-variant pair) isn't set up in this repo;
+  the utilities were ported without that variant, which is invisible at our
+  supported breakpoints.
+
+`(code — done; verified production build + live browser, see agent/reports/blocks-parity.md if written)`
+
 ## Site polish (from agent/reports/site-diff-adoption.md, 2026-08-11)
 
 - [ ] **Container utilities + full-width sweep** — root cause of the width gap: shadcn composes two shared container utilities (max 1400px → screen-2xl at 3xl) everywhere; we copy-pasted a fixed 1152px cap across 6+ files, leaving huge dead margins and a header floating narrower than the content. Add the utilities to globals, sweep all sections. MUST land after the current fleets (touches files they own). `(code — S/M, do first per the report's sequencing)`

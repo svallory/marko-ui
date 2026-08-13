@@ -1,0 +1,298 @@
+// Faithful port of shadcn/ui's components/block-viewer.tsx. React's
+// BlockViewerProvider is a context provider consumed by four sibling
+// components (Toolbar/View/Code/Mobile); Marko has no context API, so this
+// single tag owns the `view`/`activeFile`/`iframeKey` state directly (skill
+// rule 6: one state-container tag, values/setters passed down as attrs) and
+// inlines what would otherwise be BlockViewerToolbar/View/Code/Mobile as
+// local markup below. DOM structure, data-slot attributes, and Tailwind
+// class strings are copied verbatim from the source; only the state
+// mechanism and the underlying primitives (Zag machines instead of Radix)
+// differ, per the port's hard parity constraint.
+//
+// Source-order note: the Resizable panel group is declared BEFORE the
+// toolbar markup that reads its `resizableApi` tag variable, even though
+// shadcn's toolbar sits visually above the preview — Marko forbids reading
+// a tag variable before its declaration ("Hoisted values can only be read
+// in scripts and event handlers", verified empirically). `order-*` utility
+// classes on the flex container restore the original visual order.
+import Resizable from "@marko-ui/registry/ui/resizable/resizable.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import "./block-viewer-tree-node.marko";
+import { toggleVariants } from "@marko-ui/registry/ui/toggle/variants.ts";
+import { cn } from "@marko-ui/registry/lib/utils.ts";
+import { BLOCKS_MANIFEST } from "../../lib/blocks-manifest.ts";
+import type { BlockEntry } from "../../lib/blocks-list.ts";
+
+export interface Input {
+  block: BlockEntry;
+}
+
+<const/block=input.block/>
+<const/manifest=BLOCKS_MANIFEST[block.name]/>
+
+<let/view=("preview" as "preview" | "code")/>
+<let/activeFile=manifest?.defaultFile ?? null/>
+<let/copiedInstall=false/>
+<let/copiedFile=false/>
+<let/previewSize=100/>
+
+<const/activeManifestFile=manifest?.files.find((file) => file.target === activeFile) ?? null/>
+<const/installCommand=`bunx --bun shadcn@latest add https://marko-ui.saulo.tech/r/${block.name}.json`/>
+
+<div
+  id=block.name
+  data-view=view
+  data-slot="block-viewer"
+  class="group/block-view-wrapper flex min-w-0 scroll-mt-24 flex-col-reverse items-stretch gap-4 overflow-hidden md:flex-col"
+  style={ "--height": `${block.previewHeight}px` }
+>
+  // ---- BlockViewerView (desktop/tablet preview, resizable) -----------
+  // Declared first so the toolbar below can read `resizableApi`; `order-2`
+  // keeps it visually second, matching shadcn's DOM order.
+  <div class=cn("order-2 hidden md:h-(--height) lg:flex", view === "code" && "lg:hidden")>
+    <div class="relative grid w-full gap-4">
+      <div class="absolute inset-0 right-4 [background-image:radial-gradient(#d4d4d4_1px,transparent_1px)] [background-size:20px_20px] dark:[background-image:radial-gradient(#404040_1px,transparent_1px)]"></div>
+      <Resizable/resizableApi
+        orientation="horizontal"
+        panels=[
+          { id: "preview", defaultSize: previewSize, minSize: 30 },
+          { id: "spacer", defaultSize: 100 - previewSize, minSize: 0 },
+        ]
+        class="relative z-10 after:absolute after:inset-0 after:right-3 after:z-0 after:rounded-xl after:bg-surface/50"
+      >
+        <@content|panel|>
+          <if=panel.id === "preview">
+            <div class="relative aspect-[4/2.5] overflow-hidden rounded-lg border bg-background md:aspect-auto md:rounded-xl">
+              <iframe/desktopFrameEl
+                src=`/blocks/view/${block.name}`
+                height=block.previewHeight
+                loading="lazy"
+                class="relative z-20 no-scrollbar w-full bg-background"
+              />
+            </div>
+          </if>
+        </@content>
+      </Resizable>
+    </div>
+  </div>
+
+  // ---- BlockViewerToolbar ---------------------------------------------
+  <div class="order-1 hidden w-full items-center gap-2 pl-2 md:pr-6 lg:flex">
+    <div
+      class="grid h-8! grid-cols-2 items-center rounded-lg bg-muted p-1 text-muted-foreground *:h-6 *:rounded-sm *:px-2 *:text-xs"
+      data-slot="tabs-list"
+    >
+      <button
+        type="button"
+        data-slot="tabs-trigger"
+        data-selected=String(view === "preview")
+        class="inline-flex items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] data-[selected=true]:bg-background data-[selected=true]:text-foreground data-[selected=true]:shadow-sm"
+        onClick() { view = "preview"; }
+      >
+        Preview
+      </button>
+      <button
+        type="button"
+        data-slot="tabs-trigger"
+        data-selected=String(view === "code")
+        class="inline-flex items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] data-[selected=true]:bg-background data-[selected=true]:text-foreground data-[selected=true]:shadow-sm"
+        onClick() { view = "code"; }
+      >
+        Code
+      </button>
+    </div>
+    <Separator orientation="vertical" class="mx-2 h-4!"/>
+    <a
+      href=`#${block.name}`
+      class="flex-1 text-center text-sm font-medium underline-offset-2 hover:underline md:flex-auto md:text-left"
+    >
+      ${block.description.replace(/\.$/, "")}
+    </a>
+    <div class="ml-auto flex items-center gap-2">
+      <div class="flex h-8 items-center gap-1.5 rounded-md border p-[3px] shadow-none">
+        <button
+          type="button"
+          title="Desktop"
+          data-slot="toggle-group-item"
+          data-state=(previewSize === 100 ? "on" : "off")
+          class=cn(toggleVariants({ size: "sm" }), "size-6! rounded-sm!")
+          onClick() {
+            view = "preview";
+            previewSize = 100;
+            resizableApi().setSizes([100, 0]);
+          }
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+          <span class="sr-only">Desktop</span>
+        </button>
+        <button
+          type="button"
+          title="Tablet"
+          data-slot="toggle-group-item"
+          data-state=(previewSize === 60 ? "on" : "off")
+          class=cn(toggleVariants({ size: "sm" }), "size-6! rounded-sm!")
+          onClick() {
+            view = "preview";
+            previewSize = 60;
+            resizableApi().setSizes([60, 40]);
+          }
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="12" x2="12.01" y1="18" y2="18"/></svg>
+          <span class="sr-only">Tablet</span>
+        </button>
+        <button
+          type="button"
+          title="Mobile"
+          data-slot="toggle-group-item"
+          data-state=(previewSize === 30 ? "on" : "off")
+          class=cn(toggleVariants({ size: "sm" }), "size-6! rounded-sm!")
+          onClick() {
+            view = "preview";
+            previewSize = 30;
+            resizableApi().setSizes([30, 70]);
+          }
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></svg>
+          <span class="sr-only">Mobile</span>
+        </button>
+        <Separator orientation="vertical" class="h-4!"/>
+        <a
+          href=`/blocks/view/${block.name}`
+          target="_blank"
+          rel="noreferrer"
+          title="Open in New Tab"
+          class="inline-flex size-6 items-center justify-center rounded-sm p-0 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        >
+          <span class="sr-only">Open in New Tab</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        </a>
+        <Separator orientation="vertical" class="h-4!"/>
+        <button
+          type="button"
+          title="Refresh Preview"
+          class="inline-flex size-6 items-center justify-center rounded-sm p-0 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          onClick() {
+            // Tag-variable refs are functions — call to get the node
+            // (component-authoring.md gotcha). Re-assigning `src` to its
+            // current value forces the iframe to reload, the same effect
+            // shadcn gets from bumping its `iframeKey` React key.
+            const frame = desktopFrameEl();
+            if (frame) frame.src = frame.src;
+            const mobile = mobileFrameEl();
+            if (mobile) mobile.src = mobile.src;
+          }
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8"/><path d="M21 3v5h-5"/></svg>
+          <span class="sr-only">Refresh Preview</span>
+        </button>
+      </div>
+      <Separator orientation="vertical" class="mx-1 h-4!"/>
+      <Button
+        variant="outline"
+        class="w-fit gap-1 px-2 shadow-none"
+        size="sm"
+        onClick() {
+          navigator.clipboard?.writeText(installCommand);
+          copiedInstall = true;
+          setTimeout(() => { copiedInstall = false; }, 2000);
+        }
+      >
+        <if=copiedInstall>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="M20 6 9 17l-5-5"/></svg>
+        </if>
+        <else>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>
+        </else>
+        <span>npx shadcn add ${block.name}</span>
+      </Button>
+      // shadcn's OpenInV0Button deep-links to v0.dev against this project's
+      // own registry JSON — there is no v0 integration for marko-ui, and a
+      // functioning look-alike button would silently point at someone
+      // else's product. Visible but stubbed (disabled), per the skill's
+      // "no approximations" rule: skip the fake action, keep the affordance
+      // visible so parity holes are honest rather than hidden. Logged in
+      // TODO.md.
+      <Separator orientation="vertical" class="mx-1 h-4!"/>
+      <Button
+        size="sm"
+        disabled
+        title="v0 is not available for marko-ui"
+        class="h-[1.8rem] gap-1"
+      >
+        Open in v0
+      </Button>
+    </div>
+  </div>
+
+  // ---- BlockViewerCode (file tree + source) ---------------------------
+  <div class=cn("order-3 mr-[14px] overflow-hidden rounded-xl border bg-code text-code-foreground md:h-(--height)", view === "code" ? "flex" : "hidden")>
+    <if=manifest>
+      <div class="w-72 border-r">
+        <div class="flex h-12 items-center border-b px-4 text-sm font-medium">
+          Files
+        </div>
+        <nav class="flex flex-col gap-1.5 p-2" data-slot="block-viewer-file-tree">
+          <for|node| of=manifest.tree by=(node) => node.name>
+            <block-viewer-tree-node
+              node=node
+              depth=1
+              activeFile=activeFile
+              onSelect(target: string) { activeFile = target; }
+            />
+          </for>
+        </nav>
+      </div>
+      <if=activeManifestFile>
+        <figure class="mx-0! mt-0 flex min-w-0 flex-1 flex-col rounded-xl border-none">
+          <figcaption class="flex h-12 shrink-0 items-center gap-2 border-b px-4 py-2 text-code-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 opacity-70"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+            ${activeManifestFile.target}
+            <div class="ml-auto flex items-center gap-2">
+              <button
+                type="button"
+                class="inline-flex size-7 items-center justify-center rounded-md text-code-foreground/70 transition-colors hover:bg-white/10 hover:text-code-foreground"
+                onClick() {
+                  navigator.clipboard?.writeText(activeManifestFile?.content ?? "");
+                  copiedFile = true;
+                  setTimeout(() => { copiedFile = false; }, 2000);
+                }
+              >
+                <if=copiedFile>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="M20 6 9 17l-5-5"/></svg>
+                </if>
+                <else>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+                </else>
+              </button>
+            </div>
+          </figcaption>
+          // No syntax-highlighting pipeline in this docs app (see
+          // apps/docs/src/tags/docs/code-block.marko's own header comment —
+          // shadcn's MDX <pre> is rehype-highlighted at build time; there is
+          // no equivalent here, by prior project decision, not a gap
+          // introduced by this port). Plain <pre><code>, same as every other
+          // code panel on this site.
+          <pre class="no-scrollbar h-full overflow-auto p-4 text-[0.8125rem] leading-6"><code class="font-mono">${activeManifestFile.content}</code></pre>
+        </figure>
+      </if>
+    </if>
+  </div>
+
+  // ---- BlockViewerMobile ----------------------------------------------
+  <div class="order-4 flex flex-col gap-2 lg:hidden">
+    <div class="flex items-center gap-2 px-2">
+      <div class="line-clamp-1 text-sm font-medium">${block.description}</div>
+      <div class="ml-auto shrink-0 font-mono text-xs text-muted-foreground">${block.name}</div>
+    </div>
+    <div class="overflow-hidden rounded-xl border">
+      <iframe/mobileFrameEl
+        src=`/blocks/view/${block.name}`
+        height=block.previewHeight
+        loading="lazy"
+        title=`${block.title} preview`
+        class="no-scrollbar w-full bg-background"
+      />
+    </div>
+  </div>
+</div>

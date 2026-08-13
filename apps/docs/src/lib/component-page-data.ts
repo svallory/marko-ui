@@ -9,7 +9,7 @@ import type { DemoEntry, RegistrySnapshot } from "../demos/demos-manifest.ts";
 import type { ApiPart } from "../tags/docs/api-table.marko";
 
 // Where the shadcn CLI is pointed. A literal, matching every other install
-// command on the site (docs/installation, blocks/block-preview, home/card-
+// command on the site (docs/installation, blocks/block-viewer, home/card-
 // install). NOT read from process.env: this module is imported by the page,
 // so it is bundled for the browser too, and touching `process` there throws
 // "process is not defined" and takes down hydration for the whole page.
