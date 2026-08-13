@@ -4,11 +4,18 @@
 // Both panels render server-side and the tabs are a DOM toggle, so the code
 // is in the HTML for search engines and works without JavaScript (the Code
 // panel is reachable by anchor even if the toggle never wires up).
+//
+// The demo itself renders through <demo-renderer demoId=.../> — a generated
+// static <if>/<else-if> chain, not a dynamic tag (<${...}/>). Marko 6.3.34
+// crashes client hydration in production when a dynamic tag is resolved from
+// a runtime lookup; see notes/bug-marko-dynamic-tag-hydration-crash.md and
+// scripts/build-demos-manifest.ts's header comment.
 import "./expandable-code.marko";
+import "./demo-renderer.marko";
 
 export interface Input {
-  /** The demo component itself, from the generated manifest. */
-  component: Marko.Template;
+  /** A DemoEntry.demoId from the generated demos manifest, e.g. "button/button-demo". */
+  demoId: string;
   /** Raw .marko text of that demo. */
   source: string;
   /** Alignment of the demo inside the stage. */
@@ -51,7 +58,7 @@ export interface Input {
     <div
       class=`mt-4 flex min-h-[350px] w-full justify-center overflow-x-auto rounded-lg border border-border p-10 ${align === "center" ? "items-center" : "items-start"}`
     >
-      <${input.component}/>
+      <demo-renderer demoId=input.demoId/>
     </div>
   </div>
 
