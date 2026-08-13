@@ -1,16 +1,13 @@
 /*
- * marko-ui typeset — adapted from shadcn/ui's typeset.css (MIT)
- * https://ui.shadcn.com/docs/typeset
- *
- * A drop-in prose class for markdown/CMS content you don't control.
- * Scoped under .typeset so it never leaks into component UI.
+ * shadcn/typeset
+ * https://ui.shadcn.com/docs/typeset.
  */
 
 @layer components {
   .typeset {
     --typeset-font-body: inherit;
-    --typeset-font-heading: inherit;
-    --typeset-font-mono: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    --typeset-font-heading: var(--font-heading);
+    --typeset-font-mono: var(--font-mono);
     --typeset-size: 1em;
     --typeset-leading: 1.75;
     --typeset-flow: 1.25em;
@@ -336,6 +333,15 @@
       padding-block-start: var(--typeset-flow);
       font-size: 0.875em;
       color: var(--typeset-muted);
+    }
+
+    /* Math. */
+    &:where(math[display="block"]) {
+      margin-block-start: var(--typeset-flow);
+      margin-block-end: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-block: 0.25em;
     }
 
     /* Media. */
