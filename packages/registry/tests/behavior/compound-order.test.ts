@@ -150,7 +150,10 @@ describe("menu family <@item> ordering", () => {
   it("context-menu renders interleaved label/items/separator in source order", { timeout: 60_000 }, async () => {
     await withComponentPage("context-menu", async (page) => {
       const demo = demoByTitle(page, "Compound (attr tags)");
-      await demo.getByText("Right click here").click({ button: "right" });
+      // The docs page also prints the demo's source code inside the same
+      // section, so text selectors match twice — target the rendered trigger
+      // slot, not the "Right click here" text.
+      await demo.locator('[data-slot="context-menu-trigger"]').click({ button: "right" });
 
       const content = page.locator('[data-slot="context-menu-content"]:visible');
       // Source order in the demo: label, item, item, separator, item.

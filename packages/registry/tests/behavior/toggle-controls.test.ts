@@ -48,8 +48,8 @@ afterAll(async () => {
 describe("switch keyboard contract (APG)", () => {
   it("exposes role=switch with aria-checked=false by default", { timeout: 60_000 }, async () => {
     await withComponentPage("switch", async (page) => {
-      const control = demoByTitle(page, "Default").locator('[data-scope="switch"][data-part="control"]');
-      const root = demoByTitle(page, "Default").locator('[data-scope="switch"][data-part="root"]');
+      const control = demoByTitle(page, "Basic").locator('[data-scope="switch"][data-part="control"]');
+      const root = demoByTitle(page, "Basic").locator('[data-scope="switch"][data-part="root"]');
 
       expect(await attributeOf(root, "data-state")).toBe("unchecked");
       await expect.poll(() => control.count()).toBeGreaterThan(0);
@@ -58,7 +58,7 @@ describe("switch keyboard contract (APG)", () => {
 
   it("toggles with Space and reflects aria-checked", { timeout: 60_000 }, async () => {
     await withComponentPage("switch", async (page) => {
-      const demo = demoByTitle(page, "Default");
+      const demo = demoByTitle(page, "Basic");
       const input = hiddenInputIn(demo).first();
       const root = demo.locator('[data-scope="switch"][data-part="root"]');
 
@@ -77,7 +77,7 @@ describe("switch keyboard contract (APG)", () => {
 
   it("starts checked when the checked prop is set", { timeout: 60_000 }, async () => {
     await withComponentPage("switch", async (page) => {
-      const demo = demoByTitle(page, "Checked by default");
+      const demo = demoByTitle(page, "Checked");
       expect(await hiddenInputIn(demo).first().isChecked()).toBe(true);
     });
   });
@@ -102,7 +102,7 @@ describe("switch keyboard contract (APG)", () => {
 describe("checkbox keyboard contract (APG)", () => {
   it("toggles with Space", { timeout: 60_000 }, async () => {
     await withComponentPage("checkbox", async (page) => {
-      const demo = demoByTitle(page, "Default");
+      const demo = demoByTitle(page, "Basic");
       const input = hiddenInputIn(demo).first();
       const root = demo.locator('[data-scope="checkbox"][data-part="root"]');
 
@@ -142,7 +142,7 @@ describe("checkbox keyboard contract (APG)", () => {
 describe("radio group keyboard contract (APG)", () => {
   it("exposes role=radiogroup with one checked item", { timeout: 60_000 }, async () => {
     await withComponentPage("radio-group", async (page) => {
-      const demo = demoByTitle(page, "Default");
+      const demo = demoByTitle(page, "Basic");
       const root = demo.locator('[data-scope="radio-group"][data-part="root"]');
       expect(await attributeOf(root, "role")).toBe("radiogroup");
 
@@ -153,13 +153,13 @@ describe("radio group keyboard contract (APG)", () => {
     });
   });
 
-  // The "Default" demo pins value="comfortable", i.e. the middle item, so this
+  // The "Basic" demo pins value="comfortable", i.e. the middle item, so this
   // index — not 0 — is the group's starting position.
   const INITIALLY_CHECKED_INDEX = 1;
 
   it("moves the checked radio with ArrowDown", { timeout: 60_000 }, async () => {
     await withComponentPage("radio-group", async (page) => {
-      const demo = demoByTitle(page, "Default");
+      const demo = demoByTitle(page, "Basic");
       const inputs = hiddenInputIn(demo);
 
       await focusElement(inputs.nth(INITIALLY_CHECKED_INDEX));
@@ -177,7 +177,7 @@ describe("radio group keyboard contract (APG)", () => {
 
   it("moves the checked radio back with ArrowUp", { timeout: 60_000 }, async () => {
     await withComponentPage("radio-group", async (page) => {
-      const inputs = hiddenInputIn(demoByTitle(page, "Default"));
+      const inputs = hiddenInputIn(demoByTitle(page, "Basic"));
 
       await focusElement(inputs.nth(INITIALLY_CHECKED_INDEX));
       await pressKey(page, "ArrowDown");
@@ -189,7 +189,7 @@ describe("radio group keyboard contract (APG)", () => {
 
   it("wraps selection past the first radio", { timeout: 60_000 }, async () => {
     await withComponentPage("radio-group", async (page) => {
-      const inputs = hiddenInputIn(demoByTitle(page, "Default"));
+      const inputs = hiddenInputIn(demoByTitle(page, "Basic"));
       const lastIndex = (await inputs.count()) - 1;
 
       // Step up to the first item, then once more to wrap onto the last.
@@ -204,7 +204,7 @@ describe("radio group keyboard contract (APG)", () => {
 
   it("keeps exactly one radio checked at a time", { timeout: 60_000 }, async () => {
     await withComponentPage("radio-group", async (page) => {
-      const inputs = hiddenInputIn(demoByTitle(page, "Default"));
+      const inputs = hiddenInputIn(demoByTitle(page, "Basic"));
 
       // Zag drives radio focus through the item elements and leaves every
       // hidden input tabbable, so single-tab-stop behavior is asserted on the
@@ -223,7 +223,7 @@ describe("radio group keyboard contract (APG)", () => {
   it("skips a disabled radio during arrow navigation", { timeout: 60_000 }, async () => {
     await withComponentPage("radio-group", async (page) => {
       // The payment-methods demo disables "Apple Pay" (the last item).
-      const demo = demoByTitle(page, "With disabled item");
+      const demo = demoByTitle(page, "Disabled item");
       const inputs = hiddenInputIn(demo);
 
       const disabledFlags = await inputs.evaluateAll((elements) =>

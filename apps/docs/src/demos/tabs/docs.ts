@@ -34,5 +34,17 @@ export const docs: ComponentDocs = {
       description:
         "Use `<@trigger>` and `<@panel>` attribute tags instead of `items=` to compose each tab's label and panel content directly in markup.",
     },
+    {
+      name: "tabs-precedence",
+      title: "Precedence",
+      description:
+        "When both `items=` and attribute tags are supplied, the attribute tags win — the `items=` entry here is replaced entirely.",
+    },
+    {
+      name: "tabs-hybrid",
+      title: "Hybrid",
+      description:
+        "`<@trigger>` and `<@panel>` normalize independently: mixing `<@trigger>` tags with `items=` (and no `<@panel>` tags) pairs attr-tag triggers with items=-derived panels. Supply both tag names (or neither) to stay on one source.",
+    },
   ],
 };

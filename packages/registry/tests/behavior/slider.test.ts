@@ -42,19 +42,19 @@ afterAll(async () => {
 describe("slider keyboard contract (APG)", () => {
   it("exposes role=slider with the full value range", { timeout: 60_000 }, async () => {
     await withSliderPage(async (page) => {
-      const thumb = thumbsIn(demoByTitle(page, "Default")).first();
+      const thumb = thumbsIn(demoByTitle(page, "Basic")).first();
 
       expect(await attributeOf(thumb, "role")).toBe("slider");
       expect(await attributeOf(thumb, "aria-valuemin")).toBe("0");
       expect(await attributeOf(thumb, "aria-valuemax")).toBe("100");
-      // The "Default" demo's initial value is 33 (`defaultValue=[33]`).
+      // The "Basic" demo's initial value is 33 (`defaultValue=[33]`).
       expect(await valueOf(thumb)).toBe(33);
     });
   });
 
   it("increases with ArrowRight and decreases with ArrowLeft", { timeout: 60_000 }, async () => {
     await withSliderPage(async (page) => {
-      const thumb = thumbsIn(demoByTitle(page, "Default")).first();
+      const thumb = thumbsIn(demoByTitle(page, "Basic")).first();
       await focusElement(thumb);
 
       await pressKey(page, "ArrowRight");
@@ -67,7 +67,7 @@ describe("slider keyboard contract (APG)", () => {
 
   it("ignores the cross-axis arrow keys on a horizontal slider", { timeout: 60_000 }, async () => {
     await withSliderPage(async (page) => {
-      const thumb = thumbsIn(demoByTitle(page, "Default")).first();
+      const thumb = thumbsIn(demoByTitle(page, "Basic")).first();
       await focusElement(thumb);
 
       // Zag binds ArrowUp/ArrowDown to the *vertical* orientation only, so on a
@@ -83,7 +83,7 @@ describe("slider keyboard contract (APG)", () => {
 
   it("jumps to the bounds with Home / End", { timeout: 60_000 }, async () => {
     await withSliderPage(async (page) => {
-      const thumb = thumbsIn(demoByTitle(page, "Default")).first();
+      const thumb = thumbsIn(demoByTitle(page, "Basic")).first();
       await focusElement(thumb);
 
       await pressKey(page, "End");
@@ -96,7 +96,7 @@ describe("slider keyboard contract (APG)", () => {
 
   it("clamps at the bounds instead of overflowing", { timeout: 60_000 }, async () => {
     await withSliderPage(async (page) => {
-      const thumb = thumbsIn(demoByTitle(page, "Default")).first();
+      const thumb = thumbsIn(demoByTitle(page, "Basic")).first();
       await focusElement(thumb);
 
       await pressKey(page, "Home");
@@ -111,7 +111,7 @@ describe("slider keyboard contract (APG)", () => {
 
   it("moves by a larger increment with PageUp / PageDown", { timeout: 60_000 }, async () => {
     await withSliderPage(async (page) => {
-      const thumb = thumbsIn(demoByTitle(page, "Default")).first();
+      const thumb = thumbsIn(demoByTitle(page, "Basic")).first();
       await focusElement(thumb);
 
       const start = await valueOf(thumb);
@@ -128,7 +128,7 @@ describe("slider keyboard contract (APG)", () => {
       // Zag's large-step increment (`largeStep`, default 10 * step) snaps to
       // the nearest multiple of that increment rather than adding/subtracting
       // from the exact current value (see snapValueToStep in
-      // @zag-js/utils/number.mjs). The "Default" demo starts at 33, which is
+      // @zag-js/utils/number.mjs). The "Basic" demo starts at 33, which is
       // not itself on that grid, so PageUp -> PageDown lands one grid step
       // below where PageUp landed, not back at the original 33. Assert the
       // real snap-to-grid contract: PageDown must move backward by the same

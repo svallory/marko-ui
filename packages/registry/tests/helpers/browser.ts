@@ -103,7 +103,10 @@ export async function withPage<T>(
 
 /** Absolute URL for a component demo route. */
 export function componentRouteUrl(componentName: string): string {
-  return `${DOCS_BASE_URL}/components/${componentName}`;
+  // The static /components/<name> routes were replaced by the data-driven
+  // /docs/components/$name reference pages (which render every docs.ts
+  // example) — tests assert against those pages now.
+  return `${DOCS_BASE_URL}/docs/components/${componentName}`;
 }
 
 /**

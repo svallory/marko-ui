@@ -61,7 +61,7 @@ afterAll(async () => {
 describe("select keyboard contract (APG)", () => {
   it("starts collapsed with aria-expanded=false", { timeout: 60_000 }, async () => {
     await withSelectPage(async (page) => {
-      const trigger = triggerIn(demoByTitle(page, "Default"));
+      const trigger = triggerIn(demoByTitle(page, "Basic"));
       expect(await attributeOf(trigger, "aria-expanded")).toBe("false");
       await expect.poll(() => openListbox(page).count()).toBe(0);
     });
@@ -69,7 +69,7 @@ describe("select keyboard contract (APG)", () => {
 
   it("opens with Enter and exposes a listbox", { timeout: 60_000 }, async () => {
     await withSelectPage(async (page) => {
-      const demo = demoByTitle(page, "Default");
+      const demo = demoByTitle(page, "Basic");
       const listbox = await openWithKeyboard(page, demo);
 
       expect(await attributeOf(triggerIn(demo), "aria-expanded")).toBe("true");
@@ -83,7 +83,7 @@ describe("select keyboard contract (APG)", () => {
 
   it("opens with Space as well", { timeout: 60_000 }, async () => {
     await withSelectPage(async (page) => {
-      const demo = demoByTitle(page, "Default");
+      const demo = demoByTitle(page, "Basic");
       await focusElement(triggerIn(demo));
       await pressKey(page, "Space");
 
@@ -94,7 +94,7 @@ describe("select keyboard contract (APG)", () => {
 
   it("moves the highlighted option with ArrowDown / ArrowUp", { timeout: 60_000 }, async () => {
     await withSelectPage(async (page) => {
-      const demo = demoByTitle(page, "Default");
+      const demo = demoByTitle(page, "Basic");
       await openWithKeyboard(page, demo);
 
       const highlightedValue = () =>
@@ -116,7 +116,7 @@ describe("select keyboard contract (APG)", () => {
 
   it("selects the highlighted option with Enter and closes", { timeout: 60_000 }, async () => {
     await withSelectPage(async (page) => {
-      const demo = demoByTitle(page, "Default");
+      const demo = demoByTitle(page, "Basic");
       await openWithKeyboard(page, demo);
 
       await pressKey(page, "ArrowDown");
@@ -154,7 +154,7 @@ describe("select keyboard contract (APG)", () => {
   // opens with the keyboard, which happened to win the race and hid the bug.
   it("supports arrow navigation after opening with the mouse", { timeout: 60_000 }, async () => {
     await withSelectPage(async (page) => {
-      const demo = demoByTitle(page, "Default");
+      const demo = demoByTitle(page, "Basic");
 
       await triggerIn(demo).click();
       const listbox = openListbox(page);

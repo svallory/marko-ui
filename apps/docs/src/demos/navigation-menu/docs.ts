@@ -36,5 +36,11 @@ export const docs: ComponentDocs = {
       description:
         "Use `<@entry>` attribute tags instead of `items=` to compose each entry directly in markup: `type=\"menu\"` opens a shared content panel (the tag body renders inside it), and the default kind is a plain bar link. One tag name means entries render in exactly the order written — links can sit before, between, or after menus.",
     },
+    {
+      name: "navigation-menu-precedence",
+      title: "Precedence",
+      description:
+        "When both `items=` and `<@entry>` attribute tags are supplied, the attribute tags win — the `items=` entry here is replaced entirely.",
+    },
   ],
 };
