@@ -139,6 +139,7 @@ export interface Input {
 </div>
 
 <let/onDocumentClick=null/>
+<let/copyRevertTimer=null/>
 
 <lifecycle
   onMount() {
@@ -192,7 +193,8 @@ export interface Input {
       } catch {
         copyLabel.textContent = "Failed";
       }
-      setTimeout(() => {
+      if (copyRevertTimer) clearTimeout(copyRevertTimer);
+      copyRevertTimer = setTimeout(() => {
         copyLabel.textContent = "Copy Page";
         copyIcon.innerHTML = COPY_ICON_SVG;
       }, 1500);
@@ -208,5 +210,6 @@ export interface Input {
   }
   onDestroy() {
     if (onDocumentClick) document.removeEventListener("click", onDocumentClick);
+    if (copyRevertTimer) clearTimeout(copyRevertTimer);
   }
 />
