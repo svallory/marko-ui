@@ -9,7 +9,8 @@
 //   IconLibraryPicker | RadiusPicker
 //   -- separator --
 //   MenuColorPicker | MenuAccentPicker | BasePicker (mobile only)
-//   footer: CopyPreset | OpenPreset | RandomButton | ActionMenu | ResetDialog
+//   footer: CopyPreset | OpenPreset | RandomButton | ResetDialog
+//   (shadcn's footer also has ActionMenu here — removed, see deviation note below)
 //   footer: ProjectForm ("Get Code", desktop only)
 //
 // Phase 3: state moved from local <let>s to the design-system container
@@ -19,10 +20,10 @@
 // call input.setParams (URL-encoded as ?preset=<code>, pushState); hover
 // previews call input.setPreview (debounced overlay, never touches the URL).
 //
-// Phase 4: the footer "Actions" button now opens the real ActionMenu
-// (design-system.marko owns its open state, same pattern as OpenPreset) —
-// matches source's customizer.tsx footer wiring useActionMenuTrigger()'s
-// openActionMenu to that button's onClick.
+// Deliberate deviation from source: shadcn's real footer has no "Actions"
+// button (see main-menu.marko's header comment for the full rationale) —
+// this port's earlier "Actions" button + the action-menu.marko command
+// palette + item-explorer.marko it fronted have all been removed.
 //
 // Remaining stub:
 // - ProjectForm ("Get Code") — project generator, still a visible-but-
@@ -60,6 +61,7 @@ import MenuPicker from "./menu-picker.marko";
 import AccentPicker from "./accent-picker.marko";
 import BasePicker from "./base-picker.marko";
 import CopyPreset from "./copy-preset.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
 
 export interface Input {
   isMobile?: boolean;
@@ -76,7 +78,6 @@ export interface Input {
   onToggleTheme: () => void;
   onOpenPreset: () => void;
   onShowResetDialog: () => void;
-  onNavigate: () => void;
   presetCode: string;
   isDark: boolean;
 }
@@ -97,7 +98,6 @@ export interface Input {
       onToggleTheme=input.onToggleTheme
       onOpenPreset=input.onOpenPreset
       onShowResetDialog=input.onShowResetDialog
-      onNavigate=input.onNavigate
     />
   </div>
   <div class="no-scrollbar min-h-0 flex-1 overflow-x-auto overflow-y-hidden p-3 md:overflow-y-auto">
@@ -211,27 +211,32 @@ export interface Input {
   </div>
   <div class="flex min-w-0 gap-2 border-t p-3 md:flex-col md:**:[button,a]:w-full">
     <CopyPreset presetCode=input.presetCode class="min-w-0 flex-1 md:flex-none"/>
-    <button
-      type="button"
-      class="inline-flex h-8 max-w-20 min-w-0 flex-1 touch-manipulation items-center justify-center rounded-md border border-input bg-transparent px-2 py-0 text-sm font-medium shadow-xs transition-none select-none hover:bg-muted sm:max-w-none md:flex-none pointer-coarse:h-10"
+    <Button
+      variant="outline"
+      class="h-8 max-w-20 min-w-0 flex-1 touch-manipulation bg-transparent! px-2! py-0! text-sm! shadow-xs! transition-none select-none hover:bg-muted! sm:max-w-none md:flex-none pointer-coarse:h-10"
       on-click=input.onOpenPreset
     >
       ${input.isMobile ? "Open" : "Open Preset"}
-    </button>
-    <button
-      type="button"
-      class="inline-flex h-8 max-w-20 min-w-0 flex-1 touch-manipulation items-center justify-center rounded-md border border-input bg-transparent px-2 py-0 text-sm font-medium transition-none select-none hover:bg-muted sm:max-w-none md:flex-none pointer-coarse:h-10"
+    </Button>
+    <Button
+      variant="outline"
+      class="h-8 max-w-20 min-w-0 flex-1 touch-manipulation bg-transparent! px-2! py-0! text-sm! transition-none select-none hover:bg-muted! sm:max-w-none md:flex-none pointer-coarse:h-10"
       on-click=input.onShuffle
     >
       <span class="w-full truncate text-center font-medium">Shuffle</span>
-    </button>
-    <button
-      type="button"
-      class="inline-flex h-8 items-center justify-center rounded-md border border-input bg-transparent px-2 text-sm font-medium hover:bg-muted"
-      on-click=input.onNavigate
-    >
-      Actions
-    </button>
+    </Button>
+    // Deliberate deviation from shadcn's source (per explicit user
+    // direction — see Issue 3 in the code-review pass this comment
+    // documents): shadcn's real customizer footer has no "Actions" button.
+    // Their surface exists (main-menu.tsx's "Navigate..." item +
+    // hooks/use-action-menu.ts + a ⌘P listener) but was never exposed as a
+    // standalone footer button; this port previously invented one, plus a
+    // command-palette (action-menu.marko) whose search didn't work, and a
+    // dead item-explorer.marko. All of that — the button, the ⌘P binding,
+    // the palette, and its wiring in design-system.marko/main-menu.marko —
+    // has been removed to match the real product. This is a deliberate
+    // deviation from 1:1 source parity, not a missed port.
+    //
     // Note: the source's footer renders <ResetDialog /> here, which is the
     // confirm dialog only (no trigger button) — the dialog now lives in
     // design-system.marko; reset is reachable via main-menu or Shift+R,
@@ -240,6 +245,6 @@ export interface Input {
   <div class="hidden -mt-3 min-w-0 gap-2 p-3 md:flex md:flex-col md:**:[button,a]:w-full">
     // TODO: ProjectForm ("Get Code") — dialog that generates a downloadable
     // project/registry command (out of phase-3 scope).
-    <button type="button" disabled class="w-full rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground opacity-50">Get Code</button>
+    <Button disabled aria-hidden="true" class="w-full">Get Code</Button>
   </div>
 </div>
