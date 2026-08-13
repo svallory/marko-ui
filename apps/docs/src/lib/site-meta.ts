@@ -121,7 +121,6 @@ for (const name of COMPONENTS) {
     title: titleCase(name),
     description: `${titleCase(name)} — a copy-paste marko-ui component built on Zag.js.`,
   };
-  ROUTE_META[`/components/${name}`] = entry;
   ROUTE_META[`/docs/components/${name}`] = entry;
 }
 
@@ -139,7 +138,7 @@ function normalize(pathname: string): string {
 export function resolveMeta(pathname: string): PageMeta {
   const path = normalize(pathname);
   const entry = ROUTE_META[path];
-  const isArticle = path.startsWith("/docs/") || path.startsWith("/components/");
+  const isArticle = path.startsWith("/docs/");
 
   if (!entry) {
     return {

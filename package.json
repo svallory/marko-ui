@@ -12,15 +12,15 @@
     "format": "prettier --write ."
   },
   "devDependencies": {
-    "@marko/type-check": "^1",
+    "@marko/type-check": "^3.2.0",
     "@marko/vite": "^6.1.9",
     "@types/node": "^26.2.0",
     "@zag-js/tabs": "1.43.0",
-    "marko": "^6.3.34",
-    "prettier": "^3",
-    "prettier-plugin-marko": "^4",
-    "typescript": "^5",
-    "vitest": "^4"
+    "marko": "6.3.34",
+    "prettier": "^3.9.6",
+    "prettier-plugin-marko": "^4.1.0",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
   },
   "dependencies": {
     "@zag-js/core": "^1.43.0",

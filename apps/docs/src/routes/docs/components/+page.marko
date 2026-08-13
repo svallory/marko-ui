@@ -1,0 +1,46 @@
+// All Components — the marko-run equivalent of shadcn's docs/components
+// index. Same structure as shadcn's page: title, one-line intro, then a
+// plain alphabetical list of text links (no cards, no thumbnails), plus a
+// "Beyond shadcn" subsection for components shadcn/ui has no equivalent for.
+import "../../../tags/docs/docs-article.marko";
+import { COMPONENTS, BEYOND_SHADCN_AVAILABLE } from "../../../lib/components-list.ts";
+import { SIDEBAR_COMPONENTS } from "../../../lib/component-page-data.ts";
+
+static const BEYOND_SET = new Set(BEYOND_SHADCN_AVAILABLE);
+
+static const TOC = [
+  { id: "all-components", label: "All Components" },
+  { id: "beyond-shadcn", label: "Beyond shadcn" },
+];
+
+<docs-article
+  title="Components"
+  description="Here you can find all the components available in the library. We are working on adding more components."
+  href="/docs/components"
+  toc=TOC
+>
+  <h2 id="all-components">All Components</h2>
+
+  <div data-not-typeset class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+    <for|component| of=SIDEBAR_COMPONENTS by=(component) => component.name>
+      <if=(component.documented && !BEYOND_SET.has(component.name))>
+        <a href=`/docs/components/${component.name}` class="inline-flex items-center gap-2 font-medium text-muted-foreground underline-offset-4 !no-underline hover:text-foreground hover:!underline">${component.title}</a>
+      </if>
+      <else-if=!component.documented>
+        <span class="inline-flex items-center gap-2 font-medium text-muted-foreground/50" title="Documentation in progress">${component.title}</span>
+      </else-if>
+    </for>
+  </div>
+
+  <h2 id="beyond-shadcn">Beyond shadcn</h2>
+
+  <p>Components marko-ui ships that shadcn/ui has no equivalent for.</p>
+
+  <div data-not-typeset class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+    <for|component| of=SIDEBAR_COMPONENTS by=(component) => component.name>
+      <if=(BEYOND_SET.has(component.name) && component.documented)>
+        <a href=`/docs/components/${component.name}` class="inline-flex items-center gap-2 font-medium text-muted-foreground underline-offset-4 !no-underline hover:text-foreground hover:!underline">${component.title}</a>
+      </if>
+    </for>
+  </div>
+</docs-article>

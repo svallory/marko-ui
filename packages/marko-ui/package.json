@@ -18,7 +18,7 @@
     "@zag-js/utils": "1.43.0"
   },
   "peerDependencies": {
-    "marko": "^6.3.0"
+    "marko": "^6.3.34"
   },
   "keywords": ["marko", "zag", "zag-js", "state-machine", "ui", "headless", "a11y"]
 }

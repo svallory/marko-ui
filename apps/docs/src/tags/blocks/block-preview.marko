@@ -72,7 +72,7 @@ export interface Input {
     <span>Built from</span>
     <for|dependency| of=block.registryDependencies by=(dependency) => dependency>
       <if=COMPONENTS.includes(dependency)>
-        <a href=`/components/${dependency}`>
+        <a href=`/docs/components/${dependency}`>
           <Badge variant="secondary" class="hover:bg-secondary/70">${dependency}</Badge>
         </a>
       </if>

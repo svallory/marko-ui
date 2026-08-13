@@ -1,10 +1,14 @@
 import {
-  createTable,
-  getCoreRowModel,
-  getSortedRowModel,
+  constructTable,
+  createSortedRowModel,
+  rowSortingFeature,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
   type ColumnDef,
   type SortingState,
 } from "@tanstack/table-core";
+import { storeReactivityBindings } from "@tanstack/table-core/store-reactivity-bindings";
 import Table from "../table/table.marko";
 import TableHeader from "../table/header.marko";
 import TableBody from "../table/body.marko";
@@ -26,11 +30,17 @@ export interface Input<TData extends Record<string, unknown> = Record<string, un
   class?: string;
 }
 
-<let/rev=0/>
+static const features = tableFeatures({
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: { alphanumeric: sortFn_alphanumeric, text: sortFn_text },
+  coreReactivityFeature: storeReactivityBindings(),
+});
+
 <let/sorting=[] as SortingState/>
 
 <const/columnDefs=() =>
-  input.columns.map((col): ColumnDef<Record<string, unknown>> => ({
+  input.columns.map((col): ColumnDef<typeof features, Record<string, unknown>> => ({
     id: col.accessorKey,
     accessorKey: col.accessorKey,
     header: col.header,
@@ -39,23 +49,13 @@ export interface Input<TData extends Record<string, unknown> = Record<string, un
 />
 
 <const/buildTable=() => {
-  const table = createTable<Record<string, unknown>>({
+  const table = constructTable({
+    features,
     data: input.data,
     columns: columnDefs(),
-    state: {},
-    onSortingChange(updater) {
-      sorting = typeof updater === "function" ? updater(sorting) : updater;
-      rev += 1;
-    },
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    initialState: { sorting },
     renderFallbackValue: null,
-    onStateChange() {},
   });
-  table.setOptions((prev) => ({
-    ...prev,
-    state: { ...table.initialState, ...prev.state, sorting },
-  }));
   return table;
 }/>
 
@@ -63,6 +63,7 @@ export interface Input<TData extends Record<string, unknown> = Record<string, un
   const table = buildTable();
   const column = table.getColumn(columnId);
   column?.toggleSorting(column.getIsSorted() === "asc");
+  sorting = table.atoms.sorting.get();
 }/>
 
 <const/computeUi=() => {
@@ -78,7 +79,7 @@ export interface Input<TData extends Record<string, unknown> = Record<string, un
     ),
     rows: table.getRowModel().rows.map((row) => ({
       id: row.id,
-      cells: row.getVisibleCells().map((cell) => {
+      cells: row.getAllCells().map((cell) => {
         const col = input.columns.find((c) => c.accessorKey === cell.column.id);
         return {
           id: cell.id,
@@ -88,7 +89,7 @@ export interface Input<TData extends Record<string, unknown> = Record<string, un
     })),
   };
 }/>
-<const/ui=(rev, computeUi())/>
+<const/ui=computeUi()/>
 
 <const/{ class: className, columns: _columns, data: _data, ...rest }=input/>
 

@@ -72,14 +72,19 @@ export const DOCUMENTED_COMPONENTS: string[] = COMPONENTS.filter(
 export interface SidebarComponent {
   name: string;
   title: string;
+  description?: string;
   documented: boolean;
 }
 
-export const SIDEBAR_COMPONENTS: SidebarComponent[] = COMPONENTS.map((componentName) => ({
-  name: componentName,
-  title: titleize(componentName),
-  documented: componentName in DEMOS,
-}));
+export const SIDEBAR_COMPONENTS: SidebarComponent[] = COMPONENTS.map((componentName) => {
+  const entry = DEMOS[componentName];
+  return {
+    name: componentName,
+    title: entry?.registry.title || titleize(componentName),
+    description: entry && (entry.docs.description || entry.registry.description),
+    documented: Boolean(entry),
+  };
+});
 
 /** `switch-controlled` → `switch-controlled`, kept stable for anchors. */
 function slugify(value: string): string {
