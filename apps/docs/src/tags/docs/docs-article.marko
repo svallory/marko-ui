@@ -16,52 +16,51 @@ export interface Input {
 <const/previousPage = currentIndex === -1 ? null : (DOCS_NAV_FLAT[currentIndex - 1] ?? null)/>
 <const/nextPage = currentIndex === -1 ? null : (DOCS_NAV_FLAT[currentIndex + 1] ?? null)/>
 
-<div class="flex min-w-0 flex-1 gap-8">
-  <main class="min-w-0 flex-1 px-4 py-8 lg:px-8">
-    <nav class="mb-4 flex items-center gap-1.5 text-sm text-muted-foreground" aria-label="Breadcrumb">
-      <a href="/docs" class="transition-colors hover:text-foreground">Docs</a>
-      <span aria-hidden="true">/</span>
-      <span class="text-foreground">${input.title}</span>
-    </nav>
+<div class="flex items-stretch pb-8 xl:w-full">
+  <div class="flex min-w-0 flex-1 flex-col">
+    <div class="mx-auto flex w-full max-w-160 min-w-0 flex-1 flex-col gap-6 px-4 py-6 lg:py-8">
+      <nav class="flex items-center gap-1.5 text-sm text-muted-foreground" aria-label="Breadcrumb">
+        <a href="/docs" class="transition-colors hover:text-foreground">Docs</a>
+        <span aria-hidden="true">/</span>
+        <span class="text-foreground">${input.title}</span>
+      </nav>
 
-    <div class="space-y-2">
-      <h1 class="scroll-m-20 text-3xl font-bold tracking-tight">${input.title}</h1>
-      <if=input.description>
-        <p class="max-w-2xl text-base text-muted-foreground">${input.description}</p>
+      <div class="space-y-2">
+        <h1 class="scroll-m-20 text-3xl font-bold tracking-tight">${input.title}</h1>
+        <if=input.description>
+          <p class="max-w-2xl text-base text-muted-foreground">${input.description}</p>
+        </if>
+      </div>
+
+      <article class="text-sm leading-7 [&_h2]:mt-10 [&_h2]:scroll-mt-20 [&_h2]:border-b [&_h2]:border-border [&_h2]:pb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:tracking-tight [&_h3]:mt-8 [&_h3]:scroll-mt-20 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:tracking-tight [&_p]:my-4 [&_p]:text-muted-foreground [&_strong]:font-semibold [&_strong]:text-foreground [&_ul]:my-4 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6 [&_li]:text-muted-foreground [&_li>strong]:text-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] [&_code]:text-foreground [&_a]:font-medium [&_a]:text-foreground [&_a]:underline [&_a]:underline-offset-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_table]:my-6 [&_table]:w-full [&_table]:border-collapse [&_table]:text-sm [&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:align-top [&_td]:text-muted-foreground">
+        <${input.content}/>
+      </article>
+
+      <if=(previousPage || nextPage)>
+        <nav class="flex h-16 w-full items-center gap-2" aria-label="Pagination">
+          <if=previousPage>
+            <a
+              href=previousPage.href
+              class="inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              ← ${previousPage.label}
+            </a>
+          </if>
+          <if=nextPage>
+            <a
+              href=nextPage.href
+              class="ml-auto inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              ${nextPage.label} →
+            </a>
+          </if>
+        </nav>
       </if>
     </div>
+  </div>
 
-    <article class="mt-8 text-sm leading-7 [&_h2]:mt-10 [&_h2]:scroll-mt-20 [&_h2]:border-b [&_h2]:border-border [&_h2]:pb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:tracking-tight [&_h3]:mt-8 [&_h3]:scroll-mt-20 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:tracking-tight [&_p]:my-4 [&_p]:text-muted-foreground [&_strong]:font-semibold [&_strong]:text-foreground [&_ul]:my-4 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6 [&_li]:text-muted-foreground [&_li>strong]:text-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] [&_code]:text-foreground [&_a]:font-medium [&_a]:text-foreground [&_a]:underline [&_a]:underline-offset-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_table]:my-6 [&_table]:w-full [&_table]:border-collapse [&_table]:text-sm [&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:align-top [&_td]:text-muted-foreground">
-      <${input.content}/>
-    </article>
-
-    <if=(previousPage || nextPage)>
-      <nav class="mt-12 flex items-center justify-between gap-4 border-t border-border pt-6" aria-label="Pagination">
-        <if=previousPage>
-          <a
-            href=previousPage.href
-            class="inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-          >
-            ← ${previousPage.label}
-          </a>
-        </if>
-        <else>
-          <span/>
-        </else>
-        <if=nextPage>
-          <a
-            href=nextPage.href
-            class="ml-auto inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-          >
-            ${nextPage.label} →
-          </a>
-        </if>
-      </nav>
-    </if>
-  </main>
-
-  <aside class="hidden w-56 shrink-0 xl:block">
-    <div class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto py-8 pr-4">
+  <aside class="sticky top-[calc(3.5rem+1px)] z-30 ml-auto hidden h-[90svh] w-56 flex-col gap-4 overflow-hidden overscroll-none pb-8 xl:flex">
+    <div class="scrollbar-none flex flex-col gap-8 overflow-y-auto px-8 py-8">
       <docs-toc entries=input.toc/>
     </div>
   </aside>

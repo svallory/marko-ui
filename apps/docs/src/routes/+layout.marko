@@ -59,15 +59,17 @@ import { resolveMeta, SITE_NAME, DEFAULT_OG_IMAGE } from "../lib/site-meta.ts";
       })();
     </html-script>
   </head>
-  <body class="flex min-h-screen flex-col bg-background text-foreground antialiased">
-    <if=!isBlockPreview>
-      <site-header/>
-    </if>
-    <div class="flex-1">
-      <${input.content}/>
+  <body class="group/body min-h-screen bg-background text-foreground antialiased">
+    <div data-slot="layout" class="group/layout relative z-10 flex min-h-svh flex-col bg-background">
+      <if=!isBlockPreview>
+        <site-header/>
+      </if>
+      <main class="flex min-h-0 flex-1 flex-col">
+        <${input.content}/>
+      </main>
+      <if=!isBlockPreview>
+        <site-footer/>
+      </if>
     </div>
-    <if=!isBlockPreview>
-      <site-footer/>
-    </if>
   </body>
 </html>
