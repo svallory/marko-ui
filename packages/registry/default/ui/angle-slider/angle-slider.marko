@@ -44,9 +44,9 @@ export type Input = MachineInput<"div", angleSliderMachine.Props> & {
     <div
       ...api().getThumbProps()
       data-slot="angle-slider-thumb"
-      class="absolute top-1/2 left-1/2 h-1/2 w-0.5 -translate-x-1/2 origin-top -translate-y-0 bg-transparent outline-none"
+      class="absolute top-1/2 left-1/2 flex h-1/2 w-0.5 origin-top -translate-x-1/2 flex-col items-center justify-end bg-transparent outline-none"
     >
-      <span data-slot="angle-slider-thumb-knob" class="mx-auto block size-3 -translate-x-1/2 translate-y-[-2px] rounded-full border border-primary bg-background shadow-sm ring-0 focus-visible:ring-[3px] focus-visible:ring-ring/50"></span>
+      <span data-slot="angle-slider-thumb-knob" class="block size-3 -translate-y-1/2 rounded-full border border-primary bg-background shadow-sm ring-0 focus-visible:ring-[3px] focus-visible:ring-ring/50"></span>
     </div>
   </div>
   <span
