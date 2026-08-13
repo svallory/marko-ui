@@ -1,0 +1,88 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/transfer-funds.tsx
+// API adaptation: items-driven Select.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardAction from "@marko-ui/registry/ui/card/action.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import InputGroup from "@marko-ui/registry/ui/input-group/input-group.marko";
+import InputGroupAddon from "@marko-ui/registry/ui/input-group/addon.marko";
+import InputGroupInput from "@marko-ui/registry/ui/input-group/input.marko";
+import InputGroupText from "@marko-ui/registry/ui/input-group/text.marko";
+import Item from "@marko-ui/registry/ui/item/item.marko";
+import ItemContent from "@marko-ui/registry/ui/item/content.marko";
+import Select from "@marko-ui/registry/ui/select/select.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+import Field from "../../lib/field.marko";
+import FieldGroup from "../../lib/field-group.marko";
+import FieldLabel from "../../lib/field-label.marko";
+import Icon from "../../lib/icon.marko";
+
+static const FROM_ACCOUNTS = [
+  { label: "Main Checking (··8402) — $12,450.00", value: "checking" },
+  { label: "Business (··7731) — $8,920.00", value: "business" },
+];
+
+static const TO_ACCOUNTS = [
+  { label: "High Yield Savings (··1192) — $42,100.00", value: "savings" },
+  { label: "Investment (··3349) — $18,200.00", value: "investment" },
+];
+
+<Card>
+  <CardHeader>
+    <CardTitle>Transfer Funds</CardTitle>
+    <CardDescription>
+      Move money between your connected accounts.
+    </CardDescription>
+    <CardAction>
+      <Button variant="ghost" size="icon-sm" class="bg-muted">
+        <Icon name="XIcon"/>
+      </Button>
+    </CardAction>
+  </CardHeader>
+  <CardContent>
+    <FieldGroup>
+      <Field>
+        <FieldLabel for="transfer-amount">Amount to Transfer</FieldLabel>
+        <InputGroup>
+          <InputGroupAddon>
+            <InputGroupText>$</InputGroupText>
+          </InputGroupAddon>
+          <InputGroupInput id="transfer-amount" value="1,200.00"/>
+        </InputGroup>
+      </Field>
+      <Field>
+        <FieldLabel for="from-account">From Account</FieldLabel>
+        <Select id="from-account" items=FROM_ACCOUNTS defaultValue=["checking"] class="w-full"/>
+      </Field>
+      <Field>
+        <FieldLabel for="to-account">To Account</FieldLabel>
+        <Select id="to-account" items=TO_ACCOUNTS defaultValue=["savings"] class="w-full"/>
+      </Field>
+      <Item variant="muted" class="flex-col items-stretch">
+        <ItemContent class="gap-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-muted-foreground">Estimated arrival</span>
+            <span class="text-sm font-medium">Today, Apr 14</span>
+          </div>
+          <Separator/>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-muted-foreground">Transaction fee</span>
+            <span class="text-sm font-medium tabular-nums">$0.00</span>
+          </div>
+          <Separator/>
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium">Total amount</span>
+            <span class="text-sm font-semibold tabular-nums">$1,200.00</span>
+          </div>
+        </ItemContent>
+      </Item>
+    </FieldGroup>
+  </CardContent>
+  <CardFooter>
+    <Button class="w-full">Confirm Transfer</Button>
+  </CardFooter>
+</Card>

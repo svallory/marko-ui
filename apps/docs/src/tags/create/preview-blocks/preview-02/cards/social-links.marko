@@ -1,0 +1,52 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/social-links.tsx
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import InputGroup from "@marko-ui/registry/ui/input-group/input-group.marko";
+import InputGroupAddon from "@marko-ui/registry/ui/input-group/addon.marko";
+import InputGroupInput from "@marko-ui/registry/ui/input-group/input.marko";
+import Field from "../../lib/field.marko";
+import FieldGroup from "../../lib/field-group.marko";
+import FieldLabel from "../../lib/field-label.marko";
+import Icon from "../../lib/icon.marko";
+
+static const LINKS = [
+  { id: "spotify-url", label: "Spotify Artist URL", icon: "CirclePlusIcon", value: "spotify.com/artist/3j...2k", placeholder: undefined as string | undefined },
+  { id: "instagram-handle", label: "Instagram Handle", icon: "CameraIcon", value: "@julianduryea_music", placeholder: undefined as string | undefined },
+  { id: "soundcloud-url", label: "SoundCloud URL", icon: "CloudIcon", value: undefined as string | undefined, placeholder: "soundcloud.com/username" },
+  { id: "website-url", label: "Website", icon: "GlobeIcon", value: undefined as string | undefined, placeholder: "https://yoursite.com" },
+];
+
+<Card>
+  <CardHeader>
+    <CardTitle>Social Links</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <FieldGroup>
+      <for|link| of=LINKS by=(link) => link.id>
+        <Field>
+          <FieldLabel for=link.id>${link.label}</FieldLabel>
+          <InputGroup>
+            <InputGroupAddon>
+              <Icon name=link.icon/>
+            </InputGroupAddon>
+            <InputGroupInput
+              id=link.id
+              value=link.value
+              placeholder=link.placeholder
+            />
+          </InputGroup>
+        </Field>
+      </for>
+    </FieldGroup>
+  </CardContent>
+  <CardFooter class="justify-end gap-2 style-sera:justify-center">
+    <Button variant="secondary" class="style-sera:flex-1">
+      Discard
+    </Button>
+    <Button class="style-sera:flex-1">Save Changes</Button>
+  </CardFooter>
+</Card>

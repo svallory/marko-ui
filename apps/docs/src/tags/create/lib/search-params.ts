@@ -80,11 +80,9 @@ export type DesignSystemSearchParams = {
 export const DESIGN_SYSTEM_SEARCH_PARAM_DEFAULTS: DesignSystemSearchParams = {
   preset: "b0",
   base: DEFAULT_CONFIG.base,
-  // shadcn defaults to its own "preview-02" registry example; this repo's
-  // preview route (routes/create/preview/+page.marko) resolves `item` as
-  // "<kind>:<name>" against real block/component data instead — see
-  // preview.marko's header comment for the full mapping rationale.
-  item: "block:dashboard-01",
+  // Matches shadcn's parseAsString.withDefault("preview-02") — the preview
+  // route renders the real preview-02/preview showcase pages.
+  item: "preview-02",
   iconLibrary: DEFAULT_CONFIG.iconLibrary,
   style: DEFAULT_CONFIG.style,
   theme: DEFAULT_CONFIG.theme,

@@ -1,0 +1,114 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/sidebar-nav.tsx
+// API adaptation: this registry's sidebar is composed from
+// provider/sidebar/content/group/menu tags; `collapsible="none"` maps to
+// rendering the static sidebar composition directly.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import SidebarProvider from "@marko-ui/registry/ui/sidebar/provider.marko";
+import Sidebar from "@marko-ui/registry/ui/sidebar/sidebar.marko";
+import SidebarContent from "@marko-ui/registry/ui/sidebar/content.marko";
+import SidebarGroup from "@marko-ui/registry/ui/sidebar/group.marko";
+import SidebarGroupLabel from "@marko-ui/registry/ui/sidebar/group-label.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+import Icon from "../../lib/icon.marko";
+
+static const LEFT_GROUPS = [
+  {
+    label: "Overview",
+    items: [
+      { icon: "LayoutDashboardIcon", label: "Dashboard", active: true },
+      { icon: "ArrowLeftRightIcon", label: "Transactions", active: false },
+      { icon: "TrendingUpIcon", label: "Investments", active: false },
+      { icon: "Building2Icon", label: "Accounts", active: false },
+      { icon: "PieChartIcon", label: "Spending", active: false },
+    ],
+  },
+  {
+    label: "Planning",
+    items: [
+      { icon: "TargetIcon", label: "Goals", active: false },
+      { icon: "WalletIcon", label: "Budget", active: false },
+      { icon: "FileBarChartIcon", label: "Reports", active: false },
+      { icon: "FileTextIcon", label: "Documents", active: false },
+    ],
+  },
+];
+
+static const RIGHT_GROUPS = [
+  {
+    label: "Account",
+    items: [
+      { icon: "UserIcon", label: "Profile", active: false },
+      { icon: "CreditCardIcon", label: "Billing", active: true },
+      { icon: "BellIcon", label: "Notifications", active: false },
+      { icon: "ShieldIcon", label: "Security", active: false },
+      { icon: "PaintbrushIcon", label: "Appearance", active: false },
+    ],
+  },
+  {
+    label: "Support",
+    items: [
+      { icon: "CircleHelpIcon", label: "Help Center", active: false },
+      { icon: "MessageSquareIcon", label: "Contact Us", active: false },
+      { icon: "BookOpenIcon", label: "Documentation", active: false },
+      { icon: "ActivityIcon", label: "Status", active: false },
+    ],
+  },
+];
+
+<div class="grid grid-cols-2 items-start gap-6">
+  <Card class="overflow-hidden py-0">
+    <SidebarProvider class="min-h-0">
+      <Sidebar class="w-full bg-transparent">
+        <SidebarContent class="gap-0">
+          <for|group, groupIndex| of=LEFT_GROUPS by=(group) => group.label>
+            <if=(groupIndex > 0)>
+              <Separator class="mx-2 w-auto!"/>
+            </if>
+            <SidebarGroup class=(groupIndex === 0 ? "pb-1" : "pt-1")>
+              <SidebarGroupLabel>${group.label}</SidebarGroupLabel>
+              <SidebarMenu>
+                <for|entry| of=group.items by=(entry) => entry.label>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton active=entry.active>
+                      <Icon name=entry.icon/>
+                      ${entry.label}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </for>
+              </SidebarMenu>
+            </SidebarGroup>
+          </for>
+        </SidebarContent>
+      </Sidebar>
+    </SidebarProvider>
+  </Card>
+  <Card class="overflow-hidden py-0">
+    <SidebarProvider class="min-h-0">
+      <Sidebar class="w-full bg-transparent">
+        <SidebarContent class="gap-0">
+          <for|group, groupIndex| of=RIGHT_GROUPS by=(group) => group.label>
+            <if=(groupIndex > 0)>
+              <Separator class="mx-2 w-auto!"/>
+            </if>
+            <SidebarGroup class=(groupIndex === 0 ? "pb-1" : "pt-1")>
+              <SidebarGroupLabel>${group.label}</SidebarGroupLabel>
+              <SidebarMenu>
+                <for|entry| of=group.items by=(entry) => entry.label>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton active=entry.active>
+                      <Icon name=entry.icon/>
+                      ${entry.label}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </for>
+              </SidebarMenu>
+            </SidebarGroup>
+          </for>
+        </SidebarContent>
+      </Sidebar>
+    </SidebarProvider>
+  </Card>
+</div>

@@ -1,13 +1,15 @@
-// Ported from shadcn/ui app/(app)/(create)/components/preview-switcher.tsx.
-// NOT a desktop/tablet/mobile viewport toggle (that doesn't exist anywhere
-// in the source — grepped the whole (create) tree for "desktop"/"tablet"/
-// "mobile"/"viewport" and it isn't there). It's a two-item "01"/"02" preview
-// switcher, shown only while the current preview item is one of shadcn's
-// dedicated `preview`/`preview-0*` registry examples. Since this repo has
-// no such items, it switches between our two default `item` values instead:
-// "01" → the dashboard-01 block (this port's default/hero preview) and
-// "02" → the accordion component demo (an arbitrary, always-present
-// component:* item, standing in for shadcn's second bare preview example).
+// Ported from shadcn/ui app/(app)/(create)/components/preview-switcher.tsx
+// (quoted verbatim in the phase-5 task brief). NOT a desktop/tablet/mobile
+// viewport toggle (that doesn't exist anywhere in the source — grepped the
+// whole (create) tree for "desktop"/"tablet"/"mobile"/"viewport" and it
+// isn't there). It's a two-item "01"/"02" preview switcher between shadcn's
+// two dedicated dashboard-style showcase registry items:
+// "01" -> "preview-02" (the wide multi-column card grid, and the default
+// `item` value), "02" -> "preview" (the second showcase page). The gate
+// mirrors the source's `isPreview` check exactly: visible only while
+// `item === "preview"` or `item` starts with "preview-0" (so "preview-03",
+// dead code in the real product, would also satisfy the gate there even
+// though it isn't one of the two switchable items — matched literally).
 import Button from "@marko-ui/registry/ui/button/button.marko";
 
 export interface Input {
@@ -16,11 +18,11 @@ export interface Input {
 }
 
 static const PREVIEW_ITEMS = [
-  { label: "01", value: "block:dashboard-01" },
-  { label: "02", value: "component:accordion" },
+  { label: "01", value: "preview-02" },
+  { label: "02", value: "preview" },
 ] as const;
 
-<const/isPreviewItem=PREVIEW_ITEMS.some((item) => item.value === input.item)/>
+<const/isPreviewItem=(input.item === "preview" || input.item.startsWith("preview-0"))/>
 
 <if=isPreviewItem>
   <div class="dark absolute right-3 bottom-3 z-20 flex items-center gap-1 rounded-xl bg-card/90 p-1 shadow-xl backdrop-blur-xl" data-slot="preview-switcher">

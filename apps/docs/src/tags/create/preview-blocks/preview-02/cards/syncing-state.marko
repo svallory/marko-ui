@@ -1,0 +1,31 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/syncing-state.tsx
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import Empty from "@marko-ui/registry/ui/empty/empty.marko";
+import EmptyContent from "@marko-ui/registry/ui/empty/content.marko";
+import EmptyDescription from "@marko-ui/registry/ui/empty/description.marko";
+import EmptyHeader from "@marko-ui/registry/ui/empty/header.marko";
+import EmptyMedia from "@marko-ui/registry/ui/empty/media.marko";
+import EmptyTitle from "@marko-ui/registry/ui/empty/title.marko";
+import Spinner from "@marko-ui/registry/ui/spinner/spinner.marko";
+
+<Card>
+  <CardContent class="p-0">
+    <Empty class="p-4">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Spinner/>
+        </EmptyMedia>
+        <EmptyTitle>Syncing your accounts</EmptyTitle>
+        <EmptyDescription>
+          We're pulling in your latest transactions. This usually takes
+          a few seconds.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button variant="outline">Cancel</Button>
+      </EmptyContent>
+    </Empty>
+  </CardContent>
+</Card>

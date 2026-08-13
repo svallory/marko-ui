@@ -1,0 +1,21 @@
+// Stand-in for shadcn's ui/field.tsx FieldGroup (no ui/field package exists
+// in this registry — see the phase-5 report). Emits the same data-slot and
+// structural classes; the `cn-field-group` hook class is kept for fidelity
+// but its per-style @apply rules don't exist here, so the style-nova
+// defaults (gap-5) are baked in as literal utilities.
+import { cn } from "@marko-ui/registry/lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<div
+  ...rest
+  data-slot="field-group"
+  class=cn(
+    "cn-field-group group/field-group @container/field-group flex w-full flex-col gap-5",
+    className,
+  )
+>
+  <${content}/>
+</div>

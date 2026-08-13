@@ -1,0 +1,62 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/contribution-history.tsx
+// Chart deviation: recharts BarChart replaced by the static lib/bar-chart
+// stand-in (same 6-month data, var(--chart-2)); the source's JS
+// isRounded-by-style is expressed as style-lyra/style-sera classes inside
+// the helper.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Item from "@marko-ui/registry/ui/item/item.marko";
+import ItemContent from "@marko-ui/registry/ui/item/content.marko";
+import ItemDescription from "@marko-ui/registry/ui/item/description.marko";
+import BarChart from "../../lib/bar-chart.marko";
+
+static const DATA = [800, 1100, 900, 1300, 750, 1400];
+static const MONTHS = ["Dec", "Jan", "Feb", "Mar", "Apr", "May"];
+
+<Card>
+  <CardHeader>
+    <CardTitle>Contribution History</CardTitle>
+    <CardDescription>Last 6 months of activity</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <BarChart
+      values=DATA
+      labels=MONTHS
+      radius=6
+      maxBarSize=40
+      class="h-[200px] w-full"
+    />
+  </CardContent>
+  <CardContent>
+    <div class="grid w-full grid-cols-1 gap-3 md:grid-cols-2">
+      <Item variant="muted" class="flex-col items-stretch">
+        <ItemContent class="gap-1">
+          <ItemDescription class="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+            Upcoming
+          </ItemDescription>
+          <span class="cn-font-heading text-lg font-semibold">
+            May 25, 2024
+          </span>
+          <span class="text-sm text-muted-foreground">$1,000 scheduled</span>
+        </ItemContent>
+      </Item>
+      <Item variant="muted" class="flex-col items-stretch">
+        <ItemContent class="gap-1">
+          <ItemDescription class="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+            Auto-Save Plan
+          </ItemDescription>
+          <span class="cn-font-heading text-lg font-semibold">Accelerated</span>
+          <span class="text-sm text-muted-foreground">Recurring weekly</span>
+        </ItemContent>
+      </Item>
+    </div>
+  </CardContent>
+  <CardFooter>
+    <Button class="w-full">View Full Report</Button>
+  </CardFooter>
+</Card>

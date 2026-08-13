@@ -1,0 +1,59 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/dividend-income.tsx
+// Chart deviation: per-holding recharts mini BarCharts replaced by the
+// static lib/bar-chart stand-in (same quarterly data, var(--chart-2)).
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardAction from "@marko-ui/registry/ui/card/action.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Item from "@marko-ui/registry/ui/item/item.marko";
+import ItemContent from "@marko-ui/registry/ui/item/content.marko";
+import ItemDescription from "@marko-ui/registry/ui/item/description.marko";
+import ItemGroup from "@marko-ui/registry/ui/item/group.marko";
+import ItemTitle from "@marko-ui/registry/ui/item/title.marko";
+import BarChart from "../../lib/bar-chart.marko";
+import Icon from "../../lib/icon.marko";
+
+static const HOLDINGS = [
+  { name: "Vanguard VIG", shares: "450 Shares", amount: "$1,842.10", data: [380, 420, 390, 652] },
+  { name: "S&P 500 VOO", shares: "112 Shares", amount: "$928.40", data: [180, 210, 320, 218] },
+  { name: "Apple AAPL", shares: "85 Shares", amount: "$340.00", data: [60, 70, 120, 90] },
+  { name: "Realty Income", shares: "320 Shares", amount: "$1,139.50", data: [240, 260, 280, 360] },
+];
+
+<Card>
+  <CardHeader>
+    <CardTitle>Q2 Dividend Income</CardTitle>
+    <CardDescription>
+      Quarterly dividend payouts across your portfolio holdings.
+    </CardDescription>
+    <CardAction>
+      <Button variant="ghost" size="icon-sm" class="bg-muted">
+        <Icon name="XIcon"/>
+      </Button>
+    </CardAction>
+  </CardHeader>
+  <CardContent>
+    <ItemGroup>
+      <for|holding| of=HOLDINGS by=(holding) => holding.name>
+        <Item variant="muted">
+          <ItemContent>
+            <ItemTitle>${holding.name}</ItemTitle>
+            <ItemDescription>${holding.shares}</ItemDescription>
+          </ItemContent>
+          <BarChart
+            values=holding.data
+            radius=3
+            gapClass="gap-0.5"
+            class="hidden h-8 w-24 md:flex"
+          />
+          <span class="hidden text-sm font-semibold tabular-nums md:block">
+            ${holding.amount}
+          </span>
+        </Item>
+      </for>
+    </ItemGroup>
+  </CardContent>
+</Card>

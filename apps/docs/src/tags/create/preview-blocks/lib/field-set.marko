@@ -1,0 +1,15 @@
+// Stand-in for shadcn's ui/field.tsx FieldSet — see field-group.marko's
+// header. Nova defaults baked in.
+import { cn } from "@marko-ui/registry/lib/utils.ts";
+
+export interface Input extends Marko.Input<"fieldset"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<fieldset
+  ...rest
+  data-slot="field-set"
+  class=cn("cn-field-set flex flex-col gap-4", className)
+>
+  <${content}/>
+</fieldset>

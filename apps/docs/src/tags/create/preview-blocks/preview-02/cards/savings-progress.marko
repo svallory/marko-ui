@@ -1,0 +1,76 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/savings-progress.tsx
+// Chart deviation: recharts PieChart donut replaced by a static SVG donut
+// (same 24k/6k split, same var(--chart-2)/var(--chart-1) color hooks and
+// center label).
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+
+// Donut geometry: r=41.25 (mid of inner 70 / outer 95 scaled to a 110
+// viewBox), stroke ~12.5 — saved = 80% of the circumference.
+static const R = 41.25;
+static const C = 2 * Math.PI * R;
+static const SAVED_FRACTION = 24000 / 30000;
+
+<Card>
+  <CardContent>
+    <div class="mx-auto aspect-square max-h-[220px]" data-slot="chart">
+      <svg viewBox="0 0 110 110" class="size-full -rotate-90">
+        <circle
+          cx="55"
+          cy="55"
+          r=R
+          fill="none"
+          stroke="var(--chart-1)"
+          stroke-width="12.5"
+        />
+        <circle
+          cx="55"
+          cy="55"
+          r=R
+          fill="none"
+          stroke="var(--chart-2)"
+          stroke-width="12.5"
+          stroke-dasharray=`${C * SAVED_FRACTION} ${C}`
+        />
+        <g class="rotate-90" style={ "transform-origin": "55px 55px" }>
+          <text
+            x="55"
+            y="51"
+            text-anchor="middle"
+            dominant-baseline="middle"
+            class="fill-foreground text-[13px] font-bold"
+          >
+            $24,000
+          </text>
+          <text
+            x="55"
+            y="64"
+            text-anchor="middle"
+            dominant-baseline="middle"
+            class="fill-muted-foreground text-[6px]"
+          >
+            80% of $30,000
+          </text>
+        </g>
+      </svg>
+    </div>
+  </CardContent>
+  <CardFooter class="flex-col gap-0">
+    <div class="flex w-full items-center justify-between py-3">
+      <span class="text-sm text-muted-foreground">Projected Finish</span>
+      <span class="text-sm font-semibold">October 2024</span>
+    </div>
+    <Separator/>
+    <div class="flex w-full items-center justify-between py-3">
+      <span class="text-sm text-muted-foreground">Monthly Average</span>
+      <span class="text-sm font-semibold tabular-nums">$1,250</span>
+    </div>
+    <Separator/>
+    <div class="flex w-full items-center justify-between py-3">
+      <span class="text-sm text-muted-foreground">Top Contributor</span>
+      <span class="text-sm font-semibold">Auto-Transfer</span>
+    </div>
+  </CardFooter>
+</Card>

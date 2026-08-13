@@ -1,0 +1,103 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/stock-performance.tsx
+// Chart deviation: recharts AreaChart replaced by a static SVG area/line
+// (same per-ticker data, var(--chart-1) color + gradient fill; grid lines
+// approximated with dashed horizontal rules). Ticker switching still works
+// via the registry Combobox and repaints the static chart.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Combobox from "@marko-ui/registry/ui/combobox/combobox.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+import Field from "../../lib/field.marko";
+import FieldGroup from "../../lib/field-group.marko";
+import FieldLabel from "../../lib/field-label.marko";
+
+static const TICKERS = ["VOO", "VIG", "AAPL", "MSFT", "GOOGL", "AMZN", "TSLA"].map(
+  (t) => ({ value: t, label: t }),
+);
+
+static const CHART_DATA: Record<string, number[]> = {
+  VOO: [412, 438, 395, 450, 420, 462],
+  AAPL: [185, 210, 172, 198, 178, 215],
+};
+
+static const DEFAULT_DATA = [100, 118, 95, 125, 108, 130];
+
+// Map data points to a 300x100 SVG path (x evenly spaced, y normalized to
+// [min..max] with 8% padding).
+static function buildPoints(values: number[]) {
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || 1;
+  const pad = span * 0.08;
+  const lo = min - pad;
+  const hi = max + pad;
+  return values.map((v, i) => {
+    const x = (i / (values.length - 1)) * 300;
+    const y = 100 - ((v - lo) / (hi - lo)) * 100;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+}
+
+<let/ticker="VOO"/>
+
+<const/data=(CHART_DATA[ticker] ?? DEFAULT_DATA)/>
+<const/points=buildPoints(data)/>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Stock Performance</CardTitle>
+    <CardDescription>6-month price history.</CardDescription>
+  </CardHeader>
+  <CardContent class="flex flex-col gap-4">
+    <FieldGroup>
+      <Field>
+        <FieldLabel for="ticker-select">Ticker</FieldLabel>
+        <Combobox
+          id="ticker-select"
+          items=TICKERS
+          value=[ticker]
+          placeholder="Search ticker..."
+          valueChange=(value: string[]) => {
+            if (value[0]) ticker = value[0];
+          }
+        />
+      </Field>
+    </FieldGroup>
+    <Separator class="style-sera:hidden"/>
+    <div class="h-[200px] w-full" data-slot="chart">
+      <svg viewBox="0 0 300 100" preserveAspectRatio="none" class="size-full">
+        <defs>
+          <linearGradient id="fillPrice" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--chart-1)" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="var(--chart-1)" stop-opacity="0.05"/>
+          </linearGradient>
+        </defs>
+        <for|y| of=[25, 50, 75]>
+          <line
+            x1="0"
+            y1=y
+            x2="300"
+            y2=y
+            stroke="var(--border)"
+            stroke-width="0.5"
+            stroke-dasharray="3 3"
+          />
+        </for>
+        <polygon
+          points=`0,100 ${points.join(" ")} 300,100`
+          fill="url(#fillPrice)"
+        />
+        <polyline
+          points=points.join(" ")
+          fill="none"
+          stroke="var(--chart-1)"
+          stroke-width="1.5"
+          vector-effect="non-scaling-stroke"
+        />
+      </svg>
+    </div>
+  </CardContent>
+</Card>

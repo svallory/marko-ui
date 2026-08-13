@@ -1,0 +1,31 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/empty-explore-catalog.tsx
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import Empty from "@marko-ui/registry/ui/empty/empty.marko";
+import EmptyContent from "@marko-ui/registry/ui/empty/content.marko";
+import EmptyDescription from "@marko-ui/registry/ui/empty/description.marko";
+import EmptyHeader from "@marko-ui/registry/ui/empty/header.marko";
+import EmptyMedia from "@marko-ui/registry/ui/empty/media.marko";
+import EmptyTitle from "@marko-ui/registry/ui/empty/title.marko";
+import Icon from "../../lib/icon.marko";
+
+<Card>
+  <CardContent>
+    <Empty class="p-4">
+      <EmptyMedia variant="icon">
+        <Icon name="AudioLinesIcon"/>
+      </EmptyMedia>
+      <EmptyHeader>
+        <EmptyTitle>Explore Catalog</EmptyTitle>
+        <EmptyDescription>
+          Check your ISRC codes, metadata, and visual assets before going
+          live.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button>View Catalog</Button>
+      </EmptyContent>
+    </Empty>
+  </CardContent>
+</Card>

@@ -1,0 +1,25 @@
+// Stand-in for shadcn's ui/field.tsx FieldSeparator — see
+// field-group.marko's header. Nova defaults baked in.
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+import { cn } from "@marko-ui/registry/lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<div
+  ...rest
+  data-slot="field-separator"
+  data-content=Boolean(content)
+  class=cn("cn-field-separator relative -my-2 h-5 text-sm", className)
+>
+  <Separator class="absolute inset-0 top-1/2"/>
+  <if=content>
+    <span
+      class="cn-field-separator-content relative mx-auto block w-fit bg-background px-2 text-muted-foreground"
+      data-slot="field-separator-content"
+    >
+      <${content}/>
+    </span>
+  </if>
+</div>

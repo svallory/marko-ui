@@ -1,0 +1,97 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/notification-settings.tsx
+// API adaptation: this registry's Checkbox is a Zag machine with a content
+// label slot; the select-all/indeterminate logic is preserved via <let>.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Checkbox from "@marko-ui/registry/ui/checkbox/checkbox.marko";
+import Field from "../../lib/field.marko";
+import FieldContent from "../../lib/field-content.marko";
+import FieldDescription from "../../lib/field-description.marko";
+import FieldGroup from "../../lib/field-group.marko";
+import FieldLabel from "../../lib/field-label.marko";
+
+static const NOTIFICATIONS = [
+  {
+    id: "transactions",
+    label: "Transaction alerts",
+    description: "Deposits, withdrawals, and transfers.",
+    defaultChecked: true,
+  },
+  {
+    id: "security",
+    label: "Security alerts",
+    description: "Login attempts and account changes.",
+    defaultChecked: true,
+  },
+  {
+    id: "goals",
+    label: "Goal milestones",
+    description: "Updates at 25%, 50%, 75%, and 100%.",
+    defaultChecked: false,
+  },
+  {
+    id: "market",
+    label: "Market updates",
+    description: "Daily portfolio summary and price alerts.",
+    defaultChecked: false,
+  },
+];
+
+<let/checked={
+  transactions: true,
+  security: true,
+  goals: false,
+  market: false,
+} as Record<string, boolean>/>
+
+<const/allChecked=NOTIFICATIONS.every((n) => checked[n.id])/>
+<const/someChecked=(NOTIFICATIONS.some((n) => checked[n.id]) && !allChecked)/>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Notifications</CardTitle>
+    <CardDescription>
+      Choose what you want to be notified about.
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    <FieldGroup>
+      <Field orientation="horizontal">
+        <Checkbox
+          id="notify-all"
+          checked=(someChecked ? "indeterminate" : allChecked)
+          checkedChange=(value: boolean | "indeterminate") => {
+            const next = value === true;
+            checked = Object.fromEntries(NOTIFICATIONS.map((n) => [n.id, next]));
+          }
+        />
+        <FieldContent>
+          <FieldLabel for="notify-all">Select all</FieldLabel>
+        </FieldContent>
+      </Field>
+      <for|n| of=NOTIFICATIONS by=(n) => n.id>
+        <Field orientation="horizontal">
+          <Checkbox
+            id=`notify-${n.id}`
+            checked=Boolean(checked[n.id])
+            checkedChange=(value: boolean | "indeterminate") => {
+              checked = { ...checked, [n.id]: value === true };
+            }
+          />
+          <FieldContent>
+            <FieldLabel for=`notify-${n.id}`>${n.label}</FieldLabel>
+            <FieldDescription>${n.description}</FieldDescription>
+          </FieldContent>
+        </Field>
+      </for>
+    </FieldGroup>
+  </CardContent>
+  <CardFooter>
+    <Button class="w-full">Save Preferences</Button>
+  </CardFooter>
+</Card>

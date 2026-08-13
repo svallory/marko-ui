@@ -1,0 +1,50 @@
+// Static stand-in for shadcn's ChartContainer + recharts <BarChart> as used
+// by the preview showcase cards. This codebase has no recharts dependency
+// and no ui/chart primitive (noted deviation — see the phase-5 report), so
+// this renders the same hardcoded data as proportional flex bars, colored
+// through the same CSS var hook (default var(--chart-2)) so theme changes
+// still repaint it live. Rounded bar tops follow the source's
+// isRounded = style not in {lyra, sera} via style-variant classes.
+export interface Input {
+  values: number[];
+  labels?: string[];
+  color?: string;
+  class?: string;
+  /** Corner radius px for bar tops (source's recharts radius). */
+  radius?: number;
+  /** Max bar width (px), mirrors recharts maxBarSize. */
+  maxBarSize?: number;
+  /** Gap class between bars. */
+  gapClass?: string;
+  labelClass?: string;
+}
+
+<const/max=Math.max(...input.values, 1)/>
+<const/color=input.color ?? "var(--chart-2)"/>
+<const/radius=input.radius ?? 4/>
+
+<div class=`flex w-full flex-col ${input.class ?? ""}` data-slot="chart">
+  <div class=`flex flex-1 items-end justify-around ${input.gapClass ?? "gap-2"}`>
+    <for|value, i| of=input.values>
+      <div class="flex h-full flex-1 items-end justify-center">
+        <div
+          class="w-full style-lyra:rounded-none! style-sera:rounded-none!"
+          style={
+            "height": `${Math.round((value / max) * 100)}%`,
+            "background-color": color,
+            "border-top-left-radius": `${radius}px`,
+            "border-top-right-radius": `${radius}px`,
+            "max-width": input.maxBarSize ? `${input.maxBarSize}px` : undefined,
+          }
+        />
+      </div>
+    </for>
+  </div>
+  <if=input.labels>
+    <div class=`flex justify-around pt-1.5 text-muted-foreground ${input.labelClass ?? "text-xs"}`>
+      <for|label| of=(input.labels ?? [])>
+        <span class="flex-1 text-center">${label}</span>
+      </for>
+    </div>
+  </if>
+</div>

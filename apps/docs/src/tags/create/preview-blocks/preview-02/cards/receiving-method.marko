@@ -1,0 +1,98 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/receiving-method.tsx
+// Deviation: the registry RadioGroup is items-driven (plain string labels)
+// and cannot host the source's rich FieldTitle/FieldDescription option
+// cards, so the two radio option cards are hand-rolled with the same
+// classes and a shared <let> for the checked state.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardAction from "@marko-ui/registry/ui/card/action.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Input from "@marko-ui/registry/ui/input/input.marko";
+import Field from "../../lib/field.marko";
+import FieldContent from "../../lib/field-content.marko";
+import FieldDescription from "../../lib/field-description.marko";
+import FieldGroup from "../../lib/field-group.marko";
+import FieldLabel from "../../lib/field-label.marko";
+import FieldLegend from "../../lib/field-legend.marko";
+import FieldSet from "../../lib/field-set.marko";
+import FieldTitle from "../../lib/field-title.marko";
+import Icon from "../../lib/icon.marko";
+
+static const METHODS = [
+  { value: "bank", id: "method-bank", title: "Bank Transfer", description: "SWIFT / IBAN", descriptionClass: "" },
+  { value: "paypal", id: "method-paypal", title: "PayPal", description: "Instant Payout", descriptionClass: "line-clamp-1" },
+];
+
+<let/method="bank"/>
+
+<Card>
+  <CardHeader>
+    <CardDescription>Payout Preferences</CardDescription>
+    <CardTitle>Receiving Method</CardTitle>
+    <CardAction>
+      <Button variant="ghost" size="icon-sm" class="bg-muted">
+        <Icon name="XIcon"/>
+      </Button>
+    </CardAction>
+  </CardHeader>
+  <CardContent>
+    <FieldGroup>
+      <Field>
+        <FieldLabel for="account-holder">Account Holder Name</FieldLabel>
+        <Input id="account-holder" value="Synthetic Horizons Music LLC"/>
+      </Field>
+      <FieldSet>
+        <FieldLegend variant="label">Receiving Method</FieldLegend>
+        <div
+          role="radiogroup"
+          class="grid grid-cols-1 items-start gap-3 md:grid-cols-2 style-sera:grid-cols-1"
+        >
+          <for|option| of=METHODS by=(option) => option.value>
+            <FieldLabel for=option.id>
+              <Field orientation="horizontal" class="pb-2.5">
+                <span
+                  role="radio"
+                  aria-checked=(method === option.value)
+                  data-slot="radio-group-item"
+                  class="border-input text-primary dark:bg-input/30 flex aspect-square size-4 shrink-0 items-center justify-center rounded-full border shadow-xs outline-none"
+                >
+                  <if=(method === option.value)>
+                    <span class="relative size-2 rounded-full bg-primary"/>
+                  </if>
+                </span>
+                <input
+                  type="radio"
+                  id=option.id
+                  name="receiving-method"
+                  value=option.value
+                  checked=(method === option.value)
+                  class="sr-only"
+                  on-change() { method = option.value; }
+                />
+                <FieldContent>
+                  <FieldTitle>${option.title}</FieldTitle>
+                  <FieldDescription class=option.descriptionClass>
+                    ${option.description}
+                  </FieldDescription>
+                </FieldContent>
+              </Field>
+            </FieldLabel>
+          </for>
+        </div>
+      </FieldSet>
+      <Field>
+        <FieldLabel for="iban">IBAN / Account Number</FieldLabel>
+        <Input id="iban" placeholder="DE89 3704 0044 ...."/>
+      </Field>
+    </FieldGroup>
+  </CardContent>
+  <CardFooter>
+    <Button class="w-full" disabled>
+      Save Payout Settings
+    </Button>
+  </CardFooter>
+</Card>
