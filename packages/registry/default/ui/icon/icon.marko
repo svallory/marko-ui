@@ -36,7 +36,16 @@ export interface Input extends Marko.Input<"svg"> {
   class?: string;
 }
 
-<const/library=(input.library ?? "lucide") as IconLibraryName/>
+// `input.library` is typed as IconLibraryName, but every call site that
+// actually matters (icon-placeholder.marko, preview-blocks/lib/icon.marko)
+// derives it from `$global.url.searchParams.get("iconLibrary")` with only a
+// TS `as IconLibraryName` cast — no runtime check. A malformed/stale/typo'd
+// `?iconLibrary=` query value would otherwise reach `ICON_WRAPPER_ATTRS[library]`
+// as `undefined` and throw on `wrapperAttrs.viewBox` below, crashing SSR for
+// the whole request. Guard here, the single choke point every icon render
+// passes through, rather than chasing every upstream cast site.
+<const/requestedLibrary=input.library ?? "lucide"/>
+<const/library=(requestedLibrary in ICON_WRAPPER_ATTRS ? requestedLibrary : "lucide") as IconLibraryName/>
 <const/{ name, library: _library, class: className, ...rest }=input/>
 <const/wrapperAttrs=ICON_WRAPPER_ATTRS[library]/>
 

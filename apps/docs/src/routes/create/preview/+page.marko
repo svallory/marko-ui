@@ -173,6 +173,14 @@ static function applyParams(params: DesignSystemSearchParams) {
 static let latestRequestedLibrary: IconLibraryName | null = null;
 
 static async function applyIconLibrary(iconLibrary: IconLibraryName) {
+  // `iconLibrary` arrives via postMessage from the parent frame, which only
+  // ever TS-casts it (design-system.marko's decoded URL/preset state) — no
+  // runtime check. An unrecognized value must not reach ICON_WRAPPER_ATTRS[]
+  // as undefined (would throw on `.viewBox` below); fall back to lucide,
+  // matching icon.marko's own SSR-side guard for the same untrusted input.
+  if (!(iconLibrary in ICON_WRAPPER_ATTRS)) {
+    iconLibrary = "lucide";
+  }
   latestRequestedLibrary = iconLibrary;
   const attrs = ICON_WRAPPER_ATTRS[iconLibrary];
   const icons = document.querySelectorAll<SVGSVGElement>("[data-icon-name]");
