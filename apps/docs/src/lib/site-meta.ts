@@ -109,10 +109,16 @@ const ZAG_ADAPTER_SUBPAGES: Record<string, { title: string; description: string 
 };
 Object.assign(ROUTE_META, ZAG_ADAPTER_SUBPAGES);
 
-// Override the two docs pages whose real copy is richer than their nav label.
+// Override docs pages whose real copy is richer than their nav label.
 ROUTE_META["/docs/creating-components"] = {
   title: "How to Create a Marko-Zag Component",
   description: "The complete recipe, using Switch — the reference implementation — as the worked example.",
+};
+
+ROUTE_META["/docs/icons"] = {
+  title: "Icons",
+  description:
+    "A single Icon component that renders one of 191 abstract names against any of five icon libraries — real SVG in the initial HTML, zero client JS required to paint.",
 };
 
 for (const category of BLOCK_CATEGORIES) {

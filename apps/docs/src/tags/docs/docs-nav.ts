@@ -31,6 +31,7 @@ export const DOCS_NAV: DocsNavSection[] = [
     items: [
       { href: "/docs/theming", label: "Theming" },
       { href: "/docs/dark-mode", label: "Dark Mode" },
+      { href: "/docs/icons", label: "Icons" },
     ],
   },
   {

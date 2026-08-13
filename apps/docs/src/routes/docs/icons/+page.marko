@@ -1,0 +1,142 @@
+// Icons guide — no shadcn equivalent exists for this page (their icon
+// system is documented only implicitly via the /create picker and the
+// registry/icons source itself), so this is ours: what the system is, how
+// the abstract-name space works, and how to use it in app code. Structure
+// mirrors ../theming/+page.marko and ../dark-mode/+page.marko (prose +
+// code-block sections keyed to a hand-authored TOC).
+import "../../../tags/docs/docs-article.marko";
+import "../../../tags/docs/code-block.marko";
+
+static const TOC = [
+  { id: "overview", label: "Overview" },
+  { id: "libraries", label: "Supported Libraries" },
+  { id: "abstract-names", label: "The Abstract Name Space" },
+  { id: "usage", label: "Usage" },
+  { id: "create-integration", label: "The /create Integration" },
+  { id: "bundle-size", label: "Bundle Size" },
+];
+
+static const USAGE = `import Icon from "@/components/ui/icon/icon.marko";
+
+<Icon name="SearchIcon"/>
+<Icon name="TrashIcon" library="tabler"/>
+<Icon name="HeartIcon" class="size-6 text-destructive"/>`;
+
+static const REGEN = `bun packages/registry/scripts/build-icons.ts`;
+
+<docs-article
+  title="Icons"
+  description="A single Icon component that renders one of 191 abstract names against any of five icon libraries — real SVG in the initial HTML, zero client JS required to paint."
+  href="/docs/icons"
+  toc=TOC
+>
+  <h2 id="overview">Overview</h2>
+
+  <p>
+    marko-ui ships one <code>Icon</code> component instead of a separate icon component per
+    library. Every icon is server-rendered: the SVG inner markup is resolved at request time and
+    interpolated directly into the response with Marko's unescaped-interpolation syntax, so an
+    icon is real markup in the initial HTML — there is no client-side
+    fetch, no <code>.innerHTML</code> injection, and no loading flash. Switching which library an
+    already-rendered page uses (the <a href="/create">/create</a> picker) is the one exception,
+    and it is opt-in, DOM-patch-based client code — see
+    <a href="#create-integration">the section below</a>.
+  </p>
+
+  <p>
+    The data an icon renders from is never user input. Every library's markup is extracted from
+    its npm package at <strong>build time</strong> by a generator script and committed as plain
+    TypeScript maps, so there is no code path where a request parameter reaches SVG output.
+  </p>
+
+  <h2 id="libraries">Supported Libraries</h2>
+
+  <p>Five icon libraries are supported, selectable per-icon via the <code>library</code> prop:</p>
+
+  <table>
+    <thead>
+      <tr><th>Library</th><th><code>library</code> value</th><th>Style</th><th>License</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Lucide</td><td><code>lucide</code></td><td>Stroke, 24×24</td><td>ISC</td></tr>
+      <tr><td>Tabler Icons</td><td><code>tabler</code></td><td>Stroke, 24×24</td><td>MIT</td></tr>
+      <tr><td>HugeIcons</td><td><code>hugeicons</code></td><td>Stroke, 24×24</td><td>MIT</td></tr>
+      <tr><td>Phosphor Icons</td><td><code>phosphor</code></td><td>Filled outline, 256×256</td><td>MIT</td></tr>
+      <tr><td>Remix Icon</td><td><code>remixicon</code></td><td>Filled, 24×24</td><td>Apache-2.0</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    <code>lucide</code> is the default when <code>library</code> is omitted. Phosphor's icons look
+    like outlines but are actually solid <code>fill="currentColor"</code> paths with the negative
+    space cut out of the path geometry — every library ends up honoring <code>currentColor</code>
+    for coloring and a Tailwind <code>size-*</code> utility for sizing the same way, regardless of
+    whether it draws with <code>stroke</code> or <code>fill</code> internally.
+  </p>
+
+  <h2 id="abstract-names">The Abstract Name Space</h2>
+
+  <p>
+    Every icon has one <strong>abstract name</strong> — e.g. <code>SearchIcon</code> — shared
+    across all five libraries. There are 191 abstract names, vendored from shadcn/ui's own
+    curated abstract-name → per-library-symbol mapping. Not every name has an entry for every
+    library (five names are lucide-only); an icon requested from a library it has no mapping for
+    falls back to a placeholder square glyph rather than rendering nothing.
+  </p>
+
+  <p>
+    The actual SVG markup — and the <code>IconName</code>/<code>IconLibraryName</code> TypeScript
+    types — are generated, not hand-maintained. The generator reads each library's installed npm
+    package (<code>lucide-static</code>, <code>@tabler/icons</code>,
+    <code>@phosphor-icons/core</code>, <code>remixicon</code>,
+    <code>@hugeicons/core-free-icons</code>), resolves each abstract name's per-library symbol to
+    a real file via deterministic name transforms, and writes one
+    <code>__&lt;library&gt;__.ts</code> map of abstract name → inner SVG markup per library (plus
+    a shared <code>icon-names.ts</code> for the types). Regenerate after bumping any of the five
+    icon packages, or after editing the source mapping:
+  </p>
+
+  <code-block language="bash" filename="packages/registry/default/ui/icon/" code=REGEN/>
+
+  <p>
+    The generated <code>__&lt;library&gt;__.ts</code> files are committed, like every other
+    generated artifact in this registry — re-running the script should produce a byte-identical
+    diff against what's committed if nothing upstream changed.
+  </p>
+
+  <h2 id="usage">Usage</h2>
+
+  <code-block language="marko" filename="app code" code=USAGE/>
+
+  <p>
+    <code>name</code> is the only required prop. <code>library</code> defaults to
+    <code>"lucide"</code>. <code>class</code> merges onto the rendered <code>&lt;svg&gt;</code>
+    the same way it does on every other registry component — reach for a <code>size-*</code>
+    utility to resize and a <code>text-*</code> utility to recolor, since every library's wrapper
+    sets <code>fill</code> or <code>stroke</code> to <code>currentColor</code>.
+  </p>
+
+  <h2 id="create-integration">The /create Integration</h2>
+
+  <p>
+    The <a href="/create">/create</a> page's Icon Library picker is the one place a page needs to
+    change libraries <em>after</em> it has already been server-rendered. There is no React-style
+    context to re-render through, so the picker's selection is threaded through
+    <code>postMessage</code> to the preview iframe, which lazily <code>import()</code>s only the
+    newly-selected library's generated map (never the other four) and walks every
+    <code>[data-icon-name]</code> element in the page, patching its wrapper attributes and inner
+    markup in place. The SSR path and this client-side swap path share the exact same rendering
+    logic, so they can never draw a given (name, library) pair differently.
+  </p>
+
+  <h2 id="bundle-size">Bundle Size</h2>
+
+  <p>
+    Server-side rendering statically imports all five generated maps at once (~360KB of source
+    combined) so that a single request can resolve whichever library it needs synchronously —
+    this is fine because that code never ships to the browser. Client code (the <code>/create</code>
+    preview page only) instead dynamically imports one library's map at a time, and only when that
+    library is actually selected, keeping the two paths' import strategies intentionally different
+    while sharing one rendering implementation.
+  </p>
+</docs-article>
