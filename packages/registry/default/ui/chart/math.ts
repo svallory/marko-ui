@@ -293,6 +293,27 @@ export interface XTick {
   x: number;
 }
 
+/**
+ * Thins a list of x-position ticks so consecutive kept ticks are at least
+ * `minGap` pixels apart — recharts' XAxis `minTickGap` (used by every
+ * shadcn chart with a dense date-series x axis, e.g. chart-area-interactive's
+ * 90 daily points). Always keeps the first tick; each subsequent tick is
+ * kept only if it's `minGap` past the last KEPT tick's x position.
+ */
+export function thinTicksByGap<T extends { x: number }>(ticks: T[], minGap: number): T[] {
+  if (minGap <= 0 || ticks.length === 0) return ticks;
+  const kept: T[] = [ticks[0]];
+  let lastX = ticks[0].x;
+  for (let i = 1; i < ticks.length; i++) {
+    const tick = ticks[i];
+    if (tick.x - lastX >= minGap) {
+      kept.push(tick);
+      lastX = tick.x;
+    }
+  }
+  return kept;
+}
+
 export interface YTick {
   value: number;
   y: number;

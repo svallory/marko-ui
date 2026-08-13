@@ -11,6 +11,7 @@ import {
   areaPaths,
   cartesianCtx,
   stackSeries,
+  thinTicksByGap,
   type CartesianCtx,
   type CurveType,
   type Margin,
@@ -58,6 +59,8 @@ export interface Input {
   legend?: boolean | "top" | "bottom";
   /** Applied to axis tick labels only (like recharts' XAxis tickFormatter). */
   xTickFormatter?: (value: string) => string;
+  /** Minimum pixel gap between kept x-axis ticks (recharts XAxis minTickGap) — thins dense date-series ticks. */
+  xTickMinGap?: number;
   /** Applied to the tooltip's label row only (recharts ChartTooltipContent labelFormatter). */
   tooltipLabelFormatter?: (value: string) => string;
   /** "expand" ⇒ 100% stacked (recharts stackOffset="expand"). Requires stacked series. */
@@ -214,10 +217,11 @@ static function pointerIndex(
 // scales inside ctx are not serializable, so precompute per-index geometry.
 <const/centers=pointPositions(ctx, data.length)/>
 <const/areas=buildAreas(ctx, seriesList, centers, stackOffset)/>
-<const/ticks=data.map((row, index) => ({
+<const/allTicks=data.map((row, index) => ({
   value: (xTickFormatter ? xTickFormatter(String(row[xKey])) : String(row[xKey])),
   x: centers[index] ?? 0,
 }))/>
+<const/ticks=(input.xTickMinGap ? thinTicksByGap(allTicks, input.xTickMinGap) : allTicks)/>
 <const/gradients=areas.filter((geom) => geom.gradient)/>
 <const/plotTop=ctx.plot.y/>
 <const/plotBottom=(ctx.plot.y + ctx.plot.height)/>

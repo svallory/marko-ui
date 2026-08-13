@@ -18,6 +18,7 @@ import {
   roundedRectPath,
   stackSeries,
   xTicks,
+  thinTicksByGap,
   horizontalCtx,
   hBandTicks,
   hBandCenter,
@@ -102,6 +103,8 @@ export interface Input {
   hideIndicator?: boolean;
   tickMargin?: number;
   xTickFormatter?: (value: string) => string;
+  /** Minimum pixel gap between kept x-axis ticks (recharts XAxis minTickGap) — thins dense date-series ticks. */
+  xTickMinGap?: number;
   /** Applied to the tooltip's label row only (recharts ChartTooltipContent labelFormatter). */
   tooltipLabelFormatter?: (value: string) => string;
   class?: string;
@@ -468,7 +471,8 @@ static function hFormatTicks(
   <const/multiSeries=(seriesList.length > 1 || stacked)/>
   <const/bars=(multiSeries ? computeBars(ctx, seriesList, stacked) : [])/>
   <const/singleBars=(multiSeries ? [] : computeSingleBars(ctx, singleKey, singleRadius))/>
-  <const/ticks=formatTicks(ctx, input.xTickFormatter)/>
+  <const/allTicks=formatTicks(ctx, input.xTickFormatter)/>
+<const/ticks=(input.xTickMinGap ? thinTicksByGap(allTicks, input.xTickMinGap) : allTicks)/>
   <const/rowsByIndex=tooltipRowsByIndex(ctx, seriesList, config)/>
   <const/labels=data.map((row) => (input.tooltipLabelFormatter ? input.tooltipLabelFormatter(String(row[xKey])) : String(row[xKey])))/>
   <const/lefts=tooltipLefts(ctx)/>

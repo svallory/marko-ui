@@ -15,6 +15,7 @@ import { configFor, seriesColor, type ChartConfig } from "./config.ts";
 import {
   cartesianCtx,
   linePath,
+  thinTicksByGap,
   type CartesianCtx,
   type CurveType,
   type Margin,
@@ -68,6 +69,8 @@ export interface Input {
   yAxis?: boolean;
   legend?: boolean | "top" | "bottom";
   xTickFormatter?: (value: string) => string;
+  /** Minimum pixel gap between kept x-axis ticks (recharts XAxis minTickGap) — thins dense date-series ticks. */
+  xTickMinGap?: number;
   /** Applied to the tooltip's label row only (recharts ChartTooltipContent labelFormatter). */
   tooltipLabelFormatter?: (value: string) => string;
   class?: string;
@@ -219,7 +222,8 @@ static function buildTooltipRows(
 })/>
 <const/centers=pointPositions(ctx, data.length)/>
 <const/renderSeries=buildSeries(seriesList, data, centers, ctx.y)/>
-<const/ticks=data.map((row, index) => ({ value: (formatter ? formatter(String(row[xKey])) : String(row[xKey])), x: centers[index] ?? 0 }))/>
+<const/allTicks=data.map((row, index) => ({ value: (formatter ? formatter(String(row[xKey])) : String(row[xKey])), x: centers[index] ?? 0 }))/>
+<const/ticks=(input.xTickMinGap ? thinTicksByGap(allTicks, input.xTickMinGap) : allTicks)/>
 <const/legendItems=seriesList.map((series) => ({ key: series.dataKey, label: labelOf(config, series.dataKey), color: seriesColor(series.dataKey) }))/>
 
 // Plain serializable arrays for the client-reactive region (see header note).
