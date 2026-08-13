@@ -11,42 +11,50 @@ export interface Input {
   class?: string;
 }
 
-<nav class=`flex flex-col gap-6 ${input.class ?? ""}` data-slot="components-sidebar">
+<nav class=`flex flex-col gap-4 no-scrollbar ${input.class ?? ""}` data-slot="components-sidebar">
   <for|section| of=DOCS_NAV by=(section) => section.title>
-    <div class="flex flex-col gap-1">
-      <div class="px-2 text-sm font-semibold text-foreground">${section.title}</div>
-      <for|item| of=section.items by=(item) => item.href>
-        <a
-          href=item.href
-          class="rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-        >
-          ${item.label}
-        </a>
-      </for>
+    <div class="flex flex-col p-2">
+      <div class="flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-muted-foreground">${section.title}</div>
+      <ul class="flex w-full min-w-0 flex-col gap-0.5">
+        <for|item| of=section.items by=(item) => item.href>
+          <li>
+            <a
+              href=item.href
+              class="relative flex h-[30px] w-fit items-center overflow-visible rounded-md border border-transparent px-2 text-[0.8rem] font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              ${item.label}
+            </a>
+          </li>
+        </for>
+      </ul>
     </div>
   </for>
 
-  <div class="flex flex-col gap-1">
-    <div class="px-2 text-sm font-semibold text-foreground">Components</div>
-    <for|component| of=SIDEBAR_COMPONENTS by=(component) => component.name>
-      <if=component.documented>
-        <a
-          href=`/docs/components/${component.name}`
-          aria-current=component.name === input.activeComponent ? "page" : undefined
-          data-active=component.name === input.activeComponent ? "" : undefined
-          class="rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground data-active:bg-accent data-active:font-medium data-active:text-foreground"
-        >
-          ${component.title}
-        </a>
-      </if>
-      <else>
-        <span
-          title="Documentation in progress"
-          class="cursor-default rounded-md px-2 py-1.5 text-sm text-muted-foreground/50"
-        >
-          ${component.title}
-        </span>
-      </else>
-    </for>
+  <div class="flex flex-col p-2">
+    <div class="flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-muted-foreground">Components</div>
+    <ul class="flex w-full min-w-0 flex-col gap-0.5">
+      <for|component| of=SIDEBAR_COMPONENTS by=(component) => component.name>
+        <li>
+          <if=component.documented>
+            <a
+              href=`/docs/components/${component.name}`
+              aria-current=component.name === input.activeComponent ? "page" : undefined
+              data-active=component.name === input.activeComponent ? "" : undefined
+              class="relative flex h-[30px] w-fit items-center overflow-visible rounded-md border border-transparent px-2 text-[0.8rem] font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground data-active:border-accent data-active:bg-accent data-active:font-medium"
+            >
+              ${component.title}
+            </a>
+          </if>
+          <else>
+            <span
+              title="Documentation in progress"
+              class="flex h-[30px] w-fit cursor-default items-center rounded-md px-2 text-[0.8rem] font-medium text-muted-foreground/50"
+            >
+              ${component.title}
+            </span>
+          </else>
+        </li>
+      </for>
+    </ul>
   </div>
 </nav>

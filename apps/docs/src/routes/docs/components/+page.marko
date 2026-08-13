@@ -21,13 +21,17 @@ static const TOC = [
 >
   <h2 id="all-components">All Components</h2>
 
-  <div data-not-typeset class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+  <!-- Grid gap/columns ported verbatim from shadcn's ComponentsList
+       (data/shadcn-ui/apps/v4/components/components-list.tsx): mt-8 grid
+       grid-cols-2 gap-4 md:grid-cols-3 md:gap-x-8 lg:gap-x-16 lg:gap-y-6
+       xl:gap-x-20. -->
+  <div data-not-typeset class="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-x-8 lg:gap-x-16 lg:gap-y-6 xl:gap-x-20">
     <for|component| of=SIDEBAR_COMPONENTS by=(component) => component.name>
       <if=(component.documented && !BEYOND_SET.has(component.name))>
-        <a href=`/docs/components/${component.name}` class="inline-flex items-center gap-2 font-medium text-muted-foreground underline-offset-4 !no-underline hover:text-foreground hover:!underline">${component.title}</a>
+        <a href=`/docs/components/${component.name}` class="inline-flex items-center gap-2 text-lg font-medium underline-offset-4 hover:underline md:text-base">${component.title}</a>
       </if>
       <else-if=!component.documented>
-        <span class="inline-flex items-center gap-2 font-medium text-muted-foreground/50" title="Documentation in progress">${component.title}</span>
+        <span class="inline-flex items-center gap-2 text-lg font-medium text-muted-foreground/50 md:text-base" title="Documentation in progress">${component.title}</span>
       </else-if>
     </for>
   </div>
@@ -36,10 +40,10 @@ static const TOC = [
 
   <p>Components marko-ui ships that shadcn/ui has no equivalent for.</p>
 
-  <div data-not-typeset class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+  <div data-not-typeset class="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-x-8 lg:gap-x-16 lg:gap-y-6 xl:gap-x-20">
     <for|component| of=SIDEBAR_COMPONENTS by=(component) => component.name>
       <if=(BEYOND_SET.has(component.name) && component.documented)>
-        <a href=`/docs/components/${component.name}` class="inline-flex items-center gap-2 font-medium text-muted-foreground underline-offset-4 !no-underline hover:text-foreground hover:!underline">${component.title}</a>
+        <a href=`/docs/components/${component.name}` class="inline-flex items-center gap-2 text-lg font-medium underline-offset-4 hover:underline md:text-base">${component.title}</a>
       </if>
     </for>
   </div>
