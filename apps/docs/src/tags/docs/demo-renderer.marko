@@ -75,6 +75,14 @@ import Demo_cascade_select_default from "../../demos/cascade-select/default.mark
 import Demo_cascade_select_default_value from "../../demos/cascade-select/default-value.marko";
 import Demo_cascade_select_disabled from "../../demos/cascade-select/disabled.marko";
 import Demo_cascade_select_disabled_items from "../../demos/cascade-select/disabled-items.marko";
+import Demo_chart_area_default from "../../demos/chart/area-default.marko";
+import Demo_chart_area_gradient from "../../demos/chart/area-gradient.marko";
+import Demo_chart_bar_default from "../../demos/chart/bar-default.marko";
+import Demo_chart_bar_multiple from "../../demos/chart/bar-multiple.marko";
+import Demo_chart_line_default from "../../demos/chart/line-default.marko";
+import Demo_chart_line_multiple from "../../demos/chart/line-multiple.marko";
+import Demo_chart_pie_donut from "../../demos/chart/pie-donut.marko";
+import Demo_chart_pie_simple from "../../demos/chart/pie-simple.marko";
 import Demo_checkbox_checkbox_checked from "../../demos/checkbox/checkbox-checked.marko";
 import Demo_checkbox_checkbox_controlled from "../../demos/checkbox/checkbox-controlled.marko";
 import Demo_checkbox_checkbox_demo from "../../demos/checkbox/checkbox-demo.marko";
@@ -150,6 +158,13 @@ import Demo_empty_empty_demo from "../../demos/empty/empty-demo.marko";
 import Demo_empty_empty_icon from "../../demos/empty/empty-icon.marko";
 import Demo_empty_empty_input_group from "../../demos/empty/empty-input-group.marko";
 import Demo_empty_empty_outline from "../../demos/empty/empty-outline.marko";
+import Demo_field_default from "../../demos/field/default.marko";
+import Demo_field_field_set from "../../demos/field/field-set.marko";
+import Demo_field_fieldset_demo from "../../demos/field/fieldset-demo.marko";
+import Demo_field_horizontal from "../../demos/field/horizontal.marko";
+import Demo_field_invalid from "../../demos/field/invalid.marko";
+import Demo_field_multiple_errors from "../../demos/field/multiple-errors.marko";
+import Demo_field_signup from "../../demos/field/signup.marko";
 import Demo_file_upload_file_upload_accept from "../../demos/file-upload/file-upload-accept.marko";
 import Demo_file_upload_file_upload_controlled from "../../demos/file-upload/file-upload-controlled.marko";
 import Demo_file_upload_file_upload_demo from "../../demos/file-upload/file-upload-demo.marko";
@@ -158,12 +173,6 @@ import Demo_floating_panel_floating_panel_constrained from "../../demos/floating
 import Demo_floating_panel_floating_panel_controlled from "../../demos/floating-panel/floating-panel-controlled.marko";
 import Demo_floating_panel_floating_panel_demo from "../../demos/floating-panel/floating-panel-demo.marko";
 import Demo_floating_panel_floating_panel_not_resizable from "../../demos/floating-panel/floating-panel-not-resizable.marko";
-import Demo_form_default from "../../demos/form/default.marko";
-import Demo_form_field_set from "../../demos/form/field-set.marko";
-import Demo_form_horizontal from "../../demos/form/horizontal.marko";
-import Demo_form_invalid from "../../demos/form/invalid.marko";
-import Demo_form_multiple_errors from "../../demos/form/multiple-errors.marko";
-import Demo_form_signup from "../../demos/form/signup.marko";
 import Demo_hover_card_custom_delays from "../../demos/hover-card/custom-delays.marko";
 import Demo_hover_card_default from "../../demos/hover-card/default.marko";
 import Demo_hover_card_disabled from "../../demos/hover-card/disabled.marko";
@@ -226,6 +235,9 @@ import Demo_menubar_menubar_controlled from "../../demos/menubar/menubar-control
 import Demo_menubar_menubar_danger from "../../demos/menubar/menubar-danger.marko";
 import Demo_menubar_menubar_demo from "../../demos/menubar/menubar-demo.marko";
 import Demo_menubar_menubar_disabled from "../../demos/menubar/menubar-disabled.marko";
+import Demo_native_select_default from "../../demos/native-select/default.marko";
+import Demo_native_select_disabled from "../../demos/native-select/disabled.marko";
+import Demo_native_select_groups from "../../demos/native-select/groups.marko";
 import Demo_navigation_menu_controlled from "../../demos/navigation-menu/controlled.marko";
 import Demo_navigation_menu_default from "../../demos/navigation-menu/default.marko";
 import Demo_navigation_menu_disabled from "../../demos/navigation-menu/disabled.marko";
@@ -439,6 +451,14 @@ export interface Input {
 <else-if=(input.demoId === "cascade-select/default-value")><Demo_cascade_select_default_value/></else-if>
 <else-if=(input.demoId === "cascade-select/disabled")><Demo_cascade_select_disabled/></else-if>
 <else-if=(input.demoId === "cascade-select/disabled-items")><Demo_cascade_select_disabled_items/></else-if>
+<else-if=(input.demoId === "chart/area-default")><Demo_chart_area_default/></else-if>
+<else-if=(input.demoId === "chart/area-gradient")><Demo_chart_area_gradient/></else-if>
+<else-if=(input.demoId === "chart/bar-default")><Demo_chart_bar_default/></else-if>
+<else-if=(input.demoId === "chart/bar-multiple")><Demo_chart_bar_multiple/></else-if>
+<else-if=(input.demoId === "chart/line-default")><Demo_chart_line_default/></else-if>
+<else-if=(input.demoId === "chart/line-multiple")><Demo_chart_line_multiple/></else-if>
+<else-if=(input.demoId === "chart/pie-donut")><Demo_chart_pie_donut/></else-if>
+<else-if=(input.demoId === "chart/pie-simple")><Demo_chart_pie_simple/></else-if>
 <else-if=(input.demoId === "checkbox/checkbox-checked")><Demo_checkbox_checkbox_checked/></else-if>
 <else-if=(input.demoId === "checkbox/checkbox-controlled")><Demo_checkbox_checkbox_controlled/></else-if>
 <else-if=(input.demoId === "checkbox/checkbox-demo")><Demo_checkbox_checkbox_demo/></else-if>
@@ -514,6 +534,13 @@ export interface Input {
 <else-if=(input.demoId === "empty/empty-icon")><Demo_empty_empty_icon/></else-if>
 <else-if=(input.demoId === "empty/empty-input-group")><Demo_empty_empty_input_group/></else-if>
 <else-if=(input.demoId === "empty/empty-outline")><Demo_empty_empty_outline/></else-if>
+<else-if=(input.demoId === "field/default")><Demo_field_default/></else-if>
+<else-if=(input.demoId === "field/field-set")><Demo_field_field_set/></else-if>
+<else-if=(input.demoId === "field/fieldset-demo")><Demo_field_fieldset_demo/></else-if>
+<else-if=(input.demoId === "field/horizontal")><Demo_field_horizontal/></else-if>
+<else-if=(input.demoId === "field/invalid")><Demo_field_invalid/></else-if>
+<else-if=(input.demoId === "field/multiple-errors")><Demo_field_multiple_errors/></else-if>
+<else-if=(input.demoId === "field/signup")><Demo_field_signup/></else-if>
 <else-if=(input.demoId === "file-upload/file-upload-accept")><Demo_file_upload_file_upload_accept/></else-if>
 <else-if=(input.demoId === "file-upload/file-upload-controlled")><Demo_file_upload_file_upload_controlled/></else-if>
 <else-if=(input.demoId === "file-upload/file-upload-demo")><Demo_file_upload_file_upload_demo/></else-if>
@@ -522,12 +549,6 @@ export interface Input {
 <else-if=(input.demoId === "floating-panel/floating-panel-controlled")><Demo_floating_panel_floating_panel_controlled/></else-if>
 <else-if=(input.demoId === "floating-panel/floating-panel-demo")><Demo_floating_panel_floating_panel_demo/></else-if>
 <else-if=(input.demoId === "floating-panel/floating-panel-not-resizable")><Demo_floating_panel_floating_panel_not_resizable/></else-if>
-<else-if=(input.demoId === "form/default")><Demo_form_default/></else-if>
-<else-if=(input.demoId === "form/field-set")><Demo_form_field_set/></else-if>
-<else-if=(input.demoId === "form/horizontal")><Demo_form_horizontal/></else-if>
-<else-if=(input.demoId === "form/invalid")><Demo_form_invalid/></else-if>
-<else-if=(input.demoId === "form/multiple-errors")><Demo_form_multiple_errors/></else-if>
-<else-if=(input.demoId === "form/signup")><Demo_form_signup/></else-if>
 <else-if=(input.demoId === "hover-card/custom-delays")><Demo_hover_card_custom_delays/></else-if>
 <else-if=(input.demoId === "hover-card/default")><Demo_hover_card_default/></else-if>
 <else-if=(input.demoId === "hover-card/disabled")><Demo_hover_card_disabled/></else-if>
@@ -590,6 +611,9 @@ export interface Input {
 <else-if=(input.demoId === "menubar/menubar-danger")><Demo_menubar_menubar_danger/></else-if>
 <else-if=(input.demoId === "menubar/menubar-demo")><Demo_menubar_menubar_demo/></else-if>
 <else-if=(input.demoId === "menubar/menubar-disabled")><Demo_menubar_menubar_disabled/></else-if>
+<else-if=(input.demoId === "native-select/default")><Demo_native_select_default/></else-if>
+<else-if=(input.demoId === "native-select/disabled")><Demo_native_select_disabled/></else-if>
+<else-if=(input.demoId === "native-select/groups")><Demo_native_select_groups/></else-if>
 <else-if=(input.demoId === "navigation-menu/controlled")><Demo_navigation_menu_controlled/></else-if>
 <else-if=(input.demoId === "navigation-menu/default")><Demo_navigation_menu_default/></else-if>
 <else-if=(input.demoId === "navigation-menu/disabled")><Demo_navigation_menu_disabled/></else-if>
