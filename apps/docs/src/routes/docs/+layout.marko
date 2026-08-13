@@ -3,9 +3,9 @@
 // <docs-article>, so this layout only owns the two-column frame.
 //
 // Component reference pages under /docs/components/ opt out: they carry a
-// different left rail (every registry component, not the DOCS_NAV tree) and
-// need more than max-w-6xl for their previews, so they render their own
-// frame and this layout steps aside rather than nesting two sidebars.
+// different left rail (every registry component, not the DOCS_NAV tree), so
+// they render their own frame and this layout steps aside rather than
+// nesting two sidebars.
 import "../../tags/site/docs-sidebar.marko";
 import { DOCS_NAV } from "../../tags/docs/docs-nav.ts";
 
@@ -15,13 +15,20 @@ import { DOCS_NAV } from "../../tags/docs/docs-nav.ts";
   <${input.content}/>
 </if>
 <else>
-  <div class="mx-auto flex w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-    <aside class="hidden w-56 shrink-0 border-r border-border lg:block">
-      <div class="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto py-8 pr-4">
-        <docs-sidebar sections=DOCS_NAV/>
-      </div>
-    </aside>
+  <div class="container-wrapper flex flex-1 flex-col px-2">
+    <div
+      class="min-h-min flex-1 items-start lg:grid lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)]"
+      style="--sidebar-width: 18rem"
+    >
+      <aside class="hidden border-r border-border lg:block">
+        <div class="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto py-8 pr-4">
+          <docs-sidebar sections=DOCS_NAV/>
+        </div>
+      </aside>
 
-    <${input.content}/>
+      <div class="h-full w-full">
+        <${input.content}/>
+      </div>
+    </div>
   </div>
 </else>

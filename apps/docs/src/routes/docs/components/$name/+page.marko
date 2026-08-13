@@ -46,128 +46,131 @@ import { getComponentPageData } from "../../../../lib/component-page-data.ts";
     ...(page.parts.length !== 0 ? [{ id: "api-reference", label: "API Reference" }] : []),
   ]/>
 
-  <div class="mx-auto flex w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-    <aside class="hidden w-56 shrink-0 border-r border-border lg:block">
-      <div class="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto py-8 pr-4">
-        <components-sidebar activeComponent=page.name/>
-      </div>
-    </aside>
-
-    <div class="flex min-w-0 flex-1 gap-8">
-      <main class="min-w-0 flex-1 px-4 py-8 lg:px-8">
-        <nav class="mb-4 flex items-center gap-1.5 text-sm text-muted-foreground" aria-label="Breadcrumb">
-          <a href="/docs" class="transition-colors hover:text-foreground">Docs</a>
-          <span aria-hidden="true">/</span>
-          <span>Components</span>
-          <span aria-hidden="true">/</span>
-          <span class="text-foreground">${page.title}</span>
-        </nav>
-
-        <component-page-header
-          title=page.title
-          description=page.description
-          href=page.href
-          previous=page.previous
-          next=page.next
-        />
-
-        <!-- Hero preview: the first example, shown before any prose. -->
-        <if=page.examples[0]>
-          <component-preview
-            demoId=page.examples[0].demoId
-            source=page.examples[0].source
-            class="mt-6"
-          />
-        </if>
-
-        <section class="mt-10">
-          <h2 id="installation" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
-            Installation
-          </h2>
-          <install-tabs
-            componentName=page.name
-            registryUrl=page.registryUrl
-            dependencies=page.registry.dependencies
-            files=page.registry.files
-          />
-        </section>
-
-        <section class="mt-10">
-          <h2 id="usage" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
-            Usage
-          </h2>
-          <code-block code=page.docs.importSnippet language="marko"/>
-          <code-block code=page.docs.usageSnippet language="marko"/>
-        </section>
-
-        <if=page.isCompound>
-          <section class="mt-10">
-            <h2 id="composition" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
-              Composition
-            </h2>
-            <composition-tree componentName=page.name parts=page.parts/>
-          </section>
-        </if>
-
-        <for|example| of=page.examples by=(example) => example.name>
-          <section class="mt-10">
-            <h2 id=example.id class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
-              ${example.title}
-            </h2>
-            <if=example.description>
-              <p class="mt-4 text-sm leading-7 text-muted-foreground">${example.description}</p>
-            </if>
-            <component-preview demoId=example.demoId source=example.source/>
-          </section>
-        </for>
-
-        <if=page.parts.length !== 0>
-          <section class="mt-10">
-            <h2 id="api-reference" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
-              API Reference
-            </h2>
-            <p class="mt-4 text-sm leading-7 text-muted-foreground">
-              Extracted from the component's own
-              <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em] text-foreground">Input</code>
-              type, so it always matches the source you copied.
-            </p>
-            <div class="mt-4">
-              <api-table parts=page.parts/>
-            </div>
-          </section>
-        </if>
-
-        <!-- Full-width pager, matching the arrows in the header. -->
-        <if=(page.previous || page.next)>
-          <nav class="mt-12 flex items-center justify-between gap-4 border-t border-border pt-6" aria-label="Pagination">
-            <if=page.previous>
-              <a
-                href=`/docs/components/${page.previous.name}`
-                class="inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                ← ${page.previous.title}
-              </a>
-            </if>
-            <else>
-              <span/>
-            </else>
-            <if=page.next>
-              <a
-                href=`/docs/components/${page.next.name}`
-                class="ml-auto inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                ${page.next.title} →
-              </a>
-            </if>
-          </nav>
-        </if>
-      </main>
-
-      <aside class="hidden w-56 shrink-0 xl:block">
-        <div class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto py-8 pr-4">
-          <docs-toc entries=tocEntries/>
+  <div class="container-wrapper flex flex-1 flex-col px-2">
+    <div
+      class="min-h-min flex-1 items-start lg:grid lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)]"
+      style="--sidebar-width: 18rem"
+    >
+      <aside class="hidden border-r border-border lg:block">
+        <div class="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto py-8 pr-4">
+          <components-sidebar activeComponent=page.name/>
         </div>
       </aside>
+
+      <div class="flex items-stretch pb-8 xl:w-full">
+        <div class="flex min-w-0 flex-1 flex-col">
+          <div class="mx-auto flex w-full max-w-160 min-w-0 flex-1 flex-col gap-6 px-4 py-6 lg:py-8">
+            <nav class="flex items-center gap-1.5 text-sm text-muted-foreground" aria-label="Breadcrumb">
+              <a href="/docs" class="transition-colors hover:text-foreground">Docs</a>
+              <span aria-hidden="true">/</span>
+              <span>Components</span>
+              <span aria-hidden="true">/</span>
+              <span class="text-foreground">${page.title}</span>
+            </nav>
+
+            <component-page-header
+              title=page.title
+              description=page.description
+              href=page.href
+              previous=page.previous
+              next=page.next
+            />
+
+            <!-- Hero preview: the first example, shown before any prose. -->
+            <if=page.examples[0]>
+              <component-preview
+                demoId=page.examples[0].demoId
+                source=page.examples[0].source
+              />
+            </if>
+
+            <section>
+              <h2 id="installation" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
+                Installation
+              </h2>
+              <install-tabs
+                componentName=page.name
+                registryUrl=page.registryUrl
+                dependencies=page.registry.dependencies
+                files=page.registry.files
+              />
+            </section>
+
+            <section>
+              <h2 id="usage" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
+                Usage
+              </h2>
+              <code-block code=page.docs.importSnippet language="marko"/>
+              <code-block code=page.docs.usageSnippet language="marko"/>
+            </section>
+
+            <if=page.isCompound>
+              <section>
+                <h2 id="composition" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
+                  Composition
+                </h2>
+                <composition-tree componentName=page.name parts=page.parts/>
+              </section>
+            </if>
+
+            <for|example| of=page.examples by=(example) => example.name>
+              <section>
+                <h2 id=example.id class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
+                  ${example.title}
+                </h2>
+                <if=example.description>
+                  <p class="mt-4 text-sm leading-7 text-muted-foreground">${example.description}</p>
+                </if>
+                <component-preview demoId=example.demoId source=example.source/>
+              </section>
+            </for>
+
+            <if=page.parts.length !== 0>
+              <section>
+                <h2 id="api-reference" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
+                  API Reference
+                </h2>
+                <p class="mt-4 text-sm leading-7 text-muted-foreground">
+                  Extracted from the component's own
+                  <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em] text-foreground">Input</code>
+                  type, so it always matches the source you copied.
+                </p>
+                <div class="mt-4">
+                  <api-table parts=page.parts/>
+                </div>
+              </section>
+            </if>
+
+            <!-- Full-width pager, matching the arrows in the header. -->
+            <if=(page.previous || page.next)>
+              <nav class="flex h-16 w-full items-center gap-2" aria-label="Pagination">
+                <if=page.previous>
+                  <a
+                    href=`/docs/components/${page.previous.name}`
+                    class="inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                  >
+                    ← ${page.previous.title}
+                  </a>
+                </if>
+                <if=page.next>
+                  <a
+                    href=`/docs/components/${page.next.name}`
+                    class="ml-auto inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                  >
+                    ${page.next.title} →
+                  </a>
+                </if>
+              </nav>
+            </if>
+          </div>
+        </div>
+
+        <aside class="sticky top-[calc(3.5rem+1px)] z-30 ml-auto hidden h-[90svh] w-56 flex-col gap-4 overflow-hidden overscroll-none pb-8 xl:flex">
+          <div class="scrollbar-none flex flex-col gap-8 overflow-y-auto px-8 py-8">
+            <docs-toc entries=tocEntries/>
+          </div>
+        </aside>
+      </div>
     </div>
   </div>
 </else>
