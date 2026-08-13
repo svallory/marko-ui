@@ -51,7 +51,7 @@ static const COUNTRIES = [
         <Field>
           <FieldLabel for="shipping-state">State</FieldLabel>
           <Select
-            id="shipping-state"
+            ids={ trigger: "shipping-state" }
             items=STATES
             defaultValue=["CA"]
             class="w-full [&_[data-slot=select-trigger]]:w-full"
@@ -66,7 +66,7 @@ static const COUNTRIES = [
         <Field>
           <FieldLabel for="shipping-country">Country</FieldLabel>
           <Select
-            id="shipping-country"
+            ids={ trigger: "shipping-country" }
             items=COUNTRIES
             defaultValue=["US"]
             class="w-full [&_[data-slot=select-trigger]]:w-full"

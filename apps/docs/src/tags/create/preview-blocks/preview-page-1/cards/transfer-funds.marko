@@ -61,6 +61,7 @@ static const TO_ACCOUNTS = [
       <Field>
         <FieldLabel for="from-account">From Account</FieldLabel>
         <Select
+          ids={ trigger: "from-account" }
           items=FROM_ACCOUNTS
           defaultValue=["checking"]
           class="w-full [&_[data-slot=select-trigger]]:w-full"
@@ -69,6 +70,7 @@ static const TO_ACCOUNTS = [
       <Field>
         <FieldLabel for="to-account">To Account</FieldLabel>
         <Select
+          ids={ trigger: "to-account" }
           items=TO_ACCOUNTS
           defaultValue=["savings"]
           class="w-full [&_[data-slot=select-trigger]]:w-full"

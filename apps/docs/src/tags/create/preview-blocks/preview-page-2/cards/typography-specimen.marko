@@ -104,7 +104,7 @@ static const CATEGORIES = [
           <Field>
             <FieldLabel for="feedback-category">Category</FieldLabel>
             <Select
-              id="feedback-category"
+              ids={ trigger: "feedback-category" }
               items=CATEGORIES
               defaultValue=["general"]
               class="w-full [&_[data-slot=select-trigger]]:w-full"

@@ -49,7 +49,7 @@ static const COMPONENTS = [
         <Field>
           <FieldLabel for="bug-severity">Severity</FieldLabel>
           <Select
-            id="bug-severity"
+            ids={ trigger: "bug-severity" }
             items=SEVERITIES
             defaultValue=["medium"]
             class="w-full [&_[data-slot=select-trigger]]:w-full"
@@ -58,7 +58,7 @@ static const COMPONENTS = [
         <Field>
           <FieldLabel for="bug-component">Component</FieldLabel>
           <Select
-            id="bug-component"
+            ids={ trigger: "bug-component" }
             items=COMPONENTS
             defaultValue=["dashboard"]
             class="w-full [&_[data-slot=select-trigger]]:w-full"

@@ -47,6 +47,7 @@ static const CURRENCIES = [
           Preferred Currency
         </FieldLabel>
         <Select
+          ids={ trigger: "preferred-currency" }
           items=CURRENCIES
           defaultValue=["usd"]
           class="w-full [&_[data-slot=select-trigger]]:w-full"
@@ -62,6 +63,7 @@ static const CURRENCIES = [
           </span>
         </div>
         <Slider
+          ids={ thumb: () => "min-payout" }
           value=amount
           valueChange=(value: number[]) => { amount = [...value]; }
           min=50

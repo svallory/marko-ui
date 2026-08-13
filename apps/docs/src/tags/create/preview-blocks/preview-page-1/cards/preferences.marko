@@ -44,7 +44,7 @@ static const CURRENCIES = [
       <Field>
         <FieldLabel for="default-currency">Default Currency</FieldLabel>
         <Select
-          id="default-currency"
+          ids={ trigger: "default-currency" }
           items=CURRENCIES
           defaultValue=["usd"]
           class="w-full [&_[data-slot=select-trigger]]:w-full"
