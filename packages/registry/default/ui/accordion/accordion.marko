@@ -58,13 +58,33 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
 // item does on first render — without this, `closingValues` would seed
 // itself with the whole item list on mount).
 <let/previouslyExpanded={} as Record<string, boolean>>
+// Holds the fallback timer handle for whichever item is currently mid-close
+// (keyed by value), so a SECOND close of the SAME item within the 1s
+// fallback window can cancel the FIRST close's stale timer before
+// scheduling its own. Without this, re-opening and re-closing an item
+// inside that window leaves the old timer dangling; it fires on the
+// original schedule and can clear `closingValues` for the item's CURRENT
+// close cycle before that cycle's own `accordion-up` animation has actually
+// finished playing, snapping the panel to `hidden` mid-animation (verified
+// by code trace — the animation itself is normally <=300ms, well inside the
+// 1s window, so consecutive closes roughly 800ms-1200ms apart hit this).
+// Declared with `<let>` (Marko requires top-level bindings to go through a
+// tag — a bare top-level `const` isn't valid template syntax), but the
+// object itself is NEVER reassigned, only mutated in place (`fallbackTimers[
+// value] = ...`, `delete fallbackTimers[value]`); Marko's reactivity is
+// keyed off `<let>` REASSIGNMENT, not property mutation, so this stays a
+// plain, non-reactive, per-instance mutable map — no re-render is triggered
+// by touching its keys, and (being a `<let>`, not `<const>`) its identity
+// persists across re-renders instead of resetting to `{}` every time.
+<let/fallbackTimers={} as Record<string, ReturnType<typeof setTimeout>>>
 
 // Client-only: measure each open panel's natural height and publish it as
 // `--marko-accordion-content-height` (our own namespace — mirrors Radix's
 // `--radix-accordion-content-height`, which is itself just a re-export of
 // `--radix-collapsible-content-height` measured via ResizeObserver in
-// `@radix-ui/react-collapsible`). globals.css's `accordion-down`/
-// `accordion-up` override consumes this var ahead of tw-animate-css's
+// `@radix-ui/react-collapsible`). globals.css's `marko-accordion-down`/
+// `marko-accordion-up` keyframes (wired in via a repointed `--animate-
+// accordion-down`/`-up` theme var — see globals.css) consume this var ahead of tw-animate-css's
 // upstream fallback chain, so `height: 0 -> auto` becomes
 // `height: 0 -> <measured px>` in every browser, not just ones with
 // `calc-size()` support.
@@ -114,11 +134,24 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
     const onAnimationEnd = (event: AnimationEvent) => {
       const target = event.target as HTMLElement;
       if (target.dataset.slot !== "accordion-content") return;
-      if (event.animationName === "accordion-down") {
+      // Matches globals.css's renamed keyframes (`marko-accordion-down`/
+      // `marko-accordion-up`, NOT the bare `accordion-down`/`accordion-up`
+      // names) — see the comment above that @theme inline block for why the
+      // rename was necessary (Tailwind's build silently drops same-named
+      // top-level @keyframes overrides).
+      if (event.animationName === "marko-accordion-down") {
         publishHeight(target);
-      } else if (event.animationName === "accordion-up") {
+      } else if (event.animationName === "marko-accordion-up") {
         const value = target.dataset.value;
-        if (value) closingValues = closingValues.filter((v) => v !== value);
+        if (value) {
+          // Cancel this item's fallback timer now that the real
+          // animationend fired — otherwise it stays armed for up to 1s and
+          // can misfire during a LATER close cycle of the same item (see
+          // the note above `fallbackTimers`'s declaration).
+          clearTimeout(fallbackTimers[value]);
+          delete fallbackTimers[value];
+          closingValues = closingValues.filter((v) => v !== value);
+        }
       }
     };
     root.addEventListener("animationend", onAnimationEnd);
@@ -127,6 +160,7 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
       clearTimeout(initialTimer);
       resizeObserver.disconnect();
       root.removeEventListener("animationend", onAnimationEnd);
+      for (const value in fallbackTimers) clearTimeout(fallbackTimers[value]);
     };
   }
 />
@@ -199,10 +233,20 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
       // eventually settling to `hidden`. Clear it on a fixed timer as a
       // fallback; the real `animationend` path still wins when it fires
       // first, this is a backstop.
+      //
+      // The stale timer from a PRIOR close of this same item is explicitly
+      // cancelled first — see the note above `fallbackTimers`'s declaration.
+      // Without this, reopening and reclosing the item inside the 1s window
+      // leaves that old timer armed; it fires on its original schedule and
+      // can clear `closingValues` for THIS close cycle before this cycle's
+      // own `accordion-up` animation has finished, snapping the panel to
+      // `hidden` mid-animation.
       const wasExpanded = previouslyExpanded[item.value];
       if (wasExpanded && !expanded && !isClosing) {
         closingValues = [...closingValues, item.value];
-        setTimeout(() => {
+        clearTimeout(fallbackTimers[item.value]);
+        fallbackTimers[item.value] = setTimeout(() => {
+          delete fallbackTimers[item.value];
           closingValues = closingValues.filter((v) => v !== item.value);
         }, 1000);
       }
