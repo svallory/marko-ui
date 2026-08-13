@@ -1,0 +1,112 @@
+// Ported from shadcn/ui app/(app)/(create)/components/item-explorer.tsx.
+// A grouped, collapsible list of registry items for switching the preview's
+// `item` param — source groups by registry `type` (registry:block ->
+// "Blocks", registry:example -> "Components") via lib/utils.ts's
+// groupItemsByType, sourced from lib/api.ts's getAllItems() (dynamic import
+// of the CLI-facing `@/registry/bases/__index__`). This repo has no such
+// generated index; the equivalent real data is ../../lib/blocks-list.ts's
+// BLOCKS (28 real registry:block pages) and a curated 12-component subset
+// (kept identical to action-menu.marko's PREVIEWABLE_COMPONENTS -- see that
+// file's header comment for why it isn't all 76 registry components: the
+// preview route renders items through a static tag chain, not a lookup, so
+// only components with a wired branch there actually render). Item values
+// are the same "<kind>:<name>" strings preview.marko/the preview route use.
+//
+// Deviations from source:
+// - No `xl:flex` breakpoint-gated <Sidebar> primitive: this stays plain,
+//   scrollable markup rather than pulling in the full Sidebar collapsible
+//   machinery for what's a single flat list; the source's Sidebar usage is
+//   mostly about matching its own docs-sidebar visual language, which the
+//   picker-content styling below reproduces directly instead.
+// - Always visible (source hides item-explorer below the `xl` breakpoint
+//   entirely -- it isn't in the main /create layout at all today; the
+//   source's Preview never renders it either, it's dead code reachable
+//   only from a route that doesn't compose it into create/page.tsx). Kept
+//   here as an available tag rather than wired into the default layout,
+//   matching that the shipped page doesn't render it.
+import { BLOCKS } from "../../lib/blocks-list.ts";
+import { titleize } from "../../lib/component-page-data.ts";
+
+export interface Input {
+  item: string;
+  onItemChange: (item: string) => void;
+  class?: string;
+}
+
+// Kept identical to action-menu.marko's PREVIEWABLE_COMPONENTS.
+static const PREVIEWABLE_COMPONENTS = [
+  "accordion",
+  "avatar",
+  "badge",
+  "button",
+  "calendar",
+  "card",
+  "checkbox",
+  "dialog",
+  "progress",
+  "select",
+  "switch",
+  "tabs",
+];
+
+<let/blocksOpen=true/>
+<let/componentsOpen=true/>
+
+<nav data-slot="item-explorer" class=`no-scrollbar w-56 shrink-0 overflow-x-hidden overflow-y-auto text-sm ${input.class ?? ""}`>
+  <div class="mb-3">
+    <button
+      type="button"
+      class="flex w-full items-center gap-1 py-1.5 text-[0.8rem] font-medium text-muted-foreground"
+      on-click() { blocksOpen = !blocksOpen; }
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=`size-3.5 transition-transform ${blocksOpen ? "rotate-90" : ""}`>
+        <path d="m9 18 6-6-6-6"/>
+      </svg>
+      <span>Blocks</span>
+    </button>
+    <if=blocksOpen>
+      <ul class="relative ml-1.5 border-l border-border/50 pl-2">
+        <for|block| of=BLOCKS by=(block) => block.name>
+          <li>
+            <button
+              type="button"
+              data-active=(input.item === `block:${block.name}`)
+              class="h-[26px] w-full cursor-pointer rounded-md border border-transparent px-2 text-left text-[0.8rem] font-normal data-[active=true]:border-accent data-[active=true]:bg-accent"
+              on-click() { input.onItemChange(`block:${block.name}`); }
+            >
+              ${block.title}
+            </button>
+          </li>
+        </for>
+      </ul>
+    </if>
+  </div>
+  <div>
+    <button
+      type="button"
+      class="flex w-full items-center gap-1 py-1.5 text-[0.8rem] font-medium text-muted-foreground"
+      on-click() { componentsOpen = !componentsOpen; }
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=`size-3.5 transition-transform ${componentsOpen ? "rotate-90" : ""}`>
+        <path d="m9 18 6-6-6-6"/>
+      </svg>
+      <span>Components</span>
+    </button>
+    <if=componentsOpen>
+      <ul class="relative ml-1.5 border-l border-border/50 pl-2">
+        <for|name| of=PREVIEWABLE_COMPONENTS by=(name) => name>
+          <li>
+            <button
+              type="button"
+              data-active=(input.item === `component:${name}`)
+              class="h-[26px] w-full cursor-pointer rounded-md border border-transparent px-2 text-left text-[0.8rem] font-normal data-[active=true]:border-accent data-[active=true]:bg-accent"
+              on-click() { input.onItemChange(`component:${name}`); }
+            >
+              ${titleize(name)}
+            </button>
+          </li>
+        </for>
+      </ul>
+    </if>
+  </div>
+</nav>

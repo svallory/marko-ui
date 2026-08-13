@@ -1,0 +1,38 @@
+// Ported from shadcn/ui app/(app)/(create)/components/base-picker.tsx.
+// Picks the component "base" (framework): Base UI / React Aria / Radix UI,
+// from BASES in lib/registry-config.ts. Rendered only on mobile in
+// customizer.tsx (desktop exposes base elsewhere in that layout, out of
+// phase-2 scope) — customizer.marko replicates that `isMobile &&` gate.
+// No hover-preview in source (BasePicker has no onItemPreview/setOverride
+// wiring — base is architectural, not a themeable preview surface).
+import { BASES, type BaseName } from "./lib/registry-config.ts";
+import Picker from "./picker.marko";
+
+export interface Input {
+  value: BaseName;
+  onValueChange: (value: BaseName) => void;
+  isMobile?: boolean;
+}
+
+<const/currentBase=BASES.find((base) => base.name === input.value)/>
+
+<div class="group/picker relative">
+  <Picker
+    value=input.value
+    onValueChange=(value) => input.onValueChange(value as BaseName)
+    closeOnClick=input.isMobile
+    side=(input.isMobile ? "top" : "right")
+    align=(input.isMobile ? "center" : "start")
+    sections=[{ options: BASES.map((base) => ({ value: base.name, label: base.title })) }]
+  >
+    <@trigger>
+      <div class="flex flex-col justify-start text-left">
+        <div class="text-xs text-muted-foreground">Base</div>
+        <div class="text-sm font-medium text-foreground">${currentBase?.title}</div>
+      </div>
+      <if=currentBase?.meta?.logo>
+        <div class="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-foreground select-none md:right-2.5" innerHTML=currentBase.meta.logo/>
+      </if>
+    </@trigger>
+  </Picker>
+</div>

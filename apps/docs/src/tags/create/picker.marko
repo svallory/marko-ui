@@ -1,0 +1,155 @@
+// Reusable popover/radio-picker primitive for the /create theme builder
+// sidebar. Ported behaviorally from shadcn's
+// app/(app)/(create)/components/picker.tsx (Base UI `Menu` primitive), but
+// built directly on @zag-js/menu instead of Base UI — this repo's component
+// library (packages/registry/default/ui/dropdown-menu/dropdown-menu.marko)
+// already establishes the zag-js/menu + <service>/<connect>/<portal> pattern
+// for menu-shaped widgets, so extending that same primitive (rather than
+// pulling in Base UI as a new dependency) is the natural fit here. This
+// stays docs-site-local (apps/docs/src/tags/create/) rather than living in
+// the shared component registry because its markup/behavior — swatch/preview
+// slots on the trigger, hover-preview radio items, the dark floating-panel
+// styling — is specific to the /create page and not a general-purpose menu.
+//
+// @zag-js/menu's option items (`getOptionItemProps({ type: "radio", ... })`)
+// give us the single-select radio-group semantics the original's
+// `PickerRadioGroup`/`PickerRadioItem` provide. Hover-preview (shadcn's
+// `onItemPreview`, fired from a debounced onMouseMove/onFocus pair in
+// PickerRadioItem) is implemented here via zag's built-in
+// `onHighlightChange` — zag already computes the highlighted item from
+// pointer + keyboard navigation, so no separate mousemove/focus wiring or
+// debounce timer is needed; the parent's `onItemPreview` fires whenever the
+// highlighted value changes.
+import * as menu from "@zag-js/menu";
+import { positionerStyle } from "marko-ui";
+import { cn } from "@marko-ui/registry/lib/utils.ts";
+
+export interface PickerRadioOption {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+export interface PickerRadioGroupSection {
+  /** Optional group label (PickerLabel in the source). */
+  label?: string;
+  /** Options rendered together, separated from other sections by a divider. */
+  options: PickerRadioOption[];
+}
+
+export interface Input {
+  /** Trigger content — renders inside the styled trigger button. */
+  trigger: Marko.Body;
+  /** Radio sections, rendered in order with a separator between each. */
+  sections: PickerRadioGroupSection[];
+  /** Currently committed value. */
+  value: string | undefined;
+  onValueChange: (value: string) => void;
+  /**
+   * Fired when the highlighted (hovered/focused) item changes; `null` when
+   * nothing is highlighted (menu closed or pointer left the list). Mirrors
+   * shadcn's `onItemPreview` / `clearOverride` pairing.
+   */
+  onItemPreview?: (value: string | null) => void;
+  /** Close the picker immediately on click (mobile behavior upstream). */
+  closeOnClick?: boolean;
+  side?: "top" | "bottom" | "left" | "right";
+  align?: "start" | "center" | "end";
+  /** Disables the trigger (e.g. radius-picker when the current style forces a fixed radius). */
+  disabled?: boolean;
+  class?: string;
+  contentClass?: string;
+}
+
+<machine-props/machineProps from=input pick=menu.props
+  onSelect(details: menu.SelectionDetails) {
+    input.onValueChange(details.value);
+  }
+  onHighlightChange(details: menu.HighlightChangeDetails) {
+    input.onItemPreview?.(details.highlightedValue);
+  }
+  onOpenChange(details: menu.OpenChangeDetails) {
+    if (!details.open) input.onItemPreview?.(null);
+  }
+  positioning={
+    placement: `${input.side ?? "bottom"}${input.align && input.align !== "center" ? `-${input.align}` : ""}`,
+    gutter: 8,
+  }
+/>
+<service/service machine=() => menu.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  menu.connect(service, normalizeProps)
+  service=service
+/>
+
+<const/{ class: className, contentClass, trigger, sections, value, closeOnClick }=input/>
+
+<div class="group/picker relative">
+  <button
+    ...api().getTriggerProps()
+    disabled=input.disabled
+    data-slot="picker-trigger"
+    class=cn(
+      "relative w-36 shrink-0 touch-manipulation rounded-xl p-3 ring-1 ring-foreground/10 select-none hover:bg-muted focus-visible:ring-foreground/50 focus-visible:outline-none disabled:opacity-50 data-[state=open]:bg-muted md:w-full md:rounded-lg md:px-2.5 md:py-2",
+      className,
+    )
+  >
+    <${trigger}/>
+  </button>
+  <portal>
+    <if=api().open>
+      <div ...api().getPositionerProps() style=positionerStyle data-slot="picker-positioner">
+        <div
+          ...api().getContentProps()
+          data-slot="picker-content"
+          class=cn(
+            "no-scrollbar z-50 max-h-[24rem] w-[calc(var(--available-width,16rem)-1.5rem)] min-w-32 overflow-x-hidden overflow-y-auto rounded-xl border-0 bg-neutral-950/80 p-1.5 text-neutral-100 ring-1 ring-neutral-950/80 backdrop-blur-xl outline-none md:w-52 dark:bg-neutral-800/90 dark:ring-neutral-700/50",
+            contentClass,
+          )
+        >
+          <for|section, sectionIndex| of=sections>
+            <if=(sectionIndex > 0)>
+              <div data-slot="picker-separator" class="-mx-1.5 my-1.5 h-px bg-neutral-600 dark:bg-neutral-700"/>
+            </if>
+            <div ...api().getItemGroupProps({ id: `picker-group-${sectionIndex}` }) data-slot="picker-group">
+              <if=section.label>
+                <div
+                  ...api().getItemGroupLabelProps({ htmlFor: `picker-group-${sectionIndex}` })
+                  data-slot="picker-label"
+                  class="px-2 py-1.5 text-xs font-medium text-neutral-400"
+                >
+                  ${section.label}
+                </div>
+              </if>
+              <for|option| of=section.options by=(option) => option.value>
+                <div
+                  ...api().getOptionItemProps({
+                    type: "radio",
+                    value: option.value,
+                    checked: option.value === value,
+                    disabled: option.disabled,
+                    closeOnSelect: closeOnClick,
+                  })
+                  data-slot="picker-radio-item"
+                  class="relative flex cursor-default items-center gap-2 rounded-lg py-1.5 pr-8 pl-2 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                >
+                  <span
+                    class="pointer-events-none absolute right-2 flex items-center justify-center"
+                    data-slot="picker-radio-item-indicator"
+                  >
+                    <if=option.value === value>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 pointer-coarse:size-5">
+                        <path d="M20 6 9 17l-5-5"/>
+                      </svg>
+                    </if>
+                  </span>
+                  ${option.label}
+                </div>
+              </for>
+            </div>
+          </for>
+        </div>
+      </div>
+    </if>
+  </portal>
+</div>

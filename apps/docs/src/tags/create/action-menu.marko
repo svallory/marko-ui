@@ -1,0 +1,83 @@
+// Ported from shadcn/ui app/(app)/(create)/components/action-menu.tsx +
+// hooks/use-action-menu.ts. A ⌘K/⌘P-style command palette for jumping the
+// preview's `item` straight to any registry item, grouped exactly like
+// item-explorer.marko (Blocks first, then Components — source's
+// sortRegistryGroups puts registry:block groups first). Mounted by
+// design-system.marko alongside the reset AlertDialog and OpenPreset dialog,
+// matching how those two are hoisted out of customizer.marko to the
+// container that owns their shared open state.
+//
+// Deviations from source:
+// - Source keys this off a global useSWR("create:action-menu-open") cache
+//   entry so useActionMenuTrigger() (customizer.tsx's "Actions" footer
+//   button) and the ⌘P keydown listener can open it from anywhere without
+//   React context. Marko has no context OR a SWR-equivalent global mutable
+//   cache; open state instead lives in design-system.marko like every other
+//   dialog on this page (openPresetOpen, showResetDialog) and is passed
+//   down as `open`/`onOpenChange`.
+// - Item source: this repo's real BLOCKS (../../lib/blocks-list.ts, all 28)
+//   + a curated 12-component subset. NOT all 76 DOCUMENTED_COMPONENTS: the
+//   preview route (../../routes/create/preview/+page.marko) renders items
+//   through a static <if>/<else-if> tag chain, not a dynamic-tag lookup —
+//   see that file's header comment for why (a Marko production-build
+//   hydration crash) — so only components with a wired branch there can
+//   actually render. Listing more here than the route can show would be
+//   misleading (select X, see the dashboard-01 fallback instead), so this
+//   list is kept in lockstep with the route's wired set. See the phase-4
+//   report for the exact 12 and rationale for not doing all 76.
+// - No per-type SEARCH_KEYWORDS synonym boosting (source's "block blocks
+//   component components" hidden search terms) — Command's own
+//   label-substring filter (packages/registry/default/ui/command/command.marko)
+//   is used as-is.
+import Dialog from "@marko-ui/registry/ui/dialog/dialog.marko";
+import Command, { type CommandGroup } from "@marko-ui/registry/ui/command/command.marko";
+import { BLOCKS } from "../../lib/blocks-list.ts";
+import { titleize } from "../../lib/component-page-data.ts";
+
+export interface Input {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelectItem: (item: string) => void;
+}
+
+// Kept identical to ../../routes/create/preview/+page.marko's
+// COMPONENT_TITLES keys — see that file's header comment.
+static const PREVIEWABLE_COMPONENTS = [
+  "accordion",
+  "avatar",
+  "badge",
+  "button",
+  "calendar",
+  "card",
+  "checkbox",
+  "dialog",
+  "progress",
+  "select",
+  "switch",
+  "tabs",
+];
+
+static const GROUPS: CommandGroup[] = [
+  {
+    label: "Blocks",
+    items: BLOCKS.map((block) => ({ value: `block:${block.name}`, label: block.title })),
+  },
+  {
+    label: "Components",
+    items: PREVIEWABLE_COMPONENTS.map((name) => ({ value: `component:${name}`, label: titleize(name) })),
+  },
+];
+
+<Dialog open=input.open openChange=input.onOpenChange class="max-w-lg gap-0 overflow-hidden p-0">
+  <@content>
+    <Command
+      groups=GROUPS
+      placeholder="Search blocks and components..."
+      class="border-none shadow-none"
+      valueChange=(value: string) => {
+        input.onSelectItem(value);
+        input.onOpenChange(false);
+      }
+    />
+  </@content>
+</Dialog>

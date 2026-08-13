@@ -1,0 +1,71 @@
+// Ported from shadcn/ui app/(app)/(create)/components/welcome-dialog.tsx.
+// First-visit-only dialog: opens once on mount if
+// localStorage["shadcn-create-welcome-dialog"] is unset, and writes that key
+// (dismissed = "true") the moment it closes for any reason (Get Started
+// click, backdrop click, Escape) — matches source's onOpenChange writing the
+// flag on every close, not just the button.
+//
+// Deviations:
+// - Source's Dialog header shows `<Icons.logo>` (shadcn's own wordmark
+//   glyph) on a dark banner; this repo has no equivalent brand glyph asset
+//   (site-header.marko uses a plain "marko-ui" text wordmark, no SVG mark),
+//   so the banner reuses that same text wordmark treatment instead of
+//   fabricating a logo. Copy is verbatim from source.
+// - Source passes `showCloseButton={false}` (Base UI Dialog) — this
+//   registry's Dialog (packages/registry/default/ui/dialog/dialog.marko)
+//   always renders its close-X button, with no such prop to suppress it.
+//   Left as-is rather than adding a one-off prop to the shared component
+//   for a single call site; the dialog is still only dismissible via that
+//   X, the backdrop, Escape, or "Get Started", all of which correctly
+//   persist the dismissal.
+import Dialog from "@marko-ui/registry/ui/dialog/dialog.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+static const STORAGE_KEY = "shadcn-create-welcome-dialog";
+
+<let/isOpen=false/>
+
+<lifecycle
+  onMount() {
+    let dismissed: string | null = null;
+    try {
+      dismissed = localStorage.getItem(STORAGE_KEY);
+    } catch (error) {}
+    if (!dismissed) {
+      isOpen = true;
+    }
+  }
+/>
+
+<const/handleOpenChange=(open: boolean) => {
+  isOpen = open;
+  if (!open) {
+    try {
+      localStorage.setItem(STORAGE_KEY, "true");
+    } catch (error) {}
+  }
+}/>
+
+<Dialog
+  open=isOpen
+  openChange=handleOpenChange
+  class="max-w-92 min-w-0 gap-0 overflow-hidden rounded-xl p-0 sm:max-w-sm dark:bg-neutral-900"
+>
+  <@content>
+    <div class="flex aspect-2/1.2 w-full items-center justify-center rounded-t-xl bg-neutral-950 text-center text-neutral-100 sm:aspect-2/1">
+      <div class="font-mono text-2xl font-bold tracking-tight">marko-ui</div>
+    </div>
+    <div class="flex flex-col gap-1 p-4">
+      <h2 class="text-left text-base font-semibold">Build your own shadcn/ui</h2>
+      <p class="text-left leading-relaxed text-foreground">
+        Customize everything from the ground up. Pick your component library, font, color scheme, and more.
+      </p>
+      <p class="mt-2 text-left leading-relaxed font-medium text-foreground">
+        Available for all major React frameworks.
+      </p>
+    </div>
+  </@content>
+  <@footer>
+    <Button class="w-full" on-click() { handleOpenChange(false); }>Get Started</Button>
+  </@footer>
+</Dialog>

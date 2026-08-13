@@ -1,0 +1,97 @@
+// Ported from shadcn/ui app/(app)/(create)/components/font-picker.tsx.
+// Single component parameterized by `param` ("font" | "fontHeading"),
+// instantiated twice by customizer.marko exactly like the source
+// instantiates <FontPicker label="Heading" param="fontHeading" .../> and
+// <FontPicker label="Font" param="font" .../>. When param is "fontHeading"
+// an extra leading "inherit" radio item (labeled with the current body
+// font's name) is prepended in its own section, matching source behavior.
+//
+// Deviation: LockButton restored in phase 3 (locked/onToggleLock attrs from the design-system container).
+import { FONTS, type Font, type FontHeadingOption } from "./lib/fonts.ts";
+import Picker from "./picker.marko";
+import LockButton from "./lock-button.marko";
+
+export type FontPickerOption = Font | FontHeadingOption;
+
+export interface Input {
+  label: string;
+  param: "font" | "fontHeading";
+  fonts: readonly FontPickerOption[];
+  /** Current body font value — needed to resolve the "inherit" label/preview for fontHeading. */
+  bodyFontValue: string;
+  value: string;
+  onValueChange: (value: string) => void;
+  onItemPreview?: (value: string | null) => void;
+  locked: boolean;
+  onToggleLock: () => void;
+  isMobile?: boolean;
+}
+
+<const/currentFont=input.fonts.find((font) => font.value === input.value)/>
+<const/currentBodyFont=FONTS.find((font) => font.value === input.bodyFontValue)/>
+<const/inheritsBodyFont=input.param === "fontHeading" && input.value === "inherit"/>
+<const/displayFontName=inheritsBodyFont ? currentBodyFont?.name : currentFont?.name/>
+<const/inheritFontLabel=currentBodyFont ? currentBodyFont.name : "Body font"/>
+<const/previewFontFamily=currentFont?.font?.style.fontFamily ?? currentBodyFont?.font.style.fontFamily/>
+
+<const/pickerFonts=input.param === "fontHeading"
+  ? input.fonts.filter((font) => font.value !== "inherit")
+  : input.fonts
+/>
+<const/groupedFonts=(() => {
+  const groups = new Map<string, FontPickerOption[]>();
+  for (const font of pickerFonts) {
+    const existing = groups.get(font.type);
+    if (existing) {
+      existing.push(font);
+      continue;
+    }
+    groups.set(font.type, [font]);
+  }
+  return Array.from(groups.entries()).map(([type, items]) => ({
+    type,
+    label: `${type.charAt(0).toUpperCase()}${type.slice(1)}`,
+    items,
+  }));
+})()/>
+
+<const/sections=[
+  ...(input.param === "fontHeading"
+    ? [{ options: [{ value: "inherit", label: inheritFontLabel }] }]
+    : []),
+  ...groupedFonts.map((group) => ({
+    label: group.label,
+    options: group.items.map((font) => ({ value: font.value, label: font.name })),
+  })),
+]/>
+
+<div class="group/picker relative">
+  <Picker
+    value=input.value
+    onValueChange=input.onValueChange
+    onItemPreview=input.onItemPreview
+    closeOnClick=input.isMobile
+    side=(input.isMobile ? "top" : "right")
+    align=(input.isMobile ? "center" : "start")
+    contentClass="max-h-96"
+    sections=sections
+  >
+    <@trigger>
+      <div class="flex flex-col justify-start text-left">
+        <div class="text-xs text-muted-foreground">${input.label}</div>
+        <div class="line-clamp-1 max-w-[80%] truncate text-sm font-medium text-foreground">${displayFontName}</div>
+      </div>
+      <div
+        class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-base text-foreground select-none md:right-2.5"
+        style=`font-family: ${previewFontFamily}`
+      >
+        Aa
+      </div>
+    </@trigger>
+  </Picker>
+  <LockButton
+    locked=input.locked
+    onToggle=input.onToggleLock
+    class="absolute top-1/2 right-8 -translate-y-1/2"
+  />
+</div>

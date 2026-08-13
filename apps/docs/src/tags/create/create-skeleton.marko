@@ -1,0 +1,20 @@
+// Ported from shadcn/ui app/(app)/(create)/components/create-skeleton.tsx.
+// Placeholder shown before the design system container has mounted (source:
+// create/loading.tsx and the create/layout.tsx Suspense fallback around
+// HistoryProvider, whose useSearchParams() opts the subtree out of static
+// prerendering). Layout classes match design-system.marko's actual render
+// root (`relative z-10 flex min-h-0 flex-1 flex-col gap-(--gap,1rem)
+// md:flex-row-reverse`, see design-system.marko's final <div>) rather than
+// the raw source classes verbatim — the source's `section-soft` utility
+// class and `[--gap:--spacing(4)]` custom-property syntax come from
+// shadcn's own Tailwind config, which this docs site's app.css doesn't
+// define; using design-system.marko's real classes here (default gap 1rem
+// via the `,1rem` fallback) avoids introducing an undefined utility and
+// keeps the skeleton's box model matching what actually replaces it, so
+// there's no layout shift.
+import Skeleton from "@marko-ui/registry/ui/skeleton/skeleton.marko";
+
+<div class="relative z-10 flex min-h-0 flex-1 flex-col gap-(--gap,1rem) md:flex-row-reverse" data-slot="create-skeleton">
+  <Skeleton class="flex-1 rounded-2xl"/>
+  <Skeleton class="min-h-[151px] w-full self-start rounded-2xl md:h-full md:max-h-full md:min-h-0 md:w-(--customizer-width,20rem)"/>
+</div>

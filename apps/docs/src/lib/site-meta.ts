@@ -64,6 +64,14 @@ const ROUTE_META: Record<string, { title: string; description: string }> = {
     description:
       "Design your own marko-ui theme: base color, accent, radius, font, and chart palette, with a live preview and exportable CSS.",
   },
+  // Chrome-free iframe target for /create's preview pane — no ROUTE_META
+  // entry existed for /blocks/view/* either (same chrome-free-iframe-target
+  // shape); added here anyway since its <title> is visible in devtools/
+  // the iframe's own tab if popped out.
+  "/create/preview": {
+    title: "Preview",
+    description: "Live preview of the current theme.",
+  },
   "/components": {
     title: "Components",
     description: `Browse all ${COMPONENTS.length} components in the marko-ui registry.`,

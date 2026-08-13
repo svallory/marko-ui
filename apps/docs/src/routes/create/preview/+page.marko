@@ -1,0 +1,312 @@
+// The /create preview iframe target. Ported from shadcn's
+// app/(view)/preview/[base]/[name]/page.tsx — a chrome-free route that
+// renders one real registry item (a block or a component demo), themed by
+// CSS vars the parent window pushes in via postMessage.
+//
+// shadcn's route is a dynamic [base]/[name] segment resolving into whatever
+// registry item that base+name pair names (a `registry:block` or
+// `registry:example`), rendered through their per-base component resolver
+// (lib/api.ts's getBaseComponent). This repo has a single base ("base" —
+// marko-ui/Zag-js), so the [base] segment collapses: this route reads only
+// `item` from the query string (matching the design-system `item` param
+// shape `<kind>:<name>`, e.g. "block:dashboard-01" or
+// "component:accordion").
+//
+// IMPORTANT — why this is a static <if>/<else-if> chain and not a lookup
+// table + dynamic tag (`<${Component}/>`): that was the first approach
+// tried here, and it reproducibly crashed the PRODUCTION build with
+// `TypeError: ... is not a function` deep in Marko's compiled DOM-runtime
+// mount-queue processor (dom-*.mjs) — confirmed via a bisection down to a
+// minimal repro: rendering ANY registry block/demo component through a
+// dynamic tag reference from inside a route (`+page.marko`) file crashes on
+// hydration, while the exact same component through a STATIC tag reference
+// (`<Login01/>` instead of `<${Login01}/>`) does not. This looks like a
+// genuine Marko 6.3.34 compiler/runtime edge case (scope-id allocation
+// mismatch between what the compiler assigns a dynamic-tag branch and what
+// the SSR-emitted resume payload actually walks), not application code —
+// reported findings live in the phase-4 report. The static chain below is
+// the workaround.
+//
+// Item coverage — see ../../../lib/blocks-list.ts's BLOCKS (28 real
+// registry:block pages under packages/registry/default/blocks/*, the same
+// ones apps/docs/src/routes/blocks/view/<name>/+page.marko renders): ALL 28
+// are wired below. For components, exhaustively wiring all 76 registry
+// components (each needing its own static import + branch) was not done
+// given the dynamic-tag workaround's per-item cost; a curated set of 12
+// representative components (spanning form controls, overlays, and layout
+// primitives) is wired instead — each importing that component's own
+// primary demo (`docs.examples[0]`, the same file
+// ../../../routes/components/<name>/+page.marko's hero demo uses). See the
+// phase-4 report for the exact 12 and the rationale.
+//
+// Theme sync: the iframe-side half of hooks/use-iframe-sync.tsx +
+// components/preview-style.tsx + the DOM-effect logic in
+// design-system-provider.tsx. It listens for `design-system-params`
+// postMessages from the parent (../../../tags/create/preview.marko) and
+// writes the same #design-system-theme-vars <style> + body classes +
+// --font-sans/--font-heading vars design-system.marko writes on the host
+// document, so the identical DOM-effect logic runs in both places.
+import {
+  DEFAULT_CONFIG,
+  buildRegistryTheme,
+  POINTER_CURSOR_SELECTOR,
+  type DesignSystemConfig,
+} from "../../../tags/create/lib/registry-config.ts";
+import { FONTS } from "../../../tags/create/lib/fonts.ts";
+import type { DesignSystemSearchParams } from "../../../tags/create/lib/search-params.ts";
+import { findBlock } from "../../../lib/blocks-list.ts";
+
+import Block_calendar_01 from "@marko-ui/registry/blocks/calendar-01/page.marko";
+import Block_dashboard_01 from "@marko-ui/registry/blocks/dashboard-01/page.marko";
+import Block_login_01 from "@marko-ui/registry/blocks/login-01/page.marko";
+import Block_login_02 from "@marko-ui/registry/blocks/login-02/page.marko";
+import Block_login_03 from "@marko-ui/registry/blocks/login-03/page.marko";
+import Block_login_04 from "@marko-ui/registry/blocks/login-04/page.marko";
+import Block_login_05 from "@marko-ui/registry/blocks/login-05/page.marko";
+import Block_sidebar_01 from "@marko-ui/registry/blocks/sidebar-01/page.marko";
+import Block_sidebar_02 from "@marko-ui/registry/blocks/sidebar-02/page.marko";
+import Block_sidebar_03 from "@marko-ui/registry/blocks/sidebar-03/page.marko";
+import Block_sidebar_04 from "@marko-ui/registry/blocks/sidebar-04/page.marko";
+import Block_sidebar_05 from "@marko-ui/registry/blocks/sidebar-05/page.marko";
+import Block_sidebar_06 from "@marko-ui/registry/blocks/sidebar-06/page.marko";
+import Block_sidebar_07 from "@marko-ui/registry/blocks/sidebar-07/page.marko";
+import Block_sidebar_08 from "@marko-ui/registry/blocks/sidebar-08/page.marko";
+import Block_sidebar_09 from "@marko-ui/registry/blocks/sidebar-09/page.marko";
+import Block_sidebar_10 from "@marko-ui/registry/blocks/sidebar-10/page.marko";
+import Block_sidebar_11 from "@marko-ui/registry/blocks/sidebar-11/page.marko";
+import Block_sidebar_12 from "@marko-ui/registry/blocks/sidebar-12/page.marko";
+import Block_sidebar_13 from "@marko-ui/registry/blocks/sidebar-13/page.marko";
+import Block_sidebar_14 from "@marko-ui/registry/blocks/sidebar-14/page.marko";
+import Block_sidebar_15 from "@marko-ui/registry/blocks/sidebar-15/page.marko";
+import Block_sidebar_16 from "@marko-ui/registry/blocks/sidebar-16/page.marko";
+import Block_signup_01 from "@marko-ui/registry/blocks/signup-01/page.marko";
+import Block_signup_02 from "@marko-ui/registry/blocks/signup-02/page.marko";
+import Block_signup_03 from "@marko-ui/registry/blocks/signup-03/page.marko";
+import Block_signup_04 from "@marko-ui/registry/blocks/signup-04/page.marko";
+import Block_signup_05 from "@marko-ui/registry/blocks/signup-05/page.marko";
+
+import Demo_accordion from "../../../demos/accordion/default.marko";
+import Demo_avatar from "../../../demos/avatar/avatar-demo.marko";
+import Demo_badge from "../../../demos/badge/default.marko";
+import Demo_button from "../../../demos/button/button-demo.marko";
+import Demo_calendar from "../../../demos/calendar/default.marko";
+import Demo_card from "../../../demos/card/default.marko";
+import Demo_checkbox from "../../../demos/checkbox/checkbox-demo.marko";
+import Demo_dialog from "../../../demos/dialog/dialog-demo.marko";
+import Demo_progress from "../../../demos/progress/progress-demo.marko";
+import Demo_select from "../../../demos/select/select-demo.marko";
+import Demo_switch from "../../../demos/switch/switch-demo.marko";
+import Demo_tabs from "../../../demos/tabs/tabs-demo.marko";
+
+static const COMPONENT_TITLES: Record<string, string> = {
+  accordion: "Accordion",
+  avatar: "Avatar",
+  badge: "Badge",
+  button: "Button",
+  calendar: "Calendar",
+  card: "Card",
+  checkbox: "Checkbox",
+  dialog: "Dialog",
+  progress: "Progress",
+  select: "Select",
+  switch: "Switch",
+  tabs: "Tabs",
+};
+
+static const THEME_STYLE_ELEMENT_ID = "design-system-theme-vars";
+static const MANAGED_BODY_CLASS_PREFIXES = ["style-", "base-color-"] as const;
+
+static function removeManagedBodyClasses(body: Element) {
+  for (const className of Array.from(body.classList)) {
+    if (MANAGED_BODY_CLASS_PREFIXES.some((prefix) => className.startsWith(prefix))) {
+      body.classList.remove(className);
+    }
+  }
+}
+
+static function buildCssRule(selector: string, cssVars?: Record<string, string>) {
+  const declarations = Object.entries(cssVars ?? {})
+    .filter(([, value]) => Boolean(value))
+    .map(([key, value]) => `  --${key}: ${value};`)
+    .join("\n");
+  if (!declarations) return `${selector} {}\n`;
+  return `${selector} {\n${declarations}\n}\n`;
+}
+
+static const POINTER_CURSOR_CSS = `@layer base {
+  ${POINTER_CURSOR_SELECTOR} {
+    cursor: pointer;
+  }
+}
+`;
+
+static function applyParams(params: DesignSystemSearchParams) {
+  const { style, theme, font, fontHeading, baseColor, radius, menuAccent, pointer } = params;
+
+  if (style && theme && font && baseColor) {
+    const body = document.body;
+    removeManagedBodyClasses(body);
+    body.classList.add(`style-${style}`, `base-color-${baseColor}`);
+
+    const selectedFont = FONTS.find((option) => option.value === font);
+    const selectedHeadingFont =
+      fontHeading === "inherit" || fontHeading === font
+        ? selectedFont
+        : FONTS.find((option) => option.value === fontHeading);
+
+    if (selectedFont) {
+      document.documentElement.style.setProperty("--font-sans", selectedFont.font.style.fontFamily);
+    }
+    if (selectedHeadingFont) {
+      document.documentElement.style.setProperty("--font-heading", selectedHeadingFont.font.style.fontFamily);
+    }
+
+    for (const option of [selectedFont, selectedHeadingFont]) {
+      if (!option || !option.font.googleFontsUrl) continue;
+      const id = `design-system-font-${option.value}`;
+      if (!document.getElementById(id)) {
+        const link = document.createElement("link");
+        link.id = id;
+        link.rel = "stylesheet";
+        link.href = option.font.googleFontsUrl;
+        document.head.appendChild(link);
+      }
+    }
+  }
+
+  const effectiveRadius = style === "lyra" ? "none" : radius;
+  if (baseColor && theme && menuAccent && effectiveRadius) {
+    const config = {
+      ...DEFAULT_CONFIG,
+      baseColor,
+      theme,
+      chartColor: params.chartColor,
+      menuAccent,
+      radius: effectiveRadius,
+    } as DesignSystemConfig;
+
+    const registryTheme = buildRegistryTheme(config);
+    if (registryTheme.cssVars) {
+      let styleElement = document.getElementById(THEME_STYLE_ELEMENT_ID) as HTMLStyleElement | null;
+      if (!styleElement) {
+        styleElement = document.createElement("style");
+        styleElement.id = THEME_STYLE_ELEMENT_ID;
+        document.head.appendChild(styleElement);
+      }
+      styleElement.textContent = [
+        buildCssRule(":root", { ...(registryTheme.cssVars.theme ?? {}), ...(registryTheme.cssVars.light ?? {}) }),
+        buildCssRule(".dark", registryTheme.cssVars.dark),
+        pointer ? POINTER_CURSOR_CSS : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+    }
+  }
+}
+
+// No `Input.item`: marko-run route files don't map query-string params onto
+// a page's `input` (that's a React/Next.js convention, not this framework's
+// — every other query-string read in this app, e.g. design-system-state.ts,
+// goes through `window.location.search` client-side or `$global.url`
+// server-side). Read the query string directly from `$global.url`, matching
+// how `+handler.ts` files in this app already do it.
+static function resolveItem(raw: string | null) {
+  const value = raw || "block:dashboard-01";
+  const separatorIndex = value.indexOf(":");
+  const kind = separatorIndex === -1 ? "" : value.slice(0, separatorIndex);
+  const name = separatorIndex === -1 ? "" : value.slice(separatorIndex + 1);
+
+  if (kind === "component" && name in COMPONENT_TITLES) {
+    return { kind: "component" as const, name };
+  }
+  if (kind === "block" && name && findBlock(name)) {
+    return { kind: "block" as const, name };
+  }
+  return { kind: "block" as const, name: "dashboard-01" };
+}
+
+<const/itemParam=$global.url.searchParams.get("item")/>
+<const/resolved=resolveItem(itemParam)/>
+
+// No own <!doctype html>/<html>/<head>/<body>: this route renders inside
+// ../../../routes/+layout.marko like every other page (that layout supplies
+// the document shell and excludes header/footer chrome for this path
+// prefix — see its `isBlockPreview` check, extended to also match
+// `/create/preview/`). A second nested <html> here would both double the
+// document shell and 404 the route (marko-run's page slot expects body
+// content, not a full document).
+<div class="bg-background text-foreground antialiased" data-preview-item=itemParam>
+  <if=(resolved.kind === "block")>
+    <if=(resolved.name === "calendar-01")><Block_calendar_01/></if>
+    <else-if=(resolved.name === "dashboard-01")><Block_dashboard_01/></else-if>
+    <else-if=(resolved.name === "login-01")><Block_login_01/></else-if>
+    <else-if=(resolved.name === "login-02")><Block_login_02/></else-if>
+    <else-if=(resolved.name === "login-03")><Block_login_03/></else-if>
+    <else-if=(resolved.name === "login-04")><Block_login_04/></else-if>
+    <else-if=(resolved.name === "login-05")><Block_login_05/></else-if>
+    <else-if=(resolved.name === "sidebar-01")><Block_sidebar_01/></else-if>
+    <else-if=(resolved.name === "sidebar-02")><Block_sidebar_02/></else-if>
+    <else-if=(resolved.name === "sidebar-03")><Block_sidebar_03/></else-if>
+    <else-if=(resolved.name === "sidebar-04")><Block_sidebar_04/></else-if>
+    <else-if=(resolved.name === "sidebar-05")><Block_sidebar_05/></else-if>
+    <else-if=(resolved.name === "sidebar-06")><Block_sidebar_06/></else-if>
+    <else-if=(resolved.name === "sidebar-07")><Block_sidebar_07/></else-if>
+    <else-if=(resolved.name === "sidebar-08")><Block_sidebar_08/></else-if>
+    <else-if=(resolved.name === "sidebar-09")><Block_sidebar_09/></else-if>
+    <else-if=(resolved.name === "sidebar-10")><Block_sidebar_10/></else-if>
+    <else-if=(resolved.name === "sidebar-11")><Block_sidebar_11/></else-if>
+    <else-if=(resolved.name === "sidebar-12")><Block_sidebar_12/></else-if>
+    <else-if=(resolved.name === "sidebar-13")><Block_sidebar_13/></else-if>
+    <else-if=(resolved.name === "sidebar-14")><Block_sidebar_14/></else-if>
+    <else-if=(resolved.name === "sidebar-15")><Block_sidebar_15/></else-if>
+    <else-if=(resolved.name === "sidebar-16")><Block_sidebar_16/></else-if>
+    <else-if=(resolved.name === "signup-01")><Block_signup_01/></else-if>
+    <else-if=(resolved.name === "signup-02")><Block_signup_02/></else-if>
+    <else-if=(resolved.name === "signup-03")><Block_signup_03/></else-if>
+    <else-if=(resolved.name === "signup-04")><Block_signup_04/></else-if>
+    <else-if=(resolved.name === "signup-05")><Block_signup_05/></else-if>
+    <else><Block_dashboard_01/></else>
+  </if>
+  <else>
+    <div class="flex min-h-screen w-full items-center justify-center p-10">
+      <div class="w-full max-w-md">
+        <h1 class="mb-6 text-center text-sm font-medium text-muted-foreground">${COMPONENT_TITLES[resolved.name]}</h1>
+        <div class="flex flex-wrap items-center justify-center gap-4 rounded-lg border p-10">
+          <if=(resolved.name === "accordion")><Demo_accordion/></if>
+          <else-if=(resolved.name === "avatar")><Demo_avatar/></else-if>
+          <else-if=(resolved.name === "badge")><Demo_badge/></else-if>
+          <else-if=(resolved.name === "button")><Demo_button/></else-if>
+          <else-if=(resolved.name === "calendar")><Demo_calendar/></else-if>
+          <else-if=(resolved.name === "card")><Demo_card/></else-if>
+          <else-if=(resolved.name === "checkbox")><Demo_checkbox/></else-if>
+          <else-if=(resolved.name === "dialog")><Demo_dialog/></else-if>
+          <else-if=(resolved.name === "progress")><Demo_progress/></else-if>
+          <else-if=(resolved.name === "select")><Demo_select/></else-if>
+          <else-if=(resolved.name === "switch")><Demo_switch/></else-if>
+          <else-if=(resolved.name === "tabs")><Demo_tabs/></else-if>
+        </div>
+      </div>
+    </div>
+  </else>
+</div>
+
+<let/mounted=false/>
+<script>
+  if (!mounted && typeof window !== "undefined") {
+    mounted = true;
+    window.addEventListener("message", (event: MessageEvent) => {
+      if (!event.data || typeof event.data !== "object") return;
+      if (event.data.type !== "design-system-params") return;
+      const data = event.data.data as DesignSystemSearchParams & { __isDark?: boolean };
+      document.documentElement.classList.toggle("dark", Boolean(data.__isDark));
+      applyParams(data);
+    });
+
+    // Announce readiness so the parent's <iframe onload> re-send (which
+    // already fires) has a matching signal for the loading-skeleton swap
+    // in ../../../tags/create/preview.marko.
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: "design-system-preview-ready" }, "*");
+    }
+  }
+</script>

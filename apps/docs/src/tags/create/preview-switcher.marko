@@ -1,0 +1,39 @@
+// Ported from shadcn/ui app/(app)/(create)/components/preview-switcher.tsx.
+// NOT a desktop/tablet/mobile viewport toggle (that doesn't exist anywhere
+// in the source — grepped the whole (create) tree for "desktop"/"tablet"/
+// "mobile"/"viewport" and it isn't there). It's a two-item "01"/"02" preview
+// switcher, shown only while the current preview item is one of shadcn's
+// dedicated `preview`/`preview-0*` registry examples. Since this repo has
+// no such items, it switches between our two default `item` values instead:
+// "01" → the dashboard-01 block (this port's default/hero preview) and
+// "02" → the accordion component demo (an arbitrary, always-present
+// component:* item, standing in for shadcn's second bare preview example).
+import Button from "@marko-ui/registry/ui/button/button.marko";
+
+export interface Input {
+  item: string;
+  onItemChange: (item: string) => void;
+}
+
+static const PREVIEW_ITEMS = [
+  { label: "01", value: "block:dashboard-01" },
+  { label: "02", value: "component:accordion" },
+] as const;
+
+<const/isPreviewItem=PREVIEW_ITEMS.some((item) => item.value === input.item)/>
+
+<if=isPreviewItem>
+  <div class="dark absolute right-3 bottom-3 z-20 flex items-center gap-1 rounded-xl bg-card/90 p-1 shadow-xl backdrop-blur-xl" data-slot="preview-switcher">
+    <for|item| of=PREVIEW_ITEMS by=(item) => item.value>
+      <Button
+        variant="ghost"
+        size="sm"
+        data-active=(input.item === item.value)
+        class="h-7 min-w-8 cursor-pointer rounded-lg px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+        on-click() { input.onItemChange(item.value); }
+      >
+        ${item.label}
+      </Button>
+    </for>
+  </div>
+</if>

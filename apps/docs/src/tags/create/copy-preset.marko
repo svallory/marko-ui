@@ -1,0 +1,45 @@
+// Ported from shadcn/ui app/(app)/(create)/components/copy-preset.tsx.
+// Shows the canonical `--preset <code>` command for the current config and
+// copies it to the clipboard on click, flipping to "Copied" for 2s. The
+// source's copyToClipboardWithMeta analytics wrapper is replaced with plain
+// navigator.clipboard (no analytics pipeline in this app).
+import { cn } from "@marko-ui/registry/lib/utils.ts";
+
+export interface Input {
+  presetCode: string;
+  class?: string;
+}
+
+<let/hasCopied=false/>
+<let/refs={ timer: 0 }/>
+
+<const/label=hasCopied ? "Copied" : `--preset ${input.presetCode}`/>
+
+<const/handleCopy=() => {
+  void navigator.clipboard.writeText(`--preset ${input.presetCode}`);
+  hasCopied = true;
+  if (refs.timer) window.clearTimeout(refs.timer);
+  refs.timer = window.setTimeout(() => {
+    refs.timer = 0;
+    hasCopied = false;
+  }, 2000);
+}/>
+
+<lifecycle
+  onDestroy() {
+    if (refs.timer) window.clearTimeout(refs.timer);
+  }
+/>
+
+<button
+  type="button"
+  title=label
+  data-slot="copy-preset"
+  on-click=handleCopy
+  class=cn(
+    "inline-flex h-8 touch-manipulation items-center justify-center rounded-md border border-input bg-transparent px-2 py-0 text-sm font-medium shadow-xs transition-none select-none hover:bg-muted pointer-coarse:h-10",
+    input.class,
+  )
+>
+  <span class="block min-w-0 truncate">${label}</span>
+</button>
