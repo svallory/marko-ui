@@ -1,0 +1,47 @@
+// Ported from shadcn/ui app/(app)/(typeset)/components/get-code-drawer.tsx.
+// Title, description, the swipeDirection switch (down on mobile, right on
+// desktop), the data-mobile / max-h-[85svh] content class, and the "Done"
+// close button are verbatim. The body is ./docs-content.marko — the same tag
+// the docs panel renders, exactly as upstream shares TypesetDocsContent.
+//
+// Registry note: our drawer is the real @zag-js/drawer machine with
+// trigger/title/description/content/footer attr tags, so the source's
+// Drawer* part components map onto those attr tags rather than sibling JSX
+// elements. Emitted data-slots come from the registry drawer and already
+// track shadcn's.
+import Drawer from "@marko-ui/registry/ui/drawer/drawer.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import DocsContent from "./docs-content.marko";
+import type { TypesetSearchParams } from "./lib/search-params.ts";
+
+export interface Input {
+  params: TypesetSearchParams;
+  isMobile?: boolean;
+  /** Class for the TRIGGER button (the customizer's footer override chain). */
+  class?: string;
+}
+
+<let/open=false/>
+
+// Upstream puts data-mobile on DrawerContent and keys
+// `data-[mobile=true]:max-h-[85svh]` off it. Our registry drawer applies
+// `input.class` to the content element, so the resolved class is passed
+// there directly and the trigger's own class comes in via input.class above.
+<Drawer
+  open:=open
+  swipeDirection=(input.isMobile ? "down" : "right")
+  data-mobile=String(input.isMobile ?? false)
+  class="data-[mobile=true]:max-h-[85svh]"
+>
+  <@trigger|triggerProps: Record<string, unknown>|>
+    <Button ...triggerProps variant="outline" class=input.class>Get Code</Button>
+  </@trigger>
+  <@title>Get Code</@title>
+  <@description>Install typeset with the values you picked.</@description>
+  <@content>
+    <DocsContent params=input.params/>
+  </@content>
+  <@footer>
+    <Button variant="outline" on-click() { open = false; }>Done</Button>
+  </@footer>
+</Drawer>

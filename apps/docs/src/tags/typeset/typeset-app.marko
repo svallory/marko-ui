@@ -1,0 +1,384 @@
+// The /typeset page's state container. Marko-6 replacement for the React
+// provider/hook stack shadcn spreads across app/(app)/(typeset):
+//   typeset/layout.tsx          → LocksProvider > Suspense > HistoryProvider
+//   hooks/use-locks.tsx         → in-memory Set of locked params
+//   hooks/use-history.tsx       → undo/redo stack of settled param snapshots
+//   hooks/use-shuffle.tsx       → randomize unlocked params + reset
+//   hooks/use-theme-toggle.tsx  → light/dark toggle (D key)
+//   components/preview-override.tsx → debounced hover-preview overlay
+//   lib/search-params.ts's useTypesetSearchParams → URL-derived params
+//
+// Marko 6 has no context, so this single top-level component owns all of
+// that state in <let>s and passes values + setters down as attrs to
+// <preview> and <customizer> (which forward them to the pickers and
+// <main-menu>). Same shape as /create's design-system.marko, which this
+// mirrors deliberately.
+//
+// Faithful to source:
+// - The URL stays the source of truth. Every commit writes through
+//   applyTypesetUrlUpdate with history "replace" (the upstream hook's
+//   default) and re-reads params from the URL.
+// - A history entry is a JSON snapshot of EVERY param, with absent keys
+//   recorded as null so restoring clears them back to defaults — exactly
+//   what ParamsSync + parseTypesetSnapshot do upstream (and unlike /create,
+//   where one encoded preset string is the entry).
+// - Shuffle randomizes body/heading/mono/scale/measure/leading/flow only —
+//   never `item` — picks the heading font from ["inherit", ...bodyFonts],
+//   picks mono only from mono-type faces, and drops every locked param from
+//   the update before committing. reset() clears every managed key.
+// - Hover-preview overrides are debounced 50ms trailing and REPLACE rather
+//   than merge; clears are never debounced.
+//
+// Deviations:
+// - No Suspense/skeleton boundary: upstream's HistoryProvider reads
+//   useSearchParams(), which opts a Next subtree out of prerendering, so
+//   typeset-skeleton.tsx paints until it resolves client-side. This route
+//   renders synchronously from URL-derived defaults like every other page
+//   here, so typeset-skeleton.marko is ported but unreachable (same call
+//   /create's port made for create-skeleton.marko).
+// - next-themes → this site's own dark-class-on-<html> + localStorage
+//   mechanism (see ../theme-toggle.marko), which is what next-themes
+//   resolves to at the DOM level anyway. useMetaColor has no analogue here
+//   (no theme-color meta tag on this site) and is dropped.
+// - One document keydown listener covers R / ⇧R / D / ⌘Z / ⇧⌘Z / Ctrl+Y
+//   instead of one per hook — the hooks only split them up because each
+//   owned its own effect.
+import Customizer from "./customizer.marko";
+import DocsPanel from "./docs-panel.marko";
+import Preview from "./preview.marko";
+import { FONTS } from "./lib/fonts.ts";
+import {
+  applyTypesetUrlUpdate,
+  clearTypesetUrlParams,
+  getTypesetUrlSearchParams,
+  isEditableTarget,
+  parseTypesetSnapshot,
+  readTypesetParams,
+  TYPESET_FLOWS,
+  TYPESET_LEADINGS,
+  TYPESET_MEASURES,
+  TYPESET_PARAM_KEYS,
+  TYPESET_SEARCH_PARAM_DEFAULTS,
+  TYPESET_SIZES,
+  type TypesetSearchParams,
+} from "./lib/search-params.ts";
+
+// use-locks.tsx: everything but the specimen switcher.
+export type LockableParam = Exclude<keyof TypesetSearchParams, "item">;
+
+static const PREVIEW_OVERRIDE_DEBOUNCE_MS = 50;
+static const APPLE_PLATFORM_REGEX = /Mac|iPhone|iPad|iPod/;
+// customizer.tsx's useIsMobile() — shadcn's use-mobile hook breakpoint.
+static const MOBILE_BREAKPOINT = 768;
+
+// Non-empty by construction at every call site; the assertion keeps the
+// result non-nullable under noUncheckedIndexedAccess.
+static function randomItem<T>(items: readonly T[]) {
+  return items[Math.floor(Math.random() * items.length)] as T;
+}
+
+static function isSameOverride(
+  a: Partial<TypesetSearchParams> | null,
+  b: Partial<TypesetSearchParams> | null,
+) {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const aKeys = Object.keys(a) as (keyof TypesetSearchParams)[];
+  const bKeys = Object.keys(b) as (keyof TypesetSearchParams)[];
+  return aKeys.length === bKeys.length && aKeys.every((key) => a[key] === b[key]);
+}
+
+// ParamsSync upstream: a history entry is every param's RAW url value
+// (null when absent), JSON-stringified.
+static function snapshotOfUrl() {
+  const searchParams = new URLSearchParams(window.location.search);
+  return JSON.stringify(
+    Object.fromEntries(TYPESET_PARAM_KEYS.map((key) => [key, searchParams.get(key)])),
+  );
+}
+
+// Committed params — derived from the URL (SSR uses defaults, the mount
+// handler below reads the real URL immediately on the client).
+<let/params=TYPESET_SEARCH_PARAM_DEFAULTS as TypesetSearchParams/>
+// preview-override.tsx: replaces, never merges.
+<let/previewOverride=null as Partial<TypesetSearchParams> | null/>
+// use-locks.tsx: in-memory only, reset on reload — same as source.
+<let/locks=(new Set()) as Set<LockableParam>/>
+// use-history.tsx: the stack of settled snapshots.
+<let/historyEntries=[] as string[]/>
+<let/historyIndex=0/>
+<let/historyMaxIndex=0/>
+<let/isMac=false/>
+<let/isMobile=false/>
+// Non-reactive mutable refs (React useRef equivalents).
+<let/refs={
+  navigating: false,
+  inited: false,
+  previewTimer: 0,
+  cleanup: null as (() => void) | null,
+}/>
+
+// ---------------------------------------------------------------------------
+// Params + history (search-params hook + HistoryProvider)
+// ---------------------------------------------------------------------------
+
+// HistoryProvider's effect body, run synchronously after each URL write
+// instead of via a useSearchParams subscription.
+<const/recordHistoryEntry=() => {
+  const snapshot = snapshotOfUrl();
+
+  if (!refs.inited) {
+    refs.inited = true;
+    historyEntries = [snapshot];
+    return;
+  }
+
+  if (refs.navigating) {
+    refs.navigating = false;
+    return;
+  }
+
+  if (snapshot === historyEntries[historyIndex]) {
+    return;
+  }
+
+  const nextEntries = historyEntries.slice(0, historyIndex + 1);
+  nextEntries.push(snapshot);
+  historyEntries = nextEntries;
+  historyIndex = nextEntries.length - 1;
+  historyMaxIndex = nextEntries.length - 1;
+}/>
+
+<const/setParams=(update: Partial<Record<keyof TypesetSearchParams, string | null>>) => {
+  applyTypesetUrlUpdate(update);
+  params = readTypesetParams();
+  recordHistoryEntry();
+}/>
+
+<const/canGoBack=(historyIndex > 0)/>
+<const/canGoForward=(historyIndex < historyMaxIndex)/>
+
+<const/restoreHistory=(entry: string | undefined) => {
+  if (entry === undefined) return;
+  applyTypesetUrlUpdate(parseTypesetSnapshot(entry));
+  params = readTypesetParams();
+}/>
+
+<const/goBack=() => {
+  if (historyIndex <= 0) return;
+  refs.navigating = true;
+  const nextIndex = historyIndex - 1;
+  historyIndex = nextIndex;
+  restoreHistory(historyEntries[nextIndex]);
+}/>
+
+<const/goForward=() => {
+  if (historyIndex >= historyMaxIndex) return;
+  refs.navigating = true;
+  const nextIndex = historyIndex + 1;
+  historyIndex = nextIndex;
+  restoreHistory(historyEntries[nextIndex]);
+}/>
+
+// ---------------------------------------------------------------------------
+// Locks (use-locks.tsx)
+// ---------------------------------------------------------------------------
+
+<const/toggleLock=(param: LockableParam) => {
+  const next = new Set(locks);
+  if (next.has(param)) {
+    next.delete(param);
+  } else {
+    next.add(param);
+  }
+  locks = next;
+}/>
+
+// ---------------------------------------------------------------------------
+// Shuffle / reset (use-shuffle.tsx)
+// ---------------------------------------------------------------------------
+
+// Randomize the type design (fonts + size/measure/rhythm). Leaves item (the
+// specimen) alone; locked params keep their current value.
+<const/shuffle=() => {
+  const bodyFonts = FONTS.filter((font) => font.type !== "mono").map((font) => font.id);
+  const monoFonts = FONTS.filter((font) => font.type === "mono").map((font) => font.id);
+  const next: Record<string, string> = {
+    body: randomItem(bodyFonts),
+    heading: randomItem(["inherit", ...bodyFonts]),
+    mono: randomItem(monoFonts),
+    scale: randomItem(TYPESET_SIZES.map((option) => option.value)),
+    measure: randomItem(TYPESET_MEASURES.map((option) => option.value)),
+    leading: randomItem(TYPESET_LEADINGS.map((option) => option.value)),
+    flow: randomItem(TYPESET_FLOWS.map((option) => option.value)),
+  };
+
+  for (const param of locks) {
+    delete next[param];
+  }
+
+  setParams(next);
+}/>
+
+// null clears every managed key back to its default.
+<const/reset=() => {
+  clearTypesetUrlParams();
+  params = readTypesetParams();
+  recordHistoryEntry();
+}/>
+
+// ---------------------------------------------------------------------------
+// Hover-preview overlay (preview-override.tsx)
+// ---------------------------------------------------------------------------
+
+<const/clearOverride=() => {
+  if (refs.previewTimer) {
+    window.clearTimeout(refs.previewTimer);
+    refs.previewTimer = 0;
+  }
+  previewOverride = null;
+}/>
+
+<const/setOverride=(patch: Partial<TypesetSearchParams> | null) => {
+  if (!patch) {
+    clearOverride();
+    return;
+  }
+  if (refs.previewTimer) {
+    window.clearTimeout(refs.previewTimer);
+  }
+  refs.previewTimer = window.setTimeout(() => {
+    refs.previewTimer = 0;
+    if (!isSameOverride(previewOverride, patch)) {
+      previewOverride = patch;
+    }
+  }, PREVIEW_OVERRIDE_DEBOUNCE_MS);
+}/>
+
+// ---------------------------------------------------------------------------
+// Theme toggle (use-theme-toggle.tsx via this site's dark-class mechanism)
+// ---------------------------------------------------------------------------
+
+<const/toggleTheme=() => {
+  const nextIsDark = !document.documentElement.classList.contains("dark");
+  document.documentElement.classList.toggle("dark", nextIsDark);
+  try {
+    localStorage.setItem("theme", nextIsDark ? "dark" : "light");
+  } catch (error) {}
+}/>
+
+// ---------------------------------------------------------------------------
+// Mount: URL read, keyboard shortcuts, viewport watch
+// ---------------------------------------------------------------------------
+
+<lifecycle
+  onMount() {
+    isMac = APPLE_PLATFORM_REGEX.test(navigator.platform || navigator.userAgent);
+    params = readTypesetParams();
+    recordHistoryEntry();
+
+    const mediaQuery = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
+    isMobile = mediaQuery.matches;
+    const onViewportChange = () => {
+      isMobile = mediaQuery.matches;
+    };
+    mediaQuery.addEventListener("change", onViewportChange);
+
+    const onKeydown = (e: KeyboardEvent) => {
+      if (isEditableTarget(e.target)) {
+        return;
+      }
+
+      // use-history.tsx: ⌘/Ctrl+Z undo, ⇧⌘Z / Ctrl+Y redo.
+      if (e.metaKey || e.ctrlKey) {
+        const key = e.key.toLowerCase();
+        if ((key === "z" && e.shiftKey) || (key === "y" && e.ctrlKey)) {
+          e.preventDefault();
+          goForward();
+          return;
+        }
+        if (key === "z") {
+          e.preventDefault();
+          goBack();
+        }
+        return;
+      }
+
+      if (e.altKey) {
+        return;
+      }
+
+      // main-menu.tsx: R shuffles, ⇧R resets.
+      if (e.key === "r" || e.key === "R") {
+        e.preventDefault();
+        if (e.shiftKey) {
+          reset();
+        } else {
+          shuffle();
+        }
+        return;
+      }
+
+      // use-theme-toggle.tsx: D toggles light/dark.
+      if (e.key === "d" || e.key === "D") {
+        e.preventDefault();
+        toggleTheme();
+      }
+    };
+
+    // Browser back/forward: re-derive params from the URL.
+    const onPopState = () => {
+      params = readTypesetParams();
+      recordHistoryEntry();
+    };
+
+    document.addEventListener("keydown", onKeydown);
+    window.addEventListener("popstate", onPopState);
+
+    // Assigning through a widened alias: a direct `refs.cleanup = ...` is a
+    // member assignment on a reactive <let>, which Marko's compiler rejects
+    // ("Cannot assign to this expression"). Same workaround
+    // ../create/design-system.marko uses for its own listener teardown.
+    (refs as unknown as Record<string, unknown>).cleanup = () => {
+      document.removeEventListener("keydown", onKeydown);
+      window.removeEventListener("popstate", onPopState);
+      mediaQuery.removeEventListener("change", onViewportChange);
+    };
+  }
+  onDestroy() {
+    const cleanup = (refs as unknown as Record<string, unknown>).cleanup;
+    if (typeof cleanup === "function") cleanup();
+    if (refs.previewTimer) window.clearTimeout(refs.previewTimer);
+  }
+/>
+
+// typeset/page.tsx composes DocsPanel first, then the preview-override
+// provider wrapping Preview + Customizer — mirrored here, with the override
+// state living on this container instead of in two React contexts.
+<DocsPanel params=params/>
+<Preview
+  params=params
+  previewOverride=previewOverride
+  onItemChange=(item) => setParams({ item })
+  onShuffle=shuffle
+  onReset=reset
+  onUndo=goBack
+  onRedo=goForward
+  onToggleTheme=toggleTheme
+/>
+<Customizer
+  params=params
+  setParams=setParams
+  setOverride=setOverride
+  locks=locks
+  toggleLock=toggleLock
+  canGoBack=canGoBack
+  canGoForward=canGoForward
+  isMac=isMac
+  isMobile=isMobile
+  onUndo=goBack
+  onRedo=goForward
+  onShuffle=shuffle
+  onReset=reset
+  onToggleTheme=toggleTheme
+/>

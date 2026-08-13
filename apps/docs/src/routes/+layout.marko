@@ -3,16 +3,18 @@ import "../tags/site/site-header.marko";
 import "../tags/site/site-footer.marko";
 import { resolveMeta, SITE_NAME, DEFAULT_OG_IMAGE } from "../lib/site-meta.ts";
 
-// Block previews under /blocks/view/ and the /create theme-builder's own
-// preview iframe target (/create/preview) render chrome-free: each is a
-// full page meant to be embedded in an <iframe>, so site header/footer
-// would frame it wrongly (mirrors shadcn's isolated /view and /preview
-// routes, both chrome-free in the source too). Resolved from the request
-// URL server-side so the chrome is absent from the SSR payload rather than
+// Block previews under /blocks/view/, the /create theme-builder's own
+// preview iframe target (/create/preview) and /typeset's specimen iframe
+// target (/typeset/preview) render chrome-free: each is a full page meant
+// to be embedded in an <iframe>, so site header/footer would frame it
+// wrongly (mirrors shadcn's isolated /view and /preview routes, both
+// chrome-free in the source too). Resolved from the request URL
+// server-side so the chrome is absent from the SSR payload rather than
 // hidden after hydration.
 <const/isBlockPreview=(
   $global.url.pathname.startsWith("/blocks/view/") ||
-  $global.url.pathname.startsWith("/create/preview")
+  $global.url.pathname.startsWith("/create/preview") ||
+  $global.url.pathname.startsWith("/typeset/preview")
 )/>
 
 // Per-route title/description/canonical/OG, looked up by pathname. See

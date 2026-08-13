@@ -1,0 +1,215 @@
+// Ported from the TypesetDocsContent half of shadcn/ui
+// app/(app)/(typeset)/components/docs-panel.tsx, along with its private
+// leaves: DocsSection, DocsProse, DocsCode, DocsCommand, DocsFonts,
+// FrameworkPicker, CopyCssButton, CopyPromptButton. Every class string and
+// the four numbered docs steps are verbatim.
+//
+// Deviations, each forced:
+// - Tabs: our registry Tabs is items=[]-driven and emits its own list
+//   markup, so the Docs/Prompt switch is written inline here with shadcn's
+//   own tabs-list/tabs-trigger class strings and data-slots, matching what
+//   base-nova's Tabs renders. Same call /create's port made for its inline
+//   switches.
+// - The CSS fetch targets /typeset/css, not /typeset.css: @marko/run treats
+//   a period as the flat-route separator so the literal path cannot be
+//   declared (see ../../routes/typeset/css/+handler.ts, and the shared
+//   TYPESET_CSS_PATH constant in lib/docs-content.ts).
+// - trackEvent() calls are dropped — this site has no analytics pipeline.
+//   The clipboard write and the 2s "copied" state they wrapped are kept.
+// - useConfig()'s persisted package-manager preference becomes a local
+//   <let> (no cross-page config store here); the four pm buttons and the
+//   command transforms are unchanged.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Select from "@marko-ui/registry/ui/select/select.marko";
+import { cn } from "@marko-ui/registry/lib/utils.ts";
+import { TEMPLATES } from "./lib/templates.ts";
+import {
+  getCommandForPackageManager,
+  getDocsContent,
+  PACKAGE_MANAGERS,
+  TYPESET_CSS_PATH,
+  type PackageManager,
+} from "./lib/docs-content.ts";
+import type { TypesetSearchParams } from "./lib/search-params.ts";
+
+export interface Input {
+  params: TypesetSearchParams;
+}
+
+static const FRAMEWORK_ITEMS = TEMPLATES.map((template) => ({
+  value: template.value,
+  label: template.title,
+}));
+
+<let/tab="docs"/>
+<let/framework="next"/>
+<let/packageManager="pnpm" as PackageManager/>
+<let/rawCss=null as string | null/>
+<let/hasCopiedCss=false/>
+<let/hasCopiedPrompt=false/>
+<let/fetched=false/>
+
+<script>
+  // Upstream fetches the shipped stylesheet so "Copy typeset.css" hands over
+  // the real file rather than a reconstruction.
+  if (!fetched && typeof window !== "undefined") {
+    fetched = true;
+    fetch(TYPESET_CSS_PATH)
+      .then((response) => response.text())
+      .then((text) => {
+        rawCss = text;
+      })
+      .catch(() => {
+        rawCss = null;
+      });
+  }
+</script>
+
+<const/docs=getDocsContent(input.params, framework)/>
+
+<const/copyCss=() => {
+  if (!rawCss) return;
+  navigator.clipboard.writeText(rawCss).then(() => {
+    hasCopiedCss = true;
+    window.setTimeout(() => { hasCopiedCss = false; }, 2000);
+  });
+}/>
+
+<const/copyPrompt=() => {
+  navigator.clipboard.writeText(docs.prompt).then(() => {
+    hasCopiedPrompt = true;
+    window.setTimeout(() => { hasCopiedPrompt = false; }, 2000);
+  });
+}/>
+
+<div data-slot="tabs" class="flex min-h-0 flex-1 flex-col gap-0">
+  <div class="flex items-center justify-between gap-2 border-b px-4 py-3">
+    <div
+      role="tablist"
+      data-slot="tabs-list"
+      class="bg-muted text-muted-foreground inline-flex w-fit items-center justify-center rounded-lg p-[3px]"
+    >
+      <button
+        type="button"
+        role="tab"
+        data-slot="tabs-trigger"
+        data-selected=(tab === "docs" ? "" : undefined)
+        aria-selected=(tab === "docs" ? "true" : "false")
+        class="data-[selected]:bg-background data-[selected]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] data-[selected]:shadow-sm"
+        on-click() { tab = "docs"; }
+      >
+        Docs
+      </button>
+      <button
+        type="button"
+        role="tab"
+        data-slot="tabs-trigger"
+        data-selected=(tab === "prompt" ? "" : undefined)
+        aria-selected=(tab === "prompt" ? "true" : "false")
+        class="data-[selected]:bg-background data-[selected]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] data-[selected]:shadow-sm"
+        on-click() { tab = "prompt"; }
+      >
+        Prompt
+      </button>
+    </div>
+    <Select
+      items=FRAMEWORK_ITEMS
+      value=[framework]
+      valueChange=(value: string[]) => { framework = value[0] ?? "next"; }
+      positioning={ placement: "bottom-end" }
+    />
+  </div>
+  <div class="min-h-0 flex-1 scroll-fade scrollbar-none overflow-y-auto p-4 md:p-6">
+    <if=(tab === "docs")>
+      <div data-slot="tabs-content" class="flex flex-col gap-6">
+        <section class="flex flex-col gap-2.5">
+          <h3 class="text-sm font-medium">1. Create typeset.css</h3>
+          <p class="text-sm leading-relaxed text-muted-foreground">
+            Copy the stylesheet into a <code class="font-mono">typeset.css</code> file next to your main CSS file, then import it:
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            class="w-fit"
+            disabled=(!rawCss)
+            on-click() { copyCss(); }
+          >
+            <if=hasCopiedCss>
+              <svg data-icon="inline-start" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </if>
+            <else>
+              <svg data-icon="inline-start" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            </else>
+            Copy typeset.css
+          </Button>
+          <div class="relative rounded-lg bg-muted/60">
+            <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed">${'@import "tailwindcss";\n@import "./typeset.css";'}</pre>
+          </div>
+        </section>
+        <section class="flex flex-col gap-2.5">
+          <h3 class="text-sm font-medium">2. Add the fonts</h3>
+          <if=(framework === "next")>
+            <p class="text-sm leading-relaxed text-muted-foreground">
+              Load the fonts with <code class="font-mono">next/font</code> in your root layout:
+            </p>
+            <div class="relative rounded-lg bg-muted/60">
+              <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed">${docs.nextFontCode}</pre>
+            </div>
+          </if>
+          <else>
+            <div class="rounded-lg bg-muted/60">
+              <div class="flex items-center gap-3 px-3 pt-2">
+                <for|pm| of=PACKAGE_MANAGERS>
+                  <button
+                    type="button"
+                    data-active=String(pm === packageManager)
+                    class="font-mono text-xs text-muted-foreground transition-colors hover:text-foreground data-[active=true]:text-foreground"
+                    on-click() { packageManager = pm; }
+                  >
+                    ${pm}
+                  </button>
+                </for>
+              </div>
+              <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-xs leading-relaxed">${getCommandForPackageManager(packageManager, docs.fontsourceCommand)}</pre>
+            </div>
+            <p class="text-sm leading-relaxed text-muted-foreground">Then import them in your CSS file:</p>
+            <div class="relative rounded-lg bg-muted/60">
+              <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed">${docs.fontsourceCss}</pre>
+            </div>
+          </else>
+        </section>
+        <section class="flex flex-col gap-2.5">
+          <h3 class="text-sm font-medium">3. Create your custom typeset</h3>
+          <div class="relative rounded-lg bg-muted/60">
+            <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed">${docs.preset}</pre>
+          </div>
+        </section>
+        <section class="flex flex-col gap-2.5">
+          <h3 class="text-sm font-medium">4. Wrap your content</h3>
+          <div class="relative rounded-lg bg-muted/60">
+            <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed">${docs.usage}</pre>
+          </div>
+        </section>
+      </div>
+    </if>
+    <else>
+      <div data-slot="tabs-content" class="flex flex-col gap-2.5">
+        <p class="text-sm leading-relaxed text-muted-foreground">
+          One prompt with your picks baked in. Copy it and paste it into your coding agent.
+        </p>
+        <div class="relative rounded-lg bg-muted/60">
+          <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed max-h-102 scroll-fade overflow-y-auto whitespace-pre-wrap">${docs.prompt}</pre>
+        </div>
+        <Button variant="outline" size="sm" class="w-fit" on-click() { copyPrompt(); }>
+          <if=hasCopiedPrompt>
+            <svg data-icon="inline-start" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          </if>
+          <else>
+            <svg data-icon="inline-start" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          </else>
+          Copy Prompt
+        </Button>
+      </div>
+    </else>
+  </div>
+</div>

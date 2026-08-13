@@ -1,0 +1,28 @@
+// Ported from the TypesetDocsPanel half of shadcn/ui
+// app/(app)/(typeset)/components/docs-panel.tsx. Class strings verbatim: the
+// xl-and-up-only column, the max-h-[calc(100vh-16rem)] ring-1 shell, and the
+// muted "Read the docs" link button beneath it. The panel body is
+// ./docs-content.marko, the same tag the Get Code drawer renders (upstream
+// shares TypesetDocsContent the same way).
+import DocsContent from "./docs-content.marko";
+import type { TypesetSearchParams } from "./lib/search-params.ts";
+
+export interface Input {
+  params: TypesetSearchParams;
+}
+
+<div class="hidden w-88 flex-col items-start gap-3 xl:flex 2xl:w-104">
+  <div class="isolate flex max-h-[calc(100vh-16rem)] w-full flex-col overflow-hidden rounded-2xl bg-background ring-1 ring-foreground/10">
+    <DocsContent params=input.params/>
+  </div>
+  // Upstream renders <Button variant="link" size="sm" render={<Link/>}>;
+  // Marko has no render-prop escape, so the anchor carries the resolved
+  // link/sm class string directly.
+  <a
+    href="/docs/typeset"
+    data-slot="button"
+    class="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md px-3 h-8 text-sm font-medium whitespace-nowrap text-primary underline-offset-4 transition-all outline-none hover:underline text-muted-foreground"
+  >
+    Read the docs
+  </a>
+</div>

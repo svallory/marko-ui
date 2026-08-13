@@ -1,0 +1,232 @@
+// The /typeset preview iframe target. Ports THREE shadcn files that Next
+// splits across a layout and a page, because marko-run has no per-subtree
+// layout file for this route:
+//   app/(view)/preview/typeset/layout.tsx      — the frame + font/size vars
+//   app/(view)/preview/typeset/[name]/page.tsx — the fixture content
+//   app/(app)/(typeset)/components/preview-provider.tsx — postMessage → vars
+// plus the three inline forwarder scripts from components/forward-scripts.tsx.
+//
+// Wrapper markup, class strings and the CSS-variable flow are verbatim from
+// layout.tsx: the outer flex frame carries font-family / --font-heading /
+// --font-mono off --preview-font* with the SSR defaults as fallbacks, and the
+// inner .preview-params div carries font-size / max-width off --preview-size
+// and --preview-measure. The PARAMS_STYLE <style> block (mapping
+// --typeset-leading / --typeset-flow onto --preview-leading / --preview-flow)
+// is reproduced exactly.
+//
+// Deviations, all forced and all noted:
+// - No `import "typeset.css"`: this app imports it globally from
+//   ../../../app.css, so it is already present in this document. Upstream
+//   scopes it to the preview route because the rest of shadcn's site doesn't
+//   need it.
+// - No generateStaticParams/dynamicParams=false. marko-run has no such
+//   mechanism; an unknown $name renders the same 404-ish empty state the
+//   Next notFound() produces, via the <else> branch below.
+// - The fixture pick is a static <if>/<else-if> chain over static imports.
+//   Dynamic tags in ROUTE files crash production hydration
+//   (notes/bug-marko-dynamic-tag-hydration-crash.md); a FIXTURES[name] index
+//   is fine here because the values are plain HTML strings, not components,
+//   so this is a plain lookup with an explicit membership guard.
+// - Fonts: next/font preloads every face upstream. Here the provider injects
+//   a Google Fonts <link> for the picked faces on demand, the same approach
+//   ../../../tags/create/... and routes/create/preview/+page.marko use.
+//
+// Forwarder scripts: PORTED, deliberately. The skill's iframe-preview note
+// says only to forward keyboard events out of the iframe if the controls
+// actually live inside it — and shadcn's do here: the preview iframe is
+// focusable content covering most of the viewport, so R / ⇧R / D / ⌘Z / ⇧⌘Z
+// pressed while it has focus must reach the parent's real actions. They are
+// emitted as inline <html-script> so they run before hydration, matching
+// upstream's strategy="beforeInteractive".
+import {
+  AVAILABLE_CONTENT_OPTIONS,
+  FIXTURES,
+} from "../../../../tags/typeset/lib/fixtures/index.ts";
+import { CHAT_QUESTION } from "../../../../tags/typeset/lib/fixtures/chat.ts";
+import { findFont } from "../../../../tags/typeset/lib/fonts.ts";
+import {
+  FONT_DEFINITIONS,
+  googleFontsUrl,
+} from "../../../../tags/typeset/lib/font-definitions.ts";
+import {
+  parseTypesetSearchParams,
+  TYPESET_MEASURES,
+  TYPESET_PARAMS_MESSAGE,
+  TYPESET_SEARCH_PARAM_DEFAULTS,
+  type TypesetSearchParams,
+} from "../../../../tags/typeset/lib/search-params.ts";
+import { TYPESET_COMMAND_MESSAGE } from "../../../../tags/typeset/lib/commands.ts";
+
+static const DEFAULTS = TYPESET_SEARCH_PARAM_DEFAULTS;
+static const DEFAULT_FONT = findFont(DEFAULTS.body)?.value;
+static const DEFAULT_MONO = findFont(DEFAULTS.mono)?.value;
+static const DEFAULT_MEASURE = TYPESET_MEASURES.find(
+  (option) => option.value === DEFAULTS.measure,
+)?.width;
+
+static const PARAMS_STYLE = `.preview-params .typeset {
+  --typeset-leading: var(--preview-leading, ${DEFAULTS.leading});
+  --typeset-flow: var(--preview-flow, ${DEFAULTS.flow});
+}`;
+
+// preview-provider.tsx's previewValues(): the committed params projected onto
+// the --preview-* custom properties the frame above reads.
+static function previewValues(params: TypesetSearchParams) {
+  const bodyFont = findFont(params.body)?.value;
+
+  return {
+    "--preview-size": `${params.scale}px`,
+    "--preview-leading": params.leading,
+    "--preview-flow": params.flow,
+    "--preview-measure": TYPESET_MEASURES.find(
+      (option) => option.value === params.measure,
+    )?.width,
+    "--preview-font": bodyFont,
+    "--preview-font-heading":
+      params.heading === "inherit" ? bodyFont : findFont(params.heading)?.value,
+    "--preview-font-mono": findFont(params.mono)?.value,
+  } as Record<string, string | undefined>;
+}
+
+// next/font replacement: load the faces the params actually name.
+static function loadFonts(params: TypesetSearchParams) {
+  for (const id of [params.body, params.heading, params.mono]) {
+    const definition = FONT_DEFINITIONS.find((entry) => entry.name === id);
+    if (!definition) continue;
+    const elementId = `typeset-font-${definition.name}`;
+    if (document.getElementById(elementId)) continue;
+    const link = document.createElement("link");
+    link.id = elementId;
+    link.rel = "stylesheet";
+    link.href = googleFontsUrl(definition);
+    document.head.appendChild(link);
+  }
+}
+
+static function applyPreviewParams(params: TypesetSearchParams) {
+  const style = document.documentElement.style;
+  for (const [name, value] of Object.entries(previewValues(params))) {
+    if (value) {
+      style.setProperty(name, value);
+    } else {
+      style.removeProperty(name);
+    }
+  }
+  loadFonts(params);
+}
+
+// Route params live on $global, not on `input` (see marko-run docs).
+<const/name=$global.params.name/>
+<const/isKnownItem=AVAILABLE_CONTENT_OPTIONS.some((option) => option.value === name)/>
+<const/fixtureHtml=(isKnownItem ? FIXTURES[name as keyof typeof FIXTURES] : "")/>
+
+// SSR reads the query string so the first paint already carries the shared
+// params (upstream relies on nuqs doing the same during the server render).
+<const/ssrParams=parseTypesetSearchParams($global.url.searchParams)/>
+<const/ssrValues=previewValues(ssrParams)/>
+<const/ssrMeasure=(ssrValues["--preview-measure"] ?? DEFAULT_MEASURE)/>
+
+// forward-scripts.tsx — the three inline listeners, verbatim in behavior:
+// r/⇧R → shuffle/reset, d → toggle-theme, ⌘Z/⇧⌘Z/Ctrl+Y → undo/redo. Each
+// posts { type: TYPESET_COMMAND_MESSAGE, command } to the parent origin.
+<html-script>
+  (function () {
+    var MESSAGE = "$!{TYPESET_COMMAND_MESSAGE}";
+    function isEditable(target) {
+      return (
+        (target instanceof HTMLElement && target.isContentEditable) ||
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement
+      );
+    }
+    function send(command) {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: MESSAGE, command: command }, window.location.origin);
+      }
+    }
+    // RandomizeScript: r shuffles, Shift+R resets.
+    document.addEventListener("keydown", function (e) {
+      if ((e.key === "r" || e.key === "R") && !e.metaKey && !e.ctrlKey) {
+        if (isEditable(e.target)) return;
+        e.preventDefault();
+        send(e.shiftKey ? "reset" : "shuffle");
+      }
+    });
+    // DarkModeScript: D toggles the theme.
+    document.addEventListener("keydown", function (e) {
+      if ((e.key === "d" || e.key === "D") && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        if (isEditable(e.target)) return;
+        e.preventDefault();
+        send("toggle-theme");
+      }
+    });
+    // HistoryScript: undo/redo.
+    document.addEventListener("keydown", function (e) {
+      if (!e.metaKey && !e.ctrlKey) return;
+      if (isEditable(e.target)) return;
+      var key = e.key.toLowerCase();
+      var command = null;
+      if ((key === "z" && e.shiftKey) || (key === "y" && e.ctrlKey)) {
+        command = "redo";
+      } else if (key === "z") {
+        command = "undo";
+      }
+      if (command) {
+        e.preventDefault();
+        send(command);
+      }
+    });
+  })();
+</html-script>
+
+// `html-style`, not `style`: Marko's core <style> tag substitutes
+// interpolations as var(--…) references, which cannot carry a whole rule.
+<html-style>$!{PARAMS_STYLE}</html-style>
+
+<div
+  class="flex min-h-svh justify-center px-6 pt-8 pb-24 md:pt-24 md:pb-32"
+  style=`font-family: var(--preview-font, ${DEFAULT_FONT}); --font-heading: var(--preview-font-heading, ${DEFAULT_FONT}); --font-mono: var(--preview-font-mono, ${DEFAULT_MONO});`
+>
+  <div
+    class="preview-params w-full"
+    style=`font-size: var(--preview-size, ${DEFAULTS.scale}px); max-width: var(--preview-measure, ${ssrMeasure});`
+  >
+    <if=!isKnownItem>
+      // Upstream calls notFound() for an unknown [name]; marko-run has no
+      // dynamicParams=false, so the unknown case renders empty rather than
+      // leaking a fixture.
+      <div class="typeset w-full"/>
+    </if>
+    <else-if=(name === "chat")>
+      // [name]/page.tsx special-cases chat: a fake user question bubble is
+      // page chrome, rendered OUTSIDE the typeset container.
+      <div class="flex w-full flex-col gap-10">
+        <div class="ml-auto w-fit max-w-[65%] rounded-3xl bg-muted px-4 py-2.5">${CHAT_QUESTION}</div>
+        <div class="typeset w-full">$!{fixtureHtml}</div>
+      </div>
+    </else-if>
+    <else>
+      <div class="typeset w-full">$!{fixtureHtml}</div>
+    </else>
+  </div>
+</div>
+
+<let/mounted=false/>
+<script>
+  // preview-provider.tsx: apply the SSR params immediately (upstream does
+  // this in a layout effect before first paint and gates render on isReady;
+  // here the SSR markup already carries the fallbacks inline, so there is no
+  // unstyled flash to gate against), then track the parent's postMessages.
+  if (!mounted && typeof window !== "undefined") {
+    mounted = true;
+    applyPreviewParams(ssrParams);
+
+    window.addEventListener("message", (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      if (!event.data || typeof event.data !== "object") return;
+      if (event.data.type !== TYPESET_PARAMS_MESSAGE || !event.data.data) return;
+      applyPreviewParams(event.data.data as TypesetSearchParams);
+    });
+  }
+</script>

@@ -32,7 +32,11 @@ export interface Input {
   isMobile?: boolean;
 }
 
-<const/bodyFont=(findFont(input.bodyValue) ?? FONTS[0])/>
+// FONTS is never empty (font-definitions.ts has 23 non-excluded entries), but
+// the index read is widened by noUncheckedIndexedAccess — assert once here so
+// bodyFont/currentFont stay non-nullable downstream.
+<const/fallbackFont=(FONTS[0] as (typeof FONTS)[number])/>
+<const/bodyFont=(findFont(input.bodyValue) ?? fallbackFont)/>
 <const/inheritsBodyFont=(input.param === "heading" && input.value === "inherit")/>
 <const/currentFont=(inheritsBodyFont ? bodyFont : (findFont(input.value) ?? bodyFont))/>
 

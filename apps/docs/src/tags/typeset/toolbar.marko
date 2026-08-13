@@ -40,7 +40,7 @@ export interface Input {
   <div class="dark flex items-center gap-1 rounded-xl bg-card/90 p-1 shadow-xl backdrop-blur-xl">
     <for|option, index| of=CONTENT_OPTIONS by=(option) => option.value>
       <Tooltip positioning={ placement: "top", offset: { mainAxis: 10 } } content=option.label>
-        <@trigger|triggerProps|>
+        <@trigger|triggerProps: Record<string, unknown>|>
           <Button
             ...triggerProps
             variant="ghost"
@@ -59,7 +59,7 @@ export interface Input {
         <div class="mx-0.5 h-4 w-px bg-border"/>
         <for|option, index| of=DEV_CONTENT_OPTIONS by=(option) => option.value>
           <Tooltip positioning={ placement: "top", offset: { mainAxis: 10 } } content=option.label>
-            <@trigger|triggerProps|>
+            <@trigger|triggerProps: Record<string, unknown>|>
               <Button
                 ...triggerProps
                 variant="ghost"

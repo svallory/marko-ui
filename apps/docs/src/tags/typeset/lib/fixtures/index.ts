@@ -44,7 +44,11 @@ export const DEV_CONTENT_OPTIONS: readonly {
   // { value: "tailwind", label: "Tailwind" },
 ]
 
-export const IS_DEV = import.meta.env?.DEV ?? false
+// Vite's build-time flag. Typed loosely because this app's tsconfig does not
+// pull in vite/client's ImportMeta augmentation.
+export const IS_DEV: boolean = Boolean(
+  (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV
+)
 
 export const AVAILABLE_CONTENT_OPTIONS = IS_DEV
   ? ([...CONTENT_OPTIONS, ...DEV_CONTENT_OPTIONS] as const)

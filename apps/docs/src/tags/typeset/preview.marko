@@ -1,0 +1,123 @@
+// Ported from shadcn/ui app/(app)/(typeset)/components/preview.tsx.
+// Wrapper class string and the TypesetToolbar overlay are verbatim.
+//
+// Behavior ported 1:1:
+// - The iframe src is `/typeset/preview/<item>` with the current params
+//   serialized onto it. It is re-keyed ONLY when the committed item changes
+//   (a param change must never reload the iframe); everything else flows
+//   through postMessage. Hover-preview overrides never contain `item`, so
+//   they can never trigger the reload branch — same invariant as upstream.
+// - Content-identical re-sends are skipped (isSameParams), because each
+//   message triggers a full param sync inside the iframe.
+// - Params are re-sent on iframe load, so a freshly navigated document
+//   picks up the live values.
+// - The iframe forwards its keyboard shortcuts as typed commands
+//   (TYPESET_COMMAND_MESSAGE); they are dispatched here to the real actions
+//   passed down from the state container. Origin and source are both
+//   checked before acting, as upstream does.
+//
+// Marko note: `iframeEl` is the <iframe>'s tag variable, and tag variables
+// are FUNCTIONS returning the node — always `iframeEl()`, never property
+// access on the function itself (that silently no-op'd an entire postMessage
+// channel during /create's port).
+import Toolbar from "./toolbar.marko";
+import {
+  serializeTypesetSearchParams,
+  TYPESET_PARAMS_MESSAGE,
+  type TypesetSearchParams,
+} from "./lib/search-params.ts";
+import {
+  TYPESET_COMMAND_MESSAGE,
+  type TypesetCommand,
+} from "./lib/commands.ts";
+
+export interface Input {
+  params: TypesetSearchParams;
+  previewOverride: Partial<TypesetSearchParams> | null;
+  onItemChange: (item: string) => void;
+  onShuffle: () => void;
+  onReset: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  onToggleTheme: () => void;
+}
+
+<const/mergedParams={ ...input.params, ...(input.previewOverride ?? {}) } as TypesetSearchParams/>
+
+<let/currentItem=input.params.item/>
+<let/previewUrl=serializeTypesetSearchParams(
+  `/typeset/preview/${input.params.item}`,
+  input.params,
+)/>
+<let/lastSentKey=null as string | null/>
+<let/mounted=false/>
+
+<script>
+  // The item changed: re-key the src (a reload), and let the load handler
+  // send the params into the new document.
+  if (mergedParams.item !== currentItem) {
+    currentItem = mergedParams.item;
+    previewUrl = serializeTypesetSearchParams(
+      `/typeset/preview/${mergedParams.item}`,
+      mergedParams,
+    );
+    lastSentKey = null;
+  }
+</script>
+
+<const/sendParams=() => {
+  const iframe = iframeEl();
+  if (!iframe?.contentWindow) return;
+  iframe.contentWindow.postMessage(
+    { type: TYPESET_PARAMS_MESSAGE, data: mergedParams },
+    window.location.origin,
+  );
+  lastSentKey = JSON.stringify(mergedParams);
+}/>
+
+<script>
+  // Skip content-identical re-sends (e.g. an override that matches the
+  // committed params) — every message triggers a full sync in the iframe.
+  const key = JSON.stringify(mergedParams);
+  if (iframeEl()?.contentWindow && key !== lastSentKey) {
+    sendParams();
+  }
+</script>
+
+<script>
+  // The iframe forwards its keyboard shortcuts as typed commands; handle
+  // them here by calling the real actions.
+  if (!mounted && typeof window !== "undefined") {
+    mounted = true;
+    window.addEventListener("message", (event: MessageEvent) => {
+      const iframeWindow = iframeEl()?.contentWindow;
+      if (
+        !iframeWindow ||
+        event.origin !== window.location.origin ||
+        event.source !== iframeWindow ||
+        !event.data ||
+        typeof event.data !== "object" ||
+        event.data.type !== TYPESET_COMMAND_MESSAGE
+      ) {
+        return;
+      }
+
+      const command = event.data.command as TypesetCommand;
+      if (command === "shuffle") input.onShuffle();
+      else if (command === "reset") input.onReset();
+      else if (command === "undo") input.onUndo();
+      else if (command === "redo") input.onRedo();
+      else if (command === "toggle-theme") input.onToggleTheme();
+    });
+  }
+</script>
+
+<div class="relative isolate flex size-full min-h-0 flex-1 overflow-hidden rounded-2xl bg-background ring-1 ring-foreground/10">
+  <iframe/iframeEl
+    src=previewUrl
+    title="typeset preview"
+    class="size-full"
+    on-load() { sendParams(); }
+  />
+  <Toolbar params=input.params onItemChange=input.onItemChange/>
+</div>

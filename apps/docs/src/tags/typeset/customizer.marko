@@ -1,0 +1,201 @@
+// Ported from shadcn/ui app/(app)/(typeset)/components/customizer.tsx.
+// Card/CardHeader/CardContent/CardFooter + FieldGroup/FieldSeparator
+// structure, every class string, and the field order are verbatim:
+//   MainMenu (header, desktop only)
+//   Measure (hidden below 28rem — the viewport already constrains width)
+//   -- separator --
+//   Heading | Body | Mono font pickers
+//   -- separator --
+//   Size | Leading | Flow
+//   [dev-only] the resolved "15px / 26px / 19px" readout
+//   footer: RandomButton | GetCodeDrawer
+//
+// Upstream reads params/locks/preview-override from React context hooks;
+// here they arrive as attrs from ../typeset-app.marko (Marko has no
+// context), which is why every picker gets explicit value/onChange/
+// onItemPreview/locked/onToggleLock attrs.
+//
+// Registry deviation, called out honestly: shadcn imports Card and Field
+// from @/styles/base-nova/ui/*, and passes `size="sm"` to Card — a base-nova
+// variant. Our registry tracks new-york-v4, whose Card has no size variant
+// and whose default padding is py-6/px-6 rather than base-nova's compact
+// scale. The `size="sm"` attribute is therefore expressed as the explicit
+// padding overrides base-nova's sm resolves to (py-3 on the card, px-3 on
+// header/content/footer), so the rendered box matches. Everything else —
+// data-slot names, the bg-card/90 backdrop-blur shell, the FieldGroup
+// flex-row/flex-col responsive switch — is unchanged, so a shadcn theme's
+// variables still restyle it with no edits.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import FieldGroup from "@marko-ui/registry/ui/field/field-group.marko";
+import FieldSeparator from "@marko-ui/registry/ui/field/field-separator.marko";
+import MainMenu from "./main-menu.marko";
+import FontPicker from "./font-picker.marko";
+import OptionPicker from "./option-picker.marko";
+import RandomButton from "./random-button.marko";
+import GetCodeDrawer from "./get-code-drawer.marko";
+import {
+  TYPESET_FLOWS,
+  TYPESET_LEADINGS,
+  TYPESET_MEASURES,
+  TYPESET_SIZES,
+  type TypesetSearchParams,
+} from "./lib/search-params.ts";
+import { IS_DEV } from "./lib/fixtures/index.ts";
+
+export type LockableParam = Exclude<keyof TypesetSearchParams, "item">;
+
+export interface Input {
+  params: TypesetSearchParams;
+  setParams: (update: Partial<Record<keyof TypesetSearchParams, string | null>>) => void;
+  setOverride: (patch: Partial<TypesetSearchParams> | null) => void;
+  locks: Set<LockableParam>;
+  toggleLock: (param: LockableParam) => void;
+  canGoBack: boolean;
+  canGoForward: boolean;
+  isMac: boolean;
+  isMobile: boolean;
+  onUndo: () => void;
+  onRedo: () => void;
+  onShuffle: () => void;
+  onReset: () => void;
+  onToggleTheme: () => void;
+}
+
+<const/params=input.params/>
+
+// Resolve the rhythm to px off the current size: leading is a multiple,
+// flow is an em value.
+<const/sizePx=Number(params.scale)/>
+<const/leadingPx=Math.round(sizePx * Number(params.leading))/>
+<const/flowPx=Math.round(sizePx * parseFloat(params.flow))/>
+
+// Hover-preview helper: pickers report null when the highlight clears.
+<const/preview=(param: LockableParam, value: string | null) => {
+  input.setOverride(value ? ({ [param]: value } as Partial<TypesetSearchParams>) : null);
+}/>
+
+<Card
+  class="dark isolate z-10 max-h-full min-h-0 w-full self-start rounded-2xl bg-card/90 py-3 gap-3 backdrop-blur-xl md:w-(--customizer-width)"
+>
+  <CardHeader class="hidden items-center justify-between gap-2 border-b px-3 [.border-b]:pb-3 md:flex">
+    <MainMenu
+      canGoBack=input.canGoBack
+      canGoForward=input.canGoForward
+      isMac=input.isMac
+      onShuffle=input.onShuffle
+      onToggleTheme=input.onToggleTheme
+      onUndo=input.onUndo
+      onRedo=input.onRedo
+      onReset=input.onReset
+    />
+  </CardHeader>
+  <CardContent class="no-scrollbar min-h-0 flex-1 overflow-x-auto overflow-y-hidden px-3 max-md:px-0 md:overflow-y-auto">
+    <FieldGroup class="flex-row gap-2.5 py-px **:data-[slot=field-separator]:-mx-4 **:data-[slot=field-separator]:w-auto max-md:px-3 md:flex-col md:gap-3.25">
+      // Below ~60ch the viewport already constrains width, so measure does
+      // nothing: hide it.
+      <OptionPicker
+        label="Measure"
+        class="max-[28rem]:hidden"
+        isMobile=input.isMobile
+        param="measure"
+        icon="measure"
+        options=TYPESET_MEASURES
+        value=params.measure
+        onChange=(measure) => input.setParams({ measure })
+        onItemPreview=(value) => preview("measure", value)
+        locked=input.locks.has("measure")
+        onToggleLock=() => input.toggleLock("measure")
+      />
+      <FieldSeparator class="hidden md:block"/>
+      <FontPicker
+        label="Heading"
+        param="heading"
+        value=params.heading
+        bodyValue=params.body
+        onValueChange=(heading) => input.setParams({ heading })
+        onItemPreview=(value) => preview("heading", value)
+        locked=input.locks.has("heading")
+        onToggleLock=() => input.toggleLock("heading")
+        isMobile=input.isMobile
+      />
+      <FontPicker
+        label="Body"
+        param="body"
+        value=params.body
+        bodyValue=params.body
+        onValueChange=(body) => input.setParams({ body })
+        onItemPreview=(value) => preview("body", value)
+        locked=input.locks.has("body")
+        onToggleLock=() => input.toggleLock("body")
+        isMobile=input.isMobile
+      />
+      <FontPicker
+        label="Mono"
+        param="mono"
+        value=params.mono
+        bodyValue=params.body
+        onValueChange=(mono) => input.setParams({ mono })
+        onItemPreview=(value) => preview("mono", value)
+        locked=input.locks.has("mono")
+        onToggleLock=() => input.toggleLock("mono")
+        isMobile=input.isMobile
+      />
+      <FieldSeparator class="hidden md:block"/>
+      <OptionPicker
+        label="Size"
+        isMobile=input.isMobile
+        param="scale"
+        icon="size"
+        options=TYPESET_SIZES
+        value=params.scale
+        onChange=(scale) => input.setParams({ scale })
+        onItemPreview=(value) => preview("scale", value)
+        locked=input.locks.has("scale")
+        onToggleLock=() => input.toggleLock("scale")
+      />
+      <OptionPicker
+        label="Leading"
+        isMobile=input.isMobile
+        param="leading"
+        icon="leading"
+        options=TYPESET_LEADINGS
+        value=params.leading
+        onChange=(leading) => input.setParams({ leading })
+        onItemPreview=(value) => preview("leading", value)
+        locked=input.locks.has("leading")
+        onToggleLock=() => input.toggleLock("leading")
+      />
+      <OptionPicker
+        label="Flow"
+        isMobile=input.isMobile
+        param="flow"
+        icon="flow"
+        options=TYPESET_FLOWS
+        value=params.flow
+        onChange=(flow) => input.setParams({ flow })
+        onItemPreview=(value) => preview("flow", value)
+        locked=input.locks.has("flow")
+        onToggleLock=() => input.toggleLock("flow")
+      />
+      <if=IS_DEV>
+        <div class="hidden px-1 pt-0.5 text-center font-mono text-xs text-muted-foreground tabular-nums md:block">
+          ${sizePx}px / ${leadingPx}px / ${flowPx}px
+        </div>
+      </if>
+      // Scroll-end spacer: the group is a CQ container (inline-size
+      // containment), so trailing padding cannot grow it.
+      <div aria-hidden="true" class="w-0.5 shrink-0 md:hidden"/>
+    </FieldGroup>
+  </CardContent>
+  <CardFooter class="flex min-w-0 flex-row-reverse gap-2 border-t px-3 [.border-t]:pt-3 md:flex-col md:**:[button]:w-full">
+    <RandomButton onShuffle=input.onShuffle class="min-w-0 flex-1 md:flex-none"/>
+    <GetCodeDrawer
+      params=params
+      isMobile=input.isMobile
+      class="min-w-0 flex-1 touch-manipulation bg-transparent! px-2! py-0! text-sm! transition-none select-none hover:bg-muted! md:flex-none xl:hidden pointer-coarse:h-10!"
+    />
+  </CardFooter>
+</Card>

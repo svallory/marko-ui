@@ -95,7 +95,7 @@ export function coerceTypesetValue<K extends keyof TypesetSearchParams>(
   key: K,
   value: string
 ) {
-  return TYPESET_PARAM_VALUES[key].includes(value)
+  return (TYPESET_PARAM_VALUES[key] ?? []).includes(value)
     ? (value as TypesetSearchParams[K])
     : null
 }
