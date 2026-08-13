@@ -31,15 +31,10 @@ export interface Input {
         <div class="text-sm font-medium text-foreground">${currentBase?.title}</div>
       </div>
       <if=currentBase?.meta?.logo>
-        <div/baseLogoEl class="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-foreground select-none md:right-2.5"/>
+        <div class="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-foreground select-none md:right-2.5">
+          $!{currentBase.meta.logo}
+        </div>
       </if>
     </@trigger>
   </Picker>
-  // See icon-library-picker.marko's header comment: Marko 6 has no
-  // template-level `innerHTML=` binding, so the logo markup is set
-  // imperatively in a reactive <script> block instead.
-  <script>
-    const el = baseLogoEl();
-    if (el && currentBase?.meta?.logo) el.innerHTML = currentBase.meta.logo;
-  </script>
 </div>
