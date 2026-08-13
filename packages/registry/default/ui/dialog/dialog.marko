@@ -9,6 +9,8 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
   description?: Marko.Body;
   content?: Marko.Body;
   footer?: Marko.Body;
+  /** Extra classes merged onto the backdrop (e.g. a heavier blur for a specific dialog). */
+  backdropClass?: string;
 };
 
 <machine-props/machineProps from=input pick=dialogMachine.props
@@ -32,6 +34,7 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
     description: ownDescription,
     content: ownContent,
     footer: ownFooter,
+    backdropClass: ownBackdropClass,
     ...native
   } = dialogMachine.splitProps(input)[1];
   return native;
@@ -45,7 +48,10 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
     <div
       ...api().getBackdropProps()
       data-slot="dialog-backdrop"
-      class="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0"
+      class=cn(
+        "fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
+        input.backdropClass,
+      )
     />
     <div ...api().getPositionerProps() data-slot="dialog-positioner" class="fixed inset-0 z-50 flex items-center justify-center">
       <div
