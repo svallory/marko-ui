@@ -64,7 +64,7 @@ export const BLOCKS: BlockEntry[] = [
     title: "Login 02",
     description: "A two-column login page with a form on one side and an image on the other.",
     categories: ["authentication", "login"],
-    registryDependencies: ["utils", "button", "input", "label", "separator", "form"],
+    registryDependencies: ["utils", "button", "input", "label", "separator", "field"],
     previewHeight: 700,
   },
   {
@@ -72,7 +72,7 @@ export const BLOCKS: BlockEntry[] = [
     title: "Login 03",
     description: "A login form with Apple and Google sign-in options above an email and password form.",
     categories: ["authentication", "login"],
-    registryDependencies: ["utils", "button", "card", "input", "label", "separator", "form"],
+    registryDependencies: ["utils", "button", "card", "input", "label", "separator", "field"],
     previewHeight: 700,
   },
   {
@@ -80,7 +80,7 @@ export const BLOCKS: BlockEntry[] = [
     title: "Login 04",
     description: "A two-column login page with social login options and a side image panel.",
     categories: ["authentication", "login"],
-    registryDependencies: ["utils", "button", "card", "form", "input"],
+    registryDependencies: ["utils", "button", "card", "field", "input"],
     previewHeight: 700,
   },
   {
@@ -88,7 +88,7 @@ export const BLOCKS: BlockEntry[] = [
     title: "Login 05",
     description: "A centered login form with social login buttons and a field separator.",
     categories: ["authentication", "login"],
-    registryDependencies: ["utils", "button", "form", "input"],
+    registryDependencies: ["utils", "button", "field", "input"],
     previewHeight: 700,
   },
   {
@@ -224,7 +224,7 @@ export const BLOCKS: BlockEntry[] = [
     title: "Signup 01",
     description: "A simple signup form on a centered card.",
     categories: ["authentication", "signup"],
-    registryDependencies: ["utils", "button", "card", "form", "input"],
+    registryDependencies: ["utils", "button", "card", "field", "input"],
     previewHeight: 760,
   },
   {
@@ -232,7 +232,7 @@ export const BLOCKS: BlockEntry[] = [
     title: "Signup 02",
     description: "A signup page with a full-height split layout, form on one side and a cover image on the other.",
     categories: ["authentication", "signup"],
-    registryDependencies: ["utils", "button", "form", "input", "label", "separator"],
+    registryDependencies: ["utils", "button", "field", "input", "label", "separator"],
     previewHeight: 760,
   },
   {
@@ -248,7 +248,7 @@ export const BLOCKS: BlockEntry[] = [
     title: "Signup 04",
     description: "A two-column signup form with social sign up options and a decorative side panel.",
     categories: ["authentication", "signup"],
-    registryDependencies: ["utils", "button", "card", "form", "input", "label", "separator"],
+    registryDependencies: ["utils", "button", "card", "field", "input", "label", "separator"],
     previewHeight: 760,
   },
   {
@@ -256,7 +256,7 @@ export const BLOCKS: BlockEntry[] = [
     title: "Signup 05",
     description: "A centered signup form with social signup options and a field separator.",
     categories: ["authentication", "signup"],
-    registryDependencies: ["utils", "button", "form", "input"],
+    registryDependencies: ["utils", "button", "field", "input"],
     previewHeight: 760,
   },
 ];

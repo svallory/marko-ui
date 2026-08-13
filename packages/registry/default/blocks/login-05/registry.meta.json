@@ -3,5 +3,5 @@
   "description": "A centered login form with social login buttons and a field separator.",
   "categories": ["authentication", "login"],
   "dependencies": [],
-  "registryDependencies": ["utils", "button", "form", "input"]
+  "registryDependencies": ["utils", "button", "field", "input"]
 }

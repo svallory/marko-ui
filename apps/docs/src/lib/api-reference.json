@@ -4228,6 +4228,113 @@
       ]
     },
     {
+      "name": "field",
+      "parts": [
+        {
+          "file": "field-content.marko",
+          "name": "field-content",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "field-description.marko",
+          "name": "field-description",
+          "properties": [],
+          "nativeAttributes": "p"
+        },
+        {
+          "file": "field-error.marko",
+          "name": "field-error",
+          "properties": [
+            {
+              "name": "errors",
+              "type": "FieldErrorLike | readonly FieldErrorLike[]",
+              "required": false,
+              "kind": "own",
+              "description": "One error, or a list of them. Each entry may be a plain message string or any\nobject carrying a `message` — the shape of a Standard Schema issue, so output\nfrom valibot, zod or arktype passes through unchanged. Duplicates are removed.\n\nIgnored when body content is provided."
+            }
+          ],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "field-group.marko",
+          "name": "field-group",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "field-label.marko",
+          "name": "field-label",
+          "properties": [],
+          "nativeAttributes": "label"
+        },
+        {
+          "file": "field-legend.marko",
+          "name": "field-legend",
+          "properties": [
+            {
+              "name": "variant",
+              "type": "'label' | 'legend'",
+              "required": false,
+              "kind": "own"
+            }
+          ],
+          "nativeAttributes": "legend"
+        },
+        {
+          "file": "field-separator.marko",
+          "name": "field-separator",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "field-set.marko",
+          "name": "field-set",
+          "properties": [],
+          "nativeAttributes": "fieldset"
+        },
+        {
+          "file": "field-title.marko",
+          "name": "field-title",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "field.marko",
+          "name": "field",
+          "properties": [
+            {
+              "name": "disabled",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Sets `data-disabled`, dimming the label and title."
+            },
+            {
+              "name": "invalid",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Marks the field as invalid. Sets `data-invalid` on the wrapper, which every\ndescendant part restyles against via `group-data-*` selectors. The matching\n`aria-invalid` belongs on the control itself."
+            },
+            {
+              "name": "orientation",
+              "type": "'horizontal' | 'vertical' | 'responsive' | null | undefined",
+              "required": false,
+              "kind": "variant",
+              "options": [
+                "vertical",
+                "horizontal",
+                "responsive"
+              ],
+              "default": "vertical"
+            }
+          ],
+          "nativeAttributes": "div"
+        }
+      ]
+    },
+    {
       "name": "file-upload",
       "parts": [
         {
@@ -4743,113 +4850,6 @@
         }
       ],
       "machineModule": "@zag-js/floating-panel"
-    },
-    {
-      "name": "form",
-      "parts": [
-        {
-          "file": "field-content.marko",
-          "name": "field-content",
-          "properties": [],
-          "nativeAttributes": "div"
-        },
-        {
-          "file": "field-description.marko",
-          "name": "field-description",
-          "properties": [],
-          "nativeAttributes": "p"
-        },
-        {
-          "file": "field-error.marko",
-          "name": "field-error",
-          "properties": [
-            {
-              "name": "errors",
-              "type": "FieldErrorLike | readonly FieldErrorLike[]",
-              "required": false,
-              "kind": "own",
-              "description": "One error, or a list of them. Each entry may be a plain message string or any\nobject carrying a `message` — the shape of a Standard Schema issue, so output\nfrom valibot, zod or arktype passes through unchanged. Duplicates are removed.\n\nIgnored when body content is provided."
-            }
-          ],
-          "nativeAttributes": "div"
-        },
-        {
-          "file": "field-group.marko",
-          "name": "field-group",
-          "properties": [],
-          "nativeAttributes": "div"
-        },
-        {
-          "file": "field-label.marko",
-          "name": "field-label",
-          "properties": [],
-          "nativeAttributes": "label"
-        },
-        {
-          "file": "field-legend.marko",
-          "name": "field-legend",
-          "properties": [
-            {
-              "name": "variant",
-              "type": "'label' | 'legend'",
-              "required": false,
-              "kind": "own"
-            }
-          ],
-          "nativeAttributes": "legend"
-        },
-        {
-          "file": "field-separator.marko",
-          "name": "field-separator",
-          "properties": [],
-          "nativeAttributes": "div"
-        },
-        {
-          "file": "field-set.marko",
-          "name": "field-set",
-          "properties": [],
-          "nativeAttributes": "fieldset"
-        },
-        {
-          "file": "field-title.marko",
-          "name": "field-title",
-          "properties": [],
-          "nativeAttributes": "div"
-        },
-        {
-          "file": "form.marko",
-          "name": "form",
-          "properties": [
-            {
-              "name": "disabled",
-              "type": "boolean",
-              "required": false,
-              "kind": "own",
-              "description": "Sets `data-disabled`, dimming the label and title."
-            },
-            {
-              "name": "invalid",
-              "type": "boolean",
-              "required": false,
-              "kind": "own",
-              "description": "Marks the field as invalid. Sets `data-invalid` on the wrapper, which every\ndescendant part restyles against via `group-data-*` selectors. The matching\n`aria-invalid` belongs on the control itself."
-            },
-            {
-              "name": "orientation",
-              "type": "'horizontal' | 'vertical' | 'responsive' | null | undefined",
-              "required": false,
-              "kind": "variant",
-              "options": [
-                "vertical",
-                "horizontal",
-                "responsive"
-              ],
-              "default": "vertical"
-            }
-          ],
-          "nativeAttributes": "div"
-        }
-      ]
     },
     {
       "name": "hover-card",
@@ -5887,6 +5887,36 @@
             }
           ],
           "nativeAttributes": "div"
+        }
+      ]
+    },
+    {
+      "name": "native-select",
+      "parts": [
+        {
+          "file": "native-select-optgroup.marko",
+          "name": "native-select-optgroup",
+          "properties": [],
+          "nativeAttributes": "optgroup"
+        },
+        {
+          "file": "native-select-option.marko",
+          "name": "native-select-option",
+          "properties": [],
+          "nativeAttributes": "option"
+        },
+        {
+          "file": "native-select.marko",
+          "name": "native-select",
+          "properties": [
+            {
+              "name": "size",
+              "type": "'default' | 'sm'",
+              "required": false,
+              "kind": "own"
+            }
+          ],
+          "nativeAttributes": "select"
         }
       ]
     },

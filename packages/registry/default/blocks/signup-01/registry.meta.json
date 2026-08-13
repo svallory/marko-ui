@@ -3,5 +3,5 @@
   "description": "A simple signup form on a centered card.",
   "categories": ["authentication", "signup"],
   "dependencies": [],
-  "registryDependencies": ["utils", "button", "card", "form", "input"]
+  "registryDependencies": ["utils", "button", "card", "field", "input"]
 }
