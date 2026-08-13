@@ -58,7 +58,7 @@ const ROUTE_META: Record<string, { title: string; description: string }> = {
   "/charts": {
     title: "Beautiful Charts & Graphs",
     description:
-      "A collection of ready-to-use chart components built with Recharts. From basic charts to rich data displays, copy and paste into your apps.",
+      "A collection of ready-to-use chart components built with d3. From basic charts to rich data displays, copy and paste into your apps.",
   },
   "/typeset": {
     title: "Typeset",
