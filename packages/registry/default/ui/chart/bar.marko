@@ -327,36 +327,76 @@ static function hFormatTicks(
 <const/singleKey=(seriesKeys[0] ?? "")/>
 <const/singleRadius=(seriesList[0]?.radius)/>
 
+// Both layout branches' full const chains are computed UNCONDITIONALLY,
+// every render, rather than nested inside `<if=horizontal>`/`<else>`.
+//
+// LANDMINE: a `<const>` chain nested inside an `<if>/<else>` branch does
+// not reliably survive Marko 6's fine-grained reactive updates when only a
+// DESCENDANT attr-tag input changes (not the branch's own condition). Bar
+// charts nested their vertical-layout `ctx` (and everything derived from
+// it: cursorPaths, geometry, etc.) inside `<else>` here during the
+// horizontal-layout extension; the moment `chart-bar-interactive`'s
+// `<@series dataKey=activeChart/>` toggled `activeChart` (a demo-file
+// `<let>`, `horizontal` itself never changes), the reactive update that
+// recomputed `cursorPaths` ran with `ctx` unresolved, crashing on
+// `ctx.xBand.domain()` inside `bandCursorPath`. line.marko/area.marko
+// never nest their core const chain in an `<if>` and never hit this.
+// Fix: compute both `ctx` and `hCtx` (and their downstream consts) at the
+// template's top level, unconditionally; branch ONLY in the markup below.
+<const/hCtx=horizontalCtx({
+  data,
+  yKey: xKey,
+  seriesKeys,
+  width,
+  height,
+  margin: { top: 5, right: 5, bottom: 5, left: 5, ...input.margin },
+  yAxisWidth: (showYAxis ? 60 : 0),
+  stacked,
+})/>
+<const/hBars=hComputeBars(hCtx, singleKey, singleRadius)/>
+<const/hTicks=hFormatTicks(hCtx, input.categoryTickFormatter)/>
+<const/hRowsByIndex=data.map((row) => [{
+  key: singleKey,
+  label: String(config[singleKey]?.label ?? singleKey),
+  value: Number(row[singleKey] ?? 0),
+  color: barColor(row, singleKey),
+}])/>
+<const/hLabels=data.map((row) => String(row[xKey]))/>
+<const/hCursorPaths=data.map((row, index) => hBandCursorPath(hCtx, index))/>
+<const/hGeometry=hPointerGeometry(hCtx)/>
+<const/hTops=data.map((row, index) => {
+  const percent = Math.max(0, Math.min(78, (hBandCenter(hCtx, index) / hCtx.height) * 100));
+  return `${percent.toFixed(2)}%`;
+})/>
+
+<const/ctx=cartesianCtx({
+  data,
+  xKey,
+  seriesKeys,
+  width,
+  height,
+  margin: { top: 5, right: 5, bottom: 5, left: 5, ...input.margin },
+  xAxisHeight: 30,
+  stacked,
+})/>
+<const/multiSeries=(seriesList.length > 1 || stacked)/>
+<const/bars=(multiSeries ? computeBars(ctx, seriesList, stacked) : [])/>
+<const/singleBars=(multiSeries ? [] : computeSingleBars(ctx, singleKey, singleRadius))/>
+<const/allTicks=formatTicks(ctx, input.xTickFormatter)/>
+<const/ticks=(input.xTickMinGap ? thinTicksByGap(allTicks, input.xTickMinGap) : allTicks)/>
+<const/rowsByIndex=tooltipRowsByIndex(ctx, seriesList, config)/>
+<const/labels=data.map((row) => (input.tooltipLabelFormatter ? input.tooltipLabelFormatter(String(row[xKey])) : String(row[xKey])))/>
+<const/lefts=tooltipLefts(ctx)/>
+<const/cursorPaths=data.map((row, index) => bandCursorPath(ctx, index))/>
+<const/geometry=pointerGeometry(ctx)/>
+<const/showLegend=(input.legend === true || input.legend === "top" || input.legend === "bottom")/>
+<const/legendAlign=(input.legend === "top" ? "top" : "bottom")/>
+
+<let/hActiveIndex=(-1)/>
+<let/activeIndex=(-1)/>
+
 <if=horizontal>
   // ---- Horizontal layout: category axis on Y, value axis on X ----
-  <const/hCtx=horizontalCtx({
-    data,
-    yKey: xKey,
-    seriesKeys,
-    width,
-    height,
-    margin: { top: 5, right: 5, bottom: 5, left: 5, ...input.margin },
-    yAxisWidth: (showYAxis ? 60 : 0),
-    stacked,
-  })/>
-  <const/hBars=hComputeBars(hCtx, singleKey, singleRadius)/>
-  <const/hTicks=hFormatTicks(hCtx, input.categoryTickFormatter)/>
-  <const/hRowsByIndex=data.map((row) => [{
-    key: singleKey,
-    label: String(config[singleKey]?.label ?? singleKey),
-    value: Number(row[singleKey] ?? 0),
-    color: barColor(row, singleKey),
-  }])/>
-  <const/hLabels=data.map((row) => String(row[xKey]))/>
-  <const/hCursorPaths=data.map((row, index) => hBandCursorPath(hCtx, index))/>
-  <const/hGeometry=hPointerGeometry(hCtx)/>
-  <const/hTops=data.map((row, index) => {
-    const percent = Math.max(0, Math.min(78, (hBandCenter(hCtx, index) / hCtx.height) * 100));
-    return `${percent.toFixed(2)}%`;
-  })/>
-
-  <let/hActiveIndex=(-1)/>
-
   <div
     class=cn("recharts-wrapper", className)
     style={ position: "relative", width: "100%", height: "100%" }
@@ -458,31 +498,8 @@ static function hFormatTicks(
 </if>
 <else>
   // ---- Vertical layout (default): category axis on X, value axis on Y ----
-  <const/ctx=cartesianCtx({
-    data,
-    xKey,
-    seriesKeys,
-    width,
-    height,
-    margin: { top: 5, right: 5, bottom: 5, left: 5, ...input.margin },
-    xAxisHeight: 30,
-    stacked,
-  })/>
-  <const/multiSeries=(seriesList.length > 1 || stacked)/>
-  <const/bars=(multiSeries ? computeBars(ctx, seriesList, stacked) : [])/>
-  <const/singleBars=(multiSeries ? [] : computeSingleBars(ctx, singleKey, singleRadius))/>
-  <const/allTicks=formatTicks(ctx, input.xTickFormatter)/>
-<const/ticks=(input.xTickMinGap ? thinTicksByGap(allTicks, input.xTickMinGap) : allTicks)/>
-  <const/rowsByIndex=tooltipRowsByIndex(ctx, seriesList, config)/>
-  <const/labels=data.map((row) => (input.tooltipLabelFormatter ? input.tooltipLabelFormatter(String(row[xKey])) : String(row[xKey])))/>
-  <const/lefts=tooltipLefts(ctx)/>
-  <const/cursorPaths=data.map((row, index) => bandCursorPath(ctx, index))/>
-  <const/geometry=pointerGeometry(ctx)/>
-  <const/showLegend=(input.legend === true || input.legend === "top" || input.legend === "bottom")/>
-  <const/legendAlign=(input.legend === "top" ? "top" : "bottom")/>
-
-  <let/activeIndex=(-1)/>
-
+  // ctx and its whole const chain are hoisted above the <if=horizontal> —
+  // see the LANDMINE note near the top of this file.
   <div
     class=cn("recharts-wrapper", className)
     style={ position: "relative", width: "100%", height: "100%" }
