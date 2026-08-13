@@ -1,0 +1,43 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/no-team-members.tsx
+// Deviation: this registry has no AvatarGroup wrapper; shadcn's AvatarGroup
+// is a styled div, reproduced here as a plain div with the equivalent
+// overlap classes.
+import Avatar from "@marko-ui/registry/ui/avatar/avatar.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import Empty from "@marko-ui/registry/ui/empty/empty.marko";
+import EmptyContent from "@marko-ui/registry/ui/empty/content.marko";
+import EmptyDescription from "@marko-ui/registry/ui/empty/description.marko";
+import EmptyHeader from "@marko-ui/registry/ui/empty/header.marko";
+import EmptyMedia from "@marko-ui/registry/ui/empty/media.marko";
+import EmptyTitle from "@marko-ui/registry/ui/empty/title.marko";
+
+static const MEMBERS = [
+  { src: "https://github.com/shadcn.png", alt: "@shadcn", fallback: "CN" },
+  { src: "https://github.com/maxleiter.png", alt: "@maxleiter", fallback: "LR" },
+  { src: "https://github.com/evilrabbit.png", alt: "@evilrabbit", fallback: "ER" },
+];
+
+<Card>
+  <CardContent>
+    <Empty class="h-56 border">
+      <EmptyHeader>
+        <EmptyMedia>
+          <div class="flex -space-x-2 grayscale *:data-[slot=avatar]:size-10 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-background" data-slot="avatar-group">
+            <for|member| of=MEMBERS by=(member) => member.alt>
+              <Avatar src=member.src alt=member.alt fallback=member.fallback/>
+            </for>
+          </div>
+        </EmptyMedia>
+        <EmptyTitle>No Team Members</EmptyTitle>
+        <EmptyDescription>
+          Invite your team to collaborate on this project.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button size="sm">Invite Members</Button>
+      </EmptyContent>
+    </Empty>
+  </CardContent>
+</Card>

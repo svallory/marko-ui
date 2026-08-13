@@ -17,9 +17,14 @@ export interface Input {
   onItemChange: (item: string) => void;
 }
 
+// "03" -> preview-04 is this repo's own showcase of marko-ui-unique
+// components (see preview-blocks/preview-04/index.marko) — an intentional
+// addition over shadcn's two-item pager. The name matches the source's
+// `preview-0*` gate, so the visibility condition needs no change.
 static const PREVIEW_ITEMS = [
   { label: "01", value: "preview-02" },
   { label: "02", value: "preview" },
+  { label: "03", value: "preview-04" },
 ] as const;
 
 <const/isPreviewItem=(input.item === "preview" || input.item.startsWith("preview-0"))/>

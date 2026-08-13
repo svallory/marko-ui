@@ -1,0 +1,32 @@
+// preview-04 card: demos marko-ui's `signature-pad` (no shadcn equivalent)
+// in a contract-signing scenario.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import SignaturePad from "@marko-ui/registry/ui/signature-pad/signature-pad.marko";
+
+<let/strokes=[] as string[]/>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Sign Agreement</CardTitle>
+    <CardDescription>
+      Master service agreement · Rev. 2026-03
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    <SignaturePad drawEndChange=(next: string[]) => { strokes = next; }/>
+  </CardContent>
+  <CardFooter class="flex-col gap-2">
+    <Button class="w-full" disabled=(strokes.length === 0)>
+      Submit Signature
+    </Button>
+    <CardDescription class="text-center text-xs">
+      By signing you agree to the terms of service.
+    </CardDescription>
+  </CardFooter>
+</Card>

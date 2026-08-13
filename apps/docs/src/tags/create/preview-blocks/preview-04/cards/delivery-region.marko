@@ -1,0 +1,84 @@
+// preview-04 card: demos marko-ui's `cascade-select` (no shadcn
+// equivalent) in a shipping-region picker scenario.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import CascadeSelect from "@marko-ui/registry/ui/cascade-select/cascade-select.marko";
+
+static const REGIONS = [
+  {
+    value: "americas",
+    label: "Americas",
+    children: [
+      {
+        value: "us",
+        label: "United States",
+        children: [
+          { value: "us-west", label: "US West (Oregon)" },
+          { value: "us-east", label: "US East (Virginia)" },
+        ],
+      },
+      {
+        value: "br",
+        label: "Brazil",
+        children: [{ value: "sa-east", label: "São Paulo" }],
+      },
+    ],
+  },
+  {
+    value: "europe",
+    label: "Europe",
+    children: [
+      {
+        value: "de",
+        label: "Germany",
+        children: [{ value: "eu-central", label: "Frankfurt" }],
+      },
+      {
+        value: "ie",
+        label: "Ireland",
+        children: [{ value: "eu-west", label: "Dublin" }],
+      },
+    ],
+  },
+  {
+    value: "asia",
+    label: "Asia Pacific",
+    children: [
+      {
+        value: "jp",
+        label: "Japan",
+        children: [{ value: "ap-northeast", label: "Tokyo" }],
+      },
+      {
+        value: "sg",
+        label: "Singapore",
+        children: [{ value: "ap-southeast", label: "Singapore" }],
+      },
+    ],
+  },
+];
+
+<Card>
+  <CardHeader>
+    <CardTitle>Deployment Region</CardTitle>
+    <CardDescription>
+      Choose where new functions are deployed by default.
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    <CascadeSelect
+      items=REGIONS
+      label="Region"
+      placeholder="Select a region..."
+      class="w-full"
+    />
+  </CardContent>
+  <CardFooter>
+    <Button class="w-full">Save Region</Button>
+  </CardFooter>
+</Card>

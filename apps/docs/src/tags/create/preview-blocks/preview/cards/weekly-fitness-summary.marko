@@ -1,0 +1,44 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/weekly-fitness-summary.tsx
+// (pure div-based day bars in the source — not a recharts chart).
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+
+static const FITNESS_WEEKLY_LOAD = [
+  { day: "M", load: 84 },
+  { day: "T", load: 52 },
+  { day: "W", load: 73 },
+  { day: "T", load: 66 },
+  { day: "F", load: 91 },
+  { day: "S", load: 48 },
+  { day: "S", load: 61 },
+];
+
+<Card>
+  <CardHeader>
+    <CardTitle>Weekly Fitness Summary</CardTitle>
+    <CardDescription>Calories and workout load by day</CardDescription>
+  </CardHeader>
+  <CardContent class="flex flex-col gap-4">
+    <div class="grid grid-cols-7 gap-1.5">
+      <for|day, index| of=FITNESS_WEEKLY_LOAD>
+        <div class="rounded-md p-1.5 text-center ring ring-border">
+          <div class="text-sm text-muted-foreground">${day.day}</div>
+          <div class="relative mt-1 h-16 overflow-hidden rounded-sm bg-muted">
+            <div
+              class="absolute inset-x-0 bottom-0 rounded-sm bg-chart-3"
+              style={ height: `${day.load}%` }
+            />
+          </div>
+        </div>
+      </for>
+    </div>
+  </CardContent>
+  <CardFooter>
+    <Button class="w-full">View details</Button>
+  </CardFooter>
+</Card>

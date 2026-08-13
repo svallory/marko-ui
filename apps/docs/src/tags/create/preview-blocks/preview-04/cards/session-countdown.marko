@@ -1,0 +1,34 @@
+// preview-04 card: demos marko-ui's `timer` (no shadcn equivalent) in a
+// checkout-hold countdown scenario.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Timer from "@marko-ui/registry/ui/timer/timer.marko";
+
+<Card>
+  <CardHeader>
+    <CardTitle>Seats Held</CardTitle>
+    <CardDescription>
+      Your tickets are reserved while you complete checkout.
+    </CardDescription>
+  </CardHeader>
+  <CardContent class="flex justify-center">
+    <Timer
+      countdown
+      autoStart
+      targetMs=0
+      startMs=(9 * 60 * 1000 + 41 * 1000)
+      parts=["minutes", "seconds"]
+    />
+  </CardContent>
+  <CardFooter class="flex-col gap-2">
+    <Button class="w-full">Complete Purchase</Button>
+    <Button variant="outline" class="w-full">
+      Release Seats
+    </Button>
+  </CardFooter>
+</Card>

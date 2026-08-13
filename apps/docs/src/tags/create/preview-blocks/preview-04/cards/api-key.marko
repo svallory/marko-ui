@@ -1,0 +1,35 @@
+// preview-04 card: demos marko-ui's `clipboard` (no shadcn equivalent) in
+// an API-credentials scenario.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Clipboard from "@marko-ui/registry/ui/clipboard/clipboard.marko";
+
+<Card>
+  <CardHeader>
+    <CardTitle>API Credentials</CardTitle>
+    <CardDescription>
+      Use this key to authenticate server-side requests.
+    </CardDescription>
+  </CardHeader>
+  <CardContent class="flex flex-col gap-3">
+    <Clipboard
+      label="Publishable key"
+      value="pk_live_51H8s2XkQ9vTn4Yc"
+      class="w-full"
+    />
+    <Clipboard
+      label="Webhook secret"
+      value="whsec_9f86d081884c7d65"
+      class="w-full"
+    />
+  </CardContent>
+  <CardFooter>
+    <CardDescription class="text-xs">
+      Keys grant full account access. Never commit them to source control.
+    </CardDescription>
+  </CardFooter>
+</Card>

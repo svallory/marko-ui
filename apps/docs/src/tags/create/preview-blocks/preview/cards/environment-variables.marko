@@ -1,0 +1,35 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/environment-variables.tsx
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+
+static const ENVS = [
+  { key: "DATABASE_URL", masked: true },
+  { key: "NEXT_PUBLIC_API", masked: false },
+  { key: "STRIPE_SECRET", masked: true },
+];
+
+<Card>
+  <CardHeader>
+    <CardTitle>Environment Variables</CardTitle>
+    <CardDescription>Production · 8 variables</CardDescription>
+  </CardHeader>
+  <CardContent class="flex flex-col gap-2">
+    <for|env| of=ENVS by=(env) => env.key>
+      <div class="flex items-center gap-2 rounded-md px-2.5 py-2 font-mono text-xs ring ring-border">
+        <span class="font-medium">${env.key}</span>
+        <span class="ml-auto text-muted-foreground">
+          ${env.masked ? "••••••••" : "https://api.example.com"}
+        </span>
+      </div>
+    </for>
+  </CardContent>
+  <CardFooter>
+    <Button variant="outline">Edit</Button>
+    <Button class="ml-auto">Deploy</Button>
+  </CardFooter>
+</Card>

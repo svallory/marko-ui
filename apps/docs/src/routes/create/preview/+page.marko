@@ -34,6 +34,7 @@ import type { DesignSystemSearchParams } from "../../../tags/create/lib/search-p
 
 import Preview02 from "../../../tags/create/preview-blocks/preview-02/index.marko";
 import Preview from "../../../tags/create/preview-blocks/preview/index.marko";
+import Preview04 from "../../../tags/create/preview-blocks/preview-04/index.marko";
 
 static const THEME_STYLE_ELEMENT_ID = "design-system-theme-vars";
 static const MANAGED_BODY_CLASS_PREFIXES = ["style-", "base-color-"] as const;
@@ -133,7 +134,9 @@ static function applyParams(params: DesignSystemSearchParams) {
 // preview-02 exactly like an unmatched dynamic route would 404 to the
 // default there.
 <const/rawItem=$global.url.searchParams.get("item")/>
-<const/item=(rawItem === "preview" ? "preview" : "preview-02")/>
+<const/item=(
+  rawItem === "preview" || rawItem === "preview-04" ? rawItem : "preview-02"
+)/>
 
 // No own <!doctype html>/<html>/<head>/<body>: this route renders inside
 // ../../../routes/+layout.marko like every other page (that layout supplies
@@ -144,6 +147,9 @@ static function applyParams(params: DesignSystemSearchParams) {
   <if=(item === "preview")>
     <Preview/>
   </if>
+  <else-if=(item === "preview-04")>
+    <Preview04/>
+  </else-if>
   <else>
     <Preview02/>
   </else>

@@ -1,0 +1,34 @@
+// preview-04 card: demos marko-ui's `tags-input` (no shadcn equivalent) in
+// a newsletter-interests scenario.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import TagsInput from "@marko-ui/registry/ui/tags-input/tags-input.marko";
+
+<let/topics=["design-systems", "typescript", "css"]/>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Digest Topics</CardTitle>
+    <CardDescription>
+      We'll only send stories that match your topics.
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    <TagsInput
+      value=topics
+      valueChange=(next: string[]) => { topics = next; }
+      placeholder="Add topic..."
+      class="w-full"
+    />
+  </CardContent>
+  <CardFooter>
+    <Button class="w-full" disabled=(topics.length === 0)>
+      Save ${topics.length} ${topics.length === 1 ? "topic" : "topics"}
+    </Button>
+  </CardFooter>
+</Card>
