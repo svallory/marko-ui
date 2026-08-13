@@ -18,12 +18,6 @@ export interface Input {
 <const/{ name, title, description, content }=input/>
 
 <div class="flex w-full min-w-0 flex-col gap-2" data-beyond-card=name>
-  <a
-    href=`/docs/components/${name}`
-    class="text-muted-foreground hover:text-foreground focus-visible:outline-ring w-fit rounded-md font-mono text-xs font-medium tracking-wide uppercase focus-visible:outline-2 focus-visible:outline-offset-2"
-  >
-    ${name}
-  </a>
   <Card class="w-full min-w-0">
     <CardHeader>
       <CardTitle class="flex items-center justify-between gap-2 text-base">
