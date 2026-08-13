@@ -1,0 +1,319 @@
+// <chart-area-chart> — area chart with recharts-parity SVG markup.
+// d3 (via math.ts) is geometry only; every visible class and attribute
+// matches what recharts renders inside shadcn's ChartContainer: areas are
+// `recharts-curve recharts-area-area` + `recharts-curve recharts-area-curve`,
+// layers are `recharts-layer`, the svg is `recharts-surface`, the tooltip
+// cursor is a vertical `recharts-curve recharts-tooltip-cursor` line with
+// literal stroke="#ccc" (the container CSS turns it into stroke-border).
+// Series colors are always `var(--color-<dataKey>)` — never resolved in JS —
+// so a shadcn theme's --chart-1..5 variables restyle everything.
+import {
+  areaPaths,
+  cartesianCtx,
+  stackSeries,
+  type CartesianCtx,
+  type CurveType,
+  type Margin,
+  type Row,
+} from "./math.ts";
+import { configFor, seriesColor, type ChartConfig } from "./config.ts";
+import { cn } from "#lib/utils.ts";
+import ChartGrid from "./grid.marko";
+import ChartXAxis from "./x-axis.marko";
+import ChartYAxis from "./y-axis.marko";
+import ChartTooltip from "./tooltip.marko";
+import ChartLegend from "./legend.marko";
+
+export interface AreaSeriesAttrs {
+  dataKey: string;
+  /** Curve type (recharts `type`). Default "natural", like the shadcn demos. */
+  type?: CurveType;
+  /** Series sharing a stackId stack on top of each other (declaration order = bottom to top). */
+  stackId?: string;
+  /** Fill with a per-series <linearGradient> fading the series color 0.8 → 0.1. */
+  gradient?: boolean;
+  fillOpacity?: number;
+}
+
+export interface Input {
+  /** Same object passed to <Chart> — Marko has no context, so it's passed twice. */
+  config: ChartConfig;
+  data: Row[];
+  /** Category field for the x axis, e.g. "month". */
+  xKey: string;
+  /** viewBox size — the container's CSS aspect scales the drawing. */
+  width?: number;
+  height?: number;
+  margin?: Partial<Margin>;
+  tooltip?: boolean;
+  /** Vertical cursor line on hover (recharts default). Shadcn area demos pass false. */
+  cursor?: boolean;
+  indicator?: "line" | "dot" | "dashed";
+  /** Horizontal grid lines (recharts <CartesianGrid vertical={false}/>). */
+  grid?: boolean;
+  yAxis?: boolean;
+  legend?: boolean | "top" | "bottom";
+  /** Applied to axis tick labels only (like recharts' XAxis tickFormatter). */
+  xTickFormatter?: (value: string) => string;
+  series?: Marko.AttrTag<AreaSeriesAttrs>;
+  class?: string;
+}
+
+export interface AreaGeom {
+  key: string;
+  areaD: string;
+  lineD: string;
+  gradient: boolean;
+  fillOpacity: number;
+}
+
+static function numberAt(row: Row, key: string): number {
+  const value = row[key];
+  return typeof value === "number" ? value : Number(value ?? 0);
+}
+
+// Point-scale x positions, like recharts uses for area/line charts: the
+// first point sits at the plot's left edge, the last at its right edge
+// (the default left/right margin of 12 gives the curve breathing room).
+static function pointPositions(ctx: CartesianCtx, count: number): number[] {
+  if (count <= 1) return [ctx.plot.x + ctx.plot.width / 2];
+  const step = ctx.plot.width / (count - 1);
+  return Array.from({ length: count }, (item, index) => ctx.plot.x + index * step);
+}
+
+static function buildAreas(
+  ctx: CartesianCtx,
+  seriesList: AreaSeriesAttrs[],
+  positions: number[],
+): AreaGeom[] {
+  const stackedKeys = seriesList
+    .filter((series) => series.stackId != null)
+    .map((series) => series.dataKey);
+  const stacks = stackedKeys.length ? stackSeries(ctx.data, stackedKeys) : [];
+  const baselineY = ctx.y(Math.max(0, ctx.y.domain()[0] ?? 0));
+  return seriesList.map((series) => {
+    const curve = series.type ?? "natural";
+    const stackIndex = stackedKeys.indexOf(series.dataKey);
+    const layer = stackIndex >= 0 ? stacks[stackIndex] : undefined;
+    const paths = areaPaths(
+      ctx.data,
+      (row, index) => positions[index] ?? 0,
+      (row, index) => (layer ? ctx.y(layer[index][0]) : baselineY),
+      (row, index) =>
+        layer ? ctx.y(layer[index][1]) : ctx.y(numberAt(row, series.dataKey)),
+      curve,
+    );
+    return {
+      key: series.dataKey,
+      areaD: paths.area,
+      lineD: paths.line,
+      gradient: series.gradient === true,
+      fillOpacity: series.fillOpacity ?? 0.4,
+    };
+  });
+}
+
+static function seriesLabel(config: ChartConfig, key: string): string {
+  return configFor(config, key)?.label ?? key;
+}
+
+static function tooltipRowsFor(
+  config: ChartConfig,
+  seriesList: AreaSeriesAttrs[],
+  row: Row,
+): { key: string; label: string; value: number; color: string }[] {
+  return seriesList.map((series) => ({
+    key: series.dataKey,
+    label: seriesLabel(config, series.dataKey),
+    value: numberAt(row, series.dataKey),
+    color: seriesColor(series.dataKey),
+  }));
+}
+
+static function legendItemsFor(
+  config: ChartConfig,
+  seriesList: AreaSeriesAttrs[],
+): { key: string; label: string; color: string }[] {
+  return seriesList.map((series) => ({
+    key: series.dataKey,
+    label: seriesLabel(config, series.dataKey),
+    color: seriesColor(series.dataKey),
+  }));
+}
+
+static function tooltipLeft(center: number, width: number): string {
+  const pct = (center / width) * 100;
+  return `${Math.max(6, Math.min(78, pct))}%`;
+}
+
+// Pointer → nearest point index, on plain numbers only: the d3 scales in
+// `ctx` are not serializable, so the client hover math runs on a precomputed
+// plain geometry object (point scale — nearest point wins, like recharts).
+static function pointerIndex(
+  offsetX: number,
+  clientWidth: number,
+  geom: { width: number; plotX: number; plotWidth: number; count: number },
+): number {
+  if (clientWidth <= 0 || geom.count === 0) return -1;
+  const scaledX = offsetX * (geom.width / clientWidth);
+  if (scaledX < geom.plotX || scaledX > geom.plotX + geom.plotWidth) return -1;
+  if (geom.count === 1) return 0;
+  const step = geom.plotWidth / (geom.count - 1);
+  const index = Math.round((scaledX - geom.plotX) / step);
+  return Math.max(0, Math.min(geom.count - 1, index));
+}
+
+<const/{
+  config,
+  data,
+  xKey,
+  width = 628,
+  height = 353,
+  tooltip: showTooltip = true,
+  cursor = true,
+  indicator = "dot",
+  grid: showGrid = true,
+  yAxis: showYAxis = false,
+  legend,
+  xTickFormatter,
+  class: className,
+}=input/>
+<id/uid/>
+<const/seriesList=[...(input.series ?? [])]/>
+<const/seriesKeys=seriesList.map((series) => series.dataKey)/>
+<const/stacked=seriesList.some((series) => series.stackId != null)/>
+<const/ctx=cartesianCtx({
+  data,
+  xKey,
+  seriesKeys,
+  width,
+  height,
+  margin: { left: 12, right: 12, ...input.margin },
+  xAxisHeight: 30,
+  stacked,
+  paddingInner: 0,
+  paddingOuter: 0,
+})/>
+// Everything the client (hover state) touches must be plain data — the d3
+// scales inside ctx are not serializable, so precompute per-index geometry.
+<const/centers=pointPositions(ctx, data.length)/>
+<const/areas=buildAreas(ctx, seriesList, centers)/>
+<const/ticks=data.map((row, index) => ({
+  value: (xTickFormatter ? xTickFormatter(String(row[xKey])) : String(row[xKey])),
+  x: centers[index] ?? 0,
+}))/>
+<const/gradients=areas.filter((geom) => geom.gradient)/>
+<const/plotTop=ctx.plot.y/>
+<const/plotBottom=(ctx.plot.y + ctx.plot.height)/>
+<const/pointerGeom={
+  width,
+  plotX: ctx.plot.x,
+  plotWidth: ctx.plot.width,
+  count: data.length,
+}/>
+<const/tooltipItems=data.map((row) => ({
+  label: String(row[xKey]),
+  rows: tooltipRowsFor(config, seriesList, row),
+}))/>
+<let/activeIndex=(-1)/>
+<const/activeItem=(showTooltip && activeIndex >= 0 ? tooltipItems[activeIndex] : undefined)/>
+
+<div
+  class=cn("recharts-wrapper", className)
+  style={ position: "relative", width: "100%", height: "100%" }
+  onPointermove(event, el) {
+    const bounds = el.getBoundingClientRect();
+    activeIndex = pointerIndex(event.clientX - bounds.left, el.clientWidth, pointerGeom);
+  }
+  onPointerleave() { activeIndex = -1; }
+>
+  <if=(legend === "top")>
+    <ChartLegend items=legendItemsFor(config, seriesList) verticalAlign="top"/>
+  </if>
+  <svg
+    class="recharts-surface"
+    width="100%"
+    height="100%"
+    viewBox=`0 0 ${width} ${height}`
+  >
+    <if=gradients.length>
+      <defs>
+        <for|geom| of=gradients>
+          <linearGradient
+            id=`fill-${uid}-${geom.key}`
+            x1="0"
+            y1="0"
+            x2="0"
+            y2="1"
+          >
+            <stop
+              offset="5%"
+              stop-color=seriesColor(geom.key)
+              stop-opacity="0.8"
+            />
+            <stop
+              offset="95%"
+              stop-color=seriesColor(geom.key)
+              stop-opacity="0.1"
+            />
+          </linearGradient>
+        </for>
+      </defs>
+    </if>
+    <if=showGrid>
+      <ChartGrid ctx=ctx/>
+    </if>
+    <ChartXAxis ctx=ctx ticks=ticks/>
+    <if=showYAxis>
+      <ChartYAxis ctx=ctx/>
+    </if>
+    <if=(showTooltip && cursor !== false && activeIndex >= 0)>
+      <g class="recharts-layer">
+        <path
+          class="recharts-curve recharts-tooltip-cursor"
+          stroke="#ccc"
+          fill="none"
+          stroke-width="1"
+          d=`M ${centers[activeIndex]},${plotTop} L ${centers[activeIndex]},${plotBottom}`
+        />
+      </g>
+    </if>
+    <for|geom| of=areas>
+      <g class="recharts-layer recharts-area">
+        <path
+          class="recharts-curve recharts-area-area"
+          fill=(geom.gradient ? `url(#fill-${uid}-${geom.key})` : seriesColor(geom.key))
+          fill-opacity=geom.fillOpacity
+          stroke="none"
+          d=geom.areaD
+        />
+        <path
+          class="recharts-curve recharts-area-curve"
+          stroke=seriesColor(geom.key)
+          fill="none"
+          stroke-width="2"
+          d=geom.lineD
+        />
+      </g>
+    </for>
+  </svg>
+  <if=(legend === true || legend === "bottom")>
+    <ChartLegend items=legendItemsFor(config, seriesList) verticalAlign="bottom"/>
+  </if>
+  <if=activeItem>
+    <div
+      style={
+        position: "absolute",
+        left: tooltipLeft(centers[activeIndex] ?? 0, width),
+        top: "12px",
+        "pointer-events": "none",
+      }
+    >
+      <ChartTooltip
+        rows=activeItem.rows
+        label=activeItem.label
+        indicator=indicator
+      />
+    </div>
+  </if>
+</div>

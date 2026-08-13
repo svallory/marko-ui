@@ -1,0 +1,33 @@
+// YAxis ticks — recharts-parity SVG partial (internal; ctx threaded by the
+// chart tags). Only rendered when a chart tag gets `yAxis` (default off,
+// matching the shadcn demos). Literal fill="#666" — restyled by the
+// container's fill-muted-foreground selector. No axis/tick lines.
+import { yTicks, type CartesianCtx, type YTick } from "./math.ts";
+
+export interface Input {
+  ctx: CartesianCtx;
+  ticks?: YTick[];
+  tickMargin?: number;
+}
+
+<const/{ ctx, tickMargin = 8 }=input/>
+<const/ticks=(input.ticks ?? yTicks(ctx))/>
+<const/tickX=(ctx.plot.x - tickMargin)/>
+
+<g class="recharts-cartesian-axis recharts-yAxis yAxis">
+  <g class="recharts-cartesian-axis-ticks">
+    <for|tick| of=ticks>
+      <g class="recharts-layer recharts-cartesian-axis-tick">
+        <text
+          orientation="left"
+          stroke="none"
+          fill="#666"
+          class="recharts-text recharts-cartesian-axis-tick-value"
+          x=tickX
+          y=tick.y
+          text-anchor="end"
+        ><tspan x=tickX dy="0.355em">${tick.value}</tspan></text>
+      </g>
+    </for>
+  </g>
+</g>

@@ -1,0 +1,302 @@
+// BarChart — d3-geometry port of recharts' <BarChart> as used by shadcn.
+// SSR renders the full chart; the ONLY client JS is the hover state for the
+// tooltip/cursor. SVG markup mirrors recharts (recharts-* classes, literal
+// default attributes) so the shadcn ChartContainer selectors restyle it
+// identically. Series colors are always `var(--color-<dataKey>)` — resolved
+// by the container's scoped <style>, never in JS.
+import {
+  bandCenter,
+  bandCursorPath,
+  cartesianCtx,
+  roundedRectPath,
+  stackSeries,
+  xTicks,
+  type CartesianCtx,
+  type CornerRadius,
+  type Margin,
+  type Row,
+  type XTick,
+} from "./math.ts";
+import { seriesColor, type ChartConfig } from "./config.ts";
+import { cn } from "#lib/utils.ts";
+import ChartGrid from "./grid.marko";
+import ChartXAxis from "./x-axis.marko";
+import ChartYAxis from "./y-axis.marko";
+import ChartTooltip, { type TooltipRow } from "./tooltip.marko";
+import ChartLegend, { type LegendItem } from "./legend.marko";
+
+export interface BarSeries {
+  dataKey: string;
+  /** recharts Bar radius: number rounds all 4 corners, [tl,tr,br,bl] tuple per corner. */
+  radius?: CornerRadius;
+}
+
+export interface PointerGeometry {
+  width: number;
+  plotX: number;
+  plotRight: number;
+  start: number;
+  step: number;
+  count: number;
+}
+
+export interface Input {
+  /** Same object passed to <Chart> — Marko has no context, so it is passed twice. */
+  config: ChartConfig;
+  data: Row[];
+  xKey: string;
+  series?: Marko.AttrTag<BarSeries>;
+  width?: number;
+  height?: number;
+  margin?: Partial<Margin>;
+  stacked?: boolean;
+  /** Horizontal grid lines (recharts <CartesianGrid vertical={false}/>). Default true. */
+  grid?: boolean;
+  /** Render the y axis (default false — shadcn demos hide it). */
+  yAxis?: boolean;
+  legend?: boolean | "top" | "bottom";
+  /** Default true. `false` ⇒ no tooltip panel and no cursor. */
+  tooltip?: boolean;
+  /** Tooltip cursor rect behind the hovered band (recharts default). */
+  cursor?: boolean;
+  indicator?: "line" | "dot" | "dashed";
+  hideLabel?: boolean;
+  tickMargin?: number;
+  xTickFormatter?: (value: string) => string;
+  class?: string;
+  /** Reserved for a future horizontal layout — v1 renders vertical bars only. */
+  layout?: "horizontal";
+}
+
+// recharts default gap between series bars within a band (barGap: 4).
+static const BAR_GAP = 4;
+
+static function computeBars(
+  ctx: CartesianCtx,
+  seriesList: BarSeries[],
+  stacked: boolean,
+): { dataKey: string; paths: string[] }[] {
+  const bandwidth = ctx.xBand.bandwidth();
+  const baseline = ctx.y(0);
+  if (stacked) {
+    const stacks = stackSeries(
+      ctx.data,
+      seriesList.map((series) => series.dataKey),
+    );
+    return seriesList.map((series, seriesIndex) => {
+      const layer = stacks[seriesIndex];
+      const paths = ctx.data.map((row, rowIndex) => {
+        const x = ctx.xBand(String(row[ctx.xKey])) ?? 0;
+        const segment = layer[rowIndex];
+        const top = ctx.y(segment[1]);
+        const segmentHeight = ctx.y(segment[0]) - ctx.y(segment[1]);
+        return roundedRectPath(x, top, bandwidth, segmentHeight, series.radius ?? 0);
+      });
+      return { dataKey: series.dataKey, paths };
+    });
+  }
+  const count = seriesList.length;
+  const gap = count > 1 ? BAR_GAP : 0;
+  const barWidth = (bandwidth - gap * (count - 1)) / count;
+  return seriesList.map((series, seriesIndex) => {
+    const paths = ctx.data.map((row) => {
+      const x =
+        (ctx.xBand(String(row[ctx.xKey])) ?? 0) + seriesIndex * (barWidth + gap);
+      const value = Number(row[series.dataKey] ?? 0);
+      const top = Math.min(ctx.y(value), baseline);
+      const barHeight = Math.abs(baseline - ctx.y(value));
+      return roundedRectPath(x, top, barWidth, barHeight, series.radius ?? 0);
+    });
+    return { dataKey: series.dataKey, paths };
+  });
+}
+
+static function formatTicks(
+  ctx: CartesianCtx,
+  formatter?: (value: string) => string,
+): XTick[] {
+  const ticks = xTicks(ctx);
+  if (!formatter) return ticks;
+  return ticks.map((tick) => ({ value: formatter(tick.value), x: tick.x }));
+}
+
+static function tooltipRowsByIndex(
+  ctx: CartesianCtx,
+  seriesList: BarSeries[],
+  config: ChartConfig,
+): TooltipRow[][] {
+  return ctx.data.map((row) =>
+    seriesList.map((series) => ({
+      key: series.dataKey,
+      label: String(config[series.dataKey]?.label ?? series.dataKey),
+      value: Number(row[series.dataKey] ?? 0),
+      color: seriesColor(series.dataKey),
+    })),
+  );
+}
+
+static function tooltipLefts(ctx: CartesianCtx): string[] {
+  return ctx.data.map((row, index) => {
+    const center = bandCenter(ctx, index);
+    const percent = Math.max(0, Math.min(78, (center / ctx.width) * 100));
+    return `${percent.toFixed(2)}%`;
+  });
+}
+
+static function legendItemsFor(
+  seriesList: BarSeries[],
+  config: ChartConfig,
+): LegendItem[] {
+  return seriesList.map((series) => ({
+    key: series.dataKey,
+    label: String(config[series.dataKey]?.label ?? series.dataKey),
+    color: seriesColor(series.dataKey),
+  }));
+}
+
+static function pointerGeometry(ctx: CartesianCtx): PointerGeometry {
+  const domain = ctx.xBand.domain();
+  const step = ctx.xBand.step();
+  const first = ctx.xBand(domain[0] ?? "") ?? 0;
+  return {
+    width: ctx.width,
+    plotX: ctx.plot.x,
+    plotRight: ctx.plot.x + ctx.plot.width,
+    start: first - ctx.xBand.paddingInner() * step * 0.5,
+    step,
+    count: domain.length,
+  };
+}
+
+// Serializable-geometry twin of math.ts' bandIndexFromPointer: the hover
+// handler runs on the client, where the d3 scales in ctx can't be shipped.
+static function indexFromPointer(
+  offsetX: number,
+  clientWidth: number,
+  geometry: PointerGeometry,
+): number {
+  if (clientWidth <= 0 || geometry.count === 0) return -1;
+  const scaledX = offsetX * (geometry.width / clientWidth);
+  if (scaledX < geometry.plotX || scaledX > geometry.plotRight) return -1;
+  const index = Math.floor((scaledX - geometry.start) / geometry.step);
+  return Math.max(0, Math.min(geometry.count - 1, index));
+}
+
+<const/{
+  config,
+  data,
+  xKey,
+  width = 628,
+  height = 353,
+  stacked = false,
+  grid: showGrid = true,
+  yAxis: showYAxis = false,
+  tooltip: tooltipEnabled = true,
+  cursor: cursorEnabled = true,
+  indicator,
+  hideLabel,
+  tickMargin = 8,
+  class: className,
+}=input/>
+
+<const/seriesList=[...(input.series ?? [])]/>
+<const/seriesKeys=seriesList.map((series) => series.dataKey)/>
+<const/ctx=cartesianCtx({
+  data,
+  xKey,
+  seriesKeys,
+  width,
+  height,
+  margin: { top: 5, right: 5, bottom: 5, left: 5, ...input.margin },
+  xAxisHeight: 30,
+  stacked,
+})/>
+<const/bars=computeBars(ctx, seriesList, stacked)/>
+<const/ticks=formatTicks(ctx, input.xTickFormatter)/>
+<const/rowsByIndex=tooltipRowsByIndex(ctx, seriesList, config)/>
+<const/labels=data.map((row) => String(row[xKey]))/>
+<const/lefts=tooltipLefts(ctx)/>
+<const/cursorPaths=data.map((row, index) => bandCursorPath(ctx, index))/>
+<const/geometry=pointerGeometry(ctx)/>
+<const/showLegend=(input.legend === true || input.legend === "top" || input.legend === "bottom")/>
+<const/legendAlign=(input.legend === "top" ? "top" : "bottom")/>
+
+<let/activeIndex=(-1)/>
+
+<div
+  class=cn("recharts-wrapper", className)
+  style={ position: "relative", width: "100%", height: "100%" }
+  onPointermove(event: PointerEvent, el: HTMLDivElement) {
+    if (tooltipEnabled) {
+      const rect = el.getBoundingClientRect();
+      activeIndex = indexFromPointer(event.clientX - rect.left, rect.width, geometry);
+    }
+  }
+  onPointerleave() {
+    if (tooltipEnabled) {
+      activeIndex = -1;
+    }
+  }
+>
+  <if=(showLegend && legendAlign === "top")>
+    <ChartLegend items=legendItemsFor(seriesList, config) verticalAlign="top"/>
+  </if>
+  <svg
+    class="recharts-surface"
+    width="100%"
+    height="100%"
+    viewBox=`0 0 ${width} ${height}`
+  >
+    <if=showGrid>
+      <ChartGrid ctx=ctx/>
+    </if>
+    <if=(tooltipEnabled && cursorEnabled && activeIndex >= 0)>
+      <g class="recharts-layer">
+        <path
+          class="recharts-rectangle recharts-tooltip-cursor"
+          fill="#ccc"
+          d=cursorPaths[activeIndex]
+        />
+      </g>
+    </if>
+    <ChartXAxis ctx=ctx ticks=ticks tickMargin=tickMargin/>
+    <if=showYAxis>
+      <ChartYAxis ctx=ctx/>
+    </if>
+    <for|series| of=bars>
+      <g class="recharts-layer recharts-bar">
+        <g class="recharts-layer recharts-bar-rectangles">
+          <for|path| of=series.paths>
+            <g class="recharts-layer recharts-bar-rectangle">
+              <path
+                class="recharts-rectangle"
+                fill=`var(--color-${series.dataKey})`
+                d=path
+              />
+            </g>
+          </for>
+        </g>
+      </g>
+    </for>
+  </svg>
+  <if=(showLegend && legendAlign === "bottom")>
+    <ChartLegend items=legendItemsFor(seriesList, config) verticalAlign="bottom"/>
+  </if>
+  <if=(tooltipEnabled && activeIndex >= 0)>
+    <div
+      style={
+        position: "absolute",
+        left: lefts[activeIndex],
+        top: "12px",
+        "pointer-events": "none",
+      }
+    >
+      <ChartTooltip
+        rows=rowsByIndex[activeIndex]
+        label=labels[activeIndex]
+        indicator=indicator
+        hideLabel=hideLabel
+      />
+    </div>
+  </if>
+</div>

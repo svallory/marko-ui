@@ -1,0 +1,6 @@
+{
+  "title": "Chart",
+  "description": "Beautiful charts. Built with d3 and Marko — server-rendered, themeable with CSS variables.",
+  "dependencies": ["d3-scale", "d3-shape", "d3-array"],
+  "registryDependencies": ["utils"]
+}
