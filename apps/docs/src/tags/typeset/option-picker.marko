@@ -1,0 +1,110 @@
+// Ported from shadcn/ui app/(app)/(typeset)/components/option-picker.tsx.
+// Structure, class strings and data-slots verbatim; the only change is how
+// the trailing icon is supplied.
+//
+// Upstream takes `icon: IconSvgElement` (a hugeicons path-array) and renders
+// it via <HugeiconsIcon strokeWidth={2} className="size-4.5" />. hugeicons is
+// not a dependency here, so `icon` is a NAME and the four glyphs actually
+// used by customizer.tsx are inlined below as <svg> with the identical
+// stroke-width/size and the same path data:
+//   - "measure"  → hugeicons ArrowHorizontalIcon
+//   - "size"     → hugeicons TextSmallcapsIcon
+//   - "flow"     → hugeicons ParagraphSpacingIcon
+//   - "leading"  → the LineHeightIcon path array defined inline in
+//                  customizer.tsx (copied path-for-path)
+import Picker from "./picker.marko";
+import LockButton from "./lock-button.marko";
+import { cn } from "@marko-ui/registry/lib/utils.ts";
+
+export interface OptionPickerOption {
+  label: string;
+  value: string;
+}
+
+export interface Input {
+  label: string;
+  /** Lockable param key; also drives the hover-preview payload. */
+  param?: string;
+  icon?: "measure" | "size" | "flow" | "leading";
+  options: readonly OptionPickerOption[];
+  value: string;
+  onChange: (value: string) => void;
+  /** Hover-preview; receives null when the highlight clears. */
+  onItemPreview?: (value: string | null) => void;
+  locked?: boolean;
+  onToggleLock?: () => void;
+  isMobile?: boolean;
+  /** Mobile-only popup anchor override — see picker.marko's `anchorEl`. */
+  anchorEl?: () => HTMLElement | null;
+  class?: string;
+}
+
+<const/current=input.options.find((option) => option.value === input.value)/>
+<const/sections=[{ options: input.options.map((option) => ({ value: option.value, label: option.label })) }]/>
+
+<div class=cn("group/picker relative", input.class)>
+  <Picker
+    value=input.value
+    onValueChange=input.onChange
+    onItemPreview=input.onItemPreview
+    closeOnClick=input.isMobile
+    side=(input.isMobile ? "top" : "right")
+    align=(input.isMobile ? "center" : "start")
+    anchorEl=(input.isMobile ? input.anchorEl : undefined)
+    sections=sections
+  >
+    <@trigger>
+      <div class="flex min-w-0 flex-col justify-start pr-8 text-left">
+        <div class="text-xs text-muted-foreground">${input.label}</div>
+        <div class="line-clamp-1 text-sm font-medium text-foreground">${current?.label}</div>
+      </div>
+      <if=input.icon>
+        <div class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-foreground select-none md:right-2.5">
+          <if=(input.icon === "measure")>
+            // hugeicons ArrowHorizontalIcon
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4.5">
+              <path d="M7 8L3 12L7 16"/>
+              <path d="M17 8L21 12L17 16"/>
+              <path d="M3 12H21"/>
+            </svg>
+          </if>
+          <else-if=(input.icon === "size")>
+            // hugeicons TextSmallcapsIcon
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4.5">
+              <path d="M2 5H12"/>
+              <path d="M7 5V19"/>
+              <path d="M14 11H22"/>
+              <path d="M18 11V19"/>
+            </svg>
+          </else-if>
+          <else-if=(input.icon === "flow")>
+            // hugeicons ParagraphSpacingIcon
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4.5">
+              <path d="M3 3H21"/>
+              <path d="M3 21H21"/>
+              <path d="M3 9H21"/>
+              <path d="M3 15H21"/>
+            </svg>
+          </else-if>
+          <else>
+            // LineHeightIcon, defined inline in customizer.tsx — paths copied
+            // verbatim (stroke-width 1.5 there, unlike the hugeicons above).
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="size-4.5">
+              <path d="M4.5 3.5H19.5" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"/>
+              <path d="M4.5 20.5H19.5" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"/>
+              <path d="M17 17L14.8905 11.4741C13.9109 8.90801 13.4211 7.625 12.625 7.625C11.8289 7.625 11.3391 8.90801 10.3595 11.4741L8.25 17" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"/>
+              <path d="M9.5 13H15.75" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"/>
+            </svg>
+          </else>
+        </div>
+      </if>
+    </@trigger>
+  </Picker>
+  <if=(input.param && input.onToggleLock)>
+    <LockButton
+      locked=(input.locked ?? false)
+      onToggle=input.onToggleLock
+      class="absolute top-1/2 right-8 -translate-y-1/2"
+    />
+  </if>
+</div>

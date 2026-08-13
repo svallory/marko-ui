@@ -1,0 +1,22 @@
+// Ported from shadcn/ui app/(app)/(typeset)/components/random-button.tsx.
+// Class string verbatim (variant="outline" plus the override chain).
+// Upstream calls useShuffle() directly; here `onShuffle` arrives as an attr
+// from the typeset-app state container.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import { cn } from "@marko-ui/registry/lib/utils.ts";
+
+export interface Input {
+  onShuffle: () => void;
+  class?: string;
+}
+
+<Button
+  variant="outline"
+  on-click() { input.onShuffle(); }
+  class=cn(
+    "touch-manipulation bg-transparent! px-2! py-0! text-sm! transition-none select-none hover:bg-muted! pointer-coarse:h-10!",
+    input.class,
+  )
+>
+  <span class="w-full truncate text-center font-medium">Shuffle</span>
+</Button>

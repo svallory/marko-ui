@@ -1,0 +1,50 @@
+// Ported from shadcn/ui app/(app)/(typeset)/components/lock-button.tsx.
+//
+// Same component as /create's (../create/lock-button.marko) except for ONE
+// class-string difference that is real and load-bearing: typeset's variant
+// adds `max-md:hidden` (create's does not), because typeset's customizer
+// becomes a horizontal scroller on mobile where the lock affordance has no
+// room. Class string below is verbatim from typeset's lock-button.tsx, so
+// this is a separate file rather than a reuse of create's.
+//
+// Upstream reads lock state from React context (useLocks); Marko 6 has no
+// context, so `locked` + `onToggle` arrive as attrs from the typeset-app
+// state container. The hugeicons SquareLock01/SquareUnlock01 glyphs are
+// reproduced as inline SVGs (same shape as create's port uses).
+import { cn } from "@marko-ui/registry/lib/utils.ts";
+
+export interface Input {
+  locked: boolean;
+  onToggle: () => void;
+  class?: string;
+}
+
+<button
+  type="button"
+  title=(input.locked ? "Unlock" : "Lock")
+  aria-label=(input.locked ? "Unlock" : "Lock")
+  data-locked=String(input.locked)
+  data-slot="lock-button"
+  class=cn(
+    "flex size-4 cursor-pointer items-center justify-center rounded opacity-0 ring-foreground/60 transition-opacity outline-none group-focus-within/picker:opacity-100 group-hover/picker:opacity-100 focus:opacity-100 focus-visible:ring-1 data-[locked=true]:opacity-100 max-md:hidden pointer-coarse:hidden",
+    input.class,
+  )
+  on-click() { input.onToggle(); }
+>
+  <if=input.locked>
+    // hugeicons SquareLock01 (closed padlock)
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-5 text-foreground">
+      <path d="M7 10V8a5 5 0 0 1 10 0v2"/>
+      <rect x="4" y="10" width="16" height="11" rx="3"/>
+      <path d="M12 15v2"/>
+    </svg>
+  </if>
+  <else>
+    // hugeicons SquareUnlock01 (open padlock)
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-5 text-foreground">
+      <path d="M7 10V8a5 5 0 0 1 9.66-1.8"/>
+      <rect x="4" y="10" width="16" height="11" rx="3"/>
+      <path d="M12 15v2"/>
+    </svg>
+  </else>
+</button>

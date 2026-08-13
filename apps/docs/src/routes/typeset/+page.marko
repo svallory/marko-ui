@@ -1,129 +1,33 @@
-import "../../tags/typeset/typeset-customizer.marko";
-import "../../tags/typeset/typeset-preview.marko";
-import { FIXTURES } from "../../lib/typeset-fixtures.ts";
-import {
-  DEFAULT_CONFIG,
-  buildTypesetVariables,
-  toStyleString,
-  toCssBlock,
-  parseConfig,
-  serializeConfig,
-  MEASURES,
-  FONTS,
-  SIZES,
-  LEADINGS,
-  FLOWS,
-  type TypesetConfig,
-} from "../../tags/typeset/typeset-options.ts";
-
-<let/config=DEFAULT_CONFIG/>
-<let/overlay=null as Partial<TypesetConfig> | null/>
-<let/active="docs" as keyof typeof FIXTURES/>
-<let/copyState="Copy CSS"/>
-
-// Restore a shared configuration from the query string on first paint, same
-// pattern as /create — settings are shareable via URL, nothing server-side.
-<script>
-  const restored = parseConfig(window.location.search);
-  config = restored;
-</script>
-
-<const/effectiveConfig=overlay ? { ...config, ...overlay } : config/>
-<const/previewVariables=buildTypesetVariables(effectiveConfig)/>
-<const/previewStyle=toStyleString(previewVariables)/>
-<const/measureWidth=(
-  MEASURES.find((measure) => measure.name === effectiveConfig.measure) ?? MEASURES[2]
-).width/>
-
-<const/commitConfig=(next: TypesetConfig) => {
-  config = next;
-  overlay = null;
-  copyState = "Copy CSS";
-  window.history.replaceState(
-    null,
-    "",
-    window.location.pathname + serializeConfig(next),
-  );
-}/>
-
-<const/shuffle=() => {
-  const pick = (options: { name: string }[]) =>
-    options[Math.floor(Math.random() * options.length)].name;
-  commitConfig({
-    heading: pick(FONTS),
-    body: pick(FONTS.filter((font) => font.name !== "inherit")),
-    mono: pick(FONTS.filter((font) => font.name !== "inherit")),
-    scale: pick(SIZES),
-    leading: pick(LEADINGS),
-    flow: pick(FLOWS),
-    measure: effectiveConfig.measure,
-  });
-}/>
-
-<const/applyOverlay=(next: Partial<TypesetConfig> | null) => {
-  overlay = next;
-}/>
-
-<const/resetConfig=() => {
-  commitConfig(DEFAULT_CONFIG);
-}/>
-
-<const/setActive=(value: string) => {
-  active = value as keyof typeof FIXTURES;
-}/>
-
-<const/copyCss=() => {
-  navigator.clipboard
-    .writeText(toCssBlock(config))
-    .then(() => {
-      copyState = "Copied!";
-    })
-    .catch(() => {
-      copyState = "Copy failed";
-    });
-}/>
+// Ported from shadcn/ui app/(app)/(typeset)/typeset/page.tsx +
+// typeset/layout.tsx. Wrapper class strings and the data-slot="designer"
+// inner frame are verbatim; typeset-app.marko is this port's single state
+// container, replacing the source's LocksProvider > Suspense >
+// TypesetHistoryProvider > TypesetPreviewOverrideProvider stack, and it
+// mounts DocsPanel + Preview + Customizer in the same order page.tsx does
+// (see its header comment for the full provider-to-container mapping).
+//
+// Deviations from source:
+// - No Suspense/TypesetSkeleton boundary: upstream's HistoryProvider reads
+//   useSearchParams(), which opts a Next subtree out of prerendering, so
+//   typeset-skeleton paints until that resolves client-side. This route SSRs
+//   synchronously from URL-derived defaults like every other page here, so
+//   there is no async gap to fill (typeset-skeleton.marko is ported and
+//   available but unreachable — same call /create's port made).
+// - `previewFontVariables` (the next/font variable class list applied to the
+//   wrapper) has no analogue: there is no next/font here, the preview iframe
+//   loads faces via a Google Fonts link instead. Dropped rather than faked.
+// - `--spacing(n)` Tailwind-v4 function tokens are spelled as the literal
+//   rem values they compute to (n * 0.25rem), matching how
+//   ../create/+page.marko already handles the same wrapper.
+import TypesetApp from "../../tags/typeset/typeset-app.marko";
 
 <div
-  class="relative flex flex-col [--customizer-width:18rem] [--gap:1rem] md:h-[calc(100vh-8rem)] md:overflow-hidden md:[--gap:1.5rem]"
+  class="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden section-soft [--customizer-width:12rem] [--gap:1rem] md:[--gap:1.5rem] 2xl:[--customizer-width:14rem]"
 >
-  <div class="flex flex-col gap-2 px-(--gap) pt-(--gap)">
-    <div class="flex flex-wrap items-end justify-between gap-3">
-      <div class="flex flex-col gap-1">
-        <h1 class="text-2xl font-semibold tracking-tight">Typeset</h1>
-        <p class="max-w-2xl text-sm text-muted-foreground">
-          Typography for markdown you don't control. A single
-          <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">.typeset</code>
-          class styles headings, lists, tables, code, and everything in between —
-          tune it live below, then copy the CSS.
-        </p>
-      </div>
-      <span class="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
-        Preview — settings live in the URL, nothing is saved server-side
-      </span>
-    </div>
-  </div>
-
   <div
     data-slot="designer"
-    class="flex flex-col gap-(--gap) p-(--gap) md:min-h-0 md:flex-1 md:flex-row-reverse"
+    class="flex min-h-0 flex-1 flex-col items-start gap-(--gap) p-(--gap) pt-[calc(var(--gap)*0.25)] md:flex-row-reverse"
   >
-    <typeset-customizer
-      config=config
-      configChange=commitConfig
-      previewChange=applyOverlay
-      onShuffle=shuffle
-      onReset=resetConfig
-      onCopy=copyCss
-      copyState=copyState
-    />
-
-    <div class="relative min-h-[32rem] flex-1 overflow-hidden rounded-2xl border border-border md:min-h-0">
-      <typeset-preview
-        active=active
-        activeChange=setActive
-        style=previewStyle
-        measureWidth=measureWidth
-      />
-    </div>
+    <TypesetApp/>
   </div>
 </div>
