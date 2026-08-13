@@ -1,12 +1,18 @@
 // Ported from shadcn/ui app/(app)/(create)/components/main-menu.tsx.
 // Top menu bar of the customizer card header: a single trigger button that
-// opens a dropdown with Navigate/Open Preset/Shuffle/Light-Dark actions, a
+// opens a dropdown with Open Preset/Shuffle/Light-Dark actions, a
 // separator, then Undo/Redo/Reset. The source wires these to context hooks
-// (useHistory/useActionMenuTrigger/useOpenPreset/useRandom/useReset/
-// useThemeToggle); Marko has no context, so the design-system container
-// passes the equivalent callbacks + canGoBack/canGoForward down as attrs.
-// "Navigate..." (useActionMenuTrigger → item-explorer command palette) is
-// wired in phase 4 to design-system.marko's ActionMenu, via onNavigate.
+// (useHistory/useOpenPreset/useRandom/useReset/useThemeToggle); Marko has no
+// context, so the design-system container passes the equivalent callbacks +
+// canGoBack/canGoForward down as attrs.
+//
+// Deliberate deviation from source: shadcn's real menu also has a
+// "Navigate..." item (⌘P) wired to useActionMenuTrigger() / the ⌘K-style
+// item-explorer command palette. Per explicit user direction this whole
+// surface — the "Actions" footer button that used to open it, the palette
+// itself (search in it didn't even work), and the dead item-explorer.marko
+// it fronted — has been removed from this port. This is where that item
+// used to live in the dropdown.
 import { positionerStyle } from "marko-ui";
 import * as menu from "@zag-js/menu";
 import { cn } from "@marko-ui/registry/lib/utils.ts";
@@ -21,7 +27,6 @@ export interface Input {
   onToggleTheme: () => void;
   onOpenPreset: () => void;
   onShowResetDialog: () => void;
-  onNavigate: () => void;
 }
 
 <let/isMac=false/>
@@ -36,9 +41,6 @@ export interface Input {
 <machine-props/machineProps from=input pick=menu.props
   onSelect(details: menu.SelectionDetails) {
     switch (details.value) {
-      case "navigate":
-        input.onNavigate();
-        break;
       case "open-preset":
         input.onOpenPreset();
         break;
@@ -59,7 +61,7 @@ export interface Input {
         break;
     }
   }
-  positioning={ placement: "right-start", gutter: 8 }
+  positioning={ placement: "right-start", gutter: 20, shift: -8 }
 />
 <service/service machine=() => menu.machine props=machineProps/>
 <connect/api=(service, normalizeProps) =>
@@ -95,14 +97,9 @@ export interface Input {
           class="no-scrollbar z-50 max-h-[24rem] w-[calc(var(--available-width,16rem)-1.5rem)] min-w-32 overflow-x-hidden overflow-y-auto rounded-xl border-0 bg-neutral-950/80 p-1.5 text-neutral-100 ring-1 ring-neutral-950/80 backdrop-blur-xl outline-none md:w-52 dark:bg-neutral-800/90 dark:ring-neutral-700/50"
         >
           <div data-slot="picker-group">
-            <div
-              ...api().getItemProps({ value: "navigate" })
-              data-slot="picker-item"
-              class="group/dropdown-menu-item relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base"
-            >
-              Navigate...
-              <span class="ml-auto text-xs tracking-widest text-neutral-400! group-focus/dropdown-menu-item:text-neutral-100">${isMac ? "⌘P" : "Ctrl+P"}</span>
-            </div>
+            // Deliberate deviation: shadcn's "Navigate..." (⌘P) item used to
+            // go here — removed along with the action-menu surface (see
+            // header comment).
             <div
               ...api().getItemProps({ value: "open-preset" })
               data-slot="picker-item"
