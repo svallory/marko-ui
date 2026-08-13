@@ -9,7 +9,7 @@
 // hooks/use-action-menu.ts -> our action-menu.marko). This tag is likewise
 // not composed into design-system.marko. It is kept as an available tag for
 // parity, with its item list aligned to what the preview route actually
-// renders: the two real preview showcase items, as bare registry names.
+// renders: the three position-named preview pages.
 export interface Input {
   item: string;
   onItemChange: (item: string) => void;
@@ -17,9 +17,9 @@ export interface Input {
 }
 
 static const ITEMS = [
-  { name: "preview-02", title: "Preview 02" },
-  { name: "preview", title: "Preview" },
-  { name: "preview-04", title: "Preview 04" },
+  { name: "preview-page-1", title: "Preview Page 1" },
+  { name: "preview-page-2", title: "Preview Page 2" },
+  { name: "preview-page-3", title: "Preview Page 3" },
 ];
 
 <let/blocksOpen=true/>

@@ -80,9 +80,10 @@ export type DesignSystemSearchParams = {
 export const DESIGN_SYSTEM_SEARCH_PARAM_DEFAULTS: DesignSystemSearchParams = {
   preset: "b0",
   base: DEFAULT_CONFIG.base,
-  // Matches shadcn's parseAsString.withDefault("preview-02") — the preview
-  // route renders the real preview-02/preview showcase pages.
-  item: "preview-02",
+  // Mirrors shadcn's parseAsString.withDefault("preview-02") — our
+  // position-named equivalent page; the preview route renders the
+  // preview-page-1/2/3 showcase pages.
+  item: "preview-page-1",
   iconLibrary: DEFAULT_CONFIG.iconLibrary,
   style: DEFAULT_CONFIG.style,
   theme: DEFAULT_CONFIG.theme,

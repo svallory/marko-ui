@@ -2,14 +2,17 @@
 // (quoted verbatim in the phase-5 task brief). NOT a desktop/tablet/mobile
 // viewport toggle (that doesn't exist anywhere in the source — grepped the
 // whole (create) tree for "desktop"/"tablet"/"mobile"/"viewport" and it
-// isn't there). It's a two-item "01"/"02" preview switcher between shadcn's
-// two dedicated dashboard-style showcase registry items:
-// "01" -> "preview-02" (the wide multi-column card grid, and the default
-// `item` value), "02" -> "preview" (the second showcase page). The gate
-// mirrors the source's `isPreview` check exactly: visible only while
-// `item === "preview"` or `item` starts with "preview-0" (so "preview-03",
-// dead code in the real product, would also satisfy the gate there even
-// though it isn't one of the two switchable items — matched literally).
+// isn't there). It's the pager between the preview showcase pages, shown
+// only while the current `item` is one of them (the source gates on its
+// registry item names via `item === "preview" || item.startsWith(
+// "preview-0")`; our position-based names gate on the "preview-page-"
+// prefix instead).
+//
+// Our pages use position-based item names:
+// "01" -> preview-page-1 (ports shadcn's `preview-02`, their default),
+// "02" -> preview-page-2 (ports shadcn's `preview`),
+// "03" -> preview-page-3 (this repo's own showcase of marko-ui-unique
+// components — an intentional addition over shadcn's two-item pager).
 import Button from "@marko-ui/registry/ui/button/button.marko";
 
 export interface Input {
@@ -17,17 +20,13 @@ export interface Input {
   onItemChange: (item: string) => void;
 }
 
-// "03" -> preview-04 is this repo's own showcase of marko-ui-unique
-// components (see preview-blocks/preview-04/index.marko) — an intentional
-// addition over shadcn's two-item pager. The name matches the source's
-// `preview-0*` gate, so the visibility condition needs no change.
 static const PREVIEW_ITEMS = [
-  { label: "01", value: "preview-02" },
-  { label: "02", value: "preview" },
-  { label: "03", value: "preview-04" },
+  { label: "01", value: "preview-page-1" },
+  { label: "02", value: "preview-page-2" },
+  { label: "03", value: "preview-page-3" },
 ] as const;
 
-<const/isPreviewItem=(input.item === "preview" || input.item.startsWith("preview-0"))/>
+<const/isPreviewItem=input.item.startsWith("preview-page-")/>
 
 <if=isPreviewItem>
   <div class="dark absolute right-3 bottom-3 z-20 flex items-center gap-1 rounded-xl bg-card/90 p-1 shadow-xl backdrop-blur-xl" data-slot="preview-switcher">

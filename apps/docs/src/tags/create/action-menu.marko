@@ -6,11 +6,11 @@
 // Item scope: the source lists every allowed registry item for the current
 // base via getAllItems() (create/page.tsx -> Customizer -> useActionMenu).
 // This port lists exactly what our preview route can actually render: the
-// two real shadcn preview showcase pages, `preview-02` ("Preview 02") and
-// `preview` ("Preview") — bare registry item names, the same values the
-// preview-switcher pager sets, titles matching the registry index
-// (bases/__index__.tsx). The earlier `block:`/`component:` scheme pointed
-// at content the rewritten route no longer serves and is gone.
+// three position-named preview pages (preview-page-1 ports shadcn's
+// `preview-02`, preview-page-2 ports shadcn's `preview`, preview-page-3 is
+// our marko-ui-unique showcase) — the same values the preview-switcher
+// pager sets. The earlier `block:`/`component:` scheme pointed at content
+// the rewritten route no longer serves and is gone.
 //
 // Deviations from source:
 // - Source keys this off a global useSWR("create:action-menu-open") cache
@@ -37,9 +37,9 @@ static const GROUPS: CommandGroup[] = [
   {
     label: "Blocks",
     items: [
-      { value: "preview-02", label: "Preview 02" },
-      { value: "preview", label: "Preview" },
-      { value: "preview-04", label: "Preview 04" },
+      { value: "preview-page-1", label: "Preview Page 1" },
+      { value: "preview-page-2", label: "Preview Page 2" },
+      { value: "preview-page-3", label: "Preview Page 3" },
     ],
   },
 ];

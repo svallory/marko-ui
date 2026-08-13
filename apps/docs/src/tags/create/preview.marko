@@ -37,7 +37,7 @@ export interface Input {
 <const/mergedParams={ ...input.params, ...(input.previewOverride ?? {}) } as DesignSystemSearchParams/>
 
 // The iframe src carries the initial item only (item is a bare registry
-// item name — "preview-02" or "preview", see
+// item name — "preview-page-1", "preview-page-2", or "preview-page-3", see
 // ../../routes/create/preview/+page.marko) — re-keying the
 // src on every param change would reload the iframe and flash/lose state,
 // exactly the tradeoff the source's comment documents. Style/color/font

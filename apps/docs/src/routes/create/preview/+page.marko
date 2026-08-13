@@ -5,12 +5,15 @@
 //
 // Real shadcn /create shows exactly TWO purpose-built dashboard-style
 // showcase pages, switched by the bottom-right "01"/"02" pager
-// (components/preview-switcher.tsx): registry items `preview-02` (the
+// (components/preview-switcher.tsx): registry items `preview-02` (their
 // default — search-params.ts: parseAsString.withDefault("preview-02")) and
 // `preview`. A third `preview-03` exists on disk there but is dead code
-// (not in PREVIEW_ITEMS), so it is not ported. The earlier phase's
-// 28-block/12-demo `block:`/`component:` if-chain was an invention and is
-// replaced by this faithful two-item scheme.
+// (not in PREVIEW_ITEMS), so it is not ported. This port uses
+// position-based item names instead of shadcn's registry names:
+// preview-page-1 (ports shadcn's preview-02, the default), preview-page-2
+// (ports shadcn's preview), preview-page-3 (our own marko-ui-unique
+// showcase). The earlier phase's 28-block/12-demo `block:`/`component:`
+// if-chain was an invention and is replaced by this scheme.
 //
 // The item pick is a static <if>/<else> — dynamic tags (`<${Component}/>`)
 // crash production DOM hydration, see
@@ -32,9 +35,9 @@ import {
 import { FONTS } from "../../../tags/create/lib/fonts.ts";
 import type { DesignSystemSearchParams } from "../../../tags/create/lib/search-params.ts";
 
-import Preview02 from "../../../tags/create/preview-blocks/preview-02/index.marko";
-import Preview from "../../../tags/create/preview-blocks/preview/index.marko";
-import Preview04 from "../../../tags/create/preview-blocks/preview-04/index.marko";
+import PreviewPage1 from "../../../tags/create/preview-blocks/preview-page-1/index.marko";
+import PreviewPage2 from "../../../tags/create/preview-blocks/preview-page-2/index.marko";
+import PreviewPage3 from "../../../tags/create/preview-blocks/preview-page-3/index.marko";
 
 static const THEME_STYLE_ELEMENT_ID = "design-system-theme-vars";
 static const MANAGED_BODY_CLASS_PREFIXES = ["style-", "base-color-"] as const;
@@ -130,12 +133,12 @@ static function applyParams(params: DesignSystemSearchParams) {
 // No `Input.item`: marko-run route files don't map query-string params onto
 // a page's `input`. Read the query string from `$global.url`, matching how
 // `+handler.ts` files in this app already do it. Default mirrors shadcn's
-// parseAsString.withDefault("preview-02"); unknown values fall back to
-// preview-02 exactly like an unmatched dynamic route would 404 to the
-// default there.
+// parseAsString.withDefault("preview-02") — our position-named equivalent
+// is preview-page-1; unknown values fall back to it exactly like an
+// unmatched dynamic route would 404 to the default there.
 <const/rawItem=$global.url.searchParams.get("item")/>
 <const/item=(
-  rawItem === "preview" || rawItem === "preview-04" ? rawItem : "preview-02"
+  rawItem === "preview-page-2" || rawItem === "preview-page-3" ? rawItem : "preview-page-1"
 )/>
 
 // No own <!doctype html>/<html>/<head>/<body>: this route renders inside
@@ -144,14 +147,14 @@ static function applyParams(params: DesignSystemSearchParams) {
 // prefix — see its `isBlockPreview` check, extended to also match
 // `/create/preview/`).
 <div class="bg-background text-foreground antialiased" data-preview-item=item>
-  <if=(item === "preview")>
-    <Preview/>
+  <if=(item === "preview-page-2")>
+    <PreviewPage2/>
   </if>
-  <else-if=(item === "preview-04")>
-    <Preview04/>
+  <else-if=(item === "preview-page-3")>
+    <PreviewPage3/>
   </else-if>
   <else>
-    <Preview02/>
+    <PreviewPage1/>
   </else>
 </div>
 
