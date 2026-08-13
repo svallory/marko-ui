@@ -10,7 +10,7 @@
 //   glyph) on a dark banner; this repo has no equivalent brand glyph asset
 //   (site-header.marko uses a plain "marko-ui" text wordmark, no SVG mark),
 //   so the banner reuses that same text wordmark treatment instead of
-//   fabricating a logo. Copy is verbatim from source.
+//   fabricating a logo. Copy is verbatim from source, adapted for marko-ui.
 // - Source passes `showCloseButton={false}` (Base UI Dialog) — this
 //   registry's Dialog (packages/registry/default/ui/dialog/dialog.marko)
 //   always renders its close-X button, with no such prop to suppress it.
@@ -18,6 +18,17 @@
 //   for a single call site; the dialog is still only dismissible via that
 //   X, the backdrop, Escape, or "Get Started", all of which correctly
 //   persist the dismissal.
+// - shadcn's welcome-dialog applies a page-local `dialog-ring` class
+//   (app/globals.css: rounded-xl border-none shadow-2xl ring-4
+//   ring-neutral-200/80 dark:ring-neutral-800) plus its base-nova Dialog
+//   style's `.cn-dialog-overlay` (bg-black/10 + backdrop-blur-xs) — this is
+//   NOT part of the base new-york-v4 Dialog our library Dialog tracks (that
+//   base overlay is a plain bg-black/50, no blur, and DialogContent has no
+//   ring by default: confirmed by diffing registry/new-york-v4/ui/dialog.tsx
+//   against registry/bases/base/ui/dialog.tsx + style-nova.css). Since the
+//   blur/ring is a per-page style choice in the source, not a library
+//   default, it's applied here as call-site overrides rather than changing
+//   the shared Dialog for every usage.
 import Dialog from "@marko-ui/registry/ui/dialog/dialog.marko";
 import Button from "@marko-ui/registry/ui/button/button.marko";
 
@@ -49,19 +60,20 @@ static const STORAGE_KEY = "shadcn-create-welcome-dialog";
 <Dialog
   open=isOpen
   openChange=handleOpenChange
-  class="max-w-92 min-w-0 gap-0 overflow-hidden rounded-xl p-0 sm:max-w-sm dark:bg-neutral-900"
+  backdropClass="bg-black/10 supports-backdrop-filter:backdrop-blur-xs"
+  class="dialog-ring max-w-92 min-w-0 gap-0 overflow-hidden rounded-xl border-none bg-clip-padding p-0 shadow-2xl ring-4 ring-neutral-200/80 sm:max-w-sm dark:bg-neutral-900 dark:ring-neutral-800"
 >
   <@content>
     <div class="flex aspect-2/1.2 w-full items-center justify-center rounded-t-xl bg-neutral-950 text-center text-neutral-100 sm:aspect-2/1">
       <div class="font-mono text-2xl font-bold tracking-tight">marko-ui</div>
     </div>
     <div class="flex flex-col gap-1 p-4">
-      <h2 class="text-left text-base font-semibold">Build your own shadcn/ui</h2>
+      <h2 class="text-left text-base font-semibold">Build your own marko-ui</h2>
       <p class="text-left leading-relaxed text-foreground">
         Customize everything from the ground up. Pick your component library, font, color scheme, and more.
       </p>
       <p class="mt-2 text-left leading-relaxed font-medium text-foreground">
-        Available for all major React frameworks.
+        This is a port of <a href="https://ui.shadcn.com/create" target="_blank" rel="noreferrer" class="underline underline-offset-4 hover:text-foreground">shadcn/create</a> rendering marko-ui components instead of React components.
       </p>
     </div>
   </@content>

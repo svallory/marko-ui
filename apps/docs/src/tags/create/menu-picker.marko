@@ -127,8 +127,8 @@ export interface Input {
     if (!details.open) input.onItemPreview?.(null);
   }
   positioning={
-    placement: `${input.isMobile ? "top" : "right"}`,
-    gutter: 8,
+    placement: `${input.isMobile ? "top" : "right"}-start`,
+    gutter: 20,
   }
 />
 <service/service machine=() => menu.machine props=machineProps/>

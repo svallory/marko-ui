@@ -55,6 +55,10 @@ export interface Input {
   closeOnClick?: boolean;
   side?: "top" | "bottom" | "left" | "right";
   align?: "start" | "center" | "end";
+  /** Distance (px) from the trigger along the side axis. shadcn's PickerContent default is 20. */
+  sideOffset?: number;
+  /** Distance (px) along the align axis. shadcn's PickerContent default is 0. */
+  alignOffset?: number;
   /** Disables the trigger (e.g. radius-picker when the current style forces a fixed radius). */
   disabled?: boolean;
   class?: string;
@@ -73,7 +77,8 @@ export interface Input {
   }
   positioning={
     placement: `${input.side ?? "bottom"}${input.align && input.align !== "center" ? `-${input.align}` : ""}`,
-    gutter: 8,
+    gutter: input.sideOffset ?? 20,
+    shift: input.alignOffset ?? 0,
   }
 />
 <service/service machine=() => menu.machine props=machineProps/>

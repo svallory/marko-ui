@@ -87,7 +87,6 @@ import Customizer from "./customizer.marko";
 import OpenPreset from "./open-preset.marko";
 import Preview from "./preview.marko";
 import WelcomeDialog from "./welcome-dialog.marko";
-import ActionMenu from "./action-menu.marko";
 import AlertDialog from "@marko-ui/registry/ui/alert-dialog/alert-dialog.marko";
 
 export interface Input {
@@ -162,9 +161,6 @@ static function isSameOverride(
 <let/historyMaxIndex=0/>
 <let/showResetDialog=false/>
 <let/openPresetOpen=false/>
-// use-action-menu.tsx's ACTION_MENU_OPEN_KEY SWR cache, moved to a plain
-// <let> here (see action-menu.marko's header comment on the SWR deviation).
-<let/actionMenuOpen=false/>
 <let/isDark=false/>
 // Non-reactive mutable refs (React useRef equivalents).
 <let/refs={
@@ -510,14 +506,14 @@ static function isSameOverride(
       }
 
       // use-history.tsx: ⌘/Ctrl+Z undo, ⇧⌘Z / Ctrl+Y redo.
-      // use-action-menu.tsx: ⌘/Ctrl+P opens the action menu (item navigator).
+      //
+      // Deliberate deviation: shadcn's real page also binds ⌘/Ctrl+P here
+      // to open the action-menu item navigator (use-action-menu.tsx). Per
+      // explicit user direction that whole surface has been removed from
+      // this port (see main-menu.marko's header comment) — there is no
+      // ⌘P binding to forward to.
       if (e.metaKey || e.ctrlKey) {
         const key = e.key.toLowerCase();
-        if (key === "p") {
-          e.preventDefault();
-          actionMenuOpen = !actionMenuOpen;
-          return;
-        }
         if ((key === "z" && e.shiftKey) || (key === "y" && e.ctrlKey)) {
           e.preventDefault();
           goForward();
@@ -803,7 +799,6 @@ static function isSameOverride(
     onToggleTheme=toggleTheme
     onOpenPreset=() => { openPresetOpen = true; }
     onShowResetDialog=() => { showResetDialog = true; }
-    onNavigate=() => { actionMenuOpen = true; }
     presetCode=presetCode
     isDark=isDark
   />
@@ -834,14 +829,6 @@ static function isSameOverride(
     setParams({ preset });
     openPresetOpen = false;
   }
-/>
-
-// ActionMenu (action-menu.tsx): ⌘/Ctrl+P item navigator, mirroring the
-// OpenPreset wiring above.
-<ActionMenu
-  open=actionMenuOpen
-  onOpenChange=(open: boolean) => { actionMenuOpen = open; }
-  onSelectItem=(item: string) => { setParams({ item }); }
 />
 
 // WelcomeDialog (welcome-dialog.tsx): first-visit-only, mounted once at the
