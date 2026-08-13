@@ -12,32 +12,31 @@ export interface Input {
   class?: string;
 }
 
-// Level 3 headings sit one step further in than level 2.
+// Level 3 headings sit one step further in than level 2, mapped onto
+// shadcn's data-depth 3/4 pixel scale (pl-4/pl-6) since we key off our own
+// hand-built `level` field rather than an MDX heading-depth AST.
 static function indentClass(level: number) {
-  return level < 3 ? "pl-4" : "pl-7";
+  return level < 3 ? "pl-4" : "pl-6";
 }
 
 <if=(input.entries && input.entries.length !== 0)>
   <nav/tocEl
-    class=`text-sm ${input.class ?? ""}`
+    class=`flex flex-col gap-2 p-4 pt-0 text-sm ${input.class ?? ""}`
     data-slot="docs-toc"
     aria-label="On this page"
   >
-    <div class="mb-3 font-medium text-foreground">On This Page</div>
-    <ul class="flex flex-col gap-2 border-l border-border">
-      <for|entry| of=input.entries by=(entry)=>entry.id>
-        <li>
-          <a
-            href=`#${entry.id}`
-            data-toc-link
-            data-target=entry.id
-            class=`-ml-px block border-l border-transparent text-muted-foreground transition-colors hover:text-foreground data-active:border-foreground data-active:text-foreground ${indentClass(entry.level ?? 2)}`
-          >
-            ${entry.label}
-          </a>
-        </li>
-      </for>
-    </ul>
+    <p class="h-6 bg-background text-xs font-medium text-muted-foreground">On This Page</p>
+    <for|entry| of=input.entries by=(entry)=>entry.id>
+      <a
+        href=`#${entry.id}`
+        data-toc-link
+        data-target=entry.id
+        data-active="false"
+        class=`text-[0.8rem] text-muted-foreground no-underline transition-colors hover:text-foreground data-[active=true]:font-medium data-[active=true]:text-foreground ${indentClass(entry.level ?? 2)}`
+      >
+        ${entry.label}
+      </a>
+    </for>
   </nav>
 
   <let/observer=null/>
@@ -53,7 +52,7 @@ static function indentClass(level: number) {
 
       const setActive = (id) => {
         tocLinks.forEach((link) => {
-          link.toggleAttribute("data-active", link.getAttribute("data-target") === id);
+          link.setAttribute("data-active", String(link.getAttribute("data-target") === id));
         });
       };
 

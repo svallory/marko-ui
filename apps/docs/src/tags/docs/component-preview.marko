@@ -1,69 +1,62 @@
-// One example: the demo rendered live in a bordered stage, with a Preview /
-// Code tab pair over it. shadcn's ComponentPreview + ComponentPreviewTabs.
-//
-// Both panels render server-side and the tabs are a DOM toggle, so the code
-// is in the HTML for search engines and works without JavaScript (the Code
-// panel is reachable by anchor even if the toggle never wires up).
+// The demo rendered live in a bordered stage, with a stacked source block
+// below it — shadcn's ComponentPreview + ComponentPreviewTabs (v4). This is
+// NOT a Preview/Code tab toggle: the live preview always renders on top, and
+// the source starts collapsed to a 3-line peek behind a fade-out gradient
+// with a centered "View Code" button. Clicking it expands to the full
+// syntax-free source inline and stays expanded (shadcn has no re-collapse).
 //
 // The demo itself renders through <demo-renderer demoId=.../> — a generated
 // static <if>/<else-if> chain, not a dynamic tag (<${...}/>). Marko 6.3.34
 // crashes client hydration in production when a dynamic tag is resolved from
 // a runtime lookup; see notes/bug-marko-dynamic-tag-hydration-crash.md and
 // scripts/build-demos-manifest.ts's header comment.
-import "./expandable-code.marko";
 import "./demo-renderer.marko";
+import "./code-block.marko";
 
 export interface Input {
   /** A DemoEntry.demoId from the generated demos manifest, e.g. "button/button-demo". */
   demoId: string;
   /** Raw .marko text of that demo. */
   source: string;
-  /** Alignment of the demo inside the stage. */
-  align?: "center" | "start";
+  /** Alignment of the demo inside the stage. shadcn also supports "end". */
+  align?: "center" | "start" | "end";
   class?: string;
 }
 
 <const/align=input.align ?? "center"/>
 
-<id/previewPanelId/>
-<id/codePanelId/>
+// A 3-line peek, `leading-6` to match the expanded <pre>'s line-height.
+<const/peekLines=input.source.split("\n").slice(0, 3).join("\n")/>
 
-<div/previewEl class=`my-4 ${input.class ?? ""}` data-slot="component-preview">
-  <div class="flex items-center gap-1 border-b border-border" role="tablist" aria-label="Example view">
-    <button
-      type="button"
-      role="tab"
-      data-preview-tab
-      data-view="preview"
-      aria-selected="true"
-      aria-controls=previewPanelId
-      class="border-b-2 border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground aria-selected:border-foreground aria-selected:text-foreground"
-    >
-      Preview
-    </button>
-    <button
-      type="button"
-      role="tab"
-      data-preview-tab
-      data-view="code"
-      aria-selected="false"
-      aria-controls=codePanelId
-      class="border-b-2 border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground aria-selected:border-foreground aria-selected:text-foreground"
-    >
-      Code
-    </button>
+<div/previewEl
+  class=`group relative mt-4 mb-12 flex flex-col overflow-hidden rounded-2xl border border-border ${input.class ?? ""}`
+  data-slot="component-preview"
+  data-not-typeset
+>
+  <div
+    data-slot="preview"
+    data-align=align
+    class="flex h-72 w-full justify-center overflow-x-auto p-10 data-[align=center]:items-center data-[align=end]:items-start data-[align=start]:items-start sm:data-[align=end]:items-end"
+  >
+    <demo-renderer demoId=input.demoId/>
   </div>
 
-  <div id=previewPanelId role="tabpanel" data-preview-panel data-view="preview">
-    <div
-      class=`mt-4 flex min-h-[350px] w-full justify-center overflow-x-auto rounded-lg border border-border p-10 ${align === "center" ? "items-center" : "items-start"}`
-    >
-      <demo-renderer demoId=input.demoId/>
+  <div data-slot="code" data-expanded="false" class="relative overflow-hidden border-t border-border">
+    <div/peekEl class="relative">
+      <pre class="overflow-x-auto bg-code p-4 text-[0.8125rem] leading-6 text-code-foreground"><code class="font-mono">${peekLines}</code></pre>
+      <div class="pointer-events-none absolute inset-0 flex items-end justify-center pb-4" style="background: linear-gradient(to top, var(--color-code), color-mix(in oklab, var(--color-code) 60%, transparent), transparent)">
+        <button
+          type="button"
+          data-view-code
+          class="pointer-events-auto relative z-10 inline-flex h-8 items-center rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground shadow-none transition-colors hover:bg-muted"
+        >
+          View Code
+        </button>
+      </div>
     </div>
-  </div>
-
-  <div id=codePanelId role="tabpanel" data-preview-panel data-view="code" hidden>
-    <expandable-code code=input.source collapsedLines=14/>
+    <div/fullEl hidden>
+      <code-block code=input.source language="marko"/>
+    </div>
   </div>
 </div>
 
@@ -72,22 +65,16 @@ export interface Input {
     const root = previewEl();
     if (!root) return;
 
-    const tabs = Array.from(root.querySelectorAll("[data-preview-tab]"));
-    const panels = Array.from(root.querySelectorAll("[data-preview-panel]"));
+    const codeSlot = root.querySelector('[data-slot="code"]');
+    const viewCodeButton = root.querySelector("[data-view-code]");
+    const peek = peekEl();
+    const full = fullEl();
+    if (!codeSlot || !viewCodeButton || !peek || !full) return;
 
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        const view = tab.getAttribute("data-view");
-        tabs.forEach((candidate) => {
-          candidate.setAttribute(
-            "aria-selected",
-            String(candidate.getAttribute("data-view") === view),
-          );
-        });
-        panels.forEach((panel) => {
-          panel.hidden = panel.getAttribute("data-view") !== view;
-        });
-      });
+    viewCodeButton.addEventListener("click", () => {
+      peek.hidden = true;
+      full.hidden = false;
+      codeSlot.setAttribute("data-expanded", "true");
     });
   }
 />
