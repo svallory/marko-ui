@@ -1,0 +1,119 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/bar-chart-card.tsx
+// The source reads params.style via useDesignSystemSearchParams; the iframe
+// side has no hook, so isRounded updates from the same
+// `design-system-params` postMessage the route already receives.
+// The recharts source draws CartesianGrid strokeDasharray="3 3"; our
+// ChartGrid partial has no dasharray input, so grid lines render solid —
+// only visual difference from source.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Chart from "@marko-ui/registry/ui/chart/chart.marko";
+import BarChart from "@marko-ui/registry/ui/chart/bar.marko";
+import type { DesignSystemSearchParams } from "../../../lib/search-params.ts";
+
+static const barChartData = [
+  { month: "January", desktop: 186, mobile: 80 },
+  { month: "February", desktop: 305, mobile: 200 },
+  { month: "March", desktop: 237, mobile: 120 },
+  { month: "April", desktop: 73, mobile: 190 },
+  { month: "May", desktop: 209, mobile: 130 },
+  { month: "June", desktop: 214, mobile: 140 },
+];
+
+static const barChartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "var(--chart-1)",
+  },
+  mobile: {
+    label: "Mobile",
+    color: "var(--chart-2)",
+  },
+};
+
+static const desktopTotal = barChartData.reduce((sum, item) => sum + item.desktop, 0);
+static const mobileTotal = barChartData.reduce((sum, item) => sum + item.mobile, 0);
+static const desktopDelta = Math.round(
+  ((desktopTotal - mobileTotal) / mobileTotal) * 100
+);
+static const desktopDeltaPrefix = desktopDelta > 0 ? "+" : "";
+
+<let/isRounded=true/>
+
+<let/listening=false/>
+<script>
+  if (!listening && typeof window !== "undefined") {
+    listening = true;
+    window.addEventListener("message", (event: MessageEvent) => {
+      if (!event.data || typeof event.data !== "object") return;
+      if (event.data.type !== "design-system-params") return;
+      const params = event.data.data as DesignSystemSearchParams;
+      isRounded = !["lyra", "sera"].includes(params.style);
+    });
+  }
+</script>
+
+<Card>
+  <CardHeader>
+    <CardTitle class="text-lg">Traffic channels</CardTitle>
+    <CardDescription class="line-clamp-2 text-sm leading-snug">
+      Monthly desktop and mobile traffic for the last six months—compare
+      volume and mix across platforms and devices at a glance.
+    </CardDescription>
+  </CardHeader>
+  <CardContent class="flex flex-col gap-4 pt-0">
+    <Chart
+      config=barChartConfig
+      class="max-h-[180px] w-full"
+    >
+      <BarChart
+        data=barChartData
+        config=barChartConfig
+        xKey="month"
+        margin={ left: 0, right: 0, top: 8, bottom: 0 }
+        xTickFormatter=(value) => String(value).slice(0, 3)
+        tickMargin=8
+        cursor=false
+        indicator="dashed"
+        legend=true
+      >
+        <@series dataKey="desktop" radius=(isRounded ? [6, 6, 0, 0] : 0)/>
+        <@series dataKey="mobile" radius=(isRounded ? [6, 6, 0, 0] : 0)/>
+      </BarChart>
+    </Chart>
+    <div class="grid w-full grid-cols-3 divide-x divide-border/60">
+      <div class="px-2 text-center">
+        <div class="text-[0.65rem] text-muted-foreground uppercase">
+          Desktop
+        </div>
+        <div class="text-sm font-medium tabular-nums">
+          ${desktopTotal.toLocaleString()}
+        </div>
+      </div>
+      <div class="px-2 text-center">
+        <div class="text-[0.65rem] text-muted-foreground uppercase">
+          Mobile
+        </div>
+        <div class="text-sm font-medium tabular-nums">
+          ${mobileTotal.toLocaleString()}
+        </div>
+      </div>
+      <div class="px-2 text-center">
+        <div class="text-[0.65rem] text-muted-foreground uppercase">
+          Mix Delta
+        </div>
+        <div class="text-sm font-medium tabular-nums">
+          ${desktopDeltaPrefix}${desktopDelta}%
+        </div>
+      </div>
+    </div>
+  </CardContent>
+  <CardFooter>
+    <Button class="w-full">View report</Button>
+  </CardFooter>
+</Card>

@@ -1,0 +1,96 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/power-usage.tsx
+// The source reads params.style via useDesignSystemSearchParams; the iframe
+// side has no hook, so isRounded updates from the same
+// `design-system-params` postMessage the route already receives (same
+// pattern as preview-page-2/cards/style-overview.marko).
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Chart from "@marko-ui/registry/ui/chart/chart.marko";
+import BarChart from "@marko-ui/registry/ui/chart/bar.marko";
+import Progress from "@marko-ui/registry/ui/progress/progress.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+import type { DesignSystemSearchParams } from "../../../lib/search-params.ts";
+
+static const chartData = [
+  { hour: "6a", usage: 1.2 },
+  { hour: "8a", usage: 2.8 },
+  { hour: "10a", usage: 3.1 },
+  { hour: "12p", usage: 2.4 },
+  { hour: "2p", usage: 3.4 },
+  { hour: "4p", usage: 2.9 },
+  { hour: "6p", usage: 3.8 },
+  { hour: "8p", usage: 3.2 },
+];
+
+static const chartConfig = {
+  usage: {
+    label: "Usage (kW)",
+    color: "var(--chart-2)",
+  },
+};
+
+<let/isRounded=true/>
+
+<let/listening=false/>
+<script>
+  if (!listening && typeof window !== "undefined") {
+    listening = true;
+    window.addEventListener("message", (event: MessageEvent) => {
+      if (!event.data || typeof event.data !== "object") return;
+      if (event.data.type !== "design-system-params") return;
+      const params = event.data.data as DesignSystemSearchParams;
+      isRounded = !["lyra", "sera"].includes(params.style);
+    });
+  }
+</script>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Power Usage</CardTitle>
+    <CardDescription>Whole Home</CardDescription>
+  </CardHeader>
+  <CardContent class="flex flex-col gap-4">
+    <Chart config=chartConfig class="h-[140px] w-full">
+      <BarChart
+        data=chartData
+        config=chartConfig
+        xKey="hour"
+        width=340
+        height=140
+        margin={ left: 0, right: 0, top: 4, bottom: 0 }
+        tickMargin=6
+        grid=false
+        cursor=false
+        hideLabel
+      >
+        <@series dataKey="usage" radius=(isRounded ? [4, 4, 0, 0] : 0)/>
+      </BarChart>
+    </Chart>
+    <Separator/>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-0.5">
+        <span class="text-sm text-muted-foreground">
+          Currently Using
+        </span>
+        <span class="text-lg font-semibold tabular-nums">3.4 kW</span>
+      </div>
+      <div class="flex flex-col gap-0.5">
+        <span class="text-sm text-muted-foreground">Solar Gen</span>
+        <span class="text-lg font-semibold text-chart-1 tabular-nums">
+          +1.2 kW
+        </span>
+      </div>
+    </div>
+  </CardContent>
+  <CardFooter class="flex-col items-start gap-1">
+    <span class="text-sm text-muted-foreground">Battery Level</span>
+    <div class="flex w-full items-center gap-2">
+      <Progress value=85 class="flex-1"/>
+      <span class="text-sm font-medium tabular-nums">85%</span>
+    </div>
+  </CardFooter>
+</Card>

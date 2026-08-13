@@ -1,0 +1,85 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/account-access.tsx
+// The source's `<Item render={<a href="#" />}>` (base-ui render prop) renders
+// the item AS an anchor; our Item tag has no element override, so the anchor
+// is emitted directly with the item's exact data-slot/data-variant/data-size
+// attributes and itemVariants classes — identical DOM to shadcn's output.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Field from "@marko-ui/registry/ui/field/field.marko";
+import FieldGroup from "@marko-ui/registry/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/registry/ui/field/field-label.marko";
+import Input from "@marko-ui/registry/ui/input/input.marko";
+import ItemContent from "@marko-ui/registry/ui/item/content.marko";
+import ItemDescription from "@marko-ui/registry/ui/item/description.marko";
+import ItemMedia from "@marko-ui/registry/ui/item/media.marko";
+import ItemTitle from "@marko-ui/registry/ui/item/title.marko";
+import { itemVariants } from "@marko-ui/registry/ui/item/variants.ts";
+import Icon from "../../lib/icon.marko";
+
+<Card>
+  <CardHeader>
+    <CardTitle>Account Access</CardTitle>
+    <CardDescription>
+      Update your credentials or re-authenticate.
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    <FieldGroup>
+      <Field>
+        <FieldLabel for="email-address">Email Address</FieldLabel>
+        <Input
+          id="email-address"
+          type="email"
+          value="artist@studio.inc"
+        />
+      </Field>
+      <Field>
+        <div class="flex items-center justify-between">
+          <FieldLabel for="current-password">
+            Current Password
+          </FieldLabel>
+          <a
+            href="#"
+            class="text-xs font-medium tracking-wider text-muted-foreground uppercase hover:text-foreground"
+          >
+            Forgot?
+          </a>
+        </div>
+        <Input
+          id="current-password"
+          type="password"
+          value="password123"
+        />
+      </Field>
+    </FieldGroup>
+  </CardContent>
+  <CardFooter class="flex-col gap-4">
+    <Button class="w-full">
+      <Icon name="LockKeyholeIcon"/>
+      Update Security
+    </Button>
+    <a
+      href="#"
+      data-slot="item"
+      data-variant="muted"
+      data-size="default"
+      class=itemVariants({ variant: "muted" })
+    >
+      <ItemMedia variant="icon">
+        <Icon name="AlertCircleIcon" class="text-destructive"/>
+      </ItemMedia>
+      <ItemContent>
+        <ItemTitle>Danger Zone</ItemTitle>
+        <ItemDescription class="line-clamp-1">
+          Archive account and remove catalog
+        </ItemDescription>
+      </ItemContent>
+      <Icon name="ArrowRightIcon" class="size-4"/>
+    </a>
+  </CardFooter>
+</Card>

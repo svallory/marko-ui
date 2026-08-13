@@ -1,0 +1,41 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/book-appointment.tsx
+import Alert from "@marko-ui/registry/ui/alert/alert.marko";
+import AlertDescription from "@marko-ui/registry/ui/alert/description.marko";
+import AlertTitle from "@marko-ui/registry/ui/alert/title.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Field from "@marko-ui/registry/ui/field/field.marko";
+import FieldGroup from "@marko-ui/registry/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/registry/ui/field/field-label.marko";
+import ToggleGroup from "@marko-ui/registry/ui/toggle-group/toggle-group.marko";
+
+static const SLOTS = ["9:00 AM", "10:30 AM", "11:00 AM", "1:30 PM"].map(
+  (time, index) => ({ value: `slot-${index}`, label: time }),
+);
+
+<Card>
+  <CardHeader>
+    <CardTitle>Book Appointment</CardTitle>
+    <CardDescription>Dr. Sarah Chen · Cardiology</CardDescription>
+  </CardHeader>
+  <CardContent class="flex flex-col gap-4">
+    <FieldGroup>
+      <Field>
+        <FieldLabel>Available on March 18, 2026</FieldLabel>
+        <ToggleGroup items=SLOTS defaultValue=["slot-0"]/>
+      </Field>
+    </FieldGroup>
+    <Alert>
+      <AlertTitle>New patient?</AlertTitle>
+      <AlertDescription>Please arrive 15 minutes early.</AlertDescription>
+    </Alert>
+  </CardContent>
+  <CardFooter>
+    <Button class="w-full">Book Appointment</Button>
+  </CardFooter>
+</Card>

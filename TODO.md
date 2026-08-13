@@ -75,46 +75,11 @@ Source: space clone `data/shadcn-ui/apps/v4/registry/new-york-v4/blocks/<name>/`
 - [x] **Per-component behavioral test suites** — done 2026-08-11: 61 WAI-ARIA APG keyboard tests (tabs, dialog focus trap, accordion, switch/checkbox/radio-group, select, slider) in packages/registry/tests/behavior/, Playwright driven from vitest node env. Found + fixed a real adapter bug: normalize-props now maps Zag's React-style `tabIndex` → `tabindex` (verbatim camelCase key caused remove-then-add on every update, blurring focus — broke keyboard nav on all roving-focus widgets). `(code — done)`
 - [x] **Hydration-invariant helper** — done 2026-08-11 (design C-4): packages/registry/tests/helpers/hydration-invariant.ts — JS-off vs JS-on attribute diff over all [data-scope] elements, LCS pairing on scope/part, separate count-change whitelist. 33/33 components pass: 28 exact, 5 whitelisted with in-code mechanism comments (avatar image-load state, combobox/command floating-ui placement, carousel measured snap points). Dark-mode divergence untested (light pinned). `(code — done)`
 
-## /create preview — skipped cards (missing primitives)
+## /create preview — excluded cards
 
-Cards from shadcn's real preview showcase pages that were NOT ported (no-approximations directive, 2026-08-13): each depends on a primitive `packages/registry/default/ui` does not have. Source root: `data/shadcn-ui/apps/v4/registry/bases/base/blocks/`. Unblock by building the missing primitive (ui/field composition; charts — see the chart entry above; canvas visualizers), then port verbatim.
+All previously skipped cards were ported 2026-08-13 (ui/field, ui/native-select, and ui/chart primitives landed). The single intentional exclusion: `preview/cards/icon-preview-grid.tsx` — card content IS an icon-set grid (icon-set exclusion); preview-page-2 mounts the source composition without it.
 
-- [ ] **preview-02/account-access** — `preview-02/cards/account-access.tsx` — missing: ui/field (Field, FieldGroup, FieldLabel)
-- [ ] **preview-02/card-overview** — `preview-02/cards/card-overview.tsx` — missing: ui/chart + recharts (BarChart)
-- [ ] **preview-02/contribution-history** — `preview-02/cards/contribution-history.tsx` — missing: ui/chart + recharts (BarChart)
-- [ ] **preview-02/dividend-income** — `preview-02/cards/dividend-income.tsx` — missing: ui/chart + recharts (mini BarCharts)
-- [ ] **preview-02/new-milestone** — `preview-02/cards/new-milestone.tsx` — missing: ui/field
-- [ ] **preview-02/notification-settings** — `preview-02/cards/notification-settings.tsx` — missing: ui/field (Field, FieldContent, FieldDescription, FieldGroup, FieldLabel)
-- [ ] **preview-02/payout-threshold** — `preview-02/cards/payout-threshold.tsx` — missing: ui/field
-- [ ] **preview-02/power-usage** — `preview-02/cards/power-usage.tsx` — missing: ui/chart + recharts (BarChart)
-- [ ] **preview-02/preferences** — `preview-02/cards/preferences.tsx` — missing: ui/field (incl. FieldSeparator)
-- [ ] **preview-02/receiving-method** — `preview-02/cards/receiving-method.tsx` — missing: ui/field (incl. FieldSet/FieldLegend/FieldTitle rich radio options)
-- [ ] **preview-02/savings-progress** — `preview-02/cards/savings-progress.tsx` — missing: ui/chart + recharts (PieChart donut with center Label)
-- [ ] **preview-02/savings-targets** — `preview-02/cards/savings-targets.tsx` — missing: ui/field + ui/native-select
-- [ ] **preview-02/social-links** — `preview-02/cards/social-links.tsx` — missing: ui/field
-- [ ] **preview-02/stock-performance** — `preview-02/cards/stock-performance.tsx` — missing: ui/chart + recharts (AreaChart) + ui/field
-- [ ] **preview-02/transfer-funds** — `preview-02/cards/transfer-funds.tsx` — missing: ui/field
-- [ ] **preview/analytics-card** — `preview/cards/analytics-card.tsx` — missing: ui/chart + recharts (AreaChart)
-- [ ] **preview/bar-chart-card** — `preview/cards/bar-chart-card.tsx` — missing: ui/chart + recharts (grouped BarChart + ChartLegend)
-- [ ] **preview/book-appointment** — `preview/cards/book-appointment.tsx` — missing: ui/field
-- [ ] **preview/codespaces-card** — `preview/cards/codespaces-card.tsx` — missing: ui/field (clone-URL fields in the Local tab)
-- [ ] **preview/contributions-activity** — `preview/cards/contributions-activity.tsx` — missing: ui/field (incl. FieldSet/FieldLegend)
-- [ ] **preview/feedback-form** — `preview/cards/feedback-form.tsx` — missing: ui/field + ui/native-select
-- [ ] **preview/github-profile** — `preview/cards/github-profile.tsx` — missing: ui/field + ui/native-select
-- [ ] **preview/icon-preview-grid** — `preview/cards/icon-preview-grid.tsx` — skipped: card content IS an icon-set grid (icon-set exclusion)
-- [ ] **preview/invite-team** — `preview/cards/invite-team.tsx` — missing: ui/field + InputGroupButton usage tied to it
-- [ ] **preview/live-waveform** — `preview/cards/live-waveform.tsx` — missing: canvas/animation component (Web Audio + canvas waveform)
-- [ ] **preview/pie-chart-card** — `preview/cards/pie-chart-card.tsx` — missing: ui/chart + recharts (PieChart + ChartLegend)
-- [ ] **preview/report-bug** — `preview/cards/report-bug.tsx` — missing: ui/field
-- [ ] **preview/shipping-address** — `preview/cards/shipping-address.tsx` — missing: ui/field
-- [ ] **preview/sleep-report** — `preview/cards/sleep-report.tsx` — missing: ui/chart + recharts (stacked BarChart)
-- [ ] **preview/typography-specimen** — `preview/cards/typography-specimen.tsx` — missing: ui/field (dialog form body)
-- [ ] **preview/ui-elements** — `preview/cards/ui-elements.tsx` — missing: ui/field (FieldGroup form section)
-- [ ] **preview/visitors** — `preview/cards/visitors.tsx` — missing: ui/chart + recharts (AreaChart)
-
-Not ported and NOT in the skip list (dead files upstream, never mounted by their index.tsx): `preview-02/cards/album-card.tsx`, `preview-02/cards/catalog-toolbar.tsx`, `preview/cards/bar-visualizer.tsx`, and the whole `preview-03/` directory.
-
-`(code — unblocks as primitives land)`
+Not ported (dead files upstream, never mounted by their index.tsx): `preview-02/cards/album-card.tsx`, `preview-02/cards/catalog-toolbar.tsx`, `preview/cards/bar-visualizer.tsx`, and the whole `preview-03/` directory.
 
 ## Upstream
 

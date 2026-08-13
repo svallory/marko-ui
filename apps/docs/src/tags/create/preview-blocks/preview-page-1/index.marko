@@ -2,19 +2,17 @@
 // the "01" pager page of /create: a wide multi-column card grid inside a
 // horizontal scroll container with content-visibility containment hints.
 //
-// Reduced card set: 15 of the source's 33 cards depend on primitives this
-// registry does not have (ui/field composition, recharts/ui-chart) and are
-// skipped per the no-approximations directive — see TODO.md
-// "## /create preview — skipped cards (missing primitives)". The grid is
-// rebalanced from the source's 7 column units (grid-cols-7,
-// w-[2400px]/md:w-[3000px], lyra/mira md:w-[2600px]) to 6 column units
-// (grid-cols-6, w-[2050px]/md:w-[2570px], lyra/mira md:w-[2230px] — the
-// source widths scaled by 6/7) so the reduced set still reads as a
-// composed wall. The center span-2 column keeps the source's exact
-// sub-composition. All cards are static tag references (no dynamic tags —
-// see notes/bug-marko-dynamic-tag-hydration-crash.md).
+// Full source composition: all 33 mounted cards, source column layout
+// (grid-cols-7, w-[2400px]/md:w-[3000px], lyra/mira md:w-[2600px]) and the
+// source's exact card-to-column assignment. All cards are static tag
+// references (no dynamic tags — see
+// notes/bug-marko-dynamic-tag-hydration-crash.md).
+import AccountAccess from "./cards/account-access.marko";
+import CardOverview from "./cards/card-overview.marko";
 import ClaimableBalance from "./cards/claimable-balance.marko";
+import ContributionHistory from "./cards/contribution-history.marko";
 import CoverArt from "./cards/cover-art.marko";
+import DividendIncome from "./cards/dividend-income.marko";
 import EmptyConnectBank from "./cards/empty-connect-bank.marko";
 import EmptyDistributeTrack from "./cards/empty-distribute-track.marko";
 import EmptyExploreCatalog from "./cards/empty-explore-catalog.marko";
@@ -23,32 +21,49 @@ import FrontDoor from "./cards/front-door.marko";
 import IndexInvesting from "./cards/index-investing.marko";
 import KitchenIsland from "./cards/kitchen-island.marko";
 import LoadingCard from "./cards/loading-card.marko";
+import NewMilestone from "./cards/new-milestone.marko";
+import NotificationSettings from "./cards/notification-settings.marko";
 import Payments from "./cards/payments.marko";
+import PayoutThreshold from "./cards/payout-threshold.marko";
+import PowerUsage from "./cards/power-usage.marko";
+import Preferences from "./cards/preferences.marko";
 import QrConnect from "./cards/qr-connect.marko";
+import ReceivingMethod from "./cards/receiving-method.marko";
 import RecentTransactions from "./cards/recent-transactions.marko";
 import ReleaseCatalog from "./cards/release-catalog.marko";
 import RollerShades from "./cards/roller-shades.marko";
+import SavingsProgress from "./cards/savings-progress.marko";
+import SavingsTargets from "./cards/savings-targets.marko";
 import SidebarNav from "./cards/sidebar-nav.marko";
+import SocialLinks from "./cards/social-links.marko";
+import StockPerformance from "./cards/stock-performance.marko";
 import SyncingState from "./cards/syncing-state.marko";
+import TransferFunds from "./cards/transfer-funds.marko";
 import UpcomingPayments from "./cards/upcoming-payments.marko";
 
 <div class="overflow-x-auto overflow-y-hidden bg-muted contain-[paint] [--gap:--spacing(4)] 3xl:[--gap:--spacing(12)] md:[--gap:--spacing(10)] dark:bg-background style-lyra:md:[--gap:--spacing(6)] style-mira:md:[--gap:--spacing(6)]">
   <div class="flex w-full min-w-max justify-center">
     <div
-      class="grid w-[2050px] grid-cols-6 items-start gap-(--gap) bg-muted p-(--gap) md:w-[2570px] dark:bg-background style-lyra:md:w-[2230px] style-mira:md:w-[2230px] *:[div]:gap-(--gap)"
+      class="grid w-[2400px] grid-cols-7 items-start gap-(--gap) bg-muted p-(--gap) md:w-[3000px] dark:bg-background style-lyra:md:w-[2600px] style-mira:md:w-[2600px] *:[div]:gap-(--gap)"
       data-slot="capture-target"
     >
       <div class="flex flex-col p-1 [contain-intrinsic-size:380px_1200px] [content-visibility:auto]">
+        <ContributionHistory/>
         <EmptyDistributeTrack/>
         <QrConnect/>
+        <DividendIncome/>
         <IndexInvesting/>
-      </div>
-      <div class="flex flex-col p-1 [contain-intrinsic-size:380px_1200px] [content-visibility:auto]">
-        <ClaimableBalance/>
-        <KitchenIsland/>
         <SyncingState/>
       </div>
+      <div class="flex flex-col p-1 [contain-intrinsic-size:380px_1200px] [content-visibility:auto]">
+        <PayoutThreshold/>
+        <ClaimableBalance/>
+        <Preferences/>
+        <SavingsProgress/>
+        <KitchenIsland/>
+      </div>
       <div class="col-span-2 flex flex-col p-1 [contain-intrinsic-size:760px_1200px] [content-visibility:auto]">
+        <SavingsTargets/>
         <RecentTransactions/>
         <div class="grid grid-cols-2 items-start gap-(--gap)">
           <div class="flex flex-col gap-(--gap)">
@@ -63,14 +78,25 @@ import UpcomingPayments from "./cards/upcoming-payments.marko";
         <ReleaseCatalog/>
       </div>
       <div class="flex flex-col p-1 [contain-intrinsic-size:380px_1200px] [content-visibility:auto]">
+        <AccountAccess/>
+        <CardOverview/>
+        <TransferFunds/>
         <CoverArt/>
         <LoadingCard/>
-        <UpcomingPayments/>
       </div>
       <div class="flex flex-col p-1 [contain-intrinsic-size:380px_1200px] [content-visibility:auto]">
+        <ReceivingMethod/>
+        <PowerUsage/>
         <EmptyConnectBank/>
-        <EmptyExploreCatalog/>
+        <UpcomingPayments/>
         <RollerShades/>
+      </div>
+      <div class="flex flex-col p-1 [contain-intrinsic-size:380px_1200px] [content-visibility:auto]">
+        <StockPerformance/>
+        <EmptyExploreCatalog/>
+        <NewMilestone/>
+        <SocialLinks/>
+        <NotificationSettings/>
       </div>
     </div>
   </div>

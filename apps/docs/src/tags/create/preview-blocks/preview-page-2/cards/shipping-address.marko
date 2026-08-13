@@ -1,0 +1,92 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/shipping-address.tsx
+// API adaptation: this registry's Select is a single items-driven tag rather
+// than compound components; the trigger is widened to w-full via a class on
+// the root (same adaptation as payout-threshold).
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Checkbox from "@marko-ui/registry/ui/checkbox/checkbox.marko";
+import Field from "@marko-ui/registry/ui/field/field.marko";
+import FieldGroup from "@marko-ui/registry/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/registry/ui/field/field-label.marko";
+import Input from "@marko-ui/registry/ui/input/input.marko";
+import Select from "@marko-ui/registry/ui/select/select.marko";
+
+static const STATES = [
+  { label: "California", value: "CA" },
+  { label: "New York", value: "NY" },
+  { label: "Texas", value: "TX" },
+];
+
+static const COUNTRIES = [
+  { label: "United States", value: "US" },
+  { label: "Canada", value: "CA" },
+  { label: "United Kingdom", value: "UK" },
+];
+
+<Card>
+  <CardHeader>
+    <CardTitle>Shipping Address</CardTitle>
+    <CardDescription>Where should we deliver?</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <FieldGroup>
+      <Field>
+        <FieldLabel for="shipping-street">Street address</FieldLabel>
+        <Input id="shipping-street" placeholder="123 Main Street" />
+      </Field>
+      <Field>
+        <FieldLabel for="shipping-apt">Apt / Suite</FieldLabel>
+        <Input id="shipping-apt" placeholder="Apt 4B" />
+      </Field>
+      <FieldGroup class="grid grid-cols-2">
+        <Field>
+          <FieldLabel for="shipping-city">City</FieldLabel>
+          <Input id="shipping-city" placeholder="San Francisco" />
+        </Field>
+        <Field>
+          <FieldLabel for="shipping-state">State</FieldLabel>
+          <Select
+            id="shipping-state"
+            items=STATES
+            defaultValue=["CA"]
+            class="w-full [&_[data-slot=select-trigger]]:w-full"
+          />
+        </Field>
+      </FieldGroup>
+      <FieldGroup class="grid grid-cols-2">
+        <Field>
+          <FieldLabel for="shipping-zip">ZIP Code</FieldLabel>
+          <Input id="shipping-zip" placeholder="94102" />
+        </Field>
+        <Field>
+          <FieldLabel for="shipping-country">Country</FieldLabel>
+          <Select
+            id="shipping-country"
+            items=COUNTRIES
+            defaultValue=["US"]
+            class="w-full [&_[data-slot=select-trigger]]:w-full"
+          />
+        </Field>
+      </FieldGroup>
+      <Field orientation="horizontal">
+        <Checkbox id="shipping-save" defaultChecked />
+        <FieldLabel for="shipping-save" class="font-normal">
+          Save as default address
+        </FieldLabel>
+      </Field>
+    </FieldGroup>
+  </CardContent>
+  <CardFooter>
+    <Button variant="outline" size="sm">
+      Cancel
+    </Button>
+    <Button size="sm" class="ml-auto">
+      Save Address
+    </Button>
+  </CardFooter>
+</Card>

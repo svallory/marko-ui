@@ -1,0 +1,102 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/stock-performance.tsx
+// The recharts source renders NO XAxis (imported but unused); our AreaChart
+// always reserves 30 viewBox units for the axis strip, so margin.bottom = -30
+// cancels it (tick text lands outside the viewBox and is clipped), keeping
+// the source's effective margin { left: 0, right: 0, top: 8, bottom: 0 }.
+// The source's Combobox is a compound component (Input/Content/Empty/List/
+// Item); ours is a single tag with the same data-slot surface, so items are
+// passed as { value, label } pairs and the input id flows through zag `ids`
+// so the FieldLabel's `for` still targets it.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Chart from "@marko-ui/registry/ui/chart/chart.marko";
+import AreaChart from "@marko-ui/registry/ui/chart/area.marko";
+import Combobox from "@marko-ui/registry/ui/combobox/combobox.marko";
+import Field from "@marko-ui/registry/ui/field/field.marko";
+import FieldGroup from "@marko-ui/registry/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/registry/ui/field/field-label.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+
+static const TICKERS = ["VOO", "VIG", "AAPL", "MSFT", "GOOGL", "AMZN", "TSLA"];
+
+static const TICKER_ITEMS = TICKERS.map((ticker) => ({
+  value: ticker,
+  label: ticker,
+}));
+
+static const CHART_DATA = {
+  VOO: [
+    { month: "Jan", price: 412 },
+    { month: "Feb", price: 438 },
+    { month: "Mar", price: 395 },
+    { month: "Apr", price: 450 },
+    { month: "May", price: 420 },
+    { month: "Jun", price: 462 },
+  ],
+  AAPL: [
+    { month: "Jan", price: 185 },
+    { month: "Feb", price: 210 },
+    { month: "Mar", price: 172 },
+    { month: "Apr", price: 198 },
+    { month: "May", price: 178 },
+    { month: "Jun", price: 215 },
+  ],
+} as Record<string, { month: string; price: number }[]>;
+
+static const DEFAULT_DATA = [
+  { month: "Jan", price: 100 },
+  { month: "Feb", price: 118 },
+  { month: "Mar", price: 95 },
+  { month: "Apr", price: 125 },
+  { month: "May", price: 108 },
+  { month: "Jun", price: 130 },
+];
+
+static const chartConfig = {
+  price: {
+    label: "Price",
+    color: "var(--chart-1)",
+  },
+};
+
+<let/ticker="VOO"/>
+
+<const/data=(CHART_DATA[ticker] ?? DEFAULT_DATA)/>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Stock Performance</CardTitle>
+    <CardDescription>6-month price history.</CardDescription>
+  </CardHeader>
+  <CardContent class="flex flex-col gap-4">
+    <FieldGroup>
+      <Field>
+        <FieldLabel for="ticker-select">Ticker</FieldLabel>
+        <Combobox
+          items=TICKER_ITEMS
+          ids={ input: "ticker-select" }
+          placeholder="Search ticker..."
+          value=[ticker]
+          valueChange=((value: string[]) => {
+            if (value.length > 0) ticker = value[0]!;
+          })
+        />
+      </Field>
+    </FieldGroup>
+    <Separator class="style-sera:hidden"/>
+    <Chart config=chartConfig class="h-[200px] w-full">
+      <AreaChart
+        data=data
+        config=chartConfig
+        xKey="month"
+        margin={ left: 0, right: 0, top: 8, bottom: -30 }
+        cursor=false
+      >
+        <@series dataKey="price" type="monotone" gradient/>
+      </AreaChart>
+    </Chart>
+  </CardContent>
+</Card>

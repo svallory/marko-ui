@@ -1,0 +1,252 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/codespaces-card.tsx
+// API adaptations (this registry's primitives are items-driven / render-prop
+// based rather than compound React components):
+// - Tabs is a single items-driven tag; TabsList className overrides
+//   (outer `w-full`, inner `variant="line" className="w-full justify-start
+//   border-b *:[button]:flex-0"`) are not expressible — the list keeps the
+//   registry's default styling.
+// - The inner clone tabs' shared wrapper <div class="rounded-md border
+//   bg-muted/30 p-2"> around all three TabsContent panes is rendered inside
+//   each content body instead (visually identical: one pane visible at a
+//   time).
+// - DropdownMenu is items-driven ({label, value} + separator entries):
+//   per-item leading icons and align="end" are not supported by its API.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import DropdownMenu from "@marko-ui/registry/ui/dropdown-menu/dropdown-menu.marko";
+import Empty from "@marko-ui/registry/ui/empty/empty.marko";
+import EmptyContent from "@marko-ui/registry/ui/empty/content.marko";
+import EmptyDescription from "@marko-ui/registry/ui/empty/description.marko";
+import EmptyHeader from "@marko-ui/registry/ui/empty/header.marko";
+import EmptyMedia from "@marko-ui/registry/ui/empty/media.marko";
+import EmptyTitle from "@marko-ui/registry/ui/empty/title.marko";
+import Field from "@marko-ui/registry/ui/field/field.marko";
+import FieldDescription from "@marko-ui/registry/ui/field/field-description.marko";
+import FieldLabel from "@marko-ui/registry/ui/field/field-label.marko";
+import InputGroup from "@marko-ui/registry/ui/input-group/input-group.marko";
+import InputGroupAddon from "@marko-ui/registry/ui/input-group/addon.marko";
+import InputGroupButton from "@marko-ui/registry/ui/input-group/button.marko";
+import InputGroupInput from "@marko-ui/registry/ui/input-group/input.marko";
+import Item from "@marko-ui/registry/ui/item/item.marko";
+import ItemActions from "@marko-ui/registry/ui/item/actions.marko";
+import ItemContent from "@marko-ui/registry/ui/item/content.marko";
+import ItemDescription from "@marko-ui/registry/ui/item/description.marko";
+import ItemTitle from "@marko-ui/registry/ui/item/title.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+import Spinner from "@marko-ui/registry/ui/spinner/spinner.marko";
+import Tabs from "@marko-ui/registry/ui/tabs/tabs.marko";
+import Tooltip from "@marko-ui/registry/ui/tooltip/tooltip.marko";
+import Icon from "../../lib/icon.marko";
+
+static const OUTER_TABS = [
+  { value: "codespaces", label: "Codespaces" },
+  { value: "local", label: "Local" },
+];
+
+static const CLONE_TABS = [
+  { value: "https", label: "HTTPS" },
+  { value: "ssh", label: "SSH" },
+  { value: "cli", label: "GitHub CLI" },
+];
+
+static const CODESPACES_MENU = [
+  { value: "new-with-options", label: "New with options..." },
+  { value: "configure-container", label: "Configure container" },
+  { value: "set-up-prebuilds", label: "Set up prebuilds" },
+  { type: "separator" as const },
+  { value: "manage-codespaces", label: "Manage codespaces" },
+  { value: "share-deep-link", label: "Share deep link" },
+  { value: "what-are-codespaces", label: "What are codespaces?" },
+];
+
+<let/isCreatingCodespace=false/>
+
+<Card>
+  <CardContent>
+    <Tabs|tab| items=OUTER_TABS defaultValue="codespaces">
+      <if=(tab === "codespaces")>
+        <Item size="sm" class="px-1 pt-2">
+          <ItemContent>
+            <ItemTitle>Codespaces</ItemTitle>
+            <ItemDescription>Your workspaces in the cloud</ItemDescription>
+          </ItemContent>
+          <ItemActions>
+            <Tooltip
+              positioning={ placement: "bottom" }
+              content="Create a codespace on main"
+            >
+              <@trigger|triggerProps|>
+                <Button ...triggerProps variant="ghost" size="icon-sm">
+                  <Icon name="PlusIcon"/>
+                </Button>
+              </@trigger>
+            </Tooltip>
+            <DropdownMenu items=CODESPACES_MENU class="w-56">
+              <@trigger|triggerProps|>
+                <Button ...triggerProps variant="ghost" size="icon-sm">
+                  <Icon name="MoreHorizontalIcon"/>
+                </Button>
+              </@trigger>
+            </DropdownMenu>
+          </ItemActions>
+        </Item>
+        <Separator class="-mx-2 my-2 w-auto!"/>
+        <Empty class="p-4">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Icon name="ServerIcon"/>
+            </EmptyMedia>
+            <EmptyTitle>No codespaces</EmptyTitle>
+            <EmptyDescription>
+              You don't have any codespaces with this repository
+              checked out
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button
+              size="sm"
+              disabled=isCreatingCodespace
+              onClick() {
+                isCreatingCodespace = true;
+                setTimeout(() => {
+                  isCreatingCodespace = false;
+                }, 2000);
+              }
+            >
+              <if=isCreatingCodespace>
+                <Spinner data-icon="inline-start"/>
+              </if>
+              Create Codespace
+            </Button>
+            <a
+              href="#learn-more"
+              class="text-xs text-muted-foreground underline underline-offset-4"
+            >
+              Learn more about codespaces
+            </a>
+          </EmptyContent>
+        </Empty>
+        <Separator class="-mx-2 my-2 w-auto!"/>
+        <div class="p-1.5 text-xs text-muted-foreground">
+          Codespace usage for this repository is paid for by <span class="font-medium">shadcn</span>.
+        </div>
+      </if>
+      <if=(tab === "local")>
+        <Item size="sm" class="hidden p-0">
+          <ItemContent>
+            <ItemTitle class="gap-2">
+              <Icon name="TerminalIcon" class="size-4"/>
+              Clone
+            </ItemTitle>
+          </ItemContent>
+          <ItemActions>
+            <Tooltip
+              positioning={ placement: "left" }
+              content="Which remote URL should I use?"
+            >
+              <@trigger|triggerProps|>
+                <Button ...triggerProps variant="ghost" size="icon">
+                  <Icon name="InfoIcon"/>
+                </Button>
+              </@trigger>
+            </Tooltip>
+          </ItemActions>
+        </Item>
+        <Tabs|cloneTab| items=CLONE_TABS defaultValue="https">
+          <if=(cloneTab === "https")>
+            <div class="rounded-md border bg-muted/30 p-2">
+              <Field class="gap-2">
+                <FieldLabel for="https-url" class="sr-only">
+                  HTTPS URL
+                </FieldLabel>
+                <InputGroup>
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupButton variant="ghost" size="icon-xs">
+                      <Icon name="CopyIcon"/>
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="https-url"
+                    value="https://github.com/shadcn-ui/ui.git"
+                    readonly
+                  />
+                </InputGroup>
+                <FieldDescription>
+                  Clone using the web URL.
+                </FieldDescription>
+              </Field>
+            </div>
+          </if>
+          <if=(cloneTab === "ssh")>
+            <div class="rounded-md border bg-muted/30 p-2">
+              <Field class="gap-2">
+                <FieldLabel for="ssh-url" class="sr-only">
+                  SSH URL
+                </FieldLabel>
+                <InputGroup>
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupButton variant="ghost" size="icon-xs">
+                      <Icon name="CopyIcon"/>
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="ssh-url"
+                    value="git@github.com:shadcn-ui/ui.git"
+                    readonly
+                  />
+                </InputGroup>
+                <FieldDescription>
+                  Use a password-protected SSH key.
+                </FieldDescription>
+              </Field>
+            </div>
+          </if>
+          <if=(cloneTab === "cli")>
+            <div class="rounded-md border bg-muted/30 p-2">
+              <Field class="gap-2">
+                <FieldLabel for="cli-command" class="sr-only">
+                  CLI Command
+                </FieldLabel>
+                <InputGroup>
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupButton variant="ghost" size="icon-xs">
+                      <Icon name="CopyIcon"/>
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="cli-command"
+                    value="gh repo clone shadcn-ui/ui"
+                    readonly
+                  />
+                </InputGroup>
+                <FieldDescription>
+                  Work fast with our official CLI. <a href="#learn-more">Learn more</a>
+                </FieldDescription>
+              </Field>
+            </div>
+          </if>
+        </Tabs>
+        <Separator class="-mx-2 my-2 w-auto!"/>
+        <div class="flex flex-col">
+          <Button
+            variant="ghost"
+            size="sm"
+            class="justify-start gap-1.5"
+          >
+            <Icon name="MonitorIcon" data-icon="inline-start"/>
+            Open with GitHub Desktop
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            class="justify-start gap-1.5"
+          >
+            <Icon name="DownloadIcon" data-icon="inline-start"/>
+            Download ZIP
+          </Button>
+        </div>
+      </if>
+    </Tabs>
+  </CardContent>
+</Card>

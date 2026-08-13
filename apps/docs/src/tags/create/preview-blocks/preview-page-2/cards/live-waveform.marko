@@ -1,0 +1,471 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/live-waveform.tsx
+// The React source defines a parameterized <LiveWaveform>; the card mounts it
+// with fixed props (height=80, barWidth=3, barGap=2, mode, fadeEdges,
+// barColor="gray", historySize=120), so those are baked into OPTS here with
+// the component's defaults for the rest. React restarts its rAF loop when
+// active/processing/mode change (they're closured); ours reads live values
+// from a mutable state object instead — identical drawing, no restart needed.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+
+static const OPTS = {
+  barWidth: 3,
+  barGap: 2,
+  barRadius: 1.5,
+  barColor: "gray",
+  fadeEdges: true,
+  fadeWidth: 24,
+  baseBarHeight: 4,
+  sensitivity: 1,
+  smoothingTimeConstant: 0.8,
+  fftSize: 256,
+  historySize: 120,
+  updateRate: 30,
+};
+
+static function createWaveformState() {
+  return {
+    history: [] as number[],
+    analyser: null as AnalyserNode | null,
+    audioContext: null as AudioContext | null,
+    stream: null as MediaStream | null,
+    animation: 0,
+    lastUpdate: 0,
+    processingAnimation: null as number | null,
+    lastActiveData: [] as number[],
+    transitionProgress: 0,
+    staticBars: [] as number[],
+    needsRedraw: true,
+    gradientCache: null as CanvasGradient | null,
+    lastWidth: 0,
+    resizeObserver: null as ResizeObserver | null,
+    rafId: 0,
+    active: false,
+    processing: true,
+    mode: "static" as "static" | "scrolling",
+  };
+}
+
+static type WaveformState = ReturnType<typeof createWaveformState>;
+
+static function startProcessingAnimation(
+  state: WaveformState,
+  container: HTMLElement
+) {
+  let time = 0;
+  state.transitionProgress = 0;
+  const animateProcessing = () => {
+    time += 0.03;
+    state.transitionProgress = Math.min(1, state.transitionProgress + 0.02);
+    const processingData: number[] = [];
+    const barCount = Math.floor(
+      (container.getBoundingClientRect().width || 200) /
+        (OPTS.barWidth + OPTS.barGap)
+    );
+    if (state.mode === "static") {
+      const halfCount = Math.floor(barCount / 2);
+      for (let i = 0; i < barCount; i++) {
+        const normalizedPosition = (i - halfCount) / halfCount;
+        const centerWeight = 1 - Math.abs(normalizedPosition) * 0.4;
+        const wave1 = Math.sin(time * 1.5 + normalizedPosition * 3) * 0.25;
+        const wave2 = Math.sin(time * 0.8 - normalizedPosition * 2) * 0.2;
+        const wave3 = Math.cos(time * 2 + normalizedPosition) * 0.15;
+        const combinedWave = wave1 + wave2 + wave3;
+        const processingValue = (0.2 + combinedWave) * centerWeight;
+        let finalValue = processingValue;
+        if (state.lastActiveData.length > 0 && state.transitionProgress < 1) {
+          const lastDataIndex = Math.min(i, state.lastActiveData.length - 1);
+          const lastValue = state.lastActiveData[lastDataIndex] || 0;
+          finalValue =
+            lastValue * (1 - state.transitionProgress) +
+            processingValue * state.transitionProgress;
+        }
+        processingData.push(Math.max(0.05, Math.min(1, finalValue)));
+      }
+    } else {
+      for (let i = 0; i < barCount; i++) {
+        const normalizedPosition = (i - barCount / 2) / (barCount / 2);
+        const centerWeight = 1 - Math.abs(normalizedPosition) * 0.4;
+        const wave1 = Math.sin(time * 1.5 + i * 0.15) * 0.25;
+        const wave2 = Math.sin(time * 0.8 - i * 0.1) * 0.2;
+        const wave3 = Math.cos(time * 2 + i * 0.05) * 0.15;
+        const combinedWave = wave1 + wave2 + wave3;
+        const processingValue = (0.2 + combinedWave) * centerWeight;
+        let finalValue = processingValue;
+        if (state.lastActiveData.length > 0 && state.transitionProgress < 1) {
+          const lastDataIndex = Math.floor(
+            (i / barCount) * state.lastActiveData.length
+          );
+          const lastValue = state.lastActiveData[lastDataIndex] || 0;
+          finalValue =
+            lastValue * (1 - state.transitionProgress) +
+            processingValue * state.transitionProgress;
+        }
+        processingData.push(Math.max(0.05, Math.min(1, finalValue)));
+      }
+    }
+    if (state.mode === "static") {
+      state.staticBars = processingData;
+    } else {
+      state.history = processingData;
+    }
+    state.needsRedraw = true;
+    state.processingAnimation = requestAnimationFrame(animateProcessing);
+  };
+  animateProcessing();
+}
+
+static function startFadeToIdle(state: WaveformState) {
+  let fadeProgress = 0;
+  const fadeToIdle = () => {
+    fadeProgress += 0.03;
+    if (fadeProgress < 1) {
+      if (state.mode === "static") {
+        state.staticBars = state.staticBars.map(
+          (value) => value * (1 - fadeProgress)
+        );
+      } else {
+        state.history = state.history.map(
+          (value) => value * (1 - fadeProgress)
+        );
+      }
+      state.needsRedraw = true;
+      requestAnimationFrame(fadeToIdle);
+    } else {
+      if (state.mode === "static") {
+        state.staticBars = [];
+      } else {
+        state.history = [];
+      }
+    }
+  };
+  fadeToIdle();
+}
+
+static async function setupMicrophone(state: WaveformState) {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
+    });
+    state.stream = stream;
+    const AudioContextConstructor =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext })
+        .webkitAudioContext;
+    const audioContext = new AudioContextConstructor();
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = OPTS.fftSize;
+    analyser.smoothingTimeConstant = OPTS.smoothingTimeConstant;
+    const source = audioContext.createMediaStreamSource(stream);
+    source.connect(analyser);
+    state.audioContext = audioContext;
+    state.analyser = analyser;
+    state.history = [];
+  } catch {
+    // Source forwards to an onError prop; the card mounts no handler.
+  }
+}
+
+static function teardownMicrophone(state: WaveformState) {
+  if (state.stream) {
+    state.stream.getTracks().forEach((track) => track.stop());
+    state.stream = null;
+  }
+  if (state.audioContext && state.audioContext.state !== "closed") {
+    state.audioContext.close();
+    state.audioContext = null;
+  }
+  if (state.animation) {
+    cancelAnimationFrame(state.animation);
+    state.animation = 0;
+  }
+}
+
+static function startAnimationLoop(
+  state: WaveformState,
+  canvas: HTMLCanvasElement
+) {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const animate = (currentTime: number) => {
+    const rect = canvas.getBoundingClientRect();
+    if (state.active && currentTime - state.lastUpdate > OPTS.updateRate) {
+      state.lastUpdate = currentTime;
+      if (state.analyser) {
+        const dataArray = new Uint8Array(state.analyser.frequencyBinCount);
+        state.analyser.getByteFrequencyData(dataArray);
+        if (state.mode === "static") {
+          const startFreq = Math.floor(dataArray.length * 0.05);
+          const endFreq = Math.floor(dataArray.length * 0.4);
+          const relevantData = dataArray.slice(startFreq, endFreq);
+          const barCount = Math.floor(
+            rect.width / (OPTS.barWidth + OPTS.barGap)
+          );
+          const halfCount = Math.floor(barCount / 2);
+          const newBars: number[] = [];
+          for (let i = halfCount - 1; i >= 0; i--) {
+            const dataIndex = Math.floor((i / halfCount) * relevantData.length);
+            const value = Math.min(
+              1,
+              (relevantData[dataIndex] / 255) * OPTS.sensitivity
+            );
+            newBars.push(Math.max(0.05, value));
+          }
+          for (let i = 0; i < halfCount; i++) {
+            const dataIndex = Math.floor((i / halfCount) * relevantData.length);
+            const value = Math.min(
+              1,
+              (relevantData[dataIndex] / 255) * OPTS.sensitivity
+            );
+            newBars.push(Math.max(0.05, value));
+          }
+          state.staticBars = newBars;
+          state.lastActiveData = newBars;
+        } else {
+          let sum = 0;
+          const startFreq = Math.floor(dataArray.length * 0.05);
+          const endFreq = Math.floor(dataArray.length * 0.4);
+          const relevantData = dataArray.slice(startFreq, endFreq);
+          for (let i = 0; i < relevantData.length; i++) {
+            sum += relevantData[i];
+          }
+          const average =
+            (sum / relevantData.length / 255) * OPTS.sensitivity;
+          state.history.push(Math.min(1, Math.max(0.05, average)));
+          state.lastActiveData = [...state.history];
+          if (state.history.length > OPTS.historySize) {
+            state.history.shift();
+          }
+        }
+        state.needsRedraw = true;
+      }
+    }
+    if (!state.needsRedraw && !state.active) {
+      state.rafId = requestAnimationFrame(animate);
+      return;
+    }
+    state.needsRedraw = state.active;
+    ctx.clearRect(0, 0, rect.width, rect.height);
+    const computedBarColor =
+      OPTS.barColor ||
+      (() => {
+        const style = getComputedStyle(canvas);
+        const color = style.color;
+        return color || "#000";
+      })();
+    const step = OPTS.barWidth + OPTS.barGap;
+    const barCount = Math.floor(rect.width / step);
+    const centerY = rect.height / 2;
+    if (state.mode === "static") {
+      const dataToRender = state.processing
+        ? state.staticBars
+        : state.active
+          ? state.staticBars
+          : state.staticBars.length > 0
+            ? state.staticBars
+            : [];
+      for (let i = 0; i < barCount && i < dataToRender.length; i++) {
+        const value = dataToRender[i] || 0.1;
+        const x = i * step;
+        const bh = Math.max(OPTS.baseBarHeight, value * rect.height * 0.8);
+        const y = centerY - bh / 2;
+        ctx.fillStyle = computedBarColor;
+        ctx.globalAlpha = 0.4 + value * 0.6;
+        if (OPTS.barRadius > 0) {
+          ctx.beginPath();
+          ctx.roundRect(x, y, OPTS.barWidth, bh, OPTS.barRadius);
+          ctx.fill();
+        } else {
+          ctx.fillRect(x, y, OPTS.barWidth, bh);
+        }
+      }
+    } else {
+      for (let i = 0; i < barCount && i < state.history.length; i++) {
+        const dataIndex = state.history.length - 1 - i;
+        const value = state.history[dataIndex] || 0.1;
+        const x = rect.width - (i + 1) * step;
+        const bh = Math.max(OPTS.baseBarHeight, value * rect.height * 0.8);
+        const y = centerY - bh / 2;
+        ctx.fillStyle = computedBarColor;
+        ctx.globalAlpha = 0.4 + value * 0.6;
+        if (OPTS.barRadius > 0) {
+          ctx.beginPath();
+          ctx.roundRect(x, y, OPTS.barWidth, bh, OPTS.barRadius);
+          ctx.fill();
+        } else {
+          ctx.fillRect(x, y, OPTS.barWidth, bh);
+        }
+      }
+    }
+    if (OPTS.fadeEdges && OPTS.fadeWidth > 0 && rect.width > 0) {
+      if (!state.gradientCache || state.lastWidth !== rect.width) {
+        const gradient = ctx.createLinearGradient(0, 0, rect.width, 0);
+        const fadePercent = Math.min(0.3, OPTS.fadeWidth / rect.width);
+        gradient.addColorStop(0, "rgba(255,255,255,1)");
+        gradient.addColorStop(fadePercent, "rgba(255,255,255,0)");
+        gradient.addColorStop(1 - fadePercent, "rgba(255,255,255,0)");
+        gradient.addColorStop(1, "rgba(255,255,255,1)");
+        state.gradientCache = gradient;
+        state.lastWidth = rect.width;
+      }
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fillStyle = state.gradientCache;
+      ctx.fillRect(0, 0, rect.width, rect.height);
+      ctx.globalCompositeOperation = "source-over";
+    }
+    ctx.globalAlpha = 1;
+    state.rafId = requestAnimationFrame(animate);
+  };
+  state.rafId = requestAnimationFrame(animate);
+}
+
+<let/active=false/>
+<let/processing=true/>
+<let/mode="static"/>
+<const/state=createWaveformState()/>
+
+<lifecycle
+  onMount() {
+    // Alias the <const> tag variable (see the <script> note below).
+    const st = state;
+    const canvas = canvasEl() as HTMLCanvasElement;
+    const container = containerEl() as HTMLElement;
+    const resizeObserver = new ResizeObserver(() => {
+      const rect = container.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = `${rect.height}px`;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.scale(dpr, dpr);
+      }
+      st.gradientCache = null;
+      st.lastWidth = rect.width;
+      st.needsRedraw = true;
+    });
+    resizeObserver.observe(container);
+    st.resizeObserver = resizeObserver;
+    startAnimationLoop(state, canvas);
+  }
+  onDestroy() {
+    state.resizeObserver?.disconnect();
+    if (state.rafId) {
+      cancelAnimationFrame(state.rafId);
+    }
+    if (state.processingAnimation != null) {
+      cancelAnimationFrame(state.processingAnimation);
+    }
+    teardownMicrophone(state);
+  }
+/>
+
+// Mirrors the React source's [processing, active, mode] and [active] effects:
+// re-runs whenever one of the three <let>s changes.
+<script>
+  // Alias the <const> tag variable: assigning through it directly compiles
+  // to an optional-chained scope access, which is not a valid assignment
+  // target.
+  const st = state;
+  const wasActive = st.active;
+  st.active = active;
+  st.processing = processing;
+  st.mode = mode as "static" | "scrolling";
+
+  if (st.processingAnimation != null) {
+    cancelAnimationFrame(st.processingAnimation);
+    st.processingAnimation = null;
+  }
+  if (processing && !active) {
+    startProcessingAnimation(state, containerEl() as HTMLElement);
+  } else if (!active && !processing) {
+    const hasData =
+      mode === "static"
+        ? state.staticBars.length > 0
+        : state.history.length > 0;
+    if (hasData) {
+      startFadeToIdle(state);
+    }
+  }
+
+  if (active && !wasActive) {
+    setupMicrophone(state);
+  } else if (!active && wasActive) {
+    teardownMicrophone(state);
+  }
+</script>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Live Audio Waveform</CardTitle>
+    <CardDescription>
+      Real-time microphone input visualization with audio reactivity
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    <div/containerEl
+      class="relative h-full w-full"
+      style={ height: "80px" }
+      aria-label=(
+        active
+          ? "Live audio waveform"
+          : processing
+            ? "Processing audio"
+            : "Audio waveform idle"
+      )
+      role="img"
+    >
+      <if=!active && !processing>
+        <div class="absolute top-1/2 right-0 left-0 -translate-y-1/2 border-t-2 border-dotted border-muted-foreground/20"></div>
+      </if>
+      <canvas/canvasEl class="block h-full w-full" aria-hidden="true"></canvas>
+    </div>
+  </CardContent>
+  <CardFooter class="gap-2">
+    <Button
+      size="sm"
+      variant=(active ? "default" : "outline")
+      onClick() {
+        const next = !active;
+        active = next;
+        if (next) {
+          processing = false;
+        }
+      }
+    >
+      ${active ? "Stop" : "Start"} Listening
+    </Button>
+    <Button
+      size="sm"
+      variant=(processing ? "default" : "outline")
+      onClick() {
+        const next = !processing;
+        processing = next;
+        if (next) {
+          active = false;
+        }
+      }
+    >
+      ${processing ? "Stop" : "Start"} Processing
+    </Button>
+    <Button
+      size="sm"
+      variant="outline"
+      onClick() {
+        mode = mode === "static" ? "scrolling" : "static";
+      }
+    >
+      ${mode === "static" ? "Static" : "Scrolling"}
+    </Button>
+  </CardFooter>
+</Card>

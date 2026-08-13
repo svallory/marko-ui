@@ -1,0 +1,141 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/dividend-income.tsx
+// The source reads params.style via useDesignSystemSearchParams; the iframe
+// side has no hook, so isRounded updates from the same
+// `design-system-params` postMessage the route already receives.
+// The recharts source renders NO x axis (XAxis is imported but unused);
+// our BarChart always reserves 30 viewBox units for it, so each mini chart
+// passes width/height matching the h-8 w-24 box and margin.bottom = -30 to
+// cancel the reserved axis strip (tick text lands outside the viewBox and
+// is clipped).
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardAction from "@marko-ui/registry/ui/card/action.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Chart from "@marko-ui/registry/ui/chart/chart.marko";
+import BarChart from "@marko-ui/registry/ui/chart/bar.marko";
+import Item from "@marko-ui/registry/ui/item/item.marko";
+import ItemContent from "@marko-ui/registry/ui/item/content.marko";
+import ItemDescription from "@marko-ui/registry/ui/item/description.marko";
+import ItemGroup from "@marko-ui/registry/ui/item/group.marko";
+import ItemTitle from "@marko-ui/registry/ui/item/title.marko";
+import Icon from "../../lib/icon.marko";
+import type { DesignSystemSearchParams } from "../../../lib/search-params.ts";
+
+static const HOLDINGS = [
+  {
+    name: "Vanguard VIG",
+    shares: "450 Shares",
+    amount: "$1,842.10",
+    data: [
+      { q: "Q1", value: 380 },
+      { q: "Q2", value: 420 },
+      { q: "Q3", value: 390 },
+      { q: "Q4", value: 652 },
+    ],
+  },
+  {
+    name: "S&P 500 VOO",
+    shares: "112 Shares",
+    amount: "$928.40",
+    data: [
+      { q: "Q1", value: 180 },
+      { q: "Q2", value: 210 },
+      { q: "Q3", value: 320 },
+      { q: "Q4", value: 218 },
+    ],
+  },
+  {
+    name: "Apple AAPL",
+    shares: "85 Shares",
+    amount: "$340.00",
+    data: [
+      { q: "Q1", value: 60 },
+      { q: "Q2", value: 70 },
+      { q: "Q3", value: 120 },
+      { q: "Q4", value: 90 },
+    ],
+  },
+  {
+    name: "Realty Income",
+    shares: "320 Shares",
+    amount: "$1,139.50",
+    data: [
+      { q: "Q1", value: 240 },
+      { q: "Q2", value: 260 },
+      { q: "Q3", value: 280 },
+      { q: "Q4", value: 360 },
+    ],
+  },
+];
+
+static const miniChartConfig = {
+  value: {
+    label: "Dividend",
+    color: "var(--chart-2)",
+  },
+};
+
+<let/isRounded=true/>
+
+<let/listening=false/>
+<script>
+  if (!listening && typeof window !== "undefined") {
+    listening = true;
+    window.addEventListener("message", (event: MessageEvent) => {
+      if (!event.data || typeof event.data !== "object") return;
+      if (event.data.type !== "design-system-params") return;
+      const params = event.data.data as DesignSystemSearchParams;
+      isRounded = !["lyra", "sera"].includes(params.style);
+    });
+  }
+</script>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Q2 Dividend Income</CardTitle>
+    <CardDescription>
+      Quarterly dividend payouts across your portfolio holdings.
+    </CardDescription>
+    <CardAction>
+      <Button variant="ghost" size="icon-sm" class="bg-muted">
+        <Icon name="XIcon"/>
+      </Button>
+    </CardAction>
+  </CardHeader>
+  <CardContent>
+    <ItemGroup>
+      <for|holding| of=HOLDINGS by=(holding) => holding.name>
+        <Item variant="muted">
+          <ItemContent>
+            <ItemTitle>${holding.name}</ItemTitle>
+            <ItemDescription>${holding.shares}</ItemDescription>
+          </ItemContent>
+          <Chart
+            config=miniChartConfig
+            class="hidden h-8 w-24 md:block"
+          >
+            <BarChart
+              data=holding.data
+              config=miniChartConfig
+              xKey="q"
+              width=96
+              height=32
+              margin={ top: 0, right: 0, bottom: -30, left: 0 }
+              grid=false
+              cursor=false
+              hideLabel
+            >
+              <@series dataKey="value" radius=(isRounded ? [3, 3, 0, 0] : 0)/>
+            </BarChart>
+          </Chart>
+          <span class="hidden text-sm font-semibold tabular-nums md:block">
+            ${holding.amount}
+          </span>
+        </Item>
+      </for>
+    </ItemGroup>
+  </CardContent>
+</Card>

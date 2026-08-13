@@ -1,0 +1,89 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/report-bug.tsx
+// API adaptation: this registry's Select is a single items-driven tag rather
+// than compound Select* parts, so the trigger/value/content markup lives
+// inside it (same data-slots emitted); the trigger is widened to w-full via a
+// class on the root (same pattern as preferences/transfer-funds).
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Field from "@marko-ui/registry/ui/field/field.marko";
+import FieldGroup from "@marko-ui/registry/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/registry/ui/field/field-label.marko";
+import Input from "@marko-ui/registry/ui/input/input.marko";
+import Select from "@marko-ui/registry/ui/select/select.marko";
+import Textarea from "@marko-ui/registry/ui/textarea/textarea.marko";
+
+static const SEVERITIES = [
+  { label: "Critical", value: "critical" },
+  { label: "High", value: "high" },
+  { label: "Medium", value: "medium" },
+  { label: "Low", value: "low" },
+];
+
+static const COMPONENTS = [
+  { label: "Dashboard", value: "dashboard" },
+  { label: "Auth", value: "auth" },
+  { label: "API", value: "api" },
+  { label: "Billing", value: "billing" },
+];
+
+<Card>
+  <CardHeader>
+    <CardTitle>Report Bug</CardTitle>
+    <CardDescription>Help us fix issues faster.</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <FieldGroup>
+      <Field>
+        <FieldLabel for="bug-title">Title</FieldLabel>
+        <Input
+          id="bug-title"
+          placeholder="Brief description of the issue"
+        />
+      </Field>
+      <div class="grid grid-cols-2 gap-3">
+        <Field>
+          <FieldLabel for="bug-severity">Severity</FieldLabel>
+          <Select
+            id="bug-severity"
+            items=SEVERITIES
+            defaultValue=["medium"]
+            class="w-full [&_[data-slot=select-trigger]]:w-full"
+          />
+        </Field>
+        <Field>
+          <FieldLabel for="bug-component">Component</FieldLabel>
+          <Select
+            id="bug-component"
+            items=COMPONENTS
+            defaultValue=["dashboard"]
+            class="w-full [&_[data-slot=select-trigger]]:w-full"
+          />
+        </Field>
+      </div>
+      <Field>
+        <FieldLabel for="bug-steps">Steps to reproduce</FieldLabel>
+        <Textarea
+          id="bug-steps"
+          placeholder="1. Go to\n2. Click on\n3. Observe..."
+          class="min-h-24 resize-none"
+        />
+      </Field>
+    </FieldGroup>
+  </CardContent>
+  <CardFooter>
+    <Field
+      orientation="horizontal"
+      class="justify-end style-sera:justify-center"
+    >
+      <Button variant="outline" class="style-sera:flex-1">
+        Attach File
+      </Button>
+      <Button class="style-sera:flex-1">Submit Bug</Button>
+    </Field>
+  </CardFooter>
+</Card>

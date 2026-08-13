@@ -1,0 +1,61 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/analytics-card.tsx
+import AreaChart from "@marko-ui/registry/ui/chart/area.marko";
+import Badge from "@marko-ui/registry/ui/badge/badge.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardAction from "@marko-ui/registry/ui/card/action.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Chart from "@marko-ui/registry/ui/chart/chart.marko";
+
+// Monthly visitor data for the area chart.
+static const chartData = [
+  { month: "January", visitors: 186 },
+  { month: "February", visitors: 305 },
+  { month: "March", visitors: 237 },
+  { month: "April", visitors: 73 },
+  { month: "May", visitors: 209 },
+  { month: "June", visitors: 214 },
+];
+
+// Chart configuration for the visitors dataset.
+static const chartConfig = {
+  visitors: {
+    label: "Visitors",
+    color: "var(--chart-1)",
+  },
+};
+
+<Card class="mx-auto w-full max-w-sm data-[size=sm]:pb-0" data-size="sm">
+  <CardHeader>
+    <CardTitle>Analytics</CardTitle>
+    <CardDescription>
+      418.2K Visitors <Badge>+10%</Badge>
+    </CardDescription>
+    <CardAction>
+      <Button variant="outline" size="sm">
+        View Analytics
+      </Button>
+    </CardAction>
+  </CardHeader>
+  <Chart config=chartConfig class="aspect-[1/0.35]">
+    // Source AreaChart mounts no CartesianGrid and no XAxis: grid=false, and
+    // margin.bottom=-30 cancels the always-reserved x-axis strip so the plot
+    // fills the viewBox (the axis ticks land outside it and are clipped).
+    // width/height keep the viewBox at the container's 1/0.35 aspect.
+    <AreaChart
+      config=chartConfig
+      data=chartData
+      xKey="month"
+      width=1000
+      height=350
+      margin={ left: 0, right: 0, bottom: -30 }
+      grid=false
+      cursor=false
+      indicator="line"
+    >
+      <@series dataKey="visitors" type="linear"/>
+    </AreaChart>
+  </Chart>
+</Card>

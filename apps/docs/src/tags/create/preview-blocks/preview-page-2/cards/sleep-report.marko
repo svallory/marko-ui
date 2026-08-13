@@ -1,0 +1,93 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/sleep-report.tsx
+// The recharts source renders a BarChart with NO CartesianGrid, NO XAxis and
+// NO Tooltip — bars only. Our BarChart partial always reserves a 30px x-axis
+// strip, so margin.bottom is set to -30 to cancel it (ticks land outside the
+// viewBox and are clipped; xTickFormatter blanks them for safety) and
+// grid/tooltip are disabled. The source also sets barSize={16}; our band
+// scale has no fixed-bar-size input, so bar width follows the band scale —
+// only visual difference from source.
+import Badge from "@marko-ui/registry/ui/badge/badge.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Chart from "@marko-ui/registry/ui/chart/chart.marko";
+import BarChart from "@marko-ui/registry/ui/chart/bar.marko";
+
+static const sleepChartData = [
+  { hour: "10pm", deep: 0, light: 30, rem: 0 },
+  { hour: "11pm", deep: 20, light: 10, rem: 0 },
+  { hour: "12am", deep: 40, light: 0, rem: 10 },
+  { hour: "1am", deep: 30, light: 5, rem: 15 },
+  { hour: "2am", deep: 10, light: 20, rem: 30 },
+  { hour: "3am", deep: 25, light: 10, rem: 20 },
+  { hour: "4am", deep: 15, light: 25, rem: 10 },
+  { hour: "5am", deep: 5, light: 35, rem: 15 },
+  { hour: "6am", deep: 0, light: 20, rem: 25 },
+];
+
+static const sleepChartConfig = {
+  deep: {
+    label: "Deep",
+    color: "var(--chart-1)",
+  },
+  light: {
+    label: "Light",
+    color: "var(--chart-2)",
+  },
+  rem: {
+    label: "REM",
+    color: "var(--chart-3)",
+  },
+};
+
+static const sleepStats = [
+  { label: "Deep", value: "2h 10m" },
+  { label: "Light", value: "3h 48m" },
+  { label: "REM", value: "1h 26m" },
+  { label: "Score", value: "84" },
+];
+
+<Card>
+  <CardHeader>
+    <CardTitle>Sleep Report</CardTitle>
+    <CardDescription>Last night · 7h 24m</CardDescription>
+  </CardHeader>
+  <CardContent class="flex flex-col gap-3">
+    <Chart config=sleepChartConfig class="h-32 w-full">
+      <BarChart
+        data=sleepChartData
+        config=sleepChartConfig
+        xKey="hour"
+        width=340
+        height=128
+        margin={ left: 0, right: 0, top: 0, bottom: -30 }
+        stacked
+        grid=false
+        tooltip=false
+        xTickFormatter=() => ""
+      >
+        <@series dataKey="deep" radius=0/>
+        <@series dataKey="light" radius=0/>
+        <@series dataKey="rem" radius=[2, 2, 0, 0]/>
+      </BarChart>
+    </Chart>
+    <div class="grid grid-cols-4 gap-2">
+      <for|s| of=sleepStats>
+        <div class="text-center">
+          <div class="text-sm font-medium tabular-nums">${s.value}</div>
+          <div class="text-xs text-muted-foreground">${s.label}</div>
+        </div>
+      </for>
+    </div>
+  </CardContent>
+  <CardFooter>
+    <Badge variant="outline">Good</Badge>
+    <Button variant="outline" size="sm" class="ml-auto">
+      Details
+    </Button>
+  </CardFooter>
+</Card>

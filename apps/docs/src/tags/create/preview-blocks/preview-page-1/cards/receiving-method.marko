@@ -1,0 +1,128 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/receiving-method.tsx
+// API adaptation: this registry's RadioGroup is a single items-driven tag and
+// cannot host the rich FieldLabel/Field/FieldContent option markup the source
+// composes, so the radiogroup root + radio items are rendered here with the
+// registry's exact radio-group class strings and data-slots (radio-group,
+// radio-group-item, radio-group-indicator) plus data-state for the
+// FieldLabel has-data-[state=checked] styling.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardAction from "@marko-ui/registry/ui/card/action.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Field from "@marko-ui/registry/ui/field/field.marko";
+import FieldContent from "@marko-ui/registry/ui/field/field-content.marko";
+import FieldDescription from "@marko-ui/registry/ui/field/field-description.marko";
+import FieldGroup from "@marko-ui/registry/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/registry/ui/field/field-label.marko";
+import FieldLegend from "@marko-ui/registry/ui/field/field-legend.marko";
+import FieldSet from "@marko-ui/registry/ui/field/field-set.marko";
+import FieldTitle from "@marko-ui/registry/ui/field/field-title.marko";
+import Input from "@marko-ui/registry/ui/input/input.marko";
+import Icon from "../../lib/icon.marko";
+
+// The registry radio-group's item control class string, verbatim.
+static const RADIO_ITEM_CLASS =
+  "border-input text-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 aspect-square size-4 shrink-0 rounded-full border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center";
+
+<let/method="bank"/>
+
+<Card>
+  <CardHeader>
+    <CardDescription>Payout Preferences</CardDescription>
+    <CardTitle>Receiving Method</CardTitle>
+    <CardAction>
+      <Button variant="ghost" size="icon-sm" class="bg-muted">
+        <Icon name="XIcon"/>
+      </Button>
+    </CardAction>
+  </CardHeader>
+  <CardContent>
+    <FieldGroup>
+      <Field>
+        <FieldLabel for="account-holder">
+          Account Holder Name
+        </FieldLabel>
+        <Input
+          id="account-holder"
+          value="Synthetic Horizons Music LLC"
+        />
+      </Field>
+      <FieldSet>
+        <FieldLegend variant="label">Receiving Method</FieldLegend>
+        <div
+          role="radiogroup"
+          data-slot="radio-group"
+          class="grid grid-cols-1 items-start gap-3 md:grid-cols-2 style-sera:grid-cols-1"
+        >
+          <FieldLabel for="method-bank">
+            <Field orientation="horizontal" class="pb-2.5">
+              <button
+                type="button"
+                role="radio"
+                id="method-bank"
+                value="bank"
+                aria-checked=String(method === "bank")
+                data-state=(method === "bank" ? "checked" : "unchecked")
+                data-slot="radio-group-item"
+                class=RADIO_ITEM_CLASS
+                onClick() { method = "bank"; }
+              >
+                <if=(method === "bank")>
+                  <span
+                    data-slot="radio-group-indicator"
+                    class="relative size-2 rounded-full bg-primary"
+                  />
+                </if>
+              </button>
+              <FieldContent>
+                <FieldTitle>Bank Transfer</FieldTitle>
+                <FieldDescription>SWIFT / IBAN</FieldDescription>
+              </FieldContent>
+            </Field>
+          </FieldLabel>
+          <FieldLabel for="method-paypal">
+            <Field orientation="horizontal" class="pb-2.5">
+              <button
+                type="button"
+                role="radio"
+                id="method-paypal"
+                value="paypal"
+                aria-checked=String(method === "paypal")
+                data-state=(method === "paypal" ? "checked" : "unchecked")
+                data-slot="radio-group-item"
+                class=RADIO_ITEM_CLASS
+                onClick() { method = "paypal"; }
+              >
+                <if=(method === "paypal")>
+                  <span
+                    data-slot="radio-group-indicator"
+                    class="relative size-2 rounded-full bg-primary"
+                  />
+                </if>
+              </button>
+              <FieldContent>
+                <FieldTitle>PayPal</FieldTitle>
+                <FieldDescription class="line-clamp-1">
+                  Instant Payout
+                </FieldDescription>
+              </FieldContent>
+            </Field>
+          </FieldLabel>
+        </div>
+      </FieldSet>
+      <Field>
+        <FieldLabel for="iban">IBAN / Account Number</FieldLabel>
+        <Input id="iban" placeholder="DE89 3704 0044 ...."/>
+      </Field>
+    </FieldGroup>
+  </CardContent>
+  <CardFooter>
+    <Button class="w-full" disabled>
+      Save Payout Settings
+    </Button>
+  </CardFooter>
+</Card>

@@ -1,0 +1,104 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/contribution-history.tsx
+// The source reads params.style via useDesignSystemSearchParams; the iframe
+// side has no hook, so isRounded updates from the same
+// `design-system-params` postMessage the route already receives.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Chart from "@marko-ui/registry/ui/chart/chart.marko";
+import BarChart from "@marko-ui/registry/ui/chart/bar.marko";
+import Item from "@marko-ui/registry/ui/item/item.marko";
+import ItemContent from "@marko-ui/registry/ui/item/content.marko";
+import ItemDescription from "@marko-ui/registry/ui/item/description.marko";
+import type { DesignSystemSearchParams } from "../../../lib/search-params.ts";
+
+static const chartData = [
+  { month: "Dec", amount: 800 },
+  { month: "Jan", amount: 1100 },
+  { month: "Feb", amount: 900 },
+  { month: "Mar", amount: 1300 },
+  { month: "Apr", amount: 750 },
+  { month: "May", amount: 1400 },
+];
+
+static const chartConfig = {
+  amount: {
+    label: "Contribution",
+    color: "var(--chart-2)",
+  },
+};
+
+<let/isRounded=true/>
+
+<let/listening=false/>
+<script>
+  if (!listening && typeof window !== "undefined") {
+    listening = true;
+    window.addEventListener("message", (event: MessageEvent) => {
+      if (!event.data || typeof event.data !== "object") return;
+      if (event.data.type !== "design-system-params") return;
+      const params = event.data.data as DesignSystemSearchParams;
+      isRounded = !["lyra", "sera"].includes(params.style);
+    });
+  }
+</script>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Contribution History</CardTitle>
+    <CardDescription>Last 6 months of activity</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <Chart config=chartConfig class="h-[200px] w-full">
+      <BarChart
+        data=chartData
+        config=chartConfig
+        xKey="month"
+        margin={ left: 0, right: 0, top: 8, bottom: 0 }
+        grid=false
+        cursor=false
+        hideLabel
+        tickMargin=8
+      >
+        <@series dataKey="amount" radius=(isRounded ? [6, 6, 0, 0] : 0)/>
+      </BarChart>
+    </Chart>
+  </CardContent>
+  <CardContent>
+    <div class="grid w-full grid-cols-1 gap-3 md:grid-cols-2">
+      <Item variant="muted" class="flex-col items-stretch">
+        <ItemContent class="gap-1">
+          <ItemDescription class="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+            Upcoming
+          </ItemDescription>
+          <span class="cn-font-heading text-lg font-semibold">
+            May 25, 2024
+          </span>
+          <span class="text-sm text-muted-foreground">
+            $1,000 scheduled
+          </span>
+        </ItemContent>
+      </Item>
+      <Item variant="muted" class="flex-col items-stretch">
+        <ItemContent class="gap-1">
+          <ItemDescription class="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+            Auto-Save Plan
+          </ItemDescription>
+          <span class="cn-font-heading text-lg font-semibold">
+            Accelerated
+          </span>
+          <span class="text-sm text-muted-foreground">
+            Recurring weekly
+          </span>
+        </ItemContent>
+      </Item>
+    </div>
+  </CardContent>
+  <CardFooter>
+    <Button class="w-full">View Full Report</Button>
+  </CardFooter>
+</Card>

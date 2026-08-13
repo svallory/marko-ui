@@ -1,0 +1,73 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/savings-progress.tsx
+// Donut chart (recharts PieChart innerRadius=70 outerRadius=95) with a
+// centered label. The source's startAngle=90/endAngle=-270 (recharts:
+// clockwise full circle starting at 12 o'clock) matches our pie's d3
+// default (sort(null), 0 at 12 o'clock, clockwise), so no angle props are
+// needed. strokeWidth={0} is visually equivalent to the container CSS that
+// already turns the sector stroke transparent.
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import Chart from "@marko-ui/registry/ui/chart/chart.marko";
+import PieChart from "@marko-ui/registry/ui/chart/pie.marko";
+import Separator from "@marko-ui/registry/ui/separator/separator.marko";
+
+static const chartData = [
+  { name: "saved", value: 24000, fill: "var(--color-saved)" },
+  { name: "remaining", value: 6000, fill: "var(--color-remaining)" },
+];
+
+static const chartConfig = {
+  saved: {
+    label: "Saved",
+    color: "var(--chart-2)",
+  },
+  remaining: {
+    label: "Remaining",
+    color: "var(--chart-1)",
+  },
+};
+
+<Card>
+  <CardContent>
+    <Chart config=chartConfig class="mx-auto aspect-square max-h-[220px]">
+      <PieChart
+        config=chartConfig
+        data=chartData
+        dataKey="value"
+        nameKey="name"
+        innerRadius=70
+        outerRadius=95
+      >
+        <@centerLabel|{ cx, cy }|>
+          <text x=cx y=cy text-anchor="middle" dominant-baseline="middle">
+            <tspan x=cx y=(cy - 12) class="fill-foreground text-2xl font-bold">
+              $24,000
+            </tspan>
+            <tspan x=cx y=(cy + 12) class="fill-muted-foreground text-xs">
+              80% of $30,000
+            </tspan>
+          </text>
+        </@centerLabel>
+      </PieChart>
+    </Chart>
+  </CardContent>
+  <CardFooter class="flex-col gap-0">
+    <div class="flex w-full items-center justify-between py-3">
+      <span class="text-sm text-muted-foreground">
+        Projected Finish
+      </span>
+      <span class="text-sm font-semibold">October 2024</span>
+    </div>
+    <Separator/>
+    <div class="flex w-full items-center justify-between py-3">
+      <span class="text-sm text-muted-foreground">Monthly Average</span>
+      <span class="text-sm font-semibold tabular-nums">$1,250</span>
+    </div>
+    <Separator/>
+    <div class="flex w-full items-center justify-between py-3">
+      <span class="text-sm text-muted-foreground">Top Contributor</span>
+      <span class="text-sm font-semibold">Auto-Transfer</span>
+    </div>
+  </CardFooter>
+</Card>

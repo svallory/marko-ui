@@ -1,0 +1,68 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/visitors.tsx
+// Source XAxis is `hide`: recharts reserves no axis strip, so margin.bottom=-30
+// cancels our always-reserved x-axis height (same trick as analytics-card) and
+// the clipped tick labels stay out of the viewBox. Source mounts no
+// CartesianGrid -> grid=false; ChartTooltip cursor={false} content indicator
+// "line" -> cursor=false indicator="line".
+import Badge from "@marko-ui/registry/ui/badge/badge.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardAction from "@marko-ui/registry/ui/card/action.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Chart from "@marko-ui/registry/ui/chart/chart.marko";
+import AreaChart from "@marko-ui/registry/ui/chart/area.marko";
+
+static const areaChartData = [
+  { month: "January", desktop: 186 },
+  { month: "February", desktop: 305 },
+  { month: "March", desktop: 237 },
+  { month: "April", desktop: 73 },
+  { month: "May", desktop: 209 },
+  { month: "June", desktop: 214 },
+];
+
+static const areaChartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "var(--chart-1)",
+  },
+};
+
+static const latestVisitors = areaChartData[areaChartData.length - 1]?.desktop ?? 0;
+static const previousVisitors =
+  areaChartData[areaChartData.length - 2]?.desktop ?? latestVisitors;
+static const trendPercent =
+  previousVisitors === 0
+    ? 0
+    : Math.round(((latestVisitors - previousVisitors) / previousVisitors) * 100);
+static const trendPrefix = trendPercent > 0 ? "+" : "";
+
+<Card class="pb-0">
+  <CardHeader>
+    <CardTitle>Visitors</CardTitle>
+    <CardDescription>Last 6 months </CardDescription>
+    <CardAction>
+      <Badge variant=(trendPercent >= 0 ? "secondary" : "destructive")>
+        ${trendPrefix}${trendPercent}% vs last month
+      </Badge>
+    </CardAction>
+  </CardHeader>
+  <CardContent class="px-0">
+    <Chart config=areaChartConfig class="h-48 w-full">
+      <AreaChart
+        config=areaChartConfig
+        data=areaChartData
+        xKey="month"
+        margin={ left: 0, right: 0, top: 6, bottom: -30 }
+        xTickFormatter=(value) => String(value).slice(0, 3)
+        grid=false
+        cursor=false
+        indicator="line"
+      >
+        <@series dataKey="desktop" type="natural" fillOpacity=0.15/>
+      </AreaChart>
+    </Chart>
+  </CardContent>
+</Card>

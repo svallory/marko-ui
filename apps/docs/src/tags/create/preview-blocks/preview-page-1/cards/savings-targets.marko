@@ -1,0 +1,141 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/savings-targets.tsx
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardAction from "@marko-ui/registry/ui/card/action.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Field from "@marko-ui/registry/ui/field/field.marko";
+import FieldDescription from "@marko-ui/registry/ui/field/field-description.marko";
+import FieldGroup from "@marko-ui/registry/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/registry/ui/field/field-label.marko";
+import InputGroup from "@marko-ui/registry/ui/input-group/input-group.marko";
+import InputGroupAddon from "@marko-ui/registry/ui/input-group/addon.marko";
+import InputGroupInput from "@marko-ui/registry/ui/input-group/input.marko";
+import InputGroupText from "@marko-ui/registry/ui/input-group/text.marko";
+import Item from "@marko-ui/registry/ui/item/item.marko";
+import ItemContent from "@marko-ui/registry/ui/item/content.marko";
+import ItemDescription from "@marko-ui/registry/ui/item/description.marko";
+import ItemFooter from "@marko-ui/registry/ui/item/footer.marko";
+import ItemGroup from "@marko-ui/registry/ui/item/group.marko";
+import NativeSelect from "@marko-ui/registry/ui/native-select/native-select.marko";
+import NativeSelectOption from "@marko-ui/registry/ui/native-select/native-select-option.marko";
+import Progress from "@marko-ui/registry/ui/progress/progress.marko";
+
+<div class="grid grid-cols-2 gap-(--gap)">
+  <Card>
+    <CardHeader>
+      <CardTitle>Savings Targets</CardTitle>
+      <CardDescription>Active milestones for 2024</CardDescription>
+      <CardAction>
+        <Button variant="outline" size="sm">
+          New Goal
+        </Button>
+      </CardAction>
+    </CardHeader>
+    <CardContent>
+      <ItemGroup class="gap-3">
+        <Item variant="muted" class="flex-col items-stretch">
+          <ItemContent class="gap-3">
+            <ItemDescription class="cn-font-heading text-xs font-medium tracking-wider text-muted-foreground uppercase">
+              Retirement
+            </ItemDescription>
+            <span class="text-3xl font-semibold tabular-nums">
+              $420,000
+            </span>
+            <Progress value=65/>
+          </ItemContent>
+          <ItemFooter>
+            <span class="text-sm text-muted-foreground">
+              65% achieved
+            </span>
+            <span class="text-sm font-medium tabular-nums">
+              $273,000
+            </span>
+          </ItemFooter>
+        </Item>
+        <Item variant="muted" class="flex-col items-stretch">
+          <ItemContent class="gap-3">
+            <ItemDescription class="cn-font-heading text-xs font-medium tracking-wider text-muted-foreground uppercase">
+              Real Estate
+            </ItemDescription>
+            <span class="text-3xl font-semibold tabular-nums">
+              $85,000
+            </span>
+            <Progress value=32/>
+          </ItemContent>
+          <ItemFooter>
+            <span class="text-sm text-muted-foreground">
+              32% achieved
+            </span>
+            <span class="text-sm font-medium tabular-nums">
+              $27,200
+            </span>
+          </ItemFooter>
+        </Item>
+      </ItemGroup>
+    </CardContent>
+    <CardFooter>
+      <CardDescription class="text-center">
+        You have not met your targets for this year.
+      </CardDescription>
+    </CardFooter>
+  </Card>
+  <Card>
+    <CardHeader>
+      <CardTitle>Buy Investment</CardTitle>
+    </CardHeader>
+    <CardContent class="flex flex-1 flex-col gap-3">
+      <FieldGroup class="flex-1">
+        <Field>
+          <FieldLabel for="invest-amount">Amount to Invest</FieldLabel>
+          <InputGroup>
+            <InputGroupAddon>
+              <InputGroupText>$</InputGroupText>
+            </InputGroupAddon>
+            <InputGroupInput id="invest-amount" value="1,000.00"/>
+          </InputGroup>
+        </Field>
+        <Field>
+          <FieldLabel for="invest-type">Order Type</FieldLabel>
+          <NativeSelect id="invest-type" value="market">
+            <NativeSelectOption value="market">
+              Market Order
+            </NativeSelectOption>
+            <NativeSelectOption value="limit">
+              Limit Order
+            </NativeSelectOption>
+            <NativeSelectOption value="stop">Stop Order</NativeSelectOption>
+          </NativeSelect>
+          <FieldDescription>
+            Market orders execute at the current price.
+          </FieldDescription>
+        </Field>
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-muted-foreground">
+              Estimated Shares
+            </span>
+            <span class="text-sm font-semibold tabular-nums">1.95</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-muted-foreground">
+              Buying Power
+            </span>
+            <span class="text-sm font-semibold tabular-nums">
+              $12,450.00
+            </span>
+          </div>
+        </div>
+      </FieldGroup>
+    </CardContent>
+    <CardFooter class="flex-col gap-3">
+      <Button class="w-full">Review Order</Button>
+      <CardDescription class="text-center">
+        Trades are typically executed within minutes during market hours.
+      </CardDescription>
+    </CardFooter>
+  </Card>
+</div>

@@ -1,0 +1,78 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/social-links.tsx
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Field from "@marko-ui/registry/ui/field/field.marko";
+import FieldGroup from "@marko-ui/registry/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/registry/ui/field/field-label.marko";
+import InputGroup from "@marko-ui/registry/ui/input-group/input-group.marko";
+import InputGroupAddon from "@marko-ui/registry/ui/input-group/addon.marko";
+import InputGroupInput from "@marko-ui/registry/ui/input-group/input.marko";
+import Icon from "../../lib/icon.marko";
+
+<Card>
+  <CardHeader>
+    <CardTitle>Social Links</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <FieldGroup>
+      <Field>
+        <FieldLabel for="spotify-url">Spotify Artist URL</FieldLabel>
+        <InputGroup>
+          <InputGroupAddon>
+            <Icon name="CirclePlusIcon"/>
+          </InputGroupAddon>
+          <InputGroupInput
+            id="spotify-url"
+            value="spotify.com/artist/3j...2k"
+          />
+        </InputGroup>
+      </Field>
+      <Field>
+        <FieldLabel for="instagram-handle">Instagram Handle</FieldLabel>
+        <InputGroup>
+          <InputGroupAddon>
+            <Icon name="CameraIcon"/>
+          </InputGroupAddon>
+          <InputGroupInput
+            id="instagram-handle"
+            value="@julianduryea_music"
+          />
+        </InputGroup>
+      </Field>
+      <Field>
+        <FieldLabel for="soundcloud-url">SoundCloud URL</FieldLabel>
+        <InputGroup>
+          <InputGroupAddon>
+            <Icon name="CloudIcon"/>
+          </InputGroupAddon>
+          <InputGroupInput
+            id="soundcloud-url"
+            placeholder="soundcloud.com/username"
+          />
+        </InputGroup>
+      </Field>
+      <Field>
+        <FieldLabel for="website-url">Website</FieldLabel>
+        <InputGroup>
+          <InputGroupAddon>
+            <Icon name="GlobeIcon"/>
+          </InputGroupAddon>
+          <InputGroupInput
+            id="website-url"
+            placeholder="https://yoursite.com"
+          />
+        </InputGroup>
+      </Field>
+    </FieldGroup>
+  </CardContent>
+  <CardFooter class="justify-end gap-2 style-sera:justify-center">
+    <Button variant="secondary" class="style-sera:flex-1">
+      Discard
+    </Button>
+    <Button class="style-sera:flex-1">Save Changes</Button>
+  </CardFooter>
+</Card>

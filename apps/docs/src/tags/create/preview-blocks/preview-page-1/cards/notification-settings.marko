@@ -1,0 +1,95 @@
+// Ported from shadcn registry/bases/base/blocks/preview-02/cards/notification-settings.tsx
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Checkbox from "@marko-ui/registry/ui/checkbox/checkbox.marko";
+import Field from "@marko-ui/registry/ui/field/field.marko";
+import FieldContent from "@marko-ui/registry/ui/field/field-content.marko";
+import FieldDescription from "@marko-ui/registry/ui/field/field-description.marko";
+import FieldGroup from "@marko-ui/registry/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/registry/ui/field/field-label.marko";
+
+static const NOTIFICATIONS = [
+  {
+    id: "transactions",
+    label: "Transaction alerts",
+    description: "Deposits, withdrawals, and transfers.",
+    defaultChecked: true,
+  },
+  {
+    id: "security",
+    label: "Security alerts",
+    description: "Login attempts and account changes.",
+    defaultChecked: true,
+  },
+  {
+    id: "goals",
+    label: "Goal milestones",
+    description: "Updates at 25%, 50%, 75%, and 100%.",
+    defaultChecked: false,
+  },
+  {
+    id: "market",
+    label: "Market updates",
+    description: "Daily portfolio summary and price alerts.",
+    defaultChecked: false,
+  },
+];
+
+<let/checked=(
+  Object.fromEntries(
+    NOTIFICATIONS.map((n) => [n.id, n.defaultChecked]),
+  ) as Record<string, boolean>
+)/>
+
+<const/allChecked=NOTIFICATIONS.every((n) => checked[n.id])/>
+<const/someChecked=(NOTIFICATIONS.some((n) => checked[n.id]) && !allChecked)/>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Notifications</CardTitle>
+    <CardDescription>
+      Choose what you want to be notified about.
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    <FieldGroup>
+      <Field orientation="horizontal">
+        <Checkbox
+          id="notify-all"
+          checked=(someChecked ? "indeterminate" : allChecked)
+          checkedChange=(v: boolean | "indeterminate") => {
+            checked = Object.fromEntries(
+              NOTIFICATIONS.map((n) => [n.id, Boolean(v)]),
+            );
+          }
+        />
+        <FieldContent>
+          <FieldLabel for="notify-all">Select all</FieldLabel>
+        </FieldContent>
+      </Field>
+      <for|n| of=NOTIFICATIONS by=(n) => n.id>
+        <Field orientation="horizontal">
+          <Checkbox
+            id=`notify-${n.id}`
+            checked=checked[n.id]
+            checkedChange=(v: boolean | "indeterminate") => {
+              checked = { ...checked, [n.id]: Boolean(v) };
+            }
+          />
+          <FieldContent>
+            <FieldLabel for=`notify-${n.id}`>${n.label}</FieldLabel>
+            <FieldDescription>${n.description}</FieldDescription>
+          </FieldContent>
+        </Field>
+      </for>
+    </FieldGroup>
+  </CardContent>
+  <CardFooter>
+    <Button class="w-full">Save Preferences</Button>
+  </CardFooter>
+</Card>

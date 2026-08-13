@@ -1,0 +1,159 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/ui-elements.tsx
+// API adaptations (registry components are single-tag, items-driven):
+// - AlertDialog is monolithic (trigger/title/description/cancelText/actionText
+//   attrs); the source's `size="sm"` maps to a passthrough `data-size="sm"` on
+//   the content element (shadcn's size prop only sets data-size for themes).
+// - DropdownMenu is items-driven ({label, value} + separator/label entries);
+//   `align="end" side="top"` positioning is not exposed by its API.
+// - RadioGroup is items-driven; the source's bare RadioGroupItems map to
+//   items with empty labels (the item-text span renders empty).
+// - Switch puts `class` on the control, not the root label, so the source's
+//   `className="ml-auto"` becomes a wrapping div.
+import AlertDialog from "@marko-ui/registry/ui/alert-dialog/alert-dialog.marko";
+import Badge from "@marko-ui/registry/ui/badge/badge.marko";
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import ButtonGroup from "@marko-ui/registry/ui/button-group/button-group.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import Checkbox from "@marko-ui/registry/ui/checkbox/checkbox.marko";
+import DropdownMenu from "@marko-ui/registry/ui/dropdown-menu/dropdown-menu.marko";
+import Field from "@marko-ui/registry/ui/field/field.marko";
+import FieldGroup from "@marko-ui/registry/ui/field/field-group.marko";
+import InputGroup from "@marko-ui/registry/ui/input-group/input-group.marko";
+import InputGroupAddon from "@marko-ui/registry/ui/input-group/addon.marko";
+import InputGroupInput from "@marko-ui/registry/ui/input-group/input.marko";
+import InputGroupText from "@marko-ui/registry/ui/input-group/text.marko";
+import Item from "@marko-ui/registry/ui/item/item.marko";
+import ItemActions from "@marko-ui/registry/ui/item/actions.marko";
+import ItemContent from "@marko-ui/registry/ui/item/content.marko";
+import ItemDescription from "@marko-ui/registry/ui/item/description.marko";
+import ItemTitle from "@marko-ui/registry/ui/item/title.marko";
+import RadioGroup from "@marko-ui/registry/ui/radio-group/radio-group.marko";
+import Slider from "@marko-ui/registry/ui/slider/slider.marko";
+import Switch from "@marko-ui/registry/ui/switch/switch.marko";
+import Textarea from "@marko-ui/registry/ui/textarea/textarea.marko";
+import Icon from "../../lib/icon.marko";
+
+static const RADIO_ITEMS = [
+  { value: "apple", label: "" },
+  { value: "banana", label: "" },
+];
+
+static const CONVERSATION_MENU = [
+  { type: "label" as const, label: "Quick Actions" },
+  { value: "mute-conversation", label: "Mute Conversation" },
+  { value: "mark-as-read", label: "Mark as Read" },
+  { value: "block-user", label: "Block User" },
+  { type: "separator" as const },
+  { type: "label" as const, label: "Conversation" },
+  { value: "share-conversation", label: "Share Conversation" },
+  { value: "copy-conversation", label: "Copy Conversation" },
+  { value: "report-conversation", label: "Report Conversation" },
+  { type: "separator" as const },
+  { value: "delete-conversation", label: "Delete Conversation", danger: true },
+];
+
+<let/sliderValue=[500]/>
+
+<Card class="w-full">
+  <CardContent class="flex flex-col gap-6">
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-wrap gap-2">
+        <Button>Button</Button>
+        <Button variant="secondary">Secondary</Button>
+        <Button variant="outline">Outline</Button>
+        <Button variant="ghost">Ghost</Button>
+      </div>
+      <Item variant="outline">
+        <ItemContent>
+          <ItemTitle>Two-factor authentication</ItemTitle>
+          <ItemDescription class="text-pretty xl:hidden 2xl:block">
+            Verify via email or phone number.
+          </ItemDescription>
+        </ItemContent>
+        <ItemActions class="hidden md:flex">
+          <Button size="sm" variant="secondary">
+            Enable
+          </Button>
+        </ItemActions>
+      </Item>
+    </div>
+    <Slider
+      value=sliderValue
+      valueChange=(value: number[]) => { sliderValue = [...value]; }
+      max=1000
+      min=0
+      step=10
+      class="flex-1"
+      aria-label="Slider"
+    />
+    <FieldGroup>
+      <Field>
+        <InputGroup>
+          <InputGroupInput placeholder="Name"/>
+          <InputGroupAddon align="inline-end">
+            <InputGroupText>
+              <Icon name="SearchIcon"/>
+            </InputGroupText>
+          </InputGroupAddon>
+        </InputGroup>
+      </Field>
+      <Field class="flex-1">
+        <Textarea placeholder="Message" class="resize-none"/>
+      </Field>
+    </FieldGroup>
+    <div class="flex items-center gap-2">
+      <div class="flex gap-2">
+        <Badge>Badge</Badge>
+        <Badge variant="secondary">Secondary</Badge>
+        <Badge variant="outline">Outline</Badge>
+      </div>
+      <RadioGroup
+        items=RADIO_ITEMS
+        defaultValue="apple"
+        class="ml-auto flex w-fit gap-3"
+      />
+      <div class="flex gap-3">
+        <Checkbox defaultChecked/>
+        <Checkbox/>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <AlertDialog
+        data-size="sm"
+        cancelText="Don't allow"
+        actionText="Allow"
+      >
+        <@trigger|triggerProps|>
+          <Button ...triggerProps variant="outline">
+            <span class="hidden md:flex style-sera:md:hidden">
+              Alert Dialog
+            </span>
+            <span class="flex md:hidden style-sera:md:flex">Dialog</span>
+          </Button>
+        </@trigger>
+        <@title>Allow accessory to connect?</@title>
+        <@description>
+          Do you want to allow the USB accessory to connect to this
+          device and your data?
+        </@description>
+      </AlertDialog>
+      <ButtonGroup>
+        <Button variant="outline">
+          <span class="style-sera:hidden">Button Group</span>
+          <span class="hidden style-sera:block">Group</span>
+        </Button>
+        <DropdownMenu items=CONVERSATION_MENU class="w-fit">
+          <@trigger|triggerProps|>
+            <Button ...triggerProps variant="outline" size="icon">
+              <Icon name="ChevronUpIcon"/>
+            </Button>
+          </@trigger>
+        </DropdownMenu>
+      </ButtonGroup>
+      <div class="ml-auto">
+        <Switch defaultChecked/>
+      </div>
+    </div>
+  </CardContent>
+</Card>

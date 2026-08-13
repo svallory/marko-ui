@@ -1,0 +1,126 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/pie-chart-card.tsx
+// Deviations (primitive-level, not fixable from this file):
+// - Our pie's legend attr has no class passthrough, so the source's
+//   `translate-y-2` on ChartLegend is not applied.
+// - Our pie doesn't expose recharts' strokeWidth (source uses 5); sectors
+//   render with the default stroke width.
+// - Our progress primitive emits data-slot="progress-range" instead of
+//   shadcn's "progress-indicator", so the verbatim override class is kept
+//   AND twinned for -range so the bar actually turns bg-chart-3.
+import Badge from "@marko-ui/registry/ui/badge/badge.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardAction from "@marko-ui/registry/ui/card/action.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+import Chart from "@marko-ui/registry/ui/chart/chart.marko";
+import PieChart from "@marko-ui/registry/ui/chart/pie.marko";
+import Progress from "@marko-ui/registry/ui/progress/progress.marko";
+
+static const pieChartData = [
+  { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
+  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
+  { browser: "firefox", visitors: 287, fill: "var(--color-firefox)" },
+  { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
+];
+
+static const pieChartConfig = {
+  visitors: {
+    label: "Visitors",
+  },
+  chrome: {
+    label: "Chrome",
+    color: "var(--chart-1)",
+  },
+  safari: {
+    label: "Safari",
+    color: "var(--chart-2)",
+  },
+  firefox: {
+    label: "Firefox",
+    color: "var(--chart-3)",
+  },
+  edge: {
+    label: "Edge",
+    color: "var(--chart-4)",
+  },
+};
+
+static const totalVisitors = pieChartData.reduce(
+  (sum, item) => sum + item.visitors,
+  0,
+);
+static const topBrowser = pieChartData.reduce((max, item) =>
+  item.visitors > max.visitors ? item : max,
+);
+static const topBrowserShare = Math.round(
+  (topBrowser.visitors / totalVisitors) * 100,
+);
+static const topBrowserLabel =
+  (
+    pieChartConfig as Record<string, { label?: string; color?: string }>
+  )[topBrowser.browser]?.label ?? "Top";
+
+<Card>
+  <CardHeader class="pb-0">
+    <CardTitle>Browser Share</CardTitle>
+    <CardDescription>January - June 2026</CardDescription>
+    <CardAction>
+      <Badge variant="outline">${topBrowserLabel}</Badge>
+    </CardAction>
+  </CardHeader>
+  <CardContent class="pt-0">
+    <Chart
+      config=pieChartConfig
+      class="mx-auto aspect-square max-h-[190px]"
+    >
+      <PieChart
+        config=pieChartConfig
+        data=pieChartData
+        dataKey="visitors"
+        nameKey="browser"
+        innerRadius=50
+        legend=true
+      >
+        <@centerLabel|{ cx, cy }|>
+          <text
+            x=cx
+            y=cy
+            text-anchor="middle"
+            dominant-baseline="middle"
+            fill="red"
+          >
+            <tspan
+              x=cx
+              y=(cy - 16)
+              class="fill-foreground text-2xl font-bold"
+            >
+              ${totalVisitors.toLocaleString()}
+            </tspan>
+            <tspan
+              x=cx
+              y=(cy + 4)
+              class="fill-muted-foreground text-xs"
+            >
+              Visitors
+            </tspan>
+          </text>
+        </@centerLabel>
+      </PieChart>
+    </Chart>
+  </CardContent>
+  <CardFooter class="flex-col items-stretch gap-2">
+    <div class="flex items-center text-xs">
+      <span class="font-medium">${topBrowserLabel}</span>
+      <span class="ml-auto text-muted-foreground tabular-nums">
+        ${topBrowserShare}%
+      </span>
+    </div>
+    <Progress
+      value=topBrowserShare
+      class="**:data-[slot=progress-indicator]:bg-chart-3 **:data-[slot=progress-range]:bg-chart-3"
+    />
+  </CardFooter>
+</Card>
