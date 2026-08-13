@@ -1,5 +1,10 @@
 // Static code block with a copy button. Replaces shadcn's rehype-highlighted
-// MDX <pre> — no syntax highlighting pipeline here, just the chrome.
+// MDX <pre>: highlighting here is SSR-time shiki (src/lib/highlight-code.ts),
+// not a build-time MDX pipeline — see that file's header for why. The
+// copy button still reads the raw text content of the <code> element, so
+// what gets copied is always the plain source, never the highlighted markup.
+import { highlightCode } from "../../lib/highlight-code.ts";
+
 export interface Input {
   code: string;
   language?: string;
@@ -18,7 +23,9 @@ export interface Input {
       </if>
     </div>
   </if>
-  <pre class="overflow-x-auto p-4 text-[0.8125rem] leading-6"><code id=blockId class="font-mono">${input.code}</code></pre>
+  <await|highlighted|=highlightCode(input.code, input.language ?? "text")>
+    <pre class="overflow-x-auto p-4 text-[0.8125rem] leading-6"><code id=blockId class="font-mono">$!{highlighted}</code></pre>
+  </await>
   <button
     type="button"
     data-copy-code

@@ -22,6 +22,7 @@ import "./block-viewer-tree-node.marko";
 import { toggleVariants } from "@marko-ui/registry/ui/toggle/variants.ts";
 import { cn } from "@marko-ui/registry/lib/utils.ts";
 import { BLOCKS_MANIFEST } from "../../lib/blocks-manifest.ts";
+import { highlightManifestFiles } from "../../lib/highlight-code.ts";
 import type { BlockEntry } from "../../lib/blocks-list.ts";
 
 export interface Input {
@@ -31,13 +32,34 @@ export interface Input {
 <const/block=input.block/>
 <const/manifest=BLOCKS_MANIFEST[block.name]/>
 
+// `activeFile` (and so `activeManifestFile`) changes client-side on every
+// file-tree click, entirely after hydration. Marko's <await> tag turns out
+// to be unsuitable for that: verified empirically (three separate minimal
+// repros) that content and attribute bindings *inside* an <await> body are
+// frozen at whatever they were on first resolution — a reactive <let> that
+// changes afterward does not re-render anything nested in <await>, and even
+// a plain assignment from inside the awaited body's own <script> back to an
+// outer <let> never lands, in SSR or the client. So highlighted markup
+// cannot live inside a per-file <await>, and switching cannot be a Marko
+// reactive re-render of anything under one.
+//
+// Fix: every file's HTML is highlighted once, up front, inside ONE <await>
+// (resolves a single time per page load, same as every other call site);
+// each panel is pre-rendered hidden except the default file. From there,
+// switching is plain DOM — a <script> reacting to `activeFile` toggles
+// `.hidden` directly via querySelector, same mechanism
+// package-manager-switcher.marko already uses for its command panels (that
+// one does it entirely in onMount off localStorage; this one reacts to a
+// Marko <let> instead, since the trigger is the file tree's onClick).
+<const/manifestFiles=manifest?.files ?? []/>
+
 <let/view=("preview" as "preview" | "code")/>
 <let/activeFile=manifest?.defaultFile ?? null/>
 <let/copiedInstall=false/>
 <let/copiedFile=false/>
 <let/previewSize=100/>
 
-<const/activeManifestFile=manifest?.files.find((file) => file.target === activeFile) ?? null/>
+<const/activeManifestFile=manifestFiles.find((file) => file.target === activeFile) ?? null/>
 <const/installCommand=`bunx --bun shadcn@latest add https://marko-ui.saulo.tech/r/${block.name}.json`/>
 
 <div
@@ -244,7 +266,7 @@ export interface Input {
         </nav>
       </div>
       <if=activeManifestFile>
-        <figure class="mx-0! mt-0 flex min-w-0 flex-1 flex-col rounded-xl border-none">
+        <figure/codePanelEl class="mx-0! mt-0 flex min-w-0 flex-1 flex-col rounded-xl border-none">
           <figcaption class="flex h-12 shrink-0 items-center gap-2 border-b px-4 py-2 text-code-foreground">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 opacity-70"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
             ${activeManifestFile.target}
@@ -267,13 +289,18 @@ export interface Input {
               </button>
             </div>
           </figcaption>
-          // No syntax-highlighting pipeline in this docs app (see
-          // apps/docs/src/tags/docs/code-block.marko's own header comment —
-          // shadcn's MDX <pre> is rehype-highlighted at build time; there is
-          // no equivalent here, by prior project decision, not a gap
-          // introduced by this port). Plain <pre><code>, same as every other
-          // code panel on this site.
-          <pre class="no-scrollbar h-full overflow-auto p-4 text-[0.8125rem] leading-6"><code class="font-mono">${activeManifestFile.content}</code></pre>
+          // SSR-time shiki highlighting (src/lib/highlight-code.ts). Every
+          // file is highlighted once, inside a single <await> (see the
+          // comment by `manifestFiles` above for why per-file reactivity
+          // doesn't work here) — `hidden` below reflects only the file that
+          // was active at render/hydration time. The <script> further down
+          // reacts to later `activeFile` changes and flips `.hidden`
+          // directly via querySelector, entirely outside this <await>.
+          <await|highlightedFiles|=highlightManifestFiles(manifestFiles)>
+            <for|file| of=manifestFiles by=(f) => f.target>
+              <pre data-file-target=file.target hidden=file.target !== activeFile class="no-scrollbar h-full overflow-auto p-4 text-[0.8125rem] leading-6"><code class="font-mono">$!{highlightedFiles[file.target] ?? ""}</code></pre>
+            </for>
+          </await>
         </figure>
       </if>
     </if>
@@ -296,3 +323,20 @@ export interface Input {
     </div>
   </div>
 </div>
+
+// Drives the code panel's visible file when `activeFile` changes — the
+// panels themselves are pre-rendered (all files, highlighted, `hidden`
+// except the initially-active one) inside the <await> above; content and
+// attributes declared inside that <await> body don't participate in Marko's
+// reactivity afterward (see the comment there), so this reacts to
+// `activeFile` from OUTSIDE it and flips `.hidden` directly via
+// querySelector — a tag variable is a function per this codebase's Marko 6
+// conventions, so `codePanelEl()` calls it to get the node.
+<script>
+  const panel = codePanelEl();
+  if (panel) {
+    for (const pre of panel.querySelectorAll("[data-file-target]")) {
+      pre.hidden = pre.getAttribute("data-file-target") !== activeFile;
+    }
+  }
+</script>

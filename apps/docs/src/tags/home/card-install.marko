@@ -1,11 +1,13 @@
 // Structure adapted from shadcn/ui's home dashboard cards (MIT); content
-// describes marko-ui's real install flow.
+// describes marko-ui's real install flow. Command highlighted as bash via
+// SSR-time shiki (src/lib/highlight-code.ts).
 import Card from "@marko-ui/registry/ui/card/card.marko";
 import CardHeader from "@marko-ui/registry/ui/card/header.marko";
 import CardTitle from "@marko-ui/registry/ui/card/title.marko";
 import CardDescription from "@marko-ui/registry/ui/card/description.marko";
 import CardContent from "@marko-ui/registry/ui/card/content.marko";
 import Tabs from "@marko-ui/registry/ui/tabs/tabs.marko";
+import { highlightCode } from "../../lib/highlight-code.ts";
 
 static const PACKAGE_MANAGERS = [
   { value: "bun", label: "bun" },
@@ -30,7 +32,9 @@ static const COMMANDS = {
   </CardHeader>
   <CardContent class="min-w-0">
     <Tabs|value| items=PACKAGE_MANAGERS class="w-full min-w-0">
-      <pre class="bg-muted mt-2 max-w-full overflow-x-auto rounded-md p-3"><code class="text-xs whitespace-pre">${COMMANDS[value as keyof typeof COMMANDS]}</code></pre>
+      <await|highlighted|=highlightCode(COMMANDS[value as keyof typeof COMMANDS], "bash")>
+        <pre class="bg-muted mt-2 max-w-full overflow-x-auto rounded-md p-3"><code class="text-xs whitespace-pre">$!{highlighted}</code></pre>
+      </await>
     </Tabs>
   </CardContent>
 </Card>

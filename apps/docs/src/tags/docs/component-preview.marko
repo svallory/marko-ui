@@ -26,6 +26,12 @@ export interface Input {
 <const/align=input.align ?? "center"/>
 
 // A 3-line peek, `leading-6` to match the expanded <pre>'s line-height.
+// Deliberately left as plain text, not run through highlightCode: an
+// arbitrary 3-line slice of Marko source routinely lands mid-tag or with
+// unclosed brackets, and shiki's tokenizer/HTML output on a truncated
+// fragment looks visually broken (stray coloring, malformed nesting) rather
+// than just less-highlighted. The full source below (via <code-block>) is
+// syntactically complete and highlights normally.
 <const/peekLines=input.source.split("\n").slice(0, 3).join("\n")/>
 
 <div/previewEl
