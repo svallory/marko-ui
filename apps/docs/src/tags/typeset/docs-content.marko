@@ -71,16 +71,48 @@ static const FRAMEWORK_ITEMS = TEMPLATES.map((template) => ({
   if (!rawCss) return;
   navigator.clipboard.writeText(rawCss).then(() => {
     hasCopiedCss = true;
-    window.setTimeout(() => { hasCopiedCss = false; }, 2000);
   });
 }/>
 
 <const/copyPrompt=() => {
   navigator.clipboard.writeText(docs.prompt).then(() => {
     hasCopiedPrompt = true;
-    window.setTimeout(() => { hasCopiedPrompt = false; }, 2000);
   });
 }/>
+
+// The 2s revert, as its own effect keyed on the flag — upstream is
+// `useEffect(() => { if (hasCopied) { const t = setTimeout(...); return () =>
+// clearTimeout(t) } }, [hasCopied])`, once per button.
+//
+// It must be an effect, not a setTimeout chained inside the clipboard
+// promise: that puts the assignment two async hops from the event handler,
+// where Marko's reactivity does not track it (verified on the production
+// build — the icon flipped to the checkmark and never reverted). Reading the
+// flag inside a <script> makes the dependency explicit so the revert
+// re-renders.
+//
+// The timer id is parked on `refs` (a non-reactive holder) and cleared by
+// the callback, so a repeat click re-arms the revert rather than stacking
+// overlapping timers.
+<let/refs={ cssTimer: 0, promptTimer: 0 }/>
+
+<script>
+  if (hasCopiedCss && !refs.cssTimer) {
+    refs.cssTimer = window.setTimeout(() => {
+      refs.cssTimer = 0;
+      hasCopiedCss = false;
+    }, 2000);
+  }
+</script>
+
+<script>
+  if (hasCopiedPrompt && !refs.promptTimer) {
+    refs.promptTimer = window.setTimeout(() => {
+      refs.promptTimer = 0;
+      hasCopiedPrompt = false;
+    }, 2000);
+  }
+</script>
 
 <div data-slot="tabs" class="flex min-h-0 flex-1 flex-col gap-0">
   <div class="flex items-center justify-between gap-2 border-b px-4 py-3">

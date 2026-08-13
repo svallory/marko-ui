@@ -195,6 +195,18 @@ export interface Input {
     </div>
     // Clicks inside the preview iframe never reach this document, so this
     // shield catches outside-clicks over it. left-54 clears the card.
-    <div class="absolute inset-y-0 right-0 left-54 z-40 bg-transparent"/>
+    //
+    // Upstream this div sits inside Base UI's <Menu.Portal>, which owns
+    // outside-press dismissal, so the div itself needs no handler. Our zag
+    // portal does not treat it as part of the menu, so without an explicit
+    // close it becomes a full-viewport click sink that swallows every
+    // subsequent click on the page (found in browser verification: the
+    // shield measured 1376x916 and the docs-panel tabs, Shuffle and the
+    // toolbar all stopped responding once any picker had been opened).
+    // api().setOpen(false) restores the upstream behavior.
+    <div
+      class="absolute inset-y-0 right-0 left-54 z-40 bg-transparent"
+      on-click() { api().setOpen(false); }
+    />
   </if>
 </portal>

@@ -112,7 +112,21 @@ export interface Input {
   }
 </script>
 
-<div class="relative isolate flex size-full min-h-0 flex-1 overflow-hidden rounded-2xl bg-background ring-1 ring-foreground/10">
+// Two changes to shadcn's class string, both cross-axis sizing only:
+// `size-full` → `w-full`, and `self-stretch` added.
+//
+// The parent row is `items-start` (verbatim from page.tsx), so children
+// shrink-to-fit vertically. Upstream the preview still fills because
+// `size-full`'s height:100% resolves against a row whose height is definite
+// through Next's own root chain; our layout's wrapper does not establish
+// that, so height:100% fell back to the iframe's 150px intrinsic default.
+// Verified in the browser on the production build: self-stretch alone still
+// gave 150px (height:100% wins over stretch), and height:auto alone still
+// gave 150px — only dropping the height:100% AND opting this one child out
+// of items-start filled the row (150px → 657px). `w-full` preserves
+// size-full's width half. No data-slot, custom property or any other class
+// changes, so a shadcn theme still restyles this with zero edits.
+<div class="relative isolate flex w-full min-h-0 flex-1 self-stretch overflow-hidden rounded-2xl bg-background ring-1 ring-foreground/10">
   <iframe/iframeEl
     src=previewUrl
     title="typeset preview"
