@@ -3,5 +3,5 @@
   "description": "A login form with Apple and Google sign-in options above an email and password form.",
   "categories": ["authentication", "login"],
   "dependencies": [],
-  "registryDependencies": ["utils", "button", "card", "input", "label", "separator", "form"]
+  "registryDependencies": ["utils", "button", "card", "input", "label", "separator", "field"]
 }

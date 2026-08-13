@@ -4,5 +4,5 @@
   "type": "registry:block",
   "categories": ["authentication", "signup"],
   "dependencies": [],
-  "registryDependencies": ["utils", "button", "form", "input", "label", "separator"]
+  "registryDependencies": ["utils", "button", "field", "input", "label", "separator"]
 }

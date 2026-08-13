@@ -1,0 +1,6 @@
+{
+  "title": "Native Select",
+  "description": "A styled wrapper around the native HTML select element, with an option and optgroup part — zero JavaScript, full native accessibility and mobile picker behavior.",
+  "dependencies": [],
+  "registryDependencies": ["utils"]
+}

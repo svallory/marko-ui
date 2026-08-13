@@ -3,5 +3,5 @@
   "description": "A two-column signup form with social sign up options and a decorative side panel.",
   "categories": ["authentication", "signup"],
   "dependencies": [],
-  "registryDependencies": ["utils", "button", "card", "form", "input", "label", "separator"]
+  "registryDependencies": ["utils", "button", "card", "field", "input", "label", "separator"]
 }
