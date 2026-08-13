@@ -72,6 +72,16 @@ export interface Input {
   closeOnClick?: boolean;
   side?: "top" | "bottom" | "left" | "right";
   align?: "start" | "center" | "end";
+  /** Cross-axis nudge along the align edge (Base UI's PickerContent alignOffset). */
+  alignOffset?: number;
+  /**
+   * Mobile-only anchor override (option-picker/font-picker's `anchor={isMobile
+   * ? anchorRef : undefined}`): when set, the popup positions against this
+   * element instead of the trigger button — upstream anchors every field's
+   * popup to the customizer Card on mobile so it doesn't hug a cramped
+   * trigger. `undefined`/no-op on desktop, same as upstream's ternary.
+   */
+  anchorEl?: () => HTMLElement | null;
   disabled?: boolean;
   class?: string;
   contentClass?: string;
@@ -94,6 +104,8 @@ export interface Input {
   positioning={
     placement: `${input.side ?? "bottom"}${input.align && input.align !== "center" ? `-${input.align}` : ""}`,
     gutter: 20,
+    offset: input.alignOffset ? { crossAxis: input.alignOffset } : undefined,
+    getAnchorElement: input.anchorEl ? () => input.anchorEl!() : undefined,
   }
 />
 <service/service machine=() => menu.machine props=machineProps/>
@@ -105,6 +117,15 @@ export interface Input {
 <const/{ class: className, contentClass, trigger, value, closeOnClick }=input/>
 <const/sections=(input.sections ?? [])/>
 <const/actions=(input.actions ?? [])/>
+// main-menu.tsx wraps each run of actions in its own <PickerGroup>
+// (data-slot="dropdown-menu-group"): a new group starts at index 0 and at
+// every action with startsGroup. Precomputed here since Marko's <for> can't
+// interleave open/close tags across iterations.
+<const/actionGroups=actions.reduce((groups: PickerAction[][], action, index) => {
+  if (index === 0 || action.startsGroup) groups.push([]);
+  groups[groups.length - 1]!.push(action);
+  return groups;
+}, [])/>
 
 <button
   ...api().getTriggerProps()
@@ -128,69 +149,80 @@ export interface Input {
           contentClass,
         )
       >
-        <for|action, actionIndex| of=actions by=(action) => action.value>
-          <if=(action.startsGroup && actionIndex > 0)>
+        <for|group, groupIndex| of=actionGroups>
+          <if=(groupIndex > 0)>
             <div data-slot="dropdown-menu-separator" class="-mx-1.5 my-1.5 h-px bg-neutral-600 dark:bg-neutral-700"/>
           </if>
-          <div
-            ...api().getItemProps({ value: action.value, disabled: action.disabled })
-            data-slot="dropdown-menu-item"
-            data-variant="default"
-            class="group/dropdown-menu-item relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-          >
-            ${action.label}
-            <if=action.shortcut>
-              <span
-                data-slot="dropdown-menu-shortcut"
-                class="ml-auto text-xs tracking-widest text-neutral-400! group-focus/dropdown-menu-item:text-neutral-100"
-              >
-                ${action.shortcut}
-              </span>
-            </if>
-          </div>
-        </for>
-        <for|section, sectionIndex| of=sections>
-          <if=(sectionIndex > 0)>
-            <div data-slot="dropdown-menu-separator" class="-mx-1.5 my-1.5 h-px bg-neutral-600 dark:bg-neutral-700"/>
-          </if>
-          <div ...api().getItemGroupProps({ id: `picker-group-${sectionIndex}` }) data-slot="dropdown-menu-group">
-            <if=section.label>
+          <div data-slot="dropdown-menu-group">
+            <for|action| of=group by=(action) => action.value>
               <div
-                ...api().getItemGroupLabelProps({ htmlFor: `picker-group-${sectionIndex}` })
-                data-slot="dropdown-menu-label"
-                class="px-2 py-1.5 text-xs font-medium text-neutral-400"
+                ...api().getItemProps({ value: action.value, disabled: action.disabled })
+                data-slot="dropdown-menu-item"
+                data-variant="default"
+                class="group/dropdown-menu-item relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
               >
-                ${section.label}
-              </div>
-            </if>
-            <for|option| of=section.options by=(option) => option.value>
-              <div
-                ...api().getOptionItemProps({
-                  type: "radio",
-                  value: option.value,
-                  checked: option.value === value,
-                  disabled: option.disabled,
-                  closeOnSelect: closeOnClick,
-                })
-                data-slot="dropdown-menu-radio-item"
-                class="relative flex cursor-default items-center gap-2 rounded-lg py-1.5 pr-8 pl-2 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-              >
-                <span
-                  class="pointer-events-none absolute right-2 flex items-center justify-center"
-                  data-slot="dropdown-menu-radio-item-indicator"
-                >
-                  <if=(option.value === value)>
-                    // lucide CheckIcon
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 pointer-coarse:size-5">
-                      <path d="M20 6 9 17l-5-5"/>
-                    </svg>
-                  </if>
-                </span>
-                ${option.label}
+                ${action.label}
+                <if=action.shortcut>
+                  <span
+                    data-slot="dropdown-menu-shortcut"
+                    class="ml-auto text-xs tracking-widest text-neutral-400! group-focus/dropdown-menu-item:text-neutral-100"
+                  >
+                    ${action.shortcut}
+                  </span>
+                </if>
               </div>
             </for>
           </div>
         </for>
+        // option-picker/font-picker each wrap their (single) section list in
+        // one flat PickerRadioGroup (data-slot="dropdown-menu-radio-group")
+        // around the whole loop, never per-section.
+        <if=(sections.length > 0)>
+          <div data-slot="dropdown-menu-radio-group">
+            <for|section, sectionIndex| of=sections>
+              <if=(sectionIndex > 0)>
+                <div data-slot="dropdown-menu-separator" class="-mx-1.5 my-1.5 h-px bg-neutral-600 dark:bg-neutral-700"/>
+              </if>
+              <div ...api().getItemGroupProps({ id: `picker-group-${sectionIndex}` }) data-slot="dropdown-menu-group">
+                <if=section.label>
+                  <div
+                    ...api().getItemGroupLabelProps({ htmlFor: `picker-group-${sectionIndex}` })
+                    data-slot="dropdown-menu-label"
+                    class="px-2 py-1.5 text-xs font-medium text-neutral-400"
+                  >
+                    ${section.label}
+                  </div>
+                </if>
+                <for|option| of=section.options by=(option) => option.value>
+                  <div
+                    ...api().getOptionItemProps({
+                      type: "radio",
+                      value: option.value,
+                      checked: option.value === value,
+                      disabled: option.disabled,
+                      closeOnSelect: closeOnClick,
+                    })
+                    data-slot="dropdown-menu-radio-item"
+                    class="relative flex cursor-default items-center gap-2 rounded-lg py-1.5 pr-8 pl-2 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+                  >
+                    <span
+                      class="pointer-events-none absolute right-2 flex items-center justify-center"
+                      data-slot="dropdown-menu-radio-item-indicator"
+                    >
+                      <if=(option.value === value)>
+                        // lucide CheckIcon
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 pointer-coarse:size-5">
+                          <path d="M20 6 9 17l-5-5"/>
+                        </svg>
+                      </if>
+                    </span>
+                    ${option.label}
+                  </div>
+                </for>
+              </div>
+            </for>
+          </div>
+        </if>
       </div>
     </div>
     // Clicks inside the preview iframe never reach this document, so this

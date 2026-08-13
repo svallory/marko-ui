@@ -34,6 +34,8 @@ export interface Input {
   locked?: boolean;
   onToggleLock?: () => void;
   isMobile?: boolean;
+  /** Mobile-only popup anchor override — see picker.marko's `anchorEl`. */
+  anchorEl?: () => HTMLElement | null;
   class?: string;
 }
 
@@ -48,6 +50,7 @@ export interface Input {
     closeOnClick=input.isMobile
     side=(input.isMobile ? "top" : "right")
     align=(input.isMobile ? "center" : "start")
+    anchorEl=(input.isMobile ? input.anchorEl : undefined)
     sections=sections
   >
     <@trigger>

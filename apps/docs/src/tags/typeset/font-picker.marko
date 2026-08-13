@@ -30,6 +30,8 @@ export interface Input {
   locked: boolean;
   onToggleLock: () => void;
   isMobile?: boolean;
+  /** Mobile-only popup anchor override — see picker.marko's `anchorEl`. */
+  anchorEl?: () => HTMLElement | null;
 }
 
 // FONTS is never empty (font-definitions.ts has 23 non-excluded entries), but
@@ -65,6 +67,7 @@ export interface Input {
     closeOnClick=input.isMobile
     side=(input.isMobile ? "top" : "right")
     align=(input.isMobile ? "center" : "start")
+    anchorEl=(input.isMobile ? input.anchorEl : undefined)
     contentClass="max-h-96"
     sections=sections
   >

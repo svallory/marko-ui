@@ -162,6 +162,13 @@ static function snapshotOfUrl() {
   if (entry === undefined) return;
   applyTypesetUrlUpdate(parseTypesetSnapshot(entry));
   params = readTypesetParams();
+  // Upstream's restore() writes through setParams(), which re-triggers
+  // ParamsSync's effect and clears isNavigatingRef there. This port's
+  // restoreHistory bypasses recordHistoryEntry() (to avoid re-pushing the
+  // entry being restored), so it must clear the flag itself — otherwise it
+  // stays true forever and the NEXT real edit's recordHistoryEntry() call
+  // silently no-ops instead of recording, permanently desyncing the stack.
+  refs.navigating = false;
 }/>
 
 <const/goBack=() => {

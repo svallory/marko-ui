@@ -77,7 +77,13 @@ export interface Input {
   input.setOverride(value ? ({ [param]: value } as Partial<TypesetSearchParams>) : null);
 }/>
 
-<Card
+// customizer.tsx's anchorRef: on mobile every field's picker popup anchors
+// to the Card itself instead of its own cramped trigger. Card is a plain
+// <div> under the hood (see registry/default/ui/card/card.marko), so its tag
+// var is the real DOM node.
+<const/anchorEl=() => cardEl()/>
+
+<Card/cardEl
   class="dark isolate z-10 max-h-full min-h-0 w-full self-start rounded-2xl bg-card/90 py-3 gap-3 backdrop-blur-xl md:w-(--customizer-width)"
 >
   <CardHeader class="hidden items-center justify-between gap-2 border-b px-3 [.border-b]:pb-3 md:flex">
@@ -100,6 +106,7 @@ export interface Input {
         label="Measure"
         class="max-[28rem]:hidden"
         isMobile=input.isMobile
+        anchorEl=anchorEl
         param="measure"
         icon="measure"
         options=TYPESET_MEASURES
@@ -120,6 +127,7 @@ export interface Input {
         locked=input.locks.has("heading")
         onToggleLock=() => input.toggleLock("heading")
         isMobile=input.isMobile
+        anchorEl=anchorEl
       />
       <FontPicker
         label="Body"
@@ -131,6 +139,7 @@ export interface Input {
         locked=input.locks.has("body")
         onToggleLock=() => input.toggleLock("body")
         isMobile=input.isMobile
+        anchorEl=anchorEl
       />
       <FontPicker
         label="Mono"
@@ -142,11 +151,13 @@ export interface Input {
         locked=input.locks.has("mono")
         onToggleLock=() => input.toggleLock("mono")
         isMobile=input.isMobile
+        anchorEl=anchorEl
       />
       <FieldSeparator class="hidden md:block"/>
       <OptionPicker
         label="Size"
         isMobile=input.isMobile
+        anchorEl=anchorEl
         param="scale"
         icon="size"
         options=TYPESET_SIZES
@@ -159,6 +170,7 @@ export interface Input {
       <OptionPicker
         label="Leading"
         isMobile=input.isMobile
+        anchorEl=anchorEl
         param="leading"
         icon="leading"
         options=TYPESET_LEADINGS
@@ -171,6 +183,7 @@ export interface Input {
       <OptionPicker
         label="Flow"
         isMobile=input.isMobile
+        anchorEl=anchorEl
         param="flow"
         icon="flow"
         options=TYPESET_FLOWS
