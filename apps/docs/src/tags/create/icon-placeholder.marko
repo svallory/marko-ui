@@ -1,36 +1,37 @@
 // Ported from shadcn/ui app/(app)/(create)/components/icon-placeholder.tsx.
 // Source: given one icon name per library as attrs (`lucide="Home"
 // tabler="IconHome" ...`), it looks up the CURRENT iconLibrary param and
-// lazy-renders that library's icon component — used throughout shadcn's own
-// preview registry items (their `component-example`/blocks) so a single
-// demo's icons swap when the iconLibrary picker changes.
+// lazy-renders that library's icon component.
 //
-// Honest gap: this repo's registry components (packages/registry/default/**)
-// render icons as hardcoded inline SVGs per component, not through a
-// swappable icon-library abstraction — there is no lucide-react/
-// @tabler/icons-react/etc. dependency to lazy-import here, and porting one
-// would mean re-authoring every registry component's icon usage, which is
-// out of scope for the /create page port. This tag is kept for API parity
-// (so anything reaching for it compiles) but only ever renders a plain
-// square fallback glyph (shadcn's own SquareIcon Suspense fallback),
-// ignoring which library name is passed and the current iconLibrary param —
-// it does NOT actually switch libraries. The iconLibrary picker itself
-// still fully works (commits to the URL/preset code, as verified in phase
-// 4's browser check); only preview content built with this tag wouldn't
-// react to it. Nothing in this port's preview items currently uses this
-// tag — see preview.marko's header comment for why (real registry
-// components, not shadcn's icon-placeholder-based demo items).
-export interface Input {
-  lucide?: string;
-  tabler?: string;
-  hugeicons?: string;
-  phosphor?: string;
-  remixicon?: string;
+// UNBLOCKED 2026-08-13: the icon system landed
+// (packages/registry/default/ui/icon/, see TODO.md's resolved "icon
+// strategy" entry), so this now actually renders instead of always
+// returning shadcn's square Suspense fallback. iconLibrary is read from the
+// URL at SSR time (matching ./preview-blocks/lib/icon.marko's identical
+// pattern — no prop-threading, no context API in Marko 6); live switching
+// without a reload happens via the /create/preview route's postMessage
+// handler, which patches every `[data-icon-name]` element the underlying
+// Icon component renders (same mechanism, see that route's header comment).
+//
+// Nothing in this port's preview items currently uses this exact
+// per-library-attrs shape (preview.marko's cards call the registry Icon
+// tag directly, or go through preview-blocks/lib/icon.marko's single
+// `name` prop) — this tag exists for API parity with shadcn's source so
+// anything reaching for it compiles and renders correctly, not because a
+// call site needs it today.
+import Icon from "@marko-ui/registry/ui/icon/icon.marko";
+import type { IconLibraryName } from "@marko-ui/registry/ui/icon/icon-names.ts";
+
+// Mirrors shadcn's `{ [K in IconLibraryName]: string }` mapped-type input —
+// every library name is a valid attr, all optional (a card only needs to
+// pass the libraries it actually has a mapping for).
+export interface Input extends Partial<Record<IconLibraryName, string>> {
   class?: string;
 }
 
-<if=(input.lucide || input.tabler || input.hugeicons || input.phosphor || input.remixicon)>
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=input.class>
-    <rect width="18" height="18" x="3" y="3" rx="2"/>
-  </svg>
+<const/iconLibrary=($global.url.searchParams.get("iconLibrary") ?? "lucide") as IconLibraryName/>
+<const/name=input[iconLibrary]/>
+
+<if(name)>
+  <Icon name=name library=iconLibrary class=input.class/>
 </if>

@@ -1,0 +1,12 @@
+{
+  "title": "Icon",
+  "description": "Renders an icon by abstract name from any of five icon libraries (Lucide, Tabler Icons, HugeIcons, Phosphor Icons, Remix Icon).",
+  "dependencies": [
+    "lucide-static",
+    "@tabler/icons",
+    "@phosphor-icons/core",
+    "remixicon",
+    "@hugeicons/core-free-icons"
+  ],
+  "registryDependencies": ["utils"]
+}

@@ -3,12 +3,12 @@
 //
 // Full source composition: source column layout (grid-cols-7,
 // w-[2400px]/md:w-[3000px], lyra/mira md:w-[2600px]) and the source's
-// exact card-to-column assignment, with ONE deliberate exclusion:
-// IconPreviewGrid (icon-set exclusion — see TODO.md). It led column 2 in
-// the source; column 2 keeps its remaining cards (UIElements md+ wrapper,
-// ObservabilityCard, ShippingAddress) in source order — no other
-// redistribution. All cards are static tag references (no dynamic tags —
-// see notes/bug-marko-dynamic-tag-hydration-crash.md).
+// exact card-to-column assignment. IconPreviewGrid — previously excluded
+// (see TODO.md's now-resolved "icon strategy"/"Unblock icon-preview-grid"
+// entries) — is UNBLOCKED and restored 2026-08-13 leading column 2, exactly
+// where shadcn's index.tsx mounts it (before the UIElements md+ wrapper).
+// All cards are static tag references (no dynamic tags — see
+// notes/bug-marko-dynamic-tag-hydration-crash.md).
 import ActivateAgentDialog from "./cards/activate-agent-dialog.marko";
 import AnalyticsCard from "./cards/analytics-card.marko";
 import AnomalyAlert from "./cards/anomaly-alert.marko";
@@ -21,6 +21,7 @@ import EnvironmentVariables from "./cards/environment-variables.marko";
 import FeedbackForm from "./cards/feedback-form.marko";
 import FileUpload from "./cards/file-upload.marko";
 import GithubProfile from "./cards/github-profile.marko";
+import IconPreviewGrid from "./cards/icon-preview-grid.marko";
 import InviteTeam from "./cards/invite-team.marko";
 import Invoice from "./cards/invoice.marko";
 import LiveWaveformCard from "./cards/live-waveform.marko";
@@ -56,6 +57,7 @@ import WeeklyFitnessSummary from "./cards/weekly-fitness-summary.marko";
         <Invoice/>
       </div>
       <div class="flex flex-col p-px [contain-intrinsic-size:380px_1200px] [content-visibility:auto]">
+        <IconPreviewGrid/>
         <div class="hidden w-full md:flex">
           <UIElements/>
         </div>

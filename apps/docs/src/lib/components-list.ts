@@ -5,7 +5,7 @@ export const COMPONENTS = [
   "carousel", "cascade-select", "chart", "checkbox", "clipboard", "collapsible", "color-picker",
   "combobox", "command", "context-menu", "data-table", "date-input", "date-picker",
   "dialog", "drawer", "dropdown-menu", "editable", "empty", "field", "file-upload",
-  "floating-panel", "hover-card", "image-cropper", "input", "input-group",
+  "floating-panel", "hover-card", "icon", "image-cropper", "input", "input-group",
   "input-otp", "item", "kbd", "label", "listbox", "marquee",
   "menubar", "native-select", "navigation-menu", "number-input", "pagination", "password-input", "popover",
   "progress", "qr-code", "radio-group", "rating-group", "resizable", "scroll-area",
