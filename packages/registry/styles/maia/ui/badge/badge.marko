@@ -1,0 +1,15 @@
+import { badgeVariants, type BadgeVariants } from "./variants.ts";
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"span">, BadgeVariants {}
+
+<const/{ variant, class: className, content, ...rest }=input/>
+
+<span
+  ...rest
+  data-slot="badge"
+  data-variant=(variant ?? "default")
+  class=cn(badgeVariants({ variant }), className)
+>
+  <${content}/>
+</span>

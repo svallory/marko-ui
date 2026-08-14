@@ -1,0 +1,102 @@
+// ChartTooltipContent — base-maia port of
+// ../../../default/ui/chart/tooltip.marko. Zero JS/behavior change; only the
+// outer panel class string differs from default, copied verbatim from
+// shadcn styles/base-maia/ui/chart.tsx's <ChartTooltipContent> (grid
+// min-w-32 items-start gap-1.5 rounded-lg border border-border/50 bg-background
+// px-2.5 py-1.5 text-xs shadow-xl). All inner row/indicator/label classes are
+// unchanged — base-maia's chart.tsx uses the same strings there as default's
+// shadcn chart.tsx.
+import { cn } from "#lib/utils.ts";
+
+export interface TooltipRow {
+  key: string;
+  label: string;
+  value: number | string;
+  color: string;
+  icon?: Marko.Renderable;
+}
+
+export interface Input extends Marko.Input<"div"> {
+  rows: TooltipRow[];
+  /** Resolved x label — already run through the chart config by the caller. */
+  label?: string;
+  indicator?: "line" | "dot" | "dashed";
+  hideLabel?: boolean;
+  hideIndicator?: boolean;
+}
+
+static function formatValue(value: number | string): string {
+  return typeof value === "number" ? value.toLocaleString() : String(value);
+}
+
+<const/{
+  rows,
+  label,
+  indicator = "dot",
+  hideLabel,
+  hideIndicator,
+  class: className,
+  ...rest
+}=input/>
+<const/showLabel=(!hideLabel && label != null && label !== "")/>
+<const/nestLabel=(rows.length === 1 && indicator !== "dot")/>
+
+<div
+  ...rest
+  class=cn(
+    "grid min-w-32 items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
+    className,
+  )
+>
+  <if=(showLabel && !nestLabel)>
+    <div class="font-medium">${label}</div>
+  </if>
+  <div class="grid gap-1.5">
+    <for|row| of=rows>
+      <div
+        class=cn(
+          "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
+          indicator === "dot" && "items-center",
+        )
+      >
+        <if=row.icon>
+          <${row.icon}/>
+        </if>
+        <else-if=(!hideIndicator)>
+          <div
+            class=cn(
+              "shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)",
+              indicator === "dot" && "h-2.5 w-2.5",
+              indicator === "line" && "w-1",
+              indicator === "dashed" &&
+                "w-0 border-[1.5px] border-dashed bg-transparent",
+              nestLabel && indicator === "dashed" && "my-0.5",
+            )
+            style={
+              "--color-bg": row.color,
+              "--color-border": row.color,
+            }
+          ></div>
+        </else-if>
+        <div
+          class=cn(
+            "flex flex-1 justify-between leading-none",
+            nestLabel ? "items-end" : "items-center",
+          )
+        >
+          <div class="grid gap-1.5">
+            <if=(showLabel && nestLabel)>
+              <div class="font-medium">${label}</div>
+            </if>
+            <span class="text-muted-foreground">${row.label}</span>
+          </div>
+          <if=(row.value != null)>
+            <span class="font-mono font-medium text-foreground tabular-nums">
+              ${formatValue(row.value)}
+            </span>
+          </if>
+        </div>
+      </div>
+    </for>
+  </div>
+</div>
