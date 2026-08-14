@@ -1,0 +1,101 @@
+// Port of shadcn's `message-scroller.tsx`'s `MessageScrollerButton`. Wraps
+// `@shadcn/react/message-scroller`'s `MessageScroller.Button`, a
+// `useRender`-based polymorphic trigger that subscribes to the controller's
+// scrollable-state store (`useSyncExternalStore`) to compute `active`, and
+// scrolls to the given `direction`'s edge on click when active.
+//
+// SIMPLIFICATION FROM SOURCE: `useRender`'s generic `render` prop (letting a
+// caller swap the rendered element/component entirely) has no established
+// idiom yet in this registry (grep across every existing port turns up no
+// `render=` usage) — this port always renders our `<Button>` component
+// directly, matching the SOURCE'S OWN DEFAULT (`render={render ?? <Button
+// variant={variant} size={size} />}`) exactly. `type="button"`,
+// `inert`/`tabIndex` gating, and the click handler's active-guard +
+// `blur()` + direction dispatch are all preserved.
+//
+// The store subscription itself (`useSyncExternalStore` in the source)
+// becomes a `<let>` seeded from the controller's synchronous snapshot and
+// kept live via `stateStore.subscribe` in a `<lifecycle>` — Marko's
+// reactive-local equivalent of a store subscription hook.
+import Button from "../button/button.marko";
+import type { ButtonVariants } from "../button/variants.ts";
+import { cn } from "#lib/utils.ts";
+import type { MessageScrollerController } from "./lib/controller.ts";
+
+export interface Input extends Marko.Input<"button">, Pick<ButtonVariants, "variant" | "size"> {
+  /** The controller created by the nearest `<message-scroller-provider>`. */
+  controller: MessageScrollerController;
+  /** Native scroll behavior when clicked. Defaults to "smooth". */
+  behavior?: ScrollBehavior;
+  /** Transcript edge to scroll toward. Defaults to "end". */
+  direction?: "start" | "end";
+}
+
+<const/{
+  controller,
+  behavior = "smooth",
+  direction = "end",
+  variant = "secondary",
+  size = "icon-sm",
+  class: className,
+  content,
+  onClick,
+  type,
+  tabindex,
+  ...rest
+}=input/>
+
+<let/active=(direction === "start" ? controller.stateStore.getSnapshot().start : controller.stateStore.getSnapshot().end)>
+
+<lifecycle
+  onMount() {
+    return controller.stateStore.subscribe(() => {
+      const snapshot = controller.stateStore.getSnapshot();
+      active = direction === "start" ? snapshot.start : snapshot.end;
+    });
+  }
+/>
+
+<Button
+  ...rest
+  variant=variant
+  size=size
+  type=(type ?? "button")
+  inert=(!active)
+  tabindex=(active ? tabindex : -1)
+  data-slot="message-scroller-button"
+  data-direction=direction
+  data-variant=variant
+  data-size=size
+  data-active=String(active)
+  class=cn(
+    "absolute inset-s-1/2 -translate-x-1/2 border-border bg-background text-foreground transition-[translate,scale,opacity] duration-200 hover:bg-muted hover:text-foreground data-[active=false]:pointer-events-none data-[active=false]:scale-95 data-[active=false]:opacity-0 data-[active=false]:duration-400 data-[active=false]:ease-[cubic-bezier(0.7,0,0.84,0)] data-[active=true]:translate-y-0 data-[active=true]:scale-100 data-[active=true]:opacity-100 data-[active=true]:ease-[cubic-bezier(0.23,1,0.32,1)] data-[direction=end]:bottom-4 data-[direction=end]:data-[active=false]:translate-y-full data-[direction=start]:top-4 data-[direction=start]:data-[active=false]:-translate-y-full rtl:translate-x-1/2 data-[direction=start]:[&_svg]:rotate-180",
+    className,
+  )
+  onClick(event: MouseEvent) {
+    if (!active) return;
+
+    onClick?.(event);
+
+    if (!event.defaultPrevented) {
+      (event.currentTarget as HTMLElement)?.blur();
+
+      if (direction === "start") {
+        controller.scrollToStart({ behavior });
+      } else {
+        controller.scrollToEnd({ behavior });
+      }
+    }
+  }
+>
+  <if=content>
+    <${content}/>
+  </if>
+  <else>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 5v14"/>
+      <path d="m19 12-7 7-7-7"/>
+    </svg>
+    <span class="sr-only">${direction === "end" ? "Scroll to end" : "Scroll to start"}</span>
+  </else>
+</Button>

@@ -1,0 +1,15 @@
+import { attachmentMediaVariants, type AttachmentMediaVariants } from "./variants.ts";
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"div">, AttachmentMediaVariants {}
+
+<const/{ variant = "icon", class: className, content, ...rest }=input/>
+
+<div
+  ...rest
+  data-slot="attachment-media"
+  data-variant=variant
+  class=cn(attachmentMediaVariants({ variant }), className)
+>
+  <${content}/>
+</div>

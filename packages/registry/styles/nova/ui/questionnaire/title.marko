@@ -1,0 +1,21 @@
+// base-nova parity: DOM/data-slot/class strings match shadcn
+// styles/base-nova/ui/questionnaire.tsx's `QuestionnaireTitle`
+// ("cn-font-heading text-base leading-snug font-medium text-pretty
+// [&:not(:has(~[data-slot=questionnaire-description]))]:mb-4"). The
+// source renders a `<legend>` (`Questionnaire.Title` in the primitive).
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"legend"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<legend
+  ...rest
+  data-slot="questionnaire-title"
+  class=cn(
+    "cn-font-heading text-base leading-snug font-medium text-pretty [&:not(:has(~[data-slot=questionnaire-description]))]:mb-4",
+    className,
+  )
+>
+  <${content}/>
+</legend>

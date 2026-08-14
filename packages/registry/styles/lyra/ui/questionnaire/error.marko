@@ -1,0 +1,35 @@
+// base-lyra parity: DOM/data-slot/class strings match shadcn
+// styles/base-lyra/ui/questionnaire.tsx's `QuestionnaireError`
+// ("mt-2 text-xs text-destructive"). The source only renders content when
+// the item is invalid AND a message was resolved (its own default message
+// or a caller-supplied body); this port applies the same visibility rule
+// off the controller's `isInvalid`.
+import { cn } from "#lib/utils.ts";
+import type { QuestionnaireController } from "./lib/controller.ts";
+
+export interface Input extends Marko.Input<"p"> {
+  controller: QuestionnaireController;
+  itemName: string;
+}
+
+<const/{ controller, itemName, class: className, content, ...rest }=input/>
+
+<let/_version=controller.versionStore.getSnapshot()>
+<lifecycle
+  onMount() {
+    return controller.versionStore.subscribe(() => {
+      _version = controller.versionStore.getSnapshot();
+    });
+  }
+/>
+
+<const/invalid=(_version >= 0 && controller.isInvalid(itemName))/>
+
+<if=invalid>
+  <p ...rest data-slot="questionnaire-error" class=cn("mt-2 text-xs text-destructive", className)>
+    <if=content>
+      <${content}/>
+    </if>
+    <else>This question is required.</else>
+  </p>
+</if>

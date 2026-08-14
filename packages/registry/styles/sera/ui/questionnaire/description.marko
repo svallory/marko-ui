@@ -1,0 +1,23 @@
+// base-rhea parity: DOM/data-slot/class strings match shadcn
+// styles/base-rhea/ui/questionnaire.tsx's `QuestionnaireDescription`
+// ("text-sm text-pretty text-muted-foreground"). The source renders a
+// `<p>` (`Questionnaire.Description` in the primitive).
+//
+// SIMPLIFICATION FROM SOURCE: the source registers its rendered id with
+// the item's `aria-describedby` via a registration callback
+// (`registerDescription` in use-questionnaire-item.ts); this port renders
+// static markup only — see item.marko's header comment for why the
+// describedby wiring is out of scope.
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"p"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<p
+  ...rest
+  data-slot="questionnaire-description"
+  class=cn("text-sm text-pretty text-muted-foreground", className)
+>
+  <${content}/>
+</p>

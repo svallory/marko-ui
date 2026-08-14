@@ -1,0 +1,40 @@
+// Port of shadcn's `message-scroller.tsx`'s `MessageScrollerItem`. Wraps
+// `@shadcn/react/message-scroller`'s `MessageScroller.Item`, which registers
+// (and unregisters) itself with the provider by `messageId` on mount/unmount
+// via a ref callback.
+import { cn } from "#lib/utils.ts";
+import type { MessageScrollerController } from "./lib/controller.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  /** The controller created by the nearest `<message-scroller-provider>`. */
+  controller: MessageScrollerController;
+  /** Stable row id for scrollToMessage, visibility, and prepend preservation. */
+  messageId?: string;
+  /** Marks a turn boundary that newly appended anchors and last-anchor restore use. */
+  scrollAnchor?: boolean;
+}
+
+<const/{ controller, messageId, scrollAnchor = false, class: className, content, ...rest }=input/>
+
+<div/el
+  ...rest
+  data-message-id=messageId
+  data-scroll-anchor=String(scrollAnchor)
+  data-slot="message-scroller-item"
+  class=cn("min-w-0 shrink-0 [contain-intrinsic-size:auto_10rem] [content-visibility:auto]", className)
+>
+  <${content}/>
+</div>
+
+<lifecycle
+  onMount() {
+    if (messageId) {
+      controller.registerMessage(messageId, el());
+    }
+  }
+  onDestroy() {
+    if (messageId) {
+      controller.registerMessage(messageId, null, el());
+    }
+  }
+/>

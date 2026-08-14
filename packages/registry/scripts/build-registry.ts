@@ -129,15 +129,17 @@ function rewriteSubpathImports(content: string, targetBase: string): string {
 
 async function fileEntries(dir: string, targetBase: string, registryBase: string) {
   const entries = await readdir(dir, { withFileTypes: true });
-  const sub = entries.find((e) => e.isDirectory());
-  if (sub) {
-    throw new Error(`registry item dirs must be flat; found subdirectory ${dir}/${sub.name}`);
+  const subdirs = entries.filter((e) => e.isDirectory());
+  const disallowedSubdirs = subdirs.filter((e) => e.name !== "lib");
+  if (disallowedSubdirs.length > 0) {
+    throw new Error(`registry item dirs must be flat; found subdirectory ${dir}/${disallowedSubdirs[0].name}`);
   }
   const names = entries
     .filter((e) => e.isFile() && e.name !== "registry.meta.json")
     .map((e) => e.name)
     .sort();
-  return Promise.all(
+
+  const files = await Promise.all(
     names.map(async (name) => ({
       path: `${registryBase}/${name}`,
       type: "registry:file" as const,
@@ -145,6 +147,24 @@ async function fileEntries(dir: string, targetBase: string, registryBase: string
       content: rewriteSubpathImports(await readFile(join(dir, name), "utf8"), targetBase),
     })),
   );
+
+  // Process lib/ subdirectory if it exists
+  const libDir = join(dir, "lib");
+  for (const subdir of subdirs) {
+    if (subdir.name === "lib") {
+      const libFiles = await readdir(libDir, { withFileTypes: true });
+      for (const libFile of libFiles.filter((e) => e.isFile())) {
+        files.push({
+          path: `${registryBase}/lib/${libFile.name}`,
+          type: "registry:file" as const,
+          target: `${targetBase}/lib/${libFile.name}`,
+          content: rewriteSubpathImports(await readFile(join(libDir, libFile.name), "utf8"), `${targetBase}/lib`),
+        });
+      }
+    }
+  }
+
+  return files;
 }
 
 async function readMeta(dir: string): Promise<Meta> {

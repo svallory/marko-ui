@@ -1,0 +1,16 @@
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<div
+  ...rest
+  data-slot="attachment-content"
+  class=cn(
+    "max-w-full min-w-0 flex-1 leading-tight group-data-[orientation=vertical]/attachment:px-1",
+    className,
+  )
+>
+  <${content}/>
+</div>

@@ -1,0 +1,61 @@
+// base-luma parity: DOM/data-slot/class strings match shadcn
+// styles/base-luma/ui/questionnaire.tsx's `QuestionnaireProgress`
+// ("min-h-[1lh] w-fit min-w-[14ch] text-xs font-medium text-muted-foreground
+// tabular-nums"). The source's default render is
+// `Current of Total` text driven by `useRender`'s `state` (`{current}
+// of {total}`); this port reads the same numbers off the controller.
+//
+// SIMPLIFICATION FROM SOURCE: the source's `render=` prop lets a caller
+// swap the ENTIRE rendered element (see
+// apps/v4/examples/base/questionnaire-progress.tsx's segmented-dots
+// example). This registry has no established `render=` idiom yet (grep
+// across every existing port turns up none — same conclusion
+// message-scroller/button.marko's header comment reaches for `useRender`).
+// A `content=` render-prop body is offered instead, receiving `{ current,
+// total }` so callers can still build a custom progress indicator (e.g. the
+// segmented-dots example) while the default text output matches source
+// exactly when `content` is omitted.
+import { cn } from "#lib/utils.ts";
+import type { QuestionnaireController } from "./lib/controller.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  controller: QuestionnaireController;
+  content?: Marko.Body<[{ current: number; total: number }]>;
+}
+
+<const/{ controller, class: className, content, ...rest }=input/>
+
+<let/_version=controller.versionStore.getSnapshot()>
+<lifecycle
+  onMount() {
+    return controller.versionStore.subscribe(() => {
+      _version = controller.versionStore.getSnapshot();
+    });
+  }
+/>
+<lifecycle
+  onMount() {
+    return controller.activeItemStore.subscribe(() => {
+      _version = controller.versionStore.getSnapshot();
+    });
+  }
+/>
+
+<const/current=(_version >= 0 ? controller.current() : 0)/>
+<const/total=(_version >= 0 ? controller.total() : 0)/>
+
+<div
+  ...rest
+  data-slot="questionnaire-progress"
+  class=cn(
+    "min-h-[1lh] w-fit min-w-[14ch] text-xs font-medium text-muted-foreground tabular-nums",
+    className,
+  )
+>
+  <if=content>
+    <${content}({ current, total })/>
+  </if>
+  <else>
+    ${current} of ${total}
+  </else>
+</div>

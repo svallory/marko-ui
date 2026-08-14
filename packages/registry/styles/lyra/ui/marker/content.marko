@@ -1,0 +1,16 @@
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"span"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<span
+  ...rest
+  data-slot="marker-content"
+  class=cn(
+    "min-w-0 wrap-break-word group-data-[variant=separator]/marker:flex-none group-data-[variant=separator]/marker:text-center *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground",
+    className,
+  )
+>
+  <${content}/>
+</span>

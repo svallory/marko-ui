@@ -1,0 +1,14 @@
+import { buttonVariants, type ButtonVariants } from "../button/variants.ts";
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"button">, ButtonVariants {}
+
+<const/{ variant, size = "icon-xs", class: className, content, ...rest }=input/>
+
+<button
+  ...rest
+  data-slot="attachment-action"
+  class=cn(buttonVariants({ variant: variant ?? "ghost", size }), className)
+>
+  <${content}/>
+</button>
