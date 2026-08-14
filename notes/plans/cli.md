@@ -151,8 +151,30 @@ unreachable.
 
 ## Implementation notes
 
-- Home: `packages/cli/` (bin `marko-ui`), TypeScript, commander (both source
-  CLIs use commander; no benefit re-deriving on another framework).
+- Home: `packages/cli/` (bin `marko-ui`), TypeScript with TSDoc on the whole
+  `api/` surface — the programmatic API is a documented public contract,
+  not an implementation detail.
+- **Stack (decided 2026-08-14): commander + @clack/prompts.** Both source
+  CLIs are commander (shadcn 4.18: commander 14 + `prompts` + ora + kleur;
+  Astryx: commander + zod + jiti + jscodeshift), so the fork keeps commander
+  for free. oclif was considered and rejected: its value (generated help/
+  README docs, plugin system, command scaffolding) duplicates what the
+  manifest-first design already produces from `.doc` metadata — and it
+  would force a class-per-command rewrite of every forked shadcn command,
+  add startup/dependency weight, and fight the thin-adapter architecture
+  (logic lives in `api/`, commands stay ~20-line argv adapters). Replace
+  shadcn's `prompts` with `@clack/prompts` (actively maintained, better UX,
+  cancel-safe) during the fork cleanup; keep ora/kleur or fold into clack
+  spinners as encountered.
+- **CLI docs in the docs app, generated, never hand-written.** The same
+  `.doc` + `.type` metadata that generates `manifest` renders
+  `/docs/cli` (overview + agent workflow) and `/docs/cli/<command>` pages
+  (synopsis, args, flags, exit codes, error codes, `--json` envelope
+  examples) — one data layer, many renderers, same as components. TSDoc on
+  `api/` is extracted (ts-compiler pipeline already exists: extract-api.ts
+  precedent) to document the programmatic API on its own docs page. The
+  existing `/docs/cli` page (currently documents the shadcn-CLI flow) gets
+  replaced by this generated reference at P1.
 - **Astryx is open source (MIT, facebook/astryx — discovered 2026-08-14;
   shallow clone at space `data/astryx`, CLI at `packages/cli`).** Adopt its
   ARCHITECTURE, not its code wholesale: `api/` programmatic layer with
