@@ -6,6 +6,10 @@
 // server-side and pick one in the browser, so an SSR-inert Zag machine would
 // mean the wrong manager flashes before hydration. Plain buttons + [hidden]
 // keep the correct choice a one-frame DOM toggle.
+//
+// Commands are shell one-liners, highlighted as bash via SSR-time shiki
+// (src/lib/highlight-code.ts).
+import { highlightCode } from "../../lib/highlight-code.ts";
 
 export interface PackageManagerCommand {
   manager: string;
@@ -54,14 +58,16 @@ export interface Input {
   </div>
 
   <for|entry| of=input.commands by=(entry) => entry.manager>
-    <pre
-      id=`${switcherId}-${entry.manager}`
-      role="tabpanel"
-      data-manager-panel
-      data-manager=entry.manager
-      hidden=entry.manager !== defaultManager
-      class="overflow-x-auto p-4 text-[0.8125rem] leading-6"
-    ><code class="font-mono whitespace-pre">${entry.command}</code></pre>
+    <await|highlighted|=highlightCode(entry.command, "bash")>
+      <pre
+        id=`${switcherId}-${entry.manager}`
+        role="tabpanel"
+        data-manager-panel
+        data-manager=entry.manager
+        hidden=entry.manager !== defaultManager
+        class="overflow-x-auto p-4 text-[0.8125rem] leading-6"
+      ><code class="font-mono whitespace-pre">$!{highlighted}</code></pre>
+    </await>
   </for>
 </div>
 

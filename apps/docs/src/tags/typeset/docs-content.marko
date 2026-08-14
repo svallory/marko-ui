@@ -22,6 +22,7 @@
 import Button from "@marko-ui/registry/ui/button/button.marko";
 import Select from "@marko-ui/registry/ui/select/select.marko";
 import { cn } from "@marko-ui/registry/lib/utils.ts";
+import { highlightCode } from "../../lib/highlight-code.ts";
 import { TEMPLATES } from "./lib/templates.ts";
 import {
   getCommandForPackageManager,
@@ -182,7 +183,9 @@ static const FRAMEWORK_ITEMS = TEMPLATES.map((template) => ({
             Copy typeset.css
           </Button>
           <div class="relative rounded-lg bg-muted/60">
-            <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed">${'@import "tailwindcss";\n@import "./typeset.css";'}</pre>
+            <await|highlighted|=highlightCode('@import "tailwindcss";\n@import "./typeset.css";', "css")>
+              <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed"><code>$!{highlighted}</code></pre>
+            </await>
           </div>
         </section>
         <section class="flex flex-col gap-2.5">
@@ -192,7 +195,9 @@ static const FRAMEWORK_ITEMS = TEMPLATES.map((template) => ({
               Load the fonts with <code class="font-mono">next/font</code> in your root layout:
             </p>
             <div class="relative rounded-lg bg-muted/60">
-              <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed">${docs.nextFontCode}</pre>
+              <await|highlighted|=highlightCode(docs.nextFontCode, "ts")>
+                <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed"><code>$!{highlighted}</code></pre>
+              </await>
             </div>
           </if>
           <else>
@@ -209,24 +214,32 @@ static const FRAMEWORK_ITEMS = TEMPLATES.map((template) => ({
                   </button>
                 </for>
               </div>
-              <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-xs leading-relaxed">${getCommandForPackageManager(packageManager, docs.fontsourceCommand)}</pre>
+              <await|highlighted|=highlightCode(getCommandForPackageManager(packageManager, docs.fontsourceCommand), "bash")>
+                <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-xs leading-relaxed"><code>$!{highlighted}</code></pre>
+              </await>
             </div>
             <p class="text-sm leading-relaxed text-muted-foreground">Then import them in your CSS file:</p>
             <div class="relative rounded-lg bg-muted/60">
-              <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed">${docs.fontsourceCss}</pre>
+              <await|highlighted|=highlightCode(docs.fontsourceCss, "css")>
+                <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed"><code>$!{highlighted}</code></pre>
+              </await>
             </div>
           </else>
         </section>
         <section class="flex flex-col gap-2.5">
           <h3 class="text-sm font-medium">3. Create your custom typeset</h3>
           <div class="relative rounded-lg bg-muted/60">
-            <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed">${docs.preset}</pre>
+            <await|highlighted|=highlightCode(docs.preset, "css")>
+              <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed"><code>$!{highlighted}</code></pre>
+            </await>
           </div>
         </section>
         <section class="flex flex-col gap-2.5">
           <h3 class="text-sm font-medium">4. Wrap your content</h3>
           <div class="relative rounded-lg bg-muted/60">
-            <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed">${docs.usage}</pre>
+            <await|highlighted|=highlightCode(docs.usage, "html")>
+              <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed"><code>$!{highlighted}</code></pre>
+            </await>
           </div>
         </section>
       </div>
@@ -236,6 +249,9 @@ static const FRAMEWORK_ITEMS = TEMPLATES.map((template) => ({
         <p class="text-sm leading-relaxed text-muted-foreground">
           One prompt with your picks baked in. Copy it and paste it into your coding agent.
         </p>
+        // Deliberately NOT run through highlightCode: this is a natural-
+        // language LLM prompt, not code (see docs.prompt in
+        // ./lib/docs-content.ts) — syntax coloring here would be noise.
         <div class="relative rounded-lg bg-muted/60">
           <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed max-h-102 scroll-fade overflow-y-auto whitespace-pre-wrap">${docs.prompt}</pre>
         </div>

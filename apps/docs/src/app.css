@@ -41,6 +41,29 @@
   --code-foreground: var(--surface-foreground);
 }
 
+/* Shiki dual-theme token switching (src/lib/highlight-code.ts). shiki emits
+   one <span style="--shiki-light:#xxx;--shiki-dark:#yyy"> per token and
+   deliberately sets no `color` itself (defaultColor: false) — this is the
+   same mechanism shadcn/ui's globals.css uses: read shiki's own inline CSS
+   custom properties directly, but let OUR dark-mode class decide which one
+   applies, rather than relying on shiki's built-in `--shiki-light`/
+   `--shiki-dark` selector-based scheme (which keys off a `[class*="shiki-"]`
+   root, not our `.dark` toggle on <html>).
+   highlight-code.ts extracts only shiki's <code> innerHTML (each call site
+   keeps its own <pre>/<code> wrapper byte-identical — no shiki <pre>, no
+   shiki background, no class added to our own elements), so the selector
+   below targets shiki's per-token spans directly by the inline custom
+   property they carry rather than a class we'd otherwise have to thread
+   through every call site. Background continues to come from
+   --color-code/--color-code-foreground above, untouched. */
+[style*="--shiki-light"] {
+  color: var(--shiki-light);
+}
+
+.dark [style*="--shiki-dark"] {
+  color: var(--shiki-dark);
+}
+
 /* Docs-site layout utilities, ported verbatim from shadcn's
    components/page-header.tsx / page-nav.tsx / app/globals.css — the
    /blocks page chrome (PageHeader, PageNav, block list container) uses
