@@ -1,0 +1,6 @@
+{
+  "title": "Item",
+  "description": "A flexible component for displaying content in a list, group, or as standalone content.",
+  "dependencies": [],
+  "registryDependencies": ["utils", "separator"]
+}

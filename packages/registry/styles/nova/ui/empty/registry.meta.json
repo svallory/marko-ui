@@ -1,0 +1,6 @@
+{
+  "title": "Empty",
+  "description": "Use to render an empty state.",
+  "dependencies": [],
+  "registryDependencies": ["utils"]
+}

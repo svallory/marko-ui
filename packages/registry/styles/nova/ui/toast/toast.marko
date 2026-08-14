@@ -1,0 +1,80 @@
+// Toaster: the Zag toast *group* region.
+//
+// base-nova parity: same DOM skeleton (group/viewport → per-toast root) as
+// shadcn styles/base-nova/ui/toast.tsx's Toaster/ToastPortal/ToastViewport/
+// ToastList, re-mapped onto this codebase's existing default rhea toast
+// architecture (Zag v1 toast is a group store + per-toast child services,
+// not Base UI's manager+hook pair — see toast-item.marko and store.ts for
+// the full architecture note and the CSS-geometry deviation this produces).
+//
+//   store.ts        module-level createStore() — the trigger API, never
+//                   reactive state, never tag input, so never serialized.
+//   <Toaster>       one group <service>/<connect> whose only machine prop is
+//                   { id, store }. The store reaches it through a template
+//                   closure (`groupProps`), not through tag input.
+//   <toast-item>    one child <service> per visible toast, spawned by <for>.
+//                   Marko gives each <for> iteration its own component
+//                   instance and therefore its own <lifecycle>, which is
+//                   exactly the per-toast machine lifetime Zag wants.
+//
+// SSR renders the region with zero toasts (toasts are user-triggered), so no
+// toast-item and no Zag service ever exists on the server. Hydration resumes an
+// empty region; the group service starts on mount and subscribes to the store.
+//
+// data-slot naming: base-nova's Toaster composes ToastPortal + ToastViewport
+// as separate elements around ToastList. Zag's group machine has no portal/
+// viewport split of its own (one `getGroupProps()` region), so this port uses
+// <portal> (this codebase's portal primitive, matching the select/alert-dialog
+// precedent) for the portal boundary and applies base-nova's ToastViewport
+// class string directly to the group region element — collapsing
+// data-slot="toast-portal" + data-slot="toast-viewport" into one element,
+// data-slot="toast-viewport", since there is no intermediate DOM node to hang
+// a second data-slot off of without introducing a wrapper base-nova doesn't
+// have either. See component report.
+import * as toastMachine from "@zag-js/toast";
+import { toaster } from "./store.ts";
+import { cn } from "#lib/utils.ts";
+import ToastItem from "./toast-item.marko";
+
+export interface Input extends Marko.Input<"div"> {
+  /** Accessible label for the notification region. @default "Notifications" */
+  label?: string;
+  /** Text direction passed to the group machine. */
+  dir?: "ltr" | "rtl";
+}
+
+<const/{ class: className, label, dir, ...rest }=input/>
+
+<id/regionId/>
+<const/groupProps=() => ({ id: regionId, store: toaster, dir })/>
+<service/service machine=() => toastMachine.group.machine props=groupProps/>
+<connect/api=(service, normalizeProps) =>
+  toastMachine.group.connect(service, normalizeProps)
+  service=service
+/>
+
+// The group service must be handed to each child machine as `parent`. It is
+// passed as a GETTER closure created here in the template: the closure is
+// serializable, the running service it returns never is tag input itself.
+<const/getParentService=() => service.service/>
+
+<portal>
+  <div
+    ...rest
+    ...api().getGroupProps({ label })
+    data-slot="toast-viewport"
+    class=cn(
+      "pointer-events-none fixed inset-x-4 bottom-4 z-50 mx-auto w-auto max-w-sm outline-none sm:right-4 sm:left-auto sm:mx-0 sm:w-full",
+      className,
+    )
+  >
+    <for|toastOptions, index| of=api().getToasts() by=(item) => item.id>
+      <ToastItem
+        options=() => toastOptions
+        parent=getParentService
+        index=index
+        groupRevision=service.rev
+      />
+    </for>
+  </div>
+</portal>
