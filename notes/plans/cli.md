@@ -151,8 +151,20 @@ unreachable.
 
 ## Implementation notes
 
-- Home: `packages/cli/` (bin `marko-ui`), TypeScript, commander (matches the
-  shadcn code we're porting; no benefit re-deriving on another framework).
+- Home: `packages/cli/` (bin `marko-ui`), TypeScript, commander (both source
+  CLIs use commander; no benefit re-deriving on another framework).
+- **Astryx is open source (MIT, facebook/astryx — discovered 2026-08-14;
+  shallow clone at space `data/astryx`, CLI at `packages/cli`).** Adopt its
+  ARCHITECTURE, not its code wholesale: `api/` programmatic layer with
+  colocated `.doc.mjs` + `.type.mjs` per command (manifest is GENERATED from
+  these — self-description falls out for free), `clients/cli/` as a thin
+  lazy-loading adapter (per-command dynamic import so one broken command
+  can't take down the CLI), shared error envelope + exit-code tests,
+  `formatters/` for `--dense`/`--detail`, `foundation/agent-docs` for
+  AGENTS.md generation. Port those modules to TS. Their INSTALL model is
+  useless to us — no registry concept at all (npm package + `swizzle` copies
+  source out of node_modules); ours is registry-fetch, which is why the
+  registry guts come from shadcn instead.
 - **Port, don't wrap, the shadcn resolver.** MIT + we already vendor the
   clone; wrap-as-dependency would drag React assumptions (tsx/rsc flags,
   FALLBACK_STYLE, their builtin/index URLs) we'd fight forever. Port
