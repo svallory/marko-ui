@@ -1,16 +1,17 @@
 // Adapted from shadcn/ui `app/(app)/(root)/cards/sidebar-nav.tsx` (MIT).
-// The sidebar registry component's <SidebarProvider> is a full-page shell
-// (min-h-svh) — a card-sized nav uses the menu parts directly instead.
-import Card from "@marko-ui/registry/ui/card/card.marko";
-import SidebarGroupLabel from "@marko-ui/registry/ui/sidebar/group-label.marko";
-import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
-import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
-import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+import Card from "@marko-ui/registry/styles/rhea/ui/card/card.marko";
+import SidebarProvider from "@marko-ui/registry/styles/rhea/ui/sidebar/provider.marko";
+import Sidebar from "@marko-ui/registry/styles/rhea/ui/sidebar/sidebar.marko";
+import SidebarContent from "@marko-ui/registry/styles/rhea/ui/sidebar/content.marko";
+import SidebarGroup from "@marko-ui/registry/styles/rhea/ui/sidebar/group.marko";
+import SidebarGroupLabel from "@marko-ui/registry/styles/rhea/ui/sidebar/group-label.marko";
+import SidebarMenu from "@marko-ui/registry/styles/rhea/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/styles/rhea/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/styles/rhea/ui/sidebar/menu-button.marko";
 
 export interface Input {}
 
-// Icon path data ported from Tabler Icons (MIT) outline set — chart-bar,
-// cash, trending-up, wallet, user, credit-card, bell, lock.
+// Icon path data ported from Tabler Icons (MIT) outline set.
 static const ICON_PATHS = {
   "chart-bar": [
     "M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -6",
@@ -26,6 +27,53 @@ static const ICON_PATHS = {
   wallet: [
     "M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12",
     "M20 12v4h-4a2 2 0 0 1 0 -4h4",
+  ],
+  "pie-chart": [
+    "M10 3.2a9 9 0 1 0 10.8 10.8a1 1 0 0 0 -1 -1h-6.8a2 2 0 0 1 -2 -2v-7a.9 .9 0 0 0 -1 -.8",
+    "M15 3.5a9 9 0 0 1 5.5 5.5h-4.5a1 1 0 0 1 -1 -1v-4.5",
+  ],
+  "file-text": [
+    "M14 3v4a1 1 0 0 0 1 1h4",
+    "M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z",
+    "M9 9l1 0",
+    "M9 13l6 0",
+    "M9 17l6 0",
+  ],
+  target: [
+    "M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0",
+    "M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0",
+    "M12 12m-8 0a8 8 0 1 0 16 0a8 8 0 1 0 -16 0",
+  ],
+  calendar: [
+    "M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z",
+    "M16 3v4",
+    "M8 3v4",
+    "M4 11h16",
+  ],
+  help: [
+    "M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0",
+    "M12 17l0 .01",
+    "M12 13.5a1.5 1.5 0 0 1 1 -1.5a2.6 2.6 0 1 0 -3 -4",
+  ],
+  "book-open": [
+    "M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0",
+    "M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0",
+    "M3 6l0 13",
+    "M12 6l0 13",
+    "M21 6l0 13",
+  ],
+  message: [
+    "M8 9h8",
+    "M8 13h6",
+    "M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z",
+  ],
+  activity: ["M3 12h4l3 8l4 -16l3 8l4 0"],
+  globe: [
+    "M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0",
+    "M3.6 9h16.8",
+    "M3.6 15h16.8",
+    "M11.5 3a17 17 0 0 0 0 18",
+    "M12.5 3a17 17 0 0 1 0 18",
   ],
   user: [
     "M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0",
@@ -45,57 +93,97 @@ static const ICON_PATHS = {
     "M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0",
     "M8 11v-4a4 4 0 1 1 8 0v4",
   ],
+  palette: [
+    "M12 21a9 9 0 0 1 0 -18c4.97 0 9 3.582 9 8c0 1.06 -.474 2.078 -1.318 2.828c-.844 .75 -1.989 1.172 -3.182 1.172h-2.5a2 2 0 0 0 -1 3.75a1.3 1.3 0 0 1 -1 2.25",
+    "M8.5 10.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0",
+    "M12.5 7.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0",
+    "M16.5 10.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0",
+  ],
 };
 
 static const SECTIONS = [
   {
     label: "Overview",
+    gridClass: "xl:col-start-1 xl:row-start-2",
     items: [
       { label: "Analytics", icon: "chart-bar", active: true },
       { label: "Transactions", icon: "cash", active: false },
       { label: "Investments", icon: "trending-up", active: false },
       { label: "Accounts", icon: "wallet", active: false },
+      { label: "Spending", icon: "pie-chart", active: false },
+    ],
+  },
+  {
+    label: "Planning",
+    gridClass: "xl:col-start-1 xl:row-start-1",
+    items: [
+      { label: "Documents", icon: "file-text", active: false },
+      { label: "Budget", icon: "wallet", active: false },
+      { label: "Reports", icon: "chart-bar", active: false },
+      { label: "Goals", icon: "target", active: false },
+      { label: "Calendar", icon: "calendar", active: false },
+    ],
+  },
+  {
+    label: "Support",
+    gridClass: "flex xl:col-start-2 xl:row-start-1",
+    items: [
+      { label: "Help Center", icon: "help", active: false },
+      { label: "Docs", icon: "book-open", active: false },
+      { label: "Contact Us", icon: "message", active: false },
+      { label: "Status", icon: "activity", active: false },
+      { label: "Community", icon: "globe", active: false },
     ],
   },
   {
     label: "Account",
+    gridClass: "flex xl:col-start-2 xl:row-start-2",
     items: [
       { label: "Profile", icon: "user", active: false },
       { label: "Billing", icon: "credit-card", active: true },
       { label: "Notifications", icon: "bell", active: false },
       { label: "Security", icon: "lock", active: false },
+      { label: "Appearance", icon: "palette", active: false },
     ],
   },
 ];
 
-<div class="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2">
+<div class="grid w-full min-w-0 grid-cols-2 gap-4 xl:gap-6">
   <for|section| of=SECTIONS by=(section) => section.label>
-    <Card class="w-full min-w-0 overflow-hidden bg-sidebar py-3">
-      <div class="flex flex-col gap-1 px-2">
-        <SidebarGroupLabel>${section.label}</SidebarGroupLabel>
-        <SidebarMenu class="gap-1">
-          <for|entry| of=section.items by=(entry) => entry.label>
-            <SidebarMenuItem>
-              <SidebarMenuButton active=entry.active>
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  aria-hidden="true"
-                >
-                  <for|d| of=ICON_PATHS[entry.icon]>
-                    <path d=d/>
+    <Card class=`w-full min-w-0 overflow-hidden rounded-3xl py-0 ${section.gridClass}`>
+      <SidebarProvider class="min-h-0">
+        <@content>
+          <Sidebar collapsible="none" class="w-full bg-transparent">
+            <SidebarContent class="gap-0 overflow-hidden">
+              <SidebarGroup>
+                <SidebarGroupLabel>${section.label}</SidebarGroupLabel>
+                <SidebarMenu class="gap-1">
+                  <for|entry| of=section.items by=(entry) => entry.label>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton active=entry.active>
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <for|d| of=ICON_PATHS[entry.icon]>
+                            <path d=d/>
+                          </for>
+                        </svg>
+                        ${entry.label}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
                   </for>
-                </svg>
-                ${entry.label}
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </for>
-        </SidebarMenu>
-      </div>
+                </SidebarMenu>
+              </SidebarGroup>
+            </SidebarContent>
+          </Sidebar>
+        </@content>
+      </SidebarProvider>
     </Card>
   </for>
 </div>

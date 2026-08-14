@@ -1,0 +1,68 @@
+// base-rhea parity: DOM/data-slot/class strings match
+// shadcn styles/base-rhea/ui/slider.tsx. base-rhea (Base UI) computes
+// thumb count from `_values.length` and renders a Control wrapper around
+// Track/Thumbs; zag's slider machine already exposes `api().value` as the
+// array to iterate for thumbs, so we keep that and mirror the same
+// root/control/track/range/thumb DOM + data-slot layout and class strings.
+import * as sliderMachine from "@zag-js/slider";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+export type Input = MachineInput<"div", sliderMachine.Props> & {
+  valueChange?: (value: number[]) => void;
+};
+
+<machine-props/machineProps from=input pick=sliderMachine.props
+  onValueChange(details: sliderMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }/>
+<service/service machine=() => sliderMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  sliderMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    valueChange: ownChangeHandler,
+    ...native
+  } = sliderMachine.splitProps(input)[1];
+  return native;
+}>
+
+<div
+  ...nativeAttrs()
+  ...api().getRootProps()
+  data-slot="slider"
+  class=cn("data-horizontal:w-full data-vertical:h-full", input.class)
+>
+  <div
+    ...api().getControlProps()
+    data-slot="slider-control"
+    class="relative flex w-full touch-none items-center select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col"
+  >
+    <div
+      ...api().getTrackProps()
+      data-slot="slider-track"
+      class="relative grow overflow-hidden rounded-2xl bg-input/90 select-none data-horizontal:h-1 data-horizontal:w-full data-vertical:h-full data-vertical:w-1"
+    >
+      <div
+        ...api().getRangeProps()
+        data-slot="slider-range"
+        class="bg-primary select-none data-horizontal:h-full data-vertical:w-full"
+      ></div>
+    </div>
+    <for|_, i| of=api().value>
+      <input ...api().getHiddenInputProps({ index: i })>
+      <div
+        ...api().getThumbProps({ index: i })
+        data-slot="slider-thumb"
+        class="block size-4 shrink-0 rounded-2xl bg-white shadow-md ring-1 ring-black/10 transition-[color,box-shadow] duration-200 select-none not-dark:bg-clip-padding hover:ring-4 hover:ring-ring/30 focus-visible:ring-4 focus-visible:ring-ring/30 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
+      ></div>
+    </for>
+  </div>
+</div>
+
+<return=api>

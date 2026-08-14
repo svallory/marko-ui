@@ -27,10 +27,14 @@ import RailCard from "./rail-card.marko";
 // min-w-0 on every column: grid tracks default to min-width:auto, which lets
 // wide children (the install command <pre>, the QR svg) push the track past
 // the viewport instead of scrolling inside their own box.
+<!-- Wrapper classes verbatim from shadcn CardsDemo (cards/index.tsx),
+     including theme-neutral: legacy-themes.css remaps --chart-* (and friends)
+     to neutral grays inside it — this is why shadcn's homepage charts render
+     gray even though :root's chart palette is blue. -->
 <section
   id="components"
-  data-slot="home-showcase"
-  class="bg-muted dark:bg-background relative w-full overflow-hidden px-4 py-8 sm:px-6 lg:px-10"
+  data-slot="demo"
+  class="theme-neutral relative flex w-full max-w-none flex-col gap-(--gap) overflow-hidden bg-muted p-12 pb-0! [--gap:--spacing(8)] 3xl:[--gap:--spacing(8)] min-[1900px]:p-12 min-[1900px]:[--gap:--spacing(10)]! lg:p-6 lg:[--gap:--spacing(6)] dark:bg-background"
 >
   <!-- Decorative skeleton rails: shadcn shows these past min-[2200px] only,
        muted and non-interactive, to suggest a much larger component grid
@@ -51,28 +55,33 @@ import RailCard from "./rail-card.marko";
     </div>
   </div>
 
-  <div class="relative z-10 mx-auto grid max-w-[1900px] min-w-0 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-    <div class="flex min-w-0 flex-col gap-6">
+  <!-- Grid + column classes verbatim from shadcn CardsDemo. Column contents
+       match shadcn's card-for-card, except: shadcn's MessageScrollerDemo slot
+       (chat primitives not ported yet — see TODO.md) carries our CardInstall,
+       and CardComponentStats rides at the end of column 5 (deliberate
+       marko-ui addition). -->
+  <div class="relative z-10 mx-auto grid gap-(--gap) **:data-[slot=card]:w-full min-[1400px]:grid-cols-4! min-[1900px]:grid-cols-5! md:max-w-3xl md:grid-cols-2 lg:max-w-none lg:grid-cols-3 xl:max-w-[1600px] 2xl:max-w-[1900px]">
+    <div class="flex flex-col items-start gap-(--gap)">
       <CardUiElements/>
       <CardSidebarNav/>
       <CardSavingsTargets/>
     </div>
-    <div class="flex min-w-0 flex-col gap-6">
+    <div class="hidden flex-col gap-(--gap) lg:flex">
       <CardContributionHistory/>
       <CardClaimableBalance/>
       <CardDividendIncome/>
     </div>
-    <div class="flex min-w-0 flex-col gap-6">
+    <div class="hidden flex-col gap-(--gap) min-[1400px]:flex">
       <CardNewMilestone/>
       <CardPayoutThreshold/>
       <CardAccountAccess/>
     </div>
-    <div class="flex min-w-0 flex-col gap-6">
+    <div class="hidden flex-col gap-(--gap) md:flex">
       <CardQrConnect/>
-      <CardPayments/>
       <CardInstall/>
+      <CardPayments/>
     </div>
-    <div class="flex min-w-0 flex-col gap-6">
+    <div class="hidden flex-col gap-(--gap) min-[1900px]:flex">
       <CardEmptyDistribute/>
       <CardAnalytics/>
       <CardNotifications/>
@@ -85,9 +94,9 @@ import RailCard from "./rail-card.marko";
        background into the muted showcase tone. Light-mode only, like
        shadcn's own (their dark variant relies on bg-background already
        matching the wash, so it is simply hidden). -->
-  <div class="pointer-events-none absolute inset-x-0 top-0 z-[1] h-32 bg-linear-to-b from-background via-muted to-transparent dark:hidden"/>
+  <div class="absolute inset-x-0 top-0 z-1 h-120 bg-linear-to-b from-background via-muted to-transparent dark:hidden"/>
 
   <!-- Bottom fade: the grid dissolves into transparent at the section's
        lower edge instead of ending on a hard line. -->
-  <div class="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-32 bg-linear-to-t from-muted via-muted/80 to-transparent lg:h-48 dark:from-background dark:via-background/80"/>
+  <div class="absolute inset-x-0 bottom-0 z-20 h-48 bg-linear-to-t from-background via-muted/80 to-transparent lg:h-80 xl:h-64 dark:via-background/80"/>
 </section>

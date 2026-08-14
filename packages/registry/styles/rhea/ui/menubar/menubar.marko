@@ -1,0 +1,25 @@
+// base-rhea parity: DOM/data-slot/class string matches shadcn
+// styles/base-rhea/ui/menubar.tsx's Menubar root (built on Base UI's
+// MenubarPrimitive). This repo's menubar is a 2-file component (this file =
+// the outer bar wrapper; menu.marko = the per-menu dropdown, mapped from
+// MenubarMenu/MenubarTrigger/MenubarContent/MenubarItem/etc in the tsx) so
+// only the root-level class string transfers here — see menu.marko for the
+// per-menu class mapping.
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  content?: Marko.Body;
+}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<div
+  ...rest
+  data-slot="menubar"
+  class=cn(
+    "flex h-8 items-center rounded-2xl border p-[3px]",
+    className,
+  )
+>
+  <${content}/>
+</div>
