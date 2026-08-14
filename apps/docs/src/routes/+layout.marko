@@ -23,7 +23,10 @@ import { resolveMeta, SITE_NAME, DEFAULT_OG_IMAGE } from "../lib/site-meta.ts";
 <const/meta=resolveMeta($global.url.pathname)/>
 
 <!doctype html>
-<html lang="en">
+<html
+  lang="en"
+  class="[--header-height:calc(var(--spacing)*14)] lg:[--header-height:calc(var(--spacing)*16)]"
+>
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -65,8 +68,8 @@ import { resolveMeta, SITE_NAME, DEFAULT_OG_IMAGE } from "../lib/site-meta.ts";
       })();
     </html-script>
   </head>
-  <body class="group/body min-h-screen bg-background text-foreground antialiased">
-    <div data-slot="layout" class="group/layout relative z-10 flex min-h-svh flex-col bg-background">
+  <body class="group/body theme-default overscroll-none antialiased [--footer-height:calc(var(--spacing)*14)] xl:[--footer-height:calc(var(--spacing)*24)]">
+    <div data-slot="layout" class="group/layout relative z-10 flex min-h-svh flex-col bg-background has-data-[slot=designer]:h-svh has-data-[slot=designer]:overflow-hidden">
       <if=!isBlockPreview>
         <site-header/>
       </if>

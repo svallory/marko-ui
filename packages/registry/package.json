@@ -5,6 +5,7 @@
   "type": "module",
   "description": "marko-ui component source registry (shadcn registry format)",
   "exports": {
+    "./styles/*": "./styles/*",
     "./*": "./default/*"
   },
   "imports": {
