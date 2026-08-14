@@ -13,9 +13,12 @@
 // (signature-pad), session-countdown (timer), date-of-birth (date-input),
 // product-review (rating-group), topic-tags (tags-input), order-quantity
 // (number-input), api-key (clipboard), account-password (password-input),
-// project-files (tree-view).
+// project-files (tree-view), bar-visualizer (hand-rolled div-bars + rAF —
+// direct port of shadcn's dead-upstream preview/cards/bar-visualizer.tsx,
+// which shadcn ships but never mounts; mounted here per TODO.md decision).
 import AccountPassword from "./cards/account-password.marko";
 import ApiKey from "./cards/api-key.marko";
+import BarVisualizer from "./cards/bar-visualizer.marko";
 import BrandMarquee from "./cards/brand-marquee.marko";
 import ContractSignature from "./cards/contract-signature.marko";
 import DateOfBirth from "./cards/date-of-birth.marko";
@@ -42,6 +45,7 @@ import TopicTags from "./cards/topic-tags.marko";
         <NotificationSound/>
         <SessionCountdown/>
         <TopicTags/>
+        <BarVisualizer/>
       </div>
       <div class="flex flex-col p-px [contain-intrinsic-size:380px_1200px] [content-visibility:auto]">
         <DateOfBirth/>

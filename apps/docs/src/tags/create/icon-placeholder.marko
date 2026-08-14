@@ -32,6 +32,6 @@ export interface Input extends Partial<Record<IconLibraryName, string>> {
 <const/iconLibrary=($global.url.searchParams.get("iconLibrary") ?? "lucide") as IconLibraryName/>
 <const/name=input[iconLibrary]/>
 
-<if(name)>
+<if=name>
   <Icon name=name library=iconLibrary class=input.class/>
 </if>

@@ -1,0 +1,213 @@
+// Ported from shadcn registry/bases/base/blocks/preview/cards/bar-visualizer.tsx
+// (dead upstream — shipped by shadcn but never mounted in preview/index.tsx;
+// mounted here on OUR preview-page-3 instead, per TODO.md decision).
+//
+// The React source is a parameterized <BarVisualizer> (real-mic multiband
+// analysis via useMultibandVolume, or a `demo` mode using a fake sine-wave
+// signal) plus a `useBarAnimator` rAF loop that highlights a moving subset
+// of bars per `state` (connecting/listening/speaking/thinking/idle). The
+// card only ever mounts it with demo=true, so this port keeps demo mode's
+// sine+noise signal generator and the bar-highlight animator; it drops the
+// real-microphone multiband path (mediaStream is never passed by the card
+// that mounts this component, so it is dead code here — same "port what's
+// actually used" rule applied to live-waveform's onError prop).
+//
+// Two independent rAF loops, matching the source: one drives the fake
+// volume-band signal (updateFakeVolume, ~50ms cadence), one drives which
+// bar indices are "highlighted" per state (useBarAnimator, cadence varies
+// by state). Marko has no memo/effect-dependency system, so both loops are
+// plain functions over a shared mutable state object, restarted from a
+// <script> block that mirrors the source's effect dependency arrays.
+import Button from "@marko-ui/registry/ui/button/button.marko";
+import Card from "@marko-ui/registry/ui/card/card.marko";
+import CardContent from "@marko-ui/registry/ui/card/content.marko";
+import CardDescription from "@marko-ui/registry/ui/card/description.marko";
+import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
+import CardHeader from "@marko-ui/registry/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/ui/card/title.marko";
+
+static type AgentState = "connecting" | "initializing" | "listening" | "speaking" | "thinking";
+
+static const BAR_COUNT = 20;
+static const MIN_HEIGHT = 15;
+static const MAX_HEIGHT = 90;
+
+static function generateConnectingSequenceBar(columns: number): number[][] {
+  const seq: number[][] = [];
+  for (let x = 0; x < columns; x++) {
+    seq.push([x, columns - 1 - x]);
+  }
+  return seq;
+}
+
+static function generateListeningSequenceBar(columns: number): number[][] {
+  const center = Math.floor(columns / 2);
+  const noIndex = -1;
+  return [[center], [noIndex]];
+}
+
+static function sequenceForState(state: AgentState, columns: number): number[][] {
+  if (state === "thinking" || state === "listening") {
+    return generateListeningSequenceBar(columns);
+  } else if (state === "connecting" || state === "initializing") {
+    return generateConnectingSequenceBar(columns);
+  } else if (state === "speaking") {
+    return [new Array(columns).fill(0).map((_, idx) => idx)];
+  } else {
+    return [[]];
+  }
+}
+
+static function intervalForState(state: AgentState, columns: number): number {
+  if (state === "connecting") return 2000 / columns;
+  if (state === "thinking") return 150;
+  if (state === "listening") return 500;
+  return 1000;
+}
+
+static function createVisualizerState() {
+  return {
+    volumeBands: new Array(BAR_COUNT).fill(0.2) as number[],
+    fakeAnimationId: 0,
+    fakeLastUpdate: 0,
+    fakeStartTime: 0,
+    highlighted: [] as number[],
+    barAnimationId: 0,
+    barIndex: 0,
+    barSequence: [[]] as number[][],
+    barStartTime: 0,
+    barInterval: 1000,
+    state: "speaking" as AgentState,
+  };
+}
+
+static type VisualizerState = ReturnType<typeof createVisualizerState>;
+
+static function startFakeVolumeLoop(state: VisualizerState) {
+  state.fakeLastUpdate = 0;
+  state.fakeStartTime = Date.now() / 1000;
+  const updateInterval = 50;
+
+  const updateFakeVolume = (timestamp: number) => {
+    if (timestamp - state.fakeLastUpdate >= updateInterval) {
+      if (state.state !== "speaking" && state.state !== "listening") {
+        state.volumeBands = new Array(BAR_COUNT).fill(0.2);
+      } else {
+        const time = Date.now() / 1000 - state.fakeStartTime;
+        const newBands = new Array(BAR_COUNT);
+        for (let i = 0; i < BAR_COUNT; i++) {
+          const waveOffset = i * 0.5;
+          const baseVolume = Math.sin(time * 2 + waveOffset) * 0.3 + 0.5;
+          const randomNoise = Math.random() * 0.2;
+          newBands[i] = Math.max(0.1, Math.min(1, baseVolume + randomNoise));
+        }
+        state.volumeBands = newBands;
+      }
+      state.fakeLastUpdate = timestamp;
+    }
+    state.fakeAnimationId = requestAnimationFrame(updateFakeVolume);
+  };
+
+  state.fakeAnimationId = requestAnimationFrame(updateFakeVolume);
+}
+
+static function restartBarAnimator(state: VisualizerState) {
+  state.barSequence = sequenceForState(state.state, BAR_COUNT);
+  state.barInterval = intervalForState(state.state, BAR_COUNT);
+  state.barIndex = 0;
+  state.highlighted = state.barSequence[0] || [];
+  state.barStartTime = performance.now();
+}
+
+static function startBarAnimatorLoop(state: VisualizerState) {
+  const animate = (time: number) => {
+    const timeElapsed = time - state.barStartTime;
+    if (timeElapsed >= state.barInterval) {
+      state.barIndex = (state.barIndex + 1) % state.barSequence.length;
+      state.highlighted = state.barSequence[state.barIndex] || [];
+      state.barStartTime = time;
+    }
+    state.barAnimationId = requestAnimationFrame(animate);
+  };
+  state.barAnimationId = requestAnimationFrame(animate);
+}
+
+<let/state="speaking" as AgentState/>
+<const/vstate=createVisualizerState()/>
+
+<lifecycle
+  onMount() {
+    const st = vstate;
+    st.state = state as AgentState;
+    restartBarAnimator(st);
+    startFakeVolumeLoop(st);
+    startBarAnimatorLoop(st);
+  }
+  onDestroy() {
+    if (vstate.fakeAnimationId) {
+      cancelAnimationFrame(vstate.fakeAnimationId);
+    }
+    if (vstate.barAnimationId) {
+      cancelAnimationFrame(vstate.barAnimationId);
+    }
+  }
+/>
+
+// Mirrors the source's [state, barCount] effect dependency on useBarAnimator:
+// restart the sequence/interval whenever `state` changes.
+<script>
+  const st = vstate;
+  st.state = state as AgentState;
+  restartBarAnimator(st);
+</script>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Audio Frequency Visualizer</CardTitle>
+    <CardDescription>
+      Real-time frequency band visualization with animated state transitions
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    <div
+      data-state=state
+      class="relative flex items-end justify-center gap-1.5 h-32 w-full overflow-hidden rounded-lg bg-muted p-4 h-40 max-w-full"
+    >
+      <for|volume, index| of=vstate.volumeBands>
+        <const/heightPct=Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, volume * 100 + 5))/>
+        <const/isHighlighted=vstate.highlighted.includes(index)/>
+        <div
+          data-highlighted=String(isHighlighted)
+          class=`max-w-[12px] min-w-[8px] flex-1 transition-all duration-150 rounded-full bg-border data-[highlighted=true]:bg-chart-3${state === "speaking" ? " bg-chart-3" : ""}${state === "thinking" && isHighlighted ? " animate-pulse" : ""}`
+          style={
+            height: `${heightPct}%`,
+            animationDuration: state === "thinking" ? "300ms" : undefined,
+          }
+        ></div>
+      </for>
+    </div>
+  </CardContent>
+  <CardFooter class="gap-2">
+    <Button
+      size="sm"
+      variant=(state === "connecting" ? "default" : "outline")
+      onClick() { state = "connecting"; }
+    >
+      Connecting
+    </Button>
+    <Button
+      size="sm"
+      variant=(state === "listening" ? "default" : "outline")
+      onClick() { state = "listening"; }
+    >
+      Listening
+    </Button>
+    <Button
+      size="sm"
+      variant=(state === "speaking" ? "default" : "outline")
+      onClick() { state = "speaking"; }
+    >
+      Speaking
+    </Button>
+  </CardFooter>
+</Card>

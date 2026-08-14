@@ -31,6 +31,14 @@ import {
   buildRegistryTheme,
   POINTER_CURSOR_SELECTOR,
   type DesignSystemConfig,
+  BASES,
+  STYLES,
+  THEMES,
+  BASE_COLORS,
+  iconLibraries,
+  MENU_ACCENTS,
+  MENU_COLORS,
+  RADII,
 } from "../../../tags/create/lib/registry-config.ts";
 import { FONTS } from "../../../tags/create/lib/fonts.ts";
 import type { DesignSystemSearchParams } from "../../../tags/create/lib/search-params.ts";
@@ -55,6 +63,95 @@ import PreviewPage3 from "../../../tags/create/preview-blocks/preview-page-3/ind
 
 static const THEME_STYLE_ELEMENT_ID = "design-system-theme-vars";
 static const MANAGED_BODY_CLASS_PREFIXES = ["style-", "base-color-"] as const;
+
+// Build allowed value sets from registry config for validation
+static const ALLOWED_BASES = new Set(BASES.map((b) => b.name));
+static const ALLOWED_STYLES = new Set(STYLES.map((s) => s.name));
+static const ALLOWED_THEMES = new Set(THEMES.map((t) => t.name));
+static const ALLOWED_BASE_COLORS = new Set(BASE_COLORS.map((b) => b.name));
+static const ALLOWED_ICON_LIBRARIES = new Set(Object.keys(iconLibraries));
+static const ALLOWED_MENU_ACCENTS = new Set(MENU_ACCENTS.map((a) => a.value));
+static const ALLOWED_MENU_COLORS = new Set(MENU_COLORS.map((m) => m.value));
+static const ALLOWED_RADII = new Set(RADII.map((r) => r.name));
+static const ALLOWED_FONTS = new Set(FONTS.map((f) => f.value));
+static const ALLOWED_FONT_HEADINGS = new Set(["inherit", ...FONTS.map((f) => f.value)]);
+
+static function validateDesignSystemParams(
+  payload: unknown
+): boolean {
+  // Check payload type and basic shape
+  if (!payload || typeof payload !== "object") {
+    console.warn("[create/preview] incoming postMessage payload is not an object", payload);
+    return false;
+  }
+
+  const data = payload as Record<string, unknown>;
+
+  // Check message type
+  if (data.type !== "design-system-params") {
+    console.warn("[create/preview] incoming message type is not 'design-system-params'", data.type);
+    return false;
+  }
+
+  // Check params shape
+  if (!data.data || typeof data.data !== "object") {
+    console.warn("[create/preview] incoming message.data is not an object", data.data);
+    return false;
+  }
+
+  const params = data.data as Record<string, unknown>;
+
+  // Validate known fields against their allowed values (where available)
+  const fieldValidations: Array<[string, Set<string> | null]> = [
+    ["base", ALLOWED_BASES],
+    ["style", ALLOWED_STYLES],
+    ["theme", ALLOWED_THEMES],
+    ["baseColor", ALLOWED_BASE_COLORS],
+    ["chartColor", ALLOWED_THEMES], // chartColor uses theme names
+    ["iconLibrary", ALLOWED_ICON_LIBRARIES],
+    ["menuAccent", ALLOWED_MENU_ACCENTS],
+    ["menuColor", ALLOWED_MENU_COLORS],
+    ["radius", ALLOWED_RADII],
+    ["font", ALLOWED_FONTS],
+    ["fontHeading", ALLOWED_FONT_HEADINGS],
+  ];
+
+  for (const [field, allowedSet] of fieldValidations) {
+    if (field in params && params[field] !== undefined && params[field] !== null) {
+      const value = params[field];
+      if (typeof value !== "string" || (allowedSet && !allowedSet.has(value))) {
+        console.warn(
+          `[create/preview] invalid value for field '${field}'`,
+          value,
+          `expected one of: ${Array.from(allowedSet || new Set()).join(", ")}`
+        );
+        return false;
+      }
+    }
+  }
+
+  // Validate boolean fields
+  for (const field of ["__isDark", "rtl", "pointer"]) {
+    if (field in params && params[field] !== undefined && params[field] !== null) {
+      if (typeof params[field] !== "boolean") {
+        console.warn(`[create/preview] invalid value for boolean field '${field}'`, params[field]);
+        return false;
+      }
+    }
+  }
+
+  // Validate numeric fields
+  for (const field of ["size"]) {
+    if (field in params && params[field] !== undefined && params[field] !== null) {
+      if (typeof params[field] !== "number") {
+        console.warn(`[create/preview] invalid value for numeric field '${field}'`, params[field]);
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
 
 static function removeManagedBodyClasses(body: Element) {
   for (const className of Array.from(body.classList)) {
@@ -210,16 +307,33 @@ static async function applyIconLibrary(iconLibrary: IconLibraryName) {
   );
 }
 
-// No `Input.item`: marko-run route files don't map query-string params onto
-// a page's `input`. Read the query string from `$global.url`, matching how
-// `+handler.ts` files in this app already do it. Default mirrors shadcn's
-// parseAsString.withDefault("preview-02") — our position-named equivalent
-// is preview-page-1; unknown values fall back to it exactly like an
-// unmatched dynamic route would 404 to the default there.
+// No `Input.item`/`Input.base`: marko-run route files don't map query-string
+// params onto a page's `input`. Read the query string from `$global.url`,
+// matching how `+handler.ts` files in this app already do it. Default
+// mirrors shadcn's parseAsString.withDefault("preview-02") — our
+// position-named equivalent is preview-page-1; unknown values fall back to
+// it exactly like an unmatched dynamic route would 404 to the default there.
 <const/rawItem=$global.url.searchParams.get("item")/>
 <const/item=(
   rawItem === "preview-page-2" || rawItem === "preview-page-3" ? rawItem : "preview-page-1"
 )/>
+
+// `base` (registry base name — "radix", "base", "aria", see
+// ../../../tags/create/lib/registry-config.ts's BASES) is read the same way
+// and threaded onto <body data-base> below. Unlike every other design-system
+// param, base is NOT part of the postMessage-synced theme — switching base
+// changes the iframe `src` itself (../../../tags/create/preview.marko keys
+// the src by base + item, mirroring shadcn's `key={params.base + params.item}`
+// on its <iframe>), so a base change is a genuine full iframe reload here,
+// not a live re-theme. This registry has ONE unified zag.js implementation
+// backing every base — bases only differ in shadcn's *upstream* React
+// primitive library (Radix UI / Base UI / React Aria), which has no
+// equivalent axis in our zag-based components — so the reloaded document is
+// byte-identical markup regardless of which base is selected. The reload
+// (and matching loading-skeleton flash) is preserved anyway for interaction
+// parity with the source, not because the markup actually differs.
+<const/rawBase=$global.url.searchParams.get("base")/>
+<const/base=(rawBase ?? DEFAULT_CONFIG.base)/>
 
 // No own <!doctype html>/<html>/<head>/<body>: this route renders inside
 // ../../../routes/+layout.marko like every other page (that layout supplies
@@ -243,14 +357,22 @@ static async function applyIconLibrary(iconLibrary: IconLibraryName) {
   if (!mounted && typeof window !== "undefined") {
     mounted = true;
 
+    // Record which base this document was loaded for — see the `base`
+    // const's header comment above: this is diagnostic only (no selector in
+    // this app's CSS reads `[data-base]`), documenting that the reload was
+    // real and its markup is base-invariant by design, not covering for a
+    // per-base markup difference that doesn't exist.
+    document.body.setAttribute("data-base", base);
+
     // Warm every icon library's module cache in the background (mirrors
     // shadcn's icon-placeholder.tsx: `void import(...)` for all 5 libraries
     // unconditionally on mount) so the first picker switch is instant.
     preloadAllIconLibraries();
 
     window.addEventListener("message", (event: MessageEvent) => {
-      if (!event.data || typeof event.data !== "object") return;
-      if (event.data.type !== "design-system-params") return;
+      // Validate incoming message payload shape and field values
+      if (!validateDesignSystemParams(event.data)) return;
+
       const data = event.data.data as DesignSystemSearchParams & { __isDark?: boolean };
       document.documentElement.classList.toggle("dark", Boolean(data.__isDark));
       applyParams(data);

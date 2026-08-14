@@ -36,13 +36,22 @@ export interface Input {
 
 <const/mergedParams={ ...input.params, ...(input.previewOverride ?? {}) } as DesignSystemSearchParams/>
 
-// The iframe src carries the initial item only (item is a bare registry
-// item name — "preview-page-1", "preview-page-2", or "preview-page-3", see
-// ../../routes/create/preview/+page.marko) — re-keying the
-// src on every param change would reload the iframe and flash/lose state,
-// exactly the tradeoff the source's comment documents. Style/color/font
-// updates flow only through postMessage below.
-<const/iframeSrc=`/create/preview${serializeDesignSystemSearchParams({ item: input.params.item })}`/>
+// The iframe src carries the initial base + item only (base is a bare
+// registry base name — "radix", "base", "aria", see
+// ./lib/registry-config.ts's BASES; item is "preview-page-1",
+// "preview-page-2", or "preview-page-3", see
+// ../../routes/create/preview/+page.marko) — re-keying the src on every
+// OTHER param change would reload the iframe and flash/lose state, exactly
+// the tradeoff the source's comment documents. Style/color/font updates
+// flow only through postMessage below. base + item are the two exceptions:
+// shadcn's <iframe key={params.base + params.item}> forces a full remount
+// on either changing (preview.tsx) since both select which registry item
+// renders, not just how it's themed — mirrored here by including both in
+// the src so a change to either produces a new URL and the browser reloads
+// the iframe document itself (Marko has no separate remount-by-key
+// primitive for a native tag; changing `src` triggers the same navigation
+// as changing the `key` triggers a remount in React).
+<const/iframeSrc=`/create/preview${serializeDesignSystemSearchParams({ base: input.params.base, item: input.params.item })}`/>
 
 <let/ready=false/>
 <let/lastSentKey=null as string | null/>

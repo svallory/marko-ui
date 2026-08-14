@@ -88,7 +88,7 @@ export interface Input {
 <const/setPreview=input.setPreview/>
 
 <div class="dark relative isolate z-10 flex max-h-full min-h-0 w-full flex-col self-start rounded-2xl bg-card/90 backdrop-blur-xl md:w-(--customizer-width,12rem)" data-slot="customizer">
-  <div class="hidden items-center justify-between gap-2 border-b p-3 md:flex">
+  <div class="hidden items-center justify-between gap-2 border-b p-3 md:flex" data-slot="card-header">
     <MainMenu
       canGoBack=input.canGoBack
       canGoForward=input.canGoForward
@@ -100,8 +100,8 @@ export interface Input {
       onShowResetDialog=input.onShowResetDialog
     />
   </div>
-  <div class="no-scrollbar min-h-0 flex-1 overflow-x-auto overflow-y-hidden p-3 md:overflow-y-auto">
-    <div class="flex flex-row gap-2.5 py-px md:flex-col md:gap-3.25">
+  <div class="no-scrollbar min-h-0 flex-1 overflow-x-auto overflow-y-hidden p-3 md:overflow-y-auto" data-slot="card-content">
+    <div class="flex flex-row gap-2.5 py-px **:data-[slot=field-separator]:-mx-4 **:data-[slot=field-separator]:w-auto md:flex-col md:gap-3.25" data-slot="field-group">
       <StylePicker
         value=config.style
         onValueChange=(value) => input.setParams({ style: value as StyleName })
@@ -110,7 +110,7 @@ export interface Input {
         onToggleLock=() => input.toggleLock("style")
         isMobile=input.isMobile
       />
-      <div class="hidden h-px bg-border md:block"/>
+      <div class="hidden h-px bg-border md:block" data-slot="field-separator"/>
       <BaseColorPicker
         value=config.baseColor
         onValueChange=(value) => input.setParams({ baseColor: value as BaseColorName })
@@ -137,7 +137,7 @@ export interface Input {
         onToggleLock=() => input.toggleLock("chartColor")
         isMobile=input.isMobile
       />
-      <div class="hidden h-px bg-border md:block"/>
+      <div class="hidden h-px bg-border md:block" data-slot="field-separator"/>
       <FontPicker
         label="Heading"
         param="fontHeading"
@@ -162,7 +162,7 @@ export interface Input {
         onToggleLock=() => input.toggleLock("font")
         isMobile=input.isMobile
       />
-      <div class="hidden h-px bg-border md:block"/>
+      <div class="hidden h-px bg-border md:block" data-slot="field-separator"/>
       <IconLibraryPicker
         value=config.iconLibrary
         onValueChange=(value) => input.setParams({ iconLibrary: value as IconLibraryName })
@@ -180,7 +180,7 @@ export interface Input {
         onToggleLock=() => input.toggleLock("radius")
         isMobile=input.isMobile
       />
-      <div class="hidden h-px bg-border md:block"/>
+      <div class="hidden h-px bg-border md:block" data-slot="field-separator"/>
       <MenuPicker
         menuColor=config.menuColor
         menuAccent=config.menuAccent
@@ -209,7 +209,7 @@ export interface Input {
       </if>
     </div>
   </div>
-  <div class="flex min-w-0 gap-2 border-t p-3 md:flex-col md:**:[button,a]:w-full">
+  <div class="flex min-w-0 gap-2 border-t p-3 md:flex-col md:rounded-b-none md:**:[button,a]:w-full" data-slot="card-footer">
     <CopyPreset presetCode=input.presetCode class="min-w-0 flex-1 md:flex-none"/>
     <Button
       variant="outline"
@@ -242,7 +242,7 @@ export interface Input {
     // design-system.marko; reset is reachable via main-menu or Shift+R,
     // matching source.
   </div>
-  <div class="hidden -mt-3 min-w-0 gap-2 p-3 md:flex md:flex-col md:**:[button,a]:w-full">
+  <div class="hidden -mt-3 min-w-0 gap-2 p-3 md:flex md:flex-col md:**:[button,a]:w-full" data-slot="card-footer">
     // TODO: ProjectForm ("Get Code") — dialog that generates a downloadable
     // project/registry command (out of phase-3 scope).
     <Button disabled aria-hidden="true" class="w-full">Get Code</Button>
