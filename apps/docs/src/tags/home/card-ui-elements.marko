@@ -18,9 +18,9 @@ import RadioGroup from "@marko-ui/registry/styles/rhea/ui/radio-group/radio-grou
 import AlertDialog from "@marko-ui/registry/styles/rhea/ui/alert-dialog/alert-dialog.marko";
 import DropdownMenu from "@marko-ui/registry/styles/rhea/ui/dropdown-menu/dropdown-menu.marko";
 
-static const FRUIT_OPTIONS = [
-  { value: "apple", label: "Apple" },
-  { value: "banana", label: "Banana" },
+static const FRUIT_OPTIONS_UNLABELED = [
+  { value: "apple", label: "" },
+  { value: "banana", label: "" },
 ];
 
 static const QUICK_ACTIONS = [
@@ -82,26 +82,32 @@ static const QUICK_ACTIONS = [
       </Field>
     </FieldGroup>
 
-    <div class="flex flex-wrap items-center gap-3">
-      <Badge>Badge</Badge>
-      <Badge variant="secondary">Secondary</Badge>
-      <Badge variant="outline">Outline</Badge>
-      <div class="ml-auto flex items-center gap-3">
-        <RadioGroup
-          items=FRUIT_OPTIONS
-          defaultValue="apple"
-          orientation="horizontal"
-          aria-label="Fruit preference"
-        />
-        <Checkbox defaultChecked aria-label="Enable email alerts"/>
-        <Switch defaultChecked aria-label="Enable compact notifications"/>
+    <div class="flex items-center gap-2">
+      <div class="flex gap-2">
+        <Badge>Badge</Badge>
+        <Badge variant="secondary">Secondary</Badge>
+        <Badge variant="outline" class="hidden 4xl:flex">Outline</Badge>
       </div>
+      <RadioGroup
+        items=FRUIT_OPTIONS_UNLABELED
+        defaultValue="apple"
+        aria-label="Fruit preference"
+        class="ml-auto flex w-fit gap-3"
+      />
+      <div class="flex gap-3">
+        <Checkbox defaultChecked aria-label="Enable email alerts"/>
+        <Checkbox class="hidden 4xl:flex" aria-label="Enable push alerts"/>
+      </div>
+      <Switch defaultChecked class="flex 4xl:hidden" aria-label="Enable compact notifications"/>
     </div>
 
-    <div class="flex flex-wrap items-center gap-2">
+    <div class="flex items-center gap-4">
       <AlertDialog cancelText="Don't allow" actionText="Allow">
         <@trigger|triggerProps|>
-          <Button ...triggerProps variant="outline">Alert Dialog</Button>
+          <Button ...triggerProps variant="outline">
+            <span class="hidden md:flex">Alert Dialog</span>
+            <span class="flex md:hidden">Dialog</span>
+          </Button>
         </@trigger>
         <@title>Allow accessory to connect?</@title>
         <@description>
@@ -136,6 +142,8 @@ static const QUICK_ACTIONS = [
           </@trigger>
         </DropdownMenu>
       </ButtonGroup>
+
+      <Switch defaultChecked class="hidden 4xl:flex" aria-label="Enable advanced setting"/>
     </div>
   </CardContent>
 </Card>

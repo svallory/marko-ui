@@ -21,8 +21,6 @@ import CardEmptyDistribute from "./card-empty-distribute.marko";
 import CardAnalytics from "./card-analytics.marko";
 import CardNotifications from "./card-notifications.marko";
 import CardPowerUsage from "./card-power-usage.marko";
-import CardInstall from "./card-install.marko";
-import CardComponentStats from "./card-component-stats.marko";
 import RailCard from "./rail-card.marko";
 
 // min-w-0 on every column: grid tracks default to min-width:auto, which lets
@@ -59,9 +57,8 @@ import RailCard from "./rail-card.marko";
   <!-- Grid + column classes verbatim from shadcn CardsDemo. Column contents
        match shadcn's card-for-card: column 4 carries our CardMessageScroller
        port (wrapped in the same text-center/text-xs-hiding div as shadcn's
-       MessageScrollerDemo slot), and CardInstall moves to the end of column
-       5 after CardComponentStats (deliberate marko-ui addition, keeps it out
-       of the now-authentic chat-primitives slot). -->
+       MessageScrollerDemo slot). CardComponentStats and CardInstall removed
+       from column 5 per site polish. -->
   <div class="relative z-10 mx-auto grid gap-(--gap) **:data-[slot=card]:w-full min-[1400px]:grid-cols-4! min-[1900px]:grid-cols-5! md:max-w-3xl md:grid-cols-2 lg:max-w-none lg:grid-cols-3 xl:max-w-[1600px] 2xl:max-w-[1900px]">
     <div class="flex flex-col items-start gap-(--gap)">
       <CardUiElements/>
@@ -90,8 +87,6 @@ import RailCard from "./rail-card.marko";
       <CardAnalytics/>
       <CardNotifications/>
       <CardPowerUsage/>
-      <CardComponentStats/>
-      <CardInstall/>
     </div>
   </div>
 
