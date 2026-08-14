@@ -7,6 +7,7 @@
 // they render their own frame and this layout steps aside rather than
 // nesting two sidebars.
 import "../../tags/site/docs-sidebar.marko";
+import "../../tags/palette-toggle.marko";
 import { DOCS_NAV } from "../../tags/docs/docs-nav.ts";
 
 <const/ownsItsFrame=$global.url.pathname.startsWith("/docs/components/")/>
@@ -24,8 +25,13 @@ import { DOCS_NAV } from "../../tags/docs/docs-nav.ts";
         <!-- Faded vertical divider, ported verbatim from shadcn's docs-sidebar.tsx
              (a gradient hairline, not a solid border-r). -->
         <div class="absolute top-12 right-2 bottom-0 hidden h-full w-px bg-[linear-gradient(to_bottom,transparent_0%,var(--border)_10%,var(--border)_90%,transparent_100%)] lg:flex"/>
-        <div class="no-scrollbar sticky top-[calc(3.5rem+0.6rem)] max-h-[calc(100svh-10rem)] overflow-y-auto overscroll-none pt-6 pl-2.5">
-          <docs-sidebar sections=DOCS_NAV/>
+        <div class="sticky top-[calc(3.5rem+0.6rem)] flex max-h-[calc(100svh-10rem)] flex-col pt-6 pl-2.5">
+          <div class="mb-2 flex justify-end pr-4">
+            <palette-toggle/>
+          </div>
+          <div class="no-scrollbar overflow-y-auto overscroll-none">
+            <docs-sidebar sections=DOCS_NAV/>
+          </div>
         </div>
       </aside>
 

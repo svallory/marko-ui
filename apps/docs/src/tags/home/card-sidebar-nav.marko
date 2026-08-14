@@ -9,23 +9,61 @@ import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
 
 export interface Input {}
 
+// Icon path data ported from Tabler Icons (MIT) outline set — chart-bar,
+// cash, trending-up, wallet, user, credit-card, bell, lock.
+static const ICON_PATHS = {
+  "chart-bar": [
+    "M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -6",
+    "M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -10",
+    "M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -14",
+  ],
+  cash: [
+    "M7 15h-3a1 1 0 0 1 -1 -1v-8a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v3",
+    "M7 10a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v8a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1l0 -8",
+    "M12 14a2 2 0 1 0 4 0a2 2 0 0 0 -4 0",
+  ],
+  "trending-up": ["M3 17l6 -6l4 4l8 -8", "M14 7l7 0l0 7"],
+  wallet: [
+    "M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12",
+    "M20 12v4h-4a2 2 0 0 1 0 -4h4",
+  ],
+  user: [
+    "M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0",
+    "M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2",
+  ],
+  "credit-card": [
+    "M3 8a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3l0 -8",
+    "M3 10l18 0",
+    "M7 15l.01 0",
+  ],
+  bell: [
+    "M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6",
+    "M9 17v1a3 3 0 0 0 6 0v-1",
+  ],
+  lock: [
+    "M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6",
+    "M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0",
+    "M8 11v-4a4 4 0 1 1 8 0v4",
+  ],
+};
+
 static const SECTIONS = [
   {
     label: "Overview",
     items: [
-      { label: "Analytics", active: true },
-      { label: "Transactions", active: false },
-      { label: "Investments", active: false },
-      { label: "Accounts", active: false },
+      { label: "Analytics", icon: "chart-bar", active: true },
+      { label: "Transactions", icon: "cash", active: false },
+      { label: "Investments", icon: "trending-up", active: false },
+      { label: "Accounts", icon: "wallet", active: false },
     ],
   },
   {
     label: "Account",
     items: [
-      { label: "Profile", active: false },
-      { label: "Billing", active: true },
-      { label: "Notifications", active: false },
-      { label: "Security", active: false },
+      { label: "Profile", icon: "user", active: false },
+      { label: "Billing", icon: "credit-card", active: true },
+      { label: "Notifications", icon: "bell", active: false },
+      { label: "Security", icon: "lock", active: false },
     ],
   },
 ];
@@ -48,7 +86,9 @@ static const SECTIONS = [
                   stroke-linejoin="round"
                   aria-hidden="true"
                 >
-                  <circle cx="12" cy="12" r="9"/>
+                  <for|d| of=ICON_PATHS[entry.icon]>
+                    <path d=d/>
+                  </for>
                 </svg>
                 ${entry.label}
               </SidebarMenuButton>

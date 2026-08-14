@@ -56,6 +56,12 @@ import { resolveMeta, SITE_NAME, DEFAULT_OG_IMAGE } from "../lib/site-meta.ts";
         var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
         var isDark = storedTheme ? storedTheme === "dark" : prefersDark;
         document.documentElement.classList.toggle("dark", isDark);
+
+        var storedPalette = null;
+        try {
+          storedPalette = localStorage.getItem("chart-palette");
+        } catch (error) {}
+        document.documentElement.classList.toggle("theme-marko", storedPalette === "marko");
       })();
     </html-script>
   </head>
