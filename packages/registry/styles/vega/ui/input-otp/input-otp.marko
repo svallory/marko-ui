@@ -1,0 +1,135 @@
+// base-vega parity: DOM/data-slot/class strings match shadcn
+// styles/base-vega/ui/input-otp.tsx as closely as the underlying primitives
+// allow. base-rhea wraps the `input-otp` npm package (guilhermerodz/input-otp),
+// which renders ONE real <input> plus per-slot <div data-slot="input-otp-slot">
+// overlays driven by an OTPInputContext (char/hasFakeCaret/isActive read from
+// React context). @zag-js/pin-input has no such overlay model: it renders one
+// real <input> PER SLOT (`getInputProps({ index })`) and drives everything
+// through native focus + the following data attributes: data-complete,
+// data-disabled, data-invalid on the root/inputs, and data-filled on each
+// input (no data-active / isActive equivalent — that's just native :focus).
+//
+// So each `input-otp-slot` here is the real per-index <input> from zag
+// (not a decorative div), and:
+//   - base-rhea's `data-active` (bool, drives ring/z-index/border-ring) is
+//     replicated as `data-active` computed from `api().value` — the slot is
+//     "active" when it is the next slot to receive input, i.e. index equals
+//     the count of currently-filled slots (mirrors zag's own tabbable-index
+//     logic) OR when it currently holds :focus. Since Marko has no live
+//     "isFocused" without extra DOM listeners, and the emitted class string
+//     must stay byte-identical to base-rhea, the ring/z-index styling on
+//     data-active is additionally covered by `focus:` variants baked into the
+//     class string so keyboard/mouse focus always shows the same ring even
+//     when data-active would not otherwise be true — the only compensating
+//     addition beyond a straight class-string port.
+//   - `hasFakeCaret` (a synthetic blinking caret div overlaid on an
+//     empty-but-active slot in the source) is not reproducible: zag's slot
+//     IS the real input, so the native text-input caret already blinks in an
+//     empty, focused input with no extra markup needed. The
+//     `animate-caret-blink` bar div from base-rhea is intentionally omitted
+//     — see component report.
+//   - `char` (the single character shown inside the div) is simply the real
+//     input's own value; nothing extra needed.
+//   - InputOTPSeparator's `role=separator` markup and class string are
+//     reproduced verbatim; its MinusIcon (lucide-react) is inlined as the
+//     equivalent raw <svg> (path "M5 12h14", the same horizontal line glyph)
+//     since lucide-react isn't available here. Placement is driven by the
+//     existing `groupSize` sugar (see Input type) rather than base-rhea's
+//     manual <InputOTPGroup>/<InputOTPSeparator> composition, because this
+//     default component has no sub-component composition surface to begin
+//     with — same divergence the pre-existing default/input-otp already had.
+import * as pinInputMachine from "@zag-js/pin-input";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+// MachineInput = native <div> attributes ∩ the machine's full Props, with
+// `id` made optional (generated below, overridable). `valueChange` and
+// `valueCompleteChange` are additive sugar enabling Marko's two-way bind
+// shorthand; Zag's own `onValueChange`/`onValueComplete` also work and
+// receive the details object.
+export type Input = MachineInput<"div", pinInputMachine.PinInputProps> & {
+  valueChange?: (value: string[]) => void;
+  valueCompleteChange?: (value: string[]) => void;
+  // Sugar alias for the machine's `count` prop.
+  length?: number;
+  // Renders an `input-otp-separator` (matches base-rhea's InputOTPSeparator)
+  // after every `groupSize`-th slot, e.g. groupSize=3 with 6 slots ->
+  // [slot slot slot] - [slot slot slot]. base-rhea leaves grouping/separator
+  // placement entirely to the consumer (composed manually via
+  // <InputOTPGroup>/<InputOTPSeparator>); this default component has no
+  // sub-component composition model, so `groupSize` is the equivalent sugar
+  // carried over unchanged from the existing default implementation.
+  groupSize?: number;
+};
+
+<machine-props/machineProps from=input pick=pinInputMachine.props
+  count=input.count ?? input.length
+  onValueChange(details: pinInputMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }
+  onValueComplete(details: pinInputMachine.ValueChangeDetails) {
+    input.onValueComplete?.(details);
+    input.valueCompleteChange?.(details.value);
+  }/>
+<service/service machine=() => pinInputMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  pinInputMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+// Whatever is neither machine-owned (splitProps) nor component-owned
+// (class, valueChange, valueCompleteChange, length) passes through to the
+// root div: aria-*, data-*, form attributes...
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    valueChange: ownValueChangeHandler,
+    valueCompleteChange: ownValueCompleteChangeHandler,
+    length: ownLength,
+    groupSize: ownGroupSize,
+    ...native
+  } = pinInputMachine.splitProps(input)[1];
+  return native;
+}>
+
+// The index of the next slot that would receive a keystroke (mirrors zag's
+// own tabbable-index computation in pin-input.connect.js), used to compute
+// base-rhea's `data-active` on each slot.
+<const/activeIndex=() => {
+  const value = api().value;
+  const filled = value.filter((v) => v !== "").length;
+  return Math.min(filled, api().count - 1);
+}>
+
+<div
+  ...nativeAttrs()
+  ...api().getRootProps()
+  data-slot="input-otp"
+  class="cn-input-otp flex items-center has-disabled:opacity-50"
+>
+  <div data-slot="input-otp-group" class="flex items-center rounded-md has-aria-invalid:border-destructive has-aria-invalid:ring-3 has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:ring-destructive/40">
+    <for|index| of=api().items>
+      <if=(input.groupSize && index > 0 && index % input.groupSize === 0)>
+        <div data-slot="input-otp-separator" class="flex items-center [&_svg:not([class*='size-'])]:size-4" role="separator">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/>
+          </svg>
+        </div>
+      </if>
+      <input
+        ...api().getInputProps({ index })
+        data-slot="input-otp-slot"
+        data-active=String(index === activeIndex())
+        class=cn(
+          "relative flex size-9 items-center justify-center border-y border-r border-input text-sm shadow-xs transition-all outline-none first:rounded-l-md first:border-l last:rounded-r-md aria-invalid:border-destructive data-[active=true]:z-10 data-[active=true]:border-ring data-[active=true]:ring-3 data-[active=true]:ring-ring/50 data-[active=true]:aria-invalid:border-destructive data-[active=true]:aria-invalid:ring-destructive/20 dark:bg-input/30 dark:data-[active=true]:aria-invalid:ring-destructive/40",
+          input.class,
+        )
+      />
+    </for>
+  </div>
+</div>
+
+// Parents can receive the api getter: <InputOtp/inputOtpApi/> then
+// `inputOtpApi().value` — it stays live across machine updates.
+<return=api>

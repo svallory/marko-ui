@@ -1,0 +1,114 @@
+// base-lyra parity: DOM/data-slot/class strings match
+// shadcn styles/base-lyra/ui/toggle-group.tsx. base-lyra (Base UI) exposes
+// `spacing`/`orientation` as props threaded through React context and
+// mirrored onto data-spacing/data-orientation for CSS targeting on both the
+// root and each item; zag's toggle-group machine has no such concept, so
+// both are component-owned here (spacing defaults to 2, orientation to
+// "horizontal", same as base-lyra) and applied directly since Marko has no
+// context primitive equivalent — each item just reads `input.spacing`/
+// `input.orientation` directly instead of through a provider.
+// base-lyra targets `data-[state=on]` for the pressed item (Base UI's
+// Toggle emits data-state="on"/"off", same name zag's toggle-group machine
+// already uses via getItemState — see toggle-group.connect.js), so no
+// override is needed there.
+import * as toggleGroupMachine from "@zag-js/toggle-group";
+import type { MachineInput } from "marko-ui";
+import { toggleVariants, type ToggleVariants } from "../toggle/variants.ts";
+import { cn } from "#lib/utils.ts";
+
+export interface ToggleGroupItem {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+export interface ToggleGroupItemAttrs {
+  value: string;
+  disabled?: boolean;
+  content?: Marko.Body;
+}
+
+// Dual API: compound attr tags (`<@item>`) are the primary, Marko-idiomatic
+// form; `items=` remains as sugar for the data-driven case. If both are
+// supplied, attr tags win (see agent/reports/compound-tag-dx.md).
+export type Input = MachineInput<"div", toggleGroupMachine.Props> &
+  ToggleVariants & {
+    items?: ToggleGroupItem[];
+    item?: Marko.AttrTag<ToggleGroupItemAttrs>;
+    valueChange?: (value: string[]) => void;
+    spacing?: number;
+    orientation?: "horizontal" | "vertical";
+  };
+
+// Normalize BOTH sources into ONE explicit common shape (mirrors
+// radio-group.marko) so the render path below never branches on the source
+// and needs no casts: `content` carries the attr-tag markup body, `label`
+// the items= string fallback. Attr tags win if both are present.
+<const/itemTags=[...(input.item ?? [])].map((item) => ({ value: item.value, disabled: item.disabled, label: undefined as string | undefined, content: item.content }))/>
+<const/items=(itemTags.length > 0 ? itemTags : (input.items ?? []).map((item) => ({ value: item.value, disabled: item.disabled, label: item.label as string | undefined, content: undefined as Marko.Body | undefined })))/>
+
+<machine-props/machineProps from=input pick=toggleGroupMachine.props
+  onValueChange(details: toggleGroupMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }/>
+<service/service machine=() => toggleGroupMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  toggleGroupMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    items: ownItems,
+    item: ownItem,
+    variant: ownVariant,
+    size: ownSize,
+    valueChange: ownChangeHandler,
+    spacing: ownSpacing,
+    orientation: ownOrientation,
+    ...native
+  } = toggleGroupMachine.splitProps(input)[1] as typeof input;
+  return native;
+}>
+
+<const/{ variant, size, spacing = 2, orientation = "horizontal" }=input/>
+
+<div
+  ...nativeAttrs()
+  ...api().getRootProps()
+  data-slot="toggle-group"
+  data-variant=variant
+  data-size=size
+  data-spacing=String(spacing)
+  data-orientation=orientation
+  style={ "--gap": String(spacing) }
+  class=cn(
+    "group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] rounded-none data-[size=sm]:rounded-none data-vertical:flex-col data-vertical:items-stretch",
+    input.class,
+  )
+>
+  <for|item| of=items by=(item) => item.value>
+    <button
+      ...api().getItemProps({ value: item.value, disabled: item.disabled })
+      data-slot="toggle-group-item"
+      data-variant=(variant ?? "default")
+      data-size=(size ?? "default")
+      data-spacing=String(spacing)
+      class=cn(
+        "shrink-0 group-data-[spacing=0]/toggle-group:rounded-none group-data-[spacing=0]/toggle-group:px-2 focus:z-10 focus-visible:z-10 group-data-[spacing=0]/toggle-group:has-data-[icon=inline-end]:pr-1.5 group-data-[spacing=0]/toggle-group:has-data-[icon=inline-start]:pl-1.5 group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-none group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-none group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-none group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-none group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-l-0 group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-l group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t",
+        toggleVariants({ variant, size }),
+      )
+    >
+      <if=item.content>
+        <${item.content}/>
+      </if>
+      <else>
+        ${item.label}
+      </else>
+    </button>
+  </for>
+</div>
+
+<return=api>

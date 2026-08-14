@@ -1,17 +1,17 @@
 // Adapted from shadcn/ui `app/(app)/(root)/cards/savings-targets.tsx` (MIT),
 // rebuilt on marko-ui's own registry components.
-import Card from "@marko-ui/registry/ui/card/card.marko";
-import CardHeader from "@marko-ui/registry/ui/card/header.marko";
-import CardTitle from "@marko-ui/registry/ui/card/title.marko";
-import CardDescription from "@marko-ui/registry/ui/card/description.marko";
-import CardContent from "@marko-ui/registry/ui/card/content.marko";
-import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
-import ItemGroup from "@marko-ui/registry/ui/item/group.marko";
-import Item from "@marko-ui/registry/ui/item/item.marko";
-import ItemContent from "@marko-ui/registry/ui/item/content.marko";
-import ItemDescription from "@marko-ui/registry/ui/item/description.marko";
-import ItemFooter from "@marko-ui/registry/ui/item/footer.marko";
-import Progress from "@marko-ui/registry/ui/progress/progress.marko";
+import Card from "@marko-ui/registry/styles/rhea/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/styles/rhea/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/styles/rhea/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/styles/rhea/ui/card/description.marko";
+import CardContent from "@marko-ui/registry/styles/rhea/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/styles/rhea/ui/card/footer.marko";
+import ItemGroup from "@marko-ui/registry/styles/rhea/ui/item/group.marko";
+import Item from "@marko-ui/registry/styles/rhea/ui/item/item.marko";
+import ItemContent from "@marko-ui/registry/styles/rhea/ui/item/content.marko";
+import ItemDescription from "@marko-ui/registry/styles/rhea/ui/item/description.marko";
+import ItemFooter from "@marko-ui/registry/styles/rhea/ui/item/footer.marko";
+import Progress from "@marko-ui/registry/styles/rhea/ui/progress/progress.marko";
 
 static const TARGETS = [
   {
@@ -46,7 +46,7 @@ static const TARGETS = [
             </ItemDescription>
             <span class="text-3xl font-semibold tabular-nums">${target.total}</span>
             <Progress
-              defaultValue=target.percent
+              value=target.percent
               aria-label=`${target.label} savings progress`
             />
           </ItemContent>

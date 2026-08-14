@@ -1,44 +1,48 @@
 // Adapted from shadcn/ui `app/(app)/(root)/cards/account-access.tsx` (MIT),
-// rebuilt on marko-ui's own registry components. The plain password <Input>
-// of the original becomes marko-ui's PasswordInput (with a reveal toggle).
-import Card from "@marko-ui/registry/ui/card/card.marko";
-import CardHeader from "@marko-ui/registry/ui/card/header.marko";
-import CardTitle from "@marko-ui/registry/ui/card/title.marko";
-import CardDescription from "@marko-ui/registry/ui/card/description.marko";
-import CardContent from "@marko-ui/registry/ui/card/content.marko";
-import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
-import Button from "@marko-ui/registry/ui/button/button.marko";
-import Input from "@marko-ui/registry/ui/input/input.marko";
-import Label from "@marko-ui/registry/ui/label/label.marko";
-import PasswordInput from "@marko-ui/registry/ui/password-input/password-input.marko";
-import Item from "@marko-ui/registry/ui/item/item.marko";
-import ItemMedia from "@marko-ui/registry/ui/item/media.marko";
-import ItemContent from "@marko-ui/registry/ui/item/content.marko";
-import ItemTitle from "@marko-ui/registry/ui/item/title.marko";
-import ItemDescription from "@marko-ui/registry/ui/item/description.marko";
+// rebuilt on marko-ui's own registry components. The shadcn source uses a
+// plain <Input type="password">, not a reveal-toggle password input — ported
+// as such for structural parity (no PasswordInput here).
+import Card from "@marko-ui/registry/styles/rhea/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/styles/rhea/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/styles/rhea/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/styles/rhea/ui/card/description.marko";
+import CardContent from "@marko-ui/registry/styles/rhea/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/styles/rhea/ui/card/footer.marko";
+import Button from "@marko-ui/registry/styles/rhea/ui/button/button.marko";
+import Input from "@marko-ui/registry/styles/rhea/ui/input/input.marko";
+import Field from "@marko-ui/registry/styles/rhea/ui/field/field.marko";
+import FieldGroup from "@marko-ui/registry/styles/rhea/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/registry/styles/rhea/ui/field/field-label.marko";
+import Item from "@marko-ui/registry/styles/rhea/ui/item/item.marko";
+import ItemMedia from "@marko-ui/registry/styles/rhea/ui/item/media.marko";
+import ItemContent from "@marko-ui/registry/styles/rhea/ui/item/content.marko";
+import ItemTitle from "@marko-ui/registry/styles/rhea/ui/item/title.marko";
+import ItemDescription from "@marko-ui/registry/styles/rhea/ui/item/description.marko";
 
 <Card class="w-full min-w-0">
   <CardHeader>
     <CardTitle>Account Access</CardTitle>
     <CardDescription>Update your credentials or re-authenticate.</CardDescription>
   </CardHeader>
-  <CardContent class="flex flex-col gap-4">
-    <div class="grid gap-2">
-      <Label for="account-email">Email Address</Label>
-      <Input id="account-email" type="email" placeholder="artist@studio.inc"/>
-    </div>
-    <div class="grid gap-2">
-      <div class="flex items-center justify-between">
-        <Label for="account-password">Current Password</Label>
-        <a
-          href="#"
-          class="text-muted-foreground hover:text-foreground text-xs font-medium tracking-wider uppercase"
-        >
-          Forgot?
-        </a>
-      </div>
-      <PasswordInput id="account-password" placeholder="••••••••••••"/>
-    </div>
+  <CardContent>
+    <FieldGroup>
+      <Field>
+        <FieldLabel for="account-email">Email Address</FieldLabel>
+        <Input id="account-email" type="email" placeholder="artist@studio.inc"/>
+      </Field>
+      <Field>
+        <div class="flex items-center justify-between">
+          <FieldLabel for="account-password">Current Password</FieldLabel>
+          <a
+            href="#"
+            class="text-muted-foreground hover:text-foreground text-xs font-medium tracking-wider uppercase"
+          >
+            Forgot?
+          </a>
+        </div>
+        <Input id="account-password" type="password" placeholder="••••••••••••••••••••••••"/>
+      </Field>
+    </FieldGroup>
   </CardContent>
   <CardFooter class="flex-col gap-4">
     <Button class="w-full">

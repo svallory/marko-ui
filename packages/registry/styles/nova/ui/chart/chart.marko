@@ -1,0 +1,39 @@
+// ChartContainer — base-nova port of ../../../default/ui/chart/chart.marko.
+// base-nova's chart.tsx <ChartContainer> class string is BYTE-IDENTICAL to
+// the (default, non-rhea) shadcn chart.tsx's — the container wrapper,
+// data-slot="chart", data-chart id, and <ChartStyle> --color-<key> CSS
+// plumbing are unchanged between the two themes, so this file has zero class
+// deviation from default's chart.marko. Kept as its own file (not imported
+// from default) to match this component's file-per-theme convention.
+import { chartStyleCss, type ChartConfig } from "./config.ts";
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  config: ChartConfig;
+  content?: Marko.Body;
+}
+
+<const/{ config, class: className, content, id: idAttr, ...rest }=input/>
+<id/uid/>
+<const/chartId=(`chart-${idAttr ?? uid}`)/>
+<const/styleCss=chartStyleCss(chartId, config)/>
+
+<div
+  ...rest
+  data-slot="chart"
+  data-chart=chartId
+  class=cn(
+    "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
+    className,
+  )
+>
+  <if=styleCss>
+    <${"style"}>$!{styleCss}</>
+  </if>
+  <div
+    class="recharts-responsive-container"
+    style={ width: "100%", height: "100%" }
+  >
+    <${content}/>
+  </div>
+</div>

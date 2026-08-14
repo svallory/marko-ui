@@ -1,0 +1,144 @@
+// Guide: /docs/creating-components · adapter internals: /docs/zag-adapter
+// Authoring rules: notes/component-authoring.md (v2 pattern)
+//
+// base-rhea parity: same DOM structure / data-slot / class strings as
+// shadcn styles/base-rhea/ui/alert-dialog.tsx. base-rhea (Base UI) drives
+// backdrop/popup enter/exit animation off data-open/data-closed; zag's
+// dialog machine only mounts these elements while api().open is true (no
+// exit-animation phase), so data-open="true" is applied statically while
+// mounted — the data-closed:* classes are therefore inert in our port
+// (documented deviation, purely cosmetic exit-transition loss).
+import * as dialogMachine from "@zag-js/dialog";
+import type { MachineInput } from "marko-ui";
+import { buttonVariants } from "../button/variants.ts";
+import { cn } from "#lib/utils.ts";
+
+// MachineInput = native <div> attributes ∩ the machine's full Props, with
+// `id` made optional (generated below, overridable). `openChange` is
+// additive sugar enabling Marko's two-way bind shorthand
+// (<AlertDialog open:=myState/>); Zag's own `onOpenChange` also works and
+// receives the details object.
+export type Input = MachineInput<"div", dialogMachine.Props> & {
+  openChange?: (open: boolean) => void;
+  trigger?: Marko.Body<[Record<string, unknown>]>;
+  title?: Marko.Body;
+  description?: Marko.Body;
+  media?: Marko.Body;
+  cancelText?: string;
+  actionText?: string;
+  action?: () => void;
+  size?: "default" | "sm";
+};
+
+// The three-tag wiring (see /docs/creating-components):
+// 1. <machine-props> picks the machine's props out of `input` by name and
+//    merges the attributes written on it — callback adaptations live HERE,
+//    visibly, because they are this component's public contract.
+// 2. <service> creates and owns the running machine (client-only; SSR
+//    renders from a throwaway never-started instance).
+// 3. <connect> returns `api` as a GETTER — call it at every use site.
+//    Getters are the serializable currency of Marko's resumability: the
+//    api object itself must never become reactive state.
+<machine-props/machineProps from=input pick=dialogMachine.props
+  role="alertdialog"
+  closeOnInteractOutside=false
+  closeOnEscape=false
+  onOpenChange(details: dialogMachine.OpenChangeDetails) {
+    input.onOpenChange?.(details);
+    input.openChange?.(details.open);
+  }/>
+<service/service machine=() => dialogMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  dialogMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+// Whatever is neither machine-owned (splitProps) nor component-owned
+// (class, openChange, trigger, title, description, media, cancelText,
+// actionText, action, size) passes through to the content element:
+// aria-*, data-*...
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    openChange: ownChangeHandler,
+    trigger: ownTrigger,
+    title: ownTitle,
+    description: ownDescription,
+    media: ownMedia,
+    cancelText: ownCancelText,
+    actionText: ownActionText,
+    action: ownAction,
+    size: ownSize,
+    ...native
+  } = dialogMachine.splitProps(input)[1] as typeof input;
+  return native;
+}>
+
+<const/{ size = "default" }=input/>
+
+<if=input.trigger>
+  <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "alert-dialog-trigger" })/>
+</if>
+<portal>
+  <if=api().open>
+    <div
+      ...api().getBackdropProps()
+      data-slot="alert-dialog-overlay"
+      data-open="true"
+      class="fixed inset-0 isolate z-50 bg-black/20 duration-100 supports-backdrop-filter:backdrop-blur-sm data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0"
+    />
+    <div ...api().getPositionerProps() data-slot="alert-dialog-positioner" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        ...nativeAttrs()
+        ...api().getContentProps()
+        data-slot="alert-dialog-content"
+        data-size=size
+        data-open="true"
+        class=cn(
+          "group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 gap-6 rounded-none bg-popover p-6 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 outline-none data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-md data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          input.class,
+        )
+      >
+        <div
+          data-slot="alert-dialog-header"
+          class="grid grid-rows-[auto_1fr] place-items-center gap-2 text-center has-data-[slot=alert-dialog-media]:grid-rows-[auto_auto_1fr] has-data-[slot=alert-dialog-media]:gap-x-6 sm:group-data-[size=default]/alert-dialog-content:place-items-start sm:group-data-[size=default]/alert-dialog-content:text-left sm:group-data-[size=default]/alert-dialog-content:has-data-[slot=alert-dialog-media]:grid-rows-[auto_1fr]"
+        >
+          <if=input.media>
+            <div data-slot="alert-dialog-media" class="mb-2 inline-flex size-16 items-center justify-center rounded-none bg-muted sm:group-data-[size=default]/alert-dialog-content:row-span-2 *:[svg:not([class*='size-'])]:size-8">
+              <${input.media}/>
+            </div>
+          </if>
+          <h2 ...api().getTitleProps() data-slot="alert-dialog-title" class="cn-font-heading text-lg font-semibold tracking-wider uppercase sm:group-data-[size=default]/alert-dialog-content:group-has-data-[slot=alert-dialog-media]/alert-dialog-content:col-start-2">
+            <${input.title}/>
+          </h2>
+          <p ...api().getDescriptionProps() data-slot="alert-dialog-description" class="mt-0.5 text-sm leading-relaxed text-balance text-muted-foreground md:text-pretty *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground">
+            <${input.description}/>
+          </p>
+        </div>
+        <div
+          data-slot="alert-dialog-footer"
+          class="flex flex-col-reverse gap-2 group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end"
+        >
+          <button ...api().getCloseTriggerProps() data-slot="alert-dialog-cancel" class=buttonVariants({ variant: "outline" })>
+            ${input.cancelText ?? "Cancel"}
+          </button>
+          <button
+            ...api().getCloseTriggerProps()
+            data-slot="alert-dialog-action"
+            class=buttonVariants({ variant: "default" })
+            onClick(event: Event, element?: Element) {
+              input.action?.();
+              api().getCloseTriggerProps().onClick?.(event, element);
+            }
+          >
+            ${input.actionText ?? "Continue"}
+          </button>
+        </div>
+      </div>
+    </div>
+  </if>
+</portal>
+
+// Parents can receive the api getter: <AlertDialog/alertDialogApi/> then
+// `alertDialogApi().open` — it stays live across machine updates.
+<return=api>

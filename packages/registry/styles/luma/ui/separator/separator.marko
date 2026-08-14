@@ -1,0 +1,21 @@
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  orientation?: "horizontal" | "vertical";
+}
+
+<const/{ orientation = "horizontal", class: className, content, ...rest }=input/>
+
+<div
+  role="separator"
+  aria-orientation=orientation
+  data-slot="separator"
+  data-orientation=orientation
+  ...rest
+  class=cn(
+    "shrink-0 bg-border data-horizontal:h-px data-horizontal:w-full data-vertical:w-px data-vertical:self-stretch",
+    className,
+  )
+>
+  <${content}/>
+</div>

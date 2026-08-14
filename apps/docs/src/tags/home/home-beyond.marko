@@ -113,204 +113,214 @@ static const CROP_SOURCE =
       </p>
     </div>
 
-    <div class="grid min-w-0 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      <BeyondCard
-        name="angle-slider"
-        title="Angle Slider"
-        description="Drag the dial to set a rotation."
-      >
-        <AngleSlider defaultValue=45/>
-      </BeyondCard>
+    <div class="grid min-w-0 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+      <div class="flex min-w-0 flex-col gap-6">
+        <BeyondCard
+          name="angle-slider"
+          title="Angle Slider"
+          description="Drag the dial to set a rotation."
+        >
+          <AngleSlider defaultValue=45/>
+        </BeyondCard>
 
-      <BeyondCard
-        name="color-picker"
-        title="Color Picker"
-        description="Saturation area, channel sliders and swatches."
-      >
-        <ColorPicker defaultValue="#6366f1" class="w-full"/>
-      </BeyondCard>
+        <BeyondCard
+          name="signature-pad"
+          title="Signature Pad"
+          description="Draw with a pointer; exports to an image."
+        >
+          <SignaturePad class="max-w-none"/>
+        </BeyondCard>
 
-      <BeyondCard
-        name="tour"
-        title="Tour"
-        description="Spotlighted, multi-step product walkthroughs."
-      >
-        <Tour items=TOUR_ITEMS>
-          <@trigger|triggerProps|>
-            <Button ...triggerProps variant="outline" size="sm">Start tour</Button>
-          </@trigger>
-        </Tour>
-      </BeyondCard>
+        <BeyondCard
+          name="listbox"
+          title="Listbox"
+          description="Selectable list with roving focus."
+        >
+          <Listbox items=FRAMEWORK_ITEMS defaultValue=["marko"] class="w-full"/>
+        </BeyondCard>
 
-      <BeyondCard
-        name="floating-panel"
-        title="Floating Panel"
-        description="Draggable, resizable desktop-style panel."
-      >
-        <FloatingPanel>
-          <@trigger|triggerProps|>
-            <Button ...triggerProps variant="outline" size="sm">Open panel</Button>
-          </@trigger>
-          <@title>Layers</@title>
-          <p class="text-muted-foreground p-3 text-sm">
-            Drag the header, or grab any edge to resize.
-          </p>
-        </FloatingPanel>
-      </BeyondCard>
+        <BeyondCard
+          name="toc"
+          title="Table of Contents"
+          description="Tracks the active heading while scrolling."
+        >
+          <Toc items=TOC_ITEMS title="On this page" class="w-full"/>
+        </BeyondCard>
+      </div>
 
-      <BeyondCard
-        name="signature-pad"
-        title="Signature Pad"
-        description="Draw with a pointer; exports to an image."
-      >
-        <SignaturePad class="max-w-none"/>
-      </BeyondCard>
+      <div class="flex min-w-0 flex-col gap-6">
+        <BeyondCard
+          name="color-picker"
+          title="Color Picker"
+          description="Saturation area, channel sliders and swatches."
+        >
+          <ColorPicker defaultValue="#6366f1" class="w-full"/>
+        </BeyondCard>
 
-      <BeyondCard
-        name="qr-code"
-        title="QR Code"
-        description="Real QR encoding, rendered as SVG."
-      >
-        <QrCode defaultValue="https://marko-ui.saulo.tech" size="sm"/>
-      </BeyondCard>
+        <BeyondCard
+          name="qr-code"
+          title="QR Code"
+          description="Real QR encoding, rendered as SVG."
+        >
+          <QrCode defaultValue="https://marko-ui.saulo.tech" size="sm"/>
+        </BeyondCard>
 
-      <BeyondCard
-        name="rating-group"
-        title="Rating Group"
-        description="Keyboard-accessible star rating with halves."
-      >
-        <RatingGroup defaultValue=3 allowHalf/>
-      </BeyondCard>
+        <BeyondCard
+          name="cascade-select"
+          title="Cascade Select"
+          description="Drill through nested option trees."
+        >
+          <CascadeSelect
+            items=REGION_ITEMS
+            placeholder="Pick a region"
+            class="w-full"
+          />
+        </BeyondCard>
 
-      <BeyondCard
-        name="number-input"
-        title="Number Input"
-        description="Steppers, scrubbing and clamped ranges."
-      >
-        <NumberInput defaultValue="8" min=0 max=99 aria-label="Quantity"/>
-      </BeyondCard>
+        <BeyondCard
+          name="image-cropper"
+          title="Image Cropper"
+          description="Drag the handles to reframe the image."
+        >
+          // The cropper root sizes itself from its container: without an
+          // explicit height the viewport collapses to 0px and the image never
+          // becomes visible.
+          <ImageCropper
+            src=CROP_SOURCE
+            alt="Gradient placeholder"
+            class="h-40 w-full"
+          />
+        </BeyondCard>
+      </div>
 
-      <BeyondCard
-        name="tags-input"
-        title="Tags Input"
-        description="Type to add, backspace to remove."
-      >
-        <TagsInput
-          defaultValue=["marko", "zag"]
-          placeholder="Add a tag..."
-          class="w-full"
-        />
-      </BeyondCard>
+      <div class="flex min-w-0 flex-col gap-6">
+        <BeyondCard
+          name="tour"
+          title="Tour"
+          description="Spotlighted, multi-step product walkthroughs."
+        >
+          <Tour items=TOUR_ITEMS>
+            <@trigger|triggerProps|>
+              <Button ...triggerProps variant="outline" size="sm">Start tour</Button>
+            </@trigger>
+          </Tour>
+        </BeyondCard>
 
-      <BeyondCard
-        name="timer"
-        title="Timer"
-        description="Countdown and stopwatch with controls."
-      >
-        <Timer
-          startMs=90000
-          targetMs=0
-          countdown
-          parts=["minutes", "seconds"]
-          class="w-full border-0 bg-transparent py-0 shadow-none"
-        />
-      </BeyondCard>
+        <BeyondCard
+          name="rating-group"
+          title="Rating Group"
+          description="Keyboard-accessible star rating with halves."
+        >
+          <RatingGroup defaultValue=3 allowHalf/>
+        </BeyondCard>
 
-      <BeyondCard
-        name="steps"
-        title="Steps"
-        description="A guided, navigable multi-step flow."
-      >
-        <Steps items=STEP_ITEMS class="w-full">
-          <@content|index|>
-            <p class="text-muted-foreground text-sm">
-              Step ${index + 1} of ${STEP_ITEMS.length}.
+        <BeyondCard
+          name="marquee"
+          title="Marquee"
+          description="Looping ticker that pauses on hover."
+        >
+          <Marquee items=MARQUEE_ITEMS class="w-full">
+            <@content|item|>
+              <Badge variant="secondary" class="mx-1">${item}</Badge>
+            </@content>
+          </Marquee>
+        </BeyondCard>
+      </div>
+
+      <div class="flex min-w-0 flex-col gap-6">
+        <BeyondCard
+          name="floating-panel"
+          title="Floating Panel"
+          description="Draggable, resizable desktop-style panel."
+        >
+          <FloatingPanel>
+            <@trigger|triggerProps|>
+              <Button ...triggerProps variant="outline" size="sm">Open panel</Button>
+            </@trigger>
+            <@title>Layers</@title>
+            <p class="text-muted-foreground p-3 text-sm">
+              Drag the header, or grab any edge to resize.
             </p>
-          </@content>
-          <@completedContent>
-            <p class="text-muted-foreground text-sm">All done.</p>
-          </@completedContent>
-        </Steps>
-      </BeyondCard>
+          </FloatingPanel>
+        </BeyondCard>
 
-      <BeyondCard
-        name="editable"
-        title="Editable"
-        description="Click the text to edit it inline."
-      >
-        <Editable defaultValue="Click to rename" class="w-full"/>
-      </BeyondCard>
+        <BeyondCard
+          name="number-input"
+          title="Number Input"
+          description="Steppers, scrubbing and clamped ranges."
+        >
+          <NumberInput defaultValue="8" min=0 max=99 aria-label="Quantity"/>
+        </BeyondCard>
 
-      <BeyondCard
-        name="password-input"
-        title="Password Input"
-        description="Masked field with a reveal toggle."
-      >
-        <PasswordInput value="correct-horse" aria-label="Password"/>
-      </BeyondCard>
+        <BeyondCard
+          name="editable"
+          title="Editable"
+          description="Click the text to edit it inline."
+        >
+          <Editable defaultValue="Click to rename" class="w-full"/>
+        </BeyondCard>
 
-      <BeyondCard
-        name="date-input"
-        title="Date Input"
-        description="Segmented, locale-aware date entry."
-      >
-        <DateInput defaultValue=["2026-01-15"] class="w-full"/>
-      </BeyondCard>
+        <BeyondCard
+          name="date-input"
+          title="Date Input"
+          description="Segmented, locale-aware date entry."
+        >
+          <DateInput defaultValue=["2026-01-15"] class="w-full"/>
+        </BeyondCard>
+      </div>
 
-      <BeyondCard
-        name="listbox"
-        title="Listbox"
-        description="Selectable list with roving focus."
-      >
-        <Listbox items=FRAMEWORK_ITEMS defaultValue=["marko"] class="w-full"/>
-      </BeyondCard>
+      <div class="flex min-w-0 flex-col gap-6">
+        <BeyondCard
+          name="tags-input"
+          title="Tags Input"
+          description="Type to add, backspace to remove."
+        >
+          <TagsInput
+            defaultValue=["marko", "zag"]
+            placeholder="Add a tag..."
+            class="w-full"
+          />
+        </BeyondCard>
 
-      <BeyondCard
-        name="cascade-select"
-        title="Cascade Select"
-        description="Drill through nested option trees."
-      >
-        <CascadeSelect
-          items=REGION_ITEMS
-          placeholder="Pick a region"
-          class="w-full"
-        />
-      </BeyondCard>
+        <BeyondCard
+          name="timer"
+          title="Timer"
+          description="Countdown and stopwatch with controls."
+        >
+          <Timer
+            startMs=90000
+            targetMs=0
+            countdown
+            parts=["minutes", "seconds"]
+            class="w-full border-0 bg-transparent py-0 shadow-none"
+          />
+        </BeyondCard>
 
-      <BeyondCard
-        name="marquee"
-        title="Marquee"
-        description="Looping ticker that pauses on hover."
-      >
-        <Marquee items=MARQUEE_ITEMS class="w-full">
-          <@content|item|>
-            <Badge variant="secondary" class="mx-1">${item}</Badge>
-          </@content>
-        </Marquee>
-      </BeyondCard>
+        <BeyondCard
+          name="steps"
+          title="Steps"
+          description="A guided, navigable multi-step flow."
+        >
+          <Steps items=STEP_ITEMS class="w-full">
+            <@content|index|>
+              <p class="text-muted-foreground text-sm">
+                Step ${index + 1} of ${STEP_ITEMS.length}.
+              </p>
+            </@content>
+            <@completedContent>
+              <p class="text-muted-foreground text-sm">All done.</p>
+            </@completedContent>
+          </Steps>
+        </BeyondCard>
 
-      <BeyondCard
-        name="toc"
-        title="Table of Contents"
-        description="Tracks the active heading while scrolling."
-      >
-        <Toc items=TOC_ITEMS title="On this page" class="w-full"/>
-      </BeyondCard>
-
-      <BeyondCard
-        name="image-cropper"
-        title="Image Cropper"
-        description="Drag the handles to reframe the image."
-      >
-        // The cropper root sizes itself from its container: without an
-        // explicit height the viewport collapses to 0px and the image never
-        // becomes visible.
-        <ImageCropper
-          src=CROP_SOURCE
-          alt="Gradient placeholder"
-          class="h-40 w-full"
-        />
-      </BeyondCard>
+        <BeyondCard
+          name="password-input"
+          title="Password Input"
+          description="Masked field with a reveal toggle."
+        >
+          <PasswordInput value="correct-horse" aria-label="Password"/>
+        </BeyondCard>
+      </div>
     </div>
   </div>
 

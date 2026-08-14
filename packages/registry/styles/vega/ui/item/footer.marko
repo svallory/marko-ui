@@ -1,0 +1,13 @@
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<div
+  ...rest
+  data-slot="item-footer"
+  class=cn("flex basis-full items-center justify-between gap-2", className)
+>
+  <${content}/>
+</div>

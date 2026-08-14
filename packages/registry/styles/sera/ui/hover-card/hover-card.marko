@@ -1,0 +1,87 @@
+// base-rhea parity: DOM/data-slot/class strings match
+// shadcn styles/base-rhea/ui/hover-card.tsx. base-rhea (Base UI) exposes
+// side/sideOffset/align/alignOffset as flat props on its Positioner; zag's
+// hover-card machine folds all four into a single `positioning` object
+// (@zag-js/popper PositioningOptions), so we accept the same four input
+// props and assemble `positioning` from them before handing off to
+// <machine-props> (positioning is derived, not a plain passthrough field,
+// same reason <select> layers `collection` in via a closure instead of a
+// <machine-props> override). base-ui emits data-open/data-closed for the
+// popup animation states and data-side/data-align on the positioner; zag's
+// popper integration emits the same data-side, so those classes carry over
+// verbatim.
+import * as hoverCardMachine from "@zag-js/hover-card";
+import type { MachineInput } from "marko-ui";
+import { positionerStyle } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+// MachineInput = native <span> attributes ∩ the machine's full Props (minus
+// `positioning`, replaced below by the flat side/sideOffset/align/
+// alignOffset input base-rhea exposes), with `id` made optional (generated
+// below, overridable). `openChange` is additive sugar enabling Marko's
+// two-way bind shorthand (<HoverCard open:=myState/>); Zag's own
+// `onOpenChange` also works and receives the details object.
+export type Input = Omit<MachineInput<"span", hoverCardMachine.Props>, "positioning"> & {
+  /** Trigger render-prop — typically a link. */
+  trigger: Marko.Body<[Record<string, unknown>]>;
+  /** Card content shown when open. */
+  content: Marko.Body;
+  /** Extra class for the content panel. */
+  class?: string;
+  /** Fires when the open state changes; receives the plain open value. */
+  openChange?: (open: boolean) => void;
+  side?: "top" | "bottom" | "left" | "right";
+  sideOffset?: number;
+  align?: "start" | "center" | "end";
+  alignOffset?: number;
+};
+
+<const/{
+  side = "bottom",
+  sideOffset = 4,
+  align = "center",
+  alignOffset = 4,
+}=input/>
+
+// @zag-js/popper's `positioning.placement` is a floating-ui Placement
+// string that fuses side+align (e.g. "bottom-start"), unlike base-ui's flat
+// side/align props — combine them here. `gutter` is the main-axis
+// (side) offset; `shift` is the secondary-axis (align) offset.
+<const/placement=(align === "center" ? side : `${side}-${align}`) as hoverCardMachine.Placement/>
+
+<machine-props/machineProps from=input pick=hoverCardMachine.props
+  positioning={ placement, gutter: sideOffset, shift: alignOffset }
+  onOpenChange(details: hoverCardMachine.OpenChangeDetails) {
+    input.onOpenChange?.(details);
+    input.openChange?.(details.open);
+  }/>
+<service/service machine=() => hoverCardMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  hoverCardMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+<span data-slot="hover-card">
+  <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "hover-card-trigger" })/>
+  <portal>
+    <if=api().open>
+      <div ...api().getPositionerProps() data-slot="hover-card-portal" style=positionerStyle class="isolate z-50">
+        <div
+          ...api().getContentProps()
+          data-slot="hover-card-content"
+          data-open="true"
+          class=cn(
+            "z-50 w-72 origin-(--transform-origin) bg-popover p-4 text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+            input.class,
+          )
+        >
+          <${input.content}/>
+        </div>
+      </div>
+    </if>
+  </portal>
+</span>
+
+// Parents can receive the api getter: <HoverCard/hoverCardApi/> then
+// `hoverCardApi().open` — it stays live across machine updates.
+<return=api>

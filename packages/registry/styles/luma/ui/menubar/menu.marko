@@ -1,0 +1,120 @@
+// base-luma parity: DOM/data-slot/class strings match shadcn
+// styles/base-luma/ui/menubar.tsx's per-menu pieces (MenubarTrigger,
+// MenubarContent, MenubarItem, MenubarSeparator, MenubarLabel,
+// MenubarShortcut), which in base-luma are themselves thin wrappers around
+// DropdownMenuTrigger/DropdownMenuContent/DropdownMenuItem/... — mapped here
+// onto this file's zag-menu-based trigger/positioner/content/item list, the
+// same DOM role each shadcn wrapper delegates to. Class strings are copied
+// verbatim from menubar.tsx (not dropdown-menu.tsx) since menubar.tsx layers
+// its own classes on top via `cn(...)`. base-luma's `MenubarContent`
+// defaults `align="start" alignOffset={-4} sideOffset={8}` — this port has
+// no analogous default-forwarding surface for those positioning props (the
+// default marko doesn't expose them either), so that default-value parity
+// piece is not reproduced; documented here as the one non-class deviation.
+import * as menu from "@zag-js/menu";
+import { positionerStyle } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+import type { DropdownMenuItem } from "../dropdown-menu/dropdown-menu.marko";
+
+// Attr-tag form of DropdownMenuItem. A SINGLE attr tag name (`item`) carries
+// all three kinds (discriminated by `type`) rather than separate
+// `item`/`separator`/`label` attr tags: Marko collects each attr-tag NAME
+// into its own independent iterable on `input` with no shared ordering
+// between differently-named siblings, so distinct tag names could not
+// preserve call-site interleaving. One name with a `type` discriminant
+// keeps document order intact by construction (same design as
+// dropdown-menu.marko). `content` lets an item or label carry a markup
+// body; the plain `label` string renders as the fallback when no body is
+// supplied.
+export interface MenubarItemAttrs extends DropdownMenuItem {
+  content?: Marko.Body;
+}
+
+export interface Input {
+  trigger: Marko.Body<[Record<string, unknown>]>;
+  items?: DropdownMenuItem[];
+  item?: Marko.AttrTag<MenubarItemAttrs>;
+  select?: (value: string) => void;
+  class?: string;
+}
+
+<machine-props/machineProps from=input pick=menu.props
+  onSelect(details: menu.SelectionDetails) {
+    input.select?.(details.value);
+  }/>
+<service/service machine=() => menu.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  menu.connect(service, normalizeProps)
+  service=service
+/>
+
+<const/{ class: className, trigger }=input/>
+// Normalize whichever source was supplied into ONE entries list so the
+// render path below never branches. Attr tags win when present (compound is
+// primary per the compound-tag-dx report); `items=` is the fallback. The
+// single `<@item>` tag name preserves true document order by construction,
+// so interleaved item/separator/label entries render exactly as written.
+// `items=` entries never carry a body, so each is mapped into the
+// MenubarItemAttrs shape with an explicit undefined `content` — no casts
+// needed (mirrors accordion/toggle-group).
+<const/attrItems=[...(input.item ?? [])]/>
+<const/entries=(attrItems.length > 0 ? attrItems : (input.items ?? []).map((item) => ({ ...item, content: undefined as Marko.Body | undefined })))/>
+
+// The trigger element itself is caller-owned (render prop) — this port has
+// no wrapped trigger component to attach MenubarTrigger's classes to (see
+// menubar-demo.marko: the caller's own <button ...triggerProps> supplies
+// its class). base-luma's
+// "flex items-center rounded-2xl px-2 py-0.75 text-sm font-medium outline-hidden select-none hover:bg-muted aria-expanded:bg-muted"
+// is therefore not applied here; it belongs on the caller's trigger markup,
+// same as the default port.
+<${trigger}({ ...api().getTriggerProps(), "data-slot": "menubar-trigger" })/>
+<portal>
+  <if=api().open>
+    <div ...api().getPositionerProps() style=positionerStyle data-slot="menubar-positioner">
+      <div
+        ...api().getContentProps()
+        data-slot="menubar-content"
+        class=cn(
+          "cn-menu-target cn-menu-translucent min-w-48 rounded-3xl bg-popover p-1.5 text-popover-foreground shadow-lg ring-1 ring-foreground/5 duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95",
+          className,
+        )
+      >
+        <for|entry, index| of=entries>
+          <if=entry.type === "separator">
+            <div ...api().getSeparatorProps() data-slot="menubar-separator" class="-mx-1 my-1 h-px bg-border/50"/>
+          </if>
+          <else if=entry.type === "label">
+            <div data-slot="menubar-label" class="px-3.5 py-2.5 text-xs text-muted-foreground data-inset:pl-9.5">
+              <if=entry.content>
+                <${entry.content}/>
+              </if>
+              <else>
+                ${entry.label}
+              </else>
+            </div>
+          </else>
+          <else>
+            <div
+              ...api().getItemProps({ value: entry.value ?? `item-${index}`, disabled: entry.disabled })
+              data-slot="menubar-item"
+              data-variant=(entry.danger ? "destructive" : "default")
+              class="group/menubar-item gap-2.5 rounded-2xl px-3 py-2 text-sm font-medium focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-inset:pl-9.5 data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive dark:data-[variant=destructive]:focus:bg-destructive/20 data-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 data-[variant=destructive]:*:[svg]:text-destructive!"
+            >
+              <if=entry.content>
+                <span><${entry.content}/></span>
+              </if>
+              <else>
+                <span>${entry.label}</span>
+              </else>
+              <if=entry.shortcut>
+                <span data-slot="menubar-shortcut" class="ml-auto text-xs tracking-widest text-muted-foreground group-focus/menubar-item:text-accent-foreground">${entry.shortcut}</span>
+              </if>
+            </div>
+          </else>
+        </for>
+      </div>
+    </div>
+  </if>
+</portal>
+
+<return=api>

@@ -1,14 +1,16 @@
 // Adapted from shadcn/ui `app/(app)/(root)/cards/new-milestone.tsx` (MIT),
 // rebuilt on marko-ui's own registry components.
-import Card from "@marko-ui/registry/ui/card/card.marko";
-import CardHeader from "@marko-ui/registry/ui/card/header.marko";
-import CardTitle from "@marko-ui/registry/ui/card/title.marko";
-import CardDescription from "@marko-ui/registry/ui/card/description.marko";
-import CardContent from "@marko-ui/registry/ui/card/content.marko";
-import CardFooter from "@marko-ui/registry/ui/card/footer.marko";
-import Button from "@marko-ui/registry/ui/button/button.marko";
-import Input from "@marko-ui/registry/ui/input/input.marko";
-import Label from "@marko-ui/registry/ui/label/label.marko";
+import Card from "@marko-ui/registry/styles/rhea/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/styles/rhea/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/styles/rhea/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/styles/rhea/ui/card/description.marko";
+import CardContent from "@marko-ui/registry/styles/rhea/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/styles/rhea/ui/card/footer.marko";
+import Button from "@marko-ui/registry/styles/rhea/ui/button/button.marko";
+import Input from "@marko-ui/registry/styles/rhea/ui/input/input.marko";
+import Field from "@marko-ui/registry/styles/rhea/ui/field/field.marko";
+import FieldGroup from "@marko-ui/registry/styles/rhea/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/registry/styles/rhea/ui/field/field-label.marko";
 
 <Card class="w-full min-w-0">
   <CardHeader>
@@ -17,21 +19,23 @@ import Label from "@marko-ui/registry/ui/label/label.marko";
       Define your financial target and we'll help you pace your savings.
     </CardDescription>
   </CardHeader>
-  <CardContent class="flex flex-col gap-4">
-    <div class="grid gap-2">
-      <Label for="milestone-goal-name">Goal Name</Label>
-      <Input id="milestone-goal-name" placeholder="e.g. New Car, Home Downpayment"/>
-    </div>
-    <div class="grid grid-cols-2 gap-3">
-      <div class="grid gap-2">
-        <Label for="milestone-target-amount">Target Amount</Label>
-        <Input id="milestone-target-amount" value="$15,000"/>
+  <CardContent>
+    <FieldGroup>
+      <Field>
+        <FieldLabel for="milestone-goal-name">Goal Name</FieldLabel>
+        <Input id="milestone-goal-name" placeholder="e.g. New Car, Home Downpayment"/>
+      </Field>
+      <div class="grid grid-cols-2 gap-3">
+        <Field>
+          <FieldLabel for="milestone-target-amount">Target Amount</FieldLabel>
+          <Input id="milestone-target-amount" value="$15,000"/>
+        </Field>
+        <Field>
+          <FieldLabel for="milestone-target-date">Target Date</FieldLabel>
+          <Input id="milestone-target-date" value="Dec 2025"/>
+        </Field>
       </div>
-      <div class="grid gap-2">
-        <Label for="milestone-target-date">Target Date</Label>
-        <Input id="milestone-target-date" value="Dec 2025"/>
-      </div>
-    </div>
+    </FieldGroup>
   </CardContent>
   <CardFooter class="flex-col gap-2">
     <Button class="w-full">Create Goal</Button>

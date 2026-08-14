@@ -1,0 +1,86 @@
+// base-luma parity: DOM/data-slot/class strings match
+// shadcn styles/base-luma/ui/switch.tsx. base-luma (Base UI) emits
+// data-checked/data-unchecked and a group-scoped data-size on the root that
+// the thumb reads via group-data-[size=...]/switch:; zag emits
+// data-state="checked"/"unchecked" on control/thumb instead, so we compute
+// data-checked/data-unchecked ourselves from api().checked to keep the exact
+// class-string targets from base-luma intact.
+import * as switchMachine from "@zag-js/switch";
+import type { MachineInput } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+// MachineInput = native <input> attributes ∩ the machine's full Props, with
+// `id` made optional (generated below, overridable). `checkedChange` is
+// additive sugar enabling Marko's two-way bind shorthand
+// (<Switch checked:=myState/>); Zag's own `onCheckedChange` also works and
+// receives the details object.
+export type Input = MachineInput<"input", switchMachine.Props> & {
+  checkedChange?: (checked: boolean) => void;
+  size?: "sm" | "default";
+};
+
+// The three-tag wiring (see /docs/creating-components):
+// 1. <machine-props> picks the machine's props out of `input` by name and
+//    merges the attributes written on it — callback adaptations live HERE,
+//    visibly, because they are this component's public contract.
+// 2. <service> creates and owns the running machine (client-only; SSR
+//    renders from a throwaway never-started instance).
+// 3. <connect> returns `api` as a GETTER — call it at every use site.
+//    Getters are the serializable currency of Marko's resumability: the
+//    api object itself must never become reactive state.
+<machine-props/machineProps from=input pick=switchMachine.props
+  onCheckedChange(details: switchMachine.CheckedChangeDetails) {
+    input.onCheckedChange?.(details);
+    input.checkedChange?.(details.checked);
+  }/>
+<service/service machine=() => switchMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  switchMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+// Whatever is neither machine-owned (splitProps) nor component-owned
+// (class, checkedChange, size) passes through to the hidden input: aria-*,
+// data-*, form attributes...
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    checkedChange: ownChangeHandler,
+    size: ownSize,
+    ...native
+  } = switchMachine.splitProps(input)[1] as typeof input;
+  return native;
+}>
+
+<const/{ size = "default" }=input/>
+
+<label
+  ...api().getRootProps()
+  data-slot="switch-label"
+  class="peer group/switch inline-flex items-center gap-2"
+>
+  <span
+    ...api().getControlProps()
+    data-slot="switch"
+    data-size=size
+    data-checked=String(api().checked === true)
+    data-disabled=String(!!input.disabled)
+    class=cn(
+      "peer group/switch relative inline-flex shrink-0 items-center rounded-full border-2 transition-all outline-none after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-[size=default]:h-5 data-[size=default]:w-11 data-[size=sm]:h-4 data-[size=sm]:w-7 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 data-checked:border-primary data-checked:bg-primary data-unchecked:border-transparent data-unchecked:bg-input/90 data-disabled:cursor-not-allowed data-disabled:opacity-50",
+      input.class,
+    )
+  >
+    <span
+      ...api().getThumbProps()
+      data-slot="switch-thumb"
+      data-checked=String(api().checked === true)
+      data-unchecked=String(api().checked !== true)
+      class="pointer-events-none block rounded-full bg-background shadow-sm ring-0 transition-transform not-dark:bg-clip-padding group-data-[size=default]/switch:h-4 group-data-[size=default]/switch:w-6 group-data-[size=sm]/switch:h-3 group-data-[size=sm]/switch:w-4 data-checked:translate-x-[calc(100%-8px)] dark:data-checked:bg-primary-foreground data-unchecked:translate-x-0 dark:data-unchecked:bg-foreground"
+    />
+  </span>
+  <input ...nativeAttrs() ...api().getHiddenInputProps()>
+</label>
+
+// Parents can receive the api getter: <Switch/switchApi/> then
+// `switchApi().checked` — it stays live across machine updates.
+<return=api>

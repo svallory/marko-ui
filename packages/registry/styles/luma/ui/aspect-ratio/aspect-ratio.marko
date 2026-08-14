@@ -1,0 +1,19 @@
+// base-luma parity: DOM/data-slot/class strings match
+// shadcn styles/base-luma/ui/aspect-ratio.tsx.
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  /** Width-to-height ratio to constrain the content to, e.g. `16 / 9`. Defaults to `1`. */
+  ratio?: number;
+}
+
+<const/{ ratio = 1, class: className, content, ...rest }=input/>
+
+<div
+  ...rest
+  data-slot="aspect-ratio"
+  class=cn("relative aspect-(--ratio)", className)
+  style={ "--ratio": String(ratio) }
+>
+  <${content}/>
+</div>

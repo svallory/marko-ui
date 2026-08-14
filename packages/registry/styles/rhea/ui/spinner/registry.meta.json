@@ -1,0 +1,6 @@
+{
+  "title": "Spinner",
+  "description": "Displays a loading indicator.",
+  "dependencies": [],
+  "registryDependencies": ["utils"]
+}

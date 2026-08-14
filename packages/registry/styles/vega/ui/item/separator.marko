@@ -1,0 +1,15 @@
+import Separator from "../separator/separator.marko";
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<Separator
+  data-slot="item-separator"
+  orientation="horizontal"
+  class=cn("my-2", className)
+  ...rest
+>
+  <${content}/>
+</Separator>

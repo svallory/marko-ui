@@ -1,0 +1,19 @@
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"legend"> {
+  variant?: "legend" | "label";
+}
+
+<const/{ variant = "legend", class: className, content, ...rest }=input/>
+
+<legend
+  ...rest
+  data-slot="field-legend"
+  data-variant=variant
+  class=cn(
+    "mb-1.5 font-medium data-[variant=label]:text-sm data-[variant=legend]:text-base",
+    className,
+  )
+>
+  <${content}/>
+</legend>
