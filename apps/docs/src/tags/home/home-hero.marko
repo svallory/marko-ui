@@ -11,13 +11,17 @@ static const HEADLINE = "The Foundation for your Marko Design System";
 static const DESCRIPTION =
   "A set of beautifully designed components that you can customize, extend, and build on. Copy the code into your Marko 6 app, own it, and make it yours. Open Source. Open Code.";
 
-<const/announcementHref=input.announcementHref ?? "/docs/changelog"/>
-<const/announcementLabel=input.announcement ?? "shadcn for Marko — now with Zag.js machines"/>
+<const/announcementHref=input.announcementHref ?? "/docs/changelog">
+<const/announcementLabel=input.announcement ??
+"shadcn for Marko — now with Zag.js machines">
 
 <section class="border-grid" data-slot="home-hero">
   <div class="container-wrapper">
     <div class="container flex flex-col items-center gap-4 px-6 py-8 text-center md:py-16 lg:py-20 xl:gap-4">
-      <a href=announcementHref class="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+      <a
+        href=announcementHref
+        class="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      >
         <Badge variant="secondary" class="bg-muted gap-1">
           ${announcementLabel}
           <svg
@@ -36,14 +40,12 @@ static const DESCRIPTION =
           </svg>
         </Badge>
       </a>
-
       <h1 class="leading-tighter max-w-3xl text-3xl font-semibold tracking-tight text-balance text-primary lg:leading-[1.1] lg:font-semibold xl:text-5xl xl:tracking-tighter">
         ${HEADLINE}
       </h1>
 
       <p class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-base font-medium text-muted-foreground sm:text-lg">
-        shadcn for Marko 6, powered by
-        <span class="inline-flex items-center gap-1.5 rounded-md bg-foreground px-2 py-0.5 text-background">
+        <span class="inline-flex items-center gap-1.5 rounded-md bg-foreground px-2 py-0 text-background">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -55,8 +57,8 @@ static const DESCRIPTION =
           </svg>
           shadcn
         </span>
-        &amp;
-        <span class="inline-flex items-center gap-1.5 rounded-md bg-foreground px-2 py-0.5 text-background">
+        for Marko 6, powered by
+        <span class="inline-flex items-center gap-1.5 rounded-md bg-foreground px-2 py-0 text-background">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 320 320"
@@ -105,15 +107,23 @@ static const DESCRIPTION =
 
       <dl class="mt-4 grid grid-cols-3 gap-6 text-center sm:gap-10">
         <div>
-          <dt class="text-xs font-medium tracking-wide text-muted-foreground uppercase">Components</dt>
-          <dd class="mt-1 text-2xl font-semibold tabular-nums">${COMPONENTS.length}</dd>
+          <dt class="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            Components
+          </dt>
+          <dd class="mt-1 text-2xl font-semibold tabular-nums">
+            ${COMPONENTS.length}
+          </dd>
         </div>
         <div>
-          <dt class="text-xs font-medium tracking-wide text-muted-foreground uppercase">Runtime</dt>
+          <dt class="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            Runtime
+          </dt>
           <dd class="mt-1 text-2xl font-semibold">Marko 6</dd>
         </div>
         <div>
-          <dt class="text-xs font-medium tracking-wide text-muted-foreground uppercase">No-JS</dt>
+          <dt class="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            No-JS
+          </dt>
           <dd class="mt-1 text-2xl font-semibold">Works</dd>
         </div>
       </dl>
