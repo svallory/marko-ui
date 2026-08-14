@@ -1,0 +1,140 @@
+// Guide: /docs/creating-components · adapter internals: /docs/zag-adapter
+// Authoring rules: notes/component-authoring.md (v2 pattern)
+//
+// base-rhea parity: same DOM structure / data-slot / class strings as
+// shadcn styles/base-rhea/ui/dialog.tsx. base-rhea (Base UI) drives
+// backdrop/popup enter/exit animation off data-open/data-closed; zag's
+// dialog machine only mounts these elements while api().open is true (no
+// exit-animation phase), so data-open="true" is applied statically while
+// mounted — the data-closed:* classes are therefore inert in our port
+// (documented deviation, purely cosmetic exit-transition loss, same as the
+// alert-dialog precedent).
+import * as dialogMachine from "@zag-js/dialog";
+import type { MachineInput } from "marko-ui";
+import { buttonVariants } from "../button/variants.ts";
+import { cn } from "#lib/utils.ts";
+
+// MachineInput = native <div> attributes ∩ the machine's full Props, with
+// `id` made optional (generated below, overridable). `openChange` is
+// additive sugar enabling Marko's two-way bind shorthand
+// (<Dialog open:=myState/>); Zag's own `onOpenChange` also works and
+// receives the details object.
+export type Input = MachineInput<"div", dialogMachine.Props> & {
+  openChange?: (open: boolean) => void;
+  trigger?: Marko.Body<[Record<string, unknown>]>;
+  title?: Marko.Body;
+  description?: Marko.Body;
+  content?: Marko.Body;
+  footer?: Marko.Body;
+  /** Extra classes merged onto the backdrop (e.g. a heavier blur for a specific dialog). */
+  backdropClass?: string;
+  showCloseButton?: boolean;
+};
+
+// The three-tag wiring (see /docs/creating-components):
+// 1. <machine-props> picks the machine's props out of `input` by name and
+//    merges the attributes written on it — callback adaptations live HERE,
+//    visibly, because they are this component's public contract.
+// 2. <service> creates and owns the running machine (client-only; SSR
+//    renders from a throwaway never-started instance).
+// 3. <connect> returns `api` as a GETTER — call it at every use site.
+//    Getters are the serializable currency of Marko's resumability: the
+//    api object itself must never become reactive state.
+<machine-props/machineProps from=input pick=dialogMachine.props
+  role="dialog"
+  onOpenChange(details: dialogMachine.OpenChangeDetails) {
+    input.onOpenChange?.(details);
+    input.openChange?.(details.open);
+  }/>
+<service/service machine=() => dialogMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  dialogMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+// Whatever is neither machine-owned (splitProps) nor component-owned
+// (class, openChange, trigger, title, description, content, footer,
+// backdropClass, showCloseButton) passes through to the content element:
+// aria-*, data-*...
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    openChange: ownChangeHandler,
+    trigger: ownTrigger,
+    title: ownTitle,
+    description: ownDescription,
+    content: ownContent,
+    footer: ownFooter,
+    backdropClass: ownBackdropClass,
+    showCloseButton: ownShowCloseButton,
+    ...native
+  } = dialogMachine.splitProps(input)[1] as typeof input;
+  return native;
+}>
+
+<const/{ showCloseButton = true }=input/>
+
+<if=input.trigger>
+  <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "dialog-trigger" })/>
+</if>
+<portal>
+  <if=api().open>
+    <div
+      ...api().getBackdropProps()
+      data-slot="dialog-overlay"
+      data-open="true"
+      class=cn(
+        "fixed inset-0 isolate z-50 bg-black/20 duration-100 supports-backdrop-filter:backdrop-blur-sm data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        input.backdropClass,
+      )
+    />
+    <div ...api().getPositionerProps() data-slot="dialog-positioner" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div
+        ...nativeAttrs()
+        ...api().getContentProps()
+        data-slot="dialog-content"
+        data-open="true"
+        class=cn(
+          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-6 rounded-none bg-popover p-6 text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-md data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          input.class,
+        )
+      >
+        <if=input.title>
+          <h2 ...api().getTitleProps() data-slot="dialog-title" class="cn-font-heading text-lg leading-none font-semibold tracking-wider uppercase">
+            <${input.title}/>
+          </h2>
+        </if>
+        <if=input.description>
+          <p ...api().getDescriptionProps() data-slot="dialog-description" class="mt-0.5 text-sm leading-relaxed text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground">
+            <${input.description}/>
+          </p>
+        </if>
+        <if=input.content>
+          <${input.content}/>
+        </if>
+        <if=input.footer>
+          <div data-slot="dialog-footer" class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <${input.footer}/>
+          </div>
+        </if>
+        <if=showCloseButton>
+          <button
+            ...api().getCloseTriggerProps()
+            data-slot="dialog-close"
+            class=cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "absolute top-5 right-5 bg-secondary")
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+              <path d="M18 6 6 18"/>
+              <path d="m6 6 12 12"/>
+            </svg>
+            <span class="sr-only">Close</span>
+          </button>
+        </if>
+      </div>
+    </div>
+  </if>
+</portal>
+
+// Parents can receive the api getter: <Dialog/dialogApi/> then
+// `dialogApi().open` — it stays live across machine updates.
+<return=api>

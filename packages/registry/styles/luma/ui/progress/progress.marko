@@ -1,0 +1,16 @@
+import ProgressTrack from "./track.marko";
+import ProgressIndicator from "./indicator.marko";
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  value?: number | null;
+}
+
+<const/{ value, class: className, content, ...rest }=input/>
+
+<div ...rest data-slot="progress" class=cn("flex flex-wrap gap-3", className)>
+  <${content}/>
+  <ProgressTrack>
+    <ProgressIndicator style=`width: ${value != null ? value : 0}%`/>
+  </ProgressTrack>
+</div>

@@ -1,0 +1,15 @@
+import { itemMediaVariants, type ItemMediaVariants } from "./variants.ts";
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"div">, ItemMediaVariants {}
+
+<const/{ variant, class: className, content, ...rest }=input/>
+
+<div
+  ...rest
+  data-slot="item-media"
+  data-variant=(variant ?? "default")
+  class=cn(itemMediaVariants({ variant }), className)
+>
+  <${content}/>
+</div>

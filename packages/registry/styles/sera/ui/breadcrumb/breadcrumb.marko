@@ -1,0 +1,14 @@
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"nav"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<nav ...rest aria-label="breadcrumb" data-slot="breadcrumb">
+  <ol data-slot="breadcrumb-list" class=cn(
+    "flex flex-wrap items-center gap-1.5 text-xs tracking-wide wrap-break-word text-muted-foreground uppercase sm:gap-2.5",
+    className,
+  )>
+    <${content}/>
+  </ol>
+</nav>
