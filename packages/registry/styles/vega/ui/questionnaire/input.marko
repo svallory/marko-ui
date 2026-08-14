@@ -1,0 +1,96 @@
+// base-vega parity: DOM/data-slot/class strings match shadcn
+// styles/base-vega/ui/questionnaire.tsx's `QuestionnaireInput`
+// (a wrapper div carrying `data-slot="questionnaire-input-wrapper"` around
+// the native input) exactly.
+//
+// SIMPLIFICATION FROM SOURCE: the source's `id` comes from
+// `React.useId()`; this port derives a deterministic id from `itemName`
+// instead (only one free-text answer is expected per item, matching every
+// example in apps/v4/examples/base/questionnaire-*.tsx). `value=`
+// (fully-controlled) is not ported — see lib/controller.ts's header
+// comment; the input is uncontrolled, with `name` conditionally present
+// (only when it has a non-empty value) matching the source's `selected ?
+// itemName : undefined` behavior via `form.requestSubmit`-time FormData
+// semantics — the input's `name` attribute is toggled on `input` so an
+// empty freeform answer never contributes a blank `FormData` entry.
+import { cn } from "#lib/utils.ts";
+import type { QuestionnaireController } from "./lib/controller.ts";
+
+export interface Input extends Omit<Marko.Input<"input">, "name" | "type"> {
+  controller: QuestionnaireController;
+  itemName: string;
+  type?:
+    | "date"
+    | "datetime-local"
+    | "email"
+    | "month"
+    | "number"
+    | "password"
+    | "search"
+    | "tel"
+    | "text"
+    | "time"
+    | "url"
+    | "week";
+}
+
+<const/{ controller, itemName, type = "text", class: className, content, disabled, onChange, ...rest }=input/>
+
+<const/answerId=`questionnaire-${itemName}-input`/>
+
+<script>
+  controller.registerAnswer(itemName, {
+    id: answerId,
+    type: "input",
+    disabled: Boolean(disabled),
+    element: null,
+  });
+</script>
+
+<let/_version=controller.versionStore.getSnapshot()>
+<lifecycle
+  onMount() {
+    return controller.versionStore.subscribe(() => {
+      _version = controller.versionStore.getSnapshot();
+    });
+  }
+/>
+
+<const/snapshot=(_version >= 0 ? controller.getItemSnapshot(itemName) : undefined)/>
+<const/selected=(snapshot?.selectedAnswerIds.includes(answerId) ?? false)/>
+<const/invalid=(_version >= 0 && controller.isInvalid(itemName))/>
+
+<div data-slot="questionnaire-input-wrapper" class="group/questionnaire-input relative w-full min-w-0">
+  <input/inputEl
+    ...rest
+    data-slot="questionnaire-input"
+    type=type
+    id=answerId
+    name=(selected ? itemName : undefined)
+    disabled=disabled
+    aria-invalid=(invalid || undefined)
+    class=cn(
+      "h-9 min-h-11 w-full min-w-0 rounded-md border border-input bg-transparent px-2.5 py-1 text-base shadow-xs transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 sm:min-h-0 md:text-sm dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
+      "selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground",
+      className,
+    )
+    onChange(event: Event) {
+      onChange?.(event);
+      if (event.defaultPrevented) return;
+      const target = event.target as HTMLInputElement;
+      const filled = target.value.trim().length > 0;
+      controller.setAnswerSelected(itemName, answerId, filled, false);
+    }
+  >
+</div>
+
+<lifecycle
+  onMount() {
+    controller.registerAnswer(itemName, {
+      id: answerId,
+      type: "input",
+      disabled: Boolean(disabled),
+      element: inputEl(),
+    });
+  }
+/>

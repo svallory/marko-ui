@@ -1,0 +1,87 @@
+// base-lyra parity: DOM/data-slot/class strings match shadcn
+// styles/base-lyra/ui/questionnaire.tsx's `QuestionnaireItem`
+// ("flex min-w-0 flex-col gap-4 border-0 p-0 outline-none"). The source
+// renders a `<fieldset>` (`Questionnaire.Item` in the primitive), hidden +
+// inert when not the active item (`useQuestionnaireItem`'s `itemProps`).
+//
+// SIMPLIFICATION FROM SOURCE: `aria-keyshortcuts` (a dynamic composite of
+// which arrow keys/Enter are currently meaningful) and `aria-describedby`
+// (wired to sibling Description/Error ids via a registration callback) are
+// not reproduced — both are accessibility-affordance metadata, not part of
+// the DOM/class parity surface this port targets, and would require the
+// full description/error id-registration machinery from
+// use-questionnaire-item.ts. `multiple`, `required`, and `disabled` ARE
+// wired, driving the same status derivation as the source.
+import { cn } from "#lib/utils.ts";
+import type { QuestionnaireController } from "./lib/controller.ts";
+import type { QuestionnaireItemStatus } from "./lib/types.ts";
+
+export interface Input extends Omit<Marko.Input<"fieldset">, "name"> {
+  controller: QuestionnaireController;
+  name: string;
+  multiple?: boolean;
+  required?: boolean;
+  disabled?: boolean;
+  invalid?: boolean;
+  statusChange?: (status: QuestionnaireItemStatus) => void;
+  onStatusChange?: (status: QuestionnaireItemStatus) => void;
+  content?: Marko.Body<[{ active: boolean; status: QuestionnaireItemStatus }]>;
+}
+
+<const/{
+  controller,
+  name,
+  multiple = false,
+  required = false,
+  disabled = false,
+  invalid: externallyInvalid = false,
+  statusChange,
+  onStatusChange,
+  class: className,
+  content,
+  ...rest
+}=input/>
+
+<let/_version=controller.versionStore.getSnapshot()>
+<let/activeItemName=controller.activeItemStore.getSnapshot()>
+<lifecycle
+  onMount() {
+    const unsubscribeVersion = controller.versionStore.subscribe(() => {
+      _version = controller.versionStore.getSnapshot();
+    });
+    const unsubscribeActive = controller.activeItemStore.subscribe(() => {
+      activeItemName = controller.activeItemStore.getSnapshot();
+    });
+    return () => {
+      unsubscribeVersion();
+      unsubscribeActive();
+    };
+  }
+/>
+
+<const/active=(activeItemName === name && !disabled)/>
+<const/status=(_version >= 0 ? controller.getStatus(name) : "unanswered")/>
+<const/invalid=(externallyInvalid || (_version >= 0 && controller.isInvalid(name)))/>
+
+<let/_previousStatus=status>
+<script>
+  if (_previousStatus !== status) {
+    _previousStatus = status;
+    statusChange?.(status);
+    onStatusChange?.(status);
+  }
+</script>
+
+<fieldset
+  ...rest
+  data-slot="questionnaire-item"
+  data-name=name
+  disabled=disabled
+  hidden=(!active)
+  inert=(!active)
+  tabindex="-1"
+  aria-invalid=(invalid || undefined)
+  class=cn("flex min-w-0 flex-col gap-4 border-0 p-0 outline-none", className)
+>
+  <${content}({ active, status })/>
+</fieldset>

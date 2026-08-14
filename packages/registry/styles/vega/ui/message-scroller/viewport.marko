@@ -1,0 +1,94 @@
+// Port of shadcn's `message-scroller.tsx`'s `MessageScrollerViewport`. Wraps
+// `@shadcn/react/message-scroller`'s `MessageScroller.Viewport`, which owns
+// native scroll/wheel/touch/keydown listeners plus a `ResizeObserver` on the
+// viewport element itself.
+//
+// The source attaches these as React synthetic event props
+// (onScroll/onWheel/onTouchMove/onKeyDown) and a `useEffect`-mounted
+// ResizeObserver. This port uses the same native events as plain `on*`
+// attributes (Marko compiles these to real DOM listeners, so behavior is
+// identical) and moves the ResizeObserver into a `<lifecycle>` block — the
+// task's requested "real scroll listener + ResizeObserver in an effect"
+// idiom, using this project's actual effect primitive (`<lifecycle>`; Marko
+// has no separate `<effect>` tag).
+import { cn } from "#lib/utils.ts";
+import type { MessageScrollerController } from "./lib/controller.ts";
+import { USER_SCROLL_KEYS } from "./lib/types.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  /** The controller created by the nearest `<message-scroller-provider>`. */
+  controller: MessageScrollerController;
+  /** Keep the first visible messageId row stable on prepend. Defaults to true. */
+  preserveScrollOnPrepend?: boolean;
+}
+
+<const/{
+  controller,
+  class: className,
+  content,
+  preserveScrollOnPrepend = true,
+  role,
+  tabindex,
+  "aria-label": ariaLabel,
+  ...rest
+}=input/>
+
+<script>
+  controller.setPreserveScrollOnPrepend(preserveScrollOnPrepend);
+</script>
+
+<div/el
+  ...rest
+  role=(role ?? "region")
+  aria-label=(ariaLabel ?? "Messages")
+  tabindex=(tabindex ?? 0)
+  data-slot="message-scroller-viewport"
+  class=cn(
+    "size-full min-h-0 min-w-0 scroll-fade-b scrollbar-thin scrollbar-gutter-stable overflow-y-auto overscroll-contain contain-content data-autoscrolling:scrollbar-thumb-transparent data-autoscrolling:scrollbar-track-transparent",
+    className,
+  )
+  onScroll() {
+    controller.syncAfterScroll();
+  }
+  onWheel() {
+    controller.userScrollIntent();
+  }
+  onTouchMove() {
+    controller.userScrollIntent();
+  }
+  onKeyDown(event: KeyboardEvent) {
+    if (USER_SCROLL_KEYS.has(event.key)) {
+      controller.userScrollIntent();
+    }
+  }
+>
+  <${content}/>
+</div>
+
+<lifecycle
+  onMount() {
+    const viewport = el();
+    controller.setViewportElement(viewport);
+
+    if (typeof ResizeObserver === "undefined") return;
+
+    // Coalesce into rAF: handleResize mutates the spacer inside the observed
+    // content, and resizing an observed element during delivery fires
+    // "ResizeObserver loop completed with undelivered notifications" (same
+    // rationale as the source).
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => controller.handleResize());
+    });
+    observer.observe(viewport);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }
+  onDestroy() {
+    controller.setViewportElement(null);
+  }
+/>

@@ -1,0 +1,17 @@
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"span"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<span
+  ...rest
+  data-slot="attachment-description"
+  class=cn(
+    "mt-0.5 block min-w-0 truncate text-xs text-muted-foreground group-data-[state=error]/attachment:text-destructive/80",
+    "max-w-full",
+    className,
+  )
+>
+  <${content}/>
+</span>

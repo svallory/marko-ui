@@ -1,0 +1,57 @@
+// Port of shadcn's `message-scroller.tsx`'s `MessageScrollerProvider`, which
+// itself just forwards to `@shadcn/react/message-scroller`'s
+// `MessageScroller.Provider` — a HEADLESS component: it owns scroll state,
+// anchoring, auto-follow, and visibility tracking, but renders no DOM element
+// of its own (`MessageScrollerContext.Provider` in the source is a pure React
+// context boundary).
+//
+// SIMPLIFICATION FROM SOURCE: Marko has no context primitive (per this
+// project's stated gotchas: "React context -> pass values down as attrs from
+// a container tag"). This port creates ONE `MessageScrollerController`
+// instance (lib/controller.ts) per provider and passes it down explicitly as
+// the `controller=` input to every descendant part (`message-scroller.marko`,
+// `viewport.marko`, `content.marko`, `item.marko`, `button.marko`) instead of
+// reading it from context. Because the controller is created here — not
+// rendered as DOM — this file still renders NO wrapper element, matching the
+// source's headless behavior exactly; only the mechanism for reaching
+// descendants changed, not the DOM.
+import { createMessageScrollerController } from "./lib/controller.ts";
+import type { MessageScrollerDefaultScrollPosition } from "./lib/types.ts";
+
+export interface Input {
+  /** Follow new content at the bottom while the viewport is already at the end. */
+  autoScroll?: boolean;
+  /** Opening position on the first non-empty render, applied once. */
+  defaultScrollPosition?: MessageScrollerDefaultScrollPosition;
+  /** Distance from an edge that still counts as at-top/at-bottom. Defaults to 8. */
+  scrollEdgeThreshold?: number;
+  /** Extra top margin for a newly anchored row, added to scrollMargin. Defaults to 64. */
+  scrollPreviousItemPeek?: number;
+  /** Default margin on the aligned edge for commands and visibility. Defaults to 0. */
+  scrollMargin?: number;
+  /** Subtree that receives the controller as its single argument. */
+  content?: Marko.Body<[ReturnType<typeof createMessageScrollerController>]>;
+}
+
+<const/controller=createMessageScrollerController({
+  autoScroll: input.autoScroll,
+  defaultScrollPosition: input.defaultScrollPosition,
+  scrollEdgeThreshold: input.scrollEdgeThreshold,
+  scrollPreviousItemPeek: input.scrollPreviousItemPeek,
+  scrollMargin: input.scrollMargin,
+})/>
+
+<script>
+  controller.setAutoScroll(input.autoScroll ?? false);
+  if (input.defaultScrollPosition) {
+    controller.setDefaultScrollPosition(input.defaultScrollPosition);
+  }
+</script>
+
+<lifecycle
+  onDestroy() {
+    controller.dispose();
+  }
+/>
+
+<${input.content}(controller)/>

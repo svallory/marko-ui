@@ -1,0 +1,219 @@
+// Adapted from shadcn/ui `examples/radix/message-scroller-demo.tsx` (MIT).
+// The source drives this card with `useChat` (streaming, live send/reset);
+// this port renders the same populated transcript as a static snapshot —
+// same DOM/data-slot/class strings as `MessageScroller`/`Message`/`Bubble`
+// from our rhea registry, no live chat wiring — matching how the other
+// homepage cards (card-payments, card-qr-connect) are static ports of
+// otherwise-interactive shadcn demos. `MessageScrollerProvider` is still
+// used (it is headless — no DOM of its own) so the scroller parts get a
+// real controller, matching the source's component tree exactly.
+import Card from "@marko-ui/registry/styles/rhea/ui/card/card.marko";
+import CardHeader from "@marko-ui/registry/styles/rhea/ui/card/header.marko";
+import CardTitle from "@marko-ui/registry/styles/rhea/ui/card/title.marko";
+import CardDescription from "@marko-ui/registry/styles/rhea/ui/card/description.marko";
+import CardAction from "@marko-ui/registry/styles/rhea/ui/card/action.marko";
+import CardContent from "@marko-ui/registry/styles/rhea/ui/card/content.marko";
+import CardFooter from "@marko-ui/registry/styles/rhea/ui/card/footer.marko";
+import Button from "@marko-ui/registry/styles/rhea/ui/button/button.marko";
+import Tooltip from "@marko-ui/registry/styles/rhea/ui/tooltip/tooltip.marko";
+import DropdownMenu from "@marko-ui/registry/styles/rhea/ui/dropdown-menu/dropdown-menu.marko";
+import InputGroup from "@marko-ui/registry/styles/rhea/ui/input-group/input-group.marko";
+import InputGroupAddon from "@marko-ui/registry/styles/rhea/ui/input-group/addon.marko";
+import InputGroupButton from "@marko-ui/registry/styles/rhea/ui/input-group/button.marko";
+import MessageScrollerProvider from "@marko-ui/registry/styles/rhea/ui/message-scroller/message-scroller-provider.marko";
+import MessageScroller from "@marko-ui/registry/styles/rhea/ui/message-scroller/message-scroller.marko";
+import MessageScrollerViewport from "@marko-ui/registry/styles/rhea/ui/message-scroller/viewport.marko";
+import MessageScrollerContent from "@marko-ui/registry/styles/rhea/ui/message-scroller/content.marko";
+import MessageScrollerItem from "@marko-ui/registry/styles/rhea/ui/message-scroller/item.marko";
+import MessageScrollerButton from "@marko-ui/registry/styles/rhea/ui/message-scroller/button.marko";
+import Message from "@marko-ui/registry/styles/rhea/ui/message/message.marko";
+import MessageContent from "@marko-ui/registry/styles/rhea/ui/message/content.marko";
+import Bubble from "@marko-ui/registry/styles/rhea/ui/bubble/bubble.marko";
+import BubbleContent from "@marko-ui/registry/styles/rhea/ui/bubble/bubble-content.marko";
+
+static const TRANSCRIPT = [
+  {
+    id: "u1",
+    role: "user",
+    text: "I'm building a chat for our app and the scroll behavior is driving me nuts. Every time the AI streams a reply, the whole thread jumps around.",
+  },
+  {
+    id: "a1",
+    role: "assistant",
+    text: "That's the classic streaming scroll problem. Wrap your message list in `MessageScroller` and turn on `autoScroll` — the viewport pins to the bottom as tokens arrive, so users always see the latest text land in place.\n\nThe important part: it only auto-scrolls while the reader is already at the bottom. The moment they scroll up to read something earlier, auto-scroll backs off and their position is preserved. You get smooth streaming without fighting the user's intent.",
+  },
+  {
+    id: "u2",
+    role: "user",
+    text: "Okay, but when someone sends a new message the view still feels jarring — like the whole conversation reloads from the top.",
+  },
+  {
+    id: "a2",
+    role: "assistant",
+    text: "MessageScrollerItem fixes that with turn anchoring. Set `scrollAnchor` on the turn that should settle near the top instead of blindly snapping to the document bottom.\n\nIt also leaves a small peek of the previous exchange visible above the anchor, so context isn't lost. The reply starts in view without that disorienting jump you get from a plain overflow container.",
+  },
+  {
+    id: "u3",
+    role: "user",
+    text: "And if they've scrolled up to re-read an older answer? I don't want to yank them back down.",
+  },
+  {
+    id: "a3",
+    role: "assistant",
+    text: "You won't. Auto-scroll only runs when the viewport is already pinned to the bottom, so scrolling up is a deliberate opt-out — their place in the thread stays put even as new tokens keep arriving below.\n\nWhen there is content they haven't seen yet, `MessageScrollerButton` appears at the bottom of the viewport. One tap jumps them back to the newest message and re-engages auto-scroll. Same pattern as Slack or iMessage: quiet when you're caught up, helpful when you're not.",
+  },
+  {
+    id: "u4",
+    role: "user",
+    text: "Last one — does this work with assistive tech?",
+  },
+  {
+    id: "a4",
+    role: "assistant",
+    text: '`MessageScrollerContent` sets `role="log"` and `aria-relevant="additions"` by default, so screen readers announce new messages as they stream in.\n\nThe scroll button is a real `<button>` with an sr-only label, and it\'s removed from the tab order when you\'re already at the bottom — no ghost focus stops.',
+  },
+];
+
+static function paragraphs(text: string) {
+  return text
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+}
+
+<div class="relative flex flex-col gap-4">
+  <Card class="mx-auto h-140 w-full max-w-sm min-w-0 gap-0">
+    <CardHeader class="gap-1 border-b">
+      <CardTitle>New Chat</CardTitle>
+      <CardDescription>How can I help you today?</CardDescription>
+      <CardAction>
+        <Tooltip content="Reset">
+          <@trigger|triggerProps|>
+            <Button
+              ...triggerProps
+              variant="outline"
+              size="icon"
+              aria-label="Reset conversation"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+              </svg>
+            </Button>
+          </@trigger>
+        </Tooltip>
+      </CardAction>
+    </CardHeader>
+    <CardContent class="flex-1 overflow-hidden p-0">
+      <MessageScrollerProvider>
+        <@content|controller|>
+          <MessageScroller controller=controller>
+            <MessageScrollerViewport controller=controller>
+              <MessageScrollerContent controller=controller class="p-(--card-spacing)">
+                <for|message| of=TRANSCRIPT by=(message) => message.id>
+                  <MessageScrollerItem
+                    controller=controller
+                    messageId=message.id
+                    scrollAnchor=(message.role === "user")
+                  >
+                    <Message align=(message.role === "user" ? "end" : "start")>
+                      <MessageContent>
+                        <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
+                          <BubbleContent class="space-y-2">
+                            <for|paragraph, index| of=paragraphs(message.text)>
+                              <p class="whitespace-pre-wrap">${paragraph}</p>
+                            </for>
+                          </BubbleContent>
+                        </Bubble>
+                      </MessageContent>
+                    </Message>
+                  </MessageScrollerItem>
+                </for>
+              </MessageScrollerContent>
+            </MessageScrollerViewport>
+            <MessageScrollerButton controller=controller/>
+          </MessageScroller>
+        </@content>
+      </MessageScrollerProvider>
+    </CardContent>
+    <CardFooter class="flex-col gap-2">
+      <form class="w-full">
+        <InputGroup>
+          <div class="h-14 w-full px-3 py-2.5">
+            <span class="line-clamp-2 opacity-60 data-[status=ready]:opacity-100" data-status="ready">
+              Does this work with assistive tech?
+            </span>
+          </div>
+          <InputGroupAddon align="block-end" class="pt-1">
+            <DropdownMenu>
+              <@trigger|triggerProps|>
+                <InputGroupButton
+                  ...triggerProps
+                  aria-label="Add files"
+                  type="button"
+                  size="icon-sm"
+                  variant="outline"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/>
+                    <path d="M12 5v14"/>
+                  </svg>
+                </InputGroupButton>
+              </@trigger>
+              <@item value="add-photos">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"/>
+                </svg>
+                Add Photos & Files
+              </@item>
+              <@item type="separator"/>
+              <@item value="create-image">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                  <circle cx="9" cy="9" r="2"/>
+                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                </svg>
+                Create Image
+              </@item>
+              <@item value="deep-research">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m10.065 12.493-6.18 1.318a.934.934 0 0 1-1.108-.702l-.537-2.15a1.07 1.07 0 0 1 .691-1.265l13.504-4.44"/>
+                  <path d="m13.56 11.747 4.332-.924"/>
+                  <path d="m16 21-3.105-6.21"/>
+                  <path d="M16.485 5.94a2 2 0 0 1 1.455-2.425l1.09-.272a1 1 0 0 1 1.212.727l1.515 6.06a1 1 0 0 1-.727 1.213l-1.09.272a2 2 0 0 1-2.425-1.455z"/>
+                  <path d="m6.158 8.633 1.114 4.456"/>
+                  <path d="m8 21 3.105-6.21"/>
+                  <circle cx="12" cy="13" r="2"/>
+                </svg>
+                Deep Research
+              </@item>
+              <@item value="web-search">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+                  <path d="M2 12h20"/>
+                </svg>
+                Web Search
+              </@item>
+            </DropdownMenu>
+            <InputGroupButton
+              type="submit"
+              variant="default"
+              size="icon-sm"
+              class="ml-auto"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m5 12 7-7 7 7"/>
+                <path d="M12 19V5"/>
+              </svg>
+              <span class="sr-only">Send</span>
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
+      </form>
+    </CardFooter>
+  </Card>
+  <div class="px-0.5 text-center text-xs text-muted-foreground">
+    Demo is read only. Press send to send messages.
+  </div>
+</div>

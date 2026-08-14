@@ -1,0 +1,6 @@
+{
+  "title": "Bubble",
+  "description": "A chat message bubble with grouping, content, and reactions.",
+  "dependencies": ["class-variance-authority"],
+  "registryDependencies": ["utils"]
+}

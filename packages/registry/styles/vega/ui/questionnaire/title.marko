@@ -1,0 +1,21 @@
+// base-vega parity: DOM/data-slot/class strings match shadcn
+// styles/base-vega/ui/questionnaire.tsx's `QuestionnaireTitle`
+// ("cn-font-heading text-base font-semibold text-pretty
+// [&:not(:has(~[data-slot=questionnaire-description]))]:mb-5"). The
+// source renders a `<legend>` (`Questionnaire.Title` in the primitive).
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"legend"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<legend
+  ...rest
+  data-slot="questionnaire-title"
+  class=cn(
+    "cn-font-heading text-base font-semibold text-pretty [&:not(:has(~[data-slot=questionnaire-description]))]:mb-5",
+    className,
+  )
+>
+  <${content}/>
+</legend>

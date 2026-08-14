@@ -1,0 +1,6 @@
+{
+  "title": "Marker",
+  "description": "A labeled marker for separating or annotating content, with icon and content slots.",
+  "dependencies": ["class-variance-authority"],
+  "registryDependencies": ["utils"]
+}

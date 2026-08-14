@@ -1,0 +1,6 @@
+{
+  "title": "Message",
+  "description": "Chat message layout parts: group, avatar, content, header, and footer.",
+  "dependencies": [],
+  "registryDependencies": ["utils"]
+}
