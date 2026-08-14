@@ -164,12 +164,31 @@ unreachable.
   AGENTS.md generation. Port those modules to TS. Their INSTALL model is
   useless to us — no registry concept at all (npm package + `swizzle` copies
   source out of node_modules); ours is registry-fetch, which is why the
-  registry guts come from shadcn instead.
-- **Port, don't wrap, the shadcn resolver.** MIT + we already vendor the
-  clone; wrap-as-dependency would drag React assumptions (tsx/rsc flags,
-  FALLBACK_STYLE, their builtin/index URLs) we'd fight forever. Port
-  `registry/{parser,resolver,fetcher,schema}.ts` mechanics, drop React bits,
-  keep components.json wire-compat.
+  code base is the shadcn fork and Astryx contributes the shape, not the
+  guts.
+- **Starting point: fork the shadcn package, refactor toward the Astryx
+  architecture** (analyzed 2026-08-14, shadcn CLI 4.18.0). shadcn wins as
+  the CODE base: TypeScript (Astryx is .mjs+JSDoc — everything ported from
+  it needs a TS rewrite anyway), and its `registry/` layer (~668K incl.
+  tests; parser/resolver/fetcher/loader/source with GitHub refs, local
+  paths, proxies, auth headers, search, validate, typed errors) IS our
+  core problem, battle-tested (resolver.test 69K, api.test 70K; 84 test
+  files / 132 source files overall). Wire-format compatibility is also
+  safest maintained by keeping their schema/config code, not re-deriving.
+  - KEEP: `registry/`, `schema/`, `utils/updaters/` (css/css-vars/fonts/
+    dependencies — postcss-based, framework-neutral), get-config,
+    get-package-manager, get-project-info (slimmed), search, validate, mcp
+    utils.
+  - DROP: `utils/transformers/` (ts-morph/babel over TSX — meaningless for
+    `.marko`; our import rewriting `#lib/*`→relative is a text-level
+    transform we write fresh), `frameworks.ts`, `preflights/`, `templates/`
+    + create-project (Next/Vite React scaffolds), `styles/`, `icons/`,
+    `migrations/`. Dropping transformers also sheds the heavy dep tail
+    (babel, ts-morph, recast).
+  - REFACTOR TARGET: shadcn's weakness is architecture — fat commands
+    (init.ts is 1049 lines), no api layer, `--json` bolted onto 4 commands,
+    no manifest/dense/detail, stringly errors. That's exactly what the
+    Astryx shape fixes (next bullet).
 - Programmatic API (`marko-ui/api`) mirrors commands 1:1; CLI commands are
   thin argv→API adapters — that same API backs `mcp serve` and llms.txt
   generation.
