@@ -1,0 +1,122 @@
+// base-vega parity: DOM/data-slot/class strings match shadcn
+// styles/base-vega/ui/resizable.tsx, adapted for @zag-js/splitter (the
+// default implementation's engine) instead of react-resizable-panels (what
+// the tsx source actually wraps). Two documented class-selector deviations
+// below (search "DEVIATION") — everything else is copied verbatim from the
+// tsx.
+//
+// DEVIATION 1 (root): tsx targets `aria-[orientation=vertical]:flex-col` on
+// ResizablePrimitive.Group, because react-resizable-panels' Group renders
+// `aria-orientation` itself. Zag splitter's `getRootProps()` emits only
+// `data-orientation` on the root (verified in
+// @zag-js/splitter/dist/splitter.connect.mjs — no `aria-orientation` there;
+// it appears only on `getResizeTriggerProps()`), so the selector is
+// retargeted to `data-[orientation=vertical]:flex-col` to match what zag
+// actually renders. Same swap applied to `ResizableHandle`'s
+// `aria-[orientation=horizontal]:*` classes -> `data-[orientation=...]:*`
+// (zag's getResizeTriggerProps() does emit both data- and aria-orientation,
+// but the default resizable.marko's existing handle classes already target
+// data-orientation, so this keeps the two implementations consistent).
+import * as splitterMachine from "@zag-js/splitter";
+import { cn } from "#lib/utils.ts";
+
+export interface ResizablePanel {
+  id: string;
+  defaultSize?: number | string;
+  minSize?: number | string;
+  maxSize?: number | string;
+}
+
+export interface Input extends Omit<Marko.Input<"div">, "content"> {
+  panels: ResizablePanel[];
+  content?: Marko.Body<[ResizablePanel, number]>;
+  orientation?: "horizontal" | "vertical";
+  class?: string;
+  // Zag's own callbacks also work and receive the details object.
+  onResize?: (details: splitterMachine.ResizeDetails) => void;
+  onResizeStart?: () => void;
+  onResizeEnd?: (details: splitterMachine.ResizeEndDetails) => void;
+  onCollapse?: (details: splitterMachine.ExpandCollapseDetails) => void;
+  onExpand?: (details: splitterMachine.ExpandCollapseDetails) => void;
+  // Additive sugar mirroring the `xxxChange` convention used elsewhere in
+  // the registry (e.g. switch's `checkedChange`) for the values most
+  // consumers actually want out of a resize/collapse/expand event.
+  resizeChange?: (size: number[]) => void;
+  resizeEndChange?: (size: number[]) => void;
+  collapseChange?: (panelId: string, size: number) => void;
+  expandChange?: (panelId: string, size: number) => void;
+}
+
+// This component's public API (`panels`, `orientation`) does not map 1:1
+// onto the machine's Props shape, so nothing is picked from `input` by name
+// — every machine prop is supplied as an override attribute, computed here,
+// visibly, exactly like a callback adaptation would be.
+<machine-props/machineProps from=input pick=[]
+  orientation=input.orientation ?? "horizontal"
+  panels=input.panels.map((panel) => ({
+    id: panel.id,
+    minSize: panel.minSize,
+    maxSize: panel.maxSize,
+  }))
+  defaultSize=input.panels.map((panel) => panel.defaultSize ?? 100 / input.panels.length)
+  onResize(details: splitterMachine.ResizeDetails) {
+    input.onResize?.(details);
+    input.resizeChange?.(details.size);
+  }
+  onResizeStart() {
+    input.onResizeStart?.();
+  }
+  onResizeEnd(details: splitterMachine.ResizeEndDetails) {
+    input.onResizeEnd?.(details);
+    input.resizeEndChange?.(details.size);
+  }
+  onCollapse(details: splitterMachine.ExpandCollapseDetails) {
+    input.onCollapse?.(details);
+    input.collapseChange?.(details.panelId, details.size);
+  }
+  onExpand(details: splitterMachine.ExpandCollapseDetails) {
+    input.onExpand?.(details);
+    input.expandChange?.(details.panelId, details.size);
+  }
+/>
+<service/service machine=() => splitterMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  splitterMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+// NOTE (intentional deviation from the standard
+// `machineModule.splitProps(input)[1]` pattern): Input's `panels` field is
+// `ResizablePanel[]` (id/defaultSize/minSize/maxSize), a superset of the
+// machine's `PanelData[]` shape. `splitterMachine.splitProps(input)` would
+// type-check (extra fields don't block interface-to-interface
+// assignability), but the manual destructure keeps every
+// component-owned field explicit alongside the machine ones. Every
+// machine-owned field this component exposes (`panels`, `orientation`,
+// `onResize`, `onResizeStart`, `onResizeEnd`, `onCollapse`, `onExpand`,
+// `resizeChange`, `resizeEndChange`, `collapseChange`, `expandChange`) is
+// named explicitly below instead. If a new machine-named field is ever
+// added to Input ad hoc, it MUST be added to this destructure too, or it
+// will leak onto the native <div> via `...rest`.
+<const/{ panels, content, class: className, orientation, onResize, onResizeStart, onResizeEnd, onCollapse, onExpand, resizeChange, resizeEndChange, collapseChange, expandChange, ...rest }=input/>
+
+<div ...rest ...api().getRootProps() data-slot="resizable-panel-group" class=cn("flex h-full w-full data-[orientation=vertical]:flex-col", className)>
+  <for|panel, index| of=panels>
+    <div ...api().getPanelProps({ id: panel.id }) data-slot="resizable-panel">
+      <if=content>
+        <${content}(panel, index)/>
+      </if>
+    </div>
+    <if=index < panels.length - 1>
+      <div
+        ...api().getResizeTriggerProps({ id: `${panel.id}:${panels[index + 1].id}` })
+        data-slot="resizable-handle"
+        class="relative flex w-px items-center justify-center bg-border ring-offset-background after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden data-[orientation=vertical]:h-px data-[orientation=vertical]:w-full data-[orientation=vertical]:after:left-0 data-[orientation=vertical]:after:h-1 data-[orientation=vertical]:after:w-full data-[orientation=vertical]:after:translate-x-0 data-[orientation=vertical]:after:-translate-y-1/2 [&[data-orientation=vertical]>div]:rotate-90"
+      >
+        <div class="z-10 flex h-6 w-1 shrink-0 rounded-lg bg-border"/>
+      </div>
+    </if>
+  </for>
+</div>
+
+<return=api>

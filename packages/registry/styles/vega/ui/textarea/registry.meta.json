@@ -1,0 +1,6 @@
+{
+  "title": "Textarea",
+  "description": "Displays a form textarea field.",
+  "dependencies": [],
+  "registryDependencies": ["utils"]
+}

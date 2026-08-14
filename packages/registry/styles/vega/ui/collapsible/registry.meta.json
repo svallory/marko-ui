@@ -1,0 +1,6 @@
+{
+  "title": "Collapsible",
+  "description": "An interactive component which expands/collapses a panel.",
+  "dependencies": ["@zag-js/collapsible"],
+  "registryDependencies": ["utils"]
+}
