@@ -1,0 +1,39 @@
+import { normalizeFieldErrors, type FieldErrorLike } from "./variants.ts";
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  /**
+   * One error, or a list of them. Each entry may be a plain message string or any
+   * object carrying a `message` — the shape of a Standard Schema issue, so output
+   * from valibot, zod or arktype passes through unchanged. Duplicates are removed.
+   *
+   * Ignored when body content is provided.
+   */
+  errors?: FieldErrorLike | readonly FieldErrorLike[];
+}
+
+<const/{ errors, class: className, content, ...rest }=input/>
+<const/messages=content ? [] : normalizeFieldErrors(errors)/>
+
+<if=content || messages.length>
+  <div
+    ...rest
+    role="alert"
+    data-slot="field-error"
+    class=cn("text-xs font-normal text-destructive", className)
+  >
+    <if=content>
+      <${content}/>
+    </if>
+    <else-if=messages.length === 1>
+      ${messages[0]}
+    </else-if>
+    <else>
+      <ul class="ml-4 flex list-disc flex-col gap-1">
+        <for|message| of=messages>
+          <li>${message}</li>
+        </for>
+      </ul>
+    </else>
+  </div>
+</if>

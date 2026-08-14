@@ -1,0 +1,168 @@
+// base-lyra parity: DOM/data-slot/class strings match
+// shadcn styles/base-lyra/ui/select.tsx. base-lyra (Base UI) emits
+// data-placeholder on the value slot and data-open/data-closed for the
+// popup animation states, and data-highlighted on items; zag exposes
+// api().open (boolean) + getItemState() instead, so those are mapped
+// explicitly below. SelectScrollUpButton / SelectScrollDownButton have no
+// zag-select equivalent (no scroll-arrow API in @zag-js/select) and are
+// intentionally omitted — see component report.
+import * as select from "@zag-js/select";
+import type { MachineInput } from "marko-ui";
+import { positionerStyle } from "marko-ui";
+import { cn } from "#lib/utils.ts";
+
+export interface SelectItem {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+// `items`/`value` are narrowed vs. the raw machine Props: `items` drives the
+// generated `collection`, and `value` is typed as the plain string[] the
+// caller works with (the machine's own `value` type matches already).
+//
+// `option` is the attr-tag compound API (flat: no per-item render-prop needed
+// since select items are plain strings today). When present it is normalized
+// into the same SelectItem[] shape `items` already uses, and that normalized
+// array feeds buildCollection/serviceProps and both <for> loops unchanged —
+// `items=` keeps working as-is for the data-driven case.
+export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collection"> & {
+  items?: SelectItem[];
+  option?: Marko.AttrTag<SelectItem>;
+  valueChange?: (value: string[]) => void;
+  placeholder?: string;
+  label?: string;
+  size?: "sm" | "default";
+};
+
+<const/{ placeholder, label, class: className, size = "default" }=input/>
+<const/optionTags=[...(input.option ?? [])]/>
+<const/items=(optionTags.length > 0 ? optionTags : (input.items ?? []))/>
+
+<const/buildCollection=(list: SelectItem[]) =>
+  select.collection({
+    items: list,
+    itemToValue: (item: SelectItem) => item.value,
+    itemToString: (item: SelectItem) => item.label,
+    isItemDisabled: (item: SelectItem) => !!item.disabled,
+  })
+/>
+
+<machine-props/machineProps from=input pick=select.props
+  onValueChange(details: select.ValueChangeDetails<SelectItem>) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value);
+  }/>
+// `collection` is derived state (rebuilt whenever `items` changes), not a
+// plain input field, so it cannot be picked/overridden inside <machine-props>
+// (that tag's overrides are evaluated eagerly at the tag-input boundary).
+// Wrap machineProps in a closure that layers it in for <service>.
+<const/serviceProps=() => ({ ...machineProps(), collection: buildCollection(items) })/>
+<service/service machine=() => select.machine props=serviceProps/>
+<connect/api=(service, normalizeProps) =>
+  select.connect(service, normalizeProps)
+  service=service
+/>
+
+<const/nativeAttrs=() => {
+  const {
+    class: ownClass,
+    valueChange: ownChangeHandler,
+    items: ownItems,
+    option: ownOption,
+    placeholder: ownPlaceholder,
+    label: ownLabel,
+    size: ownSize,
+    ...native
+  } = select.splitProps(input)[1] as typeof input;
+  return native;
+}>
+
+<div ...nativeAttrs() ...api().getRootProps() data-slot="select" class=cn(className)>
+  <label ...api().getLabelProps() data-slot="select-label" class=(label ? "text-sm font-medium" : "sr-only")>${label || placeholder || "Select an option"}</label>
+  <div ...api().getControlProps() data-slot="select-control">
+    <button
+      ...api().getTriggerProps()
+      data-slot="select-trigger"
+      data-size=size
+      data-placeholder=(api().valueAsString ? undefined : "")
+      class="flex w-fit items-center justify-between gap-1.5 rounded-none border border-input bg-transparent py-2 pr-2 pl-2.5 text-xs whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-1 aria-invalid:ring-destructive/20 data-placeholder:text-muted-foreground data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-none *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+    >
+      <span data-slot="select-value" class="flex flex-1 text-left">${api().valueAsString || placeholder}</span>
+      <svg ...api().getIndicatorProps() xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pointer-events-none size-4 text-muted-foreground">
+        <path d="m6 9 6 6 6-6"/>
+      </svg>
+    </button>
+  </div>
+  <select ...api().getHiddenSelectProps() data-slot="select-hidden-select">
+    <for|entry| of=items>
+      <option value=entry.value disabled=entry.disabled>${entry.label}</option>
+    </for>
+  </select>
+  <portal>
+    <if=api().open>
+      <div ...api().getPositionerProps() data-slot="select-positioner" style=positionerStyle class="isolate z-50">
+        <div
+          ...api().getContentProps()
+          data-slot="select-content"
+          data-align-trigger="true"
+          class="cn-menu-target cn-menu-translucent relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-none bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95"
+        >
+          <for|entry| of=items>
+            <div
+              ...api().getItemProps({ item: entry })
+              data-slot="select-item"
+              data-highlighted=(api().getItemState({ item: entry }).highlighted ? "" : undefined)
+              class="relative flex w-full cursor-default items-center gap-2 rounded-none py-2 pr-8 pl-2 text-xs outline-hidden select-none focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2"
+            >
+              <span ...api().getItemTextProps({ item: entry }) data-slot="select-item-text" class="flex flex-1 shrink-0 gap-2 whitespace-nowrap">${entry.label}</span>
+              <if=api().getItemState({ item: entry }).selected>
+                <span ...api().getItemIndicatorProps({ item: entry }) data-slot="select-item-indicator" class="pointer-events-none absolute right-2 flex size-4 items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pointer-events-none">
+                    <path d="M20 6 9 17l-5-5"/>
+                  </svg>
+                </span>
+              </if>
+            </div>
+          </for>
+        </div>
+      </div>
+    </if>
+  </portal>
+</div>
+
+<script>
+  // Restore keyboard control when the listbox is opened BY MOUSE.
+  //
+  // Zag's `setInitialFocus` is an ACTION that schedules its DOM read with a
+  // single `raf()`. Every framework adapter Zag ships renders synchronously on
+  // a state write, so the content element exists by that frame. Marko batches:
+  // the machine's `notify()` bumps its rev on a microtask and the render lands
+  // a frame later, so on the mouse path Zag's raf fires while the content is
+  // still absent (verified live: Zag's raf at +350ms with content=null, content
+  // mounts at +399ms). `element?.focus()` then no-ops, focus stays on the
+  // trigger, and arrow keys do nothing. The keyboard path happens to win the
+  // race because its keydown route reaches the machine a tick later.
+  //
+  // Reading `api().open` makes this block re-run on every open/close. The
+  // double rAF matches the deferral marko-ui already applies to machine
+  // effects, which is the point at which the portalled content is committed.
+  const isOpen = api().open;
+  if (isOpen) {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const content = document.getElementById(api().getContentProps().id);
+        // Only intervene if Zag's own attempt lost the race; never steal focus
+        // from an element inside the content the user has already reached.
+        if (!content || content.contains(document.activeElement)) return;
+        // Mirrors @zag-js/dom-query getInitialFocus(): an explicit autofocus
+        // target wins, otherwise the content itself (it carries tabindex=0 and
+        // select items are intentionally not tabbable).
+        const target = content.querySelector<HTMLElement>("[data-autofocus],[autofocus]") ?? content;
+        target.focus({ preventScroll: true });
+      });
+    });
+  }
+</script>
+
+<return=api>
