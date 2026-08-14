@@ -13,7 +13,7 @@ export interface Input {
   <ScrollArea vertical=false horizontal class="max-w-none">
     <@content>
       <div class="flex items-center">
-        <for|category| of=BLOCK_CATEGORIES by=(category) => category.slug>
+        <for|category| of=BLOCK_CATEGORIES.filter((c) => !c.hidden) by=(category) => category.slug>
           <a
             href=(category.slug === "" ? "/blocks" : `/blocks/${category.slug}`)
             // String, not boolean: Marko renders `true` as a bare `data-active`

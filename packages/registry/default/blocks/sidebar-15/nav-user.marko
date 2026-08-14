@@ -14,28 +14,23 @@ export interface Input {
   user: NavUserData;
 }
 
-// NOTE: our DropdownMenu items are a flat data list (type: item | separator
-// | label), so it has no equivalent to the source's rich DropdownMenuLabel
-// containing an avatar + name/email block. That richer header is dropped
-// here in favor of a plain "label" entry with the user's name, following
-// the precedent in blocks/sidebar-07/nav-user.marko. Deviation from the
-// source, noted per block-porting rules.
-
-<const/menuItems=[
-  { type: "label" as const, label: input.user.name },
-  { type: "separator" as const },
-  { type: "item" as const, value: "upgrade", label: "Upgrade to Pro" },
-  { type: "separator" as const },
-  { type: "item" as const, value: "account", label: "Account" },
-  { type: "item" as const, value: "billing", label: "Billing" },
-  { type: "item" as const, value: "notifications", label: "Notifications" },
-  { type: "separator" as const },
-  { type: "item" as const, value: "logout", label: "Log out" },
-]/>
+// The dropdown-menu `<@item>` attr tag accepts a markup `content` body plus
+// a `class` override on label entries (see
+// ui/dropdown-menu/dropdown-menu.marko), so the source's rich
+// DropdownMenuLabel — avatar + name/email, with `p-0 font-normal` replacing
+// the default padded/muted label classes — ports faithfully instead of
+// being flattened to a plain string label.
+//
+// Width: the source sizes DropdownMenuContent with
+// `w-(--radix-dropdown-menu-trigger-width)`, a Radix CSS var mirroring the
+// trigger's measured width. zag's popper exposes the same measurement as
+// `--reference-width` on the positioner (see @zag-js/popper
+// get-placement.js/get-styles.js), so `w-(--reference-width)` is the
+// visual-equivalent mapping for our primitive.
 
 <SidebarMenu>
   <SidebarMenuItem>
-    <DropdownMenu items=menuItems class="w-56 rounded-lg">
+    <DropdownMenu class="w-(--reference-width) min-w-56 rounded-lg">
       <@trigger|triggerProps|>
         <SidebarMenuButton
           ...triggerProps
@@ -64,6 +59,23 @@ export interface Input {
           </svg>
         </SidebarMenuButton>
       </@trigger>
+      <@item type="label" class="p-0 font-normal">
+        <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+          <Avatar src=input.user.avatar alt=input.user.name fallback="CN" class="h-8 w-8 rounded-lg"/>
+          <div class="grid flex-1 text-left text-sm leading-tight">
+            <span class="truncate font-medium">${input.user.name}</span>
+            <span class="truncate text-xs">${input.user.email}</span>
+          </div>
+        </div>
+      </@item>
+      <@item type="separator"/>
+      <@item type="item" value="upgrade" label="Upgrade to Pro"/>
+      <@item type="separator"/>
+      <@item type="item" value="account" label="Account"/>
+      <@item type="item" value="billing" label="Billing"/>
+      <@item type="item" value="notifications" label="Notifications"/>
+      <@item type="separator"/>
+      <@item type="item" value="logout" label="Log out"/>
     </DropdownMenu>
   </SidebarMenuItem>
 </SidebarMenu>

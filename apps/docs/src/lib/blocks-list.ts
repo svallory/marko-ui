@@ -12,6 +12,7 @@
 export interface BlockCategory {
   name: string;
   slug: string;
+  hidden?: boolean;
 }
 
 export interface BlockEntry {
@@ -25,13 +26,12 @@ export interface BlockEntry {
 
 // shadcn's registryCategories (data/shadcn-ui/apps/v4/lib/categories.ts), in
 // their exact order. shadcn marks Dashboard and Authentication `hidden` and
-// filters them out of its blocks-nav — we render every category, so there is
-// no `hidden` flag here at all.
+// filters them out of its blocks-nav — we do the same here to match parity.
 export const BLOCK_CATEGORIES: BlockCategory[] = [
   { name: "Featured", slug: "" },
   { name: "Sidebar", slug: "sidebar" },
-  { name: "Dashboard", slug: "dashboard" },
-  { name: "Authentication", slug: "authentication" },
+  { name: "Dashboard", slug: "dashboard", hidden: true },
+  { name: "Authentication", slug: "authentication", hidden: true },
   { name: "Login", slug: "login" },
   { name: "Signup", slug: "signup" },
 ];

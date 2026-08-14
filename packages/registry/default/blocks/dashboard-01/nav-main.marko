@@ -1,0 +1,60 @@
+// Port of shadcn's nav-main.tsx.
+//
+// DEVIATION: SidebarMenuButton has no `tooltip` prop in our sidebar
+// registry part (no icon-collapsed state either), so the source's
+// tooltip="Quick Create" / tooltip={item.title} props are dropped.
+import SidebarGroup from "@marko-ui/registry/ui/sidebar/group.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+import { buttonVariants } from "@marko-ui/registry/ui/button/variants.ts";
+import { cn } from "#lib/utils.ts";
+
+export interface NavMainItem {
+  title: string;
+  url: string;
+  /** Inner SVG markup (24x24 tabler-icon paths), rendered raw via $!{}. */
+  icon?: string;
+}
+
+export interface Input {
+  items: NavMainItem[];
+}
+
+<SidebarGroup>
+  <div class="flex flex-col gap-2">
+    <SidebarMenu>
+      <SidebarMenuItem class="flex items-center gap-2">
+        <SidebarMenuButton class="min-w-8 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm5 11h-4v4a1 1 0 0 1-2 0v-4H7a1 1 0 0 1 0-2h4V7a1 1 0 0 1 2 0v4h4a1 1 0 0 1 0 2Z"/>
+          </svg>
+          <span>Quick Create</span>
+        </SidebarMenuButton>
+        <button
+          type="button"
+          data-slot="button"
+          class=cn(buttonVariants({ variant: "outline", size: "icon" }), "size-8 group-data-[collapsible=icon]:opacity-0")
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="20" height="16" x="2" y="4" rx="2"/>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+          <span class="sr-only">Inbox</span>
+        </button>
+      </SidebarMenuItem>
+    </SidebarMenu>
+    <SidebarMenu>
+      <for|item| of=input.items by=(item) => item.title>
+        <SidebarMenuItem>
+          <SidebarMenuButton>
+            <if=item.icon>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">$!{item.icon}</svg>
+            </if>
+            <span>${item.title}</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </for>
+    </SidebarMenu>
+  </div>
+</SidebarGroup>

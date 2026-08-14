@@ -1,3 +1,5 @@
+// Port of shadcn's section-cards.tsx. Wrapper classes/data-slot selectors
+// (the *:data-[slot=card]:* container-query grid) are emitted verbatim.
 import Badge from "@marko-ui/registry/ui/badge/badge.marko";
 import Card from "@marko-ui/registry/ui/card/card.marko";
 import CardHeader from "@marko-ui/registry/ui/card/header.marko";
@@ -32,7 +34,7 @@ static const METRICS = [
     delta: "+12.5%",
     trend: "up",
     headline: "Strong user retention",
-    detail: "Engagement exceeds targets",
+    detail: "Engagement exceed targets",
   },
   {
     id: "growth",
@@ -45,12 +47,12 @@ static const METRICS = [
   },
 ];
 
-<div class="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 lg:grid-cols-4 lg:px-6">
+<div class="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card">
   <for|metric| of=METRICS by=(metric) => metric.id>
-    <Card class="bg-gradient-to-t from-primary/5 to-card shadow-xs">
+    <Card class="@container/card">
       <CardHeader>
         <CardDescription>${metric.label}</CardDescription>
-        <CardTitle class="text-2xl font-semibold tabular-nums">${metric.value}</CardTitle>
+        <CardTitle class="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">${metric.value}</CardTitle>
         <CardAction>
           <Badge variant="outline">
             <if=metric.trend === "up">
@@ -70,7 +72,21 @@ static const METRICS = [
         </CardAction>
       </CardHeader>
       <CardFooter class="flex-col items-start gap-1.5 text-sm">
-        <div class="line-clamp-1 font-medium">${metric.headline}</div>
+        <div class="line-clamp-1 flex gap-2 font-medium">
+          ${metric.headline}
+          <if=metric.trend === "up">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+              <path d="M16 7h6v6"/>
+              <path d="m22 7-8.5 8.5-5-5L2 17"/>
+            </svg>
+          </if>
+          <else>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+              <path d="M16 17h6v-6"/>
+              <path d="m22 17-8.5-8.5-5 5L2 7"/>
+            </svg>
+          </else>
+        </div>
         <div class="text-muted-foreground">${metric.detail}</div>
       </CardFooter>
     </Card>

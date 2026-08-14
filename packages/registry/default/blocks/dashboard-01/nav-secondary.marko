@@ -1,0 +1,34 @@
+// Port of shadcn's nav-secondary.tsx.
+import SidebarGroup from "@marko-ui/registry/ui/sidebar/group.marko";
+import SidebarGroupContent from "@marko-ui/registry/ui/sidebar/content.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+
+export interface SecondaryNavItem {
+  title: string;
+  url: string;
+  /** Inner SVG markup (24x24 tabler-icon paths), rendered raw via $!{}. */
+  icon: string;
+}
+
+export interface Input extends Marko.Input<"div"> {
+  items: SecondaryNavItem[];
+}
+
+<const/{ items, class: className, ...rest }=input/>
+
+<SidebarGroup ...rest class=className>
+  <SidebarGroupContent>
+    <SidebarMenu>
+      <for|item| of=items by=(item) => item.title>
+        <SidebarMenuItem>
+          <SidebarMenuButton href=item.url>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">$!{item.icon}</svg>
+            <span>${item.title}</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </for>
+    </SidebarMenu>
+  </SidebarGroupContent>
+</SidebarGroup>

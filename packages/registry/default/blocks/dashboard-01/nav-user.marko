@@ -1,3 +1,11 @@
+// Port of shadcn's nav-user.tsx. Same DropdownMenu/Avatar composition
+// pattern as blocks/sidebar-07/nav-user.marko (see that file's notes on the
+// w-(--reference-width) trigger-width mapping and the rich label content).
+//
+// DEVIATION: SidebarMenuButton has no `size="lg"` prop (see
+// ui/sidebar/menu-button.marko), so the source's size="lg" is reproduced by
+// applying its resolved height class (h-12) directly, matching nav-user.tsx
+// in sidebar-07's port.
 import Avatar from "@marko-ui/registry/ui/avatar/avatar.marko";
 import DropdownMenu from "@marko-ui/registry/ui/dropdown-menu/dropdown-menu.marko";
 import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
@@ -14,20 +22,6 @@ export interface Input {
   user: NavUserData;
 }
 
-// The dropdown-menu `<@item>` attr tag accepts a markup `content` body plus
-// a `class` override on label entries (see
-// ui/dropdown-menu/dropdown-menu.marko), so the source's rich
-// DropdownMenuLabel — avatar + name/email, with `p-0 font-normal` replacing
-// the default padded/muted label classes — ports faithfully instead of
-// being flattened to a plain string label.
-//
-// Width: the source sizes DropdownMenuContent with
-// `w-(--radix-dropdown-menu-trigger-width)`, a Radix CSS var mirroring the
-// trigger's measured width. zag's popper exposes the same measurement as
-// `--reference-width` on the positioner (see @zag-js/popper
-// get-placement.js/get-styles.js), so `w-(--reference-width)` is the
-// visual-equivalent mapping for our primitive.
-
 <SidebarMenu>
   <SidebarMenuItem>
     <DropdownMenu class="w-(--reference-width) min-w-56 rounded-lg">
@@ -36,39 +30,27 @@ export interface Input {
           ...triggerProps
           class="h-12 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
         >
-          <Avatar src=input.user.avatar alt=input.user.name fallback="CN" class="size-8 rounded-lg"/>
+          <Avatar src=input.user.avatar alt=input.user.name fallback="CN" class="h-8 w-8 rounded-lg grayscale"/>
           <div class="grid flex-1 text-left text-sm leading-tight">
             <span class="truncate font-medium">${input.user.name}</span>
-            <span class="truncate text-xs">${input.user.email}</span>
+            <span class="truncate text-xs text-muted-foreground">${input.user.email}</span>
           </div>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="ml-auto size-4"
-          >
-            <path d="m7 15 5 5 5-5"/>
-            <path d="m7 9 5-5 5 5"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-auto size-4">
+            <circle cx="12" cy="12" r="1"/>
+            <circle cx="12" cy="5" r="1"/>
+            <circle cx="12" cy="19" r="1"/>
           </svg>
         </SidebarMenuButton>
       </@trigger>
       <@item type="label" class="p-0 font-normal">
         <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-          <Avatar src=input.user.avatar alt=input.user.name fallback="CN" class="size-8 rounded-lg"/>
+          <Avatar src=input.user.avatar alt=input.user.name fallback="CN" class="h-8 w-8 rounded-lg"/>
           <div class="grid flex-1 text-left text-sm leading-tight">
             <span class="truncate font-medium">${input.user.name}</span>
-            <span class="truncate text-xs">${input.user.email}</span>
+            <span class="truncate text-xs text-muted-foreground">${input.user.email}</span>
           </div>
         </div>
       </@item>
-      <@item type="separator"/>
-      <@item type="item" value="upgrade" label="Upgrade to Pro"/>
       <@item type="separator"/>
       <@item type="item" value="account" label="Account"/>
       <@item type="item" value="billing" label="Billing"/>
