@@ -1,7 +1,26 @@
 {
   "title": "Dashboard 01",
-  "description": "A dashboard shell with a collapsible sidebar, metric cards, and a sortable data table.",
+  "description": "A dashboard shell with a collapsible sidebar, metric cards, an interactive area chart, and a document table.",
   "categories": ["dashboard"],
-  "dependencies": [],
-  "registryDependencies": ["utils", "sidebar", "separator", "button", "badge", "card", "data-table"]
+  "dependencies": ["d3-scale", "d3-shape", "d3-array", "@tanstack/table-core"],
+  "registryDependencies": [
+    "utils",
+    "sidebar",
+    "separator",
+    "button",
+    "badge",
+    "card",
+    "chart",
+    "select",
+    "toggle-group",
+    "toggle",
+    "dropdown-menu",
+    "tabs",
+    "checkbox",
+    "input",
+    "label",
+    "avatar",
+    "drawer",
+    "table"
+  ]
 }

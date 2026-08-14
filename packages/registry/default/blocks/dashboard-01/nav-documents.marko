@@ -1,0 +1,94 @@
+// Port of shadcn's nav-documents.tsx.
+//
+// DEVIATIONS (registry primitive gaps):
+// - Our sidebar/* registry part has no SidebarMenuAction or useSidebar()
+//   (no shared open/mobile context — see app-sidebar.marko notes). The
+//   per-item "..." action button is reproduced inline with the source's
+//   exact classes/data-slot instead of a <SidebarMenuAction> component.
+// - side/align on the DropdownMenu content is hardcoded to the desktop
+//   values ("right"/"start") since isMobile isn't available; source
+//   switches to "bottom"/"end" on mobile via useSidebar().
+import SidebarGroup from "@marko-ui/registry/ui/sidebar/group.marko";
+import SidebarGroupLabel from "@marko-ui/registry/ui/sidebar/group-label.marko";
+import SidebarMenu from "@marko-ui/registry/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/registry/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/registry/ui/sidebar/menu-button.marko";
+import DropdownMenu from "@marko-ui/registry/ui/dropdown-menu/dropdown-menu.marko";
+import { cn } from "#lib/utils.ts";
+
+export interface DocumentItem {
+  name: string;
+  url: string;
+  /** Inner SVG markup (24x24 tabler-icon paths), rendered raw via $!{}. */
+  icon: string;
+}
+
+export interface Input {
+  items: DocumentItem[];
+  class?: string;
+}
+
+<SidebarGroup class=cn("group-data-[collapsible=icon]:hidden", input.class)>
+  <SidebarGroupLabel>Documents</SidebarGroupLabel>
+  <SidebarMenu>
+    <for|item| of=input.items by=(item) => item.name>
+      <SidebarMenuItem>
+        <SidebarMenuButton href=item.url>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">$!{item.icon}</svg>
+          <span>${item.name}</span>
+        </SidebarMenuButton>
+        <DropdownMenu class="w-24 rounded-lg">
+          <@trigger|props|>
+            <button
+              ...props
+              data-slot="sidebar-menu-action"
+              class="text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground peer-hover/menu-button:text-sidebar-accent-foreground absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-sm p-0 outline-hidden focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0 after:absolute after:-inset-2 md:after:hidden data-[state=open]:bg-accent group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 md:opacity-0"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="1"/>
+                <circle cx="19" cy="12" r="1"/>
+                <circle cx="5" cy="12" r="1"/>
+              </svg>
+              <span class="sr-only">More</span>
+            </button>
+          </@trigger>
+          <@item>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
+            </svg>
+            <span>Open</span>
+          </@item>
+          <@item>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/>
+              <line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/>
+            </svg>
+            <span>Share</span>
+          </@item>
+          <@item type="separator"/>
+          <@item danger>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18"/>
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+            </svg>
+            <span>Delete</span>
+          </@item>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </for>
+    <SidebarMenuItem>
+      <SidebarMenuButton class="text-sidebar-foreground/70">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-sidebar-foreground/70">
+          <circle cx="12" cy="12" r="1"/>
+          <circle cx="19" cy="12" r="1"/>
+          <circle cx="5" cy="12" r="1"/>
+        </svg>
+        <span>More</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  </SidebarMenu>
+</SidebarGroup>
