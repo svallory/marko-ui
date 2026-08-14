@@ -10,7 +10,7 @@ export interface Input {
 }
 
 <div class="relative overflow-hidden">
-  <ScrollArea class="max-w-[600px] lg:max-w-none">
+  <ScrollArea vertical=false horizontal class="max-w-[600px] lg:max-w-none">
     <@content>
       <div class="flex items-center">
         <for|type| of=CHART_TYPES by=(type) => type.slug>

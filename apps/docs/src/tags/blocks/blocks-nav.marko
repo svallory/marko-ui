@@ -10,7 +10,7 @@ export interface Input {
 }
 
 <div class="relative overflow-hidden">
-  <ScrollArea class="max-w-none">
+  <ScrollArea vertical=false horizontal class="max-w-none">
     <@content>
       <div class="flex items-center">
         <for|category| of=BLOCK_CATEGORIES by=(category) => category.slug>

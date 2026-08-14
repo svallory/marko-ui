@@ -7,8 +7,16 @@ import { cn } from "#lib/utils.ts";
 
 export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
   content?: Marko.Body;
-  /** Render a horizontal scrollbar + thumb in addition to the vertical one. */
+  /** Render a horizontal scrollbar + thumb. Defaults to false. */
   horizontal?: boolean;
+  /**
+   * Render a vertical scrollbar + thumb. Defaults to true, matching Radix
+   * ScrollArea's implicit vertical-only behavior when no <ScrollBar> is
+   * given. Set to false for horizontal-only rails (e.g. a category nav)
+   * where a vertical scrollbar/thumb would render as a stray pill even
+   * though the container never scrolls vertically.
+   */
+  vertical?: boolean;
 };
 
 // scroll-area has no onXxxChange callbacks in its Props — nothing to adapt,
@@ -27,6 +35,7 @@ export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
     class: ownClass,
     content: ownContent,
     horizontal: ownHorizontal,
+    vertical: ownVertical,
     ...native
   } = scrollAreaMachine.splitProps(input)[1];
   return native;
@@ -51,17 +60,19 @@ export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
     </div>
   </div>
 
-  <div
-    ...api().getScrollbarProps({ orientation: "vertical" })
-    data-slot="scroll-area-scrollbar"
-    class="flex h-full w-2.5 touch-none border-l border-l-transparent p-px transition-colors select-none"
-  >
+  <if=input.vertical ?? true>
     <div
-      ...api().getThumbProps({ orientation: "vertical" })
-      data-slot="scroll-area-thumb"
-      class="relative flex-1 rounded-full bg-border"
-    />
-  </div>
+      ...api().getScrollbarProps({ orientation: "vertical" })
+      data-slot="scroll-area-scrollbar"
+      class="flex h-full w-2.5 touch-none border-l border-l-transparent p-px transition-colors select-none"
+    >
+      <div
+        ...api().getThumbProps({ orientation: "vertical" })
+        data-slot="scroll-area-thumb"
+        class="relative flex-1 rounded-full bg-border"
+      />
+    </div>
+  </if>
 
   <if=input.horizontal>
     <div
