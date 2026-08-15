@@ -98,3 +98,22 @@ for now — rewrapping them is part of the P2 api-layer refactor
 943 tests green. New suites for doctor (scaffolded temp apps), manifest
 (commander introspection), registry remove. The doctor suite does not
 assert the network-dependent registry check.
+
+## diff rewritten onto the dry-run engine (2026-08-15, late)
+
+Upstream shadcn's `diff` used the legacy fetchTree/getItemTargetPath path,
+which cannot see `registry:file` items with explicit targets — i.e. EVERY
+marko-ui item (it reported "No updates" against a locally edited button).
+Rewrote it on `dryRunComponents` (the same engine as `add --dry-run`):
+correct per-file diffs, `--name-only`, bare `diff` diffs all installed
+components. `getProjectComponents` now recognizes directory-per-component
+installs (ui/button/button.marko), not just flat files.
+
+## /docs/cli + build pipeline (2026-08-15, late)
+
+- `bun run build:cli-manifest` (root) regenerates
+  `apps/docs/src/lib/cli-manifest.ts` from `marko-ui manifest`;
+  /docs/cli renders its command reference from that committed module.
+  Rebuild it whenever the CLI surface changes.
+- Root vitest excludes `packages/cli` — the package runs its own config
+  (`bun run --filter @marko-ui/cli test`).

@@ -605,9 +605,12 @@ export async function getProjectComponents(cwd: string) {
   const registryIndex = await getShadcnRegistryIndex()
   const registryNames = new Set(registryIndex?.map((item) => item.name) ?? [])
 
-  const files = await fsPromises.readdir(uiDir)
-  return files
-    .filter((f) => /\.marko$/.test(f))
-    .map((f) => path.basename(f, path.extname(f)))
+  // marko-ui components install as directories (ui/button/button.marko),
+  // single files are still recognized for flat layouts.
+  const entries = await fsPromises.readdir(uiDir, { withFileTypes: true })
+  return entries
+    .map((entry) =>
+      entry.isDirectory() ? entry.name : path.basename(entry.name, path.extname(entry.name))
+    )
     .filter((name) => registryNames.has(name))
 }

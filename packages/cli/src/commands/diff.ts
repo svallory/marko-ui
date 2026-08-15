@@ -1,60 +1,64 @@
-import { existsSync, promises as fs } from "fs"
+import { existsSync } from "fs"
 import path from "path"
-import {
-  fetchTree,
-  getItemTargetPath,
-  getShadcnRegistryIndex,
-} from "@/src/registry/api"
-import { registryIndexSchema } from "@/src/schema"
-import { Config, getConfig } from "@/src/utils/get-config"
+import { clearRegistryContext } from "@/src/registry/context"
+import { dryRunComponents } from "@/src/utils/dry-run"
+import { getConfig } from "@/src/utils/get-config"
 import {
   formatMonorepoMessage,
   getMonorepoTargets,
   isMonorepoRoot,
 } from "@/src/utils/get-monorepo-info"
+import { getProjectComponents } from "@/src/utils/get-project-info"
 import { handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
+import { spinner } from "@/src/utils/spinner"
 import { Command } from "commander"
 import { diffLines, type Change } from "diff"
 import { z } from "zod"
 
-const updateOptionsSchema = z.object({
-  component: z.string().optional(),
-  yes: z.boolean(),
+const diffOptionsSchema = z.object({
+  components: z.array(z.string()).optional(),
   cwd: z.string(),
-  path: z.string().optional(),
+  nameOnly: z.boolean(),
 })
 
+/**
+ * Compares installed files against their registry versions. Built on the
+ * same resolution engine as `add --dry-run` (dryRunComponents), so it
+ * handles registry:file items with explicit targets — the shape every
+ * marko-ui item uses. (Upstream shadcn's diff was legacy fetchTree-based
+ * and could not see those files.)
+ */
 export const diff = new Command()
   .name("diff")
   .description("show diffs between local files and their registry versions")
-  .argument("[component]", "the component name")
-  .option("-y, --yes", "skip confirmation prompt.", false)
+  .argument("[components...]", "component names (defaults to all installed)")
   .option(
     "-c, --cwd <cwd>",
     "the working directory. defaults to the current directory.",
     process.cwd()
   )
-  .action(async (name, opts) => {
+  .option("--name-only", "only list files that differ.", false)
+  .action(async (components: string[], opts) => {
     try {
-      const options = updateOptionsSchema.parse({
-        component: name,
-        ...opts,
+      const options = diffOptionsSchema.parse({
+        components,
+        cwd: path.resolve(opts.cwd),
+        nameOnly: opts.nameOnly,
       })
 
-      const cwd = path.resolve(options.cwd)
-
-      if (!existsSync(cwd)) {
-        logger.error(`The path ${cwd} does not exist. Please try again.`)
+      if (!existsSync(options.cwd)) {
+        logger.error(
+          `The path ${options.cwd} does not exist. Please try again.`
+        )
         process.exit(1)
       }
 
-      const config = await getConfig(cwd)
+      const config = await getConfig(options.cwd)
       if (!config) {
-        // Check if we're in a monorepo root.
-        if (await isMonorepoRoot(cwd)) {
-          const targets = await getMonorepoTargets(cwd)
+        if (await isMonorepoRoot(options.cwd)) {
+          const targets = await getMonorepoTargets(options.cwd)
           if (targets.length > 0) {
             formatMonorepoMessage("diff [component]", targets)
             process.exit(1)
@@ -69,145 +73,45 @@ export const diff = new Command()
         process.exit(1)
       }
 
-      const registryIndex = await getShadcnRegistryIndex()
-
-      if (!registryIndex) {
-        handleError(new Error("Failed to fetch registry index."))
-        process.exit(1)
-      }
-
-      if (!options.component) {
-        const targetDir = config.resolvedPaths.components
-
-        // Find all components that exist in the project.
-        const projectComponents = registryIndex.filter((item) => {
-          for (const file of item.files ?? []) {
-            const filePath = path.resolve(
-              targetDir,
-              typeof file === "string" ? file : file.path
-            )
-            if (existsSync(filePath)) {
-              return true
-            }
-          }
-
-          return false
-        })
-
-        // Check for updates.
-        const componentsWithUpdates = []
-        for (const component of projectComponents) {
-          const changes = await diffComponent(component, config)
-          if (changes.length) {
-            componentsWithUpdates.push({
-              name: component.name,
-              changes,
-            })
-          }
-        }
-
-        if (!componentsWithUpdates.length) {
-          logger.info("No updates found.")
+      let targets = options.components ?? []
+      if (!targets.length) {
+        targets = await getProjectComponents(options.cwd)
+        if (!targets.length) {
+          logger.info("No installed components found.")
           process.exit(0)
         }
-
-        logger.info("The following components have updates available:")
-        for (const component of componentsWithUpdates) {
-          logger.info(`- ${component.name}`)
-          for (const change of component.changes) {
-            logger.info(`  - ${change.filePath}`)
-          }
-        }
-        logger.break()
-        logger.info(
-          `Run ${highlighter.success(`diff <component>`)} to see the changes.`
-        )
-        process.exit(0)
       }
 
-      // Show diff for a single component.
-      const component = registryIndex.find(
-        (item) => item.name === options.component
+      const resolveSpinner = spinner("Resolving registry items.").start()
+      const result = await dryRunComponents(targets, config, {
+        overwrite: true,
+      })
+      resolveSpinner.stop()
+
+      const changed = result.files.filter(
+        (file) => file.action === "overwrite" && file.existingContent
       )
 
-      if (!component) {
-        logger.error(
-          `The component ${highlighter.success(
-            options.component
-          )} does not exist.`
-        )
-        process.exit(1)
-      }
-
-      const changes = await diffComponent(component, config)
-
-      if (!changes.length) {
-        logger.info(`No updates found for ${options.component}.`)
+      if (!changed.length) {
+        logger.info("No updates found.")
         process.exit(0)
       }
 
-      for (const change of changes) {
-        logger.info(`- ${change.filePath}`)
-        await printDiff(change.patch)
-        logger.info("")
+      for (const file of changed) {
+        logger.info(`- ${file.path}`)
+        if (!options.nameOnly) {
+          printDiff(diffLines(file.content, file.existingContent!))
+          logger.info("")
+        }
       }
     } catch (error) {
       handleError(error)
+    } finally {
+      clearRegistryContext()
     }
   })
 
-async function diffComponent(
-  component: z.infer<typeof registryIndexSchema>[number],
-  config: Config
-) {
-  const payload = await fetchTree(config.style, [component])
-
-  if (!payload) {
-    return []
-  }
-
-  const changes = []
-
-  for (const item of payload) {
-    const targetDir = await getItemTargetPath(config, item)
-
-    if (!targetDir) {
-      continue
-    }
-
-    for (const file of item.files ?? []) {
-      const filePath = path.resolve(
-        targetDir,
-        typeof file === "string" ? file : file.path
-      )
-
-      if (!existsSync(filePath)) {
-        continue
-      }
-
-      const fileContent = await fs.readFile(filePath, "utf8")
-
-      if (typeof file === "string" || !file.content) {
-        continue
-      }
-
-      // marko-ui registry items ship final-form content; diff directly.
-      const registryContent = file.content
-
-      const patch = diffLines(registryContent, fileContent)
-      if (patch.length > 1) {
-        changes.push({
-          filePath,
-          patch,
-        })
-      }
-    }
-  }
-
-  return changes
-}
-
-async function printDiff(diff: Change[]) {
+function printDiff(diff: Change[]) {
   diff.forEach((part) => {
     if (part) {
       if (part.added) {
