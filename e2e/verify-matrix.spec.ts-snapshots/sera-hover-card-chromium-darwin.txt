@@ -1,0 +1,20 @@
+section
+  span data-slot="hover-card"
+    a data-slot="hover-card-trigger" data-state="closed"
+---
+section
+  span data-slot="hover-card"
+    a data-slot="hover-card-trigger" data-state="closed"
+---
+section
+  span data-slot="hover-card"
+    a data-slot="hover-card-trigger" data-state="closed"
+---
+section
+  div
+    span data-slot="hover-card"
+      a data-slot="hover-card-trigger" data-state="closed"
+    span data-slot="hover-card"
+      a data-slot="hover-card-trigger" data-state="closed"
+    span data-slot="hover-card"
+      a data-slot="hover-card-trigger" data-state="closed"

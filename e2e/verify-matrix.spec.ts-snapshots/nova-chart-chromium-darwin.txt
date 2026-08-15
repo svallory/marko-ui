@@ -1,0 +1,416 @@
+section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="card-title"
+      div data-slot="card-description"
+    div data-slot="card-content"
+      div data-slot="chart"
+        style
+        div
+          div
+            svg
+              g
+                g
+                  line
+                  line
+                  line
+                  line
+                  line
+                  line
+                  line
+                  line
+              g
+                g
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+              g
+                path
+                path
+    div data-slot="card-footer"
+      div
+        div
+          div
+            svg
+              path
+              path
+          div
+---
+section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="card-title"
+      div data-slot="card-description"
+    div data-slot="card-content"
+      div data-slot="chart"
+        style
+        div
+          div
+            svg
+              defs
+                lineargradient
+                  stop
+                  stop
+                lineargradient
+                  stop
+                  stop
+              g
+                g
+                  line
+                  line
+                  line
+                  line
+                  line
+                  line
+              g
+                g
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+              g
+                path
+                path
+              g
+                path
+                path
+    div data-slot="card-footer"
+      div
+        div
+          div
+            svg
+              path
+              path
+          div
+---
+section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="card-title"
+      div data-slot="card-description"
+    div data-slot="card-content"
+      div data-slot="chart"
+        style
+        div
+          div
+            svg
+              g
+                g
+                  line
+                  line
+                  line
+                  line
+                  line
+                  line
+                  line
+                  line
+              g
+                g
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+              g
+                g
+                  g
+                    path
+                  g
+                    path
+                  g
+                    path
+                  g
+                    path
+                  g
+                    path
+                  g
+                    path
+    div data-slot="card-footer"
+      div
+        svg
+          path
+          path
+      div
+---
+section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="card-title"
+      div data-slot="card-description"
+    div data-slot="card-content"
+      div data-slot="chart"
+        style
+        div
+          div
+            svg
+              g
+                g
+                  line
+                  line
+                  line
+                  line
+                  line
+                  line
+                  line
+                  line
+              g
+                g
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+              g
+                g
+                  g
+                    path
+                  g
+                    path
+                  g
+                    path
+                  g
+                    path
+                  g
+                    path
+                  g
+                    path
+              g
+                g
+                  g
+                    path
+                  g
+                    path
+                  g
+                    path
+                  g
+                    path
+                  g
+                    path
+                  g
+                    path
+    div data-slot="card-footer"
+      div
+        svg
+          path
+          path
+      div
+---
+section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="card-title"
+      div data-slot="card-description"
+    div data-slot="card-content"
+      div data-slot="chart"
+        style
+        div
+          div
+            svg
+              g
+                g
+                  line
+                  line
+                  line
+                  line
+                  line
+                  line
+                  line
+                  line
+              g
+                g
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+              g
+                path
+    div data-slot="card-footer"
+      div
+        svg
+          path
+          path
+      div
+---
+section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="card-title"
+      div data-slot="card-description"
+    div data-slot="card-content"
+      div data-slot="chart"
+        style
+        div
+          div
+            svg
+              g
+                g
+                  line
+                  line
+                  line
+                  line
+                  line
+                  line
+                  line
+                  line
+              g
+                g
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+                  g
+                    text
+                      tspan
+              g
+                path
+              g
+                path
+    div data-slot="card-footer"
+      div
+        div
+          div
+            svg
+              path
+              path
+          div
+---
+section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="card-title"
+      div data-slot="card-description"
+    div data-slot="card-content"
+      div data-slot="chart"
+        style
+        div
+          div
+            svg
+              g
+                g
+                  path
+                g
+                  path
+                g
+                  path
+                g
+                  path
+                g
+                  path
+              text
+                tspan
+                tspan
+    div data-slot="card-footer"
+      div
+        svg
+          polyline
+          polyline
+      div
+---
+section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="card-title"
+      div data-slot="card-description"
+    div data-slot="card-content"
+      div data-slot="chart"
+        style
+        div
+          div
+            svg
+              g
+                g
+                  path
+                g
+                  path
+                g
+                  path
+                g
+                  path
+                g
+                  path
+    div data-slot="card-footer"
+      div
+        svg
+          polyline
+          polyline
+      div

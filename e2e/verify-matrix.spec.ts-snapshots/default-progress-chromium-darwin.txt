@@ -1,0 +1,41 @@
+section
+  div
+    div data-slot="progress" data-state="loading"
+      div
+        span
+        span aria-live="polite"
+      div data-slot="progress-track" role="progressbar" data-state="loading" aria-label="45%" aria-valuemin="0" aria-valuemax="100" aria-valuenow="45"
+        div data-slot="progress-range" data-state="loading"
+    div
+      button
+      button
+      span
+---
+section
+  div data-slot="progress" data-state="loading"
+    div data-slot="progress-track" role="progressbar" data-state="loading" aria-label="66%" aria-valuemin="0" aria-valuemax="100" aria-valuenow="66"
+      div data-slot="progress-range" data-state="loading"
+---
+section
+  div data-slot="progress" data-state="indeterminate"
+    div
+      span
+      span aria-live="polite"
+    div data-slot="progress-track" role="progressbar" data-state="indeterminate" aria-label="loading..." aria-valuemin="0" aria-valuemax="100"
+      div data-slot="progress-range" data-state="indeterminate"
+---
+section
+  div data-slot="progress" data-state="loading"
+    div
+      span
+      span aria-live="polite"
+    div data-slot="progress-track" role="progressbar" data-state="loading" aria-label="40%" aria-valuemin="0" aria-valuemax="100" aria-valuenow="40"
+      div data-slot="progress-range" data-state="loading"
+---
+section
+  div data-slot="progress" data-state="loading"
+    div
+      span
+      span aria-live="polite"
+    div data-slot="progress-track" role="progressbar" data-state="loading" aria-label="75%" aria-valuemin="0" aria-valuemax="200" aria-valuenow="150"
+      div data-slot="progress-range" data-state="loading"

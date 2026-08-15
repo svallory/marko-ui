@@ -1,0 +1,29 @@
+section
+  div
+    div data-slot="progress"
+      div data-slot="progress-track"
+        div data-slot="progress-indicator"
+    div
+      button
+      button
+      span
+---
+section
+  div data-slot="progress"
+    div data-slot="progress-track"
+      div data-slot="progress-indicator"
+---
+section
+  div data-slot="progress"
+    div data-slot="progress-track"
+      div data-slot="progress-indicator"
+---
+section
+  div data-slot="progress"
+    div data-slot="progress-track"
+      div data-slot="progress-indicator"
+---
+section
+  div data-slot="progress"
+    div data-slot="progress-track"
+      div data-slot="progress-indicator"

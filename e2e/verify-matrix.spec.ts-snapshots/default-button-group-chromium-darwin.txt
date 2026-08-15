@@ -1,0 +1,55 @@
+section
+  div data-slot="button-group" role="group"
+    button data-slot="button"
+    button data-slot="button"
+---
+section
+  div data-slot="button-group" role="group"
+    div data-slot="button-group" role="group"
+      button data-slot="button"
+      button data-slot="button"
+      button data-slot="button"
+      button data-slot="button"
+      button data-slot="button"
+    div data-slot="button-group" role="group"
+      button data-slot="button" aria-label="Previous"
+      button data-slot="button" aria-label="Next"
+---
+section
+  div data-slot="button-group" role="group" aria-label="Clipboard actions"
+    button data-slot="button"
+    button data-slot="button"
+    button data-slot="button"
+---
+section
+  div data-slot="button-group" role="group"
+    button data-slot="button"
+    div data-slot="button-group-separator" role="separator"
+    button data-slot="button"
+---
+section
+  div
+    div data-slot="button-group" role="group"
+      button data-slot="button"
+      button data-slot="button"
+      button data-slot="button"
+    div data-slot="button-group" role="group"
+      button data-slot="button"
+      button data-slot="button"
+      button data-slot="button"
+    div data-slot="button-group" role="group"
+      button data-slot="button"
+      button data-slot="button"
+      button data-slot="button"
+---
+section
+  div data-slot="button-group" role="group"
+    button data-slot="button"
+    div data-slot="button-group-separator" role="separator"
+    button data-slot="button" aria-label="Add"
+---
+section
+  div data-slot="button-group" role="group"
+    div data-slot="button-group-text"
+    button data-slot="button"
+    button data-slot="button"

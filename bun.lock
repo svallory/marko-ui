@@ -11,6 +11,7 @@
       "devDependencies": {
         "@marko/type-check": "^3.2.0",
         "@marko/vite": "^6.1.9",
+        "@playwright/test": "1.62.1",
         "@types/node": "^26.2.0",
         "@zag-js/tabs": "1.43.0",
         "marko": "6.3.34",
@@ -339,6 +340,8 @@
     "@parcel/source-map": ["@parcel/source-map@2.1.1", "", { "dependencies": { "detect-libc": "^1.0.3" } }, "sha512-Ejx1P/mj+kMjQb8/y5XxDUn4reGdr+WyKYloBljpppUy8gs42T+BNoEOuRYqDVdgPc6NxduzIDoJS9pOFfV5Ew=="],
 
     "@phosphor-icons/core": ["@phosphor-icons/core@2.1.1", "", {}, "sha512-v4ARvrip4qBCImOE5rmPUylOEK4iiED9ZyKjcvzuezqMaiRASCHKcRIuvvxL/twvLpkfnEODCOJp5dM4eZilxQ=="],
+
+    "@playwright/test": ["@playwright/test@1.62.1", "", { "dependencies": { "playwright": "1.62.1" }, "bin": { "playwright": "cli.js" } }, "sha512-DTcUc8qii+cpHvtOwggMtBRMjKZHXYWdw8syRYu2vtzuq4Wxphqq4NfCs5Zt44L6mA8rfDfj+PHnxFc/FeK6mQ=="],
 
     "@remix-run/form-data-parser": ["@remix-run/form-data-parser@0.17.4", "", { "dependencies": { "@remix-run/multipart-parser": "^0.16.3" } }, "sha512-mqWVpD2OaJTFEW2i+M49/iWoUp2Cai6WD606/iynZ+NIlzVdkty3bbGb8g7vTjXeV/sQRmPbg3SJypgvQitvJg=="],
 

@@ -1,0 +1,116 @@
+section
+  div
+    div data-slot="command"
+      div data-slot="command-input-wrapper"
+        div data-state="open"
+          input data-slot="command-input" role="combobox" data-state="open" aria-autocomplete="list" aria-controls="<id>" aria-expanded="true"
+          svg
+            path
+            circle
+      div data-slot="command-list" role="listbox" data-state="open" aria-labelledby="<id>"
+        div data-slot="command-group" role="group" aria-labelledby="<id>"
+          div data-slot="command-group-label" role="presentation"
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+        div data-slot="command-group" role="group" aria-labelledby="<id>"
+          div data-slot="command-group-label" role="presentation"
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+            span data-slot="command-shortcut"
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+            span data-slot="command-shortcut"
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+            span data-slot="command-shortcut"
+    span
+---
+section
+  div
+    div data-slot="command"
+      div data-slot="command-input-wrapper"
+        div data-state="open"
+          input data-slot="command-input" role="combobox" data-state="open" aria-autocomplete="list" aria-controls="<id>" aria-expanded="true"
+          svg
+            path
+            circle
+      div data-slot="command-list" role="listbox" data-state="open" aria-labelledby="<id>"
+        div data-slot="command-group" role="group" aria-labelledby="<id>"
+          div data-slot="command-group-label" role="presentation"
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+        div data-slot="command-group" role="group" aria-labelledby="<id>"
+          div data-slot="command-group-label" role="presentation"
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+            span data-slot="command-shortcut"
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+            span data-slot="command-shortcut"
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+            span data-slot="command-shortcut"
+---
+section
+  div
+    div data-slot="command"
+      div data-slot="command-input-wrapper"
+        div data-state="open"
+          input data-slot="command-input" role="combobox" data-state="open" aria-autocomplete="list" aria-controls="<id>" aria-expanded="true"
+          svg
+            path
+            circle
+      div data-slot="command-list" role="listbox" data-state="open" aria-labelledby="<id>"
+        div data-slot="command-group" role="group" aria-labelledby="<id>"
+          div data-slot="command-group-label" role="presentation"
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+---
+section
+  div
+    div data-slot="command"
+      div data-slot="command-input-wrapper"
+        div data-state="open"
+          input data-slot="command-input" role="combobox" data-state="open" aria-autocomplete="list" aria-controls="<id>" aria-expanded="true"
+          svg
+            path
+            circle
+      div data-slot="command-list" role="listbox" data-state="open" aria-labelledby="<id>"
+        div data-slot="command-group" role="group" aria-labelledby="<id>"
+          div data-slot="command-group-label" role="presentation"
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span

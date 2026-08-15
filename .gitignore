@@ -6,3 +6,4 @@ coverage/
 .DS_Store
 apps/docs/public/r/
 tsconfig.tsbuildinfo
+test-results/

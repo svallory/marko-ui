@@ -1,0 +1,78 @@
+section
+  div data-slot="input-group" role="group"
+    textarea data-slot="input-group-control"
+    div data-slot="input-group-addon" role="group"
+      button data-slot="input-group-button"
+---
+section
+  div data-slot="input-group" role="group"
+    div data-slot="input-group-addon" role="group"
+      span data-slot="input-group-text"
+    textarea data-slot="input-group-control"
+---
+section
+  div data-slot="input-group" role="group"
+    input data-slot="input-group-control"
+    div data-slot="input-group-addon" role="group"
+      span data-slot="input-group-text"
+---
+section
+  div data-slot="input-group" role="group"
+    div data-slot="input-group-addon" role="group"
+      svg
+        path
+        circle
+    input data-slot="input-group-control"
+---
+section
+  div data-slot="input-group" role="group"
+    input data-slot="input-group-control"
+    div data-slot="input-group-addon" role="group"
+      button data-slot="input-group-button" aria-label="Search"
+        svg
+          circle
+          line
+---
+section
+  div data-slot="input-group" role="group"
+    input data-slot="input-group-control"
+    div data-slot="input-group-addon" role="group"
+      svg
+        circle
+        line
+---
+section
+  div data-slot="input-group" role="group"
+    input data-slot="input-group-control"
+    div data-slot="input-group-addon" role="group"
+      svg
+        rect
+        path
+---
+section
+  div data-slot="input-group" role="group"
+    input data-slot="input-group-control" aria-invalid="true"
+    div data-slot="input-group-addon" role="group"
+      svg
+        circle
+        line
+        line
+---
+section
+  div data-slot="input-group" role="group"
+    div data-slot="input-group-addon" role="group"
+      svg
+        path
+        circle
+    input data-slot="input-group-control"
+    div data-slot="input-group-addon" role="group"
+      button data-slot="input-group-button"
+---
+section
+  div data-slot="input-group" role="group"
+    div data-slot="input-group-addon" role="group"
+      button data-slot="input-group-button"
+      button data-slot="input-group-button"
+    textarea data-slot="input-group-control"
+    div data-slot="input-group-addon" role="group"
+      button data-slot="input-group-button"

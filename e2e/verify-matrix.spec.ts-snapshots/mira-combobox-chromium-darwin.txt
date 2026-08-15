@@ -1,0 +1,25 @@
+section
+  div
+    div data-slot="combobox"
+      div data-slot="combobox-control" data-state="closed"
+        input data-slot="combobox-input" role="combobox" data-state="closed" aria-autocomplete="list" aria-controls="<id>" aria-expanded="false"
+        button data-slot="combobox-trigger" data-state="closed" aria-haspopup="listbox" aria-label="Toggle suggestions" aria-expanded="false"
+          svg
+            path
+    span
+---
+section
+  div data-slot="combobox"
+    div data-slot="combobox-control" data-state="closed"
+      input data-slot="combobox-input" role="combobox" data-state="closed" aria-autocomplete="list" aria-controls="<id>" aria-expanded="false"
+      button data-slot="combobox-trigger" data-state="closed" aria-haspopup="listbox" aria-label="Toggle suggestions" aria-expanded="false"
+        svg
+          path
+---
+section
+  div data-slot="combobox"
+    div data-slot="combobox-control" data-state="closed"
+      input data-slot="combobox-input" role="combobox" data-state="closed" aria-autocomplete="list" aria-controls="<id>" aria-expanded="false"
+      button data-slot="combobox-trigger" data-state="closed" aria-haspopup="listbox" aria-label="Toggle suggestions" aria-expanded="false"
+        svg
+          path

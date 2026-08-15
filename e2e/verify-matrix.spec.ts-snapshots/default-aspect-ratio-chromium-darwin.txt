@@ -1,0 +1,31 @@
+section
+  div
+    div data-slot="aspect-ratio"
+      div
+        div
+          span
+          span
+---
+section
+  div
+    div data-slot="aspect-ratio"
+      div
+        img
+---
+section
+  div
+    div data-slot="aspect-ratio"
+      div
+        img
+---
+section
+  div
+    div data-slot="aspect-ratio"
+      div
+        div
+---
+section
+  div
+    div data-slot="aspect-ratio"
+      div
+        div

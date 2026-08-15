@@ -1,0 +1,57 @@
+section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="card-title"
+      div data-slot="card-description"
+      div data-slot="card-action"
+        button data-slot="button"
+    div data-slot="card-content"
+      p
+---
+section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="card-title"
+      div data-slot="card-description"
+    div data-slot="card-content"
+      p
+    div data-slot="card-footer"
+      button data-slot="button"
+---
+section
+  div data-slot="card"
+    div data-slot="card-content"
+      p
+---
+section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="card-title"
+      div data-slot="card-description"
+      div data-slot="card-action"
+        button data-slot="button"
+    div data-slot="card-content"
+      div
+        div
+          label data-slot="label"
+          input data-slot="input"
+        div
+          div
+            label data-slot="label"
+            a
+          input data-slot="input"
+    div data-slot="card-footer"
+      button data-slot="button"
+      button data-slot="button"
+---
+section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="card-title"
+      div data-slot="card-description"
+      div data-slot="card-action"
+        button data-slot="button"
+    div data-slot="card-content"
+      p
+    div data-slot="card-footer"
+      p

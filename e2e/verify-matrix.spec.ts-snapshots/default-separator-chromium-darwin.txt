@@ -1,0 +1,26 @@
+section
+  div
+    div
+      h4
+      p
+    div data-slot="separator" role="none"
+    div
+      div
+      div data-slot="separator" role="none"
+      div
+      div data-slot="separator" role="none"
+      div
+---
+section
+  div
+    p
+    div data-slot="separator" role="separator" aria-orientation="horizontal"
+    p
+---
+section
+  div
+    div
+    div data-slot="separator" role="none"
+    div
+    div data-slot="separator" role="none"
+    div

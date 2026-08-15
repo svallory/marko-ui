@@ -1,0 +1,26 @@
+section
+  span data-slot="badge"
+---
+section
+  div
+    span data-slot="badge"
+    span data-slot="badge"
+---
+section
+  div
+    span data-slot="badge"
+    span data-slot="badge"
+    span data-slot="badge"
+    span data-slot="badge"
+---
+section
+  div
+    span data-slot="badge"
+    span data-slot="badge"
+    span data-slot="badge"
+    span data-slot="badge"
+---
+section
+  span data-slot="badge"
+    svg
+      polyline

@@ -1,0 +1,139 @@
+section
+  div data-slot="editable-root"
+    div data-slot="editable-area"
+      input data-slot="editable-input" aria-label="editable input"
+      span data-slot="editable-preview" aria-label="edit"
+    div data-slot="editable-control"
+      button data-slot="editable-submit-trigger" aria-label="submit"
+        svg
+          path
+        span
+      button data-slot="editable-cancel-trigger" aria-label="cancel"
+        svg
+          path
+          path
+        span
+      button data-slot="editable-edit-trigger" aria-label="edit"
+        svg
+          path
+        span
+---
+section
+  div
+    div data-slot="editable-root"
+      div data-slot="editable-area"
+        input data-slot="editable-input" aria-label="editable input"
+        span data-slot="editable-preview" aria-label="edit"
+      div data-slot="editable-control"
+        button data-slot="editable-submit-trigger" aria-label="submit"
+          svg
+            path
+          span
+        button data-slot="editable-cancel-trigger" aria-label="cancel"
+          svg
+            path
+            path
+          span
+        button data-slot="editable-edit-trigger" aria-label="edit"
+          svg
+            path
+          span
+    span
+    span
+---
+section
+  div data-slot="editable-root"
+    div data-slot="editable-area"
+      input data-slot="editable-input" aria-label="editable input"
+      span data-slot="editable-preview" aria-label="edit"
+    div data-slot="editable-control"
+      button data-slot="editable-submit-trigger" aria-label="submit"
+        svg
+          path
+        span
+      button data-slot="editable-cancel-trigger" aria-label="cancel"
+        svg
+          path
+          path
+        span
+      button data-slot="editable-trigger" aria-label="edit"
+---
+section
+  div data-slot="editable-root"
+    div data-slot="editable-area"
+      input data-slot="editable-input" aria-label="editable input"
+      span data-slot="editable-preview" aria-label="edit"
+    div data-slot="editable-control"
+      button data-slot="editable-submit-trigger" aria-label="submit"
+        svg
+          path
+        span
+      button data-slot="editable-cancel-trigger" aria-label="cancel"
+        svg
+          path
+          path
+        span
+      button data-slot="editable-edit-trigger" aria-label="edit"
+        svg
+          path
+        span
+---
+section
+  div data-slot="editable-root"
+    div data-slot="editable-area"
+      input data-slot="editable-input" aria-label="editable input"
+      span data-slot="editable-preview" aria-disabled="true" aria-label="edit"
+    div data-slot="editable-control"
+      button data-slot="editable-submit-trigger" aria-label="submit"
+        svg
+          path
+        span
+      button data-slot="editable-cancel-trigger" aria-label="cancel"
+        svg
+          path
+          path
+        span
+      button data-slot="editable-edit-trigger" aria-label="edit"
+        svg
+          path
+        span
+---
+section
+  div data-slot="editable-root"
+    div data-slot="editable-area"
+      input data-slot="editable-input" aria-label="editable input"
+      span data-slot="editable-preview" aria-label="edit"
+    div data-slot="editable-control"
+      button data-slot="editable-submit-trigger" aria-label="submit"
+        svg
+          path
+        span
+      button data-slot="editable-cancel-trigger" aria-label="cancel"
+        svg
+          path
+          path
+        span
+      button data-slot="editable-edit-trigger" aria-label="edit"
+        svg
+          path
+        span
+---
+section
+  div data-slot="editable-root"
+    div data-slot="editable-area"
+      input data-slot="editable-input" aria-label="editable input"
+      span data-slot="editable-preview" aria-label="edit"
+    div data-slot="editable-control"
+      button data-slot="editable-submit-trigger" aria-label="submit"
+        svg
+          path
+        span
+      button data-slot="editable-cancel-trigger" aria-label="cancel"
+        svg
+          path
+          path
+        span
+      button data-slot="editable-edit-trigger" aria-label="edit"
+        svg
+          path
+        span

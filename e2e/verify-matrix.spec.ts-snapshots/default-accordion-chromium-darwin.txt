@@ -1,0 +1,145 @@
+section
+  div data-slot="accordion"
+    div data-slot="accordion-item" data-state="open"
+      h3
+        button data-slot="accordion-trigger" data-state="open" aria-controls="<id>" aria-expanded="true"
+          svg
+            path
+      div data-slot="accordion-content" role="region" data-state="open" aria-labelledby="<id>"
+        div
+    div data-slot="accordion-item" data-state="closed"
+      h3
+        button data-slot="accordion-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg
+            path
+      div data-slot="accordion-content" role="region" data-state="closed" aria-labelledby="<id>"
+        div
+    div data-slot="accordion-item" data-state="closed"
+      h3
+        button data-slot="accordion-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg
+            path
+      div data-slot="accordion-content" role="region" data-state="closed" aria-labelledby="<id>"
+        div
+---
+section
+  div
+    p
+    div data-slot="accordion"
+      div data-slot="accordion-item" data-state="open"
+        h3
+          button data-slot="accordion-trigger" data-state="open" aria-controls="<id>" aria-expanded="true"
+            svg
+              path
+        div data-slot="accordion-content" role="region" data-state="open" aria-labelledby="<id>"
+          div
+      div data-slot="accordion-item" data-state="closed"
+        h3
+          button data-slot="accordion-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+            svg
+              path
+        div data-slot="accordion-content" role="region" data-state="closed" aria-labelledby="<id>"
+          div
+      div data-slot="accordion-item" data-state="closed"
+        h3
+          button data-slot="accordion-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+            svg
+              path
+        div data-slot="accordion-content" role="region" data-state="closed" aria-labelledby="<id>"
+          div
+---
+section
+  div data-slot="accordion"
+    div data-slot="accordion-item" data-state="open"
+      h3
+        button data-slot="accordion-trigger" data-state="open" aria-controls="<id>" aria-expanded="true"
+          svg
+            path
+      div data-slot="accordion-content" role="region" data-state="open" aria-labelledby="<id>"
+        div
+    div data-slot="accordion-item" data-state="closed"
+      h3
+        button data-slot="accordion-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg
+            path
+      div data-slot="accordion-content" role="region" data-state="closed" aria-labelledby="<id>"
+        div
+    div data-slot="accordion-item" data-state="closed"
+      h3
+        button data-slot="accordion-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg
+            path
+      div data-slot="accordion-content" role="region" data-state="closed" aria-labelledby="<id>"
+        div
+---
+section
+  div data-slot="accordion"
+    div data-slot="accordion-item" data-state="closed"
+      h3
+        button data-slot="accordion-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg
+            path
+      div data-slot="accordion-content" role="region" data-state="closed" aria-labelledby="<id>"
+        div
+    div data-slot="accordion-item" data-state="closed"
+      h3
+        button data-slot="accordion-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg
+            path
+      div data-slot="accordion-content" role="region" data-state="closed" aria-labelledby="<id>"
+        div
+    div data-slot="accordion-item" data-state="closed"
+      h3
+        button data-slot="accordion-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg
+            path
+      div data-slot="accordion-content" role="region" data-state="closed" aria-labelledby="<id>"
+        div
+---
+section
+  div data-slot="accordion"
+    div data-slot="accordion-item" data-state="open"
+      h3
+        button data-slot="accordion-trigger" data-state="open" aria-controls="<id>" aria-expanded="true"
+          svg
+            path
+      div data-slot="accordion-content" role="region" data-state="open" aria-labelledby="<id>"
+        div
+    div data-slot="accordion-item" data-state="closed"
+      h3
+        button data-slot="accordion-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg
+            path
+      div data-slot="accordion-content" role="region" data-state="closed" aria-labelledby="<id>"
+        div
+    div data-slot="accordion-item" data-state="closed"
+      h3
+        button data-slot="accordion-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg
+            path
+      div data-slot="accordion-content" role="region" data-state="closed" aria-labelledby="<id>"
+        div
+---
+section
+  div data-slot="accordion"
+    div data-slot="accordion-item" data-state="open"
+      h3
+        button data-slot="accordion-trigger" data-state="open" aria-controls="<id>" aria-expanded="true"
+          svg
+            path
+      div data-slot="accordion-content" role="region" data-state="open" aria-labelledby="<id>"
+        div
+    div data-slot="accordion-item" data-state="closed"
+      h3
+        button data-slot="accordion-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg
+            path
+      div data-slot="accordion-content" role="region" data-state="closed" aria-labelledby="<id>"
+        div
+    div data-slot="accordion-item" data-state="closed"
+      h3
+        button data-slot="accordion-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg
+            path
+      div data-slot="accordion-content" role="region" data-state="closed" aria-labelledby="<id>"
+        div

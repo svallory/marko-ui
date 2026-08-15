@@ -1,0 +1,52 @@
+section
+  div
+    div data-slot="toggle-group" role="radiogroup"
+      button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+      button data-slot="toggle-group-item" role="radio" data-state="on" aria-checked="true"
+      button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+    span
+---
+section
+  div data-slot="toggle-group" role="radiogroup"
+    button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+    button data-slot="toggle-group-item" role="radio" data-state="on" aria-checked="true"
+    button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+---
+section
+  div data-slot="toggle-group" role="radiogroup"
+    button data-slot="toggle-group-item" role="radio" data-state="on" aria-checked="true"
+    button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+    button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+---
+section
+  div data-slot="toggle-group" role="group"
+    button data-slot="toggle-group-item" data-state="on" aria-pressed="true"
+    button data-slot="toggle-group-item" data-state="off" aria-pressed="false"
+    button data-slot="toggle-group-item" data-state="off" aria-pressed="false"
+---
+section
+  div data-slot="toggle-group" role="radiogroup"
+    button data-slot="toggle-group-item" role="radio" data-state="on" aria-checked="true"
+    button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+    button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+---
+section
+  div
+    div data-slot="toggle-group" role="radiogroup"
+      button data-slot="toggle-group-item" role="radio" data-state="on" aria-checked="true"
+      button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+      button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+    div data-slot="toggle-group" role="radiogroup"
+      button data-slot="toggle-group-item" role="radio" data-state="on" aria-checked="true"
+      button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+      button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+    div data-slot="toggle-group" role="radiogroup"
+      button data-slot="toggle-group-item" role="radio" data-state="on" aria-checked="true"
+      button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+      button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+---
+section
+  div data-slot="toggle-group" role="radiogroup"
+    button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+    button data-slot="toggle-group-item" role="radio" data-state="on" aria-checked="true"
+    button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"

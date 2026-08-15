@@ -1,0 +1,24 @@
+section
+  div data-slot="alert" role="alert"
+    svg
+      path
+      line
+      line
+    div data-slot="alert-title"
+    div data-slot="alert-description"
+---
+section
+  div data-slot="alert" role="alert"
+    svg
+      circle
+      line
+      line
+    div data-slot="alert-title"
+    div data-slot="alert-description"
+      p
+      p
+---
+section
+  div data-slot="alert" role="alert"
+    div data-slot="alert-title"
+    div data-slot="alert-description"

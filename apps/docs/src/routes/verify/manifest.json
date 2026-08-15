@@ -1,0 +1,7194 @@
+{
+  "generatedAt": "2026-08-14T21:32:04.102Z",
+  "styles": [
+    "default",
+    "luma",
+    "lyra",
+    "maia",
+    "mira",
+    "nova",
+    "rhea",
+    "sera",
+    "vega"
+  ],
+  "totals": {
+    "pagesGenerated": 511,
+    "demosGenerated": 2549,
+    "skips": 209
+  },
+  "entries": [
+    {
+      "style": "default",
+      "component": "accordion",
+      "route": "/verify/default/accordion",
+      "demos": [
+        "accordion-compound",
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "not-collapsible"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "alert",
+      "route": "/verify/default/alert",
+      "demos": [
+        "default",
+        "destructive",
+        "without-icon"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "alert-dialog",
+      "route": "/verify/default/alert-dialog",
+      "demos": [
+        "alert-dialog-controlled",
+        "alert-dialog-demo",
+        "alert-dialog-destructive"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "angle-slider",
+      "route": "/verify/default/angle-slider",
+      "demos": [
+        "angle-slider-controlled",
+        "angle-slider-demo",
+        "angle-slider-disabled",
+        "angle-slider-step"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "aspect-ratio",
+      "route": "/verify/default/aspect-ratio",
+      "demos": [
+        "content-card",
+        "default",
+        "portrait",
+        "square",
+        "ultrawide-banner"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "avatar",
+      "route": "/verify/default/avatar",
+      "demos": [
+        "avatar-broken-image",
+        "avatar-controlled",
+        "avatar-custom-fallback",
+        "avatar-demo",
+        "avatar-fallback"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "badge",
+      "route": "/verify/default/badge",
+      "demos": [
+        "default",
+        "numeric",
+        "status",
+        "variants",
+        "with-icon"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "breadcrumb",
+      "route": "/verify/default/breadcrumb",
+      "demos": [
+        "breadcrumb-demo",
+        "breadcrumb-ellipsis",
+        "breadcrumb-responsive",
+        "breadcrumb-separator"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "button",
+      "route": "/verify/default/button",
+      "demos": [
+        "button-demo",
+        "button-disabled",
+        "button-sizes",
+        "button-variants"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "button-group",
+      "route": "/verify/default/button-group",
+      "demos": [
+        "default",
+        "nested",
+        "orientation",
+        "separator",
+        "sizes",
+        "split",
+        "text"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "calendar",
+      "route": "/verify/default/calendar",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "min-max",
+        "multiple",
+        "range"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "card",
+      "route": "/verify/default/card",
+      "demos": [
+        "action",
+        "border-footer",
+        "content-only",
+        "default",
+        "full-composition"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "carousel",
+      "route": "/verify/default/carousel",
+      "demos": [
+        "carousel-compound",
+        "carousel-controlled",
+        "carousel-demo",
+        "carousel-loop",
+        "carousel-orientation",
+        "carousel-size",
+        "carousel-spacing"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "cascade-select",
+      "route": "/verify/default/cascade-select",
+      "demos": [
+        "cascade-select-compound",
+        "controlled",
+        "default",
+        "default-value",
+        "disabled",
+        "disabled-items"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "chart",
+      "route": "/verify/default/chart",
+      "demos": [
+        "area-default",
+        "area-gradient",
+        "bar-default",
+        "bar-multiple",
+        "line-default",
+        "line-multiple",
+        "pie-donut",
+        "pie-simple"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "checkbox",
+      "route": "/verify/default/checkbox",
+      "demos": [
+        "checkbox-checked",
+        "checkbox-controlled",
+        "checkbox-demo",
+        "checkbox-disabled",
+        "checkbox-indeterminate"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "clipboard",
+      "route": "/verify/default/clipboard",
+      "demos": [
+        "clipboard-controlled",
+        "clipboard-demo",
+        "clipboard-disabled",
+        "clipboard-timeout"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "collapsible",
+      "route": "/verify/default/collapsible",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "settings"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "color-picker",
+      "route": "/verify/default/color-picker",
+      "demos": [
+        "color-picker-controlled",
+        "color-picker-demo",
+        "color-picker-disabled",
+        "color-picker-hsl",
+        "color-picker-swatches"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "combobox",
+      "route": "/verify/default/combobox",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "command",
+      "route": "/verify/default/command",
+      "demos": [
+        "command-controlled",
+        "command-demo",
+        "command-empty",
+        "command-scrollable"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "context-menu",
+      "route": "/verify/default/context-menu",
+      "demos": [
+        "context-menu-compound",
+        "controlled",
+        "default",
+        "destructive",
+        "disabled",
+        "groups",
+        "shortcuts",
+        "simple"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "data-table",
+      "route": "/verify/default/data-table",
+      "demos": [
+        "data-table-demo",
+        "empty",
+        "formatted-cells",
+        "sorting"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "date-input",
+      "route": "/verify/default/date-input",
+      "demos": [
+        "date-input-controlled",
+        "date-input-demo",
+        "date-input-disabled",
+        "date-input-locale",
+        "date-input-range",
+        "date-input-value"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "date-picker",
+      "route": "/verify/default/date-picker",
+      "demos": [
+        "date-picker-controlled",
+        "date-picker-demo",
+        "date-picker-disabled",
+        "date-picker-locale",
+        "date-picker-read-only",
+        "date-picker-value"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "dialog",
+      "route": "/verify/default/dialog",
+      "demos": [
+        "dialog-close-button",
+        "dialog-controlled",
+        "dialog-demo",
+        "dialog-no-footer"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "drawer",
+      "route": "/verify/default/drawer",
+      "demos": [
+        "drawer-demo",
+        "drawer-no-footer",
+        "drawer-sides",
+        "drawer-snap-points"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "dropdown-menu",
+      "route": "/verify/default/dropdown-menu",
+      "demos": [
+        "dropdown-menu-compound",
+        "dropdown-menu-danger",
+        "dropdown-menu-demo",
+        "dropdown-menu-disabled-item",
+        "dropdown-menu-selection",
+        "dropdown-menu-simple"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "editable",
+      "route": "/verify/default/editable",
+      "demos": [
+        "activation-mode",
+        "controlled",
+        "custom-trigger",
+        "default",
+        "disabled",
+        "placeholder",
+        "submit-mode"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "empty",
+      "route": "/verify/default/empty",
+      "demos": [
+        "empty-avatar",
+        "empty-avatar-group",
+        "empty-background",
+        "empty-demo",
+        "empty-icon",
+        "empty-input-group",
+        "empty-outline"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "field",
+      "route": "/verify/default/field",
+      "demos": [
+        "default",
+        "field-set",
+        "fieldset-demo",
+        "horizontal",
+        "invalid",
+        "multiple-errors",
+        "signup"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "file-upload",
+      "route": "/verify/default/file-upload",
+      "demos": [
+        "file-upload-accept",
+        "file-upload-controlled",
+        "file-upload-demo",
+        "file-upload-max-size"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "floating-panel",
+      "route": "/verify/default/floating-panel",
+      "demos": [
+        "floating-panel-constrained",
+        "floating-panel-controlled",
+        "floating-panel-demo",
+        "floating-panel-not-resizable"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "hover-card",
+      "route": "/verify/default/hover-card",
+      "demos": [
+        "custom-delays",
+        "default",
+        "disabled",
+        "positioning"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "icon",
+      "route": "/verify/default/icon",
+      "demos": [
+        "default",
+        "libraries",
+        "sizing"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "image-cropper",
+      "route": "/verify/default/image-cropper",
+      "demos": [
+        "circle-aspect-ratio",
+        "controlled",
+        "default",
+        "fixed-crop-area"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "input",
+      "route": "/verify/default/input",
+      "demos": [
+        "input-demo",
+        "input-disabled",
+        "input-file",
+        "input-invalid",
+        "input-label",
+        "input-number",
+        "input-password",
+        "input-value"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "input-group",
+      "route": "/verify/default/input-group",
+      "demos": [
+        "align-block-end",
+        "align-block-start",
+        "align-inline-end",
+        "align-inline-start",
+        "button",
+        "default",
+        "disabled",
+        "invalid",
+        "text",
+        "textarea"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "input-otp",
+      "route": "/verify/default/input-otp",
+      "demos": [
+        "input-otp-controlled",
+        "input-otp-demo",
+        "input-otp-disabled",
+        "input-otp-masked",
+        "input-otp-separator"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "item",
+      "route": "/verify/default/item",
+      "demos": [
+        "item-demo",
+        "item-group",
+        "item-header",
+        "item-icon",
+        "item-image",
+        "item-link",
+        "item-size",
+        "item-variant"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "kbd",
+      "route": "/verify/default/kbd",
+      "demos": [
+        "kbd-button",
+        "kbd-demo",
+        "kbd-group",
+        "kbd-input-group",
+        "kbd-tooltip"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "label",
+      "route": "/verify/default/label",
+      "demos": [
+        "disabled",
+        "input-with-label",
+        "label-demo",
+        "required"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "listbox",
+      "route": "/verify/default/listbox",
+      "demos": [
+        "listbox-compound",
+        "listbox-controlled",
+        "listbox-demo",
+        "listbox-disabled",
+        "listbox-multiple"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "marquee",
+      "route": "/verify/default/marquee",
+      "demos": [
+        "marquee-auto-fill",
+        "marquee-compound",
+        "marquee-controlled",
+        "marquee-demo",
+        "marquee-reverse",
+        "marquee-speed",
+        "marquee-vertical"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "menubar",
+      "route": "/verify/default/menubar",
+      "demos": [
+        "menubar-compound",
+        "menubar-controlled",
+        "menubar-danger",
+        "menubar-demo",
+        "menubar-disabled"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "native-select",
+      "route": "/verify/default/native-select",
+      "demos": [
+        "default",
+        "disabled",
+        "groups"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "navigation-menu",
+      "route": "/verify/default/navigation-menu",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "navigation-menu-compound",
+        "navigation-menu-precedence",
+        "panel"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "number-input",
+      "route": "/verify/default/number-input",
+      "demos": [
+        "number-input-controlled",
+        "number-input-demo",
+        "number-input-disabled",
+        "number-input-min-max-step"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "pagination",
+      "route": "/verify/default/pagination",
+      "demos": [
+        "controlled",
+        "default",
+        "few-pages",
+        "sibling-count"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "password-input",
+      "route": "/verify/default/password-input",
+      "demos": [
+        "password-input-controlled",
+        "password-input-demo",
+        "password-input-disabled",
+        "password-input-invalid",
+        "password-input-new-password"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "popover",
+      "route": "/verify/default/popover",
+      "demos": [
+        "popover-controlled",
+        "popover-demo",
+        "popover-placement"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "progress",
+      "route": "/verify/default/progress",
+      "demos": [
+        "progress-controlled",
+        "progress-demo",
+        "progress-indeterminate",
+        "progress-label",
+        "progress-min-max"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "qr-code",
+      "route": "/verify/default/qr-code",
+      "demos": [
+        "qr-code-controlled",
+        "qr-code-demo",
+        "qr-code-download",
+        "qr-code-overlay",
+        "qr-code-sizes"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "radio-group",
+      "route": "/verify/default/radio-group",
+      "demos": [
+        "radio-group-compound",
+        "radio-group-controlled",
+        "radio-group-demo",
+        "radio-group-disabled",
+        "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "rating-group",
+      "route": "/verify/default/rating-group",
+      "demos": [
+        "controlled",
+        "custom-count",
+        "default",
+        "disabled",
+        "half-stars",
+        "readonly"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "resizable",
+      "route": "/verify/default/resizable",
+      "demos": [
+        "resizable-controlled",
+        "resizable-demo",
+        "resizable-sizes",
+        "resizable-vertical"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "scroll-area",
+      "route": "/verify/default/scroll-area",
+      "demos": [
+        "default",
+        "horizontal"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "select",
+      "route": "/verify/default/select",
+      "demos": [
+        "select-compound",
+        "select-controlled",
+        "select-default-value",
+        "select-demo",
+        "select-disabled",
+        "select-disabled-items",
+        "select-with-label"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "separator",
+      "route": "/verify/default/separator",
+      "demos": [
+        "separator-demo",
+        "separator-semantic",
+        "separator-vertical"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "sheet",
+      "route": "/verify/default/sheet",
+      "demos": [
+        "sheet-controlled",
+        "sheet-demo",
+        "sheet-side"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "sidebar",
+      "route": "/verify/default/sidebar",
+      "demos": [
+        "sidebar-controlled",
+        "sidebar-demo"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "signature-pad",
+      "route": "/verify/default/signature-pad",
+      "demos": [
+        "signature-pad-controlled",
+        "signature-pad-demo",
+        "signature-pad-disabled",
+        "signature-pad-form"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "skeleton",
+      "route": "/verify/default/skeleton",
+      "demos": [
+        "skeleton-card",
+        "skeleton-demo",
+        "skeleton-table",
+        "skeleton-text"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "slider",
+      "route": "/verify/default/slider",
+      "demos": [
+        "slider-controlled",
+        "slider-demo",
+        "slider-disabled",
+        "slider-multiple",
+        "slider-range",
+        "slider-step"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "spinner",
+      "route": "/verify/default/spinner",
+      "demos": [
+        "spinner-badge",
+        "spinner-button",
+        "spinner-color",
+        "spinner-demo",
+        "spinner-size",
+        "spinner-text"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "steps",
+      "route": "/verify/default/steps",
+      "demos": [
+        "steps-controlled",
+        "steps-horizontal",
+        "steps-linear",
+        "steps-vertical"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "switch",
+      "route": "/verify/default/switch",
+      "demos": [
+        "switch-checked",
+        "switch-controlled",
+        "switch-demo",
+        "switch-disabled"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "table",
+      "route": "/verify/default/table",
+      "demos": [
+        "default",
+        "selected-row"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "tabs",
+      "route": "/verify/default/tabs",
+      "demos": [
+        "tabs-compound",
+        "tabs-controlled",
+        "tabs-demo",
+        "tabs-disabled",
+        "tabs-hybrid",
+        "tabs-precedence"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "tags-input",
+      "route": "/verify/default/tags-input",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "label",
+        "max",
+        "paste"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "textarea",
+      "route": "/verify/default/textarea",
+      "demos": [
+        "default",
+        "disabled",
+        "invalid",
+        "with-label",
+        "with-text",
+        "with-value"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "timer",
+      "route": "/verify/default/timer",
+      "demos": [
+        "timer-controlled",
+        "timer-countdown",
+        "timer-demo",
+        "timer-parts"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "toast",
+      "route": "/verify/default/toast",
+      "demos": [
+        "toast-demo",
+        "toast-description",
+        "toast-dismiss",
+        "toast-promise",
+        "toast-types"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "toc",
+      "route": "/verify/default/toc",
+      "demos": [
+        "toc-controlled",
+        "toc-demo",
+        "toc-nested",
+        "toc-with-title"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "toggle",
+      "route": "/verify/default/toggle",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "outline",
+        "sizes"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "toggle-group",
+      "route": "/verify/default/toggle-group",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "outline",
+        "sizes",
+        "toggle-group-compound"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "tooltip",
+      "route": "/verify/default/tooltip",
+      "demos": [
+        "tooltip-delay",
+        "tooltip-demo",
+        "tooltip-positioning"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "tour",
+      "route": "/verify/default/tour",
+      "demos": [
+        "controlled",
+        "default",
+        "sides"
+      ]
+    },
+    {
+      "style": "default",
+      "component": "tree-view",
+      "route": "/verify/default/tree-view",
+      "demos": [
+        "controlled-selection",
+        "default",
+        "disabled",
+        "expanded",
+        "multiple-selection"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "accordion",
+      "route": "/verify/luma/accordion",
+      "demos": [
+        "accordion-compound",
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "not-collapsible"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "alert",
+      "route": "/verify/luma/alert",
+      "demos": [
+        "default",
+        "destructive",
+        "without-icon"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "alert-dialog",
+      "route": "/verify/luma/alert-dialog",
+      "demos": [
+        "alert-dialog-controlled",
+        "alert-dialog-demo",
+        "alert-dialog-destructive"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "aspect-ratio",
+      "route": "/verify/luma/aspect-ratio",
+      "demos": [
+        "content-card",
+        "default",
+        "portrait",
+        "square",
+        "ultrawide-banner"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "avatar",
+      "route": "/verify/luma/avatar",
+      "demos": [
+        "avatar-broken-image",
+        "avatar-controlled",
+        "avatar-custom-fallback",
+        "avatar-demo",
+        "avatar-fallback"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "badge",
+      "route": "/verify/luma/badge",
+      "demos": [
+        "default",
+        "numeric",
+        "status",
+        "variants",
+        "with-icon"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "breadcrumb",
+      "route": "/verify/luma/breadcrumb",
+      "demos": [
+        "breadcrumb-demo",
+        "breadcrumb-ellipsis",
+        "breadcrumb-responsive",
+        "breadcrumb-separator"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "button",
+      "route": "/verify/luma/button",
+      "demos": [
+        "button-demo",
+        "button-disabled",
+        "button-sizes",
+        "button-variants"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "button-group",
+      "route": "/verify/luma/button-group",
+      "demos": [
+        "default",
+        "nested",
+        "orientation",
+        "separator",
+        "sizes",
+        "split",
+        "text"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "calendar",
+      "route": "/verify/luma/calendar",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "min-max",
+        "multiple",
+        "range"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "card",
+      "route": "/verify/luma/card",
+      "demos": [
+        "action",
+        "border-footer",
+        "content-only",
+        "default",
+        "full-composition"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "carousel",
+      "route": "/verify/luma/carousel",
+      "demos": [
+        "carousel-compound",
+        "carousel-controlled",
+        "carousel-demo",
+        "carousel-loop",
+        "carousel-orientation",
+        "carousel-size",
+        "carousel-spacing"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "chart",
+      "route": "/verify/luma/chart",
+      "demos": [
+        "area-default",
+        "area-gradient",
+        "bar-default",
+        "bar-multiple",
+        "line-default",
+        "line-multiple",
+        "pie-donut",
+        "pie-simple"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "checkbox",
+      "route": "/verify/luma/checkbox",
+      "demos": [
+        "checkbox-checked",
+        "checkbox-controlled",
+        "checkbox-demo",
+        "checkbox-disabled",
+        "checkbox-indeterminate"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "collapsible",
+      "route": "/verify/luma/collapsible",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "settings"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "combobox",
+      "route": "/verify/luma/combobox",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "command",
+      "route": "/verify/luma/command",
+      "demos": [
+        "command-controlled",
+        "command-demo",
+        "command-empty",
+        "command-scrollable"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "context-menu",
+      "route": "/verify/luma/context-menu",
+      "demos": [
+        "context-menu-compound",
+        "controlled",
+        "default",
+        "destructive",
+        "disabled",
+        "groups",
+        "shortcuts",
+        "simple"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "dialog",
+      "route": "/verify/luma/dialog",
+      "demos": [
+        "dialog-close-button",
+        "dialog-controlled",
+        "dialog-demo",
+        "dialog-no-footer"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "drawer",
+      "route": "/verify/luma/drawer",
+      "demos": [
+        "drawer-demo",
+        "drawer-no-footer",
+        "drawer-sides",
+        "drawer-snap-points"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "dropdown-menu",
+      "route": "/verify/luma/dropdown-menu",
+      "demos": [
+        "dropdown-menu-compound",
+        "dropdown-menu-danger",
+        "dropdown-menu-demo",
+        "dropdown-menu-disabled-item",
+        "dropdown-menu-selection",
+        "dropdown-menu-simple"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "empty",
+      "route": "/verify/luma/empty",
+      "demos": [
+        "empty-avatar",
+        "empty-avatar-group",
+        "empty-background",
+        "empty-demo",
+        "empty-icon",
+        "empty-input-group",
+        "empty-outline"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "field",
+      "route": "/verify/luma/field",
+      "demos": [
+        "default",
+        "field-set",
+        "fieldset-demo",
+        "horizontal",
+        "invalid",
+        "multiple-errors",
+        "signup"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "hover-card",
+      "route": "/verify/luma/hover-card",
+      "demos": [
+        "custom-delays",
+        "default",
+        "disabled",
+        "positioning"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "input",
+      "route": "/verify/luma/input",
+      "demos": [
+        "input-demo",
+        "input-disabled",
+        "input-file",
+        "input-invalid",
+        "input-label",
+        "input-number",
+        "input-password",
+        "input-value"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "input-group",
+      "route": "/verify/luma/input-group",
+      "demos": [
+        "align-block-end",
+        "align-block-start",
+        "align-inline-end",
+        "align-inline-start",
+        "button",
+        "default",
+        "disabled",
+        "invalid",
+        "text",
+        "textarea"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "input-otp",
+      "route": "/verify/luma/input-otp",
+      "demos": [
+        "input-otp-controlled",
+        "input-otp-demo",
+        "input-otp-disabled",
+        "input-otp-masked",
+        "input-otp-separator"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "item",
+      "route": "/verify/luma/item",
+      "demos": [
+        "item-demo",
+        "item-group",
+        "item-header",
+        "item-icon",
+        "item-image",
+        "item-link",
+        "item-size",
+        "item-variant"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "kbd",
+      "route": "/verify/luma/kbd",
+      "demos": [
+        "kbd-button",
+        "kbd-demo",
+        "kbd-group",
+        "kbd-input-group",
+        "kbd-tooltip"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "label",
+      "route": "/verify/luma/label",
+      "demos": [
+        "disabled",
+        "input-with-label",
+        "label-demo",
+        "required"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "menubar",
+      "route": "/verify/luma/menubar",
+      "demos": [
+        "menubar-compound",
+        "menubar-controlled",
+        "menubar-danger",
+        "menubar-demo",
+        "menubar-disabled"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "native-select",
+      "route": "/verify/luma/native-select",
+      "demos": [
+        "default",
+        "disabled",
+        "groups"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "navigation-menu",
+      "route": "/verify/luma/navigation-menu",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "navigation-menu-compound",
+        "navigation-menu-precedence",
+        "panel"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "pagination",
+      "route": "/verify/luma/pagination",
+      "demos": [
+        "controlled",
+        "default",
+        "few-pages",
+        "sibling-count"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "popover",
+      "route": "/verify/luma/popover",
+      "demos": [
+        "popover-controlled",
+        "popover-demo",
+        "popover-placement"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "progress",
+      "route": "/verify/luma/progress",
+      "demos": [
+        "progress-controlled",
+        "progress-demo",
+        "progress-indeterminate",
+        "progress-label",
+        "progress-min-max"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "radio-group",
+      "route": "/verify/luma/radio-group",
+      "demos": [
+        "radio-group-compound",
+        "radio-group-controlled",
+        "radio-group-demo",
+        "radio-group-disabled",
+        "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "resizable",
+      "route": "/verify/luma/resizable",
+      "demos": [
+        "resizable-controlled",
+        "resizable-demo",
+        "resizable-sizes",
+        "resizable-vertical"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "scroll-area",
+      "route": "/verify/luma/scroll-area",
+      "demos": [
+        "default",
+        "horizontal"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "select",
+      "route": "/verify/luma/select",
+      "demos": [
+        "select-compound",
+        "select-controlled",
+        "select-default-value",
+        "select-demo",
+        "select-disabled",
+        "select-disabled-items",
+        "select-with-label"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "separator",
+      "route": "/verify/luma/separator",
+      "demos": [
+        "separator-demo",
+        "separator-semantic",
+        "separator-vertical"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "sheet",
+      "route": "/verify/luma/sheet",
+      "demos": [
+        "sheet-controlled",
+        "sheet-demo",
+        "sheet-side"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "sidebar",
+      "route": "/verify/luma/sidebar",
+      "demos": [
+        "sidebar-controlled",
+        "sidebar-demo"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "skeleton",
+      "route": "/verify/luma/skeleton",
+      "demos": [
+        "skeleton-card",
+        "skeleton-demo",
+        "skeleton-table",
+        "skeleton-text"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "slider",
+      "route": "/verify/luma/slider",
+      "demos": [
+        "slider-controlled",
+        "slider-demo",
+        "slider-disabled",
+        "slider-multiple",
+        "slider-range",
+        "slider-step"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "spinner",
+      "route": "/verify/luma/spinner",
+      "demos": [
+        "spinner-badge",
+        "spinner-button",
+        "spinner-color",
+        "spinner-demo",
+        "spinner-size",
+        "spinner-text"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "switch",
+      "route": "/verify/luma/switch",
+      "demos": [
+        "switch-checked",
+        "switch-controlled",
+        "switch-demo",
+        "switch-disabled"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "table",
+      "route": "/verify/luma/table",
+      "demos": [
+        "default",
+        "selected-row"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "tabs",
+      "route": "/verify/luma/tabs",
+      "demos": [
+        "tabs-compound",
+        "tabs-controlled",
+        "tabs-demo",
+        "tabs-disabled",
+        "tabs-hybrid",
+        "tabs-precedence"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "textarea",
+      "route": "/verify/luma/textarea",
+      "demos": [
+        "default",
+        "disabled",
+        "invalid",
+        "with-label",
+        "with-text",
+        "with-value"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "toast",
+      "route": "/verify/luma/toast",
+      "demos": [
+        "toast-demo",
+        "toast-description",
+        "toast-dismiss",
+        "toast-promise",
+        "toast-types"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "toggle",
+      "route": "/verify/luma/toggle",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "outline",
+        "sizes"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "toggle-group",
+      "route": "/verify/luma/toggle-group",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "outline",
+        "sizes",
+        "toggle-group-compound"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "tooltip",
+      "route": "/verify/luma/tooltip",
+      "demos": [
+        "tooltip-delay",
+        "tooltip-demo",
+        "tooltip-positioning"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "accordion",
+      "route": "/verify/lyra/accordion",
+      "demos": [
+        "accordion-compound",
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "not-collapsible"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "alert",
+      "route": "/verify/lyra/alert",
+      "demos": [
+        "default",
+        "destructive",
+        "without-icon"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "alert-dialog",
+      "route": "/verify/lyra/alert-dialog",
+      "demos": [
+        "alert-dialog-controlled",
+        "alert-dialog-demo",
+        "alert-dialog-destructive"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "aspect-ratio",
+      "route": "/verify/lyra/aspect-ratio",
+      "demos": [
+        "content-card",
+        "default",
+        "portrait",
+        "square",
+        "ultrawide-banner"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "avatar",
+      "route": "/verify/lyra/avatar",
+      "demos": [
+        "avatar-broken-image",
+        "avatar-controlled",
+        "avatar-custom-fallback",
+        "avatar-demo",
+        "avatar-fallback"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "badge",
+      "route": "/verify/lyra/badge",
+      "demos": [
+        "default",
+        "numeric",
+        "status",
+        "variants",
+        "with-icon"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "breadcrumb",
+      "route": "/verify/lyra/breadcrumb",
+      "demos": [
+        "breadcrumb-demo",
+        "breadcrumb-ellipsis",
+        "breadcrumb-responsive",
+        "breadcrumb-separator"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "button",
+      "route": "/verify/lyra/button",
+      "demos": [
+        "button-demo",
+        "button-disabled",
+        "button-sizes",
+        "button-variants"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "button-group",
+      "route": "/verify/lyra/button-group",
+      "demos": [
+        "default",
+        "nested",
+        "orientation",
+        "separator",
+        "sizes",
+        "split",
+        "text"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "calendar",
+      "route": "/verify/lyra/calendar",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "min-max",
+        "multiple",
+        "range"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "card",
+      "route": "/verify/lyra/card",
+      "demos": [
+        "action",
+        "border-footer",
+        "content-only",
+        "default",
+        "full-composition"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "carousel",
+      "route": "/verify/lyra/carousel",
+      "demos": [
+        "carousel-compound",
+        "carousel-controlled",
+        "carousel-demo",
+        "carousel-loop",
+        "carousel-orientation",
+        "carousel-size",
+        "carousel-spacing"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "chart",
+      "route": "/verify/lyra/chart",
+      "demos": [
+        "area-default",
+        "area-gradient",
+        "bar-default",
+        "bar-multiple",
+        "line-default",
+        "line-multiple",
+        "pie-donut",
+        "pie-simple"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "checkbox",
+      "route": "/verify/lyra/checkbox",
+      "demos": [
+        "checkbox-checked",
+        "checkbox-controlled",
+        "checkbox-demo",
+        "checkbox-disabled",
+        "checkbox-indeterminate"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "collapsible",
+      "route": "/verify/lyra/collapsible",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "settings"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "combobox",
+      "route": "/verify/lyra/combobox",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "command",
+      "route": "/verify/lyra/command",
+      "demos": [
+        "command-controlled",
+        "command-demo",
+        "command-empty",
+        "command-scrollable"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "context-menu",
+      "route": "/verify/lyra/context-menu",
+      "demos": [
+        "context-menu-compound",
+        "controlled",
+        "default",
+        "destructive",
+        "disabled",
+        "groups",
+        "shortcuts",
+        "simple"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "dialog",
+      "route": "/verify/lyra/dialog",
+      "demos": [
+        "dialog-close-button",
+        "dialog-controlled",
+        "dialog-demo",
+        "dialog-no-footer"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "drawer",
+      "route": "/verify/lyra/drawer",
+      "demos": [
+        "drawer-demo",
+        "drawer-no-footer",
+        "drawer-sides",
+        "drawer-snap-points"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "dropdown-menu",
+      "route": "/verify/lyra/dropdown-menu",
+      "demos": [
+        "dropdown-menu-compound",
+        "dropdown-menu-danger",
+        "dropdown-menu-demo",
+        "dropdown-menu-disabled-item",
+        "dropdown-menu-selection",
+        "dropdown-menu-simple"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "empty",
+      "route": "/verify/lyra/empty",
+      "demos": [
+        "empty-avatar",
+        "empty-avatar-group",
+        "empty-background",
+        "empty-demo",
+        "empty-icon",
+        "empty-input-group",
+        "empty-outline"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "field",
+      "route": "/verify/lyra/field",
+      "demos": [
+        "default",
+        "field-set",
+        "fieldset-demo",
+        "horizontal",
+        "invalid",
+        "multiple-errors",
+        "signup"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "hover-card",
+      "route": "/verify/lyra/hover-card",
+      "demos": [
+        "custom-delays",
+        "default",
+        "disabled",
+        "positioning"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "input",
+      "route": "/verify/lyra/input",
+      "demos": [
+        "input-demo",
+        "input-disabled",
+        "input-file",
+        "input-invalid",
+        "input-label",
+        "input-number",
+        "input-password",
+        "input-value"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "input-group",
+      "route": "/verify/lyra/input-group",
+      "demos": [
+        "align-block-end",
+        "align-block-start",
+        "align-inline-end",
+        "align-inline-start",
+        "button",
+        "default",
+        "disabled",
+        "invalid",
+        "text",
+        "textarea"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "input-otp",
+      "route": "/verify/lyra/input-otp",
+      "demos": [
+        "input-otp-controlled",
+        "input-otp-demo",
+        "input-otp-disabled",
+        "input-otp-masked",
+        "input-otp-separator"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "item",
+      "route": "/verify/lyra/item",
+      "demos": [
+        "item-demo",
+        "item-group",
+        "item-header",
+        "item-icon",
+        "item-image",
+        "item-link",
+        "item-size",
+        "item-variant"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "kbd",
+      "route": "/verify/lyra/kbd",
+      "demos": [
+        "kbd-button",
+        "kbd-demo",
+        "kbd-group",
+        "kbd-input-group",
+        "kbd-tooltip"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "label",
+      "route": "/verify/lyra/label",
+      "demos": [
+        "disabled",
+        "input-with-label",
+        "label-demo",
+        "required"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "menubar",
+      "route": "/verify/lyra/menubar",
+      "demos": [
+        "menubar-compound",
+        "menubar-controlled",
+        "menubar-danger",
+        "menubar-demo",
+        "menubar-disabled"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "native-select",
+      "route": "/verify/lyra/native-select",
+      "demos": [
+        "default",
+        "disabled",
+        "groups"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "navigation-menu",
+      "route": "/verify/lyra/navigation-menu",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "navigation-menu-compound",
+        "navigation-menu-precedence",
+        "panel"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "pagination",
+      "route": "/verify/lyra/pagination",
+      "demos": [
+        "controlled",
+        "default",
+        "few-pages",
+        "sibling-count"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "popover",
+      "route": "/verify/lyra/popover",
+      "demos": [
+        "popover-controlled",
+        "popover-demo",
+        "popover-placement"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "progress",
+      "route": "/verify/lyra/progress",
+      "demos": [
+        "progress-controlled",
+        "progress-demo",
+        "progress-indeterminate",
+        "progress-label",
+        "progress-min-max"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "radio-group",
+      "route": "/verify/lyra/radio-group",
+      "demos": [
+        "radio-group-compound",
+        "radio-group-controlled",
+        "radio-group-demo",
+        "radio-group-disabled",
+        "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "resizable",
+      "route": "/verify/lyra/resizable",
+      "demos": [
+        "resizable-controlled",
+        "resizable-demo",
+        "resizable-sizes",
+        "resizable-vertical"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "scroll-area",
+      "route": "/verify/lyra/scroll-area",
+      "demos": [
+        "default",
+        "horizontal"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "select",
+      "route": "/verify/lyra/select",
+      "demos": [
+        "select-compound",
+        "select-controlled",
+        "select-default-value",
+        "select-demo",
+        "select-disabled",
+        "select-disabled-items",
+        "select-with-label"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "separator",
+      "route": "/verify/lyra/separator",
+      "demos": [
+        "separator-demo",
+        "separator-semantic",
+        "separator-vertical"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "sheet",
+      "route": "/verify/lyra/sheet",
+      "demos": [
+        "sheet-controlled",
+        "sheet-demo",
+        "sheet-side"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "sidebar",
+      "route": "/verify/lyra/sidebar",
+      "demos": [
+        "sidebar-controlled",
+        "sidebar-demo"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "skeleton",
+      "route": "/verify/lyra/skeleton",
+      "demos": [
+        "skeleton-card",
+        "skeleton-demo",
+        "skeleton-table",
+        "skeleton-text"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "slider",
+      "route": "/verify/lyra/slider",
+      "demos": [
+        "slider-controlled",
+        "slider-demo",
+        "slider-disabled",
+        "slider-multiple",
+        "slider-range",
+        "slider-step"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "spinner",
+      "route": "/verify/lyra/spinner",
+      "demos": [
+        "spinner-badge",
+        "spinner-button",
+        "spinner-color",
+        "spinner-demo",
+        "spinner-size",
+        "spinner-text"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "switch",
+      "route": "/verify/lyra/switch",
+      "demos": [
+        "switch-checked",
+        "switch-controlled",
+        "switch-demo",
+        "switch-disabled"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "table",
+      "route": "/verify/lyra/table",
+      "demos": [
+        "default",
+        "selected-row"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "tabs",
+      "route": "/verify/lyra/tabs",
+      "demos": [
+        "tabs-compound",
+        "tabs-controlled",
+        "tabs-demo",
+        "tabs-disabled",
+        "tabs-hybrid",
+        "tabs-precedence"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "textarea",
+      "route": "/verify/lyra/textarea",
+      "demos": [
+        "default",
+        "disabled",
+        "invalid",
+        "with-label",
+        "with-text",
+        "with-value"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "toast",
+      "route": "/verify/lyra/toast",
+      "demos": [
+        "toast-demo",
+        "toast-description",
+        "toast-dismiss",
+        "toast-promise",
+        "toast-types"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "toggle",
+      "route": "/verify/lyra/toggle",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "outline",
+        "sizes"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "toggle-group",
+      "route": "/verify/lyra/toggle-group",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "outline",
+        "sizes",
+        "toggle-group-compound"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "tooltip",
+      "route": "/verify/lyra/tooltip",
+      "demos": [
+        "tooltip-delay",
+        "tooltip-demo",
+        "tooltip-positioning"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "accordion",
+      "route": "/verify/maia/accordion",
+      "demos": [
+        "accordion-compound",
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "not-collapsible"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "alert",
+      "route": "/verify/maia/alert",
+      "demos": [
+        "default",
+        "destructive",
+        "without-icon"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "alert-dialog",
+      "route": "/verify/maia/alert-dialog",
+      "demos": [
+        "alert-dialog-controlled",
+        "alert-dialog-demo",
+        "alert-dialog-destructive"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "aspect-ratio",
+      "route": "/verify/maia/aspect-ratio",
+      "demos": [
+        "content-card",
+        "default",
+        "portrait",
+        "square",
+        "ultrawide-banner"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "avatar",
+      "route": "/verify/maia/avatar",
+      "demos": [
+        "avatar-broken-image",
+        "avatar-controlled",
+        "avatar-custom-fallback",
+        "avatar-demo",
+        "avatar-fallback"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "badge",
+      "route": "/verify/maia/badge",
+      "demos": [
+        "default",
+        "numeric",
+        "status",
+        "variants",
+        "with-icon"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "breadcrumb",
+      "route": "/verify/maia/breadcrumb",
+      "demos": [
+        "breadcrumb-demo",
+        "breadcrumb-ellipsis",
+        "breadcrumb-responsive",
+        "breadcrumb-separator"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "button",
+      "route": "/verify/maia/button",
+      "demos": [
+        "button-demo",
+        "button-disabled",
+        "button-sizes",
+        "button-variants"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "button-group",
+      "route": "/verify/maia/button-group",
+      "demos": [
+        "default",
+        "nested",
+        "orientation",
+        "separator",
+        "sizes",
+        "split",
+        "text"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "calendar",
+      "route": "/verify/maia/calendar",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "min-max",
+        "multiple",
+        "range"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "card",
+      "route": "/verify/maia/card",
+      "demos": [
+        "action",
+        "border-footer",
+        "content-only",
+        "default",
+        "full-composition"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "carousel",
+      "route": "/verify/maia/carousel",
+      "demos": [
+        "carousel-compound",
+        "carousel-controlled",
+        "carousel-demo",
+        "carousel-loop",
+        "carousel-orientation",
+        "carousel-size",
+        "carousel-spacing"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "chart",
+      "route": "/verify/maia/chart",
+      "demos": [
+        "area-default",
+        "area-gradient",
+        "bar-default",
+        "bar-multiple",
+        "line-default",
+        "line-multiple",
+        "pie-donut",
+        "pie-simple"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "checkbox",
+      "route": "/verify/maia/checkbox",
+      "demos": [
+        "checkbox-checked",
+        "checkbox-controlled",
+        "checkbox-demo",
+        "checkbox-disabled",
+        "checkbox-indeterminate"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "collapsible",
+      "route": "/verify/maia/collapsible",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "settings"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "combobox",
+      "route": "/verify/maia/combobox",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "command",
+      "route": "/verify/maia/command",
+      "demos": [
+        "command-controlled",
+        "command-demo",
+        "command-empty",
+        "command-scrollable"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "context-menu",
+      "route": "/verify/maia/context-menu",
+      "demos": [
+        "context-menu-compound",
+        "controlled",
+        "default",
+        "destructive",
+        "disabled",
+        "groups",
+        "shortcuts",
+        "simple"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "dialog",
+      "route": "/verify/maia/dialog",
+      "demos": [
+        "dialog-close-button",
+        "dialog-controlled",
+        "dialog-demo",
+        "dialog-no-footer"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "drawer",
+      "route": "/verify/maia/drawer",
+      "demos": [
+        "drawer-demo",
+        "drawer-no-footer",
+        "drawer-sides",
+        "drawer-snap-points"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "dropdown-menu",
+      "route": "/verify/maia/dropdown-menu",
+      "demos": [
+        "dropdown-menu-compound",
+        "dropdown-menu-danger",
+        "dropdown-menu-demo",
+        "dropdown-menu-disabled-item",
+        "dropdown-menu-selection",
+        "dropdown-menu-simple"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "empty",
+      "route": "/verify/maia/empty",
+      "demos": [
+        "empty-avatar",
+        "empty-avatar-group",
+        "empty-background",
+        "empty-demo",
+        "empty-icon",
+        "empty-input-group",
+        "empty-outline"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "field",
+      "route": "/verify/maia/field",
+      "demos": [
+        "default",
+        "field-set",
+        "fieldset-demo",
+        "horizontal",
+        "invalid",
+        "multiple-errors",
+        "signup"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "hover-card",
+      "route": "/verify/maia/hover-card",
+      "demos": [
+        "custom-delays",
+        "default",
+        "disabled",
+        "positioning"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "input",
+      "route": "/verify/maia/input",
+      "demos": [
+        "input-demo",
+        "input-disabled",
+        "input-file",
+        "input-invalid",
+        "input-label",
+        "input-number",
+        "input-password",
+        "input-value"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "input-group",
+      "route": "/verify/maia/input-group",
+      "demos": [
+        "align-block-end",
+        "align-block-start",
+        "align-inline-end",
+        "align-inline-start",
+        "button",
+        "default",
+        "disabled",
+        "invalid",
+        "text",
+        "textarea"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "input-otp",
+      "route": "/verify/maia/input-otp",
+      "demos": [
+        "input-otp-controlled",
+        "input-otp-demo",
+        "input-otp-disabled",
+        "input-otp-masked",
+        "input-otp-separator"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "item",
+      "route": "/verify/maia/item",
+      "demos": [
+        "item-demo",
+        "item-group",
+        "item-header",
+        "item-icon",
+        "item-image",
+        "item-link",
+        "item-size",
+        "item-variant"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "kbd",
+      "route": "/verify/maia/kbd",
+      "demos": [
+        "kbd-button",
+        "kbd-demo",
+        "kbd-group",
+        "kbd-input-group",
+        "kbd-tooltip"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "label",
+      "route": "/verify/maia/label",
+      "demos": [
+        "disabled",
+        "input-with-label",
+        "label-demo",
+        "required"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "menubar",
+      "route": "/verify/maia/menubar",
+      "demos": [
+        "menubar-compound",
+        "menubar-controlled",
+        "menubar-danger",
+        "menubar-demo",
+        "menubar-disabled"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "native-select",
+      "route": "/verify/maia/native-select",
+      "demos": [
+        "default",
+        "disabled",
+        "groups"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "navigation-menu",
+      "route": "/verify/maia/navigation-menu",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "navigation-menu-compound",
+        "navigation-menu-precedence",
+        "panel"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "pagination",
+      "route": "/verify/maia/pagination",
+      "demos": [
+        "controlled",
+        "default",
+        "few-pages",
+        "sibling-count"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "popover",
+      "route": "/verify/maia/popover",
+      "demos": [
+        "popover-controlled",
+        "popover-demo",
+        "popover-placement"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "progress",
+      "route": "/verify/maia/progress",
+      "demos": [
+        "progress-controlled",
+        "progress-demo",
+        "progress-indeterminate",
+        "progress-label",
+        "progress-min-max"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "radio-group",
+      "route": "/verify/maia/radio-group",
+      "demos": [
+        "radio-group-compound",
+        "radio-group-controlled",
+        "radio-group-demo",
+        "radio-group-disabled",
+        "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "resizable",
+      "route": "/verify/maia/resizable",
+      "demos": [
+        "resizable-controlled",
+        "resizable-demo",
+        "resizable-sizes",
+        "resizable-vertical"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "scroll-area",
+      "route": "/verify/maia/scroll-area",
+      "demos": [
+        "default",
+        "horizontal"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "select",
+      "route": "/verify/maia/select",
+      "demos": [
+        "select-compound",
+        "select-controlled",
+        "select-default-value",
+        "select-demo",
+        "select-disabled",
+        "select-disabled-items",
+        "select-with-label"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "separator",
+      "route": "/verify/maia/separator",
+      "demos": [
+        "separator-demo",
+        "separator-semantic",
+        "separator-vertical"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "sheet",
+      "route": "/verify/maia/sheet",
+      "demos": [
+        "sheet-controlled",
+        "sheet-demo",
+        "sheet-side"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "sidebar",
+      "route": "/verify/maia/sidebar",
+      "demos": [
+        "sidebar-controlled",
+        "sidebar-demo"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "skeleton",
+      "route": "/verify/maia/skeleton",
+      "demos": [
+        "skeleton-card",
+        "skeleton-demo",
+        "skeleton-table",
+        "skeleton-text"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "slider",
+      "route": "/verify/maia/slider",
+      "demos": [
+        "slider-controlled",
+        "slider-demo",
+        "slider-disabled",
+        "slider-multiple",
+        "slider-range",
+        "slider-step"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "spinner",
+      "route": "/verify/maia/spinner",
+      "demos": [
+        "spinner-badge",
+        "spinner-button",
+        "spinner-color",
+        "spinner-demo",
+        "spinner-size",
+        "spinner-text"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "switch",
+      "route": "/verify/maia/switch",
+      "demos": [
+        "switch-checked",
+        "switch-controlled",
+        "switch-demo",
+        "switch-disabled"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "table",
+      "route": "/verify/maia/table",
+      "demos": [
+        "default",
+        "selected-row"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "tabs",
+      "route": "/verify/maia/tabs",
+      "demos": [
+        "tabs-compound",
+        "tabs-controlled",
+        "tabs-demo",
+        "tabs-disabled",
+        "tabs-hybrid",
+        "tabs-precedence"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "textarea",
+      "route": "/verify/maia/textarea",
+      "demos": [
+        "default",
+        "disabled",
+        "invalid",
+        "with-label",
+        "with-text",
+        "with-value"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "toast",
+      "route": "/verify/maia/toast",
+      "demos": [
+        "toast-demo",
+        "toast-description",
+        "toast-dismiss",
+        "toast-promise",
+        "toast-types"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "toggle",
+      "route": "/verify/maia/toggle",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "outline",
+        "sizes"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "toggle-group",
+      "route": "/verify/maia/toggle-group",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "outline",
+        "sizes",
+        "toggle-group-compound"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "tooltip",
+      "route": "/verify/maia/tooltip",
+      "demos": [
+        "tooltip-delay",
+        "tooltip-demo",
+        "tooltip-positioning"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "accordion",
+      "route": "/verify/mira/accordion",
+      "demos": [
+        "accordion-compound",
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "not-collapsible"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "alert",
+      "route": "/verify/mira/alert",
+      "demos": [
+        "default",
+        "destructive",
+        "without-icon"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "alert-dialog",
+      "route": "/verify/mira/alert-dialog",
+      "demos": [
+        "alert-dialog-controlled",
+        "alert-dialog-demo",
+        "alert-dialog-destructive"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "aspect-ratio",
+      "route": "/verify/mira/aspect-ratio",
+      "demos": [
+        "content-card",
+        "default",
+        "portrait",
+        "square",
+        "ultrawide-banner"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "avatar",
+      "route": "/verify/mira/avatar",
+      "demos": [
+        "avatar-broken-image",
+        "avatar-controlled",
+        "avatar-custom-fallback",
+        "avatar-demo",
+        "avatar-fallback"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "badge",
+      "route": "/verify/mira/badge",
+      "demos": [
+        "default",
+        "numeric",
+        "status",
+        "variants",
+        "with-icon"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "breadcrumb",
+      "route": "/verify/mira/breadcrumb",
+      "demos": [
+        "breadcrumb-demo",
+        "breadcrumb-ellipsis",
+        "breadcrumb-responsive",
+        "breadcrumb-separator"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "button",
+      "route": "/verify/mira/button",
+      "demos": [
+        "button-demo",
+        "button-disabled",
+        "button-sizes",
+        "button-variants"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "button-group",
+      "route": "/verify/mira/button-group",
+      "demos": [
+        "default",
+        "nested",
+        "orientation",
+        "separator",
+        "sizes",
+        "split",
+        "text"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "calendar",
+      "route": "/verify/mira/calendar",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "min-max",
+        "multiple",
+        "range"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "card",
+      "route": "/verify/mira/card",
+      "demos": [
+        "action",
+        "border-footer",
+        "content-only",
+        "default",
+        "full-composition"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "carousel",
+      "route": "/verify/mira/carousel",
+      "demos": [
+        "carousel-compound",
+        "carousel-controlled",
+        "carousel-demo",
+        "carousel-loop",
+        "carousel-orientation",
+        "carousel-size",
+        "carousel-spacing"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "chart",
+      "route": "/verify/mira/chart",
+      "demos": [
+        "area-default",
+        "area-gradient",
+        "bar-default",
+        "bar-multiple",
+        "line-default",
+        "line-multiple",
+        "pie-donut",
+        "pie-simple"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "checkbox",
+      "route": "/verify/mira/checkbox",
+      "demos": [
+        "checkbox-checked",
+        "checkbox-controlled",
+        "checkbox-demo",
+        "checkbox-disabled",
+        "checkbox-indeterminate"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "collapsible",
+      "route": "/verify/mira/collapsible",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "settings"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "combobox",
+      "route": "/verify/mira/combobox",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "command",
+      "route": "/verify/mira/command",
+      "demos": [
+        "command-controlled",
+        "command-demo",
+        "command-empty",
+        "command-scrollable"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "context-menu",
+      "route": "/verify/mira/context-menu",
+      "demos": [
+        "context-menu-compound",
+        "controlled",
+        "default",
+        "destructive",
+        "disabled",
+        "groups",
+        "shortcuts",
+        "simple"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "dialog",
+      "route": "/verify/mira/dialog",
+      "demos": [
+        "dialog-close-button",
+        "dialog-controlled",
+        "dialog-demo",
+        "dialog-no-footer"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "drawer",
+      "route": "/verify/mira/drawer",
+      "demos": [
+        "drawer-demo",
+        "drawer-no-footer",
+        "drawer-sides",
+        "drawer-snap-points"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "dropdown-menu",
+      "route": "/verify/mira/dropdown-menu",
+      "demos": [
+        "dropdown-menu-compound",
+        "dropdown-menu-danger",
+        "dropdown-menu-demo",
+        "dropdown-menu-disabled-item",
+        "dropdown-menu-selection",
+        "dropdown-menu-simple"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "empty",
+      "route": "/verify/mira/empty",
+      "demos": [
+        "empty-avatar",
+        "empty-avatar-group",
+        "empty-background",
+        "empty-demo",
+        "empty-icon",
+        "empty-input-group",
+        "empty-outline"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "field",
+      "route": "/verify/mira/field",
+      "demos": [
+        "default",
+        "field-set",
+        "fieldset-demo",
+        "horizontal",
+        "invalid",
+        "multiple-errors",
+        "signup"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "hover-card",
+      "route": "/verify/mira/hover-card",
+      "demos": [
+        "custom-delays",
+        "default",
+        "disabled",
+        "positioning"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "input",
+      "route": "/verify/mira/input",
+      "demos": [
+        "input-demo",
+        "input-disabled",
+        "input-file",
+        "input-invalid",
+        "input-label",
+        "input-number",
+        "input-password",
+        "input-value"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "input-group",
+      "route": "/verify/mira/input-group",
+      "demos": [
+        "align-block-end",
+        "align-block-start",
+        "align-inline-end",
+        "align-inline-start",
+        "button",
+        "default",
+        "disabled",
+        "invalid",
+        "text",
+        "textarea"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "input-otp",
+      "route": "/verify/mira/input-otp",
+      "demos": [
+        "input-otp-controlled",
+        "input-otp-demo",
+        "input-otp-disabled",
+        "input-otp-masked",
+        "input-otp-separator"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "item",
+      "route": "/verify/mira/item",
+      "demos": [
+        "item-demo",
+        "item-group",
+        "item-header",
+        "item-icon",
+        "item-image",
+        "item-link",
+        "item-size",
+        "item-variant"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "kbd",
+      "route": "/verify/mira/kbd",
+      "demos": [
+        "kbd-button",
+        "kbd-demo",
+        "kbd-group",
+        "kbd-input-group",
+        "kbd-tooltip"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "label",
+      "route": "/verify/mira/label",
+      "demos": [
+        "disabled",
+        "input-with-label",
+        "label-demo",
+        "required"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "menubar",
+      "route": "/verify/mira/menubar",
+      "demos": [
+        "menubar-compound",
+        "menubar-controlled",
+        "menubar-danger",
+        "menubar-demo",
+        "menubar-disabled"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "native-select",
+      "route": "/verify/mira/native-select",
+      "demos": [
+        "default",
+        "disabled",
+        "groups"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "navigation-menu",
+      "route": "/verify/mira/navigation-menu",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "navigation-menu-compound",
+        "navigation-menu-precedence",
+        "panel"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "pagination",
+      "route": "/verify/mira/pagination",
+      "demos": [
+        "controlled",
+        "default",
+        "few-pages",
+        "sibling-count"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "popover",
+      "route": "/verify/mira/popover",
+      "demos": [
+        "popover-controlled",
+        "popover-demo",
+        "popover-placement"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "progress",
+      "route": "/verify/mira/progress",
+      "demos": [
+        "progress-controlled",
+        "progress-demo",
+        "progress-indeterminate",
+        "progress-label",
+        "progress-min-max"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "radio-group",
+      "route": "/verify/mira/radio-group",
+      "demos": [
+        "radio-group-compound",
+        "radio-group-controlled",
+        "radio-group-demo",
+        "radio-group-disabled",
+        "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "resizable",
+      "route": "/verify/mira/resizable",
+      "demos": [
+        "resizable-controlled",
+        "resizable-demo",
+        "resizable-sizes",
+        "resizable-vertical"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "scroll-area",
+      "route": "/verify/mira/scroll-area",
+      "demos": [
+        "default",
+        "horizontal"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "select",
+      "route": "/verify/mira/select",
+      "demos": [
+        "select-compound",
+        "select-controlled",
+        "select-default-value",
+        "select-demo",
+        "select-disabled",
+        "select-disabled-items",
+        "select-with-label"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "separator",
+      "route": "/verify/mira/separator",
+      "demos": [
+        "separator-demo",
+        "separator-semantic",
+        "separator-vertical"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "sheet",
+      "route": "/verify/mira/sheet",
+      "demos": [
+        "sheet-controlled",
+        "sheet-demo",
+        "sheet-side"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "sidebar",
+      "route": "/verify/mira/sidebar",
+      "demos": [
+        "sidebar-controlled",
+        "sidebar-demo"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "skeleton",
+      "route": "/verify/mira/skeleton",
+      "demos": [
+        "skeleton-card",
+        "skeleton-demo",
+        "skeleton-table",
+        "skeleton-text"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "slider",
+      "route": "/verify/mira/slider",
+      "demos": [
+        "slider-controlled",
+        "slider-demo",
+        "slider-disabled",
+        "slider-multiple",
+        "slider-range",
+        "slider-step"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "spinner",
+      "route": "/verify/mira/spinner",
+      "demos": [
+        "spinner-badge",
+        "spinner-button",
+        "spinner-color",
+        "spinner-demo",
+        "spinner-size",
+        "spinner-text"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "switch",
+      "route": "/verify/mira/switch",
+      "demos": [
+        "switch-checked",
+        "switch-controlled",
+        "switch-demo",
+        "switch-disabled"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "table",
+      "route": "/verify/mira/table",
+      "demos": [
+        "default",
+        "selected-row"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "tabs",
+      "route": "/verify/mira/tabs",
+      "demos": [
+        "tabs-compound",
+        "tabs-controlled",
+        "tabs-demo",
+        "tabs-disabled",
+        "tabs-hybrid",
+        "tabs-precedence"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "textarea",
+      "route": "/verify/mira/textarea",
+      "demos": [
+        "default",
+        "disabled",
+        "invalid",
+        "with-label",
+        "with-text",
+        "with-value"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "toast",
+      "route": "/verify/mira/toast",
+      "demos": [
+        "toast-demo",
+        "toast-description",
+        "toast-dismiss",
+        "toast-promise",
+        "toast-types"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "toggle",
+      "route": "/verify/mira/toggle",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "outline",
+        "sizes"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "toggle-group",
+      "route": "/verify/mira/toggle-group",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "outline",
+        "sizes",
+        "toggle-group-compound"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "tooltip",
+      "route": "/verify/mira/tooltip",
+      "demos": [
+        "tooltip-delay",
+        "tooltip-demo",
+        "tooltip-positioning"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "accordion",
+      "route": "/verify/nova/accordion",
+      "demos": [
+        "accordion-compound",
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "not-collapsible"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "alert",
+      "route": "/verify/nova/alert",
+      "demos": [
+        "default",
+        "destructive",
+        "without-icon"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "alert-dialog",
+      "route": "/verify/nova/alert-dialog",
+      "demos": [
+        "alert-dialog-controlled",
+        "alert-dialog-demo",
+        "alert-dialog-destructive"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "aspect-ratio",
+      "route": "/verify/nova/aspect-ratio",
+      "demos": [
+        "content-card",
+        "default",
+        "portrait",
+        "square",
+        "ultrawide-banner"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "avatar",
+      "route": "/verify/nova/avatar",
+      "demos": [
+        "avatar-broken-image",
+        "avatar-controlled",
+        "avatar-custom-fallback",
+        "avatar-demo",
+        "avatar-fallback"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "badge",
+      "route": "/verify/nova/badge",
+      "demos": [
+        "default",
+        "numeric",
+        "status",
+        "variants",
+        "with-icon"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "breadcrumb",
+      "route": "/verify/nova/breadcrumb",
+      "demos": [
+        "breadcrumb-demo",
+        "breadcrumb-ellipsis",
+        "breadcrumb-responsive",
+        "breadcrumb-separator"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "button",
+      "route": "/verify/nova/button",
+      "demos": [
+        "button-demo",
+        "button-disabled",
+        "button-sizes",
+        "button-variants"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "button-group",
+      "route": "/verify/nova/button-group",
+      "demos": [
+        "default",
+        "nested",
+        "orientation",
+        "separator",
+        "sizes",
+        "split",
+        "text"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "calendar",
+      "route": "/verify/nova/calendar",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "min-max",
+        "multiple",
+        "range"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "card",
+      "route": "/verify/nova/card",
+      "demos": [
+        "action",
+        "border-footer",
+        "content-only",
+        "default",
+        "full-composition"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "carousel",
+      "route": "/verify/nova/carousel",
+      "demos": [
+        "carousel-compound",
+        "carousel-controlled",
+        "carousel-demo",
+        "carousel-loop",
+        "carousel-orientation",
+        "carousel-size",
+        "carousel-spacing"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "chart",
+      "route": "/verify/nova/chart",
+      "demos": [
+        "area-default",
+        "area-gradient",
+        "bar-default",
+        "bar-multiple",
+        "line-default",
+        "line-multiple",
+        "pie-donut",
+        "pie-simple"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "checkbox",
+      "route": "/verify/nova/checkbox",
+      "demos": [
+        "checkbox-checked",
+        "checkbox-controlled",
+        "checkbox-demo",
+        "checkbox-disabled",
+        "checkbox-indeterminate"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "collapsible",
+      "route": "/verify/nova/collapsible",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "settings"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "combobox",
+      "route": "/verify/nova/combobox",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "command",
+      "route": "/verify/nova/command",
+      "demos": [
+        "command-controlled",
+        "command-demo",
+        "command-empty",
+        "command-scrollable"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "context-menu",
+      "route": "/verify/nova/context-menu",
+      "demos": [
+        "context-menu-compound",
+        "controlled",
+        "default",
+        "destructive",
+        "disabled",
+        "groups",
+        "shortcuts",
+        "simple"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "dialog",
+      "route": "/verify/nova/dialog",
+      "demos": [
+        "dialog-close-button",
+        "dialog-controlled",
+        "dialog-demo",
+        "dialog-no-footer"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "drawer",
+      "route": "/verify/nova/drawer",
+      "demos": [
+        "drawer-demo",
+        "drawer-no-footer",
+        "drawer-sides",
+        "drawer-snap-points"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "dropdown-menu",
+      "route": "/verify/nova/dropdown-menu",
+      "demos": [
+        "dropdown-menu-compound",
+        "dropdown-menu-danger",
+        "dropdown-menu-demo",
+        "dropdown-menu-disabled-item",
+        "dropdown-menu-selection",
+        "dropdown-menu-simple"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "empty",
+      "route": "/verify/nova/empty",
+      "demos": [
+        "empty-avatar",
+        "empty-avatar-group",
+        "empty-background",
+        "empty-demo",
+        "empty-icon",
+        "empty-input-group",
+        "empty-outline"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "field",
+      "route": "/verify/nova/field",
+      "demos": [
+        "default",
+        "field-set",
+        "fieldset-demo",
+        "horizontal",
+        "invalid",
+        "multiple-errors",
+        "signup"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "hover-card",
+      "route": "/verify/nova/hover-card",
+      "demos": [
+        "custom-delays",
+        "default",
+        "disabled",
+        "positioning"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "input",
+      "route": "/verify/nova/input",
+      "demos": [
+        "input-demo",
+        "input-disabled",
+        "input-file",
+        "input-invalid",
+        "input-label",
+        "input-number",
+        "input-password",
+        "input-value"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "input-group",
+      "route": "/verify/nova/input-group",
+      "demos": [
+        "align-block-end",
+        "align-block-start",
+        "align-inline-end",
+        "align-inline-start",
+        "button",
+        "default",
+        "disabled",
+        "invalid",
+        "text",
+        "textarea"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "input-otp",
+      "route": "/verify/nova/input-otp",
+      "demos": [
+        "input-otp-controlled",
+        "input-otp-demo",
+        "input-otp-disabled",
+        "input-otp-masked",
+        "input-otp-separator"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "item",
+      "route": "/verify/nova/item",
+      "demos": [
+        "item-demo",
+        "item-group",
+        "item-header",
+        "item-icon",
+        "item-image",
+        "item-link",
+        "item-size",
+        "item-variant"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "kbd",
+      "route": "/verify/nova/kbd",
+      "demos": [
+        "kbd-button",
+        "kbd-demo",
+        "kbd-group",
+        "kbd-input-group",
+        "kbd-tooltip"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "label",
+      "route": "/verify/nova/label",
+      "demos": [
+        "disabled",
+        "input-with-label",
+        "label-demo",
+        "required"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "menubar",
+      "route": "/verify/nova/menubar",
+      "demos": [
+        "menubar-compound",
+        "menubar-controlled",
+        "menubar-danger",
+        "menubar-demo",
+        "menubar-disabled"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "native-select",
+      "route": "/verify/nova/native-select",
+      "demos": [
+        "default",
+        "disabled",
+        "groups"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "navigation-menu",
+      "route": "/verify/nova/navigation-menu",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "navigation-menu-compound",
+        "navigation-menu-precedence",
+        "panel"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "pagination",
+      "route": "/verify/nova/pagination",
+      "demos": [
+        "controlled",
+        "default",
+        "few-pages",
+        "sibling-count"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "popover",
+      "route": "/verify/nova/popover",
+      "demos": [
+        "popover-controlled",
+        "popover-demo",
+        "popover-placement"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "progress",
+      "route": "/verify/nova/progress",
+      "demos": [
+        "progress-controlled",
+        "progress-demo",
+        "progress-indeterminate",
+        "progress-label",
+        "progress-min-max"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "radio-group",
+      "route": "/verify/nova/radio-group",
+      "demos": [
+        "radio-group-compound",
+        "radio-group-controlled",
+        "radio-group-demo",
+        "radio-group-disabled",
+        "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "resizable",
+      "route": "/verify/nova/resizable",
+      "demos": [
+        "resizable-controlled",
+        "resizable-demo",
+        "resizable-sizes",
+        "resizable-vertical"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "scroll-area",
+      "route": "/verify/nova/scroll-area",
+      "demos": [
+        "default",
+        "horizontal"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "select",
+      "route": "/verify/nova/select",
+      "demos": [
+        "select-compound",
+        "select-controlled",
+        "select-default-value",
+        "select-demo",
+        "select-disabled",
+        "select-disabled-items",
+        "select-with-label"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "separator",
+      "route": "/verify/nova/separator",
+      "demos": [
+        "separator-demo",
+        "separator-semantic",
+        "separator-vertical"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "sheet",
+      "route": "/verify/nova/sheet",
+      "demos": [
+        "sheet-controlled",
+        "sheet-demo",
+        "sheet-side"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "sidebar",
+      "route": "/verify/nova/sidebar",
+      "demos": [
+        "sidebar-controlled",
+        "sidebar-demo"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "skeleton",
+      "route": "/verify/nova/skeleton",
+      "demos": [
+        "skeleton-card",
+        "skeleton-demo",
+        "skeleton-table",
+        "skeleton-text"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "slider",
+      "route": "/verify/nova/slider",
+      "demos": [
+        "slider-controlled",
+        "slider-demo",
+        "slider-disabled",
+        "slider-multiple",
+        "slider-range",
+        "slider-step"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "spinner",
+      "route": "/verify/nova/spinner",
+      "demos": [
+        "spinner-badge",
+        "spinner-button",
+        "spinner-color",
+        "spinner-demo",
+        "spinner-size",
+        "spinner-text"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "switch",
+      "route": "/verify/nova/switch",
+      "demos": [
+        "switch-checked",
+        "switch-controlled",
+        "switch-demo",
+        "switch-disabled"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "table",
+      "route": "/verify/nova/table",
+      "demos": [
+        "default",
+        "selected-row"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "tabs",
+      "route": "/verify/nova/tabs",
+      "demos": [
+        "tabs-compound",
+        "tabs-controlled",
+        "tabs-demo",
+        "tabs-disabled",
+        "tabs-hybrid",
+        "tabs-precedence"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "textarea",
+      "route": "/verify/nova/textarea",
+      "demos": [
+        "default",
+        "disabled",
+        "invalid",
+        "with-label",
+        "with-text",
+        "with-value"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "toast",
+      "route": "/verify/nova/toast",
+      "demos": [
+        "toast-demo",
+        "toast-description",
+        "toast-dismiss",
+        "toast-promise",
+        "toast-types"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "toggle",
+      "route": "/verify/nova/toggle",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "outline",
+        "sizes"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "toggle-group",
+      "route": "/verify/nova/toggle-group",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "outline",
+        "sizes",
+        "toggle-group-compound"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "tooltip",
+      "route": "/verify/nova/tooltip",
+      "demos": [
+        "tooltip-delay",
+        "tooltip-demo",
+        "tooltip-positioning"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "accordion",
+      "route": "/verify/rhea/accordion",
+      "demos": [
+        "accordion-compound",
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "not-collapsible"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "alert",
+      "route": "/verify/rhea/alert",
+      "demos": [
+        "default",
+        "destructive",
+        "without-icon"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "alert-dialog",
+      "route": "/verify/rhea/alert-dialog",
+      "demos": [
+        "alert-dialog-controlled",
+        "alert-dialog-demo",
+        "alert-dialog-destructive"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "aspect-ratio",
+      "route": "/verify/rhea/aspect-ratio",
+      "demos": [
+        "content-card",
+        "default",
+        "portrait",
+        "square",
+        "ultrawide-banner"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "avatar",
+      "route": "/verify/rhea/avatar",
+      "demos": [
+        "avatar-broken-image",
+        "avatar-controlled",
+        "avatar-custom-fallback",
+        "avatar-demo",
+        "avatar-fallback"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "badge",
+      "route": "/verify/rhea/badge",
+      "demos": [
+        "default",
+        "numeric",
+        "status",
+        "variants",
+        "with-icon"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "breadcrumb",
+      "route": "/verify/rhea/breadcrumb",
+      "demos": [
+        "breadcrumb-demo",
+        "breadcrumb-ellipsis",
+        "breadcrumb-responsive",
+        "breadcrumb-separator"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "button",
+      "route": "/verify/rhea/button",
+      "demos": [
+        "button-demo",
+        "button-disabled",
+        "button-sizes",
+        "button-variants"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "button-group",
+      "route": "/verify/rhea/button-group",
+      "demos": [
+        "default",
+        "nested",
+        "orientation",
+        "separator",
+        "sizes",
+        "split",
+        "text"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "calendar",
+      "route": "/verify/rhea/calendar",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "min-max",
+        "multiple",
+        "range"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "card",
+      "route": "/verify/rhea/card",
+      "demos": [
+        "action",
+        "border-footer",
+        "content-only",
+        "default",
+        "full-composition"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "carousel",
+      "route": "/verify/rhea/carousel",
+      "demos": [
+        "carousel-compound",
+        "carousel-controlled",
+        "carousel-demo",
+        "carousel-loop",
+        "carousel-orientation",
+        "carousel-size",
+        "carousel-spacing"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "chart",
+      "route": "/verify/rhea/chart",
+      "demos": [
+        "area-default",
+        "area-gradient",
+        "bar-default",
+        "bar-multiple",
+        "line-default",
+        "line-multiple",
+        "pie-donut",
+        "pie-simple"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "checkbox",
+      "route": "/verify/rhea/checkbox",
+      "demos": [
+        "checkbox-checked",
+        "checkbox-controlled",
+        "checkbox-demo",
+        "checkbox-disabled",
+        "checkbox-indeterminate"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "collapsible",
+      "route": "/verify/rhea/collapsible",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "settings"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "combobox",
+      "route": "/verify/rhea/combobox",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "command",
+      "route": "/verify/rhea/command",
+      "demos": [
+        "command-controlled",
+        "command-demo",
+        "command-empty",
+        "command-scrollable"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "context-menu",
+      "route": "/verify/rhea/context-menu",
+      "demos": [
+        "context-menu-compound",
+        "controlled",
+        "default",
+        "destructive",
+        "disabled",
+        "groups",
+        "shortcuts",
+        "simple"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "dialog",
+      "route": "/verify/rhea/dialog",
+      "demos": [
+        "dialog-close-button",
+        "dialog-controlled",
+        "dialog-demo",
+        "dialog-no-footer"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "drawer",
+      "route": "/verify/rhea/drawer",
+      "demos": [
+        "drawer-demo",
+        "drawer-no-footer",
+        "drawer-sides",
+        "drawer-snap-points"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "dropdown-menu",
+      "route": "/verify/rhea/dropdown-menu",
+      "demos": [
+        "dropdown-menu-compound",
+        "dropdown-menu-danger",
+        "dropdown-menu-demo",
+        "dropdown-menu-disabled-item",
+        "dropdown-menu-selection",
+        "dropdown-menu-simple"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "empty",
+      "route": "/verify/rhea/empty",
+      "demos": [
+        "empty-avatar",
+        "empty-avatar-group",
+        "empty-background",
+        "empty-demo",
+        "empty-icon",
+        "empty-input-group",
+        "empty-outline"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "field",
+      "route": "/verify/rhea/field",
+      "demos": [
+        "default",
+        "field-set",
+        "fieldset-demo",
+        "horizontal",
+        "invalid",
+        "multiple-errors",
+        "signup"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "hover-card",
+      "route": "/verify/rhea/hover-card",
+      "demos": [
+        "custom-delays",
+        "default",
+        "disabled",
+        "positioning"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "input",
+      "route": "/verify/rhea/input",
+      "demos": [
+        "input-demo",
+        "input-disabled",
+        "input-file",
+        "input-invalid",
+        "input-label",
+        "input-number",
+        "input-password",
+        "input-value"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "input-group",
+      "route": "/verify/rhea/input-group",
+      "demos": [
+        "align-block-end",
+        "align-block-start",
+        "align-inline-end",
+        "align-inline-start",
+        "button",
+        "default",
+        "disabled",
+        "invalid",
+        "text",
+        "textarea"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "input-otp",
+      "route": "/verify/rhea/input-otp",
+      "demos": [
+        "input-otp-controlled",
+        "input-otp-demo",
+        "input-otp-disabled",
+        "input-otp-masked",
+        "input-otp-separator"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "item",
+      "route": "/verify/rhea/item",
+      "demos": [
+        "item-demo",
+        "item-group",
+        "item-header",
+        "item-icon",
+        "item-image",
+        "item-link",
+        "item-size",
+        "item-variant"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "kbd",
+      "route": "/verify/rhea/kbd",
+      "demos": [
+        "kbd-button",
+        "kbd-demo",
+        "kbd-group",
+        "kbd-input-group",
+        "kbd-tooltip"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "label",
+      "route": "/verify/rhea/label",
+      "demos": [
+        "disabled",
+        "input-with-label",
+        "label-demo",
+        "required"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "menubar",
+      "route": "/verify/rhea/menubar",
+      "demos": [
+        "menubar-compound",
+        "menubar-controlled",
+        "menubar-danger",
+        "menubar-demo",
+        "menubar-disabled"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "native-select",
+      "route": "/verify/rhea/native-select",
+      "demos": [
+        "default",
+        "disabled",
+        "groups"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "navigation-menu",
+      "route": "/verify/rhea/navigation-menu",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "navigation-menu-compound",
+        "navigation-menu-precedence",
+        "panel"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "pagination",
+      "route": "/verify/rhea/pagination",
+      "demos": [
+        "controlled",
+        "default",
+        "few-pages",
+        "sibling-count"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "popover",
+      "route": "/verify/rhea/popover",
+      "demos": [
+        "popover-controlled",
+        "popover-demo",
+        "popover-placement"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "progress",
+      "route": "/verify/rhea/progress",
+      "demos": [
+        "progress-controlled",
+        "progress-demo",
+        "progress-indeterminate",
+        "progress-label",
+        "progress-min-max"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "radio-group",
+      "route": "/verify/rhea/radio-group",
+      "demos": [
+        "radio-group-compound",
+        "radio-group-controlled",
+        "radio-group-demo",
+        "radio-group-disabled",
+        "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "resizable",
+      "route": "/verify/rhea/resizable",
+      "demos": [
+        "resizable-controlled",
+        "resizable-demo",
+        "resizable-sizes",
+        "resizable-vertical"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "scroll-area",
+      "route": "/verify/rhea/scroll-area",
+      "demos": [
+        "default",
+        "horizontal"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "select",
+      "route": "/verify/rhea/select",
+      "demos": [
+        "select-compound",
+        "select-controlled",
+        "select-default-value",
+        "select-demo",
+        "select-disabled",
+        "select-disabled-items",
+        "select-with-label"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "separator",
+      "route": "/verify/rhea/separator",
+      "demos": [
+        "separator-demo",
+        "separator-semantic",
+        "separator-vertical"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "sheet",
+      "route": "/verify/rhea/sheet",
+      "demos": [
+        "sheet-controlled",
+        "sheet-demo",
+        "sheet-side"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "sidebar",
+      "route": "/verify/rhea/sidebar",
+      "demos": [
+        "sidebar-controlled",
+        "sidebar-demo"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "skeleton",
+      "route": "/verify/rhea/skeleton",
+      "demos": [
+        "skeleton-card",
+        "skeleton-demo",
+        "skeleton-table",
+        "skeleton-text"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "slider",
+      "route": "/verify/rhea/slider",
+      "demos": [
+        "slider-controlled",
+        "slider-demo",
+        "slider-disabled",
+        "slider-multiple",
+        "slider-range",
+        "slider-step"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "spinner",
+      "route": "/verify/rhea/spinner",
+      "demos": [
+        "spinner-badge",
+        "spinner-button",
+        "spinner-color",
+        "spinner-demo",
+        "spinner-size",
+        "spinner-text"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "switch",
+      "route": "/verify/rhea/switch",
+      "demos": [
+        "switch-checked",
+        "switch-controlled",
+        "switch-demo",
+        "switch-disabled"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "table",
+      "route": "/verify/rhea/table",
+      "demos": [
+        "default",
+        "selected-row"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "tabs",
+      "route": "/verify/rhea/tabs",
+      "demos": [
+        "tabs-compound",
+        "tabs-controlled",
+        "tabs-demo",
+        "tabs-disabled",
+        "tabs-hybrid",
+        "tabs-precedence"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "textarea",
+      "route": "/verify/rhea/textarea",
+      "demos": [
+        "default",
+        "disabled",
+        "invalid",
+        "with-label",
+        "with-text",
+        "with-value"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "toast",
+      "route": "/verify/rhea/toast",
+      "demos": [
+        "toast-demo",
+        "toast-description",
+        "toast-dismiss",
+        "toast-promise",
+        "toast-types"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "toggle",
+      "route": "/verify/rhea/toggle",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "outline",
+        "sizes"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "toggle-group",
+      "route": "/verify/rhea/toggle-group",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "outline",
+        "sizes",
+        "toggle-group-compound"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "tooltip",
+      "route": "/verify/rhea/tooltip",
+      "demos": [
+        "tooltip-delay",
+        "tooltip-demo",
+        "tooltip-positioning"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "accordion",
+      "route": "/verify/sera/accordion",
+      "demos": [
+        "accordion-compound",
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "not-collapsible"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "alert",
+      "route": "/verify/sera/alert",
+      "demos": [
+        "default",
+        "destructive",
+        "without-icon"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "alert-dialog",
+      "route": "/verify/sera/alert-dialog",
+      "demos": [
+        "alert-dialog-controlled",
+        "alert-dialog-demo",
+        "alert-dialog-destructive"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "aspect-ratio",
+      "route": "/verify/sera/aspect-ratio",
+      "demos": [
+        "content-card",
+        "default",
+        "portrait",
+        "square",
+        "ultrawide-banner"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "avatar",
+      "route": "/verify/sera/avatar",
+      "demos": [
+        "avatar-broken-image",
+        "avatar-controlled",
+        "avatar-custom-fallback",
+        "avatar-demo",
+        "avatar-fallback"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "badge",
+      "route": "/verify/sera/badge",
+      "demos": [
+        "default",
+        "numeric",
+        "status",
+        "variants",
+        "with-icon"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "breadcrumb",
+      "route": "/verify/sera/breadcrumb",
+      "demos": [
+        "breadcrumb-demo",
+        "breadcrumb-ellipsis",
+        "breadcrumb-responsive",
+        "breadcrumb-separator"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "button",
+      "route": "/verify/sera/button",
+      "demos": [
+        "button-demo",
+        "button-disabled",
+        "button-sizes",
+        "button-variants"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "button-group",
+      "route": "/verify/sera/button-group",
+      "demos": [
+        "default",
+        "nested",
+        "orientation",
+        "separator",
+        "sizes",
+        "split",
+        "text"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "calendar",
+      "route": "/verify/sera/calendar",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "min-max",
+        "multiple",
+        "range"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "card",
+      "route": "/verify/sera/card",
+      "demos": [
+        "action",
+        "border-footer",
+        "content-only",
+        "default",
+        "full-composition"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "carousel",
+      "route": "/verify/sera/carousel",
+      "demos": [
+        "carousel-compound",
+        "carousel-controlled",
+        "carousel-demo",
+        "carousel-loop",
+        "carousel-orientation",
+        "carousel-size",
+        "carousel-spacing"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "chart",
+      "route": "/verify/sera/chart",
+      "demos": [
+        "area-default",
+        "area-gradient",
+        "bar-default",
+        "bar-multiple",
+        "line-default",
+        "line-multiple",
+        "pie-donut",
+        "pie-simple"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "checkbox",
+      "route": "/verify/sera/checkbox",
+      "demos": [
+        "checkbox-checked",
+        "checkbox-controlled",
+        "checkbox-demo",
+        "checkbox-disabled",
+        "checkbox-indeterminate"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "collapsible",
+      "route": "/verify/sera/collapsible",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "settings"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "combobox",
+      "route": "/verify/sera/combobox",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "command",
+      "route": "/verify/sera/command",
+      "demos": [
+        "command-controlled",
+        "command-demo",
+        "command-empty",
+        "command-scrollable"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "context-menu",
+      "route": "/verify/sera/context-menu",
+      "demos": [
+        "context-menu-compound",
+        "controlled",
+        "default",
+        "destructive",
+        "disabled",
+        "groups",
+        "shortcuts",
+        "simple"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "dialog",
+      "route": "/verify/sera/dialog",
+      "demos": [
+        "dialog-close-button",
+        "dialog-controlled",
+        "dialog-demo",
+        "dialog-no-footer"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "drawer",
+      "route": "/verify/sera/drawer",
+      "demos": [
+        "drawer-demo",
+        "drawer-no-footer",
+        "drawer-sides",
+        "drawer-snap-points"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "dropdown-menu",
+      "route": "/verify/sera/dropdown-menu",
+      "demos": [
+        "dropdown-menu-compound",
+        "dropdown-menu-danger",
+        "dropdown-menu-demo",
+        "dropdown-menu-disabled-item",
+        "dropdown-menu-selection",
+        "dropdown-menu-simple"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "empty",
+      "route": "/verify/sera/empty",
+      "demos": [
+        "empty-avatar",
+        "empty-avatar-group",
+        "empty-background",
+        "empty-demo",
+        "empty-icon",
+        "empty-input-group",
+        "empty-outline"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "field",
+      "route": "/verify/sera/field",
+      "demos": [
+        "default",
+        "field-set",
+        "fieldset-demo",
+        "horizontal",
+        "invalid",
+        "multiple-errors",
+        "signup"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "hover-card",
+      "route": "/verify/sera/hover-card",
+      "demos": [
+        "custom-delays",
+        "default",
+        "disabled",
+        "positioning"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "input",
+      "route": "/verify/sera/input",
+      "demos": [
+        "input-demo",
+        "input-disabled",
+        "input-file",
+        "input-invalid",
+        "input-label",
+        "input-number",
+        "input-password",
+        "input-value"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "input-group",
+      "route": "/verify/sera/input-group",
+      "demos": [
+        "align-block-end",
+        "align-block-start",
+        "align-inline-end",
+        "align-inline-start",
+        "button",
+        "default",
+        "disabled",
+        "invalid",
+        "text",
+        "textarea"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "input-otp",
+      "route": "/verify/sera/input-otp",
+      "demos": [
+        "input-otp-controlled",
+        "input-otp-demo",
+        "input-otp-disabled",
+        "input-otp-masked",
+        "input-otp-separator"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "item",
+      "route": "/verify/sera/item",
+      "demos": [
+        "item-demo",
+        "item-group",
+        "item-header",
+        "item-icon",
+        "item-image",
+        "item-link",
+        "item-size",
+        "item-variant"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "kbd",
+      "route": "/verify/sera/kbd",
+      "demos": [
+        "kbd-button",
+        "kbd-demo",
+        "kbd-group",
+        "kbd-input-group",
+        "kbd-tooltip"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "label",
+      "route": "/verify/sera/label",
+      "demos": [
+        "disabled",
+        "input-with-label",
+        "label-demo",
+        "required"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "menubar",
+      "route": "/verify/sera/menubar",
+      "demos": [
+        "menubar-compound",
+        "menubar-controlled",
+        "menubar-danger",
+        "menubar-demo",
+        "menubar-disabled"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "native-select",
+      "route": "/verify/sera/native-select",
+      "demos": [
+        "default",
+        "disabled",
+        "groups"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "navigation-menu",
+      "route": "/verify/sera/navigation-menu",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "navigation-menu-compound",
+        "navigation-menu-precedence",
+        "panel"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "pagination",
+      "route": "/verify/sera/pagination",
+      "demos": [
+        "controlled",
+        "default",
+        "few-pages",
+        "sibling-count"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "popover",
+      "route": "/verify/sera/popover",
+      "demos": [
+        "popover-controlled",
+        "popover-demo",
+        "popover-placement"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "progress",
+      "route": "/verify/sera/progress",
+      "demos": [
+        "progress-controlled",
+        "progress-demo",
+        "progress-indeterminate",
+        "progress-label",
+        "progress-min-max"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "radio-group",
+      "route": "/verify/sera/radio-group",
+      "demos": [
+        "radio-group-compound",
+        "radio-group-controlled",
+        "radio-group-demo",
+        "radio-group-disabled",
+        "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "resizable",
+      "route": "/verify/sera/resizable",
+      "demos": [
+        "resizable-controlled",
+        "resizable-demo",
+        "resizable-sizes",
+        "resizable-vertical"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "scroll-area",
+      "route": "/verify/sera/scroll-area",
+      "demos": [
+        "default",
+        "horizontal"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "select",
+      "route": "/verify/sera/select",
+      "demos": [
+        "select-compound",
+        "select-controlled",
+        "select-default-value",
+        "select-demo",
+        "select-disabled",
+        "select-disabled-items",
+        "select-with-label"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "separator",
+      "route": "/verify/sera/separator",
+      "demos": [
+        "separator-demo",
+        "separator-semantic",
+        "separator-vertical"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "sheet",
+      "route": "/verify/sera/sheet",
+      "demos": [
+        "sheet-controlled",
+        "sheet-demo",
+        "sheet-side"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "sidebar",
+      "route": "/verify/sera/sidebar",
+      "demos": [
+        "sidebar-controlled",
+        "sidebar-demo"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "skeleton",
+      "route": "/verify/sera/skeleton",
+      "demos": [
+        "skeleton-card",
+        "skeleton-demo",
+        "skeleton-table",
+        "skeleton-text"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "slider",
+      "route": "/verify/sera/slider",
+      "demos": [
+        "slider-controlled",
+        "slider-demo",
+        "slider-disabled",
+        "slider-multiple",
+        "slider-range",
+        "slider-step"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "spinner",
+      "route": "/verify/sera/spinner",
+      "demos": [
+        "spinner-badge",
+        "spinner-button",
+        "spinner-color",
+        "spinner-demo",
+        "spinner-size",
+        "spinner-text"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "switch",
+      "route": "/verify/sera/switch",
+      "demos": [
+        "switch-checked",
+        "switch-controlled",
+        "switch-demo",
+        "switch-disabled"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "table",
+      "route": "/verify/sera/table",
+      "demos": [
+        "default",
+        "selected-row"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "tabs",
+      "route": "/verify/sera/tabs",
+      "demos": [
+        "tabs-compound",
+        "tabs-controlled",
+        "tabs-demo",
+        "tabs-disabled",
+        "tabs-hybrid",
+        "tabs-precedence"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "textarea",
+      "route": "/verify/sera/textarea",
+      "demos": [
+        "default",
+        "disabled",
+        "invalid",
+        "with-label",
+        "with-text",
+        "with-value"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "toast",
+      "route": "/verify/sera/toast",
+      "demos": [
+        "toast-demo",
+        "toast-description",
+        "toast-dismiss",
+        "toast-promise",
+        "toast-types"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "toggle",
+      "route": "/verify/sera/toggle",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "outline",
+        "sizes"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "toggle-group",
+      "route": "/verify/sera/toggle-group",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "outline",
+        "sizes",
+        "toggle-group-compound"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "tooltip",
+      "route": "/verify/sera/tooltip",
+      "demos": [
+        "tooltip-delay",
+        "tooltip-demo",
+        "tooltip-positioning"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "accordion",
+      "route": "/verify/vega/accordion",
+      "demos": [
+        "accordion-compound",
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "not-collapsible"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "alert",
+      "route": "/verify/vega/alert",
+      "demos": [
+        "default",
+        "destructive",
+        "without-icon"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "alert-dialog",
+      "route": "/verify/vega/alert-dialog",
+      "demos": [
+        "alert-dialog-controlled",
+        "alert-dialog-demo",
+        "alert-dialog-destructive"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "aspect-ratio",
+      "route": "/verify/vega/aspect-ratio",
+      "demos": [
+        "content-card",
+        "default",
+        "portrait",
+        "square",
+        "ultrawide-banner"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "avatar",
+      "route": "/verify/vega/avatar",
+      "demos": [
+        "avatar-broken-image",
+        "avatar-controlled",
+        "avatar-custom-fallback",
+        "avatar-demo",
+        "avatar-fallback"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "badge",
+      "route": "/verify/vega/badge",
+      "demos": [
+        "default",
+        "numeric",
+        "status",
+        "variants",
+        "with-icon"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "breadcrumb",
+      "route": "/verify/vega/breadcrumb",
+      "demos": [
+        "breadcrumb-demo",
+        "breadcrumb-ellipsis",
+        "breadcrumb-responsive",
+        "breadcrumb-separator"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "button",
+      "route": "/verify/vega/button",
+      "demos": [
+        "button-demo",
+        "button-disabled",
+        "button-sizes",
+        "button-variants"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "button-group",
+      "route": "/verify/vega/button-group",
+      "demos": [
+        "default",
+        "nested",
+        "orientation",
+        "separator",
+        "sizes",
+        "split",
+        "text"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "calendar",
+      "route": "/verify/vega/calendar",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "min-max",
+        "multiple",
+        "range"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "card",
+      "route": "/verify/vega/card",
+      "demos": [
+        "action",
+        "border-footer",
+        "content-only",
+        "default",
+        "full-composition"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "carousel",
+      "route": "/verify/vega/carousel",
+      "demos": [
+        "carousel-compound",
+        "carousel-controlled",
+        "carousel-demo",
+        "carousel-loop",
+        "carousel-orientation",
+        "carousel-size",
+        "carousel-spacing"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "chart",
+      "route": "/verify/vega/chart",
+      "demos": [
+        "area-default",
+        "area-gradient",
+        "bar-default",
+        "bar-multiple",
+        "line-default",
+        "line-multiple",
+        "pie-donut",
+        "pie-simple"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "checkbox",
+      "route": "/verify/vega/checkbox",
+      "demos": [
+        "checkbox-checked",
+        "checkbox-controlled",
+        "checkbox-demo",
+        "checkbox-disabled",
+        "checkbox-indeterminate"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "collapsible",
+      "route": "/verify/vega/collapsible",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "settings"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "combobox",
+      "route": "/verify/vega/combobox",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "command",
+      "route": "/verify/vega/command",
+      "demos": [
+        "command-controlled",
+        "command-demo",
+        "command-empty",
+        "command-scrollable"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "context-menu",
+      "route": "/verify/vega/context-menu",
+      "demos": [
+        "context-menu-compound",
+        "controlled",
+        "default",
+        "destructive",
+        "disabled",
+        "groups",
+        "shortcuts",
+        "simple"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "dialog",
+      "route": "/verify/vega/dialog",
+      "demos": [
+        "dialog-close-button",
+        "dialog-controlled",
+        "dialog-demo",
+        "dialog-no-footer"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "drawer",
+      "route": "/verify/vega/drawer",
+      "demos": [
+        "drawer-demo",
+        "drawer-no-footer",
+        "drawer-sides",
+        "drawer-snap-points"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "dropdown-menu",
+      "route": "/verify/vega/dropdown-menu",
+      "demos": [
+        "dropdown-menu-compound",
+        "dropdown-menu-danger",
+        "dropdown-menu-demo",
+        "dropdown-menu-disabled-item",
+        "dropdown-menu-selection",
+        "dropdown-menu-simple"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "empty",
+      "route": "/verify/vega/empty",
+      "demos": [
+        "empty-avatar",
+        "empty-avatar-group",
+        "empty-background",
+        "empty-demo",
+        "empty-icon",
+        "empty-input-group",
+        "empty-outline"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "field",
+      "route": "/verify/vega/field",
+      "demos": [
+        "default",
+        "field-set",
+        "fieldset-demo",
+        "horizontal",
+        "invalid",
+        "multiple-errors",
+        "signup"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "hover-card",
+      "route": "/verify/vega/hover-card",
+      "demos": [
+        "custom-delays",
+        "default",
+        "disabled",
+        "positioning"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "input",
+      "route": "/verify/vega/input",
+      "demos": [
+        "input-demo",
+        "input-disabled",
+        "input-file",
+        "input-invalid",
+        "input-label",
+        "input-number",
+        "input-password",
+        "input-value"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "input-group",
+      "route": "/verify/vega/input-group",
+      "demos": [
+        "align-block-end",
+        "align-block-start",
+        "align-inline-end",
+        "align-inline-start",
+        "button",
+        "default",
+        "disabled",
+        "invalid",
+        "text",
+        "textarea"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "input-otp",
+      "route": "/verify/vega/input-otp",
+      "demos": [
+        "input-otp-controlled",
+        "input-otp-demo",
+        "input-otp-disabled",
+        "input-otp-masked",
+        "input-otp-separator"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "item",
+      "route": "/verify/vega/item",
+      "demos": [
+        "item-demo",
+        "item-group",
+        "item-header",
+        "item-icon",
+        "item-image",
+        "item-link",
+        "item-size",
+        "item-variant"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "kbd",
+      "route": "/verify/vega/kbd",
+      "demos": [
+        "kbd-button",
+        "kbd-demo",
+        "kbd-group",
+        "kbd-input-group",
+        "kbd-tooltip"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "label",
+      "route": "/verify/vega/label",
+      "demos": [
+        "disabled",
+        "input-with-label",
+        "label-demo",
+        "required"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "menubar",
+      "route": "/verify/vega/menubar",
+      "demos": [
+        "menubar-compound",
+        "menubar-controlled",
+        "menubar-danger",
+        "menubar-demo",
+        "menubar-disabled"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "native-select",
+      "route": "/verify/vega/native-select",
+      "demos": [
+        "default",
+        "disabled",
+        "groups"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "navigation-menu",
+      "route": "/verify/vega/navigation-menu",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "navigation-menu-compound",
+        "navigation-menu-precedence",
+        "panel"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "pagination",
+      "route": "/verify/vega/pagination",
+      "demos": [
+        "controlled",
+        "default",
+        "few-pages",
+        "sibling-count"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "popover",
+      "route": "/verify/vega/popover",
+      "demos": [
+        "popover-controlled",
+        "popover-demo",
+        "popover-placement"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "progress",
+      "route": "/verify/vega/progress",
+      "demos": [
+        "progress-controlled",
+        "progress-demo",
+        "progress-indeterminate",
+        "progress-label",
+        "progress-min-max"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "radio-group",
+      "route": "/verify/vega/radio-group",
+      "demos": [
+        "radio-group-compound",
+        "radio-group-controlled",
+        "radio-group-demo",
+        "radio-group-disabled",
+        "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "resizable",
+      "route": "/verify/vega/resizable",
+      "demos": [
+        "resizable-controlled",
+        "resizable-demo",
+        "resizable-sizes",
+        "resizable-vertical"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "scroll-area",
+      "route": "/verify/vega/scroll-area",
+      "demos": [
+        "default",
+        "horizontal"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "select",
+      "route": "/verify/vega/select",
+      "demos": [
+        "select-compound",
+        "select-controlled",
+        "select-default-value",
+        "select-demo",
+        "select-disabled",
+        "select-disabled-items",
+        "select-with-label"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "separator",
+      "route": "/verify/vega/separator",
+      "demos": [
+        "separator-demo",
+        "separator-semantic",
+        "separator-vertical"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "sheet",
+      "route": "/verify/vega/sheet",
+      "demos": [
+        "sheet-controlled",
+        "sheet-demo",
+        "sheet-side"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "sidebar",
+      "route": "/verify/vega/sidebar",
+      "demos": [
+        "sidebar-controlled",
+        "sidebar-demo"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "skeleton",
+      "route": "/verify/vega/skeleton",
+      "demos": [
+        "skeleton-card",
+        "skeleton-demo",
+        "skeleton-table",
+        "skeleton-text"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "slider",
+      "route": "/verify/vega/slider",
+      "demos": [
+        "slider-controlled",
+        "slider-demo",
+        "slider-disabled",
+        "slider-multiple",
+        "slider-range",
+        "slider-step"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "spinner",
+      "route": "/verify/vega/spinner",
+      "demos": [
+        "spinner-badge",
+        "spinner-button",
+        "spinner-color",
+        "spinner-demo",
+        "spinner-size",
+        "spinner-text"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "switch",
+      "route": "/verify/vega/switch",
+      "demos": [
+        "switch-checked",
+        "switch-controlled",
+        "switch-demo",
+        "switch-disabled"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "table",
+      "route": "/verify/vega/table",
+      "demos": [
+        "default",
+        "selected-row"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "tabs",
+      "route": "/verify/vega/tabs",
+      "demos": [
+        "tabs-compound",
+        "tabs-controlled",
+        "tabs-demo",
+        "tabs-disabled",
+        "tabs-hybrid",
+        "tabs-precedence"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "textarea",
+      "route": "/verify/vega/textarea",
+      "demos": [
+        "default",
+        "disabled",
+        "invalid",
+        "with-label",
+        "with-text",
+        "with-value"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "toast",
+      "route": "/verify/vega/toast",
+      "demos": [
+        "toast-demo",
+        "toast-description",
+        "toast-dismiss",
+        "toast-promise",
+        "toast-types"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "toggle",
+      "route": "/verify/vega/toggle",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "outline",
+        "sizes"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "toggle-group",
+      "route": "/verify/vega/toggle-group",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "multiple",
+        "outline",
+        "sizes",
+        "toggle-group-compound"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "tooltip",
+      "route": "/verify/vega/tooltip",
+      "demos": [
+        "tooltip-delay",
+        "tooltip-demo",
+        "tooltip-positioning"
+      ]
+    }
+  ],
+  "skips": [
+    {
+      "style": "default",
+      "component": "charts-gallery",
+      "reason": "style \"default\" has no packages/registry component directory for \"charts-gallery\""
+    },
+    {
+      "style": "luma",
+      "component": "angle-slider",
+      "reason": "style \"luma\" has no packages/registry component directory for \"angle-slider\""
+    },
+    {
+      "style": "luma",
+      "component": "cascade-select",
+      "reason": "style \"luma\" has no packages/registry component directory for \"cascade-select\""
+    },
+    {
+      "style": "luma",
+      "component": "charts-gallery",
+      "reason": "style \"luma\" has no packages/registry component directory for \"charts-gallery\""
+    },
+    {
+      "style": "luma",
+      "component": "clipboard",
+      "reason": "style \"luma\" has no packages/registry component directory for \"clipboard\""
+    },
+    {
+      "style": "luma",
+      "component": "color-picker",
+      "reason": "style \"luma\" has no packages/registry component directory for \"color-picker\""
+    },
+    {
+      "style": "luma",
+      "component": "data-table",
+      "reason": "style \"luma\" has no packages/registry component directory for \"data-table\""
+    },
+    {
+      "style": "luma",
+      "component": "date-input",
+      "reason": "style \"luma\" has no packages/registry component directory for \"date-input\""
+    },
+    {
+      "style": "luma",
+      "component": "date-picker",
+      "reason": "style \"luma\" has no packages/registry component directory for \"date-picker\""
+    },
+    {
+      "style": "luma",
+      "component": "editable",
+      "reason": "style \"luma\" has no packages/registry component directory for \"editable\""
+    },
+    {
+      "style": "luma",
+      "component": "file-upload",
+      "reason": "style \"luma\" has no packages/registry component directory for \"file-upload\""
+    },
+    {
+      "style": "luma",
+      "component": "floating-panel",
+      "reason": "style \"luma\" has no packages/registry component directory for \"floating-panel\""
+    },
+    {
+      "style": "luma",
+      "component": "icon",
+      "reason": "style \"luma\" has no packages/registry component directory for \"icon\""
+    },
+    {
+      "style": "luma",
+      "component": "image-cropper",
+      "reason": "style \"luma\" has no packages/registry component directory for \"image-cropper\""
+    },
+    {
+      "style": "luma",
+      "component": "listbox",
+      "reason": "style \"luma\" has no packages/registry component directory for \"listbox\""
+    },
+    {
+      "style": "luma",
+      "component": "marquee",
+      "reason": "style \"luma\" has no packages/registry component directory for \"marquee\""
+    },
+    {
+      "style": "luma",
+      "component": "number-input",
+      "reason": "style \"luma\" has no packages/registry component directory for \"number-input\""
+    },
+    {
+      "style": "luma",
+      "component": "password-input",
+      "reason": "style \"luma\" has no packages/registry component directory for \"password-input\""
+    },
+    {
+      "style": "luma",
+      "component": "qr-code",
+      "reason": "style \"luma\" has no packages/registry component directory for \"qr-code\""
+    },
+    {
+      "style": "luma",
+      "component": "rating-group",
+      "reason": "style \"luma\" has no packages/registry component directory for \"rating-group\""
+    },
+    {
+      "style": "luma",
+      "component": "signature-pad",
+      "reason": "style \"luma\" has no packages/registry component directory for \"signature-pad\""
+    },
+    {
+      "style": "luma",
+      "component": "steps",
+      "reason": "style \"luma\" has no packages/registry component directory for \"steps\""
+    },
+    {
+      "style": "luma",
+      "component": "tags-input",
+      "reason": "style \"luma\" has no packages/registry component directory for \"tags-input\""
+    },
+    {
+      "style": "luma",
+      "component": "timer",
+      "reason": "style \"luma\" has no packages/registry component directory for \"timer\""
+    },
+    {
+      "style": "luma",
+      "component": "toc",
+      "reason": "style \"luma\" has no packages/registry component directory for \"toc\""
+    },
+    {
+      "style": "luma",
+      "component": "tour",
+      "reason": "style \"luma\" has no packages/registry component directory for \"tour\""
+    },
+    {
+      "style": "luma",
+      "component": "tree-view",
+      "reason": "style \"luma\" has no packages/registry component directory for \"tree-view\""
+    },
+    {
+      "style": "lyra",
+      "component": "angle-slider",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"angle-slider\""
+    },
+    {
+      "style": "lyra",
+      "component": "cascade-select",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"cascade-select\""
+    },
+    {
+      "style": "lyra",
+      "component": "charts-gallery",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"charts-gallery\""
+    },
+    {
+      "style": "lyra",
+      "component": "clipboard",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"clipboard\""
+    },
+    {
+      "style": "lyra",
+      "component": "color-picker",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"color-picker\""
+    },
+    {
+      "style": "lyra",
+      "component": "data-table",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"data-table\""
+    },
+    {
+      "style": "lyra",
+      "component": "date-input",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"date-input\""
+    },
+    {
+      "style": "lyra",
+      "component": "date-picker",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"date-picker\""
+    },
+    {
+      "style": "lyra",
+      "component": "editable",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"editable\""
+    },
+    {
+      "style": "lyra",
+      "component": "file-upload",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"file-upload\""
+    },
+    {
+      "style": "lyra",
+      "component": "floating-panel",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"floating-panel\""
+    },
+    {
+      "style": "lyra",
+      "component": "icon",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"icon\""
+    },
+    {
+      "style": "lyra",
+      "component": "image-cropper",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"image-cropper\""
+    },
+    {
+      "style": "lyra",
+      "component": "listbox",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"listbox\""
+    },
+    {
+      "style": "lyra",
+      "component": "marquee",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"marquee\""
+    },
+    {
+      "style": "lyra",
+      "component": "number-input",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"number-input\""
+    },
+    {
+      "style": "lyra",
+      "component": "password-input",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"password-input\""
+    },
+    {
+      "style": "lyra",
+      "component": "qr-code",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"qr-code\""
+    },
+    {
+      "style": "lyra",
+      "component": "rating-group",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"rating-group\""
+    },
+    {
+      "style": "lyra",
+      "component": "signature-pad",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"signature-pad\""
+    },
+    {
+      "style": "lyra",
+      "component": "steps",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"steps\""
+    },
+    {
+      "style": "lyra",
+      "component": "tags-input",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"tags-input\""
+    },
+    {
+      "style": "lyra",
+      "component": "timer",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"timer\""
+    },
+    {
+      "style": "lyra",
+      "component": "toc",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"toc\""
+    },
+    {
+      "style": "lyra",
+      "component": "tour",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"tour\""
+    },
+    {
+      "style": "lyra",
+      "component": "tree-view",
+      "reason": "style \"lyra\" has no packages/registry component directory for \"tree-view\""
+    },
+    {
+      "style": "maia",
+      "component": "angle-slider",
+      "reason": "style \"maia\" has no packages/registry component directory for \"angle-slider\""
+    },
+    {
+      "style": "maia",
+      "component": "cascade-select",
+      "reason": "style \"maia\" has no packages/registry component directory for \"cascade-select\""
+    },
+    {
+      "style": "maia",
+      "component": "charts-gallery",
+      "reason": "style \"maia\" has no packages/registry component directory for \"charts-gallery\""
+    },
+    {
+      "style": "maia",
+      "component": "clipboard",
+      "reason": "style \"maia\" has no packages/registry component directory for \"clipboard\""
+    },
+    {
+      "style": "maia",
+      "component": "color-picker",
+      "reason": "style \"maia\" has no packages/registry component directory for \"color-picker\""
+    },
+    {
+      "style": "maia",
+      "component": "data-table",
+      "reason": "style \"maia\" has no packages/registry component directory for \"data-table\""
+    },
+    {
+      "style": "maia",
+      "component": "date-input",
+      "reason": "style \"maia\" has no packages/registry component directory for \"date-input\""
+    },
+    {
+      "style": "maia",
+      "component": "date-picker",
+      "reason": "style \"maia\" has no packages/registry component directory for \"date-picker\""
+    },
+    {
+      "style": "maia",
+      "component": "editable",
+      "reason": "style \"maia\" has no packages/registry component directory for \"editable\""
+    },
+    {
+      "style": "maia",
+      "component": "file-upload",
+      "reason": "style \"maia\" has no packages/registry component directory for \"file-upload\""
+    },
+    {
+      "style": "maia",
+      "component": "floating-panel",
+      "reason": "style \"maia\" has no packages/registry component directory for \"floating-panel\""
+    },
+    {
+      "style": "maia",
+      "component": "icon",
+      "reason": "style \"maia\" has no packages/registry component directory for \"icon\""
+    },
+    {
+      "style": "maia",
+      "component": "image-cropper",
+      "reason": "style \"maia\" has no packages/registry component directory for \"image-cropper\""
+    },
+    {
+      "style": "maia",
+      "component": "listbox",
+      "reason": "style \"maia\" has no packages/registry component directory for \"listbox\""
+    },
+    {
+      "style": "maia",
+      "component": "marquee",
+      "reason": "style \"maia\" has no packages/registry component directory for \"marquee\""
+    },
+    {
+      "style": "maia",
+      "component": "number-input",
+      "reason": "style \"maia\" has no packages/registry component directory for \"number-input\""
+    },
+    {
+      "style": "maia",
+      "component": "password-input",
+      "reason": "style \"maia\" has no packages/registry component directory for \"password-input\""
+    },
+    {
+      "style": "maia",
+      "component": "qr-code",
+      "reason": "style \"maia\" has no packages/registry component directory for \"qr-code\""
+    },
+    {
+      "style": "maia",
+      "component": "rating-group",
+      "reason": "style \"maia\" has no packages/registry component directory for \"rating-group\""
+    },
+    {
+      "style": "maia",
+      "component": "signature-pad",
+      "reason": "style \"maia\" has no packages/registry component directory for \"signature-pad\""
+    },
+    {
+      "style": "maia",
+      "component": "steps",
+      "reason": "style \"maia\" has no packages/registry component directory for \"steps\""
+    },
+    {
+      "style": "maia",
+      "component": "tags-input",
+      "reason": "style \"maia\" has no packages/registry component directory for \"tags-input\""
+    },
+    {
+      "style": "maia",
+      "component": "timer",
+      "reason": "style \"maia\" has no packages/registry component directory for \"timer\""
+    },
+    {
+      "style": "maia",
+      "component": "toc",
+      "reason": "style \"maia\" has no packages/registry component directory for \"toc\""
+    },
+    {
+      "style": "maia",
+      "component": "tour",
+      "reason": "style \"maia\" has no packages/registry component directory for \"tour\""
+    },
+    {
+      "style": "maia",
+      "component": "tree-view",
+      "reason": "style \"maia\" has no packages/registry component directory for \"tree-view\""
+    },
+    {
+      "style": "mira",
+      "component": "angle-slider",
+      "reason": "style \"mira\" has no packages/registry component directory for \"angle-slider\""
+    },
+    {
+      "style": "mira",
+      "component": "cascade-select",
+      "reason": "style \"mira\" has no packages/registry component directory for \"cascade-select\""
+    },
+    {
+      "style": "mira",
+      "component": "charts-gallery",
+      "reason": "style \"mira\" has no packages/registry component directory for \"charts-gallery\""
+    },
+    {
+      "style": "mira",
+      "component": "clipboard",
+      "reason": "style \"mira\" has no packages/registry component directory for \"clipboard\""
+    },
+    {
+      "style": "mira",
+      "component": "color-picker",
+      "reason": "style \"mira\" has no packages/registry component directory for \"color-picker\""
+    },
+    {
+      "style": "mira",
+      "component": "data-table",
+      "reason": "style \"mira\" has no packages/registry component directory for \"data-table\""
+    },
+    {
+      "style": "mira",
+      "component": "date-input",
+      "reason": "style \"mira\" has no packages/registry component directory for \"date-input\""
+    },
+    {
+      "style": "mira",
+      "component": "date-picker",
+      "reason": "style \"mira\" has no packages/registry component directory for \"date-picker\""
+    },
+    {
+      "style": "mira",
+      "component": "editable",
+      "reason": "style \"mira\" has no packages/registry component directory for \"editable\""
+    },
+    {
+      "style": "mira",
+      "component": "file-upload",
+      "reason": "style \"mira\" has no packages/registry component directory for \"file-upload\""
+    },
+    {
+      "style": "mira",
+      "component": "floating-panel",
+      "reason": "style \"mira\" has no packages/registry component directory for \"floating-panel\""
+    },
+    {
+      "style": "mira",
+      "component": "icon",
+      "reason": "style \"mira\" has no packages/registry component directory for \"icon\""
+    },
+    {
+      "style": "mira",
+      "component": "image-cropper",
+      "reason": "style \"mira\" has no packages/registry component directory for \"image-cropper\""
+    },
+    {
+      "style": "mira",
+      "component": "listbox",
+      "reason": "style \"mira\" has no packages/registry component directory for \"listbox\""
+    },
+    {
+      "style": "mira",
+      "component": "marquee",
+      "reason": "style \"mira\" has no packages/registry component directory for \"marquee\""
+    },
+    {
+      "style": "mira",
+      "component": "number-input",
+      "reason": "style \"mira\" has no packages/registry component directory for \"number-input\""
+    },
+    {
+      "style": "mira",
+      "component": "password-input",
+      "reason": "style \"mira\" has no packages/registry component directory for \"password-input\""
+    },
+    {
+      "style": "mira",
+      "component": "qr-code",
+      "reason": "style \"mira\" has no packages/registry component directory for \"qr-code\""
+    },
+    {
+      "style": "mira",
+      "component": "rating-group",
+      "reason": "style \"mira\" has no packages/registry component directory for \"rating-group\""
+    },
+    {
+      "style": "mira",
+      "component": "signature-pad",
+      "reason": "style \"mira\" has no packages/registry component directory for \"signature-pad\""
+    },
+    {
+      "style": "mira",
+      "component": "steps",
+      "reason": "style \"mira\" has no packages/registry component directory for \"steps\""
+    },
+    {
+      "style": "mira",
+      "component": "tags-input",
+      "reason": "style \"mira\" has no packages/registry component directory for \"tags-input\""
+    },
+    {
+      "style": "mira",
+      "component": "timer",
+      "reason": "style \"mira\" has no packages/registry component directory for \"timer\""
+    },
+    {
+      "style": "mira",
+      "component": "toc",
+      "reason": "style \"mira\" has no packages/registry component directory for \"toc\""
+    },
+    {
+      "style": "mira",
+      "component": "tour",
+      "reason": "style \"mira\" has no packages/registry component directory for \"tour\""
+    },
+    {
+      "style": "mira",
+      "component": "tree-view",
+      "reason": "style \"mira\" has no packages/registry component directory for \"tree-view\""
+    },
+    {
+      "style": "nova",
+      "component": "angle-slider",
+      "reason": "style \"nova\" has no packages/registry component directory for \"angle-slider\""
+    },
+    {
+      "style": "nova",
+      "component": "cascade-select",
+      "reason": "style \"nova\" has no packages/registry component directory for \"cascade-select\""
+    },
+    {
+      "style": "nova",
+      "component": "charts-gallery",
+      "reason": "style \"nova\" has no packages/registry component directory for \"charts-gallery\""
+    },
+    {
+      "style": "nova",
+      "component": "clipboard",
+      "reason": "style \"nova\" has no packages/registry component directory for \"clipboard\""
+    },
+    {
+      "style": "nova",
+      "component": "color-picker",
+      "reason": "style \"nova\" has no packages/registry component directory for \"color-picker\""
+    },
+    {
+      "style": "nova",
+      "component": "data-table",
+      "reason": "style \"nova\" has no packages/registry component directory for \"data-table\""
+    },
+    {
+      "style": "nova",
+      "component": "date-input",
+      "reason": "style \"nova\" has no packages/registry component directory for \"date-input\""
+    },
+    {
+      "style": "nova",
+      "component": "date-picker",
+      "reason": "style \"nova\" has no packages/registry component directory for \"date-picker\""
+    },
+    {
+      "style": "nova",
+      "component": "editable",
+      "reason": "style \"nova\" has no packages/registry component directory for \"editable\""
+    },
+    {
+      "style": "nova",
+      "component": "file-upload",
+      "reason": "style \"nova\" has no packages/registry component directory for \"file-upload\""
+    },
+    {
+      "style": "nova",
+      "component": "floating-panel",
+      "reason": "style \"nova\" has no packages/registry component directory for \"floating-panel\""
+    },
+    {
+      "style": "nova",
+      "component": "icon",
+      "reason": "style \"nova\" has no packages/registry component directory for \"icon\""
+    },
+    {
+      "style": "nova",
+      "component": "image-cropper",
+      "reason": "style \"nova\" has no packages/registry component directory for \"image-cropper\""
+    },
+    {
+      "style": "nova",
+      "component": "listbox",
+      "reason": "style \"nova\" has no packages/registry component directory for \"listbox\""
+    },
+    {
+      "style": "nova",
+      "component": "marquee",
+      "reason": "style \"nova\" has no packages/registry component directory for \"marquee\""
+    },
+    {
+      "style": "nova",
+      "component": "number-input",
+      "reason": "style \"nova\" has no packages/registry component directory for \"number-input\""
+    },
+    {
+      "style": "nova",
+      "component": "password-input",
+      "reason": "style \"nova\" has no packages/registry component directory for \"password-input\""
+    },
+    {
+      "style": "nova",
+      "component": "qr-code",
+      "reason": "style \"nova\" has no packages/registry component directory for \"qr-code\""
+    },
+    {
+      "style": "nova",
+      "component": "rating-group",
+      "reason": "style \"nova\" has no packages/registry component directory for \"rating-group\""
+    },
+    {
+      "style": "nova",
+      "component": "signature-pad",
+      "reason": "style \"nova\" has no packages/registry component directory for \"signature-pad\""
+    },
+    {
+      "style": "nova",
+      "component": "steps",
+      "reason": "style \"nova\" has no packages/registry component directory for \"steps\""
+    },
+    {
+      "style": "nova",
+      "component": "tags-input",
+      "reason": "style \"nova\" has no packages/registry component directory for \"tags-input\""
+    },
+    {
+      "style": "nova",
+      "component": "timer",
+      "reason": "style \"nova\" has no packages/registry component directory for \"timer\""
+    },
+    {
+      "style": "nova",
+      "component": "toc",
+      "reason": "style \"nova\" has no packages/registry component directory for \"toc\""
+    },
+    {
+      "style": "nova",
+      "component": "tour",
+      "reason": "style \"nova\" has no packages/registry component directory for \"tour\""
+    },
+    {
+      "style": "nova",
+      "component": "tree-view",
+      "reason": "style \"nova\" has no packages/registry component directory for \"tree-view\""
+    },
+    {
+      "style": "rhea",
+      "component": "angle-slider",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"angle-slider\""
+    },
+    {
+      "style": "rhea",
+      "component": "cascade-select",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"cascade-select\""
+    },
+    {
+      "style": "rhea",
+      "component": "charts-gallery",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"charts-gallery\""
+    },
+    {
+      "style": "rhea",
+      "component": "clipboard",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"clipboard\""
+    },
+    {
+      "style": "rhea",
+      "component": "color-picker",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"color-picker\""
+    },
+    {
+      "style": "rhea",
+      "component": "data-table",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"data-table\""
+    },
+    {
+      "style": "rhea",
+      "component": "date-input",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"date-input\""
+    },
+    {
+      "style": "rhea",
+      "component": "date-picker",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"date-picker\""
+    },
+    {
+      "style": "rhea",
+      "component": "editable",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"editable\""
+    },
+    {
+      "style": "rhea",
+      "component": "file-upload",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"file-upload\""
+    },
+    {
+      "style": "rhea",
+      "component": "floating-panel",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"floating-panel\""
+    },
+    {
+      "style": "rhea",
+      "component": "icon",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"icon\""
+    },
+    {
+      "style": "rhea",
+      "component": "image-cropper",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"image-cropper\""
+    },
+    {
+      "style": "rhea",
+      "component": "listbox",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"listbox\""
+    },
+    {
+      "style": "rhea",
+      "component": "marquee",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"marquee\""
+    },
+    {
+      "style": "rhea",
+      "component": "number-input",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"number-input\""
+    },
+    {
+      "style": "rhea",
+      "component": "password-input",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"password-input\""
+    },
+    {
+      "style": "rhea",
+      "component": "qr-code",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"qr-code\""
+    },
+    {
+      "style": "rhea",
+      "component": "rating-group",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"rating-group\""
+    },
+    {
+      "style": "rhea",
+      "component": "signature-pad",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"signature-pad\""
+    },
+    {
+      "style": "rhea",
+      "component": "steps",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"steps\""
+    },
+    {
+      "style": "rhea",
+      "component": "tags-input",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"tags-input\""
+    },
+    {
+      "style": "rhea",
+      "component": "timer",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"timer\""
+    },
+    {
+      "style": "rhea",
+      "component": "toc",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"toc\""
+    },
+    {
+      "style": "rhea",
+      "component": "tour",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"tour\""
+    },
+    {
+      "style": "rhea",
+      "component": "tree-view",
+      "reason": "style \"rhea\" has no packages/registry component directory for \"tree-view\""
+    },
+    {
+      "style": "sera",
+      "component": "angle-slider",
+      "reason": "style \"sera\" has no packages/registry component directory for \"angle-slider\""
+    },
+    {
+      "style": "sera",
+      "component": "cascade-select",
+      "reason": "style \"sera\" has no packages/registry component directory for \"cascade-select\""
+    },
+    {
+      "style": "sera",
+      "component": "charts-gallery",
+      "reason": "style \"sera\" has no packages/registry component directory for \"charts-gallery\""
+    },
+    {
+      "style": "sera",
+      "component": "clipboard",
+      "reason": "style \"sera\" has no packages/registry component directory for \"clipboard\""
+    },
+    {
+      "style": "sera",
+      "component": "color-picker",
+      "reason": "style \"sera\" has no packages/registry component directory for \"color-picker\""
+    },
+    {
+      "style": "sera",
+      "component": "data-table",
+      "reason": "style \"sera\" has no packages/registry component directory for \"data-table\""
+    },
+    {
+      "style": "sera",
+      "component": "date-input",
+      "reason": "style \"sera\" has no packages/registry component directory for \"date-input\""
+    },
+    {
+      "style": "sera",
+      "component": "date-picker",
+      "reason": "style \"sera\" has no packages/registry component directory for \"date-picker\""
+    },
+    {
+      "style": "sera",
+      "component": "editable",
+      "reason": "style \"sera\" has no packages/registry component directory for \"editable\""
+    },
+    {
+      "style": "sera",
+      "component": "file-upload",
+      "reason": "style \"sera\" has no packages/registry component directory for \"file-upload\""
+    },
+    {
+      "style": "sera",
+      "component": "floating-panel",
+      "reason": "style \"sera\" has no packages/registry component directory for \"floating-panel\""
+    },
+    {
+      "style": "sera",
+      "component": "icon",
+      "reason": "style \"sera\" has no packages/registry component directory for \"icon\""
+    },
+    {
+      "style": "sera",
+      "component": "image-cropper",
+      "reason": "style \"sera\" has no packages/registry component directory for \"image-cropper\""
+    },
+    {
+      "style": "sera",
+      "component": "listbox",
+      "reason": "style \"sera\" has no packages/registry component directory for \"listbox\""
+    },
+    {
+      "style": "sera",
+      "component": "marquee",
+      "reason": "style \"sera\" has no packages/registry component directory for \"marquee\""
+    },
+    {
+      "style": "sera",
+      "component": "number-input",
+      "reason": "style \"sera\" has no packages/registry component directory for \"number-input\""
+    },
+    {
+      "style": "sera",
+      "component": "password-input",
+      "reason": "style \"sera\" has no packages/registry component directory for \"password-input\""
+    },
+    {
+      "style": "sera",
+      "component": "qr-code",
+      "reason": "style \"sera\" has no packages/registry component directory for \"qr-code\""
+    },
+    {
+      "style": "sera",
+      "component": "rating-group",
+      "reason": "style \"sera\" has no packages/registry component directory for \"rating-group\""
+    },
+    {
+      "style": "sera",
+      "component": "signature-pad",
+      "reason": "style \"sera\" has no packages/registry component directory for \"signature-pad\""
+    },
+    {
+      "style": "sera",
+      "component": "steps",
+      "reason": "style \"sera\" has no packages/registry component directory for \"steps\""
+    },
+    {
+      "style": "sera",
+      "component": "tags-input",
+      "reason": "style \"sera\" has no packages/registry component directory for \"tags-input\""
+    },
+    {
+      "style": "sera",
+      "component": "timer",
+      "reason": "style \"sera\" has no packages/registry component directory for \"timer\""
+    },
+    {
+      "style": "sera",
+      "component": "toc",
+      "reason": "style \"sera\" has no packages/registry component directory for \"toc\""
+    },
+    {
+      "style": "sera",
+      "component": "tour",
+      "reason": "style \"sera\" has no packages/registry component directory for \"tour\""
+    },
+    {
+      "style": "sera",
+      "component": "tree-view",
+      "reason": "style \"sera\" has no packages/registry component directory for \"tree-view\""
+    },
+    {
+      "style": "vega",
+      "component": "angle-slider",
+      "reason": "style \"vega\" has no packages/registry component directory for \"angle-slider\""
+    },
+    {
+      "style": "vega",
+      "component": "cascade-select",
+      "reason": "style \"vega\" has no packages/registry component directory for \"cascade-select\""
+    },
+    {
+      "style": "vega",
+      "component": "charts-gallery",
+      "reason": "style \"vega\" has no packages/registry component directory for \"charts-gallery\""
+    },
+    {
+      "style": "vega",
+      "component": "clipboard",
+      "reason": "style \"vega\" has no packages/registry component directory for \"clipboard\""
+    },
+    {
+      "style": "vega",
+      "component": "color-picker",
+      "reason": "style \"vega\" has no packages/registry component directory for \"color-picker\""
+    },
+    {
+      "style": "vega",
+      "component": "data-table",
+      "reason": "style \"vega\" has no packages/registry component directory for \"data-table\""
+    },
+    {
+      "style": "vega",
+      "component": "date-input",
+      "reason": "style \"vega\" has no packages/registry component directory for \"date-input\""
+    },
+    {
+      "style": "vega",
+      "component": "date-picker",
+      "reason": "style \"vega\" has no packages/registry component directory for \"date-picker\""
+    },
+    {
+      "style": "vega",
+      "component": "editable",
+      "reason": "style \"vega\" has no packages/registry component directory for \"editable\""
+    },
+    {
+      "style": "vega",
+      "component": "file-upload",
+      "reason": "style \"vega\" has no packages/registry component directory for \"file-upload\""
+    },
+    {
+      "style": "vega",
+      "component": "floating-panel",
+      "reason": "style \"vega\" has no packages/registry component directory for \"floating-panel\""
+    },
+    {
+      "style": "vega",
+      "component": "icon",
+      "reason": "style \"vega\" has no packages/registry component directory for \"icon\""
+    },
+    {
+      "style": "vega",
+      "component": "image-cropper",
+      "reason": "style \"vega\" has no packages/registry component directory for \"image-cropper\""
+    },
+    {
+      "style": "vega",
+      "component": "listbox",
+      "reason": "style \"vega\" has no packages/registry component directory for \"listbox\""
+    },
+    {
+      "style": "vega",
+      "component": "marquee",
+      "reason": "style \"vega\" has no packages/registry component directory for \"marquee\""
+    },
+    {
+      "style": "vega",
+      "component": "number-input",
+      "reason": "style \"vega\" has no packages/registry component directory for \"number-input\""
+    },
+    {
+      "style": "vega",
+      "component": "password-input",
+      "reason": "style \"vega\" has no packages/registry component directory for \"password-input\""
+    },
+    {
+      "style": "vega",
+      "component": "qr-code",
+      "reason": "style \"vega\" has no packages/registry component directory for \"qr-code\""
+    },
+    {
+      "style": "vega",
+      "component": "rating-group",
+      "reason": "style \"vega\" has no packages/registry component directory for \"rating-group\""
+    },
+    {
+      "style": "vega",
+      "component": "signature-pad",
+      "reason": "style \"vega\" has no packages/registry component directory for \"signature-pad\""
+    },
+    {
+      "style": "vega",
+      "component": "steps",
+      "reason": "style \"vega\" has no packages/registry component directory for \"steps\""
+    },
+    {
+      "style": "vega",
+      "component": "tags-input",
+      "reason": "style \"vega\" has no packages/registry component directory for \"tags-input\""
+    },
+    {
+      "style": "vega",
+      "component": "timer",
+      "reason": "style \"vega\" has no packages/registry component directory for \"timer\""
+    },
+    {
+      "style": "vega",
+      "component": "toc",
+      "reason": "style \"vega\" has no packages/registry component directory for \"toc\""
+    },
+    {
+      "style": "vega",
+      "component": "tour",
+      "reason": "style \"vega\" has no packages/registry component directory for \"tour\""
+    },
+    {
+      "style": "vega",
+      "component": "tree-view",
+      "reason": "style \"vega\" has no packages/registry component directory for \"tree-view\""
+    }
+  ]
+}

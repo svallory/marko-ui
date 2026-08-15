@@ -1,0 +1,18 @@
+section
+  span data-slot="tooltip"
+    button data-slot="tooltip-trigger" data-state="closed"
+---
+section
+  span data-slot="tooltip"
+    button data-slot="tooltip-trigger" data-state="closed"
+---
+section
+  div
+    span data-slot="tooltip"
+      button data-slot="tooltip-trigger" data-state="closed"
+    span data-slot="tooltip"
+      button data-slot="tooltip-trigger" data-state="closed"
+    span data-slot="tooltip"
+      button data-slot="tooltip-trigger" data-state="closed"
+    span data-slot="tooltip"
+      button data-slot="tooltip-trigger" data-state="closed"

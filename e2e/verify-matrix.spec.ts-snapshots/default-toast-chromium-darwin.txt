@@ -1,0 +1,26 @@
+section
+  button
+  div data-slot="toaster" role="region" aria-label="Notifications, bottom-end (alt+T)" aria-live="polite" aria-relevant="additions text" aria-atomic="false"
+---
+section
+  button
+  div data-slot="toaster" role="region" aria-label="Notifications, bottom-end (alt+T)" aria-live="polite" aria-relevant="additions text" aria-atomic="false"
+---
+section
+  div
+    button
+    button
+  div data-slot="toaster" role="region" aria-label="Notifications, bottom-end (alt+T)" aria-live="polite" aria-relevant="additions text" aria-atomic="false"
+---
+section
+  button
+  div data-slot="toaster" role="region" aria-label="Notifications, bottom-end (alt+T)" aria-live="polite" aria-relevant="additions text" aria-atomic="false"
+---
+section
+  div
+    button
+    button
+    button
+    button
+    button
+  div data-slot="toaster" role="region" aria-label="Notifications, bottom-end (alt+T)" aria-live="polite" aria-relevant="additions text" aria-atomic="false"

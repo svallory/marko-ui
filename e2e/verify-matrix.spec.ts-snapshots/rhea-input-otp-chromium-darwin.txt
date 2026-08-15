@@ -1,0 +1,54 @@
+section
+  div
+    div data-slot="input-otp"
+      div data-slot="input-otp-group"
+        input data-slot="input-otp-slot" aria-label="pin code 1 of 6"
+        input data-slot="input-otp-slot" aria-label="pin code 2 of 6"
+        input data-slot="input-otp-slot" aria-label="pin code 3 of 6"
+        input data-slot="input-otp-slot" aria-label="pin code 4 of 6"
+        input data-slot="input-otp-slot" aria-label="pin code 5 of 6"
+        input data-slot="input-otp-slot" aria-label="pin code 6 of 6"
+    p
+---
+section
+  div data-slot="input-otp"
+    div data-slot="input-otp-group"
+      input data-slot="input-otp-slot" aria-label="pin code 1 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 2 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 3 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 4 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 5 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 6 of 6"
+---
+section
+  div data-slot="input-otp"
+    div data-slot="input-otp-group"
+      input data-slot="input-otp-slot" aria-label="pin code 1 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 2 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 3 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 4 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 5 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 6 of 6"
+---
+section
+  div data-slot="input-otp"
+    div data-slot="input-otp-group"
+      input data-slot="input-otp-slot" aria-label="pin code 1 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 2 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 3 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 4 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 5 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 6 of 6"
+---
+section
+  div data-slot="input-otp"
+    div data-slot="input-otp-group"
+      input data-slot="input-otp-slot" aria-label="pin code 1 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 2 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 3 of 6"
+      div data-slot="input-otp-separator" role="separator"
+        svg
+          path
+      input data-slot="input-otp-slot" aria-label="pin code 4 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 5 of 6"
+      input data-slot="input-otp-slot" aria-label="pin code 6 of 6"

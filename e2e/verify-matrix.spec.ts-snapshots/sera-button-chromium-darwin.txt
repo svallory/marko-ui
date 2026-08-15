@@ -1,0 +1,22 @@
+section
+  button data-slot="button"
+---
+section
+  div
+    button data-slot="button"
+    button data-slot="button"
+---
+section
+  div
+    button data-slot="button"
+    button data-slot="button"
+    button data-slot="button"
+---
+section
+  div
+    button data-slot="button"
+    button data-slot="button"
+    button data-slot="button"
+    button data-slot="button"
+    button data-slot="button"
+    button data-slot="button"

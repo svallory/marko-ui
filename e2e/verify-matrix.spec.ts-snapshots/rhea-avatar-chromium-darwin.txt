@@ -1,0 +1,34 @@
+section
+  span data-slot="avatar"
+    img data-slot="avatar-image" data-state="hidden"
+    span data-slot="avatar-fallback" data-state="visible"
+---
+section
+  div
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+    div
+      button
+      button
+    p
+---
+section
+  span data-slot="avatar"
+    span data-slot="avatar-fallback" data-state="visible"
+      span
+---
+section
+  div
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+    span data-slot="avatar"
+      span data-slot="avatar-fallback" data-state="visible"
+---
+section
+  span data-slot="avatar"
+    span data-slot="avatar-fallback" data-state="visible"

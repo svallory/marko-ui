@@ -1,0 +1,106 @@
+section
+  div data-slot="select"
+    label data-slot="select-label"
+    div data-slot="select-control" data-state="closed"
+      button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+        span data-slot="select-value"
+        svg data-state="closed" aria-hidden="true"
+          path
+    select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+      option
+      option
+      option
+      option
+      option
+---
+section
+  div
+    div data-slot="select"
+      label data-slot="select-label"
+      div data-slot="select-control" data-state="closed"
+        button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+          span data-slot="select-value"
+          svg data-state="closed" aria-hidden="true"
+            path
+      select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+        option
+        option
+        option
+        option
+        option
+    span
+---
+section
+  div data-slot="select"
+    label data-slot="select-label"
+    div data-slot="select-control" data-state="closed"
+      button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+        span data-slot="select-value"
+        svg data-state="closed" aria-hidden="true"
+          path
+    select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+      option
+      option
+      option
+      option
+      option
+---
+section
+  div data-slot="select"
+    label data-slot="select-label"
+    div data-slot="select-control" data-state="closed"
+      button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+        span data-slot="select-value"
+        svg data-state="closed" aria-hidden="true"
+          path
+    select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+      option
+      option
+      option
+      option
+      option
+---
+section
+  div data-slot="select"
+    label data-slot="select-label"
+    div data-slot="select-control" data-state="closed"
+      button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+        span data-slot="select-value"
+        svg data-state="closed" aria-hidden="true"
+          path
+    select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+      option
+      option
+      option
+      option
+      option
+---
+section
+  div data-slot="select"
+    label data-slot="select-label"
+    div data-slot="select-control" data-state="closed"
+      button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+        span data-slot="select-value"
+        svg data-state="closed" aria-hidden="true"
+          path
+    select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+      option
+      option
+      option
+      option
+      option
+---
+section
+  div data-slot="select"
+    label data-slot="select-label"
+    div data-slot="select-control" data-state="closed"
+      button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+        span data-slot="select-value"
+        svg data-state="closed" aria-hidden="true"
+          path
+    select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+      option
+      option
+      option
+      option
+      option

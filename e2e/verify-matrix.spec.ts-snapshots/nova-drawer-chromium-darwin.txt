@@ -1,0 +1,15 @@
+section
+  div data-slot="drawer"
+    button data-slot="drawer-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+---
+section
+  div data-slot="drawer"
+    button data-slot="drawer-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+---
+section
+  div data-slot="drawer"
+    button data-slot="drawer-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+---
+section
+  div data-slot="drawer"
+    button data-slot="drawer-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"

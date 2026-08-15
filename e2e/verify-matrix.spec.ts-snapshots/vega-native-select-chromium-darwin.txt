@@ -1,0 +1,40 @@
+section
+  div data-slot="native-select-wrapper"
+    select data-slot="native-select"
+      option data-slot="native-select-option"
+      option data-slot="native-select-option"
+      option data-slot="native-select-option"
+      option data-slot="native-select-option"
+      option data-slot="native-select-option"
+    svg data-slot="native-select-icon" aria-hidden="true"
+      path
+---
+section
+  div data-slot="native-select-wrapper"
+    select data-slot="native-select"
+      option data-slot="native-select-option"
+      option data-slot="native-select-option"
+      option data-slot="native-select-option"
+      option data-slot="native-select-option"
+      option data-slot="native-select-option"
+    svg data-slot="native-select-icon" aria-hidden="true"
+      path
+---
+section
+  div data-slot="native-select-wrapper"
+    select data-slot="native-select"
+      option data-slot="native-select-option"
+      optgroup data-slot="native-select-optgroup"
+        option data-slot="native-select-option"
+        option data-slot="native-select-option"
+        option data-slot="native-select-option"
+      optgroup data-slot="native-select-optgroup"
+        option data-slot="native-select-option"
+        option data-slot="native-select-option"
+        option data-slot="native-select-option"
+      optgroup data-slot="native-select-optgroup"
+        option data-slot="native-select-option"
+        option data-slot="native-select-option"
+        option data-slot="native-select-option"
+    svg data-slot="native-select-icon" aria-hidden="true"
+      path

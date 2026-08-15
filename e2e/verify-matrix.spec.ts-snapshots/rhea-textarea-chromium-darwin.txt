@@ -1,0 +1,22 @@
+section
+  textarea data-slot="textarea"
+---
+section
+  textarea data-slot="textarea"
+---
+section
+  textarea data-slot="textarea" aria-invalid="true"
+---
+section
+  div
+    label data-slot="label"
+    textarea data-slot="textarea"
+---
+section
+  div
+    label data-slot="label"
+    textarea data-slot="textarea"
+    p
+---
+section
+  textarea data-slot="textarea"

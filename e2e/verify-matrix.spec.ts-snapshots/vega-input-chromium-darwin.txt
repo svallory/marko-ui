@@ -1,0 +1,25 @@
+section
+  input data-slot="input"
+---
+section
+  input data-slot="input"
+---
+section
+  input data-slot="input"
+---
+section
+  input data-slot="input" aria-invalid="true"
+---
+section
+  div
+    label data-slot="label"
+    input data-slot="input"
+---
+section
+  input data-slot="input"
+---
+section
+  input data-slot="input"
+---
+section
+  input data-slot="input"

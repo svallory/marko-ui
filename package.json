@@ -10,11 +10,14 @@
     "extract:api": "bun packages/registry/scripts/extract-api.ts",
     "build:demos": "bun apps/docs/scripts/build-demos-manifest.ts",
     "build:blocks-manifest": "bun apps/docs/scripts/build-blocks-manifest.ts",
+    "build:verify": "bun apps/docs/scripts/build-verify-matrix.ts",
+    "test:e2e": "playwright test",
     "format": "prettier --write ."
   },
   "devDependencies": {
     "@marko/type-check": "^3.2.0",
     "@marko/vite": "^6.1.9",
+    "@playwright/test": "1.62.1",
     "@types/node": "^26.2.0",
     "@zag-js/tabs": "1.43.0",
     "marko": "6.3.34",

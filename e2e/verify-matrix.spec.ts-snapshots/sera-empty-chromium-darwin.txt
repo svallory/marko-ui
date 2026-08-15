@@ -1,0 +1,123 @@
+section
+  div data-slot="empty"
+    div data-slot="empty-header"
+      div data-slot="empty-icon"
+        span data-slot="avatar"
+          img data-slot="avatar-image" data-state="visible"
+          span data-slot="avatar-fallback" data-state="hidden"
+      div data-slot="empty-title"
+      div data-slot="empty-description"
+    div data-slot="empty-content"
+      button data-slot="button"
+---
+section
+  div data-slot="empty"
+    div data-slot="empty-header"
+      div data-slot="empty-icon"
+        div
+          span data-slot="avatar"
+            img data-slot="avatar-image" data-state="visible"
+            span data-slot="avatar-fallback" data-state="hidden"
+          span data-slot="avatar"
+            img data-slot="avatar-image" data-state="visible"
+            span data-slot="avatar-fallback" data-state="hidden"
+          span data-slot="avatar"
+            img data-slot="avatar-image" data-state="visible"
+            span data-slot="avatar-fallback" data-state="hidden"
+      div data-slot="empty-title"
+      div data-slot="empty-description"
+    div data-slot="empty-content"
+      button data-slot="button"
+        svg
+          path
+---
+section
+  div data-slot="empty"
+    div data-slot="empty-header"
+      div data-slot="empty-icon"
+        svg
+          path
+          path
+      div data-slot="empty-title"
+      div data-slot="empty-description"
+    div data-slot="empty-content"
+      button data-slot="button"
+        svg
+          path
+          path
+          path
+          path
+---
+section
+  div data-slot="empty"
+    div data-slot="empty-header"
+      div data-slot="empty-icon"
+        svg
+          path
+          path
+      div data-slot="empty-title"
+      div data-slot="empty-description"
+    div data-slot="empty-content"
+      div
+        button data-slot="button"
+        button data-slot="button"
+---
+section
+  div
+    div data-slot="empty"
+      div data-slot="empty-header"
+        div data-slot="empty-icon"
+          svg
+            polyline
+            path
+        div data-slot="empty-title"
+        div data-slot="empty-description"
+    div data-slot="empty"
+      div data-slot="empty-header"
+        div data-slot="empty-icon"
+          svg
+            polygon
+        div data-slot="empty-title"
+        div data-slot="empty-description"
+    div data-slot="empty"
+      div data-slot="empty-header"
+        div data-slot="empty-icon"
+          svg
+            path
+        div data-slot="empty-title"
+        div data-slot="empty-description"
+    div data-slot="empty"
+      div data-slot="empty-header"
+        div data-slot="empty-icon"
+          svg
+            path
+        div data-slot="empty-title"
+        div data-slot="empty-description"
+---
+section
+  div data-slot="empty"
+    div data-slot="empty-header"
+      div data-slot="empty-title"
+      div data-slot="empty-description"
+    div data-slot="empty-content"
+      div data-slot="input-group" role="group"
+        input data-slot="input-group-control"
+        div data-slot="input-group-addon" role="group"
+          svg
+            circle
+            path
+        div data-slot="input-group-addon" role="group"
+          kbd data-slot="kbd"
+      div data-slot="empty-description"
+        a
+---
+section
+  div data-slot="empty"
+    div data-slot="empty-header"
+      div data-slot="empty-icon"
+        svg
+          path
+      div data-slot="empty-title"
+      div data-slot="empty-description"
+    div data-slot="empty-content"
+      button data-slot="button"

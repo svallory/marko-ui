@@ -1,0 +1,57 @@
+section
+  div
+    span data-slot="badge"
+      svg data-slot="spinner" role="status" aria-label="Loading"
+        path
+    span data-slot="badge"
+      svg data-slot="spinner" role="status" aria-label="Loading"
+        path
+    span data-slot="badge"
+      svg data-slot="spinner" role="status" aria-label="Loading"
+        path
+---
+section
+  div
+    button data-slot="button"
+      svg data-slot="spinner" role="status" aria-label="Loading"
+        path
+    button data-slot="button"
+      svg data-slot="spinner" role="status" aria-label="Loading"
+        path
+    button data-slot="button"
+      svg data-slot="spinner" role="status" aria-label="Loading"
+        path
+---
+section
+  div
+    svg data-slot="spinner" role="status" aria-label="Loading"
+      path
+    svg data-slot="spinner" role="status" aria-label="Loading"
+      path
+    svg data-slot="spinner" role="status" aria-label="Loading"
+      path
+    svg data-slot="spinner" role="status" aria-label="Loading"
+      path
+    svg data-slot="spinner" role="status" aria-label="Loading"
+      path
+---
+section
+  div
+    svg data-slot="spinner" role="status" aria-label="Loading"
+      path
+---
+section
+  div
+    svg data-slot="spinner" role="status" aria-label="Loading"
+      path
+    svg data-slot="spinner" role="status" aria-label="Loading"
+      path
+    svg data-slot="spinner" role="status" aria-label="Loading"
+      path
+    svg data-slot="spinner" role="status" aria-label="Loading"
+      path
+---
+section
+  div
+    svg data-slot="spinner" role="status" aria-label="Loading"
+      path

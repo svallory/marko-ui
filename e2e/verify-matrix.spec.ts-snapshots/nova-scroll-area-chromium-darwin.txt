@@ -1,0 +1,130 @@
+section
+  div data-slot="scroll-area" role="presentation"
+    div data-slot="scroll-area-viewport" role="presentation"
+      div role="presentation"
+        div
+          h4
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+    div data-slot="scroll-area-scrollbar"
+      div data-slot="scroll-area-thumb"
+    div data-slot="scroll-area-corner" data-state="hidden"
+---
+section
+  div data-slot="scroll-area" role="presentation"
+    div data-slot="scroll-area-viewport" role="presentation"
+      div role="presentation"
+        div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+          div
+    div data-slot="scroll-area-scrollbar"
+      div data-slot="scroll-area-thumb"
+    div data-slot="scroll-area-scrollbar"
+      div data-slot="scroll-area-thumb"
+    div data-slot="scroll-area-corner" data-state="hidden"

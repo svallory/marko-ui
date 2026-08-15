@@ -1,0 +1,60 @@
+section
+  div data-slot="tabs"
+    div data-slot="tabs-list" role="tablist" aria-orientation="horizontal"
+      button data-slot="tabs-trigger" role="tab" aria-selected="true" aria-controls="<id>"
+      button data-slot="tabs-trigger" role="tab" aria-selected="false"
+    div data-slot="tabs-content" role="tabpanel" aria-labelledby="<id>"
+      p
+    div data-slot="tabs-content" role="tabpanel" aria-labelledby="<id>"
+      p
+---
+section
+  p
+  div data-slot="tabs"
+    div data-slot="tabs-list" role="tablist" aria-orientation="horizontal"
+      button data-slot="tabs-trigger" role="tab" aria-selected="true" aria-controls="<id>"
+      button data-slot="tabs-trigger" role="tab" aria-selected="false"
+      button data-slot="tabs-trigger" role="tab" aria-disabled="true" aria-selected="false"
+    div data-slot="tabs-content" role="tabpanel" aria-labelledby="<id>"
+      p
+    div data-slot="tabs-content" role="tabpanel" aria-labelledby="<id>"
+      p
+    div data-slot="tabs-content" role="tabpanel" aria-labelledby="<id>"
+      p
+---
+section
+  div data-slot="tabs"
+    div data-slot="tabs-list" role="tablist" aria-orientation="horizontal"
+      button data-slot="tabs-trigger" role="tab" aria-selected="true" aria-controls="<id>"
+      button data-slot="tabs-trigger" role="tab" aria-selected="false"
+    div data-slot="tabs-content" role="tabpanel" aria-labelledby="<id>"
+      p
+    div data-slot="tabs-content" role="tabpanel" aria-labelledby="<id>"
+      p
+---
+section
+  div data-slot="tabs"
+    div data-slot="tabs-list" role="tablist" aria-orientation="horizontal"
+      button data-slot="tabs-trigger" role="tab" aria-selected="true" aria-controls="<id>"
+      button data-slot="tabs-trigger" role="tab" aria-selected="false"
+      button data-slot="tabs-trigger" role="tab" aria-disabled="true" aria-selected="false"
+    div data-slot="tabs-content" role="tabpanel" aria-labelledby="<id>"
+      p
+    div data-slot="tabs-content" role="tabpanel" aria-labelledby="<id>"
+      p
+    div data-slot="tabs-content" role="tabpanel" aria-labelledby="<id>"
+      p
+---
+section
+  div data-slot="tabs"
+    div data-slot="tabs-list" role="tablist" aria-orientation="horizontal"
+      button data-slot="tabs-trigger" role="tab" aria-selected="true" aria-controls="<id>"
+      button data-slot="tabs-trigger" role="tab" aria-selected="false"
+    div data-slot="tabs-content" role="tabpanel" aria-labelledby="<id>"
+    div data-slot="tabs-content" role="tabpanel" aria-labelledby="<id>"
+---
+section
+  div data-slot="tabs"
+    div data-slot="tabs-list" role="tablist" aria-orientation="horizontal"
+      button data-slot="tabs-trigger" role="tab" aria-selected="true" aria-controls="<id>"
+    div data-slot="tabs-content" role="tabpanel" aria-labelledby="<id>"

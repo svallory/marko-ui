@@ -1,0 +1,13 @@
+section
+  button data-slot="dialog-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+---
+section
+  div
+    button data-slot="dialog-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+    span
+---
+section
+  button data-slot="dialog-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+---
+section
+  button data-slot="dialog-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"

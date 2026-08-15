@@ -1,0 +1,42 @@
+section
+  div
+    p
+      strong
+    div data-slot="collapsible" data-state="closed"
+      button data-slot="collapsible-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+      div data-slot="collapsible-content" data-state="closed"
+        p
+    button
+---
+section
+  div data-slot="collapsible" data-state="closed"
+    div
+      h4
+      button data-slot="collapsible-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+        svg
+          path
+          path
+        span
+    div data-slot="collapsible-content" data-state="closed"
+      div
+      div
+        div
+        div
+---
+section
+  div data-slot="collapsible" data-state="closed"
+    button data-slot="collapsible-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+    div data-slot="collapsible-content" data-state="closed"
+      p
+---
+section
+  div data-slot="collapsible" data-state="closed"
+    button data-slot="collapsible-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+      svg
+        path
+    div data-slot="collapsible-content" data-state="closed"
+      div
+        label
+          input
+        label
+          input

@@ -1,0 +1,45 @@
+section
+  div
+    button data-slot="button"
+      kbd data-slot="kbd"
+    button data-slot="button"
+      kbd data-slot="kbd"
+---
+section
+  div
+    kbd data-slot="kbd-group"
+      kbd data-slot="kbd"
+      kbd data-slot="kbd"
+      kbd data-slot="kbd"
+      kbd data-slot="kbd"
+    kbd data-slot="kbd-group"
+      kbd data-slot="kbd"
+      span
+      kbd data-slot="kbd"
+---
+section
+  div
+    p
+      kbd data-slot="kbd-group"
+        kbd data-slot="kbd"
+        kbd data-slot="kbd"
+---
+section
+  div
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        svg
+          circle
+          line
+      div data-slot="input-group-addon" role="group"
+        kbd data-slot="kbd"
+        kbd data-slot="kbd"
+---
+section
+  div
+    div data-slot="button-group" role="group"
+      span data-slot="tooltip"
+        button data-slot="tooltip-trigger" data-state="closed"
+      span data-slot="tooltip"
+        button data-slot="tooltip-trigger" data-state="closed"

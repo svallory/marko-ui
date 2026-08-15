@@ -1,0 +1,48 @@
+section
+  label data-slot="checkbox-root" data-state="checked"
+    input aria-labelledby="<id>" aria-invalid="false"
+    span data-slot="checkbox" data-state="checked" aria-hidden="true"
+      span data-slot="checkbox-indicator" data-state="checked"
+        svg
+          path
+    span
+---
+section
+  div
+    label data-slot="checkbox-root" data-state="unchecked"
+      input aria-labelledby="<id>" aria-invalid="false"
+      span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+        span data-slot="checkbox-indicator" data-state="unchecked"
+      span
+    span
+---
+section
+  label data-slot="checkbox-root" data-state="unchecked"
+    input aria-labelledby="<id>" aria-invalid="false"
+    span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+      span data-slot="checkbox-indicator" data-state="unchecked"
+    span
+---
+section
+  div
+    label data-slot="checkbox-root" data-state="unchecked"
+      input aria-labelledby="<id>" aria-invalid="false"
+      span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+        span data-slot="checkbox-indicator" data-state="unchecked"
+      span
+    label data-slot="checkbox-root" data-state="checked"
+      input aria-labelledby="<id>" aria-invalid="false"
+      span data-slot="checkbox" data-state="checked" aria-hidden="true"
+        span data-slot="checkbox-indicator" data-state="checked"
+          svg
+            path
+      span
+---
+section
+  label data-slot="checkbox-root" data-state="indeterminate"
+    input aria-labelledby="<id>" aria-invalid="false"
+    span data-slot="checkbox" data-state="indeterminate" aria-hidden="true"
+      span data-slot="checkbox-indicator" data-state="indeterminate"
+        svg
+          path
+    span

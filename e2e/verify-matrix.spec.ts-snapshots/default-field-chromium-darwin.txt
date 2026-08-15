@@ -1,0 +1,78 @@
+section
+  div data-slot="field" role="group"
+    label data-slot="label"
+    input data-slot="input"
+    p data-slot="field-description"
+---
+section
+  fieldset data-slot="field-set"
+    legend data-slot="field-legend"
+    p data-slot="field-description"
+    div data-slot="field-group"
+      div data-slot="field" role="group"
+        label data-slot="label"
+        input data-slot="input"
+      div data-slot="field-separator"
+        div data-slot="separator" role="none"
+        span data-slot="field-separator-content"
+      div data-slot="field" role="group"
+        label data-slot="label"
+        input data-slot="input"
+---
+section
+  div
+    fieldset data-slot="field-set"
+      legend data-slot="field-legend"
+      p data-slot="field-description"
+      div data-slot="field-group"
+        div data-slot="field" role="group"
+          label data-slot="label"
+          input data-slot="input"
+        div
+          div data-slot="field" role="group"
+            label data-slot="label"
+            input data-slot="input"
+          div data-slot="field" role="group"
+            label data-slot="label"
+            input data-slot="input"
+---
+section
+  div data-slot="field" role="group"
+    div data-slot="field-content"
+      div data-slot="field-label"
+      p data-slot="field-description"
+    input data-slot="input"
+---
+section
+  div data-slot="field" role="group"
+    label data-slot="label"
+    input data-slot="input" aria-invalid="true" aria-describedby="<id>"
+    div data-slot="field-error" role="alert"
+---
+section
+  div data-slot="field" role="group"
+    label data-slot="label"
+    input data-slot="input" aria-invalid="true" aria-describedby="<id>"
+    div data-slot="field-error" role="alert"
+      ul
+        li
+        li
+---
+section
+  form
+    fieldset data-slot="field-set"
+      legend data-slot="field-legend"
+      p data-slot="field-description"
+      div data-slot="field-group"
+        div data-slot="field" role="group"
+          label data-slot="label"
+          input data-slot="input" aria-describedby="<id>"
+          p data-slot="field-description"
+        div data-slot="field" role="group"
+          label data-slot="label"
+          input data-slot="input"
+        div data-slot="field" role="group"
+          label data-slot="label"
+          input data-slot="input" aria-describedby="<id>"
+          p data-slot="field-description"
+        button data-slot="button"

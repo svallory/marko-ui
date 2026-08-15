@@ -1,0 +1,86 @@
+section
+  nav data-slot="breadcrumb" aria-label="breadcrumb"
+    ol data-slot="breadcrumb-list"
+      li data-slot="breadcrumb-item"
+        a data-slot="breadcrumb-link"
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
+      li data-slot="breadcrumb-item"
+        a data-slot="breadcrumb-link"
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
+      li data-slot="breadcrumb-item"
+        span data-slot="breadcrumb-page" role="link" aria-disabled="true" aria-current="page"
+---
+section
+  nav data-slot="breadcrumb" aria-label="breadcrumb"
+    ol data-slot="breadcrumb-list"
+      li data-slot="breadcrumb-item"
+        a data-slot="breadcrumb-link"
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
+      li data-slot="breadcrumb-item"
+        span data-slot="breadcrumb-ellipsis" role="presentation" aria-hidden="true"
+          svg
+            circle
+            circle
+            circle
+          span
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
+      li data-slot="breadcrumb-item"
+        a data-slot="breadcrumb-link"
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
+      li data-slot="breadcrumb-item"
+        span data-slot="breadcrumb-page" role="link" aria-disabled="true" aria-current="page"
+---
+section
+  nav data-slot="breadcrumb" aria-label="breadcrumb"
+    ol data-slot="breadcrumb-list"
+      li data-slot="breadcrumb-item"
+        a data-slot="breadcrumb-link"
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
+      li data-slot="breadcrumb-item"
+        a data-slot="breadcrumb-link"
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
+      li data-slot="breadcrumb-item"
+        span data-slot="breadcrumb-ellipsis" role="presentation" aria-hidden="true"
+          svg
+            circle
+            circle
+            circle
+          span
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
+      li data-slot="breadcrumb-item"
+        a data-slot="breadcrumb-link"
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
+      li data-slot="breadcrumb-item"
+        span data-slot="breadcrumb-page" role="link" aria-disabled="true" aria-current="page"
+---
+section
+  nav data-slot="breadcrumb" aria-label="breadcrumb"
+    ol data-slot="breadcrumb-list"
+      li data-slot="breadcrumb-item"
+        a data-slot="breadcrumb-link"
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        span
+      li data-slot="breadcrumb-item"
+        a data-slot="breadcrumb-link"
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        span
+      li data-slot="breadcrumb-item"
+        span data-slot="breadcrumb-page" role="link" aria-disabled="true" aria-current="page"

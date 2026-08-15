@@ -1,0 +1,212 @@
+section
+  div
+    nav data-slot="navigation-menu"
+      ul data-slot="navigation-menu-list"
+        li data-state="closed"
+          button data-slot="navigation-menu-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+            svg aria-hidden="true"
+              path
+          span aria-hidden="true"
+        li data-state="closed"
+          button data-slot="navigation-menu-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+            svg aria-hidden="true"
+              path
+          span aria-hidden="true"
+        div data-slot="navigation-menu-indicator" data-state="closed" aria-hidden="true"
+          div data-slot="navigation-menu-arrow" aria-hidden="true"
+      div data-slot="navigation-menu-viewport-positioner"
+        div data-slot="navigation-menu-viewport" data-state="closed"
+          div data-slot="navigation-menu-content" data-state="closed" aria-labelledby="<id>"
+            div
+              ul
+                li
+                  a data-slot="navigation-menu-link"
+                    div
+                    p
+                li
+                  a data-slot="navigation-menu-link"
+                    div
+                    p
+          div data-slot="navigation-menu-content" data-state="closed" aria-labelledby="<id>"
+            div
+              ul
+                li
+                  a data-slot="navigation-menu-link"
+                    div
+                    p
+                li
+                  a data-slot="navigation-menu-link"
+                    div
+                    p
+    p
+    button
+---
+section
+  nav data-slot="navigation-menu"
+    ul data-slot="navigation-menu-list"
+      li data-state="closed"
+        button data-slot="navigation-menu-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg aria-hidden="true"
+            path
+        span aria-hidden="true"
+      li data-state="closed"
+        button data-slot="navigation-menu-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg aria-hidden="true"
+            path
+        span aria-hidden="true"
+      li data-state="closed"
+        a data-slot="navigation-menu-link"
+      div data-slot="navigation-menu-indicator" data-state="closed" aria-hidden="true"
+        div data-slot="navigation-menu-arrow" aria-hidden="true"
+    div data-slot="navigation-menu-viewport-positioner"
+      div data-slot="navigation-menu-viewport" data-state="closed"
+        div data-slot="navigation-menu-content" data-state="closed" aria-labelledby="<id>"
+          div
+            ul
+              li
+                a data-slot="navigation-menu-link"
+                  div
+                  p
+              li
+                a data-slot="navigation-menu-link"
+                  div
+                  p
+              li
+                a data-slot="navigation-menu-link"
+                  div
+                  p
+              li
+                a data-slot="navigation-menu-link"
+                  div
+                  p
+        div data-slot="navigation-menu-content" data-state="closed" aria-labelledby="<id>"
+          div
+            ul
+              li
+                a data-slot="navigation-menu-link"
+                  div
+                  p
+              li
+                a data-slot="navigation-menu-link"
+                  div
+                  p
+              li
+                a data-slot="navigation-menu-link"
+                  div
+                  p
+              li
+                a data-slot="navigation-menu-link"
+                  div
+                  p
+---
+section
+  nav data-slot="navigation-menu"
+    ul data-slot="navigation-menu-list"
+      li data-state="closed"
+        button data-slot="navigation-menu-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg aria-hidden="true"
+            path
+        span aria-hidden="true"
+      li data-state="closed"
+        button data-slot="navigation-menu-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg aria-hidden="true"
+            path
+        span aria-hidden="true"
+      li data-state="closed"
+        a data-slot="navigation-menu-link"
+      div data-slot="navigation-menu-indicator" data-state="closed" aria-hidden="true"
+        div data-slot="navigation-menu-arrow" aria-hidden="true"
+    div data-slot="navigation-menu-viewport-positioner"
+      div data-slot="navigation-menu-viewport" data-state="closed"
+        div data-slot="navigation-menu-content" data-state="closed" aria-labelledby="<id>"
+          div
+            ul
+              li
+                a data-slot="navigation-menu-link"
+                  div
+                  p
+              li
+                a data-slot="navigation-menu-link"
+                  div
+                  p
+        div data-slot="navigation-menu-content" data-state="closed" aria-labelledby="<id>"
+          div
+            ul
+              li
+                a data-slot="navigation-menu-link"
+                  div
+                  p
+---
+section
+  nav data-slot="navigation-menu"
+    ul data-slot="navigation-menu-list"
+      li data-state="closed"
+        button data-slot="navigation-menu-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg aria-hidden="true"
+            path
+        span aria-hidden="true"
+      li data-state="closed"
+        a data-slot="navigation-menu-link"
+      li data-state="closed"
+        button data-slot="navigation-menu-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg aria-hidden="true"
+            path
+        span aria-hidden="true"
+      div data-slot="navigation-menu-indicator" data-state="closed" aria-hidden="true"
+        div data-slot="navigation-menu-arrow" aria-hidden="true"
+    div data-slot="navigation-menu-viewport-positioner"
+      div data-slot="navigation-menu-viewport" data-state="closed"
+        div data-slot="navigation-menu-content" data-state="closed" aria-labelledby="<id>"
+          div
+            a
+            a
+            a
+        div data-slot="navigation-menu-content" data-state="closed" aria-labelledby="<id>"
+          div
+            a
+            a
+            a
+---
+section
+  nav data-slot="navigation-menu"
+    ul data-slot="navigation-menu-list"
+      li data-state="closed"
+        a data-slot="navigation-menu-link"
+      div data-slot="navigation-menu-indicator" data-state="closed" aria-hidden="true"
+        div data-slot="navigation-menu-arrow" aria-hidden="true"
+    div data-slot="navigation-menu-viewport-positioner"
+      div data-slot="navigation-menu-viewport" data-state="closed"
+---
+section
+  nav data-slot="navigation-menu"
+    ul data-slot="navigation-menu-list"
+      li data-state="closed"
+        button data-slot="navigation-menu-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+          svg aria-hidden="true"
+            path
+        span aria-hidden="true"
+      li data-state="closed"
+        a data-slot="navigation-menu-link"
+      div data-slot="navigation-menu-indicator" data-state="closed" aria-hidden="true"
+        div data-slot="navigation-menu-arrow" aria-hidden="true"
+    div data-slot="navigation-menu-viewport-positioner"
+      div data-slot="navigation-menu-viewport" data-state="closed"
+        div data-slot="navigation-menu-content" data-state="closed" aria-labelledby="<id>"
+          div
+            a data-slot="navigation-menu-link"
+              div
+              p
+            ul
+              li
+                a data-slot="navigation-menu-link"
+                  div
+                  p
+              li
+                a data-slot="navigation-menu-link"
+                  div
+                  p
+              li
+                a data-slot="navigation-menu-link"
+                  div
+                  p
+          p

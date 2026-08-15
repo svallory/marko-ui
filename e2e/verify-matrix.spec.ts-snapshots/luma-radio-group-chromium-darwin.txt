@@ -1,0 +1,71 @@
+section
+  div data-slot="radio-group" role="radiogroup" aria-labelledby="<id>" aria-orientation="vertical"
+    label data-slot="radio-group-item-wrapper"
+      span data-slot="radio-group-item" data-state="unchecked"
+      input aria-labelledby="<id>"
+    label data-slot="radio-group-item-wrapper"
+      span data-slot="radio-group-item" data-state="checked"
+        span data-slot="radio-group-indicator"
+          span
+      input aria-labelledby="<id>"
+    label data-slot="radio-group-item-wrapper"
+      span data-slot="radio-group-item" data-state="unchecked"
+      input aria-labelledby="<id>"
+---
+section
+  div
+    div data-slot="radio-group" role="radiogroup" aria-labelledby="<id>" aria-orientation="vertical"
+      label data-slot="radio-group-item-wrapper"
+        span data-slot="radio-group-item" data-state="unchecked"
+        input aria-labelledby="<id>"
+      label data-slot="radio-group-item-wrapper"
+        span data-slot="radio-group-item" data-state="checked"
+          span data-slot="radio-group-indicator"
+            span
+        input aria-labelledby="<id>"
+      label data-slot="radio-group-item-wrapper"
+        span data-slot="radio-group-item" data-state="unchecked"
+        input aria-labelledby="<id>"
+    span
+---
+section
+  div data-slot="radio-group" role="radiogroup" aria-labelledby="<id>" aria-orientation="vertical"
+    label data-slot="radio-group-item-wrapper"
+      span data-slot="radio-group-item" data-state="unchecked"
+      input aria-labelledby="<id>"
+    label data-slot="radio-group-item-wrapper"
+      span data-slot="radio-group-item" data-state="checked"
+        span data-slot="radio-group-indicator"
+          span
+      input aria-labelledby="<id>"
+    label data-slot="radio-group-item-wrapper"
+      span data-slot="radio-group-item" data-state="unchecked"
+      input aria-labelledby="<id>"
+---
+section
+  div data-slot="radio-group" role="radiogroup" aria-labelledby="<id>" aria-disabled="true" aria-orientation="vertical"
+    label data-slot="radio-group-item-wrapper"
+      span data-slot="radio-group-item" data-state="checked"
+        span data-slot="radio-group-indicator"
+          span
+      input aria-labelledby="<id>"
+    label data-slot="radio-group-item-wrapper"
+      span data-slot="radio-group-item" data-state="unchecked"
+      input aria-labelledby="<id>"
+    label data-slot="radio-group-item-wrapper"
+      span data-slot="radio-group-item" data-state="unchecked"
+      input aria-labelledby="<id>"
+---
+section
+  div data-slot="radio-group" role="radiogroup" aria-labelledby="<id>" aria-orientation="vertical"
+    label data-slot="radio-group-item-wrapper"
+      span data-slot="radio-group-item" data-state="checked"
+        span data-slot="radio-group-indicator"
+          span
+      input aria-labelledby="<id>"
+    label data-slot="radio-group-item-wrapper"
+      span data-slot="radio-group-item" data-state="unchecked"
+      input aria-labelledby="<id>"
+    label data-slot="radio-group-item-wrapper"
+      span data-slot="radio-group-item" data-state="unchecked"
+      input aria-labelledby="<id>"

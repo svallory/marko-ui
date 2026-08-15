@@ -1,0 +1,110 @@
+section
+  p
+  nav data-slot="pagination" aria-label="pagination"
+    ul
+      li
+        button data-slot="pagination-prev" aria-label="previous page"
+          svg
+            path
+          span
+      li
+        button data-slot="pagination-item" aria-label="page 1"
+      li
+        button data-slot="pagination-item" aria-label="page 2"
+      li
+        button data-slot="pagination-item" aria-current="page" aria-label="page 3"
+      li
+        button data-slot="pagination-item" aria-label="page 4"
+      li
+        button data-slot="pagination-item" aria-label="page 5"
+      li
+        span data-slot="pagination-ellipsis"
+      li
+        button data-slot="pagination-item" aria-label="last page, page 20"
+      li
+        button data-slot="pagination-next" aria-label="next page"
+          span
+          svg
+            path
+---
+section
+  nav data-slot="pagination" aria-label="pagination"
+    ul
+      li
+        button data-slot="pagination-prev" aria-label="previous page"
+          svg
+            path
+          span
+      li
+        button data-slot="pagination-item" aria-current="page" aria-label="page 1"
+      li
+        button data-slot="pagination-item" aria-label="page 2"
+      li
+        button data-slot="pagination-item" aria-label="page 3"
+      li
+        button data-slot="pagination-item" aria-label="page 4"
+      li
+        button data-slot="pagination-item" aria-label="page 5"
+      li
+        span data-slot="pagination-ellipsis"
+      li
+        button data-slot="pagination-item" aria-label="last page, page 10"
+      li
+        button data-slot="pagination-next" aria-label="next page"
+          span
+          svg
+            path
+---
+section
+  nav data-slot="pagination" aria-label="pagination"
+    ul
+      li
+        button data-slot="pagination-prev" aria-label="previous page"
+          svg
+            path
+          span
+      li
+        button data-slot="pagination-item" aria-label="page 1"
+      li
+        button data-slot="pagination-item" aria-current="page" aria-label="page 2"
+      li
+        button data-slot="pagination-item" aria-label="last page, page 3"
+      li
+        button data-slot="pagination-next" aria-label="next page"
+          span
+          svg
+            path
+---
+section
+  p
+    code
+  nav data-slot="pagination" aria-label="pagination"
+    ul
+      li
+        button data-slot="pagination-prev" aria-label="previous page"
+          svg
+            path
+          span
+      li
+        button data-slot="pagination-item" aria-label="page 1"
+      li
+        span data-slot="pagination-ellipsis"
+      li
+        button data-slot="pagination-item" aria-label="page 8"
+      li
+        button data-slot="pagination-item" aria-label="page 9"
+      li
+        button data-slot="pagination-item" aria-current="page" aria-label="page 10"
+      li
+        button data-slot="pagination-item" aria-label="page 11"
+      li
+        button data-slot="pagination-item" aria-label="page 12"
+      li
+        span data-slot="pagination-ellipsis"
+      li
+        button data-slot="pagination-item" aria-label="last page, page 50"
+      li
+        button data-slot="pagination-next" aria-label="next page"
+          span
+          svg
+            path
