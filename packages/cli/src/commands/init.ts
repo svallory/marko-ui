@@ -1,5 +1,6 @@
 import { promises as fs } from "fs"
 import path from "path"
+import { runAgentsSync } from "@/src/commands/agents"
 import { preFlightInit } from "@/src/preflights/preflight-init"
 import {
   BASE_COLORS,
@@ -40,6 +41,7 @@ export const initOptionsSchema = z.object({
   cssVariables: z.boolean().default(true),
   baseColor: z.string().optional(),
   skipPreflight: z.boolean().optional(),
+  agents: z.boolean().optional(),
 })
 
 export const init = new Command()
@@ -58,6 +60,7 @@ export const init = new Command()
   .option("-b, --base-color <name>", "the base color to use.")
   .option("--css-variables", "use css variables for theming.", true)
   .option("--no-css-variables", "do not use css variables for theming.")
+  .option("--agents", "generate AGENTS.md and the marko-ui Claude skill.", false)
   .action(async (components, opts) => {
     try {
       const options = initOptionsSchema.parse({
@@ -150,6 +153,10 @@ export async function runInit(
     silent: options.silent,
     isNewProject: options.isNewProject,
   })
+
+  if (options.agents) {
+    await runAgentsSync(options.cwd, { silent: options.silent })
+  }
 
   return fullConfig
 }

@@ -83,6 +83,11 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "flags": "--no-css-variables",
           "description": "do not use css variables for theming."
+        },
+        {
+          "flags": "--agents",
+          "description": "generate AGENTS.md and the marko-ui Claude skill.",
+          "defaultValue": false
         }
       ]
     },

@@ -58,21 +58,8 @@ agents
         process.exit(1)
       }
 
-      const components = await collectInstalledComponents(options.cwd)
-
-      const agentsPath = path.resolve(options.cwd, "AGENTS.md")
-      const skillPath = path.resolve(
-        options.cwd,
-        ".claude/skills/marko-ui/SKILL.md"
-      )
-
-      const nextAgents = mergeAgentsFile(
-        existsSync(agentsPath)
-          ? await fs.readFile(agentsPath, "utf8")
-          : null,
-        buildAgentsSection(components)
-      )
-      const nextSkill = buildSkill(components)
+      const { agentsPath, skillPath, nextAgents, nextSkill } =
+        await prepareAgentDocs(options.cwd)
 
       if (options.check) {
         const staleFiles: string[] = []
@@ -105,27 +92,57 @@ agents
         return
       }
 
-      const writeSpinner = spinner("Writing agent docs.", {
+      await runAgentsSync(options.cwd, {
         silent: options.silent,
-      }).start()
-      await fs.writeFile(agentsPath, nextAgents, "utf8")
-      const written = ["AGENTS.md"]
-      if (options.skill) {
-        await fs.mkdir(path.dirname(skillPath), { recursive: true })
-        await fs.writeFile(skillPath, nextSkill, "utf8")
-        written.push(".claude/skills/marko-ui/SKILL.md")
-      }
-      writeSpinner.succeed()
-
-      if (!options.silent) {
-        for (const file of written) {
-          logger.log(`  - ${file}`)
-        }
-      }
+        skill: options.skill,
+      })
     } catch (error) {
       handleError(error)
     }
   })
+
+/**
+ * Writes AGENTS.md (+ the Claude skill) for a project. Also called by
+ * `init --agents`.
+ */
+export async function runAgentsSync(
+  cwd: string,
+  options: { silent?: boolean; skill?: boolean } = {}
+) {
+  const { agentsPath, skillPath, nextAgents, nextSkill } =
+    await prepareAgentDocs(cwd)
+
+  const writeSpinner = spinner("Writing agent docs.", {
+    silent: options.silent,
+  }).start()
+  await fs.writeFile(agentsPath, nextAgents, "utf8")
+  const written = ["AGENTS.md"]
+  if (options.skill !== false) {
+    await fs.mkdir(path.dirname(skillPath), { recursive: true })
+    await fs.writeFile(skillPath, nextSkill, "utf8")
+    written.push(".claude/skills/marko-ui/SKILL.md")
+  }
+  writeSpinner.succeed()
+
+  if (!options.silent) {
+    for (const file of written) {
+      logger.log(`  - ${file}`)
+    }
+  }
+}
+
+async function prepareAgentDocs(cwd: string) {
+  const components = await collectInstalledComponents(cwd)
+  const agentsPath = path.resolve(cwd, "AGENTS.md")
+  const skillPath = path.resolve(cwd, ".claude/skills/marko-ui/SKILL.md")
+
+  const nextAgents = mergeAgentsFile(
+    existsSync(agentsPath) ? await fs.readFile(agentsPath, "utf8") : null,
+    buildAgentsSection(components)
+  )
+
+  return { agentsPath, skillPath, nextAgents, nextSkill: buildSkill(components) }
+}
 
 async function collectInstalledComponents(
   cwd: string
