@@ -14,10 +14,10 @@
 // semantics — the input's `name` attribute is toggled on `input` so an
 // empty freeform answer never contributes a blank `FormData` entry.
 import { cn } from "#lib/utils.ts";
-import type { QuestionnaireController } from "./lib/controller.ts";
+import type { QuestionnaireControllerGetter } from "./lib/controller.ts";
 
 export interface Input extends Omit<Marko.Input<"input">, "name" | "type"> {
-  controller: QuestionnaireController;
+  controller: QuestionnaireControllerGetter;
   itemName: string;
   type?:
     | "date"
@@ -39,7 +39,7 @@ export interface Input extends Omit<Marko.Input<"input">, "name" | "type"> {
 <const/answerId=`questionnaire-${itemName}-input`/>
 
 <script>
-  controller.registerAnswer(itemName, {
+  controller().registerAnswer(itemName, {
     id: answerId,
     type: "input",
     disabled: Boolean(disabled),
@@ -47,18 +47,23 @@ export interface Input extends Omit<Marko.Input<"input">, "name" | "type"> {
   });
 </script>
 
-<let/_version=controller.versionStore.getSnapshot()>
+<let/_version=controller().versionStore.getSnapshot()>
 <lifecycle
   onMount() {
-    return controller.versionStore.subscribe(() => {
-      _version = controller.versionStore.getSnapshot();
-    });
+    // Marko merges onMount's RETURNED OBJECT into `this` (returning the
+    // bare unsubscribe function is silently ignored) — onDestroy reads it.
+    return { cleanup: controller().versionStore.subscribe(() => {
+      _version = controller().versionStore.getSnapshot();
+    }) };
+  }
+  onDestroy() {
+    this.cleanup?.();
   }
 />
 
-<const/snapshot=(_version >= 0 ? controller.getItemSnapshot(itemName) : undefined)/>
+<const/snapshot=(_version >= 0 ? controller().getItemSnapshot(itemName) : undefined)/>
 <const/selected=(snapshot?.selectedAnswerIds.includes(answerId) ?? false)/>
-<const/invalid=(_version >= 0 && controller.isInvalid(itemName))/>
+<const/invalid=(_version >= 0 && controller().isInvalid(itemName))/>
 
 <div data-slot="questionnaire-input-wrapper" class="group/questionnaire-input relative w-full min-w-0">
   <input/inputEl
@@ -70,7 +75,7 @@ export interface Input extends Omit<Marko.Input<"input">, "name" | "type"> {
     disabled=disabled
     aria-invalid=(invalid || undefined)
     class=cn(
-      "h-9 min-h-11 w-full min-w-0 rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-base transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 sm:min-h-0 md:text-sm dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
+      "h-8 min-h-11 w-full min-w-0 rounded-2xl border border-transparent bg-input/50 px-2.5 py-1 text-base transition-[color,box-shadow,background-color] duration-200 outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 sm:min-h-0 md:text-sm dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
       "selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground",
       className,
     )
@@ -79,14 +84,14 @@ export interface Input extends Omit<Marko.Input<"input">, "name" | "type"> {
       if (event.defaultPrevented) return;
       const target = event.target as HTMLInputElement;
       const filled = target.value.trim().length > 0;
-      controller.setAnswerSelected(itemName, answerId, filled, false);
+      controller().setAnswerSelected(itemName, answerId, filled, false);
     }
   >
 </div>
 
 <lifecycle
   onMount() {
-    controller.registerAnswer(itemName, {
+    controller().registerAnswer(itemName, {
       id: answerId,
       type: "input",
       disabled: Boolean(disabled),

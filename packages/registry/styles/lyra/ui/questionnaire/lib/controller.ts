@@ -381,3 +381,30 @@ export function createQuestionnaireController(options: QuestionnaireControllerOp
 }
 
 export type QuestionnaireController = ReturnType<typeof createQuestionnaireController>;
+
+/** Getter contract passed from `<questionnaire>` to every part — a template
+ * closure, so tag input stays serializable (the controller itself is a plain
+ * object full of functions and must never cross a tag boundary). */
+export type QuestionnaireControllerGetter = () => QuestionnaireController;
+
+/** Per-root holder the getter closes over; serializes as `{ current: null }`
+ * because the browser-side controller is only created on first client call. */
+export function createQuestionnaireControllerHolder(): {
+  current: QuestionnaireController | null;
+} {
+  return { current: null };
+}
+
+/** Body of the root's getter closure. During SSR it returns a fresh
+ * throwaway instance per call (never stored, so never serialized) whose
+ * initial snapshots render the correct server markup; in the browser it
+ * lazily creates and caches the one real instance on the holder. */
+export function resolveQuestionnaireController(
+  holder: { current: QuestionnaireController | null },
+  options: () => QuestionnaireControllerOptions,
+): QuestionnaireController {
+  if (typeof window === "undefined") {
+    return createQuestionnaireController(options());
+  }
+  return (holder.current ??= createQuestionnaireController(options()));
+}

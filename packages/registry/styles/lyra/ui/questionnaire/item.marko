@@ -13,11 +13,11 @@
 // use-questionnaire-item.ts. `multiple`, `required`, and `disabled` ARE
 // wired, driving the same status derivation as the source.
 import { cn } from "#lib/utils.ts";
-import type { QuestionnaireController } from "./lib/controller.ts";
+import type { QuestionnaireControllerGetter } from "./lib/controller.ts";
 import type { QuestionnaireItemStatus } from "./lib/types.ts";
 
 export interface Input extends Omit<Marko.Input<"fieldset">, "name"> {
-  controller: QuestionnaireController;
+  controller: QuestionnaireControllerGetter;
   name: string;
   multiple?: boolean;
   required?: boolean;
@@ -42,26 +42,33 @@ export interface Input extends Omit<Marko.Input<"fieldset">, "name"> {
   ...rest
 }=input/>
 
-<let/_version=controller.versionStore.getSnapshot()>
-<let/activeItemName=controller.activeItemStore.getSnapshot()>
+<let/_version=controller().versionStore.getSnapshot()>
+<let/activeItemName=controller().activeItemStore.getSnapshot()>
 <lifecycle
   onMount() {
-    const unsubscribeVersion = controller.versionStore.subscribe(() => {
-      _version = controller.versionStore.getSnapshot();
+    const unsubscribeVersion = controller().versionStore.subscribe(() => {
+      _version = controller().versionStore.getSnapshot();
     });
-    const unsubscribeActive = controller.activeItemStore.subscribe(() => {
-      activeItemName = controller.activeItemStore.getSnapshot();
+    const unsubscribeActive = controller().activeItemStore.subscribe(() => {
+      activeItemName = controller().activeItemStore.getSnapshot();
     });
-    return () => {
-      unsubscribeVersion();
-      unsubscribeActive();
+    // Marko merges onMount's RETURNED OBJECT into `this` (returning a bare
+    // cleanup function is silently ignored) — onDestroy reads it back.
+    return {
+      cleanup: () => {
+        unsubscribeVersion();
+        unsubscribeActive();
+      },
     };
+  }
+  onDestroy() {
+    this.cleanup?.();
   }
 />
 
 <const/active=(activeItemName === name && !disabled)/>
-<const/status=(_version >= 0 ? controller.getStatus(name) : "unanswered")/>
-<const/invalid=(externallyInvalid || (_version >= 0 && controller.isInvalid(name)))/>
+<const/status=(_version >= 0 ? controller().getStatus(name) : "unanswered")/>
+<const/invalid=(externallyInvalid || (_version >= 0 && controller().isInvalid(name)))/>
 
 <let/_previousStatus=status>
 <script>
@@ -81,7 +88,7 @@ export interface Input extends Omit<Marko.Input<"fieldset">, "name"> {
   inert=(!active)
   tabindex="-1"
   aria-invalid=(invalid || undefined)
-  class=cn("flex min-w-0 flex-col gap-4 border-0 p-0 outline-none", className)
+  class=cn("flex min-w-0 flex-col gap-5 border-0 p-0 outline-none", className)
 >
   <${content}({ active, status })/>
 </fieldset>

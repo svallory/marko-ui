@@ -24,7 +24,11 @@
 // `items=` even in the React version) so the controller can compute
 // progress/navigation before any item has registered itself.
 import { cn } from "#lib/utils.ts";
-import { createQuestionnaireController, type QuestionnaireController } from "./lib/controller.ts";
+import {
+  createQuestionnaireControllerHolder,
+  resolveQuestionnaireController,
+  type QuestionnaireControllerGetter,
+} from "./lib/controller.ts";
 import type { QuestionnaireShortcutMode } from "./lib/types.ts";
 
 export interface QuestionnaireItemDefinition {
@@ -45,7 +49,7 @@ export interface Input extends Omit<Marko.Input<"form">, "onReset" | "onSubmit">
   onReset?: (event: Event) => void;
   onSubmit?: (event: SubmitEvent) => void;
   /** Render-prop body receiving the live controller; the primary way to compose parts. */
-  content?: Marko.Body<[QuestionnaireController]>;
+  content?: Marko.Body<[QuestionnaireControllerGetter]>;
 }
 
 <const/{
@@ -61,27 +65,37 @@ export interface Input extends Omit<Marko.Input<"form">, "onReset" | "onSubmit">
   ...rest
 }=input/>
 
-<const/controller=createQuestionnaireController({
-  itemNames: items.map((item) => item.name),
-  defaultItem,
-  shortcuts,
-})/>
+// SERIALIZATION RULE: the controller is a plain object full of functions and
+// must never cross the server/client boundary. Descendants receive the getter
+// closure below; during SSR it resolves to a throwaway per-call instance
+// (never stored, so never serialized) and in the browser to one lazily
+// created instance cached on the holder — see resolveQuestionnaireController.
+<const/controllerHolder=createQuestionnaireControllerHolder()/>
+<const/controllerOptions=() => ({ itemNames: items.map((item) => item.name), defaultItem, shortcuts })/>
+<const/controller=() => resolveQuestionnaireController(controllerHolder, controllerOptions)/>
 
 <script>
   for (const item of items) {
-    controller.registerItem(item.name, Boolean(item.required), Boolean(item.disabled));
+    controller().registerItem(item.name, Boolean(item.required), Boolean(item.disabled));
   }
 </script>
 
 <lifecycle
   onMount() {
-    return controller.activeItemStore.subscribe(() => {
-      const next = controller.activeItemStore.getSnapshot();
-      if (next) {
-        itemChange?.(next);
-        onItemChange?.(next);
-      }
-    });
+    // Marko merges onMount's RETURNED OBJECT into `this` (returning a bare
+    // cleanup function is silently ignored) — onDestroy reads it back.
+    return {
+      cleanup: controller().activeItemStore.subscribe(() => {
+        const next = controller().activeItemStore.getSnapshot();
+        if (next) {
+          itemChange?.(next);
+          onItemChange?.(next);
+        }
+      }),
+    };
+  }
+  onDestroy() {
+    this.cleanup?.();
   }
 />
 
@@ -93,19 +107,19 @@ export interface Input extends Omit<Marko.Input<"form">, "onReset" | "onSubmit">
   onReset(event: Event) {
     onReset?.(event);
     if (event.defaultPrevented) return;
-    controller.reset();
+    controller().reset();
   }
   onSubmit(event: SubmitEvent) {
-    const firstInvalid = controller.findFirstInvalidItem();
+    const firstInvalid = controller().findFirstInvalidItem();
     if (firstInvalid) {
       event.preventDefault();
-      controller.setItem(firstInvalid);
+      controller().setItem(firstInvalid);
       return;
     }
     onSubmit?.(event);
   }
   onKeydown(event: KeyboardEvent) {
-    controller.handleKeyDown(event, () => formEl().requestSubmit());
+    controller().handleKeyDown(event, () => formEl().requestSubmit());
   }
 >
   <${content}(controller)/>

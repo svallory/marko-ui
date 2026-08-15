@@ -8,34 +8,45 @@
 // — see previous.marko's header comment); clicking calls `skipCurrent()`.
 import { buttonVariants, type ButtonVariant, type ButtonSize } from "../button/variants.ts";
 import { cn } from "#lib/utils.ts";
-import type { QuestionnaireController } from "./lib/controller.ts";
+import type { QuestionnaireControllerGetter } from "./lib/controller.ts";
 
 export interface Input extends Marko.Input<"button"> {
-  controller: QuestionnaireController;
+  controller: QuestionnaireControllerGetter;
   variant?: ButtonVariant;
   size?: ButtonSize;
 }
 
 <const/{ controller, variant = "outline", size = "default", class: className, content, onClick, type, disabled: disabledProp = false, tabindex, ...rest }=input/>
 
-<let/_version=controller.versionStore.getSnapshot()>
+<let/_version=controller().versionStore.getSnapshot()>
+// A reactive <let>, NOT a <const> read off the store: navigation changes the
+// active item without bumping the version, so a const would stay frozen at
+// its server-rendered value and Skip would never appear/disappear.
+<let/activeName=controller().activeItemStore.getSnapshot()>
 <lifecycle
   onMount() {
-    const unsubscribeVersion = controller.versionStore.subscribe(() => {
-      _version = controller.versionStore.getSnapshot();
+    const unsubscribeVersion = controller().versionStore.subscribe(() => {
+      _version = controller().versionStore.getSnapshot();
     });
-    const unsubscribeActive = controller.activeItemStore.subscribe(() => {
-      _version = controller.versionStore.getSnapshot();
+    const unsubscribeActive = controller().activeItemStore.subscribe(() => {
+      activeName = controller().activeItemStore.getSnapshot();
+      _version = controller().versionStore.getSnapshot();
     });
-    return () => {
-      unsubscribeVersion();
-      unsubscribeActive();
+    // Marko merges onMount's RETURNED OBJECT into `this` (returning a bare
+    // cleanup function is silently ignored) — onDestroy reads it back.
+    return {
+      cleanup: () => {
+        unsubscribeVersion();
+        unsubscribeActive();
+      },
     };
+  }
+  onDestroy() {
+    this.cleanup?.();
   }
 />
 
-<const/activeName=controller.activeItemStore.getSnapshot()/>
-<const/visible=(_version >= 0 && activeName != null && controller.isRequired(activeName) === false)/>
+<const/visible=(_version >= 0 && activeName != null && controller().isRequired(activeName) === false)/>
 
 <button
   ...rest
@@ -51,11 +62,13 @@ export interface Input extends Marko.Input<"button"> {
   disabled=disabledProp
   tabindex=(visible ? tabindex : -1)
   class=cn(buttonVariants({ variant, size }), "col-start-2 row-start-1 min-h-11 justify-self-end sm:min-h-0", className)
-  onClick(event: MouseEvent) {
+  onClick(event: MouseEvent, target: HTMLButtonElement) {
     onClick?.(event);
     if (event.defaultPrevented) return;
-    controller.skipCurrent(() => {
-      (event.currentTarget as HTMLButtonElement)?.form?.requestSubmit();
+    // event.currentTarget is unsupported in Marko's delegated events —
+    // the handler's 2nd argument is the element the handler is bound to.
+    controller().skipCurrent(() => {
+      target?.form?.requestSubmit();
     });
   }
 >

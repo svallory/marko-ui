@@ -5,11 +5,11 @@
 // tag-variable ref, `el()`, standing in for the source's React `ref`
 // callback) and otherwise renders byte-identical markup.
 import { cn } from "#lib/utils.ts";
-import type { MessageScrollerController } from "./lib/controller.ts";
+import type { MessageScrollerControllerGetter } from "./lib/controller.ts";
 
 export interface Input extends Marko.Input<"div"> {
-  /** The controller created by the nearest `<message-scroller-provider>`. */
-  controller: MessageScrollerController;
+  /** Controller getter provided by the nearest `<message-scroller-provider>`. */
+  controller: MessageScrollerControllerGetter;
 }
 
 <const/{ controller, class: className, content, ...rest }=input/>
@@ -24,9 +24,9 @@ export interface Input extends Marko.Input<"div"> {
 
 <lifecycle
   onMount() {
-    controller.setRootElement(el());
+    controller().setRootElement(el());
   }
   onDestroy() {
-    controller.setRootElement(null);
+    controller().setRootElement(null);
   }
 />

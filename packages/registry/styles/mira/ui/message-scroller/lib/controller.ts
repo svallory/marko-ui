@@ -711,3 +711,16 @@ export function createMessageScrollerController(options: MessageScrollerProvider
 }
 
 export type MessageScrollerController = ReturnType<typeof createMessageScrollerController>;
+
+/** Getter contract passed from `<message-scroller-provider>` to every part —
+ * a template closure, so tag input stays serializable (the controller itself
+ * is a plain object full of functions and must never cross a tag boundary). */
+export type MessageScrollerControllerGetter = () => MessageScrollerController;
+
+/** Per-provider holder the lazy getter closes over; serializes as `{ current: null }`
+ * during SSR because the controller is only created in the browser. */
+export function createMessageScrollerControllerHolder(): {
+  current: MessageScrollerController | null;
+} {
+  return { current: null };
+}

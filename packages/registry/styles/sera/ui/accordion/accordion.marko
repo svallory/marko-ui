@@ -145,12 +145,19 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
     };
     root.addEventListener("animationend", onAnimationEnd);
 
-    return () => {
-      clearTimeout(initialTimer);
-      resizeObserver.disconnect();
-      root.removeEventListener("animationend", onAnimationEnd);
-      for (const value in fallbackTimers) clearTimeout(fallbackTimers[value]);
+    // Marko merges onMount's RETURNED OBJECT into `this` (returning a bare
+    // cleanup function is silently ignored) — onDestroy reads it back.
+    return {
+      cleanup: () => {
+        clearTimeout(initialTimer);
+        resizeObserver.disconnect();
+        root.removeEventListener("animationend", onAnimationEnd);
+        for (const value in fallbackTimers) clearTimeout(fallbackTimers[value]);
+      },
     };
+  }
+  onDestroy() {
+    this.cleanup?.();
   }
 />
 

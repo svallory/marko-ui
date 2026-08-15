@@ -75,7 +75,12 @@ export interface Input {
     const frame = requestAnimationFrame(() => {
       requestAnimationFrame(() => service.service?.send({ type: "MEASURE" }));
     });
-    return () => cancelAnimationFrame(frame);
+    // Marko merges onMount's RETURNED OBJECT into `this` (returning a bare
+    // cleanup function is silently ignored) — onDestroy reads it back.
+    return { cleanup: () => cancelAnimationFrame(frame) };
+  }
+  onDestroy() {
+    this.cleanup?.();
   }
 />
 

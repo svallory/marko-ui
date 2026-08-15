@@ -1,7 +1,7 @@
 // One live Zag toast child service, rendered by <Toaster> for each entry in the
 // group machine's `toasts` context.
 //
-// base-luma parity + the CSS-geometry deviation (read this before touching
+// base-rhea parity + the CSS-geometry deviation (read this before touching
 // class strings): base-luma's Toast (Base UI) positions/stacks/animates every
 // toast entirely through CSS custom properties Base UI itself writes onto the
 // root element — --toast-index, --toast-height, --toast-frontmost-height,
@@ -75,7 +75,12 @@ export interface Input {
     const frame = requestAnimationFrame(() => {
       requestAnimationFrame(() => service.service?.send({ type: "MEASURE" }));
     });
-    return () => cancelAnimationFrame(frame);
+    // Marko merges onMount's RETURNED OBJECT into `this` (returning a bare
+    // cleanup function is silently ignored) — onDestroy reads it back.
+    return { cleanup: () => cancelAnimationFrame(frame) };
+  }
+  onDestroy() {
+    this.cleanup?.();
   }
 />
 

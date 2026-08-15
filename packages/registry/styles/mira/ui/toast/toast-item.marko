@@ -75,7 +75,12 @@ export interface Input {
     const frame = requestAnimationFrame(() => {
       requestAnimationFrame(() => service.service?.send({ type: "MEASURE" }));
     });
-    return () => cancelAnimationFrame(frame);
+    // Marko merges onMount's RETURNED OBJECT into `this` (returning a bare
+    // cleanup function is silently ignored) — onDestroy reads it back.
+    return { cleanup: () => cancelAnimationFrame(frame) };
+  }
+  onDestroy() {
+    this.cleanup?.();
   }
 />
 
@@ -92,7 +97,7 @@ export interface Input {
   // getRootProps() and re-emitting base-rhea's exact attribute names would
   // fight Zag's real state instead of describing it.
   class=cn(
-    "group/toast pointer-events-auto relative flex w-[356px] max-w-[calc(100vw-2rem)] items-start gap-3 rounded-md border border-border bg-popover p-4 text-sm text-popover-foreground shadow-lg outline-none will-change-transform select-none",
+    "group/toast pointer-events-auto relative flex w-[356px] max-w-[calc(100vw-2rem)] items-start gap-3 rounded-2xl! border border-border bg-popover p-4 text-sm text-popover-foreground shadow-lg outline-none will-change-transform select-none",
     // Zag drives placement/stacking through CSS custom properties on this
     // element (--x/--y/--scale/--z-index/--opacity, see getPlacementStyle).
     // They must be consumed by the `translate`/`scale`/`opacity` PROPERTIES,
@@ -176,7 +181,7 @@ export interface Input {
       <button
         ...api().getActionTriggerProps()
         data-slot="toast-action"
-        class="shrink-0"
+        class="inline-flex h-7 shrink-0 items-center justify-center gap-1.5 rounded-2xl border border-border bg-background px-3 text-xs font-medium whitespace-nowrap shadow-xs transition-all outline-none hover:bg-muted hover:text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 dark:bg-transparent dark:hover:bg-input/30"
       >
         ${input.options().action?.label}
       </button>
@@ -187,7 +192,7 @@ export interface Input {
         ...api().getCloseTriggerProps()
         data-slot="toast-close"
         aria-label="Close toast"
-        class="relative shrink-0 text-muted-foreground after:absolute after:-inset-2 after:content-[''] hover:text-foreground"
+        class="relative inline-flex size-7 shrink-0 items-center justify-center rounded-2xl text-muted-foreground transition-all outline-none after:absolute after:-inset-2 after:content-[''] hover:text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4" aria-hidden="true">
           <path d="M18 6 6 18"/>

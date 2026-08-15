@@ -52,7 +52,10 @@ export interface Input {
     const frame = requestAnimationFrame(() => {
       requestAnimationFrame(() => service.service?.send({ type: "MEASURE" }));
     });
-    return () => cancelAnimationFrame(frame);
+    return { cleanup: () => cancelAnimationFrame(frame) };
+  }
+  onDestroy() {
+    this.cleanup?.();
   }
 />
 

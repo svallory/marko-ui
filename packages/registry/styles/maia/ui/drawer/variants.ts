@@ -69,7 +69,8 @@ export function drawerContentVariants({
  * ANATOMY DIFFERENCE vs rhea/vega: base-maia's DrawerSwipeHandle has no
  * separate indicator child — the pill/bar is an `after:` pseudo-element on
  * the handle itself (after:block after:shrink-0 after:rounded-full
- * after:bg-muted + axis-scoped after:h-*/after:w-*). rhea/vega render a real
+ * after:bg-muted + axis-scoped after:h-* / after:w-* — the space matters:
+ * "*" + "/" adjacent would terminate this block comment). rhea/vega render a real
  * `data-slot="drawer-grabber-indicator"` child div because base-rhea/
  * base-vega don't use the after: trick. Following base-maia's source here:
  * drawerGrabberVariants bakes the after:* classes in and the marko file

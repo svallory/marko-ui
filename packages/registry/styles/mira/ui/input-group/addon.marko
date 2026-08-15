@@ -10,9 +10,11 @@ export interface Input extends Marko.Input<"div">, InputGroupAddonVariants {}
   role="group"
   data-slot="input-group-addon"
   data-align=align
-  onClick(event) {
+  onClick(event, target: HTMLElement) {
     if ((event.target as HTMLElement).closest("button")) return;
-    (event.currentTarget as HTMLElement).parentElement
+    // event.currentTarget is unsupported in Marko's delegated events —
+    // the handler's 2nd argument is the element the handler is bound to.
+    target.parentElement
       ?.querySelector<HTMLElement>("input")
       ?.focus();
   }

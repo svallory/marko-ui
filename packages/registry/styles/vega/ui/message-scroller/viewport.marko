@@ -12,12 +12,12 @@
 // idiom, using this project's actual effect primitive (`<lifecycle>`; Marko
 // has no separate `<effect>` tag).
 import { cn } from "#lib/utils.ts";
-import type { MessageScrollerController } from "./lib/controller.ts";
+import type { MessageScrollerControllerGetter } from "./lib/controller.ts";
 import { USER_SCROLL_KEYS } from "./lib/types.ts";
 
 export interface Input extends Marko.Input<"div"> {
-  /** The controller created by the nearest `<message-scroller-provider>`. */
-  controller: MessageScrollerController;
+  /** Controller getter provided by the nearest `<message-scroller-provider>`. */
+  controller: MessageScrollerControllerGetter;
   /** Keep the first visible messageId row stable on prepend. Defaults to true. */
   preserveScrollOnPrepend?: boolean;
 }
@@ -34,7 +34,7 @@ export interface Input extends Marko.Input<"div"> {
 }=input/>
 
 <script>
-  controller.setPreserveScrollOnPrepend(preserveScrollOnPrepend);
+  controller().setPreserveScrollOnPrepend(preserveScrollOnPrepend);
 </script>
 
 <div/el
@@ -47,18 +47,15 @@ export interface Input extends Marko.Input<"div"> {
     "size-full min-h-0 min-w-0 scroll-fade-b scrollbar-thin scrollbar-gutter-stable overflow-y-auto overscroll-contain contain-content data-autoscrolling:scrollbar-thumb-transparent data-autoscrolling:scrollbar-track-transparent",
     className,
   )
-  onScroll() {
-    controller.syncAfterScroll();
-  }
   onWheel() {
-    controller.userScrollIntent();
+    controller().userScrollIntent();
   }
   onTouchMove() {
-    controller.userScrollIntent();
+    controller().userScrollIntent();
   }
   onKeyDown(event: KeyboardEvent) {
     if (USER_SCROLL_KEYS.has(event.key)) {
-      controller.userScrollIntent();
+      controller().userScrollIntent();
     }
   }
 >
@@ -68,9 +65,19 @@ export interface Input extends Marko.Input<"div"> {
 <lifecycle
   onMount() {
     const viewport = el();
-    controller.setViewportElement(viewport);
+    controller().setViewportElement(viewport);
 
-    if (typeof ResizeObserver === "undefined") return;
+    // `scroll` does not bubble and never reaches Marko's document-level
+    // delegated listeners, so an `onScroll` attribute here would be dead —
+    // it must be attached directly to the element.
+    const onScroll = () => controller().syncAfterScroll();
+    viewport.addEventListener("scroll", onScroll, { passive: true });
+
+    if (typeof ResizeObserver === "undefined") {
+      return {
+        cleanup: () => viewport.removeEventListener("scroll", onScroll),
+      };
+    }
 
     // Coalesce into rAF: handleResize mutates the spacer inside the observed
     // content, and resizing an observed element during delivery fires
@@ -79,16 +86,22 @@ export interface Input extends Marko.Input<"div"> {
     let frame = 0;
     const observer = new ResizeObserver(() => {
       window.cancelAnimationFrame(frame);
-      frame = window.requestAnimationFrame(() => controller.handleResize());
+      frame = window.requestAnimationFrame(() => controller().handleResize());
     });
     observer.observe(viewport);
 
-    return () => {
-      window.cancelAnimationFrame(frame);
-      observer.disconnect();
+    // Marko merges onMount's RETURNED OBJECT into `this` (returning a bare
+    // cleanup function is silently ignored) — onDestroy reads it back.
+    return {
+      cleanup: () => {
+        viewport.removeEventListener("scroll", onScroll);
+        window.cancelAnimationFrame(frame);
+        observer.disconnect();
+      },
     };
   }
   onDestroy() {
-    controller.setViewportElement(null);
+    this.cleanup?.();
+    controller().setViewportElement(null);
   }
 />

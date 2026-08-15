@@ -5,25 +5,30 @@
 // or a caller-supplied body); this port applies the same visibility rule
 // off the controller's `isInvalid`.
 import { cn } from "#lib/utils.ts";
-import type { QuestionnaireController } from "./lib/controller.ts";
+import type { QuestionnaireControllerGetter } from "./lib/controller.ts";
 
 export interface Input extends Marko.Input<"p"> {
-  controller: QuestionnaireController;
+  controller: QuestionnaireControllerGetter;
   itemName: string;
 }
 
 <const/{ controller, itemName, class: className, content, ...rest }=input/>
 
-<let/_version=controller.versionStore.getSnapshot()>
+<let/_version=controller().versionStore.getSnapshot()>
 <lifecycle
   onMount() {
-    return controller.versionStore.subscribe(() => {
-      _version = controller.versionStore.getSnapshot();
-    });
+    // Marko merges onMount's RETURNED OBJECT into `this` (returning the
+    // bare unsubscribe function is silently ignored) — onDestroy reads it.
+    return { cleanup: controller().versionStore.subscribe(() => {
+      _version = controller().versionStore.getSnapshot();
+    }) };
+  }
+  onDestroy() {
+    this.cleanup?.();
   }
 />
 
-<const/invalid=(_version >= 0 && controller.isInvalid(itemName))/>
+<const/invalid=(_version >= 0 && controller().isInvalid(itemName))/>
 
 <if=invalid>
   <p ...rest data-slot="questionnaire-error" class=cn("mt-2 text-xs/relaxed text-destructive", className)>

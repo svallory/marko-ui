@@ -1,8 +1,8 @@
 // One live Zag toast child service, rendered by <Toaster> for each entry in the
 // group machine's `toasts` context.
 //
-// base-nova parity + the CSS-geometry deviation (read this before touching
-// class strings): base-nova's Toast (Base UI) positions/stacks/animates every
+// base-rhea parity + the CSS-geometry deviation (read this before touching
+// class strings): base-rhea's Toast (Base UI) positions/stacks/animates every
 // toast entirely through CSS custom properties Base UI itself writes onto the
 // root element — --toast-index, --toast-height, --toast-frontmost-height,
 // --toast-offset-y, --toast-swipe-movement-x/y — consumed by a `transform:`
@@ -21,14 +21,14 @@
 // does. These two var vocabularies are NOT interchangeable — Base UI never
 // produces --x/--y/--scale/--z-index/--opacity, and Zag never produces
 // --toast-index/--toast-swipe-movement-*/--toast-offset-y. Rather than fake
-// base-nova's exact custom-property names on top of geometry Zag doesn't
+// base-rhea's exact custom-property names on top of geometry Zag doesn't
 // compute (swipe-to-dismiss movement in particular: Zag's toast has no
 // pointer-swipe gesture at all, so --toast-swipe-movement-x/y and every
 // data-[swipe-direction=*] class are structurally inapplicable here), this
 // port keeps Zag's own working geometry system verbatim — it already animates
 // stacking, expand/collapse and enter/exit correctly — and re-maps only the
 // STATIC class strings (colors, spacing, radius, borders, shadow, icon/text
-// layout) onto base-nova's Tailwind classes. Every dropped or added
+// layout) onto base-rhea's Tailwind classes. Every dropped or added
 // data-attribute is called out below at its point of use. See component
 // report for the full list.
 import * as toastMachine from "@zag-js/toast";
@@ -75,21 +75,26 @@ export interface Input {
     const frame = requestAnimationFrame(() => {
       requestAnimationFrame(() => service.service?.send({ type: "MEASURE" }));
     });
-    return () => cancelAnimationFrame(frame);
+    // Marko merges onMount's RETURNED OBJECT into `this` (returning a bare
+    // cleanup function is silently ignored) — onDestroy reads it back.
+    return { cleanup: () => cancelAnimationFrame(frame) };
+  }
+  onDestroy() {
+    this.cleanup?.();
   }
 />
 
 <div
   ...api().getRootProps()
   data-slot="toast"
-  // base-nova: data-open/data-closed drive Base UI's entrance/exit + expand
-  // transform classes; base-nova's data-expanded gates the "expanded stack"
+  // base-rhea: data-open/data-closed drive Base UI's entrance/exit + expand
+  // transform classes; base-rhea's data-expanded gates the "expanded stack"
   // offset math. Zag exposes an equivalent boolean pair as data-state=
   // "open"/"closed" (already emitted by getRootProps()) plus data-mounted/
-  // data-first/data-sibling/data-stack/data-overlap — mapped 1:1 to base-nova
+  // data-first/data-sibling/data-stack/data-overlap — mapped 1:1 to base-rhea
   // intent below via a group-scoped compound class rather than duplicated
   // data-* attrs, since Zag's own vocabulary already reaches the DOM through
-  // getRootProps() and re-emitting base-nova's exact attribute names would
+  // getRootProps() and re-emitting base-rhea's exact attribute names would
   // fight Zag's real state instead of describing it.
   class=cn(
     "group/toast pointer-events-auto relative flex w-[356px] max-w-[calc(100vw-2rem)] items-start gap-3 rounded-2xl! border border-border bg-popover p-4 text-sm text-popover-foreground shadow-lg outline-none will-change-transform select-none",
@@ -109,7 +114,7 @@ export interface Input {
   // Ghost elements keep hover/pointer state stable across the gap between
   // toasts and during exit transitions. The "before" ghost is scaled to twice
   // the root height, so every real part must stack above it to stay clickable.
-  // base-nova has no direct equivalent (Base UI's overlap gap is closed by its
+  // base-rhea has no direct equivalent (Base UI's overlap gap is closed by its
   // own hit-testing, not a ghost element) — kept from the existing default
   // implementation since it's load-bearing for correct hover behavior in
   // Zag's overlap mode.

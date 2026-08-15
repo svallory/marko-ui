@@ -8,11 +8,11 @@
 // observers; DOM/attrs/classes match the source exactly, including the
 // spacer's `aria-hidden` + `hidden` + `data-message-scroller-spacer` markup.
 import { cn } from "#lib/utils.ts";
-import type { MessageScrollerController } from "./lib/controller.ts";
+import type { MessageScrollerControllerGetter } from "./lib/controller.ts";
 
 export interface Input extends Marko.Input<"div"> {
-  /** The controller created by the nearest `<message-scroller-provider>`. */
-  controller: MessageScrollerController;
+  /** Controller getter provided by the nearest `<message-scroller-provider>`. */
+  controller: MessageScrollerControllerGetter;
   /** Class name for the internal tail spacer used when anchoring turns near the top. */
   spacerClassName?: string;
 }
@@ -33,15 +33,15 @@ export interface Input extends Marko.Input<"div"> {
 <lifecycle
   onMount() {
     const contentEl = el();
-    controller.setContentElement(contentEl);
-    controller.setSpacerElement(spacerEl());
+    controller().setContentElement(contentEl);
+    controller().setSpacerElement(spacerEl());
 
-    controller.handleContentChange();
+    controller().handleContentChange();
 
     let mutationObserver: MutationObserver | undefined;
     if (typeof MutationObserver !== "undefined") {
       mutationObserver = new MutationObserver(() => {
-        controller.handleContentChange();
+        controller().handleContentChange();
       });
       mutationObserver.observe(contentEl, { childList: true });
     }
@@ -55,19 +55,24 @@ export interface Input extends Marko.Input<"div"> {
       // (same rationale as the source).
       resizeObserver = new ResizeObserver(() => {
         window.cancelAnimationFrame(resizeFrame);
-        resizeFrame = window.requestAnimationFrame(() => controller.handleResize());
+        resizeFrame = window.requestAnimationFrame(() => controller().handleResize());
       });
       resizeObserver.observe(contentEl);
     }
 
-    return () => {
-      mutationObserver?.disconnect();
-      window.cancelAnimationFrame(resizeFrame);
-      resizeObserver?.disconnect();
+    // Marko merges onMount's RETURNED OBJECT into `this` (returning a bare
+    // cleanup function is silently ignored) — onDestroy reads it back.
+    return {
+      cleanup: () => {
+        mutationObserver?.disconnect();
+        window.cancelAnimationFrame(resizeFrame);
+        resizeObserver?.disconnect();
+      },
     };
   }
   onDestroy() {
-    controller.setContentElement(null);
-    controller.setSpacerElement(null);
+    this.cleanup?.();
+    controller().setContentElement(null);
+    controller().setSpacerElement(null);
   }
 />

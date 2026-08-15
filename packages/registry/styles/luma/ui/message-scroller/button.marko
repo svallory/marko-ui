@@ -20,11 +20,11 @@
 import Button from "../button/button.marko";
 import type { ButtonVariants } from "../button/variants.ts";
 import { cn } from "#lib/utils.ts";
-import type { MessageScrollerController } from "./lib/controller.ts";
+import type { MessageScrollerControllerGetter } from "./lib/controller.ts";
 
 export interface Input extends Marko.Input<"button">, Pick<ButtonVariants, "variant" | "size"> {
-  /** The controller created by the nearest `<message-scroller-provider>`. */
-  controller: MessageScrollerController;
+  /** Controller getter provided by the nearest `<message-scroller-provider>`. */
+  controller: MessageScrollerControllerGetter;
   /** Native scroll behavior when clicked. Defaults to "smooth". */
   behavior?: ScrollBehavior;
   /** Transcript edge to scroll toward. Defaults to "end". */
@@ -45,14 +45,25 @@ export interface Input extends Marko.Input<"button">, Pick<ButtonVariants, "vari
   ...rest
 }=input/>
 
-<let/active=(direction === "start" ? controller.stateStore.getSnapshot().start : controller.stateStore.getSnapshot().end)>
+// Seeded false: the controller only exists in the browser (calling the getter
+// during SSR would create — and then fail to serialize — it), and the store's
+// initial scrollable snapshot is all-false anyway. onMount syncs immediately.
+<let/active=false/>
 
 <lifecycle
   onMount() {
-    return controller.stateStore.subscribe(() => {
-      const snapshot = controller.stateStore.getSnapshot();
+    const stateStore = controller().stateStore;
+    const sync = () => {
+      const snapshot = stateStore.getSnapshot();
       active = direction === "start" ? snapshot.start : snapshot.end;
-    });
+    };
+    sync();
+    // Marko merges onMount's RETURNED OBJECT into `this` (returning the bare
+    // unsubscribe function is silently ignored) — onDestroy reads it back.
+    return { unsubscribe: stateStore.subscribe(sync) };
+  }
+  onDestroy() {
+    this.unsubscribe?.();
   }
 />
 
@@ -72,18 +83,20 @@ export interface Input extends Marko.Input<"button">, Pick<ButtonVariants, "vari
     "absolute inset-s-1/2 -translate-x-1/2 border-border bg-background text-foreground transition-[translate,scale,opacity] duration-200 hover:bg-muted hover:text-foreground data-[active=false]:pointer-events-none data-[active=false]:scale-95 data-[active=false]:opacity-0 data-[active=false]:duration-400 data-[active=false]:ease-[cubic-bezier(0.7,0,0.84,0)] data-[active=true]:translate-y-0 data-[active=true]:scale-100 data-[active=true]:opacity-100 data-[active=true]:ease-[cubic-bezier(0.23,1,0.32,1)] data-[direction=end]:bottom-4 data-[direction=end]:data-[active=false]:translate-y-full data-[direction=start]:top-4 data-[direction=start]:data-[active=false]:-translate-y-full rtl:translate-x-1/2 data-[direction=start]:[&_svg]:rotate-180",
     className,
   )
-  onClick(event: MouseEvent) {
+  onClick(event: MouseEvent, target: HTMLElement) {
     if (!active) return;
 
     onClick?.(event);
 
     if (!event.defaultPrevented) {
-      (event.currentTarget as HTMLElement)?.blur();
+      // event.currentTarget is unsupported in Marko's delegated events —
+      // the handler's 2nd argument is the element the handler is bound to.
+      target?.blur();
 
       if (direction === "start") {
-        controller.scrollToStart({ behavior });
+        controller().scrollToStart({ behavior });
       } else {
-        controller.scrollToEnd({ behavior });
+        controller().scrollToEnd({ behavior });
       }
     }
   }

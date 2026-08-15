@@ -10,33 +10,40 @@
 // and disabled while invisible; clicking calls `goPrevious()`.
 import { buttonVariants, type ButtonVariant, type ButtonSize } from "../button/variants.ts";
 import { cn } from "#lib/utils.ts";
-import type { QuestionnaireController } from "./lib/controller.ts";
+import type { QuestionnaireControllerGetter } from "./lib/controller.ts";
 
 export interface Input extends Marko.Input<"button"> {
-  controller: QuestionnaireController;
+  controller: QuestionnaireControllerGetter;
   variant?: ButtonVariant;
   size?: ButtonSize;
 }
 
 <const/{ controller, variant = "outline", size = "default", class: className, content, onClick, type, disabled: disabledProp = false, tabindex, ...rest }=input/>
 
-<let/_version=controller.versionStore.getSnapshot()>
+<let/_version=controller().versionStore.getSnapshot()>
 <lifecycle
   onMount() {
-    const unsubscribeVersion = controller.versionStore.subscribe(() => {
-      _version = controller.versionStore.getSnapshot();
+    const unsubscribeVersion = controller().versionStore.subscribe(() => {
+      _version = controller().versionStore.getSnapshot();
     });
-    const unsubscribeActive = controller.activeItemStore.subscribe(() => {
-      _version = controller.versionStore.getSnapshot();
+    const unsubscribeActive = controller().activeItemStore.subscribe(() => {
+      _version = controller().versionStore.getSnapshot();
     });
-    return () => {
-      unsubscribeVersion();
-      unsubscribeActive();
+    // Marko merges onMount's RETURNED OBJECT into `this` (returning a bare
+    // cleanup function is silently ignored) — onDestroy reads it back.
+    return {
+      cleanup: () => {
+        unsubscribeVersion();
+        unsubscribeActive();
+      },
     };
+  }
+  onDestroy() {
+    this.cleanup?.();
   }
 />
 
-<const/visible=(_version >= 0 && controller.total() > 1 && !controller.isFirst())/>
+<const/visible=(_version >= 0 && controller().total() > 1 && !controller().isFirst())/>
 
 <button
   ...rest
@@ -55,7 +62,7 @@ export interface Input extends Marko.Input<"button"> {
   onClick(event: MouseEvent) {
     onClick?.(event);
     if (event.defaultPrevented) return;
-    controller.goPrevious();
+    controller().goPrevious();
   }
 >
   <if=content>

@@ -3,19 +3,20 @@ import { cn } from "#lib/utils.ts";
 
 export interface Input extends Marko.Input<"div">, InputGroupAddonVariants {}
 
-<const/{ align, class: className, content, ...rest }=input/>
+<const/{ align = "inline-start", class: className, content, ...rest }=input/>
 
 <div
   ...rest
   role="group"
   data-slot="input-group-addon"
-  data-align=align ?? "inline-start"
-  onClick(event) {
+  data-align=align
+  onClick(event, target: HTMLElement) {
     if ((event.target as HTMLElement).closest("button")) return;
-    const control = (event.currentTarget as HTMLElement)
-      .closest("[data-slot=input-group]")
-      ?.querySelector<HTMLElement>("[data-slot=input-group-control]");
-    control?.focus();
+    // event.currentTarget is unsupported in Marko's delegated events —
+    // the handler's 2nd argument is the element the handler is bound to.
+    target.parentElement
+      ?.querySelector<HTMLElement>("input")
+      ?.focus();
   }
   class=cn(inputGroupAddonVariants({ align }), className)
 >
