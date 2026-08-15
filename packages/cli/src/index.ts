@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { add } from "@/src/commands/add"
+import { agents } from "@/src/commands/agents"
 import { diff } from "@/src/commands/diff"
+import { docs } from "@/src/commands/docs"
 import { doctor } from "@/src/commands/doctor"
 import { info } from "@/src/commands/info"
 import { init } from "@/src/commands/init"
@@ -29,11 +31,13 @@ async function main() {
     .addCommand(init)
     .addCommand(add)
     .addCommand(diff)
+    .addCommand(docs)
     .addCommand(view)
     .addCommand(search)
     .addCommand(info)
     .addCommand(doctor)
     .addCommand(manifest)
+    .addCommand(agents)
     .addCommand(registry)
 
   program.parse()

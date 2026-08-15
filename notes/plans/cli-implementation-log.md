@@ -124,3 +124,28 @@ installs (ui/button/button.marko), not just flat files.
 passed — upstream excluded builtins from "search all", which made a bare
 `search -q <query>` a usage error on fresh projects. Explicit registry
 arguments are still passed through unchanged.
+
+## docs + agents sync (2026-08-15, afternoon — user decisions applied)
+
+User decisions: fetch deployed endpoints (no shared data package, no
+registry-embedded docs); AGENTS.md only among the agent-file formats;
+content = installed index + landmines + CLI reference; installed-project
+scope. Their "shouldn't these be in a skill?" question resolved as a
+SPLIT: AGENTS.md stays tiny (always-loaded: installed index + CLI
+pointers), deep content (landmines catalog, CLI recipes, component
+anatomy) goes to a generated Claude skill at
+`.claude/skills/marko-ui/SKILL.md` — Cursor/Codex still get the
+essentials via AGENTS.md, Claude-family tools load the skill on demand.
+
+- `docs <components...>` fetches the site's `/docs/components/<name>/md`
+  endpoints (`--list`/`--json` from the registry index). Site URL derives
+  from REGISTRY_URL minus `/r`, so local testing works against a built
+  docs app.
+- `agents sync` writes AGENTS.md idempotently between
+  `<!-- marko-ui:start/end -->` markers (user content outside markers
+  preserved, verified by test + e2e); `--check` exits 3 when stale (CI);
+  `--no-skill` skips the skill file. Component descriptions come from the
+  registry index best-effort — sync works offline with names only.
+- Landmines catalog is CURATED IN THE CLI (src/agents/content.ts), not
+  fetched: the authoring guide has no markdown endpoint yet. Revisit when
+  docs pages get /md twins.

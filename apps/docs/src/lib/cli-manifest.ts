@@ -149,22 +149,47 @@ export const CLI_MANIFEST: CliManifest = {
       "description": "show diffs between local files and their registry versions",
       "arguments": [
         {
-          "name": "component",
+          "name": "components",
           "required": false,
-          "variadic": false,
-          "description": "the component name"
+          "variadic": true,
+          "description": "component names (defaults to all installed)"
         }
       ],
       "options": [
         {
-          "flags": "-y, --yes",
-          "description": "skip confirmation prompt.",
-          "defaultValue": false
-        },
-        {
           "flags": "-c, --cwd <cwd>",
           "description": "the working directory. defaults to the current directory.",
           "defaultValue": "/Users/svallory/work/marko-ui/worktrees/cli"
+        },
+        {
+          "flags": "--name-only",
+          "description": "only list files that differ.",
+          "defaultValue": false
+        }
+      ]
+    },
+    {
+      "name": "docs",
+      "aliases": [],
+      "description": "print component documentation as markdown",
+      "arguments": [
+        {
+          "name": "components",
+          "required": false,
+          "variadic": true,
+          "description": "component names (e.g. button dialog)"
+        }
+      ],
+      "options": [
+        {
+          "flags": "-l, --list",
+          "description": "list documented components.",
+          "defaultValue": false
+        },
+        {
+          "flags": "--json",
+          "description": "output as JSON (with --list).",
+          "defaultValue": false
         }
       ]
     },
@@ -289,6 +314,42 @@ export const CLI_MANIFEST: CliManifest = {
       "description": "print a machine-readable description of the entire CLI",
       "arguments": [],
       "options": []
+    },
+    {
+      "name": "agents",
+      "aliases": [],
+      "description": "manage generated agent documentation",
+      "arguments": [],
+      "options": [],
+      "subcommands": [
+        {
+          "name": "sync",
+          "aliases": [],
+          "description": "generate or refresh AGENTS.md and the marko-ui Claude skill",
+          "arguments": [],
+          "options": [
+            {
+              "flags": "-c, --cwd <cwd>",
+              "description": "the working directory. defaults to the current directory.",
+              "defaultValue": "/Users/svallory/work/marko-ui/worktrees/cli"
+            },
+            {
+              "flags": "--check",
+              "description": "fail (exit 3) if the generated docs are stale.",
+              "defaultValue": false
+            },
+            {
+              "flags": "--no-skill",
+              "description": "do not write .claude/skills/marko-ui/SKILL.md."
+            },
+            {
+              "flags": "-s, --silent",
+              "description": "mute output.",
+              "defaultValue": false
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "registry",
