@@ -129,7 +129,7 @@ export const search = new Command()
         logger.break()
         logger.error(
           `Provide a registry or namespace to search, e.g. ${highlighter.info(
-            "shadcn search @marko-ui"
+            "marko-ui search @marko-ui"
           )}.`
         )
         logger.break()
@@ -137,7 +137,7 @@ export const search = new Command()
           `If you have a ${highlighter.info(
             "components.json"
           )} with registries configured, run ${highlighter.info(
-            "shadcn search"
+            "marko-ui search"
           )} with no arguments to search all of them.`
         )
         logger.break()
@@ -182,7 +182,7 @@ export const search = new Command()
         )
         logger.error(
           `Provide a registry or namespace to search, e.g. ${highlighter.info(
-            "shadcn search @marko-ui"
+            "marko-ui search @marko-ui"
           )}.`
         )
         logger.break()

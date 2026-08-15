@@ -1094,7 +1094,7 @@ describe("resolveSearchRegistries", () => {
     ).toEqual(["@one", "@two"])
   })
 
-  it("returns all configured registries (excluding builtins) when none given", () => {
+  it("returns builtin plus configured registries when none given", () => {
     expect(
       resolveSearchRegistries([], {
         registries: {
@@ -1103,12 +1103,14 @@ describe("resolveSearchRegistries", () => {
           "@two": "z/{name}.json",
         },
       })
-    ).toEqual(["@one", "@two"])
+    ).toEqual(["@marko-ui", "@one", "@two"])
   })
 
-  it("returns empty when none given and nothing is configured", () => {
-    expect(resolveSearchRegistries([], { registries: {} })).toEqual([])
-    expect(resolveSearchRegistries([], undefined)).toEqual([])
+  it("returns the builtin registry when nothing is configured", () => {
+    expect(resolveSearchRegistries([], { registries: {} })).toEqual([
+      "@marko-ui",
+    ])
+    expect(resolveSearchRegistries([], undefined)).toEqual(["@marko-ui"])
   })
 })
 

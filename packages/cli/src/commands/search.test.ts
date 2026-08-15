@@ -207,26 +207,26 @@ describe("search command", () => {
     exit.mockRestore()
   })
 
-  it("requires a registry when components.json has no registries", async () => {
+  it("searches the builtin registry when components.json has no registries", async () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {})
     const exit = mockProcessExit()
 
     vi.mocked(fsExtra.existsSync).mockReturnValueOnce(true as never)
     vi.mocked(fsExtra.readJson).mockResolvedValueOnce({ style: "new-york" })
-    // components.json present but with no configured registries (only the
-    // builtin @marko-ui, which is excluded from "search all").
+    // components.json present with no extra registries: "search all" still
+    // covers the builtin @marko-ui registry.
     vi.mocked(getConfig).mockReturnValueOnce({ ...baseConfig } as never)
 
     await expect(
       search.parseAsync(["--cwd", "/tmp/test-project"], {
         from: "user",
       })
-    ).rejects.toThrow("process.exit:1")
+    ).rejects.toThrow("process.exit:0")
 
-    expect(log).toHaveBeenCalledWith(
-      expect.stringContaining("No registries are configured")
+    expect(searchRegistries).toHaveBeenCalledWith(
+      ["@marko-ui"],
+      expect.objectContaining({ continueOnError: true })
     )
-    expect(searchRegistries).not.toHaveBeenCalled()
 
     log.mockRestore()
     exit.mockRestore()
@@ -280,10 +280,10 @@ describe("search command", () => {
       expect.any(Object)
     )
 
-    // Only the configured registries are searched (builtin @marko-ui is
-    // excluded), and per-registry failures are tolerated.
+    // The builtin @marko-ui registry is searched along with the configured
+    // ones, and per-registry failures are tolerated.
     expect(searchRegistries).toHaveBeenCalledWith(
-      ["@acme", "@internal"],
+      ["@marko-ui", "@acme", "@internal"],
       expect.objectContaining({ continueOnError: true })
     )
 
@@ -310,6 +310,7 @@ describe("search command", () => {
       pagination: { total: 0, offset: 0, limit: 0, hasMore: false },
       items: [],
       errors: [
+        { registry: "@marko-ui", message: "boom" },
         { registry: "@acme", message: "boom" },
         { registry: "@internal", message: "boom" },
       ],

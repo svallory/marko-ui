@@ -29,9 +29,14 @@ export function resolveSearchRegistries(
     return registries
   }
 
-  return Object.keys(config?.registries ?? {}).filter(
+  // "Search all" includes the built-in @marko-ui registry: unlike upstream
+  // shadcn (whose builtin was excluded here), a fresh marko-ui project with
+  // no extra registries should still get results from a bare `search -q`.
+  const configured = Object.keys(config?.registries ?? {}).filter(
     (registry) => !(registry in BUILTIN_REGISTRIES)
   )
+
+  return [...Object.keys(BUILTIN_REGISTRIES), ...configured]
 }
 
 // Cap how many registries we fetch at once so searching many configured
