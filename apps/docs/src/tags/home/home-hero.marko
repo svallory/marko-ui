@@ -1,6 +1,5 @@
 import Badge from "@marko-ui/registry/ui/badge/badge.marko";
 import Button from "@marko-ui/registry/ui/button/button.marko";
-import { COMPONENTS } from "../../lib/components-list.ts";
 
 export interface Input {
   announcement?: string;
@@ -186,28 +185,6 @@ static const DESCRIPTION =
         </a>
       </div>
 
-      <dl class="mt-4 grid grid-cols-3 gap-6 text-center sm:gap-10">
-        <div>
-          <dt class="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            Components
-          </dt>
-          <dd class="mt-1 text-2xl font-semibold tabular-nums">
-            ${COMPONENTS.length}
-          </dd>
-        </div>
-        <div>
-          <dt class="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            Runtime
-          </dt>
-          <dd class="mt-1 text-2xl font-semibold">Marko 6</dd>
-        </div>
-        <div>
-          <dt class="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            No-JS
-          </dt>
-          <dd class="mt-1 text-2xl font-semibold">Works</dd>
-        </div>
-      </dl>
     </div>
   </div>
 </section>

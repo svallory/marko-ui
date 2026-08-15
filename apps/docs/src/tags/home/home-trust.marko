@@ -1,0 +1,67 @@
+// Trust strip between the hero and the showcase: every claim is a RECEIPT —
+// a number the repo can back, linking straight to its proof. No third-party
+// badge images (shields.io etc.): those read as decoration; a stat that
+// links to the actual test suite reads as evidence. Numbers are maintained
+// by hand next to their sources — update them when the suites change:
+//   - TESTS:        `bunx vitest run` total          (packages/*/tests)
+//   - MATRIX:       verify manifest pagesGenerated   (apps/docs/src/routes/verify/manifest.json)
+//   - COMPONENTS:   dirs in packages/registry/default/ui
+//   - MACHINES:     @zag-js/* runtime deps in apps/docs/package.json
+static const REPO = "https://github.com/svallory/marko-ui";
+
+static const RECEIPTS = [
+  {
+    value: "120/120",
+    label: "behavior & hydration tests",
+    title: "WAI-ARIA keyboard contracts, hydration invariance, and SSR suites — all passing",
+    href: `${REPO}/tree/main/packages/registry/tests`,
+  },
+  {
+    value: "511",
+    label: "style-matrix checks",
+    title: "Every component rendered, hydrated, and interacted with in every style — zero console errors",
+    href: `${REPO}/tree/main/e2e`,
+  },
+  {
+    value: "86",
+    label: "components, 9 styles",
+    title: "The full registry: 86 components, each shipped in the default style plus 8 ports",
+    href: `${REPO}/tree/main/packages/registry`,
+  },
+  {
+    value: "51",
+    label: "Zag.js machines",
+    title: "Interactive behavior driven by Zag.js state machines — the same core behind Chakra's Ark UI",
+    href: "https://zagjs.com",
+  },
+] as const;
+
+<section
+  aria-label="Project test and coverage numbers"
+  class="border-y border-border/60 bg-background"
+>
+  <div class="mx-auto flex max-w-5xl flex-wrap items-stretch justify-center px-6 py-5">
+    <for|receipt, index| of=RECEIPTS>
+      <a
+        href=receipt.href
+        target="_blank"
+        rel="noreferrer"
+        title=receipt.title
+        class=`group flex min-w-40 flex-1 flex-col items-center gap-0.5 px-6 py-1 text-center outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-ring ${index > 0 ? "border-s border-border/60" : ""}`
+      >
+        <span class="text-lg font-semibold tracking-tight text-primary tabular-nums">
+          ${receipt.value}
+        </span>
+        <span class="text-xs text-muted-foreground underline-offset-4 group-hover:underline">
+          ${receipt.label}
+        </span>
+      </a>
+    </for>
+    <p class="flex min-w-40 flex-1 flex-col items-center justify-center gap-0.5 border-s border-border/60 px-6 py-1 text-center">
+      <span class="text-lg font-semibold tracking-tight text-primary" aria-hidden="true">
+        &lt;/&gt;
+      </span>
+      <span class="text-xs text-muted-foreground">renders without JavaScript</span>
+    </p>
+  </div>
+</section>

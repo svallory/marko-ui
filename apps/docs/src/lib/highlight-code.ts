@@ -23,7 +23,6 @@
 //   is only ever invoked from inside an async function on first actual use,
 //   and the in-flight promise is memoized — never called eagerly at module
 //   top-level. This sidesteps that failure mode entirely.
-import { createHash } from "node:crypto";
 import {
   getSingletonHighlighter,
   type BundledLanguage,
@@ -90,9 +89,26 @@ function escapeHtml(code: string): string {
 const CACHE_LIMIT = 500;
 const cache = new Map<string, string>();
 
+// FNV-1a (two independent 32-bit passes + length), NOT node:crypto —
+// this module is imported at module scope by client-compiled tags
+// (code-block, expandable-code, block-viewer...), so it is evaluated in the
+// BROWSER bundle too. `import { createHash } from "node:crypto"` there is
+// externalized by Vite and THROWS on first access, killing hydration of
+// every page that renders a code snippet (all interactivity silently dead;
+// found via the behavior suite's 61 keyboard-contract failures). A cache
+// key only needs collision resistance across ≤CACHE_LIMIT live entries,
+// not cryptographic strength.
+function fnv1a(code: string, seed: number): number {
+  let hash = seed;
+  for (let index = 0; index < code.length; index++) {
+    hash ^= code.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+}
+
 function cacheKey(lang: string, code: string): string {
-  const hash = createHash("sha256").update(code).digest("hex");
-  return `${lang}:${hash}`;
+  return `${lang}:${fnv1a(code, 0x811c9dc5)}:${fnv1a(code, 0x1b873593)}:${code.length}`;
 }
 
 /**
