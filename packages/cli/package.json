@@ -1,7 +1,7 @@
 {
   "name": "@marko-ui/cli",
   "version": "0.1.0",
-  "description": "The marko-ui CLI — install and manage Marko UI components from shadcn-format registries.",
+  "description": "The marko-ui CLI \u2014 install and manage Marko UI components from shadcn-format registries.",
   "publishConfig": {
     "access": "public"
   },
@@ -75,7 +75,6 @@
     "ora": "^8.2.0",
     "postcss": "^8.5.6",
     "postcss-selector-parser": "^7.1.0",
-    "prompts": "^2.4.2",
     "socks": "^2.8.8",
     "tailwind-merge": "^3.6.0",
     "tsconfig-paths": "^4.2.0",
@@ -84,7 +83,6 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
-    "@types/prompts": "^2.4.9",
     "msw": "^2.10.4",
     "rimraf": "^6.0.1",
     "tsup": "^8.5.0",

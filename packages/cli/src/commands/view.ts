@@ -14,21 +14,28 @@ import { z } from "zod"
 
 const viewOptionsSchema = z.object({
   cwd: z.string(),
+  files: z.boolean(),
+  deps: z.boolean(),
 })
 
 export const view = new Command()
-  .name("view")
-  .description("view items from the registry")
+  .name("show")
+  .alias("view")
+  .description("show items from the registry (files, dependencies, source)")
   .argument("<items...>", "item addresses to view")
   .option(
     "-c, --cwd <cwd>",
     "the working directory. defaults to the current directory.",
     process.cwd()
   )
+  .option("--files", "only list file paths.", false)
+  .option("--deps", "only list npm and registry dependencies.", false)
   .action(async (items: string[], opts) => {
     try {
       const options = viewOptionsSchema.parse({
         cwd: path.resolve(opts.cwd),
+        files: opts.files,
+        deps: opts.deps,
       })
 
       await loadEnvFiles(options.cwd)
@@ -68,6 +75,37 @@ export const view = new Command()
       validateRegistryConfigForItems(items, config)
 
       const payload = await getRegistryItems(items, { config })
+
+      if (options.files) {
+        console.log(
+          JSON.stringify(
+            payload.map((item) => ({
+              name: item?.name,
+              files: item?.files?.map((file) => file.target || file.path),
+            })),
+            null,
+            2
+          )
+        )
+        process.exit(0)
+      }
+
+      if (options.deps) {
+        console.log(
+          JSON.stringify(
+            payload.map((item) => ({
+              name: item?.name,
+              dependencies: item?.dependencies ?? [],
+              devDependencies: item?.devDependencies ?? [],
+              registryDependencies: item?.registryDependencies ?? [],
+            })),
+            null,
+            2
+          )
+        )
+        process.exit(0)
+      }
+
       console.log(JSON.stringify(payload, null, 2))
       process.exit(0)
     } catch (error) {

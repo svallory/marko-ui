@@ -117,18 +117,20 @@ const server = setupServer(
       {
         name: "@marko-ui",
         url: "https://marko-ui.saulo.tech/r/{name}.json",
-        description: "The official shadcn/ui registry.",
+        description: "The official marko-ui registry.",
+        target: "marko",
       },
       {
         name: "@example",
         homepage: "https://example.com",
         url: "https://example.com/registry/{name}.json",
         description: "An example registry for testing.",
+        target: "marko",
       },
       {
         name: "@test",
         url: "https://test.com/registry/{name}.json",
-        description: "A test registry.",
+        description: "A React registry that must NOT be auto-discovered.",
       },
     ])
   })
@@ -2249,18 +2251,20 @@ describe("getRegistriesConfig", () => {
         {
           name: "@marko-ui",
           url: "https://marko-ui.saulo.tech/r/{name}.json",
-          description: "The official shadcn/ui registry.",
+          description: "The official marko-ui registry.",
+          target: "marko",
         },
         {
           name: "@example",
           homepage: "https://example.com",
           url: "https://example.com/registry/{name}.json",
           description: "An example registry for testing.",
+          target: "marko",
         },
         {
           name: "@test",
           url: "https://test.com/registry/{name}.json",
-          description: "A test registry.",
+          description: "A React registry that must NOT be auto-discovered.",
         },
       ])
     })
@@ -2304,11 +2308,12 @@ describe("getRegistriesConfig", () => {
     it("should fetch and parse the registries index successfully", async () => {
       const result = await getRegistriesIndex()
 
-      // getRegistriesIndex transforms array format to object format.
+      // getRegistriesIndex transforms array format to object format and
+      // only exposes registries that declare target: "marko" — @test does
+      // not, so silent auto-discovery must skip it.
       expect(result).toEqual({
         "@marko-ui": "https://marko-ui.saulo.tech/r/{name}.json",
         "@example": "https://example.com/registry/{name}.json",
-        "@test": "https://test.com/registry/{name}.json",
       })
     })
 

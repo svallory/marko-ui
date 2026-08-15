@@ -327,6 +327,11 @@ export const registriesSchema = z.array(
     homepage: z.string().optional(),
     url: z.string(),
     description: z.string().optional(),
+    // marko-ui compatibility contract: registries in OUR index declare the
+    // framework their items ship source for. Optional so plain shadcn
+    // indexes still parse; `registry add` refuses entries without
+    // target "marko" unless the user passes an explicit URL.
+    target: z.string().optional(),
   })
 )
 

@@ -2,6 +2,7 @@ import { RegistryItem } from "@/src/schema"
 import { Config } from "@/src/utils/get-config"
 import { getPackageInfo } from "@/src/utils/get-package-info"
 import { getPackageManager } from "@/src/utils/get-package-manager"
+import { logger } from "@/src/utils/logger"
 import { spinner } from "@/src/utils/spinner"
 import { execa } from "execa"
 
@@ -30,18 +31,55 @@ export async function updateDependencies(
     ...options,
   }
 
+  // Safety validation stays a hard failure — a malicious registry item must
+  // abort the whole operation, unlike an ordinary install error below.
+  assertSafeDependencies(dependencies)
+  assertSafeDependencies(devDependencies)
+
   const dependenciesSpinner = spinner(`Installing dependencies.`, {
     silent: options.silent,
   })?.start()
 
-  await installWithPackageManager(
-    packageManager,
-    dependencies,
-    devDependencies,
-    config.resolvedPaths.cwd
-  )
+  // A failed install must not abort the whole add: component files are
+  // still valuable (and `marko-ui` itself is not on npm yet — see the
+  // Release section in TODO.md). Surface the manual command instead.
+  try {
+    await installWithPackageManager(
+      packageManager,
+      dependencies,
+      devDependencies,
+      config.resolvedPaths.cwd
+    )
+    dependenciesSpinner?.succeed()
+  } catch (error) {
+    dependenciesSpinner?.fail()
+    const installHint = [
+      dependencies.length
+        ? `  ${formatInstallCommand(packageManager, dependencies)}`
+        : null,
+      devDependencies.length
+        ? `  ${formatInstallCommand(packageManager, devDependencies, true)}`
+        : null,
+    ]
+      .filter(Boolean)
+      .join("\n")
+    logger.warn(
+      `Could not install dependencies (${
+        error instanceof Error ? error.message.split("\n")[0] : String(error)
+      }).\nComponent files will still be written. Install manually with:\n${installHint}`
+    )
+  }
+}
 
-  dependenciesSpinner?.succeed()
+export function formatInstallCommand(
+  packageManager: Awaited<ReturnType<typeof getPackageManager>>,
+  dependencies: string[],
+  dev = false
+) {
+  const verb = packageManager === "npm" ? "install" : "add"
+  return `${packageManager} ${verb}${dev ? " -D" : ""} ${dependencies.join(
+    " "
+  )}`
 }
 
 /**

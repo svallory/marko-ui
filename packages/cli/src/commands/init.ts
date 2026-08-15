@@ -24,9 +24,9 @@ import { handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
+import { confirm, select } from "@/src/utils/clack"
 import { spinner } from "@/src/utils/spinner"
 import { Command } from "commander"
-import prompts from "prompts"
 import { z } from "zod"
 
 export const initOptionsSchema = z.object({
@@ -110,14 +110,11 @@ export async function runInit(
   const config = await promptForConfig(options)
 
   if (!options.yes && !options.silent) {
-    const { proceed } = await prompts({
-      type: "confirm",
-      name: "proceed",
-      message: `Write configuration to ${highlighter.info(
+    const proceed = await confirm(
+      `Write configuration to ${highlighter.info(
         "components.json"
-      )}. Proceed?`,
-      initial: true,
-    })
+      )}. Proceed?`
+    )
 
     if (!proceed) {
       process.exit(0)
@@ -189,18 +186,15 @@ async function promptForConfig(
 
   let baseColor = options.baseColor
   if (!baseColor && !options.defaults && !options.silent) {
-    const { color } = await prompts({
-      type: "select",
-      name: "color",
-      message: `Which color would you like to use as the ${highlighter.info(
+    baseColor = await select(
+      `Which color would you like to use as the ${highlighter.info(
         "base color"
       )}?`,
-      choices: BASE_COLORS.map((item) => ({
-        title: item.label,
-        value: item.name,
-      })),
-    })
-    baseColor = color
+      BASE_COLORS.map((item) => ({
+        value: item.name as string,
+        label: item.label,
+      }))
+    )
   }
   baseColor = baseColor ?? "neutral"
 

@@ -422,11 +422,13 @@ export async function getRegistries(options?: { useCache?: boolean }) {
  */
 export async function getRegistriesIndex(options?: { useCache?: boolean }) {
   // Fetch new format and transform to old Record<string, string> for backward compatibility.
+  // Silent auto-discovery only trusts registries that declare Marko source
+  // (target: "marko"); anything else must be added explicitly by URL.
   const registries = await getRegistries(options)
   if (!registries) return null
-  return Object.fromEntries(registries.map((r) => [r.name, r.url])) as z.infer<
-    typeof registriesIndexSchema
-  >
+  return Object.fromEntries(
+    registries.filter((r) => r.target === "marko").map((r) => [r.name, r.url])
+  ) as z.infer<typeof registriesIndexSchema>
 }
 
 export async function getPresets(options?: { useCache?: boolean }) {

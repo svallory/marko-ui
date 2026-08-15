@@ -19,9 +19,9 @@ import {
   isLocalAliasImport,
   resolveImportWithMetadata,
 } from "@/src/utils/resolve-import"
+import { confirm } from "@/src/utils/clack"
 import { spinner } from "@/src/utils/spinner"
 import { isTargetAliasKey } from "@/src/utils/target-aliases"
-import prompts from "prompts"
 import { loadConfig, type ConfigLoaderSuccessResult } from "tsconfig-paths"
 import { z } from "zod"
 
@@ -169,14 +169,12 @@ export async function updateFiles(
       if (options.rootSpinner) {
         options.rootSpinner.stop()
       }
-      const { overwrite } = await prompts({
-        type: "confirm",
-        name: "overwrite",
-        message: `The file ${highlighter.info(
+      const overwrite = await confirm(
+        `The file ${highlighter.info(
           fileName
         )} already exists. Would you like to overwrite?`,
-        initial: false,
-      })
+        false
+      )
 
       if (!overwrite) {
         filesSkipped.push(path.relative(config.resolvedPaths.cwd, filePath))

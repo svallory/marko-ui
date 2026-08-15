@@ -4,10 +4,10 @@ import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
 import { handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
+import { exitIfEmptySelection, multiselect } from "@/src/utils/clack"
 import { spinner } from "@/src/utils/spinner"
 import { Command } from "commander"
 import fs from "fs-extra"
-import prompts from "prompts"
 import { z } from "zod"
 
 const addOptionsSchema = z.object({
@@ -85,7 +85,7 @@ export async function addRegistriesToConfig(
     throw new Error(
       `No ${highlighter.info("components.json")} or ${highlighter.info(
         "package.json"
-      )} found. Run ${highlighter.info("shadcn init")} first.`
+      )} found. Run ${highlighter.info("marko-ui init")} first.`
     )
   }
 
@@ -93,7 +93,7 @@ export async function addRegistriesToConfig(
 
   const parsed = registryArgs.map(parseRegistryArg)
   const needsLookup = parsed.filter((p) => !p.url)
-  let registriesIndex: { name: string; url: string }[] = []
+  let registriesIndex: Awaited<ReturnType<typeof getRegistries>> = []
   if (needsLookup.length > 0) {
     const fetchSpinner = spinner("Fetching registries.", {
       silent: options.silent,
@@ -136,6 +136,18 @@ export async function addRegistriesToConfig(
           `Registry ${highlighter.info(namespace)} not found. ` +
             `Provide a URL: ${highlighter.info(
               `${namespace}=https://.../{name}.json`
+            )}`
+        )
+      }
+      if (registry.target !== "marko") {
+        throw new Error(
+          `Registry ${highlighter.info(
+            namespace
+          )} does not declare ${highlighter.info(
+            'target: "marko"'
+          )} — its items may not ship Marko source. ` +
+            `To add it anyway, pass its URL explicitly: ${highlighter.info(
+              `${namespace}=${registry.url}`
             )}`
         )
       }
@@ -231,24 +243,16 @@ async function promptForRegistries(options: { silent?: boolean }) {
 
   const sorted = [...registries].sort((a, b) => a.name.localeCompare(b.name))
 
-  const { selected } = await prompts({
-    type: "autocompleteMultiselect",
-    name: "selected",
-    message: "Which registries would you like to add?",
-    hint: "Space to select. A to toggle all. Enter to submit.",
-    instructions: false,
-    choices: sorted.map((r) => ({
-      title: r.name,
-      description: r.description,
+  const selected = await multiselect(
+    "Which registries would you like to add?",
+    sorted.map((r) => ({
       value: r.name,
-    })),
-  })
+      label: r.name,
+      hint: r.description,
+    }))
+  )
 
-  if (!selected?.length) {
-    logger.warn("No registries selected. Exiting.")
-    logger.info("")
-    process.exit(1)
-  }
+  exitIfEmptySelection(selected, "No registries selected. Exiting.")
 
-  return selected as string[]
+  return selected
 }

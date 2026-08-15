@@ -331,6 +331,30 @@ async function main() {
     ),
   );
 
+  // index.json — the flat item index the marko-ui CLI reads for
+  // `add` (interactive picker), `diff`, and installed-component listing.
+  await writeFile(join(OUT_DIR, "index.json"), JSON.stringify(index, null, 2));
+
+  // registries.json — OUR registry discovery index (same shape as
+  // shadcn's, plus `target: "marko"` as the compatibility contract:
+  // every listed registry ships Marko source, never React). The marko-ui
+  // CLI resolves bare `@namespace` additions against this file only.
+  await writeFile(
+    join(OUT_DIR, "registries.json"),
+    JSON.stringify(
+      [
+        {
+          name: "@marko-ui",
+          url: `${BASE_URL}/{name}.json`,
+          description: "The official marko-ui registry.",
+          target: "marko",
+        },
+      ],
+      null,
+      2,
+    ),
+  );
+
   console.log(`registry: ${index.length} items → ${relative(process.cwd(), OUT_DIR)}`);
 }
 

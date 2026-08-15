@@ -20,7 +20,8 @@ import { Command } from "commander"
 const CODE_BASE = `${SHADCN_URL}/code/apps/v4/registry/bases`
 
 export const info = new Command()
-  .name("info")
+  .name("status")
+  .alias("info")
   .description("get information about your project")
   .option(
     "-c, --cwd <cwd>",

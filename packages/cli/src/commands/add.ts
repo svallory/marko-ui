@@ -16,9 +16,9 @@ import { handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
+import { confirm, exitIfEmptySelection, multiselect } from "@/src/utils/clack"
 import { spinner } from "@/src/utils/spinner"
 import { Command } from "commander"
-import prompts from "prompts"
 import { z } from "zod"
 
 export const addOptionsSchema = z.object({
@@ -112,17 +112,15 @@ export const add = new Command()
           (itemType === "registry:style" || itemType === "registry:theme")
         ) {
           logger.break()
-          const { confirm } = await prompts({
-            type: "confirm",
-            name: "confirm",
-            message: highlighter.warn(
+          const proceed = await confirm(
+            highlighter.warn(
               `You are about to install a new ${itemType.replace(
                 "registry:",
                 ""
               )}. \nExisting CSS variables and components will be overwritten. Continue?`
-            ),
-          })
-          if (!confirm) {
+            )
+          )
+          if (!proceed) {
             logger.break()
             logger.log(`Installation cancelled.`)
             logger.break()
@@ -140,14 +138,11 @@ export const add = new Command()
       // No components.json file. Prompt the user to run init.
       let initHasRun = false
       if (errors[ERRORS.MISSING_CONFIG]) {
-        const { proceed } = await prompts({
-          type: "confirm",
-          name: "proceed",
-          message: `You need to create a ${highlighter.info(
+        const proceed = await confirm(
+          `You need to create a ${highlighter.info(
             "components.json"
-          )} file to add components. Proceed?`,
-          initial: true,
-        })
+          )} file to add components. Proceed?`
+        )
 
         if (!proceed) {
           logger.break()
@@ -251,34 +246,22 @@ async function promptForRegistryComponents(
     return options.components
   }
 
-  const { components } = await prompts({
-    type: "multiselect",
-    name: "components",
-    message: "Which components would you like to add?",
-    hint: "Space to select. A to toggle all. Enter to submit.",
-    instructions: false,
-    choices: registryIndex
+  const components = await multiselect(
+    "Which components would you like to add?",
+    registryIndex
       .filter((entry) => entry.type === "registry:ui")
       .map((entry) => ({
-        title: entry.name,
         value: entry.name,
-        selected: options.all ? true : options.components?.includes(entry.name),
+        label: entry.name,
       })),
-  })
+    {
+      initialValues: options.components,
+    }
+  )
 
-  if (!components?.length) {
-    logger.warn("No components selected. Exiting.")
-    logger.info("")
-    process.exit(1)
-  }
+  exitIfEmptySelection(components, "No components selected. Exiting.")
 
-  const result = z.array(z.string()).safeParse(components)
-  if (!result.success) {
-    logger.error("")
-    handleError(new Error("Something went wrong. Please try again."))
-    return []
-  }
-  return result.data
+  return components
 }
 
 
