@@ -117,3 +117,10 @@ installs (ui/button/button.marko), not just flat files.
   Rebuild it whenever the CLI surface changes.
 - Root vitest excludes `packages/cli` — the package runs its own config
   (`bun run --filter @marko-ui/cli test`).
+
+## search-all includes the builtin (2026-08-15, late)
+
+`resolveSearchRegistries` now prepends `@marko-ui` when no registries are
+passed — upstream excluded builtins from "search all", which made a bare
+`search -q <query>` a usage error on fresh projects. Explicit registry
+arguments are still passed through unchanged.
