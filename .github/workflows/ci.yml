@@ -1,0 +1,106 @@
+# CI + badge data. Every job runs its suite against the real production
+# build (scripts/ci/serve-docs.sh) and emits shields.io endpoint JSON; the
+# publish job pushes those to the `badges` branch on main. Render with:
+#   https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/svallory/marko-ui/badges/<name>.json
+# Badge files: tests.json, hydration.json, style-matrix.json, axe.json
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Behavior & hydration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Build and serve docs
+        run: bash scripts/ci/serve-docs.sh
+      - name: Run vitest suites
+        env:
+          DOCS_BASE_URL: http://localhost:3000
+        run: bunx vitest run --reporter=default --reporter=json --outputFile.json=vitest-results.json
+      - name: Generate badges
+        if: always()
+        run: bun scripts/ci/badge.ts vitest vitest-results.json badge-out
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: badges-tests
+          path: badge-out/
+
+  style-matrix:
+    name: Style-matrix e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Build and serve docs
+        run: bash scripts/ci/serve-docs.sh
+      - name: Run Playwright style matrix
+        env:
+          DOCS_BASE_URL: http://localhost:3000
+        run: bunx playwright test
+      - name: Generate badges
+        if: always()
+        run: bun scripts/ci/badge.ts e2e e2e/results.json badge-out
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: badges-style-matrix
+          path: badge-out/
+
+  axe:
+    name: axe-core WCAG scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Build and serve docs
+        run: bash scripts/ci/serve-docs.sh
+      - name: Run axe scan
+        env:
+          DOCS_BASE_URL: http://localhost:3000
+        run: bun scripts/ci/axe-scan.ts axe-results.json
+      - name: Generate badges
+        if: always()
+        run: bun scripts/ci/badge.ts axe axe-results.json badge-out
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: badges-axe
+          path: badge-out/
+
+  publish-badges:
+    name: Publish badges
+    needs: [tests, style-matrix, axe]
+    if: always() && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: badges-*
+          path: badges
+          merge-multiple: true
+      - name: Push to badges branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/ci/publish-badges.sh badges

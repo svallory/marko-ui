@@ -15,10 +15,28 @@ import type { Browser, BrowserContext, Page } from "playwright";
 
 const requireFromHere = createRequire(import.meta.url);
 
-const PLAYWRIGHT_MODULE_PATH = "/opt/homebrew/lib/node_modules/playwright";
+// Resolution order: explicit override (CI), the workspace's own node_modules
+// (present transitively via @playwright/test), then the globally installed
+// homebrew module as a last resort for local machines without a workspace copy.
+const PLAYWRIGHT_CANDIDATES = [
+  process.env.PLAYWRIGHT_MODULE_PATH,
+  "playwright",
+  "/opt/homebrew/lib/node_modules/playwright",
+].filter((candidate): candidate is string => Boolean(candidate));
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const playwright = requireFromHere(PLAYWRIGHT_MODULE_PATH) as typeof import("playwright");
+function loadPlaywright(): typeof import("playwright") {
+  const failures: string[] = [];
+  for (const candidate of PLAYWRIGHT_CANDIDATES) {
+    try {
+      return requireFromHere(candidate) as typeof import("playwright");
+    } catch (error) {
+      failures.push(`${candidate}: ${(error as Error).message}`);
+    }
+  }
+  throw new Error(`Unable to resolve playwright. Tried:\n${failures.join("\n")}`);
+}
+
+const playwright = loadPlaywright();
 
 /**
  * Base URL of the running docs app. The dev server is expected to be already
