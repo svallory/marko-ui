@@ -73,19 +73,34 @@ export const docs = new Command()
       }
 
       for (const name of components) {
-        const url = `${MARKO_UI_URL}/docs/components/${name}/md`
-        const response = await fetch(url)
-        if (!response.ok) {
+        // Standard convention: append .md to the page URL. Older deployments
+        // only served the /md alias, so fall back on 404.
+        const urls = [
+          `${MARKO_UI_URL}/docs/components/${name}.md`,
+          `${MARKO_UI_URL}/docs/components/${name}/md`,
+        ]
+
+        let served = false
+        let lastStatus = 0
+        for (const url of urls) {
+          const response = await fetch(url)
+          if (response.ok) {
+            process.stdout.write(await response.text())
+            process.stdout.write("\n")
+            served = true
+            break
+          }
+          lastStatus = response.status
+        }
+
+        if (!served) {
           logger.error(
             `No documentation for ${highlighter.info(
               name
-            )} (${response.status} from ${url}).`
+            )} (${lastStatus} from ${urls[0]}).`
           )
           process.exitCode = 1
-          continue
         }
-        process.stdout.write(await response.text())
-        process.stdout.write("\n")
       }
     } catch (error) {
       handleError(error)

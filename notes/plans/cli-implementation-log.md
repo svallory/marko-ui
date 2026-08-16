@@ -149,3 +149,16 @@ essentials via AGENTS.md, Claude-family tools load the skill on demand.
 - Landmines catalog is CURATED IN THE CLI (src/agents/content.ts), not
   fetched: the authoring guide has no markdown endpoint yet. Revisit when
   docs pages get /md twins.
+
+## .md URLs are canonical (2026-08-16, user catch)
+
+The standard convention is appending `.md` to the page URL (shadcn's site,
+llms.txt ecosystem) — our `/md` suffix was only ever a workaround for
+@marko/run's period-as-route-separator rule. Resolution: a `$name` dynamic
+segment MATCHES "button.md" fine, so `$name/+handler.ts` now catches the
+`.md` suffix inside the param and serves markdown (404 markdown for
+unknown components), falling through to the page otherwise.
+`/docs/components/<name>.md` is canonical; `/md` stays as an alias for
+existing links. Site "View as Markdown"/Copy Page links now point at
+`.md`; the CLI `docs` command fetches `.md` first and falls back to `/md`
+for older deployments.
