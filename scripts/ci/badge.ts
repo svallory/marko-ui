@@ -118,8 +118,15 @@ switch (kind) {
             ["seo", "lighthouse seo"],
           ];
     for (const [key, label] of categories) {
-      const scores = runs.map((run) => Math.round((run.summary[key] ?? 0) * 100));
-      const min = scores.length ? Math.min(...scores) : 0;
+      // A manifest without this category means the wrong manifest was fed in
+      // (e.g. a later collect clobbered .lighthouseci) — fail loudly rather
+      // than publish a silent 0.
+      if (runs.length === 0 || runs.some((run) => run.summary[key] === undefined)) {
+        console.error(`category "${key}" missing from manifest — wrong input file?`);
+        process.exit(1);
+      }
+      const scores = runs.map((run) => Math.round(run.summary[key] * 100));
+      const min = Math.min(...scores);
       write(`lighthouse-${key}`, {
         schemaVersion: 1,
         label,

@@ -54,6 +54,10 @@ jobs:
           uploadArtifacts: true
           artifactName: lighthouse-results-components
           temporaryPublicStorage: true
+      # Both treosh steps collect into the same .lighthouseci dir, so the
+      # second run clobbers the first run's manifest — snapshot it first.
+      - name: Save components manifest
+        run: cp "${{ steps.lhci_a11y.outputs.resultsPath }}/manifest.json" lh-components-manifest.json
       - name: Lighthouse best-practices/seo on docs pages
         id: lhci_site
         uses: treosh/lighthouse-ci-action@v12
@@ -69,7 +73,7 @@ jobs:
           temporaryPublicStorage: true
       - name: Generate badges
         run: |
-          bun scripts/ci/badge.ts lighthouse-a11y "${{ steps.lhci_a11y.outputs.resultsPath }}/manifest.json" badge-out
+          bun scripts/ci/badge.ts lighthouse-a11y lh-components-manifest.json badge-out
           bun scripts/ci/badge.ts lighthouse-site "${{ steps.lhci_site.outputs.resultsPath }}/manifest.json" badge-out
       - name: Push to badges branch
         if: github.ref == 'refs/heads/main'
