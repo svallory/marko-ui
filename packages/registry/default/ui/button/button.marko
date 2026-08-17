@@ -5,6 +5,12 @@ export interface Input extends Marko.Input<"button">, ButtonVariants {}
 
 <const/{ variant, size, class: className, content, ...rest }=input/>
 
-<button data-slot="button" ...rest class=cn(buttonVariants({ variant, size }), className)>
+<button
+  data-slot="button"
+  data-variant=(variant ?? "default")
+  data-size=(size ?? "default")
+  ...rest
+  class=cn(buttonVariants({ variant, size }), className)
+>
   <${content}/>
 </button>

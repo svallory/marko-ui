@@ -1,0 +1,13 @@
+import InputField from "../input/input.marko";
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"input"> {}
+
+<const/{ class: className, ...rest }=input/>
+
+<InputField
+  ...rest
+  data-slot="sidebar-input"
+  data-sidebar="input"
+  class=cn("mu-sidebar-input", className)
+/>

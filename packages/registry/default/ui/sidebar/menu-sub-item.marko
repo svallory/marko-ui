@@ -4,6 +4,11 @@ export interface Input extends Marko.Input<"li"> {}
 
 <const/{ class: className, content, ...rest }=input/>
 
-<li ...rest data-slot="sidebar-menu-item" data-sidebar="menu-item" class=cn("group/menu-item relative", className)>
+<li
+  ...rest
+  data-slot="sidebar-menu-sub-item"
+  data-sidebar="menu-sub-item"
+  class=cn("group/menu-sub-item relative", className)
+>
   <${content}/>
 </li>

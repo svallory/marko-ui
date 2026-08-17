@@ -1,3 +1,4 @@
+import Button from "../button/button.marko";
 import { cn } from "#lib/utils.ts";
 
 export interface Input extends Marko.Input<"button"> {
@@ -7,16 +8,14 @@ export interface Input extends Marko.Input<"button"> {
 
 <const/{ open, toggle, class: className, content, ...rest }=input/>
 
-<button
+<Button
   ...rest
   type="button"
   data-slot="sidebar-trigger"
-  data-state=(open ? "open" : "closed")
-  aria-label="Toggle sidebar"
-  class=cn(
-    "inline-flex size-7 items-center justify-center rounded-md text-sidebar-foreground outline-none transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-    className,
-  )
+  data-sidebar="trigger"
+  variant="ghost"
+  size="icon-sm"
+  class=cn("mu-sidebar-trigger", className)
   onClick() {
     toggle?.();
   }
@@ -35,11 +34,11 @@ export interface Input extends Marko.Input<"button"> {
       stroke-width="2"
       stroke-linecap="round"
       stroke-linejoin="round"
-      class="size-4"
+      class="mu-rtl-flip size-4"
     >
       <rect width="18" height="18" x="3" y="3" rx="2"/>
       <path d="M9 3v18"/>
     </svg>
     <span class="sr-only">Toggle Sidebar</span>
   </else>
-</button>
+</Button>

@@ -6,6 +6,8 @@ export interface Input extends Omit<Marko.Input<"div">, "content"> {
   openChange?: (open: boolean) => void;
   /** CSS length for --sidebar-width, default 16rem. */
   width?: string;
+  /** CSS length for --sidebar-width-icon, default 3rem. */
+  widthIcon?: string;
   /** Sidebar panel content (header/content/footer parts). */
   sidebar?: Marko.Body<[{ open: boolean; toggle: () => void }]>;
   /** Main content area, rendered next to the sidebar. */
@@ -20,6 +22,7 @@ export interface Input extends Omit<Marko.Input<"div">, "content"> {
   open: _open,
   openChange,
   width,
+  widthIcon,
   sidebar,
   class: className,
   content,
@@ -33,9 +36,11 @@ export interface Input extends Omit<Marko.Input<"div">, "content"> {
 
 <div
   ...rest
-  data-slot="sidebar-provider"
-  data-state=(open ? "open" : "closed")
-  style={ "--sidebar-width": width ?? "16rem" }
+  data-slot="sidebar-wrapper"
+  style={
+    "--sidebar-width": width ?? "16rem",
+    "--sidebar-width-icon": widthIcon ?? "3rem",
+  }
   class=cn("group/sidebar-wrapper flex min-h-svh w-full has-data-[variant=inset]:bg-sidebar", className)
 >
   <if=sidebar>

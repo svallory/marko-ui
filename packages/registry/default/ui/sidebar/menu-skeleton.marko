@@ -1,0 +1,30 @@
+import Skeleton from "../skeleton/skeleton.marko";
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  showIcon?: boolean;
+}
+
+<const/{ showIcon, class: className, content, ...rest }=input/>
+
+// Random width between 50 to 90%.
+<const/width=`${Math.floor(Math.random() * 40) + 50}%`/>
+
+<div
+  ...rest
+  data-slot="sidebar-menu-skeleton"
+  data-sidebar="menu-skeleton"
+  class=cn("mu-sidebar-menu-skeleton flex items-center", className)
+>
+  <if=showIcon>
+    <Skeleton
+      class="mu-sidebar-menu-skeleton-icon"
+      data-sidebar="menu-skeleton-icon"
+    />
+  </if>
+  <Skeleton
+    class="mu-sidebar-menu-skeleton-text max-w-(--skeleton-width) flex-1"
+    data-sidebar="menu-skeleton-text"
+    style={ "--skeleton-width": width }
+  />
+</div>

@@ -1,0 +1,16 @@
+import Separator from "../separator/separator.marko";
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {
+  orientation?: "horizontal" | "vertical";
+  decorative?: boolean;
+}
+
+<const/{ class: className, ...rest }=input/>
+
+<Separator
+  ...rest
+  data-slot="sidebar-separator"
+  data-sidebar="separator"
+  class=cn("mu-sidebar-separator w-auto", className)
+/>

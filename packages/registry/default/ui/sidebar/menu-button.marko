@@ -1,26 +1,39 @@
+import { sidebarMenuButtonVariants, type SidebarMenuButtonVariants } from "./variants.ts";
 import { cn } from "#lib/utils.ts";
 
-export interface Input extends Marko.Input<"button"> {
+export interface Input extends Marko.Input<"button">, SidebarMenuButtonVariants {
   /** Renders an <a> instead of a <button> when set (with href passed through rest). */
-  asChild?: boolean;
-  active?: boolean;
   href?: string;
+  active?: boolean;
 }
 
-<const/{ asChild, active, class: className, content, href, ...rest }=input/>
+<const/{ variant, size, active, class: className, content, href, ...rest }=input/>
 
-<const/menuButtonClass=cn(
-  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground [&>svg]:size-4 [&>svg]:shrink-0",
-  className,
-)/>
+<const/menuButtonClass=cn(sidebarMenuButtonVariants({ variant, size }), className)/>
 
 <if=href>
-  <a ...rest href=href data-slot="sidebar-menu-button" data-active=String(!!active) class=menuButtonClass>
+  <a
+    ...rest
+    href=href
+    data-slot="sidebar-menu-button"
+    data-sidebar="menu-button"
+    data-size=(size ?? "default")
+    data-active=(active ? "true" : undefined)
+    class=menuButtonClass
+  >
     <${content}/>
   </a>
 </if>
 <else>
-  <button ...rest type="button" data-slot="sidebar-menu-button" data-active=String(!!active) class=menuButtonClass>
+  <button
+    ...rest
+    type="button"
+    data-slot="sidebar-menu-button"
+    data-sidebar="menu-button"
+    data-size=(size ?? "default")
+    data-active=(active ? "true" : undefined)
+    class=menuButtonClass
+  >
     <${content}/>
   </button>
 </else>

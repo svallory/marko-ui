@@ -30,19 +30,18 @@ export type Input = MachineInput<"div", sliderMachine.Props> & {
   ...nativeAttrs()
   ...api().getRootProps()
   data-slot="slider"
-  class=cn("relative flex w-full touch-none items-center select-none", input.class)
+  class=cn("mu-slider relative flex w-full touch-none items-center select-none data-[disabled]:opacity-50 data-[orientation=vertical]:h-full data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col", input.class)
 >
-  <div ...api().getControlProps() data-slot="slider-control" class="relative flex grow touch-none items-center select-none">
-    <div ...api().getTrackProps() data-slot="slider-track" class="bg-muted relative grow rounded-full h-1.5 w-full">
-      <div ...api().getRangeProps() data-slot="slider-range" class="bg-primary absolute h-full"></div>
+  // zag-required control wrapper (no upstream counterpart; style CSS never
+  // targets it). Mirrors the root's orientation utilities so vertical works
+  // through the extra layer.
+  <div ...api().getControlProps() data-slot="slider-control" class="relative flex grow touch-none items-center select-none data-[orientation=vertical]:h-full data-[orientation=vertical]:flex-col">
+    <div ...api().getTrackProps() data-slot="slider-track" class="mu-slider-track relative grow overflow-hidden data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full">
+      <div ...api().getRangeProps() data-slot="slider-range" class="mu-slider-range absolute select-none data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full"></div>
     </div>
     <for|_, i| of=api().value>
       <input ...api().getHiddenInputProps({ index: i })>
-      // 24px hit box around a 16px visual knob — WCAG 2.5.8 minimum target
-      // size (Lighthouse: target-size) without changing the look.
-      <div ...api().getThumbProps({ index: i }) data-slot="slider-thumb" class="flex size-6 shrink-0 items-center justify-center">
-        <span aria-hidden="true" class="size-4 rounded-full border-primary bg-background border shadow-sm block"></span>
-      </div>
+      <div ...api().getThumbProps({ index: i }) data-slot="slider-thumb" class="mu-slider-thumb block shrink-0 select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"></div>
     </for>
   </div>
 </div>

@@ -4,6 +4,11 @@ export interface Input extends Marko.Input<"div"> {}
 
 <const/{ class: className, content, ...rest }=input/>
 
-<div ...rest data-slot="sidebar-footer" data-sidebar="footer" class=cn("mu-sidebar-footer flex flex-col", className)>
+<div
+  ...rest
+  data-slot="sidebar-group-content"
+  data-sidebar="group-content"
+  class=cn("mu-sidebar-group-content w-full", className)
+>
   <${content}/>
 </div>
