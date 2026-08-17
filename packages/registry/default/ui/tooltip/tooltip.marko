@@ -60,10 +60,7 @@ export type Input = MachineInput<"div", tooltipMachine.Props> & {
           ...api().getContentProps()
           data-slot="tooltip-content"
           class=cn(
-            "bg-primary text-primary-foreground z-50 w-fit rounded-md px-3 py-1.5 text-xs text-balance",
-            "animate-in fade-in-0 zoom-in-95",
-            "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
-            "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+            "mu-tooltip-content z-50 w-fit max-w-xs origin-(--radix-tooltip-content-transform-origin) bg-foreground text-background",
             input.class,
           )
         >
@@ -74,7 +71,7 @@ export type Input = MachineInput<"div", tooltipMachine.Props> & {
             <${input.content}/>
           </else>
           <div ...api().getArrowProps() data-slot="tooltip-arrow">
-            <div ...api().getArrowTipProps() data-slot="tooltip-arrow-tip" class="bg-primary size-2.5 rotate-45"/>
+            <div ...api().getArrowTipProps() data-slot="tooltip-arrow-tip" class="mu-tooltip-arrow bg-foreground fill-foreground"/>
           </div>
         </div>
       </div>

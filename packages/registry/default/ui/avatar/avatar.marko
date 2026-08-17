@@ -10,6 +10,8 @@ export type Input = MachineInput<"span", avatarMachine.Props> & {
   fallback?: string;
   content?: Marko.Body;
   statusChange?: (status: avatarMachine.LoadStatus) => void;
+  /** Size variant — also exposed as `data-size` for group/badge styling. */
+  size?: "default" | "sm" | "lg";
 };
 
 // The three-tag wiring (see /docs/creating-components):
@@ -33,8 +35,8 @@ export type Input = MachineInput<"span", avatarMachine.Props> & {
 />
 
 // Whatever is neither machine-owned (splitProps) nor component-owned
-// (class, src, alt, fallback, content, statusChange) passes through to the
-// root span: aria-*, data-*...
+// (class, src, alt, fallback, content, statusChange, size) passes through
+// to the root span: aria-*, data-*...
 <const/nativeAttrs=() => {
   const {
     class: ownClass,
@@ -43,16 +45,22 @@ export type Input = MachineInput<"span", avatarMachine.Props> & {
     fallback: ownFallback,
     content: ownContent,
     statusChange: ownChangeHandler,
+    size: ownSize,
     ...native
   } = avatarMachine.splitProps(input)[1];
   return native;
 }>
+<const/size=(input.size ?? "default")>
 
 <span
+  data-slot="avatar"
+  data-size=size
   ...nativeAttrs()
   ...api().getRootProps()
-  data-slot="avatar"
-  class=cn("relative flex size-8 shrink-0 overflow-hidden rounded-full", input.class)
+  class=cn(
+    "mu-avatar group/avatar relative flex shrink-0 select-none after:absolute after:inset-0 after:border after:border-border after:mix-blend-darken dark:after:mix-blend-lighten",
+    input.class,
+  )
 >
   <if=input.src>
     <img
@@ -60,13 +68,13 @@ export type Input = MachineInput<"span", avatarMachine.Props> & {
       src=input.src
       alt=input.alt
       data-slot="avatar-image"
-      class="aspect-square size-full"
+      class="mu-avatar-image aspect-square size-full object-cover"
     />
   </if>
   <span
     ...api().getFallbackProps()
     data-slot="avatar-fallback"
-    class="bg-muted flex size-full items-center justify-center rounded-full"
+    class="mu-avatar-fallback flex size-full items-center justify-center group-data-[size=sm]/avatar:text-xs"
   >
     <if=input.content>
       <${input.content}/>

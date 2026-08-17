@@ -1,0 +1,16 @@
+import { cn } from "#lib/utils.ts";
+
+export interface Input extends Marko.Input<"div"> {}
+
+<const/{ class: className, content, ...rest }=input/>
+
+<div
+  data-slot="avatar-group"
+  class=cn(
+    "mu-avatar-group group/avatar-group flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-background",
+    className,
+  )
+  ...rest
+>
+  <${content}/>
+</div>
