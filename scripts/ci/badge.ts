@@ -2,7 +2,9 @@
  * Turn CI result files into shields.io endpoint JSON badges.
  *
  * Usage: bun scripts/ci/badge.ts <kind> <input-file> <out-dir>
- *   kind = vitest | e2e | axe | lighthouse-a11y | lighthouse-site
+ *   kind = vitest | e2e | axe | lighthouse-a11y | combine
+ *   (for `combine`, <input-file> is the directory holding tests.json and
+ *   style-matrix.json)
  *
  * Each badge file follows the shields endpoint schema
  * (https://shields.io/badges/endpoint-badge) and is published to the
@@ -17,6 +19,12 @@ interface Badge {
   label: string;
   message: string;
   color: string;
+  /**
+   * Raw counts, ignored by shields but read back by the `combine` kind (the
+   * publish job merges tests + style-matrix into one `checks` badge).
+   */
+  passed?: number;
+  total?: number;
 }
 
 const [kind, inputFile, outDir] = process.argv.slice(2);
@@ -25,7 +33,8 @@ if (!kind || !inputFile || !outDir) {
   process.exit(1);
 }
 
-const input = JSON.parse(readFileSync(inputFile, "utf8"));
+// `combine` receives a directory and reads its files itself.
+const input = kind === "combine" ? undefined : JSON.parse(readFileSync(inputFile, "utf8"));
 mkdirSync(outDir, { recursive: true });
 
 function write(name: string, badge: Badge): void {
@@ -44,9 +53,11 @@ switch (kind) {
     const passed: number = input.numPassedTests;
     write("tests", {
       schemaVersion: 1,
-      label: "behavior & hydration tests",
+      label: "tests",
       message: `${passed}/${total} passing`,
       color: passFailColor(passed, total),
+      passed,
+      total,
     });
 
     const hydrationFiles = (input.testResults ?? []).filter((file: { name?: string }) =>
@@ -60,8 +71,8 @@ switch (kind) {
     ).length;
     write("hydration", {
       schemaVersion: 1,
-      label: "hydration invariance",
-      message: `${hydrationPassed}/${hydrationResults.length} byte-identical`,
+      label: "hydration",
+      message: `${hydrationPassed}/${hydrationResults.length} identical`,
       color: passFailColor(hydrationPassed, hydrationResults.length),
     });
     break;
@@ -73,9 +84,36 @@ switch (kind) {
     const total = expected + unexpected + flaky;
     write("style-matrix", {
       schemaVersion: 1,
-      label: "style-matrix checks",
+      label: "style matrix",
       message: `${expected}/${total} passing`,
       color: passFailColor(expected, total),
+      passed: expected,
+      total,
+    });
+    break;
+  }
+
+  case "combine": {
+    // <input-file> is the DIRECTORY holding tests.json + style-matrix.json
+    // (the publish job's merged badge artifacts). Produces the single
+    // "checks" badge the home page shows: one number for the whole suite.
+    const parts = ["tests", "style-matrix"].map((name) => {
+      const badge = JSON.parse(readFileSync(join(inputFile, `${name}.json`), "utf8")) as Badge;
+      if (badge.passed === undefined || badge.total === undefined) {
+        console.error(`${name}.json carries no passed/total counts — regenerate it first`);
+        process.exit(1);
+      }
+      return badge;
+    });
+    const passed = parts.reduce((sum, badge) => sum + (badge.passed ?? 0), 0);
+    const total = parts.reduce((sum, badge) => sum + (badge.total ?? 0), 0);
+    write("checks", {
+      schemaVersion: 1,
+      label: "checks",
+      message: `${passed}/${total} passing`,
+      color: passFailColor(passed, total),
+      passed,
+      total,
     });
     break;
   }
@@ -85,16 +123,13 @@ switch (kind) {
     // runs the WCAG 2.x A/AA rulesets and WCAG is the name people recognize —
     // "(automated)" keeps it honest, since no automated scan proves full
     // conformance and official WCAG certification does not exist.
-    const { components, violations, pagesScanned } = input;
+    const { violations } = input;
     write("axe", {
       schemaVersion: 1,
-      label: "WCAG 2.2 AA (automated)",
-      // "demo pages", not "components": only components with demo pages are
-      // scanned, and the registry has more components than demo pages.
-      message:
-        violations === 0
-          ? `0 violations · ${components} demo pages`
-          : `${violations} violations · ${pagesScanned} pages`,
+      label: "WCAG 2.2 AA",
+      // Scope (every component demo page) lives in the scan script and docs,
+      // not the badge — labels stay short.
+      message: violations === 0 ? "0 violations" : `${violations} violations`,
       color: violations === 0 ? "brightgreen" : "red",
     });
     break;
@@ -112,9 +147,7 @@ switch (kind) {
   case "lighthouse-a11y": {
     const runs = (input as { isRepresentativeRun?: boolean; summary: Record<string, number> }[])
       .filter((run) => run.isRepresentativeRun !== false);
-    const categories: [string, string][] = [
-      ["accessibility", "lighthouse a11y (components)"],
-    ];
+    const categories: [string, string][] = [["accessibility", "lighthouse a11y"]];
     for (const [key, label] of categories) {
       // A manifest without this category means the wrong manifest was fed in
       // (e.g. a later collect clobbered .lighthouseci) — fail loudly rather

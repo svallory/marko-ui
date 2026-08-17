@@ -1,27 +1,16 @@
-// Trust strip between the hero and the showcase: every claim is a RECEIPT —
-// a number the repo can back, linking straight to its proof. No third-party
-// badge images (shields.io etc.): those read as decoration; a stat that
-// links to the actual test suite reads as evidence. Numbers are maintained
-// by hand next to their sources — update them when the suites change:
-//   - CHECKS:      `bunx vitest run` total (120) + Playwright style-matrix
-//                  total (511, e2e/results.json stats.expected) — both run
-//                  in CI on every push (.github/workflows/ci.yml)
-//   - COMPONENTS:  dirs in packages/registry/default/ui
-//   - STYLES:      default + dirs in packages/registry/styles
-//   - AXE:         `bun scripts/ci/axe-scan.ts` — the CI axe job fails on any
-//                  violation, so "0" stays true
-//   - LIGHTHOUSE:  minimum accessibility score across the component pages
-//                  audited by .github/workflows/lighthouse.yml
+// Trust strip between the hero and the showcase. Two kinds of proof, no
+// overlap:
+//   - RECEIPTS: identity facts about the library (component/style counts,
+//     no-JS rendering), maintained by hand next to their sources:
+//       COMPONENTS: dirs in packages/registry/default/ui
+//       STYLES:     default + dirs in packages/registry/styles
+//   - BADGES: live shields.io endpoint images fed by CI (the `badges` branch
+//     is rewritten on every green main build) — checks, WCAG scan, Lighthouse
+//     accessibility. Their numbers update themselves; never restate them as
+//     receipts.
 static const REPO = "https://github.com/svallory/marko-ui";
 
 static const RECEIPTS = [
-  {
-    value: "631",
-    label: "checks on every push",
-    title:
-      "120 behavior & hydration tests plus 511 style-matrix checks (every component rendered, hydrated, and interacted with in every style) — CI-enforced",
-    href: `${REPO}/actions/workflows/ci.yml`,
-  },
   {
     value: "86",
     label: "components",
@@ -34,25 +23,8 @@ static const RECEIPTS = [
     title: "The default style plus 8 complete ports",
     href: `${REPO}/tree/main/packages/registry/styles`,
   },
-  {
-    value: "0",
-    label: "WCAG violations (automated)",
-    title:
-      "axe-core WCAG 2.2 A/AA scan across all 79 component demo pages — CI fails on any violation (the remaining 7 components ship without demo pages yet)",
-    href: `${REPO}/blob/main/scripts/ci/axe-scan.ts`,
-  },
-  {
-    value: "100",
-    label: "Lighthouse accessibility",
-    title:
-      "Minimum Lighthouse accessibility score across audited component pages — re-audited on every push",
-    href: `${REPO}/actions/workflows/lighthouse.yml`,
-  },
 ] as const;
 
-// Live shields.io endpoint badges fed by CI (the `badges` branch is rewritten
-// on every green main build), plus the OpenSSF Scorecard badge. Component-
-// focused only — no docs-site scores.
 static const BADGE_ENDPOINT = (name: string) =>
   `https://img.shields.io/endpoint?url=${encodeURIComponent(
     `https://raw.githubusercontent.com/svallory/marko-ui/badges/${name}.json`,
@@ -60,24 +32,23 @@ static const BADGE_ENDPOINT = (name: string) =>
 
 static const BADGES = [
   {
-    alt: "WCAG 2.2 AA automated scan: 0 violations",
-    src: BADGE_ENDPOINT("axe"),
+    alt: "631 CI checks passing (behavior, hydration, and style-matrix suites)",
+    title: "120 behavior & hydration tests + 511 style-matrix checks — run on every push",
+    src: BADGE_ENDPOINT("checks"),
     href: `${REPO}/actions/workflows/ci.yml`,
   },
   {
-    alt: "Lighthouse accessibility score on component pages",
+    alt: "WCAG 2.2 AA automated scan: 0 violations",
+    title:
+      "axe-core WCAG 2.2 A/AA scan across every component demo page — CI fails on any violation",
+    src: BADGE_ENDPOINT("axe"),
+    href: `${REPO}/blob/main/scripts/ci/axe-scan.ts`,
+  },
+  {
+    alt: "Lighthouse accessibility 100 on component pages",
+    title: "Minimum Lighthouse accessibility score across audited component pages",
     src: BADGE_ENDPOINT("lighthouse-accessibility"),
     href: `${REPO}/actions/workflows/lighthouse.yml`,
-  },
-  {
-    alt: "Behavior and hydration tests",
-    src: BADGE_ENDPOINT("tests"),
-    href: `${REPO}/actions/workflows/ci.yml`,
-  },
-  {
-    alt: "Style-matrix checks",
-    src: BADGE_ENDPOINT("style-matrix"),
-    href: `${REPO}/actions/workflows/ci.yml`,
   },
   // OpenSSF Scorecard deliberately absent: the pipeline runs weekly, but at
   // 3.8/10 (new repo — no branch protection, unpinned actions) the badge
@@ -85,17 +56,17 @@ static const BADGES = [
 ] as const;
 
 <section
-  aria-label="Project test and coverage numbers"
+  aria-label="Project quality receipts"
   class="border-y border-border/60 bg-background"
 >
-  <div class="mx-auto flex max-w-5xl flex-wrap items-stretch justify-center px-6 py-5">
+  <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-center px-6 py-5">
     <for|receipt, index| of=RECEIPTS>
       <a
         href=receipt.href
         target="_blank"
         rel="noreferrer"
         title=receipt.title
-        class=`group flex min-w-40 flex-1 flex-col items-center gap-0.5 px-6 py-1 text-center outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-ring ${index > 0 ? "border-s border-border/60" : ""}`
+        class=`group flex min-w-32 flex-col items-center gap-0.5 px-6 py-1 text-center outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-ring ${index > 0 ? "border-s border-border/60" : ""}`
       >
         <span class="text-lg font-semibold tracking-tight text-primary tabular-nums">
           ${receipt.value}
@@ -105,18 +76,24 @@ static const BADGES = [
         </span>
       </a>
     </for>
-    <p class="flex min-w-40 flex-1 flex-col items-center justify-center gap-0.5 border-s border-border/60 px-6 py-1 text-center">
+    <p class="flex min-w-32 flex-col items-center justify-center gap-0.5 border-s border-border/60 px-6 py-1 text-center">
       <span class="text-lg font-semibold tracking-tight text-primary" aria-hidden="true">
         &lt;/&gt;
       </span>
       <span class="text-xs text-muted-foreground">renders without JavaScript</span>
     </p>
-  </div>
-  <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-2 px-6 pb-5">
-    <for|badge| of=BADGES>
-      <a href=badge.href target="_blank" rel="noreferrer" class="inline-flex outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring">
-        <img src=badge.src alt=badge.alt height="20" loading="lazy"/>
-      </a>
-    </for>
+    <div class="flex flex-wrap items-center justify-center gap-2 border-s border-border/60 px-6 py-1">
+      <for|badge| of=BADGES>
+        <a
+          href=badge.href
+          target="_blank"
+          rel="noreferrer"
+          title=badge.title
+          class="inline-flex outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <img src=badge.src alt=badge.alt height="20" loading="lazy"/>
+        </a>
+      </for>
+    </div>
   </div>
 </section>
