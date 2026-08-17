@@ -2,8 +2,11 @@ import { cn } from "#lib/utils.ts";
 
 export interface Input extends Marko.Input<"kbd"> {}
 
-<const/{ class: className, content, ...rest }=input/>
+<const/{ class: className, ...rest }=input/>
 
-<kbd ...rest data-slot="kbd-group" class=cn("inline-flex items-center gap-1", className)>
-  <${content}/>
-</kbd>
+<kbd
+  data-slot="kbd-group"
+  class=cn("mu-kbd-group inline-flex items-center", className)
+  ...rest
+/>
+<${input.content}/>

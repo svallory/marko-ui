@@ -12,13 +12,13 @@ export interface Input extends Marko.Input<"div">, MarkerVariants {
   asChild?: boolean;
 }
 
-<const/{ variant, class: className, asChild, content, ...rest }=input/>
+<const/{ variant = "default", class: className, asChild, content, ...rest }=input/>
 
 <div
-  ...rest
   data-slot="marker"
-  data-variant=(variant ?? "default")
-  class=cn(markerVariants({ variant }), className)
+  data-variant=variant
+  class=cn(markerVariants({ variant, className }))
+  ...rest
 >
   <${content}/>
 </div>

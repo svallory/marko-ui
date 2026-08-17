@@ -6,6 +6,6 @@ export interface Input extends Marko.Input<"tbody"> {
 
 <const/{ class: className, content, ...rest }=input/>
 
-<tbody ...rest data-slot="table-body" class=cn("[&_tr:last-child]:border-0", className)>
+<tbody ...rest data-slot="table-body" class=cn("mu-table-body", className)>
   <${content}/>
 </tbody>

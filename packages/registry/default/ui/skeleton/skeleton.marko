@@ -4,6 +4,6 @@ export interface Input extends Marko.Input<"div"> {}
 
 <const/{ class: className, content, ...rest }=input/>
 
-<div ...rest data-slot="skeleton" class=cn("bg-accent animate-pulse rounded-md", className)>
+<div data-slot="skeleton" class=cn("mu-skeleton animate-pulse", className) ...rest>
   <${content}/>
 </div>

@@ -6,6 +6,6 @@ export interface Input extends Marko.Input<"caption"> {
 
 <const/{ class: className, content, ...rest }=input/>
 
-<caption ...rest data-slot="table-caption" class=cn("text-muted-foreground mt-4 text-sm", className)>
+<caption ...rest data-slot="table-caption" class=cn("mu-table-caption", className)>
   <${content}/>
 </caption>
