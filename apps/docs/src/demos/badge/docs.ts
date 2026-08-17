@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "Displays a badge or a component that looks like a badge.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Badge>`,
   importSnippet: `import Badge from "@/components/ui/badge/badge.marko";`,
   usageSnippet: `<Badge variant="default | secondary | destructive | outline">Badge</Badge>`,
   examples: [

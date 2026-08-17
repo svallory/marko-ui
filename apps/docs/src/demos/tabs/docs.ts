@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Tabs>`,
   importSnippet: `import Tabs from "@/components/ui/tabs/tabs.marko";`,
   usageSnippet: `<Tabs|value| items=[{ value: "account", label: "Account" }, { value: "password", label: "Password" }]>
   <p>Showing the ${"${value}"} panel.</p>

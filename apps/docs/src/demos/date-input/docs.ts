@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A segmented date input with keyboard editing and locale-aware formatting.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<DateInput>`,
   importSnippet: `import DateInput from "@/components/ui/date-input/date-input.marko";`,
   usageSnippet: `<DateInput value:=date/>`,
   examples: [

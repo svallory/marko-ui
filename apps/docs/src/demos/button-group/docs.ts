@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "A container that groups related buttons together with consistent styling.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<ButtonGroup>`,
   importSnippet: `import ButtonGroup from "@/components/ui/button-group/button-group.marko";`,
   usageSnippet: `<ButtonGroup>
   <Button>Button 1</Button>

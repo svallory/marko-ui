@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "Displays the path to the current resource using a hierarchy of links.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Breadcrumb>, <BreadcrumbItem>, <BreadcrumbLink>, <BreadcrumbPage>, <BreadcrumbSeparator>`,
   importSnippet: `import Breadcrumb from "@/components/ui/breadcrumb/breadcrumb.marko";
 import BreadcrumbItem from "@/components/ui/breadcrumb/item.marko";
 import BreadcrumbLink from "@/components/ui/breadcrumb/link.marko";

@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "Displays a list of options for the user to pick from, triggered by a button.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Select>`,
   importSnippet: `import Select from "@/components/ui/select/select.marko";`,
   usageSnippet: `<Select items=fruits placeholder="Select a fruit"/>`,
   examples: [

@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A password input field with a visibility toggle button and correct autocomplete handling.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<PasswordInput>`,
   importSnippet: `import PasswordInput from "@/components/ui/password-input/password-input.marko";`,
   usageSnippet: `<PasswordInput label="Password" name="password"/>`,
   examples: [

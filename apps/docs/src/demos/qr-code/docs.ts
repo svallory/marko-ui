@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "Renders a QR code for a given value, with size variants and an optional center logo overlay.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<QrCode>`,
   importSnippet: `import QrCode from "@/components/ui/qr-code/qr-code.marko";`,
   usageSnippet: `<QrCode value="https://marko-ui.dev"/>`,
   examples: [

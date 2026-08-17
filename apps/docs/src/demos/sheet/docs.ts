@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "Extends the Dialog component to display content that complements the main content of the screen.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Sheet>`,
   importSnippet: `import Sheet from "@/components/ui/sheet/sheet.marko";`,
   usageSnippet: `<Sheet>
   <@trigger|props|>

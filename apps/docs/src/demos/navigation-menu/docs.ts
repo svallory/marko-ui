@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "A collection of links for navigating websites.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<NavigationMenu>`,
   importSnippet: `import NavigationMenu from "@/components/ui/navigation-menu/navigation-menu.marko";`,
   usageSnippet: `<NavigationMenu items=[{ type: "menu", value: "one", label: "Item One", links: [{ title: "Link", href: "#" }] }]/>`,
   examples: [

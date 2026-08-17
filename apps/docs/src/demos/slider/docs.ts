@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "An input where the user selects a value from within a given range.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Slider>`,
   importSnippet: `import Slider from "@/components/ui/slider/slider.marko";`,
   usageSnippet: `<Slider defaultValue=[33] max=100 step=1/>`,
   examples: [

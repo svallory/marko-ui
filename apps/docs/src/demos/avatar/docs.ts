@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "An image element with a fallback for representing the user.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Avatar>`,
   importSnippet: `import Avatar from "@/components/ui/avatar/avatar.marko";`,
   usageSnippet: `<Avatar src="https://github.com/shadcn.png" alt="@shadcn" fallback="CN"/>`,
   examples: [

@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "Tracks headings in a scroll container, highlights the active section while scrolling, and smooth-scrolls to a heading on click.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Toc>`,
   importSnippet: `import Toc from "@/components/ui/toc/toc.marko";`,
   usageSnippet: `<Toc items=items scrollEl=() => scrollContainer()/>`,
   examples: [

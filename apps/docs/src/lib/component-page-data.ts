@@ -135,7 +135,9 @@ export function getComponentPageData(componentName: string): ComponentPageData |
     description: entry.docs.description || entry.registry.description,
     href: `/docs/components/${componentName}`,
     registryUrl,
-    installCommand: `bunx --bun shadcn@latest add ${registryUrl}`,
+    // Our CLI resolves bare names through the built-in @marko-ui registry;
+    // the shadcn-CLI URL form is documented on /docs/cli as interop.
+    installCommand: `bunx marko-ui add ${componentName}`,
     docs: entry.docs,
     registry: entry.registry,
     parts,

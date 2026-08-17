@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "An interactive component which expands/collapses a panel.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Collapsible>`,
   importSnippet: `import Collapsible from "@/components/ui/collapsible/collapsible.marko";`,
   usageSnippet: `<Collapsible>
   <@trigger|triggerProps|>

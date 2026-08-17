@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "An always-visible list of options with single or multiple selection and keyboard navigation.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Listbox>`,
   importSnippet: `import Listbox from "@/components/ui/listbox/listbox.marko";`,
   usageSnippet: `<Listbox items=fruits label="Favorite fruit" defaultValue=["apple"]/>`,
   examples: [

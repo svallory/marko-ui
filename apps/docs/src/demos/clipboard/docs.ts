@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "Copy text to the clipboard, with a temporary confirmation state.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Clipboard>`,
   importSnippet: `import Clipboard from "@/components/ui/clipboard/clipboard.marko";`,
   usageSnippet: `<Clipboard label="Link" value="https://marko-ui.dev"/>`,
   examples: [

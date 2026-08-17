@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "Renders an accessible label associated with a control.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Label>`,
   importSnippet: `import Label from "@/components/ui/label/label.marko";`,
   usageSnippet: `<Label for="email">Your email address</Label>`,
   examples: [

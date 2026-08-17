@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "Inline editable text: a preview that switches to an input on click or focus, submits on Enter or blur, and cancels on Escape.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Editable>`,
   importSnippet: `import Editable from "@/components/ui/editable/editable.marko";`,
   usageSnippet: `<Editable defaultValue="Edit this text"/>`,
   examples: [

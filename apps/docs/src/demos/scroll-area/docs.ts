@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "Augments native scroll functionality for custom, cross-browser styling.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<ScrollArea>`,
   importSnippet: `import ScrollArea from "@/components/ui/scroll-area/scroll-area.marko";`,
   usageSnippet: `<ScrollArea class="h-[200px] w-[350px] rounded-md border p-4">
   Your scrollable content here.

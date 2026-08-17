@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A number input with increment/decrement steppers, min/max/step constraints, and a scrub area.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<NumberInput>`,
   importSnippet: `import NumberInput from "@/components/ui/number-input/number-input.marko";`,
   usageSnippet: `<NumberInput defaultValue="0" min=0 max=100 step=5/>`,
   examples: [

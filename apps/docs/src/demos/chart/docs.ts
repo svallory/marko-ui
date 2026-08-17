@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "Beautiful charts. Built with d3 and Marko — server-rendered, themeable with CSS variables. A shadcn theme's `--chart-1..5` variables restyle every chart with zero changes. Text scales with container width (the SVG uses a fixed viewBox — the price of zero-JS SSR); only the tooltip hydrates.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Chart>, <BarChart>`,
   importSnippet: `import Chart from "@/components/ui/chart/chart.marko";
 import BarChart from "@/components/ui/chart/bar.marko";`,
   usageSnippet: `<Chart config=chartConfig>

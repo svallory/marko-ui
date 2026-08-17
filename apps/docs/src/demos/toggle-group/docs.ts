@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "A set of two-state buttons that can be toggled on or off.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<ToggleGroup>`,
   importSnippet: `import ToggleGroup from "@/components/ui/toggle-group/toggle-group.marko";`,
   usageSnippet: `<ToggleGroup items=[{ value: "left", label: "Left" }, { value: "center", label: "Center" }] value=["center"]/>`,
   examples: [

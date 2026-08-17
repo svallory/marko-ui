@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A star rating input with hover preview, half-star support, and keyboard navigation.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<RatingGroup>`,
   importSnippet: `import RatingGroup from "@/components/ui/rating-group/rating-group.marko";`,
   usageSnippet: `<RatingGroup label="Rate this" value:=rating/>`,
   examples: [

@@ -306,6 +306,29 @@ export const CLI_MANIFEST: CliManifest = {
       ]
     },
     {
+      "name": "eject",
+      "aliases": [],
+      "description": "copy the installed @marko-ui style package's components into your project",
+      "arguments": [],
+      "options": [
+        {
+          "flags": "-c, --cwd <cwd>",
+          "description": "the working directory. defaults to the current directory.",
+          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/cli"
+        },
+        {
+          "flags": "-y, --yes",
+          "description": "skip confirmation prompt.",
+          "defaultValue": false
+        },
+        {
+          "flags": "-s, --silent",
+          "description": "mute output.",
+          "defaultValue": false
+        }
+      ]
+    },
+    {
       "name": "manifest",
       "aliases": [],
       "description": "print a machine-readable description of the entire CLI",

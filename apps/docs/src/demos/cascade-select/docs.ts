@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A hierarchical select with cascading panels for drilling down through nested options, e.g. Region > Country > City.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<CascadeSelect>`,
   importSnippet: `import CascadeSelect from "@/components/ui/cascade-select/cascade-select.marko";`,
   usageSnippet: `<CascadeSelect items=items placeholder="Select a city" label="Region / Country / City"/>`,
   examples: [

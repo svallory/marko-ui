@@ -113,6 +113,43 @@ async function readRegistryItem(componentName: string): Promise<RegistryItem> {
   }
 }
 
+/**
+ * Demos are authored against the docs app's workspace alias
+ * (`@marko-ui/registry/ui/badge/badge.marko`) so they compile in-repo, but
+ * that path does not exist in a consumer's project. Displayed source is
+ * rewritten to what a user actually writes:
+ *
+ * - zero-import taglib tags are the documented default, so component
+ *   imports are dropped entirely (the tag names already match:
+ *   `<Badge>`, `<CardHeader>`);
+ * - remaining alias imports (lib helpers, icons) are rewritten to the
+ *   consumer's configured aliases.
+ *
+ * A demo that ends up with no imports keeps only its markup, which is
+ * exactly the copy-pasteable snippet.
+ */
+function toDisplaySource(source: string): string {
+  const lines = source.split("\n");
+  const kept: string[] = [];
+
+  for (const line of lines) {
+    const componentImport = /^import\s+\w+\s+from\s+"@marko-ui\/registry\/(?:ui|styles\/[^/]+\/ui)\/[^"]+\.marko";?\s*$/;
+    if (componentImport.test(line)) {
+      // Dropped: taglib auto-discovery provides the tag.
+      continue;
+    }
+    kept.push(
+      line
+        .replace(/"@marko-ui\/registry\/(?:styles\/[^/]+\/)?lib\//g, '"@/lib/')
+        .replace(/"@marko-ui\/registry\/(?:styles\/[^/]+\/)?ui\//g, '"@/components/ui/'),
+    );
+  }
+
+  // Collapse the blank lines the dropped imports left behind.
+  while (kept.length && kept[0].trim() === "") kept.shift();
+  return kept.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd();
+}
+
 async function main() {
   const components = await componentDirectories();
 
@@ -158,7 +195,7 @@ async function main() {
 
       const source = await readFile(join(componentDir, `${exampleName}.marko`), "utf8");
       exampleEntries.push(
-        `      ${JSON.stringify(exampleName)}: { demoId: ${JSON.stringify(demoId)}, source: ${JSON.stringify(source.trimEnd())} },`,
+        `      ${JSON.stringify(exampleName)}: { demoId: ${JSON.stringify(demoId)}, source: ${JSON.stringify(toDisplaySource(source))} },`,
       );
       rendererBranchLines.push(
         `<${rendererBranchLines.length === 0 ? "if" : "else-if"}=(input.demoId === ${JSON.stringify(demoId)})><${identifier}/></${rendererBranchLines.length === 0 ? "if" : "else-if"}>`,

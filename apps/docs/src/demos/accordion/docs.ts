@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A vertically stacked set of interactive headings that each reveal a section of content.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Accordion>`,
   importSnippet: `import Accordion from "@/components/ui/accordion/accordion.marko";`,
   usageSnippet: `<Accordion items=items collapsible/>`,
   examples: [

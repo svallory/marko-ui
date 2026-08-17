@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A circular dial slider for selecting an angle value, controlled by arrow keys or dragging the thumb around the track.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<AngleSlider>`,
   importSnippet: `import AngleSlider from "@/components/ui/angle-slider/angle-slider.marko";`,
   usageSnippet: `<AngleSlider defaultValue=45/>`,
   examples: [

@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A popover-style date field that combines a text input and a calendar for selecting a date.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<DatePicker>`,
   importSnippet: `import DatePicker from "@/components/ui/date-picker/date-picker.marko";`,
   usageSnippet: `<DatePicker valueChange=(date) => setDate(date)/>`,
   examples: [

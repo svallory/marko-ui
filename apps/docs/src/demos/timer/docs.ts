@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A countdown or stopwatch timer with a segmented digit display and start/pause/resume/reset controls.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Timer>`,
   importSnippet: `import Timer from "@/components/ui/timer/timer.marko";`,
   usageSnippet: `<Timer parts=["minutes", "seconds"]/>`,
   examples: [
