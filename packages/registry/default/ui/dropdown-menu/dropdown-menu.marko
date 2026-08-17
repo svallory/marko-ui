@@ -1,24 +1,29 @@
 import * as menu from "@zag-js/menu";
 import { positionerStyle } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import Icon from "../icon/icon.marko";
 
 export interface DropdownMenuItem {
-  type?: "item" | "separator" | "label";
+  type?: "item" | "separator" | "label" | "checkbox" | "radio";
   value?: string;
   label?: string;
   disabled?: boolean;
   shortcut?: string;
-  danger?: boolean;
+  /** Upstream `variant: "default" | "destructive"`, emitted as `data-variant`. */
+  variant?: "default" | "destructive";
+  /** Emits `data-inset` — indents the entry to align with icon-bearing siblings. */
+  inset?: boolean;
+  /** Checked state for `type="checkbox"` and `type="radio"` entries. */
+  checked?: boolean;
 }
 
 // Attr-tag form of DropdownMenuItem. A SINGLE attr tag name (`item`) carries
-// all three kinds (discriminated by `type`) rather than separate
-// `item`/`separator`/`label` attr tags: Marko collects each attr-tag NAME
-// into its own independent iterable on `input` with no shared ordering
-// between differently-named siblings, so
-// `<@item>`/`<@separator>`/`<@label>` as distinct tag names could not
-// preserve call-site interleaving. One name with a `type` discriminant
-// keeps document order intact by construction (same design as
+// all five kinds (discriminated by `type`) rather than separate per-kind
+// attr tags: Marko collects each attr-tag NAME into its own independent
+// iterable on `input` with no shared ordering between differently-named
+// siblings, so `<@item>`/`<@separator>`/`<@label>` as distinct tag names
+// could not preserve call-site interleaving. One name with a `type`
+// discriminant keeps document order intact by construction (same design as
 // context-menu.marko). `content` lets an item or label carry a markup body;
 // the plain `label` string renders as the fallback when no body is supplied.
 export interface DropdownMenuItemAttrs extends DropdownMenuItem {
@@ -54,25 +59,23 @@ export interface Input {
 <const/entries=(attrItems.length > 0 ? attrItems : (input.items ?? []).map((item) => ({ ...item, content: undefined as Marko.Body | undefined })))/>
 
 <${trigger}({ ...api().getTriggerProps(), "data-slot": "dropdown-menu-trigger" })/>
-<portal>
+<portal data-slot="dropdown-menu-portal">
   <if=api().open>
     <div ...api().getPositionerProps() style=positionerStyle data-slot="dropdown-menu-positioner">
       <div
         ...api().getContentProps()
         data-slot="dropdown-menu-content"
         class=cn(
-          "bg-popover text-popover-foreground z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-md",
-          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-          "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+          "mu-dropdown-menu-content mu-menu-target mu-menu-translucent z-50 max-h-(--radix-dropdown-menu-content-available-height) w-(--radix-dropdown-menu-trigger-width) origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto data-closed:overflow-hidden",
           className,
         )
       >
         <for|entry, index| of=entries>
           <if=entry.type === "separator">
-            <div ...api().getSeparatorProps() data-slot="dropdown-menu-separator" class="bg-border -mx-1 my-1 h-px"/>
+            <div ...api().getSeparatorProps() data-slot="dropdown-menu-separator" class="mu-dropdown-menu-separator"/>
           </if>
           <else if=entry.type === "label">
-            <div data-slot="dropdown-menu-label" class="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+            <div data-slot="dropdown-menu-label" data-inset=entry.inset || undefined class="mu-dropdown-menu-label">
               <if=entry.content>
                 <${entry.content}/>
               </if>
@@ -81,26 +84,68 @@ export interface Input {
               </else>
             </div>
           </else>
+          <else if=entry.type === "checkbox">
+            <div
+              ...api().getOptionItemProps({ type: "checkbox", value: entry.value ?? `item-${index}`, checked: entry.checked, disabled: entry.disabled })
+              data-slot="dropdown-menu-checkbox-item"
+              data-inset=entry.inset || undefined
+              class="mu-dropdown-menu-checkbox-item relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+            >
+              <span ...api().getItemIndicatorProps({ type: "checkbox", value: entry.value ?? `item-${index}`, checked: entry.checked }) data-slot="dropdown-menu-checkbox-item-indicator" class="mu-dropdown-menu-item-indicator pointer-events-none">
+                <if=entry.checked>
+                  <Icon name="Check"/>
+                </if>
+              </span>
+              <if=entry.content>
+                <${entry.content}/>
+              </if>
+              <else>
+                ${entry.label}
+              </else>
+              <if=entry.shortcut>
+                <span data-slot="dropdown-menu-shortcut" class="mu-dropdown-menu-shortcut">${entry.shortcut}</span>
+              </if>
+            </div>
+          </else>
+          <else if=entry.type === "radio">
+            <div
+              ...api().getOptionItemProps({ type: "radio", value: entry.value ?? `item-${index}`, checked: entry.checked, disabled: entry.disabled })
+              data-slot="dropdown-menu-radio-item"
+              data-inset=entry.inset || undefined
+              class="mu-dropdown-menu-radio-item relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+            >
+              <span ...api().getItemIndicatorProps({ type: "radio", value: entry.value ?? `item-${index}`, checked: entry.checked }) data-slot="dropdown-menu-radio-item-indicator" class="mu-dropdown-menu-item-indicator pointer-events-none">
+                <if=entry.checked>
+                  <Icon name="Check"/>
+                </if>
+              </span>
+              <if=entry.content>
+                <${entry.content}/>
+              </if>
+              <else>
+                ${entry.label}
+              </else>
+              <if=entry.shortcut>
+                <span data-slot="dropdown-menu-shortcut" class="mu-dropdown-menu-shortcut">${entry.shortcut}</span>
+              </if>
+            </div>
+          </else>
           <else>
             <div
               ...api().getItemProps({ value: entry.value ?? `item-${index}`, disabled: entry.disabled })
               data-slot="dropdown-menu-item"
-              data-danger=entry.danger || undefined
-              class=cn(
-                "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none",
-                "data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
-                "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-                "data-[danger]:text-destructive data-[danger]:data-[highlighted]:bg-destructive/10",
-              )
+              data-inset=entry.inset || undefined
+              data-variant=entry.variant ?? "default"
+              class="mu-dropdown-menu-item group/dropdown-menu-item relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
             >
               <if=entry.content>
-                <span><${entry.content}/></span>
+                <${entry.content}/>
               </if>
               <else>
-                <span>${entry.label}</span>
+                ${entry.label}
               </else>
               <if=entry.shortcut>
-                <span class="ml-auto text-xs tracking-widest text-muted-foreground">${entry.shortcut}</span>
+                <span data-slot="dropdown-menu-shortcut" class="mu-dropdown-menu-shortcut">${entry.shortcut}</span>
               </if>
             </div>
           </else>

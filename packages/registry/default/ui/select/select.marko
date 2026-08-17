@@ -70,6 +70,12 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
   service=service
 />
 
+<const/scrollViewport=(e: Event, delta: number) => {
+  const target = e.currentTarget as HTMLElement;
+  const viewport = target.closest("[data-slot='select-content']")?.querySelector<HTMLElement>("[data-slot='select-viewport']");
+  viewport?.scrollBy({ top: delta, behavior: "smooth" });
+}>
+
 <const/nativeAttrs=() => {
   const {
     class: ownClass,
@@ -123,9 +129,9 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
         <div
           ...api().getContentProps()
           data-slot="select-content"
-          class="mu-select-content mu-menu-target mu-menu-translucent relative z-50 max-h-[var(--available-height,24rem)] overflow-x-hidden overflow-y-auto data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1"
+          class="mu-select-content mu-menu-target mu-menu-translucent relative z-50 max-h-(--available-height) overflow-x-hidden overflow-y-auto origin-(--transform-origin) data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1"
         >
-          <button type="button" data-slot="select-scroll-up-button" class="mu-select-scroll-up-button" onclick=((e) => { e.currentTarget.closest("[data-slot='select-content']")?.querySelector("[data-slot='select-viewport']")?.scrollBy({ top: -40, behavior: "smooth" }); })>
+          <button type="button" data-slot="select-scroll-up-button" class="mu-select-scroll-up-button" on-click(e: Event) { scrollViewport(e, -40); }>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
               <path d="m18 15-6-6-6 6"/>
             </svg>
@@ -172,7 +178,7 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
               </for>
             </else>
           </div>
-          <button type="button" data-slot="select-scroll-down-button" class="mu-select-scroll-down-button" onclick=((e) => { e.currentTarget.closest("[data-slot='select-content']")?.querySelector("[data-slot='select-viewport']")?.scrollBy({ top: 40, behavior: "smooth" }); })>
+          <button type="button" data-slot="select-scroll-down-button" class="mu-select-scroll-down-button" on-click(e: Event) { scrollViewport(e, 40); }>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
               <path d="m6 9 6 6 6-6"/>
             </svg>
