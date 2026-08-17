@@ -36,9 +36,9 @@ static const RECEIPTS = [
   },
   {
     value: "0",
-    label: "axe violations",
+    label: "WCAG violations (automated)",
     title:
-      "axe-core WCAG scan across all 79 component demo pages — CI fails on any violation (the remaining 7 components ship without demo pages yet)",
+      "axe-core WCAG 2.2 A/AA scan across all 79 component demo pages — CI fails on any violation (the remaining 7 components ship without demo pages yet)",
     href: `${REPO}/blob/main/scripts/ci/axe-scan.ts`,
   },
   {
@@ -48,6 +48,40 @@ static const RECEIPTS = [
       "Minimum Lighthouse accessibility score across audited component pages — re-audited on every push",
     href: `${REPO}/actions/workflows/lighthouse.yml`,
   },
+] as const;
+
+// Live shields.io endpoint badges fed by CI (the `badges` branch is rewritten
+// on every green main build), plus the OpenSSF Scorecard badge. Component-
+// focused only — no docs-site scores.
+static const BADGE_ENDPOINT = (name: string) =>
+  `https://img.shields.io/endpoint?url=${encodeURIComponent(
+    `https://raw.githubusercontent.com/svallory/marko-ui/badges/${name}.json`,
+  )}`;
+
+static const BADGES = [
+  {
+    alt: "WCAG 2.2 AA automated scan: 0 violations",
+    src: BADGE_ENDPOINT("axe"),
+    href: `${REPO}/actions/workflows/ci.yml`,
+  },
+  {
+    alt: "Lighthouse accessibility score on component pages",
+    src: BADGE_ENDPOINT("lighthouse-accessibility"),
+    href: `${REPO}/actions/workflows/lighthouse.yml`,
+  },
+  {
+    alt: "Behavior and hydration tests",
+    src: BADGE_ENDPOINT("tests"),
+    href: `${REPO}/actions/workflows/ci.yml`,
+  },
+  {
+    alt: "Style-matrix checks",
+    src: BADGE_ENDPOINT("style-matrix"),
+    href: `${REPO}/actions/workflows/ci.yml`,
+  },
+  // OpenSSF Scorecard deliberately absent: the pipeline runs weekly, but at
+  // 3.8/10 (new repo — no branch protection, unpinned actions) the badge
+  // reads as a warning, not a receipt. Add it back once the score is earned.
 ] as const;
 
 <section
@@ -77,5 +111,12 @@ static const RECEIPTS = [
       </span>
       <span class="text-xs text-muted-foreground">renders without JavaScript</span>
     </p>
+  </div>
+  <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-2 px-6 pb-5">
+    <for|badge| of=BADGES>
+      <a href=badge.href target="_blank" rel="noreferrer" class="inline-flex outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring">
+        <img src=badge.src alt=badge.alt height="20" loading="lazy"/>
+      </a>
+    </for>
   </div>
 </section>

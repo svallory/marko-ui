@@ -81,17 +81,20 @@ switch (kind) {
   }
 
   case "axe": {
-    // scripts/ci/axe-scan.ts output
+    // scripts/ci/axe-scan.ts output. Branded "WCAG" rather than "axe": axe
+    // runs the WCAG 2.x A/AA rulesets and WCAG is the name people recognize —
+    // "(automated)" keeps it honest, since no automated scan proves full
+    // conformance and official WCAG certification does not exist.
     const { components, violations, pagesScanned } = input;
     write("axe", {
       schemaVersion: 1,
-      label: "axe violations",
+      label: "WCAG 2.2 AA (automated)",
       // "demo pages", not "components": only components with demo pages are
       // scanned, and the registry has more components than demo pages.
       message:
         violations === 0
-          ? `0 across ${components} demo pages`
-          : `${violations} across ${pagesScanned} pages`,
+          ? `0 violations · ${components} demo pages`
+          : `${violations} violations · ${pagesScanned} pages`,
       color: violations === 0 ? "brightgreen" : "red",
     });
     break;
@@ -101,24 +104,17 @@ switch (kind) {
   // representative run per URL and report the MINIMUM across pages (the
   // honest number: every page scores at least this).
   //
-  // Two flavors, matching the two audit targets:
-  // - lighthouse-a11y: accessibility only, run against the bare component
-  //   verify pages. NO performance badge from component pages — perf is a
-  //   whole-page metric (payload, LCP, TBT of a real route); a bare fixture
-  //   page would score ~100 and prove nothing.
-  // - lighthouse-site: best-practices + seo from the real docs pages, where
-  //   those categories actually mean something.
-  case "lighthouse-a11y":
-  case "lighthouse-site": {
+  // lighthouse-a11y: accessibility only, run against the bare component
+  // verify pages. NO performance/best-practices/seo badges — perf is a
+  // whole-page metric (payload, LCP, TBT of a real route; a bare fixture
+  // would score ~100 and prove nothing) and the others describe the docs
+  // site, which library users don't care about.
+  case "lighthouse-a11y": {
     const runs = (input as { isRepresentativeRun?: boolean; summary: Record<string, number> }[])
       .filter((run) => run.isRepresentativeRun !== false);
-    const categories: [string, string][] =
-      kind === "lighthouse-a11y"
-        ? [["accessibility", "lighthouse a11y (components)"]]
-        : [
-            ["best-practices", "lighthouse best practices"],
-            ["seo", "lighthouse seo"],
-          ];
+    const categories: [string, string][] = [
+      ["accessibility", "lighthouse a11y (components)"],
+    ];
     for (const [key, label] of categories) {
       // A manifest without this category means the wrong manifest was fed in
       // (e.g. a later collect clobbered .lighthouseci) — fail loudly rather

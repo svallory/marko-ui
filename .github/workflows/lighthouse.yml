@@ -1,10 +1,8 @@
-# Lighthouse CI over the production docs build. Two audit targets:
-# - accessibility on the bare component verify pages (the components ARE the
-#   claim) → lighthouse-accessibility badge
-# - best-practices + seo on the real docs pages → their badges
-# No performance badge: perf is a whole-page metric — meaningless on bare
-# component fixtures, and the docs pages' number belongs to the site, not the
-# library. Badges report the MINIMUM across audited pages.
+# Lighthouse accessibility over the production docs build's bare component
+# verify pages — the components ARE the claim; docs-site scores are noise to
+# library users. No performance/best-practices/seo badges: perf is a
+# whole-page metric (meaningless on bare fixtures) and the rest describe the
+# docs site, not the components. The badge reports the MINIMUM across pages.
 name: Lighthouse
 
 on:
@@ -54,27 +52,8 @@ jobs:
           uploadArtifacts: true
           artifactName: lighthouse-results-components
           temporaryPublicStorage: true
-      # Both treosh steps collect into the same .lighthouseci dir, so the
-      # second run clobbers the first run's manifest — snapshot it first.
-      - name: Save components manifest
-        run: cp "${{ steps.lhci_a11y.outputs.resultsPath }}/manifest.json" lh-components-manifest.json
-      - name: Lighthouse best-practices/seo on docs pages
-        id: lhci_site
-        uses: treosh/lighthouse-ci-action@v12
-        with:
-          urls: |
-            http://localhost:3000/
-            http://localhost:3000/docs/components/accordion
-            http://localhost:3000/docs/components/dialog
-          configPath: .github/lighthouse/lighthouserc-site.json
-          runs: 1
-          uploadArtifacts: true
-          artifactName: lighthouse-results-site
-          temporaryPublicStorage: true
       - name: Generate badges
-        run: |
-          bun scripts/ci/badge.ts lighthouse-a11y lh-components-manifest.json badge-out
-          bun scripts/ci/badge.ts lighthouse-site "${{ steps.lhci_site.outputs.resultsPath }}/manifest.json" badge-out
+        run: bun scripts/ci/badge.ts lighthouse-a11y "${{ steps.lhci_a11y.outputs.resultsPath }}/manifest.json" badge-out
       - name: Push to badges branch
         if: github.ref == 'refs/heads/main'
         env:
