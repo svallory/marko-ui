@@ -137,7 +137,10 @@ Adapter renamed to the published `marko-zag` package (295 imports swept, package
 - [ ] **Publish `marko-zag@1.0.1`** (`npm publish` from /Users/svallory/work/marko-zag — version bumped + pushed): 1.0.0's exports map misses `./src/*`, so bundlers enforcing exports refuse the taglib tag files. Then REMOVE the temporary `overrides.marko-zag: file:` from the workspace root package.json.
 - [x] Real adapter dependency install — done 2026-08-17 (marko-zag on npm; graceful-degrade warning path kept for other failures).
 - [x] e2e install verification — done 2026-08-17.
-- [ ] **`/docs/installation` rewrite** — drop the "unpublished" callout, document the real `marko-ui init` flow (Docs-audit item).
+- [ ] **`/docs/installation` rewrite** — drop the "unpublished" callout, document the real `marko-ui init` flow AND the new package mode (`bun add @marko-ui/<style>` → zero-import `<Badge>` tags; `marko-ui eject` to switch to source) (Docs-audit item).
+- [ ] **Publish the style packages** — `bun packages/registry/scripts/build-style-packages.ts` emits 9 packages to `dist/style-packages/<style>/`; `npm publish` each (needs the `@marko-ui` npm scope). Verified installable via tarball.
+- [ ] **Claim `marko-ui` on npm for the CLI** — currently `@marko-ui/cli`, so the incantation is `bunx @marko-ui/cli add badge`; docs already print `bunx marko-ui add badge`.
+- [ ] **File the language-tools issue** — draft ready at `notes/upstream-issue-language-tools-pascalcase-taglib.md` (PascalCase taglib tags: runtime resolves, type-gen emits false TS2304; our tags.d.ts shim works around it).
 - [ ] **Registry deploy pairing** — `registries.json` + item URLs bake `REGISTRY_BASE_URL` at build time; production deploy must build with `REGISTRY_BASE_URL=https://marko-ui.saulo.tech/r` or installed `registryDependencies` point at localhost.
 
 ## Docs
