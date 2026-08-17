@@ -1,6 +1,7 @@
 import { promises as fs } from "fs"
 import path from "path"
 import { runAgentsSync } from "@/src/commands/agents"
+import { writeProjectTaglib } from "@/src/utils/taglib"
 import { preFlightInit } from "@/src/preflights/preflight-init"
 import {
   BASE_COLORS,
@@ -159,6 +160,9 @@ export async function runInit(
     silent: options.silent,
     isNewProject: options.isNewProject,
   })
+
+  // Zero-import tags for installed components (<Badge>, <badge>, ...).
+  await writeProjectTaglib(fullConfig)
 
   if (options.agents) {
     await runAgentsSync(options.cwd, { silent: options.silent })

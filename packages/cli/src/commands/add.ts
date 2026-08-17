@@ -18,6 +18,7 @@ import { logger } from "@/src/utils/logger"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
 import { confirm, exitIfEmptySelection, multiselect } from "@/src/utils/clack"
 import { spinner } from "@/src/utils/spinner"
+import { writeProjectTaglib } from "@/src/utils/taglib"
 import { Command } from "commander"
 import { z } from "zod"
 
@@ -210,6 +211,9 @@ export const add = new Command()
 
       if (!initHasRun) {
         await addComponents(options.components, config, options)
+        // Keep the project taglib (zero-import <Badge>/<badge> tags) in
+        // sync with what is installed. No-op unless marko.json is ours.
+        await writeProjectTaglib(config)
       }
 
     } catch (error) {

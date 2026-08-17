@@ -5,6 +5,7 @@ import { agents } from "@/src/commands/agents"
 import { diff } from "@/src/commands/diff"
 import { docs } from "@/src/commands/docs"
 import { doctor } from "@/src/commands/doctor"
+import { eject } from "@/src/commands/eject"
 import { info } from "@/src/commands/info"
 import { init } from "@/src/commands/init"
 import { manifest } from "@/src/commands/manifest"
@@ -37,6 +38,7 @@ export function buildProgram() {
     .addCommand(search)
     .addCommand(info)
     .addCommand(doctor)
+    .addCommand(eject)
     .addCommand(manifest)
     .addCommand(agents)
     .addCommand(registry)
