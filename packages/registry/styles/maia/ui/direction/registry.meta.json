@@ -1,6 +1,0 @@
-{
-  "title": "Direction",
-  "description": "Sets the text direction (ltr/rtl) for its descendants.",
-  "dependencies": [],
-  "registryDependencies": ["utils"]
-}

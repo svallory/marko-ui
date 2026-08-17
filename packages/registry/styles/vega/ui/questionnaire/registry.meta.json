@@ -1,6 +1,0 @@
-{
-  "title": "Questionnaire",
-  "description": "A multi-step questionnaire with choices, freeform answers, progress, and keyboard shortcuts.",
-  "dependencies": [],
-  "registryDependencies": ["utils", "button"]
-}

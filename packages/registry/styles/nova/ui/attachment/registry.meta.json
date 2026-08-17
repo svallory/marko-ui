@@ -1,6 +1,0 @@
-{
-  "title": "Attachment",
-  "description": "Displays a file attachment card with media preview, title, description, and actions.",
-  "dependencies": ["class-variance-authority"],
-  "registryDependencies": ["utils", "button"]
-}

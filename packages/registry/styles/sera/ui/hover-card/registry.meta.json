@@ -1,6 +1,0 @@
-{
-  "title": "Hover Card",
-  "description": "For sighted users to preview content available behind a link.",
-  "dependencies": ["@zag-js/hover-card"],
-  "registryDependencies": ["utils"]
-}

@@ -34,7 +34,7 @@
 /* DEVIATION: scan our Marko sources instead of shadcn's styles/base-* trees. */
 @source "../../**/*.marko";
 @source "../../../packages/registry/default/**/*.{marko,ts}";
-@source "../../../packages/registry/styles/**/*.{marko,ts}";
+@source "../../../packages/registry/styles-gen/**/*.{marko,ts}";
 
 @custom-variant style-vega (&:where(.style-vega *));
 @custom-variant style-nova (&:where(.style-nova *));

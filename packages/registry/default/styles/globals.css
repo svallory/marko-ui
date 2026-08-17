@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "./marko-accordion.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -230,5 +229,64 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/*
+ * Measured-height accordion animation (parity with Radix's
+ * `--radix-accordion-content-height`, which Radix computes via
+ * ResizeObserver in `@radix-ui/react-collapsible` and re-exports through
+ * `@radix-ui/react-accordion`). `accordion.marko` publishes
+ * `--marko-accordion-content-height` on each content panel from its own
+ * ResizeObserver; these keyframes replace tw-animate-css's upstream
+ * `accordion-down`/`accordion-up` (which only knows Radix/Bits/Reka/Kobalte/
+ * ng-primitives var names) so `height: 0 -> auto` becomes
+ * `height: 0 -> <measured px>` in every browser, not just ones supporting
+ * `calc-size()`/`interpolate-size`.
+ *
+ * NAMED `marko-accordion-down`/`marko-accordion-up`, NOT `accordion-down`/
+ * `accordion-up` — Tailwind v4's build (Lightning CSS) dedupes same-named
+ * top-level `@keyframes` across the whole sheet and keeps the FIRST
+ * occurrence, which is tw-animate-css's own `@theme inline` block (it loads
+ * before this file). A same-named override here compiles clean but
+ * is silently discarded from the production CSS — verified: the built
+ * stylesheet contained exactly one `@keyframes accordion-down` (tw-animate-
+ * css's), zero references to `--marko-accordion-content-height`, i.e. this
+ * entire mechanism was dead code until renamed. Using a unique name sidesteps
+ * the dedup entirely; the `@theme inline` block below repoints Tailwind's
+ * `--animate-accordion-down`/`-up` (the vars `animate-accordion-down`/`-up`
+ * utility classes actually resolve to, referenced verbatim from shadcn's
+ * accordion.tsx class string, which this repo's accordion.marko also keeps
+ * unchanged for class-string parity) at these renamed keyframes instead of
+ * tw-animate-css's originals, which stay defined (harmless, unreferenced)
+ * for anything else that might target the bare `accordion-down` name.
+ *
+ * Shared by the consumer theme (globals.css) and the docs site's app.css —
+ * both must import it AFTER tw-animate-css.
+ */
+@theme inline {
+  --animate-accordion-down: marko-accordion-down var(--tw-animation-duration, var(--tw-duration, 0.2s))
+    var(--tw-ease, ease-out) var(--tw-animation-delay, 0s) var(--tw-animation-iteration-count, 1)
+    var(--tw-animation-direction, normal) var(--tw-animation-fill-mode, none);
+  --animate-accordion-up: marko-accordion-up var(--tw-animation-duration, var(--tw-duration, 0.2s))
+    var(--tw-ease, ease-out) var(--tw-animation-delay, 0s) var(--tw-animation-iteration-count, 1)
+    var(--tw-animation-direction, normal) var(--tw-animation-fill-mode, none);
+}
+
+@keyframes marko-accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--marko-accordion-content-height, auto);
+  }
+}
+
+@keyframes marko-accordion-up {
+  from {
+    height: var(--marko-accordion-content-height, auto);
+  }
+  to {
+    height: 0;
   }
 }

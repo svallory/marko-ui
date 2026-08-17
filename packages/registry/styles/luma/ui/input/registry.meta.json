@@ -1,6 +1,0 @@
-{
-  "title": "Input",
-  "description": "Displays a form input field.",
-  "dependencies": [],
-  "registryDependencies": ["utils"]
-}

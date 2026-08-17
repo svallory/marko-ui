@@ -1,6 +1,0 @@
-{
-  "title": "Button Group",
-  "description": "Groups buttons together, with a wide range of customization options.",
-  "dependencies": [],
-  "registryDependencies": ["utils", "separator"]
-}

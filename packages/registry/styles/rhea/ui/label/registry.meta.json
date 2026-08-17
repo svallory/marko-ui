@@ -1,6 +1,0 @@
-{
-  "title": "Label",
-  "description": "Renders an accessible label associated with controls.",
-  "dependencies": [],
-  "registryDependencies": ["utils"]
-}

@@ -1,6 +1,0 @@
-{
-  "title": "Input Group",
-  "description": "Groups inputs and addons together, with a wide range of customization options.",
-  "dependencies": [],
-  "registryDependencies": ["utils", "button", "input", "textarea"]
-}

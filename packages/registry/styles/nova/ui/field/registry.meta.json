@@ -1,6 +1,0 @@
-{
-  "title": "Field",
-  "description": "Validation-library-agnostic form field primitives — field, label, description, error, group, set, legend, separator, content and title.",
-  "dependencies": [],
-  "registryDependencies": ["utils", "label", "separator"]
-}

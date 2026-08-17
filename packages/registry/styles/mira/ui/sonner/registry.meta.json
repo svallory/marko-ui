@@ -1,6 +1,0 @@
-{
-  "title": "Sonner",
-  "description": "An opinionated toast component, ported onto this registry's Zag-powered toast machinery.",
-  "dependencies": ["@zag-js/toast", "marko-ui"],
-  "registryDependencies": ["utils", "toast"]
-}

@@ -6,7 +6,11 @@
     "dev": "marko-run",
     "build": "marko-run build",
     "preview": "marko-run preview",
-    "check": "tsc --noEmit -p ."
+    "check": "tsc --noEmit -p .",
+    "styles": "bun ../../packages/registry/scripts/build-styles.ts",
+    "predev": "bun ../../packages/registry/scripts/build-styles.ts",
+    "prebuild": "bun ../../packages/registry/scripts/build-styles.ts",
+    "precheck": "bun ../../packages/registry/scripts/build-styles.ts"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

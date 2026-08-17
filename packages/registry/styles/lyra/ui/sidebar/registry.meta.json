@@ -1,6 +1,0 @@
-{
-  "title": "Sidebar",
-  "description": "A composable, collapsible side navigation panel with header, content, footer, and menu parts.",
-  "dependencies": [],
-  "registryDependencies": ["utils"]
-}

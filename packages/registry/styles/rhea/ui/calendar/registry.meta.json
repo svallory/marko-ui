@@ -1,6 +1,0 @@
-{
-  "title": "Calendar",
-  "description": "An inline, always-open date field component that allows users to select a date.",
-  "dependencies": ["@zag-js/date-picker", "@internationalized/date"],
-  "registryDependencies": ["utils"]
-}

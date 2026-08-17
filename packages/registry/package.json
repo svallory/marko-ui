@@ -5,14 +5,14 @@
   "type": "module",
   "description": "marko-ui component source registry (shadcn registry format)",
   "exports": {
-    "./styles/rhea/*": "./styles/rhea/*",
-    "./styles/nova/*": "./styles/nova/*",
-    "./styles/vega/*": "./styles/vega/*",
-    "./styles/lyra/*": "./styles/lyra/*",
-    "./styles/maia/*": "./styles/maia/*",
-    "./styles/mira/*": "./styles/mira/*",
-    "./styles/luma/*": "./styles/luma/*",
-    "./styles/sera/*": "./styles/sera/*",
+    "./styles/rhea/*": "./styles-gen/rhea/*",
+    "./styles/nova/*": "./styles-gen/nova/*",
+    "./styles/vega/*": "./styles-gen/vega/*",
+    "./styles/lyra/*": "./styles-gen/lyra/*",
+    "./styles/maia/*": "./styles-gen/maia/*",
+    "./styles/mira/*": "./styles-gen/mira/*",
+    "./styles/luma/*": "./styles-gen/luma/*",
+    "./styles/sera/*": "./styles-gen/sera/*",
     "./*": "./default/*"
   },
   "imports": {

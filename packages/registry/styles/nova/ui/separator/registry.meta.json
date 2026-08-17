@@ -1,6 +1,0 @@
-{
-  "title": "Separator",
-  "description": "Visually or semantically separates content.",
-  "dependencies": [],
-  "registryDependencies": ["utils"]
-}
