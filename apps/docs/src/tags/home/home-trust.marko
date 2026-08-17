@@ -32,9 +32,9 @@ static const BADGE_ENDPOINT = (name: string) =>
 
 static const BADGES = [
   {
-    alt: "631 CI checks passing (behavior, hydration, and style-matrix suites)",
+    alt: "631 tests passing (behavior, hydration, and style-matrix suites)",
     title: "120 behavior & hydration tests + 511 style-matrix checks — run on every push",
-    src: BADGE_ENDPOINT("checks"),
+    src: BADGE_ENDPOINT("checks-count"),
     href: `${REPO}/actions/workflows/ci.yml`,
   },
   {
@@ -82,18 +82,18 @@ static const BADGES = [
       </span>
       <span class="text-xs text-muted-foreground">renders without JavaScript</span>
     </p>
-    <div class="flex flex-wrap items-center justify-center gap-2 border-s border-border/60 px-6 py-1">
-      <for|badge| of=BADGES>
-        <a
-          href=badge.href
-          target="_blank"
-          rel="noreferrer"
-          title=badge.title
-          class="inline-flex outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <img src=badge.src alt=badge.alt height="20" loading="lazy"/>
-        </a>
-      </for>
-    </div>
+  </div>
+  <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-2 px-6 pb-5">
+    <for|badge| of=BADGES>
+      <a
+        href=badge.href
+        target="_blank"
+        rel="noreferrer"
+        title=badge.title
+        class="inline-flex outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <img src=badge.src alt=badge.alt height="20" loading="lazy"/>
+      </a>
+    </for>
   </div>
 </section>

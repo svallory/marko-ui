@@ -107,13 +107,23 @@ switch (kind) {
     });
     const passed = parts.reduce((sum, badge) => sum + (badge.passed ?? 0), 0);
     const total = parts.reduce((sum, badge) => sum + (badge.total ?? 0), 0);
+    // Two renderings of the same number: checks.json for the README
+    // ("631/631 passing" — pass/total reads right in a checklist of badges),
+    // checks-count.json for the home page (just "631" — it sits next to
+    // equally terse receipts).
     write("checks", {
       schemaVersion: 1,
-      label: "checks",
+      label: "tests",
       message: `${passed}/${total} passing`,
       color: passFailColor(passed, total),
       passed,
       total,
+    });
+    write("checks-count", {
+      schemaVersion: 1,
+      label: "tests",
+      message: String(passed === total ? total : `${passed}/${total}`),
+      color: passFailColor(passed, total),
     });
     break;
   }
