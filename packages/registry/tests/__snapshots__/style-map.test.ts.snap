@@ -1,0 +1,3 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`createStyleMap (shadcn originals, cn- prefix) > key count snapshot 1`] = `421`;

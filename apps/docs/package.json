@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "marko-run",
     "build": "marko-run build",
-    "preview": "marko-run preview"
+    "preview": "marko-run preview",
+    "check": "tsc --noEmit -p ."
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

@@ -29,8 +29,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const REPO = join(ROOT, "../..");
 const OUT_ROOT = join(REPO, "dist/style-packages");
 
+const DEFAULT_STYLE_DIR = join(ROOT, "default");
+
 const STYLES: Record<string, string> = {
-  default: join(ROOT, "default"),
+  default: DEFAULT_STYLE_DIR,
   luma: join(ROOT, "styles/luma"),
   lyra: join(ROOT, "styles/lyra"),
   maia: join(ROOT, "styles/maia"),
@@ -79,7 +81,8 @@ function pascalCase(name: string) {
     .join("");
 }
 
-function bareModule(specifier: string): string | null {
+function bareModule(specifier: string | undefined): string | null {
+  if (specifier === undefined) return null;
   // "#lib/*" are package-internal subpath imports (declared in the emitted
   // package.json "imports" field), not dependencies.
   if (
@@ -89,7 +92,7 @@ function bareModule(specifier: string): string | null {
   )
     return null;
   const parts = specifier.split("/");
-  return specifier.startsWith("@") ? parts.slice(0, 2).join("/") : parts[0];
+  return specifier.startsWith("@") ? parts.slice(0, 2).join("/") : (parts[0] ?? specifier);
 }
 
 interface TagEntry {
@@ -110,7 +113,7 @@ async function buildPackage(style: string, srcDir: string) {
   if (existsSync(libDir)) {
     await cp(libDir, join(outDir, "lib"), { recursive: true });
   } else {
-    await cp(join(STYLES.default, "lib"), join(outDir, "lib"), {
+    await cp(join(DEFAULT_STYLE_DIR, "lib"), join(outDir, "lib"), {
       recursive: true,
     });
   }

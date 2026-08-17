@@ -107,7 +107,9 @@ export function createMessageScrollerController(options: MessageScrollerProvider
 
   // --- ref bag (plain mutable closure state) ---
   let autoscrolling = false;
-  let autoscrollingTimeout: ReturnType<typeof setTimeout> | null = null;
+  // number, not ReturnType<typeof setTimeout>: this runs in the browser and
+  // uses window.setTimeout, which returns a numeric handle.
+  let autoscrollingTimeout: number | null = null;
   let streamingTurn: HTMLElement | null = null;
   let content: HTMLElement | null = null;
   let defaultScrollPositionApplied = false;

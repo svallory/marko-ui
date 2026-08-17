@@ -301,11 +301,13 @@ export interface XTick {
  * kept only if it's `minGap` past the last KEPT tick's x position.
  */
 export function thinTicksByGap<T extends { x: number }>(ticks: T[], minGap: number): T[] {
-  if (minGap <= 0 || ticks.length === 0) return ticks;
-  const kept: T[] = [ticks[0]];
-  let lastX = ticks[0].x;
+  const first = ticks[0];
+  if (minGap <= 0 || first === undefined) return ticks;
+  const kept: T[] = [first];
+  let lastX = first.x;
   for (let i = 1; i < ticks.length; i++) {
     const tick = ticks[i];
+    if (tick === undefined) continue;
     if (tick.x - lastX >= minGap) {
       kept.push(tick);
       lastX = tick.x;

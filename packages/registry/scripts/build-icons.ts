@@ -128,11 +128,11 @@ function resolvePackageDir(pkg: string): string {
 // wrapper element; our Icon component supplies its own <svg> with
 // library-appropriate stroke/fill defaults).
 function extractSvgInner(svg: string): string {
-  const match = svg.match(/<svg[^>]*>([\s\S]*)<\/svg>/);
-  if (!match) {
+  const inner = svg.match(/<svg[^>]*>([\s\S]*)<\/svg>/)?.[1];
+  if (inner === undefined) {
     throw new Error(`Could not extract inner markup from SVG: ${svg.slice(0, 80)}`);
   }
-  return match[1].trim();
+  return inner.trim();
 }
 
 async function readSvgInner(path: string): Promise<string> {
@@ -213,7 +213,9 @@ async function buildPhosphorAliasIndex(dir: string): Promise<Map<string, string>
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(source))) {
     const [, canonical, alias] = match;
-    aliasIndex.set(alias, canonical);
+    if (canonical !== undefined && alias !== undefined) {
+      aliasIndex.set(alias, canonical);
+    }
   }
   return aliasIndex;
 }
@@ -320,8 +322,8 @@ async function buildHugeiconsMap(
       continue;
     }
     const source = await readFile(filePath, "utf-8");
-    const match = source.match(/=\s*(\[[\s\S]*?\]);\s*\n\s*export default/);
-    if (!match) {
+    const arrayLiteral = source.match(/=\s*(\[[\s\S]*?\]);\s*\n\s*export default/)?.[1];
+    if (arrayLiteral === undefined) {
       console.warn(`  ⚠ hugeicons: could not parse "${entry.hugeicons}"`);
       continue;
     }
@@ -330,7 +332,7 @@ async function buildHugeiconsMap(
     // the bare keys so it becomes strict JSON (values in this package are
     // always double-quoted strings — verified against the installed
     // package), then JSON.parse it. No code execution of file contents.
-    const jsonish = match[1].replace(/([{,]\s*)([A-Za-z0-9_]+)(\s*:)/g, '$1"$2"$3');
+    const jsonish = arrayLiteral.replace(/([{,]\s*)([A-Za-z0-9_]+)(\s*:)/g, '$1"$2"$3');
     const nodes = JSON.parse(jsonish) as unknown[];
     out[abstractName] = nodes;
   }

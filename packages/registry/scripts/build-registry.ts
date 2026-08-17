@@ -130,9 +130,9 @@ function rewriteSubpathImports(content: string, targetBase: string): string {
 async function fileEntries(dir: string, targetBase: string, registryBase: string) {
   const entries = await readdir(dir, { withFileTypes: true });
   const subdirs = entries.filter((e) => e.isDirectory());
-  const disallowedSubdirs = subdirs.filter((e) => e.name !== "lib");
-  if (disallowedSubdirs.length > 0) {
-    throw new Error(`registry item dirs must be flat; found subdirectory ${dir}/${disallowedSubdirs[0].name}`);
+  const disallowedSubdir = subdirs.find((e) => e.name !== "lib");
+  if (disallowedSubdir !== undefined) {
+    throw new Error(`registry item dirs must be flat; found subdirectory ${dir}/${disallowedSubdir.name}`);
   }
   const names = entries
     .filter((e) => e.isFile() && e.name !== "registry.meta.json")

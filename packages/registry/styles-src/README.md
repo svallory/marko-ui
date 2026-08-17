@@ -1,0 +1,3 @@
+# Vendored shadcn/ui Style Tokens
+
+These are the per-style CSS token files vendored from shadcn/ui (MIT license — https://github.com/shadcn-ui/ui). Each file (`style-luma.css`, `style-lyra.css`, `style-maia.css`, `style-mira.css`, `style-nova.css`, `style-rhea.css`, `style-sera.css`, `style-vega.css`) contains the authored component styles for one shadcn design token set. The class prefix has been rewritten from `cn-` to `mu-` to avoid conflicts with the marko-ui namespace. These files are consumed by the style transform in `packages/registry/scripts/` and should not be hand-edited — re-vendor from the shadcn source if updates are needed.
