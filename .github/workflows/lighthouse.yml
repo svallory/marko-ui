@@ -52,6 +52,7 @@ jobs:
           configPath: .github/lighthouse/lighthouserc-a11y.json
           runs: 1
           uploadArtifacts: true
+          artifactName: lighthouse-results-components
           temporaryPublicStorage: true
       - name: Lighthouse best-practices/seo on docs pages
         id: lhci_site
@@ -64,6 +65,7 @@ jobs:
           configPath: .github/lighthouse/lighthouserc-site.json
           runs: 1
           uploadArtifacts: true
+          artifactName: lighthouse-results-site
           temporaryPublicStorage: true
       - name: Generate badges
         run: |
