@@ -9,17 +9,28 @@ export interface ComboboxItem {
   disabled?: boolean;
 }
 
+// Optional grouping — same display-only shape as select.marko's `groups`
+// (zag has no native group concept; see combobox.props.mjs). Mirrors
+// upstream's `ComboboxGroup`/`ComboboxLabel` slots.
+export interface ComboboxGroupData {
+  label: string;
+  items: ComboboxItem[];
+}
+
 // `items`/`value` are narrowed vs. the raw machine Props: `items` drives the
 // generated `collection`, and `value` is typed as the plain string[] the
 // caller works with (the machine's own `value` type matches already).
 export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
   items: ComboboxItem[];
+  groups?: ComboboxGroupData[];
   valueChange?: (value: string[]) => void;
   inputValueChange?: (inputValue: string) => void;
   highlightChange?: (highlightedValue: string | null) => void;
+  /** Show the clear ("x") button when a value is selected. */
+  showClear?: boolean;
 };
 
-<const/{ items, class: className }=input/>
+<const/{ items, groups, showClear, class: className }=input/>
 
 <let/filtered=items/>
 
@@ -71,59 +82,145 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
   const {
     class: ownClass,
     items: ownItems,
+    groups: ownGroups,
     valueChange: ownValueChange,
     inputValueChange: ownInputValueChange,
     highlightChange: ownHighlightChange,
+    showClear: ownShowClear,
     ...native
   } = combobox.splitProps(input)[1];
   return native;
 }>
 
+// `filteredGroups`: group shape re-derived from `filtered` so typing narrows
+// each group's items the same way the flat list narrows (group membership by
+// value lookup against the original `groups` prop).
+<const/filteredGroups=() => {
+  if (!groups) return null;
+  const filteredValues = new Set(filtered.map((item) => item.value));
+  return groups
+    .map((group) => ({ label: group.label, items: group.items.filter((item) => filteredValues.has(item.value)) }))
+    .filter((group) => group.items.length > 0);
+}>
+
 <div ...nativeAttrs() ...api().getRootProps() data-slot="combobox" class=cn(className)>
+  <span data-slot="combobox-value" class="sr-only">${api().valueAsString}</span>
   <div
     ...api().getControlProps()
     data-slot="combobox-control"
-    class="border-input relative flex items-center rounded-md border shadow-xs focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50"
+    class="mu-combobox-input w-auto border-input relative flex items-center rounded-md border shadow-xs focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50"
   >
-    <input
-      ...api().getInputProps()
-      data-slot="combobox-input"
-      class="h-9 flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-    />
+    <if=(input.multiple && api().hasSelectedItems)>
+      <div data-slot="combobox-chips" class="mu-combobox-chips flex flex-wrap items-center gap-1 p-1">
+        <for|item| of=api().selectedItems>
+          <span data-slot="combobox-chip" class="mu-combobox-chip has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50">
+            ${item.label}
+            <button
+              type="button"
+              data-slot="combobox-chip-remove"
+              class="mu-combobox-chip-remove"
+              disabled=input.disabled
+              on-click() { api().clearValue(item.value); }
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-combobox-chip-indicator-icon pointer-events-none size-3">
+                <path d="M18 6 6 18"/>
+                <path d="m6 6 12 12"/>
+              </svg>
+            </button>
+          </span>
+        </for>
+        <input
+          ...api().getInputProps()
+          data-slot="combobox-chip-input"
+          class="mu-combobox-chip-input min-w-16 flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+        />
+      </div>
+    </if>
+    <else>
+      <input
+        ...api().getInputProps()
+        data-slot="combobox-input"
+        class="h-9 flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+      />
+    </else>
+    <if=(showClear && api().hasSelectedItems)>
+      <button
+        ...api().getClearTriggerProps()
+        data-slot="combobox-clear"
+        class="mu-combobox-clear group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent flex h-9 w-9 items-center justify-center text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-combobox-clear-icon pointer-events-none size-4">
+          <path d="M18 6 6 18"/>
+          <path d="m6 6 12 12"/>
+        </svg>
+      </button>
+    </if>
     <button
       ...api().getTriggerProps()
       data-slot="combobox-trigger"
-      class="flex h-9 w-9 items-center justify-center text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+      class="mu-combobox-trigger flex h-9 w-9 items-center justify-center text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 opacity-50">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-combobox-trigger-icon pointer-events-none size-4 opacity-50">
         <path d="m6 9 6 6 6-6"/>
       </svg>
     </button>
   </div>
   <portal>
     <if=api().open>
-      <div ...api().getPositionerProps() style=positionerStyle data-slot="combobox-positioner" class="z-50">
+      <div ...api().getPositionerProps() style=positionerStyle data-slot="combobox-positioner" class="isolate z-50">
         <div
           ...api().getContentProps()
           data-slot="combobox-content"
-          class="bg-popover text-popover-foreground relative z-50 min-w-[8rem] overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-md data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
+          class="mu-combobox-content mu-combobox-content-logical mu-menu-target mu-menu-translucent group/combobox-content relative max-h-(--available-height) w-(--reference-width) max-w-(--available-width) origin-(--transform-origin) overflow-x-hidden overflow-y-auto data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
         >
-          <for|item| of=filtered>
-            <div
-              ...api().getItemProps({ item })
-              data-slot="combobox-item"
-              class="focus:bg-accent focus:text-accent-foreground data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-            >
-              <span ...api().getItemTextProps({ item }) data-slot="combobox-item-text">${item.label}</span>
-              <span ...api().getItemIndicatorProps({ item }) data-slot="combobox-item-indicator" class="absolute right-2 flex size-3.5 items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
-                  <path d="M20 6 9 17l-5-5"/>
-                </svg>
-              </span>
-            </div>
-          </for>
+          <div ...api().getListProps() data-slot="combobox-list" class="mu-combobox-list overflow-y-auto overscroll-contain">
+            <if=filteredGroups()>
+              <for|group, groupIndex| of=filteredGroups()>
+                <div data-slot="combobox-group" class="mu-combobox-group">
+                  <div data-slot="combobox-label" class="mu-combobox-label">${group.label}</div>
+                  <div data-slot="combobox-collection">
+                    <for|item| of=group.items>
+                      <div
+                        ...api().getItemProps({ item })
+                        data-slot="combobox-item"
+                        class="mu-combobox-item relative flex w-full cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+                      >
+                        <span ...api().getItemTextProps({ item }) data-slot="combobox-item-text">${item.label}</span>
+                        <span ...api().getItemIndicatorProps({ item }) data-slot="combobox-item-indicator" class="mu-combobox-item-indicator">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-combobox-item-indicator-icon pointer-events-none size-4">
+                            <path d="M20 6 9 17l-5-5"/>
+                          </svg>
+                        </span>
+                      </div>
+                    </for>
+                  </div>
+                </div>
+                <if=(groupIndex < filteredGroups().length - 1)>
+                  <div data-slot="combobox-separator" class="mu-combobox-separator"></div>
+                </if>
+              </for>
+            </if>
+            <else>
+              <div data-slot="combobox-collection">
+                <for|item| of=filtered>
+                  <div
+                    ...api().getItemProps({ item })
+                    data-slot="combobox-item"
+                    class="mu-combobox-item relative flex w-full cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+                  >
+                    <span ...api().getItemTextProps({ item }) data-slot="combobox-item-text">${item.label}</span>
+                    <span ...api().getItemIndicatorProps({ item }) data-slot="combobox-item-indicator" class="mu-combobox-item-indicator">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-combobox-item-indicator-icon pointer-events-none size-4">
+                        <path d="M20 6 9 17l-5-5"/>
+                      </svg>
+                    </span>
+                  </div>
+                </for>
+              </div>
+            </else>
+          </div>
           <if=(filtered.length === 0)>
-            <div data-slot="combobox-empty" class="text-muted-foreground py-1.5 px-2 text-sm">No results found.</div>
+            <div data-slot="combobox-empty" class="mu-combobox-empty text-muted-foreground py-1.5 px-2 text-sm">No results found.</div>
           </if>
         </div>
       </div>
