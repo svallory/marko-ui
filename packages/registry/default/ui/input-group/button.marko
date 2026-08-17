@@ -8,15 +8,14 @@ export interface Input
     Pick<ButtonVariants, "variant">,
     InputGroupButtonVariants {}
 
-<const/{ variant, size, class: className, content, ...rest }=input/>
+<const/{ variant, size = "xs", class: className, content, ...rest }=input/>
 
 <Button
-  ...rest
   type=input.type ?? "button"
-  data-slot="input-group-button"
+  data-size=size
   variant=variant ?? "ghost"
-  size="sm"
-  class=cn(inputGroupButtonVariants({ size: size ?? "xs" }), className)
+  ...rest
+  class=cn(inputGroupButtonVariants({ size }), className)
 >
   <${content}/>
 </Button>

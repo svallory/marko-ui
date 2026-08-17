@@ -5,12 +5,9 @@ export interface Input extends Marko.Input<"div"> {}
 <const/{ class: className, content, ...rest }=input/>
 
 <div
-  ...rest
   data-slot="field-label"
-  class=cn(
-    "flex w-fit items-center gap-2 text-sm leading-snug font-medium group-data-[disabled=true]/field:opacity-50",
-    className,
-  )
+  class=cn("mu-field-title flex w-fit items-center", className)
+  ...rest
 >
   <${content}/>
 </div>

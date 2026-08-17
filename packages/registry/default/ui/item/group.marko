@@ -8,6 +8,6 @@ export interface Input extends Marko.Input<"div"> {}
 // also used standalone — so a list role here would own zero listitems, which
 // ARIA forbids (axe: aria-required-children). A plain div is honest markup
 // for a visual stack.
-<div ...rest data-slot="item-group" class=cn("group/item-group flex flex-col", className)>
+<div data-slot="item-group" ...rest class=cn("mu-item-group group/item-group flex w-full flex-col", className)>
   <${content}/>
 </div>

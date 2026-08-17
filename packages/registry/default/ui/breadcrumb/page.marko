@@ -5,12 +5,12 @@ export interface Input extends Marko.Input<"span"> {}
 <const/{ class: className, content, ...rest }=input/>
 
 <span
-  ...rest
   data-slot="breadcrumb-page"
   role="link"
   aria-disabled="true"
   aria-current="page"
-  class=cn("text-foreground font-normal", className)
+  class=cn("mu-breadcrumb-page", className)
+  ...rest
 >
   <${content}/>
 </span>

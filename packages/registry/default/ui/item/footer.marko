@@ -5,9 +5,9 @@ export interface Input extends Marko.Input<"div"> {}
 <const/{ class: className, content, ...rest }=input/>
 
 <div
-  ...rest
   data-slot="item-footer"
-  class=cn("flex basis-full items-center justify-between gap-2", className)
+  ...rest
+  class=cn("mu-item-footer flex basis-full items-center justify-between", className)
 >
   <${content}/>
 </div>

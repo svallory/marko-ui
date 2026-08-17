@@ -3,12 +3,13 @@ import { cn } from "#lib/utils.ts";
 
 export interface Input extends Marko.Input<"div">, EmptyMediaVariants {}
 
-<const/{ variant, class: className, content, ...rest }=input/>
+<const/{ variant = "default", class: className, content, ...rest }=input/>
 
 <div
-  ...rest
   data-slot="empty-icon"
-  class=cn(emptyMediaVariants({ variant }), className)
+  data-variant=variant
+  class=cn(emptyMediaVariants({ variant, className }))
+  ...rest
 >
   <${content}/>
 </div>

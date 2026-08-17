@@ -6,10 +6,10 @@ export interface Input extends Marko.Input<"div">, InputGroupAddonVariants {}
 <const/{ align = "inline-start", class: className, content, ...rest }=input/>
 
 <div
-  ...rest
   role="group"
   data-slot="input-group-addon"
   data-align=align
+  ...rest
   onClick(event, target: HTMLElement) {
     if ((event.target as HTMLElement).closest("button")) return;
     // event.currentTarget is unsupported in Marko's delegated events —

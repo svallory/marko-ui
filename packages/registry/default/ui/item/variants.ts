@@ -1,17 +1,18 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
 export const itemVariants = cva(
-  "group/item flex items-center border border-transparent text-sm rounded-md transition-colors [a]:hover:bg-accent/50 [a]:transition-colors flex-wrap outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+  "mu-item group/item flex w-full flex-wrap items-center transition-colors duration-100 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 [a]:transition-colors",
   {
     variants: {
       variant: {
-        default: "bg-transparent",
-        outline: "border-border",
-        muted: "bg-muted/50",
+        default: "mu-item-variant-default",
+        outline: "mu-item-variant-outline",
+        muted: "mu-item-variant-muted",
       },
       size: {
-        default: "p-4 gap-4 ",
-        sm: "py-3 px-4 gap-2.5",
+        default: "mu-item-size-default",
+        sm: "mu-item-size-sm",
+        xs: "mu-item-size-xs",
       },
     },
     defaultVariants: {
@@ -24,14 +25,13 @@ export const itemVariants = cva(
 export type ItemVariants = VariantProps<typeof itemVariants>;
 
 export const itemMediaVariants = cva(
-  "flex shrink-0 items-center justify-center gap-2 group-has-[[data-slot=item-description]]/item:self-start [&_svg]:pointer-events-none group-has-[[data-slot=item-description]]/item:translate-y-0.5",
+  "mu-item-media flex shrink-0 items-center justify-center [&_svg]:pointer-events-none",
   {
     variants: {
       variant: {
-        default: "bg-transparent",
-        icon: "size-8 border rounded-sm bg-muted [&_svg:not([class*='size-'])]:size-4",
-        image:
-          "size-10 rounded-sm overflow-hidden [&_img]:size-full [&_img]:object-cover",
+        default: "mu-item-media-variant-default",
+        icon: "mu-item-media-variant-icon",
+        image: "mu-item-media-variant-image",
       },
     },
     defaultVariants: {

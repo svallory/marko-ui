@@ -5,13 +5,9 @@ export interface Input extends Marko.Input<"fieldset"> {}
 <const/{ class: className, content, ...rest }=input/>
 
 <fieldset
-  ...rest
   data-slot="field-set"
-  class=cn(
-    "flex flex-col gap-6",
-    "has-[>[data-slot=checkbox-group]]:gap-3 has-[>[data-slot=radio-group]]:gap-3",
-    className,
-  )
+  class=cn("mu-field-set flex flex-col", className)
+  ...rest
 >
   <${content}/>
 </fieldset>

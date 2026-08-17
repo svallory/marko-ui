@@ -6,10 +6,10 @@ export interface Input extends Marko.Input<"div">, ButtonGroupVariants {}
 <const/{ orientation, class: className, content, ...rest }=input/>
 
 <div
-  ...rest
   role="group"
   data-slot="button-group"
   data-orientation=(orientation ?? "horizontal")
+  ...rest
   class=cn(buttonGroupVariants({ orientation }), className)
 >
   <${content}/>

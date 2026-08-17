@@ -5,6 +5,6 @@ export interface Input extends Marko.Input<"div">, ItemMediaVariants {}
 
 <const/{ variant, class: className, content, ...rest }=input/>
 
-<div ...rest data-slot="item-media" data-variant=(variant ?? "default") class=cn(itemMediaVariants({ variant }), className)>
+<div data-slot="item-media" data-variant=(variant ?? "default") ...rest class=cn(itemMediaVariants({ variant }), className)>
   <${content}/>
 </div>

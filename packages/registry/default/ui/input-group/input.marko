@@ -1,16 +1,12 @@
+import InputField from "../input/input.marko";
 import { cn } from "#lib/utils.ts";
 
 export interface Input extends Marko.Input<"input"> {}
 
-<const/{ type, class: className, ...rest }=input/>
+<const/{ class: className, ...rest }=input/>
 
-<input
-  ...rest
-  type=type
+<InputField
   data-slot="input-group-control"
-  class=cn(
-    "flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent",
-    "h-full px-3 py-1 text-base outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-    className,
-  )
+  ...rest
+  class=cn("mu-input-group-input flex-1", className)
 />

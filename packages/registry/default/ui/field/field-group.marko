@@ -5,12 +5,9 @@ export interface Input extends Marko.Input<"div"> {}
 <const/{ class: className, content, ...rest }=input/>
 
 <div
-  ...rest
   data-slot="field-group"
-  class=cn(
-    "group/field-group @container/field-group flex w-full flex-col gap-7 data-[slot=checkbox-group]:gap-3 [&>[data-slot=field-group]]:gap-4",
-    className,
-  )
+  class=cn("mu-field-group group/field-group @container/field-group flex w-full flex-col", className)
+  ...rest
 >
   <${content}/>
 </div>

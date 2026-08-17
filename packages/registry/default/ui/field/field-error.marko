@@ -17,11 +17,11 @@ export interface Input extends Marko.Input<"div"> {
 
 <if=content || messages.length>
   <div
-    ...rest
     id=id
     role="alert"
     data-slot="field-error"
-    class=cn("text-sm font-normal text-destructive", className)
+    class=cn("mu-field-error font-normal", className)
+    ...rest
   >
     <if=content>
       <${content}/>

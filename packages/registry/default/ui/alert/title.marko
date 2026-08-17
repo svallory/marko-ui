@@ -5,9 +5,9 @@ export interface Input extends Marko.Input<"div"> {}
 <const/{ class: className, content, ...rest }=input/>
 
 <div
-  ...rest
   data-slot="alert-title"
-  class=cn("col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight", className)
+  class=cn("mu-alert-title [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground", className)
+  ...rest
 >
   <${content}/>
 </div>

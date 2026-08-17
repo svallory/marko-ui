@@ -22,13 +22,13 @@ export interface Input extends Marko.Input<"div">, FieldVariants {
 }=input/>
 
 <div
-  ...rest
   role="group"
   data-slot="field"
   data-orientation=orientation
   data-invalid=(invalid ? "true" : undefined)
   data-disabled=(disabled ? "true" : undefined)
   class=cn(fieldVariants({ orientation }), className)
+  ...rest
 >
   <${content}/>
 </div>

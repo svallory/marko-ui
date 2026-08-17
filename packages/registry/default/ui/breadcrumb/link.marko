@@ -4,6 +4,6 @@ export interface Input extends Marko.Input<"a"> {}
 
 <const/{ class: className, content, ...rest }=input/>
 
-<a ...rest data-slot="breadcrumb-link" class=cn("hover:text-foreground transition-colors", className)>
+<a data-slot="breadcrumb-link" class=cn("mu-breadcrumb-link", className) ...rest>
   <${content}/>
 </a>

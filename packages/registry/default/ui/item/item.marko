@@ -5,6 +5,6 @@ export interface Input extends Marko.Input<"div">, ItemVariants {}
 
 <const/{ variant, size, class: className, content, ...rest }=input/>
 
-<div ...rest data-slot="item" data-variant=(variant ?? "default") data-size=(size ?? "default") class=cn(itemVariants({ variant, size }), className)>
+<div data-slot="item" data-variant=(variant ?? "default") data-size=(size ?? "default") ...rest class=cn(itemVariants({ variant, size }), className)>
   <${content}/>
 </div>

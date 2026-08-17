@@ -5,6 +5,6 @@ export interface Input extends Marko.Input<"div">, AlertVariants {}
 
 <const/{ variant, class: className, content, ...rest }=input/>
 
-<div ...rest role="alert" data-slot="alert" class=cn(alertVariants({ variant }), className)>
+<div data-slot="alert" role="alert" class=cn(alertVariants({ variant }), className) ...rest>
   <${content}/>
 </div>

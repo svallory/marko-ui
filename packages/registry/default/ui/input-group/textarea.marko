@@ -1,15 +1,12 @@
+import TextareaField from "../textarea/textarea.marko";
 import { cn } from "#lib/utils.ts";
 
 export interface Input extends Marko.Input<"textarea"> {}
 
 <const/{ class: className, ...rest }=input/>
 
-<textarea
-  ...rest
+<TextareaField
   data-slot="input-group-control"
-  class=cn(
-    "flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none focus-visible:ring-0 dark:bg-transparent",
-    "field-sizing-content min-h-16 w-full px-3 text-base outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-    className,
-  )
+  ...rest
+  class=cn("mu-input-group-textarea flex-1 resize-none", className)
 />

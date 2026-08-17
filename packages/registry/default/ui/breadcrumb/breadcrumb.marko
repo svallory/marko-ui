@@ -4,11 +4,8 @@ export interface Input extends Marko.Input<"nav"> {}
 
 <const/{ class: className, content, ...rest }=input/>
 
-<nav ...rest aria-label="breadcrumb" data-slot="breadcrumb">
-  <ol data-slot="breadcrumb-list" class=cn(
-    "text-muted-foreground flex flex-wrap items-center gap-1.5 text-sm break-words sm:gap-2.5",
-    className,
-  )>
+<nav data-slot="breadcrumb" aria-label="breadcrumb" class="mu-breadcrumb" ...rest>
+  <ol data-slot="breadcrumb-list" class=cn("mu-breadcrumb-list flex flex-wrap items-center wrap-break-word", className)>
     <${content}/>
   </ol>
 </nav>

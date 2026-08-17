@@ -1,12 +1,12 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
 export const emptyMediaVariants = cva(
-  "flex shrink-0 items-center justify-center mb-2 [&_svg:not([class*='size-'])]:size-6",
+  "mu-empty-media flex shrink-0 items-center justify-center [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-transparent",
-        icon: "bg-muted text-foreground flex size-10 shrink-0 items-center justify-center rounded-lg [&_svg:not([class*='size-'])]:size-6",
+        default: "mu-empty-media-default",
+        icon: "mu-empty-media-icon",
       },
     },
     defaultVariants: {

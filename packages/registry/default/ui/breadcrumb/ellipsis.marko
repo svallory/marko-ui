@@ -5,11 +5,11 @@ export interface Input extends Marko.Input<"span"> {}
 <const/{ class: className, ...rest }=input/>
 
 <span
-  ...rest
   data-slot="breadcrumb-ellipsis"
   role="presentation"
   aria-hidden="true"
-  class=cn("flex size-9 items-center justify-center", className)
+  class=cn("mu-breadcrumb-ellipsis flex items-center justify-center", className)
+  ...rest
 >
   <svg
     xmlns="http://www.w3.org/2000/svg"

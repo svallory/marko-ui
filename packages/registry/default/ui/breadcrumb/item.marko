@@ -4,6 +4,6 @@ export interface Input extends Marko.Input<"li"> {}
 
 <const/{ class: className, content, ...rest }=input/>
 
-<li ...rest data-slot="breadcrumb-item" class=cn("inline-flex items-center gap-1.5", className)>
+<li data-slot="breadcrumb-item" class=cn("mu-breadcrumb-item inline-flex items-center", className) ...rest>
   <${content}/>
 </li>

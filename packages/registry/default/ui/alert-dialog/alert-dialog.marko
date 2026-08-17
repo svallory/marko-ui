@@ -2,7 +2,8 @@
 // Authoring rules: notes/component-authoring.md (v2 pattern)
 import * as dialogMachine from "@zag-js/dialog";
 import type { MachineInput } from "marko-zag";
-import { buttonVariants } from "../button/variants.ts";
+import Button from "../button/button.marko";
+import type { ButtonVariants } from "../button/variants.ts";
 import { cn } from "#lib/utils.ts";
 
 // MachineInput = native <div> attributes ∩ the machine's full Props, with
@@ -13,11 +14,16 @@ import { cn } from "#lib/utils.ts";
 export type Input = MachineInput<"div", dialogMachine.Props> & {
   openChange?: (open: boolean) => void;
   trigger?: Marko.Body<[Record<string, unknown>]>;
+  media?: Marko.Body;
   title?: Marko.Body;
   description?: Marko.Body;
+  /** `"default" | "sm"` — mirrors upstream's `AlertDialogContent` size prop. */
+  size?: "default" | "sm";
   cancelText?: string;
   actionText?: string;
   action?: () => void;
+  cancelVariant?: ButtonVariants["variant"];
+  actionVariant?: ButtonVariants["variant"];
 };
 
 // The three-tag wiring (see /docs/creating-components):
@@ -44,22 +50,28 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
 />
 
 // Whatever is neither machine-owned (splitProps) nor component-owned
-// (class, openChange, trigger, title, description, cancelText, actionText,
-// action) passes through to the content element: aria-*, data-*...
+// (class, openChange, trigger, media, title, description, size, cancelText,
+// actionText, action, cancelVariant, actionVariant) passes through to the
+// content element: aria-*, data-*...
 <const/nativeAttrs=() => {
   const {
     class: ownClass,
     openChange: ownChangeHandler,
     trigger: ownTrigger,
+    media: ownMedia,
     title: ownTitle,
     description: ownDescription,
+    size: ownSize,
     cancelText: ownCancelText,
     actionText: ownActionText,
     action: ownAction,
+    cancelVariant: ownCancelVariant,
+    actionVariant: ownActionVariant,
     ...native
   } = dialogMachine.splitProps(input)[1];
   return native;
 }>
+<const/size=input.size ?? "default"/>
 
 <if=input.trigger>
   <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "alert-dialog-trigger" })/>
@@ -69,41 +81,53 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
     <div
       ...api().getBackdropProps()
       data-slot="alert-dialog-overlay"
-      class="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0"
+      class="mu-alert-dialog-overlay fixed inset-0 z-50"
     />
     <div ...api().getPositionerProps() data-slot="alert-dialog-positioner" class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
         ...nativeAttrs()
         ...api().getContentProps()
         data-slot="alert-dialog-content"
+        data-size=size
         class=cn(
-          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg",
+          "mu-alert-dialog-content group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 outline-none",
           input.class,
         )
       >
-        <div data-slot="alert-dialog-header" class="flex flex-col gap-2 text-center sm:text-left">
-          <h2 ...api().getTitleProps() data-slot="alert-dialog-title" class="text-lg font-semibold">
+        <div data-slot="alert-dialog-header" class="mu-alert-dialog-header">
+          <if=input.media>
+            <div data-slot="alert-dialog-media" class="mu-alert-dialog-media">
+              <${input.media}/>
+            </div>
+          </if>
+          <h2 ...api().getTitleProps() data-slot="alert-dialog-title" class="mu-alert-dialog-title mu-font-heading">
             <${input.title}/>
           </h2>
-          <p ...api().getDescriptionProps() data-slot="alert-dialog-description" class="text-muted-foreground text-sm">
+          <p ...api().getDescriptionProps() data-slot="alert-dialog-description" class="mu-alert-dialog-description">
             <${input.description}/>
           </p>
         </div>
-        <div data-slot="alert-dialog-footer" class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <button ...api().getCloseTriggerProps() data-slot="alert-dialog-cancel" class=buttonVariants({ variant: "outline" })>
-            ${input.cancelText ?? "Cancel"}
-          </button>
-          <button
+        <div data-slot="alert-dialog-footer" class="mu-alert-dialog-footer flex flex-col-reverse gap-2 group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end">
+          <Button
             ...api().getCloseTriggerProps()
+            variant=(input.cancelVariant ?? "outline")
+            data-slot="alert-dialog-cancel"
+            class="mu-alert-dialog-cancel"
+          >
+            ${input.cancelText ?? "Cancel"}
+          </Button>
+          <Button
+            ...api().getCloseTriggerProps()
+            variant=(input.actionVariant ?? "default")
             data-slot="alert-dialog-action"
-            class=buttonVariants({ variant: "default" })
+            class="mu-alert-dialog-action"
             onClick(event: Event, element?: Element) {
               input.action?.();
               api().getCloseTriggerProps().onClick?.(event, element);
             }
           >
             ${input.actionText ?? "Continue"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

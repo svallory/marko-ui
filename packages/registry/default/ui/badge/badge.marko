@@ -5,6 +5,11 @@ export interface Input extends Marko.Input<"span">, BadgeVariants {}
 
 <const/{ variant, class: className, content, ...rest }=input/>
 
-<span ...rest data-slot="badge" class=cn(badgeVariants({ variant }), className)>
+<span
+  data-slot="badge"
+  data-variant=(variant ?? "default")
+  ...rest
+  class=cn(badgeVariants({ variant }), className)
+>
   <${content}/>
 </span>
