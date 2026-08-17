@@ -7,6 +7,8 @@ export type Input = MachineInput<"div", tagsInputMachine.Props> & {
   inputValueChange?: (inputValue: string) => void;
   highlightedValueChange?: (highlightedValue: string | null) => void;
   label?: string;
+  /** Placeholder for the tag entry field (also its accessible-name fallback). */
+  placeholder?: string;
 };
 
 <machine-props/machineProps from=input pick=tagsInputMachine.props
@@ -35,6 +37,9 @@ export type Input = MachineInput<"div", tagsInputMachine.Props> & {
     inputValueChange: ownInputValueChangeHandler,
     highlightedValueChange: ownHighlightedValueChangeHandler,
     label: ownLabel,
+    // placeholder belongs on the entry <input>, not the root div — pulled out
+    // here and applied below.
+    placeholder: ownPlaceholder,
     ...native
   } = tagsInputMachine.splitProps(input)[1];
   return native;
@@ -47,13 +52,13 @@ export type Input = MachineInput<"div", tagsInputMachine.Props> & {
   <div
     ...api().getControlProps()
     data-slot="tags-input-control"
-    class="border-input flex min-h-9 w-full flex-wrap items-center gap-1.5 rounded-md border bg-transparent px-3 py-1.5 shadow-xs transition-[color,box-shadow] has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 has-[input:focus]:ring-[3px] data-[disabled]:pointer-events-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-[invalid]:border-destructive data-[invalid]:ring-destructive/20 dark:data-[invalid]:ring-destructive/40"
+    class="border-input flex min-h-9 w-full flex-wrap items-center gap-1.5 rounded-md border bg-transparent px-3 py-1.5 shadow-xs transition-[color,box-shadow] has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 has-[input:focus]:ring-[3px] data-[disabled]:pointer-events-none data-[disabled]:cursor-not-allowed data-[disabled]:bg-muted data-[invalid]:border-destructive data-[invalid]:ring-destructive/20 dark:data-[invalid]:ring-destructive/40"
   >
     <for|value, index| of=api().value>
       <span
         ...api().getItemProps({ index, value })
         data-slot="tags-input-item"
-        class="inline-flex items-center rounded-md border border-transparent bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[disabled]:opacity-50"
+        class="inline-flex items-center rounded-md border border-transparent bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[disabled]:bg-muted data-[disabled]:text-muted-foreground"
       >
         <span
           ...api().getItemPreviewProps({ index, value })
@@ -83,6 +88,7 @@ export type Input = MachineInput<"div", tagsInputMachine.Props> & {
     </for>
     <input
       ...api().getInputProps()
+      placeholder=input.placeholder
       data-slot="tags-input-input"
       class="h-6 min-w-20 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
     />

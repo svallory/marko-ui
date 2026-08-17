@@ -4,6 +4,10 @@ export interface Input extends Marko.Input<"div"> {}
 
 <const/{ class: className, content, ...rest }=input/>
 
-<div ...rest data-slot="item-group" role="list" class=cn("group/item-group flex flex-col", className)>
+// No role="list" (shadcn deviation): Item renders no role="listitem" — it is
+// also used standalone — so a list role here would own zero listitems, which
+// ARIA forbids (axe: aria-required-children). A plain div is honest markup
+// for a visual stack.
+<div ...rest data-slot="item-group" class=cn("group/item-group flex flex-col", className)>
   <${content}/>
 </div>

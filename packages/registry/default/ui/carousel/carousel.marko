@@ -52,7 +52,14 @@ export type Input<T = unknown> = Omit<
 }>
 
 <div ...nativeAttrs() ...api().getRootProps() data-slot="carousel" class=cn("relative", input.class)>
-  <div ...api().getItemGroupProps() data-slot="carousel-item-group" class="overflow-hidden">
+  // Zag's item group is a real scroll container (scroll-snap), so keyboard
+  // users need it focusable to scroll it (axe: scrollable-region-focusable).
+  <div
+    ...api().getItemGroupProps()
+    data-slot="carousel-item-group"
+    tabindex="0"
+    class="overflow-hidden outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+  >
     <for|slide, index| of=slides>
       <div
         ...api().getItemProps({ index })

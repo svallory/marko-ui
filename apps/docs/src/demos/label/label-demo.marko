@@ -1,7 +1,8 @@
 import Checkbox from "@marko-ui/registry/ui/checkbox/checkbox.marko";
-import Label from "@marko-ui/registry/ui/label/label.marko";
 
-<div class="flex items-center gap-2">
-  <Checkbox id="terms"/>
-  <Label for="terms">Accept terms and conditions</Label>
-</div>
+// The checkbox root IS a <label>, so its accessible name comes from the
+// content nested inside it — an external <Label for=...> can't reach the
+// machine-generated hidden-input id.
+<Checkbox id="terms">
+  <span>Accept terms and conditions</span>
+</Checkbox>

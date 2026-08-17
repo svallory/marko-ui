@@ -104,13 +104,17 @@ export type Input = Omit<MachineInput<"div", treeView.Props>, "collection"> & {
         class="focus-visible:ring-ring/50 flex items-center gap-1 rounded-md px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-[3px] data-[selected]:bg-accent data-[selected]:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
         style={ "padding-left": `calc(0.5rem + var(--depth) * 1rem)` }
       >
-        <button
-          ...api().getBranchTriggerProps(nodeProps)
-          data-slot="tree-view-branch-trigger"
+        // Indicator, not trigger: a nested role="button" inside the
+        // role="treeitem" branch control is invalid (axe: nested-interactive,
+        // button-name). The branch control itself toggles expansion on click
+        // and keyboard; the chevron is purely visual (aria-hidden via Zag).
+        <span
+          ...api().getBranchIndicatorProps(nodeProps)
+          data-slot="tree-view-branch-indicator"
           class="flex items-center justify-center"
         >
           <ChevronIcon/>
-        </button>
+        </span>
         <span data-slot="tree-view-branch-text" class="truncate">${node.label}</span>
       </div>
       <ul ...api().getBranchContentProps(nodeProps) data-slot="tree-view-branch-content" class="flex flex-col">

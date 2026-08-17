@@ -113,6 +113,9 @@ for (const entry of manifest.entries) {
         for (const attr of Array.from(el.attributes)) {
           if (!attr.name.startsWith("aria-")) continue;
           if (isLiveTimer && attr.name === "aria-label") continue;
+          // aria-current="date" marks TODAY's calendar cell — it moves every
+          // day, so keeping it would make the snapshot expire overnight.
+          if (attr.name === "aria-current" && attr.value === "date") continue;
           const value = ID_REF_ATTRS.has(attr.name) ? "<id>" : attr.value;
           attrs.push(`${attr.name}="${value}"`);
         }

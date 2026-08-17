@@ -91,8 +91,15 @@ export type Input = Omit<
 }>
 
 <if=input.trigger>
+  // The panel content only exists in the DOM while open, so the trigger's
+  // aria-controls would dangle when closed (axe: aria-valid-attr-value) —
+  // include it only while its target is rendered.
+  <const/triggerProps=(() => {
+    const { "aria-controls": ariaControls, ...rest } = api().getTriggerProps() as Record<string, unknown>;
+    return api().open ? { ...rest, "aria-controls": ariaControls } : rest;
+  })()>
   <${input.trigger}({
-    ...api().getTriggerProps(),
+    ...triggerProps,
     "data-slot": "floating-panel-trigger",
   })/>
 </if>

@@ -45,9 +45,12 @@ export type Input = MachineInput<"nav", tocMachine.Props> & {
     <p ...api().getTitleProps() data-slot="toc-title" class="mb-3 font-medium text-foreground">${input.title}</p>
   </if>
   <ul ...api().getListProps() data-slot="toc-list" class="relative space-y-2 border-l border-border">
+    // aria-hidden: the active-position indicator is decorative, and a bare
+    // <span> is not valid content for a <ul> (axe: list only-listitems).
     <span
       ...api().getIndicatorProps()
       data-slot="toc-indicator"
+      aria-hidden="true"
       class="w-px bg-foreground transition-[top,height] duration-200 [top:var(--top)] [height:var(--height)]"
     />
     <for|item| of=tocItems()>

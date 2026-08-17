@@ -46,8 +46,18 @@ export type Input = MachineInput<"input", fileUploadMachine.Props> & {
 }>
 
 <div ...api().getRootProps() data-slot="file-upload" class=cn("flex w-full flex-col gap-4", input.class)>
+  // Zag makes the dropzone itself a focusable role="button", but ours
+  // contains the "Browse files" trigger — an interactive control nested in
+  // another (axe: nested-interactive). The trigger is the keyboard path, so
+  // the dropzone drops out of the tab order and stays a plain click/drag
+  // target for pointer users.
+  <const/dropzoneProps=(() => {
+    const { role, tabIndex, tabindex, ...rest } =
+      api().getDropzoneProps() as Record<string, unknown>;
+    return rest;
+  })()>
   <div
-    ...api().getDropzoneProps()
+    ...dropzoneProps
     data-slot="file-upload-dropzone"
     class="border-input hover:bg-accent/50 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-6 text-center transition-colors data-[dragging]:border-primary data-[dragging]:bg-accent/50"
   >

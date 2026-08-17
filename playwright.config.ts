@@ -6,6 +6,10 @@ import { defineConfig, devices } from "@playwright/test";
 // webServer block here starts one; point DOCS_BASE_URL elsewhere if needed.
 export default defineConfig({
   testDir: "e2e",
+  // DOM-structure text snapshots are platform-independent; the default
+  // {platform} suffix would make snapshots recorded on macOS invisible to
+  // the Linux CI runners.
+  snapshotPathTemplate: "{testDir}/{testFileName}-snapshots/{arg}{ext}",
   fullyParallel: true,
   workers: process.env.CI ? 4 : 6,
   timeout: 60_000,

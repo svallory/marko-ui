@@ -4,6 +4,9 @@ export interface Input extends Marko.Input<"div"> {}
 
 <const/{ class: className, content, ...rest }=input/>
 
-<div ...rest data-slot="item-separator" role="separator" class=cn("bg-border my-0 h-px w-full", className)>
+// aria-hidden: a decorative divider is not valid content for the role="list"
+// item-group it usually sits in (axe: aria-required-children), and screen
+// readers gain nothing from announcing it.
+<div ...rest data-slot="item-separator" role="separator" aria-hidden="true" class=cn("bg-border my-0 h-px w-full", className)>
   <${content}/>
 </div>

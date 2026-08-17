@@ -69,9 +69,19 @@ export type Input = MachineInput<"div", stepsMachine.Props> & {
   <div ...api().getListProps() data-slot="steps-list" class="flex data-[orientation=horizontal]:w-full data-[orientation=horizontal]:items-center data-[orientation=vertical]:shrink-0 data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-start data-[orientation=vertical]:gap-1 data-[orientation=vertical]:pr-8">
     <for|item, index| of=items>
       <const/itemState=api().getItemState({ index })>
-      <div ...api().getItemProps({ index }) data-slot="steps-item" class="flex items-center data-[orientation=horizontal]:flex-1 data-[orientation=horizontal]:last:flex-none data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-start">
+      // The item wrapper sits between the tablist and its tabs, which ARIA
+      // forbids unless the wrapper is presentational. Zag also puts
+      // aria-current on this wrapper, but a global aria attribute would void
+      // role="presentation" (presentational-roles conflict resolution), so
+      // aria-current moves onto the tab trigger instead.
+      <const/itemProps=(() => {
+        const { "aria-current": ariaCurrent, ...rest } = api().getItemProps({ index }) as Record<string, unknown>;
+        return { rest, ariaCurrent };
+      })()>
+      <div ...itemProps.rest role="presentation" data-slot="steps-item" class="flex items-center data-[orientation=horizontal]:flex-1 data-[orientation=horizontal]:last:flex-none data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-start">
         <button
           ...api().getTriggerProps({ index })
+          aria-current=itemProps.ariaCurrent
           data-slot="steps-trigger"
           class="flex items-center gap-2 rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
         >

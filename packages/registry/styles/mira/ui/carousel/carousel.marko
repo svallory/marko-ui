@@ -71,6 +71,7 @@ export type Input<T = unknown> = Omit<
     <div
       ...api().getItemGroupProps()
       data-slot="carousel-item-group"
+      tabindex="0"
       class=cn("flex", orientation() === "horizontal" ? "-ml-4" : "-mt-4 flex-col")
     >
       <for|slide, index| of=slides>
