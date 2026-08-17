@@ -2,9 +2,10 @@ import * as menu from "@zag-js/menu";
 import { positionerStyle } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import Icon from "../icon/icon.marko";
+import Submenu from "./submenu.marko";
 
 export interface DropdownMenuItem {
-  type?: "item" | "separator" | "label" | "checkbox" | "radio";
+  type?: "item" | "separator" | "label" | "checkbox" | "radio" | "sub";
   value?: string;
   label?: string;
   disabled?: boolean;
@@ -15,6 +16,16 @@ export interface DropdownMenuItem {
   inset?: boolean;
   /** Checked state for `type="checkbox"` and `type="radio"` entries. */
   checked?: boolean;
+  /** Groups radio items — required for `type: "radio"` entries. */
+  radioGroup?: string;
+  /** `type: "radio"` entries only — this entry's value within its `radioGroup`. */
+  radioValue?: string;
+  /**
+   * `type: "sub"` entries only — the nested submenu's own item list. One
+   * level deep: a `type: "sub"` entry inside a submenu's own `subEntries` is
+   * not wired (same limit as menubar's submenu).
+   */
+  subEntries?: DropdownMenuItem[];
 }
 
 // Attr-tag form of DropdownMenuItem. A SINGLE attr tag name (`item`) carries
@@ -57,6 +68,10 @@ export interface Input {
 // casts needed (mirrors accordion/toggle-group).
 <const/attrItems=[...(input.item ?? [])]/>
 <const/entries=(attrItems.length > 0 ? attrItems : (input.items ?? []).map((item) => ({ ...item, content: undefined as Marko.Body | undefined })))/>
+
+// Getter handed to each <Submenu> child so it can call `setParent` on this
+// menu's raw service (see submenu.marko for the full wiring rationale).
+<const/getOwnService=() => service.service/>
 
 <${trigger}({ ...api().getTriggerProps(), "data-slot": "dropdown-menu-trigger" })/>
 <portal data-slot="dropdown-menu-portal">
@@ -129,6 +144,28 @@ export interface Input {
                 <span data-slot="dropdown-menu-shortcut" class="mu-dropdown-menu-shortcut">${entry.shortcut}</span>
               </if>
             </div>
+          </else>
+          <else if=entry.type === "sub">
+            <Submenu
+              entries=entry.subEntries ?? []
+              label=entry.label
+              disabled=entry.disabled
+              inset=entry.inset
+              parent=getOwnService
+              onChildReady=(childService) => api().setChild(childService)
+            >
+              <@trigger|childApi|>
+                <div
+                  ...api().getTriggerItemProps(childApi)
+                  data-slot="dropdown-menu-sub-trigger"
+                  data-inset=entry.inset || undefined
+                  class="mu-dropdown-menu-sub-trigger flex cursor-default items-center outline-hidden select-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
+                >
+                  ${entry.label}
+                  <Icon name="ChevronRight" class="mu-rtl-flip ml-auto"/>
+                </div>
+              </@trigger>
+            </Submenu>
           </else>
           <else>
             <div
