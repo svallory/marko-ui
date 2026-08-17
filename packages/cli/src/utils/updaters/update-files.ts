@@ -37,7 +37,6 @@ export async function updateFiles(
     silent?: boolean
     interactive?: boolean
     rootSpinner?: ReturnType<typeof spinner>
-    isRemote?: boolean
     isWorkspace?: boolean
     path?: string
     plannedFiles?: RegistryItem["files"]
@@ -56,7 +55,6 @@ export async function updateFiles(
     force: false,
     silent: false,
     interactive: true,
-    isRemote: false,
     isWorkspace: false,
     ...options,
   }
@@ -105,12 +103,6 @@ export async function updateFiles(
 
     const fileName = basename(file.path)
     const targetDir = path.dirname(filePath)
-
-    if (!config.tsx) {
-      filePath = filePath.replace(/\.tsx?$/, (match) =>
-        match === ".tsx" ? ".jsx" : ".js"
-      )
-    }
 
     if (isEnvFile(filePath) && !existsSync(filePath)) {
       const alternativeEnvFile = findExistingEnvFile(targetDir)
@@ -226,9 +218,10 @@ export async function updateFiles(
     }
   }
 
-  const allFiles = options.interactive
-    ? [...filesCreated, ...filesUpdated, ...filesSkipped]
-    : [...filesCreated, ...filesUpdated]
+  // Only files this run actually wrote get their imports rewritten —
+  // rewriting files the user declined to overwrite (in filesSkipped)
+  // would modify content they chose to keep.
+  const allFiles = [...filesCreated, ...filesUpdated]
   const updatedFiles = await resolveImports(allFiles, config, plannedFilePaths)
 
   // Let's update filesUpdated with the updated files.
@@ -587,12 +580,6 @@ export function getPlannedFilePaths(
         return null
       }
 
-      if (!config.tsx) {
-        filePath = filePath.replace(/\.tsx?$/, (match) =>
-          match === ".tsx" ? ".jsx" : ".js"
-        )
-      }
-
       return path.relative(config.resolvedPaths.cwd, filePath)
     })
     .filter((filePath): filePath is string => !!filePath)
@@ -602,8 +589,14 @@ export function getPlannedFilePaths(
 // import() calls. Text-level on purpose: upstream used ts-morph here, but
 // specifier rewriting doesn't need an AST and this also keeps the CLI free
 // of the TypeScript compiler at runtime.
+//
+// Static import/export clauses are anchored to the start of a line (m
+// flag) so the words "import"/"export" inside comments or strings cannot
+// start a match that swallows a later `from "..."`. The from-clause span
+// deliberately stays single-line-per-segment ([^;]*?) rather than
+// free-ranging [\s\S]*?.
 export const IMPORT_SPECIFIER_REGEX =
-  /(\b(?:import|export)\s+(?:[\s\S]*?\s+from\s+)?|\bimport\s*\(\s*)(["'])([^"'\n]+)\2/g
+  /(^[ \t]*(?:import|export)\b[^;'"]*?\bfrom\s+|^[ \t]*import\s+|\bimport\s*\(\s*)(["'])([^"'\n]+)\2/gm
 
 export async function rewriteResolvedImportsInContent({
   content,

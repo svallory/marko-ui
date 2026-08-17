@@ -1,7 +1,6 @@
 import path from "path"
-import { getRegistries } from "@/src/registry/api"
+import { getRegistries, getRegistriesConfig } from "@/src/registry/api"
 import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
-import { getConfig } from "@/src/utils/get-config"
 import { handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
@@ -69,7 +68,8 @@ export const list = new Command()
             : row.configured
               ? highlighter.success("(configured)")
               : "(available)"
-        logger.log(`${row.name} ${badge}`)
+        const target = row.target ? ` [target: ${row.target}]` : ""
+        logger.log(`${row.name} ${badge}${target}`)
         logger.log(`  ${row.url}`)
         if (row.description) {
           logger.log(`  ${row.description}`)
@@ -100,7 +100,9 @@ async function collectRegistries(
       seen.add(name)
     }
 
-    const config = await getConfig(cwd).catch(() => null)
+    // Merged view: package.json-declared registries + components.json —
+    // the same set the resolver actually uses.
+    const config = await getRegistriesConfig(cwd).catch(() => null)
     for (const [name, entry] of Object.entries(config?.registries ?? {})) {
       if (seen.has(name)) {
         continue

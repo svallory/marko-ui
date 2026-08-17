@@ -2,7 +2,6 @@ import { createHash } from "crypto"
 import path from "path"
 import { isGitHubItemAddress, resolveItemAddress } from "@/src/registry/address"
 import {
-  getRegistryBaseColor,
   getShadcnRegistryIndex,
 } from "@/src/registry/api"
 import {
@@ -31,7 +30,7 @@ import {
   registryItemTypeSchema,
   registryResolvedItemsTreeSchema,
 } from "@/src/schema"
-import { Config, getTargetStyleFromConfig } from "@/src/utils/get-config"
+import { Config } from "@/src/utils/get-config"
 import { getProjectTailwindVersionFromConfig } from "@/src/utils/get-project-info"
 import { buildTailwindThemeColorsFromCssVars } from "@/src/utils/updaters/update-tailwind-config"
 import deepmerge from "deepmerge"
@@ -293,22 +292,6 @@ export async function resolveRegistryTree(
 
   // No deduplication - we want to support multiple items with the same name from different sources
 
-  // If we're resolving the index, we want to fetch
-  // the theme item if a base color is provided.
-  // We do this for index only.
-  // Other components will ship with their theme tokens.
-  if (
-    uniqueNames.includes("index") ||
-    allDependencyRegistryNames.includes("index")
-  ) {
-    if (config.tailwind.baseColor) {
-      const theme = await registryGetTheme(config.tailwind.baseColor, config)
-      if (theme) {
-        payload.unshift(theme)
-      }
-    }
-  }
-
   // Build source map for topological sort.
   const sourceMap = new Map<
     z.infer<typeof registryItemWithSourceSchema>,
@@ -554,91 +537,12 @@ async function resolveRegistryDependencies(
     new Set()
   )
 
-  const style = config.resolvedPaths?.cwd
-    ? await getTargetStyleFromConfig(config.resolvedPaths.cwd, config.style)
-    : config.style
 
   const urls = registryNames.map((name) =>
     resolveRegistryUrl(isUrl(name) ? name : `${name}.json`)
   )
 
   return Array.from(new Set(urls))
-}
-
-async function registryGetTheme(name: string, config: Config) {
-  const [baseColor, tailwindVersion] = await Promise.all([
-    getRegistryBaseColor(name),
-    getProjectTailwindVersionFromConfig(config),
-  ])
-  if (!baseColor) {
-    return null
-  }
-
-  // TODO: Move this to the registry i.e registry:theme.
-  const theme = {
-    name,
-    type: "registry:theme",
-    tailwind: {
-      config: {
-        theme: {
-          extend: {
-            borderRadius: {
-              lg: "var(--radius)",
-              md: "calc(var(--radius) - 2px)",
-              sm: "calc(var(--radius) - 4px)",
-            },
-            colors: {},
-          },
-        },
-      },
-    },
-    cssVars: {
-      theme: {},
-      light: {
-        radius: "0.5rem",
-      },
-      dark: {},
-    },
-  } satisfies z.infer<typeof registryItemSchema>
-
-  if (config.tailwind.cssVariables) {
-    theme.tailwind.config.theme.extend.colors = {
-      ...theme.tailwind.config.theme.extend.colors,
-      ...buildTailwindThemeColorsFromCssVars(baseColor.cssVars.dark ?? {}),
-    }
-    theme.cssVars = {
-      theme: {
-        ...baseColor.cssVars.theme,
-        ...theme.cssVars.theme,
-      },
-      light: {
-        ...baseColor.cssVars.light,
-        ...theme.cssVars.light,
-      },
-      dark: {
-        ...baseColor.cssVars.dark,
-        ...theme.cssVars.dark,
-      },
-    }
-
-    if (tailwindVersion === "v4" && baseColor.cssVarsV4) {
-      theme.cssVars = {
-        theme: {
-          ...baseColor.cssVarsV4.theme,
-          ...theme.cssVars.theme,
-        },
-        light: {
-          radius: "0.625rem",
-          ...baseColor.cssVarsV4.light,
-        },
-        dark: {
-          ...baseColor.cssVarsV4.dark,
-        },
-      }
-    }
-  }
-
-  return theme
 }
 
 function computeItemHash(

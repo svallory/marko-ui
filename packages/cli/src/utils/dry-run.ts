@@ -152,12 +152,6 @@ async function processFiles(
       continue
     }
 
-    if (!config.tsx) {
-      filePath = filePath.replace(/\.tsx?$/, (match) =>
-        match === ".tsx" ? ".jsx" : ".js"
-      )
-    }
-
     const existingFile = existsSync(filePath)
     const relativePath = path.relative(config.resolvedPaths.cwd, filePath)
 

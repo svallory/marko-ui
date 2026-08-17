@@ -130,7 +130,7 @@ describe("registry validate command", () => {
       "components/ui/registry.json",
       "    Make sure the file path is relative to the registry.json file that declares the item.",
     ])
-    expect(process.exitCode).toBe(1)
+    expect(process.exitCode).toBe(3)
   })
 
   it("validates a GitHub source registry", async () => {
@@ -171,7 +171,7 @@ describe("registry validate command", () => {
       "Registry validation failed."
     )
     expect(logger.log).toHaveBeenCalledWith("  - acme/ui")
-    expect(process.exitCode).toBe(1)
+    expect(process.exitCode).toBe(3)
   })
 })
 

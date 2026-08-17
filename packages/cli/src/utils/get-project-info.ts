@@ -1,7 +1,7 @@
 import { promises as fsPromises } from "fs"
 import path from "path"
 import { getShadcnRegistryIndex } from "@/src/registry/api"
-import { SHADCN_URL } from "@/src/registry/constants"
+import { MARKO_UI_URL } from "@/src/registry/constants"
 import { rawConfigSchema } from "@/src/schema"
 import { Framework, FRAMEWORKS } from "@/src/utils/frameworks"
 import { Config, getConfig, resolveConfigPaths } from "@/src/utils/get-config"
@@ -509,7 +509,7 @@ export async function getProjectConfig(
   }
 
   const config: z.infer<typeof rawConfigSchema> = {
-    $schema: "https://marko-ui.saulo.tech/schema.json",
+    $schema: "https://ui.shadcn.com/schema.json",
     rsc: projectInfo.isRSC,
     tsx: projectInfo.isTsx,
     style: "default",

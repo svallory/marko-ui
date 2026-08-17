@@ -1,6 +1,6 @@
 import path from "path"
 import { addOptionsSchema } from "@/src/commands/add"
-import { SHADCN_URL } from "@/src/registry/constants"
+import { MARKO_UI_URL } from "@/src/registry/constants"
 import * as ERRORS from "@/src/utils/errors"
 import { getConfig } from "@/src/utils/get-config"
 import {
@@ -66,7 +66,7 @@ export async function preFlightAdd(options: z.infer<typeof addOptionsSchema>) {
       )} file by running the ${highlighter.info("init")} command.`
     )
     logger.error(
-      `Learn more at ${highlighter.info(`${SHADCN_URL}/docs/components-json`)}.`
+      `Learn more at ${highlighter.info(`${MARKO_UI_URL}/docs/components-json`)}.`
     )
     logger.break()
     process.exit(1)

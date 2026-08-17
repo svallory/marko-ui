@@ -1,3 +1,4 @@
+import { RegistryErrorCode } from "@/src/registry/errors"
 import { Command } from "commander"
 
 import packageJson from "../../package.json"
@@ -16,6 +17,46 @@ export const manifest = new Command()
     console.log(JSON.stringify(buildManifest(program), null, 2))
   })
 
+/**
+ * The recommended agent workflow, validated against the live program in
+ * buildManifest: a step referencing a command or flag that does not exist
+ * is dropped (and the accompanying unit test fails), so these strings can
+ * never advertise a surface the CLI does not have.
+ */
+const AGENT_WORKFLOW_STEPS: {
+  command: string
+  flags: string[]
+  template: string
+}[] = [
+  {
+    command: "search",
+    flags: ["--query"],
+    template:
+      "marko-ui search -q <query> — find items across configured registries",
+  },
+  {
+    command: "show",
+    flags: ["--deps"],
+    template:
+      "marko-ui show <item> — inspect an item (add --files or --deps to narrow)",
+  },
+  {
+    command: "docs",
+    flags: [],
+    template: "marko-ui docs <item> — full component documentation as markdown",
+  },
+  {
+    command: "add",
+    flags: ["--yes"],
+    template: "marko-ui add <item> -y — install it",
+  },
+  {
+    command: "doctor",
+    flags: ["--json"],
+    template: "marko-ui doctor --json — verify project health",
+  },
+]
+
 export function buildManifest(program: Command) {
   return {
     $type: "marko-ui/manifest",
@@ -30,21 +71,33 @@ export function buildManifest(program: Command) {
       exitCodes: {
         "0": "success",
         "1": "operational failure",
-        "2": "usage error",
-        "3": "doctor/validate found problems",
-        "4": "network or registry unreachable",
+        "2": "usage error (unknown command/option, bad arguments)",
+        "3": "doctor/validate/agents-check found problems",
+        "4": "network error or registry unreachable",
       },
-      agentWorkflow: [
-        "marko-ui search <query> — find items across configured registries",
-        "marko-ui view <item> --json — inspect an item's files and dependencies",
-        "marko-ui add <item> -y — install it",
-        "marko-ui doctor --json — verify project health",
-      ],
+      // Stable machine-readable error codes carried by registry errors
+      // (RegistryError.code in error output and thrown errors).
+      errorCodes: Object.values(RegistryErrorCode),
+      agentWorkflow: buildAgentWorkflow(program),
     },
   }
 }
 
-function describeCommand(cmd: Command): Record<string, unknown> {
+export function buildAgentWorkflow(program: Command) {
+  return AGENT_WORKFLOW_STEPS.filter((step) => {
+    const command = program.commands.find(
+      (cmd) => cmd.name() === step.command || cmd.aliases().includes(step.command)
+    )
+    if (!command) {
+      return false
+    }
+    return step.flags.every((flag) =>
+      command.options.some((option) => option.long === flag)
+    )
+  }).map((step) => step.template)
+}
+
+export function describeCommand(cmd: Command): Record<string, unknown> {
   return {
     name: cmd.name(),
     aliases: cmd.aliases(),

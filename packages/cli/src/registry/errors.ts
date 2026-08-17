@@ -288,7 +288,7 @@ export class RegistryParseError extends RegistryError {
       context: { item, ...options.context },
       suggestion:
         options.suggestion ??
-        `The registry item may be corrupted or have an invalid format. Please make sure it returns a valid JSON object. See ${SHADCN_URL}/schema/registry-item.json.`,
+        `The registry item may be corrupted or have an invalid format. Please make sure it returns a valid JSON object. See https://ui.shadcn.com/schema/registry-item.json.`,
     })
 
     this.parseError = parseError

@@ -1,13 +1,18 @@
-import { RegistryError } from "@/src/registry/errors"
-import {
-  getPackageManagerFromUserAgent,
-  getPackageRunnerCommand,
-} from "@/src/utils/get-package-manager"
+import { RegistryError, RegistryErrorCode } from "@/src/registry/errors"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { z } from "zod"
 
-import packageJson from "../../package.json"
+/**
+ * Exit-code contract (also exposed by `marko-ui manifest`):
+ * 0 success · 1 operational failure · 2 usage error (commander, see
+ * index.ts) · 3 doctor/validate/agents-check found problems · 4 network
+ * or registry unreachable.
+ */
+export const NETWORK_ERROR_CODES: readonly string[] = [
+  RegistryErrorCode.NETWORK_ERROR,
+  RegistryErrorCode.FETCH_ERROR,
+]
 
 export function handleError(error: unknown) {
   logger.break()
@@ -16,9 +21,10 @@ export function handleError(error: unknown) {
   )
   logger.error(`If the problem persists, please open an issue on GitHub.`)
   logger.error("")
+
   if (typeof error === "string") {
     logger.error(error)
-    exitWithPreviousVersionSuggestion()
+    process.exit(1)
   }
 
   if (error instanceof RegistryError) {
@@ -36,7 +42,8 @@ export function handleError(error: unknown) {
       logger.error("\nSuggestion:")
       logger.error(error.suggestion)
     }
-    exitWithPreviousVersionSuggestion()
+
+    process.exit(NETWORK_ERROR_CODES.includes(error.code) ? 4 : 1)
   }
 
   if (error instanceof z.ZodError) {
@@ -44,68 +51,13 @@ export function handleError(error: unknown) {
     for (const [key, value] of Object.entries(error.flatten().fieldErrors)) {
       logger.error(`- ${highlighter.info(key)}: ${value}`)
     }
-    exitWithPreviousVersionSuggestion()
+    process.exit(1)
   }
 
   if (error instanceof Error) {
     logger.error(error.message)
-    exitWithPreviousVersionSuggestion()
+    process.exit(1)
   }
 
-  exitWithPreviousVersionSuggestion()
-}
-
-export function getPreviousMinorVersion(version: string) {
-  const match = version.match(/^(\d+)\.(\d+)\.\d+/)
-
-  if (!match) {
-    return null
-  }
-
-  const major = Number.parseInt(match[1], 10)
-  const minor = Number.parseInt(match[2], 10)
-
-  if (minor === 0) {
-    return null
-  }
-
-  return `${major}.${minor - 1}.0`
-}
-
-export function getPreviousMinorCommand(
-  version = packageJson.version,
-  args = process.argv.slice(2)
-) {
-  const previousMinorVersion = getPreviousMinorVersion(version)
-
-  if (!previousMinorVersion) {
-    return null
-  }
-
-  const runner = getPackageRunnerCommand(getPackageManagerFromUserAgent())
-
-  return [...runner.split(" "), `shadcn@${previousMinorVersion}`, ...args]
-    .map(quoteShellArg)
-    .join(" ")
-}
-
-function exitWithPreviousVersionSuggestion() {
-  const command = getPreviousMinorCommand()
-
-  if (command) {
-    logger.error("")
-    logger.error("You can also try a previous version to see if that works:")
-    logger.error(command)
-  }
-
-  logger.break()
   process.exit(1)
-}
-
-function quoteShellArg(value: string) {
-  if (/^[a-zA-Z0-9_./:@%+=,-]+$/.test(value)) {
-    return value
-  }
-
-  return `'${value.replace(/'/g, "'\\''")}'`
 }

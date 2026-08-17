@@ -226,7 +226,9 @@ async function main() {
     await write({
       $schema: ITEM_SCHEMA,
       name,
-      type: "registry:file",
+      // registry:style is the type the CLI's overwrite-cssVars logic and
+      // "this will overwrite your CSS variables" warning key on.
+      type: "registry:style",
       title: name === "style" ? "Theme" : `Theme (${name.replace("style-", "")})`,
       description:
         "Tailwind v4 globals.css with shadcn-compatible CSS variables. Add `@source` directives for your .marko files.",

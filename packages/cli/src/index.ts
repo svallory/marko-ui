@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { pathToFileURL } from "node:url"
 import { add } from "@/src/commands/add"
 import { agents } from "@/src/commands/agents"
 import { diff } from "@/src/commands/diff"
@@ -17,7 +18,7 @@ import packageJson from "../package.json"
 process.on("SIGINT", () => process.exit(0))
 process.on("SIGTERM", () => process.exit(0))
 
-async function main() {
+export function buildProgram() {
   const program = new Command()
     .name("marko-ui")
     .description("install and manage Marko UI components")
@@ -40,9 +41,38 @@ async function main() {
     .addCommand(agents)
     .addCommand(registry)
 
-  program.parse()
+  // Exit-code contract: usage errors exit 2 (see handle-error.ts for the
+  // full table). Commander defaults to 1 for unknown options/commands, so
+  // override on every command in the tree.
+  applyUsageErrorExitCode(program)
+
+  return program
 }
 
-main()
+async function main() {
+  buildProgram().parse()
+}
+
+function applyUsageErrorExitCode(command: Command) {
+  command.exitOverride((error) => {
+    // Help and version are successful exits.
+    if (error.exitCode === 0) {
+      process.exit(0)
+    }
+    process.exit(error.code?.startsWith("commander.") ? 2 : error.exitCode)
+  })
+  for (const sub of command.commands) {
+    applyUsageErrorExitCode(sub)
+  }
+}
+
+// Run only when executed as the CLI binary, not when imported as a
+// library (programmatic API, tests).
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+  main()
+}
 
 export * from "./registry/api"

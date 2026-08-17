@@ -100,7 +100,10 @@ export const diff = new Command()
       for (const file of changed) {
         logger.info(`- ${file.path}`)
         if (!options.nameOnly) {
-          printDiff(diffLines(file.content, file.existingContent!))
+          // Same polarity as `add --diff` (dry-run-formatter): old = local
+          // file, new = registry version, so incoming changes read as
+          // additions.
+          printDiff(diffLines(file.existingContent!, file.content))
           logger.info("")
         }
       }

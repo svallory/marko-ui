@@ -7,7 +7,6 @@ import { describe, expect, it } from "vitest"
 
 import {
   createConfig,
-  getBase,
   getConfig,
   getRawConfig,
   getWorkspaceConfig,
@@ -44,7 +43,7 @@ describe("getProjectConfig", () => {
     const cwd = getFixturesDir("frameworks/next-app-imports")
 
     expect(await getProjectConfig(cwd)).toEqual({
-      $schema: "https://marko-ui.saulo.tech/schema.json",
+      $schema: "https://ui.shadcn.com/schema.json",
       style: "default",
       rsc: false,
       tsx: true,
@@ -83,7 +82,7 @@ describe("getProjectConfig", () => {
     const cwd = getFixturesDir("frameworks/vite-app-imports")
 
     expect(await getProjectConfig(cwd)).toEqual({
-      $schema: "https://marko-ui.saulo.tech/schema.json",
+      $schema: "https://ui.shadcn.com/schema.json",
       style: "default",
       rsc: false,
       tsx: true,
@@ -122,7 +121,7 @@ describe("getProjectConfig", () => {
     const cwd = getFixturesDir("frameworks/vite-root-imports")
 
     expect(await getProjectConfig(cwd)).toEqual({
-      $schema: "https://marko-ui.saulo.tech/schema.json",
+      $schema: "https://ui.shadcn.com/schema.json",
       style: "default",
       rsc: false,
       tsx: true,
@@ -161,7 +160,7 @@ describe("getProjectConfig", () => {
     const cwd = getFixturesDir("frameworks/vite-partial-imports")
 
     expect(await getProjectConfig(cwd)).toEqual({
-      $schema: "https://marko-ui.saulo.tech/schema.json",
+      $schema: "https://ui.shadcn.com/schema.json",
       style: "default",
       rsc: false,
       tsx: true,
@@ -563,14 +562,6 @@ describe("getWorkspaceConfig", () => {
   })
 })
 
-describe("getBase", () => {
-  it("always returns the single marko-ui base", () => {
-    expect(getBase("default")).toBe("default")
-    expect(getBase("radix-nova")).toBe("default")
-    expect(getBase(undefined)).toBe("default")
-    expect(getBase("")).toBe("default")
-  })
-})
 
 describe("createConfig", () => {
   it("creates default config when called without arguments", () => {

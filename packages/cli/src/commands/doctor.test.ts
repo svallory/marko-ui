@@ -71,8 +71,8 @@ describe("runDoctorChecks", () => {
     expect(status.tailwind).toBe("pass")
     expect(status.css).toBe("pass")
     expect(status.aliases).toBe("pass")
-    expect(status.adapter).toBe("pass")
-    // `registry` depends on network state — not asserted here.
+    // `registry`, `dependencies`, and `registries` depend on network
+    // state — not asserted here.
   })
 
   it("fails the css check when the css entry is missing", async () => {
@@ -96,14 +96,21 @@ describe("runDoctorChecks", () => {
     expect(statusOf(checks).framework).toBe("fail")
   })
 
-  it("warns when the marko-ui adapter is not declared", async () => {
+  it("reports the dependencies check as a warn-skip when the registry is unreachable", async () => {
+    // Scaffolded apps have no reachable registry in unit tests, so the
+    // registry-driven dependency check must degrade to an explicit skip
+    // instead of passing silently.
     const dir = scaffoldMarkoApp()
-    const packageJsonPath = path.join(dir, "package.json")
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"))
-    delete packageJson.dependencies["marko-ui"]
-    writeFileSync(packageJsonPath, JSON.stringify(packageJson))
-
     const checks = await runDoctorChecks(dir)
-    expect(statusOf(checks).adapter).toBe("warn")
+    const dependencies = checks.find((check) => check.id === "dependencies")
+    const registry = checks.find((check) => check.id === "registry")
+
+    if (registry?.status === "fail") {
+      expect(dependencies?.status).toBe("warn")
+      expect(dependencies?.message).toContain("Skipped")
+    } else {
+      // Network available (index fetched): the check ran for real.
+      expect(dependencies?.status).toMatch(/pass|warn/)
+    }
   })
 })

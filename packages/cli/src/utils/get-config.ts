@@ -313,19 +313,6 @@ export function findCommonRoot(cwd: string, resolvedPath: string) {
   return commonParts.join(path.sep)
 }
 
-// TODO: Cache this call.
-export async function getTargetStyleFromConfig(cwd: string, fallback: string) {
-  const projectInfo = await getProjectInfo(cwd)
-  return projectInfo?.tailwindVersion === "v4" ? "default" : fallback
-}
-
-export function getBase(style: string | undefined): string {
-  // marko-ui has a single component base (Zag adapters); the shadcn
-  // radix/base preset split does not apply.
-  void style
-  return "default"
-}
-
 export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]
 }

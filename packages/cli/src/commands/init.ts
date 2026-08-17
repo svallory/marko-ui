@@ -144,9 +144,15 @@ export async function runInit(
     fullConfig = configWithRegistries
   }
 
-  // Install the style item (base css vars + utils) plus requested components.
+  // Install the theme matching the chosen base color (the registry
+  // publishes one style item per base color: style, style-zinc, ...)
+  // plus the requested components.
+  const styleItem =
+    !config.tailwind.baseColor || config.tailwind.baseColor === "neutral"
+      ? "style"
+      : `style-${config.tailwind.baseColor}`
   const components = Array.from(
-    new Set(["style", ...(options.components ?? [])])
+    new Set([styleItem, ...(options.components ?? [])])
   )
   await addComponents(components, fullConfig, {
     overwrite: true,
@@ -227,7 +233,9 @@ async function promptForConfig(
     DEFAULT_TAILWIND_CSS
 
   return rawConfigSchema.parse({
-    $schema: `${MARKO_UI_URL}/schema.json`,
+    // components.json is wire-compatible with shadcn; its schema authority
+    // is shadcn's published one (we do not serve a schema.json).
+    $schema: "https://ui.shadcn.com/schema.json",
     style: "default",
     tailwind: {
       config: "",

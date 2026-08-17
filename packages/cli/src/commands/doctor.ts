@@ -1,9 +1,17 @@
 import { existsSync, promises as fs } from "fs"
 import path from "path"
-import { getShadcnRegistryIndex } from "@/src/registry/api"
+import {
+  getRegistries,
+  getRegistriesConfig,
+  getShadcnRegistryIndex,
+} from "@/src/registry/api"
+import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
 import { getConfig } from "@/src/utils/get-config"
 import { getPackageInfo } from "@/src/utils/get-package-info"
-import { getProjectInfo } from "@/src/utils/get-project-info"
+import {
+  getProjectComponents,
+  getProjectInfo,
+} from "@/src/utils/get-project-info"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { Command } from "commander"
@@ -190,32 +198,95 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
     })
   }
 
-  // 7. marko-ui adapter dependency.
-  const hasAdapter = "marko-ui" in allDeps
-  checks.push({
-    id: "adapter",
-    label: "marko-ui adapter package",
-    status: hasAdapter ? "pass" : "warn",
-    message: hasAdapter
-      ? undefined
-      : "Most components import the `marko-ui` adapter, which is not yet on npm. Add it as a workspace/file dependency until it is published.",
-  })
-
-  // 8. Registry reachable.
-  let registryOk = false
+  // 7. Registry reachable.
+  let index: Awaited<ReturnType<typeof getShadcnRegistryIndex>> | null = null
   let registryError: string | undefined
   try {
-    const index = await getShadcnRegistryIndex()
-    registryOk = Array.isArray(index)
+    index = await getShadcnRegistryIndex()
   } catch (error) {
     registryError = error instanceof Error ? error.message : String(error)
   }
   checks.push({
     id: "registry",
     label: "Registry reachable",
-    status: registryOk ? "pass" : "fail",
-    message: registryOk ? undefined : registryError ?? "Could not fetch index.",
+    status: Array.isArray(index) ? "pass" : "fail",
+    message: Array.isArray(index)
+      ? undefined
+      : registryError ?? "Could not fetch index.",
   })
+
+  // 8. Component npm dependencies. The registry index declares each
+  // item's `dependencies` — the same contract `add` installs from — so
+  // doctor checks exactly what installed components require instead of
+  // hardcoding package knowledge.
+  if (Array.isArray(index)) {
+    const installed = await getProjectComponents(cwd)
+    const byName = new Map(index.map((item) => [item.name, item]))
+    const missing = new Set<string>()
+    for (const name of installed) {
+      for (const dependency of byName.get(name)?.dependencies ?? []) {
+        const packageName = dependency.startsWith("@")
+          ? dependency.split("@").slice(0, 2).join("@").replace(/@$/, "")
+          : dependency.split("@")[0]
+        if (!(packageName in allDeps)) {
+          missing.add(packageName)
+        }
+      }
+    }
+    checks.push({
+      id: "dependencies",
+      label: "Component npm dependencies",
+      status: missing.size ? "warn" : "pass",
+      message: missing.size
+        ? `Installed components declare dependencies missing from package.json: ${[
+            ...missing,
+          ]
+            .sort()
+            .join(", ")}. Install them (e.g. \`bun add ${[...missing]
+            .sort()
+            .join(" ")}\`).`
+        : undefined,
+    })
+  } else {
+    checks.push({
+      id: "dependencies",
+      label: "Component npm dependencies",
+      status: "warn",
+      message: "Skipped: registry index unreachable.",
+    })
+  }
+
+  // 9. Configured registries declare Marko support. Cross-checked against
+  // OUR discovery index; registries added by explicit URL (or package.json)
+  // that are not in the index cannot be verified — reported, not failed.
+  const registriesConfig = await getRegistriesConfig(cwd).catch(() => null)
+  const configured = Object.entries(registriesConfig?.registries ?? {}).filter(
+    ([name]) => !(name in BUILTIN_REGISTRIES)
+  )
+  if (configured.length) {
+    const discovery = await getRegistries().catch(() => null)
+    const targets = new Map(
+      (discovery ?? []).map((entry) => [entry.name, entry.target])
+    )
+    const nonMarko = configured.filter(
+      ([name]) => targets.has(name) && targets.get(name) !== "marko"
+    )
+    const unverifiable = configured.filter(([name]) => !targets.has(name))
+    checks.push({
+      id: "registries",
+      label: "Configured registries target Marko",
+      status: nonMarko.length ? "fail" : "pass",
+      message: nonMarko.length
+        ? `These registries do not declare target "marko" in the discovery index and may ship non-Marko source: ${nonMarko
+            .map(([name]) => name)
+            .join(", ")}.`
+        : unverifiable.length
+          ? `Unverifiable (not in the discovery index, added by explicit URL): ${unverifiable
+              .map(([name]) => name)
+              .join(", ")}.`
+          : undefined,
+    })
+  }
 
   return checks
 }

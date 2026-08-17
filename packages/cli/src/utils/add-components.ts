@@ -40,9 +40,7 @@ export interface AddComponentsOptions {
   path?: string
 }
 
-type AddWorkspaceComponentsOptions = AddComponentsOptions & {
-  isRemote?: boolean
-}
+type AddWorkspaceComponentsOptions = AddComponentsOptions
 
 export async function addComponents(
   components: string[],
@@ -65,8 +63,6 @@ export async function addComponents(
   ) {
     return await addWorkspaceComponents(components, config, workspaceConfig, {
       ...options,
-      isRemote:
-        components?.length === 1 && !!components[0].match(/\/chat\/b\//),
     })
   }
 
@@ -233,7 +229,6 @@ async function addWorkspaceComponents(
       silent: true,
       interactive: options.interactive,
       rootSpinner,
-      isRemote: options.isRemote,
       isWorkspace: true,
       path: options.path,
       plannedFiles,

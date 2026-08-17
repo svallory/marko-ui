@@ -19,7 +19,7 @@ type RegistryValidationReport = Awaited<ReturnType<typeof validateRegistry>>
 
 export const validate = new Command()
   .name("validate")
-  .description("validate a shadcn registry")
+  .description("validate a registry against the shadcn registry schema")
   .argument(
     "[registry]",
     "registry address to validate. Supports registry.json paths and GitHub sources.",
@@ -50,7 +50,8 @@ export const validate = new Command()
       printRegistryValidationReport(report, validationSpinner)
 
       if (!report.valid) {
-        process.exitCode = 1
+        // CI contract: validation problems exit 3 (same as doctor).
+        process.exitCode = 3
       }
     } catch (error) {
       validationSpinner?.fail("Registry validation failed.")

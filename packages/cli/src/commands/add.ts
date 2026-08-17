@@ -30,8 +30,6 @@ export const addOptionsSchema = z.object({
   path: z.string().optional(),
   silent: z.boolean(),
   dryRun: z.boolean(),
-  diff: z.union([z.string(), z.literal(true)]).optional(),
-  view: z.union([z.string(), z.literal(true)]).optional(),
 })
 
 export const add = new Command()
@@ -49,8 +47,6 @@ export const add = new Command()
   .option("-p, --path <path>", "the path to add the component to.")
   .option("-s, --silent", "mute output.", false)
   .option("--dry-run", "preview changes without writing files.", false)
-  .option("--diff [path]", "show diff for a file.")
-  .option("--view [path]", "show file contents.")
   .action(async (components, opts) => {
     try {
       const options = addOptionsSchema.parse({
@@ -61,13 +57,15 @@ export const add = new Command()
 
       await loadEnvFiles(options.cwd)
 
-      const isDryRun = options.dryRun || options.diff || options.view
+      // Design principle: `add` stays pure — use the standalone `diff` and
+      // `show` commands for inspection.
+      const isDryRun = options.dryRun
 
       let initialConfig = await getConfig(options.cwd)
       const hasExistingConfig = !!initialConfig
       if (!initialConfig) {
         initialConfig = createConfig({
-          style: "new-york",
+          style: "default",
           resolvedPaths: {
             cwd: options.cwd,
           },
@@ -193,7 +191,6 @@ export const add = new Command()
       config = updatedConfig
 
       // Dry-run mode: preview changes without writing files.
-      // --diff and --view imply --dry-run.
       if (isDryRun) {
         const dryRunSpinner = spinner("Resolving items.", {
           silent: options.silent,
@@ -207,12 +204,7 @@ export const add = new Command()
         )
         dryRunSpinner.stop()
 
-        logger.log(
-          formatDryRunResult(dryRunResult, options.components, {
-            diff: options.diff,
-            view: options.view,
-          })
-        )
+        logger.log(formatDryRunResult(dryRunResult, options.components, {}))
         return
       }
 

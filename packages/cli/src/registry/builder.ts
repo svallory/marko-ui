@@ -154,14 +154,7 @@ function shouldIncludeHeader(originalValue: string, expandedValue: string) {
  */
 export function resolveRegistryUrl(pathOrUrl: string) {
   if (isUrl(pathOrUrl)) {
-    // If the url contains /chat/b/, we assume it's the v0 registry.
-    // We need to add the /json suffix if it's missing.
-    const url = new URL(pathOrUrl)
-    if (url.pathname.match(/\/chat\/b\//) && !url.pathname.endsWith("/json")) {
-      url.pathname = `${url.pathname}/json`
-    }
-
-    return url.toString()
+    return new URL(pathOrUrl).toString()
   }
 
   return `${REGISTRY_URL}/${pathOrUrl}`

@@ -33,7 +33,7 @@ phases.
 
 ## Registry model (decided 2026-08-14)
 
-- Built-in namespace: **`@marko-ui`** → `https://marko-ui.saulo.tech/r/styles/{style}/{name}.json`.
+- Built-in namespace: **`@marko-ui`** → `https://marko-ui.saulo.tech/r/{name}.json` (flat item layout).
   Bare names (`add button`) resolve there. Not overridable.
 - **Own discovery index** at `https://marko-ui.saulo.tech/r/registries.json`
   (same `[{name, url, description}]` schema as shadcn's). We do NOT resolve

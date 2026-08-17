@@ -1,7 +1,7 @@
 import { existsSync } from "fs"
 import path from "path"
-import { SHADCN_URL } from "@/src/registry/constants"
-import { getBase, getConfig } from "@/src/utils/get-config"
+import { MARKO_UI_URL, REGISTRY_URL } from "@/src/registry/constants"
+import { getConfig } from "@/src/utils/get-config"
 import {
   formatMonorepoMessage,
   getMonorepoTargets,
@@ -16,8 +16,6 @@ import { handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { Command } from "commander"
-
-const CODE_BASE = `${SHADCN_URL}/code/apps/v4/registry/bases`
 
 export const info = new Command()
   .name("status")
@@ -63,8 +61,7 @@ export const info = new Command()
       const projectInfo = await getProjectInfo(cwd)
       const config = await getConfig(cwd)
       const components = await getProjectComponents(cwd)
-      const base = getBase(config?.style)
-      const data = await collectInfo(projectInfo, config, components, base)
+      const data = await collectInfo(projectInfo, config, components)
 
       if (opts.json) {
         console.log(JSON.stringify(data, null, 2))
@@ -95,7 +92,6 @@ export async function collectInfo(
   projectInfo: ProjectInfo | null,
   config: Awaited<ReturnType<typeof getConfig>>,
   components: string[],
-  base: string
 ) {
 
   return {
@@ -116,13 +112,7 @@ export async function collectInfo(
     config: config
       ? {
           style: config.style,
-          base,
-          rsc: config.rsc,
           typescript: config.tsx,
-          iconLibrary: config.iconLibrary ?? null,
-          rtl: config.rtl ?? false,
-          menuColor: config.menuColor ?? null,
-          menuAccent: config.menuAccent ?? null,
           aliases: {
             components: config.aliases.components,
             utils: config.aliases.utils,
@@ -145,11 +135,10 @@ export async function collectInfo(
       : null,
     components,
     links: {
-      docs: `${SHADCN_URL}/docs`,
-      components: `${SHADCN_URL}/docs/components/${base}/[component].md`,
-      ui: `${CODE_BASE}/${base}/ui/[component].tsx`,
-      examples: `${CODE_BASE}/${base}/examples/[component]-example.tsx`,
-      schema: `${SHADCN_URL}/schema.json`,
+      docs: `${MARKO_UI_URL}/docs`,
+      components: `${MARKO_UI_URL}/docs/components/[component].md`,
+      registryItem: `${REGISTRY_URL}/[component].json`,
+      registryIndex: `${REGISTRY_URL}/registry.json`,
     },
   }
 }
@@ -179,13 +168,7 @@ export function printInfo(data: Awaited<ReturnType<typeof collectInfo>>) {
   if (data.config) {
     printEntries({
       style: data.config.style,
-      base: data.config.base,
-      rsc: data.config.rsc ? "Yes" : "No",
       typescript: data.config.typescript ? "Yes" : "No",
-      iconLibrary: data.config.iconLibrary ?? "-",
-      rtl: data.config.rtl ? "Yes" : "No",
-      menuColor: data.config.menuColor ?? "-",
-      menuAccent: data.config.menuAccent ?? "-",
     })
 
     logger.break()

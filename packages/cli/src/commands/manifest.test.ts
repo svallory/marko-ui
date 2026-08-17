@@ -1,7 +1,8 @@
 import { Command } from "commander"
 import { describe, expect, it } from "vitest"
 
-import { buildManifest } from "./manifest"
+import { buildProgram } from "@/src/index"
+import { buildAgentWorkflow, buildManifest } from "./manifest"
 
 describe("buildManifest", () => {
   it("describes every registered command with args and options", () => {
@@ -43,5 +44,21 @@ describe("buildManifest", () => {
   it("declares the exit code contract", () => {
     const manifest = buildManifest(new Command().name("marko-ui"))
     expect(manifest.data.exitCodes["3"]).toContain("doctor")
+    expect(manifest.data.exitCodes["2"]).toContain("usage")
+    expect(manifest.data.exitCodes["4"]).toContain("network")
+  })
+
+  it("exposes the registry error codes", () => {
+    const manifest = buildManifest(new Command().name("marko-ui"))
+    expect(manifest.data.errorCodes).toContain("FETCH_ERROR")
+    expect(manifest.data.errorCodes).toContain("NOT_CONFIGURED")
+  })
+
+  it("every agent-workflow step survives validation against the LIVE program", () => {
+    // Guards against advertising commands/flags that do not exist (the
+    // doctor-class bug: prose restating a contract instead of consuming it).
+    const program = buildProgram()
+    const workflow = buildAgentWorkflow(program)
+    expect(workflow).toHaveLength(5)
   })
 })

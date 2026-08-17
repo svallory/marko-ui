@@ -234,6 +234,9 @@ async function installWithDeno(
   devDependencies: string[],
   cwd: string
 ) {
+  assertSafeDependencies(dependencies)
+  assertSafeDependencies(devDependencies)
+
   if (dependencies?.length) {
     await execa("deno", ["add", ...dependencies.map((dep) => `npm:${dep}`)], {
       cwd,

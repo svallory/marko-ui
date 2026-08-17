@@ -18,7 +18,7 @@ import { withRegistryContext } from "./context"
 
 // Resolves which registries a search should target. When none are provided
 // explicitly, returns every registry configured in the project, excluding
-// builtin registries (e.g. @marko-ui) — "search all" means the registries the
+// "search all" includes the builtin @marko-ui registry plus the ones the
 // user actually configured. Shared by the CLI command and the MCP server so
 // both resolve "search all" the same way.
 export function resolveSearchRegistries(
