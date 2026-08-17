@@ -1,5 +1,6 @@
 import * as commandMachine from "@zag-js/combobox";
 import type { MachineInput } from "marko-zag";
+import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 
 export interface CommandItem {
@@ -83,39 +84,45 @@ static function filterGroups(groups: CommandGroup[], query: string): CommandGrou
   return native;
 }>
 
-<div ...nativeAttrs() ...api().getRootProps() data-slot="command" class=cn("bg-popover text-popover-foreground flex w-full flex-col overflow-hidden rounded-lg border shadow-md", input.class)>
-  <div ...api().getControlProps() data-slot="command-input-wrapper" class="flex h-9 items-center gap-2 border-b px-3">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 shrink-0 opacity-50">
-      <path d="m21 21-4.34-4.34"/>
-      <circle cx="11" cy="11" r="8"/>
-    </svg>
-    <input
-      ...api().getInputProps()
-      data-slot="command-input"
-      placeholder=input.placeholder
-      class="placeholder:text-muted-foreground h-9 w-full bg-transparent text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50"
-    />
+<div ...nativeAttrs() ...api().getRootProps() data-slot="command" class=cn("mu-command flex size-full flex-col overflow-hidden", input.class)>
+  <div data-slot="command-input-wrapper" class="mu-command-input-wrapper">
+    <div ...api().getControlProps() data-slot="command-input-group" class="mu-command-input-group group/input-group relative flex w-full min-w-0 items-center outline-none">
+      <input
+        ...api().getInputProps()
+        data-slot="command-input"
+        placeholder=input.placeholder
+        class="mu-command-input outline-hidden disabled:cursor-not-allowed disabled:opacity-50"
+      />
+      <div data-slot="command-input-addon" class="flex items-center">
+        <Icon name="Search" data-slot="command-input-icon" class="mu-command-input-icon"/>
+      </div>
+    </div>
   </div>
-  <div ...api().getContentProps() data-slot="command-list" class="max-h-80 scroll-py-1 overflow-y-auto overflow-x-hidden p-1">
+  <div ...api().getContentProps() data-slot="command-list" class="mu-command-list overflow-x-hidden overflow-y-auto">
     <if=(allItems.length === 0)>
-      <div data-slot="command-empty" class="py-6 text-center text-sm">No results found.</div>
+      <div data-slot="command-empty" class="mu-command-empty">No results found.</div>
     </if>
     <else>
       <for|group, groupIndex| of=filteredGroups>
-        <div ...api().getItemGroupProps({ id: `group-${groupIndex}` }) data-slot="command-group" class="text-foreground overflow-hidden p-1">
-          <div ...api().getItemGroupLabelProps({ htmlFor: `group-${groupIndex}` }) data-slot="command-group-label" class="text-muted-foreground px-2 py-1.5 text-xs font-medium">
+        <div ...api().getItemGroupProps({ id: `group-${groupIndex}` }) data-slot="command-group" class="mu-command-group">
+          <div ...api().getItemGroupLabelProps({ htmlFor: `group-${groupIndex}` }) cmdk-group-heading="">
             ${group.label}
           </div>
           <for|item| of=group.items>
             <div
               ...api().getItemProps({ item })
               data-slot="command-item"
-              class="data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+              class="mu-command-item group/command-item data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
             >
               <span>${item.label}</span>
               <if=item.shortcut>
-                <span data-slot="command-shortcut" class="text-muted-foreground ml-auto text-xs tracking-widest">${item.shortcut}</span>
+                <span data-slot="command-shortcut" class="mu-command-shortcut">${item.shortcut}</span>
               </if>
+              <Icon
+                name="Check"
+                data-slot="command-item-indicator"
+                class="mu-command-item-indicator ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-[state=checked]/command-item:opacity-100"
+              />
             </div>
           </for>
         </div>

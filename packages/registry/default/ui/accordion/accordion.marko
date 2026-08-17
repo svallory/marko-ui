@@ -1,5 +1,6 @@
 import * as accordionMachine from "@zag-js/accordion";
 import type { MachineInput } from "marko-zag";
+import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 
 export interface AccordionItem {
@@ -189,7 +190,7 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
   }
 />
 
-<div ...nativeAttrs() ...api().getRootProps() data-slot="accordion" class=cn(input.class)>
+<div ...nativeAttrs() ...api().getRootProps() data-slot="accordion" class=cn("mu-accordion flex w-full flex-col", input.class)>
   <for|item| of=normalizedItems>
     <const/expanded=api().getItemState({ value: item.value }).expanded/>
     <const/itemContentProps=api().getItemContentProps({ value: item.value })/>
@@ -197,29 +198,25 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
     <div
       ...api().getItemProps({ value: item.value })
       data-slot="accordion-item"
-      class="border-b last:border-b-0"
+      class="mu-accordion-item"
     >
       <h3 class="flex">
         <button
           ...api().getItemTriggerProps({ value: item.value })
           data-slot="accordion-trigger"
-          class="focus-visible:border-ring focus-visible:ring-ring/50 flex flex-1 items-start justify-between gap-4 rounded-md py-4 text-left text-sm font-medium transition-all outline-none hover:underline focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180"
+          class="mu-accordion-trigger group/accordion-trigger relative flex flex-1 items-start justify-between border border-transparent transition-all outline-none disabled:pointer-events-none disabled:opacity-50"
         >
           ${item.title}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="text-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200"
-          >
-            <path d="m6 9 6 6 6-6"/>
-          </svg>
+          <Icon
+            name="ChevronDown"
+            data-slot="accordion-trigger-icon"
+            class="mu-accordion-trigger-icon pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:hidden"
+          />
+          <Icon
+            name="ChevronUp"
+            data-slot="accordion-trigger-icon"
+            class="mu-accordion-trigger-icon pointer-events-none hidden shrink-0 group-aria-expanded/accordion-trigger:inline"
+          />
         </button>
       </h3>
       <div
@@ -228,9 +225,9 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
         data-slot="accordion-content"
         data-value=item.value
         data-closing=(isClosing || undefined)
-        class="overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+        class="mu-accordion-content overflow-hidden"
       >
-        <div class="pt-0 pb-4">
+        <div class="mu-accordion-content-inner h-(--marko-accordion-content-height) [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-4">
           <if=item.body>
             <${item.body}/>
           </if>

@@ -1,6 +1,7 @@
 import * as datePickerMachine from "@zag-js/date-picker";
 import { CalendarDate, type DateValue } from "@internationalized/date";
 import type { MachineInput } from "marko-zag";
+import { buttonVariants } from "../button/variants.ts";
 import { cn } from "#lib/utils.ts";
 
 // Calendar is an inline, always-open date-picker: `open`/`inline`/
@@ -56,29 +57,31 @@ static function toPlain(date: DateValue) {
 
 <const/weeks=() =>
   api().weeks.map((week) =>
-    week.map((date) => {
-      const cellState = api().getDayTableCellState({ value: date });
-      return {
-        cell: api().getDayTableCellProps({ value: date }),
-        trigger: api().getDayTableCellTriggerProps({ value: date }),
-        label: String(date.day),
-        selected: cellState.selected,
-        today: cellState.today,
-        outsideRange: cellState.outsideRange,
-      };
-    }),
+    week.map((date) => ({
+      cell: api().getDayTableCellProps({ value: date }),
+      trigger: api().getDayTableCellTriggerProps({ value: date }),
+      label: String(date.day),
+    })),
   )
 />
 
-<div ...nativeAttrs() ...api().getRootProps() data-slot="calendar" class=cn("border rounded-md p-3 w-fit", input.class)>
-  <div ...api().getContentProps() data-slot="calendar-content" class="space-y-4">
-    <div class="flex items-center justify-between">
+<div
+  ...nativeAttrs()
+  ...api().getRootProps()
+  data-slot="calendar"
+  class=cn(
+    "mu-calendar group/calendar bg-background in-data-[slot=card-content]:bg-transparent in-data-[slot=popover-content]:bg-transparent",
+    input.class,
+  )
+>
+  <div ...api().getContentProps() data-slot="calendar-content" class="relative flex flex-col gap-4">
+    <div class="absolute inset-x-0 top-0 flex w-full items-center justify-between gap-1">
       <button
         ...api().getPrevTriggerProps()
         data-slot="calendar-prev-trigger"
-        class="inline-flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+        class=cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "size-(--cell-size) p-0 select-none aria-disabled:opacity-50")
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-rtl-flip size-4">
           <path d="m15 18-6-6 6-6"/>
         </svg>
         <span class="sr-only">Previous</span>
@@ -86,26 +89,26 @@ static function toPlain(date: DateValue) {
       <button
         ...api().getViewTriggerProps()
         data-slot="calendar-view-trigger"
-        class="text-sm font-medium hover:underline"
+        class="mu-calendar-caption text-sm font-medium select-none"
       >
         ${api().visibleRangeText.formatted}
       </button>
       <button
         ...api().getNextTriggerProps()
         data-slot="calendar-next-trigger"
-        class="inline-flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+        class=cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "size-(--cell-size) p-0 select-none aria-disabled:opacity-50")
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-rtl-flip size-4">
           <path d="m9 18 6-6-6-6"/>
         </svg>
         <span class="sr-only">Next</span>
       </button>
     </div>
-    <table ...api().getTableProps() data-slot="calendar-table" class="w-full border-collapse space-y-1">
+    <table ...api().getTableProps() data-slot="calendar-table" class="w-full border-collapse">
       <thead ...api().getTableHeadProps() data-slot="calendar-table-head">
-        <tr>
+        <tr class="flex">
           <for|weekDay| of=api().weekDays>
-            <th class="text-muted-foreground w-9 rounded-md text-[0.8rem] font-normal">
+            <th class="w-(--cell-size) flex-1 rounded-(--cell-radius) text-[0.8rem] font-normal text-muted-foreground select-none">
               ${weekDay.narrow}
               <span class="sr-only">${weekDay.long}</span>
             </th>
@@ -114,22 +117,17 @@ static function toPlain(date: DateValue) {
       </thead>
       <tbody ...api().getTableBodyProps() data-slot="calendar-table-body">
         <for|week, i| of=weeks() by=(_, i) => i>
-          <tr>
+          <tr class="mt-2 flex w-full">
             <for|day, j| of=week by=(_, j) => j>
               <td
                 ...day.cell
                 data-slot="calendar-cell"
-                class="p-0 text-center text-sm relative [&:has([data-in-range])]:bg-accent first:[&:has([data-in-range])]:rounded-l-md last:[&:has([data-in-range])]:rounded-r-md"
+                class="group/day relative aspect-square h-full w-full rounded-(--cell-radius) p-0 text-center select-none [&:has([data-in-range])]:bg-muted first:[&:has([data-in-range])]:rounded-l-(--cell-radius) last:[&:has([data-in-range])]:rounded-r-(--cell-radius)"
               >
                 <button
                   ...day.trigger
                   data-slot="calendar-day"
-                  class=cn(
-                    "inline-flex size-9 items-center justify-center rounded-md p-0 text-sm font-normal transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
-                    day.selected && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
-                    day.today && !day.selected && "bg-accent text-accent-foreground",
-                    day.outsideRange && "text-muted-foreground opacity-50",
-                  )
+                  class="mu-calendar-day-button relative isolate z-10 flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 border-0 leading-none font-normal text-foreground data-[today]:bg-muted data-selected:data-[today]:bg-primary data-[outside-range]:text-muted-foreground data-[outside-range]:opacity-50 group-data-[focus]/day:relative group-data-[focus]/day:z-10 group-data-[focus]/day:border-ring group-data-[focus]/day:ring-[3px] group-data-[focus]/day:ring-ring/50 data-[range-end]:rounded-(--cell-radius) data-[range-end]:rounded-r-(--cell-radius) data-[range-end]:bg-primary data-[range-end]:text-primary-foreground data-[in-range]:rounded-none data-[in-range]:bg-muted data-[in-range]:text-foreground data-[range-start]:rounded-(--cell-radius) data-[range-start]:rounded-l-(--cell-radius) data-[range-start]:bg-primary data-[range-start]:text-primary-foreground data-selected:bg-primary data-selected:text-primary-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:hover:text-foreground"
                 >
                   ${day.label}
                 </button>

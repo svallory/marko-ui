@@ -24,7 +24,7 @@ export interface Input extends Marko.Input<"div"> {
   role=(role ?? "log")
   aria-relevant=(ariaRelevant ?? "additions")
   data-slot="message-scroller-content"
-  class=cn("flex h-max min-h-full flex-col gap-8", className)
+  class=cn("mu-message-scroller-content flex h-max min-h-full flex-col", className)
 >
   <${content}/>
   <div/spacerEl aria-hidden="true" data-message-scroller-spacer hidden class=spacerClassName/>
