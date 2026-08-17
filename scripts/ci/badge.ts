@@ -86,9 +86,11 @@ switch (kind) {
     write("axe", {
       schemaVersion: 1,
       label: "axe violations",
+      // "demo pages", not "components": only components with demo pages are
+      // scanned, and the registry has more components than demo pages.
       message:
         violations === 0
-          ? `0 across ${components} components`
+          ? `0 across ${components} demo pages`
           : `${violations} across ${pagesScanned} pages`,
       color: violations === 0 ? "brightgreen" : "red",
     });

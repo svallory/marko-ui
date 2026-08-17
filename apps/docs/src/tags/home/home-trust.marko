@@ -3,45 +3,50 @@
 // badge images (shields.io etc.): those read as decoration; a stat that
 // links to the actual test suite reads as evidence. Numbers are maintained
 // by hand next to their sources — update them when the suites change:
-//   - TESTS:        `bunx vitest run` total          (packages/*/tests)
-//   - MATRIX:       verify manifest pagesGenerated   (apps/docs/src/routes/verify/manifest.json)
-//   - COMPONENTS:   dirs in packages/registry/default/ui
-//   - MACHINES:     @zag-js/* runtime deps in apps/docs/package.json
-//   - AXE:          `bun scripts/ci/axe-scan.ts` (enforced by the CI axe job
-//                   — fails on any violation, so "0" stays true)
+//   - CHECKS:      `bunx vitest run` total (120) + Playwright style-matrix
+//                  total (511, e2e/results.json stats.expected) — both run
+//                  in CI on every push (.github/workflows/ci.yml)
+//   - COMPONENTS:  dirs in packages/registry/default/ui
+//   - STYLES:      default + dirs in packages/registry/styles
+//   - AXE:         `bun scripts/ci/axe-scan.ts` — the CI axe job fails on any
+//                  violation, so "0" stays true
+//   - LIGHTHOUSE:  minimum accessibility score across the component pages
+//                  audited by .github/workflows/lighthouse.yml
 static const REPO = "https://github.com/svallory/marko-ui";
 
 static const RECEIPTS = [
   {
-    value: "120/120",
-    label: "behavior & hydration tests",
-    title: "WAI-ARIA keyboard contracts, hydration invariance, and SSR suites — all passing",
-    href: `${REPO}/tree/main/packages/registry/tests`,
-  },
-  {
-    value: "511",
-    label: "style-matrix checks",
-    title: "Every component rendered, hydrated, and interacted with in every style — zero console errors",
-    href: `${REPO}/tree/main/e2e`,
+    value: "631",
+    label: "checks on every push",
+    title:
+      "120 behavior & hydration tests plus 511 style-matrix checks (every component rendered, hydrated, and interacted with in every style) — CI-enforced",
+    href: `${REPO}/actions/workflows/ci.yml`,
   },
   {
     value: "86",
-    label: "components, 9 styles",
-    title: "The full registry: 86 components, each shipped in the default style plus 8 ports",
+    label: "components",
+    title: "The full registry — every component in readable .marko source",
     href: `${REPO}/tree/main/packages/registry`,
   },
   {
-    value: "51",
-    label: "Zag.js machines",
-    title: "Interactive behavior driven by Zag.js state machines — the same core behind Chakra's Ark UI",
-    href: "https://zagjs.com",
+    value: "9",
+    label: "styles",
+    title: "The default style plus 8 complete ports",
+    href: `${REPO}/tree/main/packages/registry/styles`,
   },
   {
     value: "0",
-    label: "axe violations, 79 components",
+    label: "axe violations",
     title:
-      "axe-core WCAG scan over every component's demo page — zero violations, enforced in CI on every push",
+      "axe-core WCAG scan across all 79 component demo pages — CI fails on any violation (the remaining 7 components ship without demo pages yet)",
     href: `${REPO}/blob/main/scripts/ci/axe-scan.ts`,
+  },
+  {
+    value: "100",
+    label: "Lighthouse accessibility",
+    title:
+      "Minimum Lighthouse accessibility score across audited component pages — re-audited on every push",
+    href: `${REPO}/actions/workflows/lighthouse.yml`,
   },
 ] as const;
 
