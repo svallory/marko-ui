@@ -232,7 +232,7 @@ async function main() {
       title: name === "style" ? "Theme" : `Theme (${name.replace("style-", "")})`,
       description:
         "Tailwind v4 globals.css with shadcn-compatible CSS variables. Add `@source` directives for your .marko files.",
-      dependencies: ["tailwindcss", "tw-animate-css", "marko-ui"],
+      dependencies: ["tailwindcss", "tw-animate-css", "marko-zag"],
       cssVars: parseCssVars(css),
       // Ship only this variant's CSS, always targeted as globals.css so a
       // consumer picking any base color gets a normal `~/src/styles/globals.css`.
@@ -257,10 +257,10 @@ async function main() {
     const dir = join(UI_DIR, name);
     const meta = await readMeta(dir);
     const files = await fileEntries(dir, `~/src/components/ui/${name}`, `ui/${name}`);
-    // derive npm deps the meta forgot: any file importing marko-ui needs it
+    // derive npm deps the meta forgot: any file importing the adapter needs it
     const dependencies = new Set(meta.dependencies ?? []);
-    if (files.some((f) => f.content.includes('from "marko-ui"'))) {
-      dependencies.add("marko-ui");
+    if (files.some((f) => f.content.includes('from "marko-zag"'))) {
+      dependencies.add("marko-zag");
     }
     await write({
       $schema: ITEM_SCHEMA,

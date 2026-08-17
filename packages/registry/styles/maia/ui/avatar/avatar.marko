@@ -5,7 +5,7 @@
 // avatar machine has no size concept, so `size` is component-owned here,
 // same treatment as switch.marko's `size`.
 import * as avatarMachine from "@zag-js/avatar";
-import type { MachineInput } from "marko-ui";
+import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 
 export type Input = MachineInput<"span", avatarMachine.Props> & {

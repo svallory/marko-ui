@@ -112,10 +112,11 @@ list before finishing.
 8. **Server/client serialization boundary.** Values crossing from server to
    client sections must be serializable — Zag machine getters and class
    instances are not; pass plain data and reconnect on the client.
-9. **Imports use the \`marko-ui\` adapter package.** Component source imports
-   \`MachineInput\` types and machine wiring from \`"marko-ui"\`. If that
-   package is missing, installs still work but the import fails at build
-   time — \`marko-ui doctor\` reports it.
+9. **Imports use the \`marko-zag\` adapter package.** Component source
+   imports \`MachineInput\` types and machine wiring from \`"marko-zag"\`
+   (docs: https://marko-zag.saulo.tech). If it is missing, installs still
+   work but the import fails at build time — \`marko-ui doctor\` reports
+   any missing component dependencies.
 
 ## Component anatomy
 

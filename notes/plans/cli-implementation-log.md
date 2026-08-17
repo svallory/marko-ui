@@ -162,3 +162,34 @@ unknown components), falling through to the page otherwise.
 existing links. Site "View as Markdown"/Copy Page links now point at
 `.md`; the CLI `docs` command fetches `.md` first and falls back to `/md`
 for older deployments.
+
+## Review remediation + marko-zag sweep (2026-08-17)
+
+All findings from cli-architecture-review.md addressed in one batch
+(commit "fix(cli): address all adversarial-review findings"): A1-A6 real
+bugs, B1-B8 contract drift, C prune (-1300 lines of fork debris), D
+hardening (anchored import regex + regression tests, declined-file
+guard, deno assert). Scoped out with reason: validate's target check —
+target lives on registries.json INDEX entries, not on registry.json/
+items, so there is nothing for item validation to check; revisit if
+validate grows an index input mode. shadcn parity guardrail: rsc/tsx/
+iconLibrary/style stay in the components.json SCHEMA (parse + write),
+they just drive no logic; {style}/params/headers URL templating for
+third-party registries kept.
+
+marko-zag sweep (canonical decision: the marko-zag repo/npm package is
+the adapter's single source of truth):
+- 295 files: `from "marko-ui"` → `from "marko-zag"`; packages/marko-ui
+  DELETED; registry + docs app depend on npm marko-zag ^1.0.0
+- emitter: unified adapter dep-scan for components AND blocks (B7),
+  style deps say marko-zag, theme items typed registry:style
+- Found + fixed a real packaging bug in published marko-zag@1.0.0: the
+  exports map did not expose ./src/*, so bundlers enforcing exports
+  refuse the taglib's tag files (workspace links had masked it).
+  Fixed + version-bumped in the marko-zag repo (1.0.1, pushed); the
+  workspace carries a temporary `overrides: marko-zag -> file:` until
+  1.0.1 is on npm — REMOVE IT after publish.
+- First fully-green e2e: init -b zinc dialog on a fresh app — real npm
+  install (marko-zag, @zag-js/dialog, tw-animate-css), zinc theme
+  actually installed (A3 verified), doctor 8/8 incl. the new
+  registry-driven dependency check.

@@ -137,14 +137,6 @@ export const CLI_MANIFEST: CliManifest = {
           "flags": "--dry-run",
           "description": "preview changes without writing files.",
           "defaultValue": false
-        },
-        {
-          "flags": "--diff [path]",
-          "description": "show diff for a file."
-        },
-        {
-          "flags": "--view [path]",
-          "description": "show file contents."
         }
       ]
     },
@@ -439,7 +431,7 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "name": "validate",
           "aliases": [],
-          "description": "validate a shadcn registry",
+          "description": "validate a registry against the shadcn registry schema",
           "arguments": [
             {
               "name": "registry",
@@ -462,13 +454,14 @@ export const CLI_MANIFEST: CliManifest = {
   "exitCodes": {
     "0": "success",
     "1": "operational failure",
-    "2": "usage error",
-    "3": "doctor/validate found problems",
-    "4": "network or registry unreachable"
+    "2": "usage error (unknown command/option, bad arguments)",
+    "3": "doctor/validate/agents-check found problems",
+    "4": "network error or registry unreachable"
   },
   "agentWorkflow": [
-    "marko-ui search <query> — find items across configured registries",
-    "marko-ui view <item> --json — inspect an item's files and dependencies",
+    "marko-ui search -q <query> — find items across configured registries",
+    "marko-ui show <item> — inspect an item (add --files or --deps to narrow)",
+    "marko-ui docs <item> — full component documentation as markdown",
     "marko-ui add <item> -y — install it",
     "marko-ui doctor --json — verify project health"
   ]

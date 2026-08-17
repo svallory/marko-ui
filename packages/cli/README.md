@@ -43,9 +43,9 @@ Run `marko-ui manifest` for the complete, always-current surface.
 
 - Components install as readable Marko source into your project — there
   is no runtime component package.
-- Most components import the `marko-ui` adapter package, which is not
-  yet published to npm. Until it is, add it as a workspace/file
-  dependency; `doctor` will remind you.
+- Zag-backed components import the [`marko-zag`](https://marko-zag.saulo.tech)
+  adapter package (installed automatically as a component dependency);
+  `doctor` reports any missing component dependencies.
 - Forked from the MIT-licensed [shadcn CLI](https://github.com/shadcn-ui/ui)
   (registry mechanics) with an agent-first surface inspired by Meta's
   [Astryx CLI](https://github.com/facebook/astryx).

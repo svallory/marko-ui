@@ -35,5 +35,8 @@
   "dependencies": {
     "@zag-js/core": "^1.43.0",
     "@zag-js/types": "^1.43.0"
+  },
+  "overrides": {
+    "marko-zag": "file:/Users/svallory/work/marko-zag"
   }
 }
