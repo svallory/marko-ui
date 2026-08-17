@@ -28,19 +28,24 @@ export type Input = MachineInput<"div", progressMachine.Props> & {
   return native;
 }>
 
-<div ...nativeAttrs() ...api().getRootProps() data-slot="progress" class=cn("flex flex-col gap-2", input.class)>
+<div
+  ...nativeAttrs()
+  ...api().getRootProps()
+  data-slot="progress"
+  class=cn("mu-progress relative flex w-full items-center overflow-x-hidden flex-col gap-2", input.class)
+>
   <if=input.label>
     <div class="flex items-center justify-between text-sm">
-      <span ...api().getLabelProps()>${input.label}</span>
-      <span ...api().getValueTextProps()>${api().valueAsString}</span>
+      <span ...api().getLabelProps() data-slot="progress-label" class="text-sm font-medium">${input.label}</span>
+      <span ...api().getValueTextProps() data-slot="progress-value" class="text-muted-foreground ml-auto text-sm tabular-nums">${api().valueAsString}</span>
     </div>
   </if>
-  <div
-    ...api().getTrackProps()
-    data-slot="progress-track"
-    class="bg-primary/20 relative h-2 w-full overflow-hidden rounded-full"
-  >
-    <div ...api().getRangeProps() data-slot="progress-range" class="bg-primary h-full transition-all"/>
+  <div ...api().getTrackProps() data-slot="progress-track" class="bg-muted relative h-2 w-full overflow-hidden rounded-full">
+    <div
+      ...api().getRangeProps()
+      data-slot="progress-indicator"
+      class="mu-progress-indicator size-full flex-1 transition-all"
+    />
   </div>
 </div>
 

@@ -16,10 +16,10 @@ export interface Input extends Marko.Input<"button"> {
 <const/{ class: className, asChild, type, content, ...rest }=input/>
 
 <button
-  ...rest
   data-slot="attachment-trigger"
   type=(type ?? "button")
-  class=cn("absolute inset-0 z-10 outline-none", className)
+  class=cn("mu-attachment-trigger absolute inset-0 z-10 outline-none", className)
+  ...rest
 >
   <${content}/>
 </button>

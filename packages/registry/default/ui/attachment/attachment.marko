@@ -15,12 +15,12 @@ export interface Input extends Marko.Input<"div">, AttachmentVariants {
 }=input/>
 
 <div
-  ...rest
   data-slot="attachment"
   data-state=state
   data-size=size
   data-orientation=orientation
   class=cn(attachmentVariants({ size, orientation }), className)
+  ...rest
 >
   <${content}/>
 </div>

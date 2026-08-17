@@ -29,6 +29,12 @@ export interface Input {
    * what makes `<service>`'s tracking script call `propsChanged()` here.
    */
   groupRevision: number;
+  /**
+   * Extra class(es) applied to this toast's root, merged after the built-in
+   * ones. Threaded down from `<Toaster>`'s `toastClass` input — the zag-native
+   * equivalent of sonner's `toastOptions.classNames.toast`.
+   */
+  toastClass?: string;
 }
 
 <const/machineProps=() => ({
@@ -63,6 +69,7 @@ export interface Input {
   ...api().getRootProps()
   data-slot="toast"
   class=cn(
+    input.toastClass,
     // Zag drives placement/stacking through CSS custom properties on this
     // element (--x/--y/--scale/--z-index/--height/--opacity). They must be
     // consumed by the `translate`/`scale` PROPERTIES, not by Tailwind's

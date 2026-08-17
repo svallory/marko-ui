@@ -82,7 +82,7 @@ export interface Input
 // will leak onto the native <div> via `...rest`.
 <const/{ panels, content, class: className, orientation, onResize, onResizeStart, onResizeEnd, onCollapse, onExpand, resizeChange, resizeEndChange, collapseChange, expandChange, ...rest }=input/>
 
-<div ...rest ...api().getRootProps() data-slot="resizable-panel-group" class=cn("flex h-full w-full data-[orientation=vertical]:flex-col", className)>
+<div ...rest ...api().getRootProps() data-slot="resizable-panel-group" class=cn("mu-resizable-panel-group flex h-full w-full data-[orientation=vertical]:flex-col", className)>
   <for|panel, index| of=panels>
     <div ...api().getPanelProps({ id: panel.id }) data-slot="resizable-panel">
       <if=content>
@@ -93,9 +93,9 @@ export interface Input
       <div
         ...api().getResizeTriggerProps({ id: `${panel.id}:${panels[index + 1].id}` })
         data-slot="resizable-handle"
-        class="bg-border focus-visible:ring-ring relative flex w-px items-center justify-center after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:ring-1 focus-visible:ring-offset-1 focus-visible:outline-hidden data-[orientation=vertical]:h-px data-[orientation=vertical]:w-full data-[orientation=vertical]:after:left-0 data-[orientation=vertical]:after:h-1 data-[orientation=vertical]:after:w-full data-[orientation=vertical]:after:translate-x-0 data-[orientation=vertical]:after:-translate-y-1/2 [&[data-orientation=vertical]>div]:rotate-90"
+        class="mu-resizable-handle relative flex w-px items-center justify-center bg-border ring-offset-background after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden data-[orientation=vertical]:h-px data-[orientation=vertical]:w-full data-[orientation=vertical]:after:left-0 data-[orientation=vertical]:after:h-1 data-[orientation=vertical]:after:w-full data-[orientation=vertical]:after:translate-x-0 data-[orientation=vertical]:after:-translate-y-1/2 [&[data-orientation=vertical]>div]:rotate-90"
       >
-        <div class="bg-border z-10 flex h-4 w-3 items-center justify-center rounded-xs border">
+        <div class="mu-resizable-handle-icon z-10 flex shrink-0">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"

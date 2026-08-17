@@ -48,7 +48,7 @@ export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
   ...nativeAttrs()
   ...api().getRootProps()
   data-slot="scroll-area"
-  class=cn("relative", input.class)
+  class=cn("mu-scroll-area relative", input.class)
 >
   <div
     ...api().getViewportProps()
@@ -58,7 +58,7 @@ export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
     // scrollable-region-focusable). Matches shadcn's Viewport tabIndex={0} —
     // the focus-visible ring classes below assume it.
     tabindex="0"
-    class="size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1"
+    class="mu-scroll-area-viewport size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1"
   >
     <div ...api().getContentProps()>
       <${input.content}/>
@@ -69,12 +69,12 @@ export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
     <div
       ...api().getScrollbarProps({ orientation: "vertical" })
       data-slot="scroll-area-scrollbar"
-      class="flex h-full w-2.5 touch-none border-l border-l-transparent p-px transition-colors select-none"
+      class="mu-scroll-area-scrollbar flex touch-none p-px transition-colors select-none"
     >
       <div
         ...api().getThumbProps({ orientation: "vertical" })
         data-slot="scroll-area-thumb"
-        class="relative flex-1 rounded-full bg-border"
+        class="mu-scroll-area-thumb relative flex-1 bg-border"
       />
     </div>
   </if>
@@ -83,17 +83,17 @@ export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
     <div
       ...api().getScrollbarProps({ orientation: "horizontal" })
       data-slot="scroll-area-scrollbar"
-      class="flex h-2.5 w-full touch-none flex-col border-t border-t-transparent p-px transition-colors select-none"
+      class="mu-scroll-area-scrollbar flex touch-none p-px transition-colors select-none"
     >
       <div
         ...api().getThumbProps({ orientation: "horizontal" })
         data-slot="scroll-area-thumb"
-        class="relative flex-1 rounded-full bg-border"
+        class="mu-scroll-area-thumb relative flex-1 bg-border"
       />
     </div>
   </if>
 
-  <div ...api().getCornerProps() data-slot="scroll-area-corner"/>
+  <div ...api().getCornerProps()/>
 </div>
 
 <return=api>

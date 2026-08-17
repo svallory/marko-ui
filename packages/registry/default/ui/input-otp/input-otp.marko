@@ -50,19 +50,30 @@ export type Input = MachineInput<"div", pinInputMachine.Props> & {
   ...nativeAttrs()
   ...api().getRootProps()
   data-slot="input-otp"
-  class=cn("flex items-center gap-2 has-disabled:opacity-50", input.class)
+  class=cn("mu-input-otp flex items-center has-disabled:opacity-50", input.class)
 >
   <input ...api().getHiddenInputProps()>
-  <for|index| of=api().items>
-    <if=(input.groupSize && index > 0 && index % input.groupSize === 0)>
-      <div data-slot="input-otp-separator" class="text-muted-foreground">-</div>
-    </if>
-    <input
-      ...api().getInputProps({ index })
-      data-slot="input-otp-slot"
-      class="border-input size-9 rounded-md border text-center text-sm shadow-xs outline-none focus:ring-[3px] focus:ring-ring/50 focus:border-ring"
-    />
-  </for>
+  <div data-slot="input-otp-group" class="mu-input-otp-group flex items-center">
+    <for|index| of=api().items>
+      <if=(input.groupSize && index > 0 && index % input.groupSize === 0)>
+        <div data-slot="input-otp-separator" class="mu-input-otp-separator flex items-center [&_svg:not([class*='size-'])]:size-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/>
+          </svg>
+        </div>
+      </if>
+      <div data-slot="input-otp-slot" class="mu-input-otp-slot relative flex items-center justify-center has-focus:z-10">
+        <input
+          ...api().getInputProps({ index })
+          data-slot="input-otp-input"
+          class="mu-input-otp-input peer border-input size-9 rounded-md border text-center text-sm shadow-xs outline-none focus:ring-[3px] focus:ring-ring/50 focus:border-ring disabled:cursor-not-allowed caret-transparent"
+        />
+        <div class="mu-input-otp-caret pointer-events-none absolute inset-0 hidden items-center justify-center peer-[:focus:not([data-filled])]:flex">
+          <div class="mu-input-otp-caret-line animate-caret-blink bg-foreground h-4 w-px duration-1000"></div>
+        </div>
+      </div>
+    </for>
+  </div>
 </div>
 
 // Parents can receive the api getter: <InputOtp/inputOtpApi/> then

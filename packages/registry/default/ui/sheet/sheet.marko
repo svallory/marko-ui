@@ -1,16 +1,23 @@
+// Guide: /docs/creating-components · adapter internals: /docs/zag-adapter
+// Authoring rules: notes/component-authoring.md (v2 pattern)
 import * as dialogMachine from "@zag-js/dialog";
 import type { MachineInput } from "marko-zag";
+import Button from "../button/button.marko";
+import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
-import { sheetVariants, type SheetVariants } from "./variants.ts";
 
-export type Input = MachineInput<"div", dialogMachine.Props> &
-  SheetVariants & {
-    openChange?: (open: boolean) => void;
-    trigger?: Marko.Body<[Record<string, unknown>]>;
-    title?: Marko.Body;
-    description?: Marko.Body;
-    content?: Marko.Body;
-  };
+export type Input = MachineInput<"div", dialogMachine.Props> & {
+  openChange?: (open: boolean) => void;
+  trigger?: Marko.Body<[Record<string, unknown>]>;
+  title?: Marko.Body;
+  description?: Marko.Body;
+  content?: Marko.Body;
+  footer?: Marko.Body;
+  /** `"top" | "right" | "bottom" | "left"` — which edge the sheet slides in from. */
+  side?: "top" | "right" | "bottom" | "left";
+  /** Show the top-right close button. Defaults to true. */
+  showCloseButton?: boolean;
+};
 
 <machine-props/machineProps from=input pick=dialogMachine.props
   role="dialog"
@@ -32,66 +39,69 @@ export type Input = MachineInput<"div", dialogMachine.Props> &
     title: ownTitle,
     description: ownDescription,
     content: ownContent,
+    footer: ownFooter,
     side: ownSide,
+    showCloseButton: ownShowCloseButton,
     ...native
   } = dialogMachine.splitProps(input)[1];
   return native;
 }>
+<const/side=input.side ?? "right"/>
+<const/showCloseButton=input.showCloseButton ?? true/>
 
 <div ...nativeAttrs() data-slot="sheet">
   <if=input.trigger>
     <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "sheet-trigger" })/>
   </if>
-  <portal>
+  <portal data-slot="sheet-portal">
     <if=api().open>
       <div
         ...api().getBackdropProps()
         data-slot="sheet-overlay"
-        class="fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+        class="mu-sheet-overlay fixed inset-0 z-50 duration-100 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0"
       />
       <div ...api().getPositionerProps() data-slot="sheet-positioner" class="contents">
         <div
           ...api().getContentProps()
           data-slot="sheet-content"
-          class=cn(sheetVariants({ side: input.side }), input.class)
+          data-side=side
+          class=cn(
+            "mu-sheet-content data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[side=bottom]:data-[state=open]:slide-in-from-bottom-10 data-[side=left]:data-[state=open]:slide-in-from-left-10 data-[side=right]:data-[state=open]:slide-in-from-right-10 data-[side=top]:data-[state=open]:slide-in-from-top-10 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[side=bottom]:data-[state=closed]:slide-out-to-bottom-10 data-[side=left]:data-[state=closed]:slide-out-to-left-10 data-[side=right]:data-[state=closed]:slide-out-to-right-10 data-[side=top]:data-[state=closed]:slide-out-to-top-10",
+            input.class,
+          )
         >
-          <div class="flex flex-col gap-1.5 p-4">
-            <if=input.title>
-              <h2 ...api().getTitleProps() data-slot="sheet-title" class="text-foreground font-semibold">
-                <${input.title}/>
-              </h2>
-            </if>
-            <if=input.description>
-              <p ...api().getDescriptionProps() data-slot="sheet-description" class="text-muted-foreground text-sm">
-                <${input.description}/>
-              </p>
-            </if>
-          </div>
-          <div class="flex-1 overflow-auto px-4">
-            <${input.content}/>
-          </div>
-          <button
-            ...api().getCloseTriggerProps()
-            data-slot="sheet-close"
-            class="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="size-4"
+          <if=input.title || input.description>
+            <div data-slot="sheet-header" class="mu-sheet-header flex flex-col">
+              <if=input.title>
+                <h2 ...api().getTitleProps() data-slot="sheet-title" class="mu-sheet-title mu-font-heading">
+                  <${input.title}/>
+                </h2>
+              </if>
+              <if=input.description>
+                <p ...api().getDescriptionProps() data-slot="sheet-description" class="mu-sheet-description">
+                  <${input.description}/>
+                </p>
+              </if>
+            </div>
+          </if>
+          <${input.content}/>
+          <if=input.footer>
+            <div data-slot="sheet-footer" class="mu-sheet-footer mt-auto flex flex-col">
+              <${input.footer}/>
+            </div>
+          </if>
+          <if=showCloseButton>
+            <Button
+              ...api().getCloseTriggerProps()
+              variant="ghost"
+              size="icon-sm"
+              data-slot="sheet-close"
+              class="mu-sheet-close"
             >
-              <path d="M18 6 6 18"/>
-              <path d="m6 6 12 12"/>
-            </svg>
-            <span class="sr-only">Close</span>
-          </button>
+              <Icon name="XIcon"/>
+              <span class="sr-only">Close</span>
+            </Button>
+          </if>
         </div>
       </div>
     </if>

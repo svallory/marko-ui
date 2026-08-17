@@ -27,13 +27,21 @@ export type Input = MachineInput<"nav", paginationMachine.Props> & {
   return native;
 }>
 
-<nav ...nativeAttrs() ...api().getRootProps() data-slot="pagination" class=cn(input.class)>
-  <ul class="flex flex-row items-center gap-1">
-    <li>
+<nav
+  ...nativeAttrs()
+  ...api().getRootProps()
+  role="navigation"
+  aria-label="pagination"
+  data-slot="pagination"
+  class=cn("mu-pagination mx-auto flex w-full justify-center", input.class)
+>
+  <ul data-slot="pagination-content" class="mu-pagination-content flex items-center">
+    <li data-slot="pagination-item">
       <button
         ...api().getPrevTriggerProps()
-        data-slot="pagination-prev"
-        class=cn(buttonVariants({ variant: "ghost", size: "default" }), "gap-1 px-2.5 sm:pl-2.5")
+        data-slot="pagination-link"
+        aria-label="Go to previous page"
+        class=cn(buttonVariants({ variant: "ghost", size: "default" }), "mu-pagination-link mu-pagination-previous")
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -45,44 +53,50 @@ export type Input = MachineInput<"nav", paginationMachine.Props> & {
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
-          class="size-4"
+          class="mu-rtl-flip"
         >
           <path d="m15 18-6-6 6-6"/>
         </svg>
-        <span class="hidden sm:block">Previous</span>
+        <span class="mu-pagination-previous-text hidden sm:block">Previous</span>
       </button>
     </li>
     <for|item, index| of=api().pages by=(item, index) => item.type === "page" ? `page-${item.value}` : `ellipsis-${index}`>
       <if=item.type === "page">
-        <li>
+        <const/isActive=item.value === api().page>
+        <li data-slot="pagination-item">
           <button
             ...api().getItemProps({ type: "page", value: item.value })
-            data-slot="pagination-item"
-            class=buttonVariants({ variant: item.value === api().page ? "outline" : "ghost", size: "icon" })
+            data-slot="pagination-link"
+            aria-current=(isActive ? "page" : undefined)
+            data-active=(isActive ? "true" : undefined)
+            class=cn(buttonVariants({ variant: isActive ? "outline" : "ghost", size: "icon" }), "mu-pagination-link")
           >
             ${item.value}
           </button>
         </li>
       </if>
       <else>
-        <li>
+        <li data-slot="pagination-item">
           <span
             ...api().getEllipsisProps({ index })
+            aria-hidden
             data-slot="pagination-ellipsis"
-            class="flex size-9 items-center justify-center"
+            class="mu-pagination-ellipsis flex items-center justify-center"
           >
             &hellip;
+            <span class="sr-only">More pages</span>
           </span>
         </li>
       </else>
     </for>
-    <li>
+    <li data-slot="pagination-item">
       <button
         ...api().getNextTriggerProps()
-        data-slot="pagination-next"
-        class=cn(buttonVariants({ variant: "ghost", size: "default" }), "gap-1 px-2.5 sm:pr-2.5")
+        data-slot="pagination-link"
+        aria-label="Go to next page"
+        class=cn(buttonVariants({ variant: "ghost", size: "default" }), "mu-pagination-link mu-pagination-next")
       >
-        <span class="hidden sm:block">Next</span>
+        <span class="mu-pagination-next-text hidden sm:block">Next</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -93,7 +107,7 @@ export type Input = MachineInput<"nav", paginationMachine.Props> & {
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
-          class="size-4"
+          class="mu-rtl-flip"
         >
           <path d="m9 18 6-6-6-6"/>
         </svg>

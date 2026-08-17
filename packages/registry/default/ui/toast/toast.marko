@@ -25,9 +25,16 @@ export interface Input extends Marko.Input<"div"> {
   label?: string;
   /** Text direction passed to the group machine. */
   dir?: "ltr" | "rtl";
+  /**
+   * Extra class(es) applied to every toast's root element. The zag-native
+   * equivalent of sonner's `toastOptions.classNames.toast`. `sonner.marko`
+   * passes the `mu-toast` style hook through here, mirroring upstream
+   * `sonner.tsx`'s `toastOptions={{ classNames: { toast: "cn-toast" } }}`.
+   */
+  toastClass?: string;
 }
 
-<const/{ class: className, label, dir, ...rest }=input/>
+<const/{ class: className, label, dir, toastClass, ...rest }=input/>
 
 <id/regionId/>
 <const/groupProps=() => ({ id: regionId, store: toaster, dir })/>
@@ -54,6 +61,7 @@ export interface Input extends Marko.Input<"div"> {
       parent=getParentService
       index=index
       groupRevision=service.rev
+      toastClass=toastClass
     />
   </for>
 </div>

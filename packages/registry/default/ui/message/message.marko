@@ -7,13 +7,13 @@ export interface Input extends Marko.Input<"div"> {
 <const/{ align = "start", class: className, content, ...rest }=input/>
 
 <div
-  ...rest
   data-slot="message"
   data-align=align
   class=cn(
-    "group/message relative flex w-full min-w-0 gap-2 text-sm data-[align=end]:flex-row-reverse",
+    "mu-message group/message relative flex w-full min-w-0 data-[align=end]:flex-row-reverse",
     className,
   )
+  ...rest
 >
   <${content}/>
 </div>

@@ -9,11 +9,11 @@ export interface Input extends Marko.Input<"div">, BubbleReactionsVariants {
 <const/{ side = "bottom", align = "end", class: className, content, ...rest }=input/>
 
 <div
-  ...rest
   data-slot="bubble-reactions"
   data-align=align
   data-side=side
   class=cn(bubbleReactionsVariants({ side, align }), className)
+  ...rest
 >
   <${content}/>
 </div>

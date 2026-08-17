@@ -8,11 +8,11 @@ export interface Input extends Marko.Input<"div">, BubbleVariants {
 <const/{ variant = "default", align = "start", class: className, content, ...rest }=input/>
 
 <div
-  ...rest
   data-slot="bubble"
   data-variant=variant
   data-align=align
   class=cn(bubbleVariants({ variant }), className)
+  ...rest
 >
   <${content}/>
 </div>

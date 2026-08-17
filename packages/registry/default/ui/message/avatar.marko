@@ -5,12 +5,12 @@ export interface Input extends Marko.Input<"div"> {}
 <const/{ class: className, content, ...rest }=input/>
 
 <div
-  ...rest
   data-slot="message-avatar"
   class=cn(
-    "flex w-fit min-w-8 shrink-0 items-center justify-center self-end overflow-hidden rounded-full bg-muted group-has-data-[slot=message-footer]/message:-translate-y-8",
+    "mu-message-avatar flex w-fit shrink-0 items-center justify-center self-end overflow-hidden rounded-full bg-muted",
     className,
   )
+  ...rest
 >
   <${content}/>
 </div>
