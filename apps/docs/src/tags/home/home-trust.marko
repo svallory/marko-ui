@@ -7,6 +7,8 @@
 //   - MATRIX:       verify manifest pagesGenerated   (apps/docs/src/routes/verify/manifest.json)
 //   - COMPONENTS:   dirs in packages/registry/default/ui
 //   - MACHINES:     @zag-js/* runtime deps in apps/docs/package.json
+//   - AXE:          `bun scripts/ci/axe-scan.ts` (enforced by the CI axe job
+//                   — fails on any violation, so "0" stays true)
 static const REPO = "https://github.com/svallory/marko-ui";
 
 static const RECEIPTS = [
@@ -33,6 +35,13 @@ static const RECEIPTS = [
     label: "Zag.js machines",
     title: "Interactive behavior driven by Zag.js state machines — the same core behind Chakra's Ark UI",
     href: "https://zagjs.com",
+  },
+  {
+    value: "0",
+    label: "axe violations, 79 components",
+    title:
+      "axe-core WCAG scan over every component's demo page — zero violations, enforced in CI on every push",
+    href: `${REPO}/blob/main/scripts/ci/axe-scan.ts`,
   },
 ] as const;
 
