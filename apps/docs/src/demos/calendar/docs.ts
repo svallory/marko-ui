@@ -21,6 +21,12 @@ export const docs: ComponentDocs = {
       description: "An uncontrolled calendar with no date selected initially.",
     },
     {
+      name: "dropdown",
+      title: "Dropdown caption",
+      description:
+        "Set `captionLayout=\"dropdown\"` to swap the caption label for native month and year `<select>` controls.",
+    },
+    {
       name: "controlled",
       title: "Controlled",
       description:

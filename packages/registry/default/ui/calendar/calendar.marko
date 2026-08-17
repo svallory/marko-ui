@@ -20,6 +20,12 @@ export type Input = Omit<
   min?: { year: number; month: number; day: number };
   /** Latest selectable date (inclusive); days after it render disabled. */
   max?: { year: number; month: number; day: number };
+  /**
+   * Caption presentation. `"label"` (default) shows the visible range as a
+   * plain view-trigger button; `"dropdown"` swaps it for native month and year
+   * `<select>` controls. Component-owned — not forwarded to the machine.
+   */
+  captionLayout?: "label" | "dropdown";
 };
 
 static function toDateValue(date: { year: number; month: number; day: number }): DateValue {
@@ -51,9 +57,22 @@ static function toPlain(date: DateValue) {
 />
 
 <const/nativeAttrs=() => {
-  const { class: ownClass, valueChange: ownChangeHandler, ...native } = datePickerMachine.splitProps(input)[1];
+  const {
+    class: ownClass,
+    valueChange: ownChangeHandler,
+    captionLayout: ownCaptionLayout,
+    ...native
+  } = datePickerMachine.splitProps(input)[1];
   return native;
 }>
+
+<const/captionLayout=(input.captionLayout ?? "label")/>
+
+// Visible month's short name, matching the month <select>'s option labels.
+<const/monthLabel=() => {
+  const month = api().visibleRange.start.month;
+  return api().getMonths({ format: "short" }).find((m) => m.value === month)?.label ?? String(month);
+}/>
 
 <const/weeks=() =>
   api().weeks.map((week) =>
@@ -86,13 +105,70 @@ static function toPlain(date: DateValue) {
         </svg>
         <span class="sr-only">Previous</span>
       </button>
-      <button
-        ...api().getViewTriggerProps()
-        data-slot="calendar-view-trigger"
-        class="mu-calendar-caption text-sm font-medium select-none"
-      >
-        ${api().visibleRangeText.formatted}
-      </button>
+      <if=captionLayout === "dropdown">
+        <div
+          data-slot="calendar-dropdowns"
+          class="flex h-(--cell-size) w-full items-center justify-center gap-1.5 text-sm font-medium"
+        >
+          <div
+            data-slot="calendar-dropdown-root"
+            class="mu-calendar-dropdown-root relative rounded-(--cell-radius)"
+          >
+            <select
+              ...api().getMonthSelectProps()
+              data-slot="calendar-month-select"
+              class="absolute inset-0 bg-popover opacity-0"
+            >
+              <for|month| of=api().getMonths({ format: "short" })>
+                <option value=month.value disabled=month.disabled>${month.label}</option>
+              </for>
+            </select>
+            <span
+              aria-hidden="true"
+              data-slot="calendar-caption-label"
+              class="mu-calendar-caption-label flex items-center gap-1 rounded-(--cell-radius) text-sm font-medium select-none [&>svg]:size-3.5 [&>svg]:text-muted-foreground"
+            >
+              ${monthLabel()}
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+            </span>
+          </div>
+          <div
+            data-slot="calendar-dropdown-root"
+            class="mu-calendar-dropdown-root relative rounded-(--cell-radius)"
+          >
+            <select
+              ...api().getYearSelectProps()
+              data-slot="calendar-year-select"
+              class="absolute inset-0 bg-popover opacity-0"
+            >
+              <for|year| of=api().getYears()>
+                <option value=year.value disabled=year.disabled>${year.label}</option>
+              </for>
+            </select>
+            <span
+              aria-hidden="true"
+              data-slot="calendar-caption-label"
+              class="mu-calendar-caption-label flex items-center gap-1 rounded-(--cell-radius) text-sm font-medium select-none [&>svg]:size-3.5 [&>svg]:text-muted-foreground"
+            >
+              ${String(api().visibleRange.start.year)}
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </if>
+      <else>
+        <button
+          ...api().getViewTriggerProps()
+          data-slot="calendar-view-trigger"
+          class="mu-calendar-caption text-sm font-medium select-none"
+        >
+          ${api().visibleRangeText.formatted}
+        </button>
+      </else>
       <button
         ...api().getNextTriggerProps()
         data-slot="calendar-next-trigger"
