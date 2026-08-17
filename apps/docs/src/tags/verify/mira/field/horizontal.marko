@@ -10,5 +10,6 @@ import Input from "@marko-ui/registry/styles/mira/ui/input/input.marko";
     <FieldTitle>Email notifications</FieldTitle>
     <FieldDescription>Send an email when someone mentions you.</FieldDescription>
   </FieldContent>
-  <Input id="field-horizontal-toggle" type="checkbox" aria-label="Email notifications" class="size-4 shrink-0"/>
+  // size-6: WCAG 2.5.8 minimum 24px touch target (Lighthouse: target-size).
+  <Input id="field-horizontal-toggle" type="checkbox" aria-label="Email notifications" class="size-6 shrink-0"/>
 </Field>

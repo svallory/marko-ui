@@ -285,7 +285,14 @@ async function main() {
       const pageContent =
         GENERATED_HEADER +
         `${tagImportLines.join("\n")}\n\n` +
-        `<main data-verify-style=${JSON.stringify(style)} data-verify-component=${JSON.stringify(componentName)}>\n` +
+        // bg-background/text-foreground: demos must inherit the theme's text
+        // color like any real page wrapper would — without it they inherit the
+        // browser default (black), which in dark mode renders black-on-dark
+        // (caught by Lighthouse a11y: contrast ratios near 1.1).
+        // space-y-6/p-6: demos need real separation — with sections touching,
+        // interactive targets of ADJACENT demos overlap and fail WCAG 2.5.8
+        // spacing (Lighthouse: target-size on stacked sliders).
+        `<main data-verify-style=${JSON.stringify(style)} data-verify-component=${JSON.stringify(componentName)} class="space-y-6 bg-background p-6 text-foreground">\n` +
         sectionLines.map((s) => indent(s, "  ")).join("\n") +
         `\n</main>\n`;
       await writeFile(join(routeDir, "+page.marko"), pageContent);

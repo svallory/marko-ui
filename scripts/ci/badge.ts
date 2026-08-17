@@ -2,7 +2,7 @@
  * Turn CI result files into shields.io endpoint JSON badges.
  *
  * Usage: bun scripts/ci/badge.ts <kind> <input-file> <out-dir>
- *   kind = vitest | e2e | axe | lighthouse
+ *   kind = vitest | e2e | axe | lighthouse-a11y | lighthouse-site
  *
  * Each badge file follows the shields endpoint schema
  * (https://shields.io/badges/endpoint-badge) and is published to the
@@ -95,18 +95,28 @@ switch (kind) {
     break;
   }
 
-  case "lighthouse": {
-    // treosh/lighthouse-ci-action manifest.json — one entry per run; use the
-    // representative run per URL and report the MINIMUM across pages (the
-    // honest number: every page scores at least this).
+  // treosh/lighthouse-ci-action manifest.json — one entry per run; use the
+  // representative run per URL and report the MINIMUM across pages (the
+  // honest number: every page scores at least this).
+  //
+  // Two flavors, matching the two audit targets:
+  // - lighthouse-a11y: accessibility only, run against the bare component
+  //   verify pages. NO performance badge from component pages — perf is a
+  //   whole-page metric (payload, LCP, TBT of a real route); a bare fixture
+  //   page would score ~100 and prove nothing.
+  // - lighthouse-site: best-practices + seo from the real docs pages, where
+  //   those categories actually mean something.
+  case "lighthouse-a11y":
+  case "lighthouse-site": {
     const runs = (input as { isRepresentativeRun?: boolean; summary: Record<string, number> }[])
       .filter((run) => run.isRepresentativeRun !== false);
-    const categories: [string, string][] = [
-      ["accessibility", "lighthouse a11y"],
-      ["performance", "lighthouse perf"],
-      ["best-practices", "lighthouse best practices"],
-      ["seo", "lighthouse seo"],
-    ];
+    const categories: [string, string][] =
+      kind === "lighthouse-a11y"
+        ? [["accessibility", "lighthouse a11y (components)"]]
+        : [
+            ["best-practices", "lighthouse best practices"],
+            ["seo", "lighthouse seo"],
+          ];
     for (const [key, label] of categories) {
       const scores = runs.map((run) => Math.round((run.summary[key] ?? 0) * 100));
       const min = scores.length ? Math.min(...scores) : 0;

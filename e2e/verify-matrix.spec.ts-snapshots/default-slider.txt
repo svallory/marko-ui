@@ -6,6 +6,7 @@ section
           div data-slot="slider-range"
         input
         div data-slot="slider-thumb" role="slider" aria-label="Value" aria-labelledby="<id>" aria-orientation="horizontal" aria-valuemax="100" aria-valuemin="0" aria-valuenow="25"
+          span aria-hidden="true"
     span
 ---
 section
@@ -15,6 +16,7 @@ section
         div data-slot="slider-range"
       input
       div data-slot="slider-thumb" role="slider" aria-label="Value" aria-labelledby="<id>" aria-orientation="horizontal" aria-valuemax="100" aria-valuemin="0" aria-valuenow="33"
+        span aria-hidden="true"
 ---
 section
   div data-slot="slider"
@@ -23,6 +25,7 @@ section
         div data-slot="slider-range"
       input
       div data-slot="slider-thumb" role="slider" aria-disabled="true" aria-label="Value" aria-labelledby="<id>" aria-orientation="horizontal" aria-valuemax="100" aria-valuemin="0" aria-valuenow="50"
+        span aria-hidden="true"
 ---
 section
   div data-slot="slider"
@@ -31,12 +34,16 @@ section
         div data-slot="slider-range"
       input
       div data-slot="slider-thumb" role="slider" aria-label="First value" aria-labelledby="<id>" aria-orientation="horizontal" aria-valuemax="40" aria-valuemin="0" aria-valuenow="10"
+        span aria-hidden="true"
       input
       div data-slot="slider-thumb" role="slider" aria-label="Second value" aria-labelledby="<id>" aria-orientation="horizontal" aria-valuemax="70" aria-valuemin="10" aria-valuenow="40"
+        span aria-hidden="true"
       input
       div data-slot="slider-thumb" role="slider" aria-label="Third value" aria-labelledby="<id>" aria-orientation="horizontal" aria-valuemax="90" aria-valuemin="40" aria-valuenow="70"
+        span aria-hidden="true"
       input
       div data-slot="slider-thumb" role="slider" aria-label="Fourth value" aria-labelledby="<id>" aria-orientation="horizontal" aria-valuemax="100" aria-valuemin="70" aria-valuenow="90"
+        span aria-hidden="true"
 ---
 section
   div data-slot="slider"
@@ -45,8 +52,10 @@ section
         div data-slot="slider-range"
       input
       div data-slot="slider-thumb" role="slider" aria-label="Minimum value" aria-labelledby="<id>" aria-orientation="horizontal" aria-valuemax="75" aria-valuemin="0" aria-valuenow="25"
+        span aria-hidden="true"
       input
       div data-slot="slider-thumb" role="slider" aria-label="Maximum value" aria-labelledby="<id>" aria-orientation="horizontal" aria-valuemax="100" aria-valuemin="25" aria-valuenow="75"
+        span aria-hidden="true"
 ---
 section
   div data-slot="slider"
@@ -55,3 +64,4 @@ section
         div data-slot="slider-range"
       input
       div data-slot="slider-thumb" role="slider" aria-label="Value" aria-labelledby="<id>" aria-orientation="horizontal" aria-valuemax="100" aria-valuemin="0" aria-valuenow="50"
+        span aria-hidden="true"

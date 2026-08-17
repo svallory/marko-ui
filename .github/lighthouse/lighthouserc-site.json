@@ -1,0 +1,9 @@
+{
+  "ci": {
+    "collect": {
+      "settings": {
+        "onlyCategories": ["best-practices", "seo"]
+      }
+    }
+  }
+}

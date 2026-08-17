@@ -20,10 +20,13 @@ section
       span
     div data-slot="carousel-indicator-group"
       button data-slot="carousel-indicator" aria-label="Go to slide 1"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 2"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 3"
+        span aria-hidden="true"
         span
 ---
 section
@@ -56,14 +59,19 @@ section
         span
       div data-slot="carousel-indicator-group"
         button data-slot="carousel-indicator" aria-label="Go to slide 1"
+          span aria-hidden="true"
           span
         button data-slot="carousel-indicator" aria-label="Go to slide 2"
+          span aria-hidden="true"
           span
         button data-slot="carousel-indicator" aria-label="Go to slide 3"
+          span aria-hidden="true"
           span
         button data-slot="carousel-indicator" aria-label="Go to slide 4"
+          span aria-hidden="true"
           span
         button data-slot="carousel-indicator" aria-label="Go to slide 5"
+          span aria-hidden="true"
           span
 ---
 section
@@ -94,14 +102,19 @@ section
       span
     div data-slot="carousel-indicator-group"
       button data-slot="carousel-indicator" aria-label="Go to slide 1"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 2"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 3"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 4"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 5"
+        span aria-hidden="true"
         span
 ---
 section
@@ -132,14 +145,19 @@ section
       span
     div data-slot="carousel-indicator-group"
       button data-slot="carousel-indicator" aria-label="Go to slide 1"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 2"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 3"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 4"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 5"
+        span aria-hidden="true"
         span
 ---
 section
@@ -170,14 +188,19 @@ section
       span
     div data-slot="carousel-indicator-group"
       button data-slot="carousel-indicator" aria-label="Go to slide 1"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 2"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 3"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 4"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 5"
+        span aria-hidden="true"
         span
 ---
 section
@@ -208,10 +231,13 @@ section
       span
     div data-slot="carousel-indicator-group"
       button data-slot="carousel-indicator" aria-label="Go to slide 1"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 2"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 3"
+        span aria-hidden="true"
         span
 ---
 section
@@ -242,6 +268,8 @@ section
       span
     div data-slot="carousel-indicator-group"
       button data-slot="carousel-indicator" aria-label="Go to slide 1"
+        span aria-hidden="true"
         span
       button data-slot="carousel-indicator" aria-label="Go to slide 2"
+        span aria-hidden="true"
         span

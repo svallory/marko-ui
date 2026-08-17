@@ -104,11 +104,14 @@ export type Input<T = unknown> = Omit<
   </button>
   <div ...api().getIndicatorGroupProps() data-slot="carousel-indicator-group" class="flex items-center justify-center gap-2 pt-4">
     <for|_, index| of=api().pageSnapPoints>
+      // 24px hit box around an 8px visual dot — WCAG 2.5.8 minimum target
+      // size (Lighthouse: target-size) without changing the look.
       <button
         ...api().getIndicatorProps({ index })
         data-slot="carousel-indicator"
-        class="size-2 rounded-full bg-primary/20 data-[current]:bg-primary"
+        class="group/indicator flex size-6 items-center justify-center"
       >
+        <span aria-hidden="true" class="size-2 rounded-full bg-primary/20 group-data-[current]/indicator:bg-primary"></span>
         <span class="sr-only">Go to slide ${index + 1}</span>
       </button>
     </for>

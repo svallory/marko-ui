@@ -38,7 +38,11 @@ export type Input = MachineInput<"div", sliderMachine.Props> & {
     </div>
     <for|_, i| of=api().value>
       <input ...api().getHiddenInputProps({ index: i })>
-      <div ...api().getThumbProps({ index: i }) data-slot="slider-thumb" class="size-4 rounded-full border-primary bg-background border shadow-sm block shrink-0"></div>
+      // 24px hit box around a 16px visual knob — WCAG 2.5.8 minimum target
+      // size (Lighthouse: target-size) without changing the look.
+      <div ...api().getThumbProps({ index: i }) data-slot="slider-thumb" class="flex size-6 shrink-0 items-center justify-center">
+        <span aria-hidden="true" class="size-4 rounded-full border-primary bg-background border shadow-sm block"></span>
+      </div>
     </for>
   </div>
 </div>
