@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "Autocomplete input and command palette with a list of suggestions, filtered as the user types.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Combobox>`,
   importSnippet: `import Combobox from "@/components/ui/combobox/combobox.marko";`,
   usageSnippet: `<Combobox items=frameworks placeholder="Select framework..."/>`,
   examples: [

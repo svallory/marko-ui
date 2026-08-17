@@ -15,6 +15,9 @@ export interface ComponentDocs {
   /** Page subtitle. Falls back to the registry.meta.json description if omitted. */
   description?: string;
   /** The single import line shown under "Usage". */
+  /** Tag names available without an import once the taglib is registered. */
+  usageTags: string;
+  /** Explicit-import form — the documented override/escape hatch. */
   importSnippet: string;
   /** A minimal usage snippet shown under "Usage". */
   usageSnippet: string;

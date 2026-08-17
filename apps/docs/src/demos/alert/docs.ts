@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "Displays a callout for user attention.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Alert>, <AlertTitle>, <AlertDescription>`,
   importSnippet: `import Alert from "@/components/ui/alert/alert.marko";
 import AlertTitle from "@/components/ui/alert/title.marko";
 import AlertDescription from "@/components/ui/alert/description.marko";`,

@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "A two-state button that can be either on or off.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Toggle>`,
   importSnippet: `import Toggle from "@/components/ui/toggle/toggle.marko";`,
   usageSnippet: `<Toggle>Toggle</Toggle>`,
   examples: [

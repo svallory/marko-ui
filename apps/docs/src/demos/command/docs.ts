@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "Fast, composable, unstyled command menu for searching and running actions.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Command>`,
   importSnippet: `import Command from "@/components/ui/command/command.marko";`,
   usageSnippet: `<Command groups=groups placeholder="Type a command or search..."/>`,
   examples: [

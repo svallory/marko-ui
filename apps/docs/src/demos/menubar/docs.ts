@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A visually persistent menu common in desktop applications that provides quick access to a consistent set of commands.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Menubar>, <MenubarMenu>`,
   importSnippet: `import Menubar from "@/components/ui/menubar/menubar.marko";
 import MenubarMenu from "@/components/ui/menubar/menu.marko";`,
   usageSnippet: `<Menubar>

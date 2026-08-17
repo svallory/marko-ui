@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A hierarchical list of items that can be expanded, collapsed, and selected.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<TreeView>`,
   importSnippet: `import TreeView from "@/components/ui/tree-view/tree-view.marko";`,
   usageSnippet: `<TreeView items=FILE_TREE/>`,
   examples: [

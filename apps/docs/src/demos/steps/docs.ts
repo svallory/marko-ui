@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "Numbered indicators with connecting separators, prev/next triggers, per-step content, and a completed state — for wizard-style flows.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Steps>`,
   importSnippet: `import Steps from "@/components/ui/steps/steps.marko";`,
   usageSnippet: `<Steps items=steps>
   <@content|index|>Content for step ${"${index + 1}"}</@content>

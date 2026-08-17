@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "Displays a menu to the user — such as a set of actions or functions — triggered by right click.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<ContextMenu>`,
   importSnippet: `import ContextMenu from "@/components/ui/context-menu/context-menu.marko";`,
   usageSnippet: `<ContextMenu items=[{ value: "copy", label: "Copy" }]>
   <@content>Right click here</@content>

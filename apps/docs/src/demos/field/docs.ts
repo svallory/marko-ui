@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "Validation-library-agnostic form field primitives — combine labels, controls and help text to compose accessible, groupable form fields.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Field>, <FieldLabel>, <FieldDescription>`,
   importSnippet: `import Field from "@/components/ui/field/field.marko";
 import FieldLabel from "@/components/ui/field/field-label.marko";
 import FieldDescription from "@/components/ui/field/field-description.marko";`,

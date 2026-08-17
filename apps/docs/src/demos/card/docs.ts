@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "Displays a card with header, content, and footer.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Card>, <CardHeader>, <CardTitle>, <CardDescription>, <CardAction>, <CardContent>, <CardFooter>`,
   importSnippet: `import Card from "@/components/ui/card/card.marko";
 import CardHeader from "@/components/ui/card/header.marko";
 import CardTitle from "@/components/ui/card/title.marko";

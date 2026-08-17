@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "A responsive table component.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Table>, <TableHeader>, <TableBody>, <TableFooter>, <TableRow>, <TableHead>, <TableCell>, <TableCaption>`,
   importSnippet: `import Table from "@/components/ui/table/table.marko";
 import TableHeader from "@/components/ui/table/header.marko";
 import TableBody from "@/components/ui/table/body.marko";

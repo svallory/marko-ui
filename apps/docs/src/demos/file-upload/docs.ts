@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A dropzone and file picker for uploading files, with drag-and-drop and a list of accepted files.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<FileUpload>`,
   importSnippet: `import FileUpload from "@/components/ui/file-upload/file-upload.marko";`,
   usageSnippet: `<FileUpload filesChange(files) { ... }/>`,
   examples: [

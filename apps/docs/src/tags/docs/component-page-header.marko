@@ -16,8 +16,9 @@ export interface Input {
 }
 
 // See the +handler comment: @marko/run reserves `.` as a route separator, so
-// the raw-markdown twin lives at /<page>/md rather than /<page>.md.
-<const/markdownHref=`${input.href}/md`/>
+// the raw-markdown twin lives at the standard /<page>.md URL (served by
+// $name/+handler.ts, which catches the .md suffix inside the param).
+<const/markdownHref=`${input.href}.md`/>
 
 <id/menuId/>
 

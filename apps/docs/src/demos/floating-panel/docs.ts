@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A draggable and resizable floating window with minimize, maximize and close controls.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<FloatingPanel>`,
   importSnippet: `import FloatingPanel from "@/components/ui/floating-panel/floating-panel.marko";`,
   usageSnippet: `<FloatingPanel defaultPosition={ x: 320, y: 160 } defaultSize={ width: 360, height: 260 }>
   <@trigger|props|>

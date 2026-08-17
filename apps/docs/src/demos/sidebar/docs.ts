@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A composable, collapsible side navigation panel built from a provider, a sidebar shell, and header/content/footer/menu parts.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<SidebarProvider>, <Sidebar>`,
   importSnippet: `import SidebarProvider from "@/components/ui/sidebar/provider.marko";
 import Sidebar from "@/components/ui/sidebar/sidebar.marko";`,
   usageSnippet: `<SidebarProvider>

@@ -2,6 +2,10 @@
 // route. This is what the Copy Page button fetches, what "View as Markdown"
 // links to, and what the Open-in-Claude/ChatGPT prompts point an assistant at.
 //
+// NOTE: /docs/components/<name>.md is now the CANONICAL markdown URL (the
+// standard append-.md convention, served by ../+handler.ts); this /md route
+// stays as an alias for existing links.
+//
 // URL is /docs/components/<name>/md rather than shadcn's `<name>.md`: in
 // @marko/run a period is the flat-route segment separator, so `$name.md/`
 // declares the route `/docs/components/$name/md` no matter how it is spelled.

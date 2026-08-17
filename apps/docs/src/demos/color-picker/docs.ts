@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "Pick a color from a saturation area, channel sliders, channel inputs, the screen eyedropper or a preset swatch.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<ColorPicker>`,
   importSnippet: `import ColorPicker from "@/components/ui/color-picker/color-picker.marko";`,
   usageSnippet: `<ColorPicker defaultValue="#8b5cf6">\n  <@label>Brand color</@label>\n</ColorPicker>`,
   examples: [

@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A popup that displays information related to an element when it receives keyboard focus or the mouse hovers over it.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Tooltip>`,
   importSnippet: `import Tooltip from "@/components/ui/tooltip/tooltip.marko";`,
   usageSnippet: `<Tooltip content="Add to library">
   <@trigger|props|>

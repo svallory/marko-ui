@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A continuously scrolling strip of content — logos, testimonials, announcements — that pauses on hover.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Marquee>`,
   importSnippet: `import Marquee from "@/components/ui/marquee/marquee.marko";`,
   usageSnippet: `<Marquee items=logos>
   <@content|logo|>

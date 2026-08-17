@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A control that allows the user to toggle between checked and not checked.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Switch>`,
   importSnippet: `import Switch from "@/components/ui/switch/switch.marko";`,
   usageSnippet: `<Switch checked:=airplaneMode/>`,
   examples: [

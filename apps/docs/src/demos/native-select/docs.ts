@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A styled wrapper around the native HTML select element — zero JavaScript, full native accessibility and the platform's own mobile picker.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<NativeSelect>, <NativeSelectOption>`,
   importSnippet: `import NativeSelect from "@/components/ui/native-select/native-select.marko";
 import NativeSelectOption from "@/components/ui/native-select/native-select-option.marko";`,
   usageSnippet: `<NativeSelect>

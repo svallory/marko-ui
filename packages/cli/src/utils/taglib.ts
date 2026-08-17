@@ -1,0 +1,152 @@
+import { existsSync, promises as fs } from "fs"
+import path from "path"
+import { Config } from "@/src/utils/get-config"
+
+/**
+ * Generates the project-level taglib artifacts that give source-copy
+ * projects the same zero-import DX as the @marko-ui/<style> packages:
+ *
+ * - marko.json — registers every installed component/part as a tag:
+ *   PascalCase always (`<Badge>`, `<CardHeader>`), dash-case alias when it
+ *   does not collide with a native HTML element.
+ * - tags.d.ts — ambient identifiers for the PascalCase tags (works around
+ *   @marko/type-check's TS2304 on capitalized taglib tags; see
+ *   notes/upstream-issue-language-tools-pascalcase-taglib.md in the repo).
+ *
+ * Both files are fully generated: marko.json carries a marker key and is
+ * only ever rewritten when the marker is present (a hand-written
+ * marko.json is never touched).
+ */
+
+/**
+ * Marko's taglib loader rejects unknown top-level keys, so the
+ * "this file is generated" marker cannot live inside marko.json itself.
+ * It goes in a sibling dotfile instead: as long as that file exists and
+ * records the same tag count/hash we wrote, marko.json is ours to
+ * regenerate. Delete the dotfile to take ownership of marko.json.
+ */
+export const TAGLIB_STAMP_FILE = ".marko-ui-taglib.json"
+
+// Native/known HTML element names — dash-case aliases are skipped for these.
+const NATIVE_TAGS = new Set([
+  "a", "abbr", "address", "area", "article", "aside", "audio", "b", "base",
+  "bdi", "bdo", "blockquote", "body", "br", "button", "canvas", "caption",
+  "cite", "code", "col", "colgroup", "data", "datalist", "dd", "del",
+  "details", "dfn", "dialog", "div", "dl", "dt", "em", "embed", "fieldset",
+  "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5",
+  "h6", "head", "header", "hgroup", "hr", "html", "i", "iframe", "img",
+  "input", "ins", "kbd", "label", "legend", "li", "link", "main", "map",
+  "mark", "marker", "menu", "meta", "meter", "nav", "noscript", "object",
+  "ol", "optgroup", "option", "output", "p", "picture", "pre", "progress",
+  "q", "rp", "rt", "ruby", "s", "samp", "script", "search", "section",
+  "select", "slot", "small", "source", "span", "strong", "style", "sub",
+  "summary", "sup", "table", "tbody", "td", "template", "textarea", "tfoot",
+  "th", "thead", "time", "title", "tr", "track", "u", "ul", "var", "video",
+  "wbr",
+])
+
+export function pascalCase(name: string) {
+  return name
+    .split(/[-_]/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join("")
+}
+
+export interface ProjectTag {
+  pascal: string
+  dash: string | null
+  /** Template path relative to the project root (posix separators). */
+  template: string
+}
+
+/** Scans the resolved ui directory for component/part templates. */
+export async function collectProjectTags(config: Config): Promise<ProjectTag[]> {
+  const uiDir = config.resolvedPaths.ui
+  if (!uiDir || !existsSync(uiDir)) {
+    return []
+  }
+
+  const cwd = config.resolvedPaths.cwd
+  const tags: ProjectTag[] = []
+  const entries = await fs.readdir(uiDir, { withFileTypes: true })
+
+  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+    if (!entry.isDirectory()) continue
+    const componentDir = path.join(uiDir, entry.name)
+    for (const file of (await fs.readdir(componentDir)).sort()) {
+      if (!file.endsWith(".marko") || file.endsWith(".d.marko")) continue
+      const part = file.slice(0, -".marko".length)
+      const dashName =
+        part === entry.name ? entry.name : `${entry.name}-${part}`
+      tags.push({
+        pascal: pascalCase(dashName),
+        dash: NATIVE_TAGS.has(dashName) ? null : dashName,
+        template: `./${path
+          .relative(cwd, path.join(componentDir, file))
+          .split(path.sep)
+          .join("/")}`,
+      })
+    }
+  }
+
+  return tags
+}
+
+/**
+ * Writes (or refreshes) the project marko.json + tags.d.ts. Returns the
+ * written file paths, or null when a non-generated marko.json exists.
+ */
+export async function writeProjectTaglib(config: Config) {
+  const cwd = config.resolvedPaths.cwd
+  const markoJsonPath = path.join(cwd, "marko.json")
+  const tagsDtsPath = path.join(cwd, "tags.d.ts")
+
+  const stampPath = path.join(cwd, TAGLIB_STAMP_FILE)
+  if (existsSync(markoJsonPath) && !existsSync(stampPath)) {
+    // A marko.json we did not generate — never overwrite it.
+    return null
+  }
+
+  const tags = await collectProjectTags(config)
+  if (!tags.length) {
+    return { written: [] as string[], tags: 0 }
+  }
+
+  const taglib: Record<string, unknown> = {
+    "script-lang": "ts",
+  }
+  for (const tag of tags) {
+    taglib[`<${tag.pascal}>`] = { template: tag.template }
+    if (tag.dash) taglib[`<${tag.dash}>`] = { template: tag.template }
+  }
+  await fs.writeFile(markoJsonPath, JSON.stringify(taglib, null, 2) + "\n")
+
+  const globals = tags
+    .map(
+      (tag) =>
+        `  const ${tag.pascal}: typeof import("${tag.template}").default`
+    )
+    .join("\n")
+  await fs.writeFile(
+    tagsDtsPath,
+    `// Generated by marko-ui — ambient identifiers for the PascalCase\n// taglib tags registered in marko.json. Regenerated on add/eject.\ndeclare global {\n${globals}\n}\n\nexport {}\n`
+  )
+
+  await fs.writeFile(
+    stampPath,
+    JSON.stringify(
+      {
+        generatedBy: "marko-ui",
+        note: "Delete this file to take ownership of marko.json and tags.d.ts — marko-ui will stop regenerating them.",
+        tags: tags.length,
+      },
+      null,
+      2
+    ) + "\n"
+  )
+
+  return {
+    written: ["marko.json", "tags.d.ts", TAGLIB_STAMP_FILE],
+    tags: tags.length,
+  }
+}

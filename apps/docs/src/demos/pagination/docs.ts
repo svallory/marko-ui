@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "Pagination with page navigation, next and previous links.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Pagination>`,
   importSnippet: `import Pagination from "@/components/ui/pagination/pagination.marko";`,
   usageSnippet: `<Pagination count=100 pageSize=10 page=1/>`,
   examples: [

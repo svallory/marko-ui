@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "Displays content within a desired ratio.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<AspectRatio>`,
   importSnippet: `import AspectRatio from "@/components/ui/aspect-ratio/aspect-ratio.marko";`,
   usageSnippet: `<AspectRatio ratio=(16 / 9)>
   <img src="..." alt="Image" class="rounded-md object-cover" />

@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "An image editor with a draggable, resizable crop region, aspect-ratio lock, zoom, rotation and flip.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<ImageCropper>`,
   importSnippet: `import ImageCropper from "@/components/ui/image-cropper/image-cropper.marko";`,
   usageSnippet: `<ImageCropper src=imageUrl alt="Photo to crop"/>`,
   examples: [

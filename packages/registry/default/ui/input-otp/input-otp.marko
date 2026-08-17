@@ -1,5 +1,5 @@
 import * as pinInputMachine from "@zag-js/pin-input";
-import type { MachineInput } from "marko-ui";
+import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 
 // MachineInput = native <div> attributes ∩ the machine's full Props, with
@@ -7,7 +7,7 @@ import { cn } from "#lib/utils.ts";
 // `valueCompleteChange` are additive sugar enabling Marko's two-way bind
 // shorthand; Zag's own `onValueChange`/`onValueComplete` also work and
 // receive the details object.
-export type Input = MachineInput<"div", pinInputMachine.PinInputProps> & {
+export type Input = MachineInput<"div", pinInputMachine.Props> & {
   valueChange?: (value: string[]) => void;
   valueCompleteChange?: (value: string[]) => void;
   groupSize?: number;

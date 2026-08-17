@@ -1,0 +1,93 @@
+{
+  "name": "@marko-ui/cli",
+  "version": "0.1.0",
+  "description": "The marko-ui CLI \u2014 install and manage Marko UI components from shadcn-format registries.",
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Saulo Vallory",
+    "url": "https://saulo.engineer"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/svallory/marko-ui.git",
+    "directory": "packages/cli"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "components",
+    "ui",
+    "tailwind",
+    "marko",
+    "marko-ui",
+    "shadcn"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./registry": {
+      "types": "./dist/registry/index.d.ts",
+      "default": "./dist/registry/index.js"
+    },
+    "./schema": {
+      "types": "./dist/schema/index.d.ts",
+      "default": "./dist/schema/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "default": "./dist/utils/index.js"
+    }
+  },
+  "bin": {
+    "marko-ui": "./dist/index.js"
+  },
+  "engines": {
+    "node": ">=20.18.1"
+  },
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "start": "node dist/index.js",
+    "start:dev": "REGISTRY_URL=http://localhost:3000/r node dist/index.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.11.0",
+    "commander": "^14.0.0",
+    "cosmiconfig": "^9.0.0",
+    "dedent": "^1.6.0",
+    "deepmerge": "^4.3.1",
+    "diff": "^8.0.2",
+    "execa": "^9.6.0",
+    "fast-glob": "^3.3.3",
+    "fs-extra": "^11.3.1",
+    "fuzzysort": "^3.1.0",
+    "kleur": "^4.1.5",
+    "ora": "^8.2.0",
+    "postcss": "^8.5.6",
+    "postcss-selector-parser": "^7.1.0",
+    "socks": "^2.8.8",
+    "tailwind-merge": "^3.6.0",
+    "tsconfig-paths": "^4.2.0",
+    "undici": "^7.27.2",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "msw": "^2.10.4",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.5.0",
+    "type-fest": "^4.41.0",
+    "typescript": "^5.9.2",
+    "vite-tsconfig-paths": "^6.1.1"
+  }
+}

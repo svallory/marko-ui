@@ -103,8 +103,14 @@ import { getComponentPageData } from "../../../../lib/component-page-data.ts";
               <h2 id="usage" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
                 Usage
               </h2>
-              <code-block code=page.docs.importSnippet language="marko"/>
+              <p class="text-sm text-muted-foreground">
+                Tags are registered automatically — <code>${page.docs.usageTags}</code> needs no import.
+              </p>
               <code-block code=page.docs.usageSnippet language="marko"/>
+              <p class="text-sm text-muted-foreground">
+                Prefer explicit imports (or overriding a tag)? Import the file directly:
+              </p>
+              <code-block code=page.docs.importSnippet language="marko"/>
             </section>
 
             <if=page.isCompound>

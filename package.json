@@ -2,7 +2,10 @@
   "name": "marko-ui-workspace",
   "private": true,
   "type": "module",
-  "workspaces": ["packages/*", "apps/*"],
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
     "check": "bun run --filter '*' check",
     "test": "vitest run",
@@ -12,6 +15,7 @@
     "build:blocks-manifest": "bun apps/docs/scripts/build-blocks-manifest.ts",
     "build:verify": "bun apps/docs/scripts/build-verify-matrix.ts",
     "test:e2e": "playwright test",
+    "build:cli-manifest": "bun apps/docs/scripts/build-cli-manifest.ts",
     "format": "prettier --write ."
   },
   "devDependencies": {

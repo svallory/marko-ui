@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "Visually or semantically separates content.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Separator>`,
   importSnippet: `import Separator from "@/components/ui/separator/separator.marko";`,
   usageSnippet: `<Separator/>`,
   examples: [

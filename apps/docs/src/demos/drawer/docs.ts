@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A vaul-style bottom sheet with drag-to-dismiss, snap points, and swipe-to-open edge areas. Built on the @zag-js/drawer machine.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Drawer>`,
   importSnippet: `import Drawer from "@/components/ui/drawer/drawer.marko";`,
   usageSnippet: `<Drawer>
   <@trigger|props|>

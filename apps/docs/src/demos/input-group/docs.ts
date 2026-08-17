@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "Add addons, buttons, and helper content to inputs.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<InputGroup>, <InputGroupInput>, <InputGroupAddon>`,
   importSnippet: `import InputGroup from "@/components/ui/input-group/input-group.marko";
 import InputGroupInput from "@/components/ui/input-group/input.marko";
 import InputGroupAddon from "@/components/ui/input-group/addon.marko";`,

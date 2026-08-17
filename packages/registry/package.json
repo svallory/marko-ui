@@ -78,10 +78,10 @@
     "d3-scale": "^4.0.2",
     "d3-shape": "^3.2.0",
     "lucide-static": "^1.31.0",
-    "marko-ui": "workspace:*",
     "remixicon": "^4.9.1",
     "tailwind-merge": "^3.6.0",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "marko-zag": "^1.0.0"
   },
   "peerDependencies": {
     "marko": "^6.3.34"

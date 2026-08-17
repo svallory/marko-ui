@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A table built on TanStack Table's core row model — pass it columns and data and it handles rendering, header/cell composition, and click-to-sort.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<DataTable>`,
   importSnippet: `import DataTable from "@/components/ui/data-table/data-table.marko";`,
   usageSnippet: `<DataTable columns=columns data=data/>`,
   examples: [

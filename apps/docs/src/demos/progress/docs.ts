@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Progress>`,
   importSnippet: `import Progress from "@/components/ui/progress/progress.marko";`,
   usageSnippet: `<Progress value=66/>`,
   examples: [

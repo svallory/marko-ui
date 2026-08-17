@@ -6,6 +6,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 
 export const docs: ComponentDocs = {
   description: "Use the Empty component to display an empty state.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Empty>, <EmptyHeader>, <EmptyMedia>, <EmptyTitle>, <EmptyDescription>, <EmptyContent>`,
   importSnippet: `import Empty from "@/components/ui/empty/empty.marko";
 import EmptyHeader from "@/components/ui/empty/header.marko";
 import EmptyMedia from "@/components/ui/empty/media.marko";

@@ -226,11 +226,13 @@ async function main() {
     await write({
       $schema: ITEM_SCHEMA,
       name,
-      type: "registry:file",
+      // registry:style is the type the CLI's overwrite-cssVars logic and
+      // "this will overwrite your CSS variables" warning key on.
+      type: "registry:style",
       title: name === "style" ? "Theme" : `Theme (${name.replace("style-", "")})`,
       description:
         "Tailwind v4 globals.css with shadcn-compatible CSS variables. Add `@source` directives for your .marko files.",
-      dependencies: ["tailwindcss", "tw-animate-css", "marko-ui"],
+      dependencies: ["tailwindcss", "tw-animate-css", "marko-zag"],
       cssVars: parseCssVars(css),
       // Ship only this variant's CSS, always targeted as globals.css so a
       // consumer picking any base color gets a normal `~/src/styles/globals.css`.
@@ -255,10 +257,10 @@ async function main() {
     const dir = join(UI_DIR, name);
     const meta = await readMeta(dir);
     const files = await fileEntries(dir, `~/src/components/ui/${name}`, `ui/${name}`);
-    // derive npm deps the meta forgot: any file importing marko-ui needs it
+    // derive npm deps the meta forgot: any file importing the adapter needs it
     const dependencies = new Set(meta.dependencies ?? []);
-    if (files.some((f) => f.content.includes('from "marko-ui"'))) {
-      dependencies.add("marko-ui");
+    if (files.some((f) => f.content.includes('from "marko-zag"'))) {
+      dependencies.add("marko-zag");
     }
     await write({
       $schema: ITEM_SCHEMA,
@@ -326,6 +328,30 @@ async function main() {
         homepage: "https://marko-ui.saulo.tech",
         items: index,
       },
+      null,
+      2,
+    ),
+  );
+
+  // index.json — the flat item index the marko-ui CLI reads for
+  // `add` (interactive picker), `diff`, and installed-component listing.
+  await writeFile(join(OUT_DIR, "index.json"), JSON.stringify(index, null, 2));
+
+  // registries.json — OUR registry discovery index (same shape as
+  // shadcn's, plus `target: "marko"` as the compatibility contract:
+  // every listed registry ships Marko source, never React). The marko-ui
+  // CLI resolves bare `@namespace` additions against this file only.
+  await writeFile(
+    join(OUT_DIR, "registries.json"),
+    JSON.stringify(
+      [
+        {
+          name: "@marko-ui",
+          url: `${BASE_URL}/{name}.json`,
+          description: "The official marko-ui registry.",
+          target: "marko",
+        },
+      ],
       null,
       2,
     ),

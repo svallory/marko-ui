@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A set of checkable buttons—known as radio buttons—where no more than one of the buttons can be checked at a time.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<RadioGroup>`,
   importSnippet: `import RadioGroup from "@/components/ui/radio-group/radio-group.marko";`,
   usageSnippet: `<RadioGroup items=[{ value: "option-one", label: "Option One" }, { value: "option-two", label: "Option Two" }] value:=selected/>`,
   examples: [

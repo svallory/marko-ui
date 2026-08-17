@@ -7,6 +7,10 @@ import type { ComponentDocs } from "../docs-types.ts";
 export const docs: ComponentDocs = {
   description:
     "A flexible flex container for displaying content with media, title, description, and actions. Group items together with `ItemGroup` to build lists.",
+  // Tags are registered by the taglib (package install or `marko-ui
+  // init`), so no import is required. The explicit-import form is
+  // documented as the override/escape hatch.
+  usageTags: `<Item>, <ItemContent>, <ItemMedia>, <ItemTitle>, <ItemDescription>, <ItemActions>`,
   importSnippet: `import Item from "@/components/ui/item/item.marko";
 import ItemContent from "@/components/ui/item/content.marko";
 import ItemMedia from "@/components/ui/item/media.marko";

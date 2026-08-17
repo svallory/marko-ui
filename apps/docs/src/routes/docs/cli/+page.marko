@@ -1,167 +1,181 @@
-// CLI — a full rewrite of shadcn's content/docs/(root)/cli.mdx. marko-ui does
-// not ship a CLI of its own; it publishes a shadcn-format registry that the
-// official `shadcn` CLI consumes. Commands are bun-only per project convention.
+// CLI — documents the marko-ui CLI (@marko-ui/cli, packages/cli). The
+// command reference below is GENERATED from the CLI's own `manifest`
+// command via apps/docs/scripts/build-cli-manifest.ts (src/lib/cli-manifest.ts
+// is the committed output), so it cannot drift from the real surface.
+// The shadcn-CLI interop section stays: the registry remains shadcn-format.
 import "../../../tags/docs/docs-article.marko";
 import "../../../tags/docs/code-block.marko";
+import { CLI_MANIFEST, type CliCommand } from "../../../lib/cli-manifest";
+
+static const COMMANDS = CLI_MANIFEST.commands;
 
 static const TOC = [
-  { id: "no-cli", label: "There Is No marko-ui CLI" },
-  { id: "init", label: "init" },
-  { id: "add", label: "add" },
-  { id: "view-diff", label: "view and diff" },
+  { id: "overview", label: "Overview" },
+  { id: "quickstart", label: "Quickstart" },
+  { id: "commands", label: "Command Reference" },
+  ...COMMANDS.map((cmd) => ({ id: `cmd-${cmd.name}`, label: cmd.name })),
+  { id: "exit-codes", label: "Exit Codes" },
+  { id: "agents", label: "For Agents" },
+  { id: "shadcn-interop", label: "shadcn CLI Interop" },
   { id: "urls", label: "Registry URLs" },
-  { id: "item-format", label: "Registry Item Format" },
-  { id: "build", label: "Building the Registry" },
 ];
 
-static const INIT = `bunx shadcn@latest init https://marko-ui.saulo.tech/r/style.json`;
+static const QUICKSTART = `bunx @marko-ui/cli init          # components.json + base theme
+bunx @marko-ui/cli add button    # install a component as source
+bunx @marko-ui/cli doctor        # health checks (exit 3 on failure)`;
 
-static const ADD = `bunx shadcn@latest add https://marko-ui.saulo.tech/r/dialog.json`;
+static const SHADCN_INIT = `bunx shadcn@latest init https://marko-ui.saulo.tech/r/style.json`;
 
-static const ADD_OPTIONS = `-y, --yes          skip the confirmation prompt
--o, --overwrite    overwrite existing files
--c, --cwd <cwd>    working directory (defaults to the current one)
--p, --path <path>  where to write the component
--s, --silent       mute output
-    --dry-run      preview the changes without writing
-    --diff [path]  show a diff against what is already on disk
-    --view [path]  print the file contents without writing`;
-
-static const VIEW = `# print a component's source without installing it
-bunx shadcn@latest view https://marko-ui.saulo.tech/r/switch.json
-
-# see what an upgrade would change before taking it
-bunx shadcn@latest add --diff https://marko-ui.saulo.tech/r/switch.json`;
-
-static const OVERWRITE = `bunx shadcn@latest add --overwrite https://marko-ui.saulo.tech/r/switch.json`;
-
-static const ITEM = `{
-  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "switch",
-  "type": "registry:ui",
-  "title": "Switch",
-  "description": "A control that allows the user to toggle between checked and not checked.",
-  "dependencies": ["@zag-js/switch", "marko-ui"],
-  "registryDependencies": ["https://marko-ui.saulo.tech/r/utils.json"],
-  "files": [
-    {
-      "path": "ui/switch/switch.marko",
-      "type": "registry:file",
-      "target": "~/src/components/ui/switch/switch.marko",
-      "content": "…"
-    }
-  ]
-}`;
-
-static const BUILD = `# from the repo root
-REGISTRY_BASE_URL=https://marko-ui.saulo.tech/r \\
-  bun packages/registry/scripts/build-registry.ts`;
+static const SHADCN_ADD = `bunx shadcn@latest add https://marko-ui.saulo.tech/r/dialog.json`;
 
 static const REGISTRY_INDEX = `curl -s https://marko-ui.saulo.tech/r/registry.json | jq '.items[].name'`;
 
+static function commandUsage(cmd: CliCommand, parent?: string) {
+  const args = cmd.arguments
+    .map((arg) => {
+      const name = arg.variadic ? `${arg.name}...` : arg.name;
+      return arg.required ? `<${name}>` : `[${name}]`;
+    })
+    .join(" ");
+  const scope = parent ? `${parent} ` : "";
+  return `marko-ui ${scope}${cmd.name}${cmd.options.length ? " [options]" : ""}${args ? ` ${args}` : ""}`;
+}
+
+static function optionLines(cmd: CliCommand) {
+  return cmd.options
+    .map((option) => `${option.flags.padEnd(24)} ${option.description}`)
+    .join("\n");
+}
+
 <docs-article
   title="CLI"
-  description="marko-ui is distributed as a shadcn-compatible registry. You install components with the official shadcn CLI, pointed at our registry URLs."
+  description="Install and manage marko-ui components with the marko-ui CLI — or any tool that speaks the shadcn registry protocol."
   href="/docs/cli"
   toc=TOC
 >
-  <h2 id="no-cli">There Is No marko-ui CLI</h2>
+  <h2 id="overview">Overview</h2>
 
   <p>
-    This is the one place where marko-ui deliberately does less than shadcn/ui. Rather than ship
-    and maintain our own command-line tool, we publish the registry in the
-    <a href="https://ui.shadcn.com/schema/registry.json" target="_blank" rel="noreferrer">shadcn registry format</a>
-    and let the official <code>shadcn</code> CLI do the work.
+    <code>@marko-ui/cli</code> installs components as readable Marko source into your project —
+    there is no runtime component package. It is a fork of the MIT-licensed shadcn CLI's registry
+    mechanics, adapted for Marko projects (framework detection, Tailwind v4 CSS-first, no React
+    codemods) and an agent-first output surface.
   </p>
 
-  <p>The trick that makes this work for a non-React framework:</p>
+  <p>
+    Bare names like <code>button</code> resolve through the built-in <code>@marko-ui</code>
+    registry. Additional registries are configured in <code>components.json</code> — the same wire
+    format the shadcn CLI uses. Our discovery index only lists registries that declare
+    <code>target: "marko"</code>, so React registries never sneak in through auto-discovery.
+  </p>
+
+  <p>
+    <strong>Note:</strong> the <code>marko-ui</code> adapter package is not yet published to npm.
+    Component files always install fine; the dependency step prints the manual command it could
+    not run. <code>marko-ui doctor</code> tells you exactly where you stand.
+  </p>
+
+  <h2 id="quickstart">Quickstart</h2>
+
+  <code-block language="bash" code=QUICKSTART/>
+
+  <h2 id="commands">Command Reference</h2>
+
+  <p>
+    Generated from the CLI's own <code>manifest</code> command (version
+    ${CLI_MANIFEST.cliVersion}) — this reference cannot drift from the installed tool. Run
+    <code>marko-ui manifest</code> for the same data as JSON.
+  </p>
+
+  <for|cmd| of=COMMANDS>
+    <h3 id=`cmd-${cmd.name}`>
+      ${cmd.name}
+      <if=cmd.aliases.length>
+        <span class="text-muted-foreground text-base font-normal">
+          (alias: ${cmd.aliases.join(", ")})
+        </span>
+      </if>
+    </h3>
+
+    <p>${cmd.description}</p>
+
+    <code-block language="text" code=commandUsage(cmd)/>
+
+    <if=cmd.options.length>
+      <code-block language="text" code=optionLines(cmd)/>
+    </if>
+
+    <if=cmd.subcommands?.length>
+      <for|sub| of=(cmd.subcommands ?? [])>
+        <h4>${cmd.name} ${sub.name}</h4>
+        <p>${sub.description}</p>
+        <code-block language="text" code=commandUsage(sub, cmd.name)/>
+        <if=sub.options.length>
+          <code-block language="text" code=optionLines(sub)/>
+        </if>
+      </for>
+    </if>
+  </for>
+
+  <h2 id="exit-codes">Exit Codes</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <for|code| of=Object.keys(CLI_MANIFEST.exitCodes)>
+        <tr>
+          <td><code>${code}</code></td>
+          <td>${CLI_MANIFEST.exitCodes[code]}</td>
+        </tr>
+      </for>
+    </tbody>
+  </table>
+
+  <p>
+    <code>doctor</code>'s exit code 3 is the CI signal: run it in a pipeline to catch broken
+    configs, missing CSS entries, or an unreachable registry before they reach users.
+  </p>
+
+  <h2 id="agents">For Agents</h2>
+
+  <p>
+    Every discovery command takes <code>--json</code>. The recommended workflow for coding agents:
+  </p>
+
+  <ol>
+    <for|step| of=CLI_MANIFEST.agentWorkflow>
+      <li><code>${step}</code></li>
+    </for>
+  </ol>
+
+  <h2 id="shadcn-interop">shadcn CLI Interop</h2>
+
+  <p>
+    The registry stays 100% shadcn-format, so the official <code>shadcn</code> CLI keeps working —
+    useful in mixed teams or tooling that already speaks the protocol. Point it at our item URLs:
+  </p>
+
+  <code-block language="bash" code=SHADCN_INIT/>
+  <code-block language="bash" code=SHADCN_ADD/>
+
+  <p>Two details make this work for a non-React framework:</p>
 
   <ul>
     <li>
       Every file ships as <code>"type": "registry:file"</code> with an explicit
-      <code>target</code> path, rather than as <code>registry:ui</code>. That is the non-React path
-      through the CLI, so it copies our <code>.marko</code> files verbatim instead of running
-      React-specific codemods over them.
+      <code>target</code> path — the non-React path through shadcn's CLI, so it copies our
+      <code>.marko</code> files verbatim instead of running React codemods over them.
     </li>
     <li>
       Every <code>registryDependencies</code> entry is an absolute URL into our registry. A bare
-      name like <code>"utils"</code> would resolve against shadcn's own React registry and give you
-      a <code>.tsx</code> file.
+      name like <code>"utils"</code> would resolve against shadcn's own React registry.
     </li>
   </ul>
-
-  <p>
-    The consequence is that any tool speaking the shadcn registry protocol works with marko-ui —
-    the CLI, editors, and agents that already know the format.
-  </p>
-
-  <h2 id="init">init</h2>
-
-  <p>
-    <code>init</code> sets up a project: it writes <code>components.json</code>, installs the
-    <code>cn()</code> helper, and merges the theme's CSS variables into your stylesheet. Point it
-    at a theme item so it picks up our tokens rather than shadcn's defaults.
-  </p>
-
-  <code-block language="bash" code=INIT/>
-
-  <p>
-    Swap <code>style.json</code> for <code>style-zinc.json</code>, <code>style-slate.json</code>,
-    <code>style-stone.json</code>, or <code>style-gray.json</code> to start from a different base
-    color. See <a href="/docs/theming">Theming</a>.
-  </p>
-
-  <p>
-    Review the generated <code>components.json</code> afterwards — a few of its fields describe a
-    React project and need adjusting for Marko. That is covered in
-    <a href="/docs/components-json">components.json</a>.
-  </p>
-
-  <h2 id="add">add</h2>
-
-  <p>Install a component by its registry URL:</p>
-
-  <code-block language="bash" code=ADD/>
-
-  <p>The CLI then:</p>
-
-  <ol>
-    <li>Fetches the item JSON.</li>
-    <li>Follows <code>registryDependencies</code> — most components pull in <code>utils</code>.</li>
-    <li>Installs each entry in <code>dependencies</code> with your project's package manager.</li>
-    <li>Writes every file to its <code>target</code> path.</li>
-  </ol>
-
-  <p><strong>Useful options:</strong></p>
-
-  <code-block language="text" code=ADD_OPTIONS/>
-
-  <p>
-    <code>--dry-run</code> is worth reaching for the first time you install into an existing
-    project — it lists every path that would be touched without touching any of them.
-  </p>
-
-  <h2 id="view-diff">view and --diff</h2>
-
-  <p>
-    Because you own the installed files, upgrades are a merge rather than a version bump.
-    <code>view</code> is a top-level command that prints an item without writing anything;
-    <code>--diff</code> is an option on <code>add</code> that compares the registry version against
-    what is already on disk. Together they make that merge deliberate.
-  </p>
-
-  <code-block language="bash" code=VIEW/>
-
-  <p>
-    Once you have read the diff and decided you want it, re-add with <code>--overwrite</code>:
-  </p>
-
-  <code-block language="bash" code=OVERWRITE/>
-
-  <p>
-    <strong>This discards your local edits to that component.</strong> Commit first, overwrite,
-    then re-apply your changes from the diff — the same routine as any vendored dependency.
-  </p>
 
   <h2 id="urls">Registry URLs</h2>
 
@@ -178,6 +192,14 @@ static const REGISTRY_INDEX = `curl -s https://marko-ui.saulo.tech/r/registry.js
       <tr>
         <td><code>/r/registry.json</code></td>
         <td>The index — every item's name, type, and file list, without file contents.</td>
+      </tr>
+      <tr>
+        <td><code>/r/index.json</code></td>
+        <td>The flat item array the marko-ui CLI reads for its interactive picker.</td>
+      </tr>
+      <tr>
+        <td><code>/r/registries.json</code></td>
+        <td>The registry discovery index — entries declare <code>target: "marko"</code>.</td>
       </tr>
       <tr>
         <td><code>/r/&lt;component&gt;.json</code></td>
@@ -201,47 +223,4 @@ static const REGISTRY_INDEX = `curl -s https://marko-ui.saulo.tech/r/registry.js
   <p>To list everything available:</p>
 
   <code-block language="bash" code=REGISTRY_INDEX/>
-
-  <h2 id="item-format">Registry Item Format</h2>
-
-  <p>A component item looks like this:</p>
-
-  <code-block language="json" filename="/r/switch.json" code=ITEM/>
-
-  <p>
-    Note <code>marko-ui</code> in <code>dependencies</code>: the build script scans each file for
-    an import of it and adds the package automatically, so a component's declared dependencies
-    cannot drift out of sync with what its source actually imports.
-  </p>
-
-  <p>
-    Theme items carry one extra field, <code>cssVars</code>, holding the parsed
-    <code>:root</code>, <code>.dark</code>, and <code>@theme inline</code> declarations. That is
-    what lets <code>init</code> merge our tokens into a stylesheet you already have instead of
-    overwriting it.
-  </p>
-
-  <h2 id="build">Building the Registry</h2>
-
-  <p>
-    If you are contributing to marko-ui, or forking it to host your own registry, the JSON is
-    generated from <code>packages/registry/default/</code> by one script:
-  </p>
-
-  <code-block language="bash" code=BUILD/>
-
-  <p>
-    It emits one item per directory under <code>default/ui/</code>, plus <code>utils</code>, the
-    five theme items, and the <code>registry.json</code> index, into
-    <code>apps/docs/public/r/</code>. <code>REGISTRY_BASE_URL</code> controls the absolute URLs
-    written into <code>registryDependencies</code>; it defaults to
-    <code>http://localhost:3000/r</code> so you can smoke-test the real CLI against a local dev
-    server.
-  </p>
-
-  <p>
-    Component metadata — title, description, and extra dependencies — comes from a
-    <code>registry.meta.json</code> file next to the component source. Component directories must
-    be flat; the build fails loudly on a nested directory rather than silently dropping files.
-  </p>
 </docs-article>

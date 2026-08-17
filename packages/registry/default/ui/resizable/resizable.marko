@@ -8,7 +8,8 @@ export interface ResizablePanel {
   maxSize?: number | string;
 }
 
-export interface Input extends Omit<Marko.Input<"div">, "content"> {
+export interface Input
+  extends Omit<Marko.Input<"div">, "content" | "onResize"> {
   panels: ResizablePanel[];
   content?: Marko.Body<[ResizablePanel, number]>;
   orientation?: "horizontal" | "vertical";
