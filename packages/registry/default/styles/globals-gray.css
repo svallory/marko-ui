@@ -3,6 +3,115 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Polymorphic state variants — vendored from shadcn/ui (MIT):
+ * packages/shadcn/src/tailwind.css
+ *
+ * Our components emit upstream shadcn's `data-open:` / `data-closed:` /
+ * `data-checked:` / `data-selected:` / `data-horizontal:` … class prefixes
+ * verbatim, for class-string parity with the React originals. Those prefixes
+ * are NOT Tailwind builtins — without these `@custom-variant` declarations
+ * every such class silently compiles to nothing. This block must therefore
+ * ship with the theme, not just live in the docs app.
+ *
+ * "Polymorphic" = each variant matches both spellings a headless library
+ * might use: Radix-style `[data-state="open"]` AND boolean-ish `[data-open]`.
+ * zag-js (which drives our components) uses both conventions depending on
+ * the machine, so both arms are load-bearing here.
+ *
+ * ZAG EMISSION AUDIT (@zag-js/* 1.43.0) — why the `data-selected` arm below
+ * diverges from upstream:
+ *   @zag-js/dom-query `dataAttr` is `(guard) => guard ? "" : void 0`, i.e. it
+ *   emits a PRESENCE attribute (`data-selected=""`), never `="true"`.
+ *   Confirmed in real connects:
+ *     - @zag-js/tabs      trigger: data-selected + data-disabled via dataAttr
+ *     - @zag-js/checkbox  root:    data-active + data-disabled via dataAttr;
+ *                                  data-state is a literal
+ *                                  "checked"/"unchecked"/"indeterminate"
+ *     - @zag-js/splitter  resizer: data-disabled via dataAttr;
+ *                                  data-orientation is a literal string
+ *   Upstream's `data-selected` matches ONLY `[data-selected="true"]`, so it
+ *   would never fire against zag's `data-selected=""`. Widened below with the
+ *   `:not(...="false")` arm the other variants already carry.
+ *   `data-disabled` and `data-active` already had that arm upstream — it
+ *   matches `=""` — so they are left byte-identical to upstream.
+ *   `data-horizontal`/`data-vertical` key on `data-orientation`, which zag
+ *   emits as a literal string, so they need no widening either.
+ */
+@custom-variant data-open {
+  &:where([data-state="open"]),
+  &:where([data-open]:not([data-open="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-closed {
+  &:where([data-state="closed"]),
+  &:where([data-closed]:not([data-closed="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-checked {
+  &:where([data-state="checked"]),
+  &:where([data-checked]:not([data-checked="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-unchecked {
+  &:where([data-state="unchecked"]),
+  &:where([data-unchecked]:not([data-unchecked="false"])) {
+    @slot;
+  }
+}
+
+/* WIDENED vs upstream: upstream matches only [data-selected="true"]; zag's
+ * dataAttr emits data-selected="" (see audit note above). */
+@custom-variant data-selected {
+  &:where([data-selected="true"]),
+  &:where([data-selected]:not([data-selected="false"])) {
+    @slot;
+  }
+}
+
+/* Upstream as-is: the second arm already matches zag's data-disabled="". */
+@custom-variant data-disabled {
+  &:where([data-disabled="true"]),
+  &:where([data-disabled]:not([data-disabled="false"])) {
+    @slot;
+  }
+}
+
+/* Upstream as-is: the second arm already matches zag's data-active="". */
+@custom-variant data-active {
+  &:where([data-state="active"]),
+  &:where([data-active]:not([data-active="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-horizontal {
+  &:where([data-orientation="horizontal"]) {
+    @slot;
+  }
+}
+
+@custom-variant data-vertical {
+  &:where([data-orientation="vertical"]) {
+    @slot;
+  }
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.13 0.028 261.692);
