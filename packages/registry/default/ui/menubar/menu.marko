@@ -2,19 +2,35 @@ import * as menu from "@zag-js/menu";
 import { positionerStyle } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import type { DropdownMenuItem } from "../dropdown-menu/dropdown-menu.marko";
+import Submenu from "./submenu.marko";
 
 // Attr-tag form of DropdownMenuItem. A SINGLE attr tag name (`item`) carries
-// all three kinds (discriminated by `type`) rather than separate
-// `item`/`separator`/`label` attr tags: Marko collects each attr-tag NAME
-// into its own independent iterable on `input` with no shared ordering
-// between differently-named siblings, so distinct tag names could not
-// preserve call-site interleaving. One name with a `type` discriminant
+// all kinds (discriminated by `type`) rather than separate `item`/
+// `separator`/`label`/`checkbox`/`radio` attr tags: Marko collects each
+// attr-tag NAME into its own independent iterable on `input` with no shared
+// ordering between differently-named siblings, so distinct tag names could
+// not preserve call-site interleaving. One name with a `type` discriminant
 // keeps document order intact by construction (same design as
 // dropdown-menu.marko). `content` lets an item or label carry a markup
 // body; the plain `label` string renders as the fallback when no body is
 // supplied.
+//
+// `inset` (upstream new styling attr, rule 5) and the checkbox/radio kinds
+// are additive here — `DropdownMenuItem` doesn't carry them yet (dropdown-menu
+// is a separate re-baseline task), so they're declared locally rather than
+// added to the shared type.
 export interface MenubarItemAttrs extends DropdownMenuItem {
   content?: Marko.Body;
+  /** Upstream styling attr — indents the item to align with checkbox/radio items. */
+  inset?: boolean;
+  /** `type: "checkbox" | "radio"` checked state (checkbox) or selected value match (radio). */
+  checked?: boolean;
+  /** Groups radio items — required for `type: "radio"` entries. */
+  radioGroup?: string;
+  /** `type: "radio"` entries only — this entry's value within its `radioGroup`. */
+  radioValue?: string;
+  /** `type: "sub"` entries only — the nested submenu's own item list. */
+  subEntries?: MenubarItemAttrs[];
 }
 
 export interface Input {
@@ -22,6 +38,10 @@ export interface Input {
   items?: DropdownMenuItem[];
   item?: Marko.AttrTag<MenubarItemAttrs>;
   select?: (value: string) => void;
+  /** Fires when a checkbox item's checked state changes; receives its value and new checked state. */
+  checkedChange?: (value: string, checked: boolean) => void;
+  /** Fires when a radio group's selected value changes; receives the group name and new value. */
+  radioChange?: (group: string, value: string) => void;
   class?: string;
 }
 
@@ -47,7 +67,18 @@ export interface Input {
 <const/attrItems=[...(input.item ?? [])]/>
 <const/entries=(attrItems.length > 0 ? attrItems : (input.items ?? []).map((item) => ({ ...item, content: undefined as Marko.Body | undefined })))/>
 
-<${trigger}({ ...api().getTriggerProps(), "data-slot": "menubar-trigger" })/>
+// Getter handed to each <Submenu> child so it can call `setParent` on this
+// menu's raw service (see submenu.marko for the full wiring rationale).
+<const/getOwnService=() => service.service/>
+
+// Trigger is a render-prop (the caller owns the `<button>` markup), so the
+// anchor class is offered through the props object like upstream's own
+// className default — callers spread it onto their element same as any
+// other prop; a caller-supplied `class` in their own JSX wins because it's
+// applied after the spread, matching how every other render-prop trigger in
+// this registry (popover, hover-card) hands back props without dictating
+// element ownership.
+<${trigger}({ ...api().getTriggerProps(), "data-slot": "menubar-trigger", class: "mu-menubar-trigger flex items-center outline-hidden select-none" })/>
 <portal>
   <if=api().open>
     <div ...api().getPositionerProps() style=positionerStyle data-slot="menubar-positioner">
@@ -55,18 +86,17 @@ export interface Input {
         ...api().getContentProps()
         data-slot="menubar-content"
         class=cn(
-          "bg-popover text-popover-foreground z-50 min-w-[12rem] overflow-hidden rounded-md border p-1 shadow-md",
-          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-          "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+          "mu-menubar-content mu-menu-target mu-menu-translucent z-50 origin-(--radix-menubar-content-transform-origin) overflow-hidden",
           className,
         )
       >
         <for|entry, index| of=entries>
+          <const/value=entry.value ?? `item-${index}`/>
           <if=entry.type === "separator">
-            <div ...api().getSeparatorProps() data-slot="menubar-separator" class="bg-border -mx-1 my-1 h-px"/>
+            <div ...api().getSeparatorProps() data-slot="menubar-separator" class="mu-menubar-separator -mx-1 my-1 h-px"/>
           </if>
           <else if=entry.type === "label">
-            <div data-slot="menubar-label" class="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+            <div data-slot="menubar-label" data-inset=entry.inset || undefined class="mu-menubar-label">
               <if=entry.content>
                 <${entry.content}/>
               </if>
@@ -75,26 +105,112 @@ export interface Input {
               </else>
             </div>
           </else>
-          <else>
+          <else if=entry.type === "checkbox">
             <div
-              ...api().getItemProps({ value: entry.value ?? `item-${index}`, disabled: entry.disabled })
-              data-slot="menubar-item"
-              data-danger=entry.danger || undefined
-              class=cn(
-                "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none",
-                "data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
-                "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-                "data-[danger]:text-destructive data-[danger]:data-[highlighted]:bg-destructive/10",
-              )
+              ...api().getOptionItemProps({
+                type: "checkbox",
+                value,
+                checked: entry.checked ?? false,
+                disabled: entry.disabled,
+                onCheckedChange: (checked) => input.checkedChange?.(value, checked),
+              })
+              data-slot="menubar-checkbox-item"
+              data-inset=entry.inset || undefined
+              class="mu-menubar-checkbox-item relative flex cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
             >
+              <span
+                ...api().getItemIndicatorProps({ checked: entry.checked ?? false })
+                data-slot="menubar-checkbox-item-indicator"
+                class="mu-menubar-checkbox-item-indicator pointer-events-none absolute flex items-center justify-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M20 6 9 17l-5-5"/>
+                </svg>
+              </span>
               <if=entry.content>
-                <span><${entry.content}/></span>
+                <${entry.content}/>
               </if>
               <else>
-                <span>${entry.label}</span>
+                ${entry.label}
               </else>
               <if=entry.shortcut>
-                <span class="ml-auto text-xs tracking-widest text-muted-foreground">${entry.shortcut}</span>
+                <span data-slot="menubar-shortcut" class="mu-menubar-shortcut ml-auto">${entry.shortcut}</span>
+              </if>
+            </div>
+          </else>
+          <else if=entry.type === "radio">
+            <div
+              ...api().getOptionItemProps({
+                type: "radio",
+                value: entry.radioValue ?? value,
+                checked: entry.checked ?? false,
+                disabled: entry.disabled,
+                onCheckedChange: () => input.radioChange?.(entry.radioGroup ?? "", entry.radioValue ?? value),
+              })
+              data-slot="menubar-radio-item"
+              data-inset=entry.inset || undefined
+              class="mu-menubar-radio-item relative flex cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
+            >
+              <span
+                ...api().getItemIndicatorProps({ checked: entry.checked ?? false })
+                data-slot="menubar-radio-item-indicator"
+                class="mu-menubar-radio-item-indicator pointer-events-none absolute flex items-center justify-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M20 6 9 17l-5-5"/>
+                </svg>
+              </span>
+              <if=entry.content>
+                <${entry.content}/>
+              </if>
+              <else>
+                ${entry.label}
+              </else>
+              <if=entry.shortcut>
+                <span data-slot="menubar-shortcut" class="mu-menubar-shortcut ml-auto">${entry.shortcut}</span>
+              </if>
+            </div>
+          </else>
+          <else if=entry.type === "sub">
+            <Submenu
+              entries=entry.subEntries ?? []
+              label=entry.label
+              disabled=entry.disabled
+              inset=entry.inset
+              parent=getOwnService
+              onChildReady=(childService) => api().setChild(childService)
+            >
+              <@trigger|childApi|>
+                <div
+                  ...api().getTriggerItemProps(childApi)
+                  data-slot="menubar-sub-trigger"
+                  data-inset=entry.inset || undefined
+                  class="mu-menubar-sub-trigger flex cursor-default items-center outline-none select-none"
+                >
+                  ${entry.label}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-rtl-flip ml-auto size-4" aria-hidden="true">
+                    <path d="m9 18 6-6-6-6"/>
+                  </svg>
+                </div>
+              </@trigger>
+            </Submenu>
+          </else>
+          <else>
+            <div
+              ...api().getItemProps({ value, disabled: entry.disabled })
+              data-slot="menubar-item"
+              data-inset=entry.inset || undefined
+              data-variant=entry.danger ? "destructive" : "default"
+              class="mu-menubar-item group/menubar-item relative flex cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
+            >
+              <if=entry.content>
+                <${entry.content}/>
+              </if>
+              <else>
+                ${entry.label}
+              </else>
+              <if=entry.shortcut>
+                <span data-slot="menubar-shortcut" class="mu-menubar-shortcut ml-auto">${entry.shortcut}</span>
               </if>
             </div>
           </else>

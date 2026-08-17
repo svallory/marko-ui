@@ -1,0 +1,108 @@
+// One nested submenu: a real second `@zag-js/menu` machine instance, linked
+// to its parent menu's raw service via `setParent`/`setChild` — the wiring
+// zag's own connect() exposes for exactly this (`menu.connect(...).setParent`
+// / `.setChild`, both documented to accept the *raw* MarkoService, not the
+// connected api — confirmed against `@zag-js/menu@1.43.0`'s connect source).
+// Marko gives this its own component instance (and therefore its own
+// `<lifecycle>`) per call site, which is exactly the child-machine lifetime
+// zag wants — same shape as `<toast-item>`'s per-toast child service linked
+// to the toaster's group service.
+//
+// The trigger row lives in the PARENT menu's item list (it needs the
+// parent's `getTriggerItemProps(childApi)`, which only the parent's api
+// exposes), so this component renders only the sub-trigger's own subtree:
+// the trigger row itself (via `<@trigger>`, receiving this submenu's api so
+// the caller can call `getTriggerItemProps`) plus the popped-out content.
+// Rendered by `menu.marko` for `type: "sub"` entries. Supports one level of
+// nesting (a submenu's own items are flat — item/separator/label only); a
+// `type: "sub"` entry inside a submenu's `subEntries` is not wired.
+import * as menu from "@zag-js/menu";
+import type { MarkoService } from "marko-zag";
+import { positionerStyle } from "marko-zag";
+import type { MenubarItemAttrs } from "./menu.marko";
+
+export interface Input {
+  /** This submenu's own item list — same entry shape as the top-level menu. */
+  entries: MenubarItemAttrs[];
+  /** Label rendered on the sub-trigger row. */
+  label?: string;
+  disabled?: boolean;
+  inset?: boolean;
+  /** Getter for the parent menu's raw service — this submenu registers onto it via `setParent`. */
+  parent: () => MarkoService;
+  /**
+   * Fires once this submenu's own raw service exists (on mount), so the
+   * parent can complete the link with `parentApi().setChild(childService)` —
+   * `setChild` needs the RAW service (see menu.connect's `child.prop("id")`),
+   * which only exists after this component's own `<service>` has mounted.
+   */
+  onChildReady?: (childService: MarkoService) => void;
+  /**
+   * Trigger render-prop: receives this submenu's connected api so the caller
+   * (the parent menu's item loop) can build the row with
+   * `parentApi().getTriggerItemProps(childApi)`.
+   */
+  trigger: Marko.Body<[menu.Api]>;
+}
+
+<machine-props/machineProps from=input pick=menu.props/>
+<service/service machine=() => menu.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  menu.connect(service, normalizeProps)
+  service=service
+/>
+
+// Link this submenu to its parent as soon as both raw services exist.
+// `setParent`/`setChild` both take the raw MarkoService (see menu.connect's
+// `parent.prop("id")` / `child.prop("id")` calls) — `<service>`'s onMount has
+// already run for every ancestor by the time any descendant mounts (Marko
+// mounts render bottom-up after the full tree commits), so `input.parent()`
+// and `service.service` are both live here.
+<lifecycle
+  onMount() {
+    const parentService = input.parent();
+    const ownService = service.service;
+    if (!parentService || !ownService) return;
+    api().setParent(parentService);
+    input.onChildReady?.(ownService);
+  }
+/>
+
+<${input.trigger}(api())/>
+<portal>
+  <if=api().open>
+    <div ...api().getPositionerProps() style=positionerStyle data-slot="menubar-sub-content-positioner">
+      <div
+        ...api().getContentProps()
+        data-slot="menubar-sub-content"
+        class="mu-menubar-sub-content mu-menu-target mu-menu-translucent z-50 origin-(--radix-menubar-content-transform-origin) overflow-hidden"
+      >
+        <for|entry, index| of=input.entries>
+          <const/value=entry.value ?? `sub-item-${index}`/>
+          <if=entry.type === "separator">
+            <div ...api().getSeparatorProps() data-slot="menubar-separator" class="mu-menubar-separator -mx-1 my-1 h-px"/>
+          </if>
+          <else if=entry.type === "label">
+            <div data-slot="menubar-label" data-inset=entry.inset || undefined class="mu-menubar-label">
+              ${entry.label}
+            </div>
+          </else>
+          <else>
+            <div
+              ...api().getItemProps({ value, disabled: entry.disabled })
+              data-slot="menubar-item"
+              data-inset=entry.inset || undefined
+              data-variant=entry.danger ? "destructive" : "default"
+              class="mu-menubar-item group/menubar-item relative flex cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
+            >
+              ${entry.label}
+              <if=entry.shortcut>
+                <span data-slot="menubar-shortcut" class="mu-menubar-shortcut ml-auto">${entry.shortcut}</span>
+              </if>
+            </div>
+          </else>
+        </for>
+      </div>
+    </div>
+  </if>
+</portal>

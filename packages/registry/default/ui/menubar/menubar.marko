@@ -7,12 +7,9 @@ export interface Input extends Marko.Input<"div"> {
 <const/{ class: className, content, ...rest }=input/>
 
 <div
-  ...rest
   data-slot="menubar"
-  class=cn(
-    "flex h-9 items-center gap-1 rounded-md border bg-background p-1 shadow-xs",
-    className,
-  )
+  ...rest
+  class=cn("mu-menubar flex items-center", className)
 >
   <${content}/>
 </div>

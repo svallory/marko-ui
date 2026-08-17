@@ -2,7 +2,7 @@
 // Authoring rules: notes/component-authoring.md
 import * as navigationMenu from "@zag-js/navigation-menu";
 import type { MachineInput } from "marko-zag";
-import { navigationMenuTriggerStyle, navigationMenuLinkStyle } from "./variants.ts";
+import { navigationMenuTriggerStyle } from "./variants.ts";
 import { cn } from "#lib/utils.ts";
 
 // A link rendered directly in the menu bar, with no content panel.
@@ -153,18 +153,19 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
   ...nativeAttrs()
   ...api().getRootProps()
   data-slot="navigation-menu"
-  class=cn("group/navigation-menu relative flex max-w-max flex-1 items-center justify-center", input.class)
+  class=cn("mu-navigation-menu group/navigation-menu relative flex max-w-max flex-1 items-center justify-center", input.class)
 >
-  <ul ...api().getListProps() data-slot="navigation-menu-list" class="group flex flex-1 list-none items-center justify-center gap-1">
+  <ul ...api().getListProps() data-slot="navigation-menu-list" class="mu-navigation-menu-list group flex flex-1 list-none items-center justify-center">
     <for|item| of=items>
-      <li ...api().getItemProps({ value: item.value, disabled: item.disabled }) data-slot="navigation-menu-item">
+      <li ...api().getItemProps({ value: item.value, disabled: item.disabled }) data-slot="navigation-menu-item" class="mu-navigation-menu-item relative">
         <if=item.type === "menu">
           <button
             ...api().getTriggerProps({ value: item.value, disabled: item.disabled })
             data-slot="navigation-menu-trigger"
-            class=cn(navigationMenuTriggerStyle(), "gap-1")
+            class=cn(navigationMenuTriggerStyle(), "group")
           >
             ${item.label}
+            {" "}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -175,7 +176,8 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
               stroke-width="2"
               stroke-linecap="round"
               stroke-linejoin="round"
-              class="relative top-px size-3 shrink-0 transition-transform duration-300 group-data-[state=open]:rotate-180"
+              data-slot="navigation-menu-trigger-icon"
+              class="mu-navigation-menu-trigger-icon"
               aria-hidden="true"
             >
               <path d="m6 9 6 6 6-6"/>
@@ -189,7 +191,7 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
             ...api().getLinkProps({ value: item.value, current: item.current })
             href=item.href
             data-slot="navigation-menu-link"
-            class=navigationMenuTriggerStyle()
+            class="mu-navigation-menu-link"
           >
             ${item.label}
           </a>
@@ -202,35 +204,39 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
     <div
       ...api().getIndicatorProps()
       data-slot="navigation-menu-indicator"
-      class="bottom-0 left-0 z-1 flex h-1.5 w-[var(--trigger-width)] items-end justify-center overflow-hidden [translate:var(--trigger-x)_0] transition-[translate,width] duration-250 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:animate-in data-[state=open]:fade-in"
+      class="mu-navigation-menu-indicator top-full z-1 flex h-1.5 items-end justify-center overflow-hidden [width:var(--trigger-width)] [translate:var(--trigger-x)_0]"
     >
       <div
         ...api().getArrowProps()
-        data-slot="navigation-menu-arrow"
-        class="relative top-[60%] size-2 rotate-45 rounded-tl-[2px] border-t border-l bg-popover shadow-md"
+        data-slot="navigation-menu-indicator-arrow"
+        class="mu-navigation-menu-indicator-arrow relative top-[60%] size-2 rotate-45"
       />
     </div>
   </ul>
 
   // Shared animated viewport: every panel renders inside it, and the machine
   // drives its size/position through CSS vars in its own style object — so this
-  // part carries no style attribute of ours.
+  // part carries no style attribute of ours. Zag-forced wrapper (rule 6) — but
+  // the triage brief maps it 1:1 onto upstream's unslotted `cn-navigation-menu-
+  // viewport-wrapper` div (NavigationMenuViewport's own wrapping <div>, no
+  // data-slot upstream either), so it carries that anchor verbatim rather than
+  // going bare.
   <div
     ...api().getViewportPositionerProps({ align: input.align })
     data-slot="navigation-menu-viewport-positioner"
-    class="absolute top-full left-0 isolate z-50 flex justify-center"
+    class="mu-navigation-menu-viewport-wrapper absolute top-full left-0 isolate z-50 flex justify-center"
   >
     <div
       ...api().getViewportProps({ align: input.align })
       data-slot="navigation-menu-viewport"
-      class="relative mt-1.5 h-[var(--viewport-height)] w-[var(--viewport-width)] origin-top overflow-hidden rounded-md border bg-popover text-popover-foreground shadow duration-200 data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:zoom-in-90 data-[state=open]:fade-in-0"
+      class="mu-navigation-menu-viewport origin-top-center relative mt-1.5 h-[var(--viewport-height)] w-[var(--viewport-width)] overflow-hidden"
     >
       <for|item| of=menuItems()>
         <const/menuContent=menuContentByValue.get(item.value)/>
         <div
           ...api().getContentProps({ value: item.value })
           data-slot="navigation-menu-content"
-          class="absolute top-0 left-0 w-max p-2 duration-200 data-[motion=from-end]:slide-in-from-right-52 data-[motion=from-start]:slide-in-from-left-52 data-[motion=to-end]:slide-out-to-right-52 data-[motion=to-start]:slide-out-to-left-52 data-[motion^=from-]:animate-in data-[motion^=from-]:fade-in data-[motion^=to-]:animate-out data-[motion^=to-]:fade-out"
+          class="mu-navigation-menu-content top-0 left-0 w-full **:data-[slot=navigation-menu-link]:focus:ring-0 **:data-[slot=navigation-menu-link]:focus:outline-none md:absolute md:w-auto"
         >
           <if=item.links?.length>
             <div class=cn("grid gap-2", hasFeatured(item) ? "w-[500px] grid-cols-[.75fr_1fr]" : "w-[400px]")>
@@ -239,7 +245,7 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
                   ...api().getLinkProps({ value: item.value, current: link.current })
                   href=link.href
                   data-slot="navigation-menu-link"
-                  class="from-muted/50 to-muted flex h-full w-full select-none flex-col justify-end rounded-md bg-linear-to-b p-6 no-underline outline-none transition-all hover:shadow-md focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  class="mu-navigation-menu-link"
                 >
                   <div class="mt-4 mb-2 text-lg font-medium">${link.title}</div>
                   <if=link.description>
@@ -254,7 +260,7 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
                       ...api().getLinkProps({ value: item.value, current: link.current })
                       href=link.href
                       data-slot="navigation-menu-link"
-                      class=navigationMenuLinkStyle()
+                      class="mu-navigation-menu-link"
                     >
                       <div class="text-sm font-medium leading-none">${link.title}</div>
                       <if=link.description>
