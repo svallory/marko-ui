@@ -1,22 +1,24 @@
 section
   p
   div
-    div data-slot="sidebar-provider" data-state="open"
-      aside data-slot="sidebar" data-state="open"
-        div
-          div data-slot="sidebar-header"
-            div
-          div data-slot="sidebar-content"
-            div data-slot="sidebar-group"
-              div data-slot="sidebar-group-label"
-              ul data-slot="sidebar-menu"
-                li data-slot="sidebar-menu-item"
-                  a data-slot="sidebar-menu-button"
-                li data-slot="sidebar-menu-item"
-                  a data-slot="sidebar-menu-button"
+    div data-slot="sidebar-wrapper"
+      div data-slot="sidebar" data-state="expanded"
+        div data-slot="sidebar-gap"
+        div data-slot="sidebar-container"
+          div data-slot="sidebar-inner"
+            div data-slot="sidebar-header"
+              div
+            div data-slot="sidebar-content"
+              div data-slot="sidebar-group"
+                div data-slot="sidebar-group-label"
+                ul data-slot="sidebar-menu"
+                  li data-slot="sidebar-menu-item"
+                    a data-slot="sidebar-menu-button"
+                  li data-slot="sidebar-menu-item"
+                    a data-slot="sidebar-menu-button"
       div
         header
-          button data-slot="sidebar-trigger" data-state="open" aria-label="Toggle sidebar"
+          button data-slot="sidebar-trigger"
             svg
               rect
               path
@@ -26,28 +28,30 @@ section
 ---
 section
   div
-    div data-slot="sidebar-provider" data-state="open"
-      aside data-slot="sidebar" data-state="open"
-        div
-          div data-slot="sidebar-header"
-            div
-          div data-slot="sidebar-content"
-            div data-slot="sidebar-group"
-              div data-slot="sidebar-group-label"
-              ul data-slot="sidebar-menu"
-                li data-slot="sidebar-menu-item"
-                  a data-slot="sidebar-menu-button"
-                li data-slot="sidebar-menu-item"
-                  a data-slot="sidebar-menu-button"
-                li data-slot="sidebar-menu-item"
-                  a data-slot="sidebar-menu-button"
-                li data-slot="sidebar-menu-item"
-                  a data-slot="sidebar-menu-button"
-          div data-slot="sidebar-footer"
-            div
+    div data-slot="sidebar-wrapper"
+      div data-slot="sidebar" data-state="expanded"
+        div data-slot="sidebar-gap"
+        div data-slot="sidebar-container"
+          div data-slot="sidebar-inner"
+            div data-slot="sidebar-header"
+              div
+            div data-slot="sidebar-content"
+              div data-slot="sidebar-group"
+                div data-slot="sidebar-group-label"
+                ul data-slot="sidebar-menu"
+                  li data-slot="sidebar-menu-item"
+                    a data-slot="sidebar-menu-button"
+                  li data-slot="sidebar-menu-item"
+                    a data-slot="sidebar-menu-button"
+                  li data-slot="sidebar-menu-item"
+                    a data-slot="sidebar-menu-button"
+                  li data-slot="sidebar-menu-item"
+                    a data-slot="sidebar-menu-button"
+            div data-slot="sidebar-footer"
+              div
       div
         header
-          button data-slot="sidebar-trigger" data-state="open" aria-label="Toggle sidebar"
+          button data-slot="sidebar-trigger"
             svg
               rect
               path

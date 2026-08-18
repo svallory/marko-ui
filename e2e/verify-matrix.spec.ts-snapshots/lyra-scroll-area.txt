@@ -106,7 +106,7 @@ section
           div
     div data-slot="scroll-area-scrollbar"
       div data-slot="scroll-area-thumb"
-    div data-slot="scroll-area-corner" data-state="hidden"
+    div data-state="hidden"
 ---
 section
   div data-slot="scroll-area" role="presentation"
@@ -127,4 +127,4 @@ section
       div data-slot="scroll-area-thumb"
     div data-slot="scroll-area-scrollbar"
       div data-slot="scroll-area-thumb"
-    div data-slot="scroll-area-corner" data-state="hidden"
+    div data-state="hidden"

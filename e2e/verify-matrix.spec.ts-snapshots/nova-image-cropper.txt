@@ -1,0 +1,66 @@
+section
+  div data-slot="image-cropper" role="group" aria-roledescription="Image cropper" aria-label="Image cropper" aria-description="Image cropper preview, 1.00x zoom, 0 degrees rotation. Crop positioned at 90px from the left and 40px from the top with a size of 180px by 180px." aria-live="polite" aria-controls="<id>"
+    div data-slot="image-cropper-viewport" role="presentation"
+      img data-slot="image-cropper-image" role="presentation" aria-hidden="true"
+      div data-slot="image-cropper-selection" role="slider" aria-label="Crop selection area (circle)" aria-roledescription="2d slider" aria-valuemin="0" aria-valuemax="266" aria-valuenow="90" aria-valuetext="Position X 90px, Y 40px. Diameter 180px." aria-description="Use arrow keys to move the crop. Hold Alt with arrow keys to resize width or height. Press plus or minus to zoom."
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+---
+section
+  div
+    div data-slot="image-cropper" role="group" aria-roledescription="Image cropper" aria-label="Image cropper" aria-description="Image cropper preview, 1.00x zoom, 0 degrees rotation. Crop positioned at 60px from the left and 50px from the top with a size of 220px by 160px." aria-live="polite" aria-controls="<id>"
+      div data-slot="image-cropper-viewport" role="presentation"
+        img data-slot="image-cropper-image" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-selection" role="slider" aria-label="Crop selection area (rectangle)" aria-roledescription="2d slider" aria-valuemin="0" aria-valuemax="226" aria-valuenow="60" aria-valuetext="Position X 60px, Y 50px. Size 220px by 160px." aria-description="Use arrow keys to move the crop. Hold Alt with arrow keys to resize width or height. Press plus or minus to zoom."
+          div data-slot="image-cropper-grid" aria-hidden="true"
+          div data-slot="image-cropper-grid" aria-hidden="true"
+          div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+          div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+          div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+          div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+          div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+          div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+          div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+          div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+    div
+      button
+      button
+      button
+      button
+    p
+---
+section
+  div data-slot="image-cropper" role="group" aria-roledescription="Image cropper" aria-label="Image cropper" aria-description="Image cropper preview, 1.00x zoom, 0 degrees rotation. Crop positioned at 60px from the left and 50px from the top with a size of 220px by 160px." aria-live="polite" aria-controls="<id>"
+    div data-slot="image-cropper-viewport" role="presentation"
+      img data-slot="image-cropper-image" role="presentation" aria-hidden="true"
+      div data-slot="image-cropper-selection" role="slider" aria-label="Crop selection area (rectangle)" aria-roledescription="2d slider" aria-valuemin="0" aria-valuemax="226" aria-valuenow="60" aria-valuetext="Position X 60px, Y 50px. Size 220px by 160px." aria-description="Use arrow keys to move the crop. Hold Alt with arrow keys to resize width or height. Press plus or minus to zoom."
+        div data-slot="image-cropper-grid" aria-hidden="true"
+        div data-slot="image-cropper-grid" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+---
+section
+  div data-slot="image-cropper" role="group" aria-roledescription="Image cropper" aria-label="Image cropper" aria-description="Image cropper preview, 1.00x zoom, 0 degrees rotation. Crop positioned at 80px from the left and 50px from the top with a size of 240px by 160px." aria-live="polite" aria-controls="<id>"
+    div data-slot="image-cropper-viewport" role="presentation"
+      img data-slot="image-cropper-image" role="presentation" aria-hidden="true"
+      div data-slot="image-cropper-selection" role="slider" aria-label="Crop selection area (rectangle)" aria-roledescription="2d slider" aria-disabled="true" aria-valuemin="0" aria-valuemax="206" aria-valuenow="80" aria-valuetext="Position X 80px, Y 50px. Size 240px by 160px." aria-description="Use arrow keys to move the crop. Hold Alt with arrow keys to resize width or height. Press plus or minus to zoom."
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"
+        div data-slot="image-cropper-handle" role="presentation" aria-hidden="true"

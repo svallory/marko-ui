@@ -1,0 +1,152 @@
+section
+  div
+    div data-slot="rating-group"
+      label data-slot="rating-group-label"
+      div data-slot="rating-group-control" role="radiogroup" aria-orientation="horizontal" aria-labelledby="<id>"
+        span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="1 stars" aria-disabled="false" aria-setsize="5" aria-checked="false" aria-posinset="1"
+          svg
+            path
+        span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="2 stars" aria-disabled="false" aria-setsize="5" aria-checked="false" aria-posinset="2"
+          svg
+            path
+        span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="3 stars" aria-disabled="false" aria-setsize="5" aria-checked="true" aria-posinset="3"
+          svg
+            path
+        span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="4 stars" aria-disabled="false" aria-setsize="5" aria-checked="false" aria-posinset="4"
+          svg
+            path
+        span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="5 stars" aria-disabled="false" aria-setsize="5" aria-checked="false" aria-posinset="5"
+          svg
+            path
+      input
+    span
+---
+section
+  div data-slot="rating-group"
+    label data-slot="rating-group-label"
+    div data-slot="rating-group-control" role="radiogroup" aria-orientation="horizontal" aria-labelledby="<id>"
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="1 stars" aria-disabled="false" aria-setsize="10" aria-checked="false" aria-posinset="1"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="2 stars" aria-disabled="false" aria-setsize="10" aria-checked="false" aria-posinset="2"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="3 stars" aria-disabled="false" aria-setsize="10" aria-checked="false" aria-posinset="3"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="4 stars" aria-disabled="false" aria-setsize="10" aria-checked="false" aria-posinset="4"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="5 stars" aria-disabled="false" aria-setsize="10" aria-checked="false" aria-posinset="5"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="6 stars" aria-disabled="false" aria-setsize="10" aria-checked="false" aria-posinset="6"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="7 stars" aria-disabled="false" aria-setsize="10" aria-checked="true" aria-posinset="7"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="8 stars" aria-disabled="false" aria-setsize="10" aria-checked="false" aria-posinset="8"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="9 stars" aria-disabled="false" aria-setsize="10" aria-checked="false" aria-posinset="9"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="10 stars" aria-disabled="false" aria-setsize="10" aria-checked="false" aria-posinset="10"
+        svg
+          path
+    input
+---
+section
+  div data-slot="rating-group"
+    label data-slot="rating-group-label"
+    div data-slot="rating-group-control" role="radiogroup" aria-orientation="horizontal" aria-labelledby="<id>"
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="1 stars" aria-disabled="false" aria-setsize="5" aria-checked="false" aria-posinset="1"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="2 stars" aria-disabled="false" aria-setsize="5" aria-checked="false" aria-posinset="2"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="3 stars" aria-disabled="false" aria-setsize="5" aria-checked="true" aria-posinset="3"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="4 stars" aria-disabled="false" aria-setsize="5" aria-checked="false" aria-posinset="4"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="5 stars" aria-disabled="false" aria-setsize="5" aria-checked="false" aria-posinset="5"
+        svg
+          path
+    input
+---
+section
+  div data-slot="rating-group"
+    label data-slot="rating-group-label"
+    div data-slot="rating-group-control" role="radiogroup" aria-orientation="horizontal" aria-labelledby="<id>"
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="1 stars" aria-disabled="true" aria-setsize="5" aria-checked="false" aria-posinset="1"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="2 stars" aria-disabled="true" aria-setsize="5" aria-checked="true" aria-posinset="2"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="3 stars" aria-disabled="true" aria-setsize="5" aria-checked="false" aria-posinset="3"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="4 stars" aria-disabled="true" aria-setsize="5" aria-checked="false" aria-posinset="4"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="5 stars" aria-disabled="true" aria-setsize="5" aria-checked="false" aria-posinset="5"
+        svg
+          path
+    input
+---
+section
+  div data-slot="rating-group"
+    label data-slot="rating-group-label"
+    div data-slot="rating-group-control" role="radiogroup" aria-orientation="horizontal" aria-labelledby="<id>"
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="1 stars" aria-disabled="false" aria-setsize="5" aria-checked="false" aria-posinset="1"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="2 stars" aria-disabled="false" aria-setsize="5" aria-checked="false" aria-posinset="2"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="3 stars" aria-disabled="false" aria-setsize="5" aria-checked="false" aria-posinset="3"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="4 stars" aria-disabled="false" aria-setsize="5" aria-checked="true" aria-posinset="4"
+        svg
+          defs
+            clippath
+              rect
+          path
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="5 stars" aria-disabled="false" aria-setsize="5" aria-checked="false" aria-posinset="5"
+        svg
+          path
+    input
+---
+section
+  div data-slot="rating-group"
+    label data-slot="rating-group-label"
+    div data-slot="rating-group-control" role="radiogroup" aria-orientation="horizontal" aria-labelledby="<id>" aria-readonly="true"
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="1 stars" aria-disabled="false" aria-setsize="5" aria-checked="false" aria-posinset="1"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="2 stars" aria-disabled="false" aria-setsize="5" aria-checked="false" aria-posinset="2"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="3 stars" aria-disabled="false" aria-setsize="5" aria-checked="false" aria-posinset="3"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="4 stars" aria-disabled="false" aria-setsize="5" aria-checked="false" aria-posinset="4"
+        svg
+          path
+      span data-slot="rating-group-item" role="radio" aria-roledescription="rating" aria-label="5 stars" aria-disabled="false" aria-setsize="5" aria-checked="true" aria-posinset="5"
+        svg
+          defs
+            clippath
+              rect
+          path
+        svg
+          path
+    input

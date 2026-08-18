@@ -1,0 +1,73 @@
+section
+  div
+    div data-slot="date-picker" data-state="closed"
+      div data-slot="date-picker-control"
+        input data-slot="date-picker-input" data-state="closed"
+        button data-slot="date-picker-trigger" data-state="closed" aria-label="Open calendar" aria-controls="<id>" aria-expanded="false" aria-haspopup="grid"
+          svg
+            path
+            path
+            rect
+            path
+          span
+    span
+---
+section
+  div data-slot="date-picker" data-state="closed"
+    div data-slot="date-picker-control"
+      input data-slot="date-picker-input" data-state="closed"
+      button data-slot="date-picker-trigger" data-state="closed" aria-label="Open calendar" aria-controls="<id>" aria-expanded="false" aria-haspopup="grid"
+        svg
+          path
+          path
+          rect
+          path
+        span
+---
+section
+  div data-slot="date-picker" data-state="closed"
+    div data-slot="date-picker-control"
+      input data-slot="date-picker-input" data-state="closed"
+      button data-slot="date-picker-trigger" data-state="closed" aria-label="Open calendar" aria-controls="<id>" aria-expanded="false" aria-haspopup="grid"
+        svg
+          path
+          path
+          rect
+          path
+        span
+---
+section
+  div data-slot="date-picker" data-state="closed"
+    div data-slot="date-picker-control"
+      input data-slot="date-picker-input" data-state="closed"
+      button data-slot="date-picker-trigger" data-state="closed" aria-label="Open calendar" aria-controls="<id>" aria-expanded="false" aria-haspopup="grid"
+        svg
+          path
+          path
+          rect
+          path
+        span
+---
+section
+  div data-slot="date-picker" data-state="closed"
+    div data-slot="date-picker-control"
+      input data-slot="date-picker-input" data-state="closed"
+      button data-slot="date-picker-trigger" data-state="closed" aria-label="Open calendar" aria-controls="<id>" aria-expanded="false" aria-haspopup="grid"
+        svg
+          path
+          path
+          rect
+          path
+        span
+---
+section
+  div data-slot="date-picker" data-state="closed"
+    div data-slot="date-picker-control"
+      input data-slot="date-picker-input" data-state="closed"
+      button data-slot="date-picker-trigger" data-state="closed" aria-label="Open calendar" aria-controls="<id>" aria-expanded="false" aria-haspopup="grid"
+        svg
+          path
+          path
+          rect
+          path
+        span

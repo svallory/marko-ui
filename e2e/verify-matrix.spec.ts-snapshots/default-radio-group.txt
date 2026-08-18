@@ -7,6 +7,7 @@ section
     label data-slot="radio-group-item-wrapper" data-state="checked"
       span data-slot="radio-group-item" data-state="checked" aria-hidden="true"
         span data-slot="radio-group-indicator"
+          span
       input aria-labelledby="<id>"
       span data-slot="radio-group-item-text" data-state="checked"
     label data-slot="radio-group-item-wrapper" data-state="unchecked"
@@ -24,6 +25,7 @@ section
       label data-slot="radio-group-item-wrapper" data-state="checked"
         span data-slot="radio-group-item" data-state="checked" aria-hidden="true"
           span data-slot="radio-group-indicator"
+            span
         input aria-labelledby="<id>"
         span data-slot="radio-group-item-text" data-state="checked"
       label data-slot="radio-group-item-wrapper" data-state="unchecked"
@@ -41,6 +43,7 @@ section
     label data-slot="radio-group-item-wrapper" data-state="checked"
       span data-slot="radio-group-item" data-state="checked" aria-hidden="true"
         span data-slot="radio-group-indicator"
+          span
       input aria-labelledby="<id>"
       span data-slot="radio-group-item-text" data-state="checked"
     label data-slot="radio-group-item-wrapper" data-state="unchecked"
@@ -53,6 +56,7 @@ section
     label data-slot="radio-group-item-wrapper" data-state="checked"
       span data-slot="radio-group-item" data-state="checked" aria-hidden="true"
         span data-slot="radio-group-indicator"
+          span
       input aria-labelledby="<id>"
       span data-slot="radio-group-item-text" data-state="checked"
     label data-slot="radio-group-item-wrapper" data-state="unchecked"
@@ -69,6 +73,7 @@ section
     label data-slot="radio-group-item-wrapper" data-state="checked"
       span data-slot="radio-group-item" data-state="checked" aria-hidden="true"
         span data-slot="radio-group-indicator"
+          span
       input aria-labelledby="<id>"
       span data-slot="radio-group-item-text" data-state="checked"
     label data-slot="radio-group-item-wrapper" data-state="unchecked"

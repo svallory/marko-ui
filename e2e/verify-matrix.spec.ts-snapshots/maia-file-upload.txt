@@ -1,0 +1,52 @@
+section
+  div data-slot="file-upload"
+    div data-slot="file-upload-dropzone" aria-label="dropzone"
+      svg
+        path
+        path
+        path
+      div
+        span
+      p
+      button data-slot="file-upload-trigger"
+      input data-slot="file-upload-hidden-input" aria-hidden="true"
+---
+section
+  p
+  div data-slot="file-upload"
+    div data-slot="file-upload-dropzone" aria-label="dropzone"
+      svg
+        path
+        path
+        path
+      div
+        span
+      p
+      button data-slot="file-upload-trigger"
+      input data-slot="file-upload-hidden-input" aria-hidden="true"
+---
+section
+  div data-slot="file-upload"
+    div data-slot="file-upload-dropzone" aria-label="dropzone"
+      svg
+        path
+        path
+        path
+      div
+        span
+      p
+      button data-slot="file-upload-trigger"
+      input data-slot="file-upload-hidden-input" aria-hidden="true"
+---
+section
+  div data-slot="file-upload"
+    div data-slot="file-upload-dropzone" aria-label="dropzone"
+      svg
+        path
+        path
+        path
+      div
+        span
+      p
+      button data-slot="file-upload-trigger"
+      input data-slot="file-upload-hidden-input" aria-hidden="true"

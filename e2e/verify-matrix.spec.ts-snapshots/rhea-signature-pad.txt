@@ -1,0 +1,53 @@
+section
+  div
+    div data-slot="signature-pad"
+      label data-slot="signature-pad-label"
+      div data-slot="signature-pad-control" role="application" aria-roledescription="signature pad" aria-label="signature pad" aria-disabled="false"
+        svg data-slot="signature-pad-segment"
+        button data-slot="signature-pad-clear-trigger" aria-label="clear signature"
+          svg
+            path
+            path
+          span
+        div data-slot="signature-pad-guide"
+      input data-slot="signature-pad-hidden-input"
+    span
+---
+section
+  div data-slot="signature-pad"
+    label data-slot="signature-pad-label"
+    div data-slot="signature-pad-control" role="application" aria-roledescription="signature pad" aria-label="signature pad" aria-disabled="false"
+      svg data-slot="signature-pad-segment"
+      button data-slot="signature-pad-clear-trigger" aria-label="clear signature"
+        svg
+          path
+          path
+        span
+      div data-slot="signature-pad-guide"
+    input data-slot="signature-pad-hidden-input"
+---
+section
+  div data-slot="signature-pad"
+    label data-slot="signature-pad-label"
+    div data-slot="signature-pad-control" role="application" aria-roledescription="signature pad" aria-label="signature pad" aria-disabled="true"
+      svg data-slot="signature-pad-segment"
+      button data-slot="signature-pad-clear-trigger" aria-label="clear signature"
+        svg
+          path
+          path
+        span
+      div data-slot="signature-pad-guide"
+    input data-slot="signature-pad-hidden-input"
+---
+section
+  div data-slot="signature-pad"
+    label data-slot="signature-pad-label"
+    div data-slot="signature-pad-control" role="application" aria-roledescription="signature pad" aria-label="signature pad" aria-disabled="false"
+      svg data-slot="signature-pad-segment"
+      button data-slot="signature-pad-clear-trigger" aria-label="clear signature"
+        svg
+          path
+          path
+        span
+      div data-slot="signature-pad-guide"
+    input data-slot="signature-pad-hidden-input"

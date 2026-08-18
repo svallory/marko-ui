@@ -2,19 +2,19 @@ section
   div data-slot="input-group" role="group"
     textarea data-slot="input-group-control"
     div data-slot="input-group-addon" role="group"
-      button data-slot="input-group-button"
+      button data-slot="button"
 ---
 section
   div data-slot="input-group" role="group"
     div data-slot="input-group-addon" role="group"
-      span data-slot="input-group-text"
+      span
     textarea data-slot="input-group-control"
 ---
 section
   div data-slot="input-group" role="group"
     input data-slot="input-group-control"
     div data-slot="input-group-addon" role="group"
-      span data-slot="input-group-text"
+      span
 ---
 section
   div data-slot="input-group" role="group"
@@ -28,7 +28,7 @@ section
   div data-slot="input-group" role="group"
     input data-slot="input-group-control"
     div data-slot="input-group-addon" role="group"
-      button data-slot="input-group-button" aria-label="Search"
+      button data-slot="button" aria-label="Search"
         svg
           circle
           line
@@ -66,13 +66,13 @@ section
         circle
     input data-slot="input-group-control"
     div data-slot="input-group-addon" role="group"
-      button data-slot="input-group-button"
+      button data-slot="button"
 ---
 section
   div data-slot="input-group" role="group"
     div data-slot="input-group-addon" role="group"
-      button data-slot="input-group-button"
-      button data-slot="input-group-button"
+      button data-slot="button"
+      button data-slot="button"
     textarea data-slot="input-group-control"
     div data-slot="input-group-addon" role="group"
-      button data-slot="input-group-button"
+      button data-slot="button"

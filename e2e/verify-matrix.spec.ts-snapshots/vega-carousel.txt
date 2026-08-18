@@ -1,17 +1,16 @@
 section
   div data-slot="carousel" role="region" aria-roledescription="carousel"
-    div data-slot="carousel-content"
-      div data-slot="carousel-item-group" aria-live="polite"
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 3"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 3" aria-hidden="true"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 3" aria-hidden="true"
-          div
-            span
-    button data-slot="carousel-previous" aria-label="Previous slide" aria-controls="<id>"
+    div data-slot="carousel-item-group" aria-live="polite"
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 3"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 3" aria-hidden="true"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 3" aria-hidden="true"
+        div
+          span
+    button data-slot="carousel-prev" aria-label="Previous slide" aria-controls="<id>"
       svg
         path
       span
@@ -34,24 +33,23 @@ section
   div
     p
     div data-slot="carousel" role="region" aria-roledescription="carousel"
-      div data-slot="carousel-content"
-        div data-slot="carousel-item-group" aria-live="polite"
-          div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 5"
-            div
-              span
-          div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 5" aria-hidden="true"
-            div
-              span
-          div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 5" aria-hidden="true"
-            div
-              span
-          div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="4 of 5" aria-hidden="true"
-            div
-              span
-          div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true"
-            div
-              span
-      button data-slot="carousel-previous" aria-label="Previous slide" aria-controls="<id>"
+      div data-slot="carousel-item-group" aria-live="polite"
+        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 5"
+          div
+            span
+        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 5" aria-hidden="true"
+          div
+            span
+        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 5" aria-hidden="true"
+          div
+            span
+        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="4 of 5" aria-hidden="true"
+          div
+            span
+        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true"
+          div
+            span
+      button data-slot="carousel-prev" aria-label="Previous slide" aria-controls="<id>"
         svg
           path
         span
@@ -78,24 +76,23 @@ section
 ---
 section
   div data-slot="carousel" role="region" aria-roledescription="carousel"
-    div data-slot="carousel-content"
-      div data-slot="carousel-item-group" aria-live="polite"
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 5"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 5" aria-hidden="true"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 5" aria-hidden="true"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="4 of 5" aria-hidden="true"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true"
-          div
-            span
-    button data-slot="carousel-previous" aria-label="Previous slide" aria-controls="<id>"
+    div data-slot="carousel-item-group" aria-live="polite"
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 5"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 5" aria-hidden="true"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 5" aria-hidden="true"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="4 of 5" aria-hidden="true"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true"
+        div
+          span
+    button data-slot="carousel-prev" aria-label="Previous slide" aria-controls="<id>"
       svg
         path
       span
@@ -122,24 +119,23 @@ section
 ---
 section
   div data-slot="carousel" role="region" aria-roledescription="carousel"
-    div data-slot="carousel-content"
-      div data-slot="carousel-item-group" aria-live="polite"
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 5"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 5" aria-hidden="true"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 5" aria-hidden="true"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="4 of 5" aria-hidden="true"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true"
-          div
-            span
-    button data-slot="carousel-previous" aria-label="Previous slide" aria-controls="<id>"
+    div data-slot="carousel-item-group" aria-live="polite"
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 5"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 5" aria-hidden="true"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 5" aria-hidden="true"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="4 of 5" aria-hidden="true"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true"
+        div
+          span
+    button data-slot="carousel-prev" aria-label="Previous slide" aria-controls="<id>"
       svg
         path
       span
@@ -166,24 +162,23 @@ section
 ---
 section
   div data-slot="carousel" role="region" aria-roledescription="carousel"
-    div data-slot="carousel-content"
-      div data-slot="carousel-item-group" aria-live="polite"
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 5"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 5" aria-hidden="true"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 5" aria-hidden="true"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="4 of 5" aria-hidden="true"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true"
-          div
-            span
-    button data-slot="carousel-previous" aria-label="Previous slide" aria-controls="<id>"
+    div data-slot="carousel-item-group" aria-live="polite"
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 5"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 5" aria-hidden="true"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 5" aria-hidden="true"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="4 of 5" aria-hidden="true"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true"
+        div
+          span
+    button data-slot="carousel-prev" aria-label="Previous slide" aria-controls="<id>"
       svg
         path
       span
@@ -210,24 +205,23 @@ section
 ---
 section
   div data-slot="carousel" role="region" aria-roledescription="carousel"
-    div data-slot="carousel-content"
-      div data-slot="carousel-item-group" aria-live="polite"
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 5"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 5"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 5" aria-hidden="true"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="4 of 5" aria-hidden="true"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true"
-          div
-            span
-    button data-slot="carousel-previous" aria-label="Previous slide" aria-controls="<id>"
+    div data-slot="carousel-item-group" aria-live="polite"
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 5"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 5"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 5" aria-hidden="true"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="4 of 5" aria-hidden="true"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true"
+        div
+          span
+    button data-slot="carousel-prev" aria-label="Previous slide" aria-controls="<id>"
       svg
         path
       span
@@ -248,24 +242,23 @@ section
 ---
 section
   div data-slot="carousel" role="region" aria-roledescription="carousel"
-    div data-slot="carousel-content"
-      div data-slot="carousel-item-group" aria-live="polite"
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 5"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 5"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 5"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="4 of 5" aria-hidden="true"
-          div
-            span
-        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true"
-          div
-            span
-    button data-slot="carousel-previous" aria-label="Previous slide" aria-controls="<id>"
+    div data-slot="carousel-item-group" aria-live="polite"
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 5"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 5"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 5"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="4 of 5" aria-hidden="true"
+        div
+          span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true"
+        div
+          span
+    button data-slot="carousel-prev" aria-label="Previous slide" aria-controls="<id>"
       svg
         path
       span

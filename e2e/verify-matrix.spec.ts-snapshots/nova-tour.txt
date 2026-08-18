@@ -1,0 +1,26 @@
+section
+  div
+    div
+      span
+    p
+    div
+      button data-slot="tour-trigger"
+---
+section
+  div
+    div
+      input
+      button
+      div
+      button
+    p
+    div
+      button data-slot="tour-trigger"
+---
+section
+  div
+    div
+      button
+      button
+    div
+      button data-slot="tour-trigger"

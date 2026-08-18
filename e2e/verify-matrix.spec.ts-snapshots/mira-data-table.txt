@@ -1,0 +1,169 @@
+section
+  div data-slot="data-table-container"
+    div data-slot="table-container"
+      table data-slot="table"
+        thead data-slot="table-header"
+          tr data-slot="table-row"
+            th data-slot="table-head"
+              button data-slot="button"
+                svg
+                  path
+                  path
+                  path
+                  path
+            th data-slot="table-head"
+              button data-slot="button"
+                svg
+                  path
+                  path
+                  path
+                  path
+            th data-slot="table-head"
+              button data-slot="button"
+                svg
+                  path
+                  path
+                  path
+                  path
+        tbody data-slot="table-body"
+          tr data-slot="table-row"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+          tr data-slot="table-row"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+          tr data-slot="table-row"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+          tr data-slot="table-row"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+          tr data-slot="table-row"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+---
+section
+  div data-slot="data-table-container"
+    div data-slot="table-container"
+      table data-slot="table"
+        thead data-slot="table-header"
+          tr data-slot="table-row"
+            th data-slot="table-head"
+              button data-slot="button"
+                svg
+                  path
+                  path
+                  path
+                  path
+            th data-slot="table-head"
+              button data-slot="button"
+                svg
+                  path
+                  path
+                  path
+                  path
+            th data-slot="table-head"
+              button data-slot="button"
+                svg
+                  path
+                  path
+                  path
+                  path
+        tbody data-slot="table-body"
+          tr data-slot="table-row"
+            td data-slot="table-cell"
+---
+section
+  div data-slot="data-table-container"
+    div data-slot="table-container"
+      table data-slot="table"
+        thead data-slot="table-header"
+          tr data-slot="table-row"
+            th data-slot="table-head"
+              button data-slot="button"
+                svg
+                  path
+                  path
+                  path
+                  path
+            th data-slot="table-head"
+              button data-slot="button"
+                svg
+                  path
+                  path
+                  path
+                  path
+            th data-slot="table-head"
+              button data-slot="button"
+                svg
+                  path
+                  path
+                  path
+                  path
+        tbody data-slot="table-body"
+          tr data-slot="table-row"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+          tr data-slot="table-row"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+          tr data-slot="table-row"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+---
+section
+  div data-slot="data-table-container"
+    div data-slot="table-container"
+      table data-slot="table"
+        thead data-slot="table-header"
+          tr data-slot="table-row"
+            th data-slot="table-head"
+              button data-slot="button"
+                svg
+                  path
+                  path
+                  path
+                  path
+            th data-slot="table-head"
+              button data-slot="button"
+                svg
+                  path
+                  path
+                  path
+                  path
+            th data-slot="table-head"
+              button data-slot="button"
+                svg
+                  path
+                  path
+                  path
+                  path
+        tbody data-slot="table-body"
+          tr data-slot="table-row"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+          tr data-slot="table-row"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+          tr data-slot="table-row"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+          tr data-slot="table-row"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+          tr data-slot="table-row"
+            td data-slot="table-cell"
+            td data-slot="table-cell"
+            td data-slot="table-cell"

@@ -1,21 +1,21 @@
 section
   div
-    button data-slot="toggle" aria-pressed="true" aria-label="Toggle italic"
+    button data-slot="toggle" data-state="on" aria-pressed="true" aria-label="Toggle italic"
     span
 ---
 section
-  button data-slot="toggle" aria-pressed="false" aria-label="Toggle italic"
+  button data-slot="toggle" data-state="off" aria-pressed="false" aria-label="Toggle italic"
 ---
 section
   div
-    button data-slot="toggle" aria-pressed="false" aria-label="Toggle italic"
-    button data-slot="toggle" aria-pressed="true" aria-label="Toggle italic"
+    button data-slot="toggle" data-state="off" aria-pressed="false" aria-label="Toggle italic"
+    button data-slot="toggle" data-state="on" aria-pressed="true" aria-label="Toggle italic"
 ---
 section
-  button data-slot="toggle" aria-pressed="false" aria-label="Toggle italic"
+  button data-slot="toggle" data-state="off" aria-pressed="false" aria-label="Toggle italic"
 ---
 section
   div
-    button data-slot="toggle" aria-pressed="false" aria-label="Toggle italic"
-    button data-slot="toggle" aria-pressed="false" aria-label="Toggle italic"
-    button data-slot="toggle" aria-pressed="false" aria-label="Toggle italic"
+    button data-slot="toggle" data-state="off" aria-pressed="false" aria-label="Toggle italic"
+    button data-slot="toggle" data-state="off" aria-pressed="false" aria-label="Toggle italic"
+    button data-slot="toggle" data-state="off" aria-pressed="false" aria-label="Toggle italic"

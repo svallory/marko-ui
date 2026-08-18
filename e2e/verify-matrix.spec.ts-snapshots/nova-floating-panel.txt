@@ -1,0 +1,14 @@
+section
+  button data-slot="floating-panel-trigger" data-state="closed"
+---
+section
+  div
+    div
+      button data-slot="button"
+      span
+---
+section
+  button data-slot="floating-panel-trigger" data-state="closed"
+---
+section
+  button data-slot="floating-panel-trigger" data-state="closed"

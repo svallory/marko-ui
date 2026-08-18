@@ -1,14 +1,20 @@
 section
   div
-    button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+    div data-slot="sheet"
+      button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
     span
 ---
 section
-  button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+  div data-slot="sheet"
+    button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
 ---
 section
   div
-    button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
-    button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
-    button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
-    button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+    div data-slot="sheet"
+      button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+    div data-slot="sheet"
+      button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+    div data-slot="sheet"
+      button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+    div data-slot="sheet"
+      button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"

@@ -13,7 +13,7 @@ section
       div data-slot="item-content"
         div data-slot="item-title"
         p data-slot="item-description"
-    div data-slot="item-separator" role="separator" aria-orientation="horizontal"
+    div data-slot="item-separator" role="separator" aria-hidden="true"
     div data-slot="item"
       div data-slot="item-media"
         svg
@@ -21,7 +21,7 @@ section
       div data-slot="item-content"
         div data-slot="item-title"
         p data-slot="item-description"
-    div data-slot="item-separator" role="separator" aria-orientation="horizontal"
+    div data-slot="item-separator" role="separator" aria-hidden="true"
     div data-slot="item"
       div data-slot="item-media"
         svg

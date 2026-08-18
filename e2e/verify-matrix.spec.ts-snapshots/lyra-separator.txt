@@ -3,12 +3,12 @@ section
     div
       h4
       p
-    div data-slot="separator" role="separator" aria-orientation="horizontal"
+    div data-slot="separator" role="none"
     div
       div
-      div data-slot="separator" role="separator" aria-orientation="vertical"
+      div data-slot="separator" role="none"
       div
-      div data-slot="separator" role="separator" aria-orientation="vertical"
+      div data-slot="separator" role="none"
       div
 ---
 section
@@ -20,7 +20,7 @@ section
 section
   div
     div
-    div data-slot="separator" role="separator" aria-orientation="vertical"
+    div data-slot="separator" role="none"
     div
-    div data-slot="separator" role="separator" aria-orientation="vertical"
+    div data-slot="separator" role="none"
     div

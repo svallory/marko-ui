@@ -19,10 +19,6 @@ section
         button data-slot="pagination-link" aria-label="page 5"
       li data-slot="pagination-item"
         span data-slot="pagination-ellipsis" aria-hidden=""
-          svg
-            circle
-            circle
-            circle
           span
       li data-slot="pagination-item"
         button data-slot="pagination-link" aria-label="last page, page 20"
@@ -52,10 +48,6 @@ section
         button data-slot="pagination-link" aria-label="page 5"
       li data-slot="pagination-item"
         span data-slot="pagination-ellipsis" aria-hidden=""
-          svg
-            circle
-            circle
-            circle
           span
       li data-slot="pagination-item"
         button data-slot="pagination-link" aria-label="last page, page 10"
@@ -99,10 +91,6 @@ section
         button data-slot="pagination-link" aria-label="page 1"
       li data-slot="pagination-item"
         span data-slot="pagination-ellipsis" aria-hidden=""
-          svg
-            circle
-            circle
-            circle
           span
       li data-slot="pagination-item"
         button data-slot="pagination-link" aria-label="page 8"
@@ -116,10 +104,6 @@ section
         button data-slot="pagination-link" aria-label="page 12"
       li data-slot="pagination-item"
         span data-slot="pagination-ellipsis" aria-hidden=""
-          svg
-            circle
-            circle
-            circle
           span
       li data-slot="pagination-item"
         button data-slot="pagination-link" aria-label="last page, page 50"

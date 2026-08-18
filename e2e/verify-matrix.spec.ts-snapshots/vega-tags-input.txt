@@ -1,0 +1,128 @@
+section
+  div
+    div data-slot="tags-input-root"
+      div data-slot="tags-input-control"
+        span data-slot="tags-input-item"
+          span data-slot="tags-input-item-preview"
+            span data-slot="tags-input-item-text"
+            button data-slot="tags-input-item-delete-trigger" aria-disabled="false" aria-label="Delete tag react"
+              svg
+                path
+                path
+              span
+          input data-slot="tags-input-item-input" aria-label="Editing tag react. Press enter to save or escape to cancel."
+        span data-slot="tags-input-item"
+          span data-slot="tags-input-item-preview"
+            span data-slot="tags-input-item-text"
+            button data-slot="tags-input-item-delete-trigger" aria-disabled="false" aria-label="Delete tag marko"
+              svg
+                path
+                path
+              span
+          input data-slot="tags-input-item-input" aria-label="Editing tag marko. Press enter to save or escape to cancel."
+        input data-slot="tags-input-input"
+      input
+    span
+---
+section
+  div data-slot="tags-input-root"
+    div data-slot="tags-input-control"
+      span data-slot="tags-input-item"
+        span data-slot="tags-input-item-preview"
+          span data-slot="tags-input-item-text"
+          button data-slot="tags-input-item-delete-trigger" aria-disabled="false" aria-label="Delete tag shadcn"
+            svg
+              path
+              path
+            span
+        input data-slot="tags-input-item-input" aria-label="Editing tag shadcn. Press enter to save or escape to cancel."
+      span data-slot="tags-input-item"
+        span data-slot="tags-input-item-preview"
+          span data-slot="tags-input-item-text"
+          button data-slot="tags-input-item-delete-trigger" aria-disabled="false" aria-label="Delete tag marko"
+            svg
+              path
+              path
+            span
+        input data-slot="tags-input-item-input" aria-label="Editing tag marko. Press enter to save or escape to cancel."
+      span data-slot="tags-input-item"
+        span data-slot="tags-input-item-preview"
+          span data-slot="tags-input-item-text"
+          button data-slot="tags-input-item-delete-trigger" aria-disabled="false" aria-label="Delete tag zag-js"
+            svg
+              path
+              path
+            span
+        input data-slot="tags-input-item-input" aria-label="Editing tag zag-js. Press enter to save or escape to cancel."
+      input data-slot="tags-input-input"
+    input
+---
+section
+  div data-slot="tags-input-root"
+    div data-slot="tags-input-control"
+      span data-slot="tags-input-item"
+        span data-slot="tags-input-item-preview"
+          span data-slot="tags-input-item-text"
+          button data-slot="tags-input-item-delete-trigger" aria-disabled="true" aria-label="Delete tag locked"
+            svg
+              path
+              path
+            span
+        input data-slot="tags-input-item-input" aria-label="Editing tag locked. Press enter to save or escape to cancel."
+      span data-slot="tags-input-item"
+        span data-slot="tags-input-item-preview"
+          span data-slot="tags-input-item-text"
+          button data-slot="tags-input-item-delete-trigger" aria-disabled="true" aria-label="Delete tag read-only"
+            svg
+              path
+              path
+            span
+        input data-slot="tags-input-item-input" aria-label="Editing tag read-only. Press enter to save or escape to cancel."
+      input data-slot="tags-input-input"
+    input
+---
+section
+  div data-slot="tags-input-root"
+    label data-slot="tags-input-label"
+    div data-slot="tags-input-control"
+      span data-slot="tags-input-item"
+        span data-slot="tags-input-item-preview"
+          span data-slot="tags-input-item-text"
+          button data-slot="tags-input-item-delete-trigger" aria-disabled="false" aria-label="Delete tag typescript"
+            svg
+              path
+              path
+            span
+        input data-slot="tags-input-item-input" aria-label="Editing tag typescript. Press enter to save or escape to cancel."
+      input data-slot="tags-input-input"
+    input
+---
+section
+  div data-slot="tags-input-root"
+    div data-slot="tags-input-control"
+      span data-slot="tags-input-item"
+        span data-slot="tags-input-item-preview"
+          span data-slot="tags-input-item-text"
+          button data-slot="tags-input-item-delete-trigger" aria-disabled="false" aria-label="Delete tag one"
+            svg
+              path
+              path
+            span
+        input data-slot="tags-input-item-input" aria-label="Editing tag one. Press enter to save or escape to cancel."
+      span data-slot="tags-input-item"
+        span data-slot="tags-input-item-preview"
+          span data-slot="tags-input-item-text"
+          button data-slot="tags-input-item-delete-trigger" aria-disabled="false" aria-label="Delete tag two"
+            svg
+              path
+              path
+            span
+        input data-slot="tags-input-item-input" aria-label="Editing tag two. Press enter to save or escape to cancel."
+      input data-slot="tags-input-input"
+    input
+---
+section
+  div data-slot="tags-input-root"
+    div data-slot="tags-input-control"
+      input data-slot="tags-input-input"
+    input

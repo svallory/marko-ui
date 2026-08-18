@@ -4,9 +4,13 @@ section
       li data-slot="breadcrumb-item"
         a data-slot="breadcrumb-link"
       li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
       li data-slot="breadcrumb-item"
         a data-slot="breadcrumb-link"
       li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
       li data-slot="breadcrumb-item"
         span data-slot="breadcrumb-page" role="link" aria-disabled="true" aria-current="page"
 ---
@@ -16,6 +20,8 @@ section
       li data-slot="breadcrumb-item"
         a data-slot="breadcrumb-link"
       li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
       li data-slot="breadcrumb-item"
         span data-slot="breadcrumb-ellipsis" role="presentation" aria-hidden="true"
           svg
@@ -24,9 +30,13 @@ section
             circle
           span
       li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
       li data-slot="breadcrumb-item"
         a data-slot="breadcrumb-link"
       li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
       li data-slot="breadcrumb-item"
         span data-slot="breadcrumb-page" role="link" aria-disabled="true" aria-current="page"
 ---
@@ -36,9 +46,13 @@ section
       li data-slot="breadcrumb-item"
         a data-slot="breadcrumb-link"
       li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
       li data-slot="breadcrumb-item"
         a data-slot="breadcrumb-link"
       li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
       li data-slot="breadcrumb-item"
         span data-slot="breadcrumb-ellipsis" role="presentation" aria-hidden="true"
           svg
@@ -47,9 +61,13 @@ section
             circle
           span
       li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
       li data-slot="breadcrumb-item"
         a data-slot="breadcrumb-link"
       li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
       li data-slot="breadcrumb-item"
         span data-slot="breadcrumb-page" role="link" aria-disabled="true" aria-current="page"
 ---

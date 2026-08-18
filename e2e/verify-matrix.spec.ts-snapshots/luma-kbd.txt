@@ -12,10 +12,17 @@ section
       kbd data-slot="kbd"
       kbd data-slot="kbd"
       kbd data-slot="kbd"
+    kbd data-slot="kbd"
+    kbd data-slot="kbd"
+    kbd data-slot="kbd"
+    kbd data-slot="kbd"
     kbd data-slot="kbd-group"
       kbd data-slot="kbd"
       span
       kbd data-slot="kbd"
+    kbd data-slot="kbd"
+    span
+    kbd data-slot="kbd"
 ---
 section
   div
@@ -23,6 +30,8 @@ section
       kbd data-slot="kbd-group"
         kbd data-slot="kbd"
         kbd data-slot="kbd"
+      kbd data-slot="kbd"
+      kbd data-slot="kbd"
 ---
 section
   div

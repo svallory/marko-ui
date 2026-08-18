@@ -1,0 +1,51 @@
+section
+  div
+    div data-slot="color-picker"
+      label data-slot="color-picker-label"
+      div data-slot="color-picker-control" data-state="closed"
+        button data-slot="color-picker-trigger" data-state="closed" aria-label="select color. current color is rgba(59, 130, 246, 1)" aria-controls="<id>" aria-labelledby="<id>" aria-haspopup="dialog" aria-expanded="false"
+          div data-slot="color-picker-transparency-grid"
+          div data-slot="color-picker-swatch" data-state="checked"
+        span data-slot="color-picker-value-text"
+      input
+    span
+---
+section
+  div data-slot="color-picker"
+    label data-slot="color-picker-label"
+    div data-slot="color-picker-control" data-state="closed"
+      button data-slot="color-picker-trigger" data-state="closed" aria-label="select color. current color is rgba(139, 92, 246, 1)" aria-controls="<id>" aria-labelledby="<id>" aria-haspopup="dialog" aria-expanded="false"
+        div data-slot="color-picker-transparency-grid"
+        div data-slot="color-picker-swatch" data-state="checked"
+      span data-slot="color-picker-value-text"
+    input
+---
+section
+  div data-slot="color-picker"
+    label data-slot="color-picker-label"
+    div data-slot="color-picker-control" data-state="closed"
+      button data-slot="color-picker-trigger" data-state="closed" aria-label="select color. current color is rgba(100, 116, 139, 1)" aria-controls="<id>" aria-labelledby="<id>" aria-haspopup="dialog" aria-expanded="false"
+        div data-slot="color-picker-transparency-grid"
+        div data-slot="color-picker-swatch" data-state="checked"
+      span data-slot="color-picker-value-text"
+    input
+---
+section
+  div data-slot="color-picker"
+    label data-slot="color-picker-label"
+    div data-slot="color-picker-control" data-state="closed"
+      button data-slot="color-picker-trigger" data-state="closed" aria-label="select color. current color is hsla(200, 90%, 50%, 1)" aria-controls="<id>" aria-labelledby="<id>" aria-haspopup="dialog" aria-expanded="false"
+        div data-slot="color-picker-transparency-grid"
+        div data-slot="color-picker-swatch" data-state="checked"
+      span data-slot="color-picker-value-text"
+    input
+---
+section
+  div data-slot="color-picker"
+    label data-slot="color-picker-label"
+    div data-slot="color-picker-control" data-state="closed"
+      button data-slot="color-picker-trigger" data-state="closed" aria-label="select color. current color is rgba(34, 197, 94, 1)" aria-controls="<id>" aria-labelledby="<id>" aria-haspopup="dialog" aria-expanded="false"
+        div data-slot="color-picker-transparency-grid"
+        div data-slot="color-picker-swatch" data-state="checked"
+      span data-slot="color-picker-value-text"
+    input

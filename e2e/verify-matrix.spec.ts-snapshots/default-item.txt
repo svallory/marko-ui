@@ -2,7 +2,7 @@ section
   div data-slot="item"
     div data-slot="item-content"
       div data-slot="item-title"
-      div data-slot="item-description"
+      p data-slot="item-description"
 ---
 section
   div data-slot="item-group"
@@ -12,7 +12,7 @@ section
           circle
       div data-slot="item-content"
         div data-slot="item-title"
-        div data-slot="item-description"
+        p data-slot="item-description"
     div data-slot="item-separator" role="separator" aria-hidden="true"
     div data-slot="item"
       div data-slot="item-media"
@@ -20,7 +20,7 @@ section
           rect
       div data-slot="item-content"
         div data-slot="item-title"
-        div data-slot="item-description"
+        p data-slot="item-description"
     div data-slot="item-separator" role="separator" aria-hidden="true"
     div data-slot="item"
       div data-slot="item-media"
@@ -28,7 +28,7 @@ section
           path
       div data-slot="item-content"
         div data-slot="item-title"
-        div data-slot="item-description"
+        p data-slot="item-description"
 ---
 section
   div data-slot="item"
@@ -36,7 +36,7 @@ section
       div data-slot="item-title"
       span data-slot="badge"
     div data-slot="item-content"
-      div data-slot="item-description"
+      p data-slot="item-description"
     div data-slot="item-footer"
       span
       button data-slot="button"
@@ -48,7 +48,7 @@ section
         path
     div data-slot="item-content"
       div data-slot="item-title"
-      div data-slot="item-description"
+      p data-slot="item-description"
     div data-slot="item-actions"
       button data-slot="button"
 ---
@@ -58,7 +58,7 @@ section
       img
     div data-slot="item-content"
       div data-slot="item-title"
-      div data-slot="item-description"
+      p data-slot="item-description"
     div data-slot="item-actions"
       span data-slot="badge"
 ---
@@ -67,30 +67,30 @@ section
     div data-slot="item"
       div data-slot="item-content"
         div data-slot="item-title"
-        div data-slot="item-description"
+        p data-slot="item-description"
 ---
 section
   div
     div data-slot="item"
       div data-slot="item-content"
         div data-slot="item-title"
-        div data-slot="item-description"
+        p data-slot="item-description"
     div data-slot="item"
       div data-slot="item-content"
         div data-slot="item-title"
-        div data-slot="item-description"
+        p data-slot="item-description"
 ---
 section
   div
     div data-slot="item"
       div data-slot="item-content"
         div data-slot="item-title"
-        div data-slot="item-description"
+        p data-slot="item-description"
     div data-slot="item"
       div data-slot="item-content"
         div data-slot="item-title"
-        div data-slot="item-description"
+        p data-slot="item-description"
     div data-slot="item"
       div data-slot="item-content"
         div data-slot="item-title"
-        div data-slot="item-description"
+        p data-slot="item-description"

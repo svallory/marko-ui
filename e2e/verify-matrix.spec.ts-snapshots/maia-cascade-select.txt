@@ -1,0 +1,61 @@
+section
+  div data-slot="cascade-select" data-state="closed"
+    label data-slot="cascade-select-label"
+    div data-slot="cascade-select-control" data-state="closed"
+      button data-slot="cascade-select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="<id>"
+        span data-slot="cascade-select-value"
+        svg data-state="closed" aria-hidden="true"
+          path
+    input data-slot="cascade-select-hidden-input" aria-hidden="true" aria-labelledby="<id>"
+---
+section
+  div
+    div data-slot="cascade-select" data-state="closed"
+      label data-slot="cascade-select-label"
+      div data-slot="cascade-select-control" data-state="closed"
+        button data-slot="cascade-select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="<id>"
+          span data-slot="cascade-select-value"
+          svg data-state="closed" aria-hidden="true"
+            path
+      input data-slot="cascade-select-hidden-input" aria-hidden="true" aria-labelledby="<id>"
+    p
+---
+section
+  div data-slot="cascade-select" data-state="closed"
+    label data-slot="cascade-select-label"
+    div data-slot="cascade-select-control" data-state="closed"
+      button data-slot="cascade-select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="<id>"
+        span data-slot="cascade-select-value"
+        svg data-state="closed" aria-hidden="true"
+          path
+    input data-slot="cascade-select-hidden-input" aria-hidden="true" aria-labelledby="<id>"
+---
+section
+  div data-slot="cascade-select" data-state="closed"
+    label data-slot="cascade-select-label"
+    div data-slot="cascade-select-control" data-state="closed"
+      button data-slot="cascade-select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="<id>"
+        span data-slot="cascade-select-value"
+        svg data-state="closed" aria-hidden="true"
+          path
+    input data-slot="cascade-select-hidden-input" aria-hidden="true" aria-labelledby="<id>"
+---
+section
+  div data-slot="cascade-select" data-state="closed"
+    label data-slot="cascade-select-label"
+    div data-slot="cascade-select-control" data-state="closed"
+      button data-slot="cascade-select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="<id>"
+        span data-slot="cascade-select-value"
+        svg data-state="closed" aria-hidden="true"
+          path
+    input data-slot="cascade-select-hidden-input" aria-hidden="true" aria-labelledby="<id>"
+---
+section
+  div data-slot="cascade-select" data-state="closed"
+    label data-slot="cascade-select-label"
+    div data-slot="cascade-select-control" data-state="closed"
+      button data-slot="cascade-select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="<id>"
+        span data-slot="cascade-select-value"
+        svg data-state="closed" aria-hidden="true"
+          path
+    input data-slot="cascade-select-hidden-input" aria-hidden="true" aria-labelledby="<id>"

@@ -1,10 +1,13 @@
 section
   div
-    button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+    div data-slot="popover"
+      button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
     span
 ---
 section
-  button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+  div data-slot="popover"
+    button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
 ---
 section
-  button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+  div data-slot="popover"
+    button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"

@@ -1,6 +1,6 @@
 section
   div data-slot="field" role="group"
-    label data-slot="label"
+    label data-slot="field-label"
     input data-slot="input"
     p data-slot="field-description"
 ---
@@ -10,13 +10,13 @@ section
     p data-slot="field-description"
     div data-slot="field-group"
       div data-slot="field" role="group"
-        label data-slot="label"
+        label data-slot="field-label"
         input data-slot="input"
       div data-slot="field-separator"
         div data-slot="separator" role="none"
         span data-slot="field-separator-content"
       div data-slot="field" role="group"
-        label data-slot="label"
+        label data-slot="field-label"
         input data-slot="input"
 ---
 section
@@ -26,14 +26,14 @@ section
       p data-slot="field-description"
       div data-slot="field-group"
         div data-slot="field" role="group"
-          label data-slot="label"
+          label data-slot="field-label"
           input data-slot="input"
         div
           div data-slot="field" role="group"
-            label data-slot="label"
+            label data-slot="field-label"
             input data-slot="input"
           div data-slot="field" role="group"
-            label data-slot="label"
+            label data-slot="field-label"
             input data-slot="input"
 ---
 section
@@ -45,13 +45,13 @@ section
 ---
 section
   div data-slot="field" role="group"
-    label data-slot="label"
+    label data-slot="field-label"
     input data-slot="input" aria-invalid="true" aria-describedby="<id>"
     div data-slot="field-error" role="alert"
 ---
 section
   div data-slot="field" role="group"
-    label data-slot="label"
+    label data-slot="field-label"
     input data-slot="input" aria-invalid="true" aria-describedby="<id>"
     div data-slot="field-error" role="alert"
       ul
@@ -65,14 +65,14 @@ section
       p data-slot="field-description"
       div data-slot="field-group"
         div data-slot="field" role="group"
-          label data-slot="label"
+          label data-slot="field-label"
           input data-slot="input" aria-describedby="<id>"
           p data-slot="field-description"
         div data-slot="field" role="group"
-          label data-slot="label"
+          label data-slot="field-label"
           input data-slot="input"
         div data-slot="field" role="group"
-          label data-slot="label"
+          label data-slot="field-label"
           input data-slot="input" aria-describedby="<id>"
           p data-slot="field-description"
         button data-slot="button"

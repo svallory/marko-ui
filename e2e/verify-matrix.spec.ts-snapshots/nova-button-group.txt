@@ -24,7 +24,7 @@ section
 section
   div data-slot="button-group" role="group"
     button data-slot="button"
-    div data-slot="button-group-separator" role="separator" aria-orientation="vertical"
+    div data-slot="button-group-separator" role="separator"
     button data-slot="button"
 ---
 section
@@ -45,11 +45,11 @@ section
 section
   div data-slot="button-group" role="group"
     button data-slot="button"
-    div data-slot="button-group-separator" role="separator" aria-orientation="vertical"
+    div data-slot="button-group-separator" role="separator"
     button data-slot="button" aria-label="Add"
 ---
 section
   div data-slot="button-group" role="group"
-    div data-slot="button-group-text"
+    div
     button data-slot="button"
     button data-slot="button"

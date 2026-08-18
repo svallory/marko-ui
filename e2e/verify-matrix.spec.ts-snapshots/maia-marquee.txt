@@ -1,0 +1,251 @@
+section
+  div data-slot="marquee" role="region" data-state="idle" aria-roledescription="marquee" aria-live="off" aria-label="Marquee content"
+    div data-slot="marquee-edge-start"
+    div data-slot="marquee-edge-end"
+    div data-slot="marquee-viewport"
+      div data-slot="marquee-content"
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+      div data-slot="marquee-content" role="presentation" aria-hidden="true"
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+      div data-slot="marquee-content" role="presentation" aria-hidden="true"
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+      div data-slot="marquee-content" role="presentation" aria-hidden="true"
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+---
+section
+  div data-slot="marquee" role="region" data-state="idle" aria-roledescription="marquee" aria-live="off" aria-label="Marquee content"
+    div data-slot="marquee-edge-start"
+    div data-slot="marquee-edge-end"
+    div data-slot="marquee-viewport"
+      div data-slot="marquee-content"
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+      div data-slot="marquee-content" role="presentation" aria-hidden="true"
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+---
+section
+  p
+  button
+  div data-slot="marquee" role="region" data-state="idle" aria-roledescription="marquee" aria-live="off" aria-label="Marquee content"
+    div data-slot="marquee-edge-start"
+    div data-slot="marquee-edge-end"
+    div data-slot="marquee-viewport"
+      div data-slot="marquee-content"
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+      div data-slot="marquee-content" role="presentation" aria-hidden="true"
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+---
+section
+  div data-slot="marquee" role="region" data-state="idle" aria-roledescription="marquee" aria-live="off" aria-label="Marquee content"
+    div data-slot="marquee-edge-start"
+    div data-slot="marquee-edge-end"
+    div data-slot="marquee-viewport"
+      div data-slot="marquee-content"
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+      div data-slot="marquee-content" role="presentation" aria-hidden="true"
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+---
+section
+  div data-slot="marquee" role="region" data-state="idle" aria-roledescription="marquee" aria-live="off" aria-label="Marquee content"
+    div data-slot="marquee-edge-start"
+    div data-slot="marquee-edge-end"
+    div data-slot="marquee-viewport"
+      div data-slot="marquee-content"
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+      div data-slot="marquee-content" role="presentation" aria-hidden="true"
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+---
+section
+  div data-slot="marquee" role="region" data-state="idle" aria-roledescription="marquee" aria-live="off" aria-label="Marquee content"
+    div data-slot="marquee-edge-start"
+    div data-slot="marquee-edge-end"
+    div data-slot="marquee-viewport"
+      div data-slot="marquee-content"
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+      div data-slot="marquee-content" role="presentation" aria-hidden="true"
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+---
+section
+  div data-slot="marquee" role="region" data-state="idle" aria-roledescription="marquee" aria-live="off" aria-label="Marquee content"
+    div data-slot="marquee-edge-start"
+    div data-slot="marquee-edge-end"
+    div data-slot="marquee-viewport"
+      div data-slot="marquee-content"
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+      div data-slot="marquee-content" role="presentation" aria-hidden="true"
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span
+        div data-slot="marquee-item"
+          span

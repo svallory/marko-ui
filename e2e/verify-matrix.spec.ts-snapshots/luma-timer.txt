@@ -1,0 +1,68 @@
+section
+  div
+    div data-slot="timer"
+      div data-slot="timer-area" role="timer" aria-atomic="true"
+        div data-slot="timer-item"
+          span data-slot="timer-item-value"
+          span data-slot="timer-item-label"
+        span data-slot="timer-separator" aria-hidden="true"
+        div data-slot="timer-item"
+          span data-slot="timer-item-value"
+          span data-slot="timer-item-label"
+      div data-slot="timer-control"
+        button data-slot="timer-action"
+        button data-slot="timer-action"
+    div
+      button
+      button
+      button
+---
+section
+  div data-slot="timer"
+    div data-slot="timer-area" role="timer" aria-atomic="true"
+      div data-slot="timer-item"
+        span data-slot="timer-item-value"
+        span data-slot="timer-item-label"
+      span data-slot="timer-separator" aria-hidden="true"
+      div data-slot="timer-item"
+        span data-slot="timer-item-value"
+        span data-slot="timer-item-label"
+    div data-slot="timer-control"
+      button data-slot="timer-action"
+      button data-slot="timer-action"
+---
+section
+  div data-slot="timer"
+    div data-slot="timer-area" role="timer" aria-atomic="true"
+      div data-slot="timer-item"
+        span data-slot="timer-item-value"
+        span data-slot="timer-item-label"
+      span data-slot="timer-separator" aria-hidden="true"
+      div data-slot="timer-item"
+        span data-slot="timer-item-value"
+        span data-slot="timer-item-label"
+    div data-slot="timer-control"
+      button data-slot="timer-action"
+      button data-slot="timer-action"
+---
+section
+  div data-slot="timer"
+    div data-slot="timer-area" role="timer" aria-atomic="true"
+      div data-slot="timer-item"
+        span data-slot="timer-item-value"
+        span data-slot="timer-item-label"
+      span data-slot="timer-separator" aria-hidden="true"
+      div data-slot="timer-item"
+        span data-slot="timer-item-value"
+        span data-slot="timer-item-label"
+      span data-slot="timer-separator" aria-hidden="true"
+      div data-slot="timer-item"
+        span data-slot="timer-item-value"
+        span data-slot="timer-item-label"
+      span data-slot="timer-separator" aria-hidden="true"
+      div data-slot="timer-item"
+        span data-slot="timer-item-value"
+        span data-slot="timer-item-label"
+    div data-slot="timer-control"
+      button data-slot="timer-action"
+      button data-slot="timer-action"

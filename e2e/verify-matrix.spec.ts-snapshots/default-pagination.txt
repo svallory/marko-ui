@@ -1,76 +1,78 @@
 section
   p
-  nav data-slot="pagination" aria-label="pagination"
-    ul
-      li
-        button data-slot="pagination-prev" aria-label="previous page"
+  nav data-slot="pagination" role="navigation" aria-label="pagination"
+    ul data-slot="pagination-content"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="Go to previous page"
           svg
             path
           span
-      li
-        button data-slot="pagination-item" aria-label="page 1"
-      li
-        button data-slot="pagination-item" aria-label="page 2"
-      li
-        button data-slot="pagination-item" aria-current="page" aria-label="page 3"
-      li
-        button data-slot="pagination-item" aria-label="page 4"
-      li
-        button data-slot="pagination-item" aria-label="page 5"
-      li
-        span data-slot="pagination-ellipsis"
-      li
-        button data-slot="pagination-item" aria-label="last page, page 20"
-      li
-        button data-slot="pagination-next" aria-label="next page"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 1"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 2"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-current="page" aria-label="page 3"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 4"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 5"
+      li data-slot="pagination-item"
+        span data-slot="pagination-ellipsis" aria-hidden=""
           span
-          svg
-            path
----
-section
-  nav data-slot="pagination" aria-label="pagination"
-    ul
-      li
-        button data-slot="pagination-prev" aria-label="previous page"
-          svg
-            path
-          span
-      li
-        button data-slot="pagination-item" aria-current="page" aria-label="page 1"
-      li
-        button data-slot="pagination-item" aria-label="page 2"
-      li
-        button data-slot="pagination-item" aria-label="page 3"
-      li
-        button data-slot="pagination-item" aria-label="page 4"
-      li
-        button data-slot="pagination-item" aria-label="page 5"
-      li
-        span data-slot="pagination-ellipsis"
-      li
-        button data-slot="pagination-item" aria-label="last page, page 10"
-      li
-        button data-slot="pagination-next" aria-label="next page"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="last page, page 20"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="Go to next page"
           span
           svg
             path
 ---
 section
-  nav data-slot="pagination" aria-label="pagination"
-    ul
-      li
-        button data-slot="pagination-prev" aria-label="previous page"
+  nav data-slot="pagination" role="navigation" aria-label="pagination"
+    ul data-slot="pagination-content"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="Go to previous page"
           svg
             path
           span
-      li
-        button data-slot="pagination-item" aria-label="page 1"
-      li
-        button data-slot="pagination-item" aria-current="page" aria-label="page 2"
-      li
-        button data-slot="pagination-item" aria-label="last page, page 3"
-      li
-        button data-slot="pagination-next" aria-label="next page"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-current="page" aria-label="page 1"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 2"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 3"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 4"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 5"
+      li data-slot="pagination-item"
+        span data-slot="pagination-ellipsis" aria-hidden=""
+          span
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="last page, page 10"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="Go to next page"
+          span
+          svg
+            path
+---
+section
+  nav data-slot="pagination" role="navigation" aria-label="pagination"
+    ul data-slot="pagination-content"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="Go to previous page"
+          svg
+            path
+          span
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 1"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-current="page" aria-label="page 2"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="last page, page 3"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="Go to next page"
           span
           svg
             path
@@ -78,33 +80,35 @@ section
 section
   p
     code
-  nav data-slot="pagination" aria-label="pagination"
-    ul
-      li
-        button data-slot="pagination-prev" aria-label="previous page"
+  nav data-slot="pagination" role="navigation" aria-label="pagination"
+    ul data-slot="pagination-content"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="Go to previous page"
           svg
             path
           span
-      li
-        button data-slot="pagination-item" aria-label="page 1"
-      li
-        span data-slot="pagination-ellipsis"
-      li
-        button data-slot="pagination-item" aria-label="page 8"
-      li
-        button data-slot="pagination-item" aria-label="page 9"
-      li
-        button data-slot="pagination-item" aria-current="page" aria-label="page 10"
-      li
-        button data-slot="pagination-item" aria-label="page 11"
-      li
-        button data-slot="pagination-item" aria-label="page 12"
-      li
-        span data-slot="pagination-ellipsis"
-      li
-        button data-slot="pagination-item" aria-label="last page, page 50"
-      li
-        button data-slot="pagination-next" aria-label="next page"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 1"
+      li data-slot="pagination-item"
+        span data-slot="pagination-ellipsis" aria-hidden=""
+          span
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 8"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 9"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-current="page" aria-label="page 10"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 11"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 12"
+      li data-slot="pagination-item"
+        span data-slot="pagination-ellipsis" aria-hidden=""
+          span
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="last page, page 50"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="Go to next page"
           span
           svg
             path

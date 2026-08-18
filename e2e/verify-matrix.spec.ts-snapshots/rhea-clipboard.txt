@@ -1,0 +1,48 @@
+section
+  p
+  div data-slot="clipboard-root"
+    label data-slot="clipboard-label"
+    div data-slot="clipboard-control"
+      input data-slot="clipboard-input"
+      button data-slot="clipboard-trigger" aria-label="Copy to clipboard"
+        span data-slot="clipboard-indicator"
+          svg
+            rect
+            path
+        span
+---
+section
+  div data-slot="clipboard-root"
+    label data-slot="clipboard-label"
+    div data-slot="clipboard-control"
+      input data-slot="clipboard-input"
+      button data-slot="clipboard-trigger" aria-label="Copy to clipboard"
+        span data-slot="clipboard-indicator"
+          svg
+            rect
+            path
+        span
+---
+section
+  div data-slot="clipboard-root"
+    label data-slot="clipboard-label"
+    div data-slot="clipboard-control"
+      input data-slot="clipboard-input"
+      button data-slot="clipboard-trigger" aria-label="Copy to clipboard"
+        span data-slot="clipboard-indicator"
+          svg
+            rect
+            path
+        span
+---
+section
+  div data-slot="clipboard-root"
+    label data-slot="clipboard-label"
+    div data-slot="clipboard-control"
+      input data-slot="clipboard-input"
+      button data-slot="clipboard-trigger" aria-label="Copy to clipboard"
+        span data-slot="clipboard-indicator"
+          svg
+            rect
+            path
+        span

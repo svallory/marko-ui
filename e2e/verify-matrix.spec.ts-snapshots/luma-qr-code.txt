@@ -1,0 +1,42 @@
+section
+  div
+    div data-slot="qr-code"
+      svg data-slot="qr-code-frame"
+        path data-slot="qr-code-pattern"
+    div
+      button
+      button
+    p
+---
+section
+  div data-slot="qr-code"
+    svg data-slot="qr-code-frame"
+      path data-slot="qr-code-pattern"
+---
+section
+  div
+    div data-slot="qr-code"
+      svg data-slot="qr-code-frame"
+        path data-slot="qr-code-pattern"
+      div data-slot="qr-code-overlay"
+        div
+    button data-slot="button"
+---
+section
+  div data-slot="qr-code"
+    svg data-slot="qr-code-frame"
+      path data-slot="qr-code-pattern"
+    div data-slot="qr-code-overlay"
+      div
+---
+section
+  div
+    div data-slot="qr-code"
+      svg data-slot="qr-code-frame"
+        path data-slot="qr-code-pattern"
+    div data-slot="qr-code"
+      svg data-slot="qr-code-frame"
+        path data-slot="qr-code-pattern"
+    div data-slot="qr-code"
+      svg data-slot="qr-code-frame"
+        path data-slot="qr-code-pattern"

@@ -1,0 +1,82 @@
+section
+  div
+    div data-slot="date-input"
+      div data-slot="date-input-control"
+        label
+        div data-slot="date-input-segment-group" role="group" aria-labelledby="<id>"
+          span data-slot="date-input-segment" role="spinbutton" aria-label="Month" aria-valuenow="8" aria-valuetext="8" aria-valuemin="1" aria-valuemax="12"
+          span data-slot="date-input-segment" aria-hidden="true"
+          span data-slot="date-input-segment" role="spinbutton" aria-label="Day" aria-valuenow="10" aria-valuetext="10" aria-valuemin="1" aria-valuemax="31"
+          span data-slot="date-input-segment" aria-hidden="true"
+          span data-slot="date-input-segment" role="spinbutton" aria-label="Year" aria-valuenow="2026" aria-valuetext="2026" aria-valuemin="1" aria-valuemax="9999"
+        input
+    span
+---
+section
+  div data-slot="date-input"
+    div data-slot="date-input-control"
+      label
+      div data-slot="date-input-segment-group" role="group" aria-labelledby="<id>"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Month" aria-valuetext="mm" aria-valuemin="1" aria-valuemax="12"
+        span data-slot="date-input-segment" aria-hidden="true"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Day" aria-valuetext="dd" aria-valuemin="1" aria-valuemax="31"
+        span data-slot="date-input-segment" aria-hidden="true"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Year" aria-valuetext="yyyy" aria-valuemin="1" aria-valuemax="9999"
+      input
+---
+section
+  div data-slot="date-input"
+    div data-slot="date-input-control"
+      label
+      div data-slot="date-input-segment-group" role="group" aria-labelledby="<id>"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Month" aria-valuenow="8" aria-valuetext="8" aria-valuemin="1" aria-valuemax="12" aria-disabled="true"
+        span data-slot="date-input-segment" aria-hidden="true"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Day" aria-valuenow="10" aria-valuetext="10" aria-valuemin="1" aria-valuemax="31" aria-disabled="true"
+        span data-slot="date-input-segment" aria-hidden="true"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Year" aria-valuenow="2026" aria-valuetext="2026" aria-valuemin="1" aria-valuemax="9999" aria-disabled="true"
+      input
+---
+section
+  div data-slot="date-input"
+    div data-slot="date-input-control"
+      label
+      div data-slot="date-input-segment-group" role="group" aria-labelledby="<id>"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Day" aria-valuenow="10" aria-valuetext="10" aria-valuemin="1" aria-valuemax="31"
+        span data-slot="date-input-segment" aria-hidden="true"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Month" aria-valuenow="8" aria-valuetext="08" aria-valuemin="1" aria-valuemax="12"
+        span data-slot="date-input-segment" aria-hidden="true"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Year" aria-valuenow="2026" aria-valuetext="2026" aria-valuemin="1" aria-valuemax="9999"
+      input
+---
+section
+  div data-slot="date-input"
+    div data-slot="date-input-control"
+      label
+      div data-slot="date-input-segment-group" role="group" aria-labelledby="<id>"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Month" aria-valuetext="mm" aria-valuemin="1" aria-valuemax="12"
+        span data-slot="date-input-segment" aria-hidden="true"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Day" aria-valuetext="dd" aria-valuemin="1" aria-valuemax="31"
+        span data-slot="date-input-segment" aria-hidden="true"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Year" aria-valuetext="yyyy" aria-valuemin="1" aria-valuemax="9999"
+      input
+      span data-slot="date-input-range-separator"
+      label
+      div data-slot="date-input-segment-group" role="group" aria-labelledby="<id>"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Month" aria-valuetext="mm" aria-valuemin="1" aria-valuemax="12"
+        span data-slot="date-input-segment" aria-hidden="true"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Day" aria-valuetext="dd" aria-valuemin="1" aria-valuemax="31"
+        span data-slot="date-input-segment" aria-hidden="true"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Year" aria-valuetext="yyyy" aria-valuemin="1" aria-valuemax="9999"
+      input
+---
+section
+  div data-slot="date-input"
+    div data-slot="date-input-control"
+      label
+      div data-slot="date-input-segment-group" role="group" aria-labelledby="<id>"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Month" aria-valuenow="8" aria-valuetext="8" aria-valuemin="1" aria-valuemax="12"
+        span data-slot="date-input-segment" aria-hidden="true"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Day" aria-valuenow="10" aria-valuetext="10" aria-valuemin="1" aria-valuemax="31"
+        span data-slot="date-input-segment" aria-hidden="true"
+        span data-slot="date-input-segment" role="spinbutton" aria-label="Year" aria-valuenow="2026" aria-valuetext="2026" aria-valuemin="1" aria-valuemax="9999"
+      input

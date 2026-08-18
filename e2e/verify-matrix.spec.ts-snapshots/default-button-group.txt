@@ -50,6 +50,6 @@ section
 ---
 section
   div data-slot="button-group" role="group"
-    div data-slot="button-group-text"
+    div
     button data-slot="button"
     button data-slot="button"
