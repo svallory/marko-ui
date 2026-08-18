@@ -1,4 +1,4 @@
-// CLI — documents the marko-ui CLI (@marko-ui/cli, packages/cli). The
+// CLI — documents the marko-ui CLI (marko-ui, packages/marko-ui). The
 // command reference below is GENERATED from the CLI's own `manifest`
 // command via apps/docs/scripts/build-cli-manifest.ts (src/lib/cli-manifest.ts
 // is the committed output), so it cannot drift from the real surface.
@@ -20,9 +20,9 @@ static const TOC = [
   { id: "urls", label: "Registry URLs" },
 ];
 
-static const QUICKSTART = `bunx @marko-ui/cli init          # components.json + base theme
-bunx @marko-ui/cli add button    # install a component as source
-bunx @marko-ui/cli doctor        # health checks (exit 3 on failure)`;
+static const QUICKSTART = `bunx marko-ui init          # components.json + base theme
+bunx marko-ui add button    # install a component as source
+bunx marko-ui doctor        # health checks (exit 3 on failure)`;
 
 static const SHADCN_INIT = `bunx shadcn@latest init https://marko-ui.saulo.tech/r/style.json`;
 
@@ -56,7 +56,7 @@ static function optionLines(cmd: CliCommand) {
   <h2 id="overview">Overview</h2>
 
   <p>
-    <code>@marko-ui/cli</code> installs components as readable Marko source into your project —
+    <code>marko-ui</code> installs components as readable Marko source into your project —
     there is no runtime component package. It is a fork of the MIT-licensed shadcn CLI's registry
     mechanics, adapted for Marko projects (framework detection, Tailwind v4 CSS-first, no React
     codemods) and an agent-first output surface.

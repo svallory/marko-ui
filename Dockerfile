@@ -17,7 +17,7 @@ COPY package.json bun.lock ./
 COPY apps/docs/package.json apps/docs/package.json
 COPY packages/registry/package.json packages/registry/package.json
 COPY packages/core/package.json packages/core/package.json
-COPY packages/cli/package.json packages/cli/package.json
+COPY packages/marko-ui/package.json packages/marko-ui/package.json
 RUN bun install --frozen-lockfile
 
 # ---- build: registry JSON + docs production bundle --------------------------
@@ -46,7 +46,7 @@ COPY package.json bun.lock ./
 COPY apps/docs/package.json apps/docs/package.json
 COPY packages/registry/package.json packages/registry/package.json
 COPY packages/core/package.json packages/core/package.json
-COPY packages/cli/package.json packages/cli/package.json
+COPY packages/marko-ui/package.json packages/marko-ui/package.json
 RUN bun install --frozen-lockfile --production
 
 COPY --from=build /app/apps/docs/dist ./apps/docs/dist

@@ -38,9 +38,9 @@ const BLOCKS_DIR = join(DEFAULT_DIR, "blocks");
 const STYLES_GEN_DIR = join(ROOT, "styles-gen");
 const OUT_DIR = join(ROOT, "../../apps/docs/public/r");
 
-// The 8 shadcn-derived visual styles (packages/cli/src/registry/constants.ts
-// VISUAL_STYLES). Hardcoded here too — registry and cli are separate
-// packages and neither depends on the other.
+// The 8 shadcn-derived visual styles (packages/marko-ui/src/registry/constants.ts
+// VISUAL_STYLES). Hardcoded here too — registry and marko-ui (the CLI) are
+// separate packages and neither depends on the other.
 const VISUAL_STYLES = ["rhea", "nova", "vega", "lyra", "maia", "mira", "luma", "sera"];
 
 const ITEM_SCHEMA = "https://ui.shadcn.com/schema/registry-item.json";

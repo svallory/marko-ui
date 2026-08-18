@@ -1,13 +1,13 @@
-# @marko-ui/cli
+# marko-ui
 
 The marko-ui CLI — install and manage Marko UI components from
 shadcn-format registries.
 
 ```bash
-bunx @marko-ui/cli init          # scaffold components.json + base theme
-bunx @marko-ui/cli add button    # install a component (source, not a package)
-bunx @marko-ui/cli doctor        # health checks (exit 3 on failure — CI-friendly)
-bunx @marko-ui/cli manifest      # machine-readable description of the whole CLI
+bunx marko-ui init          # scaffold components.json + base theme
+bunx marko-ui add button    # install a component (source, not a package)
+bunx marko-ui doctor        # health checks (exit 3 on failure — CI-friendly)
+bunx marko-ui manifest      # machine-readable description of the whole CLI
 ```
 
 ## Commands

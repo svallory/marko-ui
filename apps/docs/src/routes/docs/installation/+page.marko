@@ -20,15 +20,15 @@ static const CREATE_APP = `bun create marko my-app
 cd my-app
 bun install`;
 
-static const INIT_COPY = `bunx @marko-ui/cli init --distribution copy --visual-style vega`;
+static const INIT_COPY = `bunx marko-ui init --distribution copy --visual-style vega`;
 
-static const INIT_IMPORT = `bunx @marko-ui/cli init --distribution import --visual-style vega`;
+static const INIT_IMPORT = `bunx marko-ui init --distribution import --visual-style vega`;
 
-static const INIT_INTERACTIVE = `bunx @marko-ui/cli init`;
+static const INIT_INTERACTIVE = `bunx marko-ui init`;
 
-static const ADD_COMMAND = `bunx @marko-ui/cli add button`;
+static const ADD_COMMAND = `bunx marko-ui add button`;
 
-static const ADD_MANY = `bunx @marko-ui/cli add dialog select toast`;
+static const ADD_MANY = `bunx marko-ui add dialog select toast`;
 
 static const USE_BUTTON_COPY = `import Button from "../components/ui/button/button.marko";
 
@@ -52,7 +52,7 @@ static const IMPORT_CSS_BROKEN = `/* Missing layer(components) — silently wins
    working. */
 @import "@marko-ui/core/styles/style-vega.css";`;
 
-static const EJECT_COMMAND = `bunx @marko-ui/cli eject`;
+static const EJECT_COMMAND = `bunx marko-ui eject`;
 
 static const MU_OVERRIDE_CSS = `.style-vega .mu-button {
   @apply rounded-none;
@@ -90,11 +90,10 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
   </p>
 
   <p>
-    <strong>Note:</strong> <code>@marko-ui/core</code> is not yet published to npm, so the import
-    path is not installable today. The steps below document the real, current CLI behavior — the
-    import path will work exactly as shown once the package ships. The copy path is installable
-    now, using the <code>@marko-ui/cli</code> package (published; the CLI's own binary is named
-    <code>marko-ui</code>).
+    <strong>Note:</strong> neither <code>@marko-ui/core</code> nor the <code>marko-ui</code> CLI is
+    published to npm yet, so nothing below is installable today via <code>bunx</code>. The steps
+    document the real, current CLI behavior — both distribution paths will work exactly as shown
+    once the packages ship.
   </p>
 
   <h2 id="create-project">Create a project</h2>

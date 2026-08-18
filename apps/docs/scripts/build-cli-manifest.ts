@@ -16,12 +16,12 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "../../..");
-const CLI_DIR = join(ROOT, "packages/cli");
+const CLI_DIR = join(ROOT, "packages/marko-ui");
 const CLI_BIN = join(CLI_DIR, "dist/index.js");
 const OUT_FILE = join(ROOT, "apps/docs/src/lib/cli-manifest.ts");
 
 if (!existsSync(CLI_BIN)) {
-  console.log("cli-manifest: building @marko-ui/cli first…");
+  console.log("cli-manifest: building marko-ui first…");
   execFileSync("bun", ["run", "build"], { cwd: CLI_DIR, stdio: "inherit" });
 }
 
