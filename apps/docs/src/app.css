@@ -12,6 +12,8 @@
  *   - marko-accordion.css patch (Radix var -> Marko var, see that file)
  *   - .theme-marko brand palette (sanctioned extra theme)
  *   - scrollbar-none alias utility (our call sites use it)
+ *   - style-<name> precompiled layers imported below (shadcn's site has no
+ *     equivalent — this is our /create style-preview feature)
  */
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -30,6 +32,30 @@
 /* DEVIATION: measured-height accordion animation for accordion.marko. */
 @import "../../../packages/registry/default/styles/marko-accordion.css";
 @import "./tags/typeset/typeset.css";
+/* DEVIATION: the 8 precompiled `@marko-ui/core` style layers (see
+   packages/registry/scripts/build-style-css.ts), one per shadcn style. Each
+   file is Tailwind's `@apply` output for `styles-src/style-<name>.css`
+   pre-resolved against the registry's consumer theme via `@reference` — it
+   still contains `var(--...)` references, so it tracks whatever theme is
+   active on the page, but it does NOT re-emit Tailwind's own theme/preflight/
+   utilities (that would double them up with the ones already pulled in by
+   `@import "tailwindcss"` above).
+   `layer(components)` is REQUIRED, not stylistic: imported unlayered, these
+   rules would land outside any cascade layer, and unlayered CSS beats every
+   layered declaration regardless of specificity — a consumer's own
+   `rounded-none` utility (which lives in Tailwind's `@layer utilities`) would
+   silently lose to `.style-vega .mu-button`'s radius forever. See
+   notes/plans/spike-3a-verdict.md for the measured proof. This makes the
+   `/create` page's `style-${style}` body class (design-system.marko) actually
+   style real components instead of a no-op. */
+@import "../../../packages/registry/styles-gen/css/style-vega.css" layer(components);
+@import "../../../packages/registry/styles-gen/css/style-nova.css" layer(components);
+@import "../../../packages/registry/styles-gen/css/style-lyra.css" layer(components);
+@import "../../../packages/registry/styles-gen/css/style-maia.css" layer(components);
+@import "../../../packages/registry/styles-gen/css/style-mira.css" layer(components);
+@import "../../../packages/registry/styles-gen/css/style-luma.css" layer(components);
+@import "../../../packages/registry/styles-gen/css/style-sera.css" layer(components);
+@import "../../../packages/registry/styles-gen/css/style-rhea.css" layer(components);
 
 /* DEVIATION: scan our Marko sources instead of shadcn's styles/base-* trees. */
 @source "../../**/*.marko";
@@ -230,7 +256,7 @@
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
   }
-  .cn-font-heading {
+  .mu-font-heading {
     @apply font-heading;
   }
 
