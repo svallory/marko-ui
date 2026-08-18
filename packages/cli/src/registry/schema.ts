@@ -50,6 +50,21 @@ export const rawConfigSchema = z
       .default("default")
       .optional(),
     menuAccent: z.enum(["subtle", "bold"]).default("subtle").optional(),
+    // Which distribution path this project uses (see
+    // notes/plans/dual-distribution-plan.md): "copy" (default) writes flat
+    // generated source per component via `add`; "import" depends on
+    // `@marko-ui/core` (mu-* hook-class components + precompiled style
+    // layers) and scaffolds a CSS entry instead of copying files. Additive
+    // field — absent/older configs are treated as "copy".
+    distribution: z.enum(["copy", "import"]).optional(),
+    // Which of the 8 shape/spacing/radius styles (VISUAL_STYLES in
+    // registry/constants.ts) this project uses. For "copy" it selects which
+    // per-style registry tree `add` fetches from
+    // (`<REGISTRY_URL>/<visualStyle>/<name>.json`, see build-registry.ts);
+    // for "import" it's the `style-<visualStyle>` class applied to activate
+    // @marko-ui/core's precompiled layer. Additive field — absent/older
+    // configs fall back to DEFAULT_VISUAL_STYLE.
+    visualStyle: z.string().optional(),
     aliases: z.object({
       components: z.string(),
       utils: z.string(),

@@ -1,5 +1,5 @@
 import path from "path"
-import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
+import { BUILTIN_REGISTRIES, DEFAULT_VISUAL_STYLE } from "@/src/registry/constants"
 import {
   configSchema,
   rawConfigSchema,
@@ -38,6 +38,19 @@ export async function getConfig(cwd: string) {
   // Set default icon library if not provided.
   if (!config.iconLibrary) {
     config.iconLibrary = "lucide"
+  }
+
+  // Older configs (and anything written before dual distribution) have no
+  // distribution field — treat them as "copy", the pre-existing behavior.
+  if (!config.distribution) {
+    config.distribution = "copy"
+  }
+
+  // Older configs (and anything written before per-style registry items
+  // existed) have no visualStyle field — fall back to the default style
+  // rather than leaving `add` unable to pick a per-style registry tree.
+  if (!config.visualStyle) {
+    config.visualStyle = DEFAULT_VISUAL_STYLE
   }
 
   return await resolveConfigPaths(cwd, config)

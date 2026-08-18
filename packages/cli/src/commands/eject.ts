@@ -1,6 +1,9 @@
 import { existsSync, promises as fs } from "fs"
 import path from "path"
+import { getShadcnRegistryIndex } from "@/src/registry/api"
+import { clearRegistryContext } from "@/src/registry/context"
 import { confirm } from "@/src/utils/clack"
+import { addComponents } from "@/src/utils/add-components"
 import { getConfig } from "@/src/utils/get-config"
 import { handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
@@ -17,15 +20,25 @@ const ejectOptionsSchema = z.object({
 })
 
 /**
- * Moves from package mode (@marko-ui/<style> installed from npm) to
- * source-copy mode: copies the package's component source into the
- * project's configured directories and regenerates the project taglib so
- * every `<Badge>`/`<badge>` in application code keeps working unchanged.
+ * Switches a project from the `import` distribution to `copy` (see
+ * notes/plans/dual-distribution-plan.md §4c). This is a first-class
+ * supported transition, not an escape hatch: `import` consumers depend on
+ * `@marko-ui/core` (mu-* hook-class components + precompiled style CSS
+ * layers) and never have local component files; `eject` gives them real,
+ * editable source in their own project — "the code is mine now" — using
+ * the exact same fetch-and-write path `marko-ui add` uses, so the result is
+ * indistinguishable from having run `add` for every installed component.
+ *
+ * What it does NOT do: touch @marko-ui/core's node_modules install (the
+ * user removes the npm dependency once satisfied) or delete the CSS block
+ * `init --distribution import` wrote (styles still work identically until
+ * the user removes it, since the copy path's generated components style
+ * themselves independently — see the printed follow-up steps).
  */
 export const eject = new Command()
   .name("eject")
   .description(
-    "copy the installed @marko-ui style package's components into your project"
+    "switch this project from the import distribution (@marko-ui/core) to copy: fetch and write local component source for everything currently installed"
   )
   .option(
     "-c, --cwd <cwd>",
@@ -52,12 +65,29 @@ export const eject = new Command()
         process.exit(1)
       }
 
-      const stylePackage = await findInstalledStylePackage(options.cwd)
-      if (!stylePackage) {
+      if (config.distribution !== "import") {
         logger.error(
-          `No installed ${highlighter.info(
-            "@marko-ui/<style>"
-          )} package found in node_modules. Nothing to eject.`
+          `This project is already on the ${highlighter.info(
+            "copy"
+          )} distribution (or predates the ${highlighter.info(
+            "distribution"
+          )} field, which defaults to ${highlighter.info(
+            "copy"
+          )}). Nothing to eject — ${highlighter.info(
+            "eject"
+          )} only switches ${highlighter.info("import")} projects to ${highlighter.info(
+            "copy"
+          )}.`
+        )
+        process.exit(1)
+      }
+
+      const installedComponents = await findImportedComponents(options.cwd)
+      if (!installedComponents.length) {
+        logger.error(
+          `No installed components found under ${highlighter.info(
+            "node_modules/@marko-ui/core/ui"
+          )}. Is ${highlighter.info("@marko-ui/core")} installed?`
         )
         process.exit(1)
       }
@@ -65,48 +95,62 @@ export const eject = new Command()
       if (!options.yes) {
         const proceed = await confirm(
           `Eject ${highlighter.info(
-            stylePackage.name
-          )} into ${highlighter.info(
+            String(installedComponents.length)
+          )} component(s) into ${highlighter.info(
             path.relative(options.cwd, config.resolvedPaths.ui) || "."
-          )}? Existing files with the same names will be overwritten.`
+          )}? This fetches and writes local source for each, overwriting any existing files with the same names.`
         )
         if (!proceed) {
           process.exit(0)
         }
       }
 
-      const ejectSpinner = spinner(`Ejecting ${stylePackage.name}.`, {
-        silent: options.silent,
-      }).start()
+      const ejectSpinner = spinner(
+        `Ejecting ${installedComponents.length} component(s).`,
+        { silent: options.silent }
+      ).start()
 
-      // Components -> aliases.ui dir; lib -> aliases.lib dir.
-      await fs.mkdir(config.resolvedPaths.ui, { recursive: true })
-      await fs.cp(path.join(stylePackage.dir, "ui"), config.resolvedPaths.ui, {
-        recursive: true,
+      // Reuse `add`'s exact fetch-and-write engine so the result is
+      // identical to what `marko-ui add <every installed component>` would
+      // produce on the copy path — no separate copy logic to keep in sync.
+      await addComponents(installedComponents, config, {
+        overwrite: true,
+        silent: true,
+        interactive: false,
       })
-      const libSrc = path.join(stylePackage.dir, "lib")
-      if (existsSync(libSrc)) {
-        await fs.mkdir(config.resolvedPaths.lib, { recursive: true })
-        await fs.cp(libSrc, config.resolvedPaths.lib, { recursive: true })
-      }
-
-      // Ejected files import "#lib/*" (package-internal subpath). Point the
-      // project's package.json imports at the lib dir so they keep resolving.
-      await ensureLibSubpathImport(options.cwd, config.resolvedPaths.lib)
 
       const taglib = await writeProjectTaglib(config)
+
+      // Flip the config so `add`/`doctor`/future `eject` calls see copy mode.
+      await setDistribution(options.cwd, "copy")
+
       ejectSpinner.succeed()
 
       if (!options.silent) {
         logger.log(
-          `Ejected ${highlighter.info(stylePackage.name)} (${
-            taglib?.tags ?? 0
-          } tags registered in marko.json).`
+          `Ejected ${highlighter.info(
+            String(installedComponents.length)
+          )} component(s) (${taglib?.tags ?? 0} tags registered in marko.json).`
         )
         logger.log(
-          `Remove the package when ready: ${highlighter.info(
-            `bun remove ${stylePackage.name}`
-          )} — its dependencies (marko-zag, @zag-js/*) must stay.`
+          `components.json now has ${highlighter.info(
+            '"distribution": "copy"'
+          )}.`
+        )
+        logger.log(`Remaining manual steps:`)
+        logger.log(
+          `  1. Remove the dependency: ${highlighter.info(
+            "bun remove @marko-ui/core"
+          )}`
+        )
+        logger.log(
+          `  2. Remove the marko-ui:import-distribution block ${highlighter.info(
+            config.resolvedPaths.tailwindCss
+              ? path.relative(options.cwd, config.resolvedPaths.tailwindCss)
+              : "from your CSS entry"
+          )} added and restore your own theme/style CSS (${highlighter.info(
+            "marko-ui add style"
+          )} writes the copy-path theme).`
         )
         if (taglib === null) {
           logger.warn(
@@ -116,46 +160,52 @@ export const eject = new Command()
       }
     } catch (error) {
       handleError(error)
+    } finally {
+      clearRegistryContext()
     }
   })
 
-export async function findInstalledStylePackage(cwd: string) {
-  const scopeDir = path.join(cwd, "node_modules", "@marko-ui")
-  if (!existsSync(scopeDir)) {
-    return null
+/**
+ * The import distribution has no local component files to scan (that's the
+ * point) — it lists what's "installed" by reading the directory names under
+ * the @marko-ui/core package's ui/ tree in node_modules, cross-checked
+ * against the registry index so only real component names are eject
+ * targets (skips anything unexpected there).
+ */
+export async function findImportedComponents(cwd: string): Promise<string[]> {
+  const coreUiDir = path.join(cwd, "node_modules", "@marko-ui", "core", "ui")
+  if (!existsSync(coreUiDir)) {
+    return []
   }
 
-  for (const entry of (await fs.readdir(scopeDir)).sort()) {
-    const dir = path.join(scopeDir, entry)
-    // A style package is identified by its taglib + ui tree (the CLI
-    // package and future non-style packages have neither).
-    if (
-      existsSync(path.join(dir, "marko.json")) &&
-      existsSync(path.join(dir, "ui"))
-    ) {
-      return { name: `@marko-ui/${entry}`, dir }
-    }
+  const entries = await fs.readdir(coreUiDir, { withFileTypes: true })
+  const names = entries.filter((e) => e.isDirectory()).map((e) => e.name)
+
+  const registryIndex = await getShadcnRegistryIndex().catch(() => null)
+  if (!registryIndex) {
+    // Registry unreachable — fall back to the raw directory listing rather
+    // than failing outright; addComponents will surface a clear per-item
+    // error for anything that doesn't actually resolve.
+    return names
   }
 
-  return null
+  const registryNames = new Set(registryIndex.map((item) => item.name))
+  return names.filter((name) => registryNames.has(name))
 }
 
-async function ensureLibSubpathImport(cwd: string, libDir: string) {
-  const packageJsonPath = path.join(cwd, "package.json")
-  if (!existsSync(packageJsonPath)) {
+export async function setDistribution(
+  cwd: string,
+  distribution: "copy" | "import"
+) {
+  const componentsJsonPath = path.join(cwd, "components.json")
+  if (!existsSync(componentsJsonPath)) {
     return
   }
-  const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf8"))
-  const relativeLib = `./${path
-    .relative(cwd, libDir)
-    .split(path.sep)
-    .join("/")}/*`
-  packageJson.imports = {
-    ...(packageJson.imports ?? {}),
-    "#lib/*": relativeLib,
-  }
+  const raw = JSON.parse(await fs.readFile(componentsJsonPath, "utf8"))
+  raw.distribution = distribution
   await fs.writeFile(
-    packageJsonPath,
-    JSON.stringify(packageJson, null, 2) + "\n"
+    componentsJsonPath,
+    JSON.stringify(raw, null, 2) + "\n",
+    "utf8"
   )
 }

@@ -1,10 +1,48 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  rawConfigSchema,
   registryChunkSchema,
   registryConfigSchema,
   registrySchema,
 } from "./schema"
+
+const baseRawConfig = {
+  style: "default",
+  tailwind: {
+    css: "src/styles/globals.css",
+    baseColor: "neutral",
+    cssVariables: true,
+  },
+  aliases: {
+    components: "@/components",
+    utils: "@/lib/utils",
+  },
+}
+
+describe("rawConfigSchema distribution field", () => {
+  it("is undefined when omitted (getConfig fills the copy default)", () => {
+    const config = rawConfigSchema.parse(baseRawConfig)
+    expect(config.distribution).toBeUndefined()
+  })
+
+  it("accepts import", () => {
+    const config = rawConfigSchema.parse({
+      ...baseRawConfig,
+      distribution: "import",
+    })
+    expect(config.distribution).toBe("import")
+  })
+
+  it("rejects an invalid distribution value", () => {
+    expect(() =>
+      rawConfigSchema.parse({
+        ...baseRawConfig,
+        distribution: "vendor",
+      })
+    ).toThrow()
+  })
+})
 
 describe("registryConfigSchema", () => {
   it("should accept valid registry names starting with @", () => {

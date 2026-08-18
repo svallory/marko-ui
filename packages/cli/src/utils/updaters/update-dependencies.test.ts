@@ -1,7 +1,6 @@
 import { getFixturesDir } from "@/src/test-helpers"
 import type { Config } from "@/src/utils/get-config"
 import { execa } from "execa"
-import prompts from "prompts"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
@@ -10,7 +9,6 @@ import {
 } from "./update-dependencies"
 
 vi.mock("execa")
-vi.mock("prompts")
 
 describe("updateDependencies", () => {
   beforeEach(() => {
@@ -107,8 +105,6 @@ describe("updateDependencies", () => {
         config as Config,
         options ?? {}
       )
-
-      expect(prompts).not.toHaveBeenCalled()
 
       expect(execa).toHaveBeenCalledWith(expectedPackageManager, expectedArgs, {
         cwd: config?.resolvedPaths.cwd,

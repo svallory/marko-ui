@@ -39,3 +39,22 @@ export const BUILTIN_REGISTRIES: z.infer<typeof registryConfigSchema> = {
   "@marko-ui": `${REGISTRY_URL}/{name}.json`,
 }
 
+// The 8 shadcn-derived visual styles (shape/spacing/radius/borders — see
+// notes/plans/dual-distribution-plan.md §1). Each ships as
+// `styles-src/style-<name>.css` for the copy path (baked into generated
+// component classes) and as a precompiled `@marko-ui/core/styles/style-
+// <name>.css` layer for the import path. Fixed set, hardcoded like
+// BASE_COLORS.
+export const VISUAL_STYLES = [
+  { name: "rhea", label: "Rhea" },
+  { name: "nova", label: "Nova" },
+  { name: "vega", label: "Vega" },
+  { name: "lyra", label: "Lyra" },
+  { name: "maia", label: "Maia" },
+  { name: "mira", label: "Mira" },
+  { name: "luma", label: "Luma" },
+  { name: "sera", label: "Sera" },
+] as const
+
+export const DEFAULT_VISUAL_STYLE = "vega"
+

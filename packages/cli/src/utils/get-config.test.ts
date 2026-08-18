@@ -237,6 +237,8 @@ describe("getConfig", () => {
         lib: path.resolve(getFixturesDir("config-partial"), "./lib"),
       },
       iconLibrary: "lucide",
+      distribution: "copy",
+      visualStyle: "vega",
       registries: {
         "@marko-ui": "https://marko-ui.saulo.tech/r/{name}.json",
       },
@@ -261,6 +263,8 @@ describe("getConfig", () => {
         ui: "~/ui",
       },
       iconLibrary: "lucide",
+      distribution: "copy",
+      visualStyle: "vega",
       resolvedPaths: {
         cwd: getFixturesDir("config-full"),
         tailwindConfig: path.resolve(
@@ -300,6 +304,8 @@ describe("getConfig", () => {
         utils: "@/lib/utils",
       },
       iconLibrary: "radix",
+      distribution: "copy",
+      visualStyle: "vega",
       resolvedPaths: {
         cwd: getFixturesDir("config-jsx"),
         tailwindConfig: path.resolve(
@@ -339,6 +345,8 @@ describe("getConfig", () => {
         utils: "#utils",
       },
       iconLibrary: "lucide",
+      distribution: "copy",
+      visualStyle: "vega",
       resolvedPaths: {
         cwd: getFixturesDir("config-imports"),
         tailwindConfig: path.resolve(
@@ -384,6 +392,8 @@ describe("getConfig", () => {
         utils: "#lib/utils",
       },
       iconLibrary: "lucide",
+      distribution: "copy",
+      visualStyle: "vega",
       resolvedPaths: {
         cwd: getFixturesDir("config-imports-extensions"),
         tailwindConfig: "",
@@ -439,6 +449,8 @@ describe("getConfig", () => {
         utils: "@workspace/ui/lib/utils",
       },
       iconLibrary: "lucide",
+      distribution: "copy",
+      visualStyle: "vega",
       resolvedPaths: {
         cwd: getFixturesDir("frameworks/vite-monorepo-imports/apps/web"),
         tailwindConfig: "",
