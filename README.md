@@ -64,8 +64,11 @@ for the full walkthrough.
 
 ## Styles
 
-The `default` style plus 8 complete ports — every component re-styled, not
-re-skinned: `luma`, `lyra`, `maia`, `mira`, `nova`, `rhea`, `sera`, `vega`.
+The `default` style plus 8 more — every component re-styled, not re-skinned:
+`luma`, `lyra`, `maia`, `mira`, `nova`, `rhea`, `sera`, `vega`. One component
+source carries semantic `mu-*` hook classes; each style is a vendored CSS
+token layer combined with that source by a build step, so styling a component
+differently is a token/CSS change, not a separate hand-maintained tree.
 A 511-check Playwright matrix renders, hydrates, and interacts with every
 component in every style on every push.
 
@@ -73,7 +76,9 @@ component in every style on every push.
 
 ```
 apps/docs            docs site (also serves the registry JSON at /r/*)
-packages/registry    component source: default style, 8 style ports, tests
+packages/registry    component source (default/), vendored style CSS
+                      (styles-src/), generated per-style trees (styles-gen/,
+                      gitignored), build scripts, tests
 packages/marko-ui    the Marko↔Zag adapter runtime
 e2e                  style-matrix verification suite
 scripts/ci           axe scan, badge generation, CI serving

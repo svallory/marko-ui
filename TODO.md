@@ -137,8 +137,8 @@ Adapter renamed to the published `marko-zag` package (295 imports swept, package
 - [ ] **Publish `marko-zag@1.0.1`** (`npm publish` from /Users/svallory/work/marko-zag — version bumped + pushed): 1.0.0's exports map misses `./src/*`, so bundlers enforcing exports refuse the taglib tag files. Then REMOVE the temporary `overrides.marko-zag: file:` from the workspace root package.json.
 - [x] Real adapter dependency install — done 2026-08-17 (marko-zag on npm; graceful-degrade warning path kept for other failures).
 - [x] e2e install verification — done 2026-08-17.
-- [ ] **`/docs/installation` rewrite** — drop the "unpublished" callout, document the real `marko-ui init` flow AND the new package mode (`bun add @marko-ui/<style>` → zero-import `<Badge>` tags; `marko-ui eject` to switch to source) (Docs-audit item).
-- [ ] **Publish the style packages** — `bun packages/registry/scripts/build-style-packages.ts` emits 9 packages to `dist/style-packages/<style>/`; `npm publish` each (needs the `@marko-ui` npm scope). Verified installable via tarball.
+- [ ] **`/docs/installation` rewrite** — drop the "unpublished" callout, document the real `marko-ui init` flow AND the new import path (`@marko-ui/core` — hook-class components + precompiled style CSS layers; `marko-ui eject` to switch to source) (Docs-audit item). Per-style `@marko-ui/<style>` packages are DROPPED (superseded by `notes/plans/dual-distribution-plan.md` §1); do not resurrect that model.
+- [x] ~~Publish the style packages~~ — DROPPED. The per-style-package model (`build-style-packages.ts`, 9 `@marko-ui/<style>` packages) is superseded by dual distribution (`notes/plans/dual-distribution-plan.md` §1, §4b). The script read the deleted `packages/registry/styles/` path and was unreferenced anywhere in the repo; deleted 2026-08-17 rather than repointed, since no per-style artifact is needed under the new model.
 - [ ] **Claim `marko-ui` on npm for the CLI** — currently `@marko-ui/cli`, so the incantation is `bunx @marko-ui/cli add badge`; docs already print `bunx marko-ui add badge`.
 - [ ] **File the language-tools issue** — draft ready at `notes/upstream-issue-language-tools-pascalcase-taglib.md` (PascalCase taglib tags: runtime resolves, type-gen emits false TS2304; our tags.d.ts shim works around it).
 - [ ] **Registry deploy pairing** — `registries.json` + item URLs bake `REGISTRY_BASE_URL` at build time; production deploy must build with `REGISTRY_BASE_URL=https://marko-ui.saulo.tech/r` or installed `registryDependencies` point at localhost.
@@ -207,6 +207,21 @@ Not ported (dead files upstream, never mounted by their index.tsx): `preview-02/
 - [ ] **Fix `bun run extract:api`** — broken on main (pre-existing `ts.ScriptTarget.ES2022` failure in extract-api.ts, likely TS 7 API change): api-reference.json can no longer be regenerated, so any NEW component (e.g. ui/icon) ships an empty API Reference table. Fix the extractor against the installed TypeScript, regen, verify icon/field/chart tables populate. `(code — small)`
 
 ## Style ports (8 shadcn styles → packages/registry/styles/<name>/ui, started 2026-08-14)
+
+**Superseded 2026-08-17 (decision — made):** the hand-ported-tree-per-style
+approach this section describes was a premise error — the 8 hand-ported trees
+turned out to be byte-identical modulo the style name, so there were never
+real per-style deltas to hand-maintain. All 1,880 hand-ported files were
+deleted in `0ee60878`. The registry is now one authored source
+(`packages/registry/default/`) with semantic `mu-*` hook classes, 8 vendored
+CSS token layers (`packages/registry/styles-src/style-<name>.css`), and a
+generator (`packages/registry/scripts/build-styles.ts`) that emits the
+per-style trees to `packages/registry/styles-gen/<name>/ui/` (gitignored).
+See `notes/plans/dual-distribution-plan.md` and `notes/plans/
+style-refactor-fleet-plan.md` for the current architecture and its "Measured
+result"/"Known gaps". The items below are kept as the historical record of
+the original (now-replaced) hand-porting effort; do not use them to judge
+current coverage — check `check-anchors.ts`'s 86/86 pass instead.
 
 - [x] **rhea** — 55/66 components ported (masonry subset + waves A1-A3), home masonry rewired to it.
 - [ ] **Chat primitives missing in every style except rhea**: `attachment`, `sonner`, `questionnaire`, `direction`, `marker` — no default-registry Marko base exists to restyle; each needs a ground-up port (zag machine or hand-rolled) BEFORE its 8 style variants. `bubble`, `message`, `message-scroller` are now ported for rhea and power the homepage's `card-message-scroller.marko` (static-content port of shadcn's MessageScrollerDemo); still missing for the other 7 styles. `(code — large)`

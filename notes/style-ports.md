@@ -3,30 +3,48 @@
 Written 2026-08-14 after porting every shadcn style (rhea, nova, vega, lyra,
 maia, mira, luma, sera) — ~54 components each — plus the 8 chat primitives
 (message, bubble, attachment, marker, message-scroller, sonner, direction,
-questionnaire) into the registry.
+questionnaire) into the registry, by hand-porting one full component tree per
+style.
 
-## Layout & imports
+**Superseded 2026-08-17.** That hand-ported approach (one full implementation
+per style, ~1,880 files) was a premise error: the 8 hand-ported trees turned
+out to be byte-identical modulo the style name, meaning there were never any
+real per-style deltas to hand-maintain in the first place. All 1,880 files
+were deleted in `0ee60878`. The current architecture — one authored source
+plus vendored CSS token layers plus a generator — is described in
+`notes/plans/dual-distribution-plan.md` and `notes/plans/
+style-refactor-fleet-plan.md`. This file's porting method and structural notes
+below are kept as historical record of how the (now-replaced) hand ports were
+produced; do not use them as a guide for current work.
+
+## Layout & imports (historical — see the plans above for the current layout)
 
 - `packages/registry/default/ui/<component>/<part>.marko` — the default
-  registry, tracks shadcn's `registry/new-york-v4`.
-- `packages/registry/styles/<style>/ui/<component>/<part>.marko` — one dir per
-  shadcn style. Import as `@marko-ui/registry/styles/<style>/ui/...`.
-- The package `exports` map lists each style subpath EXPLICITLY
-  (`"./styles/rhea/*": ...` × 8). Do NOT collapse to `"./styles/*"` — that
-  pattern shadows the consumer theme files (`./styles/globals.css`,
-  `./styles/marko-accordion.css`) which live under `default/styles/` via the
-  `"./*" → "./default/*"` fallback.
+  registry, tracks shadcn's `registry/new-york-v4`. This is still the current
+  single authored source, now carrying `mu-*` hook classes.
+- `packages/registry/styles/<style>/ui/<component>/<part>.marko` — one
+  hand-ported dir per shadcn style. This layout no longer exists; the
+  equivalent generated output now lives at `packages/registry/styles-gen/
+  <style>/ui/...` (gitignored, produced by `packages/registry/scripts/
+  build-styles.ts` from `default/` + `styles-src/style-<name>.css`).
+- The package `exports` map still lists each style subpath EXPLICITLY
+  (`"./styles/rhea/*": ...` × 8), now resolving to `styles-gen/rhea/*`. Do NOT
+  collapse to `"./styles/*"` — that pattern shadows the consumer theme files
+  (`./styles/globals.css`, `./styles/marko-accordion.css`) which live under
+  `default/styles/` via the `"./*" → "./default/*"` fallback.
 
-## Why one implementation per style (not per base)
+## Why one implementation per style (not per base) — historical rationale
 
 shadcn ships 24 trees (`{base,aria,radix}-<style>`), but the three bases only
 differ in React primitive library — their Tailwind class strings are
 byte-identical per style (verified by diffing). Our zag.js internals replace
-all three, so one Marko tree per style is complete. The `/create` base picker
+all three, so one Marko tree per style was complete. The `/create` base picker
 still reloads the preview (parity of behavior), it just loads identical markup
-by design.
+by design. This reasoning justified having one tree per style; it did not
+require that tree to be hand-maintained rather than generated, which is the
+part later found to be a premise error (see the note at the top of this file).
 
-## The porting method (proven ~500 times)
+## The porting method (historical, used for the original hand ports)
 
 1. Read the style source FULLY: `data/shadcn-ui/apps/v4/styles/base-<style>/ui/<name>.tsx`.
 2. Copy the rhea (or default) Marko port — keep zag wiring, attr-tag API,
@@ -39,7 +57,7 @@ by design.
    `node_modules/.bun/marko@6.3.34/.../@marko/compiler`) + run the
    string-parity audit (below).
 
-## String-parity audit
+## String-parity audit (historical)
 
 Regex-extract every class-looking string (≥~25 chars, has spaces + tailwind-ish
 tokens) from the style's tsx source and check it appears verbatim somewhere in
@@ -48,7 +66,7 @@ review signal. Every style lands at 84–99 residual misses, ALL in the same
 structural categories (below) — a component outside those categories with
 misses is a real porting bug.
 
-## Known structural residuals (shared by all 8 styles, documented in-file)
+## Known structural residuals (historical — shared by all 8 hand-ported styles, documented in-file)
 
 - sidebar: mobile Sheet branch + Rail/Inset/Sub-menu parts unported
 - toast: Base UI swipe/stack geometry replaced by zag's `--x/--y/--scale`
