@@ -1,0 +1,3 @@
+# Toolchain pins for reproducible builds across contributors and CI.
+# bun matches the Dockerfile's BUN_VERSION (oven/bun base image).
+bun = "1.3.11"
