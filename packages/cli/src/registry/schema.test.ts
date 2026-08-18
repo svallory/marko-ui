@@ -88,6 +88,51 @@ describe("registryConfigSchema", () => {
       )
     }
   })
+
+  it("should accept vars on the object form", () => {
+    const config = {
+      "@marko-ui": {
+        url: "https://marko-ui.saulo.tech/r/styles/{style}/{name}.json",
+        vars: { style: "lyra" },
+      },
+    }
+
+    const result = registryConfigSchema.safeParse(config)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect((result.data["@marko-ui"] as any).vars).toEqual({
+        style: "lyra",
+      })
+    }
+  })
+
+  it("should reject vars.name — reserved for item identity", () => {
+    const config = {
+      "@marko-ui": {
+        url: "https://marko-ui.saulo.tech/r/{name}.json",
+        vars: { name: "override" },
+      },
+    }
+
+    const result = registryConfigSchema.safeParse(config)
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.errors[0].message).toContain(
+        '"vars" cannot define "name"'
+      )
+    }
+  })
+
+  it("should silently strip vars from the string form (no vars support there)", () => {
+    // The string form has no vars branch at all — vars only exists on the
+    // object form. This documents that a string-form entry cannot carry vars.
+    const config = {
+      "@v0": "https://v0.dev/{name}.json",
+    }
+
+    const result = registryConfigSchema.safeParse(config)
+    expect(result.success).toBe(true)
+  })
 })
 
 describe("registrySchema", () => {

@@ -15,6 +15,21 @@ export const registryConfigItemSchema = z.union([
     }),
     params: z.record(z.string(), z.string()).optional(),
     headers: z.record(z.string(), z.string()).optional(),
+    // Per-namespace values for `{...}` URL placeholders (see
+    // notes/plans/registry-url-vars.md). Must live INSIDE the registry entry,
+    // never at the top level: the top-level config schema is `.strict()`
+    // (see rawConfigSchema below), so a new top-level field would make
+    // shadcn's own CLI hard-reject the whole components.json. This object
+    // schema has no `.strict()`, so unknown keys (like `vars` when read by
+    // shadcn's CLI) are silently stripped and the config stays valid there.
+    // `name` is reserved for item identity; rejected at parse time.
+    vars: z
+      .record(z.string(), z.string())
+      .refine((v) => !("name" in v), {
+        message:
+          '"vars" cannot define "name" — it is reserved for the item being installed.',
+      })
+      .optional(),
   }),
 ])
 
@@ -60,7 +75,7 @@ export const rawConfigSchema = z
     // Which of the 8 shape/spacing/radius styles (VISUAL_STYLES in
     // registry/constants.ts) this project uses. For "copy" it selects which
     // per-style registry tree `add` fetches from
-    // (`<REGISTRY_URL>/<visualStyle>/<name>.json`, see build-registry.ts);
+    // (`<REGISTRY_URL>/styles/<visualStyle>/<name>.json`, see build-registry.ts);
     // for "import" it's the `style-<visualStyle>` class applied to activate
     // @marko-ui/core's precompiled layer. Additive field — absent/older
     // configs fall back to DEFAULT_VISUAL_STYLE.

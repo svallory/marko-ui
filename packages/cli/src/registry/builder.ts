@@ -1,7 +1,11 @@
 import { isGitHubItemAddress } from "@/src/registry/address"
 import { BUILTIN_REGISTRIES, REGISTRY_URL } from "@/src/registry/constants"
 import { expandEnvVars } from "@/src/registry/env"
-import { RegistryNotConfiguredError } from "@/src/registry/errors"
+import {
+  RegistryError,
+  RegistryErrorCode,
+  RegistryNotConfiguredError,
+} from "@/src/registry/errors"
 import { parseRegistryAndItemFromString } from "@/src/registry/parser"
 import { isLocalFile, isUrl } from "@/src/registry/utils"
 import { validateRegistryConfig } from "@/src/registry/validator"
@@ -12,6 +16,7 @@ import { z } from "zod"
 const NAME_PLACEHOLDER = "{name}"
 const STYLE_PLACEHOLDER = "{style}"
 const ENV_VAR_PATTERN = /\${(\w+)}/g
+const LEFTOVER_PLACEHOLDER_PATTERN = /\{([a-z]\w*)\}/i
 const QUERY_PARAM_SEPARATOR = "?"
 const QUERY_PARAM_DELIMITER = "&"
 
@@ -50,7 +55,7 @@ export function buildUrlAndHeadersForRegistryItem(
   validateRegistryConfig(registry, registryConfig)
 
   return {
-    url: buildUrlFromRegistryConfig(item, registryConfig, config),
+    url: buildUrlFromRegistryConfig(item, registryConfig, config, registry),
     headers: buildHeadersFromRegistryConfig(registryConfig),
   }
 }
@@ -58,27 +63,69 @@ export function buildUrlAndHeadersForRegistryItem(
 export function buildUrlFromRegistryConfig(
   item: string,
   registryConfig: z.infer<typeof registryConfigItemSchema>,
-  config?: Config
+  config?: Config,
+  registryName?: string
 ) {
   if (typeof registryConfig === "string") {
-    let url = registryConfig.replace(NAME_PLACEHOLDER, item)
+    let url = registryConfig.replaceAll(NAME_PLACEHOLDER, item)
     if (config?.style && url.includes(STYLE_PLACEHOLDER)) {
-      url = url.replace(STYLE_PLACEHOLDER, config.style)
+      url = url.replaceAll(STYLE_PLACEHOLDER, config.style)
     }
-    return expandEnvVars(url)
+    url = expandEnvVars(url)
+    assertNoLeftoverPlaceholders(url, registryName)
+    return url
   }
 
-  let baseUrl = registryConfig.url.replace(NAME_PLACEHOLDER, item)
-  if (config?.style && baseUrl.includes(STYLE_PLACEHOLDER)) {
-    baseUrl = baseUrl.replace(STYLE_PLACEHOLDER, config.style)
+  let baseUrl = registryConfig.url.replaceAll(NAME_PLACEHOLDER, item)
+
+  // Per-namespace `vars` take precedence over the global `config.style`
+  // fallback (see notes/plans/registry-url-vars.md). `style` is special: it
+  // is the only placeholder with a global fallback, and `vars.style` beats
+  // it. Every other placeholder has no global fallback at all.
+  if (registryConfig.vars) {
+    for (const [key, rawValue] of Object.entries(registryConfig.vars)) {
+      const placeholder = `{${key}}`
+      if (baseUrl.includes(placeholder)) {
+        baseUrl = baseUrl.replaceAll(placeholder, expandEnvVars(rawValue))
+      }
+    }
   }
+
+  if (config?.style && baseUrl.includes(STYLE_PLACEHOLDER)) {
+    baseUrl = baseUrl.replaceAll(STYLE_PLACEHOLDER, config.style)
+  }
+
   baseUrl = expandEnvVars(baseUrl)
+  assertNoLeftoverPlaceholders(baseUrl, registryName)
 
   if (!registryConfig.params) {
     return baseUrl
   }
 
   return appendQueryParams(baseUrl, registryConfig.params)
+}
+
+function assertNoLeftoverPlaceholders(url: string, registryName?: string) {
+  const match = url.match(LEFTOVER_PLACEHOLDER_PATTERN)
+  if (!match) {
+    return
+  }
+
+  const placeholder = match[0]
+  const varName = match[1]
+  const registryLabel = registryName ? `registry "${registryName}"` : "registry"
+
+  throw new RegistryError(
+    `${registryLabel}: no value for ${placeholder} — set it in the namespace's "vars" or in the top-level "style" field.`,
+    {
+      code: RegistryErrorCode.INVALID_CONFIG,
+      context: { url, placeholder, varName, registryName },
+      suggestion:
+        varName === "style"
+          ? 'Set the top-level "style" field, or add a "vars" entry for this namespace in your components.json.'
+          : 'Add a "vars" entry for this placeholder in the namespace\'s registry configuration in your components.json.',
+    }
+  )
 }
 
 export function buildHeadersFromRegistryConfig(

@@ -178,6 +178,122 @@ describe("buildUrlFromRegistryConfig", () => {
   })
 })
 
+describe("buildUrlFromRegistryConfig vars", () => {
+  beforeEach(() => {
+    process.env.MARKO_UI_STYLE = "lyra"
+  })
+
+  afterEach(() => {
+    delete process.env.MARKO_UI_STYLE
+  })
+
+  it("lets vars.style beat the global config.style (precedence)", () => {
+    const config = {
+      url: "https://marko-ui.saulo.tech/r/styles/{style}/{name}.json",
+      vars: { style: "lyra" },
+    }
+
+    const url = buildUrlFromRegistryConfig("button", config, {
+      style: "new-york",
+    } as any)
+
+    expect(url).toBe("https://marko-ui.saulo.tech/r/styles/lyra/button.json")
+  })
+
+  it("lets two namespaces with different vars.style resolve to different URLs", () => {
+    const markoUiConfig = {
+      url: "https://marko-ui.saulo.tech/r/styles/{style}/{name}.json",
+      vars: { style: "lyra" },
+    }
+    const initiumConfig = {
+      url: "https://app.initium.sh/r/styles/{style}/{name}.json",
+      vars: { style: "brutalist" },
+    }
+
+    const markoUiUrl = buildUrlFromRegistryConfig("hero", markoUiConfig, {
+      style: "new-york",
+    } as any)
+    const initiumUrl = buildUrlFromRegistryConfig("hero", initiumConfig, {
+      style: "new-york",
+    } as any)
+
+    expect(markoUiUrl).toBe(
+      "https://marko-ui.saulo.tech/r/styles/lyra/hero.json"
+    )
+    expect(initiumUrl).toBe(
+      "https://app.initium.sh/r/styles/brutalist/hero.json"
+    )
+    expect(markoUiUrl).not.toBe(initiumUrl)
+  })
+
+  it("expands env vars inside a vars value", () => {
+    const config = {
+      url: "https://example.com/{style}/{name}.json",
+      vars: { style: "${MARKO_UI_STYLE}" },
+    }
+
+    const url = buildUrlFromRegistryConfig("card", config)
+    expect(url).toBe("https://example.com/lyra/card.json")
+  })
+
+  it("falls back to global config.style when no vars.style is set", () => {
+    const config = {
+      url: "https://example.com/{style}/{name}.json",
+    }
+
+    const url = buildUrlFromRegistryConfig("card", config, {
+      style: "new-york",
+    } as any)
+    expect(url).toBe("https://example.com/new-york/card.json")
+  })
+
+  it("substitutes a repeated placeholder everywhere (replaceAll)", () => {
+    const config = {
+      url: "https://example.com/{style}/{name}-{style}.json",
+      vars: { style: "lyra" },
+    }
+
+    const url = buildUrlFromRegistryConfig("button", config)
+    expect(url).toBe("https://example.com/lyra/button-lyra.json")
+  })
+
+  it("throws a clear error for a leftover unsubstituted placeholder", () => {
+    const config = {
+      url: "https://example.com/{framework}/{name}.json",
+    }
+
+    expect(() =>
+      buildUrlFromRegistryConfig("button", config, undefined, "@acme")
+    ).toThrow(
+      'registry "@acme": no value for {framework} — set it in the namespace\'s "vars" or in the top-level "style" field.'
+    )
+  })
+
+  it("throws for a leftover {style} placeholder with no vars and no global style", () => {
+    const config = {
+      url: "https://example.com/{style}/{name}.json",
+    }
+
+    expect(() => buildUrlFromRegistryConfig("button", config)).toThrow(
+      /no value for \{style\}/
+    )
+  })
+
+  it("does not affect a shadcn-shaped config without vars (no regression)", () => {
+    const config = {
+      url: "https://ui.shadcn.com/r/styles/{style}/{name}.json",
+      params: { foo: "bar" },
+    }
+
+    const url = buildUrlFromRegistryConfig("button", config, {
+      style: "new-york",
+    } as any)
+    expect(url).toBe(
+      "https://ui.shadcn.com/r/styles/new-york/button.json?foo=bar"
+    )
+  })
+})
+
 describe("buildHeadersFromRegistryConfig", () => {
   beforeEach(() => {
     process.env.AUTH_TOKEN = "secret123"
