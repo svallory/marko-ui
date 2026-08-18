@@ -16,7 +16,8 @@ FROM base AS deps
 COPY package.json bun.lock ./
 COPY apps/docs/package.json apps/docs/package.json
 COPY packages/registry/package.json packages/registry/package.json
-COPY packages/marko-ui/package.json packages/marko-ui/package.json
+COPY packages/core/package.json packages/core/package.json
+COPY packages/cli/package.json packages/cli/package.json
 RUN bun install --frozen-lockfile
 
 # ---- build: registry JSON + docs production bundle --------------------------
@@ -25,7 +26,6 @@ ARG REGISTRY_BASE_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/docs/node_modules ./apps/docs/node_modules
 COPY --from=deps /app/packages/registry/node_modules ./packages/registry/node_modules
-COPY --from=deps /app/packages/marko-ui/node_modules ./packages/marko-ui/node_modules
 COPY . .
 
 RUN REGISTRY_BASE_URL=${REGISTRY_BASE_URL} bun packages/registry/scripts/build-registry.ts
@@ -45,7 +45,8 @@ ENV NODE_ENV=production
 COPY package.json bun.lock ./
 COPY apps/docs/package.json apps/docs/package.json
 COPY packages/registry/package.json packages/registry/package.json
-COPY packages/marko-ui/package.json packages/marko-ui/package.json
+COPY packages/core/package.json packages/core/package.json
+COPY packages/cli/package.json packages/cli/package.json
 RUN bun install --frozen-lockfile --production
 
 COPY --from=build /app/apps/docs/dist ./apps/docs/dist
