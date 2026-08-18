@@ -142,6 +142,7 @@ Adapter renamed to the published `marko-zag` package (295 imports swept, package
 - [ ] **Claim `marko-ui` on npm for the CLI** — currently `@marko-ui/cli`, so the incantation is `bunx @marko-ui/cli add badge`; docs already print `bunx marko-ui add badge`.
 - [ ] **File the language-tools issue** — draft ready at `notes/upstream-issue-language-tools-pascalcase-taglib.md` (PascalCase taglib tags: runtime resolves, type-gen emits false TS2304; our tags.d.ts shim works around it).
 - [ ] **Registry deploy pairing** — `registries.json` + item URLs bake `REGISTRY_BASE_URL` at build time; production deploy must build with `REGISTRY_BASE_URL=https://marko-ui.saulo.tech/r` or installed `registryDependencies` point at localhost.
+- [ ] **"Open in v0" button** — shadcn ships one per component/block; we can have our own. Refs: https://ui.shadcn.com/docs/registry/open-in-v0 and https://v0.app/chat/button. Note v0 consumes a registry item URL, so this depends on the registry being publicly deployed (see the deploy-pairing item above). Not yet investigated — read the refs before designing.
 
 ## Docs
 

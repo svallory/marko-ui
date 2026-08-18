@@ -1,14 +1,18 @@
-// Installation — structurally follows shadcn's content/docs/installation/*.mdx
-// (create project → deps → Tailwind → path aliases → add a component), but the
-// steps are the real @marko/run + Vite + shadcn-CLI steps for marko-ui.
+// Installation — the marko-ui CLI's own init/add/eject flow, not the raw
+// shadcn-CLI walkthrough this page used to carry. See TODO.md "CLI —
+// remaining gates" and notes/css-architecture.md ("The mu-* hooks") for the
+// architecture this documents.
 import "../../../tags/docs/docs-article.marko";
 import "../../../tags/docs/code-block.marko";
 
 static const TOC = [
-  { id: "marko-run", label: "@marko/run" },
-  { id: "vite", label: "Vite" },
-  { id: "add-components", label: "Adding Components" },
-  { id: "manual", label: "Manual Installation" },
+  { id: "choosing", label: "Choosing a distribution" },
+  { id: "create-project", label: "Create a project" },
+  { id: "init", label: "marko-ui init" },
+  { id: "add-components", label: "Adding components" },
+  { id: "import-css", label: "The import CSS entry" },
+  { id: "eject", label: "marko-ui eject" },
+  { id: "mu-hooks", label: "mu-* styling hooks" },
   { id: "troubleshooting", label: "Troubleshooting" },
 ];
 
@@ -16,152 +20,128 @@ static const CREATE_APP = `bun create marko my-app
 cd my-app
 bun install`;
 
-static const RUN_DEPS = `bun add -d tailwindcss @tailwindcss/vite`;
+static const INIT_COPY = `bunx @marko-ui/cli init --distribution copy --visual-style vega`;
 
-static const RUN_VITE_CONFIG = `import { defineConfig } from "vite";
-import marko from "@marko/run/vite";
-import tailwindcss from "@tailwindcss/vite";
+static const INIT_IMPORT = `bunx @marko-ui/cli init --distribution import --visual-style vega`;
 
-export default defineConfig({
-  plugins: [tailwindcss(), marko()],
-});`;
+static const INIT_INTERACTIVE = `bunx @marko-ui/cli init`;
 
-static const RUN_CSS = `@import "tailwindcss";
-@import "tw-animate-css";
+static const ADD_COMMAND = `bunx @marko-ui/cli add button`;
 
-/* Tailwind v4 scans the files you point it at. Marko templates are not
-   picked up by the default content detection, so list them explicitly. */
-@source "../**/*.marko";`;
+static const ADD_MANY = `bunx @marko-ui/cli add dialog select toast`;
 
-static const RUN_LAYOUT = `import "../styles/globals.css";
-
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>my-app</title>
-  </head>
-  <body>
-    <\${input.content}/>
-  </body>
-</html>`;
-
-static const INIT_COMMAND = `bunx shadcn@latest init https://marko-ui.saulo.tech/r/style.json`;
-
-static const ADD_COMMAND = `bunx shadcn@latest add https://marko-ui.saulo.tech/r/button.json`;
-
-static const ADD_MANY = `bunx shadcn@latest add \\
-  https://marko-ui.saulo.tech/r/dialog.json \\
-  https://marko-ui.saulo.tech/r/select.json \\
-  https://marko-ui.saulo.tech/r/toast.json`;
-
-static const VITE_STRUCTURE = `src/
-├── components/
-│   └── ui/
-│       └── button/
-│           ├── button.marko
-│           └── variants.ts
-├── lib/
-│   └── utils.ts
-├── styles/
-│   └── globals.css
-└── routes/
-    ├── +layout.marko
-    └── +page.marko`;
-
-static const MANUAL_UTILS = `import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}`;
-
-static const MANUAL_DEPS = `bun add clsx tailwind-merge class-variance-authority marko-ui`;
-
-// Components whose name collides with a native HTML tag (button, dialog,
-// select, label…) must be imported under a capitalized local name.
-static const USE_BUTTON = `import Button from "../components/ui/button/button.marko";
+static const USE_BUTTON_COPY = `import Button from "../components/ui/button/button.marko";
 
 <Button variant="outline">Click me</Button>`;
 
+static const USE_BUTTON_IMPORT = `import Button from "@marko-ui/core/ui/button/button.marko";
+
+<Button variant="outline">Click me</Button>`;
+
+static const IMPORT_CSS_ENTRY = `@import "tailwindcss";
+@import "@marko-ui/core/styles/globals.css";
+@import "@marko-ui/core/styles/style-vega.css" layer(components);
+
+/* Required so data-open:/data-state-*: variant classes on mu-* components
+   compile to real CSS instead of silently emitting nothing. */
+@custom-variant style-vega (&:where(.style-vega *));`;
+
+static const IMPORT_CSS_BROKEN = `/* Missing layer(components) — silently wins over
+   Tailwind's own utility layer no matter how specific your
+   override selector is. Renders fine; overrides just stop
+   working. */
+@import "@marko-ui/core/styles/style-vega.css";`;
+
+static const EJECT_COMMAND = `bunx @marko-ui/cli eject`;
+
+static const MU_OVERRIDE_CSS = `.style-vega .mu-button {
+  @apply rounded-none;
+}`;
+
+static const MU_SWITCH_CLASS = `<div class="style-lyra">
+  <\${input.content}/>
+</div>`;
+
 <docs-article
   title="Installation"
-  description="Set up marko-ui in a @marko/run or Vite project, then install components from the registry with the shadcn CLI."
+  description="Install components as source you own, or import a themeable package — then wire up the CSS either path needs."
   href="/docs/installation"
   toc=TOC
 >
   <p>
-    marko-ui needs three things in your project: <strong>Marko 6</strong>,
-    <strong>Tailwind v4</strong>, and the <code>cn()</code> helper the components import. The
-    registry ships the theme CSS and the helper as installable items, so the CLI can set both up
-    for you.
+    marko-ui ships components two different ways. Pick the one that matches what you want to own:
   </p>
 
-  <h2 id="marko-run">@marko/run</h2>
+  <h2 id="choosing">Choosing a distribution</h2>
 
   <p>
-    <a href="https://github.com/marko-js/run" target="_blank" rel="noreferrer">@marko/run</a> is the
-    file-based router for Marko 6 and the setup this site itself uses. Start from a fresh app:
+    <strong>copy</strong> (<code>marko-ui add</code>) writes flat generated component source
+    straight into your project — Tailwind utility classes baked in, no runtime dependency on
+    marko-ui. This is the shadcn model: once it's in your repo, the code is yours to edit however
+    you like.
   </p>
+
+  <p>
+    <strong>import</strong> installs <code>@marko-ui/core</code>, a single npm package that ships
+    the same components as <code>mu-*</code> hook-class components plus all 8 precompiled visual
+    style layers. Nothing is copied into your project; you theme, override, or switch between
+    styles entirely from your own stylesheet. Pick this when you expect to swap styles at runtime
+    or theme centrally without maintaining a fork of the component source.
+  </p>
+
+  <p>
+    <strong>Note:</strong> <code>@marko-ui/core</code> is not yet published to npm, so the import
+    path is not installable today. The steps below document the real, current CLI behavior — the
+    import path will work exactly as shown once the package ships. The copy path is installable
+    now, using the <code>@marko-ui/cli</code> package (published; the CLI's own binary is named
+    <code>marko-ui</code>).
+  </p>
+
+  <h2 id="create-project">Create a project</h2>
+
+  <p>Start from a Marko 6 app with Tailwind v4 already wired up. A fresh <code>@marko/run</code> app works:</p>
 
   <code-block language="bash" code=CREATE_APP/>
 
-  <h3>1. Install Tailwind v4</h3>
-
-  <code-block language="bash" code=RUN_DEPS/>
-
-  <p>Add the Tailwind plugin to your Vite config, before the Marko plugin:</p>
-
-  <code-block language="ts" filename="vite.config.ts" code=RUN_VITE_CONFIG/>
-
-  <h3>2. Create your stylesheet</h3>
-
   <p>
-    Create <code>src/styles/globals.css</code>. The <code>@source</code> directive is the part
-    people miss: Tailwind v4's automatic content detection does not know about
-    <code>.marko</code> files, so classes used in your templates get stripped from the build
-    unless you point at them.
+    Any project with a Tailwind v4 stylesheet works — see
+    <a href="/docs/components-json">components.json</a> for how the CLI detects your CSS file and
+    path aliases.
   </p>
 
-  <code-block language="css" filename="src/styles/globals.css" code=RUN_CSS/>
-
-  <h3>3. Import it from your root layout</h3>
-
-  <code-block language="marko" filename="src/routes/+layout.marko" code=RUN_LAYOUT/>
-
-  <h3>4. Initialize the registry</h3>
+  <h2 id="init">marko-ui init</h2>
 
   <p>
-    Point the shadcn CLI at the marko-ui theme item. This writes a
-    <code>components.json</code>, merges the theme tokens into your
-    <code>globals.css</code>, and installs the <code>cn()</code> helper.
+    Run <code>marko-ui init</code> inside your project. With no flags it prompts interactively for
+    base color, distribution, and visual style:
   </p>
 
-  <code-block language="bash" code=INIT_COMMAND/>
+  <code-block language="bash" code=INIT_INTERACTIVE/>
 
   <p>
-    Prefer a different base color? Use <code>style-zinc</code>, <code>style-slate</code>,
-    <code>style-stone</code>, or <code>style-gray</code> in place of <code>style</code>. See
-    <a href="/docs/theming">Theming</a> for what each one changes.
+    Or set everything non-interactively with <code>--distribution</code> and
+    <code>--visual-style</code>:
   </p>
 
-  <h2 id="vite">Vite</h2>
+  <code-block language="bash" filename="copy distribution" code=INIT_COPY/>
+  <code-block language="bash" filename="import distribution" code=INIT_IMPORT/>
 
   <p>
-    For a plain Vite + Marko 6 project without the router, the steps are identical except that you
-    import <code>globals.css</code> from your entry module instead of a route layout, and you use
-    <code>@marko/vite</code> rather than <code>@marko/run/vite</code>. The registry does not care
-    which one you picked — it only writes files.
+    <code>--distribution</code> accepts <code>copy</code> (the default) or <code>import</code>.
+    <code>--visual-style</code> accepts <code>rhea</code>, <code>nova</code>, <code>vega</code>
+    (the default), <code>lyra</code>, <code>maia</code>, <code>mira</code>, <code>luma</code>, or
+    <code>sera</code> — see <a href="/docs/theming">Theming</a> for what each one changes. Both
+    flags are recorded in <code>components.json</code> so later <code>add</code> and
+    <code>eject</code> calls know which mode and style you're on.
   </p>
 
-  <p>Either way, you end up with this shape:</p>
+  <p>On <code>copy</code>, <code>init</code> writes <code>components.json</code>, then fetches and writes the theme matching your base color plus any components you named on the command line, as flat generated source under your components alias directory.</p>
 
-  <code-block language="text" code=VITE_STRUCTURE/>
+  <p>On <code>import</code>, <code>init</code> writes <code>components.json</code>, adds <code>@marko-ui/core</code> as a dependency, and scaffolds the CSS entry described below. No component files are written — there's nothing to copy.</p>
 
-  <h2 id="add-components">Adding Components</h2>
+  <h2 id="add-components">Adding components</h2>
 
-  <p>Install any component by its registry URL:</p>
+  <p>On the <code>copy</code> distribution, install any component by name:</p>
 
   <code-block language="bash" code=ADD_COMMAND/>
 
@@ -170,67 +150,148 @@ static const USE_BUTTON = `import Button from "../components/ui/button/button.ma
   <code-block language="bash" code=ADD_MANY/>
 
   <p>
-    The CLI resolves each item's <code>registryDependencies</code> — most components depend on
-    <code>utils</code> — installs the <code>@zag-js/*</code> packages that component needs, and
-    writes the <code>.marko</code> files under <code>src/components/ui/&lt;name&gt;/</code>.
+    The CLI resolves each item's registry dependencies, installs the <code>@zag-js/*</code>
+    packages that component needs, and writes the <code>.marko</code> files under your components
+    directory. Then import the tag by path and use it:
   </p>
 
-  <p>Then import the tag by path and use it:</p>
+  <code-block language="marko" code=USE_BUTTON_COPY/>
 
-  <code-block language="marko" code=USE_BUTTON/>
+  <p>
+    On the <code>import</code> distribution there is no <code>add</code> step — every component is
+    already available from <code>@marko-ui/core</code>:
+  </p>
+
+  <code-block language="marko" code=USE_BUTTON_IMPORT/>
 
   <p>
     Every component's page in the <a href="/docs/components">Components</a> section shows the
     exact install command and a live demo.
   </p>
 
-  <h2 id="manual">Manual Installation</h2>
+  <h2 id="import-css">The import CSS entry</h2>
 
   <p>
-    If you would rather not run the CLI, the registry JSON is just files with target paths — you
-    can copy them by hand.
+    <code>marko-ui init --distribution import</code> writes this block into your Tailwind
+    stylesheet automatically. If you're wiring it up by hand, or checking what got generated, it
+    has to look exactly like this:
   </p>
 
-  <ol>
-    <li>Install the runtime dependencies.</li>
-    <li>Add the <code>cn()</code> helper.</li>
-    <li>Copy the theme tokens into your <code>globals.css</code>.</li>
-    <li>Copy the component directory you want.</li>
-  </ol>
-
-  <code-block language="bash" code=MANUAL_DEPS/>
-
-  <code-block language="ts" filename="src/lib/utils.ts" code=MANUAL_UTILS/>
+  <code-block language="css" code=IMPORT_CSS_ENTRY/>
 
   <p>
-    For the theme tokens, open
-    <a href="https://marko-ui.saulo.tech/r/style.json" target="_blank" rel="noreferrer">/r/style.json</a>
-    and copy the contents of its single file into your stylesheet. For a component, open
-    <code>/r/&lt;name&gt;.json</code>, and write each entry in <code>files</code> to the path in its
-    <code>target</code> field. Install anything listed in <code>dependencies</code> with
-    <code>bun add</code>.
+    Two parts of this are easy to get wrong, and both fail silently — everything still renders, so
+    the break only shows up later as "my override doesn't do anything."
   </p>
+
+  <p>
+    <strong><code>layer(components)</code> is required, not stylistic.</strong> Imported raw, a
+    style layer's rules land outside any cascade layer, and unlayered CSS beats every layered
+    declaration unconditionally — including Tailwind's own <code>@layer utilities</code>. Writing
+    <code>class="rounded-none"</code> on a marko-ui <code>Button</code> silently loses to the style
+    layer no matter how specific your selector is, if the layer was imported without
+    <code>layer(components)</code>:
+  </p>
+
+  <code-block language="css" filename="don't do this" code=IMPORT_CSS_BROKEN/>
+
+  <p>
+    <strong>The <code>@custom-variant</code> line must be present.</strong> Components rely on
+    Tailwind variants like <code>data-open:</code> and <code>data-state-*:</code>, which only exist
+    because <code>globals.css</code> in the copy path defines them via <code>@custom-variant</code>.
+    The import path doesn't get that for free — without the line above in your own build, those
+    variant classes parse fine and compile to nothing. No error, no warning, just dead styling.
+  </p>
+
+  <p>
+    If you picked a base color other than neutral at <code>init</code> time, the generated import
+    points at <code>globals-&lt;color&gt;.css</code> instead of <code>globals.css</code> (for
+    example <code>globals-zinc.css</code>), and the style layer and custom variant both use your
+    chosen <code>--visual-style</code> in place of <code>vega</code>.
+  </p>
+
+  <h2 id="eject">marko-ui eject</h2>
+
+  <p>
+    <code>eject</code> switches a project from <code>import</code> to <code>copy</code>. It is not
+    an escape hatch bolted on after the fact — under dual distribution it's a first-class,
+    supported transition for when you outgrow "theme from CSS" and want to edit component source
+    directly.
+  </p>
+
+  <code-block language="bash" code=EJECT_COMMAND/>
+
+  <p>
+    It reads which components are actually in use from <code>@marko-ui/core</code>'s installed
+    <code>ui/</code> tree, cross-checks that list against the registry, then fetches and writes
+    local source for every one of them — the exact same fetch-and-write path <code>add</code> uses,
+    so the result is indistinguishable from having run <code>add</code> for each component by hand.
+    It then flips <code>components.json</code>'s <code>distribution</code> field to
+    <code>copy</code>.
+  </p>
+
+  <p>
+    <code>eject</code> does not remove the <code>@marko-ui/core</code> npm dependency or the CSS
+    block <code>init --distribution import</code> wrote — the command prints both as manual
+    follow-up steps, since your project keeps rendering correctly with the old CSS in place until
+    you remove it and reinstall the copy-path theme (<code>marko-ui add style</code>).
+  </p>
+
+  <h2 id="mu-hooks">mu-* styling hooks</h2>
+
+  <p>
+    Every marko-ui component carries semantic <code>mu-*</code> classes in its markup —
+    <code>mu-button</code>, <code>mu-accordion-trigger</code>, and so on — regardless of which
+    distribution you're on. On <code>copy</code> these are inert decoration; the generated Tailwind
+    utility classes sitting alongside them do the actual styling, and editing that file is how you
+    change anything.
+  </p>
+
+  <p>
+    On <code>import</code> they're load-bearing: <code>mu-*</code> is the public styling API a
+    consumer's own stylesheet targets. Scope an override to one visual style by combining it with
+    the <code>style-&lt;name&gt;</code> class your CSS entry activates:
+  </p>
+
+  <code-block language="css" code=MU_OVERRIDE_CSS/>
+
+  <p>
+    Switching styles at runtime — no rebuild, no reinstall — is just toggling which
+    <code>style-&lt;name&gt;</code> class is present on an ancestor element. All 8 precompiled
+    layers ship in the package at once, so this works the moment you import more than one of them:
+  </p>
+
+  <code-block language="marko" code=MU_SWITCH_CLASS/>
 
   <h2 id="troubleshooting">Troubleshooting</h2>
 
+  <h3>An override or a data-* variant class does nothing</h3>
+  <p>
+    On the import distribution this is almost always the CSS entry: either the style layer was
+    imported without <code>layer(components)</code>, or the matching
+    <code>@custom-variant style-&lt;name&gt;</code> line is missing. Both fail silently — see
+    <a href="#import-css">the import CSS entry</a> above.
+  </p>
+
   <h3>Components render unstyled</h3>
   <p>
-    Almost always a missing <code>@source</code> directive. Tailwind v4 has to be told where your
-    <code>.marko</code> files live, and it needs a second directive if your components were
-    installed outside the directory the first one covers.
+    On the copy distribution, this is almost always a missing Tailwind <code>@source</code>
+    directive for your component directory. Tailwind v4 has to be told where your
+    <code>.marko</code> files live, and needs a second directive if components were installed
+    outside the directory the first one covers.
   </p>
 
   <h3>"Cannot find module" for a @zag-js package</h3>
   <p>
-    The CLI installs a component's declared dependencies, but if you copied files manually you have
-    to install them yourself. The list is in the component's registry JSON under
-    <code>dependencies</code>.
+    <code>marko-ui add</code> installs a component's declared dependencies automatically. If you
+    copied files manually instead, install them yourself — the list is in the component's registry
+    JSON under <code>dependencies</code>.
   </p>
 
   <h3>Serialization errors on interaction</h3>
   <p>
     A Zag service or API object escaped into reactive state. This is a component-authoring mistake
-    rather than an installation problem — see <a href="/docs/creating-components">Creating Components</a>
-    for the rule and the fix.
+    rather than an installation problem — see <a href="/docs/creating-components">Creating
+    Components</a> for the rule and the fix.
   </p>
 </docs-article>
