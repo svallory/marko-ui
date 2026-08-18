@@ -29,6 +29,30 @@
  * identity transform — non-allowlisted anchor tokens are still stripped; the
  * phase-3 identity check compares modulo stripped anchors.
  *
+ * ALSO matches a `class:` object-literal property (e.g. the prop bag built
+ * for a dynamic-tag render-prop call: `${trigger}({ ..., class: "mu-x" })`)
+ * — but ONLY when the value immediately starts with `"`, `'`, a backtick, or
+ * a `cn(` call, i.e. it looks like an actual class-string expression. This
+ * deliberately does NOT match `class: className` — the extremely common
+ * destructuring-rename shape (`const { class: className, ...rest } = input`)
+ * used throughout this registry to strip `class` off `input` before
+ * forwarding `...rest`. A bare identifier after `class:` is a binding
+ * target, never a class value, so it is intentionally excluded rather than
+ * scanned-and-found-harmless — this keeps the regex's intent legible and
+ * does not depend on "no string literals happen to appear after it" holding
+ * by coincidence.
+ *
+ * ALSO matches any `<name>Class=` attribute (e.g. `toastClass="mu-toast"`)
+ * — a convention this registry uses for a class string threaded to a NESTED
+ * component's root instead of the tag's own `class` (Zag toast's per-toast
+ * root class, forwarded through `<Toaster toastClass=...>` down to
+ * `<toast-item>`, which is the only such case today). The receiving side
+ * merges it via `class=cn(input.toastClass, ...)`, a normal class context —
+ * only the DEFINING literal (in `sonner.marko`) needs the widened match,
+ * since the pass-through sites only ever hold an identifier, never a
+ * literal. `class=` itself is excluded from this generic suffix match (it
+ * is handled by the first alternative) to avoid a redundant double-match.
+ *
  * Known limits (fine for registry sources):
  * - Concise-mode `class=` and shorthand `.class-name` syntax are not handled;
  *   registry components use HTML-mode tags exclusively.
@@ -56,8 +80,18 @@ interface Span {
   kind: "string" | "template-chunk"
 }
 
-/** Matches a `class=` attribute name: start-of-file, whitespace, or `,` before it. */
-const CLASS_ATTR_REGEX = /(?:^|[\s,])class=/g
+/**
+ * Matches, in order of the alternation:
+ *   1. a `class=` attribute name (start-of-file, whitespace, or `,` before it)
+ *   2. a `class:` object-literal property whose value looks like an actual
+ *      class-string expression (a quote, backtick, or `cn(` call) — see the
+ *      file header for why the value lookahead is required (excludes the
+ *      `class: someIdentifier` destructuring-rename shape)
+ *   3. a `<name>Class=` attribute name (e.g. `toastClass=`) — see the file
+ *      header for the nested-component-root convention this covers
+ */
+const CLASS_ATTR_REGEX =
+  /(?:^|[\s,])class=|(?:^|[\s,])class:\s*(?=["'`]|cn\()|(?:^|[\s,])[A-Za-z][\w]*Class=/g
 
 export function transformMarkoSource(
   source: string,
