@@ -28,7 +28,7 @@ describe("findImportedComponents", () => {
     mockGetShadcnRegistryIndex.mockReset()
   })
 
-  it("returns nothing when @marko-ui/core is not installed", async () => {
+  it("returns nothing when @marko-ui/shadcn is not installed", async () => {
     const dir = mkdtempSync(path.join(tmpdir(), "marko-ui-eject-empty-"))
     mockGetShadcnRegistryIndex.mockResolvedValue([])
 

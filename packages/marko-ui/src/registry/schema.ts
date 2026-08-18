@@ -68,7 +68,7 @@ export const rawConfigSchema = z
     // Which distribution path this project uses (see
     // notes/plans/dual-distribution-plan.md): "copy" (default) writes flat
     // generated source per component via `add`; "import" depends on
-    // `@marko-ui/core` (mu-* hook-class components + precompiled style
+    // `@marko-ui/shadcn` (mu-* hook-class components + precompiled style
     // layers) and scaffolds a CSS entry instead of copying files. Additive
     // field — absent/older configs are treated as "copy".
     distribution: z.enum(["copy", "import"]).optional(),
@@ -77,7 +77,7 @@ export const rawConfigSchema = z
     // per-style registry tree `add` fetches from
     // (`<REGISTRY_URL>/styles/<visualStyle>/<name>.json`, see build-registry.ts);
     // for "import" it's the `style-<visualStyle>` class applied to activate
-    // @marko-ui/core's precompiled layer. Additive field — absent/older
+    // @marko-ui/shadcn's precompiled layer. Additive field — absent/older
     // configs fall back to DEFAULT_VISUAL_STYLE.
     visualStyle: z.string().optional(),
     aliases: z.object({

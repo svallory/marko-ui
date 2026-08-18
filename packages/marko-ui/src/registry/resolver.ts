@@ -137,7 +137,7 @@ export async function fetchRegistryItems(
 // moment a new non-component item type is added — try the styled path first
 // and fall back to the flat path on 404. "import" distribution and configs
 // with no visualStyle skip straight to the flat path (it's the only one
-// @marko-ui/core's consumers or older configs care about).
+// @marko-ui/shadcn's consumers or older configs care about).
 //
 // This duplicates BUILTIN_REGISTRIES["@marko-ui"]'s `{style}` template
 // intentionally rather than routing through buildUrlFromRegistryConfig:

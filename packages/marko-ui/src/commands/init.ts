@@ -70,7 +70,7 @@ export const init = new Command()
   .option("--agents", "generate AGENTS.md and the marko-ui Claude skill.", false)
   .option(
     "-D, --distribution <mode>",
-    "how components are shipped: copy (flat generated source, default) or import (@marko-ui/core hook-class components + CSS layers)."
+    "how components are shipped: copy (flat generated source, default) or import (@marko-ui/shadcn hook-class components + CSS layers)."
   )
   .option(
     "--visual-style <name>",
@@ -160,11 +160,11 @@ export async function runInit(
   }
 
   if (distribution === "import") {
-    // Import path: no files are copied. `@marko-ui/core` ships the mu-*
+    // Import path: no files are copied. `@marko-ui/shadcn` ships the mu-*
     // hook-class components + precompiled style CSS layers; scaffold the
     // dependency and the CSS entry that consumes them (see
     // notes/plans/dual-distribution-plan.md §1/§4c).
-    await updateDependencies(["@marko-ui/core"], [], fullConfig, {
+    await updateDependencies(["@marko-ui/shadcn"], [], fullConfig, {
       silent: options.silent,
     })
     await scaffoldImportDistributionCss(fullConfig, {
@@ -176,7 +176,7 @@ export async function runInit(
     if (!options.silent) {
       logger.info(
         `Import distribution: components come from ${highlighter.info(
-          "@marko-ui/core"
+          "@marko-ui/shadcn"
         )} (no local component files). Use ${highlighter.info(
           `class="style-${visualStyle}"`
         )} on an ancestor element to activate the ${highlighter.info(
@@ -274,7 +274,7 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
       `Which ${highlighter.info(
         "distribution"
       )} do you want — copy generated source into your project, or import ${highlighter.info(
-        "@marko-ui/core"
+        "@marko-ui/shadcn"
       )}?`,
       [
         { value: "copy", label: "copy", hint: "the code is yours — shadcn's model" },
@@ -301,7 +301,7 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
   // Visual style is a real dimension for BOTH distributions: "copy" uses it
   // to pick which per-style registry tree `add` fetches from
   // (`<REGISTRY_URL>/styles/<visualStyle>/<name>.json`), "import" uses it to pick
-  // which `style-<visualStyle>` class activates @marko-ui/core's precompiled
+  // which `style-<visualStyle>` class activates @marko-ui/shadcn's precompiled
   // layer. It must be persisted either way — prompting for it in "import"
   // only (the pre-dual-distribution-blocker-fix behavior) left "copy"
   // projects with no way to record which style `add` should keep fetching.

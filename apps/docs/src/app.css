@@ -30,10 +30,10 @@
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
 /* DEVIATION: measured-height accordion animation for accordion.marko. */
-@import "../../../packages/registry/default/styles/marko-accordion.css";
+@import "../../../packages/shadcn/styles/marko-accordion.css";
 @import "./tags/typeset/typeset.css";
-/* DEVIATION: the 8 precompiled `@marko-ui/core` style layers (see
-   packages/registry/scripts/build-style-css.ts), one per shadcn style. Each
+/* DEVIATION: the 8 precompiled `@marko-ui/shadcn` style layers (see
+   the source style layers), one per shadcn style. Each
    file is Tailwind's `@apply` output for `styles-src/style-<name>.css`
    pre-resolved against the registry's consumer theme via `@reference` — it
    still contains `var(--...)` references, so it tracks whatever theme is
@@ -48,19 +48,20 @@
    notes/plans/spike-3a-verdict.md for the measured proof. This makes the
    `/create` page's `style-${style}` body class (design-system.marko) actually
    style real components instead of a no-op. */
-@import "../../../packages/registry/styles-gen/css/style-vega.css" layer(components);
-@import "../../../packages/registry/styles-gen/css/style-nova.css" layer(components);
-@import "../../../packages/registry/styles-gen/css/style-lyra.css" layer(components);
-@import "../../../packages/registry/styles-gen/css/style-maia.css" layer(components);
-@import "../../../packages/registry/styles-gen/css/style-mira.css" layer(components);
-@import "../../../packages/registry/styles-gen/css/style-luma.css" layer(components);
-@import "../../../packages/registry/styles-gen/css/style-sera.css" layer(components);
-@import "../../../packages/registry/styles-gen/css/style-rhea.css" layer(components);
+@import "../../../packages/shadcn/styles/style-vega.css" layer(components);
+@import "../../../packages/shadcn/styles/style-nova.css" layer(components);
+@import "../../../packages/shadcn/styles/style-lyra.css" layer(components);
+@import "../../../packages/shadcn/styles/style-maia.css" layer(components);
+@import "../../../packages/shadcn/styles/style-mira.css" layer(components);
+@import "../../../packages/shadcn/styles/style-luma.css" layer(components);
+@import "../../../packages/shadcn/styles/style-sera.css" layer(components);
+@import "../../../packages/shadcn/styles/style-rhea.css" layer(components);
 
 /* DEVIATION: scan our Marko sources instead of shadcn's styles/base-* trees. */
 @source "../../**/*.marko";
-@source "../../../packages/registry/default/**/*.{marko,ts}";
-@source "../../../packages/registry/styles-gen/**/*.{marko,ts}";
+@source "../../../packages/shadcn/**/*.{marko,ts}";
+@source "../../../packages/shadcn/ui/**/*.{marko,ts}";
+@source "../../../packages/shadcn/styles/*.css";
 
 @custom-variant style-vega (&:where(.style-vega *));
 @custom-variant style-nova (&:where(.style-nova *));

@@ -2,11 +2,11 @@
 // original hand-rolls a fake QR matrix as static <rect> elements (no real
 // encoding, no qr-code component) — ported verbatim rather than swapped for
 // marko-ui's real QrCode primitive, to keep exact DOM/class parity.
-import Card from "@marko-ui/shadcn/styles/rhea/ui/card/card.marko";
-import CardHeader from "@marko-ui/shadcn/styles/rhea/ui/card/header.marko";
-import CardTitle from "@marko-ui/shadcn/styles/rhea/ui/card/title.marko";
-import CardDescription from "@marko-ui/shadcn/styles/rhea/ui/card/description.marko";
-import CardContent from "@marko-ui/shadcn/styles/rhea/ui/card/content.marko";
+import Card from "@marko-ui/shadcn/ui/card/card.marko";
+import CardHeader from "@marko-ui/shadcn/ui/card/header.marko";
+import CardTitle from "@marko-ui/shadcn/ui/card/title.marko";
+import CardDescription from "@marko-ui/shadcn/ui/card/description.marko";
+import CardContent from "@marko-ui/shadcn/ui/card/content.marko";
 
 static const QR_CELLS = [
   "111111100101101111111",

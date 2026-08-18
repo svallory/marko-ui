@@ -29,10 +29,10 @@ describe("scaffoldImportDistributionCss", () => {
     const output = readFileSync(cssFilepath, "utf8")
 
     expect(output).toContain(
-      '@import "@marko-ui/core/styles/globals.css";'
+      '@import "@marko-ui/shadcn/styles/globals.css";'
     )
     expect(output).toContain(
-      '@import "@marko-ui/core/styles/style-vega.css" layer(components);'
+      '@import "@marko-ui/shadcn/styles/style-vega.css" layer(components);'
     )
     expect(output).toContain(
       "@custom-variant style-vega (&:where(.style-vega *));"
@@ -52,10 +52,10 @@ describe("scaffoldImportDistributionCss", () => {
     const output = readFileSync(cssFilepath, "utf8")
 
     expect(output).toContain(
-      '@import "@marko-ui/core/styles/globals-zinc.css";'
+      '@import "@marko-ui/shadcn/styles/globals-zinc.css";'
     )
     expect(output).toContain(
-      '@import "@marko-ui/core/styles/style-nova.css" layer(components);'
+      '@import "@marko-ui/shadcn/styles/style-nova.css" layer(components);'
     )
     expect(output).toContain(
       "@custom-variant style-nova (&:where(.style-nova *));"

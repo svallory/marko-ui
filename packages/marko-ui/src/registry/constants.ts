@@ -56,7 +56,7 @@ export const BUILTIN_REGISTRIES: z.infer<typeof registryConfigSchema> = {
 // The 8 shadcn-derived visual styles (shape/spacing/radius/borders — see
 // notes/plans/dual-distribution-plan.md §1). Each ships as
 // `styles-src/style-<name>.css` for the copy path (baked into generated
-// component classes) and as a precompiled `@marko-ui/core/styles/style-
+// component classes) and as a precompiled `@marko-ui/shadcn/styles/style-
 // <name>.css` layer for the import path. Fixed set, hardcoded like
 // BASE_COLORS.
 export const VISUAL_STYLES = [

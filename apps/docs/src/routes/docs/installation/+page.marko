@@ -34,13 +34,13 @@ static const USE_BUTTON_COPY = `import Button from "../components/ui/button/butt
 
 <Button variant="outline">Click me</Button>`;
 
-static const USE_BUTTON_IMPORT = `import Button from "@marko-ui/core/ui/button/button.marko";
+static const USE_BUTTON_IMPORT = `import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
 <Button variant="outline">Click me</Button>`;
 
 static const IMPORT_CSS_ENTRY = `@import "tailwindcss";
-@import "@marko-ui/core/styles/globals.css";
-@import "@marko-ui/core/styles/style-vega.css" layer(components);
+@import "@marko-ui/shadcn/styles/globals.css";
+@import "@marko-ui/shadcn/styles/style-vega.css" layer(components);
 
 /* Required so data-open:/data-state-*: variant classes on mu-* components
    compile to real CSS instead of silently emitting nothing. */
@@ -50,7 +50,7 @@ static const IMPORT_CSS_BROKEN = `/* Missing layer(components) — silently wins
    Tailwind's own utility layer no matter how specific your
    override selector is. Renders fine; overrides just stop
    working. */
-@import "@marko-ui/core/styles/style-vega.css";`;
+@import "@marko-ui/shadcn/styles/style-vega.css";`;
 
 static const EJECT_COMMAND = `bunx marko-ui eject`;
 
@@ -82,15 +82,15 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
   </p>
 
   <p>
-    <strong>import</strong> installs <code>@marko-ui/core</code>, a single npm package that ships
-    the same components as <code>mu-*</code> hook-class components plus all 8 precompiled visual
+    <strong>import</strong> installs <code>@marko-ui/shadcn</code>, a single npm package that ships
+    the same components as <code>mu-*</code> hook-class components plus all 8 visual
     style layers. Nothing is copied into your project; you theme, override, or switch between
     styles entirely from your own stylesheet. Pick this when you expect to swap styles at runtime
     or theme centrally without maintaining a fork of the component source.
   </p>
 
   <p>
-    <strong>Note:</strong> neither <code>@marko-ui/core</code> nor the <code>marko-ui</code> CLI is
+    <strong>Note:</strong> neither <code>@marko-ui/shadcn</code> nor the <code>marko-ui</code> CLI is
     published to npm yet, so nothing below is installable today via <code>bunx</code>. The steps
     document the real, current CLI behavior — both distribution paths will work exactly as shown
     once the packages ship.
@@ -136,7 +136,7 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
 
   <p>On <code>copy</code>, <code>init</code> writes <code>components.json</code>, then fetches and writes the theme matching your base color plus any components you named on the command line, as flat generated source under your components alias directory.</p>
 
-  <p>On <code>import</code>, <code>init</code> writes <code>components.json</code>, adds <code>@marko-ui/core</code> as a dependency, and scaffolds the CSS entry described below. No component files are written — there's nothing to copy.</p>
+  <p>On <code>import</code>, <code>init</code> writes <code>components.json</code>, adds <code>@marko-ui/shadcn</code> as a dependency, and scaffolds the CSS entry described below. No component files are written — there's nothing to copy.</p>
 
   <h2 id="add-components">Adding components</h2>
 
@@ -158,7 +158,7 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
 
   <p>
     On the <code>import</code> distribution there is no <code>add</code> step — every component is
-    already available from <code>@marko-ui/core</code>:
+    already available from <code>@marko-ui/shadcn</code>:
   </p>
 
   <code-block language="marko" code=USE_BUTTON_IMPORT/>
@@ -221,7 +221,7 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
   <code-block language="bash" code=EJECT_COMMAND/>
 
   <p>
-    It reads which components are actually in use from <code>@marko-ui/core</code>'s installed
+    It reads which components are actually in use from <code>@marko-ui/shadcn</code>'s installed
     <code>ui/</code> tree, cross-checks that list against the registry, then fetches and writes
     local source for every one of them — the exact same fetch-and-write path <code>add</code> uses,
     so the result is indistinguishable from having run <code>add</code> for each component by hand.
@@ -230,7 +230,7 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
   </p>
 
   <p>
-    <code>eject</code> does not remove the <code>@marko-ui/core</code> npm dependency or the CSS
+    <code>eject</code> does not remove the <code>@marko-ui/shadcn</code> npm dependency or the CSS
     block <code>init --distribution import</code> wrote — the command prints both as manual
     follow-up steps, since your project keeps rendering correctly with the old CSS in place until
     you remove it and reinstall the copy-path theme (<code>marko-ui add style</code>).
@@ -256,7 +256,7 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
 
   <p>
     Switching styles at runtime — no rebuild, no reinstall — is just toggling which
-    <code>style-&lt;name&gt;</code> class is present on an ancestor element. All 8 precompiled
+    <code>style-&lt;name&gt;</code> class is present on an ancestor element. All 8
     layers ship in the package at once, so this works the moment you import more than one of them:
   </p>
 

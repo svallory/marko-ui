@@ -7,10 +7,10 @@
     "build": "marko-run build",
     "preview": "marko-run preview",
     "check": "tsc --noEmit -p .",
-    "styles": "bun ../../packages/registry/scripts/build-styles.ts && bun ../../packages/registry/scripts/build-style-css.ts",
-    "predev": "bun ../../packages/registry/scripts/build-styles.ts && bun ../../packages/registry/scripts/build-style-css.ts && bun ../../packages/registry/scripts/build-registry.ts",
-    "prebuild": "bun ../../packages/registry/scripts/build-styles.ts && bun ../../packages/registry/scripts/build-style-css.ts && bun ../../packages/registry/scripts/build-registry.ts",
-    "precheck": "bun ../../packages/registry/scripts/build-styles.ts && bun ../../packages/registry/scripts/build-style-css.ts && bun ../../packages/registry/scripts/build-registry.ts"
+    "styles": "bun ../../packages/shadcn/scripts/build-styles.ts",
+    "predev": "bun ../../packages/shadcn/scripts/build-styles.ts && bun ../../packages/shadcn/scripts/build-registry.ts",
+    "prebuild": "bun ../../packages/shadcn/scripts/build-styles.ts && bun ../../packages/shadcn/scripts/build-registry.ts",
+    "precheck": "bun ../../packages/shadcn/scripts/build-styles.ts && bun ../../packages/shadcn/scripts/build-registry.ts"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

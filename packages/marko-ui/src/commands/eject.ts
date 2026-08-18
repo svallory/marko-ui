@@ -23,13 +23,13 @@ const ejectOptionsSchema = z.object({
  * Switches a project from the `import` distribution to `copy` (see
  * notes/plans/dual-distribution-plan.md §4c). This is a first-class
  * supported transition, not an escape hatch: `import` consumers depend on
- * `@marko-ui/core` (mu-* hook-class components + precompiled style CSS
+ * `@marko-ui/shadcn` (mu-* hook-class components + precompiled style CSS
  * layers) and never have local component files; `eject` gives them real,
  * editable source in their own project — "the code is mine now" — using
  * the exact same fetch-and-write path `marko-ui add` uses, so the result is
  * indistinguishable from having run `add` for every installed component.
  *
- * What it does NOT do: touch @marko-ui/core's node_modules install (the
+ * What it does NOT do: touch @marko-ui/shadcn's node_modules install (the
  * user removes the npm dependency once satisfied) or delete the CSS block
  * `init --distribution import` wrote (styles still work identically until
  * the user removes it, since the copy path's generated components style
@@ -38,7 +38,7 @@ const ejectOptionsSchema = z.object({
 export const eject = new Command()
   .name("eject")
   .description(
-    "switch this project from the import distribution (@marko-ui/core) to copy: fetch and write local component source for everything currently installed"
+    "switch this project from the import distribution (@marko-ui/shadcn) to copy: fetch and write local component source for everything currently installed"
   )
   .option(
     "-c, --cwd <cwd>",
@@ -86,8 +86,8 @@ export const eject = new Command()
       if (!installedComponents.length) {
         logger.error(
           `No installed components found under ${highlighter.info(
-            "node_modules/@marko-ui/core/ui"
-          )}. Is ${highlighter.info("@marko-ui/core")} installed?`
+            "node_modules/@marko-ui/shadcn/ui"
+          )}. Is ${highlighter.info("@marko-ui/shadcn")} installed?`
         )
         process.exit(1)
       }
@@ -140,7 +140,7 @@ export const eject = new Command()
         logger.log(`Remaining manual steps:`)
         logger.log(
           `  1. Remove the dependency: ${highlighter.info(
-            "bun remove @marko-ui/core"
+            "bun remove @marko-ui/shadcn"
           )}`
         )
         logger.log(
@@ -168,7 +168,7 @@ export const eject = new Command()
 /**
  * The import distribution has no local component files to scan (that's the
  * point) — it lists what's "installed" by reading the directory names under
- * the @marko-ui/core package's ui/ tree in node_modules, cross-checked
+ * the @marko-ui/shadcn package's ui/ tree in node_modules, cross-checked
  * against the registry index so only real component names are eject
  * targets (skips anything unexpected there).
  */
