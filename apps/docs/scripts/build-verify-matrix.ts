@@ -59,7 +59,7 @@ const DOCS_APP = new URL("../", import.meta.url).pathname;
 const DEMOS_DIR = join(DOCS_APP, "src/demos");
 const TAGS_OUT_DIR = join(DOCS_APP, "src/tags/verify");
 const ROUTES_OUT_DIR = join(DOCS_APP, "src/routes/verify");
-const REGISTRY_DIR = new URL("../../../packages/registry/", import.meta.url).pathname;
+const REGISTRY_DIR = new URL("../../../packages/shadcn/", import.meta.url).pathname;
 
 /** Files in src/demos/ that are infrastructure, not a documented component. */
 const NON_COMPONENT_ENTRIES = new Set(["docs-types.ts", "demos-manifest.ts"]);
@@ -91,21 +91,21 @@ async function componentDirectories(): Promise<string[]> {
 /** Style root for a component's registry directory, or null if the style doesn't ship that component. */
 function styleComponentDir(style: Style, componentName: string): string {
   return style === "default"
-    ? join(REGISTRY_DIR, "default/ui", componentName)
+    ? join(REGISTRY_DIR, "ui", componentName)
     : join(REGISTRY_DIR, "styles-gen", style, "ui", componentName);
 }
 
-/** Rewrites `@marko-ui/registry/ui/` import specifiers to the target style's package path. Default style is a no-op. */
+/** Rewrites `@marko-ui/shadcn/ui/` import specifiers to the target style's package path. Default style is a no-op. */
 function rewriteImports(source: string, style: Style): string {
   if (style === "default") return source;
   return source.replace(
     /from\s+(["'])@marko-ui\/registry\/ui\//g,
-    (_match, quote: string) => `from ${quote}@marko-ui/registry/styles/${style}/ui/`,
+    (_match, quote: string) => `from ${quote}@marko-ui/shadcn/styles/${style}/ui/`,
   );
 }
 
 /**
- * Every `@marko-ui/registry/ui/<component>/<file>.marko` import path referenced
+ * Every `@marko-ui/shadcn/ui/<component>/<file>.marko` import path referenced
  * by a demo's source, as `<component>/<file>.marko` pairs. Checking at the
  * exact-file level (not just "does the component directory exist") matters:
  * a style can ship a component directory that's missing one of its part

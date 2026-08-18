@@ -1,0 +1,124 @@
+import SidebarGroup from "@marko-ui/shadcn/ui/sidebar/group.marko";
+import SidebarGroupLabel from "@marko-ui/shadcn/ui/sidebar/group-label.marko";
+import SidebarMenu from "@marko-ui/shadcn/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/shadcn/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/shadcn/ui/sidebar/menu-button.marko";
+import Collapsible from "@marko-ui/shadcn/ui/collapsible/collapsible.marko";
+
+export interface WorkspacePage {
+  id: string;
+  name: string;
+  emoji: string;
+}
+
+export interface Workspace {
+  id: string;
+  name: string;
+  emoji: string;
+  pages: WorkspacePage[];
+}
+
+export interface Input {
+  workspaces: Workspace[];
+}
+
+// NOTE: shadcn's SidebarMenuAction (hover-revealed icon buttons anchored to
+// a menu item, used here for the expand chevron and the "add page" button)
+// has no equivalent in our sidebar sub-parts yet. The expand chevron is
+// composed via Collapsible's trigger render-prop; the "add page" button is a
+// plain inline button styled to match. Deviations from the source, noted
+// per block-porting rules.
+
+<SidebarGroup>
+  <SidebarGroupLabel>Workspaces</SidebarGroupLabel>
+  <SidebarMenu>
+    <for|workspace| of=input.workspaces by=(workspace) => workspace.id>
+      <Collapsible class="group/workspace-collapsible">
+        <@trigger|attrs|>
+          <SidebarMenuItem class="group/workspace-item relative">
+            <SidebarMenuButton href="#" class="pr-14">
+              <span>${workspace.emoji}</span>
+              <span>${workspace.name}</span>
+            </SidebarMenuButton>
+            <button
+              ...attrs
+              type="button"
+              class="absolute left-2 top-1.5 flex aspect-square w-5 items-center justify-center rounded-md bg-sidebar-accent p-0 text-sidebar-accent-foreground opacity-0 outline-none ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 group-hover/workspace-item:opacity-100 data-[state=open]:rotate-90 data-[state=open]:opacity-100 [&>svg]:size-4 [&>svg]:shrink-0"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="absolute right-1 top-1.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground opacity-0 outline-none ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 group-hover/workspace-item:opacity-100 [&>svg]:size-4 [&>svg]:shrink-0"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M5 12h14"/>
+                <path d="M12 5v14"/>
+              </svg>
+              <span class="sr-only">Add page</span>
+            </button>
+          </SidebarMenuItem>
+        </@trigger>
+        <@content>
+          <if=workspace.pages.length !== 0>
+            <ul class="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5">
+              <for|page| of=workspace.pages by=(page) => page.id>
+                <li class="group/menu-sub-item relative">
+                  <a
+                    href="#"
+                    class="flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 text-sm text-sidebar-foreground outline-none ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50"
+                  >
+                    <span>${page.emoji}</span>
+                    <span class="truncate">${page.name}</span>
+                  </a>
+                </li>
+              </for>
+            </ul>
+          </if>
+        </@content>
+      </Collapsible>
+    </for>
+    <SidebarMenuItem>
+      <SidebarMenuButton class="text-sidebar-foreground/70">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="1"/>
+          <circle cx="19" cy="12" r="1"/>
+          <circle cx="5" cy="12" r="1"/>
+        </svg>
+        <span>More</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  </SidebarMenu>
+</SidebarGroup>

@@ -24,7 +24,7 @@ describe("searchRegistries", () => {
     const mockGetRegistry = vi.mocked(getRegistry)
 
     mockGetRegistry.mockImplementation(async (name: string) => {
-      if (name === "@marko-ui" || name === "@marko-ui/registry") {
+      if (name === "@marko-ui" || name === "@marko-ui/shadcn") {
         return {
           name: "shadcn/ui",
           homepage: "https://ui.shadcn.com",
@@ -146,7 +146,7 @@ describe("searchRegistries", () => {
     const mockGetRegistry = vi.mocked(getRegistry)
 
     mockGetRegistry.mockImplementation(async (name: string) => {
-      if (name === "@marko-ui" || name === "@marko-ui/registry") {
+      if (name === "@marko-ui" || name === "@marko-ui/shadcn") {
         return {
           name: "shadcn/ui",
           homepage: "https://ui.shadcn.com",
@@ -697,7 +697,7 @@ describe("searchRegistries", () => {
     const mockGetRegistry = vi.mocked(getRegistry)
 
     mockGetRegistry.mockImplementation(async (nameOrUrl: string) => {
-      if (nameOrUrl === "@marko-ui" || nameOrUrl === "@marko-ui/registry") {
+      if (nameOrUrl === "@marko-ui" || nameOrUrl === "@marko-ui/shadcn") {
         return {
           name: "shadcn/ui",
           homepage: "https://ui.shadcn.com",

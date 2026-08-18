@@ -16,7 +16,7 @@
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",
     "@internationalized/date": "^3.12.3",
-    "@marko-ui/registry": "workspace:*",
+    "@marko-ui/shadcn": "workspace:*",
     "@zag-js/accordion": "1.43.0",
     "@zag-js/angle-slider": "1.43.0",
     "@zag-js/avatar": "1.43.0",

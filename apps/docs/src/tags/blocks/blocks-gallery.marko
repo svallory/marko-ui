@@ -7,9 +7,9 @@
 // full category, matching [...categories]/page.tsx's getAllBlockIds.
 import "./blocks-nav.marko";
 import "./block-viewer.marko";
-import { buttonVariants } from "@marko-ui/registry/ui/button/variants.ts";
-import { badgeVariants } from "@marko-ui/registry/ui/badge/variants.ts";
-import { cn } from "@marko-ui/registry/lib/utils.ts";
+import { buttonVariants } from "@marko-ui/shadcn/ui/button/variants.ts";
+import { badgeVariants } from "@marko-ui/shadcn/ui/badge/variants.ts";
+import { cn } from "@marko-ui/shadcn/lib/utils.ts";
 import { blocksInCategory, findBlock, BLOCK_CATEGORIES } from "../../lib/blocks-list.ts";
 
 export interface Input {

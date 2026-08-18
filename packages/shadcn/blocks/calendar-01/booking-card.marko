@@ -1,0 +1,99 @@
+import Calendar from "@marko-ui/shadcn/ui/calendar/calendar.marko";
+import Card from "@marko-ui/shadcn/ui/card/card.marko";
+import CardHeader from "@marko-ui/shadcn/ui/card/header.marko";
+import CardTitle from "@marko-ui/shadcn/ui/card/title.marko";
+import CardDescription from "@marko-ui/shadcn/ui/card/description.marko";
+import CardContent from "@marko-ui/shadcn/ui/card/content.marko";
+import CardFooter from "@marko-ui/shadcn/ui/card/footer.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Separator from "@marko-ui/shadcn/ui/separator/separator.marko";
+
+static const TIME_SLOTS = [
+  "09:00",
+  "09:30",
+  "10:00",
+  "10:30",
+  "11:00",
+  "11:30",
+  "13:00",
+  "13:30",
+  "14:00",
+  "14:30",
+  "15:00",
+  "15:30",
+];
+
+static const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+<let/selectedDate=[(() => {
+  const today = new Date();
+  return { year: today.getFullYear(), month: today.getMonth() + 1, day: 15 };
+})()]/>
+<let/selectedSlot="10:00"/>
+
+<const/currentDate=selectedDate[0]/>
+<const/formattedDate=currentDate
+  ? `${MONTH_NAMES[currentDate.month - 1]} ${currentDate.day}, ${currentDate.year}`
+  : "No date selected"/>
+
+<Card class="w-full max-w-3xl gap-0 py-0" data-slot="booking-card">
+  <CardHeader class="border-b py-6">
+    <CardTitle>Book an appointment</CardTitle>
+    <CardDescription>Pick a day and a time slot that works for you.</CardDescription>
+  </CardHeader>
+  <CardContent class="flex flex-col gap-6 p-0 md:flex-row">
+    <div class="p-6">
+      <Calendar
+        class="border-0 p-0"
+        value:=selectedDate
+      />
+    </div>
+    <Separator orientation="vertical" class="hidden md:block"/>
+    <Separator class="md:hidden"/>
+    <div class="flex-1 space-y-3 p-6 md:pl-0">
+      <div class="text-sm font-medium">Available times</div>
+      <div class="grid grid-cols-3 gap-2">
+        <for|slot| of=TIME_SLOTS by=(slot) => slot>
+          <Button
+            type="button"
+            size="sm"
+            variant=(slot === selectedSlot ? "default" : "outline")
+            data-slot-time=slot
+            onClick() { selectedSlot = slot; }
+          >
+            ${slot}
+          </Button>
+        </for>
+      </div>
+    </div>
+  </CardContent>
+  <CardFooter
+    class="flex flex-col items-start gap-3 border-t px-6 py-5 sm:flex-row sm:items-center"
+  >
+    <div class="text-sm text-muted-foreground" data-slot="booking-summary">
+      <if=currentDate>
+        Your appointment is set for
+        <span class="font-medium text-foreground">${formattedDate}</span>
+        at
+        <span class="font-medium text-foreground">${selectedSlot}</span>.
+      </if>
+      <else>
+        Select a date to continue.
+      </else>
+    </div>
+    <Button class="w-full sm:ml-auto sm:w-auto" disabled=!currentDate>Confirm booking</Button>
+  </CardFooter>
+</Card>

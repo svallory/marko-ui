@@ -15,12 +15,12 @@
 // a tag variable before its declaration ("Hoisted values can only be read
 // in scripts and event handlers", verified empirically). `order-*` utility
 // classes on the flex container restore the original visual order.
-import Resizable from "@marko-ui/registry/ui/resizable/resizable.marko";
-import Separator from "@marko-ui/registry/ui/separator/separator.marko";
-import Button from "@marko-ui/registry/ui/button/button.marko";
+import Resizable from "@marko-ui/shadcn/ui/resizable/resizable.marko";
+import Separator from "@marko-ui/shadcn/ui/separator/separator.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
 import "./block-viewer-tree-node.marko";
-import { toggleVariants } from "@marko-ui/registry/ui/toggle/variants.ts";
-import { cn } from "@marko-ui/registry/lib/utils.ts";
+import { toggleVariants } from "@marko-ui/shadcn/ui/toggle/variants.ts";
+import { cn } from "@marko-ui/shadcn/lib/utils.ts";
 import { BLOCKS_MANIFEST } from "../../lib/blocks-manifest.ts";
 import { highlightManifestFiles } from "../../lib/highlight-code.ts";
 import type { BlockEntry } from "../../lib/blocks-list.ts";

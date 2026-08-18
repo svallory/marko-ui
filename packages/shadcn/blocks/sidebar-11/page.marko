@@ -1,0 +1,44 @@
+import SidebarProvider from "@marko-ui/shadcn/ui/sidebar/provider.marko";
+import SidebarTrigger from "@marko-ui/shadcn/ui/sidebar/trigger.marko";
+import Separator from "@marko-ui/shadcn/ui/separator/separator.marko";
+import Breadcrumb from "@marko-ui/shadcn/ui/breadcrumb/breadcrumb.marko";
+import BreadcrumbItem from "@marko-ui/shadcn/ui/breadcrumb/item.marko";
+import BreadcrumbLink from "@marko-ui/shadcn/ui/breadcrumb/link.marko";
+import BreadcrumbPage from "@marko-ui/shadcn/ui/breadcrumb/page.marko";
+import BreadcrumbSeparator from "@marko-ui/shadcn/ui/breadcrumb/separator.marko";
+import AppSidebar from "./app-sidebar.marko";
+
+<SidebarProvider width="16rem">
+  <@sidebar|{ open }|>
+    <AppSidebar open=open/>
+  </@sidebar>
+  <@content|{ open, toggle }|>
+    <div class="flex min-w-0 flex-1 flex-col">
+      <header class="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+        <SidebarTrigger open=open toggle=toggle class="-ml-1"/>
+        <Separator orientation="vertical" class="mr-2 h-4"/>
+        <Breadcrumb>
+          <BreadcrumbItem class="hidden md:block">
+            <BreadcrumbLink href="#">components</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator class="hidden md:block"/>
+          <BreadcrumbItem class="hidden md:block">
+            <BreadcrumbLink href="#">ui</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator class="hidden md:block"/>
+          <BreadcrumbItem>
+            <BreadcrumbPage>button.tsx</BreadcrumbPage>
+          </BreadcrumbItem>
+        </Breadcrumb>
+      </header>
+      <div class="flex flex-1 flex-col gap-4 p-4">
+        <div class="grid auto-rows-min gap-4 md:grid-cols-3">
+          <div class="aspect-video rounded-xl bg-muted/50"></div>
+          <div class="aspect-video rounded-xl bg-muted/50"></div>
+          <div class="aspect-video rounded-xl bg-muted/50"></div>
+        </div>
+        <div class="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min"></div>
+      </div>
+    </div>
+  </@content>
+</SidebarProvider>

@@ -1,0 +1,42 @@
+import SidebarGroup from "@marko-ui/shadcn/ui/sidebar/group.marko";
+import SidebarMenu from "@marko-ui/shadcn/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/shadcn/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/shadcn/ui/sidebar/menu-button.marko";
+
+export interface NavSecondaryItem {
+  id: string;
+  title: string;
+  url: string;
+  /** SVG path `d` attribute(s) for a 24x24 lucide-style icon, rendered inline. */
+  icon: string;
+}
+
+export interface Input {
+  items: NavSecondaryItem[];
+  class?: string;
+}
+
+<SidebarGroup class=input.class>
+  <SidebarMenu>
+    <for|item| of=input.items by=(entry) => entry.id>
+      <SidebarMenuItem>
+        <SidebarMenuButton href=item.url>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d=item.icon/>
+          </svg>
+          <span>${item.title}</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </for>
+  </SidebarMenu>
+</SidebarGroup>

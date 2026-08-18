@@ -1,0 +1,139 @@
+import Sidebar from "@marko-ui/shadcn/ui/sidebar/sidebar.marko";
+import SidebarContent from "@marko-ui/shadcn/ui/sidebar/content.marko";
+import SidebarGroup from "@marko-ui/shadcn/ui/sidebar/group.marko";
+import SidebarGroupLabel from "@marko-ui/shadcn/ui/sidebar/group-label.marko";
+import SidebarMenu from "@marko-ui/shadcn/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/shadcn/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/shadcn/ui/sidebar/menu-button.marko";
+
+export interface NavSubItem {
+  id: string;
+  title: string;
+  url: string;
+  isActive?: boolean;
+}
+
+export interface NavItem {
+  id: string;
+  title: string;
+  url: string;
+  items?: NavSubItem[];
+}
+
+export interface Input {
+  open?: boolean;
+}
+
+// NOTE: our sidebar sub-parts have no SidebarMenuSub / SidebarMenuSubItem /
+// SidebarMenuSubButton equivalents yet, so the always-expanded indented
+// sub-menu list below is composed from plain markup, following the pattern
+// already established in blocks/sidebar-08/nav-main.marko. Deviation from
+// the source, noted per block-porting rules.
+//
+// shadcn's SidebarRail (a hover/drag handle on the sidebar's edge) also has
+// no equivalent in our sidebar sub-parts yet, so it is omitted here,
+// following the precedent set in blocks/sidebar-05/app-sidebar.marko.
+//
+// This block renders on the right edge of the screen (see page.marko for
+// how that's achieved via slot order). Our Sidebar always hardcodes a
+// right-side border (`border-r`), so it is flipped to a left-side border
+// here via a `class` override merged through `cn`/`twMerge`.
+
+// This is sample data.
+static const NAV_MAIN: NavItem[] = [
+  {
+    id: "getting-started",
+    title: "Getting Started",
+    url: "#",
+    items: [
+      { id: "installation", title: "Installation", url: "#" },
+      { id: "project-structure", title: "Project Structure", url: "#" },
+    ],
+  },
+  {
+    id: "build-your-application",
+    title: "Build Your Application",
+    url: "#",
+    items: [
+      { id: "routing", title: "Routing", url: "#" },
+      { id: "data-fetching", title: "Data Fetching", url: "#", isActive: true },
+      { id: "rendering", title: "Rendering", url: "#" },
+      { id: "caching", title: "Caching", url: "#" },
+      { id: "styling", title: "Styling", url: "#" },
+      { id: "optimizing", title: "Optimizing", url: "#" },
+      { id: "configuring", title: "Configuring", url: "#" },
+      { id: "testing", title: "Testing", url: "#" },
+      { id: "authentication", title: "Authentication", url: "#" },
+      { id: "deploying", title: "Deploying", url: "#" },
+      { id: "upgrading", title: "Upgrading", url: "#" },
+      { id: "examples", title: "Examples", url: "#" },
+    ],
+  },
+  {
+    id: "api-reference",
+    title: "API Reference",
+    url: "#",
+    items: [
+      { id: "components", title: "Components", url: "#" },
+      { id: "file-conventions", title: "File Conventions", url: "#" },
+      { id: "functions", title: "Functions", url: "#" },
+      { id: "next-config-js-options", title: "next.config.js Options", url: "#" },
+      { id: "cli", title: "CLI", url: "#" },
+      { id: "edge-runtime", title: "Edge Runtime", url: "#" },
+    ],
+  },
+  {
+    id: "architecture",
+    title: "Architecture",
+    url: "#",
+    items: [
+      { id: "accessibility", title: "Accessibility", url: "#" },
+      { id: "fast-refresh", title: "Fast Refresh", url: "#" },
+      { id: "nextjs-compiler", title: "Next.js Compiler", url: "#" },
+      { id: "supported-browsers", title: "Supported Browsers", url: "#" },
+      { id: "turbopack", title: "Turbopack", url: "#" },
+    ],
+  },
+  {
+    id: "community",
+    title: "Community",
+    url: "#",
+    items: [{ id: "contribution-guide", title: "Contribution Guide", url: "#" }],
+  },
+];
+
+<Sidebar open=input.open class="border-r-0 border-l data-[state=closed]:border-r-0 data-[state=closed]:border-l-0">
+  <@content>
+    <SidebarContent>
+      <SidebarGroup>
+        <SidebarGroupLabel>Table of Contents</SidebarGroupLabel>
+        <SidebarMenu>
+          <for|item| of=NAV_MAIN by=(item) => item.id>
+            <SidebarMenuItem>
+              <SidebarMenuButton href=item.url class="font-medium">
+                <span>${item.title}</span>
+              </SidebarMenuButton>
+              <if=((item.items ?? []).length !== 0)>
+                <ul
+                  class="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5"
+                >
+                  <for|leaf| of=item.items by=(leaf) => leaf.id>
+                    <li class="group/menu-sub-item relative">
+                      <a
+                        href=leaf.url
+                        data-active=String(!!leaf.isActive)
+                        class="flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 text-sm text-sidebar-foreground outline-none ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground"
+                      >
+                        <span>${leaf.title}</span>
+                      </a>
+                    </li>
+                  </for>
+                </ul>
+              </if>
+            </SidebarMenuItem>
+          </for>
+        </SidebarMenu>
+      </SidebarGroup>
+    </SidebarContent>
+  </@content>
+</Sidebar>

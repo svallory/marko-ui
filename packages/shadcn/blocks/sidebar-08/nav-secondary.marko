@@ -1,0 +1,30 @@
+import SidebarGroup from "@marko-ui/shadcn/ui/sidebar/group.marko";
+import SidebarMenu from "@marko-ui/shadcn/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/shadcn/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/shadcn/ui/sidebar/menu-button.marko";
+import NavIcon, { type NavIconName } from "./nav-icon.marko";
+
+export interface NavSecondaryItem {
+  id: string;
+  title: string;
+  url: string;
+  icon: NavIconName;
+}
+
+export interface Input {
+  items: NavSecondaryItem[];
+  class?: string;
+}
+
+<SidebarGroup class=input.class>
+  <SidebarMenu>
+    <for|item| of=input.items by=(item) => item.id>
+      <SidebarMenuItem>
+        <SidebarMenuButton href=item.url class="text-sm">
+          <NavIcon name=item.icon/>
+          <span>${item.title}</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </for>
+  </SidebarMenu>
+</SidebarGroup>

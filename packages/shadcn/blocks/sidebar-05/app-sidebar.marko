@@ -1,0 +1,206 @@
+import Sidebar from "@marko-ui/shadcn/ui/sidebar/sidebar.marko";
+import SidebarHeader from "@marko-ui/shadcn/ui/sidebar/header.marko";
+import SidebarContent from "@marko-ui/shadcn/ui/sidebar/content.marko";
+import SidebarGroup from "@marko-ui/shadcn/ui/sidebar/group.marko";
+import SidebarMenu from "@marko-ui/shadcn/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/shadcn/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/shadcn/ui/sidebar/menu-button.marko";
+import Collapsible from "@marko-ui/shadcn/ui/collapsible/collapsible.marko";
+import SearchForm from "./search-form.marko";
+
+export interface Input {
+  open?: boolean;
+}
+
+// NOTE: shadcn's SidebarRail (a hover/drag handle on the sidebar's right
+// edge for resizing/toggling) has no equivalent in our sidebar sub-parts
+// yet, so it is omitted here. SidebarTrigger in the page header covers
+// open/close. Deviation from the source, noted per block-porting rules.
+
+export interface NavLeafItem {
+  id: string;
+  title: string;
+  url: string;
+  active?: boolean;
+}
+
+export interface NavGroup {
+  id: string;
+  title: string;
+  url: string;
+  items: NavLeafItem[];
+}
+
+// This is sample data.
+static const NAV_MAIN: NavGroup[] = [
+  {
+    id: "getting-started",
+    title: "Getting Started",
+    url: "#",
+    items: [
+      { id: "installation", title: "Installation", url: "#" },
+      { id: "project-structure", title: "Project Structure", url: "#" },
+    ],
+  },
+  {
+    id: "build-your-application",
+    title: "Build Your Application",
+    url: "#",
+    items: [
+      { id: "routing", title: "Routing", url: "#" },
+      { id: "data-fetching", title: "Data Fetching", url: "#", active: true },
+      { id: "rendering", title: "Rendering", url: "#" },
+      { id: "caching", title: "Caching", url: "#" },
+      { id: "styling", title: "Styling", url: "#" },
+      { id: "optimizing", title: "Optimizing", url: "#" },
+      { id: "configuring", title: "Configuring", url: "#" },
+      { id: "testing", title: "Testing", url: "#" },
+      { id: "authentication", title: "Authentication", url: "#" },
+      { id: "deploying", title: "Deploying", url: "#" },
+      { id: "upgrading", title: "Upgrading", url: "#" },
+      { id: "examples", title: "Examples", url: "#" },
+    ],
+  },
+  {
+    id: "api-reference",
+    title: "API Reference",
+    url: "#",
+    items: [
+      { id: "components", title: "Components", url: "#" },
+      { id: "file-conventions", title: "File Conventions", url: "#" },
+      { id: "functions", title: "Functions", url: "#" },
+      { id: "next-config-js-options", title: "next.config.js Options", url: "#" },
+      { id: "cli", title: "CLI", url: "#" },
+      { id: "edge-runtime", title: "Edge Runtime", url: "#" },
+    ],
+  },
+  {
+    id: "architecture",
+    title: "Architecture",
+    url: "#",
+    items: [
+      { id: "accessibility", title: "Accessibility", url: "#" },
+      { id: "fast-refresh", title: "Fast Refresh", url: "#" },
+      { id: "nextjs-compiler", title: "Next.js Compiler", url: "#" },
+      { id: "supported-browsers", title: "Supported Browsers", url: "#" },
+      { id: "turbopack", title: "Turbopack", url: "#" },
+    ],
+  },
+  {
+    id: "community",
+    title: "Community",
+    url: "#",
+    items: [{ id: "contribution-guide", title: "Contribution Guide", url: "#" }],
+  },
+];
+
+<Sidebar open=input.open>
+  <@content>
+    <SidebarHeader>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton href="#" class="h-12">
+            <div
+              class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="size-4"
+              >
+                <path d="M7 2h10"/>
+                <path d="M5 6h14"/>
+                <rect width="18" height="12" x="3" y="10" rx="2"/>
+              </svg>
+            </div>
+            <div class="flex flex-col gap-0.5 leading-none">
+              <span class="font-medium">Documentation</span>
+              <span>v1.0.0</span>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+      <SearchForm/>
+    </SidebarHeader>
+    <SidebarContent>
+      <SidebarGroup>
+        <SidebarMenu>
+          <for|group, index| of=NAV_MAIN by=(group) => group.id>
+            <let/isOpen=index === 1/>
+            <Collapsible
+              open=isOpen
+              openChange(open) {
+                isOpen = open;
+              }
+              class="group/collapsible"
+            >
+              <@trigger|attrs|>
+                <SidebarMenuItem>
+                  <SidebarMenuButton ...attrs>
+                    ${group.title}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="ml-auto group-data-[state=open]/collapsible:hidden"
+                    >
+                      <path d="M5 12h14"/>
+                      <path d="M12 5v14"/>
+                    </svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="ml-auto group-data-[state=closed]/collapsible:hidden"
+                    >
+                      <path d="M5 12h14"/>
+                    </svg>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </@trigger>
+              <@content>
+                <if=group.items.length !== 0>
+                  <ul
+                    class="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5"
+                  >
+                    <for|leaf| of=group.items by=(leaf) => leaf.id>
+                      <li class="group/menu-sub-item relative">
+                        <a
+                          href=leaf.url
+                          data-active=String(!!leaf.active)
+                          class="flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 text-sm text-sidebar-foreground outline-none ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground"
+                        >
+                          ${leaf.title}
+                        </a>
+                      </li>
+                    </for>
+                  </ul>
+                </if>
+              </@content>
+            </Collapsible>
+          </for>
+        </SidebarMenu>
+      </SidebarGroup>
+    </SidebarContent>
+  </@content>
+</Sidebar>
+

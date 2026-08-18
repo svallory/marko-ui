@@ -42,7 +42,7 @@ import {
 } from "../../../tags/create/lib/registry-config.ts";
 import { FONTS } from "../../../tags/create/lib/fonts.ts";
 import type { DesignSystemSearchParams } from "../../../tags/create/lib/search-params.ts";
-import { ICON_WRAPPER_ATTRS } from "@marko-ui/registry/ui/icon/render.ts";
+import { ICON_WRAPPER_ATTRS } from "@marko-ui/shadcn/ui/icon/render.ts";
 // client-swap.ts, not resolve.ts: resolve.ts statically imports all 5
 // generated icon maps for SSR's synchronous render (fine server-side, never
 // shipped to the browser); this route runs in the browser and must lazily
@@ -54,8 +54,8 @@ import { ICON_WRAPPER_ATTRS } from "@marko-ui/registry/ui/icon/render.ts";
 import {
   resolveIconInnerAsync,
   preloadAllIconLibraries,
-} from "@marko-ui/registry/ui/icon/client-swap.ts";
-import type { IconLibraryName } from "@marko-ui/registry/ui/icon/icon-names.ts";
+} from "@marko-ui/shadcn/ui/icon/client-swap.ts";
+import type { IconLibraryName } from "@marko-ui/shadcn/ui/icon/icon-names.ts";
 
 import PreviewPage1 from "../../../tags/create/preview-blocks/preview-page-1/index.marko";
 import PreviewPage2 from "../../../tags/create/preview-blocks/preview-page-2/index.marko";

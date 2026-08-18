@@ -1,0 +1,95 @@
+import SidebarGroup from "@marko-ui/shadcn/ui/sidebar/group.marko";
+import SidebarGroupLabel from "@marko-ui/shadcn/ui/sidebar/group-label.marko";
+import SidebarMenu from "@marko-ui/shadcn/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/shadcn/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/shadcn/ui/sidebar/menu-button.marko";
+import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+
+export interface FavoriteItem {
+  id: string;
+  name: string;
+  url: string;
+  emoji: string;
+}
+
+export interface Input {
+  favorites: FavoriteItem[];
+}
+
+// NOTE: our sidebar sub-parts have no SidebarMenuAction equivalent, so the
+// "more" trigger button is composed here from plain markup, following the
+// pattern in blocks/sidebar-07/nav-projects.marko. The source's
+// isMobile-aware dropdown side/align has no equivalent in our zag-based
+// DropdownMenu input, so it is omitted; the menu positions itself
+// automatically. Deviation from the source, noted per block-porting rules.
+
+<const/dropdownItems=[
+  { type: "item" as const, value: "remove", label: "Remove from Favorites" },
+  { type: "separator" as const },
+  { type: "item" as const, value: "copy-link", label: "Copy Link" },
+  { type: "item" as const, value: "open-new-tab", label: "Open in New Tab" },
+  { type: "separator" as const },
+  { type: "item" as const, value: "delete", label: "Delete", danger: true },
+]/>
+
+<SidebarGroup class="group-data-[collapsible=icon]:hidden">
+  <SidebarGroupLabel>Favorites</SidebarGroupLabel>
+  <SidebarMenu>
+    <for|item| of=input.favorites by=(entry) => entry.id>
+      <SidebarMenuItem>
+        <SidebarMenuButton href=item.url title=item.name>
+          <span>${item.emoji}</span>
+          <span>${item.name}</span>
+        </SidebarMenuButton>
+        <DropdownMenu items=dropdownItems class="w-56 rounded-lg">
+          <@trigger|triggerProps|>
+            <button
+              ...triggerProps
+              type="button"
+              data-slot="sidebar-menu-action"
+              class="absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground group-hover/menu-item:opacity-100 md:opacity-0"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="size-4"
+              >
+                <circle cx="12" cy="12" r="1"/>
+                <circle cx="19" cy="12" r="1"/>
+                <circle cx="5" cy="12" r="1"/>
+              </svg>
+              <span class="sr-only">More</span>
+            </button>
+          </@trigger>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </for>
+    <SidebarMenuItem>
+      <SidebarMenuButton class="text-sidebar-foreground/70">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="1"/>
+          <circle cx="19" cy="12" r="1"/>
+          <circle cx="5" cy="12" r="1"/>
+        </svg>
+        <span>More</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  </SidebarMenu>
+</SidebarGroup>

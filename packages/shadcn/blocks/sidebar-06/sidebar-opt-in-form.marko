@@ -1,0 +1,24 @@
+import Card from "@marko-ui/shadcn/ui/card/card.marko";
+import CardHeader from "@marko-ui/shadcn/ui/card/header.marko";
+import CardTitle from "@marko-ui/shadcn/ui/card/title.marko";
+import CardDescription from "@marko-ui/shadcn/ui/card/description.marko";
+import CardContent from "@marko-ui/shadcn/ui/card/content.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Input from "@marko-ui/shadcn/ui/input/input.marko";
+
+<Card class="gap-2 py-4 shadow-none">
+  <CardHeader class="px-4">
+    <CardTitle class="text-sm">Subscribe to our newsletter</CardTitle>
+    <CardDescription>Opt-in to receive updates and news about the sidebar.</CardDescription>
+  </CardHeader>
+  <CardContent class="px-4">
+    <form>
+      <div class="grid gap-2.5">
+        <Input type="email" placeholder="Email"/>
+        <Button class="w-full bg-sidebar-primary text-sidebar-primary-foreground shadow-none" size="sm">
+          Subscribe
+        </Button>
+      </div>
+    </form>
+  </CardContent>
+</Card>

@@ -115,7 +115,7 @@ async function readRegistryItem(componentName: string): Promise<RegistryItem> {
 
 /**
  * Demos are authored against the docs app's workspace alias
- * (`@marko-ui/registry/ui/badge/badge.marko`) so they compile in-repo, but
+ * (`@marko-ui/shadcn/ui/badge/badge.marko`) so they compile in-repo, but
  * that path does not exist in a consumer's project. Displayed source is
  * rewritten to what a user actually writes:
  *

@@ -1,0 +1,49 @@
+// Port of shadcn's site-header.tsx (dashboard-01).
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Separator from "@marko-ui/shadcn/ui/separator/separator.marko";
+import { buttonVariants } from "@marko-ui/shadcn/ui/button/variants.ts";
+import { cn } from "#lib/utils.ts";
+
+export interface Input {
+  toggle?: () => void;
+}
+
+<header class="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
+  <div class="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
+    <Button
+      class="h-8 w-8"
+      variant="ghost"
+      size="icon"
+      onClick() {
+        input.toggle?.();
+      }
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <rect width="18" height="18" x="3" y="3" rx="2"/>
+        <path d="M9 3v18"/>
+      </svg>
+    </Button>
+    <Separator orientation="vertical" class="mx-2 data-[orientation=vertical]:h-4"/>
+    <h1 class="text-base font-medium">Documents</h1>
+    <div class="ml-auto flex items-center gap-2">
+      <a
+        href="https://github.com/shadcn-ui/ui/tree/main/apps/v4/app/(examples)/dashboard"
+        rel="noopener noreferrer"
+        target="_blank"
+        class=cn(buttonVariants({ variant: "ghost", size: "sm" }), "hidden dark:text-foreground sm:flex")
+      >
+        GitHub
+      </a>
+    </div>
+  </div>
+</header>

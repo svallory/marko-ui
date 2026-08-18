@@ -7,29 +7,29 @@
 // otherwise-interactive shadcn demos. `MessageScrollerProvider` is still
 // used (it is headless — no DOM of its own) so the scroller parts get a
 // real controller, matching the source's component tree exactly.
-import Card from "@marko-ui/registry/styles/rhea/ui/card/card.marko";
-import CardHeader from "@marko-ui/registry/styles/rhea/ui/card/header.marko";
-import CardTitle from "@marko-ui/registry/styles/rhea/ui/card/title.marko";
-import CardDescription from "@marko-ui/registry/styles/rhea/ui/card/description.marko";
-import CardAction from "@marko-ui/registry/styles/rhea/ui/card/action.marko";
-import CardContent from "@marko-ui/registry/styles/rhea/ui/card/content.marko";
-import CardFooter from "@marko-ui/registry/styles/rhea/ui/card/footer.marko";
-import Button from "@marko-ui/registry/styles/rhea/ui/button/button.marko";
-import Tooltip from "@marko-ui/registry/styles/rhea/ui/tooltip/tooltip.marko";
-import DropdownMenu from "@marko-ui/registry/styles/rhea/ui/dropdown-menu/dropdown-menu.marko";
-import InputGroup from "@marko-ui/registry/styles/rhea/ui/input-group/input-group.marko";
-import InputGroupAddon from "@marko-ui/registry/styles/rhea/ui/input-group/addon.marko";
-import InputGroupButton from "@marko-ui/registry/styles/rhea/ui/input-group/button.marko";
-import MessageScrollerProvider from "@marko-ui/registry/styles/rhea/ui/message-scroller/message-scroller-provider.marko";
-import MessageScroller from "@marko-ui/registry/styles/rhea/ui/message-scroller/message-scroller.marko";
-import MessageScrollerViewport from "@marko-ui/registry/styles/rhea/ui/message-scroller/viewport.marko";
-import MessageScrollerContent from "@marko-ui/registry/styles/rhea/ui/message-scroller/content.marko";
-import MessageScrollerItem from "@marko-ui/registry/styles/rhea/ui/message-scroller/item.marko";
-import MessageScrollerButton from "@marko-ui/registry/styles/rhea/ui/message-scroller/button.marko";
-import Message from "@marko-ui/registry/styles/rhea/ui/message/message.marko";
-import MessageContent from "@marko-ui/registry/styles/rhea/ui/message/content.marko";
-import Bubble from "@marko-ui/registry/styles/rhea/ui/bubble/bubble.marko";
-import BubbleContent from "@marko-ui/registry/styles/rhea/ui/bubble/bubble-content.marko";
+import Card from "@marko-ui/shadcn/styles/rhea/ui/card/card.marko";
+import CardHeader from "@marko-ui/shadcn/styles/rhea/ui/card/header.marko";
+import CardTitle from "@marko-ui/shadcn/styles/rhea/ui/card/title.marko";
+import CardDescription from "@marko-ui/shadcn/styles/rhea/ui/card/description.marko";
+import CardAction from "@marko-ui/shadcn/styles/rhea/ui/card/action.marko";
+import CardContent from "@marko-ui/shadcn/styles/rhea/ui/card/content.marko";
+import CardFooter from "@marko-ui/shadcn/styles/rhea/ui/card/footer.marko";
+import Button from "@marko-ui/shadcn/styles/rhea/ui/button/button.marko";
+import Tooltip from "@marko-ui/shadcn/styles/rhea/ui/tooltip/tooltip.marko";
+import DropdownMenu from "@marko-ui/shadcn/styles/rhea/ui/dropdown-menu/dropdown-menu.marko";
+import InputGroup from "@marko-ui/shadcn/styles/rhea/ui/input-group/input-group.marko";
+import InputGroupAddon from "@marko-ui/shadcn/styles/rhea/ui/input-group/addon.marko";
+import InputGroupButton from "@marko-ui/shadcn/styles/rhea/ui/input-group/button.marko";
+import MessageScrollerProvider from "@marko-ui/shadcn/styles/rhea/ui/message-scroller/message-scroller-provider.marko";
+import MessageScroller from "@marko-ui/shadcn/styles/rhea/ui/message-scroller/message-scroller.marko";
+import MessageScrollerViewport from "@marko-ui/shadcn/styles/rhea/ui/message-scroller/viewport.marko";
+import MessageScrollerContent from "@marko-ui/shadcn/styles/rhea/ui/message-scroller/content.marko";
+import MessageScrollerItem from "@marko-ui/shadcn/styles/rhea/ui/message-scroller/item.marko";
+import MessageScrollerButton from "@marko-ui/shadcn/styles/rhea/ui/message-scroller/button.marko";
+import Message from "@marko-ui/shadcn/styles/rhea/ui/message/message.marko";
+import MessageContent from "@marko-ui/shadcn/styles/rhea/ui/message/content.marko";
+import Bubble from "@marko-ui/shadcn/styles/rhea/ui/bubble/bubble.marko";
+import BubbleContent from "@marko-ui/shadcn/styles/rhea/ui/bubble/bubble-content.marko";
 
 static const TRANSCRIPT = [
   {

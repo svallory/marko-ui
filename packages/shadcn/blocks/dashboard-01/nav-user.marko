@@ -1,0 +1,62 @@
+// Port of shadcn's nav-user.tsx. Same DropdownMenu/Avatar composition
+// pattern as blocks/sidebar-07/nav-user.marko (see that file's notes on the
+// w-(--reference-width) trigger-width mapping and the rich label content).
+//
+// DEVIATION: SidebarMenuButton has no `size="lg"` prop (see
+// ui/sidebar/menu-button.marko), so the source's size="lg" is reproduced by
+// applying its resolved height class (h-12) directly, matching nav-user.tsx
+// in sidebar-07's port.
+import Avatar from "@marko-ui/shadcn/ui/avatar/avatar.marko";
+import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import SidebarMenu from "@marko-ui/shadcn/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/shadcn/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/shadcn/ui/sidebar/menu-button.marko";
+
+export interface NavUserData {
+  name: string;
+  email: string;
+  avatar: string;
+}
+
+export interface Input {
+  user: NavUserData;
+}
+
+<SidebarMenu>
+  <SidebarMenuItem>
+    <DropdownMenu class="w-(--reference-width) min-w-56 rounded-lg">
+      <@trigger|triggerProps|>
+        <SidebarMenuButton
+          ...triggerProps
+          class="h-12 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+        >
+          <Avatar src=input.user.avatar alt=input.user.name fallback="CN" class="h-8 w-8 rounded-lg grayscale"/>
+          <div class="grid flex-1 text-left text-sm leading-tight">
+            <span class="truncate font-medium">${input.user.name}</span>
+            <span class="truncate text-xs text-muted-foreground">${input.user.email}</span>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-auto size-4">
+            <circle cx="12" cy="12" r="1"/>
+            <circle cx="12" cy="5" r="1"/>
+            <circle cx="12" cy="19" r="1"/>
+          </svg>
+        </SidebarMenuButton>
+      </@trigger>
+      <@item type="label" class="p-0 font-normal">
+        <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+          <Avatar src=input.user.avatar alt=input.user.name fallback="CN" class="h-8 w-8 rounded-lg"/>
+          <div class="grid flex-1 text-left text-sm leading-tight">
+            <span class="truncate font-medium">${input.user.name}</span>
+            <span class="truncate text-xs text-muted-foreground">${input.user.email}</span>
+          </div>
+        </div>
+      </@item>
+      <@item type="separator"/>
+      <@item type="item" value="account" label="Account"/>
+      <@item type="item" value="billing" label="Billing"/>
+      <@item type="item" value="notifications" label="Notifications"/>
+      <@item type="separator"/>
+      <@item type="item" value="logout" label="Log out"/>
+    </DropdownMenu>
+  </SidebarMenuItem>
+</SidebarMenu>

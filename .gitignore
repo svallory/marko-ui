@@ -7,7 +7,4 @@ coverage/
 apps/docs/public/r/
 tsconfig.tsbuildinfo
 test-results/
-packages/registry/styles-gen/
-packages/core/ui/
-packages/core/lib/
-packages/core/styles/
+packages/shadcn/styles-gen/

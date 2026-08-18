@@ -1,0 +1,181 @@
+import Sidebar from "@marko-ui/shadcn/ui/sidebar/sidebar.marko";
+import SidebarHeader from "@marko-ui/shadcn/ui/sidebar/header.marko";
+import SidebarContent from "@marko-ui/shadcn/ui/sidebar/content.marko";
+import TeamSwitcher, { type Team } from "./team-switcher.marko";
+import NavMain, { type NavMainItem } from "./nav-main.marko";
+import NavFavorites, { type FavoriteItem } from "./nav-favorites.marko";
+import NavWorkspaces, { type Workspace } from "./nav-workspaces.marko";
+import NavSecondary, { type NavSecondaryItem } from "./nav-secondary.marko";
+
+export interface Input {
+  open?: boolean;
+}
+
+// NOTE: shadcn's SidebarRail (a hover/drag handle on the sidebar's right
+// edge for resizing/toggling) has no equivalent in our sidebar sub-parts
+// yet, so it is omitted here, matching the sidebar-05/sidebar-07
+// precedent. SidebarTrigger in the page header covers open/close.
+
+// This is sample data.
+static const TEAMS: Team[] = [
+  {
+    id: "acme-inc",
+    name: "Acme Inc",
+    plan: "Enterprise",
+    logo: "m12 8 6-3-6-3-6 3 6 3Z M6 5v14l6 3 6-3V5 M12 8v13",
+  },
+  {
+    id: "acme-corp",
+    name: "Acme Corp.",
+    plan: "Startup",
+    logo: "M2 10h4l2.5-6L14 20l3-9h5",
+  },
+  {
+    id: "evil-corp",
+    name: "Evil Corp.",
+    plan: "Free",
+    logo: "m12 8 6-3-6-3-6 3 6 3Z M6 5v14l6 3 6-3V5 M12 8v13",
+  },
+];
+
+static const NAV_MAIN: NavMainItem[] = [
+  {
+    id: "search",
+    title: "Search",
+    url: "#",
+    icon: "m21 21-4.34-4.34 M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z",
+  },
+  {
+    id: "ask-ai",
+    title: "Ask AI",
+    url: "#",
+    icon: "M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z",
+  },
+  {
+    id: "home",
+    title: "Home",
+    url: "#",
+    icon: "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8 M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
+    isActive: true,
+  },
+  {
+    id: "inbox",
+    title: "Inbox",
+    url: "#",
+    icon: "M22 12h-6l-2 3h-4l-2-3H2 M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z",
+    badge: "10",
+  },
+];
+
+static const NAV_SECONDARY: NavSecondaryItem[] = [
+  {
+    id: "calendar",
+    title: "Calendar",
+    url: "#",
+    icon: "M8 2v4 M16 2v4 M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8 M3 10h18 M17.5 17.5 16 16.25V14 M22 18a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z",
+  },
+  {
+    id: "settings",
+    title: "Settings",
+    url: "#",
+    icon: "M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915 M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z",
+  },
+  {
+    id: "templates",
+    title: "Templates",
+    url: "#",
+    icon: "M14 22v-4a2 2 0 1 1 4 0v4 M6 18H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2 M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2 M10 5a2 2 0 1 1 4 0v3.4a1 1 0 0 0 .272.687l1.463 1.578a1 1 0 0 1 .265.687V13a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-1.649a1 1 0 0 1 .265-.686l1.463-1.579A1 1 0 0 0 10 8.4Z",
+  },
+  {
+    id: "trash",
+    title: "Trash",
+    url: "#",
+    icon: "M3 6h18 M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2",
+  },
+  {
+    id: "help",
+    title: "Help",
+    url: "#",
+    icon: "M7.9 20A9 9 0 1 0 4 16.1L2 22Z M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3 M12 17h.01",
+  },
+];
+
+static const FAVORITES: FavoriteItem[] = [
+  { id: "project-management", name: "Project Management & Task Tracking", url: "#", emoji: "📊" },
+  { id: "recipe-collection", name: "Family Recipe Collection & Meal Planning", url: "#", emoji: "🍳" },
+  { id: "fitness-tracker", name: "Fitness Tracker & Workout Routines", url: "#", emoji: "💪" },
+  { id: "book-notes", name: "Book Notes & Reading List", url: "#", emoji: "📚" },
+  { id: "gardening-tips", name: "Sustainable Gardening Tips & Plant Care", url: "#", emoji: "🌱" },
+  { id: "language-learning", name: "Language Learning Progress & Resources", url: "#", emoji: "🗣️" },
+  { id: "home-renovation", name: "Home Renovation Ideas & Budget Tracker", url: "#", emoji: "🏠" },
+  { id: "personal-finance", name: "Personal Finance & Investment Portfolio", url: "#", emoji: "💰" },
+  { id: "watchlist", name: "Movie & TV Show Watchlist with Reviews", url: "#", emoji: "🎬" },
+  { id: "habit-tracker", name: "Daily Habit Tracker & Goal Setting", url: "#", emoji: "✅" },
+];
+
+static const WORKSPACES: Workspace[] = [
+  {
+    id: "personal-life",
+    name: "Personal Life Management",
+    emoji: "🏠",
+    pages: [
+      { id: "daily-journal", name: "Daily Journal & Reflection", url: "#", emoji: "📔" },
+      { id: "health-wellness", name: "Health & Wellness Tracker", url: "#", emoji: "🍏" },
+      { id: "personal-growth", name: "Personal Growth & Learning Goals", url: "#", emoji: "🌟" },
+    ],
+  },
+  {
+    id: "professional-development",
+    name: "Professional Development",
+    emoji: "💼",
+    pages: [
+      { id: "career-objectives", name: "Career Objectives & Milestones", url: "#", emoji: "🎯" },
+      { id: "skill-acquisition", name: "Skill Acquisition & Training Log", url: "#", emoji: "🧠" },
+      { id: "networking-contacts", name: "Networking Contacts & Events", url: "#", emoji: "🤝" },
+    ],
+  },
+  {
+    id: "creative-projects",
+    name: "Creative Projects",
+    emoji: "🎨",
+    pages: [
+      { id: "writing-ideas", name: "Writing Ideas & Story Outlines", url: "#", emoji: "✍️" },
+      { id: "art-design", name: "Art & Design Portfolio", url: "#", emoji: "🖼️" },
+      { id: "music-composition", name: "Music Composition & Practice Log", url: "#", emoji: "🎵" },
+    ],
+  },
+  {
+    id: "home-management",
+    name: "Home Management",
+    emoji: "🏡",
+    pages: [
+      { id: "household-budget", name: "Household Budget & Expense Tracking", url: "#", emoji: "💰" },
+      { id: "home-maintenance", name: "Home Maintenance Schedule & Tasks", url: "#", emoji: "🔧" },
+      { id: "family-calendar", name: "Family Calendar & Event Planning", url: "#", emoji: "📅" },
+    ],
+  },
+  {
+    id: "travel-adventure",
+    name: "Travel & Adventure",
+    emoji: "🧳",
+    pages: [
+      { id: "trip-planning", name: "Trip Planning & Itineraries", url: "#", emoji: "🗺️" },
+      { id: "travel-bucket-list", name: "Travel Bucket List & Inspiration", url: "#", emoji: "🌎" },
+      { id: "travel-journal", name: "Travel Journal & Photo Gallery", url: "#", emoji: "📸" },
+    ],
+  },
+];
+
+<Sidebar open=input.open class="border-r-0">
+  <@content>
+    <SidebarHeader>
+      <TeamSwitcher teams=TEAMS/>
+      <NavMain items=NAV_MAIN/>
+    </SidebarHeader>
+    <SidebarContent>
+      <NavFavorites favorites=FAVORITES/>
+      <NavWorkspaces workspaces=WORKSPACES/>
+      <NavSecondary items=NAV_SECONDARY class="mt-auto"/>
+    </SidebarContent>
+  </@content>
+</Sidebar>

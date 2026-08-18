@@ -2,7 +2,7 @@
  * Faithful port of shadcn's apps/v4/app/globals.css. This file IS the site's
  * CSS architecture: same import chain, same token map, same layers/utilities,
  * so any shadcn theme's CSS variables restyle this site with zero changes.
- * The consumer registry theme (@marko-ui/registry/styles/globals.css) is NOT
+ * The consumer registry theme (@marko-ui/shadcn/styles/globals.css) is NOT
  * imported here — shadcn's site doesn't import its registry theme either; the
  * site defines its own tokens below, exactly as shadcn's does.
  *

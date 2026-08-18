@@ -1,0 +1,86 @@
+import SidebarMenu from "@marko-ui/shadcn/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/shadcn/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/shadcn/ui/sidebar/menu-button.marko";
+import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+
+export interface Team {
+  id: string;
+  name: string;
+  plan: string;
+}
+
+export interface Input {
+  teams: Team[];
+}
+
+<let/activeTeamId=input.teams[0]?.id/>
+<const/activeTeam=input.teams.find((team) => team.id === activeTeamId) ?? input.teams[0]/>
+
+<const/menuItems=[
+  { type: "label" as const, label: "Teams" },
+  ...input.teams.map((team) => ({ value: team.id, label: team.name })),
+  { type: "separator" as const },
+  { value: "add-team", label: "Add team" },
+]/>
+
+<if=activeTeam>
+  <SidebarMenu>
+    <SidebarMenuItem>
+      <DropdownMenu
+        items=menuItems
+        class="w-64"
+        select(value) {
+          if (value !== "add-team") activeTeamId = value;
+        }
+      >
+        <@trigger|attrs|>
+          <SidebarMenuButton ...attrs class="w-fit px-1.5">
+            <div
+              class="flex aspect-square size-5 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="size-3"
+              >
+                <rect width="16" height="20" x="4" y="2" rx="2"/>
+                <path d="M9 22v-4h6v4"/>
+                <path d="M8 6h.01"/>
+                <path d="M16 6h.01"/>
+                <path d="M12 6h.01"/>
+                <path d="M12 10h.01"/>
+                <path d="M12 14h.01"/>
+                <path d="M16 10h.01"/>
+                <path d="M16 14h.01"/>
+                <path d="M8 10h.01"/>
+                <path d="M8 14h.01"/>
+              </svg>
+            </div>
+            <span class="truncate font-medium">${activeTeam.name}</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="opacity-50"
+            >
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </SidebarMenuButton>
+        </@trigger>
+      </DropdownMenu>
+    </SidebarMenuItem>
+  </SidebarMenu>
+</if>
