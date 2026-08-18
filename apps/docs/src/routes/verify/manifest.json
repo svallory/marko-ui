@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T03:30:19.934Z",
+  "generatedAt": "2026-08-17T23:19:28.319Z",
   "styles": [
     "default",
     "luma",
@@ -12,9 +12,9 @@
     "vega"
   ],
   "totals": {
-    "pagesGenerated": 511,
-    "demosGenerated": 2549,
-    "skips": 209
+    "pagesGenerated": 711,
+    "demosGenerated": 3510,
+    "skips": 9
   },
   "entries": [
     {
@@ -141,6 +141,7 @@
         "controlled",
         "default",
         "disabled",
+        "dropdown",
         "min-max",
         "multiple",
         "range"
@@ -994,6 +995,17 @@
     },
     {
       "style": "luma",
+      "component": "angle-slider",
+      "route": "/verify/luma/angle-slider",
+      "demos": [
+        "angle-slider-controlled",
+        "angle-slider-demo",
+        "angle-slider-disabled",
+        "angle-slider-step"
+      ]
+    },
+    {
+      "style": "luma",
       "component": "aspect-ratio",
       "route": "/verify/luma/aspect-ratio",
       "demos": [
@@ -1072,6 +1084,7 @@
         "controlled",
         "default",
         "disabled",
+        "dropdown",
         "min-max",
         "multiple",
         "range"
@@ -1105,6 +1118,19 @@
     },
     {
       "style": "luma",
+      "component": "cascade-select",
+      "route": "/verify/luma/cascade-select",
+      "demos": [
+        "cascade-select-compound",
+        "controlled",
+        "default",
+        "default-value",
+        "disabled",
+        "disabled-items"
+      ]
+    },
+    {
+      "style": "luma",
       "component": "chart",
       "route": "/verify/luma/chart",
       "demos": [
@@ -1132,6 +1158,17 @@
     },
     {
       "style": "luma",
+      "component": "clipboard",
+      "route": "/verify/luma/clipboard",
+      "demos": [
+        "clipboard-controlled",
+        "clipboard-demo",
+        "clipboard-disabled",
+        "clipboard-timeout"
+      ]
+    },
+    {
+      "style": "luma",
       "component": "collapsible",
       "route": "/verify/luma/collapsible",
       "demos": [
@@ -1139,6 +1176,18 @@
         "default",
         "disabled",
         "settings"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "color-picker",
+      "route": "/verify/luma/color-picker",
+      "demos": [
+        "color-picker-controlled",
+        "color-picker-demo",
+        "color-picker-disabled",
+        "color-picker-hsl",
+        "color-picker-swatches"
       ]
     },
     {
@@ -1179,6 +1228,43 @@
     },
     {
       "style": "luma",
+      "component": "data-table",
+      "route": "/verify/luma/data-table",
+      "demos": [
+        "data-table-demo",
+        "empty",
+        "formatted-cells",
+        "sorting"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "date-input",
+      "route": "/verify/luma/date-input",
+      "demos": [
+        "date-input-controlled",
+        "date-input-demo",
+        "date-input-disabled",
+        "date-input-locale",
+        "date-input-range",
+        "date-input-value"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "date-picker",
+      "route": "/verify/luma/date-picker",
+      "demos": [
+        "date-picker-controlled",
+        "date-picker-demo",
+        "date-picker-disabled",
+        "date-picker-locale",
+        "date-picker-read-only",
+        "date-picker-value"
+      ]
+    },
+    {
+      "style": "luma",
       "component": "dialog",
       "route": "/verify/luma/dialog",
       "demos": [
@@ -1214,6 +1300,20 @@
     },
     {
       "style": "luma",
+      "component": "editable",
+      "route": "/verify/luma/editable",
+      "demos": [
+        "activation-mode",
+        "controlled",
+        "custom-trigger",
+        "default",
+        "disabled",
+        "placeholder",
+        "submit-mode"
+      ]
+    },
+    {
+      "style": "luma",
       "component": "empty",
       "route": "/verify/luma/empty",
       "demos": [
@@ -1242,6 +1342,28 @@
     },
     {
       "style": "luma",
+      "component": "file-upload",
+      "route": "/verify/luma/file-upload",
+      "demos": [
+        "file-upload-accept",
+        "file-upload-controlled",
+        "file-upload-demo",
+        "file-upload-max-size"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "floating-panel",
+      "route": "/verify/luma/floating-panel",
+      "demos": [
+        "floating-panel-constrained",
+        "floating-panel-controlled",
+        "floating-panel-demo",
+        "floating-panel-not-resizable"
+      ]
+    },
+    {
+      "style": "luma",
       "component": "hover-card",
       "route": "/verify/luma/hover-card",
       "demos": [
@@ -1249,6 +1371,27 @@
         "default",
         "disabled",
         "positioning"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "icon",
+      "route": "/verify/luma/icon",
+      "demos": [
+        "default",
+        "libraries",
+        "sizing"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "image-cropper",
+      "route": "/verify/luma/image-cropper",
+      "demos": [
+        "circle-aspect-ratio",
+        "controlled",
+        "default",
+        "fixed-crop-area"
       ]
     },
     {
@@ -1335,6 +1478,32 @@
     },
     {
       "style": "luma",
+      "component": "listbox",
+      "route": "/verify/luma/listbox",
+      "demos": [
+        "listbox-compound",
+        "listbox-controlled",
+        "listbox-demo",
+        "listbox-disabled",
+        "listbox-multiple"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "marquee",
+      "route": "/verify/luma/marquee",
+      "demos": [
+        "marquee-auto-fill",
+        "marquee-compound",
+        "marquee-controlled",
+        "marquee-demo",
+        "marquee-reverse",
+        "marquee-speed",
+        "marquee-vertical"
+      ]
+    },
+    {
+      "style": "luma",
       "component": "menubar",
       "route": "/verify/luma/menubar",
       "demos": [
@@ -1370,6 +1539,17 @@
     },
     {
       "style": "luma",
+      "component": "number-input",
+      "route": "/verify/luma/number-input",
+      "demos": [
+        "number-input-controlled",
+        "number-input-demo",
+        "number-input-disabled",
+        "number-input-min-max-step"
+      ]
+    },
+    {
+      "style": "luma",
       "component": "pagination",
       "route": "/verify/luma/pagination",
       "demos": [
@@ -1377,6 +1557,18 @@
         "default",
         "few-pages",
         "sibling-count"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "password-input",
+      "route": "/verify/luma/password-input",
+      "demos": [
+        "password-input-controlled",
+        "password-input-demo",
+        "password-input-disabled",
+        "password-input-invalid",
+        "password-input-new-password"
       ]
     },
     {
@@ -1403,6 +1595,18 @@
     },
     {
       "style": "luma",
+      "component": "qr-code",
+      "route": "/verify/luma/qr-code",
+      "demos": [
+        "qr-code-controlled",
+        "qr-code-demo",
+        "qr-code-download",
+        "qr-code-overlay",
+        "qr-code-sizes"
+      ]
+    },
+    {
+      "style": "luma",
       "component": "radio-group",
       "route": "/verify/luma/radio-group",
       "demos": [
@@ -1411,6 +1615,19 @@
         "radio-group-demo",
         "radio-group-disabled",
         "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "rating-group",
+      "route": "/verify/luma/rating-group",
+      "demos": [
+        "controlled",
+        "custom-count",
+        "default",
+        "disabled",
+        "half-stars",
+        "readonly"
       ]
     },
     {
@@ -1478,6 +1695,17 @@
     },
     {
       "style": "luma",
+      "component": "signature-pad",
+      "route": "/verify/luma/signature-pad",
+      "demos": [
+        "signature-pad-controlled",
+        "signature-pad-demo",
+        "signature-pad-disabled",
+        "signature-pad-form"
+      ]
+    },
+    {
+      "style": "luma",
       "component": "skeleton",
       "route": "/verify/luma/skeleton",
       "demos": [
@@ -1515,6 +1743,17 @@
     },
     {
       "style": "luma",
+      "component": "steps",
+      "route": "/verify/luma/steps",
+      "demos": [
+        "steps-controlled",
+        "steps-horizontal",
+        "steps-linear",
+        "steps-vertical"
+      ]
+    },
+    {
+      "style": "luma",
       "component": "switch",
       "route": "/verify/luma/switch",
       "demos": [
@@ -1548,6 +1787,19 @@
     },
     {
       "style": "luma",
+      "component": "tags-input",
+      "route": "/verify/luma/tags-input",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "label",
+        "max",
+        "paste"
+      ]
+    },
+    {
+      "style": "luma",
       "component": "textarea",
       "route": "/verify/luma/textarea",
       "demos": [
@@ -1561,6 +1813,17 @@
     },
     {
       "style": "luma",
+      "component": "timer",
+      "route": "/verify/luma/timer",
+      "demos": [
+        "timer-controlled",
+        "timer-countdown",
+        "timer-demo",
+        "timer-parts"
+      ]
+    },
+    {
+      "style": "luma",
       "component": "toast",
       "route": "/verify/luma/toast",
       "demos": [
@@ -1569,6 +1832,17 @@
         "toast-dismiss",
         "toast-promise",
         "toast-types"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "toc",
+      "route": "/verify/luma/toc",
+      "demos": [
+        "toc-controlled",
+        "toc-demo",
+        "toc-nested",
+        "toc-with-title"
       ]
     },
     {
@@ -1608,6 +1882,28 @@
       ]
     },
     {
+      "style": "luma",
+      "component": "tour",
+      "route": "/verify/luma/tour",
+      "demos": [
+        "controlled",
+        "default",
+        "sides"
+      ]
+    },
+    {
+      "style": "luma",
+      "component": "tree-view",
+      "route": "/verify/luma/tree-view",
+      "demos": [
+        "controlled-selection",
+        "default",
+        "disabled",
+        "expanded",
+        "multiple-selection"
+      ]
+    },
+    {
       "style": "lyra",
       "component": "accordion",
       "route": "/verify/lyra/accordion",
@@ -1638,6 +1934,17 @@
         "alert-dialog-controlled",
         "alert-dialog-demo",
         "alert-dialog-destructive"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "angle-slider",
+      "route": "/verify/lyra/angle-slider",
+      "demos": [
+        "angle-slider-controlled",
+        "angle-slider-demo",
+        "angle-slider-disabled",
+        "angle-slider-step"
       ]
     },
     {
@@ -1720,6 +2027,7 @@
         "controlled",
         "default",
         "disabled",
+        "dropdown",
         "min-max",
         "multiple",
         "range"
@@ -1753,6 +2061,19 @@
     },
     {
       "style": "lyra",
+      "component": "cascade-select",
+      "route": "/verify/lyra/cascade-select",
+      "demos": [
+        "cascade-select-compound",
+        "controlled",
+        "default",
+        "default-value",
+        "disabled",
+        "disabled-items"
+      ]
+    },
+    {
+      "style": "lyra",
       "component": "chart",
       "route": "/verify/lyra/chart",
       "demos": [
@@ -1780,6 +2101,17 @@
     },
     {
       "style": "lyra",
+      "component": "clipboard",
+      "route": "/verify/lyra/clipboard",
+      "demos": [
+        "clipboard-controlled",
+        "clipboard-demo",
+        "clipboard-disabled",
+        "clipboard-timeout"
+      ]
+    },
+    {
+      "style": "lyra",
       "component": "collapsible",
       "route": "/verify/lyra/collapsible",
       "demos": [
@@ -1787,6 +2119,18 @@
         "default",
         "disabled",
         "settings"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "color-picker",
+      "route": "/verify/lyra/color-picker",
+      "demos": [
+        "color-picker-controlled",
+        "color-picker-demo",
+        "color-picker-disabled",
+        "color-picker-hsl",
+        "color-picker-swatches"
       ]
     },
     {
@@ -1827,6 +2171,43 @@
     },
     {
       "style": "lyra",
+      "component": "data-table",
+      "route": "/verify/lyra/data-table",
+      "demos": [
+        "data-table-demo",
+        "empty",
+        "formatted-cells",
+        "sorting"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "date-input",
+      "route": "/verify/lyra/date-input",
+      "demos": [
+        "date-input-controlled",
+        "date-input-demo",
+        "date-input-disabled",
+        "date-input-locale",
+        "date-input-range",
+        "date-input-value"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "date-picker",
+      "route": "/verify/lyra/date-picker",
+      "demos": [
+        "date-picker-controlled",
+        "date-picker-demo",
+        "date-picker-disabled",
+        "date-picker-locale",
+        "date-picker-read-only",
+        "date-picker-value"
+      ]
+    },
+    {
+      "style": "lyra",
       "component": "dialog",
       "route": "/verify/lyra/dialog",
       "demos": [
@@ -1862,6 +2243,20 @@
     },
     {
       "style": "lyra",
+      "component": "editable",
+      "route": "/verify/lyra/editable",
+      "demos": [
+        "activation-mode",
+        "controlled",
+        "custom-trigger",
+        "default",
+        "disabled",
+        "placeholder",
+        "submit-mode"
+      ]
+    },
+    {
+      "style": "lyra",
       "component": "empty",
       "route": "/verify/lyra/empty",
       "demos": [
@@ -1890,6 +2285,28 @@
     },
     {
       "style": "lyra",
+      "component": "file-upload",
+      "route": "/verify/lyra/file-upload",
+      "demos": [
+        "file-upload-accept",
+        "file-upload-controlled",
+        "file-upload-demo",
+        "file-upload-max-size"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "floating-panel",
+      "route": "/verify/lyra/floating-panel",
+      "demos": [
+        "floating-panel-constrained",
+        "floating-panel-controlled",
+        "floating-panel-demo",
+        "floating-panel-not-resizable"
+      ]
+    },
+    {
+      "style": "lyra",
       "component": "hover-card",
       "route": "/verify/lyra/hover-card",
       "demos": [
@@ -1897,6 +2314,27 @@
         "default",
         "disabled",
         "positioning"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "icon",
+      "route": "/verify/lyra/icon",
+      "demos": [
+        "default",
+        "libraries",
+        "sizing"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "image-cropper",
+      "route": "/verify/lyra/image-cropper",
+      "demos": [
+        "circle-aspect-ratio",
+        "controlled",
+        "default",
+        "fixed-crop-area"
       ]
     },
     {
@@ -1983,6 +2421,32 @@
     },
     {
       "style": "lyra",
+      "component": "listbox",
+      "route": "/verify/lyra/listbox",
+      "demos": [
+        "listbox-compound",
+        "listbox-controlled",
+        "listbox-demo",
+        "listbox-disabled",
+        "listbox-multiple"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "marquee",
+      "route": "/verify/lyra/marquee",
+      "demos": [
+        "marquee-auto-fill",
+        "marquee-compound",
+        "marquee-controlled",
+        "marquee-demo",
+        "marquee-reverse",
+        "marquee-speed",
+        "marquee-vertical"
+      ]
+    },
+    {
+      "style": "lyra",
       "component": "menubar",
       "route": "/verify/lyra/menubar",
       "demos": [
@@ -2018,6 +2482,17 @@
     },
     {
       "style": "lyra",
+      "component": "number-input",
+      "route": "/verify/lyra/number-input",
+      "demos": [
+        "number-input-controlled",
+        "number-input-demo",
+        "number-input-disabled",
+        "number-input-min-max-step"
+      ]
+    },
+    {
+      "style": "lyra",
       "component": "pagination",
       "route": "/verify/lyra/pagination",
       "demos": [
@@ -2025,6 +2500,18 @@
         "default",
         "few-pages",
         "sibling-count"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "password-input",
+      "route": "/verify/lyra/password-input",
+      "demos": [
+        "password-input-controlled",
+        "password-input-demo",
+        "password-input-disabled",
+        "password-input-invalid",
+        "password-input-new-password"
       ]
     },
     {
@@ -2051,6 +2538,18 @@
     },
     {
       "style": "lyra",
+      "component": "qr-code",
+      "route": "/verify/lyra/qr-code",
+      "demos": [
+        "qr-code-controlled",
+        "qr-code-demo",
+        "qr-code-download",
+        "qr-code-overlay",
+        "qr-code-sizes"
+      ]
+    },
+    {
+      "style": "lyra",
       "component": "radio-group",
       "route": "/verify/lyra/radio-group",
       "demos": [
@@ -2059,6 +2558,19 @@
         "radio-group-demo",
         "radio-group-disabled",
         "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "rating-group",
+      "route": "/verify/lyra/rating-group",
+      "demos": [
+        "controlled",
+        "custom-count",
+        "default",
+        "disabled",
+        "half-stars",
+        "readonly"
       ]
     },
     {
@@ -2126,6 +2638,17 @@
     },
     {
       "style": "lyra",
+      "component": "signature-pad",
+      "route": "/verify/lyra/signature-pad",
+      "demos": [
+        "signature-pad-controlled",
+        "signature-pad-demo",
+        "signature-pad-disabled",
+        "signature-pad-form"
+      ]
+    },
+    {
+      "style": "lyra",
       "component": "skeleton",
       "route": "/verify/lyra/skeleton",
       "demos": [
@@ -2163,6 +2686,17 @@
     },
     {
       "style": "lyra",
+      "component": "steps",
+      "route": "/verify/lyra/steps",
+      "demos": [
+        "steps-controlled",
+        "steps-horizontal",
+        "steps-linear",
+        "steps-vertical"
+      ]
+    },
+    {
+      "style": "lyra",
       "component": "switch",
       "route": "/verify/lyra/switch",
       "demos": [
@@ -2196,6 +2730,19 @@
     },
     {
       "style": "lyra",
+      "component": "tags-input",
+      "route": "/verify/lyra/tags-input",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "label",
+        "max",
+        "paste"
+      ]
+    },
+    {
+      "style": "lyra",
       "component": "textarea",
       "route": "/verify/lyra/textarea",
       "demos": [
@@ -2209,6 +2756,17 @@
     },
     {
       "style": "lyra",
+      "component": "timer",
+      "route": "/verify/lyra/timer",
+      "demos": [
+        "timer-controlled",
+        "timer-countdown",
+        "timer-demo",
+        "timer-parts"
+      ]
+    },
+    {
+      "style": "lyra",
       "component": "toast",
       "route": "/verify/lyra/toast",
       "demos": [
@@ -2217,6 +2775,17 @@
         "toast-dismiss",
         "toast-promise",
         "toast-types"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "toc",
+      "route": "/verify/lyra/toc",
+      "demos": [
+        "toc-controlled",
+        "toc-demo",
+        "toc-nested",
+        "toc-with-title"
       ]
     },
     {
@@ -2256,6 +2825,28 @@
       ]
     },
     {
+      "style": "lyra",
+      "component": "tour",
+      "route": "/verify/lyra/tour",
+      "demos": [
+        "controlled",
+        "default",
+        "sides"
+      ]
+    },
+    {
+      "style": "lyra",
+      "component": "tree-view",
+      "route": "/verify/lyra/tree-view",
+      "demos": [
+        "controlled-selection",
+        "default",
+        "disabled",
+        "expanded",
+        "multiple-selection"
+      ]
+    },
+    {
       "style": "maia",
       "component": "accordion",
       "route": "/verify/maia/accordion",
@@ -2286,6 +2877,17 @@
         "alert-dialog-controlled",
         "alert-dialog-demo",
         "alert-dialog-destructive"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "angle-slider",
+      "route": "/verify/maia/angle-slider",
+      "demos": [
+        "angle-slider-controlled",
+        "angle-slider-demo",
+        "angle-slider-disabled",
+        "angle-slider-step"
       ]
     },
     {
@@ -2368,6 +2970,7 @@
         "controlled",
         "default",
         "disabled",
+        "dropdown",
         "min-max",
         "multiple",
         "range"
@@ -2401,6 +3004,19 @@
     },
     {
       "style": "maia",
+      "component": "cascade-select",
+      "route": "/verify/maia/cascade-select",
+      "demos": [
+        "cascade-select-compound",
+        "controlled",
+        "default",
+        "default-value",
+        "disabled",
+        "disabled-items"
+      ]
+    },
+    {
+      "style": "maia",
       "component": "chart",
       "route": "/verify/maia/chart",
       "demos": [
@@ -2428,6 +3044,17 @@
     },
     {
       "style": "maia",
+      "component": "clipboard",
+      "route": "/verify/maia/clipboard",
+      "demos": [
+        "clipboard-controlled",
+        "clipboard-demo",
+        "clipboard-disabled",
+        "clipboard-timeout"
+      ]
+    },
+    {
+      "style": "maia",
       "component": "collapsible",
       "route": "/verify/maia/collapsible",
       "demos": [
@@ -2435,6 +3062,18 @@
         "default",
         "disabled",
         "settings"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "color-picker",
+      "route": "/verify/maia/color-picker",
+      "demos": [
+        "color-picker-controlled",
+        "color-picker-demo",
+        "color-picker-disabled",
+        "color-picker-hsl",
+        "color-picker-swatches"
       ]
     },
     {
@@ -2475,6 +3114,43 @@
     },
     {
       "style": "maia",
+      "component": "data-table",
+      "route": "/verify/maia/data-table",
+      "demos": [
+        "data-table-demo",
+        "empty",
+        "formatted-cells",
+        "sorting"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "date-input",
+      "route": "/verify/maia/date-input",
+      "demos": [
+        "date-input-controlled",
+        "date-input-demo",
+        "date-input-disabled",
+        "date-input-locale",
+        "date-input-range",
+        "date-input-value"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "date-picker",
+      "route": "/verify/maia/date-picker",
+      "demos": [
+        "date-picker-controlled",
+        "date-picker-demo",
+        "date-picker-disabled",
+        "date-picker-locale",
+        "date-picker-read-only",
+        "date-picker-value"
+      ]
+    },
+    {
+      "style": "maia",
       "component": "dialog",
       "route": "/verify/maia/dialog",
       "demos": [
@@ -2510,6 +3186,20 @@
     },
     {
       "style": "maia",
+      "component": "editable",
+      "route": "/verify/maia/editable",
+      "demos": [
+        "activation-mode",
+        "controlled",
+        "custom-trigger",
+        "default",
+        "disabled",
+        "placeholder",
+        "submit-mode"
+      ]
+    },
+    {
+      "style": "maia",
       "component": "empty",
       "route": "/verify/maia/empty",
       "demos": [
@@ -2538,6 +3228,28 @@
     },
     {
       "style": "maia",
+      "component": "file-upload",
+      "route": "/verify/maia/file-upload",
+      "demos": [
+        "file-upload-accept",
+        "file-upload-controlled",
+        "file-upload-demo",
+        "file-upload-max-size"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "floating-panel",
+      "route": "/verify/maia/floating-panel",
+      "demos": [
+        "floating-panel-constrained",
+        "floating-panel-controlled",
+        "floating-panel-demo",
+        "floating-panel-not-resizable"
+      ]
+    },
+    {
+      "style": "maia",
       "component": "hover-card",
       "route": "/verify/maia/hover-card",
       "demos": [
@@ -2545,6 +3257,27 @@
         "default",
         "disabled",
         "positioning"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "icon",
+      "route": "/verify/maia/icon",
+      "demos": [
+        "default",
+        "libraries",
+        "sizing"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "image-cropper",
+      "route": "/verify/maia/image-cropper",
+      "demos": [
+        "circle-aspect-ratio",
+        "controlled",
+        "default",
+        "fixed-crop-area"
       ]
     },
     {
@@ -2631,6 +3364,32 @@
     },
     {
       "style": "maia",
+      "component": "listbox",
+      "route": "/verify/maia/listbox",
+      "demos": [
+        "listbox-compound",
+        "listbox-controlled",
+        "listbox-demo",
+        "listbox-disabled",
+        "listbox-multiple"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "marquee",
+      "route": "/verify/maia/marquee",
+      "demos": [
+        "marquee-auto-fill",
+        "marquee-compound",
+        "marquee-controlled",
+        "marquee-demo",
+        "marquee-reverse",
+        "marquee-speed",
+        "marquee-vertical"
+      ]
+    },
+    {
+      "style": "maia",
       "component": "menubar",
       "route": "/verify/maia/menubar",
       "demos": [
@@ -2666,6 +3425,17 @@
     },
     {
       "style": "maia",
+      "component": "number-input",
+      "route": "/verify/maia/number-input",
+      "demos": [
+        "number-input-controlled",
+        "number-input-demo",
+        "number-input-disabled",
+        "number-input-min-max-step"
+      ]
+    },
+    {
+      "style": "maia",
       "component": "pagination",
       "route": "/verify/maia/pagination",
       "demos": [
@@ -2673,6 +3443,18 @@
         "default",
         "few-pages",
         "sibling-count"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "password-input",
+      "route": "/verify/maia/password-input",
+      "demos": [
+        "password-input-controlled",
+        "password-input-demo",
+        "password-input-disabled",
+        "password-input-invalid",
+        "password-input-new-password"
       ]
     },
     {
@@ -2699,6 +3481,18 @@
     },
     {
       "style": "maia",
+      "component": "qr-code",
+      "route": "/verify/maia/qr-code",
+      "demos": [
+        "qr-code-controlled",
+        "qr-code-demo",
+        "qr-code-download",
+        "qr-code-overlay",
+        "qr-code-sizes"
+      ]
+    },
+    {
+      "style": "maia",
       "component": "radio-group",
       "route": "/verify/maia/radio-group",
       "demos": [
@@ -2707,6 +3501,19 @@
         "radio-group-demo",
         "radio-group-disabled",
         "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "rating-group",
+      "route": "/verify/maia/rating-group",
+      "demos": [
+        "controlled",
+        "custom-count",
+        "default",
+        "disabled",
+        "half-stars",
+        "readonly"
       ]
     },
     {
@@ -2774,6 +3581,17 @@
     },
     {
       "style": "maia",
+      "component": "signature-pad",
+      "route": "/verify/maia/signature-pad",
+      "demos": [
+        "signature-pad-controlled",
+        "signature-pad-demo",
+        "signature-pad-disabled",
+        "signature-pad-form"
+      ]
+    },
+    {
+      "style": "maia",
       "component": "skeleton",
       "route": "/verify/maia/skeleton",
       "demos": [
@@ -2811,6 +3629,17 @@
     },
     {
       "style": "maia",
+      "component": "steps",
+      "route": "/verify/maia/steps",
+      "demos": [
+        "steps-controlled",
+        "steps-horizontal",
+        "steps-linear",
+        "steps-vertical"
+      ]
+    },
+    {
+      "style": "maia",
       "component": "switch",
       "route": "/verify/maia/switch",
       "demos": [
@@ -2844,6 +3673,19 @@
     },
     {
       "style": "maia",
+      "component": "tags-input",
+      "route": "/verify/maia/tags-input",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "label",
+        "max",
+        "paste"
+      ]
+    },
+    {
+      "style": "maia",
       "component": "textarea",
       "route": "/verify/maia/textarea",
       "demos": [
@@ -2857,6 +3699,17 @@
     },
     {
       "style": "maia",
+      "component": "timer",
+      "route": "/verify/maia/timer",
+      "demos": [
+        "timer-controlled",
+        "timer-countdown",
+        "timer-demo",
+        "timer-parts"
+      ]
+    },
+    {
+      "style": "maia",
       "component": "toast",
       "route": "/verify/maia/toast",
       "demos": [
@@ -2865,6 +3718,17 @@
         "toast-dismiss",
         "toast-promise",
         "toast-types"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "toc",
+      "route": "/verify/maia/toc",
+      "demos": [
+        "toc-controlled",
+        "toc-demo",
+        "toc-nested",
+        "toc-with-title"
       ]
     },
     {
@@ -2904,6 +3768,28 @@
       ]
     },
     {
+      "style": "maia",
+      "component": "tour",
+      "route": "/verify/maia/tour",
+      "demos": [
+        "controlled",
+        "default",
+        "sides"
+      ]
+    },
+    {
+      "style": "maia",
+      "component": "tree-view",
+      "route": "/verify/maia/tree-view",
+      "demos": [
+        "controlled-selection",
+        "default",
+        "disabled",
+        "expanded",
+        "multiple-selection"
+      ]
+    },
+    {
       "style": "mira",
       "component": "accordion",
       "route": "/verify/mira/accordion",
@@ -2934,6 +3820,17 @@
         "alert-dialog-controlled",
         "alert-dialog-demo",
         "alert-dialog-destructive"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "angle-slider",
+      "route": "/verify/mira/angle-slider",
+      "demos": [
+        "angle-slider-controlled",
+        "angle-slider-demo",
+        "angle-slider-disabled",
+        "angle-slider-step"
       ]
     },
     {
@@ -3016,6 +3913,7 @@
         "controlled",
         "default",
         "disabled",
+        "dropdown",
         "min-max",
         "multiple",
         "range"
@@ -3049,6 +3947,19 @@
     },
     {
       "style": "mira",
+      "component": "cascade-select",
+      "route": "/verify/mira/cascade-select",
+      "demos": [
+        "cascade-select-compound",
+        "controlled",
+        "default",
+        "default-value",
+        "disabled",
+        "disabled-items"
+      ]
+    },
+    {
+      "style": "mira",
       "component": "chart",
       "route": "/verify/mira/chart",
       "demos": [
@@ -3076,6 +3987,17 @@
     },
     {
       "style": "mira",
+      "component": "clipboard",
+      "route": "/verify/mira/clipboard",
+      "demos": [
+        "clipboard-controlled",
+        "clipboard-demo",
+        "clipboard-disabled",
+        "clipboard-timeout"
+      ]
+    },
+    {
+      "style": "mira",
       "component": "collapsible",
       "route": "/verify/mira/collapsible",
       "demos": [
@@ -3083,6 +4005,18 @@
         "default",
         "disabled",
         "settings"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "color-picker",
+      "route": "/verify/mira/color-picker",
+      "demos": [
+        "color-picker-controlled",
+        "color-picker-demo",
+        "color-picker-disabled",
+        "color-picker-hsl",
+        "color-picker-swatches"
       ]
     },
     {
@@ -3123,6 +4057,43 @@
     },
     {
       "style": "mira",
+      "component": "data-table",
+      "route": "/verify/mira/data-table",
+      "demos": [
+        "data-table-demo",
+        "empty",
+        "formatted-cells",
+        "sorting"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "date-input",
+      "route": "/verify/mira/date-input",
+      "demos": [
+        "date-input-controlled",
+        "date-input-demo",
+        "date-input-disabled",
+        "date-input-locale",
+        "date-input-range",
+        "date-input-value"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "date-picker",
+      "route": "/verify/mira/date-picker",
+      "demos": [
+        "date-picker-controlled",
+        "date-picker-demo",
+        "date-picker-disabled",
+        "date-picker-locale",
+        "date-picker-read-only",
+        "date-picker-value"
+      ]
+    },
+    {
+      "style": "mira",
       "component": "dialog",
       "route": "/verify/mira/dialog",
       "demos": [
@@ -3158,6 +4129,20 @@
     },
     {
       "style": "mira",
+      "component": "editable",
+      "route": "/verify/mira/editable",
+      "demos": [
+        "activation-mode",
+        "controlled",
+        "custom-trigger",
+        "default",
+        "disabled",
+        "placeholder",
+        "submit-mode"
+      ]
+    },
+    {
+      "style": "mira",
       "component": "empty",
       "route": "/verify/mira/empty",
       "demos": [
@@ -3186,6 +4171,28 @@
     },
     {
       "style": "mira",
+      "component": "file-upload",
+      "route": "/verify/mira/file-upload",
+      "demos": [
+        "file-upload-accept",
+        "file-upload-controlled",
+        "file-upload-demo",
+        "file-upload-max-size"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "floating-panel",
+      "route": "/verify/mira/floating-panel",
+      "demos": [
+        "floating-panel-constrained",
+        "floating-panel-controlled",
+        "floating-panel-demo",
+        "floating-panel-not-resizable"
+      ]
+    },
+    {
+      "style": "mira",
       "component": "hover-card",
       "route": "/verify/mira/hover-card",
       "demos": [
@@ -3193,6 +4200,27 @@
         "default",
         "disabled",
         "positioning"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "icon",
+      "route": "/verify/mira/icon",
+      "demos": [
+        "default",
+        "libraries",
+        "sizing"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "image-cropper",
+      "route": "/verify/mira/image-cropper",
+      "demos": [
+        "circle-aspect-ratio",
+        "controlled",
+        "default",
+        "fixed-crop-area"
       ]
     },
     {
@@ -3279,6 +4307,32 @@
     },
     {
       "style": "mira",
+      "component": "listbox",
+      "route": "/verify/mira/listbox",
+      "demos": [
+        "listbox-compound",
+        "listbox-controlled",
+        "listbox-demo",
+        "listbox-disabled",
+        "listbox-multiple"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "marquee",
+      "route": "/verify/mira/marquee",
+      "demos": [
+        "marquee-auto-fill",
+        "marquee-compound",
+        "marquee-controlled",
+        "marquee-demo",
+        "marquee-reverse",
+        "marquee-speed",
+        "marquee-vertical"
+      ]
+    },
+    {
+      "style": "mira",
       "component": "menubar",
       "route": "/verify/mira/menubar",
       "demos": [
@@ -3314,6 +4368,17 @@
     },
     {
       "style": "mira",
+      "component": "number-input",
+      "route": "/verify/mira/number-input",
+      "demos": [
+        "number-input-controlled",
+        "number-input-demo",
+        "number-input-disabled",
+        "number-input-min-max-step"
+      ]
+    },
+    {
+      "style": "mira",
       "component": "pagination",
       "route": "/verify/mira/pagination",
       "demos": [
@@ -3321,6 +4386,18 @@
         "default",
         "few-pages",
         "sibling-count"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "password-input",
+      "route": "/verify/mira/password-input",
+      "demos": [
+        "password-input-controlled",
+        "password-input-demo",
+        "password-input-disabled",
+        "password-input-invalid",
+        "password-input-new-password"
       ]
     },
     {
@@ -3347,6 +4424,18 @@
     },
     {
       "style": "mira",
+      "component": "qr-code",
+      "route": "/verify/mira/qr-code",
+      "demos": [
+        "qr-code-controlled",
+        "qr-code-demo",
+        "qr-code-download",
+        "qr-code-overlay",
+        "qr-code-sizes"
+      ]
+    },
+    {
+      "style": "mira",
       "component": "radio-group",
       "route": "/verify/mira/radio-group",
       "demos": [
@@ -3355,6 +4444,19 @@
         "radio-group-demo",
         "radio-group-disabled",
         "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "rating-group",
+      "route": "/verify/mira/rating-group",
+      "demos": [
+        "controlled",
+        "custom-count",
+        "default",
+        "disabled",
+        "half-stars",
+        "readonly"
       ]
     },
     {
@@ -3422,6 +4524,17 @@
     },
     {
       "style": "mira",
+      "component": "signature-pad",
+      "route": "/verify/mira/signature-pad",
+      "demos": [
+        "signature-pad-controlled",
+        "signature-pad-demo",
+        "signature-pad-disabled",
+        "signature-pad-form"
+      ]
+    },
+    {
+      "style": "mira",
       "component": "skeleton",
       "route": "/verify/mira/skeleton",
       "demos": [
@@ -3459,6 +4572,17 @@
     },
     {
       "style": "mira",
+      "component": "steps",
+      "route": "/verify/mira/steps",
+      "demos": [
+        "steps-controlled",
+        "steps-horizontal",
+        "steps-linear",
+        "steps-vertical"
+      ]
+    },
+    {
+      "style": "mira",
       "component": "switch",
       "route": "/verify/mira/switch",
       "demos": [
@@ -3492,6 +4616,19 @@
     },
     {
       "style": "mira",
+      "component": "tags-input",
+      "route": "/verify/mira/tags-input",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "label",
+        "max",
+        "paste"
+      ]
+    },
+    {
+      "style": "mira",
       "component": "textarea",
       "route": "/verify/mira/textarea",
       "demos": [
@@ -3505,6 +4642,17 @@
     },
     {
       "style": "mira",
+      "component": "timer",
+      "route": "/verify/mira/timer",
+      "demos": [
+        "timer-controlled",
+        "timer-countdown",
+        "timer-demo",
+        "timer-parts"
+      ]
+    },
+    {
+      "style": "mira",
       "component": "toast",
       "route": "/verify/mira/toast",
       "demos": [
@@ -3513,6 +4661,17 @@
         "toast-dismiss",
         "toast-promise",
         "toast-types"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "toc",
+      "route": "/verify/mira/toc",
+      "demos": [
+        "toc-controlled",
+        "toc-demo",
+        "toc-nested",
+        "toc-with-title"
       ]
     },
     {
@@ -3552,6 +4711,28 @@
       ]
     },
     {
+      "style": "mira",
+      "component": "tour",
+      "route": "/verify/mira/tour",
+      "demos": [
+        "controlled",
+        "default",
+        "sides"
+      ]
+    },
+    {
+      "style": "mira",
+      "component": "tree-view",
+      "route": "/verify/mira/tree-view",
+      "demos": [
+        "controlled-selection",
+        "default",
+        "disabled",
+        "expanded",
+        "multiple-selection"
+      ]
+    },
+    {
       "style": "nova",
       "component": "accordion",
       "route": "/verify/nova/accordion",
@@ -3582,6 +4763,17 @@
         "alert-dialog-controlled",
         "alert-dialog-demo",
         "alert-dialog-destructive"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "angle-slider",
+      "route": "/verify/nova/angle-slider",
+      "demos": [
+        "angle-slider-controlled",
+        "angle-slider-demo",
+        "angle-slider-disabled",
+        "angle-slider-step"
       ]
     },
     {
@@ -3664,6 +4856,7 @@
         "controlled",
         "default",
         "disabled",
+        "dropdown",
         "min-max",
         "multiple",
         "range"
@@ -3697,6 +4890,19 @@
     },
     {
       "style": "nova",
+      "component": "cascade-select",
+      "route": "/verify/nova/cascade-select",
+      "demos": [
+        "cascade-select-compound",
+        "controlled",
+        "default",
+        "default-value",
+        "disabled",
+        "disabled-items"
+      ]
+    },
+    {
+      "style": "nova",
       "component": "chart",
       "route": "/verify/nova/chart",
       "demos": [
@@ -3724,6 +4930,17 @@
     },
     {
       "style": "nova",
+      "component": "clipboard",
+      "route": "/verify/nova/clipboard",
+      "demos": [
+        "clipboard-controlled",
+        "clipboard-demo",
+        "clipboard-disabled",
+        "clipboard-timeout"
+      ]
+    },
+    {
+      "style": "nova",
       "component": "collapsible",
       "route": "/verify/nova/collapsible",
       "demos": [
@@ -3731,6 +4948,18 @@
         "default",
         "disabled",
         "settings"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "color-picker",
+      "route": "/verify/nova/color-picker",
+      "demos": [
+        "color-picker-controlled",
+        "color-picker-demo",
+        "color-picker-disabled",
+        "color-picker-hsl",
+        "color-picker-swatches"
       ]
     },
     {
@@ -3771,6 +5000,43 @@
     },
     {
       "style": "nova",
+      "component": "data-table",
+      "route": "/verify/nova/data-table",
+      "demos": [
+        "data-table-demo",
+        "empty",
+        "formatted-cells",
+        "sorting"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "date-input",
+      "route": "/verify/nova/date-input",
+      "demos": [
+        "date-input-controlled",
+        "date-input-demo",
+        "date-input-disabled",
+        "date-input-locale",
+        "date-input-range",
+        "date-input-value"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "date-picker",
+      "route": "/verify/nova/date-picker",
+      "demos": [
+        "date-picker-controlled",
+        "date-picker-demo",
+        "date-picker-disabled",
+        "date-picker-locale",
+        "date-picker-read-only",
+        "date-picker-value"
+      ]
+    },
+    {
+      "style": "nova",
       "component": "dialog",
       "route": "/verify/nova/dialog",
       "demos": [
@@ -3806,6 +5072,20 @@
     },
     {
       "style": "nova",
+      "component": "editable",
+      "route": "/verify/nova/editable",
+      "demos": [
+        "activation-mode",
+        "controlled",
+        "custom-trigger",
+        "default",
+        "disabled",
+        "placeholder",
+        "submit-mode"
+      ]
+    },
+    {
+      "style": "nova",
       "component": "empty",
       "route": "/verify/nova/empty",
       "demos": [
@@ -3834,6 +5114,28 @@
     },
     {
       "style": "nova",
+      "component": "file-upload",
+      "route": "/verify/nova/file-upload",
+      "demos": [
+        "file-upload-accept",
+        "file-upload-controlled",
+        "file-upload-demo",
+        "file-upload-max-size"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "floating-panel",
+      "route": "/verify/nova/floating-panel",
+      "demos": [
+        "floating-panel-constrained",
+        "floating-panel-controlled",
+        "floating-panel-demo",
+        "floating-panel-not-resizable"
+      ]
+    },
+    {
+      "style": "nova",
       "component": "hover-card",
       "route": "/verify/nova/hover-card",
       "demos": [
@@ -3841,6 +5143,27 @@
         "default",
         "disabled",
         "positioning"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "icon",
+      "route": "/verify/nova/icon",
+      "demos": [
+        "default",
+        "libraries",
+        "sizing"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "image-cropper",
+      "route": "/verify/nova/image-cropper",
+      "demos": [
+        "circle-aspect-ratio",
+        "controlled",
+        "default",
+        "fixed-crop-area"
       ]
     },
     {
@@ -3927,6 +5250,32 @@
     },
     {
       "style": "nova",
+      "component": "listbox",
+      "route": "/verify/nova/listbox",
+      "demos": [
+        "listbox-compound",
+        "listbox-controlled",
+        "listbox-demo",
+        "listbox-disabled",
+        "listbox-multiple"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "marquee",
+      "route": "/verify/nova/marquee",
+      "demos": [
+        "marquee-auto-fill",
+        "marquee-compound",
+        "marquee-controlled",
+        "marquee-demo",
+        "marquee-reverse",
+        "marquee-speed",
+        "marquee-vertical"
+      ]
+    },
+    {
+      "style": "nova",
       "component": "menubar",
       "route": "/verify/nova/menubar",
       "demos": [
@@ -3962,6 +5311,17 @@
     },
     {
       "style": "nova",
+      "component": "number-input",
+      "route": "/verify/nova/number-input",
+      "demos": [
+        "number-input-controlled",
+        "number-input-demo",
+        "number-input-disabled",
+        "number-input-min-max-step"
+      ]
+    },
+    {
+      "style": "nova",
       "component": "pagination",
       "route": "/verify/nova/pagination",
       "demos": [
@@ -3969,6 +5329,18 @@
         "default",
         "few-pages",
         "sibling-count"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "password-input",
+      "route": "/verify/nova/password-input",
+      "demos": [
+        "password-input-controlled",
+        "password-input-demo",
+        "password-input-disabled",
+        "password-input-invalid",
+        "password-input-new-password"
       ]
     },
     {
@@ -3995,6 +5367,18 @@
     },
     {
       "style": "nova",
+      "component": "qr-code",
+      "route": "/verify/nova/qr-code",
+      "demos": [
+        "qr-code-controlled",
+        "qr-code-demo",
+        "qr-code-download",
+        "qr-code-overlay",
+        "qr-code-sizes"
+      ]
+    },
+    {
+      "style": "nova",
       "component": "radio-group",
       "route": "/verify/nova/radio-group",
       "demos": [
@@ -4003,6 +5387,19 @@
         "radio-group-demo",
         "radio-group-disabled",
         "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "rating-group",
+      "route": "/verify/nova/rating-group",
+      "demos": [
+        "controlled",
+        "custom-count",
+        "default",
+        "disabled",
+        "half-stars",
+        "readonly"
       ]
     },
     {
@@ -4070,6 +5467,17 @@
     },
     {
       "style": "nova",
+      "component": "signature-pad",
+      "route": "/verify/nova/signature-pad",
+      "demos": [
+        "signature-pad-controlled",
+        "signature-pad-demo",
+        "signature-pad-disabled",
+        "signature-pad-form"
+      ]
+    },
+    {
+      "style": "nova",
       "component": "skeleton",
       "route": "/verify/nova/skeleton",
       "demos": [
@@ -4107,6 +5515,17 @@
     },
     {
       "style": "nova",
+      "component": "steps",
+      "route": "/verify/nova/steps",
+      "demos": [
+        "steps-controlled",
+        "steps-horizontal",
+        "steps-linear",
+        "steps-vertical"
+      ]
+    },
+    {
+      "style": "nova",
       "component": "switch",
       "route": "/verify/nova/switch",
       "demos": [
@@ -4140,6 +5559,19 @@
     },
     {
       "style": "nova",
+      "component": "tags-input",
+      "route": "/verify/nova/tags-input",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "label",
+        "max",
+        "paste"
+      ]
+    },
+    {
+      "style": "nova",
       "component": "textarea",
       "route": "/verify/nova/textarea",
       "demos": [
@@ -4153,6 +5585,17 @@
     },
     {
       "style": "nova",
+      "component": "timer",
+      "route": "/verify/nova/timer",
+      "demos": [
+        "timer-controlled",
+        "timer-countdown",
+        "timer-demo",
+        "timer-parts"
+      ]
+    },
+    {
+      "style": "nova",
       "component": "toast",
       "route": "/verify/nova/toast",
       "demos": [
@@ -4161,6 +5604,17 @@
         "toast-dismiss",
         "toast-promise",
         "toast-types"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "toc",
+      "route": "/verify/nova/toc",
+      "demos": [
+        "toc-controlled",
+        "toc-demo",
+        "toc-nested",
+        "toc-with-title"
       ]
     },
     {
@@ -4200,6 +5654,28 @@
       ]
     },
     {
+      "style": "nova",
+      "component": "tour",
+      "route": "/verify/nova/tour",
+      "demos": [
+        "controlled",
+        "default",
+        "sides"
+      ]
+    },
+    {
+      "style": "nova",
+      "component": "tree-view",
+      "route": "/verify/nova/tree-view",
+      "demos": [
+        "controlled-selection",
+        "default",
+        "disabled",
+        "expanded",
+        "multiple-selection"
+      ]
+    },
+    {
       "style": "rhea",
       "component": "accordion",
       "route": "/verify/rhea/accordion",
@@ -4230,6 +5706,17 @@
         "alert-dialog-controlled",
         "alert-dialog-demo",
         "alert-dialog-destructive"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "angle-slider",
+      "route": "/verify/rhea/angle-slider",
+      "demos": [
+        "angle-slider-controlled",
+        "angle-slider-demo",
+        "angle-slider-disabled",
+        "angle-slider-step"
       ]
     },
     {
@@ -4312,6 +5799,7 @@
         "controlled",
         "default",
         "disabled",
+        "dropdown",
         "min-max",
         "multiple",
         "range"
@@ -4345,6 +5833,19 @@
     },
     {
       "style": "rhea",
+      "component": "cascade-select",
+      "route": "/verify/rhea/cascade-select",
+      "demos": [
+        "cascade-select-compound",
+        "controlled",
+        "default",
+        "default-value",
+        "disabled",
+        "disabled-items"
+      ]
+    },
+    {
+      "style": "rhea",
       "component": "chart",
       "route": "/verify/rhea/chart",
       "demos": [
@@ -4372,6 +5873,17 @@
     },
     {
       "style": "rhea",
+      "component": "clipboard",
+      "route": "/verify/rhea/clipboard",
+      "demos": [
+        "clipboard-controlled",
+        "clipboard-demo",
+        "clipboard-disabled",
+        "clipboard-timeout"
+      ]
+    },
+    {
+      "style": "rhea",
       "component": "collapsible",
       "route": "/verify/rhea/collapsible",
       "demos": [
@@ -4379,6 +5891,18 @@
         "default",
         "disabled",
         "settings"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "color-picker",
+      "route": "/verify/rhea/color-picker",
+      "demos": [
+        "color-picker-controlled",
+        "color-picker-demo",
+        "color-picker-disabled",
+        "color-picker-hsl",
+        "color-picker-swatches"
       ]
     },
     {
@@ -4419,6 +5943,43 @@
     },
     {
       "style": "rhea",
+      "component": "data-table",
+      "route": "/verify/rhea/data-table",
+      "demos": [
+        "data-table-demo",
+        "empty",
+        "formatted-cells",
+        "sorting"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "date-input",
+      "route": "/verify/rhea/date-input",
+      "demos": [
+        "date-input-controlled",
+        "date-input-demo",
+        "date-input-disabled",
+        "date-input-locale",
+        "date-input-range",
+        "date-input-value"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "date-picker",
+      "route": "/verify/rhea/date-picker",
+      "demos": [
+        "date-picker-controlled",
+        "date-picker-demo",
+        "date-picker-disabled",
+        "date-picker-locale",
+        "date-picker-read-only",
+        "date-picker-value"
+      ]
+    },
+    {
+      "style": "rhea",
       "component": "dialog",
       "route": "/verify/rhea/dialog",
       "demos": [
@@ -4454,6 +6015,20 @@
     },
     {
       "style": "rhea",
+      "component": "editable",
+      "route": "/verify/rhea/editable",
+      "demos": [
+        "activation-mode",
+        "controlled",
+        "custom-trigger",
+        "default",
+        "disabled",
+        "placeholder",
+        "submit-mode"
+      ]
+    },
+    {
+      "style": "rhea",
       "component": "empty",
       "route": "/verify/rhea/empty",
       "demos": [
@@ -4482,6 +6057,28 @@
     },
     {
       "style": "rhea",
+      "component": "file-upload",
+      "route": "/verify/rhea/file-upload",
+      "demos": [
+        "file-upload-accept",
+        "file-upload-controlled",
+        "file-upload-demo",
+        "file-upload-max-size"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "floating-panel",
+      "route": "/verify/rhea/floating-panel",
+      "demos": [
+        "floating-panel-constrained",
+        "floating-panel-controlled",
+        "floating-panel-demo",
+        "floating-panel-not-resizable"
+      ]
+    },
+    {
+      "style": "rhea",
       "component": "hover-card",
       "route": "/verify/rhea/hover-card",
       "demos": [
@@ -4489,6 +6086,27 @@
         "default",
         "disabled",
         "positioning"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "icon",
+      "route": "/verify/rhea/icon",
+      "demos": [
+        "default",
+        "libraries",
+        "sizing"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "image-cropper",
+      "route": "/verify/rhea/image-cropper",
+      "demos": [
+        "circle-aspect-ratio",
+        "controlled",
+        "default",
+        "fixed-crop-area"
       ]
     },
     {
@@ -4575,6 +6193,32 @@
     },
     {
       "style": "rhea",
+      "component": "listbox",
+      "route": "/verify/rhea/listbox",
+      "demos": [
+        "listbox-compound",
+        "listbox-controlled",
+        "listbox-demo",
+        "listbox-disabled",
+        "listbox-multiple"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "marquee",
+      "route": "/verify/rhea/marquee",
+      "demos": [
+        "marquee-auto-fill",
+        "marquee-compound",
+        "marquee-controlled",
+        "marquee-demo",
+        "marquee-reverse",
+        "marquee-speed",
+        "marquee-vertical"
+      ]
+    },
+    {
+      "style": "rhea",
       "component": "menubar",
       "route": "/verify/rhea/menubar",
       "demos": [
@@ -4610,6 +6254,17 @@
     },
     {
       "style": "rhea",
+      "component": "number-input",
+      "route": "/verify/rhea/number-input",
+      "demos": [
+        "number-input-controlled",
+        "number-input-demo",
+        "number-input-disabled",
+        "number-input-min-max-step"
+      ]
+    },
+    {
+      "style": "rhea",
       "component": "pagination",
       "route": "/verify/rhea/pagination",
       "demos": [
@@ -4617,6 +6272,18 @@
         "default",
         "few-pages",
         "sibling-count"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "password-input",
+      "route": "/verify/rhea/password-input",
+      "demos": [
+        "password-input-controlled",
+        "password-input-demo",
+        "password-input-disabled",
+        "password-input-invalid",
+        "password-input-new-password"
       ]
     },
     {
@@ -4643,6 +6310,18 @@
     },
     {
       "style": "rhea",
+      "component": "qr-code",
+      "route": "/verify/rhea/qr-code",
+      "demos": [
+        "qr-code-controlled",
+        "qr-code-demo",
+        "qr-code-download",
+        "qr-code-overlay",
+        "qr-code-sizes"
+      ]
+    },
+    {
+      "style": "rhea",
       "component": "radio-group",
       "route": "/verify/rhea/radio-group",
       "demos": [
@@ -4651,6 +6330,19 @@
         "radio-group-demo",
         "radio-group-disabled",
         "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "rating-group",
+      "route": "/verify/rhea/rating-group",
+      "demos": [
+        "controlled",
+        "custom-count",
+        "default",
+        "disabled",
+        "half-stars",
+        "readonly"
       ]
     },
     {
@@ -4718,6 +6410,17 @@
     },
     {
       "style": "rhea",
+      "component": "signature-pad",
+      "route": "/verify/rhea/signature-pad",
+      "demos": [
+        "signature-pad-controlled",
+        "signature-pad-demo",
+        "signature-pad-disabled",
+        "signature-pad-form"
+      ]
+    },
+    {
+      "style": "rhea",
       "component": "skeleton",
       "route": "/verify/rhea/skeleton",
       "demos": [
@@ -4755,6 +6458,17 @@
     },
     {
       "style": "rhea",
+      "component": "steps",
+      "route": "/verify/rhea/steps",
+      "demos": [
+        "steps-controlled",
+        "steps-horizontal",
+        "steps-linear",
+        "steps-vertical"
+      ]
+    },
+    {
+      "style": "rhea",
       "component": "switch",
       "route": "/verify/rhea/switch",
       "demos": [
@@ -4788,6 +6502,19 @@
     },
     {
       "style": "rhea",
+      "component": "tags-input",
+      "route": "/verify/rhea/tags-input",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "label",
+        "max",
+        "paste"
+      ]
+    },
+    {
+      "style": "rhea",
       "component": "textarea",
       "route": "/verify/rhea/textarea",
       "demos": [
@@ -4801,6 +6528,17 @@
     },
     {
       "style": "rhea",
+      "component": "timer",
+      "route": "/verify/rhea/timer",
+      "demos": [
+        "timer-controlled",
+        "timer-countdown",
+        "timer-demo",
+        "timer-parts"
+      ]
+    },
+    {
+      "style": "rhea",
       "component": "toast",
       "route": "/verify/rhea/toast",
       "demos": [
@@ -4809,6 +6547,17 @@
         "toast-dismiss",
         "toast-promise",
         "toast-types"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "toc",
+      "route": "/verify/rhea/toc",
+      "demos": [
+        "toc-controlled",
+        "toc-demo",
+        "toc-nested",
+        "toc-with-title"
       ]
     },
     {
@@ -4848,6 +6597,28 @@
       ]
     },
     {
+      "style": "rhea",
+      "component": "tour",
+      "route": "/verify/rhea/tour",
+      "demos": [
+        "controlled",
+        "default",
+        "sides"
+      ]
+    },
+    {
+      "style": "rhea",
+      "component": "tree-view",
+      "route": "/verify/rhea/tree-view",
+      "demos": [
+        "controlled-selection",
+        "default",
+        "disabled",
+        "expanded",
+        "multiple-selection"
+      ]
+    },
+    {
       "style": "sera",
       "component": "accordion",
       "route": "/verify/sera/accordion",
@@ -4878,6 +6649,17 @@
         "alert-dialog-controlled",
         "alert-dialog-demo",
         "alert-dialog-destructive"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "angle-slider",
+      "route": "/verify/sera/angle-slider",
+      "demos": [
+        "angle-slider-controlled",
+        "angle-slider-demo",
+        "angle-slider-disabled",
+        "angle-slider-step"
       ]
     },
     {
@@ -4960,6 +6742,7 @@
         "controlled",
         "default",
         "disabled",
+        "dropdown",
         "min-max",
         "multiple",
         "range"
@@ -4993,6 +6776,19 @@
     },
     {
       "style": "sera",
+      "component": "cascade-select",
+      "route": "/verify/sera/cascade-select",
+      "demos": [
+        "cascade-select-compound",
+        "controlled",
+        "default",
+        "default-value",
+        "disabled",
+        "disabled-items"
+      ]
+    },
+    {
+      "style": "sera",
       "component": "chart",
       "route": "/verify/sera/chart",
       "demos": [
@@ -5020,6 +6816,17 @@
     },
     {
       "style": "sera",
+      "component": "clipboard",
+      "route": "/verify/sera/clipboard",
+      "demos": [
+        "clipboard-controlled",
+        "clipboard-demo",
+        "clipboard-disabled",
+        "clipboard-timeout"
+      ]
+    },
+    {
+      "style": "sera",
       "component": "collapsible",
       "route": "/verify/sera/collapsible",
       "demos": [
@@ -5027,6 +6834,18 @@
         "default",
         "disabled",
         "settings"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "color-picker",
+      "route": "/verify/sera/color-picker",
+      "demos": [
+        "color-picker-controlled",
+        "color-picker-demo",
+        "color-picker-disabled",
+        "color-picker-hsl",
+        "color-picker-swatches"
       ]
     },
     {
@@ -5067,6 +6886,43 @@
     },
     {
       "style": "sera",
+      "component": "data-table",
+      "route": "/verify/sera/data-table",
+      "demos": [
+        "data-table-demo",
+        "empty",
+        "formatted-cells",
+        "sorting"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "date-input",
+      "route": "/verify/sera/date-input",
+      "demos": [
+        "date-input-controlled",
+        "date-input-demo",
+        "date-input-disabled",
+        "date-input-locale",
+        "date-input-range",
+        "date-input-value"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "date-picker",
+      "route": "/verify/sera/date-picker",
+      "demos": [
+        "date-picker-controlled",
+        "date-picker-demo",
+        "date-picker-disabled",
+        "date-picker-locale",
+        "date-picker-read-only",
+        "date-picker-value"
+      ]
+    },
+    {
+      "style": "sera",
       "component": "dialog",
       "route": "/verify/sera/dialog",
       "demos": [
@@ -5102,6 +6958,20 @@
     },
     {
       "style": "sera",
+      "component": "editable",
+      "route": "/verify/sera/editable",
+      "demos": [
+        "activation-mode",
+        "controlled",
+        "custom-trigger",
+        "default",
+        "disabled",
+        "placeholder",
+        "submit-mode"
+      ]
+    },
+    {
+      "style": "sera",
       "component": "empty",
       "route": "/verify/sera/empty",
       "demos": [
@@ -5130,6 +7000,28 @@
     },
     {
       "style": "sera",
+      "component": "file-upload",
+      "route": "/verify/sera/file-upload",
+      "demos": [
+        "file-upload-accept",
+        "file-upload-controlled",
+        "file-upload-demo",
+        "file-upload-max-size"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "floating-panel",
+      "route": "/verify/sera/floating-panel",
+      "demos": [
+        "floating-panel-constrained",
+        "floating-panel-controlled",
+        "floating-panel-demo",
+        "floating-panel-not-resizable"
+      ]
+    },
+    {
+      "style": "sera",
       "component": "hover-card",
       "route": "/verify/sera/hover-card",
       "demos": [
@@ -5137,6 +7029,27 @@
         "default",
         "disabled",
         "positioning"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "icon",
+      "route": "/verify/sera/icon",
+      "demos": [
+        "default",
+        "libraries",
+        "sizing"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "image-cropper",
+      "route": "/verify/sera/image-cropper",
+      "demos": [
+        "circle-aspect-ratio",
+        "controlled",
+        "default",
+        "fixed-crop-area"
       ]
     },
     {
@@ -5223,6 +7136,32 @@
     },
     {
       "style": "sera",
+      "component": "listbox",
+      "route": "/verify/sera/listbox",
+      "demos": [
+        "listbox-compound",
+        "listbox-controlled",
+        "listbox-demo",
+        "listbox-disabled",
+        "listbox-multiple"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "marquee",
+      "route": "/verify/sera/marquee",
+      "demos": [
+        "marquee-auto-fill",
+        "marquee-compound",
+        "marquee-controlled",
+        "marquee-demo",
+        "marquee-reverse",
+        "marquee-speed",
+        "marquee-vertical"
+      ]
+    },
+    {
+      "style": "sera",
       "component": "menubar",
       "route": "/verify/sera/menubar",
       "demos": [
@@ -5258,6 +7197,17 @@
     },
     {
       "style": "sera",
+      "component": "number-input",
+      "route": "/verify/sera/number-input",
+      "demos": [
+        "number-input-controlled",
+        "number-input-demo",
+        "number-input-disabled",
+        "number-input-min-max-step"
+      ]
+    },
+    {
+      "style": "sera",
       "component": "pagination",
       "route": "/verify/sera/pagination",
       "demos": [
@@ -5265,6 +7215,18 @@
         "default",
         "few-pages",
         "sibling-count"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "password-input",
+      "route": "/verify/sera/password-input",
+      "demos": [
+        "password-input-controlled",
+        "password-input-demo",
+        "password-input-disabled",
+        "password-input-invalid",
+        "password-input-new-password"
       ]
     },
     {
@@ -5291,6 +7253,18 @@
     },
     {
       "style": "sera",
+      "component": "qr-code",
+      "route": "/verify/sera/qr-code",
+      "demos": [
+        "qr-code-controlled",
+        "qr-code-demo",
+        "qr-code-download",
+        "qr-code-overlay",
+        "qr-code-sizes"
+      ]
+    },
+    {
+      "style": "sera",
       "component": "radio-group",
       "route": "/verify/sera/radio-group",
       "demos": [
@@ -5299,6 +7273,19 @@
         "radio-group-demo",
         "radio-group-disabled",
         "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "rating-group",
+      "route": "/verify/sera/rating-group",
+      "demos": [
+        "controlled",
+        "custom-count",
+        "default",
+        "disabled",
+        "half-stars",
+        "readonly"
       ]
     },
     {
@@ -5366,6 +7353,17 @@
     },
     {
       "style": "sera",
+      "component": "signature-pad",
+      "route": "/verify/sera/signature-pad",
+      "demos": [
+        "signature-pad-controlled",
+        "signature-pad-demo",
+        "signature-pad-disabled",
+        "signature-pad-form"
+      ]
+    },
+    {
+      "style": "sera",
       "component": "skeleton",
       "route": "/verify/sera/skeleton",
       "demos": [
@@ -5403,6 +7401,17 @@
     },
     {
       "style": "sera",
+      "component": "steps",
+      "route": "/verify/sera/steps",
+      "demos": [
+        "steps-controlled",
+        "steps-horizontal",
+        "steps-linear",
+        "steps-vertical"
+      ]
+    },
+    {
+      "style": "sera",
       "component": "switch",
       "route": "/verify/sera/switch",
       "demos": [
@@ -5436,6 +7445,19 @@
     },
     {
       "style": "sera",
+      "component": "tags-input",
+      "route": "/verify/sera/tags-input",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "label",
+        "max",
+        "paste"
+      ]
+    },
+    {
+      "style": "sera",
       "component": "textarea",
       "route": "/verify/sera/textarea",
       "demos": [
@@ -5449,6 +7471,17 @@
     },
     {
       "style": "sera",
+      "component": "timer",
+      "route": "/verify/sera/timer",
+      "demos": [
+        "timer-controlled",
+        "timer-countdown",
+        "timer-demo",
+        "timer-parts"
+      ]
+    },
+    {
+      "style": "sera",
       "component": "toast",
       "route": "/verify/sera/toast",
       "demos": [
@@ -5457,6 +7490,17 @@
         "toast-dismiss",
         "toast-promise",
         "toast-types"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "toc",
+      "route": "/verify/sera/toc",
+      "demos": [
+        "toc-controlled",
+        "toc-demo",
+        "toc-nested",
+        "toc-with-title"
       ]
     },
     {
@@ -5496,6 +7540,28 @@
       ]
     },
     {
+      "style": "sera",
+      "component": "tour",
+      "route": "/verify/sera/tour",
+      "demos": [
+        "controlled",
+        "default",
+        "sides"
+      ]
+    },
+    {
+      "style": "sera",
+      "component": "tree-view",
+      "route": "/verify/sera/tree-view",
+      "demos": [
+        "controlled-selection",
+        "default",
+        "disabled",
+        "expanded",
+        "multiple-selection"
+      ]
+    },
+    {
       "style": "vega",
       "component": "accordion",
       "route": "/verify/vega/accordion",
@@ -5526,6 +7592,17 @@
         "alert-dialog-controlled",
         "alert-dialog-demo",
         "alert-dialog-destructive"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "angle-slider",
+      "route": "/verify/vega/angle-slider",
+      "demos": [
+        "angle-slider-controlled",
+        "angle-slider-demo",
+        "angle-slider-disabled",
+        "angle-slider-step"
       ]
     },
     {
@@ -5608,6 +7685,7 @@
         "controlled",
         "default",
         "disabled",
+        "dropdown",
         "min-max",
         "multiple",
         "range"
@@ -5641,6 +7719,19 @@
     },
     {
       "style": "vega",
+      "component": "cascade-select",
+      "route": "/verify/vega/cascade-select",
+      "demos": [
+        "cascade-select-compound",
+        "controlled",
+        "default",
+        "default-value",
+        "disabled",
+        "disabled-items"
+      ]
+    },
+    {
+      "style": "vega",
       "component": "chart",
       "route": "/verify/vega/chart",
       "demos": [
@@ -5668,6 +7759,17 @@
     },
     {
       "style": "vega",
+      "component": "clipboard",
+      "route": "/verify/vega/clipboard",
+      "demos": [
+        "clipboard-controlled",
+        "clipboard-demo",
+        "clipboard-disabled",
+        "clipboard-timeout"
+      ]
+    },
+    {
+      "style": "vega",
       "component": "collapsible",
       "route": "/verify/vega/collapsible",
       "demos": [
@@ -5675,6 +7777,18 @@
         "default",
         "disabled",
         "settings"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "color-picker",
+      "route": "/verify/vega/color-picker",
+      "demos": [
+        "color-picker-controlled",
+        "color-picker-demo",
+        "color-picker-disabled",
+        "color-picker-hsl",
+        "color-picker-swatches"
       ]
     },
     {
@@ -5715,6 +7829,43 @@
     },
     {
       "style": "vega",
+      "component": "data-table",
+      "route": "/verify/vega/data-table",
+      "demos": [
+        "data-table-demo",
+        "empty",
+        "formatted-cells",
+        "sorting"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "date-input",
+      "route": "/verify/vega/date-input",
+      "demos": [
+        "date-input-controlled",
+        "date-input-demo",
+        "date-input-disabled",
+        "date-input-locale",
+        "date-input-range",
+        "date-input-value"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "date-picker",
+      "route": "/verify/vega/date-picker",
+      "demos": [
+        "date-picker-controlled",
+        "date-picker-demo",
+        "date-picker-disabled",
+        "date-picker-locale",
+        "date-picker-read-only",
+        "date-picker-value"
+      ]
+    },
+    {
+      "style": "vega",
       "component": "dialog",
       "route": "/verify/vega/dialog",
       "demos": [
@@ -5750,6 +7901,20 @@
     },
     {
       "style": "vega",
+      "component": "editable",
+      "route": "/verify/vega/editable",
+      "demos": [
+        "activation-mode",
+        "controlled",
+        "custom-trigger",
+        "default",
+        "disabled",
+        "placeholder",
+        "submit-mode"
+      ]
+    },
+    {
+      "style": "vega",
       "component": "empty",
       "route": "/verify/vega/empty",
       "demos": [
@@ -5778,6 +7943,28 @@
     },
     {
       "style": "vega",
+      "component": "file-upload",
+      "route": "/verify/vega/file-upload",
+      "demos": [
+        "file-upload-accept",
+        "file-upload-controlled",
+        "file-upload-demo",
+        "file-upload-max-size"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "floating-panel",
+      "route": "/verify/vega/floating-panel",
+      "demos": [
+        "floating-panel-constrained",
+        "floating-panel-controlled",
+        "floating-panel-demo",
+        "floating-panel-not-resizable"
+      ]
+    },
+    {
+      "style": "vega",
       "component": "hover-card",
       "route": "/verify/vega/hover-card",
       "demos": [
@@ -5785,6 +7972,27 @@
         "default",
         "disabled",
         "positioning"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "icon",
+      "route": "/verify/vega/icon",
+      "demos": [
+        "default",
+        "libraries",
+        "sizing"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "image-cropper",
+      "route": "/verify/vega/image-cropper",
+      "demos": [
+        "circle-aspect-ratio",
+        "controlled",
+        "default",
+        "fixed-crop-area"
       ]
     },
     {
@@ -5871,6 +8079,32 @@
     },
     {
       "style": "vega",
+      "component": "listbox",
+      "route": "/verify/vega/listbox",
+      "demos": [
+        "listbox-compound",
+        "listbox-controlled",
+        "listbox-demo",
+        "listbox-disabled",
+        "listbox-multiple"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "marquee",
+      "route": "/verify/vega/marquee",
+      "demos": [
+        "marquee-auto-fill",
+        "marquee-compound",
+        "marquee-controlled",
+        "marquee-demo",
+        "marquee-reverse",
+        "marquee-speed",
+        "marquee-vertical"
+      ]
+    },
+    {
+      "style": "vega",
       "component": "menubar",
       "route": "/verify/vega/menubar",
       "demos": [
@@ -5906,6 +8140,17 @@
     },
     {
       "style": "vega",
+      "component": "number-input",
+      "route": "/verify/vega/number-input",
+      "demos": [
+        "number-input-controlled",
+        "number-input-demo",
+        "number-input-disabled",
+        "number-input-min-max-step"
+      ]
+    },
+    {
+      "style": "vega",
       "component": "pagination",
       "route": "/verify/vega/pagination",
       "demos": [
@@ -5913,6 +8158,18 @@
         "default",
         "few-pages",
         "sibling-count"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "password-input",
+      "route": "/verify/vega/password-input",
+      "demos": [
+        "password-input-controlled",
+        "password-input-demo",
+        "password-input-disabled",
+        "password-input-invalid",
+        "password-input-new-password"
       ]
     },
     {
@@ -5939,6 +8196,18 @@
     },
     {
       "style": "vega",
+      "component": "qr-code",
+      "route": "/verify/vega/qr-code",
+      "demos": [
+        "qr-code-controlled",
+        "qr-code-demo",
+        "qr-code-download",
+        "qr-code-overlay",
+        "qr-code-sizes"
+      ]
+    },
+    {
+      "style": "vega",
       "component": "radio-group",
       "route": "/verify/vega/radio-group",
       "demos": [
@@ -5947,6 +8216,19 @@
         "radio-group-demo",
         "radio-group-disabled",
         "radio-group-disabled-item"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "rating-group",
+      "route": "/verify/vega/rating-group",
+      "demos": [
+        "controlled",
+        "custom-count",
+        "default",
+        "disabled",
+        "half-stars",
+        "readonly"
       ]
     },
     {
@@ -6014,6 +8296,17 @@
     },
     {
       "style": "vega",
+      "component": "signature-pad",
+      "route": "/verify/vega/signature-pad",
+      "demos": [
+        "signature-pad-controlled",
+        "signature-pad-demo",
+        "signature-pad-disabled",
+        "signature-pad-form"
+      ]
+    },
+    {
+      "style": "vega",
       "component": "skeleton",
       "route": "/verify/vega/skeleton",
       "demos": [
@@ -6051,6 +8344,17 @@
     },
     {
       "style": "vega",
+      "component": "steps",
+      "route": "/verify/vega/steps",
+      "demos": [
+        "steps-controlled",
+        "steps-horizontal",
+        "steps-linear",
+        "steps-vertical"
+      ]
+    },
+    {
+      "style": "vega",
       "component": "switch",
       "route": "/verify/vega/switch",
       "demos": [
@@ -6084,6 +8388,19 @@
     },
     {
       "style": "vega",
+      "component": "tags-input",
+      "route": "/verify/vega/tags-input",
+      "demos": [
+        "controlled",
+        "default",
+        "disabled",
+        "label",
+        "max",
+        "paste"
+      ]
+    },
+    {
+      "style": "vega",
       "component": "textarea",
       "route": "/verify/vega/textarea",
       "demos": [
@@ -6097,6 +8414,17 @@
     },
     {
       "style": "vega",
+      "component": "timer",
+      "route": "/verify/vega/timer",
+      "demos": [
+        "timer-controlled",
+        "timer-countdown",
+        "timer-demo",
+        "timer-parts"
+      ]
+    },
+    {
+      "style": "vega",
       "component": "toast",
       "route": "/verify/vega/toast",
       "demos": [
@@ -6105,6 +8433,17 @@
         "toast-dismiss",
         "toast-promise",
         "toast-types"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "toc",
+      "route": "/verify/vega/toc",
+      "demos": [
+        "toc-controlled",
+        "toc-demo",
+        "toc-nested",
+        "toc-with-title"
       ]
     },
     {
@@ -6142,6 +8481,28 @@
         "tooltip-demo",
         "tooltip-positioning"
       ]
+    },
+    {
+      "style": "vega",
+      "component": "tour",
+      "route": "/verify/vega/tour",
+      "demos": [
+        "controlled",
+        "default",
+        "sides"
+      ]
+    },
+    {
+      "style": "vega",
+      "component": "tree-view",
+      "route": "/verify/vega/tree-view",
+      "demos": [
+        "controlled-selection",
+        "default",
+        "disabled",
+        "expanded",
+        "multiple-selection"
+      ]
     }
   ],
   "skips": [
@@ -6152,143 +8513,8 @@
     },
     {
       "style": "luma",
-      "component": "angle-slider",
-      "reason": "style \"luma\" has no packages/registry component directory for \"angle-slider\""
-    },
-    {
-      "style": "luma",
-      "component": "cascade-select",
-      "reason": "style \"luma\" has no packages/registry component directory for \"cascade-select\""
-    },
-    {
-      "style": "luma",
       "component": "charts-gallery",
       "reason": "style \"luma\" has no packages/registry component directory for \"charts-gallery\""
-    },
-    {
-      "style": "luma",
-      "component": "clipboard",
-      "reason": "style \"luma\" has no packages/registry component directory for \"clipboard\""
-    },
-    {
-      "style": "luma",
-      "component": "color-picker",
-      "reason": "style \"luma\" has no packages/registry component directory for \"color-picker\""
-    },
-    {
-      "style": "luma",
-      "component": "data-table",
-      "reason": "style \"luma\" has no packages/registry component directory for \"data-table\""
-    },
-    {
-      "style": "luma",
-      "component": "date-input",
-      "reason": "style \"luma\" has no packages/registry component directory for \"date-input\""
-    },
-    {
-      "style": "luma",
-      "component": "date-picker",
-      "reason": "style \"luma\" has no packages/registry component directory for \"date-picker\""
-    },
-    {
-      "style": "luma",
-      "component": "editable",
-      "reason": "style \"luma\" has no packages/registry component directory for \"editable\""
-    },
-    {
-      "style": "luma",
-      "component": "file-upload",
-      "reason": "style \"luma\" has no packages/registry component directory for \"file-upload\""
-    },
-    {
-      "style": "luma",
-      "component": "floating-panel",
-      "reason": "style \"luma\" has no packages/registry component directory for \"floating-panel\""
-    },
-    {
-      "style": "luma",
-      "component": "icon",
-      "reason": "style \"luma\" has no packages/registry component directory for \"icon\""
-    },
-    {
-      "style": "luma",
-      "component": "image-cropper",
-      "reason": "style \"luma\" has no packages/registry component directory for \"image-cropper\""
-    },
-    {
-      "style": "luma",
-      "component": "listbox",
-      "reason": "style \"luma\" has no packages/registry component directory for \"listbox\""
-    },
-    {
-      "style": "luma",
-      "component": "marquee",
-      "reason": "style \"luma\" has no packages/registry component directory for \"marquee\""
-    },
-    {
-      "style": "luma",
-      "component": "number-input",
-      "reason": "style \"luma\" has no packages/registry component directory for \"number-input\""
-    },
-    {
-      "style": "luma",
-      "component": "password-input",
-      "reason": "style \"luma\" has no packages/registry component directory for \"password-input\""
-    },
-    {
-      "style": "luma",
-      "component": "qr-code",
-      "reason": "style \"luma\" has no packages/registry component directory for \"qr-code\""
-    },
-    {
-      "style": "luma",
-      "component": "rating-group",
-      "reason": "style \"luma\" has no packages/registry component directory for \"rating-group\""
-    },
-    {
-      "style": "luma",
-      "component": "signature-pad",
-      "reason": "style \"luma\" has no packages/registry component directory for \"signature-pad\""
-    },
-    {
-      "style": "luma",
-      "component": "steps",
-      "reason": "style \"luma\" has no packages/registry component directory for \"steps\""
-    },
-    {
-      "style": "luma",
-      "component": "tags-input",
-      "reason": "style \"luma\" has no packages/registry component directory for \"tags-input\""
-    },
-    {
-      "style": "luma",
-      "component": "timer",
-      "reason": "style \"luma\" has no packages/registry component directory for \"timer\""
-    },
-    {
-      "style": "luma",
-      "component": "toc",
-      "reason": "style \"luma\" has no packages/registry component directory for \"toc\""
-    },
-    {
-      "style": "luma",
-      "component": "tour",
-      "reason": "style \"luma\" has no packages/registry component directory for \"tour\""
-    },
-    {
-      "style": "luma",
-      "component": "tree-view",
-      "reason": "style \"luma\" has no packages/registry component directory for \"tree-view\""
-    },
-    {
-      "style": "lyra",
-      "component": "angle-slider",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"angle-slider\""
-    },
-    {
-      "style": "lyra",
-      "component": "cascade-select",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"cascade-select\""
     },
     {
       "style": "lyra",
@@ -6296,259 +8522,9 @@
       "reason": "style \"lyra\" has no packages/registry component directory for \"charts-gallery\""
     },
     {
-      "style": "lyra",
-      "component": "clipboard",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"clipboard\""
-    },
-    {
-      "style": "lyra",
-      "component": "color-picker",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"color-picker\""
-    },
-    {
-      "style": "lyra",
-      "component": "data-table",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"data-table\""
-    },
-    {
-      "style": "lyra",
-      "component": "date-input",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"date-input\""
-    },
-    {
-      "style": "lyra",
-      "component": "date-picker",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"date-picker\""
-    },
-    {
-      "style": "lyra",
-      "component": "editable",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"editable\""
-    },
-    {
-      "style": "lyra",
-      "component": "file-upload",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"file-upload\""
-    },
-    {
-      "style": "lyra",
-      "component": "floating-panel",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"floating-panel\""
-    },
-    {
-      "style": "lyra",
-      "component": "icon",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"icon\""
-    },
-    {
-      "style": "lyra",
-      "component": "image-cropper",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"image-cropper\""
-    },
-    {
-      "style": "lyra",
-      "component": "listbox",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"listbox\""
-    },
-    {
-      "style": "lyra",
-      "component": "marquee",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"marquee\""
-    },
-    {
-      "style": "lyra",
-      "component": "number-input",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"number-input\""
-    },
-    {
-      "style": "lyra",
-      "component": "password-input",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"password-input\""
-    },
-    {
-      "style": "lyra",
-      "component": "qr-code",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"qr-code\""
-    },
-    {
-      "style": "lyra",
-      "component": "rating-group",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"rating-group\""
-    },
-    {
-      "style": "lyra",
-      "component": "signature-pad",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"signature-pad\""
-    },
-    {
-      "style": "lyra",
-      "component": "steps",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"steps\""
-    },
-    {
-      "style": "lyra",
-      "component": "tags-input",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"tags-input\""
-    },
-    {
-      "style": "lyra",
-      "component": "timer",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"timer\""
-    },
-    {
-      "style": "lyra",
-      "component": "toc",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"toc\""
-    },
-    {
-      "style": "lyra",
-      "component": "tour",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"tour\""
-    },
-    {
-      "style": "lyra",
-      "component": "tree-view",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"tree-view\""
-    },
-    {
-      "style": "maia",
-      "component": "angle-slider",
-      "reason": "style \"maia\" has no packages/registry component directory for \"angle-slider\""
-    },
-    {
-      "style": "maia",
-      "component": "cascade-select",
-      "reason": "style \"maia\" has no packages/registry component directory for \"cascade-select\""
-    },
-    {
       "style": "maia",
       "component": "charts-gallery",
       "reason": "style \"maia\" has no packages/registry component directory for \"charts-gallery\""
-    },
-    {
-      "style": "maia",
-      "component": "clipboard",
-      "reason": "style \"maia\" has no packages/registry component directory for \"clipboard\""
-    },
-    {
-      "style": "maia",
-      "component": "color-picker",
-      "reason": "style \"maia\" has no packages/registry component directory for \"color-picker\""
-    },
-    {
-      "style": "maia",
-      "component": "data-table",
-      "reason": "style \"maia\" has no packages/registry component directory for \"data-table\""
-    },
-    {
-      "style": "maia",
-      "component": "date-input",
-      "reason": "style \"maia\" has no packages/registry component directory for \"date-input\""
-    },
-    {
-      "style": "maia",
-      "component": "date-picker",
-      "reason": "style \"maia\" has no packages/registry component directory for \"date-picker\""
-    },
-    {
-      "style": "maia",
-      "component": "editable",
-      "reason": "style \"maia\" has no packages/registry component directory for \"editable\""
-    },
-    {
-      "style": "maia",
-      "component": "file-upload",
-      "reason": "style \"maia\" has no packages/registry component directory for \"file-upload\""
-    },
-    {
-      "style": "maia",
-      "component": "floating-panel",
-      "reason": "style \"maia\" has no packages/registry component directory for \"floating-panel\""
-    },
-    {
-      "style": "maia",
-      "component": "icon",
-      "reason": "style \"maia\" has no packages/registry component directory for \"icon\""
-    },
-    {
-      "style": "maia",
-      "component": "image-cropper",
-      "reason": "style \"maia\" has no packages/registry component directory for \"image-cropper\""
-    },
-    {
-      "style": "maia",
-      "component": "listbox",
-      "reason": "style \"maia\" has no packages/registry component directory for \"listbox\""
-    },
-    {
-      "style": "maia",
-      "component": "marquee",
-      "reason": "style \"maia\" has no packages/registry component directory for \"marquee\""
-    },
-    {
-      "style": "maia",
-      "component": "number-input",
-      "reason": "style \"maia\" has no packages/registry component directory for \"number-input\""
-    },
-    {
-      "style": "maia",
-      "component": "password-input",
-      "reason": "style \"maia\" has no packages/registry component directory for \"password-input\""
-    },
-    {
-      "style": "maia",
-      "component": "qr-code",
-      "reason": "style \"maia\" has no packages/registry component directory for \"qr-code\""
-    },
-    {
-      "style": "maia",
-      "component": "rating-group",
-      "reason": "style \"maia\" has no packages/registry component directory for \"rating-group\""
-    },
-    {
-      "style": "maia",
-      "component": "signature-pad",
-      "reason": "style \"maia\" has no packages/registry component directory for \"signature-pad\""
-    },
-    {
-      "style": "maia",
-      "component": "steps",
-      "reason": "style \"maia\" has no packages/registry component directory for \"steps\""
-    },
-    {
-      "style": "maia",
-      "component": "tags-input",
-      "reason": "style \"maia\" has no packages/registry component directory for \"tags-input\""
-    },
-    {
-      "style": "maia",
-      "component": "timer",
-      "reason": "style \"maia\" has no packages/registry component directory for \"timer\""
-    },
-    {
-      "style": "maia",
-      "component": "toc",
-      "reason": "style \"maia\" has no packages/registry component directory for \"toc\""
-    },
-    {
-      "style": "maia",
-      "component": "tour",
-      "reason": "style \"maia\" has no packages/registry component directory for \"tour\""
-    },
-    {
-      "style": "maia",
-      "component": "tree-view",
-      "reason": "style \"maia\" has no packages/registry component directory for \"tree-view\""
-    },
-    {
-      "style": "mira",
-      "component": "angle-slider",
-      "reason": "style \"mira\" has no packages/registry component directory for \"angle-slider\""
-    },
-    {
-      "style": "mira",
-      "component": "cascade-select",
-      "reason": "style \"mira\" has no packages/registry component directory for \"cascade-select\""
     },
     {
       "style": "mira",
@@ -6556,259 +8532,9 @@
       "reason": "style \"mira\" has no packages/registry component directory for \"charts-gallery\""
     },
     {
-      "style": "mira",
-      "component": "clipboard",
-      "reason": "style \"mira\" has no packages/registry component directory for \"clipboard\""
-    },
-    {
-      "style": "mira",
-      "component": "color-picker",
-      "reason": "style \"mira\" has no packages/registry component directory for \"color-picker\""
-    },
-    {
-      "style": "mira",
-      "component": "data-table",
-      "reason": "style \"mira\" has no packages/registry component directory for \"data-table\""
-    },
-    {
-      "style": "mira",
-      "component": "date-input",
-      "reason": "style \"mira\" has no packages/registry component directory for \"date-input\""
-    },
-    {
-      "style": "mira",
-      "component": "date-picker",
-      "reason": "style \"mira\" has no packages/registry component directory for \"date-picker\""
-    },
-    {
-      "style": "mira",
-      "component": "editable",
-      "reason": "style \"mira\" has no packages/registry component directory for \"editable\""
-    },
-    {
-      "style": "mira",
-      "component": "file-upload",
-      "reason": "style \"mira\" has no packages/registry component directory for \"file-upload\""
-    },
-    {
-      "style": "mira",
-      "component": "floating-panel",
-      "reason": "style \"mira\" has no packages/registry component directory for \"floating-panel\""
-    },
-    {
-      "style": "mira",
-      "component": "icon",
-      "reason": "style \"mira\" has no packages/registry component directory for \"icon\""
-    },
-    {
-      "style": "mira",
-      "component": "image-cropper",
-      "reason": "style \"mira\" has no packages/registry component directory for \"image-cropper\""
-    },
-    {
-      "style": "mira",
-      "component": "listbox",
-      "reason": "style \"mira\" has no packages/registry component directory for \"listbox\""
-    },
-    {
-      "style": "mira",
-      "component": "marquee",
-      "reason": "style \"mira\" has no packages/registry component directory for \"marquee\""
-    },
-    {
-      "style": "mira",
-      "component": "number-input",
-      "reason": "style \"mira\" has no packages/registry component directory for \"number-input\""
-    },
-    {
-      "style": "mira",
-      "component": "password-input",
-      "reason": "style \"mira\" has no packages/registry component directory for \"password-input\""
-    },
-    {
-      "style": "mira",
-      "component": "qr-code",
-      "reason": "style \"mira\" has no packages/registry component directory for \"qr-code\""
-    },
-    {
-      "style": "mira",
-      "component": "rating-group",
-      "reason": "style \"mira\" has no packages/registry component directory for \"rating-group\""
-    },
-    {
-      "style": "mira",
-      "component": "signature-pad",
-      "reason": "style \"mira\" has no packages/registry component directory for \"signature-pad\""
-    },
-    {
-      "style": "mira",
-      "component": "steps",
-      "reason": "style \"mira\" has no packages/registry component directory for \"steps\""
-    },
-    {
-      "style": "mira",
-      "component": "tags-input",
-      "reason": "style \"mira\" has no packages/registry component directory for \"tags-input\""
-    },
-    {
-      "style": "mira",
-      "component": "timer",
-      "reason": "style \"mira\" has no packages/registry component directory for \"timer\""
-    },
-    {
-      "style": "mira",
-      "component": "toc",
-      "reason": "style \"mira\" has no packages/registry component directory for \"toc\""
-    },
-    {
-      "style": "mira",
-      "component": "tour",
-      "reason": "style \"mira\" has no packages/registry component directory for \"tour\""
-    },
-    {
-      "style": "mira",
-      "component": "tree-view",
-      "reason": "style \"mira\" has no packages/registry component directory for \"tree-view\""
-    },
-    {
-      "style": "nova",
-      "component": "angle-slider",
-      "reason": "style \"nova\" has no packages/registry component directory for \"angle-slider\""
-    },
-    {
-      "style": "nova",
-      "component": "cascade-select",
-      "reason": "style \"nova\" has no packages/registry component directory for \"cascade-select\""
-    },
-    {
       "style": "nova",
       "component": "charts-gallery",
       "reason": "style \"nova\" has no packages/registry component directory for \"charts-gallery\""
-    },
-    {
-      "style": "nova",
-      "component": "clipboard",
-      "reason": "style \"nova\" has no packages/registry component directory for \"clipboard\""
-    },
-    {
-      "style": "nova",
-      "component": "color-picker",
-      "reason": "style \"nova\" has no packages/registry component directory for \"color-picker\""
-    },
-    {
-      "style": "nova",
-      "component": "data-table",
-      "reason": "style \"nova\" has no packages/registry component directory for \"data-table\""
-    },
-    {
-      "style": "nova",
-      "component": "date-input",
-      "reason": "style \"nova\" has no packages/registry component directory for \"date-input\""
-    },
-    {
-      "style": "nova",
-      "component": "date-picker",
-      "reason": "style \"nova\" has no packages/registry component directory for \"date-picker\""
-    },
-    {
-      "style": "nova",
-      "component": "editable",
-      "reason": "style \"nova\" has no packages/registry component directory for \"editable\""
-    },
-    {
-      "style": "nova",
-      "component": "file-upload",
-      "reason": "style \"nova\" has no packages/registry component directory for \"file-upload\""
-    },
-    {
-      "style": "nova",
-      "component": "floating-panel",
-      "reason": "style \"nova\" has no packages/registry component directory for \"floating-panel\""
-    },
-    {
-      "style": "nova",
-      "component": "icon",
-      "reason": "style \"nova\" has no packages/registry component directory for \"icon\""
-    },
-    {
-      "style": "nova",
-      "component": "image-cropper",
-      "reason": "style \"nova\" has no packages/registry component directory for \"image-cropper\""
-    },
-    {
-      "style": "nova",
-      "component": "listbox",
-      "reason": "style \"nova\" has no packages/registry component directory for \"listbox\""
-    },
-    {
-      "style": "nova",
-      "component": "marquee",
-      "reason": "style \"nova\" has no packages/registry component directory for \"marquee\""
-    },
-    {
-      "style": "nova",
-      "component": "number-input",
-      "reason": "style \"nova\" has no packages/registry component directory for \"number-input\""
-    },
-    {
-      "style": "nova",
-      "component": "password-input",
-      "reason": "style \"nova\" has no packages/registry component directory for \"password-input\""
-    },
-    {
-      "style": "nova",
-      "component": "qr-code",
-      "reason": "style \"nova\" has no packages/registry component directory for \"qr-code\""
-    },
-    {
-      "style": "nova",
-      "component": "rating-group",
-      "reason": "style \"nova\" has no packages/registry component directory for \"rating-group\""
-    },
-    {
-      "style": "nova",
-      "component": "signature-pad",
-      "reason": "style \"nova\" has no packages/registry component directory for \"signature-pad\""
-    },
-    {
-      "style": "nova",
-      "component": "steps",
-      "reason": "style \"nova\" has no packages/registry component directory for \"steps\""
-    },
-    {
-      "style": "nova",
-      "component": "tags-input",
-      "reason": "style \"nova\" has no packages/registry component directory for \"tags-input\""
-    },
-    {
-      "style": "nova",
-      "component": "timer",
-      "reason": "style \"nova\" has no packages/registry component directory for \"timer\""
-    },
-    {
-      "style": "nova",
-      "component": "toc",
-      "reason": "style \"nova\" has no packages/registry component directory for \"toc\""
-    },
-    {
-      "style": "nova",
-      "component": "tour",
-      "reason": "style \"nova\" has no packages/registry component directory for \"tour\""
-    },
-    {
-      "style": "nova",
-      "component": "tree-view",
-      "reason": "style \"nova\" has no packages/registry component directory for \"tree-view\""
-    },
-    {
-      "style": "rhea",
-      "component": "angle-slider",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"angle-slider\""
-    },
-    {
-      "style": "rhea",
-      "component": "cascade-select",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"cascade-select\""
     },
     {
       "style": "rhea",
@@ -6816,379 +8542,14 @@
       "reason": "style \"rhea\" has no packages/registry component directory for \"charts-gallery\""
     },
     {
-      "style": "rhea",
-      "component": "clipboard",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"clipboard\""
-    },
-    {
-      "style": "rhea",
-      "component": "color-picker",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"color-picker\""
-    },
-    {
-      "style": "rhea",
-      "component": "data-table",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"data-table\""
-    },
-    {
-      "style": "rhea",
-      "component": "date-input",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"date-input\""
-    },
-    {
-      "style": "rhea",
-      "component": "date-picker",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"date-picker\""
-    },
-    {
-      "style": "rhea",
-      "component": "editable",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"editable\""
-    },
-    {
-      "style": "rhea",
-      "component": "file-upload",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"file-upload\""
-    },
-    {
-      "style": "rhea",
-      "component": "floating-panel",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"floating-panel\""
-    },
-    {
-      "style": "rhea",
-      "component": "icon",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"icon\""
-    },
-    {
-      "style": "rhea",
-      "component": "image-cropper",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"image-cropper\""
-    },
-    {
-      "style": "rhea",
-      "component": "listbox",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"listbox\""
-    },
-    {
-      "style": "rhea",
-      "component": "marquee",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"marquee\""
-    },
-    {
-      "style": "rhea",
-      "component": "number-input",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"number-input\""
-    },
-    {
-      "style": "rhea",
-      "component": "password-input",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"password-input\""
-    },
-    {
-      "style": "rhea",
-      "component": "qr-code",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"qr-code\""
-    },
-    {
-      "style": "rhea",
-      "component": "rating-group",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"rating-group\""
-    },
-    {
-      "style": "rhea",
-      "component": "signature-pad",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"signature-pad\""
-    },
-    {
-      "style": "rhea",
-      "component": "steps",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"steps\""
-    },
-    {
-      "style": "rhea",
-      "component": "tags-input",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"tags-input\""
-    },
-    {
-      "style": "rhea",
-      "component": "timer",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"timer\""
-    },
-    {
-      "style": "rhea",
-      "component": "toc",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"toc\""
-    },
-    {
-      "style": "rhea",
-      "component": "tour",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"tour\""
-    },
-    {
-      "style": "rhea",
-      "component": "tree-view",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"tree-view\""
-    },
-    {
-      "style": "sera",
-      "component": "angle-slider",
-      "reason": "style \"sera\" has no packages/registry component directory for \"angle-slider\""
-    },
-    {
-      "style": "sera",
-      "component": "cascade-select",
-      "reason": "style \"sera\" has no packages/registry component directory for \"cascade-select\""
-    },
-    {
       "style": "sera",
       "component": "charts-gallery",
       "reason": "style \"sera\" has no packages/registry component directory for \"charts-gallery\""
     },
     {
-      "style": "sera",
-      "component": "clipboard",
-      "reason": "style \"sera\" has no packages/registry component directory for \"clipboard\""
-    },
-    {
-      "style": "sera",
-      "component": "color-picker",
-      "reason": "style \"sera\" has no packages/registry component directory for \"color-picker\""
-    },
-    {
-      "style": "sera",
-      "component": "data-table",
-      "reason": "style \"sera\" has no packages/registry component directory for \"data-table\""
-    },
-    {
-      "style": "sera",
-      "component": "date-input",
-      "reason": "style \"sera\" has no packages/registry component directory for \"date-input\""
-    },
-    {
-      "style": "sera",
-      "component": "date-picker",
-      "reason": "style \"sera\" has no packages/registry component directory for \"date-picker\""
-    },
-    {
-      "style": "sera",
-      "component": "editable",
-      "reason": "style \"sera\" has no packages/registry component directory for \"editable\""
-    },
-    {
-      "style": "sera",
-      "component": "file-upload",
-      "reason": "style \"sera\" has no packages/registry component directory for \"file-upload\""
-    },
-    {
-      "style": "sera",
-      "component": "floating-panel",
-      "reason": "style \"sera\" has no packages/registry component directory for \"floating-panel\""
-    },
-    {
-      "style": "sera",
-      "component": "icon",
-      "reason": "style \"sera\" has no packages/registry component directory for \"icon\""
-    },
-    {
-      "style": "sera",
-      "component": "image-cropper",
-      "reason": "style \"sera\" has no packages/registry component directory for \"image-cropper\""
-    },
-    {
-      "style": "sera",
-      "component": "listbox",
-      "reason": "style \"sera\" has no packages/registry component directory for \"listbox\""
-    },
-    {
-      "style": "sera",
-      "component": "marquee",
-      "reason": "style \"sera\" has no packages/registry component directory for \"marquee\""
-    },
-    {
-      "style": "sera",
-      "component": "number-input",
-      "reason": "style \"sera\" has no packages/registry component directory for \"number-input\""
-    },
-    {
-      "style": "sera",
-      "component": "password-input",
-      "reason": "style \"sera\" has no packages/registry component directory for \"password-input\""
-    },
-    {
-      "style": "sera",
-      "component": "qr-code",
-      "reason": "style \"sera\" has no packages/registry component directory for \"qr-code\""
-    },
-    {
-      "style": "sera",
-      "component": "rating-group",
-      "reason": "style \"sera\" has no packages/registry component directory for \"rating-group\""
-    },
-    {
-      "style": "sera",
-      "component": "signature-pad",
-      "reason": "style \"sera\" has no packages/registry component directory for \"signature-pad\""
-    },
-    {
-      "style": "sera",
-      "component": "steps",
-      "reason": "style \"sera\" has no packages/registry component directory for \"steps\""
-    },
-    {
-      "style": "sera",
-      "component": "tags-input",
-      "reason": "style \"sera\" has no packages/registry component directory for \"tags-input\""
-    },
-    {
-      "style": "sera",
-      "component": "timer",
-      "reason": "style \"sera\" has no packages/registry component directory for \"timer\""
-    },
-    {
-      "style": "sera",
-      "component": "toc",
-      "reason": "style \"sera\" has no packages/registry component directory for \"toc\""
-    },
-    {
-      "style": "sera",
-      "component": "tour",
-      "reason": "style \"sera\" has no packages/registry component directory for \"tour\""
-    },
-    {
-      "style": "sera",
-      "component": "tree-view",
-      "reason": "style \"sera\" has no packages/registry component directory for \"tree-view\""
-    },
-    {
-      "style": "vega",
-      "component": "angle-slider",
-      "reason": "style \"vega\" has no packages/registry component directory for \"angle-slider\""
-    },
-    {
-      "style": "vega",
-      "component": "cascade-select",
-      "reason": "style \"vega\" has no packages/registry component directory for \"cascade-select\""
-    },
-    {
       "style": "vega",
       "component": "charts-gallery",
       "reason": "style \"vega\" has no packages/registry component directory for \"charts-gallery\""
-    },
-    {
-      "style": "vega",
-      "component": "clipboard",
-      "reason": "style \"vega\" has no packages/registry component directory for \"clipboard\""
-    },
-    {
-      "style": "vega",
-      "component": "color-picker",
-      "reason": "style \"vega\" has no packages/registry component directory for \"color-picker\""
-    },
-    {
-      "style": "vega",
-      "component": "data-table",
-      "reason": "style \"vega\" has no packages/registry component directory for \"data-table\""
-    },
-    {
-      "style": "vega",
-      "component": "date-input",
-      "reason": "style \"vega\" has no packages/registry component directory for \"date-input\""
-    },
-    {
-      "style": "vega",
-      "component": "date-picker",
-      "reason": "style \"vega\" has no packages/registry component directory for \"date-picker\""
-    },
-    {
-      "style": "vega",
-      "component": "editable",
-      "reason": "style \"vega\" has no packages/registry component directory for \"editable\""
-    },
-    {
-      "style": "vega",
-      "component": "file-upload",
-      "reason": "style \"vega\" has no packages/registry component directory for \"file-upload\""
-    },
-    {
-      "style": "vega",
-      "component": "floating-panel",
-      "reason": "style \"vega\" has no packages/registry component directory for \"floating-panel\""
-    },
-    {
-      "style": "vega",
-      "component": "icon",
-      "reason": "style \"vega\" has no packages/registry component directory for \"icon\""
-    },
-    {
-      "style": "vega",
-      "component": "image-cropper",
-      "reason": "style \"vega\" has no packages/registry component directory for \"image-cropper\""
-    },
-    {
-      "style": "vega",
-      "component": "listbox",
-      "reason": "style \"vega\" has no packages/registry component directory for \"listbox\""
-    },
-    {
-      "style": "vega",
-      "component": "marquee",
-      "reason": "style \"vega\" has no packages/registry component directory for \"marquee\""
-    },
-    {
-      "style": "vega",
-      "component": "number-input",
-      "reason": "style \"vega\" has no packages/registry component directory for \"number-input\""
-    },
-    {
-      "style": "vega",
-      "component": "password-input",
-      "reason": "style \"vega\" has no packages/registry component directory for \"password-input\""
-    },
-    {
-      "style": "vega",
-      "component": "qr-code",
-      "reason": "style \"vega\" has no packages/registry component directory for \"qr-code\""
-    },
-    {
-      "style": "vega",
-      "component": "rating-group",
-      "reason": "style \"vega\" has no packages/registry component directory for \"rating-group\""
-    },
-    {
-      "style": "vega",
-      "component": "signature-pad",
-      "reason": "style \"vega\" has no packages/registry component directory for \"signature-pad\""
-    },
-    {
-      "style": "vega",
-      "component": "steps",
-      "reason": "style \"vega\" has no packages/registry component directory for \"steps\""
-    },
-    {
-      "style": "vega",
-      "component": "tags-input",
-      "reason": "style \"vega\" has no packages/registry component directory for \"tags-input\""
-    },
-    {
-      "style": "vega",
-      "component": "timer",
-      "reason": "style \"vega\" has no packages/registry component directory for \"timer\""
-    },
-    {
-      "style": "vega",
-      "component": "toc",
-      "reason": "style \"vega\" has no packages/registry component directory for \"toc\""
-    },
-    {
-      "style": "vega",
-      "component": "tour",
-      "reason": "style \"vega\" has no packages/registry component directory for \"tour\""
-    },
-    {
-      "style": "vega",
-      "component": "tree-view",
-      "reason": "style \"vega\" has no packages/registry component directory for \"tree-view\""
     }
   ]
 }

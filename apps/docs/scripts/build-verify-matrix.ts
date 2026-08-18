@@ -92,7 +92,7 @@ async function componentDirectories(): Promise<string[]> {
 function styleComponentDir(style: Style, componentName: string): string {
   return style === "default"
     ? join(REGISTRY_DIR, "default/ui", componentName)
-    : join(REGISTRY_DIR, "styles", style, "ui", componentName);
+    : join(REGISTRY_DIR, "styles-gen", style, "ui", componentName);
 }
 
 /** Rewrites `@marko-ui/registry/ui/` import specifiers to the target style's package path. Default style is a no-op. */
