@@ -9,8 +9,9 @@
  *   @reference "<abs path to default/styles/globals.css>";
  *   @import "<abs path to styles-src/style-<name>.css>";
  *
- * through the Tailwind v4 CLI (`@tailwindcss/cli`, invoked via `bunx` — it is
- * NOT a project dependency, see README/report notes). `@reference` resolves
+ * through the Tailwind v4 CLI (`@tailwindcss/cli`, a devDependency of this
+ * package, invoked via its local `node_modules/.bin` binary). `@reference`
+ * resolves
  * every `@apply` in the style source against the consumer theme WITHOUT
  * emitting `@theme`/preflight/utilities, so the output is plain, self-
  * contained CSS that still carries `var(--...)` references — consumer themes
@@ -101,9 +102,13 @@ function compileStyle(style: string, outDir: string): void {
     `@import "${path.join(STYLES_SRC, `style-${style}.css`)}";\n`
   writeFileSync(referenceInput, inputCss)
 
+  // Invoke the locally-installed binary directly. `bunx @tailwindcss/cli`
+  // resolves through a shared temp cache that can be corrupted by unrelated
+  // installs (seen: "Cannot find package 'mri'"), and would also require
+  // network access on a fresh clone.
   const proc = spawnSync(
-    "bunx",
-    ["--bun", "@tailwindcss/cli", "-i", referenceInput, "-o", outFile],
+    path.join(REGISTRY_ROOT, "node_modules/.bin/tailwindcss"),
+    ["-i", referenceInput, "-o", outFile],
     { encoding: "utf8" }
   )
   if (proc.status !== 0) {
