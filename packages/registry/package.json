@@ -98,6 +98,10 @@
     "typescript": "^5.9.3"
   },
   "scripts": {
-    "check": "tsc --noEmit -p ."
+    "check": "tsc --noEmit -p . && bun scripts/check-anchors.ts && bun scripts/check-identity.ts && bun scripts/check-consumption.ts",
+    "check:anchors": "bun scripts/check-anchors.ts",
+    "check:identity": "bun scripts/check-identity.ts",
+    "check:consumption": "bun scripts/check-consumption.ts",
+    "build:styles:css": "bun scripts/build-style-css.ts"
   }
 }
