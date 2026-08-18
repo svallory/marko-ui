@@ -34,7 +34,21 @@ export const BASE_COLORS = [
   },
 ] as const
 
-// Built-in registries that are always available and cannot be overridden
+// Built-in registries that are always available and cannot be overridden.
+//
+// Deliberately kept flat (no {style} placeholder) even though the registry
+// now also publishes styled items at `/styles/{style}/{name}.json`
+// (build-registry.ts). The generic builder.ts `{style}` mechanism fills the
+// placeholder from `config.style` — a vestigial shadcn field, always
+// "default", unrelated to marko-ui's 8-style `config.visualStyle` axis (see
+// registry/schema.ts). builder.ts now throws (assertNoLeftoverPlaceholders)
+// on an unresolved `{style}`, so templating it here would break every
+// generic bare-name lookup (resolveRegistryDependencies,
+// resolveRegistryItemsFromRegistries) since `config.style` is never one of
+// our 8 style-dir names. The styled path is instead built explicitly from
+// `config.visualStyle` in registry/resolver.ts's fetchBareRegistryItem,
+// which is the only place that has the right value and the correct
+// 404-fallback-to-flat semantics.
 export const BUILTIN_REGISTRIES: z.infer<typeof registryConfigSchema> = {
   "@marko-ui": `${REGISTRY_URL}/{name}.json`,
 }

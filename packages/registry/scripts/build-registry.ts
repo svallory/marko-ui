@@ -6,8 +6,11 @@
  *     `import` distribution (`@marko-ui/core`) and debugging want.
  *   - one registry-item per component PER STYLE, sourced from
  *     `styles-gen/<style>/ui/*` (flat generated source, no `mu-*` hooks), at
- *     `/<style>/<name>.json` — this is what `marko-ui add` (the `copy`
- *     distribution) needs to actually deliver a visual style. See
+ *     `/styles/<style>/<name>.json` — this is what `marko-ui add` (the `copy`
+ *     distribution) needs to actually deliver a visual style. The `styles/`
+ *     segment mirrors upstream shadcn's `/r/styles/{style}/{name}.json`
+ *     layout so style names never collide with sibling `/r/` namespaces
+ *     (`icons/`, `themes/`, `colors/`, `templates/`). See
  *     notes/plans/dual-distribution-plan.md §1/§4b-bis for why this
  *     dimension was missing and what it fixes.
  *
@@ -58,7 +61,7 @@ const BASE_URL = process.env.REGISTRY_BASE_URL ?? "http://localhost:3000/r";
 const selfRef = (dep: string, style: string) => {
   if (/^(https?:)?\/\//.test(dep) || dep.includes("/")) return dep;
   if (dep === "utils" || !style) return `${BASE_URL}/${dep}.json`;
-  return `${BASE_URL}/${style}/${dep}.json`;
+  return `${BASE_URL}/styles/${style}/${dep}.json`;
 };
 
 interface Meta {
@@ -343,7 +346,7 @@ async function main() {
   }
 
   // per-style components — flat generated source from styles-gen/<style>/ui/*
-  // (no mu-* hooks), emitted at /<style>/<name>.json. This is what the
+  // (no mu-* hooks), emitted at /styles/<style>/<name>.json. This is what the
   // `copy` distribution's `marko-ui add` fetches: without this loop every
   // component arrives identical regardless of which of the 8 styles the
   // consumer picked (notes/plans/dual-distribution-plan.md §4b-bis).
@@ -381,7 +384,7 @@ async function main() {
           ),
           files,
         },
-        { outName: `${style}/${name}`, indexed: false }
+        { outName: `styles/${style}/${name}`, indexed: false }
       );
     }
   }

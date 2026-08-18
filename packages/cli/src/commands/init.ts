@@ -300,7 +300,7 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
 
   // Visual style is a real dimension for BOTH distributions: "copy" uses it
   // to pick which per-style registry tree `add` fetches from
-  // (`<REGISTRY_URL>/<visualStyle>/<name>.json`), "import" uses it to pick
+  // (`<REGISTRY_URL>/styles/<visualStyle>/<name>.json`), "import" uses it to pick
   // which `style-<visualStyle>` class activates @marko-ui/core's precompiled
   // layer. It must be persisted either way — prompting for it in "import"
   // only (the pre-dual-distribution-blocker-fix behavior) left "copy"

@@ -130,14 +130,21 @@ export async function fetchRegistryItems(
 // `marko-ui add button` case. Under the "copy" distribution, `add` needs to
 // deliver a real visual style (see notes/plans/dual-distribution-plan.md
 // §4b-bis): the registry publishes per-style component trees at
-// `<REGISTRY_URL>/<visualStyle>/<name>.json` (build-registry.ts), alongside
-// the flat unstyled `<REGISTRY_URL>/<name>.json` for items with no style
-// dimension (utils, style/style-<color> theme items, blocks). Rather than
-// hardcode which names are "styleable" — a list that would drift the moment
-// a new non-component item type is added — try the styled path first and
-// fall back to the flat path on 404. "import" distribution and configs with
-// no visualStyle skip straight to the flat path (it's the only one @marko-ui/
-// core's consumers or older configs care about).
+// `<REGISTRY_URL>/styles/<visualStyle>/<name>.json` (build-registry.ts),
+// alongside the flat unstyled `<REGISTRY_URL>/<name>.json` for items with no
+// style dimension (utils, style/style-<color> theme items, blocks). Rather
+// than hardcode which names are "styleable" — a list that would drift the
+// moment a new non-component item type is added — try the styled path first
+// and fall back to the flat path on 404. "import" distribution and configs
+// with no visualStyle skip straight to the flat path (it's the only one
+// @marko-ui/core's consumers or older configs care about).
+//
+// This duplicates BUILTIN_REGISTRIES["@marko-ui"]'s `{style}` template
+// intentionally rather than routing through buildUrlFromRegistryConfig:
+// that generic mechanism fills `{style}` from `config.style`, a vestigial
+// shadcn field (always "default", see get-config.ts/registry/config.ts) that
+// has nothing to do with marko-ui's `config.visualStyle` 8-style axis. Using
+// it here would leave a literal unresolved "{style}" segment in the URL.
 async function fetchBareRegistryItem(
   item: string,
   config: Config | undefined,
@@ -146,7 +153,7 @@ async function fetchBareRegistryItem(
   const flatPath = `${item}.json`
   const styledPath =
     config?.distribution === "copy" && config?.visualStyle
-      ? `${config.visualStyle}/${item}.json`
+      ? `styles/${config.visualStyle}/${item}.json`
       : undefined
 
   if (styledPath) {
