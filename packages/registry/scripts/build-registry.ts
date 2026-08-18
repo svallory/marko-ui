@@ -1,7 +1,23 @@
 /**
  * Emits shadcn-registry-format JSON artifacts (design C-6/C-7):
- * one registry-item per component in default/ui/*, plus `utils` and `style`
- * items, and the registry.json index. Output: apps/docs/public/r/.
+ *
+ *   - one registry-item per component in `default/ui/*` (style-less,
+ *     hook-classed authored source) at `/<name>.json` — this is what the
+ *     `import` distribution (`@marko-ui/core`) and debugging want.
+ *   - one registry-item per component PER STYLE, sourced from
+ *     `styles-gen/<style>/ui/*` (flat generated source, no `mu-*` hooks), at
+ *     `/<style>/<name>.json` — this is what `marko-ui add` (the `copy`
+ *     distribution) needs to actually deliver a visual style. See
+ *     notes/plans/dual-distribution-plan.md §1/§4b-bis for why this
+ *     dimension was missing and what it fixes.
+ *
+ * Plus `utils` and `style`/`style-<color>` theme items (unstyled — style and
+ * theme are orthogonal axes, see the plan's §1), and a registry.json index
+ * covering every emitted item. Output: apps/docs/public/r/.
+ *
+ * `styles-gen/` is gitignored — run `bun run build:styles` first. This
+ * script fails loudly (not silently/emptily) if it is missing, mirroring
+ * build-core.ts's guard on styles-gen/css/.
  *
  * Every file ships as `registry:file` with an explicit `target` — the
  * non-React path through the official shadcn CLI (no React transforms).
@@ -9,13 +25,20 @@
  * Run: bun packages/registry/scripts/build-registry.ts
  */
 import { readdir, readFile, writeFile, mkdir, rm } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const ROOT = new URL("../", import.meta.url).pathname;
 const DEFAULT_DIR = join(ROOT, "default");
 const UI_DIR = join(DEFAULT_DIR, "ui");
 const BLOCKS_DIR = join(DEFAULT_DIR, "blocks");
+const STYLES_GEN_DIR = join(ROOT, "styles-gen");
 const OUT_DIR = join(ROOT, "../../apps/docs/public/r");
+
+// The 8 shadcn-derived visual styles (packages/cli/src/registry/constants.ts
+// VISUAL_STYLES). Hardcoded here too — registry and cli are separate
+// packages and neither depends on the other.
+const VISUAL_STYLES = ["rhea", "nova", "vega", "lyra", "maia", "mira", "luma", "sera"];
 
 const ITEM_SCHEMA = "https://ui.shadcn.com/schema/registry-item.json";
 const REGISTRY_SCHEMA = "https://ui.shadcn.com/schema/registry.json";
@@ -25,8 +48,18 @@ const REGISTRY_SCHEMA = "https://ui.shadcn.com/schema/registry.json";
 // absolute URLs into this registry instead. Override for deploys:
 //   REGISTRY_BASE_URL=https://marko-ui.saulo.tech/r bun packages/registry/scripts/build-registry.ts
 const BASE_URL = process.env.REGISTRY_BASE_URL ?? "http://localhost:3000/r";
-const selfRef = (dep: string) =>
-  /^(https?:)?\/\//.test(dep) || dep.includes("/") ? dep : `${BASE_URL}/${dep}.json`;
+
+// `style` is the emitting item's own style directory ("" for the flat
+// unstyled tree, or one of VISUAL_STYLES). Same-style component deps (e.g.
+// alert-dialog -> button) must resolve within that style's tree; `utils` has
+// no per-style variant (styles-gen/<style>/ has no lib/) so it always
+// resolves flat, matching how the generated trees themselves import
+// `#lib/utils.ts` package-wide rather than per style.
+const selfRef = (dep: string, style: string) => {
+  if (/^(https?:)?\/\//.test(dep) || dep.includes("/")) return dep;
+  if (dep === "utils" || !style) return `${BASE_URL}/${dep}.json`;
+  return `${BASE_URL}/${style}/${dep}.json`;
+};
 
 interface Meta {
   title?: string;
@@ -176,23 +209,57 @@ async function readMeta(dir: string): Promise<Meta> {
 }
 
 async function main() {
+  // styles-gen/ is gitignored and only exists after `bun run build:styles`.
+  // Fail loudly and specifically rather than silently emitting a registry
+  // with no per-style items (the exact 4b-bis bug this script now fixes) —
+  // consistent with build-core.ts's guard on styles-gen/css/.
+  if (!existsSync(STYLES_GEN_DIR)) {
+    throw new Error(
+      `${STYLES_GEN_DIR} does not exist. Run "bun run build:styles" first — ` +
+        `the registry's per-style items (what "marko-ui add" needs to serve a ` +
+        `visual style) are generated there, not authored.`
+    );
+  }
+  const missingStyles = VISUAL_STYLES.filter(
+    (style) => !existsSync(join(STYLES_GEN_DIR, style, "ui"))
+  );
+  if (missingStyles.length > 0) {
+    throw new Error(
+      `${STYLES_GEN_DIR} is missing ui/ trees for: ${missingStyles.join(", ")}. ` +
+        `Run "bun run build:styles" first (it emits all ${VISUAL_STYLES.length} styles).`
+    );
+  }
+
   await rm(OUT_DIR, { recursive: true, force: true });
   await mkdir(OUT_DIR, { recursive: true });
 
+  // `index` backs registry.json/index.json: the public component identity
+  // list the CLI's interactive picker, `diff`, and installed-component
+  // listing read (commands/add.ts promptForRegistryComponents filters
+  // type === "registry:ui" and uses `name` as the value passed to `add` —
+  // it must NOT see 9 "button" entries just because 8 styles exist). Style
+  // is a distribution/fetch-time concern, not a distinct component
+  // identity, so per-style writes are excluded from `index` and only landed
+  // on disk at their own `<style>/<name>.json` path.
   const index: any[] = [];
 
-  const write = async (item: any) => {
-    index.push({
-      name: item.name,
-      type: item.type,
-      title: item.title,
-      description: item.description,
-      categories: item.categories,
-      dependencies: item.dependencies,
-      registryDependencies: item.registryDependencies,
-      files: item.files.map(({ content: _, ...f }: any) => f),
-    });
-    await writeFile(join(OUT_DIR, `${item.name}.json`), JSON.stringify(item, null, 2));
+  const write = async (item: any, opts: { outName?: string; indexed?: boolean } = {}) => {
+    const { outName = item.name, indexed = true } = opts;
+    if (indexed) {
+      index.push({
+        name: item.name,
+        type: item.type,
+        title: item.title,
+        description: item.description,
+        categories: item.categories,
+        dependencies: item.dependencies,
+        registryDependencies: item.registryDependencies,
+        files: item.files.map(({ content: _, ...f }: any) => f),
+      });
+    }
+    const outPath = join(OUT_DIR, `${outName}.json`);
+    await mkdir(join(outPath, ".."), { recursive: true });
+    await writeFile(outPath, JSON.stringify(item, null, 2));
   };
 
   // utils
@@ -270,9 +337,53 @@ async function main() {
       description: meta.description,
       dependencies: dependencies.size ? [...dependencies].sort() : undefined,
       devDependencies: meta.devDependencies,
-      registryDependencies: (meta.registryDependencies ?? ["utils"]).map(selfRef),
+      registryDependencies: (meta.registryDependencies ?? ["utils"]).map((dep) => selfRef(dep, "")),
       files,
     });
+  }
+
+  // per-style components — flat generated source from styles-gen/<style>/ui/*
+  // (no mu-* hooks), emitted at /<style>/<name>.json. This is what the
+  // `copy` distribution's `marko-ui add` fetches: without this loop every
+  // component arrives identical regardless of which of the 8 styles the
+  // consumer picked (notes/plans/dual-distribution-plan.md §4b-bis).
+  //
+  // registry.meta.json is copied verbatim per style by build-styles.ts, so
+  // component set + meta are identical to `default/ui/*`; only the source
+  // files (variants.ts, *.marko) differ. Blocks have no per-style trees
+  // (styles-gen/<style>/ only contains ui/) so they stay default-only.
+  for (const style of VISUAL_STYLES) {
+    const styleUiDir = join(STYLES_GEN_DIR, style, "ui");
+    const styleComponents = (await readdir(styleUiDir, { withFileTypes: true }))
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name)
+      .sort();
+
+    for (const name of styleComponents) {
+      const dir = join(styleUiDir, name);
+      const meta = await readMeta(dir);
+      const files = await fileEntries(dir, `~/src/components/ui/${name}`, `ui/${name}`);
+      const dependencies = new Set(meta.dependencies ?? []);
+      if (files.some((f) => f.content.includes('from "marko-zag"'))) {
+        dependencies.add("marko-zag");
+      }
+      await write(
+        {
+          $schema: ITEM_SCHEMA,
+          name,
+          type: "registry:ui",
+          title: meta.title ?? name,
+          description: meta.description,
+          dependencies: dependencies.size ? [...dependencies].sort() : undefined,
+          devDependencies: meta.devDependencies,
+          registryDependencies: (meta.registryDependencies ?? ["utils"]).map((dep) =>
+            selfRef(dep, style)
+          ),
+          files,
+        },
+        { outName: `${style}/${name}`, indexed: false }
+      );
+    }
   }
 
   // blocks — whole-page compositions built from the ui items above. Unlike
@@ -314,7 +425,7 @@ async function main() {
       categories: meta.categories,
       dependencies: dependencies.size ? [...dependencies].sort() : undefined,
       devDependencies: meta.devDependencies,
-      registryDependencies: (meta.registryDependencies ?? ["utils"]).map(selfRef),
+      registryDependencies: (meta.registryDependencies ?? ["utils"]).map((dep) => selfRef(dep, "")),
       files,
     });
   }
@@ -357,7 +468,11 @@ async function main() {
     ),
   );
 
-  console.log(`registry: ${index.length} items → ${relative(process.cwd(), OUT_DIR)}`);
+  const styledCount = VISUAL_STYLES.length * components.length;
+  console.log(
+    `registry: ${index.length} indexed items + ${styledCount} per-style component ` +
+      `variants (${VISUAL_STYLES.length} styles × ${components.length} components) → ${relative(process.cwd(), OUT_DIR)}`
+  );
 }
 
 await main();
