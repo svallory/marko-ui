@@ -9,11 +9,8 @@
   "scripts": {
     "check": "bun run --filter '*' check",
     "test": "vitest run",
-    "build:registry": "bun packages/registry/scripts/build-registry.ts",
-    "build:styles": "bun packages/registry/scripts/build-styles.ts",
-    "build:styles:css": "bun packages/registry/scripts/build-style-css.ts",
-    "build:core": "bun packages/registry/scripts/build-core.ts",
-    "extract:api": "bun packages/registry/scripts/extract-api.ts",
+    "build:registry": "bun packages/shadcn/scripts/build-registry.ts",
+    "extract:api": "bun packages/shadcn/scripts/extract-api.ts",
     "build:demos": "bun apps/docs/scripts/build-demos-manifest.ts",
     "build:blocks-manifest": "bun apps/docs/scripts/build-blocks-manifest.ts",
     "build:verify": "bun apps/docs/scripts/build-verify-matrix.ts",

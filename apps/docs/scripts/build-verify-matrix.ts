@@ -89,19 +89,20 @@ async function componentDirectories(): Promise<string[]> {
 }
 
 /** Style root for a component's registry directory, or null if the style doesn't ship that component. */
-function styleComponentDir(style: Style, componentName: string): string {
-  return style === "default"
-    ? join(REGISTRY_DIR, "ui", componentName)
-    : join(REGISTRY_DIR, "styles-gen", style, "ui", componentName);
+// Every style renders the SAME authored source (@marko-ui/shadcn/ui/*); the
+// visual style is applied at runtime by the `style-<name>` wrapper class + the
+// CSS layer, not by per-style component files. So all styles resolve to ui/.
+// (Was styles-gen/<style>/ui before the source-shipping restructure.)
+function styleComponentDir(_style: Style, componentName: string): string {
+  return join(REGISTRY_DIR, "ui", componentName);
 }
 
-/** Rewrites `@marko-ui/shadcn/ui/` import specifiers to the target style's package path. Default style is a no-op. */
-function rewriteImports(source: string, style: Style): string {
-  if (style === "default") return source;
-  return source.replace(
-    /from\s+(["'])@marko-ui\/registry\/ui\//g,
-    (_match, quote: string) => `from ${quote}@marko-ui/shadcn/styles/${style}/ui/`,
-  );
+// Under source-shipping, every style imports the SAME @marko-ui/shadcn/ui/*
+// source and gets its look from the `style-<name>` wrapper + CSS layer — there
+// is no per-style package path to rewrite to. No-op, kept so callers need no
+// change (and so a future per-style-source model has an obvious seam).
+function rewriteImports(source: string, _style: Style): string {
+  return source;
 }
 
 /**
@@ -292,7 +293,10 @@ async function main() {
         // space-y-6/p-6: demos need real separation — with sections touching,
         // interactive targets of ADJACENT demos overlap and fail WCAG 2.5.8
         // spacing (Lighthouse: target-size on stacked sliders).
-        `<main data-verify-style=${JSON.stringify(style)} data-verify-component=${JSON.stringify(componentName)} class="space-y-6 bg-background p-6 text-foreground">\n` +
+        // The `style-<name>` class activates that style's CSS layer on the
+        // source components (imported as @marko-ui/shadcn/ui/*, mu- hooks).
+        // `default` has no layer — it is the base, styled by the theme alone.
+        `<main data-verify-style=${JSON.stringify(style)} data-verify-component=${JSON.stringify(componentName)} class="${style === "default" ? "" : `style-${style} `}space-y-6 bg-background p-6 text-foreground">\n` +
         sectionLines.map((s) => indent(s, "  ")).join("\n") +
         `\n</main>\n`;
       await writeFile(join(routeDir, "+page.marko"), pageContent);

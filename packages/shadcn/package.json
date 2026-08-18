@@ -20,14 +20,6 @@
   "sideEffects": ["**/*.css"],
   "files": ["ui", "lib", "styles", "!**/registry.meta.json"],
   "exports": {
-    "./styles/rhea/*": "./styles-gen/rhea/*",
-    "./styles/nova/*": "./styles-gen/nova/*",
-    "./styles/vega/*": "./styles-gen/vega/*",
-    "./styles/lyra/*": "./styles-gen/lyra/*",
-    "./styles/maia/*": "./styles-gen/maia/*",
-    "./styles/mira/*": "./styles-gen/mira/*",
-    "./styles/luma/*": "./styles-gen/luma/*",
-    "./styles/sera/*": "./styles-gen/sera/*",
     "./ui/*": "./ui/*",
     "./lib/*": "./lib/*",
     "./styles/*": "./styles/*",
@@ -105,7 +97,6 @@
     "marko": "^6.3.34"
   },
   "devDependencies": {
-    "@tailwindcss/cli": "4.3.3",
     "@types/d3-array": "^3.2.2",
     "@types/d3-scale": "^4.0.9",
     "@types/d3-shape": "^3.1.8",
@@ -120,7 +111,6 @@
     "check": "tsc --noEmit -p . && bun scripts/check-anchors.ts && bun scripts/check-identity.ts && bun scripts/check-consumption.ts",
     "check:anchors": "bun scripts/check-anchors.ts",
     "check:identity": "bun scripts/check-identity.ts",
-    "check:consumption": "bun scripts/check-consumption.ts",
-    "build:styles:css": "bun scripts/build-style-css.ts"
+    "check:consumption": "bun scripts/check-consumption.ts"
   }
 }

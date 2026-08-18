@@ -28,15 +28,17 @@
  * Run: bun packages/registry/scripts/build-registry.ts
  */
 import { readdir, readFile, writeFile, mkdir, rm } from "node:fs/promises";
-import { existsSync } from "node:fs";
-import { join, relative } from "node:path";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { join, relative, basename } from "node:path";
+import { createStyleMap, type StyleMap } from "./style-map";
+import { transformMarkoSource } from "./transform-marko";
+import { transformVariantsSource } from "./transform-variants";
 
 const ROOT = new URL("../", import.meta.url).pathname;
 const UI_DIR = join(ROOT, "ui");
 const LIB_DIR = join(ROOT, "lib");
 const STYLES_DIR = join(ROOT, "styles");
 const BLOCKS_DIR = join(ROOT, "blocks");
-const STYLES_GEN_DIR = join(ROOT, "styles-gen");
 const OUT_DIR = join(ROOT, "../../apps/docs/public/r");
 
 // The 8 shadcn-derived visual styles (packages/marko-ui/src/registry/constants.ts
@@ -189,8 +191,10 @@ async function fileEntries(dir: string, targetBase: string, registryBase: string
   const libDir = join(dir, "lib");
   for (const subdir of subdirs) {
     if (subdir.name === "lib") {
-      const libFiles = await readdir(libDir, { withFileTypes: true });
-      for (const libFile of libFiles.filter((e) => e.isFile())) {
+      const libFiles = (await readdir(libDir, { withFileTypes: true }))
+        .filter((e) => e.isFile())
+        .sort((a, b) => a.name.localeCompare(b.name));
+      for (const libFile of libFiles) {
         files.push({
           path: `${registryBase}/lib/${libFile.name}`,
           type: "registry:file" as const,
@@ -204,6 +208,59 @@ async function fileEntries(dir: string, targetBase: string, registryBase: string
   return files;
 }
 
+// In-memory sibling of fileEntries: same output shape, but from a
+// {relativeName -> content} map instead of a directory read. Used for the
+// per-style component variants, transformed in memory rather than materialized
+// to a styles-gen/ tree on disk. Keys may include a "lib/" prefix (some
+// components, e.g. message-scroller, carry a lib/ subdir); those target
+// ${targetBase}/lib and rewrite imports relative to it, matching fileEntries.
+function fileEntriesFromMap(
+  fileMap: Map<string, string>,
+  targetBase: string,
+  registryBase: string,
+) {
+  const keys = [...fileMap.keys()].filter((n) => basename(n) !== "registry.meta.json");
+  // Match fileEntries' ordering: flat files sorted, then lib/ files sorted.
+  const flat = keys.filter((n) => !n.startsWith("lib/")).sort();
+  const lib = keys.filter((n) => n.startsWith("lib/")).sort();
+  return [...flat, ...lib].map((name) => {
+    const inLib = name.startsWith("lib/");
+    const base = inLib ? `${targetBase}/lib` : targetBase;
+    return {
+      path: `${registryBase}/${name}`,
+      type: "registry:file" as const,
+      target: `${targetBase}/${name}`,
+      content: rewriteSubpathImports(fileMap.get(name)!, base),
+    };
+  });
+}
+
+// Applies a style's StyleMap to one authored component directory in memory,
+// mirroring build-styles.ts's per-file transform (.marko -> transformMarko,
+// variants.ts -> transformVariants, everything else verbatim). Recurses into
+// a lib/ subdir (keys become "lib/<file>"). Returns the transformed map.
+function transformComponent(dir: string, styleMap: StyleMap): Map<string, string> {
+  const out = new Map<string, string>();
+  const add = (rel: string, abs: string) => {
+    const src = readFileSync(abs, "utf8");
+    const b = basename(rel);
+    if (b.endsWith(".marko")) out.set(rel, transformMarkoSource(src, styleMap));
+    else if (b === "variants.ts") out.set(rel, transformVariantsSource(src, styleMap));
+    else out.set(rel, src);
+  };
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isFile()) add(entry.name, join(dir, entry.name));
+    else if (entry.isDirectory() && entry.name === "lib") {
+      for (const libEntry of readdirSync(join(dir, "lib"), { withFileTypes: true })) {
+        if (libEntry.isFile()) add(`lib/${libEntry.name}`, join(dir, "lib", libEntry.name));
+      }
+    } else if (entry.isDirectory()) {
+      throw new Error(`registry item dirs must be flat (only lib/ allowed); found ${dir}/${entry.name}`);
+    }
+  }
+  return out;
+}
+
 async function readMeta(dir: string): Promise<Meta> {
   try {
     return JSON.parse(await readFile(join(dir, "registry.meta.json"), "utf8"));
@@ -213,27 +270,9 @@ async function readMeta(dir: string): Promise<Meta> {
 }
 
 async function main() {
-  // styles-gen/ is gitignored and only exists after `bun run build:styles`.
-  // Fail loudly and specifically rather than silently emitting a registry
-  // with no per-style items (the exact 4b-bis bug this script now fixes) —
-  // consistent with build-core.ts's guard on styles-gen/css/.
-  if (!existsSync(STYLES_GEN_DIR)) {
-    throw new Error(
-      `${STYLES_GEN_DIR} does not exist. Run "bun run build:styles" first — ` +
-        `the registry's per-style items (what "marko-ui add" needs to serve a ` +
-        `visual style) are generated there, not authored.`
-    );
-  }
-  const missingStyles = VISUAL_STYLES.filter(
-    (style) => !existsSync(join(STYLES_GEN_DIR, style, "ui"))
-  );
-  if (missingStyles.length > 0) {
-    throw new Error(
-      `${STYLES_GEN_DIR} is missing ui/ trees for: ${missingStyles.join(", ")}. ` +
-        `Run "bun run build:styles" first (it emits all ${VISUAL_STYLES.length} styles).`
-    );
-  }
-
+  // Per-style items are transformed in memory from ui/ + styles/style-*.css
+  // (no styles-gen/ on disk). The fail-loud empty-output guard now lives
+  // inline in the per-style loop (asserts each style emits its full set).
   await rm(OUT_DIR, { recursive: true, force: true });
   await mkdir(OUT_DIR, { recursive: true });
 
@@ -356,17 +395,25 @@ async function main() {
   // component set + meta are identical to `default/ui/*`; only the source
   // files (variants.ts, *.marko) differ. Blocks have no per-style trees
   // (styles-gen/<style>/ only contains ui/) so they stay default-only.
-  for (const style of VISUAL_STYLES) {
-    const styleUiDir = join(STYLES_GEN_DIR, style, "ui");
-    const styleComponents = (await readdir(styleUiDir, { withFileTypes: true }))
-      .filter((e) => e.isDirectory())
-      .map((e) => e.name)
-      .sort();
+  // Per-style variants are transformed IN MEMORY from the authored ui/ source
+  // + each style's CSS StyleMap — no styles-gen/ tree on disk. The component
+  // set is exactly ui/*, since a style only rewrites class strings, never
+  // adds/removes components.
+  const authoredComponents = (await readdir(UI_DIR, { withFileTypes: true }))
+    .filter((e) => e.isDirectory())
+    .map((e) => e.name)
+    .sort();
 
-    for (const name of styleComponents) {
-      const dir = join(styleUiDir, name);
+  for (const style of VISUAL_STYLES) {
+    const styleCss = readFileSync(join(STYLES_DIR, `style-${style}.css`), "utf8");
+    const styleMap = createStyleMap(styleCss);
+
+    let emittedForStyle = 0;
+    for (const name of authoredComponents) {
+      const dir = join(UI_DIR, name);
       const meta = await readMeta(dir);
-      const files = await fileEntries(dir, `~/src/components/ui/${name}`, `ui/${name}`);
+      const fileMap = transformComponent(dir, styleMap);
+      const files = fileEntriesFromMap(fileMap, `~/src/components/ui/${name}`, `ui/${name}`);
       const dependencies = new Set(meta.dependencies ?? []);
       if (files.some((f) => f.content.includes('from "marko-zag"'))) {
         dependencies.add("marko-zag");
@@ -386,6 +433,20 @@ async function main() {
           files,
         },
         { outName: `styles/${style}/${name}`, indexed: false }
+      );
+      emittedForStyle++;
+    }
+
+    // Fail-loud empty-output guard (replaces the old on-disk styles-gen check).
+    // With the transform in memory there is no artifact to check for existence,
+    // so assert each style produced its full component set — otherwise a broken
+    // transform or empty StyleMap would silently emit a hollow per-style
+    // registry (the "4b-bis" bug class), with nothing on disk to catch it.
+    if (emittedForStyle !== authoredComponents.length) {
+      throw new Error(
+        `style "${style}" emitted ${emittedForStyle}/${authoredComponents.length} per-style ` +
+          `components — the in-memory transform produced an incomplete set. Refusing to write a ` +
+          `hollow registry (marko-ui add would serve missing components).`
       );
     }
   }
