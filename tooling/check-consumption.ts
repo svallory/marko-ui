@@ -1,10 +1,11 @@
 /**
  * check-consumption.ts — Phase 3e scripted check #2.
  *
- * Every StyleMap key extracted from `styles-src/style-*.css` (by
- * `createStyleMap`, the same parser `build-styles.ts` uses) must be either:
+ * Every StyleMap key extracted from `styles/style-*.css` (by
+ * `createStyleMap`, the same parser `build-registry.ts` uses for the
+ * in-memory per-style transform) must be either:
  *   (a) CONSUMED — the literal `mu-<key>` token appears somewhere under
- *       `default/ui/**` in a `.marko` or `variants.ts` file, so at least
+ *       `ui/**` in a `.marko` or `variants.ts` file, so at least
  *       one of the 8 generated style trees actually inlines its Tailwind
  *       classes for some component, OR
  *   (b) on the EXPLAINED-UNUSED allowlist (`./unused-anchors.json`), with a

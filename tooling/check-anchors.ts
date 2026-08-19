@@ -15,7 +15,7 @@
  *
  * Usage:
  *   bun tooling/check-anchors.ts [component ...]
- *     no args = all components under packages/registry/default/ui/
+ *     no args = all components under packages/shadcn/ui/
  *   --json        machine-readable output
  *   --self-check  treat the shadcn bases themselves as "our" source
  *                 (prefix cn-); every ported component must report zero
@@ -108,7 +108,7 @@ function loadCssStems(): { stems: Set<string>; source: string } {
       for (const f of files) {
         for (const s of extractSelectorStems(readFileSync(f, "utf8"), "mu")) stems.add(s);
       }
-      if (stems.size > 0) return { stems, source: "styles-src (mu-)" };
+      if (stems.size > 0) return { stems, source: "styles/ (mu-)" };
     }
   }
   const stems = new Set<string>();

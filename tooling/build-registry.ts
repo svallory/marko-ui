@@ -1,26 +1,26 @@
 /**
  * Emits shadcn-registry-format JSON artifacts (design C-6/C-7):
  *
- *   - one registry-item per component in `default/ui/*` (style-less,
+ *   - one registry-item per component in `ui/*` (style-less,
  *     hook-classed authored source) at `/<name>.json` — this is what the
- *     `import` distribution (`@marko-ui/core`) and debugging want.
- *   - one registry-item per component PER STYLE, sourced from
- *     `styles-gen/<style>/ui/*` (flat generated source, no `mu-*` hooks), at
- *     `/styles/<style>/<name>.json` — this is what `marko-ui add` (the `copy`
- *     distribution) needs to actually deliver a visual style. The `styles/`
- *     segment mirrors upstream shadcn's `/r/styles/{style}/{name}.json`
- *     layout so style names never collide with sibling `/r/` namespaces
- *     (`icons/`, `themes/`, `colors/`, `templates/`). See
- *     notes/plans/dual-distribution-plan.md §1/§4b-bis for why this
- *     dimension was missing and what it fixes.
+ *     `import` distribution (`@marko-ui/shadcn`) and debugging want.
+ *   - one registry-item per component PER STYLE, sourced from an IN-MEMORY
+ *     transform of `ui/*` against `styles/style-<style>.css` (flat generated
+ *     source, no `mu-*` hooks), at `/styles/<style>/<name>.json` — this is
+ *     what `marko-ui add` (the `copy` distribution) needs to actually
+ *     deliver a visual style. The `styles/` segment mirrors upstream
+ *     shadcn's `/r/styles/{style}/{name}.json` layout so style names never
+ *     collide with sibling `/r/` namespaces (`icons/`, `themes/`, `colors/`,
+ *     `templates/`). See notes/plans/dual-distribution-plan.md §1/§4b-bis
+ *     for why this dimension was missing and what it fixes.
  *
  * Plus `utils` and `style`/`style-<color>` theme items (unstyled — style and
  * theme are orthogonal axes, see the plan's §1), and a registry.json index
  * covering every emitted item. Output: apps/docs/public/r/.
  *
- * `styles-gen/` is gitignored — run `bun run build:styles` first. This
- * script fails loudly (not silently/emptily) if it is missing, mirroring
- * build-core.ts's guard on styles-gen/css/.
+ * The per-style transform runs entirely in memory — there is no on-disk
+ * generated tree. This script fails loudly (not silently/emptily) if a
+ * style's transform produces empty output; see the fail-loud guard below.
  *
  * Every file ships as `registry:file` with an explicit `target` — the
  * non-React path through the official shadcn CLI (no React transforms).
@@ -58,9 +58,9 @@ const BASE_URL = process.env.REGISTRY_BASE_URL ?? "http://localhost:3000/r";
 // `style` is the emitting item's own style directory ("" for the flat
 // unstyled tree, or one of VISUAL_STYLES). Same-style component deps (e.g.
 // alert-dialog -> button) must resolve within that style's tree; `utils` has
-// no per-style variant (styles-gen/<style>/ has no lib/) so it always
-// resolves flat, matching how the generated trees themselves import
-// `#lib/utils.ts` package-wide rather than per style.
+// no per-style variant (the in-memory per-style transform only covers `ui/`)
+// so it always resolves flat, matching how the generated trees themselves
+// import `#lib/utils.ts` package-wide rather than per style.
 const selfRef = (dep: string, style: string) => {
   if (/^(https?:)?\/\//.test(dep) || dep.includes("/")) return dep;
   if (dep === "utils" || !style) return `${BASE_URL}/${dep}.json`;
@@ -144,7 +144,7 @@ const SUBPATH_IMPORT_TARGETS: Record<string, string> = {
 // Rewrites `#alias/...` specifiers into paths relative to the emitting file's
 // own target directory. A component targeting ~/src/components/ui/switch and a
 // utils file targeting ~/src/lib/utils.ts are three levels apart, while in our
-// source tree (default/ui/switch → default/lib) they are only two — emitting
+// source tree (ui/switch → lib) they are only two — emitting
 // the source-relative path verbatim is what shipped a broken import.
 function rewriteSubpathImports(content: string, targetBase: string): string {
   // Require a "/" in the specifier: every real subpath import here is
@@ -235,9 +235,9 @@ function fileEntriesFromMap(
   });
 }
 
-// Applies a style's StyleMap to one authored component directory in memory,
-// mirroring build-styles.ts's per-file transform (.marko -> transformMarko,
-// variants.ts -> transformVariants, everything else verbatim). Recurses into
+// Applies a style's StyleMap to one authored component directory in memory
+// (.marko -> transformMarko, variants.ts -> transformVariants, everything
+// else verbatim). Recurses into
 // a lib/ subdir (keys become "lib/<file>"). Returns the transformed map.
 function transformComponent(dir: string, styleMap: StyleMap): Map<string, string> {
   const out = new Map<string, string>();
@@ -385,18 +385,17 @@ async function main() {
     });
   }
 
-  // per-style components — flat generated source from styles-gen/<style>/ui/*
-  // (no mu-* hooks), emitted at /styles/<style>/<name>.json. This is what the
+  // per-style components — flat generated source transformed IN MEMORY from
+  // the authored ui/* source + each style's CSS StyleMap (no mu-* hooks in
+  // the output), emitted at /styles/<style>/<name>.json. This is what the
   // `copy` distribution's `marko-ui add` fetches: without this loop every
   // component arrives identical regardless of which of the 8 styles the
   // consumer picked (notes/plans/dual-distribution-plan.md §4b-bis).
   //
-  // registry.meta.json is copied verbatim per style by build-styles.ts, so
-  // component set + meta are identical to `default/ui/*`; only the source
-  // files (variants.ts, *.marko) differ. Blocks have no per-style trees
-  // (styles-gen/<style>/ only contains ui/) so they stay default-only.
-  // Per-style variants are transformed IN MEMORY from the authored ui/ source
-  // + each style's CSS StyleMap — no styles-gen/ tree on disk. The component
+  // registry.meta.json is read via readMeta() directly from ui/<name>/, so
+  // component set + meta are identical to `ui/*`; only the source files
+  // (variants.ts, *.marko) differ per style, via transformComponent() above.
+  // Blocks have no per-style trees, so they stay default-only. The component
   // set is exactly ui/*, since a style only rewrites class strings, never
   // adds/removes components.
   const authoredComponents = (await readdir(UI_DIR, { withFileTypes: true }))

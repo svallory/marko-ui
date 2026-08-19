@@ -22,7 +22,7 @@ tailwindcss → tw-animate-css → ./shadcn-tailwind.css (vendored)
 
 ## Two-layer split
 
-- `packages/registry/default/styles/globals.css` = the CONSUMER theme (what
+- `packages/shadcn/styles/globals.css` = the CONSUMER theme (what
   `shadcn add` users get; additive radius scale, standard values).
 - `apps/docs/src/app.css` = the SITE css (shadcn's site tokens: pure-black
   foreground/primary, blue-300..800 charts, MULTIPLICATIVE radius scale
@@ -38,12 +38,12 @@ tailwindcss → tw-animate-css → ./shadcn-tailwind.css (vendored)
   wrapper carries `theme-neutral`, and legacy-themes.css remaps `--chart-*`
   inside it. Body carries `theme-default` (shadcn sets it via
   ActiveThemeProvider; we set it statically).
-- `@source` globs MUST include `packages/registry/styles-gen/**` — a
-  style-only utility that no scanned file uses is silently absent from the
-  build (this bit us: cards rendered square/unpadded because the style trees
-  weren't scanned). `styles-gen/` is generated and gitignored, so a fresh
-  clone has nothing there until the build runs (docs `predev`/`prebuild`/
-  `precheck` handle it as a prestep).
+- `@source` globs MUST include `packages/shadcn` — a style-only utility that
+  no scanned file uses is silently absent from the build (this bit us: cards
+  rendered square/unpadded because the style layers weren't scanned). The
+  package ships the 8 style layers as SOURCE CSS (`styles/style-<name>.css`),
+  not precompiled; the docs app's own Tailwind build compiles them, so it must
+  actually see them via `@source`.
 - `<html>` carries `--header-height`, `<body>` carries `--footer-height`
   (spacing-calc arbitrary properties, copied from shadcn's layout).
 - `.theme-marko` (brand chart palette, header toggle) is a sanctioned
@@ -55,10 +55,11 @@ tailwindcss → tw-animate-css → ./shadcn-tailwind.css (vendored)
 
 This section is about the registry's consumer-facing distribution, not the
 docs site itself — it documents the API surface that npm consumers of
-`@marko-ui/core` (the "import" path, as opposed to `marko-ui add`'s "copy"
-path) rely on. See `notes/plans/dual-distribution-plan.md` for the full
-model; this is the operational reference for anyone wiring up or documenting
-the import path's CSS.
+`@marko-ui/shadcn` (the "import" path, as opposed to `marko-ui add`'s "copy"
+path) rely on. See `notes/plans/dual-distribution-plan.md` and
+`notes/plans/restructure-shadcn-packages.md` for the full model; this is the
+operational reference for anyone wiring up or documenting the import path's
+CSS.
 
 Every registry component carries semantic `mu-*` hook classes (`mu-button`,
 `mu-accordion-trigger`, and so on) baked directly into its markup —
@@ -72,11 +73,16 @@ or switch between styles, e.g.:
 .style-vega .mu-button { @apply rounded-none; }
 ```
 
-`@marko-ui/core` ships one hook-class component tree plus all 8 precompiled
-`style-<name>.css` layers (compiled from `packages/registry/styles-src/
-style-<name>.css` against the consumer's own theme via `@reference`, per
-`notes/plans/spike-3a-verdict.md`). Switching styles at runtime is just
-toggling a `style-<name>` class on an ancestor element — no rebuild.
+`@marko-ui/shadcn` ships one hook-class component tree plus all 8 style
+layers **as SOURCE** (`styles/style-<name>.css`) — not precompiled. The
+package ships source, not compiled CSS: every Marko+Tailwind consumer already
+runs Tailwind, so precompiling bought nothing and would have baked in our
+own theme/scale/plugins instead of the consumer's (see
+`notes/plans/spike-3a-verdict.md` for the superseded precompiled verdict and
+why it changed). The consumer adds `@marko-ui/shadcn` to their own Tailwind
+`@source` globs, and their own build compiles the `@apply`-based style
+layers against their own theme. Switching styles at runtime is just toggling
+a `style-<name>` class on an ancestor element — no rebuild.
 
 Two requirements here are silent-failure traps: get either wrong and
 everything still renders, so the break only shows up as "my override doesn't
@@ -90,8 +96,12 @@ work" or "my variant classes do nothing."
   The correct form:
 
   ```css
-  @import "@marko-ui/core/styles/style-vega.css" layer(components);
+  @import "@marko-ui/shadcn/styles/style-vega.css" layer(components);
   ```
+
+  This requirement is unchanged by the move to source shipping — it applies
+  to source style layers identically to how it applied to the precompiled
+  ones.
 
 - **Ship the `@custom-variant` definitions.** The `data-open:`, `data-state-*:`
   and similar variants the components rely on are defined via Tailwind's

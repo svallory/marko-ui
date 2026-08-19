@@ -13,25 +13,27 @@ real per-style deltas to hand-maintain in the first place. All 1,880 files
 were deleted in `0ee60878`. The current architecture — one authored source
 plus vendored CSS token layers plus a generator — is described in
 `notes/plans/dual-distribution-plan.md` and `notes/plans/
-style-refactor-fleet-plan.md`. This file's porting method and structural notes
-below are kept as historical record of how the (now-replaced) hand ports were
-produced; do not use them as a guide for current work.
+style-refactor-fleet-plan.md`; the package merge and source-shipping decision
+that superseded precompiled shipping are in
+`notes/plans/restructure-shadcn-packages.md`. This file's porting method and
+structural notes below are kept as historical record of how the (now-replaced)
+hand ports were produced; do not use them as a guide for current work.
 
 ## Layout & imports (historical — see the plans above for the current layout)
 
-- `packages/registry/default/ui/<component>/<part>.marko` — the default
-  registry, tracks shadcn's `registry/new-york-v4`. This is still the current
-  single authored source, now carrying `mu-*` hook classes.
+- `packages/shadcn/ui/<component>/<part>.marko` — the default registry,
+  tracks shadcn's `registry/new-york-v4`. This is still the current single
+  authored source, now carrying `mu-*` hook classes.
 - `packages/registry/styles/<style>/ui/<component>/<part>.marko` — one
   hand-ported dir per shadcn style. This layout no longer exists; the
-  equivalent generated output now lives at `packages/registry/styles-gen/
-  <style>/ui/...` (gitignored, produced by `packages/registry/scripts/
-  build-styles.ts` from `default/` + `styles-src/style-<name>.css`).
-- The package `exports` map still lists each style subpath EXPLICITLY
-  (`"./styles/rhea/*": ...` × 8), now resolving to `styles-gen/rhea/*`. Do NOT
-  collapse to `"./styles/*"` — that pattern shadows the consumer theme files
-  (`./styles/globals.css`, `./styles/marko-accordion.css`) which live under
-  `default/styles/` via the `"./*" → "./default/*"` fallback.
+  equivalent per-style output is now transformed IN MEMORY by
+  `tooling/build-registry.ts` from `packages/shadcn/ui/` +
+  `packages/shadcn/styles/style-<name>.css` — there is no on-disk
+  `styles-gen/` tree at all (not even gitignored; it was removed entirely).
+- The package `exports` map now lists `./ui/*`, `./lib/*`, `./styles/*`,
+  `./blocks/*`, pointing directly at real authored files under
+  `packages/shadcn/` — no per-style subpath indirection and no generated
+  copies.
 
 ## Why one implementation per style (not per base) — historical rationale
 
@@ -84,7 +86,7 @@ misses is a real porting bug.
 - exit animations generally: zag unmounts on close, so `data-closed:*` /
   `data-ending-style:*` classes are present-but-inert (kept verbatim anyway)
 
-Closing any of these = change the shared anatomy in `default/ui` first, then
+Closing any of these = change the shared anatomy in `packages/shadcn/ui` first, then
 propagate to all 8 styles.
 
 ## Marko attr patterns the styles rely on

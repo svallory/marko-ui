@@ -2,7 +2,7 @@
  * check-identity.ts — Phase 3e scripted check #1.
  *
  * Verifies the generator's identity claim: generating a tree from
- * `default/ui/**` with an EMPTY StyleMap must equal `default/ui/**`
+ * `ui/**` with an EMPTY StyleMap must equal `ui/**`
  * "modulo stripped anchors".
  *
  * CRITICAL semantics (read before touching — this bit people already):
@@ -13,13 +13,14 @@
  * non-allowlisted anchor token is simply deleted from that string, and the
  * touched string's whitespace is collapsed/trimmed. Strings with zero anchor
  * tokens, and any non-`.marko`/non-`variants.ts` file, pass through
- * byte-identical (verbatim copy path in `build-styles.ts`'s `buildStyle()`).
+ * byte-identical (verbatim copy path in `build-registry.ts`'s
+ * `transformComponent()`).
  *
  * A genuinely independent, string-context-aware reimplementation of that
  * stripping rule was attempted and discarded: this codebase's real sources
  * contain apostrophes in prose ("shadcn's", "codebase's") that break a naive
  * quote-scanner, URLs with `//` that break naive comment-detection, AND (the
- * decisive case) `default/ui/command/command.marko` deliberately keeps a
+ * decisive case) `ui/command/command.marko` deliberately keeps a
  * `mu-command-dialog` token *inside a `//` comment* specifically so the
  * (comment-blind, tokenizer-level) transform strips it for check-anchors
  * parity — see that file's own trailing comment. So "comment-aware" is not
@@ -32,14 +33,14 @@
  * So this check verifies the identity claim with assertions that ARE
  * independent of the transform's internals, run against a REAL generated
  * tree (this script drives the exact same per-file dispatch as
- * `build-styles.ts`'s `buildStyle()` — .marko -> transformMarkoSource,
+ * `build-registry.ts`'s `transformComponent()` — .marko -> transformMarkoSource,
  * variants.ts -> transformVariantsSource, else verbatim copy — with
  * `styleMap = {}`, into a scratch directory):
  *
  *   1. FILE-SET IDENTITY — the generated tree's relative file list is
- *      exactly `walk(default/ui)`. Catches added/dropped files.
+ *      exactly `walk(ui)`. Catches added/dropped files.
  *   2. VERBATIM FILES BYTE-IDENTICAL — every non-.marko/non-variants.ts file
- *      is byte-for-byte identical to its `default/ui` source (Buffer.equals,
+ *      is byte-for-byte identical to its `ui` source (Buffer.equals,
  *      the `cmp` semantics called for by the measurement warning below).
  *      Catches a generator regression that starts transforming file types
  *      it shouldn't, or corrupts verbatim copies.
@@ -293,7 +294,7 @@ function main(): number {
     console.log(`FAIL  ${m.rel}  [${m.kind}]  ${m.detail}`)
   }
   console.log(
-    `\n${files.length} file(s) checked under default/ui (empty-StyleMap tree${keep ? ` kept at ${outDir}` : ""}); ` +
+    `\n${files.length} file(s) checked under ui (empty-StyleMap tree${keep ? ` kept at ${outDir}` : ""}); ` +
       `${mismatches.length} mismatch(es).`,
   )
   return mismatches.length ? 1 : 0

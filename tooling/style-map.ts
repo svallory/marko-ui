@@ -1,7 +1,7 @@
 /**
  * Ported from shadcn's `packages/shadcn/src/styles/create-style-map.ts`.
  *
- * Parses a style CSS file (e.g. `styles-src/style-rhea.css`) into a StyleMap:
+ * Parses a style CSS file (e.g. `styles/style-rhea.css`) into a StyleMap:
  * a record mapping each anchor class (`mu-accordion-trigger`, ...) to the
  * Tailwind classes collected from `@apply` declarations in every rule whose
  * selector targets that class.
