@@ -2,14 +2,14 @@ import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { describe, expect, test } from "vitest"
 
-import { createStyleMap, type StyleMap } from "../scripts/style-map"
+import { createStyleMap, type StyleMap } from "../../../tooling/style-map"
 import {
   DEFAULT_ALLOWLIST,
   transformVariantsSource,
-} from "../scripts/transform-variants"
+} from "../../../tooling/transform-variants"
 
 const REGISTRY_DIR = join(import.meta.dirname, "..")
-const STYLES_SRC_DIR = join(REGISTRY_DIR, "styles-src")
+const STYLES_SRC_DIR = join(REGISTRY_DIR, "styles")
 
 const MU_TOKEN = /\bmu-[\w-]+\b/g
 
@@ -19,7 +19,7 @@ function muTokensIn(source: string) {
 
 describe("real-world: button variants.ts x vega/nova style maps", () => {
   const variantsSource = readFileSync(
-    join(REGISTRY_DIR, "default/ui/button/variants.ts"),
+    join(REGISTRY_DIR, "ui/button/variants.ts"),
     "utf8"
   )
   const vegaMap = createStyleMap(
@@ -183,7 +183,7 @@ describe("unit: token replacement", () => {
 describe("idempotency", () => {
   test("transforming already-transformed output is a no-op", () => {
     const variantsSource = readFileSync(
-      join(REGISTRY_DIR, "default/ui/button/variants.ts"),
+      join(REGISTRY_DIR, "ui/button/variants.ts"),
       "utf8"
     )
     const vegaMap = createStyleMap(

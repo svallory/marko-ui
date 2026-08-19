@@ -27,7 +27,7 @@
  * measurement warning (no style name ever appears inside an anchor key).
  *
  * Usage:
- *   bun packages/registry/scripts/check-consumption.ts [--json]
+ *   bun tooling/check-consumption.ts [--json]
  * Exit 1 if any StyleMap key is neither consumed nor allowlisted, else 0.
  */
 import { readdirSync, readFileSync } from "node:fs"
@@ -35,10 +35,11 @@ import path from "node:path"
 
 import { createStyleMap } from "./style-map"
 
-const REGISTRY_ROOT = new URL("../", import.meta.url).pathname
+const REGISTRY_ROOT = new URL("../packages/shadcn/", import.meta.url).pathname
+const TOOLING_ROOT = new URL("./", import.meta.url).pathname
 const STYLES_SRC = path.join(REGISTRY_ROOT, "styles")
 const SOURCE_UI = path.join(REGISTRY_ROOT, "ui")
-const ALLOWLIST_PATH = path.join(REGISTRY_ROOT, "scripts", "unused-anchors.json")
+const ALLOWLIST_PATH = path.join(TOOLING_ROOT, "unused-anchors.json")
 
 function walk(dir: string, base = dir): string[] {
   const out: string[] = []

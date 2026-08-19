@@ -3,7 +3,7 @@
  *
  * Blocks are whole-page compositions built from marko-ui registry components.
  * Their source lives at packages/registry/default/blocks/<name>/ and is
- * emitted as a `registry:block` item by packages/registry/scripts/build-registry.ts.
+ * emitted as a `registry:block` item by tooling/build-registry.ts.
  *
  * `previewHeight` is the intrinsic height (px) the gallery gives the block's
  * preview iframe before scaling — blocks that are full app shells need more

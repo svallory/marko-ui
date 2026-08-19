@@ -7,10 +7,10 @@
     "build": "marko-run build",
     "preview": "marko-run preview",
     "check": "tsc --noEmit -p .",
-    "registry": "bun ../../packages/shadcn/scripts/build-registry.ts",
-    "predev": "bun ../../packages/shadcn/scripts/build-registry.ts",
-    "prebuild": "bun ../../packages/shadcn/scripts/build-registry.ts",
-    "precheck": "bun ../../packages/shadcn/scripts/build-registry.ts"
+    "registry": "bun ../../tooling/build-registry.ts",
+    "predev": "bun ../../tooling/build-registry.ts",
+    "prebuild": "bun ../../tooling/build-registry.ts",
+    "precheck": "bun ../../tooling/build-registry.ts"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

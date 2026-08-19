@@ -2,7 +2,7 @@
  * Extracts the public API surface of every registry component into one
  * checked-in artifact: apps/docs/src/lib/api-reference.json.
  *
- * Run: bun packages/registry/scripts/extract-api.ts   (script: `extract:api`)
+ * Run: bun tooling/extract-api.ts   (script: `extract:api`)
  *
  * How it works
  * ------------
@@ -41,9 +41,9 @@ import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, dirname, basename, relative } from "node:path";
 
-const ROOT = new URL("../", import.meta.url).pathname;
+const ROOT = new URL("../packages/shadcn/", import.meta.url).pathname;
 const REGISTRY_DIR = ROOT;
-const UI_DIR = join(ROOT, "default", "ui");
+const UI_DIR = join(ROOT, "ui");
 const OUT_FILE = join(ROOT, "../../apps/docs/src/lib/api-reference.json");
 
 /** A prop's origin, which is also how the docs group it. */
@@ -108,7 +108,7 @@ const COMPILER_OPTIONS: ts.CompilerOptions = {
   allowImportingTsExtensions: true,
   noEmit: true,
   baseUrl: REGISTRY_DIR,
-  paths: { "#lib/*": ["./default/lib/*"] },
+  paths: { "#lib/*": ["./lib/*"] },
 };
 
 /**
@@ -449,7 +449,7 @@ async function main() {
   await writeFile(
     OUT_FILE,
     JSON.stringify(
-      { generatedBy: "packages/registry/scripts/extract-api.ts", components },
+      { generatedBy: "tooling/extract-api.ts", components },
       null,
       2,
     ) + "\n",

@@ -25,7 +25,7 @@
  * Every file ships as `registry:file` with an explicit `target` — the
  * non-React path through the official shadcn CLI (no React transforms).
  *
- * Run: bun packages/registry/scripts/build-registry.ts
+ * Run: bun tooling/build-registry.ts
  */
 import { readdir, readFile, writeFile, mkdir, rm } from "node:fs/promises";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
@@ -34,7 +34,7 @@ import { createStyleMap, type StyleMap } from "./style-map";
 import { transformMarkoSource } from "./transform-marko";
 import { transformVariantsSource } from "./transform-variants";
 
-const ROOT = new URL("../", import.meta.url).pathname;
+const ROOT = new URL("../packages/shadcn/", import.meta.url).pathname;
 const UI_DIR = join(ROOT, "ui");
 const LIB_DIR = join(ROOT, "lib");
 const STYLES_DIR = join(ROOT, "styles");
@@ -52,7 +52,7 @@ const REGISTRY_SCHEMA = "https://ui.shadcn.com/schema/registry.json";
 // Bare registryDependencies names resolve against shadcn's own (React)
 // registry — a consumer asking for our "button" would get button.tsx. Emit
 // absolute URLs into this registry instead. Override for deploys:
-//   REGISTRY_BASE_URL=https://marko-ui.saulo.tech/r bun packages/registry/scripts/build-registry.ts
+//   REGISTRY_BASE_URL=https://marko-ui.saulo.tech/r bun tooling/build-registry.ts
 const BASE_URL = process.env.REGISTRY_BASE_URL ?? "http://localhost:3000/r";
 
 // `style` is the emitting item's own style directory ("" for the flat

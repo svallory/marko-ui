@@ -2,14 +2,14 @@ import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { describe, expect, test } from "vitest"
 
-import { createStyleMap, type StyleMap } from "../scripts/style-map"
+import { createStyleMap, type StyleMap } from "../../../tooling/style-map"
 import {
   DEFAULT_ALLOWLIST,
   transformMarkoSource,
-} from "../scripts/transform-marko"
+} from "../../../tooling/transform-marko"
 
 const REGISTRY_DIR = join(import.meta.dirname, "..")
-const STYLES_SRC_DIR = join(REGISTRY_DIR, "styles-src")
+const STYLES_SRC_DIR = join(REGISTRY_DIR, "styles")
 
 const MU_TOKEN = /\bmu-[\w-]+\b/g
 
@@ -18,7 +18,7 @@ function muTokensIn(source: string) {
 }
 
 function readComponent(relPath: string) {
-  return readFileSync(join(REGISTRY_DIR, "default/ui", relPath), "utf8")
+  return readFileSync(join(REGISTRY_DIR, "ui", relPath), "utf8")
 }
 
 const vegaMap = createStyleMap(

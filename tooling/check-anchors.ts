@@ -14,7 +14,7 @@
  *   NO-UPSTREAM    our component has no bases counterpart (informational)
  *
  * Usage:
- *   bun packages/registry/scripts/check-anchors.ts [component ...]
+ *   bun tooling/check-anchors.ts [component ...]
  *     no args = all components under packages/registry/default/ui/
  *   --json        machine-readable output
  *   --self-check  treat the shadcn bases themselves as "our" source
@@ -31,7 +31,7 @@ import { join, dirname, basename, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = join(HERE, "..", "..", "..");
+const REPO_ROOT = join(HERE, "..");
 const SHADCN_ROOT = join(REPO_ROOT, "..", "..", "data", "shadcn-ui", "apps", "v4", "registry");
 const BASES_UI_DIR = join(SHADCN_ROOT, "bases", "radix", "ui");
 const SHADCN_STYLES_DIR = join(SHADCN_ROOT, "styles");

@@ -9,7 +9,7 @@ PORT="${PORT:-3000}"
 BASE_URL="http://localhost:${PORT}"
 LOG_FILE="${RUNNER_TEMP:-/tmp}/docs-server.log"
 
-REGISTRY_BASE_URL="${BASE_URL}/r" bun packages/registry/scripts/build-registry.ts
+REGISTRY_BASE_URL="${BASE_URL}/r" bun tooling/build-registry.ts
 bun run --cwd apps/docs build
 
 (cd apps/docs && PORT="$PORT" NODE_ENV=production nohup bun dist/index.mjs > "$LOG_FILE" 2>&1 &)

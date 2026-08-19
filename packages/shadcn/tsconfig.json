@@ -2,8 +2,8 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "paths": {
-      "#lib/*": ["./default/lib/*"]
+      "#lib/*": ["./lib/*"]
     }
   },
-  "include": ["default/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts"]
+  "include": ["ui/**/*.ts", "lib/**/*.ts", "tests/**/*.ts"]
 }

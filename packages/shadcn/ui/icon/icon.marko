@@ -4,7 +4,7 @@
 // (IconLucide/IconTabler/IconHugeicons/IconPhosphor/IconRemixicon), each
 // lazily importing a generated `__<library>__.ts` name -> icon-component
 // map. This port has no React and no per-icon components to lazy-import;
-// instead packages/registry/scripts/build-icons.ts generates per-library
+// instead tooling/build-icons.ts generates per-library
 // maps of abstract name -> raw SVG inner-markup (or, for hugeicons, an
 // [tag, attrs][] node array — the same shape shadcn's own HugeiconsIcon
 // consumes), and ./lib/render.ts resolves (name, library) to wrapper attrs

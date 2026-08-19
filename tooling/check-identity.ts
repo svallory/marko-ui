@@ -79,7 +79,7 @@
  * measurement warning doesn't apply to this particular check — noted
  * explicitly rather than silently skipped.
  *
- * Usage: bun packages/registry/scripts/check-identity.ts [--json] [--keep]
+ * Usage: bun tooling/check-identity.ts [--json] [--keep]
  *   --keep   don't delete the scratch output dir (for manual inspection)
  * Exit 1 on any mismatch, else 0.
  */
@@ -91,7 +91,7 @@ import { DEFAULT_ALLOWLIST } from "./apply-style-map"
 import { transformMarkoSource } from "./transform-marko"
 import { transformVariantsSource } from "./transform-variants"
 
-const REGISTRY_ROOT = new URL("../", import.meta.url).pathname
+const REGISTRY_ROOT = new URL("../packages/shadcn/", import.meta.url).pathname
 const SOURCE_UI = path.join(REGISTRY_ROOT, "ui")
 const TOKEN_RE = /\bmu-[\w-]+\b/g
 

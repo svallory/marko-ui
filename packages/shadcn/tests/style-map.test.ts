@@ -2,10 +2,10 @@ import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { describe, expect, test } from "vitest"
 
-import { createStyleMap } from "../scripts/style-map"
+import { createStyleMap } from "../../../tooling/style-map"
 
 const REGISTRY_DIR = join(import.meta.dirname, "..")
-const STYLES_SRC_DIR = join(REGISTRY_DIR, "styles-src")
+const STYLES_SRC_DIR = join(REGISTRY_DIR, "styles")
 const SHADCN_STYLES_DIR = join(
   REGISTRY_DIR,
   "../../../../data/shadcn-ui/apps/v4/registry/styles"
