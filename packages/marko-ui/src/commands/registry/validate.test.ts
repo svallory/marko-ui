@@ -8,7 +8,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { validate } from "./validate"
 
-vi.mock("@/src/utils/handle-error", () => ({
+vi.mock("@/src/utils/handle-error", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/src/utils/handle-error")>()),
   handleError: vi.fn((error) => {
     throw error
   }),

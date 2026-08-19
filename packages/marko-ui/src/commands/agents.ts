@@ -10,7 +10,7 @@ import {
 import { getShadcnRegistryIndex } from "@/src/registry/api"
 import { getConfig } from "@/src/utils/get-config"
 import { getProjectComponents } from "@/src/utils/get-project-info"
-import { handleError } from "@/src/utils/handle-error"
+import { CommandError, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { spinner } from "@/src/utils/spinner"
@@ -50,12 +50,11 @@ agents
 
       const config = await getConfig(options.cwd)
       if (!config) {
-        logger.error(
+        throw new CommandError(
           `No ${highlighter.info(
             "components.json"
           )} found. Run ${highlighter.info("marko-ui init")} first.`
         )
-        process.exit(1)
       }
 
       const { agentsPath, skillPath, nextAgents, nextSkill } =
@@ -79,12 +78,14 @@ agents
         }
 
         if (staleFiles.length) {
-          logger.error(
+          // Exit 3 is the documented "check found problems" code (shared
+          // with doctor/validate) — preserve it.
+          throw new CommandError(
             `Agent docs are stale: ${staleFiles.join(
               ", "
-            )}. Run ${highlighter.info("marko-ui agents sync")}.`
+            )}. Run ${highlighter.info("marko-ui agents sync")}.`,
+            { exitCode: 3 }
           )
-          process.exit(3)
         }
         if (!options.silent) {
           logger.log(highlighter.success("Agent docs are up to date."))

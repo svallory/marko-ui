@@ -11,8 +11,11 @@ import { formatDryRunResult } from "@/src/utils/dry-run-formatter"
 import { loadEnvFiles } from "@/src/utils/env-loader"
 import * as ERRORS from "@/src/utils/errors"
 import { createConfig, getConfig } from "@/src/utils/get-config"
-import { getProjectInfo } from "@/src/utils/get-project-info"
-import { handleError } from "@/src/utils/handle-error"
+import {
+  CleanExit,
+  CommandError,
+  handleError,
+} from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
@@ -84,9 +87,6 @@ export const add = new Command()
         hasNewRegistries = newRegistries.length > 0
       }
 
-      const projectInfo = await getProjectInfo(options.cwd)
-      void projectInfo
-
       let itemType: z.infer<typeof registryItemTypeSchema> | undefined
       let shouldInstallStyleIndex = true
       const shouldResolveInitialItem = components.length > 0
@@ -123,7 +123,9 @@ export const add = new Command()
             logger.break()
             logger.log(`Installation cancelled.`)
             logger.break()
-            process.exit(1)
+            // User declined. Message already printed; exit 1 is the
+            // pre-existing contract for a cancelled install.
+            throw new CleanExit(1)
           }
         }
       }
@@ -144,8 +146,8 @@ export const add = new Command()
         )
 
         if (!proceed) {
-          logger.break()
-          process.exit(1)
+          // User declined to create components.json — nothing to add.
+          throw new CleanExit(1)
         }
 
         config = await runInit({
@@ -155,7 +157,6 @@ export const add = new Command()
           defaults: false,
           skipPreflight: false,
           silent: options.silent && !hasNewRegistries,
-          isNewProject: false,
           cssVariables: true,
           components: options.components ?? [],
         })
@@ -163,16 +164,13 @@ export const add = new Command()
       }
 
       if (errors[ERRORS.MISSING_DIR_OR_EMPTY_PROJECT]) {
-        logger.break()
-        logger.error(
+        throw new CommandError(
           `No project found at ${highlighter.info(
             options.cwd
           )}. Create a Marko app first (e.g. ${highlighter.info(
             "bun create marko@latest"
           )}), then run ${highlighter.info("marko-ui init")}.`
         )
-        logger.break()
-        process.exit(1)
       }
 
       if (!config) {

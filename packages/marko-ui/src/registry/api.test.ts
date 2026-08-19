@@ -41,7 +41,8 @@ import {
 import { RegistriesIndexParseError } from "./errors"
 import { registryItemSchema } from "./schema"
 
-vi.mock("@/src/utils/handle-error", () => ({
+vi.mock("@/src/utils/handle-error", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/src/utils/handle-error")>()),
   handleError: vi.fn(),
 }))
 

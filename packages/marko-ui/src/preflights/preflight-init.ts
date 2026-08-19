@@ -2,6 +2,7 @@ import path from "path"
 import { initOptionsSchema } from "@/src/commands/init"
 import * as ERRORS from "@/src/utils/errors"
 import { highlighter } from "@/src/utils/highlighter"
+import { CommandError } from "@/src/utils/handle-error"
 import { logger } from "@/src/utils/logger"
 import { spinner } from "@/src/utils/spinner"
 import fs from "fs-extra"
@@ -33,8 +34,7 @@ export async function preFlightInit(
     !options.force
   ) {
     projectSpinner?.fail()
-    logger.break()
-    logger.error(
+    throw new CommandError(
       `A ${highlighter.info(
         "components.json"
       )} file already exists at ${highlighter.info(
@@ -43,8 +43,6 @@ export async function preFlightInit(
         "components.json"
       )} file and run ${highlighter.info("init")} again.`
     )
-    logger.break()
-    process.exit(1)
   }
 
   projectSpinner?.succeed()

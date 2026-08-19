@@ -1,4 +1,5 @@
 import * as clack from "@clack/prompts"
+import { CleanExit } from "@/src/utils/handle-error"
 import { logger } from "@/src/utils/logger"
 
 /**
@@ -10,7 +11,14 @@ import { logger } from "@/src/utils/logger"
 function handleCancel<T>(value: T | symbol): T {
   if (clack.isCancel(value)) {
     clack.cancel("Cancelled.")
-    process.exit(1)
+    // Thrown, not exited inline: prompts run deep inside command bodies, and
+    // throwing unwinds to the command's single `catch → handleError` site so
+    // the exit happens in one place instead of at every prompt call. It does
+    // NOT make `finally` blocks run — handleError calls process.exit() from
+    // the catch, which skips any pending finally exactly as an inline exit
+    // would. clack already printed "Cancelled."; exit 1 is the pre-existing
+    // code for a user-cancelled prompt.
+    throw new CleanExit(1)
   }
   return value
 }
@@ -48,6 +56,6 @@ export function exitIfEmptySelection<T>(
   if (!values?.length) {
     logger.warn(message)
     logger.info("")
-    process.exit(1)
+    throw new CleanExit(1)
   }
 }

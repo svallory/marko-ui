@@ -103,11 +103,27 @@ vi.mock("@/src/registry/context", () => ({
   withRegistryContext: vi.fn((callback: () => unknown) => callback()),
 }))
 
-vi.mock("@/src/utils/handle-error", () => ({
-  handleError: vi.fn((error) => {
-    throw error
-  }),
-}))
+vi.mock("@/src/utils/handle-error", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/src/utils/handle-error")>()
+  return {
+    ...actual,
+    // Stand in for the real handleError's only observable effect: exiting
+    // with the code the thrown error carries. Commands now signal their
+    // exit code by throwing CleanExit/CommandError rather than calling
+    // process.exit inline, so the assertions below still read the same
+    // "process.exit:N" the spy produces.
+    handleError: vi.fn((error) => {
+      if (
+        error instanceof actual.CleanExit ||
+        error instanceof actual.CommandError
+      ) {
+        process.exit(error.exitCode)
+      }
+      throw error
+    }),
+  }
+})
 
 describe("search command", () => {
   beforeEach(() => {
@@ -190,8 +206,8 @@ describe("search command", () => {
     const exit = mockProcessExit()
 
     // fs-extra.existsSync is mocked to return false (no components.json).
-    // This is a usage error, so it prints a message and exits 1 directly
-    // instead of routing through handleError.
+    // This is a usage error: the message is printed inline and a
+    // pre-formatted CommandError carries exit 1 through handleError.
     await expect(
       search.parseAsync(["--cwd", "/tmp/test-project"], {
         from: "user",

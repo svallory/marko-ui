@@ -31,7 +31,8 @@ vi.mock("./context", () => ({
   withRegistryContext: vi.fn((callback: () => unknown) => callback()),
 }))
 
-vi.mock("@/src/utils/handle-error", () => ({
+vi.mock("@/src/utils/handle-error", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/src/utils/handle-error")>()),
   handleError: vi.fn((error) => {
     console.error("Test error:", error)
   }),

@@ -1,6 +1,7 @@
 import path from "path"
 import { getRegistries } from "@/src/registry/api"
 import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
+import { writeConfigRegistries } from "@/src/utils/get-config"
 import { handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
@@ -201,7 +202,22 @@ export async function addRegistriesToConfig(
   const writeSpinner = spinner(`Updating ${configFileName}.`, {
     silent: options.silent,
   }).start()
-  await fs.writeJson(configPath, updatedConfig, { spaces: 2 })
+  try {
+    // Routed through the shared validated writer instead of a raw
+    // fs.writeJson: a malformed registries map now fails here, naming this
+    // command, rather than as a cryptic parse error on the next read.
+    // Only `registries` is validated — this target may be a PARTIAL
+    // components.json or a package.json, neither of which is a complete
+    // config, so rawConfigSchema must not be applied.
+    await writeConfigRegistries(configPath, updatedConfig, {
+      // fs.writeJson's historical output for this path had no trailing
+      // newline; preserve it so existing files are not reformatted.
+      newline: false,
+    })
+  } catch (error) {
+    writeSpinner.fail()
+    throw error
+  }
   writeSpinner.succeed()
 
   if (!options.silent) {

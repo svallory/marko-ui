@@ -23,7 +23,6 @@ import { z } from "zod"
 const FILE_EXTENSIONS_FOR_LOOKUP = [".tsx", ".ts", ".jsx", ".js", ".css"]
 const FILE_PATH_SKIP_LIST = ["lib/utils.ts"]
 const DEPENDENCY_SKIP_LIST = [
-  /^(react|react-dom|next)(\/.*)?$/, // Matches react, react-dom, next and their submodules
   /^(node|jsr|npm):.*$/, // Matches node:, jsr:, and npm: prefixed modules
 ]
 

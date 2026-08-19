@@ -34,7 +34,6 @@ export interface AddComponentsOptions {
   silent?: boolean
   interactive?: boolean
   resolvedTree?: NonNullable<Awaited<ReturnType<typeof resolveRegistryTree>>>
-  isNewProject?: boolean
   skipFonts?: boolean
   registryHeaders?: Record<string, Record<string, string>>
   path?: string
@@ -51,7 +50,6 @@ export async function addComponents(
     overwrite: false,
     silent: false,
     interactive: true,
-    isNewProject: false,
     ...options,
   }
 
@@ -112,7 +110,6 @@ async function addProjectComponents(
   await updateCss(tree.css, config, {
     silent: options.silent,
     cssVars: tree.cssVars,
-    cleanupDefaultNextStyles: options.isNewProject,
     overwriteCssVars,
     tailwindVersion,
     tailwindConfig: tree.tailwind?.config,

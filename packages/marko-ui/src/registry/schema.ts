@@ -44,6 +44,9 @@ export const rawConfigSchema = z
   .object({
     $schema: z.string().optional(),
     style: z.string(),
+    // React Server Components flag. Meaningless for Marko, but shadcn's
+    // published schema.json (which we declare as our $schema) lists it as
+    // required, so it stays for wire compatibility. Always false.
     rsc: z.coerce.boolean().default(false),
     tsx: z.coerce.boolean().default(true),
     tailwind: z.object({

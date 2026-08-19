@@ -24,7 +24,6 @@ export async function updateCss(
   options: {
     silent?: boolean
     cssVars?: z.infer<typeof registryItemCssVarsSchema>
-    cleanupDefaultNextStyles?: boolean
     overwriteCssVars?: boolean
     tailwindVersion?: TailwindVersion
     tailwindConfig?: z.infer<typeof registryItemTailwindSchema>["config"]
@@ -59,7 +58,6 @@ export async function updateCss(
   // Apply CSS vars transform first if provided.
   if (hasCssVars) {
     output = await transformCssVars(output, options.cssVars!, config, {
-      cleanupDefaultNextStyles: options.cleanupDefaultNextStyles,
       tailwindVersion: options.tailwindVersion,
       tailwindConfig: options.tailwindConfig,
       overwriteCssVars: options.overwriteCssVars,

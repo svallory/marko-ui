@@ -54,7 +54,7 @@
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "NODE_OPTIONS=\"--max-old-space-size=8192\" marko-type-check -p ./tsconfig.json -d condensed",
     "clean": "rimraf dist",
     "start": "node dist/index.js",
     "start:dev": "REGISTRY_URL=http://localhost:3000/r node dist/index.js",

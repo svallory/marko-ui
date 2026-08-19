@@ -17,11 +17,13 @@ bunx marko-ui manifest      # machine-readable description of the whole CLI
 | `init [items...]` | Scaffold components.json, install the base theme, optionally install items |
 | `add [items...]` | Install items — bare names (`button`), namespaced (`@acme/button`), URLs, or local paths |
 | `diff [item]` | Diff local files against their registry versions |
+| `docs [components...]` | Print component documentation as markdown (`--list` for the index) |
 | `show <items...>` (alias `view`) | Inspect items: full JSON, `--files`, `--deps` |
 | `search [registries...]` (alias `list`) | Search items across configured registries |
 | `status` (alias `info`) | Project info: config, aliases, framework |
-| `doctor` | 8 health checks; exit code 3 when any fail |
+| `doctor` | 9 health checks; exit code 3 when any fail |
 | `manifest` | Self-description: commands, flags, exit codes, agent workflow |
+| `agents sync` | Generate or refresh AGENTS.md and the marko-ui Claude skill (`--check` fails on stale) |
 | `registry list/add/remove/validate` | Manage registries in components.json |
 
 Run `marko-ui manifest` for the complete, always-current surface.

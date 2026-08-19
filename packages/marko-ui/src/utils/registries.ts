@@ -5,7 +5,7 @@ import {
 } from "@/src/registry/api"
 import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
 import { resolveRegistryNamespaces } from "@/src/registry/namespaces"
-import { Config } from "@/src/utils/get-config"
+import { Config, writeConfigRegistries } from "@/src/utils/get-config"
 import { spinner } from "@/src/utils/spinner"
 import fs from "fs-extra"
 
@@ -120,11 +120,14 @@ export async function ensureRegistriesInConfig(
           ...discoveredRegistries,
         },
       }
-      await fs.writeFile(
-        configPath,
-        JSON.stringify(updatedConfig, null, 2) + "\n",
-        "utf-8"
-      )
+      try {
+        // components.json here may be PARTIAL (this runs before/without a
+        // full init), so only the registries field is validated.
+        await writeConfigRegistries(configPath, updatedConfig)
+      } catch (error) {
+        configSpinner.fail()
+        throw error
+      }
       configSpinner.succeed()
     }
   }

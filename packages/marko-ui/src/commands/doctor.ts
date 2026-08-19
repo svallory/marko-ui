@@ -12,6 +12,7 @@ import {
   getProjectComponents,
   getProjectInfo,
 } from "@/src/utils/get-project-info"
+import { CleanExit, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { Command } from "commander"
@@ -45,53 +46,59 @@ export const doctor = new Command()
   )
   .option("--json", "output as JSON.", false)
   .action(async (opts) => {
-    const options = doctorOptionsSchema.parse({
-      cwd: path.resolve(opts.cwd),
-      json: opts.json,
-    })
+    try {
+      const options = doctorOptionsSchema.parse({
+        cwd: path.resolve(opts.cwd),
+        json: opts.json,
+      })
 
-    const checks = await runDoctorChecks(options.cwd)
-    const failed = checks.filter((check) => check.status === "fail")
+      const checks = await runDoctorChecks(options.cwd)
+      const failed = checks.filter((check) => check.status === "fail")
 
-    if (options.json) {
-      console.log(
-        JSON.stringify(
-          {
-            $type: "marko-ui/doctor",
-            version: 1,
-            ok: failed.length === 0,
-            data: { checks },
-          },
-          null,
-          2
-        )
-      )
-    } else {
-      logger.break()
-      for (const check of checks) {
-        const icon =
-          check.status === "pass"
-            ? highlighter.success("✔")
-            : check.status === "warn"
-              ? highlighter.warn("⚠")
-              : highlighter.error("✖")
-        logger.log(`${icon} ${check.label}`)
-        if (check.message && check.status !== "pass") {
-          logger.log(`  ${check.message}`)
-        }
-      }
-      logger.break()
-      if (failed.length) {
-        logger.error(
-          `${failed.length} ${failed.length === 1 ? "check" : "checks"} failed.`
+      if (options.json) {
+        console.log(
+          JSON.stringify(
+            {
+              $type: "marko-ui/doctor",
+              version: 1,
+              ok: failed.length === 0,
+              data: { checks },
+            },
+            null,
+            2
+          )
         )
       } else {
-        logger.log(highlighter.success("All checks passed."))
+        logger.break()
+        for (const check of checks) {
+          const icon =
+            check.status === "pass"
+              ? highlighter.success("✔")
+              : check.status === "warn"
+                ? highlighter.warn("⚠")
+                : highlighter.error("✖")
+          logger.log(`${icon} ${check.label}`)
+          if (check.message && check.status !== "pass") {
+            logger.log(`  ${check.message}`)
+          }
+        }
+        logger.break()
+        if (failed.length) {
+          logger.error(
+            `${failed.length} ${failed.length === 1 ? "check" : "checks"} failed.`
+          )
+        } else {
+          logger.log(highlighter.success("All checks passed."))
+        }
+        logger.break()
       }
-      logger.break()
-    }
 
-    process.exit(failed.length ? 3 : 0)
+      // Documented, CI-facing contract: exit 3 when any check fails (README,
+      // manifest exitCodes). The report is already printed either way.
+      throw new CleanExit(failed.length ? 3 : 0)
+    } catch (error) {
+      handleError(error)
+    }
   })
 
 export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {

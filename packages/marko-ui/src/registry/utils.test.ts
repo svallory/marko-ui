@@ -28,24 +28,6 @@ describe("getDependencyFromModuleSpecifier", () => {
   })
 
   it.each([
-    // Core packages
-    "react",
-    "react/jsx-runtime",
-    "react/dom",
-    "react/experimental",
-    "react-dom",
-    "react-dom/client",
-    "react-dom/server",
-    "react-dom/test-utils",
-    "next",
-    "next/link",
-    "next/image",
-    "next/navigation",
-  ])("should return null for core package %s", (moduleSpecifier) => {
-    expect(getDependencyFromModuleSpecifier(moduleSpecifier)).toBe(null)
-  })
-
-  it.each([
     // Node.js modules
     "node:fs",
     "node:path",

@@ -20,7 +20,6 @@ export type TailwindVersion = "v3" | "v4" | null
 export type ProjectInfo = {
   framework: Framework
   isSrcDir: boolean
-  isRSC: boolean
   isTsx: boolean
   tailwindConfigFile: string | null
   tailwindCssFile: string | null
@@ -78,7 +77,6 @@ export async function getProjectInfo(
   const type: ProjectInfo = {
     framework: FRAMEWORKS["manual"],
     isSrcDir,
-    isRSC: false,
     isTsx,
     tailwindConfigFile,
     tailwindCssFile,
@@ -510,7 +508,9 @@ export async function getProjectConfig(
 
   const config: z.infer<typeof rawConfigSchema> = {
     $schema: "https://ui.shadcn.com/schema.json",
-    rsc: projectInfo.isRSC,
+    // `rsc` is meaningless for Marko but is `required` by shadcn's published
+    // schema.json (the $schema above), so it stays on the wire as a constant.
+    rsc: false,
     tsx: projectInfo.isTsx,
     style: "default",
     tailwind: {

@@ -9,6 +9,7 @@ import {
   isMonorepoRoot,
 } from "@/src/utils/get-monorepo-info"
 import { highlighter } from "@/src/utils/highlighter"
+import { CommandError } from "@/src/utils/handle-error"
 import { logger } from "@/src/utils/logger"
 import fs from "fs-extra"
 import { z } from "zod"
@@ -36,7 +37,10 @@ export async function preFlightAdd(options: z.infer<typeof addOptionsSchema>) {
       const targets = await getMonorepoTargets(options.cwd)
       if (targets.length > 0) {
         formatMonorepoMessage("add [component]", targets)
-        process.exit(1)
+        throw new CommandError(
+          "Run add from a workspace, not the monorepo root.",
+          { formatted: true }
+        )
       }
     }
 
@@ -69,6 +73,9 @@ export async function preFlightAdd(options: z.infer<typeof addOptionsSchema>) {
       `Learn more at ${highlighter.info(`${MARKO_UI_URL}/docs/components-json`)}.`
     )
     logger.break()
-    process.exit(1)
+    throw new CommandError(
+      `Invalid components.json at ${options.cwd}.`,
+      { formatted: true }
+    )
   }
 }

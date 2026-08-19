@@ -18,7 +18,6 @@ export async function updateCssVars(
   cssVars: z.infer<typeof registryItemCssVarsSchema> | undefined,
   config: Config,
   options: {
-    cleanupDefaultNextStyles?: boolean
     overwriteCssVars?: boolean
     silent?: boolean
     tailwindVersion?: TailwindVersion
@@ -30,7 +29,6 @@ export async function updateCssVars(
   }
 
   options = {
-    cleanupDefaultNextStyles: false,
     silent: false,
     tailwindVersion: "v3",
     overwriteCssVars: false,
@@ -49,7 +47,6 @@ export async function updateCssVars(
   ).start()
   const raw = await fs.readFile(cssFilepath, "utf8")
   let output = await transformCssVars(raw, cssVars ?? {}, config, {
-    cleanupDefaultNextStyles: options.cleanupDefaultNextStyles,
     tailwindVersion: options.tailwindVersion,
     tailwindConfig: options.tailwindConfig,
     overwriteCssVars: options.overwriteCssVars,
@@ -63,19 +60,16 @@ export async function transformCssVars(
   cssVars: z.infer<typeof registryItemCssVarsSchema>,
   config: Config,
   options: {
-    cleanupDefaultNextStyles?: boolean
     tailwindVersion?: TailwindVersion
     tailwindConfig?: z.infer<typeof registryItemTailwindSchema>["config"]
     overwriteCssVars?: boolean
   } = {
-    cleanupDefaultNextStyles: false,
     tailwindVersion: "v3",
     tailwindConfig: undefined,
     overwriteCssVars: false,
   }
 ) {
   options = {
-    cleanupDefaultNextStyles: false,
     tailwindVersion: "v3",
     tailwindConfig: undefined,
     overwriteCssVars: false,
@@ -84,18 +78,10 @@ export async function transformCssVars(
 
   let plugins = [updateCssVarsPlugin(cssVars)]
 
-  if (options.cleanupDefaultNextStyles) {
-    plugins.push(cleanupDefaultNextStylesPlugin())
-  }
-
   if (options.tailwindVersion === "v4") {
     plugins = []
 
     plugins.push(addCustomVariant({ params: "dark (&:is(.dark *))" }))
-
-    if (options.cleanupDefaultNextStyles) {
-      plugins.push(cleanupDefaultNextStylesPlugin())
-    }
 
     plugins.push(
       updateCssVarsPluginV4(cssVars, {
@@ -161,94 +147,6 @@ function updateCssVarsPlugin(
           // TODO: Fix typecheck.
           addOrUpdateVars(baseLayer as AtRule, selector, vars)
         })
-      }
-    },
-  }
-}
-
-function removeConflictVars(root: Rule | Root) {
-  const rootRule = root.nodes.find(
-    (node): node is Rule => node.type === "rule" && node.selector === ":root"
-  )
-
-  if (rootRule) {
-    const propsToRemove = ["--background", "--foreground"]
-
-    rootRule.nodes
-      .filter(
-        (node): node is postcss.Declaration =>
-          node.type === "decl" && propsToRemove.includes(node.prop)
-      )
-      .forEach((node) => node.remove())
-
-    if (rootRule.nodes.length === 0) {
-      rootRule.remove()
-    }
-  }
-}
-
-function cleanupDefaultNextStylesPlugin() {
-  return {
-    postcssPlugin: "cleanup-default-next-styles",
-    Once(root: Root) {
-      const bodyRule = root.nodes.find(
-        (node): node is Rule => node.type === "rule" && node.selector === "body"
-      )
-      if (bodyRule) {
-        // Remove color from the body node.
-        bodyRule.nodes
-          .find(
-            (node): node is postcss.Declaration =>
-              node.type === "decl" &&
-              node.prop === "color" &&
-              ["rgb(var(--foreground-rgb))", "var(--foreground)"].includes(
-                node.value
-              )
-          )
-          ?.remove()
-
-        // Remove background: linear-gradient.
-        bodyRule.nodes
-          .find((node): node is postcss.Declaration => {
-            return (
-              node.type === "decl" &&
-              node.prop === "background" &&
-              // This is only going to run on create project, so all good.
-              (node.value.startsWith("linear-gradient") ||
-                node.value === "var(--background)")
-            )
-          })
-          ?.remove()
-
-        // Remove font-family: Arial, Helvetica, sans-serif;
-        bodyRule.nodes
-          .find(
-            (node): node is postcss.Declaration =>
-              node.type === "decl" &&
-              node.prop === "font-family" &&
-              node.value === "Arial, Helvetica, sans-serif"
-          )
-          ?.remove()
-
-        // If the body rule is empty, remove it.
-        if (bodyRule.nodes.length === 0) {
-          bodyRule.remove()
-        }
-      }
-
-      removeConflictVars(root)
-
-      const darkRootRule = root.nodes.find(
-        (node): node is Rule =>
-          node.type === "atrule" &&
-          node.params === "(prefers-color-scheme: dark)"
-      )
-
-      if (darkRootRule) {
-        removeConflictVars(darkRootRule)
-        if (darkRootRule.nodes.length === 0) {
-          darkRootRule.remove()
-        }
       }
     },
   }

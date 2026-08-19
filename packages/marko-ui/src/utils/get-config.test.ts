@@ -10,6 +10,8 @@ import {
   getConfig,
   getRawConfig,
   getWorkspaceConfig,
+  writeComponentsJson,
+  writeConfigRegistries,
 } from "./get-config"
 
 describe("getRawConfig", () => {
@@ -698,5 +700,117 @@ describe("createConfig", () => {
     expect(config1.resolvedPaths).not.toBe(config2.resolvedPaths)
     expect(config1.tailwind).not.toBe(config2.tailwind)
     expect(config1.aliases).not.toBe(config2.aliases)
+  })
+})
+
+describe("writeComponentsJson", () => {
+  async function tempConfigPath() {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "marko-ui-write-"))
+    return path.join(dir, "components.json")
+  }
+
+  const validConfig = {
+    style: "default",
+    tailwind: {
+      config: "",
+      css: "app/globals.css",
+      baseColor: "neutral",
+      cssVariables: true,
+      prefix: "",
+    },
+    rsc: false,
+    tsx: true,
+    aliases: { components: "@/components", utils: "@/lib/utils" },
+  }
+
+  it("writes a valid config and returns the parsed result", async () => {
+    const configPath = await tempConfigPath()
+
+    const parsed = await writeComponentsJson(configPath, validConfig)
+
+    expect(parsed.style).toBe("default")
+    // Round-trips through the same reader the CLI uses on the next run.
+    expect(await getRawConfig(path.dirname(configPath))).toMatchObject({
+      style: "default",
+    })
+  })
+
+  it("refuses to write a config missing required fields", async () => {
+    const configPath = await tempConfigPath()
+
+    await expect(
+      writeComponentsJson(configPath, { style: "default" })
+    ).rejects.toThrow()
+
+    // The point of validating at write time: nothing lands on disk, so the
+    // next read cannot fail on a file this CLI wrote.
+    expect(await fs.pathExists(configPath)).toBe(false)
+  })
+
+  it("refuses to write an unknown top-level field (schema is strict)", async () => {
+    const configPath = await tempConfigPath()
+
+    await expect(
+      writeComponentsJson(configPath, { ...validConfig, nope: true })
+    ).rejects.toThrow()
+    expect(await fs.pathExists(configPath)).toBe(false)
+  })
+
+  it("refuses to write a config that redefines a built-in registry", async () => {
+    const configPath = await tempConfigPath()
+
+    await expect(
+      writeComponentsJson(configPath, {
+        ...validConfig,
+        registries: { "@marko-ui": "https://evil.example/{name}.json" },
+      })
+    ).rejects.toThrow("built-in registry")
+    expect(await fs.pathExists(configPath)).toBe(false)
+  })
+})
+
+describe("writeConfigRegistries", () => {
+  async function tempConfigPath() {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "marko-ui-write-reg-"))
+    return path.join(dir, "components.json")
+  }
+
+  it("writes a PARTIAL config through untouched", async () => {
+    const configPath = await tempConfigPath()
+
+    // `registry add` and ensureRegistriesInConfig both legitimately operate
+    // on partial files — full-schema validation must not apply here.
+    await writeConfigRegistries(configPath, {
+      style: "new-york",
+      registries: { "@acme": "https://acme.com/r/{name}.json" },
+    })
+
+    expect(await fs.readJson(configPath)).toEqual({
+      style: "new-york",
+      registries: { "@acme": "https://acme.com/r/{name}.json" },
+    })
+  })
+
+  it("refuses to write a malformed registries map", async () => {
+    const configPath = await tempConfigPath()
+
+    await expect(
+      writeConfigRegistries(configPath, {
+        style: "new-york",
+        registries: { "@acme": 42 },
+      })
+    ).rejects.toThrow()
+    expect(await fs.pathExists(configPath)).toBe(false)
+  })
+
+  it("refuses to redefine a built-in registry", async () => {
+    const configPath = await tempConfigPath()
+
+    await expect(
+      writeConfigRegistries(configPath, {
+        registries: { "@marko-ui": "https://evil.example/{name}.json" },
+      })
+    ).rejects.toThrow("built-in registry")
+    expect(await fs.pathExists(configPath)).toBe(false)
   })
 })

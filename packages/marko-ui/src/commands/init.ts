@@ -21,10 +21,15 @@ import {
   DEFAULT_TAILWIND_CSS,
   getConfig,
   resolveConfigPaths,
+  writeComponentsJson,
   type Config,
 } from "@/src/utils/get-config"
 import { getProjectConfig, getProjectInfo } from "@/src/utils/get-project-info"
-import { handleError } from "@/src/utils/handle-error"
+import {
+  CleanExit,
+  CommandError,
+  handleError,
+} from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
@@ -42,7 +47,6 @@ export const initOptionsSchema = z.object({
   defaults: z.boolean(),
   force: z.boolean(),
   silent: z.boolean(),
-  isNewProject: z.boolean().default(false),
   cssVariables: z.boolean().default(true),
   baseColor: z.string().optional(),
   skipPreflight: z.boolean().optional(),
@@ -80,7 +84,6 @@ export const init = new Command()
     try {
       const options = initOptionsSchema.parse({
         cwd: path.resolve(opts.cwd),
-        isNewProject: false,
         components,
         baseColor: opts.baseColor,
         ...opts,
@@ -112,16 +115,13 @@ export async function runInit(
   if (!options.skipPreflight) {
     const preflight = await preFlightInit(options)
     if (preflight.errors[ERRORS.MISSING_DIR_OR_EMPTY_PROJECT]) {
-      logger.break()
-      logger.error(
+      throw new CommandError(
         `No project found at ${highlighter.info(
           options.cwd
         )}. Create a Marko app first (e.g. ${highlighter.info(
           "bun create marko@latest"
         )}), then run ${highlighter.info("marko-ui init")} inside it.`
       )
-      logger.break()
-      process.exit(1)
     }
   }
 
@@ -135,7 +135,8 @@ export async function runInit(
     )
 
     if (!proceed) {
-      process.exit(0)
+      // User declined — a successful no-op, not a failure.
+      throw new CleanExit(0)
     }
   }
 
@@ -144,7 +145,7 @@ export async function runInit(
     silent: options.silent,
   }).start()
   const targetPath = path.resolve(options.cwd, "components.json")
-  await fs.writeFile(targetPath, JSON.stringify(config, null, 2) + "\n", "utf8")
+  await writeComponentsJson(targetPath, config)
   componentSpinner.succeed()
 
   let fullConfig = await resolveConfigPaths(options.cwd, config)
@@ -198,7 +199,6 @@ export async function runInit(
     await addComponents(components, fullConfig, {
       overwrite: true,
       silent: options.silent,
-      isNewProject: options.isNewProject,
     })
 
     // Zero-import tags for installed components (<Badge>, <badge>, ...).
@@ -259,13 +259,11 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
   baseColor = baseColor ?? "neutral"
 
   if (!BASE_COLORS.some((item) => item.name === baseColor)) {
-    logger.break()
-    logger.error(
+    throw new CommandError(
       `Invalid base color ${highlighter.info(
         baseColor
       )}. Expected one of: ${BASE_COLORS.map((item) => item.name).join(", ")}.`
     )
-    process.exit(1)
   }
 
   let distribution = options.distribution
@@ -289,13 +287,11 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
   distribution = distribution ?? "copy"
 
   if (distribution !== "copy" && distribution !== "import") {
-    logger.break()
-    logger.error(
+    throw new CommandError(
       `Invalid distribution ${highlighter.info(
         distribution
       )}. Expected one of: copy, import.`
     )
-    process.exit(1)
   }
 
   // Visual style is a real dimension for BOTH distributions: "copy" uses it
@@ -318,13 +314,11 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
   visualStyle = visualStyle ?? DEFAULT_VISUAL_STYLE
 
   if (!VISUAL_STYLES.some((item) => item.name === visualStyle)) {
-    logger.break()
-    logger.error(
+    throw new CommandError(
       `Invalid visual style ${highlighter.info(
         visualStyle
       )}. Expected one of: ${VISUAL_STYLES.map((item) => item.name).join(", ")}.`
     )
-    process.exit(1)
   }
 
   const componentsAlias = detected?.aliases?.components ?? DEFAULT_COMPONENTS

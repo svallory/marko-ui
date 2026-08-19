@@ -191,24 +191,29 @@ const registryItemWithSourceSchema = registryItemCommonSchema
   })
   .passthrough()
 
-// Resolves a list of registry items with all their dependencies and returns
-// a complete installation bundle with merged configuration.
-export async function resolveRegistryTree(
-  names: z.infer<typeof registryItemSchema>["name"][],
+type RegistryItemWithSource = z.infer<typeof registryItemWithSourceSchema>
+
+/**
+ * Fetches the explicitly requested items and, for each, recursively resolves
+ * its `registryDependencies`.
+ *
+ * Returns the requested items (source-tagged, in first-seen order) plus the
+ * flattened dependency items and the bare registry NAMES that still need
+ * index resolution — the split the caller feeds to
+ * `resolveIndexDependencyItems`.
+ */
+async function resolveRequestedItems(
+  uniqueNames: string[],
   config: Config,
-  options: RegistryFetchOptions = {}
-) {
-  options = {
-    useCache: true,
-    ...options,
-    sourceCache: options.sourceCache ?? new Map(),
-  }
-
-  let payload: z.infer<typeof registryItemWithSourceSchema>[] = []
-  let allDependencyItems: z.infer<typeof registryItemWithSourceSchema>[] = []
-  let allDependencyRegistryNames: string[] = []
-
-  const uniqueNames = Array.from(new Set(names))
+  options: RegistryFetchOptions
+): Promise<{
+  items: RegistryItemWithSource[]
+  dependencyItems: RegistryItemWithSource[]
+  dependencyRegistryNames: string[]
+}> {
+  const items: RegistryItemWithSource[] = []
+  const dependencyItems: RegistryItemWithSource[] = []
+  const dependencyRegistryNames: string[] = []
 
   const results = await fetchRegistryItems(uniqueNames, config, options)
 
@@ -221,109 +226,254 @@ export async function resolveRegistryTree(
 
   for (const [sourceName, item] of Array.from(resultMap.entries())) {
     // Add source tracking
-    const itemWithSource: z.infer<typeof registryItemWithSourceSchema> = {
-      ...item,
-      _source: sourceName,
-    }
-    payload.push(itemWithSource)
+    items.push({ ...item, _source: sourceName })
 
     if (item.registryDependencies) {
-      // Resolve namespace syntax and set headers for dependencies
-      let resolvedDependencies = item.registryDependencies
+      const resolvedDependencies = resolveDependencyAddresses(
+        item.registryDependencies,
+        config
+      )
 
-      // Check for namespaced dependencies when no registries are configured
-      if (!config?.registries) {
-        const namespacedDeps = item.registryDependencies.filter((dep: string) =>
-          dep.startsWith("@")
-        )
-        if (namespacedDeps.length > 0) {
-          const { registry } = parseRegistryAndItemFromString(namespacedDeps[0])
-          throw new RegistryNotConfiguredError(registry)
-        }
-      } else {
-        resolvedDependencies = resolveRegistryItemsFromRegistries(
-          item.registryDependencies,
-          config
-        )
-      }
-
-      const { items, registryNames } = await resolveDependenciesRecursively(
+      const nested = await resolveDependenciesRecursively(
         resolvedDependencies,
         config,
         options,
         new Set(uniqueNames)
       )
-      allDependencyItems.push(...items)
-      allDependencyRegistryNames.push(...registryNames)
+      dependencyItems.push(...nested.items)
+      dependencyRegistryNames.push(...nested.registryNames)
     }
   }
 
-  payload.push(...allDependencyItems)
+  return { items, dependencyItems, dependencyRegistryNames }
+}
+
+/**
+ * Maps an item's `registryDependencies` through the configured registries so
+ * namespaced entries (`@acme/button`) become fetchable URLs with headers set.
+ *
+ * With no registries configured at all, a namespaced dependency is
+ * unresolvable — that is a hard error naming the first offending registry,
+ * not a silent skip.
+ */
+function resolveDependencyAddresses(
+  registryDependencies: string[],
+  config: Config
+): string[] {
+  if (!config?.registries) {
+    const namespacedDeps = registryDependencies.filter((dep: string) =>
+      dep.startsWith("@")
+    )
+    if (namespacedDeps.length > 0) {
+      const { registry } = parseRegistryAndItemFromString(namespacedDeps[0])
+      throw new RegistryNotConfiguredError(registry)
+    }
+    return registryDependencies
+  }
+
+  return resolveRegistryItemsFromRegistries(registryDependencies, config)
+}
+
+/**
+ * Resolves the bare dependency NAMES left over from the recursive walk —
+ * the ones that were never fetched because they need index resolution.
+ *
+ * Namespaced leftovers are fetched directly (source-tagged). Non-namespaced
+ * ones go through the shadcn index: each name expands to its own transitive
+ * dependency URLs, which are deduplicated and fetched in one batch.
+ *
+ * Returns null to signal "registry index unreachable AND nothing resolved so
+ * far" — the caller's abort condition. Note this is evaluated against the
+ * payload as it stands when the index lookup happens, which is why the
+ * caller passes `payloadSoFar` rather than a count captured earlier.
+ */
+async function resolveIndexDependencyItems(
+  dependencyRegistryNames: string[],
+  payloadSoFar: RegistryItemWithSource[],
+  config: Config,
+  options: RegistryFetchOptions
+): Promise<RegistryItemWithSource[] | null> {
+  const collected: RegistryItemWithSource[] = []
+
+  // Remove duplicates from registry names
+  const uniqueRegistryNames = Array.from(new Set(dependencyRegistryNames))
+
+  // Separate namespaced and non-namespaced items
+  const nonNamespacedItems = uniqueRegistryNames.filter(
+    (name) => !name.startsWith("@")
+  )
+  const namespacedDepItems = uniqueRegistryNames.filter((name) =>
+    name.startsWith("@")
+  )
+
+  // Handle namespaced dependency items
+  if (namespacedDepItems.length > 0) {
+    // This will now throw specific errors on failure
+    const depResults = await fetchRegistryItems(
+      namespacedDepItems,
+      config,
+      options
+    )
+
+    for (let i = 0; i < depResults.length; i++) {
+      collected.push({
+        ...depResults[i],
+        _source: namespacedDepItems[i],
+      })
+    }
+  }
+
+  // For non-namespaced items, we need the index and style resolution
+  if (nonNamespacedItems.length > 0) {
+    const index = await getShadcnRegistryIndex()
+    if (!index && payloadSoFar.length + collected.length === 0) {
+      return null
+    }
+
+    if (index) {
+      // If we're resolving the index, we want it to go first
+      if (nonNamespacedItems.includes("index")) {
+        nonNamespacedItems.unshift("index")
+      }
+
+      // Resolve non-namespaced items through the existing flow
+      // Get URLs for all registry items including their dependencies
+      const registryUrls: string[] = []
+      for (const name of nonNamespacedItems) {
+        const itemDependencies = await resolveRegistryDependencies(
+          name,
+          config,
+          options
+        )
+        registryUrls.push(...itemDependencies)
+      }
+
+      // Deduplicate URLs
+      const uniqueUrls = Array.from(new Set(registryUrls))
+      const result = await fetchRegistry(uniqueUrls, options)
+      const registryPayload = z.array(registryItemSchema).parse(result)
+      collected.push(...registryPayload)
+    }
+  }
+
+  return collected
+}
+
+/**
+ * Orders the payload for installation: dependencies before dependents
+ * (topological), then `registry:theme` items hoisted to the front so theme
+ * CSS variables are written before anything that builds on them.
+ *
+ * Both passes are stability-sensitive — the theme hoist is a comparator that
+ * returns 0 for every same-class pair, so it preserves the topological order
+ * within each class.
+ */
+function orderRegistryPayload(
+  payload: RegistryItemWithSource[]
+): RegistryItemWithSource[] {
+  // Build source map for topological sort.
+  const sourceMap = new Map<RegistryItemWithSource, string>()
+  payload.forEach((item) => {
+    // Use the _source property if it was added, otherwise use the name.
+    sourceMap.set(item, item._source || item.name)
+  })
+
+  // Apply topological sort to ensure dependencies come before dependents.
+  const sorted = topologicalSortRegistryItems(payload, sourceMap)
+
+  // Sort the payload so that registry:theme items come first,
+  // while maintaining the relative order of all items.
+  sorted.sort((a, b) => {
+    if (a.type === "registry:theme" && b.type !== "registry:theme") {
+      return -1
+    }
+    if (a.type !== "registry:theme" && b.type === "registry:theme") {
+      return 1
+    }
+    return 0
+  })
+
+  return sorted
+}
+
+/**
+ * Deep-merges the per-item config fields into the single set every consumer
+ * of the resolved tree reads. `docs` concatenates (newline-terminated per
+ * item) rather than merging; the rest are deepmerge in payload order, so
+ * later items win on conflict.
+ */
+function mergeRegistryItemFields(payload: RegistryItemWithSource[]) {
+  let tailwind = {}
+  let cssVars = {}
+  let css = {}
+  let docs = ""
+  let envVars = {}
+
+  payload.forEach((item) => {
+    tailwind = deepmerge(tailwind, item.tailwind ?? {})
+    cssVars = deepmerge(cssVars, item.cssVars ?? {})
+    css = deepmerge(css, item.css ?? {})
+    if (item.docs) {
+      docs += `${item.docs}\n`
+    }
+    envVars = deepmerge(envVars, item.envVars ?? {})
+  })
+
+  return { tailwind, cssVars, css, docs, envVars }
+}
+
+// Collect font items.
+function collectFontItems(
+  payload: RegistryItemWithSource[]
+): RegistryFontItem[] {
+  return payload
+    .filter((item) => item.type === "registry:font" && item.font)
+    .map((item) => ({
+      ...item,
+      type: "registry:font" as const,
+      font: item.font!,
+    }))
+}
+
+// Resolves a list of registry items with all their dependencies and returns
+// a complete installation bundle with merged configuration.
+//
+// The pipeline, in order: fetch the requested items and walk their
+// dependencies (resolveRequestedItems) → resolve the leftover bare names
+// through the index (resolveIndexDependencyItems) → validate the universal
+// constraint → order for installation (orderRegistryPayload) → merge the
+// per-item config fields (mergeRegistryItemFields) → deduplicate files and
+// collect fonts → parse into the resolved-tree schema.
+export async function resolveRegistryTree(
+  names: z.infer<typeof registryItemSchema>["name"][],
+  config: Config,
+  options: RegistryFetchOptions = {}
+) {
+  options = {
+    useCache: true,
+    ...options,
+    sourceCache: options.sourceCache ?? new Map(),
+  }
+
+  const uniqueNames = Array.from(new Set(names))
+
+  const { items, dependencyItems, dependencyRegistryNames } =
+    await resolveRequestedItems(uniqueNames, config, options)
+
+  let payload: RegistryItemWithSource[] = [...items, ...dependencyItems]
 
   // Handle any remaining registry names that need index resolution
-  if (allDependencyRegistryNames.length > 0) {
-    // Remove duplicates from registry names
-    const uniqueRegistryNames = Array.from(new Set(allDependencyRegistryNames))
-
-    // Separate namespaced and non-namespaced items
-    const nonNamespacedItems = uniqueRegistryNames.filter(
-      (name) => !name.startsWith("@")
+  if (dependencyRegistryNames.length > 0) {
+    const indexItems = await resolveIndexDependencyItems(
+      dependencyRegistryNames,
+      payload,
+      config,
+      options
     )
-    const namespacedDepItems = uniqueRegistryNames.filter((name) =>
-      name.startsWith("@")
-    )
-
-    // Handle namespaced dependency items
-    if (namespacedDepItems.length > 0) {
-      // This will now throw specific errors on failure
-      const depResults = await fetchRegistryItems(
-        namespacedDepItems,
-        config,
-        options
-      )
-
-      for (let i = 0; i < depResults.length; i++) {
-        const item = depResults[i]
-        const itemWithSource: z.infer<typeof registryItemWithSourceSchema> = {
-          ...item,
-          _source: namespacedDepItems[i],
-        }
-        payload.push(itemWithSource)
-      }
+    if (indexItems === null) {
+      return null
     }
-
-    // For non-namespaced items, we need the index and style resolution
-    if (nonNamespacedItems.length > 0) {
-      const index = await getShadcnRegistryIndex()
-      if (!index && payload.length === 0) {
-        return null
-      }
-
-      if (index) {
-        // If we're resolving the index, we want it to go first
-        if (nonNamespacedItems.includes("index")) {
-          nonNamespacedItems.unshift("index")
-        }
-
-        // Resolve non-namespaced items through the existing flow
-        // Get URLs for all registry items including their dependencies
-        const registryUrls: string[] = []
-        for (const name of nonNamespacedItems) {
-          const itemDependencies = await resolveRegistryDependencies(
-            name,
-            config,
-            options
-          )
-          registryUrls.push(...itemDependencies)
-        }
-
-        // Deduplicate URLs
-        const uniqueUrls = Array.from(new Set(registryUrls))
-        let result = await fetchRegistry(uniqueUrls, options)
-        const registryPayload = z.array(registryItemSchema).parse(result)
-        payload.push(...registryPayload)
-      }
-    }
+    payload.push(...indexItems)
   }
 
   if (!payload.length) {
@@ -340,59 +490,10 @@ export async function resolveRegistryTree(
   }
 
   // No deduplication - we want to support multiple items with the same name from different sources
+  payload = orderRegistryPayload(payload)
 
-  // Build source map for topological sort.
-  const sourceMap = new Map<
-    z.infer<typeof registryItemWithSourceSchema>,
-    string
-  >()
-  payload.forEach((item) => {
-    // Use the _source property if it was added, otherwise use the name.
-    const source = item._source || item.name
-    sourceMap.set(item, source)
-  })
-
-  // Apply topological sort to ensure dependencies come before dependents.
-  payload = topologicalSortRegistryItems(payload, sourceMap)
-
-  // Sort the payload so that registry:theme items come first,
-  // while maintaining the relative order of all items.
-  payload.sort((a, b) => {
-    if (a.type === "registry:theme" && b.type !== "registry:theme") {
-      return -1
-    }
-    if (a.type !== "registry:theme" && b.type === "registry:theme") {
-      return 1
-    }
-    return 0
-  })
-
-  let tailwind = {}
-  payload.forEach((item) => {
-    tailwind = deepmerge(tailwind, item.tailwind ?? {})
-  })
-
-  let cssVars = {}
-  payload.forEach((item) => {
-    cssVars = deepmerge(cssVars, item.cssVars ?? {})
-  })
-
-  let css = {}
-  payload.forEach((item) => {
-    css = deepmerge(css, item.css ?? {})
-  })
-
-  let docs = ""
-  payload.forEach((item) => {
-    if (item.docs) {
-      docs += `${item.docs}\n`
-    }
-  })
-
-  let envVars = {}
-  payload.forEach((item) => {
-    envVars = deepmerge(envVars, item.envVars ?? {})
-  })
+  const { tailwind, cssVars, css, docs, envVars } =
+    mergeRegistryItemFields(payload)
 
   // Deduplicate files based on resolved target paths.
   const deduplicatedFiles = await deduplicateFilesByTarget(
@@ -400,14 +501,7 @@ export async function resolveRegistryTree(
     config
   )
 
-  // Collect font items.
-  const fonts: RegistryFontItem[] = payload
-    .filter((item) => item.type === "registry:font" && item.font)
-    .map((item) => ({
-      ...item,
-      type: "registry:font" as const,
-      font: item.font!,
-    }))
+  const fonts = collectFontItems(payload)
 
   const parsed = registryResolvedItemsTreeSchema.parse({
     dependencies: deepmerge.all(payload.map((item) => item.dependencies ?? [])),

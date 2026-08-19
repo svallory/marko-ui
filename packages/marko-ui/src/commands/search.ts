@@ -13,7 +13,11 @@ import { validateRegistryConfigForItems } from "@/src/registry/validator"
 import { rawConfigSchema } from "@/src/schema"
 import { loadEnvFiles } from "@/src/utils/env-loader"
 import { createConfig, getConfig } from "@/src/utils/get-config"
-import { handleError } from "@/src/utils/handle-error"
+import {
+  CleanExit,
+  CommandError,
+  handleError,
+} from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
@@ -81,7 +85,8 @@ export const search = new Command()
           )
           logger.error(`Valid types: ${SEARCHABLE_TYPES.join(", ")}.`)
           logger.break()
-          process.exit(1)
+          // Multi-line message already printed above.
+          throw new CommandError(`Unknown search type.`, { formatted: true })
         }
       }
 
@@ -141,7 +146,9 @@ export const search = new Command()
           )} with no arguments to search all of them.`
         )
         logger.break()
-        process.exit(1)
+        throw new CommandError("A registry or namespace is required.", {
+          formatted: true,
+        })
       }
 
       // Only namespace registries that are not already configured need to be
@@ -186,7 +193,9 @@ export const search = new Command()
           )}.`
         )
         logger.break()
-        process.exit(1)
+        throw new CommandError("No registries are configured.", {
+          formatted: true,
+        })
       }
 
       // For explicitly requested registries we validate up front so the user
@@ -225,7 +234,9 @@ export const search = new Command()
         })
       }
 
-      process.exit(allRegistriesFailed ? 1 : 0)
+      // Results (or the JSON envelope) are already printed; the exit code
+      // just reports whether every registry failed.
+      throw new CleanExit(allRegistriesFailed ? 1 : 0)
     } catch (error) {
       handleError(error)
     } finally {

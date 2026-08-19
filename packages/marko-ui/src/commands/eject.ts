@@ -5,7 +5,11 @@ import { clearRegistryContext } from "@/src/registry/context"
 import { confirm } from "@/src/utils/clack"
 import { addComponents } from "@/src/utils/add-components"
 import { getConfig } from "@/src/utils/get-config"
-import { handleError } from "@/src/utils/handle-error"
+import {
+  CleanExit,
+  CommandError,
+  handleError,
+} from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { spinner } from "@/src/utils/spinner"
@@ -57,16 +61,15 @@ export const eject = new Command()
 
       const config = await getConfig(options.cwd)
       if (!config) {
-        logger.error(
+        throw new CommandError(
           `No ${highlighter.info(
             "components.json"
           )} found. Run ${highlighter.info("marko-ui init")} first.`
         )
-        process.exit(1)
       }
 
       if (config.distribution !== "import") {
-        logger.error(
+        throw new CommandError(
           `This project is already on the ${highlighter.info(
             "copy"
           )} distribution (or predates the ${highlighter.info(
@@ -79,17 +82,15 @@ export const eject = new Command()
             "copy"
           )}.`
         )
-        process.exit(1)
       }
 
       const installedComponents = await findImportedComponents(options.cwd)
       if (!installedComponents.length) {
-        logger.error(
+        throw new CommandError(
           `No installed components found under ${highlighter.info(
             "node_modules/@marko-ui/shadcn/ui"
           )}. Is ${highlighter.info("@marko-ui/shadcn")} installed?`
         )
-        process.exit(1)
       }
 
       if (!options.yes) {
@@ -101,7 +102,8 @@ export const eject = new Command()
           )}? This fetches and writes local source for each, overwriting any existing files with the same names.`
         )
         if (!proceed) {
-          process.exit(0)
+          // User declined the eject — a successful no-op.
+          throw new CleanExit(0)
         }
       }
 
@@ -173,12 +175,18 @@ export const eject = new Command()
  * targets (skips anything unexpected there).
  */
 export async function findImportedComponents(cwd: string): Promise<string[]> {
-  const coreUiDir = path.join(cwd, "node_modules", "@marko-ui", "core", "ui")
-  if (!existsSync(coreUiDir)) {
+  const shadcnUiDirectory = path.join(
+    cwd,
+    "node_modules",
+    "@marko-ui",
+    "shadcn",
+    "ui"
+  )
+  if (!existsSync(shadcnUiDirectory)) {
     return []
   }
 
-  const entries = await fs.readdir(coreUiDir, { withFileTypes: true })
+  const entries = await fs.readdir(shadcnUiDirectory, { withFileTypes: true })
   const names = entries.filter((e) => e.isDirectory()).map((e) => e.name)
 
   const registryIndex = await getShadcnRegistryIndex().catch(() => null)
@@ -203,6 +211,12 @@ export async function setDistribution(
   }
   const raw = JSON.parse(await fs.readFile(componentsJsonPath, "utf8"))
   raw.distribution = distribution
+  // Deliberately a raw single-field rewrite, NOT writeComponentsJson: this
+  // flips one field on whatever is already on disk, which may be a partial
+  // components.json. Validating the whole file here would reject configs the
+  // rest of the CLI accepts, and would rewrite unrelated fields by
+  // materializing schema defaults. `distribution` itself is a closed enum
+  // fixed by this function's signature, so there is nothing to validate.
   await fs.writeFile(
     componentsJsonPath,
     JSON.stringify(raw, null, 2) + "\n",

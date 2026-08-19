@@ -14,7 +14,82 @@ export const NETWORK_ERROR_CODES: readonly string[] = [
   RegistryErrorCode.FETCH_ERROR,
 ]
 
+/**
+ * A failure whose message is already written for the user and whose exit
+ * code is part of the CLI's documented contract (see the table above).
+ *
+ * Command handlers used to `logger.error(...)` and then call
+ * `process.exit(n)` inline, bypassing handleError entirely. Throwing this
+ * instead routes every failure through the single `catch (error) →
+ * handleError(error)` site each command already has, so the exit-code table
+ * above is applied in exactly one place and the message formatting
+ * (`formatted`, the CleanExit/CommandError split) cannot drift per command.
+ *
+ * What this does NOT change: `finally` blocks still do not run. `handleError`
+ * calls `process.exit()` from inside the `catch`, and `process.exit()`
+ * terminates immediately — a pending `finally` in the same try statement is
+ * skipped just as it was with an inline exit. Command `finally` blocks here
+ * only call `clearRegistryContext()`, which is in-process state teardown that
+ * does not need to run when the process is about to die; nothing flushed to
+ * disk or to a socket depends on it. Do not add cleanup that must run on exit
+ * to those `finally` blocks — it will not run. Use an explicit
+ * `process.on("exit")` handler or do the cleanup before throwing.
+ *
+ * `handleError` prints the message verbatim — no "Something went wrong"
+ * preamble — because the caller already phrased it for the user. Pass
+ * `formatted: true` when the message was already printed by the caller
+ * (multi-line, highlighter-formatted output) so nothing is printed twice.
+ */
+export class CommandError extends Error {
+  exitCode: number
+  formatted: boolean
+
+  constructor(
+    message: string,
+    options: { exitCode?: number; formatted?: boolean } = {}
+  ) {
+    super(message)
+    this.name = "CommandError"
+    this.exitCode = options.exitCode ?? 1
+    this.formatted = options.formatted ?? false
+  }
+}
+
+/**
+ * A deliberate, successful early return from a command — the user declined
+ * a confirmation prompt, there was nothing to do, or the command finished
+ * after printing JSON. Not a failure: nothing is printed and the process
+ * exits with `exitCode` (0 unless stated otherwise).
+ *
+ * Same motivation as CommandError: thrown rather than exited inline so every
+ * exit goes through the one `catch → handleError` site. It does NOT make the
+ * command's `finally` cleanup run — handleError calls process.exit() from the
+ * catch, which skips any pending finally. See CommandError above.
+ */
+export class CleanExit extends Error {
+  exitCode: number
+
+  constructor(exitCode = 0) {
+    super(`Clean exit (${exitCode}).`)
+    this.name = "CleanExit"
+    this.exitCode = exitCode
+  }
+}
+
 export function handleError(error: unknown) {
+  if (error instanceof CleanExit) {
+    process.exit(error.exitCode)
+  }
+
+  if (error instanceof CommandError) {
+    if (!error.formatted) {
+      logger.break()
+      logger.error(error.message)
+      logger.break()
+    }
+    process.exit(error.exitCode)
+  }
+
   logger.break()
   logger.error(
     `Something went wrong. Please check the error below for more details.`

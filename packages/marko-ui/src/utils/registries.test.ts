@@ -114,7 +114,7 @@ describe("ensureRegistriesInConfig", () => {
     expect(fs.writeFile).toHaveBeenCalledWith(
       expect.stringContaining("components.json"),
       expect.any(String),
-      "utf-8"
+      "utf8"
     )
   })
 

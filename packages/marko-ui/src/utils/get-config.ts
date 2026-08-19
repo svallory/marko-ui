@@ -3,12 +3,15 @@ import { BUILTIN_REGISTRIES, DEFAULT_VISUAL_STYLE } from "@/src/registry/constan
 import {
   configSchema,
   rawConfigSchema,
+  registryConfigSchema,
   workspaceConfigSchema,
 } from "@/src/schema"
 import { getProjectInfo } from "@/src/utils/get-project-info"
 import { highlighter } from "@/src/utils/highlighter"
+import { logger } from "@/src/utils/logger"
 import { resolveImportWithMetadata } from "@/src/utils/resolve-import"
 import { cosmiconfig } from "cosmiconfig"
+import fsExtra from "fs-extra"
 import fg from "fast-glob"
 import { loadConfig, type ConfigLoaderSuccessResult } from "tsconfig-paths"
 import { z } from "zod"
@@ -236,6 +239,125 @@ export async function getRawConfig(
       `Invalid configuration found in ${highlighter.info(componentPath)}.`
     )
   }
+}
+
+/**
+ * Shared validation for anything about to be written as a components.json.
+ *
+ * Writers used to hand-roll `fs.writeJson`/`fs.writeFile` on an object
+ * spread from whatever was on disk, so a malformed result was only
+ * discovered on the NEXT read — surfacing as "Invalid configuration found in
+ * components.json" from getRawConfig, far from the command that caused it.
+ * Validating at write time names the offending command instead.
+ *
+ * Two entry points rather than one, because there are genuinely two cases:
+ *
+ * - `writeComponentsJson` — a COMPLETE config (init, eject). Validated
+ *   against the full `rawConfigSchema`, which is `.strict()`.
+ * - `writeConfigRegistries` — a registries-only update applied to a config
+ *   that may be PARTIAL (`marko-ui registry add`, `ensureRegistriesInConfig`).
+ *   Both are documented to work on partial components.json files and on
+ *   package.json, so full-schema validation would reject supported input and
+ *   would rewrite unrelated fields by materializing schema defaults. Only
+ *   the field these writers actually touch is validated.
+ *
+ * Both enforce the built-in-registry rule that getRawConfig enforces on read.
+ */
+function assertNoBuiltinRegistryOverride(
+  configPath: string,
+  registries: Record<string, unknown> | undefined
+) {
+  if (!registries) {
+    return
+  }
+  for (const registryName of Object.keys(registries)) {
+    if (registryName in BUILTIN_REGISTRIES) {
+      throw new Error(
+        `Refusing to write ${highlighter.info(
+          configPath
+        )}: "${registryName}" is a built-in registry and cannot be overridden.`
+      )
+    }
+  }
+}
+
+/**
+ * Writes a COMPLETE components.json, validated against `rawConfigSchema`.
+ * The written JSON is the PARSED object, so schema defaults are materialized
+ * exactly the way a fresh `init` writes them.
+ */
+export async function writeComponentsJson(
+  configPath: string,
+  config: unknown
+): Promise<z.infer<typeof rawConfigSchema>> {
+  let parsed: z.infer<typeof rawConfigSchema>
+  try {
+    parsed = rawConfigSchema.parse(config)
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      // Let handleError's ZodError branch render the field errors; just say
+      // which file the CLI refused to corrupt.
+      logger.error(
+        `Refusing to write an invalid ${highlighter.info(configPath)}.`
+      )
+    }
+    throw error
+  }
+
+  assertNoBuiltinRegistryOverride(configPath, parsed.registries)
+
+  await fsExtra.writeFile(
+    configPath,
+    JSON.stringify(parsed, null, 2) + "\n",
+    "utf8"
+  )
+
+  return parsed
+}
+
+/**
+ * Writes a config whose `registries` field was just updated, WITHOUT
+ * requiring the rest of the file to be a complete components.json.
+ *
+ * Validates the registries map against the same schema `rawConfigSchema`
+ * uses for it, so a malformed entry (a non-string, a URL missing `{name}`,
+ * a shape the reader would reject) fails here instead of on the next read.
+ * Every other field is written through untouched.
+ *
+ * `spaces` matches whatever the caller was already emitting so this change
+ * does not reformat users' files.
+ */
+export async function writeConfigRegistries(
+  configPath: string,
+  config: Record<string, unknown>,
+  options: { newline?: boolean } = {}
+): Promise<void> {
+  if (config.registries !== undefined) {
+    try {
+      registryConfigSchema.parse(config.registries)
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        logger.error(
+          `Refusing to write invalid registries to ${highlighter.info(
+            configPath
+          )}.`
+        )
+      }
+      throw error
+    }
+  }
+
+  assertNoBuiltinRegistryOverride(
+    configPath,
+    config.registries as Record<string, unknown> | undefined
+  )
+
+  const json = JSON.stringify(config, null, 2)
+  await fsExtra.writeFile(
+    configPath,
+    options.newline === false ? json : json + "\n",
+    "utf8"
+  )
 }
 
 // Note: we can check for -workspace.yaml or "workspace" in package.json.

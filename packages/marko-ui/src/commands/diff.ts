@@ -9,7 +9,11 @@ import {
   isMonorepoRoot,
 } from "@/src/utils/get-monorepo-info"
 import { getProjectComponents } from "@/src/utils/get-project-info"
-import { handleError } from "@/src/utils/handle-error"
+import {
+  CleanExit,
+  CommandError,
+  handleError,
+} from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { spinner } from "@/src/utils/spinner"
@@ -49,10 +53,9 @@ export const diff = new Command()
       })
 
       if (!existsSync(options.cwd)) {
-        logger.error(
+        throw new CommandError(
           `The path ${options.cwd} does not exist. Please try again.`
         )
-        process.exit(1)
       }
 
       const config = await getConfig(options.cwd)
@@ -61,16 +64,17 @@ export const diff = new Command()
           const targets = await getMonorepoTargets(options.cwd)
           if (targets.length > 0) {
             formatMonorepoMessage("diff [component]", targets)
-            process.exit(1)
+            throw new CommandError("Run diff from a workspace, not the monorepo root.", {
+              formatted: true,
+            })
           }
         }
 
-        logger.warn(
+        throw new CommandError(
           `Configuration is missing. Please run ${highlighter.success(
             `init`
           )} to create a components.json file.`
         )
-        process.exit(1)
       }
 
       let targets = options.components ?? []
@@ -78,7 +82,8 @@ export const diff = new Command()
         targets = await getProjectComponents(options.cwd)
         if (!targets.length) {
           logger.info("No installed components found.")
-          process.exit(0)
+          // Nothing to diff is a success, not a failure.
+          throw new CleanExit(0)
         }
       }
 
@@ -94,7 +99,7 @@ export const diff = new Command()
 
       if (!changed.length) {
         logger.info("No updates found.")
-        process.exit(0)
+        throw new CleanExit(0)
       }
 
       for (const file of changed) {

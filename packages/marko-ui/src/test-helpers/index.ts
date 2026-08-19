@@ -4,7 +4,7 @@ import fs from "fs-extra"
 
 // Absolute path into test/fixtures, stable no matter where the calling
 // test file lives. getFixturesDir("config-full") or
-// getFixturesDir("frameworks", "next-app").
+// getFixturesDir("frameworks", "next-app-imports").
 export function getFixturesDir(...segments: string[]) {
   return path.resolve(__dirname, "../../test/fixtures", ...segments)
 }

@@ -12,7 +12,7 @@ import {
   getProjectInfo,
   type ProjectInfo,
 } from "@/src/utils/get-project-info"
-import { handleError } from "@/src/utils/handle-error"
+import { CommandError, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { Command } from "commander"
@@ -54,7 +54,12 @@ export const info = new Command()
           } else {
             formatMonorepoMessage("info", targets)
           }
-          process.exit(1)
+          // Both branches already printed a tailored message (JSON or
+          // human) — don't let handleError print a second one.
+          throw new CommandError(
+            "Run status from a workspace, not the monorepo root.",
+            { formatted: true }
+          )
         }
       }
 
@@ -101,7 +106,6 @@ export async function collectInfo(
           frameworkName: projectInfo.framework.name,
           frameworkVersion: projectInfo.frameworkVersion ?? null,
           srcDirectory: projectInfo.isSrcDir,
-          rsc: projectInfo.isRSC,
           typescript: projectInfo.isTsx,
           tailwindVersion: projectInfo.tailwindVersion ?? null,
           tailwindConfig: projectInfo.tailwindConfigFile ?? null,
@@ -151,7 +155,6 @@ export function printInfo(data: Awaited<ReturnType<typeof collectInfo>>) {
       framework: `${data.project.framework} (${data.project.frameworkName})`,
       frameworkVersion: data.project.frameworkVersion ?? "-",
       srcDirectory: data.project.srcDirectory ? "Yes" : "No",
-      rsc: data.project.rsc ? "Yes" : "No",
       typescript: data.project.typescript ? "Yes" : "No",
       tailwindVersion: data.project.tailwindVersion ?? "-",
       tailwindConfig: data.project.tailwindConfig ?? "-",

@@ -6,7 +6,7 @@ import { validateRegistryConfigForItems } from "@/src/registry/validator"
 import { rawConfigSchema } from "@/src/schema"
 import { loadEnvFiles } from "@/src/utils/env-loader"
 import { getConfig } from "@/src/utils/get-config"
-import { handleError } from "@/src/utils/handle-error"
+import { CleanExit, handleError } from "@/src/utils/handle-error"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
 import { Command } from "commander"
 import fsExtra from "fs-extra"
@@ -87,7 +87,7 @@ export const view = new Command()
             2
           )
         )
-        process.exit(0)
+        throw new CleanExit(0)
       }
 
       if (options.deps) {
@@ -103,11 +103,11 @@ export const view = new Command()
             2
           )
         )
-        process.exit(0)
+        throw new CleanExit(0)
       }
 
       console.log(JSON.stringify(payload, null, 2))
-      process.exit(0)
+      throw new CleanExit(0)
     } catch (error) {
       handleError(error)
     } finally {
