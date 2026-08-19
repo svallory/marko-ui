@@ -30,9 +30,11 @@
 import { readdir, readFile, writeFile, mkdir, rm } from "node:fs/promises";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, relative, basename } from "node:path";
+import { VISUAL_STYLES as VISUAL_STYLE_DEFINITIONS } from "../packages/marko-ui/src/registry/constants";
 import { createStyleMap, type StyleMap } from "./style-map";
 import { transformMarkoSource } from "./transform-marko";
 import { transformVariantsSource } from "./transform-variants";
+import type { RegistryItem } from "@/src/registry/schema";
 
 const ROOT = new URL("../packages/shadcn/", import.meta.url).pathname;
 const UI_DIR = join(ROOT, "ui");
@@ -41,10 +43,16 @@ const STYLES_DIR = join(ROOT, "styles");
 const BLOCKS_DIR = join(ROOT, "blocks");
 const OUT_DIR = join(ROOT, "../../apps/docs/public/r");
 
-// The 8 shadcn-derived visual styles (packages/marko-ui/src/registry/constants.ts
-// VISUAL_STYLES). Hardcoded here too — registry and marko-ui (the CLI) are
-// separate packages and neither depends on the other.
-const VISUAL_STYLES = ["rhea", "nova", "vega", "lyra", "maia", "mira", "luma", "sera"];
+// The 8 shadcn-derived visual styles. SINGLE SOURCE OF TRUTH:
+// packages/marko-ui/src/registry/constants.ts. This list used to be
+// hardcoded here as well ("registry and marko-ui are separate packages"),
+// which meant a new style had to be added in two places or the registry
+// would silently stop emitting it. tooling/ is neither package — it is
+// repo-local build scripting run via `bun tooling/<script>.ts`, so it may
+// reach into either workspace by relative path without creating a package
+// dependency. (tooling/tsconfig.json maps the `@/*` alias that constants.ts
+// uses internally so `tsc -p tooling` resolves it too.)
+const VISUAL_STYLES = VISUAL_STYLE_DEFINITIONS.map((style) => style.name);
 
 const ITEM_SCHEMA = "https://ui.shadcn.com/schema/registry-item.json";
 const REGISTRY_SCHEMA = "https://ui.shadcn.com/schema/registry.json";
@@ -81,6 +89,59 @@ interface CssVars {
   theme?: Record<string, string>;
   light?: Record<string, string>;
   dark?: Record<string, string>;
+}
+
+// Every file this script emits ships as `registry:file` with an explicit
+// `target` (see the header comment) — the narrow variant of the registry's own
+// file schema. Reusing `RegistryItem["files"]` as the source of truth keeps the
+// emitted shape pinned to what packages/marko-ui/src/registry/schema.ts parses.
+// The general (non-base, non-font) member of the registry's item union — the
+// only one this script emits. `Exclude` on the discriminant narrows the union
+// down to it without re-declaring any of its fields.
+type RegistryItemCommon = Exclude<
+  RegistryItem,
+  { type: "registry:base" } | { type: "registry:font" }
+>;
+
+type RegistryItemFile = NonNullable<RegistryItem["files"]>[number];
+type EmittedFile = Omit<RegistryItemFile, "type" | "target" | "content"> & {
+  type: "registry:file";
+  target: string;
+  content: string;
+};
+
+// The item objects this script writes to `<name>.json`. A subset of the
+// registry's own `RegistryItem` union: always a concrete type literal, always
+// with `files` present and every file carrying `content`.
+type EmittedItem = Omit<RegistryItemCommon, "files"> & {
+  type: Exclude<RegistryItem["type"], "registry:base" | "registry:font">;
+  files: EmittedFile[];
+};
+
+// One entry of registry.json / index.json: the emitted item minus every file's
+// `content`. The CLI's picker, `diff`, and installed-component listing read
+// this shape.
+type IndexEntry = Pick<
+  EmittedItem,
+  | "name"
+  | "type"
+  | "title"
+  | "description"
+  | "categories"
+  | "dependencies"
+  | "registryDependencies"
+> & {
+  files: Omit<EmittedFile, "content">[];
+};
+
+// What each emit step contributes: the items to write, plus (for per-style
+// variants) the output path override and whether the item belongs in the index.
+interface Emission {
+  item: EmittedItem;
+  /** Output path relative to OUT_DIR, without `.json`. Defaults to item.name. */
+  outName?: string;
+  /** Whether this item appears in registry.json / index.json. Defaults to true. */
+  indexed?: boolean;
 }
 
 // Parses top-level custom-property declarations (`--name: value;`) out of a
@@ -166,66 +227,23 @@ function rewriteSubpathImports(content: string, targetBase: string): string {
   });
 }
 
-async function fileEntries(dir: string, targetBase: string, registryBase: string) {
-  const entries = await readdir(dir, { withFileTypes: true });
-  const subdirs = entries.filter((e) => e.isDirectory());
-  const disallowedSubdir = subdirs.find((e) => e.name !== "lib");
-  if (disallowedSubdir !== undefined) {
-    throw new Error(`registry item dirs must be flat; found subdirectory ${dir}/${disallowedSubdir.name}`);
-  }
-  const names = entries
-    .filter((e) => e.isFile() && e.name !== "registry.meta.json")
-    .map((e) => e.name)
-    .sort();
-
-  const files = await Promise.all(
-    names.map(async (name) => ({
-      path: `${registryBase}/${name}`,
-      type: "registry:file" as const,
-      target: `${targetBase}/${name}`,
-      content: rewriteSubpathImports(await readFile(join(dir, name), "utf8"), targetBase),
-    })),
-  );
-
-  // Process lib/ subdirectory if it exists
-  const libDir = join(dir, "lib");
-  for (const subdir of subdirs) {
-    if (subdir.name === "lib") {
-      const libFiles = (await readdir(libDir, { withFileTypes: true }))
-        .filter((e) => e.isFile())
-        .sort((a, b) => a.name.localeCompare(b.name));
-      for (const libFile of libFiles) {
-        files.push({
-          path: `${registryBase}/lib/${libFile.name}`,
-          type: "registry:file" as const,
-          target: `${targetBase}/lib/${libFile.name}`,
-          content: rewriteSubpathImports(await readFile(join(libDir, libFile.name), "utf8"), `${targetBase}/lib`),
-        });
-      }
-    }
-  }
-
-  return files;
-}
-
-// In-memory sibling of fileEntries: same output shape, but from a
-// {relativeName -> content} map instead of a directory read. Used for the
-// per-style component variants, transformed in memory rather than materialized
-// to a styles-gen/ tree on disk. Keys may include a "lib/" prefix (some
-// components, e.g. message-scroller, carry a lib/ subdir); those target
-// ${targetBase}/lib and rewrite imports relative to it, matching fileEntries.
+// The one implementation behind both fileEntries() (disk) and
+// fileEntriesFromMap() (in-memory per-style transforms): given a
+// {relativeName -> content} map, emit the registry `files` array. Keys may
+// carry a "lib/" prefix (some components, e.g. message-scroller, have a lib/
+// subdir); those target ${targetBase}/lib and rewrite their imports relative
+// to it. Ordering is flat files sorted, then lib/ files sorted — the order the
+// emitted JSON has always had, so it must not change.
 function fileEntriesFromMap(
   fileMap: Map<string, string>,
   targetBase: string,
   registryBase: string,
-) {
-  const keys = [...fileMap.keys()].filter((n) => basename(n) !== "registry.meta.json");
-  // Match fileEntries' ordering: flat files sorted, then lib/ files sorted.
-  const flat = keys.filter((n) => !n.startsWith("lib/")).sort();
-  const lib = keys.filter((n) => n.startsWith("lib/")).sort();
+): EmittedFile[] {
+  const names = [...fileMap.keys()].filter((n) => basename(n) !== "registry.meta.json");
+  const flat = names.filter((n) => !n.startsWith("lib/")).sort();
+  const lib = names.filter((n) => n.startsWith("lib/")).sort();
   return [...flat, ...lib].map((name) => {
-    const inLib = name.startsWith("lib/");
-    const base = inLib ? `${targetBase}/lib` : targetBase;
+    const base = name.startsWith("lib/") ? `${targetBase}/lib` : targetBase;
     return {
       path: `${registryBase}/${name}`,
       type: "registry:file" as const,
@@ -233,6 +251,39 @@ function fileEntriesFromMap(
       content: rewriteSubpathImports(fileMap.get(name)!, base),
     };
   });
+}
+
+// Reads one registry item directory into the {relativeName -> content} map
+// fileEntriesFromMap consumes. Only a lib/ subdirectory is allowed; anything
+// else is a flat-layout violation and fails loudly.
+async function readItemDir(dir: string): Promise<Map<string, string>> {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const disallowedSubdir = entries.find((e) => e.isDirectory() && e.name !== "lib");
+  if (disallowedSubdir !== undefined) {
+    throw new Error(`registry item dirs must be flat; found subdirectory ${dir}/${disallowedSubdir.name}`);
+  }
+
+  const fileMap = new Map<string, string>();
+  for (const entry of entries) {
+    if (entry.isFile()) fileMap.set(entry.name, await readFile(join(dir, entry.name), "utf8"));
+  }
+  if (entries.some((e) => e.isDirectory() && e.name === "lib")) {
+    const libDir = join(dir, "lib");
+    for (const libEntry of await readdir(libDir, { withFileTypes: true })) {
+      if (libEntry.isFile()) {
+        fileMap.set(`lib/${libEntry.name}`, await readFile(join(libDir, libEntry.name), "utf8"));
+      }
+    }
+  }
+  return fileMap;
+}
+
+async function fileEntries(
+  dir: string,
+  targetBase: string,
+  registryBase: string,
+): Promise<EmittedFile[]> {
+  return fileEntriesFromMap(await readItemDir(dir), targetBase, registryBase);
 }
 
 // Applies a style's StyleMap to one authored component directory in memory
@@ -269,140 +320,129 @@ async function readMeta(dir: string): Promise<Meta> {
   }
 }
 
-async function main() {
-  // Per-style items are transformed in memory from ui/ + styles/style-*.css
-  // (no styles-gen/ on disk). The fail-loud empty-output guard now lives
-  // inline in the per-style loop (asserts each style emits its full set).
-  await rm(OUT_DIR, { recursive: true, force: true });
-  await mkdir(OUT_DIR, { recursive: true });
+// Adds the npm deps a registry.meta.json forgot: any item whose source imports
+// the Zag adapter needs `marko-zag` regardless of what the meta declares.
+function resolveDependencies(meta: Meta, files: EmittedFile[]): string[] | undefined {
+  const dependencies = new Set(meta.dependencies ?? []);
+  if (files.some((file) => file.content.includes('from "marko-zag"'))) {
+    dependencies.add("marko-zag");
+  }
+  return dependencies.size ? [...dependencies].sort() : undefined;
+}
 
-  // `index` backs registry.json/index.json: the public component identity
-  // list the CLI's interactive picker, `diff`, and installed-component
-  // listing read (commands/add.ts promptForRegistryComponents filters
-  // type === "registry:ui" and uses `name` as the value passed to `add` —
-  // it must NOT see 9 "button" entries just because 8 styles exist). Style
-  // is a distribution/fetch-time concern, not a distinct component
-  // identity, so per-style writes are excluded from `index` and only landed
-  // on disk at their own `<style>/<name>.json` path.
-  const index: any[] = [];
+// --- emit steps -------------------------------------------------------------
+// Each returns the Emissions it contributes. None of them writes to disk or
+// mutates shared state; main() collects and writes.
 
-  const write = async (item: any, opts: { outName?: string; indexed?: boolean } = {}) => {
-    const { outName = item.name, indexed = true } = opts;
-    if (indexed) {
-      index.push({
-        name: item.name,
-        type: item.type,
-        title: item.title,
-        description: item.description,
-        categories: item.categories,
-        dependencies: item.dependencies,
-        registryDependencies: item.registryDependencies,
-        files: item.files.map(({ content: _, ...f }: any) => f),
-      });
-    }
-    const outPath = join(OUT_DIR, `${outName}.json`);
-    await mkdir(join(outPath, ".."), { recursive: true });
-    await writeFile(outPath, JSON.stringify(item, null, 2));
-  };
-
-  // utils
-  await write({
-    $schema: ITEM_SCHEMA,
-    name: "utils",
-    type: "registry:lib",
-    title: "Utils",
-    description: "cn() class helper (clsx + tailwind-merge).",
-    dependencies: ["clsx", "tailwind-merge"],
-    files: await fileEntries(LIB_DIR, "~/src/lib", "lib"),
-  });
-
-  // style/theme — one item per shadcn base color, each carrying its own
-  // globals-{color}.css as cssVars. "style" (no suffix) is the neutral
-  // base color, mirroring shadcn's own default (new-york + neutral).
-  // Suffixed names (style-zinc, style-slate, ...) follow shadcn's own
-  // "<name>-<variant>" convention used for blocks (e.g. dashboard-01,
-  // login-02) since shadcn has no standalone per-base-color registry item
-  // naming precedent of its own.
-  const STYLE_VARIANTS: Array<{ name: string; file: string }> = [
-    { name: "style", file: "globals.css" },
-    { name: "style-zinc", file: "globals-zinc.css" },
-    { name: "style-slate", file: "globals-slate.css" },
-    { name: "style-stone", file: "globals-stone.css" },
-    { name: "style-gray", file: "globals-gray.css" },
+// The cn() class helper, shared by every component.
+async function emitUtils(): Promise<Emission[]> {
+  return [
+    {
+      item: {
+        $schema: ITEM_SCHEMA,
+        name: "utils",
+        type: "registry:lib",
+        title: "Utils",
+        description: "cn() class helper (clsx + tailwind-merge).",
+        dependencies: ["clsx", "tailwind-merge"],
+        files: await fileEntries(LIB_DIR, "~/src/lib", "lib"),
+      },
+    },
   ];
+}
 
+// style/theme — one item per shadcn base color, each carrying its own
+// globals-{color}.css as cssVars. "style" (no suffix) is the neutral
+// base color, mirroring shadcn's own default (new-york + neutral).
+// Suffixed names (style-zinc, style-slate, ...) follow shadcn's own
+// "<name>-<variant>" convention used for blocks (e.g. dashboard-01,
+// login-02) since shadcn has no standalone per-base-color registry item
+// naming precedent of its own.
+const STYLE_VARIANTS: Array<{ name: string; file: string }> = [
+  { name: "style", file: "globals.css" },
+  { name: "style-zinc", file: "globals-zinc.css" },
+  { name: "style-slate", file: "globals-slate.css" },
+  { name: "style-stone", file: "globals-stone.css" },
+  { name: "style-gray", file: "globals-gray.css" },
+];
+
+async function emitThemeVariants(): Promise<Emission[]> {
+  const emissions: Emission[] = [];
   for (const { name, file } of STYLE_VARIANTS) {
     const css = await readFile(join(STYLES_DIR, file), "utf8");
-    await write({
-      $schema: ITEM_SCHEMA,
-      name,
-      // registry:style is the type the CLI's overwrite-cssVars logic and
-      // "this will overwrite your CSS variables" warning key on.
-      type: "registry:style",
-      title: name === "style" ? "Theme" : `Theme (${name.replace("style-", "")})`,
-      description:
-        "Tailwind v4 globals.css with shadcn-compatible CSS variables. Add `@source` directives for your .marko files.",
-      dependencies: ["tailwindcss", "tw-animate-css", "marko-zag"],
-      cssVars: parseCssVars(css),
-      // Ship only this variant's CSS, always targeted as globals.css so a
-      // consumer picking any base color gets a normal `~/src/styles/globals.css`.
-      files: [
-        {
-          path: `styles/${file}`,
-          type: "registry:file" as const,
-          target: "~/src/styles/globals.css",
-          content: css,
-        },
-      ],
+    emissions.push({
+      item: {
+        $schema: ITEM_SCHEMA,
+        name,
+        // registry:style is the type the CLI's overwrite-cssVars logic and
+        // "this will overwrite your CSS variables" warning key on.
+        type: "registry:style",
+        title: name === "style" ? "Theme" : `Theme (${name.replace("style-", "")})`,
+        description:
+          "Tailwind v4 globals.css with shadcn-compatible CSS variables. Add `@source` directives for your .marko files.",
+        dependencies: ["tailwindcss", "tw-animate-css", "marko-zag"],
+        cssVars: parseCssVars(css),
+        // Ship only this variant's CSS, always targeted as globals.css so a
+        // consumer picking any base color gets a normal `~/src/styles/globals.css`.
+        files: [
+          {
+            path: `styles/${file}`,
+            type: "registry:file" as const,
+            target: "~/src/styles/globals.css",
+            content: css,
+          },
+        ],
+      },
     });
   }
+  return emissions;
+}
 
-  // components
-  const components = (await readdir(UI_DIR, { withFileTypes: true }))
-    .filter((e) => e.isDirectory())
-    .map((e) => e.name)
-    .sort();
-
+// The style-less components: the authored `ui/*` source verbatim (mu-* hook
+// classes intact), at `/<name>.json`. This is what the `import` distribution
+// (`@marko-ui/shadcn`) and debugging want.
+async function emitComponents(components: string[]): Promise<Emission[]> {
+  const emissions: Emission[] = [];
   for (const name of components) {
     const dir = join(UI_DIR, name);
     const meta = await readMeta(dir);
     const files = await fileEntries(dir, `~/src/components/ui/${name}`, `ui/${name}`);
-    // derive npm deps the meta forgot: any file importing the adapter needs it
-    const dependencies = new Set(meta.dependencies ?? []);
-    if (files.some((f) => f.content.includes('from "marko-zag"'))) {
-      dependencies.add("marko-zag");
-    }
-    await write({
-      $schema: ITEM_SCHEMA,
-      name,
-      type: "registry:ui",
-      title: meta.title ?? name,
-      description: meta.description,
-      dependencies: dependencies.size ? [...dependencies].sort() : undefined,
-      devDependencies: meta.devDependencies,
-      registryDependencies: (meta.registryDependencies ?? ["utils"]).map((dep) => selfRef(dep, "")),
-      files,
+    emissions.push({
+      item: {
+        $schema: ITEM_SCHEMA,
+        name,
+        type: "registry:ui",
+        title: meta.title ?? name,
+        description: meta.description,
+        dependencies: resolveDependencies(meta, files),
+        devDependencies: meta.devDependencies,
+        registryDependencies: (meta.registryDependencies ?? ["utils"]).map((dep) => selfRef(dep, "")),
+        files,
+      },
     });
   }
+  return emissions;
+}
 
-  // per-style components — flat generated source transformed IN MEMORY from
-  // the authored ui/* source + each style's CSS StyleMap (no mu-* hooks in
-  // the output), emitted at /styles/<style>/<name>.json. This is what the
-  // `copy` distribution's `marko-ui add` fetches: without this loop every
-  // component arrives identical regardless of which of the 8 styles the
-  // consumer picked (notes/plans/dual-distribution-plan.md §4b-bis).
-  //
-  // registry.meta.json is read via readMeta() directly from ui/<name>/, so
-  // component set + meta are identical to `ui/*`; only the source files
-  // (variants.ts, *.marko) differ per style, via transformComponent() above.
-  // Blocks have no per-style trees, so they stay default-only. The component
-  // set is exactly ui/*, since a style only rewrites class strings, never
-  // adds/removes components.
-  const authoredComponents = (await readdir(UI_DIR, { withFileTypes: true }))
-    .filter((e) => e.isDirectory())
-    .map((e) => e.name)
-    .sort();
-
+// per-style components — flat generated source transformed IN MEMORY from
+// the authored ui/* source + each style's CSS StyleMap (no mu-* hooks in
+// the output), emitted at /styles/<style>/<name>.json. This is what the
+// `copy` distribution's `marko-ui add` fetches: without this every
+// component arrives identical regardless of which of the 8 styles the
+// consumer picked (notes/plans/dual-distribution-plan.md §4b-bis).
+//
+// registry.meta.json is read via readMeta() directly from ui/<name>/, so
+// component set + meta are identical to `ui/*`; only the source files
+// (variants.ts, *.marko) differ per style, via transformComponent() above.
+// Blocks have no per-style trees, so they stay default-only. The component
+// set is exactly ui/*, since a style only rewrites class strings, never
+// adds/removes components.
+//
+// Per-style items are excluded from the index: style is a distribution /
+// fetch-time concern, not a distinct component identity, so the CLI's picker
+// must not see 9 "button" entries just because 8 styles exist.
+async function emitPerStyleComponents(authoredComponents: string[]): Promise<Emission[]> {
+  const emissions: Emission[] = [];
   for (const style of VISUAL_STYLES) {
     const styleCss = readFileSync(join(STYLES_DIR, `style-${style}.css`), "utf8");
     const styleMap = createStyleMap(styleCss);
@@ -413,26 +453,23 @@ async function main() {
       const meta = await readMeta(dir);
       const fileMap = transformComponent(dir, styleMap);
       const files = fileEntriesFromMap(fileMap, `~/src/components/ui/${name}`, `ui/${name}`);
-      const dependencies = new Set(meta.dependencies ?? []);
-      if (files.some((f) => f.content.includes('from "marko-zag"'))) {
-        dependencies.add("marko-zag");
-      }
-      await write(
-        {
+      emissions.push({
+        item: {
           $schema: ITEM_SCHEMA,
           name,
           type: "registry:ui",
           title: meta.title ?? name,
           description: meta.description,
-          dependencies: dependencies.size ? [...dependencies].sort() : undefined,
+          dependencies: resolveDependencies(meta, files),
           devDependencies: meta.devDependencies,
           registryDependencies: (meta.registryDependencies ?? ["utils"]).map((dep) =>
             selfRef(dep, style)
           ),
           files,
         },
-        { outName: `styles/${style}/${name}`, indexed: false }
-      );
+        outName: `styles/${style}/${name}`,
+        indexed: false,
+      });
       emittedForStyle++;
     }
 
@@ -449,15 +486,19 @@ async function main() {
       );
     }
   }
+  return emissions;
+}
 
-  // blocks — whole-page compositions built from the ui items above. Unlike
-  // components (which land in ~/src/components/ui/<name>), a block's page.marko
-  // is a *route*, so it targets the consumer's routes directory the way
-  // shadcn targets `app/<name>/page.tsx`. Supporting parts sit beside it.
+// blocks — whole-page compositions built from the ui items above. Unlike
+// components (which land in ~/src/components/ui/<name>), a block's page.marko
+// is a *route*, so it targets the consumer's routes directory the way
+// shadcn targets `app/<name>/page.tsx`. Supporting parts sit beside it.
+async function emitBlocks(): Promise<Emission[]> {
   const blocks = await readdir(BLOCKS_DIR, { withFileTypes: true })
     .then((entries) => entries.filter((e) => e.isDirectory()).map((e) => e.name).sort())
     .catch(() => [] as string[]);
 
+  const emissions: Emission[] = [];
   for (const name of blocks) {
     const dir = join(BLOCKS_DIR, name);
     const meta = await readMeta(dir);
@@ -476,23 +517,77 @@ async function main() {
         ? `~/src/routes/${name}/+page.marko`
         : file.target,
     }));
-    const dependencies = new Set(meta.dependencies ?? []);
-    if (files.some((f) => f.content.includes('from "marko-zag"'))) {
-      dependencies.add("marko-zag");
-    }
-    await write({
-      $schema: ITEM_SCHEMA,
-      name,
-      type: "registry:block",
-      title: meta.title ?? name,
-      description: meta.description,
-      categories: meta.categories,
-      dependencies: dependencies.size ? [...dependencies].sort() : undefined,
-      devDependencies: meta.devDependencies,
-      registryDependencies: (meta.registryDependencies ?? ["utils"]).map((dep) => selfRef(dep, "")),
-      files,
+    emissions.push({
+      item: {
+        $schema: ITEM_SCHEMA,
+        name,
+        type: "registry:block",
+        title: meta.title ?? name,
+        description: meta.description,
+        categories: meta.categories,
+        dependencies: resolveDependencies(meta, files),
+        devDependencies: meta.devDependencies,
+        registryDependencies: (meta.registryDependencies ?? ["utils"]).map((dep) => selfRef(dep, "")),
+        files,
+      },
     });
   }
+  return emissions;
+}
+
+// --- writing ----------------------------------------------------------------
+
+// The index entry for an item: identity + file metadata, never file content.
+function toIndexEntry(item: EmittedItem): IndexEntry {
+  return {
+    name: item.name,
+    type: item.type,
+    title: item.title,
+    description: item.description,
+    categories: item.categories,
+    dependencies: item.dependencies,
+    registryDependencies: item.registryDependencies,
+    files: item.files.map(({ content: _content, ...file }) => file),
+  };
+}
+
+async function writeItem(emission: Emission): Promise<void> {
+  const outPath = join(OUT_DIR, `${emission.outName ?? emission.item.name}.json`);
+  await mkdir(join(outPath, ".."), { recursive: true });
+  await writeFile(outPath, JSON.stringify(emission.item, null, 2));
+}
+
+async function main() {
+  // Per-style items are transformed in memory from ui/ + styles/style-*.css
+  // (no styles-gen/ on disk). The fail-loud empty-output guard lives in
+  // emitPerStyleComponents (asserts each style emits its full set).
+  await rm(OUT_DIR, { recursive: true, force: true });
+  await mkdir(OUT_DIR, { recursive: true });
+
+  const components = (await readdir(UI_DIR, { withFileTypes: true }))
+    .filter((e) => e.isDirectory())
+    .map((e) => e.name)
+    .sort();
+
+  const emissions: Emission[] = [
+    ...(await emitUtils()),
+    ...(await emitThemeVariants()),
+    ...(await emitComponents(components)),
+    ...(await emitPerStyleComponents(components)),
+    ...(await emitBlocks()),
+  ];
+
+  for (const emission of emissions) await writeItem(emission);
+
+  // `index` backs registry.json/index.json: the public component identity
+  // list the CLI's interactive picker, `diff`, and installed-component
+  // listing read (commands/add.ts promptForRegistryComponents filters
+  // type === "registry:ui" and uses `name` as the value passed to `add`).
+  // Per-style emissions opt out via `indexed: false` and only land on disk
+  // at their own `styles/<style>/<name>.json` path.
+  const index: IndexEntry[] = emissions
+    .filter((emission) => emission.indexed !== false)
+    .map((emission) => toIndexEntry(emission.item));
 
   await writeFile(
     join(OUT_DIR, "registry.json"),

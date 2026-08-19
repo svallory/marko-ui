@@ -36,7 +36,29 @@
  * Output: packages/shadcn/ui/icon/__<library>__.ts (committed,
  * like every other generated artifact in this repo — see build-registry.ts).
  *
- * Run: bun tooling/build-icons.ts
+ * Run: bun tooling/build-icons.ts [--allow-missing]
+ *
+ * STRICTNESS: every icon NAMED in icon-mapping.json for a library must
+ * resolve to real markup in that library. A per-icon resolution failure used
+ * to be a lone console.warn with no aggregate count and no effect on the exit
+ * code, so the icon silently vanished from the generated map while the build
+ * reported success — shipping a `<Icon name="...">` that renders nothing.
+ * Such failures are counted and the script exits 1 unless `--allow-missing`
+ * is passed (which downgrades them to a summary warning, for the case where a
+ * library genuinely dropped an icon upstream and the mapping needs curating).
+ * As of this writing the baseline is zero resolution failures across all 5
+ * libraries.
+ *
+ * Separately, an icon can be absent from a map simply because the mapping
+ * names no symbol for that library — see the "Drop tracking" block below.
+ * That is expected (the vendored shadcn mapping covers 191 names for lucide
+ * and 186 for each other library) so it is reported but never fatal; it is
+ * the reason the four non-lucide maps are smaller than the mapping.
+ *
+ * ORDERING: the drop report runs BEFORE the first writeFile, so a failing run
+ * writes no artifacts at all. Reporting after the writes (as this script
+ * originally did) still exited 1 but left every generated file overwritten
+ * with the broken version.
  */
 import { readFile, writeFile, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
@@ -66,6 +88,57 @@ interface IconMappingEntry {
   remixicon?: string;
 }
 
+// -----------------------------------------------------------------------
+// Drop tracking
+//
+// An icon can leave a generated map by TWO distinct routes, and both used to
+// be silent (or, for the first, a bare console.warn that did not affect the
+// exit code):
+//
+//   1. UNRESOLVED — the mapping names a symbol for this library but that
+//      symbol does not resolve to real markup: no file on disk under any of
+//      the fallback paths, or a file that resolved but whose payload could
+//      not be parsed. This is a bug in our name transforms or a genuine
+//      upstream removal, and it fails the build.
+//
+//   2. UNMAPPED — the mapping entry simply has no symbol name for this
+//      library at all (`if (!entry.tabler) continue`). Nothing is broken:
+//      shadcn's own vendored index.json covers 191 abstract names for lucide
+//      but only 186 for each of the other four libraries. This is EXPECTED
+//      data, so it is counted and reported but does NOT fail the build —
+//      otherwise every run would fail on data we deliberately vendored
+//      verbatim.
+//
+// Route 2 is by far the higher-volume one (20 drops across the four
+// non-lucide libraries at the time of writing vs 0 unresolved), which is
+// exactly why leaving it uninstrumented was misleading: the maps are
+// smaller than the mapping and nothing said why.
+// -----------------------------------------------------------------------
+
+interface IconDrop {
+  library: string;
+  abstractName: string;
+  detail: string;
+}
+
+const resolutionFailures: IconDrop[] = [];
+const unmappedIcons: IconDrop[] = [];
+
+/** Route 1: named for this library but did not resolve. Fails the build. */
+function recordResolutionFailure(library: string, abstractName: string, detail: string): void {
+  resolutionFailures.push({ library, abstractName, detail });
+  console.warn(`  ⚠ ${library}: no file for "${abstractName}" (${detail})`);
+}
+
+/** Route 2: not named for this library at all. Reported, not fatal. */
+function recordUnmappedIcon(library: string, abstractName: string): void {
+  unmappedIcons.push({
+    library,
+    abstractName,
+    detail: "no symbol name for this library in icon-mapping.json",
+  });
+}
+
 async function loadIconMapping(): Promise<Record<string, IconMappingEntry>> {
   const raw = JSON.parse(await readFile(MAPPING_PATH, "utf-8")) as Record<
     string,
@@ -73,7 +146,16 @@ async function loadIconMapping(): Promise<Record<string, IconMappingEntry>> {
   >;
   const out: Record<string, IconMappingEntry> = {};
   for (const [name, entry] of Object.entries(raw)) {
-    if (!entry.lucide) continue;
+    // lucide is the canonical key space: an entry with no lucide symbol is
+    // dropped from the mapping outright, so it vanishes from ALL FIVE maps
+    // AND from the generated IconName union — the widest silent drop in this
+    // script. Unlike a missing tabler/phosphor/remixicon/hugeicons symbol
+    // (expected — see recordUnmappedIcon), this is a defect in
+    // icon-mapping.json, so it fails the build.
+    if (!entry.lucide) {
+      recordResolutionFailure("lucide", name, "mapping entry has no lucide symbol name");
+      continue;
+    }
     out[name] = {
       lucide: entry.lucide,
       tabler: entry.tabler,
@@ -154,7 +236,7 @@ async function buildLucideMap(
     const kebab = pascalToKebab(symbol);
     const svgPath = join(dir, "icons", `${kebab}.svg`);
     if (!existsSync(svgPath)) {
-      console.warn(`  ⚠ lucide: no file for "${abstractName}" (${entry.lucide} -> ${kebab}.svg)`);
+      recordResolutionFailure("lucide", abstractName, `${entry.lucide} -> ${kebab}.svg`);
       continue;
     }
     out[abstractName] = await readSvgInner(svgPath);
@@ -173,7 +255,10 @@ async function buildTablerMap(
   const dir = resolvePackageDir("@tabler/icons");
   const out: Record<string, string> = {};
   for (const [abstractName, entry] of Object.entries(mapping)) {
-    if (!entry.tabler) continue;
+    if (!entry.tabler) {
+      recordUnmappedIcon("tabler", abstractName);
+      continue;
+    }
     const symbol = stripPrefix(entry.tabler, "Icon");
     const kebab = pascalToKebab(symbol);
     const outlinePath = join(dir, "icons", "outline", `${kebab}.svg`);
@@ -189,7 +274,7 @@ async function buildTablerMap(
         ? filledPath
         : undefined;
     if (!svgPath) {
-      console.warn(`  ⚠ tabler: no file for "${abstractName}" (${entry.tabler} -> ${kebab}.svg)`);
+      recordResolutionFailure("tabler", abstractName, `${entry.tabler} -> ${kebab}.svg`);
       continue;
     }
     out[abstractName] = await readSvgInner(svgPath);
@@ -228,7 +313,10 @@ async function buildPhosphorMap(
   const aliasIndex = await buildPhosphorAliasIndex(dir);
   const out: Record<string, string> = {};
   for (const [abstractName, entry] of Object.entries(mapping)) {
-    if (!entry.phosphor) continue;
+    if (!entry.phosphor) {
+      recordUnmappedIcon("phosphor", abstractName);
+      continue;
+    }
     const symbol = stripSuffix(entry.phosphor, "Icon");
     const kebab = pascalToKebab(symbol);
     const directPath = join(dir, "assets", "regular", `${kebab}.svg`);
@@ -240,7 +328,7 @@ async function buildPhosphorMap(
         ? aliasPath
         : undefined;
     if (!svgPath) {
-      console.warn(`  ⚠ phosphor: no file for "${abstractName}" (${entry.phosphor} -> ${kebab}.svg)`);
+      recordResolutionFailure("phosphor", abstractName, `${entry.phosphor} -> ${kebab}.svg`);
       continue;
     }
     out[abstractName] = await readSvgInner(svgPath);
@@ -275,14 +363,17 @@ async function buildRemixiconMap(
   const fileIndex = await buildRemixiconFileIndex(dir);
   const out: Record<string, string> = {};
   for (const [abstractName, entry] of Object.entries(mapping)) {
-    if (!entry.remixicon) continue;
+    if (!entry.remixicon) {
+      recordUnmappedIcon("remixicon", abstractName);
+      continue;
+    }
     // "RiErrorWarningLine" -> "ErrorWarningLine" -> "error-warning-line.svg"
     const symbol = stripPrefix(entry.remixicon, "Ri");
     const kebab = pascalToKebab(symbol);
     const filename = `${kebab}.svg`;
     const svgPath = fileIndex.get(filename);
     if (!svgPath) {
-      console.warn(`  ⚠ remixicon: no file for "${abstractName}" (${entry.remixicon} -> ${filename})`);
+      recordResolutionFailure("remixicon", abstractName, `${entry.remixicon} -> ${filename}`);
       continue;
     }
     out[abstractName] = await readSvgInner(svgPath);
@@ -302,7 +393,10 @@ async function buildHugeiconsMap(
   const dir = resolvePackageDir("@hugeicons/core-free-icons");
   const out: Record<string, unknown[]> = {};
   for (const [abstractName, entry] of Object.entries(mapping)) {
-    if (!entry.hugeicons) continue;
+    if (!entry.hugeicons) {
+      recordUnmappedIcon("hugeicons", abstractName);
+      continue;
+    }
     // shadcn's mapping was authored against an older hugeicons naming
     // scheme where the default/first variant of a family had no numeric
     // suffix (e.g. "HomeIcon"); the installed @hugeicons/core-free-icons
@@ -318,13 +412,17 @@ async function buildHugeiconsMap(
         ? numberedPath
         : undefined;
     if (!filePath) {
-      console.warn(`  ⚠ hugeicons: no file for "${abstractName}" (${entry.hugeicons}.js)`);
+      recordResolutionFailure("hugeicons", abstractName, `${entry.hugeicons}.js`);
       continue;
     }
     const source = await readFile(filePath, "utf-8");
     const arrayLiteral = source.match(/=\s*(\[[\s\S]*?\]);\s*\n\s*export default/)?.[1];
     if (arrayLiteral === undefined) {
-      console.warn(`  ⚠ hugeicons: could not parse "${entry.hugeicons}"`);
+      recordResolutionFailure(
+        "hugeicons",
+        abstractName,
+        `${entry.hugeicons}.js resolved but its icon-node array literal could not be parsed`,
+      );
       continue;
     }
     // The array literal uses bare object keys (valid JS, invalid JSON).
@@ -380,6 +478,14 @@ async function main() {
     buildHugeiconsMap(mapping),
   ]);
 
+  // Every map is built fully in memory FIRST, and the drop report runs BEFORE
+  // the first writeFile. reportResolutionFailures() used to be the last line
+  // of main(), so a failing run had already overwritten all six generated
+  // artifacts with the broken (icon-missing) versions before it exited 1 —
+  // leaving the tree in exactly the state the check exists to prevent. A
+  // failing run must now write nothing at all.
+  reportIconDrops();
+
   await writeFile(
     join(OUT_DIR, "__lucide__.ts"),
     HEADER("lucide", Object.keys(lucide).length) + serializeStringMap("lucideIcons", lucide)
@@ -430,4 +536,57 @@ async function main() {
   console.log(`  - Abstract names: ${names.length}`);
 }
 
-main();
+function countByLibrary(drops: IconDrop[]): string {
+  const byLibrary = new Map<string, number>();
+  for (const drop of drops) {
+    byLibrary.set(drop.library, (byLibrary.get(drop.library) ?? 0) + 1);
+  }
+  return [...byLibrary]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([library, count]) => `${library}: ${count}`)
+    .join(", ");
+}
+
+/**
+ * Reports both drop routes and fails the build on the fatal one.
+ *
+ * MUST be called before any artifact is written: a drop means the generated
+ * map quietly omits the icon, and writing those maps and *then* exiting 1
+ * leaves the broken files on disk — the exact failure mode that ships an
+ * `<Icon name="...">` rendering nothing.
+ */
+function reportIconDrops(): void {
+  // Route 2 (unmapped) is informational: shadcn's vendored index.json names
+  // 191 abstract icons for lucide and 186 for each other library, so a
+  // nonzero count here is the expected steady state, not a regression.
+  if (unmappedIcons.length > 0) {
+    console.log(
+      `\nℹ ${unmappedIcons.length} icon/library pair(s) are absent from the generated ` +
+        `maps because icon-mapping.json names no symbol for that library ` +
+        `(${countByLibrary(unmappedIcons)}). This is expected — the vendored ` +
+        `shadcn mapping covers fewer names outside lucide.`
+    );
+  }
+
+  if (resolutionFailures.length === 0) return;
+
+  const breakdown = countByLibrary(resolutionFailures);
+  const allowMissing = process.argv.includes("--allow-missing");
+  const summary =
+    `${resolutionFailures.length} icon(s) failed to resolve and are MISSING from ` +
+    `the generated maps (${breakdown}).`;
+
+  if (allowMissing) {
+    console.warn(`\n⚠ ${summary}`);
+    console.warn("  --allow-missing was passed, so the build is reported as successful.");
+    return;
+  }
+
+  console.error(`\n✗ ${summary}`);
+  console.error("  Each failure above means <Icon name=\"...\"> renders nothing for that");
+  console.error("  library. Fix packages/shadcn/ui/icon/icon-mapping.json (or the");
+  console.error("  resolution transform), or re-run with --allow-missing to accept them.");
+  process.exit(1);
+}
+
+await main();

@@ -1,4 +1,10 @@
 {
   "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "paths": {
+      "@/*": ["./packages/marko-ui/*"]
+    }
+  },
   "include": ["**/*.ts"]
 }

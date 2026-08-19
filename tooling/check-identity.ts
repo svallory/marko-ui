@@ -38,7 +38,7 @@
  * `styleMap = {}`, into a scratch directory):
  *
  *   1. FILE-SET IDENTITY — the generated tree's relative file list is
- *      exactly `walk(ui)`. Catches added/dropped files.
+ *      exactly `walkRelative(ui)`. Catches added/dropped files.
  *   2. VERBATIM FILES BYTE-IDENTICAL — every non-.marko/non-variants.ts file
  *      is byte-for-byte identical to its `ui` source (Buffer.equals,
  *      the `cmp` semantics called for by the measurement warning below).
@@ -84,17 +84,16 @@
  *   --keep   don't delete the scratch output dir (for manual inspection)
  * Exit 1 on any mismatch, else 0.
  */
-import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import path from "node:path"
 
 import { DEFAULT_ALLOWLIST } from "./apply-style-map"
+import { ANCHOR_TOKEN_RE, REGISTRY_ROOT, runCheck, walkRelative } from "./fs-utils"
 import { transformMarkoSource } from "./transform-marko"
 import { transformVariantsSource } from "./transform-variants"
 
-const REGISTRY_ROOT = new URL("../packages/shadcn/", import.meta.url).pathname
 const SOURCE_UI = path.join(REGISTRY_ROOT, "ui")
-const TOKEN_RE = /\bmu-[\w-]+\b/g
 
 /**
  * Known, accepted "anchor not stripped from an empty-map tree" exceptions —
@@ -136,19 +135,6 @@ const KNOWN_UNSTRIPPED = new Set<string>([
   "toast/toast.marko#mu-toast",
 ])
 
-function walk(dir: string, base = dir): string[] {
-  const out: string[] = []
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name)
-    if (entry.isDirectory()) {
-      out.push(...walk(full, base))
-    } else if (entry.isFile()) {
-      out.push(path.relative(base, full))
-    }
-  }
-  return out.sort()
-}
-
 /** Generates the empty-StyleMap tree into `outDir`, mirroring build-styles.ts's buildStyle() dispatch. */
 function generateEmptyMapTree(files: string[], outDir: string): void {
   const emptyMap = {}
@@ -172,7 +158,7 @@ function generateEmptyMapTree(files: string[], outDir: string): void {
 
 function countTokens(text: string): Map<string, number> {
   const counts = new Map<string, number>()
-  for (const m of text.matchAll(TOKEN_RE)) {
+  for (const m of text.matchAll(ANCHOR_TOKEN_RE)) {
     counts.set(m[0], (counts.get(m[0]) ?? 0) + 1)
   }
   return counts
@@ -188,15 +174,32 @@ function main(): number {
   const json = process.argv.includes("--json")
   const keep = process.argv.includes("--keep")
 
-  const files = walk(SOURCE_UI)
+  const files = walkRelative(SOURCE_UI)
   const outDir = path.join(tmpdir(), `check-identity-${process.pid}-${Date.now()}`)
   rmSync(outDir, { recursive: true, force: true })
+
+  // try/finally: without it, ANY throw between here and the cleanup below
+  // (a transform crash, an unreadable source file, a full disk) leaked the
+  // scratch tree in tmpdir permanently — one orphan per failed run.
+  try {
+    return compareEmptyMapTree(files, outDir, { json, keep })
+  } finally {
+    if (!keep) rmSync(outDir, { recursive: true, force: true })
+  }
+}
+
+function compareEmptyMapTree(
+  files: string[],
+  outDir: string,
+  options: { json: boolean; keep: boolean },
+): number {
+  const { json, keep } = options
   generateEmptyMapTree(files, outDir)
 
   const mismatches: Mismatch[] = []
 
   // 1. File-set identity.
-  const generatedFiles = walk(outDir)
+  const generatedFiles = walkRelative(outDir)
   const expectedSet = new Set(files)
   const generatedSet = new Set(generatedFiles)
   for (const rel of files) {
@@ -277,8 +280,6 @@ function main(): number {
     }
   }
 
-  if (!keep) rmSync(outDir, { recursive: true, force: true })
-
   if (json) {
     console.log(
       JSON.stringify(
@@ -300,4 +301,4 @@ function main(): number {
   return mismatches.length ? 1 : 0
 }
 
-process.exit(main())
+runCheck("check-identity", main)

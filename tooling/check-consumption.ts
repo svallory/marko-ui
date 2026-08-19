@@ -34,26 +34,18 @@
 import { readdirSync, readFileSync } from "node:fs"
 import path from "node:path"
 
+import {
+  ANCHOR_TOKEN_RE,
+  REGISTRY_ROOT,
+  TOOLING_ROOT,
+  runCheck,
+  walkRelative,
+} from "./fs-utils"
 import { createStyleMap } from "./style-map"
 
-const REGISTRY_ROOT = new URL("../packages/shadcn/", import.meta.url).pathname
-const TOOLING_ROOT = new URL("./", import.meta.url).pathname
 const STYLES_SRC = path.join(REGISTRY_ROOT, "styles")
 const SOURCE_UI = path.join(REGISTRY_ROOT, "ui")
 const ALLOWLIST_PATH = path.join(TOOLING_ROOT, "unused-anchors.json")
-
-function walk(dir: string, base = dir): string[] {
-  const out: string[] = []
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name)
-    if (entry.isDirectory()) {
-      out.push(...walk(full, base))
-    } else if (entry.isFile()) {
-      out.push(path.relative(base, full))
-    }
-  }
-  return out.sort()
-}
 
 function discoverStyles(): string[] {
   return readdirSync(STYLES_SRC)
@@ -88,7 +80,7 @@ function main(): number {
     for (const k of Object.keys(map)) allKeys.add(k)
   }
 
-  const sourceFiles = walk(SOURCE_UI).filter((rel) => {
+  const sourceFiles = walkRelative(SOURCE_UI).filter((rel) => {
     const base = path.basename(rel)
     return base.endsWith(".marko") || base === "variants.ts"
   })
@@ -97,11 +89,10 @@ function main(): number {
   // component(s) consume a key; also lets us report ORPHANED allowlist
   // entries — a key marked "unused" that some new component now uses).
   const tokenLocations = new Map<string, string[]>()
-  const tokenRe = /\bmu-[\w-]+\b/g
   for (const rel of sourceFiles) {
     const text = readFileSync(path.join(SOURCE_UI, rel), "utf8")
     const seen = new Set<string>()
-    for (const m of text.matchAll(tokenRe)) {
+    for (const m of text.matchAll(ANCHOR_TOKEN_RE)) {
       if (seen.has(m[0])) continue
       seen.add(m[0])
       const list = tokenLocations.get(m[0])
@@ -167,4 +158,4 @@ function main(): number {
   return failing.length ? 1 : 0
 }
 
-process.exit(main())
+runCheck("check-consumption", main)

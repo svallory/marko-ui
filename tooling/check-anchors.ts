@@ -27,11 +27,10 @@
  */
 
 import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
-import { join, dirname, basename, extname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join, basename } from "node:path";
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = join(HERE, "..");
+import { REPO_ROOT, runCheck, walkAbsolute } from "./fs-utils";
+
 const SHADCN_ROOT = join(REPO_ROOT, "..", "..", "data", "shadcn-ui", "apps", "v4", "registry");
 const BASES_UI_DIR = join(SHADCN_ROOT, "bases", "radix", "ui");
 const SHADCN_STYLES_DIR = join(SHADCN_ROOT, "styles");
@@ -65,14 +64,56 @@ function extractSelectorStems(css: string, prefix: "cn" | "mu"): Set<string> {
   return stems;
 }
 
-function walkFiles(dir: string, exts: string[]): string[] {
-  const out: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const p = join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...walkFiles(p, exts));
-    else if (exts.includes(extname(entry.name))) out.push(p);
+// ---------------------------------------------------------------------------
+// External dependency guard
+//
+// The canonical anchor list is read from a SIBLING clone of shadcn/ui that
+// lives OUTSIDE this repository (`../../data/shadcn-ui/`, per CLAUDE.md's
+// "shadcn source lives in the space clone" note). Without that checkout this
+// script used to die with a bare ENOENT from readdirSync.
+//
+// This FAILS HARD rather than skipping. A skipped check is worse than a
+// crashed one for a gate wired into `bun run check` (package.json's
+// check:tooling): MISSING/EXTRA anchor drift is exactly the class of bug this
+// gate exists to catch, so a silent green on a machine lacking the clone would
+// let that drift land unnoticed. Failing loud with an actionable message costs
+// one clone; failing silent costs a broken registry.
+
+/**
+ * Verifies the sibling shadcn clone is present. Returns normally when it is,
+ * exits the process with an actionable message when it is not (or exits 0
+ * with a warning if MARKO_UI_SKIP_ANCHOR_CHECK is set).
+ */
+function requireShadcnClone(): void {
+  const missing = [BASES_UI_DIR, SHADCN_STYLES_DIR].filter(
+    (dir) => !existsSync(dir) || !statSync(dir).isDirectory(),
+  );
+  if (missing.length === 0) return;
+  if (process.env.MARKO_UI_SKIP_ANCHOR_CHECK) {
+    console.warn(
+      `check-anchors: SKIPPED — shadcn clone not found at ${SHADCN_ROOT} and ` +
+        `MARKO_UI_SKIP_ANCHOR_CHECK is set. Anchor drift is NOT being verified.`,
+    );
+    process.exit(0);
   }
-  return out;
+  console.error(
+    [
+      "check-anchors: the shadcn/ui source clone is missing.",
+      "",
+      `  expected registry root: ${SHADCN_ROOT}`,
+      ...missing.map((dir) => `  missing directory:      ${dir}`),
+      "",
+      "This check diffs our mu-* anchors against shadcn's cn-* anchors, so it",
+      "cannot run without that source. It is a sibling clone of this repo, not",
+      "a dependency — clone it next to the repo's space root:",
+      "",
+      `  git clone https://github.com/shadcn-ui/ui ${join(REPO_ROOT, "..", "..", "data", "shadcn-ui")}`,
+      "",
+      "Set MARKO_UI_SKIP_ANCHOR_CHECK=1 to skip this gate deliberately (it will",
+      "exit 0 with a warning; do NOT set it in CI).",
+    ].join("\n"),
+  );
+  process.exit(2);
 }
 
 // ---------------------------------------------------------------------------
@@ -102,7 +143,7 @@ interface CssSide {
 
 function loadCssStems(): { stems: Set<string>; source: string } {
   if (existsSync(OUR_STYLES_SRC) && statSync(OUR_STYLES_SRC).isDirectory()) {
-    const files = walkFiles(OUR_STYLES_SRC, [".css"]);
+    const files = walkAbsolute(OUR_STYLES_SRC, [".css"]);
     if (files.length > 0) {
       const stems = new Set<string>();
       for (const f of files) {
@@ -155,7 +196,7 @@ function loadOurStems(component: string, selfCheck: boolean): Set<string> | null
   const dir = join(OUR_UI_DIR, component);
   if (!existsSync(dir)) return null;
   const stems = new Set<string>();
-  for (const f of walkFiles(dir, [".marko", ".ts"])) {
+  for (const f of walkAbsolute(dir, [".marko", ".ts"])) {
     for (const s of extractStems(readFileSync(f, "utf8"), "mu")) stems.add(s);
   }
   return stems;
@@ -181,6 +222,8 @@ function main(): number {
   const json = argv.includes("--json");
   const selfCheck = argv.includes("--self-check");
   const requested = argv.filter((a) => !a.startsWith("--"));
+
+  requireShadcnClone();
 
   const basesAnchors = loadBasesAnchors();
   const componentNames = [...basesAnchors.keys()];
@@ -285,4 +328,4 @@ function main(): number {
   return failed.length || errors.length ? 1 : 0;
 }
 
-process.exit(main());
+runCheck("check-anchors", main);
