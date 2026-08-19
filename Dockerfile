@@ -15,8 +15,7 @@ WORKDIR /app
 FROM base AS deps
 COPY package.json bun.lock ./
 COPY apps/docs/package.json apps/docs/package.json
-COPY packages/registry/package.json packages/registry/package.json
-COPY packages/core/package.json packages/core/package.json
+COPY packages/shadcn/package.json packages/shadcn/package.json
 COPY packages/marko-ui/package.json packages/marko-ui/package.json
 RUN bun install --frozen-lockfile
 
@@ -25,7 +24,7 @@ FROM base AS build
 ARG REGISTRY_BASE_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/docs/node_modules ./apps/docs/node_modules
-COPY --from=deps /app/packages/registry/node_modules ./packages/registry/node_modules
+COPY --from=deps /app/packages/shadcn/node_modules ./packages/shadcn/node_modules
 COPY . .
 
 RUN REGISTRY_BASE_URL=${REGISTRY_BASE_URL} bun tooling/build-registry.ts
@@ -44,8 +43,7 @@ ENV NODE_ENV=production
 
 COPY package.json bun.lock ./
 COPY apps/docs/package.json apps/docs/package.json
-COPY packages/registry/package.json packages/registry/package.json
-COPY packages/core/package.json packages/core/package.json
+COPY packages/shadcn/package.json packages/shadcn/package.json
 COPY packages/marko-ui/package.json packages/marko-ui/package.json
 RUN bun install --frozen-lockfile --production
 
