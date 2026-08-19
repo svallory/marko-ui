@@ -448,10 +448,6 @@
     @apply data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 bg-popover text-popover-foreground min-w-32 rounded-none p-1.5 shadow-md ring-1 duration-100;
   }
 
-  .mu-context-menu-subcontent {
-    @apply shadow-md;
-  }
-
   /* MARK: Dialog */
   .mu-dialog-overlay {
     @apply data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 bg-black/20 duration-100 supports-backdrop-filter:backdrop-blur-sm;
@@ -569,10 +565,6 @@
 
   .mu-dropdown-menu-sub-content {
     @apply data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 bg-popover text-popover-foreground min-w-36 rounded-none p-1.5 shadow-md ring-1 duration-100;
-  }
-
-  .mu-dropdown-menu-subcontent {
-    @apply shadow-md;
   }
 
   /* MARK: Empty */
@@ -1581,75 +1573,6 @@
 
   .mu-marker-content {
     @apply group-data-[variant=separator]/marker:flex-none group-data-[variant=separator]/marker:text-center *:[a]:hover:text-foreground *:[a]:underline *:[a]:underline-offset-3;
-  }
-
-  /* MARK: Questionnaire */
-  .mu-questionnaire {
-    @apply gap-6;
-  }
-
-  .mu-questionnaire-progress {
-    @apply text-xs uppercase tracking-wide;
-  }
-
-  .mu-questionnaire-item {
-    @apply flex flex-col gap-5;
-  }
-
-  .mu-questionnaire-title {
-    @apply text-xs font-semibold uppercase tracking-wide [&:not(:has(~[data-slot=questionnaire-description]))]:mb-5;
-  }
-
-  .mu-questionnaire-description {
-    @apply text-sm normal-case tracking-normal;
-  }
-
-  .mu-questionnaire-choices {
-    @apply gap-3;
-  }
-
-  .mu-questionnaire-choice {
-    @apply hover:bg-muted/50 data-checked:bg-primary/5 data-checked:border-primary/30 dark:data-checked:border-primary/20 dark:data-checked:bg-primary/10 data-invalid:border-destructive has-[>input:focus-visible]:ring-ring/30 gap-3 rounded-none border border-input bg-transparent px-4 py-4 text-sm has-[>input:focus-visible]:ring-2;
-  }
-
-  .mu-questionnaire-choice-indicator {
-    @apply border-input group-data-checked/questionnaire-choice:border-foreground group-data-[type=checkbox]/questionnaire-choice:group-data-checked/questionnaire-choice:bg-primary group-data-[type=checkbox]/questionnaire-choice:group-data-checked/questionnaire-choice:text-primary-foreground group-data-[type=checkbox]/questionnaire-choice:group-data-checked/questionnaire-choice:border-primary size-4.5 translate-y-[--spacing(0.45)] group-has-data-[slot=questionnaire-choice-description]/questionnaire-choice:translate-y-0.5;
-  }
-
-  .mu-questionnaire-choice-indicator-dot {
-    @apply bg-foreground size-2;
-  }
-
-  .mu-questionnaire-choice-indicator-check {
-    @apply size-3.5;
-  }
-
-  .mu-questionnaire-choice-content {
-    @apply gap-1;
-  }
-
-  .mu-questionnaire-choice-description {
-    @apply text-muted-foreground;
-  }
-
-  .mu-questionnaire-shortcut {
-    @apply border-input bg-background text-muted-foreground size-5 translate-y-[--spacing(0.45)] group-has-data-[slot=questionnaire-choice-description]/questionnaire-choice:translate-y-0.5 items-center justify-center rounded-none border font-mono text-[0.625rem] font-medium leading-none;
-  }
-
-  .mu-questionnaire-input-wrapper {
-    @apply w-full;
-  }
-
-  .mu-questionnaire-input {
-    @apply border-transparent border-b-input bg-transparent focus-visible:border-b-ring aria-invalid:border-b-destructive dark:aria-invalid:border-b-destructive/50 h-10 border px-0 py-1 text-base md:text-sm;
-  }
-
-  .mu-questionnaire-error {
-    @apply mt-2 text-sm;
-  }
-
-  .mu-questionnaire-actions {
-    @apply gap-2 sm:min-h-10;
   }
 
   /* MARK: Message Scroller */
