@@ -16,16 +16,16 @@
 - [ ] **navigation-menu** — partial parity (light-JS, no machine); revisit for viewport-style animated panels. `(code, decision on scope)`
 - [ ] **scroll-area** — styled native scrollbars instead of synthetic draggable thumb; decide if parity matters. `(decision)`
 - [x] **field** (formerly misfiled as **form**; extracted to `ui/field/` + new `ui/native-select/` on 2026-08-13) — grown into the full shadcn Field anatomy (10 parts), validation-library-agnostic. Zag has no form machine (verified), so this is a static pattern. Errors accept plain strings or Standard Schema issues; demo shows valibot on the server via `Run.POST({ form })` (progressive enhancement) plus native `ValidityState` on blur. See `agent/reports/form-validation.md`.
-- [x] **chart** — built 2026-08-13 per the evaluation (`agent/reports/chart-evaluation.md`): d3 primitives (d3-scale/shape/array) with Marko emitting SVG, zero-JS SSR (charts in initial HTML; only tooltip hydrates). Tags: chart (container + ChartStyle equivalent), bar, line, area, pie, grid, x-axis, y-axis, tooltip, legend in `packages/registry/default/ui/chart/`. 100% shadcn theme parity: identical container classes, `data-slot="chart"`, per-series `--color-<key>` vars from `--chart-1..5` with light/`.dark` blocks, verbatim tooltip/legend class strings, recharts-compatible SVG class structure. 8 docs demos, registry item `r/chart.json` (12 files). `(code — done)`
+- [x] **chart** — built 2026-08-13 per the evaluation (`agent/reports/chart-evaluation.md`): d3 primitives (d3-scale/shape/array) with Marko emitting SVG, zero-JS SSR (charts in initial HTML; only tooltip hydrates). Tags: chart (container + ChartStyle equivalent), bar, line, area, pie, grid, x-axis, y-axis, tooltip, legend in `packages/shadcn/ui/chart/`. 100% shadcn theme parity: identical container classes, `data-slot="chart"`, per-series `--color-<key>` vars from `--chart-1..5` with light/`.dark` blocks, verbatim tooltip/legend class strings, recharts-compatible SVG class structure. 8 docs demos, registry item `r/chart.json` (12 files). `(code — done)`
 - [x] **Compound-tag DX** — researched 2026-08-11 (`agent/reports/compound-tag-dx.md`), ADOPTED 2026-08-12/13 (branch `compound-attr-tags`, PR #1): attr-tag compound API (Variant A) added to 13 components (tabs, accordion, carousel, cascade-select [flat only], context-menu, dropdown-menu, menubar/menu, listbox, marquee, navigation-menu, radio-group, select, toggle-group), `items=` kept as sugar; combobox/command/tree-view stay array-primary by design. Order-sensitive components use a SINGLE attr-tag name with a `type` discriminant (cross-name attr-tag order is unrecoverable in Marko). 5 review rounds; behavior suite covers ordering + precedence + hybrid contracts. Pattern documented in /docs/creating-components §5 and notes/component-authoring.md. CLEANUP CANDIDATE: `apps/docs/src/{routes,tags}/compound-spike/` spikes are now historical — delete or keep as reference. `(code — done)`
 
 ## Blocks (port ALL shadcn v4 blocks — decided 2026-08-11)
 
-Source: space clone `data/shadcn-ui/apps/v4/registry/new-york-v4/blocks/<name>/` (MIT; adapt to our components with attribution). Infra (gallery, chrome-free view routes, registry:block emission) landed in the docs-site branch with 3 proof blocks (login-01, dashboard-01, calendar-01 — the calendar block is ours, shadcn keeps calendars in a separate site section not the blocks registry). Remaining 26 to port, each = page.marko + sub-part tags + registry.meta.json + view route:
+Source: space clone `data/shadcn-ui/apps/v4/registry/new-york-v4/blocks/<name>/` (MIT; adapt to our components with attribution). Infra (gallery, chrome-free view routes, registry:block emission) landed in the docs-site branch with 3 proof blocks (login-01, dashboard-01, calendar-01 — the calendar block is ours, shadcn keeps calendars in a separate site section not the blocks registry). The remaining 25 landed (verify: `packages/shadcn/blocks/` and `apps/docs/src/routes/blocks/view/`), each = page.marko + sub-part tags + registry.meta.json + view route:
 
-- [ ] **login-02..05** (4) — variants of the login screen (split panels, image side, muted background)
-- [ ] **signup-01..05** (5) — signup screens mirroring the login variants
-- [ ] **sidebar-01..16** (16) — the full sidebar showcase family (collapsible variants, submenus, calendars-in-sidebar, settings dialogs; heaviest reuse of our sidebar component's sub-parts)
+- [x] **login-02..05** (4) — variants of the login screen (split panels, image side, muted background)
+- [x] **signup-01..05** (5) — signup screens mirroring the login variants
+- [x] **sidebar-01..16** (16) — the full sidebar showcase family (collapsible variants, submenus, calendars-in-sidebar, settings dialogs; heaviest reuse of our sidebar component's sub-parts)
 - [ ] **charts blocks** — `registry/new-york-v4/charts/` has the chart demo set; UNBLOCKED 2026-08-13 — the chart component is built (see chart entry above)
 - [ ] Also available for later: `examples/` (per-component demo variants — useful for the data-driven component docs pages) and `internal/` sink pages for QA.
 
@@ -88,7 +88,7 @@ in full (41/41 demos across the 4 supported types — see commit history on
 
 - **Radar charts (14 demos)** — shadcn source `data/shadcn-ui/apps/v4/
   registry/new-york-v4/charts/chart-radar-*.tsx`. Missing primitive: no
-  radar-chart component (`packages/registry/default/ui/chart/` has no
+  radar-chart component (`packages/shadcn/ui/chart/` has no
   polar-grid/radar geometry at all — would need a whole new primitive, not a
   small extension). `/charts/radar` route not created; charts-nav.marko
   omits the "Radar Charts" link (a dead link would be worse than omitting).
@@ -155,11 +155,11 @@ Adapter renamed to the published `marko-zag` package (295 imports swept, package
 - [x] Real adapter dependency install — done 2026-08-17 (marko-zag on npm; graceful-degrade warning path kept for other failures).
 - [x] e2e install verification — done 2026-08-17.
 - [ ] **`/docs/installation` rewrite** — drop the "unpublished" callout, document the real `marko-ui init` flow AND the new import path (`@marko-ui/core` — hook-class components + precompiled style CSS layers; `marko-ui eject` to switch to source) (Docs-audit item). Per-style `@marko-ui/<style>` packages are DROPPED (superseded by `notes/plans/dual-distribution-plan.md` §1); do not resurrect that model.
-- [x] ~~Publish the style packages~~ — DROPPED. The per-style-package model (`build-style-packages.ts`, 9 `@marko-ui/<style>` packages) is superseded by dual distribution (`notes/plans/dual-distribution-plan.md` §1, §4b). The script read the deleted `packages/registry/styles/` path and was unreferenced anywhere in the repo; deleted 2026-08-17 rather than repointed, since no per-style artifact is needed under the new model.
+- [x] ~~Publish the style packages~~ — DROPPED. The per-style-package model (`build-style-packages.ts`, 9 `@marko-ui/<style>` packages) is superseded by dual distribution (`notes/plans/dual-distribution-plan.md` §1, §4b). The script read the deleted `packages/registry/styles/` path (that whole package is gone; the registry now lives at `packages/shadcn/`) and was unreferenced anywhere in the repo; deleted 2026-08-17 rather than repointed, since no per-style artifact is needed under the new model.
 - [x] **Claim `marko-ui` on npm for the CLI** — package renamed `@marko-ui/cli` → `marko-ui` (`packages/cli` → `packages/marko-ui`) 2026-08-18; docs already print `bunx marko-ui add badge`. Not yet published.
 - [ ] **File the language-tools issue** — draft ready at `notes/upstream-issue-language-tools-pascalcase-taglib.md` (PascalCase taglib tags: runtime resolves, type-gen emits false TS2304; our tags.d.ts shim works around it).
 - [ ] **Registry deploy pairing** — `registries.json` + item URLs bake `REGISTRY_BASE_URL` at build time; production deploy must build with `REGISTRY_BASE_URL=https://marko-ui.saulo.tech/r` or installed `registryDependencies` point at localhost.
-- [ ] **Investigate AST-based `.marko` transforms (replace the regex rewriter)** — our style/import rewriting is textual (`packages/registry/scripts/transform-marko.ts`, `apply-style-map.ts`) because `ts-morph` cannot parse `.marko`. That has already cost us real bugs: `CLASS_ATTR_REGEX` matched only `class=`, silently missing `class:` object properties (menubar) and `*Class=` props (sonner), shipping unstyled components in all 8 styles until fixed 2026-08-18. Every new syntax shape must be enumerated by hand. Investigate importing Marko's own compiler or a lower-level package (`@marko/compiler`'s parse/walk API, or `htmljs-parser` which Marko builds on) to walk a real AST instead. Compare against shadcn, which ships 14 `ts-morph` transformers for exactly this class of work. Prize: structurally-impossible-to-miss attribute rewriting. Risk: compiler API stability across Marko versions (we are pinned to 6.3.34), and build-time cost. Context: `~/work/mu-cli/framework-coupling-explained.md` §2.
+- [ ] **Investigate AST-based `.marko` transforms (replace the regex rewriter)** — our style/import rewriting is textual (`tooling/transform-marko.ts`, `apply-style-map.ts`) because `ts-morph` cannot parse `.marko`. That has already cost us real bugs: `CLASS_ATTR_REGEX` matched only `class=`, silently missing `class:` object properties (menubar) and `*Class=` props (sonner), shipping unstyled components in all 8 styles until fixed 2026-08-18. Every new syntax shape must be enumerated by hand. Investigate importing Marko's own compiler or a lower-level package (`@marko/compiler`'s parse/walk API, or `htmljs-parser` which Marko builds on) to walk a real AST instead. Compare against shadcn, which ships 14 `ts-morph` transformers for exactly this class of work. Prize: structurally-impossible-to-miss attribute rewriting. Risk: compiler API stability across Marko versions (we are pinned to 6.3.34), and build-time cost. Context: `~/work/mu-cli/framework-coupling-explained.md` §2.
 - [ ] **`~/`-prefixed registry targets ignore `aliases`** — `resolveFilePath` (`packages/marko-ui/src/utils/updaters/update-files.ts:340-342`) resolves a `~/`-prefixed `target` against the project ROOT and never consults `config.aliases`; the alias branch below only runs for non-`~/` targets. So `utils`' target `~/src/lib/utils.ts` is written there verbatim even when `aliases.utils` points elsewhere (e.g. `@/helpers/cn`), while components still import via the alias — a broken import rather than a misplaced file. Existing files are NOT clobbered (identical → skipped, differing → prompt defaulting to no), so this is a correctness/DX bug, not data loss. Inherited from shadcn's CLI; verify upstream behaviour before diverging.
 - [ ] **Publish the shadcn-CLI-fork diff as a porting guide** — our `packages/marko-ui` is a fork of shadcn's CLI; the diff between them IS the answer to "how do I port this CLI to my framework." Every shadcn port (Svelte, Vue, Angular, Solid) independently rebuilt or forked their own, so this is a real gap. Cheap: most of the community value of a generic multi-framework CLI at near-zero maintenance cost, and no extraction needed. Research and reasoning: `~/work/mu-cli/` (`shadcn-cli-landscape.md`, `framework-coupling-explained.md`). Decision 2026-08-18: do NOT extract the CLI; write the guide instead.
 - [ ] **"Open in v0" button** — shadcn ships one per component/block; we can have our own. Refs: https://ui.shadcn.com/docs/registry/open-in-v0 and https://v0.app/chat/button. Note v0 consumes a registry item URL, so this depends on the registry being publicly deployed (see the deploy-pairing item above). Not yet investigated — read the refs before designing.
@@ -192,19 +192,39 @@ Adapter renamed to the published `marko-zag` package (295 imports swept, package
 
 ## Quality
 
+- [ ] **Land the `.marko` typecheck gate (BLOCKED upstream on `marko-zag`)** — measured 2026-08-19. `packages/shadcn/tsconfig.json` `include` has NO `.marko` glob, so `bun run check` typechecks only `.ts` and **has never once checked a component in this repo's history** — it reports green while all 47 `ui/*` components go unchecked. Adding `"ui/**/*.marko"` to that `include` was attempted and **reverted**: it yields **87 errors across 34 components** (down from the 209 baseline after the parallel triage round, so the triage was real, but not zero).
+
+  Breakdown of the 87 (from `marko-type-check -p packages/shadcn/tsconfig.json -d condensed` with the glob temporarily on): **82 × TS2345**, **4 × TS2589** (`Type instantiation is excessively deep`, all in `navigation-menu.marko`), **1 × TS2531** (`Object is possibly 'null'`, `combobox.marko:189:35`).
+
+  **The 82 TS2345 are a single upstream defect, not 82 code defects.** `marko-zag`'s `src/prop-types.ts` types the generic prop-getter fallback as `element: Marko.Input<"div">`. Zag prop getters that legitimately target a non-div (`getValueTextProps`, `getItemTextProps`, `getIndicatorProps`, tree-view's `<li>`/`<ul>` parts, …) therefore return div-shaped props, and spreading them onto `<span>`/`<li>`/`<ul>` fails structurally — the error always bottoms out at `Property 'align' is missing in type 'HTMLSpanElement' but required in type 'HTMLDivElement'` via the `onAbort` handler's element parameter. This is **not** fixable in this repo without either casting at all 82 spread sites (there are currently ZERO `as unknown as` / `@ts-expect-error` escapes anywhere in `packages/shadcn/ui/` — verified by grep — and adding 82 would defeat the gate's purpose) or an upstream `marko-zag` change making the prop-getter element type generic/per-part instead of hardcoded `div`. Pairs with the existing `stripOwnProps` upstream item below — same package, same release cycle.
+
+  Affected components (error count): navigation-menu 8; tree-view/toc/select/pagination/combobox/cascade-select 5 each; switch/file-upload 4; timer/tags-input/color-picker/checkbox 3; signature-pad/rating-group/radio-group/progress/menubar(menu)/dropdown-menu/context-menu/avatar 2; tour/tooltip/steps/sidebar(menu-button)/password-input/listbox/editable/drawer/date-picker/date-input/clipboard/calendar/angle-slider 1.
+
+  **The 5 non-TS2345 errors ARE in-repo fixable now** and are unfinished work, not blocked: the 1 TS2531 in `combobox.marko` is a plain `noUncheckedIndexedAccess` null guard, and the 4 TS2589 in `navigation-menu.marko` are a type-depth blowup that likely needs an explicit annotation to break the inference chain. Fixing those five does not unblock the gate on its own — the 82 still stand — but it shrinks the landing diff to exactly one upstream change.
+
+  Sequence to land: (1) fix the 5 in-repo errors; (2) make the `marko-zag` prop-getter element type per-part/generic and release it; (3) re-run with the glob on and confirm 0; (4) add `"ui/**/*.marko"` to `include` permanently. Do NOT land the glob before step 3 — it would make `bun run check` permanently red. `(code + upstream — blocked)`
+
+- [ ] **Delete leftover scratch tests `packages/shadcn/tests/tmp-{dump,mergeprops}.test.ts` — they make `bun run check` RED right now** — found 2026-08-19. Both are untracked (`git status` shows `??`), clearly throwaway debugging aids: `tmp-` prefixed, they `writeFileSync` to `/tmp/tg.html` and `/tmp/tv.html` and `console.log` raw tag dumps. They are NOT harmless: they statically `import TreeView from "../ui/tree-view/tree-view.marko"`, and because `tests/**/*.ts` IS in `packages/shadcn/tsconfig.json`'s `include`, that import drags `tree-view.marko` into the project graph **even with no `.marko` glob**. Net effect with the config exactly as committed: **7 errors** — 5 × TS2345 in `ui/tree-view/tree-view.marko` (the same upstream `marko-zag` div-prop defect described above, leaking in through this one back door) and 2 × TS6307 on the scratch files themselves (`is not listed within the file list of project`, since the `.marko` files they import are not in `include`). So the assumption that the shadcn check is currently green is **false** until these two files are removed. Left in place here only because they are another session's untracked working files — whoever owns them should delete them. `(cleanup — trivial)`
+
+- [ ] **`apps/docs` typecheck gate — 9,535 errors, structurally unlistable** — measured 2026-08-19 with the config AS-IS (`include: ["src/**/*.ts", ".marko-run/routes.d.ts"]`, no `.marko` glob, no changes made). Recorded here only so the scale is known; **not** in scope for the shadcn gate above and deliberately untouched.
+
+  By code: **4,115 × TS6307**, 1,629 × TS2353, 1,150 × TS2749, 932 × TS7006, 589 × TS2322, 574 × TS2307, 155 × TS7031, 141 × TS2339, 91 × TS2345, 87 × TS2532 (+ tail).
+
+  The single largest bucket, TS6307 (43%), is **an include problem, not code defects** — verbatim: `File '…/src/demos/charts-gallery/_icons/trending-down.marko' is not listed within the file list of project '…/apps/docs/tsconfig.json'. Projects must list all files or use an 'include' pattern.` Every `.marko` file reached only by import from an included `.ts` trips it because no `.marko` glob is in `include`. So the config that makes the count *look* smaller is itself generating ~4.1k of the errors; adding a `.marko` glob here would clear the TS6307 bucket while exposing however many real errors are currently invisible behind it. The 1,150 TS2749 (`'Input' refers to a value, but is being used as a type here`) and 574 TS2307 (unresolved `?raw` imports and cross-package `blocks/*.marko` specifiers) look like further systematic/config issues rather than per-file bugs. Needs its own scoped pass — do not fold into the shadcn gate. `(ops — investigation)`
+
 - [ ] **Dev-mode controlled-prop warning** — the controlled-vs-default footgun (`open=` without `openChange` pins the machine; hit three sidebar blocks 2026-08-11) suggests machine components should warn in dev when a controlled prop arrives with no matching change handler. Candidate home: `<machine-props>` (it knows the picked props and the attached handlers). `(code — small)`
 - [ ] **Boolean-attr serialization sweep** — Marko renders boolean `true` as a bare attribute: `aria-selected=(bool)` emits `aria-selected=""` (a11y-incorrect) and `data-active=(bool)` never matches `data-[active=true]:` Tailwind variants. Sweep docs-site tags + blocks for boolean-valued aria-*/data-* attrs and wrap in String(). `(code — small)`
 - [ ] **Investigate `marko-run preview` stale-serve caching** — three separate times on 2026-08-13 a `marko-run preview` process served an outdated build after `bun run build` wrote a fresh `dist/` (cost ~30min chasing a phantom "field not documented" bug; also produced false failures for two review agents). Repro attempt: build, preview, rebuild with a visible change, curl — does preview hold the old bundle in memory / serve from its own cache dir? If confirmed, file upstream at marko-js/run. Until then the working convention is `PORT=<p> node dist/index.mjs` for all verification (already encoded in the port-shadcn-resource skill). `(ops — investigation)`
 - [ ] **Mobile layout parity for /create + /typeset customizer (toolbar/article overlap at narrow viewports)** — shadcn has NO overlap on mobile by construction: `data-slot="designer"` is `flex-col` (customizer stacks BELOW the preview as a full-width strip) and only becomes the side column at `md:flex-row-reverse`; the customizer Card itself carries mobile variants we did not fully port — `CardHeader className="hidden … md:flex"`, `FieldGroup className="flex-row gap-2.5 … md:flex-col"` (horizontal scroll strip on mobile via `overflow-x-auto overflow-y-hidden md:overflow-y-auto`), `CardFooter md:flex-col`, and `w-full … md:w-(--customizer-width)`. Audit our customizer.marko (+ typeset's) against shadcn's customizer.tsx mobile classes and port the missing responsive variants verbatim; verify with a real viewport resize (browser tooling could not resize on 2026-08-13 — use Playwright viewport option). `(code)`
 
-- [x] **Per-component behavioral test suites** — done 2026-08-11: 61 WAI-ARIA APG keyboard tests (tabs, dialog focus trap, accordion, switch/checkbox/radio-group, select, slider) in packages/registry/tests/behavior/, Playwright driven from vitest node env. Found + fixed a real adapter bug: normalize-props now maps Zag's React-style `tabIndex` → `tabindex` (verbatim camelCase key caused remove-then-add on every update, blurring focus — broke keyboard nav on all roving-focus widgets). `(code — done)`
-- [x] **Hydration-invariant helper** — done 2026-08-11 (design C-4): packages/registry/tests/helpers/hydration-invariant.ts — JS-off vs JS-on attribute diff over all [data-scope] elements, LCS pairing on scope/part, separate count-change whitelist. 33/33 components pass: 28 exact, 5 whitelisted with in-code mechanism comments (avatar image-load state, combobox/command floating-ui placement, carousel measured snap points). Dark-mode divergence untested (light pinned). `(code — done)`
+- [x] **Per-component behavioral test suites** — done 2026-08-11: 61 WAI-ARIA APG keyboard tests (tabs, dialog focus trap, accordion, switch/checkbox/radio-group, select, slider) in packages/shadcn/tests/behavior/, Playwright driven from vitest node env. Found + fixed a real adapter bug: normalize-props now maps Zag's React-style `tabIndex` → `tabindex` (verbatim camelCase key caused remove-then-add on every update, blurring focus — broke keyboard nav on all roving-focus widgets). `(code — done)`
+- [x] **Hydration-invariant helper** — done 2026-08-11 (design C-4): packages/shadcn/tests/helpers/hydration-invariant.ts — JS-off vs JS-on attribute diff over all [data-scope] elements, LCS pairing on scope/part, separate count-change whitelist. 33/33 components pass: 28 exact, 5 whitelisted with in-code mechanism comments (avatar image-load state, combobox/command floating-ui placement, carousel measured snap points). Dark-mode divergence untested (light pinned). `(code — done)`
 
 ## /create preview — excluded cards
 
 All previously skipped cards were ported 2026-08-13 (ui/field, ui/native-select, ui/chart, and ui/icon primitives landed).
 
-- [x] **Icon strategy decision + icon-preview-grid unblock** — done 2026-08-13 (branch `icon-libraries`): chose option (a) from the original decision list — shadcn's own generated-per-library-map approach, ported mechanically. `packages/registry/scripts/build-icons.ts` generates `packages/registry/default/ui/icon/__{lucide,tabler,phosphor,remixicon,hugeicons}__.ts` (abstract shadcn icon name -> raw SVG inner-markup, or for hugeicons an `IconNode` tuple array) from framework-agnostic SVG/data packages (`lucide-static`, `@tabler/icons`, `@phosphor-icons/core`, `remixicon`, `@hugeicons/core-free-icons` — no React packages), vendoring shadcn's `public/r/icons/index.json` abstract-name map (191 names) as `icon-mapping.json`. Coverage matches shadcn's own totals exactly: lucide 191/191, tabler/phosphor/remixicon/hugeicons 186/186 each. New `ui/icon/icon.marko` renders (name, library) SSR-first (`$!{}`, never client innerHTML for its own render). `preview-blocks/lib/icon.marko` (the old ~65-glyph lucide-only map) now delegates to it, reading `iconLibrary` from `$global.url` at SSR time; `icon-placeholder.marko` (dead code, unused, kept for shadcn API parity) does the same. `preview-page-2/cards/icon-preview-grid.marko` is the direct port of shadcn's card, mounted in `preview-page-2/index.marko` at the exact spot (leading column 2) shadcn's `registry/bases/base/blocks/preview/index.tsx` has it. Live icon-library switching (picker change without an iframe reload) is a client-side DOM patch in `routes/create/preview/+page.marko`'s `applyIconLibrary`, walking `[data-icon-name]` markers and reusing the same generated data via `ui/icon/client-swap.ts` (lazy `import()` per library, mirroring shadcn's `create-icon-loader.tsx`) — the iframe-preview pattern (postMessage-only sync, no src reload) already established for theme/font params. `(code — done)`
+- [x] **Icon strategy decision + icon-preview-grid unblock** — done 2026-08-13 (branch `icon-libraries`): chose option (a) from the original decision list — shadcn's own generated-per-library-map approach, ported mechanically. `tooling/build-icons.ts` generates `packages/shadcn/ui/icon/__{lucide,tabler,phosphor,remixicon,hugeicons}__.ts` (abstract shadcn icon name -> raw SVG inner-markup, or for hugeicons an `IconNode` tuple array) from framework-agnostic SVG/data packages (`lucide-static`, `@tabler/icons`, `@phosphor-icons/core`, `remixicon`, `@hugeicons/core-free-icons` — no React packages), vendoring shadcn's `public/r/icons/index.json` abstract-name map (191 names) as `icon-mapping.json`. Coverage matches shadcn's own totals exactly: lucide 191/191, tabler/phosphor/remixicon/hugeicons 186/186 each. New `ui/icon/icon.marko` renders (name, library) SSR-first (`$!{}`, never client innerHTML for its own render). `preview-blocks/lib/icon.marko` (the old ~65-glyph lucide-only map) now delegates to it, reading `iconLibrary` from `$global.url` at SSR time; `icon-placeholder.marko` (dead code, unused, kept for shadcn API parity) does the same. `preview-page-2/cards/icon-preview-grid.marko` is the direct port of shadcn's card, mounted in `preview-page-2/index.marko` at the exact spot (leading column 2) shadcn's `registry/bases/base/blocks/preview/index.tsx` has it. Live icon-library switching (picker change without an iframe reload) is a client-side DOM patch in `routes/create/preview/+page.marko`'s `applyIconLibrary`, walking `[data-icon-name]` markers and reusing the same generated data via `ui/icon/client-swap.ts` (lazy `import()` per library, mirroring shadcn's `create-icon-loader.tsx`) — the iframe-preview pattern (postMessage-only sync, no src reload) already established for theme/font params. `(code — done)`
 - [ ] **Icon bundle code-splitting doesn't land as separate network chunks** — found during the icon-strategy work: `ui/icon/client-swap.ts`'s per-library `import()` calls (intended to mirror shadcn's `React.lazy`/webpack per-library chunking) get inlined by this app's Vite/Rolldown build into the SAME per-route client chunk as the importer (`Promise.resolve().then(() => module)`, confirmed via built-output inspection, not a config oversight — no `manualChunks`/`inlineDynamicImports` is set anywhere in this repo). Net effect: `/create/preview`'s client bundle ships all 5 icon libraries' data (~360KB combined source, ~101KB gzipped) in one chunk regardless of which library is active, same as if the dynamic imports weren't there — though resolve.ts's SSR-only static imports are still correctly excluded from the client graph, and the runtime API only resolves/uses the map it's asked for. Investigate: explicit `build.rollupOptions.output.manualChunks` in `apps/docs/vite.config.ts`, or file upstream against `@marko/run`/rolldown-vite if their route-bundling model doesn't support per-route lazy sub-chunks at all. `(code/ops — investigation)`
 - [x] **Port bar-visualizer and mount it on preview-page-3** (decided 2026-08-13, done 2026-08-14): dead upstream (shadcn ships `preview/cards/bar-visualizer.tsx`/`registry/bases/{base,radix,aria}/blocks/preview/cards/bar-visualizer.tsx` but never mounts it in any base's `preview/index.tsx`), so it can't live on pages 1/2 without breaking parity — mounted on OUR page (preview-page-3) instead, column 2 (after topic-tags). `preview-page-3/cards/bar-visualizer.marko`: div-bars (not canvas — source itself renders `<div>` bars, not a canvas) + two independent `requestAnimationFrame` loops on a shared mutable state object (fake sine+noise volume-band signal, and the bar-highlight sequencer per `state`), mirroring live-waveform's established `<let>`/`<const>` state-object/`<lifecycle>`/`<script>`-restart pattern. Kept only the `demo=true` code path (the card that mounts it never passes a real `mediaStream`, so `useMultibandVolume`'s real-mic analysis path is dead code, same reasoning as live-waveform dropping the unmounted `onError` prop). Class strings, `data-state`/`data-highlighted` attrs verbatim from source. `(code — done)`
 
@@ -213,6 +233,19 @@ Not ported (dead files upstream, never mounted by their index.tsx): `preview-02/
 ## Upstream
 
 - [ ] **Report Zag cascade-select init bug** — verified 2026-08-11 in @zag-js/cascade-select@1.43.0 machine source: `selectedItems` context seeds `defaultValue: []` unconditionally and is populated only by the `set.value` action (interactive selection), never at machine init — so `valueAsString` is empty on first mount even with a correct `defaultValue`. Our component works around it by deriving the trigger label from `api().value` (which IS seeded correctly). Worth an upstream issue/PR to chanan/zag. `(ops — upstream report)`
+
+- [ ] **Upstream `stripOwnProps` into `marko-zag`** — `packages/shadcn/lib/native-attrs.ts` is a deliberate LOCAL STOPGAP, added 2026-08-19. It belongs in the `marko-zag` adapter package, which already owns `MachineInput`, `<machine-props>`, `<service>` and `<connect>`; nativeAttrs is the fourth step of that same three-tag contract, so shipping it here means the adapter ships an incomplete pattern and 47 consumers hand-copy the last step. It was added locally only because `marko-zag` is a separate repo (`/Users/svallory/work/marko-zag/`) consumed as a published `^1.0.0` dependency, not a workspace package — changing it needs its own release cycle.
+
+  Final signature (unchanged since the sweep; move it verbatim):
+
+  ```ts
+  export function stripOwnProps<Source extends object, Keys extends readonly (keyof Source)[]>(
+    source: Source,
+    ...keys: Keys
+  ): Omit<Source, Keys[number]>
+  ```
+
+  When it moves, all 47 `ui/*` components must have their import re-pointed from `#lib/native-attrs.ts` to `marko-zag`, and `packages/shadcn/lib/native-attrs.ts` deleted. Two registry-build consequences to handle at that time: (1) the helper currently ships to copy-path consumers inside the `utils` registry item, because `build-registry.ts` emits *every* file in `lib/` as `utils` (`fileEntries(LIB_DIR, ...)`) — once the import is a bare package specifier, `resolveDependencies()` picks `marko-zag` up as a normal npm dep instead and no `registryDependencies` edit is needed; (2) `SUBPATH_IMPORT_TARGETS` in `build-registry.ts` needs no change either, since the `#lib/` rewrite simply stops applying to this specifier. `(refactor — upstream)`
 
 ## Release (user)
 
@@ -227,17 +260,21 @@ Not ported (dead files upstream, never mounted by their index.tsx): `preview-02/
 - [ ] **Define `scroll-fade` utility** — referenced in docs-content.marko/docs-article.marko but never defined (same latent no-op class as `no-scrollbar` was before 2026-08-13). Copy shadcn's implementation or remove the dead references. `(code — tiny)`
 - [ ] **Fix `bun run extract:api`** — broken on main (pre-existing `ts.ScriptTarget.ES2022` failure in extract-api.ts, likely TS 7 API change): api-reference.json can no longer be regenerated, so any NEW component (e.g. ui/icon) ships an empty API Reference table. Fix the extractor against the installed TypeScript, regen, verify icon/field/chart tables populate. `(code — small)`
 
-## Style ports (8 shadcn styles → packages/registry/styles/<name>/ui, started 2026-08-14)
+## Style ports (8 shadcn styles → per-style `ui` trees, started 2026-08-14)
 
 **Superseded 2026-08-17 (decision — made):** the hand-ported-tree-per-style
 approach this section describes was a premise error — the 8 hand-ported trees
 turned out to be byte-identical modulo the style name, so there were never
 real per-style deltas to hand-maintain. All 1,880 hand-ported files were
 deleted in `0ee60878`. The registry is now one authored source
-(`packages/registry/default/`) with semantic `mu-*` hook classes, 8 vendored
-CSS token layers (`packages/registry/styles-src/style-<name>.css`), and a
-generator (`packages/registry/scripts/build-styles.ts`) that emits the
-per-style trees to `packages/registry/styles-gen/<name>/ui/` (gitignored).
+(`packages/shadcn/ui/`) with semantic `mu-*` hook classes, 8 vendored CSS
+token layers (`packages/shadcn/styles/style-<name>.css`, shipped as SOURCE),
+and a generator (`tooling/build-registry.ts`, applying the StyleMap via
+`tooling/style-map.ts` + `tooling/apply-style-map.ts`) that transforms the
+per-style flat components IN MEMORY at build time — there is no on-disk
+`styles-gen/`. (The whole `packages/registry/` package this section
+originally referenced no longer exists — the registry moved to
+`packages/shadcn/` and its `scripts/` moved to the top-level `tooling/`.)
 See `notes/plans/dual-distribution-plan.md` and `notes/plans/
 style-refactor-fleet-plan.md` for the current architecture and its "Measured
 result"/"Known gaps". The items below are kept as the historical record of
@@ -245,7 +282,87 @@ the original (now-replaced) hand-porting effort; do not use them to judge
 current coverage — check `check-anchors.ts`'s 86/86 pass instead.
 
 - [x] **rhea** — 55/66 components ported (masonry subset + waves A1-A3), home masonry rewired to it.
-- [ ] **Chat primitives missing in every style except rhea**: `attachment`, `sonner`, `questionnaire`, `direction`, `marker` — no default-registry Marko base exists to restyle; each needs a ground-up port (zag machine or hand-rolled) BEFORE its 8 style variants. `bubble`, `message`, `message-scroller` are now ported for rhea and power the homepage's `card-message-scroller.marko` (static-content port of shadcn's MessageScrollerDemo); still missing for the other 7 styles. `(code — large)`
+- [ ] **Chat primitives missing in every style except rhea**: `attachment`, `sonner`, `direction`, `marker` (`questionnaire` split out into its own entry below — its 17 CSS anchors were deleted on 2026-08-19) — no default-registry Marko base exists to restyle; each needs a ground-up port (zag machine or hand-rolled) BEFORE its 8 style variants. `bubble`, `message`, `message-scroller` are now ported for rhea and power the homepage's `card-message-scroller.marko` (static-content port of shadcn's MessageScrollerDemo); still missing for the other 7 styles. `(code — large)`
 - [ ] **rhea gaps documented in-file**: select scroll-arrow buttons (no zag API), base-ui exit animations (`data-closed:*` inert — zag unmounts on close), input-otp focus-ring addition, toast geometry (zag system kept), sidebar partial part set (only what homepage needs; no Sheet-based mobile branch, no Rail/Inset/Sub-menus). `(code — medium)`
 - [ ] **Masonry rails** — shadcn's ≥2200px skeleton rails use 16 per-card skeleton variants (cards/skeleton/*); ours renders a simplified 6-card rail set. Port the full skeleton card set for exact ultra-wide parity. `(code — medium)`
 - [x] nova, vega, lyra, maia, mira, luma, sera — all ported 2026-08-14 (54 components each, packages/registry/styles/<name>/ui). Per-style string-audit residuals (84-99) are all structural categories shared across styles: sidebar mobile-sheet branch + unported sub-parts, toast swipe/stack geometry, menu submenu/checkbox/radio items (flattened entries model), select scroll buttons + group labels, combobox chips/InputGroup mode, CommandDialog, drawer nested-stack internals, input-otp fake caret, calendar dropdown layout, navigation-menu exit-phase attrs. Closing any of these means changing the shared zag anatomy first (default registry), then propagating to all 8 styles.
+
+- [ ] **Port `questionnaire` (deferred 2026-08-19 — recon done, do not redo it)** `(code — large, 1.5-2.5 days)`
+  Deliberately deferred, not forgotten. The 17 `mu-questionnaire-*` CSS anchors that
+  used to ship in all 8 `packages/shadcn/styles/style-*.css` files were **REMOVED** in
+  the same pass that wrote this entry (one `/* MARK: Questionnaire */` block per file),
+  along with their 17 entries in `tooling/unused-anchors.json`. **They must be restored
+  alongside the port** — recover them with
+  `git show HEAD -- packages/shadcn/styles/style-rhea.css` (and the other 7) rather than
+  re-deriving from upstream, since each style had its own hand-tuned values.
+  Note: `style-vega.css` also carries `.mu-card-content:has(> [data-slot=questionnaire-choices])`
+  (~line 262). That rule was **left in place** — its anchor stem is `card-content`, not
+  `questionnaire`, so no gate flags it; it simply stays inert until the port lands.
+
+  **Component surface — 15 exported parts.** Element/anchor per part, verified against
+  `data/shadcn-ui/apps/v4/registry/bases/base/ui/questionnaire.tsx` (styled layer) and
+  `packages/react/src/questionnaire/components.tsx` (`defaultTagName` of each primitive):
+
+  | Part | Element | Anchor |
+  | --- | --- | --- |
+  | Questionnaire (root) | `form` (`noValidate`) | `mu-questionnaire` |
+  | Progress | `div` | `mu-questionnaire-progress` |
+  | Item | `fieldset` | `mu-questionnaire-item` |
+  | Title | `legend` | `mu-questionnaire-title` |
+  | Description | `p` | `mu-questionnaire-description` |
+  | Choices | `div` (grid) | `mu-questionnaire-choices` |
+  | Choice | `label` | `mu-questionnaire-choice` |
+  | ChoiceInput (nested in Choice) | `input` | `mu-questionnaire-choice-input` |
+  | Choice indicator (nested, `aria-hidden`) | `span` | `mu-questionnaire-choice-indicator` |
+  | Indicator dot (nested) | `span` | `mu-questionnaire-choice-indicator-dot` |
+  | Indicator check (nested, Check icon) | icon | `mu-questionnaire-choice-indicator-check` |
+  | Choice content/label (nested) | `span` | `mu-questionnaire-choice-content` |
+  | Choice shortcut (nested) | `span` | `mu-questionnaire-shortcut` |
+  | ChoiceDescription | `span` | `mu-questionnaire-choice-description` |
+  | Input wrapper + Input | `div` > `input` | `mu-questionnaire-input-wrapper`, `mu-questionnaire-input` |
+  | Error | `p` | `mu-questionnaire-error` |
+  | Actions | `div` (3-col grid) | `mu-questionnaire-actions` |
+  | Previous / Skip / Next / Submit | `button` | (buttonVariants; no `mu-` anchor in the removed CSS) |
+
+  Correction to earlier recon notes: the choice input is **not** visually-hidden — it is
+  `absolute inset-0 z-10 size-full opacity-0` overlaying the whole label. Previous/Skip
+  default to `variant="outline"`, Next/Submit to `variant="default"`; Skip is
+  `col-start-2`, Next and Submit share `col-start-3`.
+
+  **Files to create** under `packages/shadcn/ui/questionnaire/`:
+  - `questionnaire.marko` (+ any sibling `.marko` part files) — flat, at the top level.
+  - `lib/controller.ts` and `lib/types.ts` for the headless engine.
+    `tooling/build-registry.ts` supports a `lib/` subdirectory and **only** `lib/`; any
+    other nested directory throws `registry item dirs must be flat (only lib/ allowed)`
+    (build-registry.ts:309).
+  - `registry.meta.json`:
+    ```json
+    { "title": "Questionnaire",
+      "description": "...",
+      "registryDependencies": ["utils", "button"] }
+    ```
+    **No `dependencies` key** — there is no `@zag-js/questionnaire` package; the engine is
+    hand-rolled. (Contrast `ui/steps/registry.meta.json`, which does carry
+    `"dependencies": ["@zag-js/steps"]`.)
+  - `packages/shadcn/package.json` needs **no** change — its exports are wildcards
+    (`"./ui/*"`, `"./lib/*"`), so a new component directory is exported automatically.
+
+  **Engine to port** (the bulk of the 1.5-2.5 days, ~2,100 lines): the
+  `@shadcn/react/questionnaire` headless package at
+  `data/shadcn-ui/packages/react/src/questionnaire/` — `use-questionnaire-item.ts` (571),
+  `use-questionnaire-root.ts` (525), `types.ts` (305), `collection.ts` (234),
+  `use-questionnaire-choice.ts` (170), `use-questionnaire-input.ts` (149), `utils.ts` (141);
+  `components.tsx` (551) is the React binding layer and is replaced by Marko tags, not ported.
+
+  **Behavior specs** — 14 example scenarios at `data/shadcn-ui/apps/v4/examples/aria/`:
+  `questionnaire-{animated,card,conditional,controlled,demo,dialog,freeform,multiple,`
+  `navigation-state,progress,resume,shortcuts,skip,validation}.tsx`. Treat them as the
+  acceptance suite. (An earlier note claimed six; there are fourteen.)
+
+  **Docs wiring**: `apps/docs/src/demos/questionnaire/` with one `.marko` per example plus a
+  `docs.ts` modeled on `apps/docs/src/demos/steps/docs.ts` (description, `usageTags`,
+  `importSnippet`, `usageSnippet`, `examples[]` where each `name` matches a sibling
+  `.marko` filename), then run `bun run build:demos`.
+
+  **Acceptance gate**: `bun tooling/check-anchors.ts` and `bun tooling/check-consumption.ts`
+  must both exit 0 once the anchors are restored and the component carries them.

@@ -8,8 +8,10 @@
   ],
   "scripts": {
     "check": "bun run --filter '*' check && bun run check:tooling",
-    "check:tooling": "tsc --noEmit -p tooling && bun tooling/check-anchors.ts && bun tooling/check-identity.ts && bun tooling/check-consumption.ts",
-    "test": "vitest run",
+    "check:tooling": "tsc --noEmit -p tooling && bun tooling/check-anchors.ts && bun tooling/check-identity.ts && bun tooling/check-consumption.ts && bun tooling/check-registry-deps.ts",
+    "test": "bun run test:cli && bun run test:docs",
+    "test:cli": "bun run --filter marko-ui test",
+    "test:docs": "vitest run",
     "build:registry": "bun tooling/build-registry.ts",
     "extract:api": "bun tooling/extract-api.ts",
     "build:demos": "bun apps/docs/scripts/build-demos-manifest.ts",

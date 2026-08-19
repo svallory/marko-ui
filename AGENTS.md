@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 marko-ui — "shadcn for Marko": a shadcn-format component registry ported to Marko 6, powered by Zag.js v1 state machines. Bun workspace with three packages:
 
-- `packages/marko-ui` (npm name `marko-ui`) — the published CLI: install and manage Marko UI components from shadcn-format registries (`init`, `add`, `diff`, `show`, `search`, `doctor`, `manifest`, `registry`). Ships `.ts` source directly — no dist build; consumers compile it with their own Marko-aware bundler.
+- `packages/marko-ui` (npm name `marko-ui`) — the published CLI: install and manage Marko UI components from shadcn-format registries (`init`, `add`, `diff`, `show`, `search`, `doctor`, `manifest`, `registry`). Builds with tsup and publishes `dist/` only (`files: ["dist"]`; `exports`/`bin` point at `./dist/...`), so consumers just run `bunx marko-ui init` — no bundler of their own required.
 - `packages/shadcn` (npm name `@marko-ui/shadcn`) — component source in shadcn registry format. `ui/<component>/<part>.marko` is the single authored source, tracking shadcn's `new-york-v4` and carrying semantic `mu-*` hook classes; `styles/style-<name>.css` vendors the 8 shadcn style token layers (rhea, nova, vega, lyra, maia, mira, luma, sera) as SOURCE — the package ships source, not precompiled CSS, so import-path consumers add it to their own Tailwind `@source` and compile the `@apply`-based style layers themselves. Per-style flat components (the copy-path artifact `marko-ui add` fetches) are transformed IN MEMORY during the registry build — there is no on-disk `styles-gen/`.
 - `apps/docs` — the docs site (`@marko/run` + Vite + Tailwind v4), which is also the test target for behavior tests.
 - `tooling/` — build + check scripts (`build-registry.ts`, `check-*.ts`, `transform-*.ts`, etc.), run directly with `bun tooling/<script>.ts`. No package.json.
@@ -17,7 +17,7 @@ Bun only — never npm. Run from the workspace root unless noted.
 
 ```bash
 bun install
-bun run check                  # tsc --noEmit across all workspace packages
+bun run check                  # typecheck all packages + tooling/ + the check-*.ts invariant scripts
 bun run test                   # vitest run (all packages/**/*.test.ts)
 bunx vitest run packages/shadcn/tests/behavior/tabs.test.ts   # single test file
 bun run build:registry         # emit shadcn-CLI-compatible r/*.json
@@ -26,6 +26,16 @@ bun run build:demos            # docs demos manifest
 bun run build:blocks-manifest  # docs blocks manifest
 cd apps/docs && bun run dev    # docs site, default port 3000
 ```
+
+**Typechecking uses `@marko/type-check`, not `tsc`.** `tsc` cannot parse `.marko` at all, so any `tsc --noEmit` run over this repo silently checks only the `.ts` files and reports success while every component goes unchecked. Each package's `check` script therefore runs:
+
+```bash
+NODE_OPTIONS="--max-old-space-size=8192" marko-type-check -p . -d condensed
+```
+
+**The gate now covers components.** `packages/shadcn/tsconfig.json`'s `include` carries `"ui/**/*.marko"` permanently (landed 2026-08-19), so `bun run check` typechecks every component. It is currently **expected red: 87 errors across 34 components**, 82 of them one upstream `marko-zag` defect (its `src/prop-types.ts` hardcodes the generic prop-getter fallback as `element: Marko.Input<"div">`, so Zag getters targeting `<span>`/`<li>`/`<ul>` fail to spread) — the fix is requested upstream and the count drops to ~5 when it ships. Do NOT cast, widen, or `@ts-ignore` around those 82; they are the adapter's to fix. New errors you introduce DO count: measure before and after your change and hold the line at the documented number. See TODO.md § Quality for the breakdown.
+
+The `NODE_OPTIONS` heap bump is **required** — at the default heap size `marko-type-check` OOMs on this repo with a V8 stack dump. It is baked into each package script, so `bun run check` works without extra setup; keep it there if you edit those scripts. `tooling/` stays on plain `tsc` because it is pure `.ts` (no `.marko` files), where `marko-type-check` would add nothing.
 
 Behavior tests (`packages/shadcn/tests/behavior/`) drive real Playwright against a **running docs dev server** — start `apps/docs` first, and pass `DOCS_BASE_URL` if it isn't on port 3000. Playwright is resolved from the global homebrew install, not the workspace. SSR/unit tests (`packages/marko-ui/tests/`, `packages/shadcn/tests/hydration-invariant.test.ts`) need no server.
 

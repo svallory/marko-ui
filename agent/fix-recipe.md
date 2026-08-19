@@ -1,3 +1,20 @@
+> **HISTORICAL DOCUMENT — paths are stale, patterns are still authoritative.**
+>
+> Every path in this file points into `packages/registry/styles/<style>/ui/`
+> (and `packages/registry/default/ui/`), a tree that was **removed** in commit
+> `0ee60878` when the registry moved to the single-authored-source model
+> described in `CLAUDE.md` and `notes/style-ports.md`. The component source now
+> lives in `packages/shadcn/ui/<component>/`, and per-style flat components are
+> transformed in memory by `tooling/build-registry.ts` rather than existing on
+> disk. The git commands below that read `git show HEAD:packages/registry/...`
+> will not resolve against current `HEAD`.
+>
+> Read this document for **what it says, not where it says it lives**: the
+> per-component part lists, the enumerated bug patterns and their fixes, and
+> the SSR-safe Zag conventions remain the authoritative historical spec — in
+> particular for the questionnaire component still being ported. Translate the
+> paths to the current layout as you go.
+
 # Style-port bug-fix recipe (reference implementation: styles/rhea)
 
 All paths are relative to the worktree root:

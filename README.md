@@ -5,7 +5,7 @@
 [![Tests](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges%2Fchecks.json)](https://github.com/svallory/marko-ui/actions/workflows/ci.yml)
 [![WCAG 2.2 AA automated scan](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges%2Faxe.json)](https://github.com/svallory/marko-ui/blob/main/scripts/ci/axe-scan.ts)
 [![Lighthouse accessibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges%2Flighthouse-accessibility.json)](https://github.com/svallory/marko-ui/actions/workflows/lighthouse.yml)
-[![Hydration invariance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges%2Fhydration.json)](https://github.com/svallory/marko-ui/tree/main/packages/registry/tests)
+[![Hydration invariance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges%2Fhydration.json)](https://github.com/svallory/marko-ui/tree/main/packages/shadcn/tests)
 
 86 accessible, themeable components for Marko 6, in 9 complete styles,
 installable with the shadcn CLI. Interactive behavior comes from
@@ -69,17 +69,19 @@ The `default` style plus 8 more — every component re-styled, not re-skinned:
 source carries semantic `mu-*` hook classes; each style is a vendored CSS
 token layer combined with that source by a build step, so styling a component
 differently is a token/CSS change, not a separate hand-maintained tree.
-A 511-check Playwright matrix renders, hydrates, and interacts with every
-component in every style on every push.
+A generated Playwright matrix renders, hydrates, and interacts with every
+component in every style on every push — one check per entry in
+`apps/docs/src/routes/verify/manifest.json` (711 at the time of writing).
 
 ## Repository layout
 
 ```
 apps/docs            docs site (also serves the registry JSON at /r/*)
-packages/registry    component source (default/), vendored style CSS
-                      (styles-src/), generated per-style trees (styles-gen/,
-                      gitignored), build scripts, tests
-packages/marko-ui    the Marko↔Zag adapter runtime
+packages/shadcn      @marko-ui/shadcn: authored component source (ui/),
+                      vendored style token CSS (styles/), blocks/, lib/,
+                      tests/
+packages/marko-ui    the marko-ui CLI (init, add, diff, doctor, ...)
+tooling              registry build + style-transform scripts
 e2e                  style-matrix verification suite
 scripts/ci           axe scan, badge generation, CI serving
 ```
@@ -90,7 +92,7 @@ scripts/ci           axe scan, badge generation, CI serving
 bun install
 bun run --cwd apps/docs dev     # docs site
 bunx vitest run                 # behavior + hydration suites (needs the docs server)
-bunx playwright test            # 511-check style matrix (needs the docs server)
+bunx playwright test            # style matrix (needs the docs server)
 bun scripts/ci/axe-scan.ts out.json   # WCAG scan (needs the docs server)
 ```
 

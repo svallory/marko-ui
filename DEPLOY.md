@@ -1,8 +1,8 @@
 # Deploying to Coolify
 
-`apps/docs` (Marko + `@marko/run` 0.11.8, Vite) also serves the shadcn
+`apps/docs` (Marko + `@marko/run` 0.11.9, Vite) also serves the shadcn
 registry as static JSON under `/r/*` (generated into `apps/docs/public/r` by
-`packages/registry/scripts/build-registry.ts` — that directory is
+`tooling/build-registry.ts` — that directory is
 `.gitignore`d, never committed, always built fresh). One image, one
 deployment, covers docs + registry.
 
@@ -67,7 +67,7 @@ for testing without editing the Dockerfile.
    tab, let Coolify issue the Let's Encrypt certificate.
 7. **Deploy.** Watch the build log for the two `RUN` steps
    (`build-registry.ts`, `marko-run build`) — a failure there most likely
-   means a component in `packages/registry` was added without a matching
+   means a component in `packages/shadcn` was added without a matching
    entry in `apps/docs/package.json` dependencies (see note below).
 8. Health check: hit `https://marko-ui.saulo.tech/` (docs home) and
    `https://marko-ui.saulo.tech/r/registry.json` (registry index) after
@@ -83,8 +83,8 @@ bun run build:registry && git diff --exit-code
 
 `apps/docs/public/r/` is gitignored, so this specific invocation (no
 `REGISTRY_BASE_URL` override, i.e. `localhost:3000/r` URLs) is really
-guarding `packages/registry/default/**` and
-`packages/registry/scripts/build-registry.ts` — it fails if the registry
+guarding `packages/shadcn/**` and
+`tooling/build-registry.ts` — it fails if the registry
 build script itself throws, or if a source change breaks the build. Run it
 as a required CI check before merging to `main`, since Coolify deploys
 straight from `main` with the production `REGISTRY_BASE_URL` and won't
@@ -97,7 +97,7 @@ routes actually use (`marko`, `@zag-js/*`, `valibot`, ...) as external,
 unbundled specifiers. Under bun's isolated-linking install, a package is
 only resolvable from `apps/docs` if `apps/docs/package.json` (or an
 ancestor workspace) declares it — a dependency declared only in
-`packages/registry/package.json` is not automatically reachable from
+`packages/shadcn/package.json` is not automatically reachable from
 `apps/docs/dist/index.mjs` in a clean install. A local dev checkout can mask
 this (stale/orphaned symlinks from an earlier `bun install` can leave a
 package resolvable at the workspace root even after it's no longer declared
@@ -109,4 +109,4 @@ If a Coolify build fails with `Cannot find module '@zag-js/...'` (or
 similar) during the `runtime` stage's `bun install --production`, or the
 container crashes on start with `ERR_MODULE_NOT_FOUND`, add the missing
 package directly to `apps/docs/package.json` dependencies — don't rely on
-`packages/registry` declaring it.
+`packages/shadcn` declaring it.

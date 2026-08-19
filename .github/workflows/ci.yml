@@ -19,6 +19,19 @@ permissions:
   contents: read
 
 jobs:
+  cli-tests:
+    name: CLI unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      # packages/marko-ui is excluded from the root vitest config (it needs its
+      # own @/ path alias + msw setup, see packages/marko-ui/vitest.config.ts),
+      # so it must be run through its own config or it never executes in CI.
+      - name: Run marko-ui CLI suite
+        run: bun run --filter marko-ui test
+
   tests:
     name: Behavior & hydration tests
     runs-on: ubuntu-latest

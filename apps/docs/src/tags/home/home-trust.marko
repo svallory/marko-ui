@@ -2,8 +2,8 @@
 // overlap:
 //   - RECEIPTS: identity facts about the library (component/style counts,
 //     no-JS rendering), maintained by hand next to their sources:
-//       COMPONENTS: dirs in packages/registry/default/ui
-//       STYLES:     default + dirs in packages/registry/styles
+//       COMPONENTS: dirs in packages/shadcn/ui
+//       STYLES:     default + style-*.css in packages/shadcn/styles
 //   - BADGES: live shields.io endpoint images fed by CI (the `badges` branch
 //     is rewritten on every green main build) — checks, WCAG scan, Lighthouse
 //     accessibility. Their numbers update themselves; never restate them as
@@ -15,13 +15,13 @@ static const RECEIPTS = [
     value: "86",
     label: "components",
     title: "The full registry — every component in readable .marko source",
-    href: `${REPO}/tree/main/packages/registry`,
+    href: `${REPO}/tree/main/packages/shadcn/ui`,
   },
   {
     value: "9",
     label: "styles",
     title: "The default style plus 8 complete ports",
-    href: `${REPO}/tree/main/packages/registry/styles`,
+    href: `${REPO}/tree/main/packages/shadcn/styles`,
   },
 ] as const;
 
@@ -32,8 +32,8 @@ static const BADGE_ENDPOINT = (name: string) =>
 
 static const BADGES = [
   {
-    alt: "631 tests passing (behavior, hydration, and style-matrix suites)",
-    title: "120 behavior & hydration tests + 511 style-matrix checks — run on every push",
+    alt: "Tests passing (behavior, hydration, and style-matrix suites)",
+    title: "Behavior, hydration, and style-matrix suites — run on every push",
     src: BADGE_ENDPOINT("checks-count"),
     href: `${REPO}/actions/workflows/ci.yml`,
   },
