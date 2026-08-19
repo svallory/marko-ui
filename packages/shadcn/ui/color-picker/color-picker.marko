@@ -6,6 +6,7 @@ import * as colorPickerMachine from "@zag-js/color-picker";
 import type { MachineInput } from "marko-zag";
 import { positionerStyle } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export type Input = Omit<
   MachineInput<"div", colorPickerMachine.Props>,
@@ -86,21 +87,29 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
 // Whatever is neither machine-owned (splitProps) nor component-owned passes
 // through to the hidden input: aria-*, data-*, form attributes... Leaking a
 // component-owned prop here would stringify it into a bogus DOM attribute.
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    valueChange: ownValueChange,
-    valueChangeEnd: ownValueChangeEnd,
-    openChange: ownOpenChange,
-    formatChange: ownFormatChange,
-    label: ownLabel,
-    swatches: ownSwatches,
-    hideEyeDropper: ownHideEyeDropper,
-    hideFormatSelect: ownHideFormatSelect,
-    ...native
-  } = colorPickerMachine.splitProps(input)[1];
-  return native;
-}>
+// `value`/`defaultValue` are deliberately widened to `string | Color` on this
+// component's public Input (callers may pass a CSS color string), so `input` does not
+// satisfy `splitProps`'s `Partial<ColorPickerProps>` constraint. It is a
+// Both are machine-owned keys that `splitProps` would strip from the leftover
+// anyway — drop them first and the call type-checks on the keys it partitions.
+<const/splitSource=() => {
+  const { value, defaultValue, ...rest } = input;
+  return rest;
+}/>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    colorPickerMachine.splitProps(splitSource())[1],
+    "class",
+    "valueChange",
+    "valueChangeEnd",
+    "openChange",
+    "formatChange",
+    "label",
+    "swatches",
+    "hideEyeDropper",
+    "hideFormatSelect",
+  )
+>
 
 <const/channels=() => CHANNELS_BY_FORMAT[api().format] ?? CHANNELS_BY_FORMAT.rgba>
 

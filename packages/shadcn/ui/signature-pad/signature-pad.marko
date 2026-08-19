@@ -1,6 +1,7 @@
 import * as signaturePadMachine from "@zag-js/signature-pad";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 import { buttonVariants } from "../button/variants.ts";
 
 export type Input = MachineInput<"input", signaturePadMachine.Props> & {
@@ -23,15 +24,14 @@ export type Input = MachineInput<"input", signaturePadMachine.Props> & {
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    drawChange: ownDrawChangeHandler,
-    drawEndChange: ownDrawEndChangeHandler,
-    ...native
-  } = signaturePadMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    signaturePadMachine.splitProps(input)[1],
+    "class",
+    "drawChange",
+    "drawEndChange",
+  )
+>
 
 <div
   ...api().getRootProps()

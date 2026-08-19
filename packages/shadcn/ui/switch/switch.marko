@@ -4,6 +4,7 @@
 import * as switchMachine from "@zag-js/switch";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 // MachineInput = native <input> attributes ∩ the machine's full Props, with
 // `id` made optional (generated below, overridable). `checkedChange` is
@@ -49,16 +50,15 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
 // Whatever is neither machine-owned (splitProps) nor component-owned
 // (class, checkedChange) passes through to the hidden input: aria-*,
 // data-*, form attributes...
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    checkedChange: ownChangeHandler,
-    content: ownContent,
-    size: ownSize,
-    ...native
-  } = switchMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    switchMachine.splitProps(input)[1],
+    "class",
+    "checkedChange",
+    "content",
+    "size",
+  )
+>
 
 // Zag always points the hidden input's aria-labelledby at the label part's
 // id; when no label content is rendered that reference dangles and the

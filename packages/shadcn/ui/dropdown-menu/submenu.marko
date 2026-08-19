@@ -20,7 +20,6 @@
 // level of nesting (a submenu's own items are flat — item/separator/label
 // only); a `type: "sub"` entry inside a submenu's `subEntries` is not wired.
 import * as menu from "@zag-js/menu";
-import type { MarkoService } from "marko-zag";
 import { positionerStyle } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import type { DropdownMenuItem } from "./dropdown-menu.marko";
@@ -33,20 +32,20 @@ export interface Input {
   disabled?: boolean;
   inset?: boolean;
   /** Getter for the parent menu's raw service — this submenu registers onto it via `setParent`. */
-  parent: () => MarkoService;
+  parent: () => menu.Service | null;
   /**
    * Fires once this submenu's own raw service exists (on mount), so the
    * parent can complete the link with `parentApi().setChild(childService)` —
    * `setChild` needs the RAW service (see menu.connect's `child.prop("id")`),
    * which only exists after this component's own `<service>` has mounted.
    */
-  onChildReady?: (childService: MarkoService) => void;
+  onChildReady?: (childService: menu.Service) => void;
   /**
    * Trigger render-prop: receives this submenu's connected api so the caller
    * (the parent menu's item loop) can build the row with
    * `parentApi().getTriggerItemProps(childApi)`.
    */
-  trigger: Marko.Body<[menu.Api]>;
+  trigger: Marko.AttrTag<{ content: Marko.Body<[menu.Api]> }>;
 }
 
 <machine-props/machineProps from=input pick=menu.props/>
@@ -72,8 +71,8 @@ export interface Input {
   }
 />
 
-<${input.trigger}(api())/>
-<portal data-slot="dropdown-menu-portal">
+<${input.trigger.content}(api())/>
+<portal>
   <if=api().open>
     <div ...api().getPositionerProps() style=positionerStyle data-slot="dropdown-menu-sub-content-positioner">
       <div

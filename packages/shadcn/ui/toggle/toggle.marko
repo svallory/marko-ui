@@ -17,7 +17,10 @@ export interface Input extends Marko.Input<"button">, ToggleVariants {
   type="button"
   data-slot="toggle"
   data-state=(pressed ? "on" : "off")
-  aria-pressed=String(pressed)
+  // Must be the literal strings, not `String(pressed)` (widens to `string`)
+  // and not a raw boolean — Marko omits `false` attributes entirely, and a
+  // missing aria-pressed makes the toggle read as a plain button.
+  aria-pressed=(pressed ? "true" : "false")
   class=cn(toggleVariants({ variant, size }), className)
   onClick() {
     pressed = !pressed;

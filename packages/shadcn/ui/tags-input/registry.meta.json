@@ -2,5 +2,5 @@
   "title": "Tags Input",
   "description": "An input for entering a list of tags, with keyboard navigation, inline editing, and paste splitting.",
   "dependencies": ["@zag-js/tags-input"],
-  "registryDependencies": ["utils"]
+  "registryDependencies": ["utils", "icon"]
 }

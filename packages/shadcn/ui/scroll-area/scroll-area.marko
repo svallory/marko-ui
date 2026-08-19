@@ -4,6 +4,7 @@
 import * as scrollAreaMachine from "@zag-js/scroll-area";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
   content?: Marko.Body;
@@ -30,16 +31,15 @@ export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
 
 // Everything that is neither machine-owned (splitProps) nor component-owned
 // (class, content, horizontal) passes through to the root wrapper.
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    content: ownContent,
-    horizontal: ownHorizontal,
-    vertical: ownVertical,
-    ...native
-  } = scrollAreaMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    scrollAreaMachine.splitProps(input)[1],
+    "class",
+    "content",
+    "horizontal",
+    "vertical",
+  )
+>
 
 // root/scrollbar/thumb/corner all carry Zag-owned reactive `style` objects
 // (imperative --corner-width/--thumb-height CSS vars, absolute positioning) —

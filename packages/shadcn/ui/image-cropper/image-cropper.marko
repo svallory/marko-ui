@@ -6,6 +6,7 @@
 import * as imageCropperMachine from "@zag-js/image-cropper";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export type Input = MachineInput<"div", imageCropperMachine.Props> & {
   /** Source of the image to crop. */
@@ -60,20 +61,19 @@ static const HANDLE_POSITIONS = imageCropperMachine.handles;
 // Whatever is neither machine-owned (splitProps) nor component-owned
 // (class, src, alt, hideGrid, the xxxChange sugar) passes through to the
 // root element: aria-*, data-*...
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    src: ownSource,
-    alt: ownAlt,
-    hideGrid: ownHideGrid,
-    zoomChange: ownZoomChange,
-    rotationChange: ownRotationChange,
-    flipChange: ownFlipChange,
-    cropChange: ownCropChange,
-    ...native
-  } = imageCropperMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    imageCropperMachine.splitProps(input)[1],
+    "class",
+    "src",
+    "alt",
+    "hideGrid",
+    "zoomChange",
+    "rotationChange",
+    "flipChange",
+    "cropChange",
+  )
+>
 
 <div
   ...nativeAttrs()

@@ -2,7 +2,9 @@
 // Authoring rules: notes/component-authoring.md (v2 pattern)
 import * as checkboxMachine from "@zag-js/checkbox";
 import type { MachineInput } from "marko-zag";
+import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 // MachineInput = native <input> attributes ∩ the machine's full Props, with
 // `id` made optional (generated below, overridable). `checkedChange` is
@@ -45,15 +47,19 @@ export type Input = MachineInput<"input", checkboxMachine.Props> & {
 // through splitProps into nativeAttrs and land as a bogus static HTML
 // attribute on the native <input>. Strip it defensively here; the supported
 // API for tri-state is `checked`.
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    checkedChange: ownChangeHandler,
-    indeterminate: unsupportedIndeterminate,
-    ...native
-  } = checkboxMachine.splitProps(input)[1] as typeof input;
-  return native;
-}>
+// The source is widened with an explicit optional `indeterminate` rather than
+// `as typeof input`: `Input` deliberately does NOT declare the prop (it is not
+// part of the supported API), so `keyof Input` cannot name it and
+// `stripOwnProps`'s `keyof Source` constraint rejects the key. Naming it here
+// is what makes the defensive strip above both legal and honest.
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    checkboxMachine.splitProps(input)[1] as typeof input & { indeterminate?: unknown },
+    "class",
+    "checkedChange",
+    "indeterminate",
+  )
+>
 
 <label
   ...api().getRootProps()
@@ -71,15 +77,16 @@ export type Input = MachineInput<"input", checkboxMachine.Props> & {
     class="mu-checkbox peer relative shrink-0 outline-none after:absolute after:-inset-x-3 after:-inset-y-2 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50"
   >
     <span ...api().getIndicatorProps() data-slot="checkbox-indicator" class="mu-checkbox-indicator grid place-content-center text-current transition-none">
+      // The shared <Icon> hardcodes the lucide wrapper's stroke-width of 2;
+      // this indicator has always been drawn at 3 for weight at 14px, so the
+      // override rides in as a Tailwind arbitrary property on `class`
+      // (a `stroke-width=` attribute would be clobbered — icon.marko spreads
+      // `...rest` BEFORE its own stroke-width attribute).
       <if=api().indeterminate>
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="size-3.5">
-          <path d="M5 12h14"/>
-        </svg>
+        <Icon name="Minus" class="size-3.5 [stroke-width:3]"/>
       </if>
       <else-if=api().checked>
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="size-3.5">
-          <path d="M20 6 9 17l-5-5"/>
-        </svg>
+        <Icon name="Check" class="size-3.5 [stroke-width:3]"/>
       </else-if>
     </span>
   </span>

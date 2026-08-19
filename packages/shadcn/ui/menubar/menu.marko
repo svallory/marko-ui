@@ -1,5 +1,6 @@
 import * as menu from "@zag-js/menu";
 import { positionerStyle } from "marko-zag";
+import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import type { DropdownMenuItem } from "../dropdown-menu/dropdown-menu.marko";
 import Submenu from "./submenu.marko";
@@ -119,13 +120,11 @@ export interface Input {
               class="mu-menubar-checkbox-item relative flex cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
             >
               <span
-                ...api().getItemIndicatorProps({ checked: entry.checked ?? false })
+                ...api().getItemIndicatorProps({ value, checked: entry.checked ?? false })
                 data-slot="menubar-checkbox-item-indicator"
                 class="mu-menubar-checkbox-item-indicator pointer-events-none absolute flex items-center justify-center"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M20 6 9 17l-5-5"/>
-                </svg>
+                <Icon name="Check" aria-hidden="true"/>
               </span>
               <if=entry.content>
                 <${entry.content}/>
@@ -152,13 +151,11 @@ export interface Input {
               class="mu-menubar-radio-item relative flex cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
             >
               <span
-                ...api().getItemIndicatorProps({ checked: entry.checked ?? false })
+                ...api().getItemIndicatorProps({ value: entry.radioValue ?? value, checked: entry.checked ?? false })
                 data-slot="menubar-radio-item-indicator"
                 class="mu-menubar-radio-item-indicator pointer-events-none absolute flex items-center justify-center"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M20 6 9 17l-5-5"/>
-                </svg>
+                <Icon name="Check" aria-hidden="true"/>
               </span>
               <if=entry.content>
                 <${entry.content}/>
@@ -188,9 +185,7 @@ export interface Input {
                   class="mu-menubar-sub-trigger flex cursor-default items-center outline-none select-none"
                 >
                   ${entry.label}
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-rtl-flip ml-auto size-4" aria-hidden="true">
-                    <path d="m9 18 6-6-6-6"/>
-                  </svg>
+                  <Icon name="ChevronRight" class="mu-rtl-flip ml-auto size-4" aria-hidden="true"/>
                 </div>
               </@trigger>
             </Submenu>
@@ -200,7 +195,7 @@ export interface Input {
               ...api().getItemProps({ value, disabled: entry.disabled })
               data-slot="menubar-item"
               data-inset=entry.inset || undefined
-              data-variant=entry.danger ? "destructive" : "default"
+              data-variant=entry.variant ?? "default"
               class="mu-menubar-item group/menubar-item relative flex cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
             >
               <if=entry.content>

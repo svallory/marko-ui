@@ -1,6 +1,8 @@
 import * as tagsInputMachine from "@zag-js/tags-input";
 import type { MachineInput } from "marko-zag";
+import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export type Input = MachineInput<"div", tagsInputMachine.Props> & {
   valueChange?: (value: string[]) => void;
@@ -30,20 +32,22 @@ export type Input = MachineInput<"div", tagsInputMachine.Props> & {
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    valueChange: ownValueChangeHandler,
-    inputValueChange: ownInputValueChangeHandler,
-    highlightedValueChange: ownHighlightedValueChangeHandler,
-    label: ownLabel,
-    // placeholder belongs on the entry <input>, not the root div — pulled out
-    // here and applied below.
-    placeholder: ownPlaceholder,
-    ...native
-  } = tagsInputMachine.splitProps(input)[1];
-  return native;
-}>
+// `placeholder` belongs on the entry <input>, not the root div. It is a
+// machine prop, so `splitProps` already removes it here; it is re-applied
+// from `input.placeholder` on that <input> below.
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    tagsInputMachine.splitProps(input)[1],
+    "class",
+    "valueChange",
+    "inputValueChange",
+    "highlightedValueChange",
+    "label",
+    // `placeholder` is a machine prop, so `splitProps` has already removed it
+    // from this leftover object. It is still applied to the entry <input>
+    // below from `input.placeholder` (Zag's getInputProps does not emit one).
+  )
+>
 
 <div ...nativeAttrs() ...api().getRootProps() data-slot="tags-input-root" class=cn("flex flex-col gap-1.5", input.class)>
   <if=input.label>
@@ -72,10 +76,7 @@ export type Input = MachineInput<"div", tagsInputMachine.Props> & {
             type="button"
             class="inline-flex size-3.5 shrink-0 items-center justify-center rounded-sm outline-none hover:bg-secondary-foreground/20 focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3">
-              <path d="M18 6 6 18"/>
-              <path d="m6 6 12 12"/>
-            </svg>
+            <Icon name="X" class="size-3"/>
             <span class="sr-only">Remove ${value}</span>
           </button>
         </span>

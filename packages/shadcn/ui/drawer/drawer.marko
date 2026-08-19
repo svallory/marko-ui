@@ -6,6 +6,7 @@ import type { MachineInput } from "marko-zag";
 import Button from "../button/button.marko";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export type Input = MachineInput<"div", drawerMachine.Props> & {
   /** Sugar for onOpenChange — receives the plain boolean, enables `open:=state`. */
@@ -52,25 +53,24 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
 // Everything that is neither machine-owned (splitProps) nor component-owned
 // passes through to the root wrapper. Leaking a component-owned prop here
 // would render it as a bogus DOM attribute.
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    openChange: ownOpenChange,
-    snapPointChange: ownSnapPointChange,
-    triggerValueChange: ownTriggerValueChange,
-    trigger: ownTrigger,
-    title: ownTitle,
-    description: ownDescription,
-    content: ownContent,
-    footer: ownFooter,
-    hideGrabber: ownHideGrabber,
-    draggable: ownDraggable,
-    swipeArea: ownSwipeArea,
-    hideCloseTrigger: ownHideCloseTrigger,
-    ...native
-  } = drawerMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    drawerMachine.splitProps(input)[1],
+    "class",
+    "openChange",
+    "snapPointChange",
+    "triggerValueChange",
+    "trigger",
+    "title",
+    "description",
+    "content",
+    "footer",
+    "hideGrabber",
+    "draggable",
+    "swipeArea",
+    "hideCloseTrigger",
+  )
+>
 
 // The machine resolves logical `start`/`end` against `dir`, so the physical
 // direction that drives our layout classes must be read back off the api.
@@ -91,7 +91,13 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
     />
   </if>
 
-  <portal data-slot="drawer-portal">
+  // NOTE: upstream shadcn sets data-slot="drawer-portal" on Radix's Portal,
+  // which renders a real element. marko-zag's <portal> renders a
+  // `display:contents` host and does not forward attributes, so the
+  // marker never reached the DOM — it was inert, and nothing in this
+  // repo's CSS, tests or tooling reads it. Dropped rather than left as
+  // dead markup; restore it if <portal> gains attribute forwarding.
+  <portal>
     <if=api().open>
       <div
         ...api().getBackdropProps()

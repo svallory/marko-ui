@@ -69,10 +69,7 @@ static function formatValue(value: number | string): string {
                 "w-0 border-[1.5px] border-dashed bg-transparent",
               nestLabel && indicator === "dashed" && "my-0.5",
             )
-            style={
-              "--color-bg": row.color,
-              "--color-border": row.color,
-            }
+            style=`--color-bg: ${row.color}; --color-border: ${row.color};`
           ></div>
         </else-if>
         <div

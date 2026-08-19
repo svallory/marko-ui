@@ -1,6 +1,8 @@
 import * as clipboardMachine from "@zag-js/clipboard";
 import type { MachineInput } from "marko-zag";
+import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export type Input = MachineInput<"input", clipboardMachine.Props> & {
   valueChange?: (value: string) => void;
@@ -23,16 +25,21 @@ export type Input = MachineInput<"input", clipboardMachine.Props> & {
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    valueChange: ownValueChangeHandler,
-    statusChange: ownStatusChangeHandler,
-    label: ownLabel,
-    ...native
-  } = clipboardMachine.contextProps(input)[1];
-  return native;
-}>
+// `contextProps` is constrained `Props extends ClipboardProps`, where `id` is
+// REQUIRED — but `MachineInput` deliberately makes `id` optional (the
+// <machine-props> tag generates one). The call only partitions keys by name
+// and never reads the id's value, so pass a definite one to satisfy the
+// constraint. The value is inert here: `getInputProps()` below sets the real
+// id on the element after this spread.
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    clipboardMachine.contextProps({ ...input, id: input.id ?? "" })[1],
+    "class",
+    "valueChange",
+    "statusChange",
+    "label",
+  )
+>
 
 <div ...api().getRootProps() data-slot="clipboard-root" class=cn("grid w-full gap-1.5", input.class)>
   <if=input.label>
@@ -56,15 +63,10 @@ export type Input = MachineInput<"input", clipboardMachine.Props> & {
     >
       <span ...api().getIndicatorProps({ copied: api().copied }) data-slot="clipboard-indicator">
         <if=api().copied>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 6 9 17l-5-5"/>
-          </svg>
+          <Icon name="Check"/>
         </if>
         <else>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
-          </svg>
+          <Icon name="Copy"/>
         </else>
       </span>
       <span class="sr-only">Copy</span>

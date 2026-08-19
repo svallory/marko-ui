@@ -5,6 +5,7 @@ import type { MachineInput } from "marko-zag";
 import Button from "../button/button.marko";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export type Input = MachineInput<"div", dialogMachine.Props> & {
   openChange?: (open: boolean) => void;
@@ -31,21 +32,20 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    openChange: ownChangeHandler,
-    trigger: ownTrigger,
-    title: ownTitle,
-    description: ownDescription,
-    content: ownContent,
-    footer: ownFooter,
-    side: ownSide,
-    showCloseButton: ownShowCloseButton,
-    ...native
-  } = dialogMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    dialogMachine.splitProps(input)[1],
+    "class",
+    "openChange",
+    "trigger",
+    "title",
+    "description",
+    "content",
+    "footer",
+    "side",
+    "showCloseButton",
+  )
+>
 <const/side=input.side ?? "right"/>
 <const/showCloseButton=input.showCloseButton ?? true/>
 
@@ -53,7 +53,13 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
   <if=input.trigger>
     <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "sheet-trigger" })/>
   </if>
-  <portal data-slot="sheet-portal">
+  // NOTE: upstream shadcn sets data-slot="sheet-portal" on Radix's Portal,
+  // which renders a real element. marko-zag's <portal> renders a
+  // `display:contents` host and does not forward attributes, so the
+  // marker never reached the DOM — it was inert, and nothing in this
+  // repo's CSS, tests or tooling reads it. Dropped rather than left as
+  // dead markup; restore it if <portal> gains attribute forwarding.
+  <portal>
     <if=api().open>
       <div
         ...api().getBackdropProps()

@@ -4,6 +4,7 @@ import * as navigationMenu from "@zag-js/navigation-menu";
 import type { MachineInput } from "marko-zag";
 import { navigationMenuTriggerStyle } from "./variants.ts";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 // A link rendered directly in the menu bar, with no content panel.
 export interface NavigationMenuLinkItem {
@@ -113,18 +114,17 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
 
 // Machine-owned props go to the machine; component-owned props are stripped so
 // they never stringify onto the <nav>.
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    items: ownItems,
-    align: ownAlign,
-    content: ownContent,
-    valueChange: ownChangeHandler,
-    entry: ownEntry,
-    ...native
-  } = navigationMenu.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    navigationMenu.splitProps(input)[1],
+    "class",
+    "items",
+    "align",
+    "content",
+    "valueChange",
+    "entry",
+  )
+>
 
 // Normalize whichever source was supplied into one items array so the render
 // path below never branches. Attr tags win if present (compound is primary

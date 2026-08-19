@@ -2,5 +2,5 @@
   "title": "Tour",
   "description": "A guided product tour with spotlight, backdrop, and positioned step popovers.",
   "dependencies": ["@zag-js/tour"],
-  "registryDependencies": ["utils"]
+  "registryDependencies": ["utils", "icon"]
 }

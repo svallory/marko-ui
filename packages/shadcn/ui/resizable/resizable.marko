@@ -89,9 +89,14 @@ export interface Input
         <${content}(panel, index)/>
       </if>
     </div>
-    <if=index < panels.length - 1>
+    // Bind the next panel instead of indexing inside the template: under
+    // `noUncheckedIndexedAccess` TS cannot carry the `index < length - 1`
+    // guard into the subscript, so `panels[index + 1]` reads as possibly
+    // undefined. `<if=nextPanel>` narrows it and keeps the same condition.
+    <const/nextPanel=panels[index + 1]/>
+    <if=nextPanel>
       <div
-        ...api().getResizeTriggerProps({ id: `${panel.id}:${panels[index + 1].id}` })
+        ...api().getResizeTriggerProps({ id: `${panel.id}:${nextPanel.id}` })
         data-slot="resizable-handle"
         class="mu-resizable-handle relative flex w-px items-center justify-center bg-border ring-offset-background after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden data-[orientation=vertical]:h-px data-[orientation=vertical]:w-full data-[orientation=vertical]:after:left-0 data-[orientation=vertical]:after:h-1 data-[orientation=vertical]:after:w-full data-[orientation=vertical]:after:translate-x-0 data-[orientation=vertical]:after:-translate-y-1/2 [&[data-orientation=vertical]>div]:rotate-90"
       >

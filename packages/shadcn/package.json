@@ -103,7 +103,7 @@
     "d3-scale": "^4.0.2",
     "d3-shape": "^3.2.0",
     "lucide-static": "^1.31.0",
-    "marko-zag": "^1.0.0",
+    "marko-zag": "^1.1.0",
     "remixicon": "^4.9.1",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",
@@ -123,7 +123,7 @@
     "typescript": "^5.9.3"
   },
   "scripts": {
-    "check": "tsc --noEmit -p .",
+    "check": "NODE_OPTIONS=\"--max-old-space-size=8192\" marko-type-check -p ./tsconfig.json -d condensed",
     "check:anchors": "bun ../../tooling/check-anchors.ts",
     "check:identity": "bun ../../tooling/check-identity.ts",
     "check:consumption": "bun ../../tooling/check-consumption.ts"

@@ -2,5 +2,5 @@
   "title": "Command",
   "description": "Fast, composable, unstyled command menu for React.",
   "dependencies": ["@zag-js/combobox"],
-  "registryDependencies": ["utils"]
+  "registryDependencies": ["utils", "icon"]
 }

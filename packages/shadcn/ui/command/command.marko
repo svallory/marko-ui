@@ -2,6 +2,7 @@ import * as commandMachine from "@zag-js/combobox";
 import type { MachineInput } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 // Upstream's `CommandDialog` is a THIN separate wrapper function — not part
 // of `Command` itself — that composes `<Dialog><DialogContent
@@ -93,15 +94,14 @@ static function filterGroups(groups: CommandGroup[], query: string): CommandGrou
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    groups: ownGroups,
-    valueChange: ownValueChange,
-    ...native
-  } = commandMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    commandMachine.splitProps(input)[1],
+    "class",
+    "groups",
+    "valueChange",
+  )
+>
 
 <div ...nativeAttrs() ...api().getRootProps() data-slot="command" class=cn("mu-command flex size-full flex-col overflow-hidden", input.class)>
   <div data-slot="command-input-wrapper" class="mu-command-input-wrapper">

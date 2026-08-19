@@ -13,9 +13,28 @@ import type { IconLibraryName } from "./icon-names.ts";
 
 export const FALLBACK_INNER = '<rect width="18" height="18" x="3" y="3" rx="2"/>';
 
+/**
+ * The `<svg>` wrapper attributes a library contributes.
+ *
+ * `stroke-linecap`/`stroke-linejoin` are typed as the SVG enums rather than
+ * `string`, because they are spread straight onto an `<svg>` whose attribute
+ * types are the real SVG unions — a `Record<string, string>` here widened them
+ * to `string` and lost the guarantee at exactly the point it is needed.
+ * Optional keys are marked optional so only the libraries that set them
+ * (phosphor/remixicon set neither) have to.
+ */
+interface IconWrapperAttrs {
+  viewBox: string;
+  fill: string;
+  stroke?: string;
+  "stroke-width"?: string;
+  "stroke-linecap"?: "butt" | "round" | "square";
+  "stroke-linejoin"?: "arcs" | "bevel" | "miter" | "miter-clip" | "round";
+}
+
 // Per-library <svg> wrapper attributes, verified against each installed
 // package's real SVG output (see build-icons.ts's header comment).
-export const ICON_WRAPPER_ATTRS: Record<IconLibraryName, Record<string, string>> = {
+export const ICON_WRAPPER_ATTRS: Record<IconLibraryName, IconWrapperAttrs> = {
   lucide: {
     viewBox: "0 0 24 24",
     fill: "none",

@@ -3,6 +3,7 @@ import type { MachineInput } from "marko-zag";
 import Button from "../button/button.marko";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export interface CarouselSlideAttrs {
   content?: Marko.Body;
@@ -16,7 +17,16 @@ export type Input<T = unknown> = Omit<
   "slideCount"
 > & {
   items?: T[];
-  content?: Marko.Body<[T, number]>;
+  /**
+   * Render prop for `items=` entries.
+   *
+   * The item is `T | undefined`, not `T`: a bodyless `<@slide/>` produces an
+   * entry with no datum, and the render path below deliberately still invokes
+   * this body for it (see the comment at the call site — the render prop owns
+   * placeholder slides). Declaring it as `T` promised a value this component
+   * does not always pass.
+   */
+  content?: Marko.Body<[T | undefined, number]>;
   slide?: Marko.AttrTag<CarouselSlideAttrs>;
   pageChange?: (page: number) => void;
 };
@@ -27,7 +37,11 @@ export type Input<T = unknown> = Omit<
 // prop at render time. Attr tags win if both are present (compound is
 // primary per the compound-tag-dx report).
 <const/slideTags=[...(input.slide ?? [])]/>
-<const/slides=(slideTags.length > 0 ? slideTags.map((slide) => ({ content: slide.content, item: undefined as unknown })) : (input.items ?? []).map((item) => ({ content: undefined, item })))/>
+// `item` is `T | undefined`, not `unknown`: the attr-tag branch carries no
+// datum, but the items= branch carries a real `T` that must survive into the
+// `content` render prop's parameter. Erasing it to `unknown` made the
+// `<${input.content}(slide.item, index)>` call below a type error.
+<const/slides=(slideTags.length > 0 ? slideTags.map((slide) => ({ content: slide.content, item: undefined as T | undefined })) : (input.items ?? []).map((item) => ({ content: undefined as Marko.Body | undefined, item: item as T | undefined })))/>
 
 <machine-props/machineProps from=input pick=carouselMachine.props
   slideCount=slides.length
@@ -41,17 +55,16 @@ export type Input<T = unknown> = Omit<
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    items: ownItems,
-    content: ownContent,
-    slide: ownSlide,
-    pageChange: ownChangeHandler,
-    ...native
-  } = carouselMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    carouselMachine.splitProps(input)[1],
+    "class",
+    "items",
+    "content",
+    "slide",
+    "pageChange",
+  )
+>
 
 <div ...nativeAttrs() ...api().getRootProps() data-slot="carousel" class=cn("relative", input.class)>
   // Zag's item group is a real scroll container (scroll-snap), so keyboard

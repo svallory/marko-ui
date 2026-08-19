@@ -5,6 +5,7 @@ import type { MachineInput } from "marko-zag";
 import Button from "../button/button.marko";
 import type { ButtonVariants } from "../button/variants.ts";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 // MachineInput = native <div> attributes ∩ the machine's full Props, with
 // `id` made optional (generated below, overridable). `openChange` is
@@ -53,24 +54,23 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
 // (class, openChange, trigger, media, title, description, size, cancelText,
 // actionText, action, cancelVariant, actionVariant) passes through to the
 // content element: aria-*, data-*...
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    openChange: ownChangeHandler,
-    trigger: ownTrigger,
-    media: ownMedia,
-    title: ownTitle,
-    description: ownDescription,
-    size: ownSize,
-    cancelText: ownCancelText,
-    actionText: ownActionText,
-    action: ownAction,
-    cancelVariant: ownCancelVariant,
-    actionVariant: ownActionVariant,
-    ...native
-  } = dialogMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    dialogMachine.splitProps(input)[1],
+    "class",
+    "openChange",
+    "trigger",
+    "media",
+    "title",
+    "description",
+    "size",
+    "cancelText",
+    "actionText",
+    "action",
+    "cancelVariant",
+    "actionVariant",
+  )
+>
 <const/size=input.size ?? "default"/>
 
 <if=input.trigger>
@@ -121,9 +121,16 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
             variant=(input.actionVariant ?? "default")
             data-slot="alert-dialog-action"
             class="mu-alert-dialog-action"
-            onClick(event: Event, element?: Element) {
+            // Unannotated: Marko infers the real <button> click signature
+            // (PointerEvent + bound element). The previous `Event`/`Element`
+            // annotations were wider than what Zag's own handler accepts.
+            onClick(event, element) {
               input.action?.();
-              api().getCloseTriggerProps().onClick?.(event, element);
+              // Marko types event attrs as `handler | false | undefined`
+              // (`false` disables the handler), so `?.` is not enough — guard
+              // on callability before invoking Zag's own close handler.
+              const closeHandler = api().getCloseTriggerProps().onClick;
+              if (typeof closeHandler === "function") closeHandler(event, element);
             }
           >
             ${input.actionText ?? "Continue"}

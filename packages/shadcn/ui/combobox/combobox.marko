@@ -1,7 +1,9 @@
 import * as combobox from "@zag-js/combobox";
 import type { MachineInput } from "marko-zag";
 import { positionerStyle } from "marko-zag";
+import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export interface ComboboxItem {
   value: string;
@@ -78,19 +80,18 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    items: ownItems,
-    groups: ownGroups,
-    valueChange: ownValueChange,
-    inputValueChange: ownInputValueChange,
-    highlightChange: ownHighlightChange,
-    showClear: ownShowClear,
-    ...native
-  } = combobox.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    combobox.splitProps(input)[1],
+    "class",
+    "items",
+    "groups",
+    "valueChange",
+    "inputValueChange",
+    "highlightChange",
+    "showClear",
+  )
+>
 
 // `filteredGroups`: group shape re-derived from `filtered` so typing narrows
 // each group's items the same way the flat list narrows (group membership by
@@ -122,10 +123,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
               disabled=input.disabled
               on-click() { api().clearValue(item.value); }
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-combobox-chip-indicator-icon pointer-events-none size-3">
-                <path d="M18 6 6 18"/>
-                <path d="m6 6 12 12"/>
-              </svg>
+              <Icon name="X" class="mu-combobox-chip-indicator-icon pointer-events-none size-3"/>
             </button>
           </span>
         </for>
@@ -149,10 +147,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
         data-slot="combobox-clear"
         class="mu-combobox-clear group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent flex h-9 w-9 items-center justify-center text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-combobox-clear-icon pointer-events-none size-4">
-          <path d="M18 6 6 18"/>
-          <path d="m6 6 12 12"/>
-        </svg>
+        <Icon name="X" class="mu-combobox-clear-icon pointer-events-none size-4"/>
       </button>
     </if>
     <button
@@ -160,9 +155,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
       data-slot="combobox-trigger"
       class="mu-combobox-trigger flex h-9 w-9 items-center justify-center text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-combobox-trigger-icon pointer-events-none size-4 opacity-50">
-        <path d="m6 9 6 6 6-6"/>
-      </svg>
+      <Icon name="ChevronDown" class="mu-combobox-trigger-icon pointer-events-none size-4 opacity-50"/>
     </button>
   </div>
   <portal>
@@ -187,9 +180,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
                       >
                         <span ...api().getItemTextProps({ item }) data-slot="combobox-item-text">${item.label}</span>
                         <span ...api().getItemIndicatorProps({ item }) data-slot="combobox-item-indicator" class="mu-combobox-item-indicator">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-combobox-item-indicator-icon pointer-events-none size-4">
-                            <path d="M20 6 9 17l-5-5"/>
-                          </svg>
+                          <Icon name="Check" class="mu-combobox-item-indicator-icon pointer-events-none size-4"/>
                         </span>
                       </div>
                     </for>
@@ -210,9 +201,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
                   >
                     <span ...api().getItemTextProps({ item }) data-slot="combobox-item-text">${item.label}</span>
                     <span ...api().getItemIndicatorProps({ item }) data-slot="combobox-item-indicator" class="mu-combobox-item-indicator">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-combobox-item-indicator-icon pointer-events-none size-4">
-                        <path d="M20 6 9 17l-5-5"/>
-                      </svg>
+                      <Icon name="Check" class="mu-combobox-item-indicator-icon pointer-events-none size-4"/>
                     </span>
                   </div>
                 </for>

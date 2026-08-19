@@ -39,8 +39,13 @@ static const features = tableFeatures({
 
 <let/sorting=[] as SortingState/>
 
+// `ColumnDef`'s SECOND type parameter is the row type. Hardcoding
+// `Record<string, unknown>` there pinned it to the default while
+// `constructTable` infers the real row type from `data: input.data`
+// (`TData[]`), so `ctx.row.original` came back as the wrong type and
+// `col.cell` — which takes `TData` — rejected it. Thread `TData` through.
 <const/columnDefs=() =>
-  input.columns.map((col): ColumnDef<typeof features, Record<string, unknown>> => ({
+  input.columns.map((col): ColumnDef<typeof features, TData> => ({
     id: col.accessorKey,
     accessorKey: col.accessorKey,
     header: col.header,

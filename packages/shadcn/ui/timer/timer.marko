@@ -3,6 +3,7 @@
 import * as timerMachine from "@zag-js/timer";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export type Input = MachineInput<"div", timerMachine.Props> & {
   tickChange?: (details: timerMachine.TickDetails) => void;
@@ -28,16 +29,15 @@ static const defaultParts: timerMachine.TimePart[] = ["hours", "minutes", "secon
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    tickChange: ownTickChange,
-    complete: ownComplete,
-    parts: ownParts,
-    ...native
-  } = timerMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    timerMachine.splitProps(input)[1],
+    "class",
+    "tickChange",
+    "complete",
+    "parts",
+  )
+>
 
 <const/timeParts=input.parts || defaultParts>
 

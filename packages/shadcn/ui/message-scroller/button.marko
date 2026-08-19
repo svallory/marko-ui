@@ -18,6 +18,7 @@
 // kept live via `stateStore.subscribe` in a `<lifecycle>` — Marko's
 // reactive-local equivalent of a store subscription hook.
 import Button from "../button/button.marko";
+import Icon from "../icon/icon.marko";
 import type { ButtonVariants } from "../button/variants.ts";
 import { cn } from "#lib/utils.ts";
 import type { MessageScrollerControllerGetter } from "./lib/controller.ts";
@@ -83,10 +84,17 @@ export interface Input extends Marko.Input<"button">, Pick<ButtonVariants, "vari
     "mu-message-scroller-button absolute inset-s-1/2 -translate-x-1/2 border-border bg-background text-foreground transition-[translate,scale,opacity] duration-200 hover:bg-muted hover:text-foreground data-[active=false]:pointer-events-none data-[active=false]:scale-95 data-[active=false]:opacity-0 data-[active=false]:duration-400 data-[active=false]:ease-[cubic-bezier(0.7,0,0.84,0)] data-[active=true]:translate-y-0 data-[active=true]:scale-100 data-[active=true]:opacity-100 data-[active=true]:ease-[cubic-bezier(0.23,1,0.32,1)] data-[direction=end]:bottom-4 data-[direction=end]:data-[active=false]:translate-y-full data-[direction=start]:top-4 data-[direction=start]:data-[active=false]:-translate-y-full rtl:translate-x-1/2 data-[direction=start]:[&_svg]:rotate-180",
     className,
   )
-  onClick(event: MouseEvent, target: HTMLElement) {
+  // No hand-written parameter annotations: Marko infers `onClick`'s real
+  // signature for a <button> (a PointerEvent plus the bound element).
+  // Annotating them `MouseEvent`/`HTMLElement` widened away that type and
+  // made forwarding to the caller's own onClick a type error.
+  onClick(event, target) {
     if (!active) return;
 
-    onClick?.(event);
+    // Marko types event attrs as `handler | false | undefined` (`false`
+    // disables the handler), so this must be a callability check, not `?.` —
+    // a consumer passing `onClick=false` would otherwise crash here.
+    if (typeof onClick === "function") onClick(event, target);
 
     if (!event.defaultPrevented) {
       // event.currentTarget is unsupported in Marko's delegated events —
@@ -105,10 +113,7 @@ export interface Input extends Marko.Input<"button">, Pick<ButtonVariants, "vari
     <${content}/>
   </if>
   <else>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 5v14"/>
-      <path d="m19 12-7 7-7-7"/>
-    </svg>
+    <Icon name="ArrowDownIcon"/>
     <span class="sr-only">${direction === "end" ? "Scroll to end" : "Scroll to start"}</span>
   </else>
 </Button>

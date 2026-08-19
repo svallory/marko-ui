@@ -1,7 +1,9 @@
 import * as cascadeSelect from "@zag-js/cascade-select";
 import type { MachineInput } from "marko-zag";
 import { positionerStyle } from "marko-zag";
+import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export interface CascadeSelectItem {
   value: string;
@@ -33,7 +35,11 @@ export type Input = Omit<MachineInput<"div", cascadeSelect.Props<CascadeSelectIt
 };
 
 <const/optionTags=[...(input.option ?? [])]/>
-<const/items=(optionTags.length > 0 ? optionTags.map((option) => ({ value: option.value, label: option.label, disabled: option.disabled })) : (input.items ?? []))/>
+// Annotated as CascadeSelectItem[] (not left to inference): a flat
+// `<@option>` tag is just an item without `children`, so both arms are
+// CascadeSelectItem[]. Without this the ternary infers a union whose
+// attr-tag arm has no `children`, which the tree walkers below read.
+<const/items: CascadeSelectItem[]=(optionTags.length > 0 ? optionTags.map((option) => ({ value: option.value, label: option.label, disabled: option.disabled })) : (input.items ?? []))/>
 <const/{ placeholder, label, class: className }=input/>
 
 <const/buildCollection=(list: CascadeSelectItem[]) =>
@@ -61,18 +67,17 @@ export type Input = Omit<MachineInput<"div", cascadeSelect.Props<CascadeSelectIt
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    valueChange: ownChangeHandler,
-    items: ownItems,
-    option: ownOption,
-    placeholder: ownPlaceholder,
-    label: ownLabel,
-    ...native
-  } = cascadeSelect.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    cascadeSelect.splitProps(input)[1],
+    "class",
+    "valueChange",
+    "items",
+    "option",
+    "placeholder",
+    "label",
+  )
+>
 
 // `api().valueAsString` derives from the machine's internal `selectedItems`
 // context, which the @zag-js/cascade-select machine (verified through
@@ -104,22 +109,23 @@ export type Input = Omit<MachineInput<"div", cascadeSelect.Props<CascadeSelectIt
 // these must match the actual tree structure, not panel-local positions.
 <const/panels=() => {
   const highlightedItems = api().highlightedItems;
-  const result: { indexPath: number[]; valuePath: string[]; children: CascadeSelectItem[] }[] = [{
-    indexPath: [],
-    valuePath: [],
-    children: items,
-  }];
+  type Panel = { indexPath: number[]; valuePath: string[]; children: CascadeSelectItem[] };
+  // Tracked separately from the array so the compiler knows a parent always
+  // exists: `result[result.length - 1]` is `Panel | undefined` under
+  // noUncheckedIndexedAccess even though the list is seeded non-empty here.
+  let parent: Panel = { indexPath: [], valuePath: [], children: items };
+  const result: Panel[] = [parent];
   let siblings = items;
   for (const node of highlightedItems) {
     const childItems = node.children ?? [];
     const nodeIndex = siblings.indexOf(node);
     if (childItems.length > 0 && nodeIndex !== -1) {
-      const parent = result[result.length - 1];
-      result.push({
+      parent = {
         indexPath: [...parent.indexPath, nodeIndex],
         valuePath: [...parent.valuePath, node.value],
         children: childItems,
-      });
+      };
+      result.push(parent);
       siblings = childItems;
     }
   }
@@ -131,9 +137,7 @@ export type Input = Omit<MachineInput<"div", cascadeSelect.Props<CascadeSelectIt
   <div ...api().getControlProps() data-slot="cascade-select-control">
     <button ...api().getTriggerProps() data-slot="cascade-select-trigger" class="border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 h-9">
       <span data-slot="cascade-select-value">${triggerLabel() || placeholder}</span>
-      <svg ...api().getIndicatorProps() xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 opacity-50">
-        <path d="m6 9 6 6 6-6"/>
-      </svg>
+      <Icon ...api().getIndicatorProps() name="ChevronDown" class="size-4 opacity-50"/>
     </button>
   </div>
   <input ...api().getHiddenInputProps() data-slot="cascade-select-hidden-input">
@@ -160,15 +164,11 @@ export type Input = Omit<MachineInput<"div", cascadeSelect.Props<CascadeSelectIt
                 >
                   <span ...api().getItemTextProps(itemProps) data-slot="cascade-select-item-text">${entry.label}</span>
                   <if=(entry.children && entry.children.length > 0)>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5 opacity-50">
-                      <path d="m9 18 6-6-6-6"/>
-                    </svg>
+                    <Icon name="ChevronRight" class="size-3.5 opacity-50"/>
                   </if>
                   <else>
                     <span ...api().getItemIndicatorProps(itemProps) data-slot="cascade-select-item-indicator" class="flex size-3.5 items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
-                        <path d="M20 6 9 17l-5-5"/>
-                      </svg>
+                      <Icon name="Check" class="size-4"/>
                     </span>
                   </else>
                 </div>

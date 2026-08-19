@@ -2,6 +2,7 @@ import * as paginationMachine from "@zag-js/pagination";
 import type { MachineInput } from "marko-zag";
 import { buttonVariants } from "../button/variants.ts";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export type Input = MachineInput<"nav", paginationMachine.Props> & {
   pageChange?: (page: number) => void;
@@ -18,14 +19,9 @@ export type Input = MachineInput<"nav", paginationMachine.Props> & {
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    pageChange: ownChangeHandler,
-    ...native
-  } = paginationMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(paginationMachine.splitProps(input)[1], "class", "pageChange")
+>
 
 <nav
   ...nativeAttrs()
@@ -79,7 +75,7 @@ export type Input = MachineInput<"nav", paginationMachine.Props> & {
         <li data-slot="pagination-item">
           <span
             ...api().getEllipsisProps({ index })
-            aria-hidden
+            aria-hidden="true"
             data-slot="pagination-ellipsis"
             class="mu-pagination-ellipsis flex items-center justify-center"
           >

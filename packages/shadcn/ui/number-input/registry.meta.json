@@ -2,5 +2,5 @@
   "title": "Number Input",
   "description": "A number input with increment/decrement steppers, min/max/step constraints, and a scrub area.",
   "dependencies": ["@zag-js/number-input"],
-  "registryDependencies": ["utils"]
+  "registryDependencies": ["utils", "icon"]
 }

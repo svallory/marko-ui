@@ -9,14 +9,14 @@
 // (the running group service, the Zag option object) never appear as tag input
 // themselves.
 import * as toastMachine from "@zag-js/toast";
-import type { MarkoService } from "marko-zag";
+import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 
 export interface Input {
   /** Getter for this toast's options as held by the group machine. */
   options: () => toastMachine.Props;
   /** Getter for the running group service that owns this toast. */
-  parent: () => MarkoService;
+  parent: () => toastMachine.GroupService;
   /** This toast's position in the group, front-most first. */
   index: number;
   /**
@@ -90,8 +90,21 @@ export interface Input {
   // Ghost elements keep hover/pointer state stable across the gap between
   // toasts and during exit transitions. The "before" ghost is scaled to twice
   // the root height, so every real part must stack above it to stay clickable.
-  <span ...api().getGhostBeforeProps()/>
+  //
+  // These must be <div>, not <span>: Zag's getGhostBefore/AfterStyle set
+  // block-box geometry (position/inset/height/width), and `normalize.element`
+  // types the props as div attributes.
+  <div ...api().getGhostBeforeProps()/>
 
+  // Deliberately NOT converted to <Icon>: this is lucide's `circle-check-big`
+  // (a broken-arc circle with an oversized check breaking out of it), and the
+  // abstract icon-name set <Icon> resolves against is the 191-name mapping
+  // vendored verbatim from shadcn's public/r/icons/index.json (see
+  // tooling/build-icons.ts) — that set has no `circle-check-big` entry. Its
+  // nearest neighbours (CircleCheckIcon / CheckCircle2Icon) are the DIFFERENT
+  // `circle-check` glyph (closed circle, small inset check), so swapping would
+  // silently change the rendered mark. Left inline until the mapping gains the
+  // name.
   <if=(api().type === "success")>
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-slot="toast-icon" class="mt-0.5 size-4 shrink-0 relative z-[1] text-emerald-500">
       <path d="M21.801 10A10 10 0 1 1 17 3.335"/>
@@ -99,30 +112,32 @@ export interface Input {
     </svg>
   </if>
   <else-if=(api().type === "error")>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-slot="toast-icon" class="mt-0.5 size-4 shrink-0 relative z-[1] text-destructive">
-      <circle cx="12" cy="12" r="10"/>
-      <line x1="12" x2="12" y1="8" y2="12"/>
-      <line x1="12" x2="12.01" y1="16" y2="16"/>
-    </svg>
+    <Icon
+      name="CircleAlertIcon"
+      data-slot="toast-icon"
+      class="mt-0.5 size-4 shrink-0 relative z-[1] text-destructive"
+    />
   </else-if>
   <else-if=(api().type === "warning")>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-slot="toast-icon" class="mt-0.5 size-4 shrink-0 relative z-[1] text-amber-500">
-      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-      <line x1="12" x2="12" y1="9" y2="13"/>
-      <line x1="12" x2="12.01" y1="17" y2="17"/>
-    </svg>
+    <Icon
+      name="TriangleAlertIcon"
+      data-slot="toast-icon"
+      class="mt-0.5 size-4 shrink-0 relative z-[1] text-amber-500"
+    />
   </else-if>
   <else-if=(api().type === "info")>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-slot="toast-icon" class="mt-0.5 size-4 shrink-0 relative z-[1] text-blue-500">
-      <circle cx="12" cy="12" r="10"/>
-      <line x1="12" x2="12.01" y1="8" y2="8"/>
-      <line x1="12" x2="12" y1="12" y2="16"/>
-    </svg>
+    <Icon
+      name="InfoIcon"
+      data-slot="toast-icon"
+      class="mt-0.5 size-4 shrink-0 relative z-[1] text-blue-500"
+    />
   </else-if>
   <else-if=(api().type === "loading")>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-slot="toast-icon" class="mt-0.5 size-4 shrink-0 relative z-[1] animate-spin text-muted-foreground">
-      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-    </svg>
+    <Icon
+      name="Loader2"
+      data-slot="toast-icon"
+      class="mt-0.5 size-4 shrink-0 relative z-[1] animate-spin text-muted-foreground"
+    />
   </else-if>
 
   <div class="relative z-[1] flex min-w-0 flex-1 flex-col gap-1">
@@ -155,12 +170,9 @@ export interface Input {
       aria-label="Dismiss notification"
       class="relative z-[1] shrink-0 rounded-xs text-muted-foreground opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
-        <path d="M18 6 6 18"/>
-        <path d="m6 6 12 12"/>
-      </svg>
+      <Icon name="X" class="size-4"/>
     </button>
   </if>
 
-  <span ...api().getGhostAfterProps()/>
+  <div ...api().getGhostAfterProps()/>
 </div>

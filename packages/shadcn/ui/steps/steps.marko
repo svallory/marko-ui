@@ -3,7 +3,9 @@
 // Authoring rules: notes/component-authoring.md (v2 pattern)
 import * as stepsMachine from "@zag-js/steps";
 import type { MachineInput } from "marko-zag";
+import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export interface StepItem {
   title: string;
@@ -48,17 +50,16 @@ export type Input = MachineInput<"div", stepsMachine.Props> & {
 // Whatever is neither machine-owned (splitProps) nor component-owned
 // (class, items, content, completedContent, stepChange) passes through to
 // the root div.
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    items: ownItems,
-    content: ownContent,
-    completedContent: ownCompletedContent,
-    stepChange: ownChangeHandler,
-    ...native
-  } = stepsMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    stepsMachine.splitProps(input)[1],
+    "class",
+    "items",
+    "content",
+    "completedContent",
+    "stepChange",
+  )
+>
 
 <div
   ...nativeAttrs()
@@ -74,8 +75,11 @@ export type Input = MachineInput<"div", stepsMachine.Props> & {
       // aria-current on this wrapper, but a global aria attribute would void
       // role="presentation" (presentational-roles conflict resolution), so
       // aria-current moves onto the tab trigger instead.
+      // No `as Record<string, unknown>`: that cast erased `aria-current` to
+      // `unknown`, which then failed to satisfy the <button>'s real
+      // `aria-current` union. Zag's own prop type already carries it.
       <const/itemProps=(() => {
-        const { "aria-current": ariaCurrent, ...rest } = api().getItemProps({ index }) as Record<string, unknown>;
+        const { "aria-current": ariaCurrent, ...rest } = api().getItemProps({ index });
         return { rest, ariaCurrent };
       })()>
       <div ...itemProps.rest role="presentation" data-slot="steps-item" class="flex items-center data-[orientation=horizontal]:flex-1 data-[orientation=horizontal]:last:flex-none data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-start">
@@ -91,9 +95,13 @@ export type Input = MachineInput<"div", stepsMachine.Props> & {
             class="flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-medium data-complete:border-primary data-complete:bg-primary data-complete:text-primary-foreground data-current:border-primary data-current:text-primary data-incomplete:border-input data-incomplete:text-muted-foreground"
           >
             <if=itemState.completed>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="size-4">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
+              // The shared <Icon> hardcodes the lucide wrapper's stroke-width
+              // of 2; this indicator has always been drawn at 2.5, so the
+              // override rides in as a Tailwind arbitrary property on `class`
+              // (a `stroke-width=` attribute would be clobbered — icon.marko
+              // spreads `...rest` BEFORE its own stroke-width attribute).
+              // Same approach as checkbox.marko's indicator.
+              <Icon name="Check" class="[stroke-width:2.5]"/>
             </if>
             <else>
               ${index + 1}

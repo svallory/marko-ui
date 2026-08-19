@@ -2,5 +2,5 @@
   "title": "Drawer",
   "description": "A vaul-style bottom sheet with drag-to-dismiss, snap points, and swipe-to-open edge areas. Built on the @zag-js/drawer machine.",
   "dependencies": ["@zag-js/drawer"],
-  "registryDependencies": ["utils"]
+  "registryDependencies": ["utils", "button", "icon"]
 }

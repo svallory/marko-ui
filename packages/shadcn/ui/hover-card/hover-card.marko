@@ -32,7 +32,13 @@ export type Input = MachineInput<"span", hoverCardMachine.Props> & {
 
 <span data-slot="hover-card">
   <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "hover-card-trigger" })/>
-  <portal data-slot="hover-card-portal">
+  // NOTE: upstream shadcn sets data-slot="hover-card-portal" on Radix's Portal,
+  // which renders a real element. marko-zag's <portal> renders a
+  // `display:contents` host and does not forward attributes, so the
+  // marker never reached the DOM — it was inert, and nothing in this
+  // repo's CSS, tests or tooling reads it. Dropped rather than left as
+  // dead markup; restore it if <portal> gains attribute forwarding.
+  <portal>
     <if=api().open>
       <div ...api().getPositionerProps() style=positionerStyle data-slot="hover-card-positioner">
         <div

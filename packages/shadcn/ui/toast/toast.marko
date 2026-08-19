@@ -23,8 +23,17 @@ import ToastItem from "./toast-item.marko";
 export interface Input extends Marko.Input<"div"> {
   /** Accessible label for the notification region. @default "Notifications" */
   label?: string;
-  /** Text direction passed to the group machine. */
-  dir?: "ltr" | "rtl";
+  /**
+   * Text direction passed to the group machine.
+   *
+   * Typed as the full HTML `dir` surface, not just `"ltr" | "rtl"`: this Input
+   * extends `Marko.Input<"div">`, and re-declaring `dir` more narrowly than
+   * the attribute it inherits makes every `...rest` spread from a div-shaped
+   * parent (e.g. `sonner.marko`) a type error. `"auto"` and the absent values
+   * are normalized away below, since Zag's group machine accepts only the two
+   * concrete directions.
+   */
+  dir?: Marko.Input<"div">["dir"];
   /**
    * Extra class(es) applied to every toast's root element. The zag-native
    * equivalent of sonner's `toastOptions.classNames.toast`. `sonner.marko`
@@ -37,7 +46,10 @@ export interface Input extends Marko.Input<"div"> {
 <const/{ class: className, label, dir, toastClass, ...rest }=input/>
 
 <id/regionId/>
-<const/groupProps=() => ({ id: regionId, store: toaster, dir })/>
+// Zag's group machine takes `"ltr" | "rtl"` only, so `"auto"` (and the absent
+// values HTML allows) fall back to undefined and let the machine default.
+<const/machineDir=(dir === "ltr" || dir === "rtl" ? dir : undefined)/>
+<const/groupProps=() => ({ id: regionId, store: toaster, dir: machineDir })/>
 <service/service machine=() => toastMachine.group.machine props=groupProps/>
 <connect/api=(service, normalizeProps) =>
   toastMachine.group.connect(service, normalizeProps)
@@ -47,7 +59,20 @@ export interface Input extends Marko.Input<"div"> {
 // The group service must be handed to each child machine as `parent`. It is
 // passed as a GETTER closure created here in the template: the closure is
 // serializable, the running service it returns never is tag input itself.
-<const/getParentService=() => service.service/>
+//
+// `service.service` is null only during SSR, and SSR renders zero toasts (the
+// <for> below iterates an empty list), so no <toast-item> can ever call this
+// getter while it is null. Assert that invariant rather than widening the
+// child's `parent` input to allow null, which the Zag machine does not accept.
+<const/getParentService=() => {
+  const groupService = service.service;
+  if (!groupService) {
+    throw new Error(
+      "[toast] group service is not running — <toast-item> was rendered before <Toaster> mounted.",
+    );
+  }
+  return groupService;
+}/>
 
 <div
   ...rest
@@ -55,7 +80,11 @@ export interface Input extends Marko.Input<"div"> {
   data-slot="toaster"
   class=cn("outline-none", className)
 >
-  <for|toastOptions, index| of=api().getToasts() by=(item) => item.id>
+  // `ToastProps["id"]` is optional only as *creation input*: the store assigns
+  // `data.id ?? uuid()` before a toast is ever stored, so every entry returned
+  // by getToasts() carries a real id. The fallback keeps the key a string
+  // without inventing a value that could collide with a caller-supplied id.
+  <for|toastOptions, index| of=api().getToasts() by=(item, index) => item.id ?? `toast:index:${index}`>
     <ToastItem
       options=() => toastOptions
       parent=getParentService

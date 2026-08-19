@@ -13,21 +13,31 @@ const SHADCN_STYLES_DIR = join(
 
 const hasStylesSrc = existsSync(join(STYLES_SRC_DIR, "style-rhea.css"))
 
+// The shadcn originals live in a sibling clone (see CLAUDE.md: "shadcn source
+// lives in the space clone at ../../data/shadcn-ui/"). Contributors without
+// that checkout skip this block rather than crashing the whole run.
+const hasShadcnStyles = existsSync(join(SHADCN_STYLES_DIR, "style-rhea.css"))
+
 describe("createStyleMap (shadcn originals, cn- prefix)", () => {
-  const css = readFileSync(join(SHADCN_STYLES_DIR, "style-rhea.css"), "utf8")
-  const map = createStyleMap(css, "cn-")
+  // Reading is deferred so the describe body itself never throws when the
+  // sibling clone is absent; every test below is skipped in that case.
+  const map = hasShadcnStyles
+    ? createStyleMap(
+        readFileSync(join(SHADCN_STYLES_DIR, "style-rhea.css"), "utf8"),
+        "cn-"
+      )
+    : {}
 
-  test("produces a non-empty map with only cn- keys", () => {
-    const keys = Object.keys(map)
-    expect(keys.length).toBeGreaterThan(0)
-    expect(keys.every((key) => key.startsWith("cn-"))).toBe(true)
-  })
+  test.skipIf(!hasShadcnStyles)(
+    "produces a non-empty map with only cn- keys",
+    () => {
+      const keys = Object.keys(map)
+      expect(keys.length).toBeGreaterThan(0)
+      expect(keys.every((key) => key.startsWith("cn-"))).toBe(true)
+    }
+  )
 
-  test("key count snapshot", () => {
-    expect(Object.keys(map).length).toMatchSnapshot()
-  })
-
-  test("known mappings from style-rhea.css", () => {
+  test.skipIf(!hasShadcnStyles)("known mappings from style-rhea.css", () => {
     // .cn-slider-range { @apply bg-primary; }
     expect(map["cn-slider-range"]).toBe("bg-primary")
 
@@ -42,18 +52,39 @@ describe("createStyleMap (shadcn originals, cn- prefix)", () => {
     expect(map["cn-accordion-trigger"]).toContain("text-sm font-medium")
   })
 
-  test("returns undefined for a class with no mapping", () => {
-    expect(map["cn-does-not-exist"]).toBeUndefined()
-    expect("cn-does-not-exist" in map).toBe(false)
-  })
+  test.skipIf(!hasShadcnStyles)(
+    "returns undefined for a class with no mapping",
+    () => {
+      expect(map["cn-does-not-exist"]).toBeUndefined()
+      expect("cn-does-not-exist" in map).toBe(false)
+    }
+  )
 
-  test("classes without the prefix are never included", () => {
+  test.skipIf(!hasShadcnStyles)("classes without the prefix are never included", () => {
     // The wrapper selector .style-rhea has no @apply of its own and does
     // not carry the prefix, so it must not appear.
     expect(map["style-rhea"]).toBeUndefined()
   })
 
-  test("all style files parse into non-empty maps", () => {
+  // Replaces a bare `expect(keys.length).toMatchSnapshot()` (snapshotted 421).
+  // A key count passes identically whether a correct key or a garbage one was
+  // added, so it caught nothing the content assertions above did not. This
+  // asserts the SHAPE every entry must have instead: a component-ish key and a
+  // non-empty utility string, which does fail on a garbage key.
+  test.skipIf(!hasShadcnStyles)("every entry is a well-formed key/utility pair", () => {
+    const entries = Object.entries(map)
+    expect(entries.length).toBeGreaterThan(100)
+    for (const [key, utilities] of entries) {
+      expect(key, `key ${key}`).toMatch(/^cn-[a-z0-9]+(-[a-z0-9]+)*$/)
+      expect(utilities, `value of ${key}`).toBeTypeOf("string")
+      expect(utilities.trim(), `value of ${key}`).not.toBe("")
+      // @apply output is whitespace-separated utilities — never raw CSS.
+      expect(utilities, `value of ${key}`).not.toContain(";")
+      expect(utilities, `value of ${key}`).not.toContain("{")
+    }
+  })
+
+  test.skipIf(!hasShadcnStyles)("all style files parse into non-empty maps", () => {
     for (const style of [
       "luma",
       "lyra",

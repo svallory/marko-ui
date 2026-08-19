@@ -3,37 +3,70 @@
  *
  * vitest runs these files in the `node` environment (see vitest.config.ts), so
  * there is no browser provider in play — we drive Playwright directly. Playwright
- * is not a workspace dependency; it is resolved from the globally installed
- * module, hence the explicit `createRequire` lookup below.
+ * is not a direct workspace dependency, so it is resolved through the explicit
+ * `createRequire` probe below: PLAYWRIGHT_MODULE_PATH first, then normal node
+ * resolution, then known global-install locations (including homebrew).
  *
  * Every suite shares ONE chromium instance per worker process (launched lazily on
  * first use, closed by the process-exit hook). Launching a browser per test file
  * costs ~400ms each and buys nothing: pages are isolated by context, not process.
  */
 import { createRequire } from "node:module";
+import { join } from "node:path";
 import type { Browser, BrowserContext, Page } from "playwright";
 
 const requireFromHere = createRequire(import.meta.url);
 
-// Resolution order: explicit override (CI), the workspace's own node_modules
-// (present transitively via @playwright/test), then the globally installed
-// homebrew module as a last resort for local machines without a workspace copy.
-const PLAYWRIGHT_CANDIDATES = [
-  process.env.PLAYWRIGHT_MODULE_PATH,
-  "playwright",
-  "/opt/homebrew/lib/node_modules/playwright",
-].filter((candidate): candidate is string => Boolean(candidate));
+// Resolution order:
+//  1. PLAYWRIGHT_MODULE_PATH — explicit override, for CI or any layout the
+//     probes below do not know about. Always wins.
+//  2. Normal node resolution from this file, which finds the workspace's own
+//     node_modules copy (present transitively via @playwright/test) and any
+//     NODE_PATH the environment has set.
+//  3. Known global-install locations. CLAUDE.md documents this repo's local
+//     convention of resolving playwright from a GLOBAL homebrew install rather
+//     than the workspace, so that path stays supported — it is simply no longer
+//     the only one. The list covers homebrew on both arm64 (/opt/homebrew) and
+//     Intel (/usr/local) macOS plus the usual Linux global prefixes.
+const GLOBAL_INSTALL_PREFIXES = [
+  "/opt/homebrew/lib/node_modules", // homebrew, macOS arm64
+  "/usr/local/lib/node_modules", // homebrew Intel macOS, and common Linux
+  "/usr/lib/node_modules", // distro-packaged node on Linux
+  "/opt/homebrew/lib/node_modules/npm/node_modules",
+];
+
+function playwrightCandidates(): string[] {
+  const candidates: string[] = [];
+  if (process.env.PLAYWRIGHT_MODULE_PATH) {
+    candidates.push(process.env.PLAYWRIGHT_MODULE_PATH);
+  }
+  candidates.push("playwright");
+  for (const prefix of GLOBAL_INSTALL_PREFIXES) {
+    candidates.push(join(prefix, "playwright"));
+  }
+  // A globally installed bun/npm prefix reported by the environment.
+  for (const envPrefix of [process.env.BUN_INSTALL, process.env.npm_config_prefix]) {
+    if (envPrefix) candidates.push(join(envPrefix, "lib", "node_modules", "playwright"));
+  }
+  return candidates;
+}
 
 function loadPlaywright(): typeof import("playwright") {
   const failures: string[] = [];
-  for (const candidate of PLAYWRIGHT_CANDIDATES) {
+  for (const candidate of playwrightCandidates()) {
     try {
       return requireFromHere(candidate) as typeof import("playwright");
     } catch (error) {
-      failures.push(`${candidate}: ${(error as Error).message}`);
+      failures.push(`  ${candidate}: ${(error as Error).message}`);
     }
   }
-  throw new Error(`Unable to resolve playwright. Tried:\n${failures.join("\n")}`);
+  throw new Error(
+    "Unable to resolve the playwright module.\n" +
+      "Set PLAYWRIGHT_MODULE_PATH to the absolute path of an installed playwright " +
+      "package (for example /opt/homebrew/lib/node_modules/playwright), or install " +
+      "playwright so that normal node resolution finds it.\n" +
+      `Tried:\n${failures.join("\n")}`,
+  );
 }
 
 const playwright = loadPlaywright();

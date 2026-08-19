@@ -2,5 +2,5 @@
   "title": "Combobox",
   "description": "Autocomplete input and command palette with a list of suggestions, filtered as the user types.",
   "dependencies": ["@zag-js/combobox", "@zag-js/collection"],
-  "registryDependencies": ["utils"]
+  "registryDependencies": ["utils", "icon"]
 }

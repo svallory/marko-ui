@@ -166,7 +166,7 @@ static function outsideLabelGeometry(
 <div
   class=cn("recharts-wrapper flex h-full w-full flex-col", className)
   style={ position: "relative" }
-  onPointerleave() { activeIndex = -1; }
+  onPointerLeave() { activeIndex = -1; }
 >
   <if=(legend === "top")>
     <ChartLegend
@@ -192,7 +192,7 @@ static function outsideLabelGeometry(
             d=(isActive
               ? pieArcs(data, dataKey, { innerRadius, outerRadius: outer + activeOuterRadiusDelta, paddingAngle })[arcDatum.index]?.path ?? arcDatum.path
               : arcDatum.path)
-            onPointerenter() { activeIndex = arcDatum.index; }
+            onPointerEnter() { activeIndex = arcDatum.index; }
           />
         </g>
       </for>

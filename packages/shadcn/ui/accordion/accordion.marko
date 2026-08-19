@@ -2,6 +2,7 @@ import * as accordionMachine from "@zag-js/accordion";
 import type { MachineInput } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export interface AccordionItem {
   value: string;
@@ -44,17 +45,16 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    valueChange: ownChangeHandler,
-    items: ownItems,
-    item: ownItem,
-    content: ownContent,
-    ...native
-  } = accordionMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    accordionMachine.splitProps(input)[1],
+    "class",
+    "valueChange",
+    "items",
+    "item",
+    "content",
+  )
+>
 
 // Zag's `getItemContentProps().hidden` flips to `true` in the SAME render
 // that flips `data-state` to "closed" — there is no equivalent to Radix's
@@ -132,8 +132,15 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
 // after hydration).
 <lifecycle
   onMount() {
-    const root = document.getElementById(api().getRootProps().id);
-    if (!root) return;
+    // `getRootProps().id` is typed `AttrString` (`string | undefined`) because
+    // every Marko attribute is optional; Zag always fills it from the machine
+    // scope. Narrow through the id so the lookup is a real string.
+    const rootId = api().getRootProps().id;
+    const root = rootId ? document.getElementById(rootId) : null;
+    // Always return the same shape: an `onMount` that can return undefined
+    // types Marko's merge onto `this` as `... | undefined`, and `this.cleanup`
+    // stops existing. The no-root path returns a no-op cleanup instead.
+    if (!root) return { cleanup: () => {} };
 
     const publishHeight = (el: HTMLElement) => {
       if (el.hidden) return;

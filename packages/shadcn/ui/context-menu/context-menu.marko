@@ -79,7 +79,7 @@ export interface Input {
 <div ...api().getContextTriggerProps() data-slot="context-menu-trigger" class="mu-context-menu-trigger select-none">
   <${input.content}/>
 </div>
-<portal data-slot="context-menu-portal">
+<portal>
   <if=api().open>
     <div ...api().getPositionerProps() style=positionerStyle data-slot="context-menu-positioner">
       <div
@@ -106,12 +106,12 @@ export interface Input {
           </else>
           <else if=entry.type === "checkbox">
             <div
-              ...api().getOptionItemProps({ type: "checkbox", value: entry.value ?? `item-${index}`, checked: entry.checked, disabled: entry.disabled })
+              ...api().getOptionItemProps({ type: "checkbox", value: entry.value ?? `item-${index}`, checked: entry.checked ?? false, disabled: entry.disabled })
               data-slot="context-menu-checkbox-item"
               data-inset=entry.inset || undefined
               class="mu-context-menu-checkbox-item relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
             >
-              <span ...api().getItemIndicatorProps({ type: "checkbox", value: entry.value ?? `item-${index}`, checked: entry.checked }) data-slot="context-menu-checkbox-item-indicator" class="mu-context-menu-item-indicator pointer-events-none">
+              <span ...api().getItemIndicatorProps({ value: entry.value ?? `item-${index}`, checked: entry.checked ?? false }) data-slot="context-menu-checkbox-item-indicator" class="mu-context-menu-item-indicator pointer-events-none">
                 <if=entry.checked>
                   <Icon name="Check"/>
                 </if>
@@ -129,12 +129,12 @@ export interface Input {
           </else>
           <else if=entry.type === "radio">
             <div
-              ...api().getOptionItemProps({ type: "radio", value: entry.value ?? `item-${index}`, checked: entry.checked, disabled: entry.disabled })
+              ...api().getOptionItemProps({ type: "radio", value: entry.value ?? `item-${index}`, checked: entry.checked ?? false, disabled: entry.disabled })
               data-slot="context-menu-radio-item"
               data-inset=entry.inset || undefined
               class="mu-context-menu-radio-item relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
             >
-              <span ...api().getItemIndicatorProps({ type: "radio", value: entry.value ?? `item-${index}`, checked: entry.checked }) data-slot="context-menu-radio-item-indicator" class="mu-context-menu-item-indicator pointer-events-none">
+              <span ...api().getItemIndicatorProps({ value: entry.value ?? `item-${index}`, checked: entry.checked ?? false }) data-slot="context-menu-radio-item-indicator" class="mu-context-menu-item-indicator pointer-events-none">
                 <if=entry.checked>
                   <Icon name="Check"/>
                 </if>

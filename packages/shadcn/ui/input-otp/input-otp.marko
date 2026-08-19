@@ -1,6 +1,8 @@
 import * as pinInputMachine from "@zag-js/pin-input";
 import type { MachineInput } from "marko-zag";
+import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 // MachineInput = native <div> attributes ∩ the machine's full Props, with
 // `id` made optional (generated below, overridable). `valueChange` and
@@ -34,17 +36,16 @@ export type Input = MachineInput<"div", pinInputMachine.Props> & {
 // Whatever is neither machine-owned (splitProps) nor component-owned
 // (class, valueChange, valueCompleteChange, groupSize, length) passes
 // through to the root div: aria-*, data-*, form attributes...
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    valueChange: ownValueChangeHandler,
-    valueCompleteChange: ownValueCompleteChangeHandler,
-    groupSize: ownGroupSize,
-    length: ownLength,
-    ...native
-  } = pinInputMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    pinInputMachine.splitProps(input)[1],
+    "class",
+    "valueChange",
+    "valueCompleteChange",
+    "groupSize",
+    "length",
+  )
+>
 
 <div
   ...nativeAttrs()
@@ -56,10 +57,21 @@ export type Input = MachineInput<"div", pinInputMachine.Props> & {
   <div data-slot="input-otp-group" class="mu-input-otp-group flex items-center">
     <for|index| of=api().items>
       <if=(input.groupSize && index > 0 && index % input.groupSize === 0)>
-        <div data-slot="input-otp-separator" class="mu-input-otp-separator flex items-center [&_svg:not([class*='size-'])]:size-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14"/>
-          </svg>
+        // No inline `[&_svg:not([class*='size-'])]:size-N` here: every style
+        // layer's rule for the separator anchor below already carries one
+        // (sera 3.5, the other 7 → 4). An inline copy would shadow it on
+        // BOTH paths — on the import path by equal-specificity source order,
+        // and on the copy path because apply-style-map merges as
+        // `twMerge(mapped, original)` so an authored utility beats the
+        // injected one. Upstream's InputOTPSeparator likewise carries no
+        // classes; all sizing is the style layer's job.
+        <div data-slot="input-otp-separator" class="mu-input-otp-separator flex items-center">
+          // `unsized`: the style layer sizes this icon through shadcn's
+          // `[&_svg:not([class*='size-'])]` hatch, which only reaches an
+          // <svg> that has NO size class. Icon's default `size-4` would
+          // silently disable it (upstream's lucide-react MinusIcon emits no
+          // size class, which is why the hatch works there).
+          <Icon name="Minus" unsized/>
         </div>
       </if>
       <div data-slot="input-otp-slot" class="mu-input-otp-slot relative flex items-center justify-center has-focus:z-10">

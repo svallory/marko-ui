@@ -1,6 +1,7 @@
 import * as progressMachine from "@zag-js/progress";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export type Input = MachineInput<"div", progressMachine.Props> & {
   valueChange?: (value: number | null) => void;
@@ -18,15 +19,14 @@ export type Input = MachineInput<"div", progressMachine.Props> & {
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    valueChange: ownChangeHandler,
-    label: ownLabel,
-    ...native
-  } = progressMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    progressMachine.splitProps(input)[1],
+    "class",
+    "valueChange",
+    "label",
+  )
+>
 
 <div
   ...nativeAttrs()

@@ -1,6 +1,7 @@
 import * as fileUploadMachine from "@zag-js/file-upload";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 import { buttonVariants } from "../button/variants.ts";
 
 export interface FileUploadFileInfo {
@@ -30,14 +31,13 @@ export type Input = MachineInput<"input", fileUploadMachine.Props> & {
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    filesChange: ownChangeHandler,
-    ...native
-  } = fileUploadMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    fileUploadMachine.splitProps(input)[1],
+    "class",
+    "filesChange",
+  )
+>
 
 <const/formatSize=(bytes: number) => {
   if (bytes < 1024) return `${bytes} B`;

@@ -2,5 +2,5 @@
   "title": "Carousel",
   "description": "A slideshow component for cycling through elements, images, or slides of content.",
   "dependencies": ["@zag-js/carousel"],
-  "registryDependencies": ["utils"]
+  "registryDependencies": ["utils", "button", "icon"]
 }

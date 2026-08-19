@@ -137,7 +137,10 @@ static function computeBars(
       const layer = stacks[seriesIndex];
       const paths = ctx.data.map((row, rowIndex) => {
         const x = ctx.xBand(String(row[ctx.xKey])) ?? 0;
-        const segment = layer[rowIndex];
+        // d3 stack() emits one layer per key and one segment per row, so these
+        // are always present; fall back to an empty [0, 0] band so a malformed
+        // data/keys pairing renders nothing rather than crashing.
+        const segment = layer?.[rowIndex] ?? [0, 0];
         const top = ctx.y(segment[1]);
         const segmentHeight = ctx.y(segment[0]) - ctx.y(segment[1]);
         return roundedRectPath(x, top, bandwidth, segmentHeight, series.radius ?? 0);
@@ -166,7 +169,7 @@ static function computeSingleBars(
   ctx: CartesianCtx,
   dataKey: string,
   radius: CornerRadius | undefined,
-): { x: number; top: number; width: number; height: number; path: string }[] {
+): { row: Row; x: number; top: number; width: number; height: number; path: string }[] {
   const bandwidth = ctx.xBand.bandwidth();
   const baseline = ctx.y(0);
   return ctx.data.map((row) => {
@@ -174,7 +177,7 @@ static function computeSingleBars(
     const value = Number(row[dataKey] ?? 0);
     const top = Math.min(ctx.y(value), baseline);
     const height = Math.abs(baseline - ctx.y(value));
-    return { x, top, width: bandwidth, height, path: roundedRectPath(x, top, bandwidth, height, radius ?? 0) };
+    return { row, x, top, width: bandwidth, height, path: roundedRectPath(x, top, bandwidth, height, radius ?? 0) };
   });
 }
 
@@ -279,7 +282,7 @@ static function hComputeBars(
   ctx: HorizontalCtx,
   dataKey: string,
   radius: CornerRadius | undefined,
-): { y: number; left: number; width: number; height: number; path: string }[] {
+): { row: Row; y: number; left: number; width: number; height: number; path: string }[] {
   const bandwidth = ctx.yBand.bandwidth();
   const baseline = ctx.x(0);
   return ctx.data.map((row) => {
@@ -287,7 +290,7 @@ static function hComputeBars(
     const value = Number(row[dataKey] ?? 0);
     const left = Math.min(ctx.x(value), baseline);
     const width = Math.abs(baseline - ctx.x(value));
-    return { y, left, width, height: bandwidth, path: roundedRectPath(left, y, width, bandwidth, radius ?? 0) };
+    return { row, y, left, width, height: bandwidth, path: roundedRectPath(left, y, width, bandwidth, radius ?? 0) };
   });
 }
 
@@ -394,19 +397,24 @@ static function hFormatTicks(
 
 <let/hActiveIndex=(-1)/>
 <let/activeIndex=(-1)/>
+// Bind the active tooltip rows rather than indexing in the template:
+// `activeIndex >= 0` alone does not prove the index is still within the
+// arrays (a stale index survives a `data` change), so guard on the value.
+<const/hActiveRows=(hActiveIndex >= 0 ? hRowsByIndex[hActiveIndex] : undefined)/>
+<const/activeRows=(activeIndex >= 0 ? rowsByIndex[activeIndex] : undefined)/>
 
 <if=horizontal>
   // ---- Horizontal layout: category axis on Y, value axis on X ----
   <div
     class=cn("recharts-wrapper", className)
     style={ position: "relative", width: "100%", height: "100%" }
-    onPointermove(event: PointerEvent, el: HTMLDivElement) {
+    onPointerMove(event: PointerEvent, el: HTMLDivElement) {
       if (tooltipEnabled) {
         const rect = el.getBoundingClientRect();
         hActiveIndex = hIndexFromPointer(event.clientY - rect.top, rect.height, hGeometry);
       }
     }
-    onPointerleave() {
+    onPointerLeave() {
       if (tooltipEnabled) {
         hActiveIndex = -1;
       }
@@ -432,26 +440,26 @@ static function hFormatTicks(
           <g class="recharts-cartesian-axis-ticks">
             <for|tick| of=hTicks>
               <g class="recharts-layer recharts-cartesian-axis-tick">
-                <text orientation="left" stroke="none" fill="#666" class="recharts-text recharts-cartesian-axis-tick-value" x=(hCtx.plot.x - tickMargin) y=tick.y text-anchor="end"><tspan x=(hCtx.plot.x - tickMargin) dy="0.355em">${tick.value}</tspan></text>
+                <text stroke="none" fill="#666" class="recharts-text recharts-cartesian-axis-tick-value" x=(hCtx.plot.x - tickMargin) y=tick.y text-anchor="end"><tspan x=(hCtx.plot.x - tickMargin) dy="0.355em">${tick.value}</tspan></text>
               </g>
             </for>
           </g>
         </g>
       </if>
-      <for|bar,index| of=hBars>
+      <for|bar| of=hBars>
         <g class="recharts-layer recharts-bar">
           <g class="recharts-layer recharts-bar-rectangles">
             <g class="recharts-layer recharts-bar-rectangle">
               <path
                 class="recharts-rectangle"
-                fill=barColor(data[index], singleKey)
+                fill=barColor(bar.row, singleKey)
                 d=bar.path
               />
             </g>
           </g>
           <if=labelSpecs>
             <for|spec| of=labelSpecs>
-              <const/labelValue=(spec.dataKey ? String(data[index][spec.dataKey] ?? "") : String(data[index][singleKey] ?? ""))/>
+              <const/labelValue=(spec.dataKey ? String(bar.row[spec.dataKey] ?? "") : String(bar.row[singleKey] ?? ""))/>
               <const/labelText=(spec.formatter ? spec.formatter(labelValue) : labelValue)/>
               <const/labelPos=(spec.position ?? "right")/>
               <const/labelX=(labelPos === "insideLeft"
@@ -459,7 +467,7 @@ static function hFormatTicks(
                 : labelPos === "right"
                   ? bar.left + bar.width + 8
                   : bar.left + bar.width / 2)/>
-              <const/labelAnchor=(labelPos === "insideLeft" ? "start" : labelPos === "right" ? "start" : "middle")/>
+              <const/labelAnchor=(labelPos === "insideLeft" || labelPos === "right" ? ("start" as const) : ("middle" as const))/>
               <g class="recharts-layer recharts-label-list">
                 <text
                   x=labelX
@@ -476,7 +484,7 @@ static function hFormatTicks(
         </g>
       </for>
     </svg>
-    <if=(tooltipEnabled && hActiveIndex >= 0)>
+    <if=(tooltipEnabled && hActiveRows)>
       <div
         style={
           position: "absolute",
@@ -486,7 +494,7 @@ static function hFormatTicks(
         }
       >
         <ChartTooltip
-          rows=hRowsByIndex[hActiveIndex]
+          rows=hActiveRows
           label=hLabels[hActiveIndex]
           indicator=indicator
           hideLabel=hideLabel
@@ -503,13 +511,13 @@ static function hFormatTicks(
   <div
     class=cn("recharts-wrapper", className)
     style={ position: "relative", width: "100%", height: "100%" }
-    onPointermove(event: PointerEvent, el: HTMLDivElement) {
+    onPointerMove(event: PointerEvent, el: HTMLDivElement) {
       if (tooltipEnabled) {
         const rect = el.getBoundingClientRect();
         activeIndex = indexFromPointer(event.clientX - rect.left, rect.width, geometry);
       }
     }
-    onPointerleave() {
+    onPointerLeave() {
       if (tooltipEnabled) {
         activeIndex = -1;
       }
@@ -565,16 +573,16 @@ static function hFormatTicks(
               <g class="recharts-layer recharts-bar-rectangle">
                 <path
                   class="recharts-rectangle"
-                  fill=barColor(data[index], singleKey)
+                  fill=barColor(bar.row, singleKey)
                   fill-opacity=(isActive ? 0.8 : undefined)
-                  stroke=(isActive ? barColor(data[index], singleKey) : undefined)
+                  stroke=(isActive ? barColor(bar.row, singleKey) : undefined)
                   stroke-dasharray=(isActive ? 4 : undefined)
                   d=bar.path
                 />
               </g>
               <if=labelSpecs>
                 <for|spec| of=labelSpecs>
-                  <const/labelValue=(spec.dataKey ? String(data[index][spec.dataKey] ?? "") : String(data[index][singleKey] ?? ""))/>
+                  <const/labelValue=(spec.dataKey ? String(bar.row[spec.dataKey] ?? "") : String(bar.row[singleKey] ?? ""))/>
                   <const/labelText=(spec.formatter ? spec.formatter(labelValue) : labelValue)/>
                   <const/labelPos=(spec.position ?? "top")/>
                   <const/labelY=(labelPos === "top" ? bar.top - 12 : bar.top + bar.height / 2)/>
@@ -598,7 +606,7 @@ static function hFormatTicks(
     <if=(showLegend && legendAlign === "bottom")>
       <ChartLegend items=legendItemsFor(seriesList, config) verticalAlign="bottom"/>
     </if>
-    <if=(tooltipEnabled && activeIndex >= 0)>
+    <if=(tooltipEnabled && activeRows)>
       <div
         style={
           position: "absolute",
@@ -608,7 +616,7 @@ static function hFormatTicks(
         }
       >
         <ChartTooltip
-          rows=rowsByIndex[activeIndex]
+          rows=activeRows
           label=labels[activeIndex]
           indicator=indicator
           hideLabel=hideLabel

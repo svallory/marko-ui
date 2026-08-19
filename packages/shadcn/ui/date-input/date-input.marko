@@ -2,6 +2,7 @@ import * as dateInputMachine from "@zag-js/date-input";
 import { parse } from "@zag-js/date-input";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 // `value`/`placeholderValue` (and their `xxxChange` sugar) use plain ISO
 // strings instead of Zag's DateValue so consumers don't need to depend on
@@ -60,16 +61,25 @@ export type Input = Omit<
 // Whatever is neither machine-owned (splitProps) nor component-owned
 // (class, valueChange, placeholderValueChange, focusChange) passes through
 // to the root div: aria-*, data-*, form attributes...
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    valueChange: ownValueChangeHandler,
-    placeholderValueChange: ownPlaceholderValueChangeHandler,
-    focusChange: ownFocusChangeHandler,
-    ...native
-  } = dateInputMachine.splitProps(input)[1];
-  return native;
-}>
+// The four date props are deliberately remapped to ISO strings on this
+// component's public Input (see the note at the top), so `input` does not
+// satisfy `splitProps`'s `Partial<DateInputProps>` constraint. They are
+// machine-owned keys, so `splitProps` would strip them from the leftover
+// anyway — drop them first and the call type-checks on the keys it actually
+// partitions. `parse()` above is what feeds the real DateValues to the machine.
+<const/splitSource=() => {
+  const { value, defaultValue, placeholderValue, defaultPlaceholderValue, ...rest } = input;
+  return rest;
+}/>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    dateInputMachine.splitProps(splitSource())[1],
+    "class",
+    "valueChange",
+    "placeholderValueChange",
+    "focusChange",
+  )
+>
 
 <div
   ...nativeAttrs()

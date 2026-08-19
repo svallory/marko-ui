@@ -3,6 +3,7 @@
 import * as ratingGroupMachine from "@zag-js/rating-group";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 // MachineInput = native <div> attributes ∩ the machine's full Props, with
 // `id` made optional (generated below, overridable). `valueChange` is
@@ -36,15 +37,14 @@ export type Input = MachineInput<"div", ratingGroupMachine.Props> & {
 
 // Whatever is neither machine-owned (splitProps) nor component-owned
 // (class, valueChange) passes through to the root div.
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    label: ownLabel,
-    valueChange: ownChangeHandler,
-    ...native
-  } = ratingGroupMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    ratingGroupMachine.splitProps(input)[1],
+    "class",
+    "label",
+    "valueChange",
+  )
+>
 
 <div ...nativeAttrs() ...api().getRootProps() data-slot="rating-group" class=cn("flex flex-col gap-1.5", input.class)>
   <if=input.label>

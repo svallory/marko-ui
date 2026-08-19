@@ -1,6 +1,8 @@
 import * as editableMachine from "@zag-js/editable";
 import type { MachineInput } from "marko-zag";
+import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export type Input = MachineInput<"input", editableMachine.Props> & {
   valueChange?: (value: string) => void;
@@ -34,18 +36,17 @@ export type Input = MachineInput<"input", editableMachine.Props> & {
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    valueChange: ownValueChangeHandler,
-    editChange: ownEditChangeHandler,
-    valueCommit: ownValueCommitHandler,
-    valueRevert: ownValueRevertHandler,
-    trigger: ownTrigger,
-    ...native
-  } = editableMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    editableMachine.splitProps(input)[1],
+    "class",
+    "valueChange",
+    "editChange",
+    "valueCommit",
+    "valueRevert",
+    "trigger",
+  )
+>
 
 <div ...api().getRootProps() data-slot="editable-root" class=cn("flex items-center gap-1.5", input.class)>
   <div ...api().getAreaProps() data-slot="editable-area" class="flex-1">
@@ -70,9 +71,7 @@ export type Input = MachineInput<"input", editableMachine.Props> & {
       type="button"
       class="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex size-8 shrink-0 items-center justify-center gap-2 rounded-md border shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-4"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20 6 9 17l-5-5"/>
-      </svg>
+      <Icon name="Check"/>
       <span class="sr-only">Submit</span>
     </button>
     <button
@@ -81,10 +80,7 @@ export type Input = MachineInput<"input", editableMachine.Props> & {
       type="button"
       class="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex size-8 shrink-0 items-center justify-center gap-2 rounded-md border shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-4"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 6 6 18"/>
-        <path d="m6 6 12 12"/>
-      </svg>
+      <Icon name="X"/>
       <span class="sr-only">Cancel</span>
     </button>
     <if=input.trigger>
@@ -97,9 +93,7 @@ export type Input = MachineInput<"input", editableMachine.Props> & {
         type="button"
         class="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex size-8 shrink-0 items-center justify-center gap-2 rounded-md border shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-4"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-        </svg>
+        <Icon name="PencilIcon"/>
         <span class="sr-only">Edit</span>
       </button>
     </else>

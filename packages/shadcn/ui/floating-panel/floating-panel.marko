@@ -4,7 +4,9 @@
 // Authoring rules: notes/component-authoring.md (v2 pattern)
 import * as floatingPanelMachine from "@zag-js/floating-panel";
 import type { MachineInput } from "marko-zag";
+import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export type Input = Omit<
   MachineInput<"div", floatingPanelMachine.Props>,
@@ -70,25 +72,24 @@ export type Input = Omit<
 // Everything that is neither machine-owned (splitProps) nor component-owned
 // passes through to the panel content. Leaking a component-owned prop here
 // would render it as a bogus DOM attribute.
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    openChange: ownOpenChange,
-    positionChange: ownPositionChange,
-    positionEndChange: ownPositionEndChange,
-    sizeChange: ownSizeChange,
-    sizeEndChange: ownSizeEndChange,
-    stageChange: ownStageChange,
-    trigger: ownTrigger,
-    title: ownTitle,
-    content: ownContent,
-    actions: ownActions,
-    hideStageTriggers: ownHideStageTriggers,
-    hideCloseTrigger: ownHideCloseTrigger,
-    ...native
-  } = floatingPanelMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    floatingPanelMachine.splitProps(input)[1],
+    "class",
+    "openChange",
+    "positionChange",
+    "positionEndChange",
+    "sizeChange",
+    "sizeEndChange",
+    "stageChange",
+    "trigger",
+    "title",
+    "content",
+    "actions",
+    "hideStageTriggers",
+    "hideCloseTrigger",
+  )
+>
 
 <if=input.trigger>
   // The panel content only exists in the DOM while open, so the trigger's
@@ -155,15 +156,21 @@ export type Input = Omit<
                 data-slot="floating-panel-stage-trigger"
                 class="text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring/50 inline-flex size-6 items-center justify-center rounded-sm transition-colors focus-visible:ring-[3px] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5" aria-hidden="true">
-                  <path d="M5 12h14"/>
-                </svg>
+                <Icon name="Minus" class="size-3.5" aria-hidden="true"/>
               </button>
               <button
                 ...api().getStageTriggerProps({ stage: "maximized" })
                 data-slot="floating-panel-stage-trigger"
                 class="text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring/50 inline-flex size-6 items-center justify-center rounded-sm transition-colors focus-visible:ring-[3px] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
               >
+                // Deliberately still hand-inlined, unlike every other icon in
+                // this file: this is a custom 16x16-at-(4,4) rounded square, the
+                // desktop-window "maximize" glyph. Lucide has no equivalent —
+                // its `SquareIcon` is 18x18 at (3,3) (visibly larger inside the
+                // same 24 viewBox) and `MaximizeIcon` is a four-corner-brackets
+                // shape, not a square. Swapping in either would change what the
+                // button looks like, so it stays raw rather than being made
+                // icon-library-swappable with a different glyph.
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5" aria-hidden="true">
                   <rect width="16" height="16" x="4" y="4" rx="2"/>
                 </svg>
@@ -173,12 +180,7 @@ export type Input = Omit<
                 data-slot="floating-panel-stage-trigger"
                 class="text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring/50 inline-flex size-6 items-center justify-center rounded-sm transition-colors focus-visible:ring-[3px] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5" aria-hidden="true">
-                  <path d="M8 3v3a2 2 0 0 1-2 2H3"/>
-                  <path d="M21 8h-3a2 2 0 0 1-2-2V3"/>
-                  <path d="M3 16h3a2 2 0 0 1 2 2v3"/>
-                  <path d="M16 21v-3a2 2 0 0 1 2-2h3"/>
-                </svg>
+                <Icon name="MinimizeIcon" class="size-3.5" aria-hidden="true"/>
               </button>
             </if>
             <if=!input.hideCloseTrigger>
@@ -187,10 +189,7 @@ export type Input = Omit<
                 data-slot="floating-panel-close-trigger"
                 class="text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring/50 inline-flex size-6 items-center justify-center rounded-sm transition-colors focus-visible:ring-[3px] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5" aria-hidden="true">
-                  <path d="M18 6 6 18"/>
-                  <path d="m6 6 12 12"/>
-                </svg>
+                <Icon name="X" class="size-3.5" aria-hidden="true"/>
                 <span class="sr-only">Close</span>
               </button>
             </if>

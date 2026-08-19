@@ -1,6 +1,7 @@
 import * as listboxMachine from "@zag-js/listbox";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export interface ListboxItem {
   value: string;
@@ -90,18 +91,24 @@ export type Input = Omit<MachineInput<"div", listboxMachine.Props<ListboxItem>>,
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    items: ownItems,
-    option: ownOption,
-    valueChange: ownValueChange,
-    highlightedValueChange: ownHighlightedValueChange,
-    label: ownLabel,
-    ...native
-  } = listboxMachine.splitProps(input)[1];
-  return native;
-}>
+// `collection` is Omit-ted from this component's public Input (it is derived
+// from `items`), but `splitProps` is constrained on the full `ListboxProps`,
+// which requires it. Hand it the collection this component actually builds:
+// `splitProps` only partitions keys by name, and `collection` is machine-owned
+// so it is stripped from the leftover either way. `id` gets the same
+// treatment: `MachineInput` makes it optional (<machine-props> generates one)
+// while `ListboxProps` requires it, and splitProps never reads its value.
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    listboxMachine.splitProps({ ...input, id: input.id ?? "", collection: buildCollection(items) })[1],
+    "class",
+    "items",
+    "option",
+    "valueChange",
+    "highlightedValueChange",
+    "label",
+  )
+>
 
 <div ...nativeAttrs() ...api().getRootProps() data-slot="listbox" class=cn("flex flex-col gap-1.5", className)>
   <if=label>

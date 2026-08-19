@@ -18,7 +18,29 @@ import {
   type AllowedElementCountChange,
 } from "./helpers/hydration-invariant.ts";
 
-/** The 31 Zag-machine-backed components with demo routes. */
+/**
+ * The 33 Zag-machine-backed components currently covered by this suite.
+ *
+ * NOT the full set. packages/shadcn/ui/ holds 54 Zag-backed components (54
+ * component directories contain both a <service> and a <connect> tag; 53 of
+ * those also carry <machine-props> — `toast` is the lone exception, a
+ * client-only group store that is Zag-backed by <service>/<connect> alone).
+ * All 54 have demo directories under apps/docs/src/demos/.
+ *
+ * 33 are listed below, so 21 are uncovered — a real coverage gap in
+ * constraint C-4, not a deliberate exclusion:
+ *
+ *   angle-slider, cascade-select, color-picker, date-input, editable,
+ *   floating-panel, image-cropper, listbox, marquee, navigation-menu,
+ *   number-input, password-input, qr-code, rating-group, scroll-area,
+ *   signature-pad, steps, tags-input, timer, toc, tour
+ *
+ * (54 Zag-backed − 33 covered = 21, matching that list exactly.)
+ *
+ * Add a component here once its route is verified; several of the above are
+ * measurement-heavy (color-picker, image-cropper, signature-pad, floating-panel)
+ * and will likely need ALLOWED_DIFFERENCES entries the way carousel does.
+ */
 const INTERACTIVE_COMPONENTS = [
   "accordion",
   "alert-dialog",

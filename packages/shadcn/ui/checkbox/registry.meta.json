@@ -2,5 +2,5 @@
   "title": "Checkbox",
   "description": "A control that allows the user to toggle between checked, unchecked, and indeterminate states.",
   "dependencies": ["@zag-js/checkbox"],
-  "registryDependencies": ["utils"]
+  "registryDependencies": ["utils", "icon"]
 }

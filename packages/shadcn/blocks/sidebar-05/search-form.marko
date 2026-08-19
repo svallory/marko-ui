@@ -6,7 +6,7 @@ export interface Input extends Marko.Input<"form"> {}
 
 <const/{ class: className, ...rest }=input/>
 
-<form ...rest>
+<form ...rest class=className>
   <SidebarGroup class="py-0">
     <div class="relative" data-slot="sidebar-group-content">
       <Label for="search" class="sr-only">Search</Label>

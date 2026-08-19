@@ -34,6 +34,18 @@ export interface Input extends Marko.Input<"svg"> {
   /** Which icon library to render from. Defaults to "lucide". */
   library?: IconLibraryName;
   class?: string;
+  /**
+   * Suppress the default `size-4` class so the emitted <svg> carries no
+   * `size-*` utility at all.
+   *
+   * The 8 style layers size icons through shadcn's vendored
+   * `[&_svg:not([class*='size-'])]:size-N` escape hatch, which only reaches
+   * an <svg> that has NO size class. Upstream shadcn's icon loader emits no
+   * default size for exactly this reason; this component adds `size-4` as a
+   * convenience, which silently disables that hatch. Set `unsized` at any
+   * call site whose size is owned by an ancestor's `mu-*` style rule.
+   */
+  unsized?: boolean;
 }
 
 // `input.library` is typed as IconLibraryName, but every call site that
@@ -46,7 +58,7 @@ export interface Input extends Marko.Input<"svg"> {
 // passes through, rather than chasing every upstream cast site.
 <const/requestedLibrary=input.library ?? "lucide"/>
 <const/library=(requestedLibrary in ICON_WRAPPER_ATTRS ? requestedLibrary : "lucide") as IconLibraryName/>
-<const/{ name, library: _library, class: className, ...rest }=input/>
+<const/{ name, library: _library, class: className, unsized, ...rest }=input/>
 <const/wrapperAttrs=ICON_WRAPPER_ATTRS[library]/>
 
 <svg
@@ -60,7 +72,7 @@ export interface Input extends Marko.Input<"svg"> {
   stroke-width=wrapperAttrs["stroke-width"]
   stroke-linecap=wrapperAttrs["stroke-linecap"]
   stroke-linejoin=wrapperAttrs["stroke-linejoin"]
-  class=cn("size-4", className)
+  class=cn(unsized ? undefined : "size-4", className) || undefined
   data-icon-name=name
   data-icon-library=library
 >

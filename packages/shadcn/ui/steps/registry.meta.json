@@ -2,5 +2,5 @@
   "title": "Steps",
   "description": "A wizard-like stepper with numbered indicators, connecting separators, and prev/next navigation.",
   "dependencies": ["@zag-js/steps"],
-  "registryDependencies": ["utils"]
+  "registryDependencies": ["utils", "icon"]
 }

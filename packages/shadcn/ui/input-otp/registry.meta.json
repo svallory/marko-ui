@@ -2,5 +2,5 @@
   "title": "Input OTP",
   "description": "Accessible one-time password component with copy paste functionality.",
   "dependencies": ["@zag-js/pin-input"],
-  "registryDependencies": ["utils"]
+  "registryDependencies": ["utils", "icon"]
 }

@@ -5,5 +5,14 @@
       "#lib/*": ["./lib/*"]
     }
   },
-  "include": ["ui/**/*.ts", "lib/**/*.ts", "tests/**/*.ts"]
+  "include": [
+    "ui/**/*.ts",
+    "ui/**/*.marko",
+    "lib/**/*.ts",
+    "tests/**/*.ts",
+    "../../tooling/style-map.ts",
+    "../../tooling/apply-style-map.ts",
+    "../../tooling/transform-marko.ts",
+    "../../tooling/transform-variants.ts"
+  ]
 }

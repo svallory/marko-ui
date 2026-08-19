@@ -2,6 +2,7 @@ import * as tabsMachine from "@zag-js/tabs";
 import type { MachineInput } from "marko-zag";
 import { tabsListVariants, type TabsListVariants } from "./variants.ts";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export interface TabItem {
   value: string;
@@ -16,6 +17,20 @@ export interface TabsTriggerAttrs {
 }
 
 export interface TabsPanelAttrs {
+  value: string;
+  content?: Marko.Body;
+}
+
+// The single normalized shapes the render path consumes. Both sources
+// (attr tags and `items=`) widen into these, so no narrowing is needed.
+export interface NormalizedTrigger {
+  value: string;
+  disabled?: boolean;
+  label?: string;
+  content?: Marko.Body;
+}
+
+export interface NormalizedPanel {
   value: string;
   content?: Marko.Body;
 }
@@ -51,8 +66,13 @@ export type Input = MachineInput<"div", tabsMachine.Props> &
 // supply both tag names (or neither) to stay on one source.
 <const/triggerTags=[...(input.trigger ?? [])]/>
 <const/panelTags=[...(input.panel ?? [])]/>
-<const/triggers=(triggerTags.length > 0 ? triggerTags : (items ?? []).map((item) => ({ value: item.value, disabled: item.disabled, label: item.label })))/>
-<const/panels=(panelTags.length > 0 ? panelTags : (items ?? []).map((item) => ({ value: item.value })))/>
+// Normalized to ONE shape (not a union of the two sources): `label` and
+// `content` are both optional here, so the render path can read either
+// without narrowing. A union of the attr-tag shape and the items= shape
+// would make `.content` invalid on one arm and `.label` invalid on the
+// other, which is exactly what the render path below needs to read.
+<const/triggers: NormalizedTrigger[]=(triggerTags.length > 0 ? triggerTags : (items ?? []).map((item) => ({ value: item.value, disabled: item.disabled, label: item.label })))/>
+<const/panels: NormalizedPanel[]=(panelTags.length > 0 ? panelTags : (items ?? []).map((item) => ({ value: item.value })))/>
 
 // The three-tag wiring (see /docs/creating-components):
 // 1. <machine-props> picks the machine's props out of `input` by name and
@@ -77,19 +97,18 @@ export type Input = MachineInput<"div", tabsMachine.Props> &
 
 // Whatever is neither machine-owned (splitProps) nor component-owned
 // (class, items, content, valueChange) passes through to the root div.
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    items: ownItems,
-    content: ownContent,
-    trigger: ownTrigger,
-    panel: ownPanel,
-    variant: ownVariant,
-    valueChange: ownChangeHandler,
-    ...native
-  } = tabsMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    tabsMachine.splitProps(input)[1],
+    "class",
+    "items",
+    "content",
+    "trigger",
+    "panel",
+    "variant",
+    "valueChange",
+  )
+>
 
 <div
   ...nativeAttrs()

@@ -2,5 +2,5 @@
   "title": "Toast",
   "description": "A succinct message that is displayed temporarily.",
   "dependencies": ["@zag-js/toast", "marko-ui"],
-  "registryDependencies": ["utils"]
+  "registryDependencies": ["utils", "icon"]
 }

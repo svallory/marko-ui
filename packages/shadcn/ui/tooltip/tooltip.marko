@@ -2,6 +2,7 @@ import * as tooltipMachine from "@zag-js/tooltip";
 import type { MachineInput } from "marko-zag";
 import { positionerStyle } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 // MachineInput = native <div> attributes ∩ the machine's full Props, with
 // `id` made optional (generated below, overridable). `openChange` is
@@ -40,16 +41,9 @@ export type Input = MachineInput<"div", tooltipMachine.Props> & {
 // (class, openChange, trigger, content) passes through to the root span:
 // aria-*, data-*, arbitrary attributes callers attach to the tooltip as
 // a whole.
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    openChange: ownChangeHandler,
-    trigger: ownTrigger,
-    content: ownContent,
-    ...native
-  } = tooltipMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(tooltipMachine.splitProps(input)[1], "class", "openChange", "trigger", "content")
+>
 
 <span ...nativeAttrs() data-slot="tooltip">
   <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "tooltip-trigger" })/>

@@ -25,55 +25,12 @@ export function demoByTitle(page: Page, title: string): Locator {
     .first();
 }
 
-/**
- * Nth root element of a machine scope on the page.
- *
- * Demo routes render several configurations of the same component; tests pin an
- * explicit index so adding a demo later fails loudly instead of silently
- * retargeting an assertion at a different configuration.
- */
-export function scopeRoot(page: Page, scope: string, index = 0): Locator {
-  return page.locator(`[data-scope="${scope}"][data-part="root"]`).nth(index);
-}
-
-/** A part within a given machine root. */
-export function partWithin(root: Locator, part: string): Locator {
-  return root.locator(`[data-part="${part}"]`);
-}
-
 /** Read an attribute, normalizing absence to undefined. */
 export async function attributeOf(
   locator: Locator,
   attributeName: string,
 ): Promise<string | undefined> {
   return (await locator.getAttribute(attributeName)) ?? undefined;
-}
-
-/**
- * The element the document currently considers focused.
- *
- * Returned as a descriptor rather than a handle so assertions read clearly in
- * failure output and do not depend on element identity across re-renders.
- */
-export interface FocusDescriptor {
-  tagName: string;
-  part: string | undefined;
-  scope: string | undefined;
-  id: string | undefined;
-  textContent: string;
-}
-
-export async function describeFocusedElement(page: Page): Promise<FocusDescriptor> {
-  return page.evaluate(() => {
-    const element = document.activeElement;
-    return {
-      tagName: element?.tagName.toLowerCase() ?? "(none)",
-      part: element?.getAttribute("data-part") ?? undefined,
-      scope: element?.getAttribute("data-scope") ?? undefined,
-      id: element?.id || undefined,
-      textContent: (element?.textContent ?? "").trim().slice(0, 60),
-    };
-  });
 }
 
 /** Assert-friendly check that a specific locator holds DOM focus. */

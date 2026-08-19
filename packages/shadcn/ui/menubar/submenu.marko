@@ -17,7 +17,6 @@
 // nesting (a submenu's own items are flat — item/separator/label only); a
 // `type: "sub"` entry inside a submenu's `subEntries` is not wired.
 import * as menu from "@zag-js/menu";
-import type { MarkoService } from "marko-zag";
 import { positionerStyle } from "marko-zag";
 import type { MenubarItemAttrs } from "./menu.marko";
 
@@ -29,20 +28,20 @@ export interface Input {
   disabled?: boolean;
   inset?: boolean;
   /** Getter for the parent menu's raw service — this submenu registers onto it via `setParent`. */
-  parent: () => MarkoService;
+  parent: () => menu.Service | null;
   /**
    * Fires once this submenu's own raw service exists (on mount), so the
    * parent can complete the link with `parentApi().setChild(childService)` —
    * `setChild` needs the RAW service (see menu.connect's `child.prop("id")`),
    * which only exists after this component's own `<service>` has mounted.
    */
-  onChildReady?: (childService: MarkoService) => void;
+  onChildReady?: (childService: menu.Service) => void;
   /**
    * Trigger render-prop: receives this submenu's connected api so the caller
    * (the parent menu's item loop) can build the row with
    * `parentApi().getTriggerItemProps(childApi)`.
    */
-  trigger: Marko.Body<[menu.Api]>;
+  trigger: Marko.AttrTag<{ content: Marko.Body<[menu.Api]> }>;
 }
 
 <machine-props/machineProps from=input pick=menu.props/>
@@ -68,7 +67,7 @@ export interface Input {
   }
 />
 
-<${input.trigger}(api())/>
+<${input.trigger.content}(api())/>
 <portal>
   <if=api().open>
     <div ...api().getPositionerProps() style=positionerStyle data-slot="menubar-sub-content-positioner">
@@ -92,7 +91,7 @@ export interface Input {
               ...api().getItemProps({ value, disabled: entry.disabled })
               data-slot="menubar-item"
               data-inset=entry.inset || undefined
-              data-variant=entry.danger ? "destructive" : "default"
+              data-variant=entry.variant ?? "default"
               class="mu-menubar-item group/menubar-item relative flex cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
             >
               ${entry.label}

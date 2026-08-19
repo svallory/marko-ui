@@ -1,5 +1,5 @@
 {
   "title": "Message Scroller",
   "description": "Headless scroll container for chat transcripts, with stick-to-bottom auto-follow, turn anchoring, and a scroll-to-end/start button.",
-  "registryDependencies": ["utils", "button"]
+  "registryDependencies": ["utils", "button", "icon"]
 }

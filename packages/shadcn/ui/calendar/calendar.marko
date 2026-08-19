@@ -2,7 +2,9 @@ import * as datePickerMachine from "@zag-js/date-picker";
 import { CalendarDate, type DateValue } from "@internationalized/date";
 import type { MachineInput } from "marko-zag";
 import { buttonVariants } from "../button/variants.ts";
+import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 // Calendar is an inline, always-open date-picker: `open`/`inline`/
 // `closeOnSelect` are fixed by this component, not exposed to callers.
@@ -56,15 +58,24 @@ static function toPlain(date: DateValue) {
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    valueChange: ownChangeHandler,
-    captionLayout: ownCaptionLayout,
-    ...native
-  } = datePickerMachine.splitProps(input)[1];
-  return native;
-}>
+// `value`/`min`/`max` are deliberately remapped to plain { year, month, day }
+// objects on this component's public Input (see the note above it), so `input`
+// does not satisfy `splitProps`'s `Partial<DatePickerProps>` constraint. All
+// three are machine-owned keys that `splitProps` would strip from the leftover
+// anyway — drop them first and the call type-checks on the keys it actually
+// partitions. `toDateValue()` is what feeds real DateValues to the machine.
+<const/splitSource=() => {
+  const { value, min, max, ...rest } = input;
+  return rest;
+}/>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    datePickerMachine.splitProps(splitSource())[1],
+    "class",
+    "valueChange",
+    "captionLayout",
+  )
+>
 
 <const/captionLayout=(input.captionLayout ?? "label")/>
 
@@ -100,9 +111,7 @@ static function toPlain(date: DateValue) {
         data-slot="calendar-prev-trigger"
         class=cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "size-(--cell-size) p-0 select-none aria-disabled:opacity-50")
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-rtl-flip size-4">
-          <path d="m15 18-6-6 6-6"/>
-        </svg>
+        <Icon name="ChevronLeft" class="mu-rtl-flip"/>
         <span class="sr-only">Previous</span>
       </button>
       <if=captionLayout === "dropdown">
@@ -129,9 +138,7 @@ static function toPlain(date: DateValue) {
               class="mu-calendar-caption-label flex items-center gap-1 rounded-(--cell-radius) text-sm font-medium select-none [&>svg]:size-3.5 [&>svg]:text-muted-foreground"
             >
               ${monthLabel()}
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
-                <path d="m6 9 6 6 6-6"/>
-              </svg>
+              <Icon name="ChevronDown"/>
             </span>
           </div>
           <div
@@ -153,9 +160,7 @@ static function toPlain(date: DateValue) {
               class="mu-calendar-caption-label flex items-center gap-1 rounded-(--cell-radius) text-sm font-medium select-none [&>svg]:size-3.5 [&>svg]:text-muted-foreground"
             >
               ${String(api().visibleRange.start.year)}
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
-                <path d="m6 9 6 6 6-6"/>
-              </svg>
+              <Icon name="ChevronDown"/>
             </span>
           </div>
         </div>
@@ -174,9 +179,7 @@ static function toPlain(date: DateValue) {
         data-slot="calendar-next-trigger"
         class=cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "size-(--cell-size) p-0 select-none aria-disabled:opacity-50")
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-rtl-flip size-4">
-          <path d="m9 18 6-6-6-6"/>
-        </svg>
+        <Icon name="ChevronRight" class="mu-rtl-flip"/>
         <span class="sr-only">Next</span>
       </button>
     </div>
@@ -192,9 +195,9 @@ static function toPlain(date: DateValue) {
         </tr>
       </thead>
       <tbody ...api().getTableBodyProps() data-slot="calendar-table-body">
-        <for|week, i| of=weeks() by=(_, i) => i>
+        <for|week, i| of=weeks() by=(_, i) => `week:${i}`>
           <tr class="mt-2 flex w-full">
-            <for|day, j| of=week by=(_, j) => j>
+            <for|day, j| of=week by=(_, j) => `day:${j}`>
               <td
                 ...day.cell
                 data-slot="calendar-cell"

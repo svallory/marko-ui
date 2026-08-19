@@ -1,7 +1,8 @@
 import * as toggleGroupMachine from "@zag-js/toggle-group";
-import type { MachineInput } from "marko-zag";
+import { mergeProps, type MachineInput } from "marko-zag";
 import { toggleVariants, type ToggleVariants } from "../toggle/variants.ts";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export interface ToggleGroupItem {
   value: string;
@@ -49,30 +50,28 @@ export type Input = MachineInput<"div", toggleGroupMachine.Props> &
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    items: ownItems,
-    item: ownItem,
-    variant: ownVariant,
-    size: ownSize,
-    spacing: ownSpacing,
-    valueChange: ownChangeHandler,
-    ...native
-  } = toggleGroupMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    toggleGroupMachine.splitProps(input)[1],
+    "class",
+    "items",
+    "item",
+    "variant",
+    "size",
+    "spacing",
+    "valueChange",
+  )
+>
 
 <const/spacing=input.spacing ?? 2/>
 
 <div
   ...nativeAttrs()
-  ...api().getRootProps()
+  ...mergeProps(api().getRootProps(), { style: { "--gap": spacing } })
   data-slot="toggle-group"
   data-variant=(input.variant ?? "default")
   data-size=(input.size ?? "default")
   data-spacing=spacing
-  style={ "--gap": spacing }
   class=cn(
     "mu-toggle-group group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] data-vertical:flex-col data-vertical:items-stretch",
     input.class

@@ -1,7 +1,9 @@
 import * as select from "@zag-js/select";
 import type { MachineInput } from "marko-zag";
 import { positionerStyle } from "marko-zag";
+import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export interface SelectItem {
   value: string;
@@ -76,20 +78,19 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
   viewport?.scrollBy({ top: delta, behavior: "smooth" });
 }>
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    valueChange: ownChangeHandler,
-    items: ownItems,
-    groups: ownGroups,
-    option: ownOption,
-    placeholder: ownPlaceholder,
-    label: ownLabel,
-    size: ownSize,
-    ...native
-  } = select.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    select.splitProps(input)[1],
+    "class",
+    "valueChange",
+    "items",
+    "groups",
+    "option",
+    "placeholder",
+    "label",
+    "size",
+  )
+>
 
 <div ...nativeAttrs() ...api().getRootProps() data-slot="select" class=cn(className)>
   // RULE 9 TRAP: upstream `select-label` is the LISTBOX GROUP LABEL rendered
@@ -113,9 +114,7 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
       class="mu-select-trigger flex w-fit items-center justify-between whitespace-nowrap outline-none disabled:cursor-not-allowed disabled:opacity-50 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center [&_svg]:pointer-events-none [&_svg]:shrink-0"
     >
       <span data-slot="select-value">${api().valueAsString || placeholder}</span>
-      <svg ...api().getIndicatorProps() xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-select-trigger-icon pointer-events-none">
-        <path d="m6 9 6 6 6-6"/>
-      </svg>
+      <Icon ...api().getIndicatorProps() name="ChevronDown" class="mu-select-trigger-icon pointer-events-none"/>
     </button>
   </div>
   <select ...api().getHiddenSelectProps() data-slot="select-hidden-select">
@@ -132,9 +131,7 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
           class="mu-select-content mu-menu-target mu-menu-translucent relative z-50 max-h-(--available-height) overflow-x-hidden overflow-y-auto origin-(--transform-origin) data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1"
         >
           <button type="button" data-slot="select-scroll-up-button" class="mu-select-scroll-up-button" on-click(e: Event) { scrollViewport(e, -40); }>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
-              <path d="m18 15-6-6-6 6"/>
-            </svg>
+            <Icon name="ChevronUp" class="size-4"/>
           </button>
           <div data-slot="select-viewport" class="mu-select-viewport">
             <if=groups>
@@ -148,9 +145,7 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
                       class="mu-select-item relative flex w-full cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
                     >
                       <span ...api().getItemIndicatorProps({ item: entry }) data-slot="select-item-indicator" class="mu-select-item-indicator">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-select-item-indicator-icon pointer-events-none">
-                          <path d="M20 6 9 17l-5-5"/>
-                        </svg>
+                        <Icon name="Check" class="mu-select-item-indicator-icon pointer-events-none"/>
                       </span>
                       <span ...api().getItemTextProps({ item: entry }) data-slot="select-item-text">${entry.label}</span>
                     </div>
@@ -169,9 +164,7 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
                   class="mu-select-item relative flex w-full cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
                 >
                   <span ...api().getItemIndicatorProps({ item: entry }) data-slot="select-item-indicator" class="mu-select-item-indicator">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mu-select-item-indicator-icon pointer-events-none">
-                      <path d="M20 6 9 17l-5-5"/>
-                    </svg>
+                    <Icon name="Check" class="mu-select-item-indicator-icon pointer-events-none"/>
                   </span>
                   <span ...api().getItemTextProps({ item: entry }) data-slot="select-item-text">${entry.label}</span>
                 </div>
@@ -179,9 +172,7 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
             </else>
           </div>
           <button type="button" data-slot="select-scroll-down-button" class="mu-select-scroll-down-button" on-click(e: Event) { scrollViewport(e, 40); }>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
-              <path d="m6 9 6 6 6-6"/>
-            </svg>
+            <Icon name="ChevronDown" class="size-4"/>
           </button>
         </div>
       </div>
@@ -209,7 +200,11 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
   if (isOpen) {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        const content = document.getElementById(api().getContentProps().id);
+        // `id` is typed AttrString (may be undefined). Guard rather than
+        // pass it through: getElementById(undefined) stringifies to
+        // "undefined" and silently matches nothing.
+        const contentId = api().getContentProps().id;
+        const content = contentId ? document.getElementById(contentId) : null;
         // Only intervene if Zag's own attempt lost the race; never steal focus
         // from an element inside the content the user has already reached.
         if (!content || content.contains(document.activeElement)) return;

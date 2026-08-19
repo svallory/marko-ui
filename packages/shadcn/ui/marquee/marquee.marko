@@ -1,10 +1,19 @@
 import * as marqueeMachine from "@zag-js/marquee";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
   items?: T[];
-  content?: Marko.Body<[T, number]>;
+  /**
+   * Render prop for `items=` entries.
+   *
+   * The item is `T | undefined`, not `T`: a bodyless `<@item/>` produces an
+   * entry with no datum, and the render path below still reaches this body for
+   * it (the `<else if=input.content>` branch). Declaring it as `T` promised a
+   * value this component does not always pass.
+   */
+  content?: Marko.Body<[T | undefined, number]>;
   item?: Marko.AttrTag<{ content?: Marko.Body }>;
   pausedChange?: (paused: boolean) => void;
 };
@@ -20,17 +29,16 @@ export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
   service=service
 />
 
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    items: ownItems,
-    content: ownContent,
-    item: ownItem,
-    pausedChange: ownChangeHandler,
-    ...native
-  } = marqueeMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    marqueeMachine.splitProps(input)[1],
+    "class",
+    "items",
+    "content",
+    "item",
+    "pausedChange",
+  )
+>
 
 // Normalize BOTH sources into ONE explicit common shape (mirrors
 // carousel.marko / radio-group.marko) so the render path below never
@@ -38,8 +46,12 @@ export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
 // markup body, `item` the items=-derived datum handed to the `content`
 // render prop (or rendered as text). Attr tags win if both are present
 // (compound is primary per the compound-tag-dx report).
-<const/itemTags=[...(input.item ?? [])].map((tag) => ({ body: tag.content, item: undefined as unknown }))/>
-<const/entries=(itemTags.length > 0 ? itemTags : (input.items ?? []).map((item) => ({ body: undefined as Marko.Body | undefined, item: item as unknown })))/>
+// `item` is `T | undefined`, not `unknown`: the attr-tag branch carries no
+// datum, but the items= branch carries a real `T` that must survive into the
+// `content` render prop's parameter. Erasing it to `unknown` made the
+// `<${input.content}(entry.item, itemIndex)>` call below a type error.
+<const/itemTags=[...(input.item ?? [])].map((tag) => ({ body: tag.content, item: undefined as T | undefined }))/>
+<const/entries=(itemTags.length > 0 ? itemTags : (input.items ?? []).map((item) => ({ body: undefined as Marko.Body | undefined, item: item as T | undefined })))/>
 
 <style>
   @keyframes marko-ui-marquee-scroll-x {

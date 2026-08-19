@@ -1,6 +1,7 @@
 import * as tocMachine from "@zag-js/toc";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 // Zag's TocItem only carries `value` (heading slug) and `depth`; the display
 // text is this component's own concern, so items may carry an optional
@@ -30,10 +31,18 @@ export type Input = MachineInput<"nav", tocMachine.Props> & {
 
 <const/tocItems=() => api().items as TocItem[]>
 
-<const/nativeAttrs=() => {
-  const { class: ownClass, activeIdsChange: ownActiveIdsChangeHandler, activeItemsChange: ownActiveItemsChangeHandler, items: ownItems, title: ownTitle, ...native } = tocMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    tocMachine.splitProps(input)[1],
+    "class",
+    "activeIdsChange",
+    "activeItemsChange",
+    // NOTE: no "items" here — `items` is a TocProps key, so Zag's splitProps
+    // has already claimed it and it is absent from the leftover object.
+    // Listing it was a compile error (keys must be `keyof Source`).
+    "title",
+  )
+>
 
 <nav
   ...nativeAttrs()

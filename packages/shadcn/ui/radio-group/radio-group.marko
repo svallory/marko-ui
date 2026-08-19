@@ -1,6 +1,7 @@
 import * as radioGroupMachine from "@zag-js/radio-group";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import { stripOwnProps } from "#lib/native-attrs.ts";
 
 export interface RadioGroupItem {
   value: string;
@@ -60,16 +61,15 @@ export type Input = Omit<MachineInput<"div", radioGroupMachine.Props>, "value"> 
 
 // Whatever is neither machine-owned (splitProps) nor component-owned
 // (class, items, valueChange) passes through to the root div.
-<const/nativeAttrs=() => {
-  const {
-    class: ownClass,
-    items: ownItems,
-    item: ownItem,
-    valueChange: ownChangeHandler,
-    ...native
-  } = radioGroupMachine.splitProps(input)[1];
-  return native;
-}>
+<const/nativeAttrs=() =>
+  stripOwnProps(
+    radioGroupMachine.splitProps(input)[1],
+    "class",
+    "items",
+    "item",
+    "valueChange",
+  )
+>
 
 <div ...nativeAttrs() ...api().getRootProps() data-slot="radio-group" class=cn("mu-radio-group w-full", input.class)>
   <for|item| of=normalizedItems by=(item) => item.value>

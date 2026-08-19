@@ -234,11 +234,15 @@ static function buildTooltipRows(
 <const/geo={ width, plotX: ctx.plot.x, plotWidth: ctx.plot.width, count: data.length }/>
 
 <let/activeIndex=(-1)/>
+// Bind the active row rather than indexing in the template: `activeIndex >= 0`
+// alone does not prove the index is still within `tooltipRows` (a stale index
+// survives a `data` change), so guard on the looked-up value instead.
+<const/activeRows=(activeIndex >= 0 ? tooltipRows[activeIndex] : undefined)/>
 
 <div
   class=cn("recharts-wrapper", className)
   style={ position: "relative", width: "100%", height: "100%" }
-  onPointermove(event: PointerEvent, el: HTMLDivElement) {
+  onPointerMove(event: PointerEvent, el: HTMLDivElement) {
     if (showTooltip) {
       // offsetX is relative to the event TARGET (an inner svg node when
       // hovering the chart), so derive the wrapper-relative x from clientX.
@@ -246,7 +250,7 @@ static function buildTooltipRows(
       activeIndex = pointerIndex(event.clientX - rect.left, rect.width, geo);
     }
   }
-  onPointerleave() {
+  onPointerLeave() {
     activeIndex = -1;
   }
 >
@@ -332,7 +336,7 @@ static function buildTooltipRows(
   <if=(showLegend && legendPosition === "bottom")>
     <ChartLegend items=legendItems verticalAlign="bottom"/>
   </if>
-  <if=(showTooltip && activeIndex >= 0)>
+  <if=(showTooltip && activeRows)>
     <div
       style={
         position: "absolute",
@@ -343,7 +347,7 @@ static function buildTooltipRows(
       }
     >
       <ChartTooltip
-        rows=tooltipRows[activeIndex]
+        rows=activeRows
         label=xLabels[activeIndex]
         indicator=indicator
         hideLabel=hideLabel

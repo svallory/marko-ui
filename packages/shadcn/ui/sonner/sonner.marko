@@ -69,12 +69,18 @@ export interface Input extends Marko.Input<"div"> {
   ...rest
   toastClass="mu-toast"
   class=cn("toaster group", className)
-  style={
-    "--normal-bg": "var(--popover)",
-    "--normal-text": "var(--popover-foreground)",
-    "--normal-border": "var(--border)",
-    "--border-radius": "var(--radius)",
-    "--sonner-theme": theme ?? "system",
-    ...style,
-  }
+  // An ARRAY, not an object spread: Marko's `style` attribute accepts a
+  // string, an object, or an array of those, and merges an array left to
+  // right. `...style` assumed it was always an object, which is a type error
+  // (and would silently drop a caller's `style="..."` string at runtime).
+  style=[
+    {
+      "--normal-bg": "var(--popover)",
+      "--normal-text": "var(--popover-foreground)",
+      "--normal-border": "var(--border)",
+      "--border-radius": "var(--radius)",
+      "--sonner-theme": theme ?? "system",
+    },
+    style,
+  ]
 />
