@@ -7,7 +7,6 @@ section
         svg data-state="closed" aria-hidden="true"
           path
     input data-slot="cascade-select-hidden-input" aria-hidden="true" aria-labelledby="<id>"
-    div
 ---
 section
   div
@@ -19,7 +18,6 @@ section
           svg data-state="closed" aria-hidden="true"
             path
       input data-slot="cascade-select-hidden-input" aria-hidden="true" aria-labelledby="<id>"
-      div
     p
 ---
 section
@@ -31,7 +29,6 @@ section
         svg data-state="closed" aria-hidden="true"
           path
     input data-slot="cascade-select-hidden-input" aria-hidden="true" aria-labelledby="<id>"
-    div
 ---
 section
   div data-slot="cascade-select" data-state="closed"
@@ -42,7 +39,6 @@ section
         svg data-state="closed" aria-hidden="true"
           path
     input data-slot="cascade-select-hidden-input" aria-hidden="true" aria-labelledby="<id>"
-    div
 ---
 section
   div data-slot="cascade-select" data-state="closed"
@@ -53,7 +49,6 @@ section
         svg data-state="closed" aria-hidden="true"
           path
     input data-slot="cascade-select-hidden-input" aria-hidden="true" aria-labelledby="<id>"
-    div
 ---
 section
   div data-slot="cascade-select" data-state="closed"
@@ -64,4 +59,3 @@ section
         svg data-state="closed" aria-hidden="true"
           path
     input data-slot="cascade-select-hidden-input" aria-hidden="true" aria-labelledby="<id>"
-    div

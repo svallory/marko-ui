@@ -10,7 +10,6 @@ section
             rect
             path
           span
-      div
     span
 ---
 section
@@ -24,7 +23,6 @@ section
           rect
           path
         span
-    div
 ---
 section
   div data-slot="date-picker" data-state="closed"
@@ -37,7 +35,6 @@ section
           rect
           path
         span
-    div
 ---
 section
   div data-slot="date-picker" data-state="closed"
@@ -50,7 +47,6 @@ section
           rect
           path
         span
-    div
 ---
 section
   div data-slot="date-picker" data-state="closed"
@@ -63,7 +59,6 @@ section
           rect
           path
         span
-    div
 ---
 section
   div data-slot="date-picker" data-state="closed"
@@ -76,4 +71,3 @@ section
           rect
           path
         span
-    div

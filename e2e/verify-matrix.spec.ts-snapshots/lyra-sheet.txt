@@ -2,25 +2,19 @@ section
   div
     div data-slot="sheet"
       button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
-      div
     span
 ---
 section
   div data-slot="sheet"
     button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
-    div
 ---
 section
   div
     div data-slot="sheet"
       button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
-      div
     div data-slot="sheet"
       button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
-      div
     div data-slot="sheet"
       button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
-      div
     div data-slot="sheet"
       button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
-      div

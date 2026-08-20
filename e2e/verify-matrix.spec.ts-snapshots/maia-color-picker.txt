@@ -8,7 +8,6 @@ section
           div data-slot="color-picker-swatch" data-state="checked"
         span data-slot="color-picker-value-text"
       input
-      div
     span
 ---
 section
@@ -20,7 +19,6 @@ section
         div data-slot="color-picker-swatch" data-state="checked"
       span data-slot="color-picker-value-text"
     input
-    div
 ---
 section
   div data-slot="color-picker"
@@ -31,7 +29,6 @@ section
         div data-slot="color-picker-swatch" data-state="checked"
       span data-slot="color-picker-value-text"
     input
-    div
 ---
 section
   div data-slot="color-picker"
@@ -42,7 +39,6 @@ section
         div data-slot="color-picker-swatch" data-state="checked"
       span data-slot="color-picker-value-text"
     input
-    div
 ---
 section
   div data-slot="color-picker"
@@ -53,4 +49,3 @@ section
         div data-slot="color-picker-swatch" data-state="checked"
       span data-slot="color-picker-value-text"
     input
-    div
