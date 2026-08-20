@@ -26,7 +26,8 @@
     "access": "public"
   },
   "sideEffects": [
-    "**/*.css"
+    "**/*.css",
+    "**/*.marko"
   ],
   "files": [
     "ui",
