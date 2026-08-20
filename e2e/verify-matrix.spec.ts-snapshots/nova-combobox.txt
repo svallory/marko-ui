@@ -7,6 +7,7 @@ section
         button data-slot="combobox-trigger" data-state="closed" aria-haspopup="listbox" aria-label="Toggle suggestions" aria-expanded="false"
           svg
             path
+      div
     span
 ---
 section
@@ -17,6 +18,7 @@ section
       button data-slot="combobox-trigger" data-state="closed" aria-haspopup="listbox" aria-label="Toggle suggestions" aria-expanded="false"
         svg
           path
+    div
 ---
 section
   div data-slot="combobox"
@@ -26,3 +28,4 @@ section
       button data-slot="combobox-trigger" data-state="closed" aria-haspopup="listbox" aria-label="Toggle suggestions" aria-expanded="false"
         svg
           path
+    div

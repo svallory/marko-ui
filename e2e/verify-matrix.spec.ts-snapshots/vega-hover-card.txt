@@ -1,20 +1,26 @@
 section
   span data-slot="hover-card"
     a data-slot="hover-card-trigger" data-state="closed"
+    div
 ---
 section
   span data-slot="hover-card"
     a data-slot="hover-card-trigger" data-state="closed"
+    div
 ---
 section
   span data-slot="hover-card"
     a data-slot="hover-card-trigger" data-state="closed"
+    div
 ---
 section
   div
     span data-slot="hover-card"
       a data-slot="hover-card-trigger" data-state="closed"
+      div
     span data-slot="hover-card"
       a data-slot="hover-card-trigger" data-state="closed"
+      div
     span data-slot="hover-card"
       a data-slot="hover-card-trigger" data-state="closed"
+      div

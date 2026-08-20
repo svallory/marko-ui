@@ -1,6 +1,6 @@
 section
   div data-slot="listbox"
-    div data-slot="listbox-label"
+    label data-slot="listbox-label"
     div data-slot="listbox-content" role="listbox" aria-labelledby="<id>"
       div data-slot="listbox-item" role="option" data-state="checked" aria-selected="true"
         span data-slot="listbox-item-text"
@@ -16,7 +16,7 @@ section
 section
   div
     div data-slot="listbox"
-      div data-slot="listbox-label"
+      label data-slot="listbox-label"
       div data-slot="listbox-content" role="listbox" aria-labelledby="<id>"
         div data-slot="listbox-item" role="option" data-state="unchecked" aria-selected="false"
           span data-slot="listbox-item-text"
@@ -32,7 +32,7 @@ section
 ---
 section
   div data-slot="listbox"
-    div data-slot="listbox-label"
+    label data-slot="listbox-label"
     div data-slot="listbox-content" role="listbox" aria-labelledby="<id>"
       div data-slot="listbox-item" role="option" data-state="checked" aria-selected="true"
         span data-slot="listbox-item-text"
@@ -47,7 +47,7 @@ section
 ---
 section
   div data-slot="listbox"
-    div data-slot="listbox-label"
+    label data-slot="listbox-label"
     div data-slot="listbox-content" role="listbox" aria-labelledby="<id>"
       div data-slot="listbox-item" role="option" data-state="checked" aria-selected="true"
         span data-slot="listbox-item-text"
@@ -62,7 +62,7 @@ section
 ---
 section
   div data-slot="listbox"
-    div data-slot="listbox-label"
+    label data-slot="listbox-label"
     div data-slot="listbox-content" role="listbox" aria-multiselectable="true" aria-labelledby="<id>"
       div data-slot="listbox-item" role="option" data-state="checked" aria-selected="true"
         span data-slot="listbox-item-text"

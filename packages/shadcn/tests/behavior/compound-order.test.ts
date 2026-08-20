@@ -29,10 +29,19 @@ afterAll(async () => {
   await closeSharedBrowser();
 });
 
-/** data-slot of every element inside `container` matching the slot prefix, in DOM order. */
+/**
+ * data-slot of every top-level menu entry inside `container` matching the
+ * slot prefix, in DOM order.
+ *
+ * Excludes `<prefix>shortcut` — the shortcut span (e.g.
+ * `dropdown-menu-shortcut`) is a CHILD of its owning `<prefix>item`, not a
+ * sibling entry, but it still matches the `^=` prefix selector. Without this
+ * exclusion, any item carrying `shortcut=` inflates the sequence with an
+ * extra entry that doesn't represent real source-order structure.
+ */
 async function slotSequence(container: Locator, prefix: string): Promise<string[]> {
   return container
-    .locator(`[data-slot^="${prefix}"]`)
+    .locator(`[data-slot^="${prefix}"]:not([data-slot="${prefix}shortcut"])`)
     .evaluateAll((elements) => elements.map((element) => element.getAttribute("data-slot") ?? ""));
 }
 
@@ -141,9 +150,9 @@ describe("menu family <@item> ordering", () => {
       // label=) AND carries shortcut="⌘E". The shortcut span must render for
       // body-based items too — it used to live only inside the label-fallback
       // branch, so body items silently dropped their shortcut.
-      expect(await textSequence(content, '[data-slot="dropdown-menu-item"] > span.ml-auto')).toEqual([
-        "⌘E",
-      ]);
+      expect(
+        await textSequence(content, '[data-slot="dropdown-menu-item"] > [data-slot="dropdown-menu-shortcut"]'),
+      ).toEqual(["⌘E"]);
     });
   });
 

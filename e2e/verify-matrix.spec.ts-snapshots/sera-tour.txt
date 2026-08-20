@@ -5,6 +5,7 @@ section
     p
     div
       button data-slot="tour-trigger"
+      div
 ---
 section
   div
@@ -16,6 +17,7 @@ section
     p
     div
       button data-slot="tour-trigger"
+      div
 ---
 section
   div
@@ -24,3 +26,4 @@ section
       button
     div
       button data-slot="tour-trigger"
+      div
