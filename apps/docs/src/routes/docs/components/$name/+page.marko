@@ -23,7 +23,7 @@ import { getComponentPageData } from "../../../../lib/component-page-data.ts";
 
 <if=!page>
   <main class="mx-auto max-w-3xl px-4 py-24 text-center">
-    <h1 class="text-2xl font-bold">Component not documented</h1>
+    <h1 class="text-2xl font-bold text-foreground">Component not documented</h1>
     <p class="mt-2 text-muted-foreground">
       <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">${$global.params.name}</code>
       has no documentation page yet.
@@ -62,7 +62,7 @@ import { getComponentPageData } from "../../../../lib/component-page-data.ts";
 
       <div class="flex items-stretch pb-8 xl:w-full">
         <div class="flex min-w-0 flex-1 flex-col">
-          <div class="mx-auto flex w-full max-w-160 min-w-0 flex-1 flex-col gap-6 px-4 py-6 lg:py-8">
+          <div class="mx-auto flex w-full max-w-160 min-w-0 flex-1 flex-col gap-6 px-4 py-6 text-foreground md:px-0 lg:py-8 dark:text-foreground">
             <nav class="flex items-center gap-1.5 text-sm text-muted-foreground" aria-label="Breadcrumb">
               <a href="/docs" class="transition-colors hover:text-foreground">Docs</a>
               <span aria-hidden="true">/</span>

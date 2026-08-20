@@ -48,8 +48,22 @@
    notes/plans/spike-3a-verdict.md for the measured proof. This makes the
    `/create` page's `style-${style}` body class (design-system.marko) actually
    style real components instead of a no-op. */
-@import "../../../packages/shadcn/styles/style-vega.css" layer(components);
+/* DEVIATION: nova imports FIRST, not alongside its alphabetical/registry
+   position. nova is the site-wide default (<body class="style-nova">` in
+   +layout.marko, matching PRESET_STYLES[0]/DEFAULT_PRESET_CONFIG). Every
+   `.style-<name> .mu-*` selector below has equal specificity, so when a
+   page nests a different style inside the nova-classed <body> (e.g.
+   home-showcase's `.style-rhea` panel, or any /verify/<style>/* page's
+   `.style-<style>` <main>), the LAST-declared equal-specificity rule wins,
+   not the more deeply-nested one. Importing nova first guarantees every
+   other style's rules come after it in source order, so a nested opt-in
+   always wins over the default — matching "default" semantics. Importing
+   nova anywhere but first left every style declared before it (previously
+   just vega) silently overridden by nova's rules wherever nova is also an
+   ancestor (i.e. sitewide, since body carries style-nova). See
+   notes/plans/spike-3a-verdict.md for the layer(components) rationale. */
 @import "../../../packages/shadcn/styles/style-nova.css" layer(components);
+@import "../../../packages/shadcn/styles/style-vega.css" layer(components);
 @import "../../../packages/shadcn/styles/style-lyra.css" layer(components);
 @import "../../../packages/shadcn/styles/style-maia.css" layer(components);
 @import "../../../packages/shadcn/styles/style-mira.css" layer(components);
