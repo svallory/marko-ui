@@ -1,4 +1,4 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src/**/*.ts", ".marko-run/routes.d.ts"]
+  "include": ["src/**/*.ts", "src/_blocks/**/*.marko", ".marko-run/routes.d.ts"]
 }

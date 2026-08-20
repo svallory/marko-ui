@@ -33,14 +33,12 @@
     "ui",
     "lib",
     "styles",
-    "blocks",
     "!**/registry.meta.json"
   ],
   "exports": {
     "./ui/*": "./ui/*",
     "./lib/*": "./lib/*",
-    "./styles/*": "./styles/*",
-    "./blocks/*": "./blocks/*"
+    "./styles/*": "./styles/*"
   },
   "imports": {
     "#lib/*": "./lib/*"
