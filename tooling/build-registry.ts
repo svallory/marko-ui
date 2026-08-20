@@ -35,6 +35,7 @@ import { createStyleMap, type StyleMap } from "./style-map";
 import { transformMarkoSource } from "./transform-marko";
 import { transformVariantsSource } from "./transform-variants";
 import type { RegistryItem } from "@/src/registry/schema";
+import directory from "../apps/docs/src/data/directory.json";
 
 const ROOT = new URL("../packages/shadcn/", import.meta.url).pathname;
 const UI_DIR = join(ROOT, "ui");
@@ -611,17 +612,19 @@ async function main() {
   // shadcn's, plus `target: "marko"` as the compatibility contract:
   // every listed registry ships Marko source, never React). The marko-ui
   // CLI resolves bare `@namespace` additions against this file only.
+  //
+  // Entries come from the directory data file (also rendered by the
+  // /docs/directory page). The official @marko-ui entry's url is rewritten
+  // from REGISTRY_BASE_URL so localhost builds point at themselves; the
+  // page-only `logo` field is stripped from the CLI-facing index.
   await writeFile(
     join(OUT_DIR, "registries.json"),
     JSON.stringify(
-      [
-        {
-          name: "@marko-ui",
-          url: `${BASE_URL}/{name}.json`,
-          description: "The official marko-ui registry.",
-          target: "marko",
-        },
-      ],
+      directory.registries.map(({ logo: _logo, ...entry }) =>
+        entry.name === "@marko-ui"
+          ? { ...entry, url: `${BASE_URL}/{name}.json` }
+          : entry,
+      ),
       null,
       2,
     ),

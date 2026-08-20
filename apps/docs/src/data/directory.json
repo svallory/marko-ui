@@ -1,0 +1,35 @@
+{
+  "$comment": "Single source for the registry directory. `registries` feeds both /r/registries.json (tooling/build-registry.ts rewrites the @marko-ui url from REGISTRY_BASE_URL at build time) and the /docs/directory page. Every entry must satisfy the marko-ui compatibility contract: target 'marko', url containing '{name}' (packages/marko-ui/src/registry/schema.ts registriesSchema). `wanted` lists libraries we want ported INTO the official repo — the /port-to-marko skill checks this list to route contributors.",
+  "registries": [
+    {
+      "name": "@marko-ui",
+      "homepage": "https://marko-ui.saulo.tech",
+      "url": "https://marko-ui.saulo.tech/r/{name}.json",
+      "description": "The official marko-ui registry. shadcn/ui ported to Marko 6, powered by Zag.js state machines — 8 visual styles, one authored source.",
+      "target": "marko",
+      "logo": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='var(--foreground)'/><path d='M7 24V9l9 9 9-9v15' stroke='var(--background)' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>"
+    }
+  ],
+  "wanted": [
+    {
+      "name": "daisyUI",
+      "homepage": "https://daisyui.com",
+      "description": "The most popular component library for Tailwind CSS — semantic class names, themes, and a huge component catalog."
+    },
+    {
+      "name": "Flowbite",
+      "homepage": "https://flowbite.com",
+      "description": "Open-source UI component library built on Tailwind CSS with interactive components and Figma design files."
+    },
+    {
+      "name": "Preline",
+      "homepage": "https://preline.co",
+      "description": "Open-source Tailwind CSS component library with hundreds of prebuilt components and examples."
+    },
+    {
+      "name": "Astryx",
+      "homepage": "https://astryx.atmeta.com/",
+      "description": "Modern UI component collection for Tailwind CSS."
+    }
+  ]
+}
