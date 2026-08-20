@@ -40,6 +40,7 @@ export const DOCS_NAV: DocsNavSection[] = [
     items: [
       { href: "/docs/creating-components", label: "Creating Components" },
       { href: "/docs/zag-adapter", label: "Zag Adapter Anatomy" },
+      { href: "/docs/contributing-a-library", label: "Contributing a Library" },
     ],
   },
   {
