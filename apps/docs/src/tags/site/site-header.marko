@@ -2,7 +2,6 @@ import "../../tags/site/main-nav.marko";
 import "../../tags/site/mobile-nav.marko";
 import "../../tags/site/github-link.marko";
 import "../../tags/theme-toggle.marko";
-import "../../tags/palette-toggle.marko";
 
 <!-- DELIBERATE DEVIATION FROM shadcn: no border-b here. shadcn's own
      site-header.tsx (data/shadcn-ui/apps/v4/components/site-header.tsx)
@@ -17,7 +16,6 @@ import "../../tags/palette-toggle.marko";
       <main-nav class="hidden lg:flex"/>
       <div class="ml-auto flex items-center gap-1">
         <github-link/>
-        <palette-toggle/>
         <theme-toggle/>
       </div>
     </div>
