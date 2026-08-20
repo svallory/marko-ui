@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "direction",
+  "type": "registry:ui",
+  "title": "Direction",
+  "description": "Sets the text direction (ltr/rtl) for its descendants.",
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "ui/direction/direction-provider.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/direction/direction-provider.marko",
+      "content": "// Port of shadcn's `direction.tsx`, which itself just re-exports Base UI's\n// (nee Radix's) `Direction.DirectionProvider` + `useDirection` hook.\n//\n// SIMPLIFICATION FROM SOURCE: Base UI's DirectionProvider is a pure React\n// Context provider — it renders NO DOM element of its own; `dir` only ever\n// reaches descendants through `useDirection()` reading context, never\n// through an attribute in the DOM. Marko has no context primitive (per the\n// project's stated gotchas: \"React context -> pass values down as attrs\n// from a container tag\"), so this port renders a real wrapping element and\n// sets `dir` on it directly. Descendants read direction via the CSS\n// `dir` inheritance (the browser's own attribute-inheritance mechanism)\n// rather than via a JS context lookup — `getDirection()` in `direction.ts`\n// resolves the *effective* value the same way `useDirection()` would,\n// by walking up to the nearest ancestor `[dir]` element via `closest()`.\n//\n// This means the DOM gains one wrapper element the source never rendered.\n// That is a deliberate, documented deviation from byte-for-byte DOM parity,\n// forced by the absence of a React-context equivalent in Marko; every\n// class string / data-slot / CSS variable rule from HARD PARITY still\n// applies to everything else in this registry.\nimport { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {\n  /** Text direction propagated to descendants. */\n  dir?: \"ltr\" | \"rtl\";\n  /** Alias for `dir`, matching the shadcn source's extra `direction` prop. */\n  direction?: \"ltr\" | \"rtl\";\n}\n\n<const/{ class: className, dir, direction, content, ...rest }=input/>\n\n<div\n  ...rest\n  dir=(direction ?? dir)\n  data-slot=\"direction-provider\"\n  class=cn(className)\n>\n  <${content}/>\n</div>\n"
+    },
+    {
+      "path": "ui/direction/direction.ts",
+      "type": "registry:file",
+      "target": "~/src/components/ui/direction/direction.ts",
+      "content": "// Port of Base UI's `useDirection()` hook (re-exported by shadcn's\n// direction.tsx). Marko has no React-context equivalent, so `<DirectionProvider>`\n// (direction-provider.marko) sets a real `dir` attribute on a wrapper element\n// instead of stashing the value in context. `getDirection()` below recovers\n// the \"effective\" direction for any descendant node the same way\n// `useDirection()` would resolve it — by walking up the DOM to the nearest\n// ancestor carrying `dir=\"ltr\"` / `dir=\"rtl\"` — falling back to `\"ltr\"` when\n// no such ancestor exists (Base UI's own default).\n//\n// This is intentionally NOT a Marko hook/tag: reading \"the current text\n// direction\" is a DOM query keyed off a node, not reactive component state,\n// so a plain function mirrors the one real capability the source exposes\n// without inventing machinery Marko has no primitive for.\nexport type Direction = \"ltr\" | \"rtl\";\n\n/**\n * Resolves the effective text direction for `element` by walking up to the\n * nearest ancestor (inclusive) with an explicit `dir=\"ltr\"|\"rtl\"` attribute,\n * mirroring Base UI's `useDirection()` context lookup. Returns `\"ltr\"` when\n * no such ancestor exists, matching Base UI's default.\n */\nexport function getDirection(element: Element | null | undefined): Direction {\n  const match = element?.closest<HTMLElement>(\"[dir]\");\n  return match?.getAttribute(\"dir\") === \"rtl\" ? \"rtl\" : \"ltr\";\n}\n"
+    }
+  ]
+}

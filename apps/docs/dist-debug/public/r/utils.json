@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "utils",
+  "type": "registry:lib",
+  "title": "Utils",
+  "description": "cn() class helper (clsx + tailwind-merge).",
+  "dependencies": [
+    "clsx",
+    "tailwind-merge"
+  ],
+  "files": [
+    {
+      "path": "lib/native-attrs.ts",
+      "type": "registry:file",
+      "target": "~/src/lib/native-attrs.ts",
+      "content": "/**\n * Removes a component's own (non-native) props from the leftover object that\n * Zag's `splitProps`/`contextProps` returns, leaving only the native element\n * attributes to spread onto the rendered element.\n *\n * This is the fourth step of the three-tag Zag contract (`<machine-props>` ->\n * `<service>` -> `<connect>` -> nativeAttrs). `splitProps(input)[1]` is\n * everything the machine did NOT claim, which still includes this component's\n * own additive props — `class` (applied separately through `cn()`, so leaving\n * it here would emit the class twice), the sugar callbacks that back Marko's\n * two-way `bind` shorthand, attr-tag bodies (`trigger`, `content`, `item`),\n * `items=` array sugar, and variant props (`size`, `variant`). None of those\n * are valid DOM attributes, so all of them must be removed before the rest is\n * spread onto an element.\n *\n * Everything NOT listed survives, which is the point: consumer-supplied `id`,\n * `data-*`, `aria-*`, `title`, `tabindex` and form attributes keep flowing\n * through to the DOM untouched.\n *\n * `keys` is constrained to `keyof Source`, so a misspelled or stale key is a\n * compile error rather than a prop that silently starts leaking into the DOM.\n * The return type is `Omit<Source, Keys[number]>`, so the surviving attribute\n * surface stays fully typed at the call site — spreading the result onto an\n * element is checked exactly as the hand-written destructure was.\n *\n * To strip a key that is deliberately absent from `Source` (a defensive strip\n * of a prop the machine never declares — see `ui/checkbox` and its\n * `indeterminate` note), widen the source at the call site with\n * `as typeof input`. That cast is intentionally required: loosening `keys` to\n * accept arbitrary strings would make every misspelling in every other\n * component compile silently.\n *\n * @example\n * <const/nativeAttrs=() =>\n *   stripOwnProps(sliderMachine.splitProps(input)[1], \"class\", \"valueChange\")\n * >\n */\nexport function stripOwnProps<Source extends object, Keys extends readonly (keyof Source)[]>(\n  source: Source,\n  ...keys: Keys\n): Omit<Source, Keys[number]> {\n  const native = { ...source } as Record<PropertyKey, unknown>;\n  for (const key of keys) delete native[key as PropertyKey];\n  return native as Omit<Source, Keys[number]>;\n}\n"
+    },
+    {
+      "path": "lib/utils.ts",
+      "type": "registry:file",
+      "target": "~/src/lib/utils.ts",
+      "content": "import { clsx, type ClassValue } from \"clsx\";\nimport { twMerge } from \"tailwind-merge\";\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs));\n}\n"
+    }
+  ]
+}

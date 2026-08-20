@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "angle-slider",
+  "type": "registry:ui",
+  "title": "Angle Slider",
+  "description": "A circular dial slider for selecting an angle value, controlled by arrow keys or dragging the thumb around the track.",
+  "dependencies": [
+    "@zag-js/angle-slider",
+    "marko-zag"
+  ],
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "ui/angle-slider/angle-slider.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/angle-slider/angle-slider.marko",
+      "content": "import * as angleSliderMachine from \"@zag-js/angle-slider\";\nimport type { MachineInput } from \"marko-zag\";\nimport { cn } from \"../../../lib/utils.ts\";\nimport { stripOwnProps } from \"../../../lib/native-attrs.ts\";\n\nexport type Input = MachineInput<\"div\", angleSliderMachine.Props> & {\n  valueChange?: (value: number) => void;\n};\n\n<machine-props/machineProps from=input pick=angleSliderMachine.props\n  onValueChange(details: angleSliderMachine.ValueChangeDetails) {\n    input.onValueChange?.(details);\n    input.valueChange?.(details.value);\n  }/>\n<service/service machine=() => angleSliderMachine.machine props=machineProps/>\n<connect/api=(service, normalizeProps) =>\n  angleSliderMachine.connect(service, normalizeProps)\n  service=service\n/>\n\n<const/nativeAttrs=() =>\n  stripOwnProps(angleSliderMachine.splitProps(input)[1], \"class\", \"valueChange\")\n>\n\n<div\n  ...nativeAttrs()\n  ...api().getRootProps()\n  data-slot=\"angle-slider\"\n  class=cn(\"flex flex-col items-center gap-2\", input.class)\n>\n  <label ...api().getLabelProps() data-slot=\"angle-slider-label\" class=\"sr-only\">\n    Angle\n  </label>\n  <div\n    ...api().getControlProps()\n    data-slot=\"angle-slider-control\"\n    class=\"relative size-24 rounded-full border border-input bg-muted\"\n  >\n    <input ...api().getHiddenInputProps()>\n    <div\n      ...api().getThumbProps()\n      data-slot=\"angle-slider-thumb\"\n      class=\"absolute inset-y-0 left-1/2 flex w-0.5 -translate-x-1/2 flex-col items-center justify-start bg-transparent outline-none\"\n    >\n      <span data-slot=\"angle-slider-thumb-knob\" class=\"block size-3 -translate-y-1/2 rounded-full border border-primary bg-background shadow-sm ring-0 focus-visible:ring-[3px] focus-visible:ring-ring/50\"></span>\n    </div>\n  </div>\n  <span\n    ...api().getValueTextProps()\n    data-slot=\"angle-slider-value-text\"\n    class=\"text-sm text-muted-foreground tabular-nums\"\n  >\n    ${api().value}&deg;\n  </span>\n</div>\n\n<return=api>\n"
+    }
+  ]
+}

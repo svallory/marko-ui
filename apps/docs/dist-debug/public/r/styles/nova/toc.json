@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "toc",
+  "type": "registry:ui",
+  "title": "Table of Contents",
+  "description": "Tracks headings in a scroll container, highlights the active section while scrolling, and smooth-scrolls to a heading on click.",
+  "dependencies": [
+    "@zag-js/toc",
+    "marko-zag"
+  ],
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "ui/toc/toc.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/toc/toc.marko",
+      "content": "import * as tocMachine from \"@zag-js/toc\";\nimport type { MachineInput } from \"marko-zag\";\nimport { cn } from \"../../../lib/utils.ts\";\nimport { stripOwnProps } from \"../../../lib/native-attrs.ts\";\n\n// Zag's TocItem only carries `value` (heading slug) and `depth`; the display\n// text is this component's own concern, so items may carry an optional\n// `label` alongside them (falls back to the slug when omitted).\nexport interface TocItem extends tocMachine.TocItem {\n  label?: string;\n}\n\nexport type Input = MachineInput<\"nav\", tocMachine.Props> & {\n  items: TocItem[];\n  activeIdsChange?: (activeIds: string[]) => void;\n  activeItemsChange?: (activeItems: TocItem[]) => void;\n  title?: string;\n};\n\n<machine-props/machineProps from=input pick=tocMachine.props\n  onActiveChange(details: tocMachine.ActiveChangeDetails) {\n    input.onActiveChange?.(details);\n    input.activeIdsChange?.(details.activeIds);\n    input.activeItemsChange?.(details.activeItems as TocItem[]);\n  }/>\n<service/service machine=() => tocMachine.machine props=machineProps/>\n<connect/api=(service, normalizeProps) =>\n  tocMachine.connect(service, normalizeProps)\n  service=service\n/>\n\n<const/tocItems=() => api().items as TocItem[]>\n\n<const/nativeAttrs=() =>\n  stripOwnProps(\n    tocMachine.splitProps(input)[1],\n    \"class\",\n    \"activeIdsChange\",\n    \"activeItemsChange\",\n    // NOTE: no \"items\" here — `items` is a TocProps key, so Zag's splitProps\n    // has already claimed it and it is absent from the leftover object.\n    // Listing it was a compile error (keys must be `keyof Source`).\n    \"title\",\n  )\n>\n\n<nav\n  ...nativeAttrs()\n  ...api().getRootProps()\n  data-slot=\"toc-root\"\n  class=cn(\"relative text-sm\", input.class)\n>\n  <if=input.title>\n    <p ...api().getTitleProps() data-slot=\"toc-title\" class=\"mb-3 font-medium text-foreground\">${input.title}</p>\n  </if>\n  <ul ...api().getListProps() data-slot=\"toc-list\" class=\"relative space-y-2 border-l border-border\">\n    // aria-hidden: the active-position indicator is decorative, and a bare\n    // <span> is not valid content for a <ul> (axe: list only-listitems).\n    <span\n      ...api().getIndicatorProps()\n      data-slot=\"toc-indicator\"\n      aria-hidden=\"true\"\n      class=\"w-px bg-foreground transition-[top,height] duration-200 [top:var(--top)] [height:var(--height)]\"\n    />\n    <for|item| of=tocItems()>\n      <li\n        ...api().getItemProps({ item })\n        data-slot=\"toc-item\"\n        class=\"pl-[calc(0.75rem*var(--depth))]\"\n      >\n        <a\n          href=`#${item.value}`\n          ...api().getLinkProps({ item })\n          data-slot=\"toc-link\"\n          class=\"block text-muted-foreground transition-colors hover:text-foreground data-[active]:font-medium data-[active]:text-foreground\"\n        >\n          ${item.label ?? item.value}\n        </a>\n      </li>\n    </for>\n  </ul>\n</nav>\n\n<return=api>\n"
+    }
+  ]
+}

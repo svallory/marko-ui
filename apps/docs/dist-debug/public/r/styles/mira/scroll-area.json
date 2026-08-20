@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "scroll-area",
+  "type": "registry:ui",
+  "title": "Scroll Area",
+  "description": "Augments native scroll functionality for custom, cross-browser styling.",
+  "dependencies": [
+    "@zag-js/scroll-area",
+    "marko-zag"
+  ],
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "ui/scroll-area/scroll-area.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/scroll-area/scroll-area.marko",
+      "content": "// Built on the REAL @zag-js/scroll-area machine (synthetic draggable thumb,\n// auto-hiding scrollbars) — not native browser scrollbars re-skinned.\n// Authoring rules: notes/component-authoring.md (v2 pattern)\nimport * as scrollAreaMachine from \"@zag-js/scroll-area\";\nimport type { MachineInput } from \"marko-zag\";\nimport { cn } from \"../../../lib/utils.ts\";\nimport { stripOwnProps } from \"../../../lib/native-attrs.ts\";\n\nexport type Input = MachineInput<\"div\", scrollAreaMachine.Props> & {\n  content?: Marko.Body;\n  /** Render a horizontal scrollbar + thumb. Defaults to false. */\n  horizontal?: boolean;\n  /**\n   * Render a vertical scrollbar + thumb. Defaults to true, matching Radix\n   * ScrollArea's implicit vertical-only behavior when no <ScrollBar> is\n   * given. Set to false for horizontal-only rails (e.g. a category nav)\n   * where a vertical scrollbar/thumb would render as a stray pill even\n   * though the container never scrolls vertically.\n   */\n  vertical?: boolean;\n};\n\n// scroll-area has no onXxxChange callbacks in its Props — nothing to adapt,\n// <machine-props> just picks the machine's own props off input.\n<machine-props/machineProps from=input pick=scrollAreaMachine.props/>\n<service/service machine=() => scrollAreaMachine.machine props=machineProps/>\n<connect/api=(service, normalizeProps) =>\n  scrollAreaMachine.connect(service, normalizeProps)\n  service=service\n/>\n\n// Everything that is neither machine-owned (splitProps) nor component-owned\n// (class, content, horizontal) passes through to the root wrapper.\n<const/nativeAttrs=() =>\n  stripOwnProps(\n    scrollAreaMachine.splitProps(input)[1],\n    \"class\",\n    \"content\",\n    \"horizontal\",\n    \"vertical\",\n  )\n>\n\n// root/scrollbar/thumb/corner all carry Zag-owned reactive `style` objects\n// (imperative --corner-width/--thumb-height CSS vars, absolute positioning) —\n// do NOT add a style attribute of our own to any of them; only `class`.\n<div\n  ...nativeAttrs()\n  ...api().getRootProps()\n  data-slot=\"scroll-area\"\n  class=cn(\"relative\", input.class)\n>\n  <div\n    ...api().getViewportProps()\n    data-slot=\"scroll-area-viewport\"\n    // Keyboard users must be able to scroll: a scrollable region with no\n    // focusable content needs to be focusable itself (axe:\n    // scrollable-region-focusable). Matches shadcn's Viewport tabIndex={0} —\n    // the focus-visible ring classes below assume it.\n    tabindex=\"0\"\n    class=\"size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1\"\n  >\n    <div ...api().getContentProps()>\n      <${input.content}/>\n    </div>\n  </div>\n\n  <if=input.vertical ?? true>\n    <div\n      ...api().getScrollbarProps({ orientation: \"vertical\" })\n      data-slot=\"scroll-area-scrollbar\"\n      class=\"data-horizontal:h-2.5 data-horizontal:flex-col data-horizontal:border-t data-horizontal:border-t-transparent data-vertical:h-full data-vertical:w-2.5 data-vertical:border-l data-vertical:border-l-transparent flex touch-none p-px transition-colors select-none\"\n    >\n      <div\n        ...api().getThumbProps({ orientation: \"vertical\" })\n        data-slot=\"scroll-area-thumb\"\n        class=\"rounded-full relative flex-1 bg-border\"\n      />\n    </div>\n  </if>\n\n  <if=input.horizontal>\n    <div\n      ...api().getScrollbarProps({ orientation: \"horizontal\" })\n      data-slot=\"scroll-area-scrollbar\"\n      class=\"flex touch-none p-px transition-colors select-none\"\n    >\n      <div\n        ...api().getThumbProps({ orientation: \"horizontal\" })\n        data-slot=\"scroll-area-thumb\"\n        class=\"relative flex-1 bg-border\"\n      />\n    </div>\n  </if>\n\n  <div ...api().getCornerProps()/>\n</div>\n\n<return=api>\n"
+    }
+  ]
+}

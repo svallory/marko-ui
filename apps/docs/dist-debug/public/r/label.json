@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "label",
+  "type": "registry:ui",
+  "title": "Label",
+  "description": "Renders an accessible label associated with controls.",
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "ui/label/label.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/label/label.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"label\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<label\n  data-slot=\"label\"\n  class=cn(\n    \"mu-label flex items-center select-none group-data-[disabled=true]:pointer-events-none peer-disabled:cursor-not-allowed\",\n    className,\n  )\n  ...rest\n>\n  <${content}/>\n</label>\n"
+    }
+  ]
+}

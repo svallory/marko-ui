@@ -1,0 +1,63 @@
+//#region ../../node_modules/.bun/@zag-js+live-region@1.43.0/node_modules/@zag-js/live-region/dist/index.mjs
+var ID = "__live-region__";
+var DEBUG_ID = "__live-region-debug__";
+var DEBUG_STYLES = "position:fixed;inset-inline:0;bottom:0;z-index:2147483647;padding:12px 16px;background:black;color:white;font-size:14px;line-height:20px;text-align:center;pointer-events:none;";
+function createLiveRegion(opts = {}) {
+	const { level = "polite", document: doc = document, root, delay: _delay = 0, debug = false } = opts;
+	const win = doc.defaultView ?? window;
+	const parent = root ?? doc.body;
+	function getDebugRegion() {
+		if (!debug) return;
+		let region = doc.getElementById(DEBUG_ID);
+		if (region) return region;
+		region = doc.createElement("div");
+		region.id = DEBUG_ID;
+		region.dataset.liveAnnouncerDebug = "true";
+		region.setAttribute("aria-hidden", "true");
+		region.style.cssText = DEBUG_STYLES;
+		parent.appendChild(region);
+		return region;
+	}
+	function announce(message, delay) {
+		doc.getElementById(ID)?.remove();
+		delay = delay ?? _delay;
+		const region = doc.createElement("span");
+		region.id = ID;
+		region.dataset.liveAnnouncer = "true";
+		const role = level !== "assertive" ? "status" : "alert";
+		region.setAttribute("aria-live", level);
+		region.setAttribute("role", role);
+		Object.assign(region.style, {
+			border: "0",
+			clip: "rect(0 0 0 0)",
+			height: "1px",
+			margin: "-1px",
+			overflow: "hidden",
+			padding: "0",
+			position: "absolute",
+			width: "1px",
+			whiteSpace: "nowrap",
+			wordWrap: "normal"
+		});
+		parent.appendChild(region);
+		win.setTimeout(() => {
+			if (!region.isConnected) return;
+			region.textContent = message;
+			const debugRegion = getDebugRegion();
+			if (debugRegion) debugRegion.textContent = message;
+		}, delay);
+	}
+	function destroy() {
+		doc.getElementById(ID)?.remove();
+		doc.getElementById(DEBUG_ID)?.remove();
+	}
+	return {
+		announce,
+		destroy,
+		toJSON() {
+			return ID;
+		}
+	};
+}
+//#endregion
+export { createLiveRegion as t };

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "empty",
+  "type": "registry:ui",
+  "title": "Empty",
+  "description": "Use to display an empty state.",
+  "dependencies": [
+    "class-variance-authority"
+  ],
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "ui/empty/content.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/empty/content.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<div\n  data-slot=\"empty-content\"\n  class=cn(\n    \"gap-4 text-sm flex w-full max-w-sm min-w-0 flex-col items-center text-balance\",\n    className,\n  )\n  ...rest\n>\n  <${content}/>\n</div>\n"
+    },
+    {
+      "path": "ui/empty/description.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/empty/description.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<div\n  data-slot=\"empty-description\"\n  class=cn(\n    \"text-sm/relaxed text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary\",\n    className,\n  )\n  ...rest\n>\n  <${content}/>\n</div>\n"
+    },
+    {
+      "path": "ui/empty/empty.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/empty/empty.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<div\n  data-slot=\"empty\"\n  class=cn(\n    \"gap-4 rounded-3xl border-dashed p-12 flex w-full min-w-0 flex-1 flex-col items-center justify-center text-center text-balance\",\n    className,\n  )\n  ...rest\n>\n  <${content}/>\n</div>\n"
+    },
+    {
+      "path": "ui/empty/header.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/empty/header.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<div\n  data-slot=\"empty-header\"\n  class=cn(\"gap-2 flex max-w-sm flex-col items-center\", className)\n  ...rest\n>\n  <${content}/>\n</div>\n"
+    },
+    {
+      "path": "ui/empty/media.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/empty/media.marko",
+      "content": "import { emptyMediaVariants, type EmptyMediaVariants } from \"./variants.ts\";\nimport { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\">, EmptyMediaVariants {}\n\n<const/{ variant = \"default\", class: className, content, ...rest }=input/>\n\n<div\n  data-slot=\"empty-icon\"\n  data-variant=variant\n  class=cn(emptyMediaVariants({ variant, className }))\n  ...rest\n>\n  <${content}/>\n</div>\n"
+    },
+    {
+      "path": "ui/empty/title.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/empty/title.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<div\n  data-slot=\"empty-title\"\n  class=cn(\"text-lg font-medium tracking-tight mu-font-heading\", className)\n  ...rest\n>\n  <${content}/>\n</div>\n"
+    },
+    {
+      "path": "ui/empty/variants.ts",
+      "type": "registry:file",
+      "target": "~/src/components/ui/empty/variants.ts",
+      "content": "import { cva, type VariantProps } from \"class-variance-authority\";\n\nexport const emptyMediaVariants = cva(\n  \"mb-2 flex shrink-0 items-center justify-center [&_svg]:pointer-events-none [&_svg]:shrink-0\",\n  {\n    variants: {\n      variant: {\n        default: \"bg-transparent\",\n        icon: \"bg-muted text-foreground flex size-10 shrink-0 items-center justify-center rounded-xl [&_svg:not([class*='size-'])]:size-5\",\n      },\n    },\n    defaultVariants: {\n      variant: \"default\",\n    },\n  },\n);\n\nexport type EmptyMediaVariants = VariantProps<typeof emptyMediaVariants>;\n"
+    }
+  ]
+}

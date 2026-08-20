@@ -1,0 +1,60 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "table",
+  "type": "registry:ui",
+  "title": "Table",
+  "description": "A responsive table component.",
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "ui/table/body.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/table/body.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"tbody\"> {\n  content?: Marko.Body;\n}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<tbody ...rest data-slot=\"table-body\" class=cn(\"[&_tr:last-child]:border-0\", className)>\n  <${content}/>\n</tbody>\n"
+    },
+    {
+      "path": "ui/table/caption.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/table/caption.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"caption\"> {\n  content?: Marko.Body;\n}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<caption ...rest data-slot=\"table-caption\" class=cn(\"text-muted-foreground mt-4 text-xs\", className)>\n  <${content}/>\n</caption>\n"
+    },
+    {
+      "path": "ui/table/cell.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/table/cell.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"td\"> {\n  content?: Marko.Body;\n}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<td\n  ...rest\n  data-slot=\"table-cell\"\n  class=cn(\"p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0\", className)\n>\n  <${content}/>\n</td>\n"
+    },
+    {
+      "path": "ui/table/footer.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/table/footer.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"tfoot\"> {\n  content?: Marko.Body;\n}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<tfoot\n  ...rest\n  data-slot=\"table-footer\"\n  class=cn(\"bg-muted/50 border-t font-medium [&>tr]:last:border-b-0\", className)\n>\n  <${content}/>\n</tfoot>\n"
+    },
+    {
+      "path": "ui/table/head.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/table/head.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"th\"> {\n  content?: Marko.Body;\n}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<th\n  ...rest\n  data-slot=\"table-head\"\n  class=cn(\"text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0\", className)\n>\n  <${content}/>\n</th>\n"
+    },
+    {
+      "path": "ui/table/header.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/table/header.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"thead\"> {\n  content?: Marko.Body;\n}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<thead ...rest data-slot=\"table-header\" class=cn(\"[&_tr]:border-b\", className)>\n  <${content}/>\n</thead>\n"
+    },
+    {
+      "path": "ui/table/row.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/table/row.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"tr\"> {\n  content?: Marko.Body;\n}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<tr\n  ...rest\n  data-slot=\"table-row\"\n  class=cn(\"hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors has-aria-expanded:bg-muted/50\", className)\n>\n  <${content}/>\n</tr>\n"
+    },
+    {
+      "path": "ui/table/table.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/table/table.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {\n  content?: Marko.Body;\n}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<div ...rest data-slot=\"table-container\" class=cn(\"relative w-full overflow-x-auto\", className)>\n  <table data-slot=\"table\" class=\"w-full caption-bottom text-xs\">\n    <${content}/>\n  </table>\n</div>\n"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+
+  @keyframes marko-ui-marquee-scroll-x {
+    from { transform: translateX(0); }
+    to { transform: translateX(var(--marquee-translate)); }
+  }
+  @keyframes marko-ui-marquee-scroll-y {
+    from { transform: translateY(0); }
+    to { transform: translateY(var(--marquee-translate)); }
+  }
+  [data-scope="marquee"][data-part="content"] {
+    animation-name: marko-ui-marquee-scroll-x;
+    animation-duration: var(--marquee-duration);
+    animation-delay: var(--marquee-delay);
+    animation-timing-function: linear;
+    animation-iteration-count: var(--marquee-loop-count);
+    animation-direction: normal;
+  }
+  [data-scope="marquee"][data-part="content"][data-orientation="vertical"] {
+    animation-name: marko-ui-marquee-scroll-y;
+  }
+  [data-scope="marquee"][data-part="content"][data-reverse] {
+    animation-direction: reverse;
+  }
+  [data-scope="marquee"][data-state="paused"] [data-part="content"] {
+    animation-play-state: paused;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-scope="marquee"][data-part="content"] {
+      animation-play-state: paused;
+    }
+  }

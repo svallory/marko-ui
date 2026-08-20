@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "collapsible",
+  "type": "registry:ui",
+  "title": "Collapsible",
+  "description": "An interactive component which expands/collapses a panel.",
+  "dependencies": [
+    "@zag-js/collapsible",
+    "marko-zag"
+  ],
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "ui/collapsible/collapsible.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/collapsible/collapsible.marko",
+      "content": "import * as collapsibleMachine from \"@zag-js/collapsible\";\nimport type { MachineInput } from \"marko-zag\";\nimport { cn } from \"../../../lib/utils.ts\";\nimport { stripOwnProps } from \"../../../lib/native-attrs.ts\";\n\nexport type Input = MachineInput<\"div\", collapsibleMachine.Props> & {\n  openChange?: (open: boolean) => void;\n  trigger?: Marko.Body<[Record<string, unknown>]>;\n  content: Marko.Body;\n};\n\n<machine-props/machineProps from=input pick=collapsibleMachine.props\n  onOpenChange(details: collapsibleMachine.OpenChangeDetails) {\n    input.onOpenChange?.(details);\n    input.openChange?.(details.open);\n  }/>\n<service/service machine=() => collapsibleMachine.machine props=machineProps/>\n<connect/api=(service, normalizeProps) =>\n  collapsibleMachine.connect(service, normalizeProps)\n  service=service\n/>\n\n<const/nativeAttrs=() =>\n  stripOwnProps(\n    collapsibleMachine.splitProps(input)[1],\n    \"class\",\n    \"openChange\",\n    \"trigger\",\n    \"content\",\n  )\n>\n\n<div ...nativeAttrs() ...api().getRootProps() data-slot=\"collapsible\" class=cn(input.class)>\n  <if=input.trigger>\n    <${input.trigger}({ ...api().getTriggerProps(), \"data-slot\": \"collapsible-trigger\" })/>\n  </if>\n  <div ...api().getContentProps() data-slot=\"collapsible-content\">\n    <${input.content}/>\n  </div>\n</div>\n\n<return=api>\n"
+    }
+  ]
+}

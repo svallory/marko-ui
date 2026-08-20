@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "separator",
+  "type": "registry:ui",
+  "title": "Separator",
+  "description": "Visually or semantically separates content.",
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "ui/separator/separator.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/separator/separator.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {\n  orientation?: \"horizontal\" | \"vertical\";\n  decorative?: boolean;\n}\n\n<const/{ orientation = \"horizontal\", decorative = true, class: className, content, ...rest }=input/>\n\n<div\n  data-slot=\"separator\"\n  data-orientation=orientation\n  role=(decorative ? \"none\" : \"separator\")\n  aria-orientation=(decorative ? undefined : orientation)\n  class=cn(\n    \"shrink-0 bg-border data-horizontal:h-px data-horizontal:w-full data-vertical:w-px data-vertical:self-stretch\",\n    className,\n  )\n  ...rest\n>\n  <${content}/>\n</div>\n"
+    }
+  ]
+}

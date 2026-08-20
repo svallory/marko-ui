@@ -1,0 +1,8 @@
+[
+  {
+    "name": "@marko-ui",
+    "url": "http://localhost:3000/r/{name}.json",
+    "description": "The official marko-ui registry.",
+    "target": "marko"
+  }
+]

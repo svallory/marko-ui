@@ -1,0 +1,40 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "popover",
+  "type": "registry:ui",
+  "title": "Popover",
+  "description": "Displays rich content in a portal, triggered by a button.",
+  "dependencies": [
+    "@zag-js/popover",
+    "marko-zag"
+  ],
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "ui/popover/description.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/popover/description.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"p\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<p data-slot=\"popover-description\" class=cn(\"text-muted-foreground text-sm leading-relaxed mt-0.5\", className) ...rest>\n  <${content}/>\n</p>\n"
+    },
+    {
+      "path": "ui/popover/header.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/popover/header.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<div data-slot=\"popover-header\" class=cn(\"flex flex-col gap-1 text-sm\", className) ...rest>\n  <${content}/>\n</div>\n"
+    },
+    {
+      "path": "ui/popover/popover.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/popover/popover.marko",
+      "content": "import * as popoverMachine from \"@zag-js/popover\";\nimport type { MachineInput } from \"marko-zag\";\nimport { positionerStyle } from \"marko-zag\";\nimport { cn } from \"../../../lib/utils.ts\";\n\n// MachineInput = native <div> attributes ∩ the machine's full Props, with\n// `id` made optional (generated below, overridable). `openChange` is\n// additive sugar enabling Marko's two-way bind shorthand\n// (<Popover open:=myState/>); Zag's own `onOpenChange` also works and\n// receives the details object. Align/sideOffset are NOT separate props —\n// zag exposes them via `positioning.align` / `positioning.gutter`\n// (@zag-js/popper `PositioningOptions`), already forwarded through\n// `popoverMachine.props`.\nexport type Input = MachineInput<\"div\", popoverMachine.Props> & {\n  /** Trigger render-prop — the element that opens the popover. */\n  trigger: Marko.Body<[Record<string, unknown>]>;\n  /** Popover content shown when open. */\n  content: Marko.Body;\n  /** Extra class for the content panel. */\n  class?: string;\n  openChange?: (open: boolean) => void;\n};\n\n<machine-props/machineProps from=input pick=popoverMachine.props\n  onOpenChange(details: popoverMachine.OpenChangeDetails) {\n    input.onOpenChange?.(details);\n    input.openChange?.(details.open);\n  }/>\n<service/service machine=() => popoverMachine.machine props=machineProps/>\n<connect/api=(service, normalizeProps) =>\n  popoverMachine.connect(service, normalizeProps)\n  service=service\n/>\n\n<div data-slot=\"popover\">\n  <${input.trigger}({ ...api().getTriggerProps(), \"data-slot\": \"popover-trigger\" })/>\n  // NOTE: upstream shadcn sets data-slot=\"popover-portal\" on Radix's Portal,\n  // which renders a real element. marko-zag's <portal> renders a\n  // `display:contents` host and does not forward attributes, so the\n  // marker never reached the DOM — it was inert, and nothing in this\n  // repo's CSS, tests or tooling reads it. Dropped rather than left as\n  // dead markup; restore it if <portal> gains attribute forwarding.\n  <portal>\n    <if=api().open>\n      <div ...api().getPositionerProps() style=positionerStyle data-slot=\"popover-positioner\">\n        <div\n          ...api().getContentProps()\n          data-slot=\"popover-content\"\n          class=cn(\n            \"bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 flex flex-col gap-4 rounded-none p-4 text-sm shadow-md ring-1 duration-100 z-50 w-72 origin-(--radix-popover-content-transform-origin) outline-hidden\",\n            input.class,\n          )\n        >\n          <${input.content}/>\n        </div>\n      </div>\n    </if>\n  </portal>\n</div>\n\n<return=api>\n"
+    },
+    {
+      "path": "ui/popover/title.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/popover/title.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<div data-slot=\"popover-title\" class=cn(\"text-xs font-semibold uppercase\", className) ...rest>\n  <${content}/>\n</div>\n"
+    }
+  ]
+}

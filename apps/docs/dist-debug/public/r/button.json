@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "button",
+  "type": "registry:ui",
+  "title": "Button",
+  "description": "Displays a button or a component that looks like a button.",
+  "dependencies": [
+    "class-variance-authority"
+  ],
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "ui/button/button.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/button/button.marko",
+      "content": "import { buttonVariants, type ButtonVariants } from \"./variants.ts\";\nimport { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"button\">, ButtonVariants {}\n\n<const/{ variant, size, class: className, content, ...rest }=input/>\n\n<button\n  data-slot=\"button\"\n  data-variant=(variant ?? \"default\")\n  data-size=(size ?? \"default\")\n  ...rest\n  class=cn(buttonVariants({ variant, size }), className)\n>\n  <${content}/>\n</button>\n"
+    },
+    {
+      "path": "ui/button/variants.ts",
+      "type": "registry:file",
+      "target": "~/src/components/ui/button/variants.ts",
+      "content": "import { cva, type VariantProps } from \"class-variance-authority\";\n\nexport const buttonVariants = cva(\n  \"mu-button group/button inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0\",\n  {\n    variants: {\n      variant: {\n        default: \"mu-button-variant-default\",\n        outline: \"mu-button-variant-outline\",\n        secondary: \"mu-button-variant-secondary\",\n        ghost: \"mu-button-variant-ghost\",\n        destructive: \"mu-button-variant-destructive\",\n        link: \"mu-button-variant-link\",\n      },\n      size: {\n        default: \"mu-button-size-default\",\n        xs: \"mu-button-size-xs\",\n        sm: \"mu-button-size-sm\",\n        lg: \"mu-button-size-lg\",\n        icon: \"mu-button-size-icon\",\n        \"icon-xs\": \"mu-button-size-icon-xs\",\n        \"icon-sm\": \"mu-button-size-icon-sm\",\n        \"icon-lg\": \"mu-button-size-icon-lg\",\n      },\n    },\n    defaultVariants: {\n      variant: \"default\",\n      size: \"default\",\n    },\n  },\n);\n\nexport type ButtonVariants = VariantProps<typeof buttonVariants>;\n"
+    }
+  ]
+}

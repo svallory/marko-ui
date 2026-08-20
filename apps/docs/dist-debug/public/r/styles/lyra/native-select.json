@@ -1,0 +1,30 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "native-select",
+  "type": "registry:ui",
+  "title": "Native Select",
+  "description": "A styled wrapper around the native HTML select element, with an option and optgroup part — zero JavaScript, full native accessibility and mobile picker behavior.",
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "ui/native-select/native-select-optgroup.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/native-select/native-select-optgroup.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"optgroup\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<optgroup ...rest data-slot=\"native-select-optgroup\" class=cn(\"bg-[Canvas] text-[CanvasText]\", className)>\n  <${content}/>\n</optgroup>\n"
+    },
+    {
+      "path": "ui/native-select/native-select-option.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/native-select/native-select-option.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"option\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<option ...rest data-slot=\"native-select-option\" class=cn(\"bg-[Canvas] text-[CanvasText]\", className)>\n  <${content}/>\n</option>\n"
+    },
+    {
+      "path": "ui/native-select/native-select.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/native-select/native-select.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Omit<Marko.Input<\"select\">, \"size\"> {\n  size?: \"sm\" | \"default\";\n}\n\n<const/{ size = \"default\", class: className, content, ...rest }=input/>\n\n<div class=cn(\"group/native-select relative w-fit has-[select:disabled]:opacity-50\", className) data-slot=\"native-select-wrapper\" data-size=size>\n  <select\n    ...rest\n    data-slot=\"native-select\"\n    data-size=size\n    class=\"border-input placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 dark:hover:bg-input/50 focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 h-8 w-full min-w-0 appearance-none rounded-none border bg-transparent py-1 pr-8 pl-2.5 text-xs transition-colors select-none focus-visible:ring-1 aria-invalid:ring-1 data-[size=sm]:h-7 data-[size=sm]:rounded-none data-[size=sm]:py-0.5 outline-none disabled:pointer-events-none disabled:cursor-not-allowed\"\n  >\n    <${content}/>\n  </select>\n  <svg\n    xmlns=\"http://www.w3.org/2000/svg\"\n    width=\"24\"\n    height=\"24\"\n    viewBox=\"0 0 24 24\"\n    fill=\"none\"\n    stroke=\"currentColor\"\n    stroke-width=\"2\"\n    stroke-linecap=\"round\"\n    stroke-linejoin=\"round\"\n    class=\"text-muted-foreground top-1/2 right-2.5 size-4 -translate-y-1/2 pointer-events-none absolute select-none\"\n    aria-hidden=\"true\"\n    data-slot=\"native-select-icon\"\n  >\n    <path d=\"m6 9 6 6 6-6\"/>\n  </svg>\n</div>\n"
+    }
+  ]
+}

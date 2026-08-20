@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "clipboard",
+  "type": "registry:ui",
+  "title": "Clipboard",
+  "description": "Copy text to the clipboard, with a temporary confirmation state.",
+  "dependencies": [
+    "@zag-js/clipboard",
+    "marko-zag"
+  ],
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json",
+    "http://localhost:3000/r/styles/rhea/icon.json"
+  ],
+  "files": [
+    {
+      "path": "ui/clipboard/clipboard.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/clipboard/clipboard.marko",
+      "content": "import * as clipboardMachine from \"@zag-js/clipboard\";\nimport type { MachineInput } from \"marko-zag\";\nimport Icon from \"../icon/icon.marko\";\nimport { cn } from \"../../../lib/utils.ts\";\nimport { stripOwnProps } from \"../../../lib/native-attrs.ts\";\n\nexport type Input = MachineInput<\"input\", clipboardMachine.Props> & {\n  valueChange?: (value: string) => void;\n  statusChange?: (copied: boolean) => void;\n  label?: string;\n};\n\n<machine-props/machineProps from=input pick=clipboardMachine.props\n  onValueChange(details: clipboardMachine.ValueChangeDetails) {\n    input.onValueChange?.(details);\n    input.valueChange?.(details.value);\n  }\n  onStatusChange(details: clipboardMachine.CopyStatusDetails) {\n    input.onStatusChange?.(details);\n    input.statusChange?.(details.copied);\n  }/>\n<service/service machine=() => clipboardMachine.machine props=machineProps/>\n<connect/api=(service, normalizeProps) =>\n  clipboardMachine.connect(service, normalizeProps)\n  service=service\n/>\n\n// `contextProps` is constrained `Props extends ClipboardProps`, where `id` is\n// REQUIRED — but `MachineInput` deliberately makes `id` optional (the\n// <machine-props> tag generates one). The call only partitions keys by name\n// and never reads the id's value, so pass a definite one to satisfy the\n// constraint. The value is inert here: `getInputProps()` below sets the real\n// id on the element after this spread.\n<const/nativeAttrs=() =>\n  stripOwnProps(\n    clipboardMachine.contextProps({ ...input, id: input.id ?? \"\" })[1],\n    \"class\",\n    \"valueChange\",\n    \"statusChange\",\n    \"label\",\n  )\n>\n\n<div ...api().getRootProps() data-slot=\"clipboard-root\" class=cn(\"grid w-full gap-1.5\", input.class)>\n  <if=input.label>\n    <label ...api().getLabelProps() data-slot=\"clipboard-label\" class=\"text-sm leading-none font-medium select-none\">\n      ${input.label}\n    </label>\n  </if>\n  <div ...api().getControlProps() data-slot=\"clipboard-control\" class=\"flex items-center gap-2\">\n    <input\n      ...nativeAttrs()\n      ...api().getInputProps()\n      data-slot=\"clipboard-input\"\n      readonly\n      class=\"file:text-foreground placeholder:text-muted-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]\"\n    />\n    <button\n      ...api().getTriggerProps()\n      data-slot=\"clipboard-trigger\"\n      type=\"button\"\n      class=\"border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex size-9 shrink-0 items-center justify-center gap-2 rounded-md border shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-4\"\n    >\n      <span ...api().getIndicatorProps({ copied: api().copied }) data-slot=\"clipboard-indicator\">\n        <if=api().copied>\n          <Icon name=\"Check\"/>\n        </if>\n        <else>\n          <Icon name=\"Copy\"/>\n        </else>\n      </span>\n      <span class=\"sr-only\">Copy</span>\n    </button>\n  </div>\n</div>\n\n<return=api>\n"
+    }
+  ]
+}

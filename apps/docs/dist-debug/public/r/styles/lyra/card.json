@@ -1,0 +1,54 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "card",
+  "type": "registry:ui",
+  "title": "Card",
+  "description": "Displays a card with header, content, and footer.",
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "ui/card/action.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/card/action.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<div\n  data-slot=\"card-action\"\n  class=cn(\"col-start-2 row-span-2 row-start-1 self-start justify-self-end\", className)\n  ...rest\n>\n  <${content}/>\n</div>\n"
+    },
+    {
+      "path": "ui/card/card.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/card/card.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {\n  size?: \"default\" | \"sm\";\n}\n\n<const/{ class: className, content, size = \"default\", ...rest }=input/>\n\n<div\n  data-slot=\"card\"\n  data-size=size\n  class=cn(\"ring-foreground/10 bg-card text-card-foreground gap-(--card-spacing) overflow-hidden rounded-none py-(--card-spacing) text-xs/relaxed ring-1 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-none *:[img:last-child]:rounded-none group/card flex flex-col\", className)\n  ...rest\n>\n  <${content}/>\n</div>\n"
+    },
+    {
+      "path": "ui/card/content.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/card/content.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<div data-slot=\"card-content\" class=cn(\"px-(--card-spacing)\", className) ...rest>\n  <${content}/>\n</div>\n"
+    },
+    {
+      "path": "ui/card/description.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/card/description.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<div data-slot=\"card-description\" class=cn(\"text-muted-foreground text-xs/relaxed\", className) ...rest>\n  <${content}/>\n</div>\n"
+    },
+    {
+      "path": "ui/card/footer.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/card/footer.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<div data-slot=\"card-footer\" class=cn(\"rounded-none border-t p-(--card-spacing) flex items-center\", className) ...rest>\n  <${content}/>\n</div>\n"
+    },
+    {
+      "path": "ui/card/header.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/card/header.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<div\n  data-slot=\"card-header\"\n  class=cn(\n    \"gap-1 rounded-none px-(--card-spacing) [.border-b]:pb-(--card-spacing) group/card-header @container/card-header grid auto-rows-min items-start has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto]\",\n    className,\n  )\n  ...rest\n>\n  <${content}/>\n</div>\n"
+    },
+    {
+      "path": "ui/card/title.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/card/title.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"div\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<div data-slot=\"card-title\" class=cn(\"text-sm font-medium group-data-[size=sm]/card:text-sm mu-font-heading\", className) ...rest>\n  <${content}/>\n</div>\n"
+    }
+  ]
+}

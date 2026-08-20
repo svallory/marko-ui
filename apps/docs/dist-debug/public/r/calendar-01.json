@@ -1,0 +1,31 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "calendar-01",
+  "type": "registry:block",
+  "title": "Calendar 01",
+  "description": "An appointment booking card pairing an inline calendar with selectable time slots.",
+  "categories": [
+    "calendar"
+  ],
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json",
+    "http://localhost:3000/r/calendar.json",
+    "http://localhost:3000/r/card.json",
+    "http://localhost:3000/r/button.json",
+    "http://localhost:3000/r/separator.json"
+  ],
+  "files": [
+    {
+      "path": "blocks/calendar-01/booking-card.marko",
+      "type": "registry:file",
+      "target": "~/src/routes/calendar-01/booking-card.marko",
+      "content": "import Calendar from \"../../components/ui/calendar/calendar.marko\";\nimport Card from \"../../components/ui/card/card.marko\";\nimport CardHeader from \"../../components/ui/card/header.marko\";\nimport CardTitle from \"../../components/ui/card/title.marko\";\nimport CardDescription from \"../../components/ui/card/description.marko\";\nimport CardContent from \"../../components/ui/card/content.marko\";\nimport CardFooter from \"../../components/ui/card/footer.marko\";\nimport Button from \"../../components/ui/button/button.marko\";\nimport Separator from \"../../components/ui/separator/separator.marko\";\n\nstatic const TIME_SLOTS = [\n  \"09:00\",\n  \"09:30\",\n  \"10:00\",\n  \"10:30\",\n  \"11:00\",\n  \"11:30\",\n  \"13:00\",\n  \"13:30\",\n  \"14:00\",\n  \"14:30\",\n  \"15:00\",\n  \"15:30\",\n];\n\nstatic const MONTH_NAMES = [\n  \"January\",\n  \"February\",\n  \"March\",\n  \"April\",\n  \"May\",\n  \"June\",\n  \"July\",\n  \"August\",\n  \"September\",\n  \"October\",\n  \"November\",\n  \"December\",\n];\n\n<let/selectedDate=[(() => {\n  const today = new Date();\n  return { year: today.getFullYear(), month: today.getMonth() + 1, day: 15 };\n})()]/>\n<let/selectedSlot=\"10:00\"/>\n\n<const/currentDate=selectedDate[0]/>\n<const/formattedDate=currentDate\n  ? `${MONTH_NAMES[currentDate.month - 1]} ${currentDate.day}, ${currentDate.year}`\n  : \"No date selected\"/>\n\n<Card class=\"w-full max-w-3xl gap-0 py-0\" data-slot=\"booking-card\">\n  <CardHeader class=\"border-b py-6\">\n    <CardTitle>Book an appointment</CardTitle>\n    <CardDescription>Pick a day and a time slot that works for you.</CardDescription>\n  </CardHeader>\n  <CardContent class=\"flex flex-col gap-6 p-0 md:flex-row\">\n    <div class=\"p-6\">\n      <Calendar\n        class=\"border-0 p-0\"\n        value:=selectedDate\n      />\n    </div>\n    <Separator orientation=\"vertical\" class=\"hidden md:block\"/>\n    <Separator class=\"md:hidden\"/>\n    <div class=\"flex-1 space-y-3 p-6 md:pl-0\">\n      <div class=\"text-sm font-medium\">Available times</div>\n      <div class=\"grid grid-cols-3 gap-2\">\n        <for|slot| of=TIME_SLOTS by=(slot) => slot>\n          <Button\n            type=\"button\"\n            size=\"sm\"\n            variant=(slot === selectedSlot ? \"default\" : \"outline\")\n            data-slot-time=slot\n            onClick() { selectedSlot = slot; }\n          >\n            ${slot}\n          </Button>\n        </for>\n      </div>\n    </div>\n  </CardContent>\n  <CardFooter\n    class=\"flex flex-col items-start gap-3 border-t px-6 py-5 sm:flex-row sm:items-center\"\n  >\n    <div class=\"text-sm text-muted-foreground\" data-slot=\"booking-summary\">\n      <if=currentDate>\n        Your appointment is set for\n        <span class=\"font-medium text-foreground\">${formattedDate}</span>\n        at\n        <span class=\"font-medium text-foreground\">${selectedSlot}</span>.\n      </if>\n      <else>\n        Select a date to continue.\n      </else>\n    </div>\n    <Button class=\"w-full sm:ml-auto sm:w-auto\" disabled=!currentDate>Confirm booking</Button>\n  </CardFooter>\n</Card>\n"
+    },
+    {
+      "path": "blocks/calendar-01/page.marko",
+      "type": "registry:file",
+      "target": "~/src/routes/calendar-01/+page.marko",
+      "content": "import BookingCard from \"./booking-card.marko\";\n\n<div class=\"flex min-h-svh w-full items-center justify-center bg-muted/40 p-6 md:p-10\">\n  <BookingCard/>\n</div>\n"
+    }
+  ]
+}

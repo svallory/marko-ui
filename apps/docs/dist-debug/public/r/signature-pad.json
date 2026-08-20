@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "signature-pad",
+  "type": "registry:ui",
+  "title": "Signature Pad",
+  "description": "A draw-to-sign pad for capturing handwritten signatures via pointer input.",
+  "dependencies": [
+    "@zag-js/signature-pad",
+    "marko-zag"
+  ],
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json",
+    "http://localhost:3000/r/button.json"
+  ],
+  "files": [
+    {
+      "path": "ui/signature-pad/signature-pad.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/signature-pad/signature-pad.marko",
+      "content": "import * as signaturePadMachine from \"@zag-js/signature-pad\";\nimport type { MachineInput } from \"marko-zag\";\nimport { cn } from \"../../../lib/utils.ts\";\nimport { stripOwnProps } from \"../../../lib/native-attrs.ts\";\nimport { buttonVariants } from \"../button/variants.ts\";\n\nexport type Input = MachineInput<\"input\", signaturePadMachine.Props> & {\n  drawChange?: (paths: string[]) => void;\n  drawEndChange?: (paths: string[]) => void;\n};\n\n<machine-props/machineProps from=input pick=signaturePadMachine.props\n  onDraw(details: signaturePadMachine.DrawDetails) {\n    input.onDraw?.(details);\n    input.drawChange?.(details.paths);\n  }\n  onDrawEnd(details: signaturePadMachine.DrawEndDetails) {\n    input.onDrawEnd?.(details);\n    input.drawEndChange?.(details.paths);\n  }/>\n<service/service machine=() => signaturePadMachine.machine props=machineProps/>\n<connect/api=(service, normalizeProps) =>\n  signaturePadMachine.connect(service, normalizeProps)\n  service=service\n/>\n\n<const/nativeAttrs=() =>\n  stripOwnProps(\n    signaturePadMachine.splitProps(input)[1],\n    \"class\",\n    \"drawChange\",\n    \"drawEndChange\",\n  )\n>\n\n<div\n  ...api().getRootProps()\n  data-slot=\"signature-pad\"\n  class=cn(\"bg-card text-card-foreground flex w-full max-w-sm flex-col gap-2 rounded-xl border p-4 shadow-sm\", input.class)\n>\n  <label ...api().getLabelProps() data-slot=\"signature-pad-label\" class=\"text-sm font-medium\">\n    Sign here\n  </label>\n\n  <div\n    ...api().getControlProps()\n    data-slot=\"signature-pad-control\"\n    class=\"border-input bg-muted/30 relative h-32 w-full overflow-hidden rounded-md border\"\n  >\n    <svg ...api().getSegmentProps() data-slot=\"signature-pad-segment\">\n      <for|path| of=api().paths>\n        <path ...api().getSegmentPathProps({ path }) data-slot=\"signature-pad-segment-path\"/>\n      </for>\n      <if=api().currentPath>\n        <path ...api().getSegmentPathProps({ path: api().currentPath as string }) data-slot=\"signature-pad-segment-path\"/>\n      </if>\n    </svg>\n\n    <button\n      ...api().getClearTriggerProps()\n      data-slot=\"signature-pad-clear-trigger\"\n      class=cn(buttonVariants({ variant: \"ghost\", size: \"icon\" }), \"absolute top-1 right-1 size-7\")\n    >\n      <svg\n        xmlns=\"http://www.w3.org/2000/svg\"\n        width=\"24\"\n        height=\"24\"\n        viewBox=\"0 0 24 24\"\n        fill=\"none\"\n        stroke=\"currentColor\"\n        stroke-width=\"2\"\n        stroke-linecap=\"round\"\n        stroke-linejoin=\"round\"\n        class=\"size-4\"\n      >\n        <path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/>\n        <path d=\"M3 3v5h5\"/>\n      </svg>\n      <span class=\"sr-only\">Clear signature</span>\n    </button>\n\n    <div ...api().getGuideProps() data-slot=\"signature-pad-guide\" class=\"border-border pointer-events-none absolute right-4 bottom-6 left-4 border-b border-dashed\"/>\n  </div>\n\n  <input/hiddenInput\n    ...nativeAttrs()\n    ...api().getHiddenInputProps({ value: JSON.stringify(api().paths) })\n    data-slot=\"signature-pad-hidden-input\"\n  >\n</div>\n\n<script>\n  // Marko patches `value` as the input's default-value ATTRIBUTE, not the\n  // live DOM property forms actually submit. Set the property imperatively\n  // whenever the committed paths change so form submission stays correct.\n  hiddenInput().value = JSON.stringify(api().paths);\n</script>\n\n<return=api>\n"
+    }
+  ]
+}

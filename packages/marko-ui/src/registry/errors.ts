@@ -375,7 +375,7 @@ export class ConfigMissingError extends RegistryError {
       code: RegistryErrorCode.NOT_CONFIGURED,
       context: { cwd },
       suggestion:
-        "Run 'npx shadcn@latest init' to create a components.json file, or check that you're in the correct directory.",
+        "Run 'marko-ui init' to create a components.json file, or check that you're in the correct directory.",
     })
     this.name = "ConfigMissingError"
   }
@@ -413,7 +413,7 @@ export class ConfigParseError extends RegistryError {
           ? 'Check the "registries" field in your package.json file for invalid configuration.'
           : configFile === "config"
             ? "Pass a valid full project config, or omit resolvedPaths and provide only registry configuration."
-            : "Check your components.json file for syntax errors or invalid configuration. Run 'npx shadcn@latest init' to regenerate a valid configuration.",
+            : "Check your components.json file for syntax errors or invalid configuration. Run 'marko-ui init' to regenerate a valid configuration.",
     })
     this.name = "ConfigParseError"
   }

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "breadcrumb",
+  "type": "registry:ui",
+  "title": "Breadcrumb",
+  "description": "Displays the path to the current resource using a hierarchy of links.",
+  "registryDependencies": [
+    "http://localhost:3000/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "ui/breadcrumb/breadcrumb.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/breadcrumb/breadcrumb.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"nav\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<nav data-slot=\"breadcrumb\" aria-label=\"breadcrumb\" class=\"\" ...rest>\n  <ol data-slot=\"breadcrumb-list\" class=cn(\"text-muted-foreground gap-1.5 text-xs uppercase tracking-wide sm:gap-2.5 flex flex-wrap items-center wrap-break-word\", className)>\n    <${content}/>\n  </ol>\n</nav>\n"
+    },
+    {
+      "path": "ui/breadcrumb/ellipsis.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/breadcrumb/ellipsis.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"span\"> {}\n\n<const/{ class: className, ...rest }=input/>\n\n<span\n  data-slot=\"breadcrumb-ellipsis\"\n  role=\"presentation\"\n  aria-hidden=\"true\"\n  class=cn(\"size-5 [&>svg]:size-4 flex items-center justify-center\", className)\n  ...rest\n>\n  <svg\n    xmlns=\"http://www.w3.org/2000/svg\"\n    width=\"24\"\n    height=\"24\"\n    viewBox=\"0 0 24 24\"\n    fill=\"none\"\n    stroke=\"currentColor\"\n    stroke-width=\"2\"\n    stroke-linecap=\"round\"\n    stroke-linejoin=\"round\"\n    class=\"size-4\"\n  >\n    <circle cx=\"12\" cy=\"12\" r=\"1\"/>\n    <circle cx=\"19\" cy=\"12\" r=\"1\"/>\n    <circle cx=\"5\" cy=\"12\" r=\"1\"/>\n  </svg>\n  <span class=\"sr-only\">More</span>\n</span>\n"
+    },
+    {
+      "path": "ui/breadcrumb/item.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/breadcrumb/item.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"li\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<li data-slot=\"breadcrumb-item\" class=cn(\"gap-1.5 inline-flex items-center\", className) ...rest>\n  <${content}/>\n</li>\n"
+    },
+    {
+      "path": "ui/breadcrumb/link.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/breadcrumb/link.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"a\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<a data-slot=\"breadcrumb-link\" class=cn(\"hover:text-foreground transition-colors\", className) ...rest>\n  <${content}/>\n</a>\n"
+    },
+    {
+      "path": "ui/breadcrumb/page.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/breadcrumb/page.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"span\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<span\n  data-slot=\"breadcrumb-page\"\n  role=\"link\"\n  aria-disabled=\"true\"\n  aria-current=\"page\"\n  class=cn(\"text-foreground font-normal\", className)\n  ...rest\n>\n  <${content}/>\n</span>\n"
+    },
+    {
+      "path": "ui/breadcrumb/separator.marko",
+      "type": "registry:file",
+      "target": "~/src/components/ui/breadcrumb/separator.marko",
+      "content": "import { cn } from \"../../../lib/utils.ts\";\n\nexport interface Input extends Marko.Input<\"li\"> {}\n\n<const/{ class: className, content, ...rest }=input/>\n\n<li\n  data-slot=\"breadcrumb-separator\"\n  role=\"presentation\"\n  aria-hidden=\"true\"\n  class=cn(\"[&>svg]:size-3.5\", className)\n  ...rest\n>\n  <if=content>\n    <${content}/>\n  </if>\n  <else>\n    <svg\n      xmlns=\"http://www.w3.org/2000/svg\"\n      width=\"24\"\n      height=\"24\"\n      viewBox=\"0 0 24 24\"\n      fill=\"none\"\n      stroke=\"currentColor\"\n      stroke-width=\"2\"\n      stroke-linecap=\"round\"\n      stroke-linejoin=\"round\"\n      class=\"mu-rtl-flip\"\n    >\n      <path d=\"m9 18 6-6-6-6\"/>\n    </svg>\n  </else>\n</li>\n"
+    }
+  ]
+}
