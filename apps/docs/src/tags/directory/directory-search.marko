@@ -1,0 +1,49 @@
+// Ported from shadcn's components/directory-search.tsx (SearchDirectory).
+// Same Field > InputGroup structure, data-slots and class strings; React
+// props become queryChange/queryClear callbacks from <directory-list>.
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import InputGroup from "@marko-ui/shadcn/ui/input-group/input-group.marko";
+import InputGroupAddon from "@marko-ui/shadcn/ui/input-group/addon.marko";
+import InputGroupButton from "@marko-ui/shadcn/ui/input-group/button.marko";
+import InputGroupInput from "@marko-ui/shadcn/ui/input-group/input.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+export interface Input {
+  query: string;
+  registriesCount: number;
+  queryChange: (value: string) => void;
+  queryClear: () => void;
+}
+
+<Field>
+  <InputGroup>
+    <InputGroupAddon>
+      <Icon name="SearchIcon"/>
+    </InputGroupAddon>
+    <InputGroupInput
+      class="h-full"
+      placeholder="Search"
+      value=input.query
+      valueChange(value: string) { input.queryChange(value); }
+    />
+    <InputGroupAddon align="inline-end">
+      <span class="text-muted-foreground tabular-nums sm:text-xs">
+        ${input.registriesCount} ${input.registriesCount === 1 ? "registry" : "registries"}
+      </span>
+    </InputGroupAddon>
+    <InputGroupAddon
+      align="inline-end"
+      data-disabled=String(!input.query.length)
+      class="data-[disabled=true]:hidden"
+    >
+      <InputGroupButton
+        aria-label="Clear"
+        title="Clear"
+        size="icon-xs"
+        onClick() { input.queryClear(); }
+      >
+        <Icon name="XIcon"/>
+      </InputGroupButton>
+    </InputGroupAddon>
+  </InputGroup>
+</Field>

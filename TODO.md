@@ -124,7 +124,19 @@ the demo IS ported, just not pixel-for-pixel on one interaction detail):
 
 - [ ] **Container utilities + full-width sweep** — root cause of the width gap: shadcn composes two shared container utilities (max 1400px → screen-2xl at 3xl) everywhere; we copy-pasted a fixed 1152px cap across 6+ files, leaving huge dead margins and a header floating narrower than the content. Add the utilities to globals, sweep all sections. MUST land after the current fleets (touches files they own). `(code — S/M, do first per the report's sequencing)`
 - [ ] **In flight**: meta/OG/favicon + styled 404 (agent running); component pages into docs IA + home 16-card density (covered by the running docs-pages workflow + home agent).
-- [ ] Remaining adoption items ranked in the report: command-menu search (M), GitHub stars in navbar (S), resizable block-preview viewer (S given our /view routes), prev/next pager everywhere, colors page (M), themes page (M). Skips (with reasons in report): ~~charts gallery until chart components land~~ (done 2026-08-13, see "/charts — skipped" section above), directory, examples page, base switcher, decorative skeleton rails.
+- [ ] Remaining adoption items ranked in the report: command-menu search (M), GitHub stars in navbar (S), resizable block-preview viewer (S given our /view routes), prev/next pager everywhere, colors page (M), themes page (M). Skips (with reasons in report): ~~charts gallery until chart components land~~ (done 2026-08-13, see "/charts — skipped" section above), ~~directory~~ (done 2026-08-20, see "/docs/directory" section below), examples page, base switcher, decorative skeleton rails.
+
+## /docs/directory — ported (2026-08-20, branch feat/directory-ecosystem)
+
+Ported from `content/docs/(root)/directory.mdx` + `components/directory-{list,search,add-button}.tsx` + `hooks/use-search-registry.ts`. Data source: `apps/docs/src/data/directory.json` (also feeds `/r/registries.json` via `tooling/build-registry.ts`). Content adapted to marko-ui: our CLI commands, our doc links, plus a marko-ui-only "Wanted Libraries" section.
+
+Skips / deviations (rule 5 — no approximations, log instead):
+- **No mount-gated skeleton** — shadcn renders `DirectoryListSkeleton` until nuqs mounts (client-only URL state). We SSR the real page-1 list and read `?q=`/`?page=` in onMount, so the skeleton state never exists. `DirectoryListSkeleton` intentionally not ported.
+- **Mobile add-flow uses the same Dialog** — shadcn swaps in a Drawer under `useIsMobile`; we render the Dialog at every width (`components/directory-add-button.tsx` Drawer branch not ported).
+- **Add-dialog tabs are page-local reactive state**, not shadcn's Tabs+Tooltip composition and not our shared `<package-manager-switcher>` — the switcher binds panels imperatively in onMount and its shiki `<await>` panels don't exist yet when mounted inside a client-opened dialog (tabs update, panels never swap; hit 2026-08-20). Same `marko-ui.packageManager` localStorage key, so the choice stays synced site-wide.
+- **Icons are lucide via our Icon component** (ArrowUpRight, Plus, ChevronLeft/Right, Check, Copy) where shadcn's page uses @tabler — repo-wide icon strategy decision (option a), glyphs near-identical.
+- **Pagination is anchors ported verbatim from directory-list.tsx** (getPageNumbers logic included) but with only 1 registry listed the `totalPages > 1` branch is unexercised in the live page — re-verify when the directory grows past 10 entries.
+- **Documentation LinkedCards** point at `/docs/cli` and `/docs/contributing-a-library` (2 cards, not shadcn's 6 registry-docs cards — those pages don't exist here).
 
 ## OSS readiness (before going public)
 

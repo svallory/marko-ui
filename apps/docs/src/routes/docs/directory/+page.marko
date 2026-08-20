@@ -1,0 +1,108 @@
+// Registry Directory — ported from shadcn's content/docs/(root)/directory.mdx
+// (via the port-shadcn-resource skill). Content adapted to marko-ui: our CLI
+// commands, our documentation links, plus a marko-ui-only "Wanted libraries"
+// section driven by src/data/directory.json (the same file that feeds
+// /r/registries.json — see tooling/build-registry.ts).
+import "../../../tags/docs/docs-article.marko";
+import "../../../tags/directory/directory-list.marko";
+import Alert from "@marko-ui/shadcn/ui/alert/alert.marko";
+import AlertDescription from "@marko-ui/shadcn/ui/alert/description.marko";
+import directory from "../../../data/directory.json";
+
+static const TOC = [
+  { id: "wanted-libraries", label: "Wanted Libraries" },
+  { id: "documentation", label: "Documentation" },
+];
+
+static const SKILL_INSTALL = "npx skills add marko-ui/marko-ui";
+
+<docs-article
+  title="Registry Directory"
+  description="Discover community registries for marko-ui components and blocks."
+  href="/docs/directory"
+  toc=TOC
+>
+  <p>
+    These registries are known to the marko-ui CLI with no additional
+    configuration required. To add a component, run:${" "}
+    <code>bunx marko-ui add @&lt;registry&gt;/&lt;component&gt;</code>.
+  </p>
+
+  <Alert class="not-typeset mt-6 w-auto rounded-2xl border-surface bg-surface font-semibold text-surface-foreground md:-mx-1 **:[code]:border">
+    <AlertDescription class="text-card-foreground/80">
+      Community registries are maintained by third-party developers. Always
+      review code on installation to ensure it meets your security and quality
+      standards.
+    </AlertDescription>
+  </Alert>
+
+  <p>
+    Don't see a registry? Learn how to
+    <a href="/docs/contributing-a-library"> add it here</a>. Every listed
+    registry ships Marko source (<code>"target": "marko"</code>) — the CLI
+    refuses React-source registries by design.
+  </p>
+
+  <directory-list/>
+
+  <h2 id="wanted-libraries">Wanted Libraries</h2>
+
+  <p>
+    These are libraries we want ported into the official marko-ui repository.
+    Port one with your AI agent: install the porting skill with${" "}
+    <code>${SKILL_INSTALL}</code>, point your agent at the library, and it will
+    fork the repo, port with Zag.js state machines, and verify parity
+    mechanically. Ports of libraries <strong>not</strong> on this list are
+    still welcome — as your own community registry, listed right here in the
+    directory.
+  </p>
+
+  <div data-not-typeset class="mt-6 grid gap-4 sm:grid-cols-2">
+    <for|lib| of=directory.wanted by=(lib) => lib.name>
+      <div class="flex w-full flex-col items-start rounded-2xl bg-surface p-6 text-sm text-surface-foreground">
+        <div class="flex w-full items-center justify-between gap-2">
+          <div class="font-medium">${lib.name}</div>
+          <span class="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">wanted</span>
+        </div>
+        <div class="mt-1 text-muted-foreground">${lib.description}</div>
+        <a
+          href=lib.homepage
+          target="_blank"
+          rel="noopener noreferrer external"
+          class="mt-3 font-medium underline underline-offset-4"
+        >
+          ${new URL(lib.homepage).hostname}
+        </a>
+      </div>
+    </for>
+  </div>
+
+  <h2 id="documentation">Documentation</h2>
+
+  <p>
+    You can use the <code>marko-ui</code> CLI to run your own code registry.
+    Running your own registry allows you to distribute your custom components,
+    hooks, pages, and other files to any Marko project.
+  </p>
+
+  <div data-not-typeset class="mt-6 grid gap-4 sm:grid-cols-2">
+    <a
+      href="/docs/cli"
+      class="flex w-full flex-col items-start rounded-2xl bg-surface p-6 text-sm text-surface-foreground transition-colors hover:bg-surface/80 md:p-6"
+    >
+      <div class="font-medium">CLI</div>
+      <div class="text-muted-foreground">
+        Registry commands, URLs, and shadcn interop
+      </div>
+    </a>
+    <a
+      href="/docs/contributing-a-library"
+      class="flex w-full flex-col items-start rounded-2xl bg-surface p-6 text-sm text-surface-foreground transition-colors hover:bg-surface/80 md:p-6"
+    >
+      <div class="font-medium">Contribute a Library</div>
+      <div class="text-muted-foreground">
+        Port a library with your AI agent and get it listed
+      </div>
+    </a>
+  </div>
+</docs-article>
