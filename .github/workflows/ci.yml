@@ -32,6 +32,22 @@ jobs:
       - name: Run marko-ui CLI suite
         run: bun run --filter marko-ui test
 
+  registry-drift:
+    name: Registry drift check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      # DEPLOY.md "CI check": keeps the registry output honest before every
+      # deploy. apps/docs/public/r/ is gitignored and rebuilt here with the
+      # localhost default (no REGISTRY_BASE_URL override), so a clean exit
+      # code means packages/shadcn/** and tooling/build-registry.ts still
+      # produce the same registry — a non-zero diff means either script
+      # changed behavior or the registry build itself failed.
+      - name: Build registry and check for drift
+        run: bun run build:registry && git diff --exit-code -- apps/docs/public/r/
+
   tests:
     name: Behavior & hydration tests
     runs-on: ubuntu-latest

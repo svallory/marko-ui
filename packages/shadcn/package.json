@@ -33,6 +33,7 @@
     "ui",
     "lib",
     "styles",
+    "blocks",
     "!**/registry.meta.json"
   ],
   "exports": {
