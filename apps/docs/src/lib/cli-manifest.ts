@@ -49,7 +49,7 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "flags": "-c, --cwd <cwd>",
           "description": "the working directory. defaults to the current directory.",
-          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/cli"
+          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/directory-ecosystem/apps/docs"
         },
         {
           "flags": "-y, --yes",
@@ -88,6 +88,14 @@ export const CLI_MANIFEST: CliManifest = {
           "flags": "--agents",
           "description": "generate AGENTS.md and the marko-ui Claude skill.",
           "defaultValue": false
+        },
+        {
+          "flags": "-D, --distribution <mode>",
+          "description": "how components are shipped: copy (flat generated source, default) or import (@marko-ui/shadcn hook-class components + CSS layers)."
+        },
+        {
+          "flags": "--visual-style <name>",
+          "description": "the visual style to use with --distribution import (rhea, nova, vega, lyra, maia, mira, luma, sera). ignored for copy."
         }
       ]
     },
@@ -117,7 +125,7 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "flags": "-c, --cwd <cwd>",
           "description": "the working directory. defaults to the current directory.",
-          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/cli"
+          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/directory-ecosystem/apps/docs"
         },
         {
           "flags": "-a, --all",
@@ -156,7 +164,7 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "flags": "-c, --cwd <cwd>",
           "description": "the working directory. defaults to the current directory.",
-          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/cli"
+          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/directory-ecosystem/apps/docs"
         },
         {
           "flags": "--name-only",
@@ -208,7 +216,7 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "flags": "-c, --cwd <cwd>",
           "description": "the working directory. defaults to the current directory.",
-          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/cli"
+          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/directory-ecosystem/apps/docs"
         },
         {
           "flags": "--files",
@@ -240,7 +248,7 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "flags": "-c, --cwd <cwd>",
           "description": "the working directory. defaults to the current directory.",
-          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/cli"
+          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/directory-ecosystem/apps/docs"
         },
         {
           "flags": "-q, --query <query>",
@@ -278,7 +286,7 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "flags": "-c, --cwd <cwd>",
           "description": "the working directory. defaults to the current directory.",
-          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/cli"
+          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/directory-ecosystem/apps/docs"
         },
         {
           "flags": "--json",
@@ -296,7 +304,7 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "flags": "-c, --cwd <cwd>",
           "description": "the working directory. defaults to the current directory.",
-          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/cli"
+          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/directory-ecosystem/apps/docs"
         },
         {
           "flags": "--json",
@@ -308,13 +316,13 @@ export const CLI_MANIFEST: CliManifest = {
     {
       "name": "eject",
       "aliases": [],
-      "description": "copy the installed @marko-ui style package's components into your project",
+      "description": "switch this project from the import distribution (@marko-ui/shadcn) to copy: fetch and write local component source for everything currently installed",
       "arguments": [],
       "options": [
         {
           "flags": "-c, --cwd <cwd>",
           "description": "the working directory. defaults to the current directory.",
-          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/cli"
+          "defaultValue": "/Users/svallory/work/marko-ui/worktrees/directory-ecosystem/apps/docs"
         },
         {
           "flags": "-y, --yes",
@@ -351,7 +359,7 @@ export const CLI_MANIFEST: CliManifest = {
             {
               "flags": "-c, --cwd <cwd>",
               "description": "the working directory. defaults to the current directory.",
-              "defaultValue": "/Users/svallory/work/marko-ui/worktrees/cli"
+              "defaultValue": "/Users/svallory/work/marko-ui/worktrees/directory-ecosystem/apps/docs"
             },
             {
               "flags": "--check",
@@ -387,7 +395,7 @@ export const CLI_MANIFEST: CliManifest = {
             {
               "flags": "-c, --cwd <cwd>",
               "description": "the working directory. defaults to the current directory.",
-              "defaultValue": "/Users/svallory/work/marko-ui/worktrees/cli"
+              "defaultValue": "/Users/svallory/work/marko-ui/worktrees/directory-ecosystem/apps/docs"
             },
             {
               "flags": "--json",
@@ -417,7 +425,7 @@ export const CLI_MANIFEST: CliManifest = {
             {
               "flags": "-c, --cwd <cwd>",
               "description": "the working directory. defaults to the current directory.",
-              "defaultValue": "/Users/svallory/work/marko-ui/worktrees/cli"
+              "defaultValue": "/Users/svallory/work/marko-ui/worktrees/directory-ecosystem/apps/docs"
             },
             {
               "flags": "-s, --silent",
@@ -442,7 +450,7 @@ export const CLI_MANIFEST: CliManifest = {
             {
               "flags": "-c, --cwd <cwd>",
               "description": "the working directory. defaults to the current directory.",
-              "defaultValue": "/Users/svallory/work/marko-ui/worktrees/cli"
+              "defaultValue": "/Users/svallory/work/marko-ui/worktrees/directory-ecosystem/apps/docs"
             },
             {
               "flags": "-s, --silent",
@@ -467,7 +475,36 @@ export const CLI_MANIFEST: CliManifest = {
             {
               "flags": "-c, --cwd <cwd>",
               "description": "the working directory. defaults to the current directory.",
-              "defaultValue": "/Users/svallory/work/marko-ui/worktrees/cli"
+              "defaultValue": "/Users/svallory/work/marko-ui/worktrees/directory-ecosystem/apps/docs"
+            }
+          ]
+        },
+        {
+          "name": "build",
+          "aliases": [],
+          "description": "build registry.json into installable registry item files",
+          "arguments": [
+            {
+              "name": "registry",
+              "required": false,
+              "variadic": false,
+              "description": "path to registry.json file"
+            }
+          ],
+          "options": [
+            {
+              "flags": "-o, --output <path>",
+              "description": "destination directory for json files",
+              "defaultValue": "./public/r"
+            },
+            {
+              "flags": "-c, --cwd <cwd>",
+              "description": "the working directory. defaults to the current directory.",
+              "defaultValue": "/Users/svallory/work/marko-ui/worktrees/directory-ecosystem/apps/docs"
+            },
+            {
+              "flags": "-v, --verbose",
+              "description": "verbose output"
             }
           ]
         }
