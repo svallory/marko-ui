@@ -50,7 +50,7 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
 // Whatever is neither machine-owned (splitProps) nor component-owned
 // (class, checkedChange) passes through to the hidden input: aria-*,
 // data-*, form attributes...
-<const/nativeAttrs=() =>
+<const/nativeAttrs=(): Marko.HTMLAttributes<HTMLInputElement> =>
   stripOwnProps(
     switchMachine.splitProps(input)[1],
     "class",
@@ -64,11 +64,7 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
 // id; when no label content is rendered that reference dangles and the
 // switch ends up with NO accessible name (axe: label). Keep the reference
 // only when the label part actually exists.
-<const/hiddenInputProps=() => {
-  const { "aria-labelledby": labelledBy, ...rest } =
-    api().getHiddenInputProps() as Record<string, unknown>;
-  return input.content ? { ...rest, "aria-labelledby": labelledBy } : rest;
-}>
+<const/hiddenInputProps=() => api().getHiddenInputProps()/>
 
 <label
   ...api().getRootProps()
@@ -99,7 +95,11 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
       <${input.content}/>
     </span>
   </if>
-  <input ...nativeAttrs() ...hiddenInputProps()>
+  <input
+    ...nativeAttrs()
+    ...hiddenInputProps()
+    aria-labelledby=(input.content ? hiddenInputProps()["aria-labelledby"] : undefined)
+  >
 </label>
 
 // Parents can receive the api getter: <Switch/switchApi/> then

@@ -114,6 +114,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
 <const/channels=() => CHANNELS_BY_FORMAT[api().format] ?? CHANNELS_BY_FORMAT.rgba>
 
 <div
+  ...nativeAttrs()
   ...api().getRootProps()
   data-slot="color-picker"
   class=cn("flex w-56 flex-col gap-2", input.class)
@@ -156,7 +157,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
     </span>
   </div>
 
-  <input ...nativeAttrs() ...api().getHiddenInputProps()>
+  <input ...api().getHiddenInputProps()>
 
   <portal>
     <if=api().open>

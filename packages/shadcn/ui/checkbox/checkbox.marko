@@ -52,7 +52,7 @@ export type Input = MachineInput<"input", checkboxMachine.Props> & {
 // part of the supported API), so `keyof Input` cannot name it and
 // `stripOwnProps`'s `keyof Source` constraint rejects the key. Naming it here
 // is what makes the defensive strip above both legal and honest.
-<const/nativeAttrs=() =>
+<const/nativeAttrs=(): Marko.HTMLAttributes<HTMLInputElement> =>
   stripOwnProps(
     checkboxMachine.splitProps(input)[1] as typeof input & { indeterminate?: unknown },
     "class",

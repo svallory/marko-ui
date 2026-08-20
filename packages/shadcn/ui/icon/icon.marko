@@ -28,7 +28,7 @@ import { resolveIconInner } from "./resolve.ts";
 import { ICON_WRAPPER_ATTRS } from "./render.ts";
 import type { IconLibraryName, IconName } from "./icon-names.ts";
 
-export interface Input extends Marko.Input<"svg"> {
+export interface Input extends Omit<Marko.HTMLAttributes<Element>, "lang"> {
   /** Abstract icon name, e.g. "SearchIcon" — shared across all 5 libraries. */
   name: IconName | string;
   /** Which icon library to render from. Defaults to "lucide". */

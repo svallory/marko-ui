@@ -112,7 +112,7 @@ export type Input = Omit<MachineInput<"div", listboxMachine.Props<ListboxItem>>,
 
 <div ...nativeAttrs() ...api().getRootProps() data-slot="listbox" class=cn("flex flex-col gap-1.5", className)>
   <if=label>
-    <div ...api().getLabelProps() data-slot="listbox-label" class="text-sm font-medium">${label}</div>
+    <label ...api().getLabelProps() data-slot="listbox-label" class="text-sm font-medium">${label}</label>
   </if>
   <div
     ...api().getContentProps()

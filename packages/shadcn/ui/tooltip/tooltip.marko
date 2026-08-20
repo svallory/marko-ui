@@ -9,7 +9,7 @@ import { stripOwnProps } from "#lib/native-attrs.ts";
 // additive sugar enabling Marko's two-way bind shorthand
 // (<Tooltip open:=myState/>); Zag's own `onOpenChange` also works and
 // receives the details object.
-export type Input = MachineInput<"div", tooltipMachine.Props> & {
+export type Input = MachineInput<"span", tooltipMachine.Props> & {
   /** Trigger render-prop — typically the element the tooltip describes. */
   trigger: Marko.Body<[Record<string, unknown>]>;
   /** Tooltip content shown when open. */

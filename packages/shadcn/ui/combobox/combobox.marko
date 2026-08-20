@@ -186,7 +186,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
                     </for>
                   </div>
                 </div>
-                <if=(groupIndex < filteredGroups().length - 1)>
+                <if=(groupIndex < (filteredGroups()?.length ?? 0) - 1)>
                   <div data-slot="combobox-separator" class="mu-combobox-separator"></div>
                 </if>
               </for>
