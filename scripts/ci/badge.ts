@@ -48,16 +48,24 @@ function passFailColor(passed: number, total: number): string {
 
 switch (kind) {
   case "vitest": {
-    // vitest --reporter=json (jest-compatible shape)
+    // vitest --reporter=json (jest-compatible shape).
+    // Skipped tests are deliberate, environment-gated exclusions (e.g.
+    // test.skipIf guards on suites needing the sibling shadcn clone,
+    // absent on CI runners) — they are not failures, so the badge
+    // denominator is runnable tests only. Failures still paint red
+    // because passed < runnable whenever anything actually fails.
     const total: number = input.numTotalTests;
     const passed: number = input.numPassedTests;
+    const skipped: number =
+      (input.numPendingTests ?? 0) + (input.numTodoTests ?? 0);
+    const runnable = total - skipped;
     write("tests", {
       schemaVersion: 1,
       label: "tests",
-      message: `${passed}/${total} passing`,
-      color: passFailColor(passed, total),
+      message: `${passed}/${runnable} passing`,
+      color: passFailColor(passed, runnable),
       passed,
-      total,
+      total: runnable,
     });
 
     const hydrationFiles = (input.testResults ?? []).filter((file: { name?: string }) =>
