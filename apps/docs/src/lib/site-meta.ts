@@ -18,9 +18,16 @@ import { CHART_TYPES } from "./charts-list.ts";
 export const SITE_NAME = "marko-ui";
 export const SITE_TAGLINE = "shadcn for Marko";
 export const SITE_URL = "https://marko-ui.saulo.tech";
+export const SITE_LOCALE = "en_US";
 export const DEFAULT_DESCRIPTION =
   "Accessible, copy-paste components for Marko 6, styled with Tailwind v4 and driven by Zag.js state machines. Open Source. Open Code.";
+// Single shared social-preview card (1200x630, the OG/Twitter "large image"
+// aspect ratio) — every route uses the same image, so its metrics live here
+// once rather than being re-declared at each call site.
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og.png`;
+export const DEFAULT_OG_IMAGE_WIDTH = 1200;
+export const DEFAULT_OG_IMAGE_HEIGHT = 630;
+export const DEFAULT_OG_IMAGE_ALT = `${SITE_NAME} — ${SITE_TAGLINE}`;
 
 export interface PageMeta {
   title: string;
@@ -181,6 +188,21 @@ export function resolveMeta(pathname: string): PageMeta {
   const isArticle = path.startsWith("/docs/");
 
   if (!entry) {
+    // /verify/<theme>/<component> is the generated theme-verification
+    // matrix (build-verify-matrix.ts) — hundreds of internal QA fixture
+    // pages, not public content worth hand-authoring per-route metadata
+    // for. Give them a generic title instead of misreporting "Page Not
+    // Found" (they're real, intentionally chrome-free pages).
+    if (path.startsWith("/verify/")) {
+      return {
+        title: `Theme Verification — ${SITE_NAME}`,
+        description:
+          "Internal theme-verification matrix: every component rendered under each shadcn style for visual QA. Not part of the public docs.",
+        canonical: `${SITE_URL}${path}`,
+        ogType: "website",
+      };
+    }
+
     return {
       title: `Page Not Found — ${SITE_NAME}`,
       description: DEFAULT_DESCRIPTION,

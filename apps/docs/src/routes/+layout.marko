@@ -1,7 +1,15 @@
 import "../app.css";
 import "../tags/site/site-header.marko";
 import "../tags/site/site-footer.marko";
-import { resolveMeta, SITE_NAME, DEFAULT_OG_IMAGE } from "../lib/site-meta.ts";
+import {
+  resolveMeta,
+  SITE_NAME,
+  SITE_LOCALE,
+  DEFAULT_OG_IMAGE,
+  DEFAULT_OG_IMAGE_WIDTH,
+  DEFAULT_OG_IMAGE_HEIGHT,
+  DEFAULT_OG_IMAGE_ALT,
+} from "../lib/site-meta.ts";
 
 // Block previews under /blocks/view/, the /create theme-builder's own
 // preview iframe target (/create/preview) and /typeset's specimen iframe
@@ -43,12 +51,17 @@ import { resolveMeta, SITE_NAME, DEFAULT_OG_IMAGE } from "../lib/site-meta.ts";
     <meta property="og:type" content=meta.ogType>
     <meta property="og:url" content=meta.canonical>
     <meta property="og:site_name" content=SITE_NAME>
+    <meta property="og:locale" content=SITE_LOCALE>
     <meta property="og:image" content=DEFAULT_OG_IMAGE>
+    <meta property="og:image:width" content=`${DEFAULT_OG_IMAGE_WIDTH}`>
+    <meta property="og:image:height" content=`${DEFAULT_OG_IMAGE_HEIGHT}`>
+    <meta property="og:image:alt" content=DEFAULT_OG_IMAGE_ALT>
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content=meta.title>
     <meta name="twitter:description" content=meta.description>
     <meta name="twitter:image" content=DEFAULT_OG_IMAGE>
+    <meta name="twitter:image:alt" content=DEFAULT_OG_IMAGE_ALT>
 
     <html-script>
       (function () {
