@@ -14,33 +14,33 @@ export const docs: ComponentDocs = {
   usageSnippet: `<Textarea placeholder="Type your message here." />`,
   examples: [
     {
-      name: "default",
+      name: "textarea-demo",
       title: "Default",
       description: "A plain textarea with a placeholder.",
     },
     {
-      name: "with-label",
+      name: "textarea-field",
       title: "With label",
       description: "Pair a textarea with a `Label` via a shared id.",
     },
     {
-      name: "with-text",
+      name: "textarea-with-text",
       title: "With text",
       description: "Add helper text below the textarea to explain its purpose.",
     },
     {
-      name: "with-value",
+      name: "textarea-with-value",
       title: "With value",
       description:
         "Uncontrolled initial content. `field-sizing-content` grows the textarea with its content as the user types.",
     },
     {
-      name: "disabled",
+      name: "textarea-disabled",
       title: "Disabled",
       description: "A disabled textarea is skipped by the tab order and ignores pointer input.",
     },
     {
-      name: "invalid",
+      name: "textarea-invalid",
       title: "Invalid",
       description: "Set `aria-invalid` to mark the textarea as invalid.",
     },

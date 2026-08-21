@@ -17,38 +17,38 @@ export const docs: ComponentDocs = {
 </ButtonGroup>`,
   examples: [
     {
-      name: "default",
+      name: "button-group-demo",
       title: "Basic",
       description: "Buttons that share adjacent borders and merge their corners.",
     },
     {
-      name: "orientation",
+      name: "button-group-orientation",
       title: "Orientation",
       description: "Set `orientation=\"vertical\"` to stack the group instead of rowing it.",
     },
     {
-      name: "sizes",
+      name: "button-group-size",
       title: "Size",
       description: "Control the size of the whole group through the `size` prop on each `Button`.",
     },
     {
-      name: "nested",
+      name: "button-group-nested",
       title: "Nested",
       description: "Nest `ButtonGroup` components to add spacing between related clusters of buttons.",
     },
     {
-      name: "separator",
+      name: "button-group-separator",
       title: "Separator",
       description:
         "`ButtonGroupSeparator` visually divides buttons within a group. Buttons with the `outline` variant already have a border and rarely need one; other variants benefit from it.",
     },
     {
-      name: "split",
+      name: "button-group-split",
       title: "Split",
       description: "A split button: two buttons separated by a `ButtonGroupSeparator`.",
     },
     {
-      name: "text",
+      name: "button-group-text",
       title: "With Text",
       description: "`ButtonGroupText` renders a non-interactive label inside the group.",
     },

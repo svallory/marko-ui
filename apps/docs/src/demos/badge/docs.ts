@@ -14,27 +14,27 @@ export const docs: ComponentDocs = {
   usageSnippet: `<Badge variant="default | secondary | destructive | outline">Badge</Badge>`,
   examples: [
     {
-      name: "default",
+      name: "badge-default",
       title: "Default",
       description: "A badge with the default variant.",
     },
     {
-      name: "variants",
+      name: "badge-demo",
       title: "Variants",
       description: "Use the `variant` prop to change the appearance of the badge.",
     },
     {
-      name: "status",
+      name: "badge-status",
       title: "Status examples",
       description: "Badges are a common way to surface state, such as the status of a record.",
     },
     {
-      name: "with-icon",
+      name: "badge-icon",
       title: "With icon",
       description: "Render an icon alongside the badge text.",
     },
     {
-      name: "numeric",
+      name: "badge-numeric",
       title: "Numeric",
       description: "Badges also work well for short counts, like unread totals.",
     },

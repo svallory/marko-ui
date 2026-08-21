@@ -14,23 +14,23 @@ export const docs: ComponentDocs = {
   usageSnippet: `<Pagination count=100 pageSize=10 page=1/>`,
   examples: [
     {
-      name: "default",
+      name: "pagination-demo",
       title: "Default",
       description: "Pass `count` and `pageSize` to derive the total number of pages, and `page` for the active page.",
     },
     {
-      name: "sibling-count",
+      name: "pagination-sibling-count",
       title: "Sibling count",
       description:
         "`siblingCount` controls how many pages are shown around the active page before an ellipsis appears.",
     },
     {
-      name: "few-pages",
+      name: "pagination-simple",
       title: "Few pages",
       description: "When every page fits within the sibling range, no ellipsis is rendered.",
     },
     {
-      name: "controlled",
+      name: "pagination-controlled",
       title: "Controlled",
       description:
         "Zag machines are controlled: a `page` prop without a change handler never moves. Pair it with `pageChange`.",

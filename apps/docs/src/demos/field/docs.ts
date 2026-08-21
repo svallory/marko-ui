@@ -21,41 +21,41 @@ import FieldDescription from "@/components/ui/field/field-description.marko";`,
 </Field>`,
   examples: [
     {
-      name: "default",
+      name: "field-demo",
       title: "Default",
       description: "A field pairs a label, control and helper text via matching ids.",
     },
     {
-      name: "invalid",
+      name: "field-invalid",
       title: "Invalid",
       description:
         "Pass `invalid` to `Field` to switch the whole block into an error state, and `aria-invalid` on the control itself.",
     },
     {
-      name: "multiple-errors",
+      name: "field-multiple-errors",
       title: "Multiple errors",
       description: "`FieldError` accepts a list of errors and renders them as a bulleted list.",
     },
     {
-      name: "horizontal",
+      name: "field-horizontal",
       title: "Horizontal orientation",
       description:
         "Set `orientation=\"horizontal\"` to align the control beside the label. Pair with `FieldContent` to keep descriptions aligned.",
     },
     {
-      name: "field-set",
+      name: "field-fieldset-basic",
       title: "Field set with legend and separator",
       description:
         "Group related fields with `FieldSet` and `FieldGroup`, and divide sections with `FieldSeparator`.",
     },
     {
-      name: "signup",
+      name: "field-signup",
       title: "Sign up — live validation",
       description:
         "Native `ValidityState` drives client-side validation with zero dependencies — it already understands `required`, `type=email`, `minlength` and `pattern`.",
     },
     {
-      name: "fieldset-demo",
+      name: "field-fieldset",
       title: "Nested field groups",
       description:
         "Combine `FieldSet`, `FieldLegend` and a grid of `Field`s to build a labeled section like an address form.",

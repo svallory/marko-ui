@@ -15,18 +15,18 @@ export const docs: ComponentDocs = {
   usageSnippet: `<Combobox items=frameworks placeholder="Select framework..."/>`,
   examples: [
     {
-      name: "default",
+      name: "combobox-demo",
       title: "Default",
       description:
         "Type to filter the list, or use the trigger to open the full set of items.",
     },
     {
-      name: "disabled",
+      name: "combobox-disabled",
       title: "Disabled",
       description: "Pass `disabled` to disable the input and trigger.",
     },
     {
-      name: "controlled",
+      name: "combobox-controlled",
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`.",

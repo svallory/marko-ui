@@ -21,25 +21,25 @@ export const docs: ComponentDocs = {
 </HoverCard>`,
   examples: [
     {
-      name: "default",
+      name: "hover-card-demo",
       title: "Basic",
       description:
         "The `trigger` render-prop receives the trigger's props and spreads them onto the element that opens the card; `content` is shown once the pointer lingers.",
     },
     {
-      name: "positioning",
+      name: "hover-card-sides",
       title: "Positioning",
       description:
         "Pass `positioning` with a `placement` to control which side of the trigger the card opens on.",
     },
     {
-      name: "custom-delays",
+      name: "hover-card-custom-delays",
       title: "Custom delays",
       description:
         "Use `openDelay` and `closeDelay` (in milliseconds) to control how quickly the card opens and closes.",
     },
     {
-      name: "disabled",
+      name: "hover-card-disabled",
       title: "Disabled",
       description: "Pass `disabled` to prevent the hover card from ever opening.",
     },

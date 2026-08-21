@@ -20,23 +20,23 @@ export const docs: ComponentDocs = {
 </Collapsible>`,
   examples: [
     {
-      name: "default",
+      name: "collapsible-demo",
       title: "Basic",
       description:
         "A trigger toggles the panel's open state; the chevron icon rotates to reflect it.",
     },
     {
-      name: "settings",
+      name: "collapsible-settings",
       title: "Settings Panel",
       description: "Use a trigger button to reveal additional settings.",
     },
     {
-      name: "disabled",
+      name: "collapsible-disabled",
       title: "Disabled",
       description: "A disabled collapsible ignores pointer and keyboard input on its trigger.",
     },
     {
-      name: "controlled",
+      name: "collapsible-controlled",
       title: "Controlled",
       description:
         "Zag machines are controlled: an `open` prop without a change handler never moves. Pair it with `openChange`.",

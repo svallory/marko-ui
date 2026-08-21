@@ -20,17 +20,17 @@ import NativeSelectOption from "@/components/ui/native-select/native-select-opti
 </NativeSelect>`,
   examples: [
     {
-      name: "default",
+      name: "native-select-demo",
       title: "Default",
       description: "A native select styled to match the rest of the form controls.",
     },
     {
-      name: "groups",
+      name: "native-select-groups",
       title: "Option groups",
       description: "Use `NativeSelectOptGroup` to group related options under a label.",
     },
     {
-      name: "disabled",
+      name: "native-select-disabled",
       title: "Disabled",
       description: "Pass `disabled` to disable the whole control.",
     },

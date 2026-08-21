@@ -11,7 +11,7 @@ export const docs: ComponentDocs = {
   usageSnippet: `<Button variant="outline">Button</Button>`,
   examples: [
     {
-      name: "button-demo",
+      name: "button-default",
       title: "Basic",
       description: "The default button.",
     },
@@ -22,7 +22,7 @@ export const docs: ComponentDocs = {
         "Six visual variants, selected with the `variant` prop. They are plain class-variance-authority variants — no machine involved.",
     },
     {
-      name: "button-sizes",
+      name: "button-size",
       title: "Sizes",
       description: "Three sizes plus an `icon` size for square icon-only buttons.",
     },

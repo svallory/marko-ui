@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T05:43:09.451Z",
+  "generatedAt": "2026-08-21T19:48:00.934Z",
   "styles": [
     "default",
     "luma",
@@ -23,11 +23,11 @@
       "route": "/verify/default/accordion",
       "demos": [
         "accordion-compound",
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "not-collapsible"
+        "accordion-controlled",
+        "accordion-demo",
+        "accordion-disabled",
+        "accordion-multiple",
+        "accordion-not-collapsible"
       ]
     },
     {
@@ -35,9 +35,9 @@
       "component": "alert",
       "route": "/verify/default/alert",
       "demos": [
-        "default",
-        "destructive",
-        "without-icon"
+        "alert-demo",
+        "alert-destructive",
+        "alert-without-icon"
       ]
     },
     {
@@ -66,11 +66,11 @@
       "component": "aspect-ratio",
       "route": "/verify/default/aspect-ratio",
       "demos": [
-        "content-card",
-        "default",
-        "portrait",
-        "square",
-        "ultrawide-banner"
+        "aspect-ratio-content-card",
+        "aspect-ratio-demo",
+        "aspect-ratio-portrait",
+        "aspect-ratio-square",
+        "aspect-ratio-ultrawide-banner"
       ]
     },
     {
@@ -90,11 +90,11 @@
       "component": "badge",
       "route": "/verify/default/badge",
       "demos": [
-        "default",
-        "numeric",
-        "status",
-        "variants",
-        "with-icon"
+        "badge-default",
+        "badge-demo",
+        "badge-icon",
+        "badge-numeric",
+        "badge-status"
       ]
     },
     {
@@ -102,7 +102,7 @@
       "component": "breadcrumb",
       "route": "/verify/default/breadcrumb",
       "demos": [
-        "breadcrumb-demo",
+        "breadcrumb-basic",
         "breadcrumb-ellipsis",
         "breadcrumb-responsive",
         "breadcrumb-separator"
@@ -113,9 +113,9 @@
       "component": "button",
       "route": "/verify/default/button",
       "demos": [
-        "button-demo",
+        "button-default",
         "button-disabled",
-        "button-sizes",
+        "button-size",
         "button-variants"
       ]
     },
@@ -124,13 +124,13 @@
       "component": "button-group",
       "route": "/verify/default/button-group",
       "demos": [
-        "default",
-        "nested",
-        "orientation",
-        "separator",
-        "sizes",
-        "split",
-        "text"
+        "button-group-demo",
+        "button-group-nested",
+        "button-group-orientation",
+        "button-group-separator",
+        "button-group-size",
+        "button-group-split",
+        "button-group-text"
       ]
     },
     {
@@ -138,13 +138,13 @@
       "component": "calendar",
       "route": "/verify/default/calendar",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "dropdown",
-        "min-max",
-        "multiple",
-        "range"
+        "calendar-basic",
+        "calendar-controlled",
+        "calendar-demo",
+        "calendar-disabled",
+        "calendar-min-max",
+        "calendar-multiple",
+        "calendar-range"
       ]
     },
     {
@@ -152,11 +152,11 @@
       "component": "card",
       "route": "/verify/default/card",
       "demos": [
-        "action",
-        "border-footer",
-        "content-only",
-        "default",
-        "full-composition"
+        "card-action",
+        "card-border-footer",
+        "card-content-only",
+        "card-demo",
+        "card-full-composition"
       ]
     },
     {
@@ -179,11 +179,11 @@
       "route": "/verify/default/cascade-select",
       "demos": [
         "cascade-select-compound",
-        "controlled",
-        "default",
-        "default-value",
-        "disabled",
-        "disabled-items"
+        "cascade-select-controlled",
+        "cascade-select-default-value",
+        "cascade-select-demo",
+        "cascade-select-disabled",
+        "cascade-select-disabled-items"
       ]
     },
     {
@@ -191,14 +191,14 @@
       "component": "chart",
       "route": "/verify/default/chart",
       "demos": [
-        "area-default",
-        "area-gradient",
-        "bar-default",
-        "bar-multiple",
-        "line-default",
-        "line-multiple",
-        "pie-donut",
-        "pie-simple"
+        "chart-area-default",
+        "chart-area-gradient",
+        "chart-bar-default",
+        "chart-bar-multiple",
+        "chart-line-default",
+        "chart-line-multiple",
+        "chart-pie-donut",
+        "chart-pie-simple"
       ]
     },
     {
@@ -229,10 +229,10 @@
       "component": "collapsible",
       "route": "/verify/default/collapsible",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "settings"
+        "collapsible-controlled",
+        "collapsible-demo",
+        "collapsible-disabled",
+        "collapsible-settings"
       ]
     },
     {
@@ -252,9 +252,9 @@
       "component": "combobox",
       "route": "/verify/default/combobox",
       "demos": [
-        "controlled",
-        "default",
-        "disabled"
+        "combobox-controlled",
+        "combobox-demo",
+        "combobox-disabled"
       ]
     },
     {
@@ -274,13 +274,13 @@
       "route": "/verify/default/context-menu",
       "demos": [
         "context-menu-compound",
-        "controlled",
-        "default",
-        "destructive",
-        "disabled",
-        "groups",
-        "shortcuts",
-        "simple"
+        "context-menu-controlled",
+        "context-menu-demo",
+        "context-menu-destructive",
+        "context-menu-disabled",
+        "context-menu-groups",
+        "context-menu-shortcuts",
+        "context-menu-simple"
       ]
     },
     {
@@ -289,9 +289,9 @@
       "route": "/verify/default/data-table",
       "demos": [
         "data-table-demo",
-        "empty",
-        "formatted-cells",
-        "sorting"
+        "data-table-empty",
+        "data-table-formatted-cells",
+        "data-table-sorting"
       ]
     },
     {
@@ -348,8 +348,8 @@
       "route": "/verify/default/dropdown-menu",
       "demos": [
         "dropdown-menu-compound",
-        "dropdown-menu-danger",
         "dropdown-menu-demo",
+        "dropdown-menu-destructive",
         "dropdown-menu-disabled-item",
         "dropdown-menu-selection",
         "dropdown-menu-simple"
@@ -360,13 +360,13 @@
       "component": "editable",
       "route": "/verify/default/editable",
       "demos": [
-        "activation-mode",
-        "controlled",
-        "custom-trigger",
-        "default",
-        "disabled",
-        "placeholder",
-        "submit-mode"
+        "editable-activation-mode",
+        "editable-controlled",
+        "editable-custom-trigger",
+        "editable-demo",
+        "editable-disabled",
+        "editable-placeholder",
+        "editable-submit-mode"
       ]
     },
     {
@@ -388,13 +388,13 @@
       "component": "field",
       "route": "/verify/default/field",
       "demos": [
-        "default",
-        "field-set",
-        "fieldset-demo",
-        "horizontal",
-        "invalid",
-        "multiple-errors",
-        "signup"
+        "field-demo",
+        "field-fieldset",
+        "field-fieldset-basic",
+        "field-horizontal",
+        "field-invalid",
+        "field-multiple-errors",
+        "field-signup"
       ]
     },
     {
@@ -424,10 +424,10 @@
       "component": "hover-card",
       "route": "/verify/default/hover-card",
       "demos": [
-        "custom-delays",
-        "default",
-        "disabled",
-        "positioning"
+        "hover-card-custom-delays",
+        "hover-card-demo",
+        "hover-card-disabled",
+        "hover-card-sides"
       ]
     },
     {
@@ -435,9 +435,9 @@
       "component": "icon",
       "route": "/verify/default/icon",
       "demos": [
-        "default",
-        "libraries",
-        "sizing"
+        "icon-demo",
+        "icon-libraries",
+        "icon-sizing"
       ]
     },
     {
@@ -445,10 +445,10 @@
       "component": "image-cropper",
       "route": "/verify/default/image-cropper",
       "demos": [
-        "circle-aspect-ratio",
-        "controlled",
-        "default",
-        "fixed-crop-area"
+        "image-cropper-circle-aspect-ratio",
+        "image-cropper-controlled",
+        "image-cropper-demo",
+        "image-cropper-fixed-crop-area"
       ]
     },
     {
@@ -471,16 +471,16 @@
       "component": "input-group",
       "route": "/verify/default/input-group",
       "demos": [
-        "align-block-end",
-        "align-block-start",
-        "align-inline-end",
-        "align-inline-start",
-        "button",
-        "default",
-        "disabled",
-        "invalid",
-        "text",
-        "textarea"
+        "input-group-block-end",
+        "input-group-block-start",
+        "input-group-button",
+        "input-group-demo",
+        "input-group-disabled",
+        "input-group-inline-end",
+        "input-group-inline-start",
+        "input-group-invalid",
+        "input-group-text",
+        "input-group-textarea"
       ]
     },
     {
@@ -527,10 +527,10 @@
       "component": "label",
       "route": "/verify/default/label",
       "demos": [
-        "disabled",
-        "input-with-label",
         "label-demo",
-        "required"
+        "label-disabled",
+        "label-input-with-label",
+        "label-required"
       ]
     },
     {
@@ -576,9 +576,9 @@
       "component": "native-select",
       "route": "/verify/default/native-select",
       "demos": [
-        "default",
-        "disabled",
-        "groups"
+        "native-select-demo",
+        "native-select-disabled",
+        "native-select-groups"
       ]
     },
     {
@@ -586,12 +586,12 @@
       "component": "navigation-menu",
       "route": "/verify/default/navigation-menu",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
         "navigation-menu-compound",
-        "navigation-menu-precedence",
-        "panel"
+        "navigation-menu-controlled",
+        "navigation-menu-demo",
+        "navigation-menu-disabled",
+        "navigation-menu-panel",
+        "navigation-menu-precedence"
       ]
     },
     {
@@ -610,10 +610,10 @@
       "component": "pagination",
       "route": "/verify/default/pagination",
       "demos": [
-        "controlled",
-        "default",
-        "few-pages",
-        "sibling-count"
+        "pagination-controlled",
+        "pagination-demo",
+        "pagination-sibling-count",
+        "pagination-simple"
       ]
     },
     {
@@ -671,7 +671,7 @@
         "radio-group-controlled",
         "radio-group-demo",
         "radio-group-disabled",
-        "radio-group-disabled-item"
+        "radio-group-disabled-group"
       ]
     },
     {
@@ -679,12 +679,12 @@
       "component": "rating-group",
       "route": "/verify/default/rating-group",
       "demos": [
-        "controlled",
-        "custom-count",
-        "default",
-        "disabled",
-        "half-stars",
-        "readonly"
+        "rating-group-controlled",
+        "rating-group-custom-count",
+        "rating-group-demo",
+        "rating-group-disabled",
+        "rating-group-half-stars",
+        "rating-group-readonly"
       ]
     },
     {
@@ -694,7 +694,7 @@
       "demos": [
         "resizable-controlled",
         "resizable-demo",
-        "resizable-sizes",
+        "resizable-handle",
         "resizable-vertical"
       ]
     },
@@ -703,8 +703,8 @@
       "component": "scroll-area",
       "route": "/verify/default/scroll-area",
       "demos": [
-        "default",
-        "horizontal"
+        "scroll-area-demo",
+        "scroll-area-horizontal-demo"
       ]
     },
     {
@@ -825,8 +825,8 @@
       "component": "table",
       "route": "/verify/default/table",
       "demos": [
-        "default",
-        "selected-row"
+        "table-demo",
+        "table-selected-row"
       ]
     },
     {
@@ -847,12 +847,12 @@
       "component": "tags-input",
       "route": "/verify/default/tags-input",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "label",
-        "max",
-        "paste"
+        "tags-input-controlled",
+        "tags-input-demo",
+        "tags-input-disabled",
+        "tags-input-label",
+        "tags-input-max",
+        "tags-input-paste"
       ]
     },
     {
@@ -860,12 +860,12 @@
       "component": "textarea",
       "route": "/verify/default/textarea",
       "demos": [
-        "default",
-        "disabled",
-        "invalid",
-        "with-label",
-        "with-text",
-        "with-value"
+        "textarea-demo",
+        "textarea-disabled",
+        "textarea-field",
+        "textarea-invalid",
+        "textarea-with-text",
+        "textarea-with-value"
       ]
     },
     {
@@ -907,11 +907,11 @@
       "component": "toggle",
       "route": "/verify/default/toggle",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "outline",
-        "sizes"
+        "toggle-controlled",
+        "toggle-demo",
+        "toggle-disabled",
+        "toggle-outline",
+        "toggle-sizes"
       ]
     },
     {
@@ -919,13 +919,13 @@
       "component": "toggle-group",
       "route": "/verify/default/toggle-group",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "outline",
-        "sizes",
-        "toggle-group-compound"
+        "toggle-group-compound",
+        "toggle-group-controlled",
+        "toggle-group-demo",
+        "toggle-group-disabled",
+        "toggle-group-multiple",
+        "toggle-group-outline",
+        "toggle-group-sizes"
       ]
     },
     {
@@ -935,7 +935,7 @@
       "demos": [
         "tooltip-delay",
         "tooltip-demo",
-        "tooltip-positioning"
+        "tooltip-sides"
       ]
     },
     {
@@ -943,9 +943,9 @@
       "component": "tour",
       "route": "/verify/default/tour",
       "demos": [
-        "controlled",
-        "default",
-        "sides"
+        "tour-controlled",
+        "tour-demo",
+        "tour-sides"
       ]
     },
     {
@@ -953,11 +953,11 @@
       "component": "tree-view",
       "route": "/verify/default/tree-view",
       "demos": [
-        "controlled-selection",
-        "default",
-        "disabled",
-        "expanded",
-        "multiple-selection"
+        "tree-view-controlled-selection",
+        "tree-view-demo",
+        "tree-view-disabled",
+        "tree-view-expanded",
+        "tree-view-multiple-selection"
       ]
     },
     {
@@ -966,11 +966,11 @@
       "route": "/verify/luma/accordion",
       "demos": [
         "accordion-compound",
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "not-collapsible"
+        "accordion-controlled",
+        "accordion-demo",
+        "accordion-disabled",
+        "accordion-multiple",
+        "accordion-not-collapsible"
       ]
     },
     {
@@ -978,9 +978,9 @@
       "component": "alert",
       "route": "/verify/luma/alert",
       "demos": [
-        "default",
-        "destructive",
-        "without-icon"
+        "alert-demo",
+        "alert-destructive",
+        "alert-without-icon"
       ]
     },
     {
@@ -1009,11 +1009,11 @@
       "component": "aspect-ratio",
       "route": "/verify/luma/aspect-ratio",
       "demos": [
-        "content-card",
-        "default",
-        "portrait",
-        "square",
-        "ultrawide-banner"
+        "aspect-ratio-content-card",
+        "aspect-ratio-demo",
+        "aspect-ratio-portrait",
+        "aspect-ratio-square",
+        "aspect-ratio-ultrawide-banner"
       ]
     },
     {
@@ -1033,11 +1033,11 @@
       "component": "badge",
       "route": "/verify/luma/badge",
       "demos": [
-        "default",
-        "numeric",
-        "status",
-        "variants",
-        "with-icon"
+        "badge-default",
+        "badge-demo",
+        "badge-icon",
+        "badge-numeric",
+        "badge-status"
       ]
     },
     {
@@ -1045,7 +1045,7 @@
       "component": "breadcrumb",
       "route": "/verify/luma/breadcrumb",
       "demos": [
-        "breadcrumb-demo",
+        "breadcrumb-basic",
         "breadcrumb-ellipsis",
         "breadcrumb-responsive",
         "breadcrumb-separator"
@@ -1056,9 +1056,9 @@
       "component": "button",
       "route": "/verify/luma/button",
       "demos": [
-        "button-demo",
+        "button-default",
         "button-disabled",
-        "button-sizes",
+        "button-size",
         "button-variants"
       ]
     },
@@ -1067,13 +1067,13 @@
       "component": "button-group",
       "route": "/verify/luma/button-group",
       "demos": [
-        "default",
-        "nested",
-        "orientation",
-        "separator",
-        "sizes",
-        "split",
-        "text"
+        "button-group-demo",
+        "button-group-nested",
+        "button-group-orientation",
+        "button-group-separator",
+        "button-group-size",
+        "button-group-split",
+        "button-group-text"
       ]
     },
     {
@@ -1081,13 +1081,13 @@
       "component": "calendar",
       "route": "/verify/luma/calendar",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "dropdown",
-        "min-max",
-        "multiple",
-        "range"
+        "calendar-basic",
+        "calendar-controlled",
+        "calendar-demo",
+        "calendar-disabled",
+        "calendar-min-max",
+        "calendar-multiple",
+        "calendar-range"
       ]
     },
     {
@@ -1095,11 +1095,11 @@
       "component": "card",
       "route": "/verify/luma/card",
       "demos": [
-        "action",
-        "border-footer",
-        "content-only",
-        "default",
-        "full-composition"
+        "card-action",
+        "card-border-footer",
+        "card-content-only",
+        "card-demo",
+        "card-full-composition"
       ]
     },
     {
@@ -1122,11 +1122,11 @@
       "route": "/verify/luma/cascade-select",
       "demos": [
         "cascade-select-compound",
-        "controlled",
-        "default",
-        "default-value",
-        "disabled",
-        "disabled-items"
+        "cascade-select-controlled",
+        "cascade-select-default-value",
+        "cascade-select-demo",
+        "cascade-select-disabled",
+        "cascade-select-disabled-items"
       ]
     },
     {
@@ -1134,14 +1134,14 @@
       "component": "chart",
       "route": "/verify/luma/chart",
       "demos": [
-        "area-default",
-        "area-gradient",
-        "bar-default",
-        "bar-multiple",
-        "line-default",
-        "line-multiple",
-        "pie-donut",
-        "pie-simple"
+        "chart-area-default",
+        "chart-area-gradient",
+        "chart-bar-default",
+        "chart-bar-multiple",
+        "chart-line-default",
+        "chart-line-multiple",
+        "chart-pie-donut",
+        "chart-pie-simple"
       ]
     },
     {
@@ -1172,10 +1172,10 @@
       "component": "collapsible",
       "route": "/verify/luma/collapsible",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "settings"
+        "collapsible-controlled",
+        "collapsible-demo",
+        "collapsible-disabled",
+        "collapsible-settings"
       ]
     },
     {
@@ -1195,9 +1195,9 @@
       "component": "combobox",
       "route": "/verify/luma/combobox",
       "demos": [
-        "controlled",
-        "default",
-        "disabled"
+        "combobox-controlled",
+        "combobox-demo",
+        "combobox-disabled"
       ]
     },
     {
@@ -1217,13 +1217,13 @@
       "route": "/verify/luma/context-menu",
       "demos": [
         "context-menu-compound",
-        "controlled",
-        "default",
-        "destructive",
-        "disabled",
-        "groups",
-        "shortcuts",
-        "simple"
+        "context-menu-controlled",
+        "context-menu-demo",
+        "context-menu-destructive",
+        "context-menu-disabled",
+        "context-menu-groups",
+        "context-menu-shortcuts",
+        "context-menu-simple"
       ]
     },
     {
@@ -1232,9 +1232,9 @@
       "route": "/verify/luma/data-table",
       "demos": [
         "data-table-demo",
-        "empty",
-        "formatted-cells",
-        "sorting"
+        "data-table-empty",
+        "data-table-formatted-cells",
+        "data-table-sorting"
       ]
     },
     {
@@ -1291,8 +1291,8 @@
       "route": "/verify/luma/dropdown-menu",
       "demos": [
         "dropdown-menu-compound",
-        "dropdown-menu-danger",
         "dropdown-menu-demo",
+        "dropdown-menu-destructive",
         "dropdown-menu-disabled-item",
         "dropdown-menu-selection",
         "dropdown-menu-simple"
@@ -1303,13 +1303,13 @@
       "component": "editable",
       "route": "/verify/luma/editable",
       "demos": [
-        "activation-mode",
-        "controlled",
-        "custom-trigger",
-        "default",
-        "disabled",
-        "placeholder",
-        "submit-mode"
+        "editable-activation-mode",
+        "editable-controlled",
+        "editable-custom-trigger",
+        "editable-demo",
+        "editable-disabled",
+        "editable-placeholder",
+        "editable-submit-mode"
       ]
     },
     {
@@ -1331,13 +1331,13 @@
       "component": "field",
       "route": "/verify/luma/field",
       "demos": [
-        "default",
-        "field-set",
-        "fieldset-demo",
-        "horizontal",
-        "invalid",
-        "multiple-errors",
-        "signup"
+        "field-demo",
+        "field-fieldset",
+        "field-fieldset-basic",
+        "field-horizontal",
+        "field-invalid",
+        "field-multiple-errors",
+        "field-signup"
       ]
     },
     {
@@ -1367,10 +1367,10 @@
       "component": "hover-card",
       "route": "/verify/luma/hover-card",
       "demos": [
-        "custom-delays",
-        "default",
-        "disabled",
-        "positioning"
+        "hover-card-custom-delays",
+        "hover-card-demo",
+        "hover-card-disabled",
+        "hover-card-sides"
       ]
     },
     {
@@ -1378,9 +1378,9 @@
       "component": "icon",
       "route": "/verify/luma/icon",
       "demos": [
-        "default",
-        "libraries",
-        "sizing"
+        "icon-demo",
+        "icon-libraries",
+        "icon-sizing"
       ]
     },
     {
@@ -1388,10 +1388,10 @@
       "component": "image-cropper",
       "route": "/verify/luma/image-cropper",
       "demos": [
-        "circle-aspect-ratio",
-        "controlled",
-        "default",
-        "fixed-crop-area"
+        "image-cropper-circle-aspect-ratio",
+        "image-cropper-controlled",
+        "image-cropper-demo",
+        "image-cropper-fixed-crop-area"
       ]
     },
     {
@@ -1414,16 +1414,16 @@
       "component": "input-group",
       "route": "/verify/luma/input-group",
       "demos": [
-        "align-block-end",
-        "align-block-start",
-        "align-inline-end",
-        "align-inline-start",
-        "button",
-        "default",
-        "disabled",
-        "invalid",
-        "text",
-        "textarea"
+        "input-group-block-end",
+        "input-group-block-start",
+        "input-group-button",
+        "input-group-demo",
+        "input-group-disabled",
+        "input-group-inline-end",
+        "input-group-inline-start",
+        "input-group-invalid",
+        "input-group-text",
+        "input-group-textarea"
       ]
     },
     {
@@ -1470,10 +1470,10 @@
       "component": "label",
       "route": "/verify/luma/label",
       "demos": [
-        "disabled",
-        "input-with-label",
         "label-demo",
-        "required"
+        "label-disabled",
+        "label-input-with-label",
+        "label-required"
       ]
     },
     {
@@ -1519,9 +1519,9 @@
       "component": "native-select",
       "route": "/verify/luma/native-select",
       "demos": [
-        "default",
-        "disabled",
-        "groups"
+        "native-select-demo",
+        "native-select-disabled",
+        "native-select-groups"
       ]
     },
     {
@@ -1529,12 +1529,12 @@
       "component": "navigation-menu",
       "route": "/verify/luma/navigation-menu",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
         "navigation-menu-compound",
-        "navigation-menu-precedence",
-        "panel"
+        "navigation-menu-controlled",
+        "navigation-menu-demo",
+        "navigation-menu-disabled",
+        "navigation-menu-panel",
+        "navigation-menu-precedence"
       ]
     },
     {
@@ -1553,10 +1553,10 @@
       "component": "pagination",
       "route": "/verify/luma/pagination",
       "demos": [
-        "controlled",
-        "default",
-        "few-pages",
-        "sibling-count"
+        "pagination-controlled",
+        "pagination-demo",
+        "pagination-sibling-count",
+        "pagination-simple"
       ]
     },
     {
@@ -1614,7 +1614,7 @@
         "radio-group-controlled",
         "radio-group-demo",
         "radio-group-disabled",
-        "radio-group-disabled-item"
+        "radio-group-disabled-group"
       ]
     },
     {
@@ -1622,12 +1622,12 @@
       "component": "rating-group",
       "route": "/verify/luma/rating-group",
       "demos": [
-        "controlled",
-        "custom-count",
-        "default",
-        "disabled",
-        "half-stars",
-        "readonly"
+        "rating-group-controlled",
+        "rating-group-custom-count",
+        "rating-group-demo",
+        "rating-group-disabled",
+        "rating-group-half-stars",
+        "rating-group-readonly"
       ]
     },
     {
@@ -1637,7 +1637,7 @@
       "demos": [
         "resizable-controlled",
         "resizable-demo",
-        "resizable-sizes",
+        "resizable-handle",
         "resizable-vertical"
       ]
     },
@@ -1646,8 +1646,8 @@
       "component": "scroll-area",
       "route": "/verify/luma/scroll-area",
       "demos": [
-        "default",
-        "horizontal"
+        "scroll-area-demo",
+        "scroll-area-horizontal-demo"
       ]
     },
     {
@@ -1768,8 +1768,8 @@
       "component": "table",
       "route": "/verify/luma/table",
       "demos": [
-        "default",
-        "selected-row"
+        "table-demo",
+        "table-selected-row"
       ]
     },
     {
@@ -1790,12 +1790,12 @@
       "component": "tags-input",
       "route": "/verify/luma/tags-input",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "label",
-        "max",
-        "paste"
+        "tags-input-controlled",
+        "tags-input-demo",
+        "tags-input-disabled",
+        "tags-input-label",
+        "tags-input-max",
+        "tags-input-paste"
       ]
     },
     {
@@ -1803,12 +1803,12 @@
       "component": "textarea",
       "route": "/verify/luma/textarea",
       "demos": [
-        "default",
-        "disabled",
-        "invalid",
-        "with-label",
-        "with-text",
-        "with-value"
+        "textarea-demo",
+        "textarea-disabled",
+        "textarea-field",
+        "textarea-invalid",
+        "textarea-with-text",
+        "textarea-with-value"
       ]
     },
     {
@@ -1850,11 +1850,11 @@
       "component": "toggle",
       "route": "/verify/luma/toggle",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "outline",
-        "sizes"
+        "toggle-controlled",
+        "toggle-demo",
+        "toggle-disabled",
+        "toggle-outline",
+        "toggle-sizes"
       ]
     },
     {
@@ -1862,13 +1862,13 @@
       "component": "toggle-group",
       "route": "/verify/luma/toggle-group",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "outline",
-        "sizes",
-        "toggle-group-compound"
+        "toggle-group-compound",
+        "toggle-group-controlled",
+        "toggle-group-demo",
+        "toggle-group-disabled",
+        "toggle-group-multiple",
+        "toggle-group-outline",
+        "toggle-group-sizes"
       ]
     },
     {
@@ -1878,7 +1878,7 @@
       "demos": [
         "tooltip-delay",
         "tooltip-demo",
-        "tooltip-positioning"
+        "tooltip-sides"
       ]
     },
     {
@@ -1886,9 +1886,9 @@
       "component": "tour",
       "route": "/verify/luma/tour",
       "demos": [
-        "controlled",
-        "default",
-        "sides"
+        "tour-controlled",
+        "tour-demo",
+        "tour-sides"
       ]
     },
     {
@@ -1896,11 +1896,11 @@
       "component": "tree-view",
       "route": "/verify/luma/tree-view",
       "demos": [
-        "controlled-selection",
-        "default",
-        "disabled",
-        "expanded",
-        "multiple-selection"
+        "tree-view-controlled-selection",
+        "tree-view-demo",
+        "tree-view-disabled",
+        "tree-view-expanded",
+        "tree-view-multiple-selection"
       ]
     },
     {
@@ -1909,11 +1909,11 @@
       "route": "/verify/lyra/accordion",
       "demos": [
         "accordion-compound",
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "not-collapsible"
+        "accordion-controlled",
+        "accordion-demo",
+        "accordion-disabled",
+        "accordion-multiple",
+        "accordion-not-collapsible"
       ]
     },
     {
@@ -1921,9 +1921,9 @@
       "component": "alert",
       "route": "/verify/lyra/alert",
       "demos": [
-        "default",
-        "destructive",
-        "without-icon"
+        "alert-demo",
+        "alert-destructive",
+        "alert-without-icon"
       ]
     },
     {
@@ -1952,11 +1952,11 @@
       "component": "aspect-ratio",
       "route": "/verify/lyra/aspect-ratio",
       "demos": [
-        "content-card",
-        "default",
-        "portrait",
-        "square",
-        "ultrawide-banner"
+        "aspect-ratio-content-card",
+        "aspect-ratio-demo",
+        "aspect-ratio-portrait",
+        "aspect-ratio-square",
+        "aspect-ratio-ultrawide-banner"
       ]
     },
     {
@@ -1976,11 +1976,11 @@
       "component": "badge",
       "route": "/verify/lyra/badge",
       "demos": [
-        "default",
-        "numeric",
-        "status",
-        "variants",
-        "with-icon"
+        "badge-default",
+        "badge-demo",
+        "badge-icon",
+        "badge-numeric",
+        "badge-status"
       ]
     },
     {
@@ -1988,7 +1988,7 @@
       "component": "breadcrumb",
       "route": "/verify/lyra/breadcrumb",
       "demos": [
-        "breadcrumb-demo",
+        "breadcrumb-basic",
         "breadcrumb-ellipsis",
         "breadcrumb-responsive",
         "breadcrumb-separator"
@@ -1999,9 +1999,9 @@
       "component": "button",
       "route": "/verify/lyra/button",
       "demos": [
-        "button-demo",
+        "button-default",
         "button-disabled",
-        "button-sizes",
+        "button-size",
         "button-variants"
       ]
     },
@@ -2010,13 +2010,13 @@
       "component": "button-group",
       "route": "/verify/lyra/button-group",
       "demos": [
-        "default",
-        "nested",
-        "orientation",
-        "separator",
-        "sizes",
-        "split",
-        "text"
+        "button-group-demo",
+        "button-group-nested",
+        "button-group-orientation",
+        "button-group-separator",
+        "button-group-size",
+        "button-group-split",
+        "button-group-text"
       ]
     },
     {
@@ -2024,13 +2024,13 @@
       "component": "calendar",
       "route": "/verify/lyra/calendar",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "dropdown",
-        "min-max",
-        "multiple",
-        "range"
+        "calendar-basic",
+        "calendar-controlled",
+        "calendar-demo",
+        "calendar-disabled",
+        "calendar-min-max",
+        "calendar-multiple",
+        "calendar-range"
       ]
     },
     {
@@ -2038,11 +2038,11 @@
       "component": "card",
       "route": "/verify/lyra/card",
       "demos": [
-        "action",
-        "border-footer",
-        "content-only",
-        "default",
-        "full-composition"
+        "card-action",
+        "card-border-footer",
+        "card-content-only",
+        "card-demo",
+        "card-full-composition"
       ]
     },
     {
@@ -2065,11 +2065,11 @@
       "route": "/verify/lyra/cascade-select",
       "demos": [
         "cascade-select-compound",
-        "controlled",
-        "default",
-        "default-value",
-        "disabled",
-        "disabled-items"
+        "cascade-select-controlled",
+        "cascade-select-default-value",
+        "cascade-select-demo",
+        "cascade-select-disabled",
+        "cascade-select-disabled-items"
       ]
     },
     {
@@ -2077,14 +2077,14 @@
       "component": "chart",
       "route": "/verify/lyra/chart",
       "demos": [
-        "area-default",
-        "area-gradient",
-        "bar-default",
-        "bar-multiple",
-        "line-default",
-        "line-multiple",
-        "pie-donut",
-        "pie-simple"
+        "chart-area-default",
+        "chart-area-gradient",
+        "chart-bar-default",
+        "chart-bar-multiple",
+        "chart-line-default",
+        "chart-line-multiple",
+        "chart-pie-donut",
+        "chart-pie-simple"
       ]
     },
     {
@@ -2115,10 +2115,10 @@
       "component": "collapsible",
       "route": "/verify/lyra/collapsible",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "settings"
+        "collapsible-controlled",
+        "collapsible-demo",
+        "collapsible-disabled",
+        "collapsible-settings"
       ]
     },
     {
@@ -2138,9 +2138,9 @@
       "component": "combobox",
       "route": "/verify/lyra/combobox",
       "demos": [
-        "controlled",
-        "default",
-        "disabled"
+        "combobox-controlled",
+        "combobox-demo",
+        "combobox-disabled"
       ]
     },
     {
@@ -2160,13 +2160,13 @@
       "route": "/verify/lyra/context-menu",
       "demos": [
         "context-menu-compound",
-        "controlled",
-        "default",
-        "destructive",
-        "disabled",
-        "groups",
-        "shortcuts",
-        "simple"
+        "context-menu-controlled",
+        "context-menu-demo",
+        "context-menu-destructive",
+        "context-menu-disabled",
+        "context-menu-groups",
+        "context-menu-shortcuts",
+        "context-menu-simple"
       ]
     },
     {
@@ -2175,9 +2175,9 @@
       "route": "/verify/lyra/data-table",
       "demos": [
         "data-table-demo",
-        "empty",
-        "formatted-cells",
-        "sorting"
+        "data-table-empty",
+        "data-table-formatted-cells",
+        "data-table-sorting"
       ]
     },
     {
@@ -2234,8 +2234,8 @@
       "route": "/verify/lyra/dropdown-menu",
       "demos": [
         "dropdown-menu-compound",
-        "dropdown-menu-danger",
         "dropdown-menu-demo",
+        "dropdown-menu-destructive",
         "dropdown-menu-disabled-item",
         "dropdown-menu-selection",
         "dropdown-menu-simple"
@@ -2246,13 +2246,13 @@
       "component": "editable",
       "route": "/verify/lyra/editable",
       "demos": [
-        "activation-mode",
-        "controlled",
-        "custom-trigger",
-        "default",
-        "disabled",
-        "placeholder",
-        "submit-mode"
+        "editable-activation-mode",
+        "editable-controlled",
+        "editable-custom-trigger",
+        "editable-demo",
+        "editable-disabled",
+        "editable-placeholder",
+        "editable-submit-mode"
       ]
     },
     {
@@ -2274,13 +2274,13 @@
       "component": "field",
       "route": "/verify/lyra/field",
       "demos": [
-        "default",
-        "field-set",
-        "fieldset-demo",
-        "horizontal",
-        "invalid",
-        "multiple-errors",
-        "signup"
+        "field-demo",
+        "field-fieldset",
+        "field-fieldset-basic",
+        "field-horizontal",
+        "field-invalid",
+        "field-multiple-errors",
+        "field-signup"
       ]
     },
     {
@@ -2310,10 +2310,10 @@
       "component": "hover-card",
       "route": "/verify/lyra/hover-card",
       "demos": [
-        "custom-delays",
-        "default",
-        "disabled",
-        "positioning"
+        "hover-card-custom-delays",
+        "hover-card-demo",
+        "hover-card-disabled",
+        "hover-card-sides"
       ]
     },
     {
@@ -2321,9 +2321,9 @@
       "component": "icon",
       "route": "/verify/lyra/icon",
       "demos": [
-        "default",
-        "libraries",
-        "sizing"
+        "icon-demo",
+        "icon-libraries",
+        "icon-sizing"
       ]
     },
     {
@@ -2331,10 +2331,10 @@
       "component": "image-cropper",
       "route": "/verify/lyra/image-cropper",
       "demos": [
-        "circle-aspect-ratio",
-        "controlled",
-        "default",
-        "fixed-crop-area"
+        "image-cropper-circle-aspect-ratio",
+        "image-cropper-controlled",
+        "image-cropper-demo",
+        "image-cropper-fixed-crop-area"
       ]
     },
     {
@@ -2357,16 +2357,16 @@
       "component": "input-group",
       "route": "/verify/lyra/input-group",
       "demos": [
-        "align-block-end",
-        "align-block-start",
-        "align-inline-end",
-        "align-inline-start",
-        "button",
-        "default",
-        "disabled",
-        "invalid",
-        "text",
-        "textarea"
+        "input-group-block-end",
+        "input-group-block-start",
+        "input-group-button",
+        "input-group-demo",
+        "input-group-disabled",
+        "input-group-inline-end",
+        "input-group-inline-start",
+        "input-group-invalid",
+        "input-group-text",
+        "input-group-textarea"
       ]
     },
     {
@@ -2413,10 +2413,10 @@
       "component": "label",
       "route": "/verify/lyra/label",
       "demos": [
-        "disabled",
-        "input-with-label",
         "label-demo",
-        "required"
+        "label-disabled",
+        "label-input-with-label",
+        "label-required"
       ]
     },
     {
@@ -2462,9 +2462,9 @@
       "component": "native-select",
       "route": "/verify/lyra/native-select",
       "demos": [
-        "default",
-        "disabled",
-        "groups"
+        "native-select-demo",
+        "native-select-disabled",
+        "native-select-groups"
       ]
     },
     {
@@ -2472,12 +2472,12 @@
       "component": "navigation-menu",
       "route": "/verify/lyra/navigation-menu",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
         "navigation-menu-compound",
-        "navigation-menu-precedence",
-        "panel"
+        "navigation-menu-controlled",
+        "navigation-menu-demo",
+        "navigation-menu-disabled",
+        "navigation-menu-panel",
+        "navigation-menu-precedence"
       ]
     },
     {
@@ -2496,10 +2496,10 @@
       "component": "pagination",
       "route": "/verify/lyra/pagination",
       "demos": [
-        "controlled",
-        "default",
-        "few-pages",
-        "sibling-count"
+        "pagination-controlled",
+        "pagination-demo",
+        "pagination-sibling-count",
+        "pagination-simple"
       ]
     },
     {
@@ -2557,7 +2557,7 @@
         "radio-group-controlled",
         "radio-group-demo",
         "radio-group-disabled",
-        "radio-group-disabled-item"
+        "radio-group-disabled-group"
       ]
     },
     {
@@ -2565,12 +2565,12 @@
       "component": "rating-group",
       "route": "/verify/lyra/rating-group",
       "demos": [
-        "controlled",
-        "custom-count",
-        "default",
-        "disabled",
-        "half-stars",
-        "readonly"
+        "rating-group-controlled",
+        "rating-group-custom-count",
+        "rating-group-demo",
+        "rating-group-disabled",
+        "rating-group-half-stars",
+        "rating-group-readonly"
       ]
     },
     {
@@ -2580,7 +2580,7 @@
       "demos": [
         "resizable-controlled",
         "resizable-demo",
-        "resizable-sizes",
+        "resizable-handle",
         "resizable-vertical"
       ]
     },
@@ -2589,8 +2589,8 @@
       "component": "scroll-area",
       "route": "/verify/lyra/scroll-area",
       "demos": [
-        "default",
-        "horizontal"
+        "scroll-area-demo",
+        "scroll-area-horizontal-demo"
       ]
     },
     {
@@ -2711,8 +2711,8 @@
       "component": "table",
       "route": "/verify/lyra/table",
       "demos": [
-        "default",
-        "selected-row"
+        "table-demo",
+        "table-selected-row"
       ]
     },
     {
@@ -2733,12 +2733,12 @@
       "component": "tags-input",
       "route": "/verify/lyra/tags-input",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "label",
-        "max",
-        "paste"
+        "tags-input-controlled",
+        "tags-input-demo",
+        "tags-input-disabled",
+        "tags-input-label",
+        "tags-input-max",
+        "tags-input-paste"
       ]
     },
     {
@@ -2746,12 +2746,12 @@
       "component": "textarea",
       "route": "/verify/lyra/textarea",
       "demos": [
-        "default",
-        "disabled",
-        "invalid",
-        "with-label",
-        "with-text",
-        "with-value"
+        "textarea-demo",
+        "textarea-disabled",
+        "textarea-field",
+        "textarea-invalid",
+        "textarea-with-text",
+        "textarea-with-value"
       ]
     },
     {
@@ -2793,11 +2793,11 @@
       "component": "toggle",
       "route": "/verify/lyra/toggle",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "outline",
-        "sizes"
+        "toggle-controlled",
+        "toggle-demo",
+        "toggle-disabled",
+        "toggle-outline",
+        "toggle-sizes"
       ]
     },
     {
@@ -2805,13 +2805,13 @@
       "component": "toggle-group",
       "route": "/verify/lyra/toggle-group",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "outline",
-        "sizes",
-        "toggle-group-compound"
+        "toggle-group-compound",
+        "toggle-group-controlled",
+        "toggle-group-demo",
+        "toggle-group-disabled",
+        "toggle-group-multiple",
+        "toggle-group-outline",
+        "toggle-group-sizes"
       ]
     },
     {
@@ -2821,7 +2821,7 @@
       "demos": [
         "tooltip-delay",
         "tooltip-demo",
-        "tooltip-positioning"
+        "tooltip-sides"
       ]
     },
     {
@@ -2829,9 +2829,9 @@
       "component": "tour",
       "route": "/verify/lyra/tour",
       "demos": [
-        "controlled",
-        "default",
-        "sides"
+        "tour-controlled",
+        "tour-demo",
+        "tour-sides"
       ]
     },
     {
@@ -2839,11 +2839,11 @@
       "component": "tree-view",
       "route": "/verify/lyra/tree-view",
       "demos": [
-        "controlled-selection",
-        "default",
-        "disabled",
-        "expanded",
-        "multiple-selection"
+        "tree-view-controlled-selection",
+        "tree-view-demo",
+        "tree-view-disabled",
+        "tree-view-expanded",
+        "tree-view-multiple-selection"
       ]
     },
     {
@@ -2852,11 +2852,11 @@
       "route": "/verify/maia/accordion",
       "demos": [
         "accordion-compound",
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "not-collapsible"
+        "accordion-controlled",
+        "accordion-demo",
+        "accordion-disabled",
+        "accordion-multiple",
+        "accordion-not-collapsible"
       ]
     },
     {
@@ -2864,9 +2864,9 @@
       "component": "alert",
       "route": "/verify/maia/alert",
       "demos": [
-        "default",
-        "destructive",
-        "without-icon"
+        "alert-demo",
+        "alert-destructive",
+        "alert-without-icon"
       ]
     },
     {
@@ -2895,11 +2895,11 @@
       "component": "aspect-ratio",
       "route": "/verify/maia/aspect-ratio",
       "demos": [
-        "content-card",
-        "default",
-        "portrait",
-        "square",
-        "ultrawide-banner"
+        "aspect-ratio-content-card",
+        "aspect-ratio-demo",
+        "aspect-ratio-portrait",
+        "aspect-ratio-square",
+        "aspect-ratio-ultrawide-banner"
       ]
     },
     {
@@ -2919,11 +2919,11 @@
       "component": "badge",
       "route": "/verify/maia/badge",
       "demos": [
-        "default",
-        "numeric",
-        "status",
-        "variants",
-        "with-icon"
+        "badge-default",
+        "badge-demo",
+        "badge-icon",
+        "badge-numeric",
+        "badge-status"
       ]
     },
     {
@@ -2931,7 +2931,7 @@
       "component": "breadcrumb",
       "route": "/verify/maia/breadcrumb",
       "demos": [
-        "breadcrumb-demo",
+        "breadcrumb-basic",
         "breadcrumb-ellipsis",
         "breadcrumb-responsive",
         "breadcrumb-separator"
@@ -2942,9 +2942,9 @@
       "component": "button",
       "route": "/verify/maia/button",
       "demos": [
-        "button-demo",
+        "button-default",
         "button-disabled",
-        "button-sizes",
+        "button-size",
         "button-variants"
       ]
     },
@@ -2953,13 +2953,13 @@
       "component": "button-group",
       "route": "/verify/maia/button-group",
       "demos": [
-        "default",
-        "nested",
-        "orientation",
-        "separator",
-        "sizes",
-        "split",
-        "text"
+        "button-group-demo",
+        "button-group-nested",
+        "button-group-orientation",
+        "button-group-separator",
+        "button-group-size",
+        "button-group-split",
+        "button-group-text"
       ]
     },
     {
@@ -2967,13 +2967,13 @@
       "component": "calendar",
       "route": "/verify/maia/calendar",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "dropdown",
-        "min-max",
-        "multiple",
-        "range"
+        "calendar-basic",
+        "calendar-controlled",
+        "calendar-demo",
+        "calendar-disabled",
+        "calendar-min-max",
+        "calendar-multiple",
+        "calendar-range"
       ]
     },
     {
@@ -2981,11 +2981,11 @@
       "component": "card",
       "route": "/verify/maia/card",
       "demos": [
-        "action",
-        "border-footer",
-        "content-only",
-        "default",
-        "full-composition"
+        "card-action",
+        "card-border-footer",
+        "card-content-only",
+        "card-demo",
+        "card-full-composition"
       ]
     },
     {
@@ -3008,11 +3008,11 @@
       "route": "/verify/maia/cascade-select",
       "demos": [
         "cascade-select-compound",
-        "controlled",
-        "default",
-        "default-value",
-        "disabled",
-        "disabled-items"
+        "cascade-select-controlled",
+        "cascade-select-default-value",
+        "cascade-select-demo",
+        "cascade-select-disabled",
+        "cascade-select-disabled-items"
       ]
     },
     {
@@ -3020,14 +3020,14 @@
       "component": "chart",
       "route": "/verify/maia/chart",
       "demos": [
-        "area-default",
-        "area-gradient",
-        "bar-default",
-        "bar-multiple",
-        "line-default",
-        "line-multiple",
-        "pie-donut",
-        "pie-simple"
+        "chart-area-default",
+        "chart-area-gradient",
+        "chart-bar-default",
+        "chart-bar-multiple",
+        "chart-line-default",
+        "chart-line-multiple",
+        "chart-pie-donut",
+        "chart-pie-simple"
       ]
     },
     {
@@ -3058,10 +3058,10 @@
       "component": "collapsible",
       "route": "/verify/maia/collapsible",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "settings"
+        "collapsible-controlled",
+        "collapsible-demo",
+        "collapsible-disabled",
+        "collapsible-settings"
       ]
     },
     {
@@ -3081,9 +3081,9 @@
       "component": "combobox",
       "route": "/verify/maia/combobox",
       "demos": [
-        "controlled",
-        "default",
-        "disabled"
+        "combobox-controlled",
+        "combobox-demo",
+        "combobox-disabled"
       ]
     },
     {
@@ -3103,13 +3103,13 @@
       "route": "/verify/maia/context-menu",
       "demos": [
         "context-menu-compound",
-        "controlled",
-        "default",
-        "destructive",
-        "disabled",
-        "groups",
-        "shortcuts",
-        "simple"
+        "context-menu-controlled",
+        "context-menu-demo",
+        "context-menu-destructive",
+        "context-menu-disabled",
+        "context-menu-groups",
+        "context-menu-shortcuts",
+        "context-menu-simple"
       ]
     },
     {
@@ -3118,9 +3118,9 @@
       "route": "/verify/maia/data-table",
       "demos": [
         "data-table-demo",
-        "empty",
-        "formatted-cells",
-        "sorting"
+        "data-table-empty",
+        "data-table-formatted-cells",
+        "data-table-sorting"
       ]
     },
     {
@@ -3177,8 +3177,8 @@
       "route": "/verify/maia/dropdown-menu",
       "demos": [
         "dropdown-menu-compound",
-        "dropdown-menu-danger",
         "dropdown-menu-demo",
+        "dropdown-menu-destructive",
         "dropdown-menu-disabled-item",
         "dropdown-menu-selection",
         "dropdown-menu-simple"
@@ -3189,13 +3189,13 @@
       "component": "editable",
       "route": "/verify/maia/editable",
       "demos": [
-        "activation-mode",
-        "controlled",
-        "custom-trigger",
-        "default",
-        "disabled",
-        "placeholder",
-        "submit-mode"
+        "editable-activation-mode",
+        "editable-controlled",
+        "editable-custom-trigger",
+        "editable-demo",
+        "editable-disabled",
+        "editable-placeholder",
+        "editable-submit-mode"
       ]
     },
     {
@@ -3217,13 +3217,13 @@
       "component": "field",
       "route": "/verify/maia/field",
       "demos": [
-        "default",
-        "field-set",
-        "fieldset-demo",
-        "horizontal",
-        "invalid",
-        "multiple-errors",
-        "signup"
+        "field-demo",
+        "field-fieldset",
+        "field-fieldset-basic",
+        "field-horizontal",
+        "field-invalid",
+        "field-multiple-errors",
+        "field-signup"
       ]
     },
     {
@@ -3253,10 +3253,10 @@
       "component": "hover-card",
       "route": "/verify/maia/hover-card",
       "demos": [
-        "custom-delays",
-        "default",
-        "disabled",
-        "positioning"
+        "hover-card-custom-delays",
+        "hover-card-demo",
+        "hover-card-disabled",
+        "hover-card-sides"
       ]
     },
     {
@@ -3264,9 +3264,9 @@
       "component": "icon",
       "route": "/verify/maia/icon",
       "demos": [
-        "default",
-        "libraries",
-        "sizing"
+        "icon-demo",
+        "icon-libraries",
+        "icon-sizing"
       ]
     },
     {
@@ -3274,10 +3274,10 @@
       "component": "image-cropper",
       "route": "/verify/maia/image-cropper",
       "demos": [
-        "circle-aspect-ratio",
-        "controlled",
-        "default",
-        "fixed-crop-area"
+        "image-cropper-circle-aspect-ratio",
+        "image-cropper-controlled",
+        "image-cropper-demo",
+        "image-cropper-fixed-crop-area"
       ]
     },
     {
@@ -3300,16 +3300,16 @@
       "component": "input-group",
       "route": "/verify/maia/input-group",
       "demos": [
-        "align-block-end",
-        "align-block-start",
-        "align-inline-end",
-        "align-inline-start",
-        "button",
-        "default",
-        "disabled",
-        "invalid",
-        "text",
-        "textarea"
+        "input-group-block-end",
+        "input-group-block-start",
+        "input-group-button",
+        "input-group-demo",
+        "input-group-disabled",
+        "input-group-inline-end",
+        "input-group-inline-start",
+        "input-group-invalid",
+        "input-group-text",
+        "input-group-textarea"
       ]
     },
     {
@@ -3356,10 +3356,10 @@
       "component": "label",
       "route": "/verify/maia/label",
       "demos": [
-        "disabled",
-        "input-with-label",
         "label-demo",
-        "required"
+        "label-disabled",
+        "label-input-with-label",
+        "label-required"
       ]
     },
     {
@@ -3405,9 +3405,9 @@
       "component": "native-select",
       "route": "/verify/maia/native-select",
       "demos": [
-        "default",
-        "disabled",
-        "groups"
+        "native-select-demo",
+        "native-select-disabled",
+        "native-select-groups"
       ]
     },
     {
@@ -3415,12 +3415,12 @@
       "component": "navigation-menu",
       "route": "/verify/maia/navigation-menu",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
         "navigation-menu-compound",
-        "navigation-menu-precedence",
-        "panel"
+        "navigation-menu-controlled",
+        "navigation-menu-demo",
+        "navigation-menu-disabled",
+        "navigation-menu-panel",
+        "navigation-menu-precedence"
       ]
     },
     {
@@ -3439,10 +3439,10 @@
       "component": "pagination",
       "route": "/verify/maia/pagination",
       "demos": [
-        "controlled",
-        "default",
-        "few-pages",
-        "sibling-count"
+        "pagination-controlled",
+        "pagination-demo",
+        "pagination-sibling-count",
+        "pagination-simple"
       ]
     },
     {
@@ -3500,7 +3500,7 @@
         "radio-group-controlled",
         "radio-group-demo",
         "radio-group-disabled",
-        "radio-group-disabled-item"
+        "radio-group-disabled-group"
       ]
     },
     {
@@ -3508,12 +3508,12 @@
       "component": "rating-group",
       "route": "/verify/maia/rating-group",
       "demos": [
-        "controlled",
-        "custom-count",
-        "default",
-        "disabled",
-        "half-stars",
-        "readonly"
+        "rating-group-controlled",
+        "rating-group-custom-count",
+        "rating-group-demo",
+        "rating-group-disabled",
+        "rating-group-half-stars",
+        "rating-group-readonly"
       ]
     },
     {
@@ -3523,7 +3523,7 @@
       "demos": [
         "resizable-controlled",
         "resizable-demo",
-        "resizable-sizes",
+        "resizable-handle",
         "resizable-vertical"
       ]
     },
@@ -3532,8 +3532,8 @@
       "component": "scroll-area",
       "route": "/verify/maia/scroll-area",
       "demos": [
-        "default",
-        "horizontal"
+        "scroll-area-demo",
+        "scroll-area-horizontal-demo"
       ]
     },
     {
@@ -3654,8 +3654,8 @@
       "component": "table",
       "route": "/verify/maia/table",
       "demos": [
-        "default",
-        "selected-row"
+        "table-demo",
+        "table-selected-row"
       ]
     },
     {
@@ -3676,12 +3676,12 @@
       "component": "tags-input",
       "route": "/verify/maia/tags-input",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "label",
-        "max",
-        "paste"
+        "tags-input-controlled",
+        "tags-input-demo",
+        "tags-input-disabled",
+        "tags-input-label",
+        "tags-input-max",
+        "tags-input-paste"
       ]
     },
     {
@@ -3689,12 +3689,12 @@
       "component": "textarea",
       "route": "/verify/maia/textarea",
       "demos": [
-        "default",
-        "disabled",
-        "invalid",
-        "with-label",
-        "with-text",
-        "with-value"
+        "textarea-demo",
+        "textarea-disabled",
+        "textarea-field",
+        "textarea-invalid",
+        "textarea-with-text",
+        "textarea-with-value"
       ]
     },
     {
@@ -3736,11 +3736,11 @@
       "component": "toggle",
       "route": "/verify/maia/toggle",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "outline",
-        "sizes"
+        "toggle-controlled",
+        "toggle-demo",
+        "toggle-disabled",
+        "toggle-outline",
+        "toggle-sizes"
       ]
     },
     {
@@ -3748,13 +3748,13 @@
       "component": "toggle-group",
       "route": "/verify/maia/toggle-group",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "outline",
-        "sizes",
-        "toggle-group-compound"
+        "toggle-group-compound",
+        "toggle-group-controlled",
+        "toggle-group-demo",
+        "toggle-group-disabled",
+        "toggle-group-multiple",
+        "toggle-group-outline",
+        "toggle-group-sizes"
       ]
     },
     {
@@ -3764,7 +3764,7 @@
       "demos": [
         "tooltip-delay",
         "tooltip-demo",
-        "tooltip-positioning"
+        "tooltip-sides"
       ]
     },
     {
@@ -3772,9 +3772,9 @@
       "component": "tour",
       "route": "/verify/maia/tour",
       "demos": [
-        "controlled",
-        "default",
-        "sides"
+        "tour-controlled",
+        "tour-demo",
+        "tour-sides"
       ]
     },
     {
@@ -3782,11 +3782,11 @@
       "component": "tree-view",
       "route": "/verify/maia/tree-view",
       "demos": [
-        "controlled-selection",
-        "default",
-        "disabled",
-        "expanded",
-        "multiple-selection"
+        "tree-view-controlled-selection",
+        "tree-view-demo",
+        "tree-view-disabled",
+        "tree-view-expanded",
+        "tree-view-multiple-selection"
       ]
     },
     {
@@ -3795,11 +3795,11 @@
       "route": "/verify/mira/accordion",
       "demos": [
         "accordion-compound",
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "not-collapsible"
+        "accordion-controlled",
+        "accordion-demo",
+        "accordion-disabled",
+        "accordion-multiple",
+        "accordion-not-collapsible"
       ]
     },
     {
@@ -3807,9 +3807,9 @@
       "component": "alert",
       "route": "/verify/mira/alert",
       "demos": [
-        "default",
-        "destructive",
-        "without-icon"
+        "alert-demo",
+        "alert-destructive",
+        "alert-without-icon"
       ]
     },
     {
@@ -3838,11 +3838,11 @@
       "component": "aspect-ratio",
       "route": "/verify/mira/aspect-ratio",
       "demos": [
-        "content-card",
-        "default",
-        "portrait",
-        "square",
-        "ultrawide-banner"
+        "aspect-ratio-content-card",
+        "aspect-ratio-demo",
+        "aspect-ratio-portrait",
+        "aspect-ratio-square",
+        "aspect-ratio-ultrawide-banner"
       ]
     },
     {
@@ -3862,11 +3862,11 @@
       "component": "badge",
       "route": "/verify/mira/badge",
       "demos": [
-        "default",
-        "numeric",
-        "status",
-        "variants",
-        "with-icon"
+        "badge-default",
+        "badge-demo",
+        "badge-icon",
+        "badge-numeric",
+        "badge-status"
       ]
     },
     {
@@ -3874,7 +3874,7 @@
       "component": "breadcrumb",
       "route": "/verify/mira/breadcrumb",
       "demos": [
-        "breadcrumb-demo",
+        "breadcrumb-basic",
         "breadcrumb-ellipsis",
         "breadcrumb-responsive",
         "breadcrumb-separator"
@@ -3885,9 +3885,9 @@
       "component": "button",
       "route": "/verify/mira/button",
       "demos": [
-        "button-demo",
+        "button-default",
         "button-disabled",
-        "button-sizes",
+        "button-size",
         "button-variants"
       ]
     },
@@ -3896,13 +3896,13 @@
       "component": "button-group",
       "route": "/verify/mira/button-group",
       "demos": [
-        "default",
-        "nested",
-        "orientation",
-        "separator",
-        "sizes",
-        "split",
-        "text"
+        "button-group-demo",
+        "button-group-nested",
+        "button-group-orientation",
+        "button-group-separator",
+        "button-group-size",
+        "button-group-split",
+        "button-group-text"
       ]
     },
     {
@@ -3910,13 +3910,13 @@
       "component": "calendar",
       "route": "/verify/mira/calendar",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "dropdown",
-        "min-max",
-        "multiple",
-        "range"
+        "calendar-basic",
+        "calendar-controlled",
+        "calendar-demo",
+        "calendar-disabled",
+        "calendar-min-max",
+        "calendar-multiple",
+        "calendar-range"
       ]
     },
     {
@@ -3924,11 +3924,11 @@
       "component": "card",
       "route": "/verify/mira/card",
       "demos": [
-        "action",
-        "border-footer",
-        "content-only",
-        "default",
-        "full-composition"
+        "card-action",
+        "card-border-footer",
+        "card-content-only",
+        "card-demo",
+        "card-full-composition"
       ]
     },
     {
@@ -3951,11 +3951,11 @@
       "route": "/verify/mira/cascade-select",
       "demos": [
         "cascade-select-compound",
-        "controlled",
-        "default",
-        "default-value",
-        "disabled",
-        "disabled-items"
+        "cascade-select-controlled",
+        "cascade-select-default-value",
+        "cascade-select-demo",
+        "cascade-select-disabled",
+        "cascade-select-disabled-items"
       ]
     },
     {
@@ -3963,14 +3963,14 @@
       "component": "chart",
       "route": "/verify/mira/chart",
       "demos": [
-        "area-default",
-        "area-gradient",
-        "bar-default",
-        "bar-multiple",
-        "line-default",
-        "line-multiple",
-        "pie-donut",
-        "pie-simple"
+        "chart-area-default",
+        "chart-area-gradient",
+        "chart-bar-default",
+        "chart-bar-multiple",
+        "chart-line-default",
+        "chart-line-multiple",
+        "chart-pie-donut",
+        "chart-pie-simple"
       ]
     },
     {
@@ -4001,10 +4001,10 @@
       "component": "collapsible",
       "route": "/verify/mira/collapsible",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "settings"
+        "collapsible-controlled",
+        "collapsible-demo",
+        "collapsible-disabled",
+        "collapsible-settings"
       ]
     },
     {
@@ -4024,9 +4024,9 @@
       "component": "combobox",
       "route": "/verify/mira/combobox",
       "demos": [
-        "controlled",
-        "default",
-        "disabled"
+        "combobox-controlled",
+        "combobox-demo",
+        "combobox-disabled"
       ]
     },
     {
@@ -4046,13 +4046,13 @@
       "route": "/verify/mira/context-menu",
       "demos": [
         "context-menu-compound",
-        "controlled",
-        "default",
-        "destructive",
-        "disabled",
-        "groups",
-        "shortcuts",
-        "simple"
+        "context-menu-controlled",
+        "context-menu-demo",
+        "context-menu-destructive",
+        "context-menu-disabled",
+        "context-menu-groups",
+        "context-menu-shortcuts",
+        "context-menu-simple"
       ]
     },
     {
@@ -4061,9 +4061,9 @@
       "route": "/verify/mira/data-table",
       "demos": [
         "data-table-demo",
-        "empty",
-        "formatted-cells",
-        "sorting"
+        "data-table-empty",
+        "data-table-formatted-cells",
+        "data-table-sorting"
       ]
     },
     {
@@ -4120,8 +4120,8 @@
       "route": "/verify/mira/dropdown-menu",
       "demos": [
         "dropdown-menu-compound",
-        "dropdown-menu-danger",
         "dropdown-menu-demo",
+        "dropdown-menu-destructive",
         "dropdown-menu-disabled-item",
         "dropdown-menu-selection",
         "dropdown-menu-simple"
@@ -4132,13 +4132,13 @@
       "component": "editable",
       "route": "/verify/mira/editable",
       "demos": [
-        "activation-mode",
-        "controlled",
-        "custom-trigger",
-        "default",
-        "disabled",
-        "placeholder",
-        "submit-mode"
+        "editable-activation-mode",
+        "editable-controlled",
+        "editable-custom-trigger",
+        "editable-demo",
+        "editable-disabled",
+        "editable-placeholder",
+        "editable-submit-mode"
       ]
     },
     {
@@ -4160,13 +4160,13 @@
       "component": "field",
       "route": "/verify/mira/field",
       "demos": [
-        "default",
-        "field-set",
-        "fieldset-demo",
-        "horizontal",
-        "invalid",
-        "multiple-errors",
-        "signup"
+        "field-demo",
+        "field-fieldset",
+        "field-fieldset-basic",
+        "field-horizontal",
+        "field-invalid",
+        "field-multiple-errors",
+        "field-signup"
       ]
     },
     {
@@ -4196,10 +4196,10 @@
       "component": "hover-card",
       "route": "/verify/mira/hover-card",
       "demos": [
-        "custom-delays",
-        "default",
-        "disabled",
-        "positioning"
+        "hover-card-custom-delays",
+        "hover-card-demo",
+        "hover-card-disabled",
+        "hover-card-sides"
       ]
     },
     {
@@ -4207,9 +4207,9 @@
       "component": "icon",
       "route": "/verify/mira/icon",
       "demos": [
-        "default",
-        "libraries",
-        "sizing"
+        "icon-demo",
+        "icon-libraries",
+        "icon-sizing"
       ]
     },
     {
@@ -4217,10 +4217,10 @@
       "component": "image-cropper",
       "route": "/verify/mira/image-cropper",
       "demos": [
-        "circle-aspect-ratio",
-        "controlled",
-        "default",
-        "fixed-crop-area"
+        "image-cropper-circle-aspect-ratio",
+        "image-cropper-controlled",
+        "image-cropper-demo",
+        "image-cropper-fixed-crop-area"
       ]
     },
     {
@@ -4243,16 +4243,16 @@
       "component": "input-group",
       "route": "/verify/mira/input-group",
       "demos": [
-        "align-block-end",
-        "align-block-start",
-        "align-inline-end",
-        "align-inline-start",
-        "button",
-        "default",
-        "disabled",
-        "invalid",
-        "text",
-        "textarea"
+        "input-group-block-end",
+        "input-group-block-start",
+        "input-group-button",
+        "input-group-demo",
+        "input-group-disabled",
+        "input-group-inline-end",
+        "input-group-inline-start",
+        "input-group-invalid",
+        "input-group-text",
+        "input-group-textarea"
       ]
     },
     {
@@ -4299,10 +4299,10 @@
       "component": "label",
       "route": "/verify/mira/label",
       "demos": [
-        "disabled",
-        "input-with-label",
         "label-demo",
-        "required"
+        "label-disabled",
+        "label-input-with-label",
+        "label-required"
       ]
     },
     {
@@ -4348,9 +4348,9 @@
       "component": "native-select",
       "route": "/verify/mira/native-select",
       "demos": [
-        "default",
-        "disabled",
-        "groups"
+        "native-select-demo",
+        "native-select-disabled",
+        "native-select-groups"
       ]
     },
     {
@@ -4358,12 +4358,12 @@
       "component": "navigation-menu",
       "route": "/verify/mira/navigation-menu",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
         "navigation-menu-compound",
-        "navigation-menu-precedence",
-        "panel"
+        "navigation-menu-controlled",
+        "navigation-menu-demo",
+        "navigation-menu-disabled",
+        "navigation-menu-panel",
+        "navigation-menu-precedence"
       ]
     },
     {
@@ -4382,10 +4382,10 @@
       "component": "pagination",
       "route": "/verify/mira/pagination",
       "demos": [
-        "controlled",
-        "default",
-        "few-pages",
-        "sibling-count"
+        "pagination-controlled",
+        "pagination-demo",
+        "pagination-sibling-count",
+        "pagination-simple"
       ]
     },
     {
@@ -4443,7 +4443,7 @@
         "radio-group-controlled",
         "radio-group-demo",
         "radio-group-disabled",
-        "radio-group-disabled-item"
+        "radio-group-disabled-group"
       ]
     },
     {
@@ -4451,12 +4451,12 @@
       "component": "rating-group",
       "route": "/verify/mira/rating-group",
       "demos": [
-        "controlled",
-        "custom-count",
-        "default",
-        "disabled",
-        "half-stars",
-        "readonly"
+        "rating-group-controlled",
+        "rating-group-custom-count",
+        "rating-group-demo",
+        "rating-group-disabled",
+        "rating-group-half-stars",
+        "rating-group-readonly"
       ]
     },
     {
@@ -4466,7 +4466,7 @@
       "demos": [
         "resizable-controlled",
         "resizable-demo",
-        "resizable-sizes",
+        "resizable-handle",
         "resizable-vertical"
       ]
     },
@@ -4475,8 +4475,8 @@
       "component": "scroll-area",
       "route": "/verify/mira/scroll-area",
       "demos": [
-        "default",
-        "horizontal"
+        "scroll-area-demo",
+        "scroll-area-horizontal-demo"
       ]
     },
     {
@@ -4597,8 +4597,8 @@
       "component": "table",
       "route": "/verify/mira/table",
       "demos": [
-        "default",
-        "selected-row"
+        "table-demo",
+        "table-selected-row"
       ]
     },
     {
@@ -4619,12 +4619,12 @@
       "component": "tags-input",
       "route": "/verify/mira/tags-input",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "label",
-        "max",
-        "paste"
+        "tags-input-controlled",
+        "tags-input-demo",
+        "tags-input-disabled",
+        "tags-input-label",
+        "tags-input-max",
+        "tags-input-paste"
       ]
     },
     {
@@ -4632,12 +4632,12 @@
       "component": "textarea",
       "route": "/verify/mira/textarea",
       "demos": [
-        "default",
-        "disabled",
-        "invalid",
-        "with-label",
-        "with-text",
-        "with-value"
+        "textarea-demo",
+        "textarea-disabled",
+        "textarea-field",
+        "textarea-invalid",
+        "textarea-with-text",
+        "textarea-with-value"
       ]
     },
     {
@@ -4679,11 +4679,11 @@
       "component": "toggle",
       "route": "/verify/mira/toggle",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "outline",
-        "sizes"
+        "toggle-controlled",
+        "toggle-demo",
+        "toggle-disabled",
+        "toggle-outline",
+        "toggle-sizes"
       ]
     },
     {
@@ -4691,13 +4691,13 @@
       "component": "toggle-group",
       "route": "/verify/mira/toggle-group",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "outline",
-        "sizes",
-        "toggle-group-compound"
+        "toggle-group-compound",
+        "toggle-group-controlled",
+        "toggle-group-demo",
+        "toggle-group-disabled",
+        "toggle-group-multiple",
+        "toggle-group-outline",
+        "toggle-group-sizes"
       ]
     },
     {
@@ -4707,7 +4707,7 @@
       "demos": [
         "tooltip-delay",
         "tooltip-demo",
-        "tooltip-positioning"
+        "tooltip-sides"
       ]
     },
     {
@@ -4715,9 +4715,9 @@
       "component": "tour",
       "route": "/verify/mira/tour",
       "demos": [
-        "controlled",
-        "default",
-        "sides"
+        "tour-controlled",
+        "tour-demo",
+        "tour-sides"
       ]
     },
     {
@@ -4725,11 +4725,11 @@
       "component": "tree-view",
       "route": "/verify/mira/tree-view",
       "demos": [
-        "controlled-selection",
-        "default",
-        "disabled",
-        "expanded",
-        "multiple-selection"
+        "tree-view-controlled-selection",
+        "tree-view-demo",
+        "tree-view-disabled",
+        "tree-view-expanded",
+        "tree-view-multiple-selection"
       ]
     },
     {
@@ -4738,11 +4738,11 @@
       "route": "/verify/nova/accordion",
       "demos": [
         "accordion-compound",
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "not-collapsible"
+        "accordion-controlled",
+        "accordion-demo",
+        "accordion-disabled",
+        "accordion-multiple",
+        "accordion-not-collapsible"
       ]
     },
     {
@@ -4750,9 +4750,9 @@
       "component": "alert",
       "route": "/verify/nova/alert",
       "demos": [
-        "default",
-        "destructive",
-        "without-icon"
+        "alert-demo",
+        "alert-destructive",
+        "alert-without-icon"
       ]
     },
     {
@@ -4781,11 +4781,11 @@
       "component": "aspect-ratio",
       "route": "/verify/nova/aspect-ratio",
       "demos": [
-        "content-card",
-        "default",
-        "portrait",
-        "square",
-        "ultrawide-banner"
+        "aspect-ratio-content-card",
+        "aspect-ratio-demo",
+        "aspect-ratio-portrait",
+        "aspect-ratio-square",
+        "aspect-ratio-ultrawide-banner"
       ]
     },
     {
@@ -4805,11 +4805,11 @@
       "component": "badge",
       "route": "/verify/nova/badge",
       "demos": [
-        "default",
-        "numeric",
-        "status",
-        "variants",
-        "with-icon"
+        "badge-default",
+        "badge-demo",
+        "badge-icon",
+        "badge-numeric",
+        "badge-status"
       ]
     },
     {
@@ -4817,7 +4817,7 @@
       "component": "breadcrumb",
       "route": "/verify/nova/breadcrumb",
       "demos": [
-        "breadcrumb-demo",
+        "breadcrumb-basic",
         "breadcrumb-ellipsis",
         "breadcrumb-responsive",
         "breadcrumb-separator"
@@ -4828,9 +4828,9 @@
       "component": "button",
       "route": "/verify/nova/button",
       "demos": [
-        "button-demo",
+        "button-default",
         "button-disabled",
-        "button-sizes",
+        "button-size",
         "button-variants"
       ]
     },
@@ -4839,13 +4839,13 @@
       "component": "button-group",
       "route": "/verify/nova/button-group",
       "demos": [
-        "default",
-        "nested",
-        "orientation",
-        "separator",
-        "sizes",
-        "split",
-        "text"
+        "button-group-demo",
+        "button-group-nested",
+        "button-group-orientation",
+        "button-group-separator",
+        "button-group-size",
+        "button-group-split",
+        "button-group-text"
       ]
     },
     {
@@ -4853,13 +4853,13 @@
       "component": "calendar",
       "route": "/verify/nova/calendar",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "dropdown",
-        "min-max",
-        "multiple",
-        "range"
+        "calendar-basic",
+        "calendar-controlled",
+        "calendar-demo",
+        "calendar-disabled",
+        "calendar-min-max",
+        "calendar-multiple",
+        "calendar-range"
       ]
     },
     {
@@ -4867,11 +4867,11 @@
       "component": "card",
       "route": "/verify/nova/card",
       "demos": [
-        "action",
-        "border-footer",
-        "content-only",
-        "default",
-        "full-composition"
+        "card-action",
+        "card-border-footer",
+        "card-content-only",
+        "card-demo",
+        "card-full-composition"
       ]
     },
     {
@@ -4894,11 +4894,11 @@
       "route": "/verify/nova/cascade-select",
       "demos": [
         "cascade-select-compound",
-        "controlled",
-        "default",
-        "default-value",
-        "disabled",
-        "disabled-items"
+        "cascade-select-controlled",
+        "cascade-select-default-value",
+        "cascade-select-demo",
+        "cascade-select-disabled",
+        "cascade-select-disabled-items"
       ]
     },
     {
@@ -4906,14 +4906,14 @@
       "component": "chart",
       "route": "/verify/nova/chart",
       "demos": [
-        "area-default",
-        "area-gradient",
-        "bar-default",
-        "bar-multiple",
-        "line-default",
-        "line-multiple",
-        "pie-donut",
-        "pie-simple"
+        "chart-area-default",
+        "chart-area-gradient",
+        "chart-bar-default",
+        "chart-bar-multiple",
+        "chart-line-default",
+        "chart-line-multiple",
+        "chart-pie-donut",
+        "chart-pie-simple"
       ]
     },
     {
@@ -4944,10 +4944,10 @@
       "component": "collapsible",
       "route": "/verify/nova/collapsible",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "settings"
+        "collapsible-controlled",
+        "collapsible-demo",
+        "collapsible-disabled",
+        "collapsible-settings"
       ]
     },
     {
@@ -4967,9 +4967,9 @@
       "component": "combobox",
       "route": "/verify/nova/combobox",
       "demos": [
-        "controlled",
-        "default",
-        "disabled"
+        "combobox-controlled",
+        "combobox-demo",
+        "combobox-disabled"
       ]
     },
     {
@@ -4989,13 +4989,13 @@
       "route": "/verify/nova/context-menu",
       "demos": [
         "context-menu-compound",
-        "controlled",
-        "default",
-        "destructive",
-        "disabled",
-        "groups",
-        "shortcuts",
-        "simple"
+        "context-menu-controlled",
+        "context-menu-demo",
+        "context-menu-destructive",
+        "context-menu-disabled",
+        "context-menu-groups",
+        "context-menu-shortcuts",
+        "context-menu-simple"
       ]
     },
     {
@@ -5004,9 +5004,9 @@
       "route": "/verify/nova/data-table",
       "demos": [
         "data-table-demo",
-        "empty",
-        "formatted-cells",
-        "sorting"
+        "data-table-empty",
+        "data-table-formatted-cells",
+        "data-table-sorting"
       ]
     },
     {
@@ -5063,8 +5063,8 @@
       "route": "/verify/nova/dropdown-menu",
       "demos": [
         "dropdown-menu-compound",
-        "dropdown-menu-danger",
         "dropdown-menu-demo",
+        "dropdown-menu-destructive",
         "dropdown-menu-disabled-item",
         "dropdown-menu-selection",
         "dropdown-menu-simple"
@@ -5075,13 +5075,13 @@
       "component": "editable",
       "route": "/verify/nova/editable",
       "demos": [
-        "activation-mode",
-        "controlled",
-        "custom-trigger",
-        "default",
-        "disabled",
-        "placeholder",
-        "submit-mode"
+        "editable-activation-mode",
+        "editable-controlled",
+        "editable-custom-trigger",
+        "editable-demo",
+        "editable-disabled",
+        "editable-placeholder",
+        "editable-submit-mode"
       ]
     },
     {
@@ -5103,13 +5103,13 @@
       "component": "field",
       "route": "/verify/nova/field",
       "demos": [
-        "default",
-        "field-set",
-        "fieldset-demo",
-        "horizontal",
-        "invalid",
-        "multiple-errors",
-        "signup"
+        "field-demo",
+        "field-fieldset",
+        "field-fieldset-basic",
+        "field-horizontal",
+        "field-invalid",
+        "field-multiple-errors",
+        "field-signup"
       ]
     },
     {
@@ -5139,10 +5139,10 @@
       "component": "hover-card",
       "route": "/verify/nova/hover-card",
       "demos": [
-        "custom-delays",
-        "default",
-        "disabled",
-        "positioning"
+        "hover-card-custom-delays",
+        "hover-card-demo",
+        "hover-card-disabled",
+        "hover-card-sides"
       ]
     },
     {
@@ -5150,9 +5150,9 @@
       "component": "icon",
       "route": "/verify/nova/icon",
       "demos": [
-        "default",
-        "libraries",
-        "sizing"
+        "icon-demo",
+        "icon-libraries",
+        "icon-sizing"
       ]
     },
     {
@@ -5160,10 +5160,10 @@
       "component": "image-cropper",
       "route": "/verify/nova/image-cropper",
       "demos": [
-        "circle-aspect-ratio",
-        "controlled",
-        "default",
-        "fixed-crop-area"
+        "image-cropper-circle-aspect-ratio",
+        "image-cropper-controlled",
+        "image-cropper-demo",
+        "image-cropper-fixed-crop-area"
       ]
     },
     {
@@ -5186,16 +5186,16 @@
       "component": "input-group",
       "route": "/verify/nova/input-group",
       "demos": [
-        "align-block-end",
-        "align-block-start",
-        "align-inline-end",
-        "align-inline-start",
-        "button",
-        "default",
-        "disabled",
-        "invalid",
-        "text",
-        "textarea"
+        "input-group-block-end",
+        "input-group-block-start",
+        "input-group-button",
+        "input-group-demo",
+        "input-group-disabled",
+        "input-group-inline-end",
+        "input-group-inline-start",
+        "input-group-invalid",
+        "input-group-text",
+        "input-group-textarea"
       ]
     },
     {
@@ -5242,10 +5242,10 @@
       "component": "label",
       "route": "/verify/nova/label",
       "demos": [
-        "disabled",
-        "input-with-label",
         "label-demo",
-        "required"
+        "label-disabled",
+        "label-input-with-label",
+        "label-required"
       ]
     },
     {
@@ -5291,9 +5291,9 @@
       "component": "native-select",
       "route": "/verify/nova/native-select",
       "demos": [
-        "default",
-        "disabled",
-        "groups"
+        "native-select-demo",
+        "native-select-disabled",
+        "native-select-groups"
       ]
     },
     {
@@ -5301,12 +5301,12 @@
       "component": "navigation-menu",
       "route": "/verify/nova/navigation-menu",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
         "navigation-menu-compound",
-        "navigation-menu-precedence",
-        "panel"
+        "navigation-menu-controlled",
+        "navigation-menu-demo",
+        "navigation-menu-disabled",
+        "navigation-menu-panel",
+        "navigation-menu-precedence"
       ]
     },
     {
@@ -5325,10 +5325,10 @@
       "component": "pagination",
       "route": "/verify/nova/pagination",
       "demos": [
-        "controlled",
-        "default",
-        "few-pages",
-        "sibling-count"
+        "pagination-controlled",
+        "pagination-demo",
+        "pagination-sibling-count",
+        "pagination-simple"
       ]
     },
     {
@@ -5386,7 +5386,7 @@
         "radio-group-controlled",
         "radio-group-demo",
         "radio-group-disabled",
-        "radio-group-disabled-item"
+        "radio-group-disabled-group"
       ]
     },
     {
@@ -5394,12 +5394,12 @@
       "component": "rating-group",
       "route": "/verify/nova/rating-group",
       "demos": [
-        "controlled",
-        "custom-count",
-        "default",
-        "disabled",
-        "half-stars",
-        "readonly"
+        "rating-group-controlled",
+        "rating-group-custom-count",
+        "rating-group-demo",
+        "rating-group-disabled",
+        "rating-group-half-stars",
+        "rating-group-readonly"
       ]
     },
     {
@@ -5409,7 +5409,7 @@
       "demos": [
         "resizable-controlled",
         "resizable-demo",
-        "resizable-sizes",
+        "resizable-handle",
         "resizable-vertical"
       ]
     },
@@ -5418,8 +5418,8 @@
       "component": "scroll-area",
       "route": "/verify/nova/scroll-area",
       "demos": [
-        "default",
-        "horizontal"
+        "scroll-area-demo",
+        "scroll-area-horizontal-demo"
       ]
     },
     {
@@ -5540,8 +5540,8 @@
       "component": "table",
       "route": "/verify/nova/table",
       "demos": [
-        "default",
-        "selected-row"
+        "table-demo",
+        "table-selected-row"
       ]
     },
     {
@@ -5562,12 +5562,12 @@
       "component": "tags-input",
       "route": "/verify/nova/tags-input",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "label",
-        "max",
-        "paste"
+        "tags-input-controlled",
+        "tags-input-demo",
+        "tags-input-disabled",
+        "tags-input-label",
+        "tags-input-max",
+        "tags-input-paste"
       ]
     },
     {
@@ -5575,12 +5575,12 @@
       "component": "textarea",
       "route": "/verify/nova/textarea",
       "demos": [
-        "default",
-        "disabled",
-        "invalid",
-        "with-label",
-        "with-text",
-        "with-value"
+        "textarea-demo",
+        "textarea-disabled",
+        "textarea-field",
+        "textarea-invalid",
+        "textarea-with-text",
+        "textarea-with-value"
       ]
     },
     {
@@ -5622,11 +5622,11 @@
       "component": "toggle",
       "route": "/verify/nova/toggle",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "outline",
-        "sizes"
+        "toggle-controlled",
+        "toggle-demo",
+        "toggle-disabled",
+        "toggle-outline",
+        "toggle-sizes"
       ]
     },
     {
@@ -5634,13 +5634,13 @@
       "component": "toggle-group",
       "route": "/verify/nova/toggle-group",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "outline",
-        "sizes",
-        "toggle-group-compound"
+        "toggle-group-compound",
+        "toggle-group-controlled",
+        "toggle-group-demo",
+        "toggle-group-disabled",
+        "toggle-group-multiple",
+        "toggle-group-outline",
+        "toggle-group-sizes"
       ]
     },
     {
@@ -5650,7 +5650,7 @@
       "demos": [
         "tooltip-delay",
         "tooltip-demo",
-        "tooltip-positioning"
+        "tooltip-sides"
       ]
     },
     {
@@ -5658,9 +5658,9 @@
       "component": "tour",
       "route": "/verify/nova/tour",
       "demos": [
-        "controlled",
-        "default",
-        "sides"
+        "tour-controlled",
+        "tour-demo",
+        "tour-sides"
       ]
     },
     {
@@ -5668,11 +5668,11 @@
       "component": "tree-view",
       "route": "/verify/nova/tree-view",
       "demos": [
-        "controlled-selection",
-        "default",
-        "disabled",
-        "expanded",
-        "multiple-selection"
+        "tree-view-controlled-selection",
+        "tree-view-demo",
+        "tree-view-disabled",
+        "tree-view-expanded",
+        "tree-view-multiple-selection"
       ]
     },
     {
@@ -5681,11 +5681,11 @@
       "route": "/verify/rhea/accordion",
       "demos": [
         "accordion-compound",
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "not-collapsible"
+        "accordion-controlled",
+        "accordion-demo",
+        "accordion-disabled",
+        "accordion-multiple",
+        "accordion-not-collapsible"
       ]
     },
     {
@@ -5693,9 +5693,9 @@
       "component": "alert",
       "route": "/verify/rhea/alert",
       "demos": [
-        "default",
-        "destructive",
-        "without-icon"
+        "alert-demo",
+        "alert-destructive",
+        "alert-without-icon"
       ]
     },
     {
@@ -5724,11 +5724,11 @@
       "component": "aspect-ratio",
       "route": "/verify/rhea/aspect-ratio",
       "demos": [
-        "content-card",
-        "default",
-        "portrait",
-        "square",
-        "ultrawide-banner"
+        "aspect-ratio-content-card",
+        "aspect-ratio-demo",
+        "aspect-ratio-portrait",
+        "aspect-ratio-square",
+        "aspect-ratio-ultrawide-banner"
       ]
     },
     {
@@ -5748,11 +5748,11 @@
       "component": "badge",
       "route": "/verify/rhea/badge",
       "demos": [
-        "default",
-        "numeric",
-        "status",
-        "variants",
-        "with-icon"
+        "badge-default",
+        "badge-demo",
+        "badge-icon",
+        "badge-numeric",
+        "badge-status"
       ]
     },
     {
@@ -5760,7 +5760,7 @@
       "component": "breadcrumb",
       "route": "/verify/rhea/breadcrumb",
       "demos": [
-        "breadcrumb-demo",
+        "breadcrumb-basic",
         "breadcrumb-ellipsis",
         "breadcrumb-responsive",
         "breadcrumb-separator"
@@ -5771,9 +5771,9 @@
       "component": "button",
       "route": "/verify/rhea/button",
       "demos": [
-        "button-demo",
+        "button-default",
         "button-disabled",
-        "button-sizes",
+        "button-size",
         "button-variants"
       ]
     },
@@ -5782,13 +5782,13 @@
       "component": "button-group",
       "route": "/verify/rhea/button-group",
       "demos": [
-        "default",
-        "nested",
-        "orientation",
-        "separator",
-        "sizes",
-        "split",
-        "text"
+        "button-group-demo",
+        "button-group-nested",
+        "button-group-orientation",
+        "button-group-separator",
+        "button-group-size",
+        "button-group-split",
+        "button-group-text"
       ]
     },
     {
@@ -5796,13 +5796,13 @@
       "component": "calendar",
       "route": "/verify/rhea/calendar",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "dropdown",
-        "min-max",
-        "multiple",
-        "range"
+        "calendar-basic",
+        "calendar-controlled",
+        "calendar-demo",
+        "calendar-disabled",
+        "calendar-min-max",
+        "calendar-multiple",
+        "calendar-range"
       ]
     },
     {
@@ -5810,11 +5810,11 @@
       "component": "card",
       "route": "/verify/rhea/card",
       "demos": [
-        "action",
-        "border-footer",
-        "content-only",
-        "default",
-        "full-composition"
+        "card-action",
+        "card-border-footer",
+        "card-content-only",
+        "card-demo",
+        "card-full-composition"
       ]
     },
     {
@@ -5837,11 +5837,11 @@
       "route": "/verify/rhea/cascade-select",
       "demos": [
         "cascade-select-compound",
-        "controlled",
-        "default",
-        "default-value",
-        "disabled",
-        "disabled-items"
+        "cascade-select-controlled",
+        "cascade-select-default-value",
+        "cascade-select-demo",
+        "cascade-select-disabled",
+        "cascade-select-disabled-items"
       ]
     },
     {
@@ -5849,14 +5849,14 @@
       "component": "chart",
       "route": "/verify/rhea/chart",
       "demos": [
-        "area-default",
-        "area-gradient",
-        "bar-default",
-        "bar-multiple",
-        "line-default",
-        "line-multiple",
-        "pie-donut",
-        "pie-simple"
+        "chart-area-default",
+        "chart-area-gradient",
+        "chart-bar-default",
+        "chart-bar-multiple",
+        "chart-line-default",
+        "chart-line-multiple",
+        "chart-pie-donut",
+        "chart-pie-simple"
       ]
     },
     {
@@ -5887,10 +5887,10 @@
       "component": "collapsible",
       "route": "/verify/rhea/collapsible",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "settings"
+        "collapsible-controlled",
+        "collapsible-demo",
+        "collapsible-disabled",
+        "collapsible-settings"
       ]
     },
     {
@@ -5910,9 +5910,9 @@
       "component": "combobox",
       "route": "/verify/rhea/combobox",
       "demos": [
-        "controlled",
-        "default",
-        "disabled"
+        "combobox-controlled",
+        "combobox-demo",
+        "combobox-disabled"
       ]
     },
     {
@@ -5932,13 +5932,13 @@
       "route": "/verify/rhea/context-menu",
       "demos": [
         "context-menu-compound",
-        "controlled",
-        "default",
-        "destructive",
-        "disabled",
-        "groups",
-        "shortcuts",
-        "simple"
+        "context-menu-controlled",
+        "context-menu-demo",
+        "context-menu-destructive",
+        "context-menu-disabled",
+        "context-menu-groups",
+        "context-menu-shortcuts",
+        "context-menu-simple"
       ]
     },
     {
@@ -5947,9 +5947,9 @@
       "route": "/verify/rhea/data-table",
       "demos": [
         "data-table-demo",
-        "empty",
-        "formatted-cells",
-        "sorting"
+        "data-table-empty",
+        "data-table-formatted-cells",
+        "data-table-sorting"
       ]
     },
     {
@@ -6006,8 +6006,8 @@
       "route": "/verify/rhea/dropdown-menu",
       "demos": [
         "dropdown-menu-compound",
-        "dropdown-menu-danger",
         "dropdown-menu-demo",
+        "dropdown-menu-destructive",
         "dropdown-menu-disabled-item",
         "dropdown-menu-selection",
         "dropdown-menu-simple"
@@ -6018,13 +6018,13 @@
       "component": "editable",
       "route": "/verify/rhea/editable",
       "demos": [
-        "activation-mode",
-        "controlled",
-        "custom-trigger",
-        "default",
-        "disabled",
-        "placeholder",
-        "submit-mode"
+        "editable-activation-mode",
+        "editable-controlled",
+        "editable-custom-trigger",
+        "editable-demo",
+        "editable-disabled",
+        "editable-placeholder",
+        "editable-submit-mode"
       ]
     },
     {
@@ -6046,13 +6046,13 @@
       "component": "field",
       "route": "/verify/rhea/field",
       "demos": [
-        "default",
-        "field-set",
-        "fieldset-demo",
-        "horizontal",
-        "invalid",
-        "multiple-errors",
-        "signup"
+        "field-demo",
+        "field-fieldset",
+        "field-fieldset-basic",
+        "field-horizontal",
+        "field-invalid",
+        "field-multiple-errors",
+        "field-signup"
       ]
     },
     {
@@ -6082,10 +6082,10 @@
       "component": "hover-card",
       "route": "/verify/rhea/hover-card",
       "demos": [
-        "custom-delays",
-        "default",
-        "disabled",
-        "positioning"
+        "hover-card-custom-delays",
+        "hover-card-demo",
+        "hover-card-disabled",
+        "hover-card-sides"
       ]
     },
     {
@@ -6093,9 +6093,9 @@
       "component": "icon",
       "route": "/verify/rhea/icon",
       "demos": [
-        "default",
-        "libraries",
-        "sizing"
+        "icon-demo",
+        "icon-libraries",
+        "icon-sizing"
       ]
     },
     {
@@ -6103,10 +6103,10 @@
       "component": "image-cropper",
       "route": "/verify/rhea/image-cropper",
       "demos": [
-        "circle-aspect-ratio",
-        "controlled",
-        "default",
-        "fixed-crop-area"
+        "image-cropper-circle-aspect-ratio",
+        "image-cropper-controlled",
+        "image-cropper-demo",
+        "image-cropper-fixed-crop-area"
       ]
     },
     {
@@ -6129,16 +6129,16 @@
       "component": "input-group",
       "route": "/verify/rhea/input-group",
       "demos": [
-        "align-block-end",
-        "align-block-start",
-        "align-inline-end",
-        "align-inline-start",
-        "button",
-        "default",
-        "disabled",
-        "invalid",
-        "text",
-        "textarea"
+        "input-group-block-end",
+        "input-group-block-start",
+        "input-group-button",
+        "input-group-demo",
+        "input-group-disabled",
+        "input-group-inline-end",
+        "input-group-inline-start",
+        "input-group-invalid",
+        "input-group-text",
+        "input-group-textarea"
       ]
     },
     {
@@ -6185,10 +6185,10 @@
       "component": "label",
       "route": "/verify/rhea/label",
       "demos": [
-        "disabled",
-        "input-with-label",
         "label-demo",
-        "required"
+        "label-disabled",
+        "label-input-with-label",
+        "label-required"
       ]
     },
     {
@@ -6234,9 +6234,9 @@
       "component": "native-select",
       "route": "/verify/rhea/native-select",
       "demos": [
-        "default",
-        "disabled",
-        "groups"
+        "native-select-demo",
+        "native-select-disabled",
+        "native-select-groups"
       ]
     },
     {
@@ -6244,12 +6244,12 @@
       "component": "navigation-menu",
       "route": "/verify/rhea/navigation-menu",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
         "navigation-menu-compound",
-        "navigation-menu-precedence",
-        "panel"
+        "navigation-menu-controlled",
+        "navigation-menu-demo",
+        "navigation-menu-disabled",
+        "navigation-menu-panel",
+        "navigation-menu-precedence"
       ]
     },
     {
@@ -6268,10 +6268,10 @@
       "component": "pagination",
       "route": "/verify/rhea/pagination",
       "demos": [
-        "controlled",
-        "default",
-        "few-pages",
-        "sibling-count"
+        "pagination-controlled",
+        "pagination-demo",
+        "pagination-sibling-count",
+        "pagination-simple"
       ]
     },
     {
@@ -6329,7 +6329,7 @@
         "radio-group-controlled",
         "radio-group-demo",
         "radio-group-disabled",
-        "radio-group-disabled-item"
+        "radio-group-disabled-group"
       ]
     },
     {
@@ -6337,12 +6337,12 @@
       "component": "rating-group",
       "route": "/verify/rhea/rating-group",
       "demos": [
-        "controlled",
-        "custom-count",
-        "default",
-        "disabled",
-        "half-stars",
-        "readonly"
+        "rating-group-controlled",
+        "rating-group-custom-count",
+        "rating-group-demo",
+        "rating-group-disabled",
+        "rating-group-half-stars",
+        "rating-group-readonly"
       ]
     },
     {
@@ -6352,7 +6352,7 @@
       "demos": [
         "resizable-controlled",
         "resizable-demo",
-        "resizable-sizes",
+        "resizable-handle",
         "resizable-vertical"
       ]
     },
@@ -6361,8 +6361,8 @@
       "component": "scroll-area",
       "route": "/verify/rhea/scroll-area",
       "demos": [
-        "default",
-        "horizontal"
+        "scroll-area-demo",
+        "scroll-area-horizontal-demo"
       ]
     },
     {
@@ -6483,8 +6483,8 @@
       "component": "table",
       "route": "/verify/rhea/table",
       "demos": [
-        "default",
-        "selected-row"
+        "table-demo",
+        "table-selected-row"
       ]
     },
     {
@@ -6505,12 +6505,12 @@
       "component": "tags-input",
       "route": "/verify/rhea/tags-input",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "label",
-        "max",
-        "paste"
+        "tags-input-controlled",
+        "tags-input-demo",
+        "tags-input-disabled",
+        "tags-input-label",
+        "tags-input-max",
+        "tags-input-paste"
       ]
     },
     {
@@ -6518,12 +6518,12 @@
       "component": "textarea",
       "route": "/verify/rhea/textarea",
       "demos": [
-        "default",
-        "disabled",
-        "invalid",
-        "with-label",
-        "with-text",
-        "with-value"
+        "textarea-demo",
+        "textarea-disabled",
+        "textarea-field",
+        "textarea-invalid",
+        "textarea-with-text",
+        "textarea-with-value"
       ]
     },
     {
@@ -6565,11 +6565,11 @@
       "component": "toggle",
       "route": "/verify/rhea/toggle",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "outline",
-        "sizes"
+        "toggle-controlled",
+        "toggle-demo",
+        "toggle-disabled",
+        "toggle-outline",
+        "toggle-sizes"
       ]
     },
     {
@@ -6577,13 +6577,13 @@
       "component": "toggle-group",
       "route": "/verify/rhea/toggle-group",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "outline",
-        "sizes",
-        "toggle-group-compound"
+        "toggle-group-compound",
+        "toggle-group-controlled",
+        "toggle-group-demo",
+        "toggle-group-disabled",
+        "toggle-group-multiple",
+        "toggle-group-outline",
+        "toggle-group-sizes"
       ]
     },
     {
@@ -6593,7 +6593,7 @@
       "demos": [
         "tooltip-delay",
         "tooltip-demo",
-        "tooltip-positioning"
+        "tooltip-sides"
       ]
     },
     {
@@ -6601,9 +6601,9 @@
       "component": "tour",
       "route": "/verify/rhea/tour",
       "demos": [
-        "controlled",
-        "default",
-        "sides"
+        "tour-controlled",
+        "tour-demo",
+        "tour-sides"
       ]
     },
     {
@@ -6611,11 +6611,11 @@
       "component": "tree-view",
       "route": "/verify/rhea/tree-view",
       "demos": [
-        "controlled-selection",
-        "default",
-        "disabled",
-        "expanded",
-        "multiple-selection"
+        "tree-view-controlled-selection",
+        "tree-view-demo",
+        "tree-view-disabled",
+        "tree-view-expanded",
+        "tree-view-multiple-selection"
       ]
     },
     {
@@ -6624,11 +6624,11 @@
       "route": "/verify/sera/accordion",
       "demos": [
         "accordion-compound",
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "not-collapsible"
+        "accordion-controlled",
+        "accordion-demo",
+        "accordion-disabled",
+        "accordion-multiple",
+        "accordion-not-collapsible"
       ]
     },
     {
@@ -6636,9 +6636,9 @@
       "component": "alert",
       "route": "/verify/sera/alert",
       "demos": [
-        "default",
-        "destructive",
-        "without-icon"
+        "alert-demo",
+        "alert-destructive",
+        "alert-without-icon"
       ]
     },
     {
@@ -6667,11 +6667,11 @@
       "component": "aspect-ratio",
       "route": "/verify/sera/aspect-ratio",
       "demos": [
-        "content-card",
-        "default",
-        "portrait",
-        "square",
-        "ultrawide-banner"
+        "aspect-ratio-content-card",
+        "aspect-ratio-demo",
+        "aspect-ratio-portrait",
+        "aspect-ratio-square",
+        "aspect-ratio-ultrawide-banner"
       ]
     },
     {
@@ -6691,11 +6691,11 @@
       "component": "badge",
       "route": "/verify/sera/badge",
       "demos": [
-        "default",
-        "numeric",
-        "status",
-        "variants",
-        "with-icon"
+        "badge-default",
+        "badge-demo",
+        "badge-icon",
+        "badge-numeric",
+        "badge-status"
       ]
     },
     {
@@ -6703,7 +6703,7 @@
       "component": "breadcrumb",
       "route": "/verify/sera/breadcrumb",
       "demos": [
-        "breadcrumb-demo",
+        "breadcrumb-basic",
         "breadcrumb-ellipsis",
         "breadcrumb-responsive",
         "breadcrumb-separator"
@@ -6714,9 +6714,9 @@
       "component": "button",
       "route": "/verify/sera/button",
       "demos": [
-        "button-demo",
+        "button-default",
         "button-disabled",
-        "button-sizes",
+        "button-size",
         "button-variants"
       ]
     },
@@ -6725,13 +6725,13 @@
       "component": "button-group",
       "route": "/verify/sera/button-group",
       "demos": [
-        "default",
-        "nested",
-        "orientation",
-        "separator",
-        "sizes",
-        "split",
-        "text"
+        "button-group-demo",
+        "button-group-nested",
+        "button-group-orientation",
+        "button-group-separator",
+        "button-group-size",
+        "button-group-split",
+        "button-group-text"
       ]
     },
     {
@@ -6739,13 +6739,13 @@
       "component": "calendar",
       "route": "/verify/sera/calendar",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "dropdown",
-        "min-max",
-        "multiple",
-        "range"
+        "calendar-basic",
+        "calendar-controlled",
+        "calendar-demo",
+        "calendar-disabled",
+        "calendar-min-max",
+        "calendar-multiple",
+        "calendar-range"
       ]
     },
     {
@@ -6753,11 +6753,11 @@
       "component": "card",
       "route": "/verify/sera/card",
       "demos": [
-        "action",
-        "border-footer",
-        "content-only",
-        "default",
-        "full-composition"
+        "card-action",
+        "card-border-footer",
+        "card-content-only",
+        "card-demo",
+        "card-full-composition"
       ]
     },
     {
@@ -6780,11 +6780,11 @@
       "route": "/verify/sera/cascade-select",
       "demos": [
         "cascade-select-compound",
-        "controlled",
-        "default",
-        "default-value",
-        "disabled",
-        "disabled-items"
+        "cascade-select-controlled",
+        "cascade-select-default-value",
+        "cascade-select-demo",
+        "cascade-select-disabled",
+        "cascade-select-disabled-items"
       ]
     },
     {
@@ -6792,14 +6792,14 @@
       "component": "chart",
       "route": "/verify/sera/chart",
       "demos": [
-        "area-default",
-        "area-gradient",
-        "bar-default",
-        "bar-multiple",
-        "line-default",
-        "line-multiple",
-        "pie-donut",
-        "pie-simple"
+        "chart-area-default",
+        "chart-area-gradient",
+        "chart-bar-default",
+        "chart-bar-multiple",
+        "chart-line-default",
+        "chart-line-multiple",
+        "chart-pie-donut",
+        "chart-pie-simple"
       ]
     },
     {
@@ -6830,10 +6830,10 @@
       "component": "collapsible",
       "route": "/verify/sera/collapsible",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "settings"
+        "collapsible-controlled",
+        "collapsible-demo",
+        "collapsible-disabled",
+        "collapsible-settings"
       ]
     },
     {
@@ -6853,9 +6853,9 @@
       "component": "combobox",
       "route": "/verify/sera/combobox",
       "demos": [
-        "controlled",
-        "default",
-        "disabled"
+        "combobox-controlled",
+        "combobox-demo",
+        "combobox-disabled"
       ]
     },
     {
@@ -6875,13 +6875,13 @@
       "route": "/verify/sera/context-menu",
       "demos": [
         "context-menu-compound",
-        "controlled",
-        "default",
-        "destructive",
-        "disabled",
-        "groups",
-        "shortcuts",
-        "simple"
+        "context-menu-controlled",
+        "context-menu-demo",
+        "context-menu-destructive",
+        "context-menu-disabled",
+        "context-menu-groups",
+        "context-menu-shortcuts",
+        "context-menu-simple"
       ]
     },
     {
@@ -6890,9 +6890,9 @@
       "route": "/verify/sera/data-table",
       "demos": [
         "data-table-demo",
-        "empty",
-        "formatted-cells",
-        "sorting"
+        "data-table-empty",
+        "data-table-formatted-cells",
+        "data-table-sorting"
       ]
     },
     {
@@ -6949,8 +6949,8 @@
       "route": "/verify/sera/dropdown-menu",
       "demos": [
         "dropdown-menu-compound",
-        "dropdown-menu-danger",
         "dropdown-menu-demo",
+        "dropdown-menu-destructive",
         "dropdown-menu-disabled-item",
         "dropdown-menu-selection",
         "dropdown-menu-simple"
@@ -6961,13 +6961,13 @@
       "component": "editable",
       "route": "/verify/sera/editable",
       "demos": [
-        "activation-mode",
-        "controlled",
-        "custom-trigger",
-        "default",
-        "disabled",
-        "placeholder",
-        "submit-mode"
+        "editable-activation-mode",
+        "editable-controlled",
+        "editable-custom-trigger",
+        "editable-demo",
+        "editable-disabled",
+        "editable-placeholder",
+        "editable-submit-mode"
       ]
     },
     {
@@ -6989,13 +6989,13 @@
       "component": "field",
       "route": "/verify/sera/field",
       "demos": [
-        "default",
-        "field-set",
-        "fieldset-demo",
-        "horizontal",
-        "invalid",
-        "multiple-errors",
-        "signup"
+        "field-demo",
+        "field-fieldset",
+        "field-fieldset-basic",
+        "field-horizontal",
+        "field-invalid",
+        "field-multiple-errors",
+        "field-signup"
       ]
     },
     {
@@ -7025,10 +7025,10 @@
       "component": "hover-card",
       "route": "/verify/sera/hover-card",
       "demos": [
-        "custom-delays",
-        "default",
-        "disabled",
-        "positioning"
+        "hover-card-custom-delays",
+        "hover-card-demo",
+        "hover-card-disabled",
+        "hover-card-sides"
       ]
     },
     {
@@ -7036,9 +7036,9 @@
       "component": "icon",
       "route": "/verify/sera/icon",
       "demos": [
-        "default",
-        "libraries",
-        "sizing"
+        "icon-demo",
+        "icon-libraries",
+        "icon-sizing"
       ]
     },
     {
@@ -7046,10 +7046,10 @@
       "component": "image-cropper",
       "route": "/verify/sera/image-cropper",
       "demos": [
-        "circle-aspect-ratio",
-        "controlled",
-        "default",
-        "fixed-crop-area"
+        "image-cropper-circle-aspect-ratio",
+        "image-cropper-controlled",
+        "image-cropper-demo",
+        "image-cropper-fixed-crop-area"
       ]
     },
     {
@@ -7072,16 +7072,16 @@
       "component": "input-group",
       "route": "/verify/sera/input-group",
       "demos": [
-        "align-block-end",
-        "align-block-start",
-        "align-inline-end",
-        "align-inline-start",
-        "button",
-        "default",
-        "disabled",
-        "invalid",
-        "text",
-        "textarea"
+        "input-group-block-end",
+        "input-group-block-start",
+        "input-group-button",
+        "input-group-demo",
+        "input-group-disabled",
+        "input-group-inline-end",
+        "input-group-inline-start",
+        "input-group-invalid",
+        "input-group-text",
+        "input-group-textarea"
       ]
     },
     {
@@ -7128,10 +7128,10 @@
       "component": "label",
       "route": "/verify/sera/label",
       "demos": [
-        "disabled",
-        "input-with-label",
         "label-demo",
-        "required"
+        "label-disabled",
+        "label-input-with-label",
+        "label-required"
       ]
     },
     {
@@ -7177,9 +7177,9 @@
       "component": "native-select",
       "route": "/verify/sera/native-select",
       "demos": [
-        "default",
-        "disabled",
-        "groups"
+        "native-select-demo",
+        "native-select-disabled",
+        "native-select-groups"
       ]
     },
     {
@@ -7187,12 +7187,12 @@
       "component": "navigation-menu",
       "route": "/verify/sera/navigation-menu",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
         "navigation-menu-compound",
-        "navigation-menu-precedence",
-        "panel"
+        "navigation-menu-controlled",
+        "navigation-menu-demo",
+        "navigation-menu-disabled",
+        "navigation-menu-panel",
+        "navigation-menu-precedence"
       ]
     },
     {
@@ -7211,10 +7211,10 @@
       "component": "pagination",
       "route": "/verify/sera/pagination",
       "demos": [
-        "controlled",
-        "default",
-        "few-pages",
-        "sibling-count"
+        "pagination-controlled",
+        "pagination-demo",
+        "pagination-sibling-count",
+        "pagination-simple"
       ]
     },
     {
@@ -7272,7 +7272,7 @@
         "radio-group-controlled",
         "radio-group-demo",
         "radio-group-disabled",
-        "radio-group-disabled-item"
+        "radio-group-disabled-group"
       ]
     },
     {
@@ -7280,12 +7280,12 @@
       "component": "rating-group",
       "route": "/verify/sera/rating-group",
       "demos": [
-        "controlled",
-        "custom-count",
-        "default",
-        "disabled",
-        "half-stars",
-        "readonly"
+        "rating-group-controlled",
+        "rating-group-custom-count",
+        "rating-group-demo",
+        "rating-group-disabled",
+        "rating-group-half-stars",
+        "rating-group-readonly"
       ]
     },
     {
@@ -7295,7 +7295,7 @@
       "demos": [
         "resizable-controlled",
         "resizable-demo",
-        "resizable-sizes",
+        "resizable-handle",
         "resizable-vertical"
       ]
     },
@@ -7304,8 +7304,8 @@
       "component": "scroll-area",
       "route": "/verify/sera/scroll-area",
       "demos": [
-        "default",
-        "horizontal"
+        "scroll-area-demo",
+        "scroll-area-horizontal-demo"
       ]
     },
     {
@@ -7426,8 +7426,8 @@
       "component": "table",
       "route": "/verify/sera/table",
       "demos": [
-        "default",
-        "selected-row"
+        "table-demo",
+        "table-selected-row"
       ]
     },
     {
@@ -7448,12 +7448,12 @@
       "component": "tags-input",
       "route": "/verify/sera/tags-input",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "label",
-        "max",
-        "paste"
+        "tags-input-controlled",
+        "tags-input-demo",
+        "tags-input-disabled",
+        "tags-input-label",
+        "tags-input-max",
+        "tags-input-paste"
       ]
     },
     {
@@ -7461,12 +7461,12 @@
       "component": "textarea",
       "route": "/verify/sera/textarea",
       "demos": [
-        "default",
-        "disabled",
-        "invalid",
-        "with-label",
-        "with-text",
-        "with-value"
+        "textarea-demo",
+        "textarea-disabled",
+        "textarea-field",
+        "textarea-invalid",
+        "textarea-with-text",
+        "textarea-with-value"
       ]
     },
     {
@@ -7508,11 +7508,11 @@
       "component": "toggle",
       "route": "/verify/sera/toggle",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "outline",
-        "sizes"
+        "toggle-controlled",
+        "toggle-demo",
+        "toggle-disabled",
+        "toggle-outline",
+        "toggle-sizes"
       ]
     },
     {
@@ -7520,13 +7520,13 @@
       "component": "toggle-group",
       "route": "/verify/sera/toggle-group",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "outline",
-        "sizes",
-        "toggle-group-compound"
+        "toggle-group-compound",
+        "toggle-group-controlled",
+        "toggle-group-demo",
+        "toggle-group-disabled",
+        "toggle-group-multiple",
+        "toggle-group-outline",
+        "toggle-group-sizes"
       ]
     },
     {
@@ -7536,7 +7536,7 @@
       "demos": [
         "tooltip-delay",
         "tooltip-demo",
-        "tooltip-positioning"
+        "tooltip-sides"
       ]
     },
     {
@@ -7544,9 +7544,9 @@
       "component": "tour",
       "route": "/verify/sera/tour",
       "demos": [
-        "controlled",
-        "default",
-        "sides"
+        "tour-controlled",
+        "tour-demo",
+        "tour-sides"
       ]
     },
     {
@@ -7554,11 +7554,11 @@
       "component": "tree-view",
       "route": "/verify/sera/tree-view",
       "demos": [
-        "controlled-selection",
-        "default",
-        "disabled",
-        "expanded",
-        "multiple-selection"
+        "tree-view-controlled-selection",
+        "tree-view-demo",
+        "tree-view-disabled",
+        "tree-view-expanded",
+        "tree-view-multiple-selection"
       ]
     },
     {
@@ -7567,11 +7567,11 @@
       "route": "/verify/vega/accordion",
       "demos": [
         "accordion-compound",
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "not-collapsible"
+        "accordion-controlled",
+        "accordion-demo",
+        "accordion-disabled",
+        "accordion-multiple",
+        "accordion-not-collapsible"
       ]
     },
     {
@@ -7579,9 +7579,9 @@
       "component": "alert",
       "route": "/verify/vega/alert",
       "demos": [
-        "default",
-        "destructive",
-        "without-icon"
+        "alert-demo",
+        "alert-destructive",
+        "alert-without-icon"
       ]
     },
     {
@@ -7610,11 +7610,11 @@
       "component": "aspect-ratio",
       "route": "/verify/vega/aspect-ratio",
       "demos": [
-        "content-card",
-        "default",
-        "portrait",
-        "square",
-        "ultrawide-banner"
+        "aspect-ratio-content-card",
+        "aspect-ratio-demo",
+        "aspect-ratio-portrait",
+        "aspect-ratio-square",
+        "aspect-ratio-ultrawide-banner"
       ]
     },
     {
@@ -7634,11 +7634,11 @@
       "component": "badge",
       "route": "/verify/vega/badge",
       "demos": [
-        "default",
-        "numeric",
-        "status",
-        "variants",
-        "with-icon"
+        "badge-default",
+        "badge-demo",
+        "badge-icon",
+        "badge-numeric",
+        "badge-status"
       ]
     },
     {
@@ -7646,7 +7646,7 @@
       "component": "breadcrumb",
       "route": "/verify/vega/breadcrumb",
       "demos": [
-        "breadcrumb-demo",
+        "breadcrumb-basic",
         "breadcrumb-ellipsis",
         "breadcrumb-responsive",
         "breadcrumb-separator"
@@ -7657,9 +7657,9 @@
       "component": "button",
       "route": "/verify/vega/button",
       "demos": [
-        "button-demo",
+        "button-default",
         "button-disabled",
-        "button-sizes",
+        "button-size",
         "button-variants"
       ]
     },
@@ -7668,13 +7668,13 @@
       "component": "button-group",
       "route": "/verify/vega/button-group",
       "demos": [
-        "default",
-        "nested",
-        "orientation",
-        "separator",
-        "sizes",
-        "split",
-        "text"
+        "button-group-demo",
+        "button-group-nested",
+        "button-group-orientation",
+        "button-group-separator",
+        "button-group-size",
+        "button-group-split",
+        "button-group-text"
       ]
     },
     {
@@ -7682,13 +7682,13 @@
       "component": "calendar",
       "route": "/verify/vega/calendar",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "dropdown",
-        "min-max",
-        "multiple",
-        "range"
+        "calendar-basic",
+        "calendar-controlled",
+        "calendar-demo",
+        "calendar-disabled",
+        "calendar-min-max",
+        "calendar-multiple",
+        "calendar-range"
       ]
     },
     {
@@ -7696,11 +7696,11 @@
       "component": "card",
       "route": "/verify/vega/card",
       "demos": [
-        "action",
-        "border-footer",
-        "content-only",
-        "default",
-        "full-composition"
+        "card-action",
+        "card-border-footer",
+        "card-content-only",
+        "card-demo",
+        "card-full-composition"
       ]
     },
     {
@@ -7723,11 +7723,11 @@
       "route": "/verify/vega/cascade-select",
       "demos": [
         "cascade-select-compound",
-        "controlled",
-        "default",
-        "default-value",
-        "disabled",
-        "disabled-items"
+        "cascade-select-controlled",
+        "cascade-select-default-value",
+        "cascade-select-demo",
+        "cascade-select-disabled",
+        "cascade-select-disabled-items"
       ]
     },
     {
@@ -7735,14 +7735,14 @@
       "component": "chart",
       "route": "/verify/vega/chart",
       "demos": [
-        "area-default",
-        "area-gradient",
-        "bar-default",
-        "bar-multiple",
-        "line-default",
-        "line-multiple",
-        "pie-donut",
-        "pie-simple"
+        "chart-area-default",
+        "chart-area-gradient",
+        "chart-bar-default",
+        "chart-bar-multiple",
+        "chart-line-default",
+        "chart-line-multiple",
+        "chart-pie-donut",
+        "chart-pie-simple"
       ]
     },
     {
@@ -7773,10 +7773,10 @@
       "component": "collapsible",
       "route": "/verify/vega/collapsible",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "settings"
+        "collapsible-controlled",
+        "collapsible-demo",
+        "collapsible-disabled",
+        "collapsible-settings"
       ]
     },
     {
@@ -7796,9 +7796,9 @@
       "component": "combobox",
       "route": "/verify/vega/combobox",
       "demos": [
-        "controlled",
-        "default",
-        "disabled"
+        "combobox-controlled",
+        "combobox-demo",
+        "combobox-disabled"
       ]
     },
     {
@@ -7818,13 +7818,13 @@
       "route": "/verify/vega/context-menu",
       "demos": [
         "context-menu-compound",
-        "controlled",
-        "default",
-        "destructive",
-        "disabled",
-        "groups",
-        "shortcuts",
-        "simple"
+        "context-menu-controlled",
+        "context-menu-demo",
+        "context-menu-destructive",
+        "context-menu-disabled",
+        "context-menu-groups",
+        "context-menu-shortcuts",
+        "context-menu-simple"
       ]
     },
     {
@@ -7833,9 +7833,9 @@
       "route": "/verify/vega/data-table",
       "demos": [
         "data-table-demo",
-        "empty",
-        "formatted-cells",
-        "sorting"
+        "data-table-empty",
+        "data-table-formatted-cells",
+        "data-table-sorting"
       ]
     },
     {
@@ -7892,8 +7892,8 @@
       "route": "/verify/vega/dropdown-menu",
       "demos": [
         "dropdown-menu-compound",
-        "dropdown-menu-danger",
         "dropdown-menu-demo",
+        "dropdown-menu-destructive",
         "dropdown-menu-disabled-item",
         "dropdown-menu-selection",
         "dropdown-menu-simple"
@@ -7904,13 +7904,13 @@
       "component": "editable",
       "route": "/verify/vega/editable",
       "demos": [
-        "activation-mode",
-        "controlled",
-        "custom-trigger",
-        "default",
-        "disabled",
-        "placeholder",
-        "submit-mode"
+        "editable-activation-mode",
+        "editable-controlled",
+        "editable-custom-trigger",
+        "editable-demo",
+        "editable-disabled",
+        "editable-placeholder",
+        "editable-submit-mode"
       ]
     },
     {
@@ -7932,13 +7932,13 @@
       "component": "field",
       "route": "/verify/vega/field",
       "demos": [
-        "default",
-        "field-set",
-        "fieldset-demo",
-        "horizontal",
-        "invalid",
-        "multiple-errors",
-        "signup"
+        "field-demo",
+        "field-fieldset",
+        "field-fieldset-basic",
+        "field-horizontal",
+        "field-invalid",
+        "field-multiple-errors",
+        "field-signup"
       ]
     },
     {
@@ -7968,10 +7968,10 @@
       "component": "hover-card",
       "route": "/verify/vega/hover-card",
       "demos": [
-        "custom-delays",
-        "default",
-        "disabled",
-        "positioning"
+        "hover-card-custom-delays",
+        "hover-card-demo",
+        "hover-card-disabled",
+        "hover-card-sides"
       ]
     },
     {
@@ -7979,9 +7979,9 @@
       "component": "icon",
       "route": "/verify/vega/icon",
       "demos": [
-        "default",
-        "libraries",
-        "sizing"
+        "icon-demo",
+        "icon-libraries",
+        "icon-sizing"
       ]
     },
     {
@@ -7989,10 +7989,10 @@
       "component": "image-cropper",
       "route": "/verify/vega/image-cropper",
       "demos": [
-        "circle-aspect-ratio",
-        "controlled",
-        "default",
-        "fixed-crop-area"
+        "image-cropper-circle-aspect-ratio",
+        "image-cropper-controlled",
+        "image-cropper-demo",
+        "image-cropper-fixed-crop-area"
       ]
     },
     {
@@ -8015,16 +8015,16 @@
       "component": "input-group",
       "route": "/verify/vega/input-group",
       "demos": [
-        "align-block-end",
-        "align-block-start",
-        "align-inline-end",
-        "align-inline-start",
-        "button",
-        "default",
-        "disabled",
-        "invalid",
-        "text",
-        "textarea"
+        "input-group-block-end",
+        "input-group-block-start",
+        "input-group-button",
+        "input-group-demo",
+        "input-group-disabled",
+        "input-group-inline-end",
+        "input-group-inline-start",
+        "input-group-invalid",
+        "input-group-text",
+        "input-group-textarea"
       ]
     },
     {
@@ -8071,10 +8071,10 @@
       "component": "label",
       "route": "/verify/vega/label",
       "demos": [
-        "disabled",
-        "input-with-label",
         "label-demo",
-        "required"
+        "label-disabled",
+        "label-input-with-label",
+        "label-required"
       ]
     },
     {
@@ -8120,9 +8120,9 @@
       "component": "native-select",
       "route": "/verify/vega/native-select",
       "demos": [
-        "default",
-        "disabled",
-        "groups"
+        "native-select-demo",
+        "native-select-disabled",
+        "native-select-groups"
       ]
     },
     {
@@ -8130,12 +8130,12 @@
       "component": "navigation-menu",
       "route": "/verify/vega/navigation-menu",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
         "navigation-menu-compound",
-        "navigation-menu-precedence",
-        "panel"
+        "navigation-menu-controlled",
+        "navigation-menu-demo",
+        "navigation-menu-disabled",
+        "navigation-menu-panel",
+        "navigation-menu-precedence"
       ]
     },
     {
@@ -8154,10 +8154,10 @@
       "component": "pagination",
       "route": "/verify/vega/pagination",
       "demos": [
-        "controlled",
-        "default",
-        "few-pages",
-        "sibling-count"
+        "pagination-controlled",
+        "pagination-demo",
+        "pagination-sibling-count",
+        "pagination-simple"
       ]
     },
     {
@@ -8215,7 +8215,7 @@
         "radio-group-controlled",
         "radio-group-demo",
         "radio-group-disabled",
-        "radio-group-disabled-item"
+        "radio-group-disabled-group"
       ]
     },
     {
@@ -8223,12 +8223,12 @@
       "component": "rating-group",
       "route": "/verify/vega/rating-group",
       "demos": [
-        "controlled",
-        "custom-count",
-        "default",
-        "disabled",
-        "half-stars",
-        "readonly"
+        "rating-group-controlled",
+        "rating-group-custom-count",
+        "rating-group-demo",
+        "rating-group-disabled",
+        "rating-group-half-stars",
+        "rating-group-readonly"
       ]
     },
     {
@@ -8238,7 +8238,7 @@
       "demos": [
         "resizable-controlled",
         "resizable-demo",
-        "resizable-sizes",
+        "resizable-handle",
         "resizable-vertical"
       ]
     },
@@ -8247,8 +8247,8 @@
       "component": "scroll-area",
       "route": "/verify/vega/scroll-area",
       "demos": [
-        "default",
-        "horizontal"
+        "scroll-area-demo",
+        "scroll-area-horizontal-demo"
       ]
     },
     {
@@ -8369,8 +8369,8 @@
       "component": "table",
       "route": "/verify/vega/table",
       "demos": [
-        "default",
-        "selected-row"
+        "table-demo",
+        "table-selected-row"
       ]
     },
     {
@@ -8391,12 +8391,12 @@
       "component": "tags-input",
       "route": "/verify/vega/tags-input",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "label",
-        "max",
-        "paste"
+        "tags-input-controlled",
+        "tags-input-demo",
+        "tags-input-disabled",
+        "tags-input-label",
+        "tags-input-max",
+        "tags-input-paste"
       ]
     },
     {
@@ -8404,12 +8404,12 @@
       "component": "textarea",
       "route": "/verify/vega/textarea",
       "demos": [
-        "default",
-        "disabled",
-        "invalid",
-        "with-label",
-        "with-text",
-        "with-value"
+        "textarea-demo",
+        "textarea-disabled",
+        "textarea-field",
+        "textarea-invalid",
+        "textarea-with-text",
+        "textarea-with-value"
       ]
     },
     {
@@ -8451,11 +8451,11 @@
       "component": "toggle",
       "route": "/verify/vega/toggle",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "outline",
-        "sizes"
+        "toggle-controlled",
+        "toggle-demo",
+        "toggle-disabled",
+        "toggle-outline",
+        "toggle-sizes"
       ]
     },
     {
@@ -8463,13 +8463,13 @@
       "component": "toggle-group",
       "route": "/verify/vega/toggle-group",
       "demos": [
-        "controlled",
-        "default",
-        "disabled",
-        "multiple",
-        "outline",
-        "sizes",
-        "toggle-group-compound"
+        "toggle-group-compound",
+        "toggle-group-controlled",
+        "toggle-group-demo",
+        "toggle-group-disabled",
+        "toggle-group-multiple",
+        "toggle-group-outline",
+        "toggle-group-sizes"
       ]
     },
     {
@@ -8479,7 +8479,7 @@
       "demos": [
         "tooltip-delay",
         "tooltip-demo",
-        "tooltip-positioning"
+        "tooltip-sides"
       ]
     },
     {
@@ -8487,9 +8487,9 @@
       "component": "tour",
       "route": "/verify/vega/tour",
       "demos": [
-        "controlled",
-        "default",
-        "sides"
+        "tour-controlled",
+        "tour-demo",
+        "tour-sides"
       ]
     },
     {
@@ -8497,11 +8497,11 @@
       "component": "tree-view",
       "route": "/verify/vega/tree-view",
       "demos": [
-        "controlled-selection",
-        "default",
-        "disabled",
-        "expanded",
-        "multiple-selection"
+        "tree-view-controlled-selection",
+        "tree-view-demo",
+        "tree-view-disabled",
+        "tree-view-expanded",
+        "tree-view-multiple-selection"
       ]
     }
   ],

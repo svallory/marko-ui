@@ -16,12 +16,12 @@ export const docs: ComponentDocs = {
 </ScrollArea>`,
   examples: [
     {
-      name: "default",
+      name: "scroll-area-demo",
       title: "Vertical",
       description: "A vertical scroll area with a synthetic, auto-hiding draggable thumb.",
     },
     {
-      name: "horizontal",
+      name: "scroll-area-horizontal-demo",
       title: "Horizontal",
       description: "Pass `horizontal` to render a horizontal scrollbar and thumb alongside the vertical one.",
     },

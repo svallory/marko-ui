@@ -14,33 +14,33 @@ export const docs: ComponentDocs = {
   usageSnippet: `<ToggleGroup items=[{ value: "left", label: "Left" }, { value: "center", label: "Center" }] value=["center"]/>`,
   examples: [
     {
-      name: "default",
+      name: "toggle-group-demo",
       title: "Default",
       description:
         "Pass an `items: { value, label, disabled? }[]` array and the component renders every item internally — or compose items in markup with `<@item>` attribute tags (see the Compound example). By default only one item can be pressed at a time.",
     },
     {
-      name: "multiple",
+      name: "toggle-group-multiple",
       title: "Multiple selection",
       description: "Pass `multiple` to allow more than one item to be pressed at once.",
     },
     {
-      name: "outline",
+      name: "toggle-group-outline",
       title: "Outline",
       description: 'Pass `variant="outline"` for an outline style.',
     },
     {
-      name: "sizes",
+      name: "toggle-group-sizes",
       title: "Size",
       description: "Pass `size` as `sm`, `default`, or `lg` to change the size of every item.",
     },
     {
-      name: "disabled",
+      name: "toggle-group-disabled",
       title: "Disabled",
       description: "Pass `disabled` on `ToggleGroup` to disable every item in the group.",
     },
     {
-      name: "controlled",
+      name: "toggle-group-controlled",
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, or use Marko's bind shorthand `value:=state`.",

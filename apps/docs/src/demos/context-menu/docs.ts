@@ -17,38 +17,38 @@ export const docs: ComponentDocs = {
 </ContextMenu>`,
   examples: [
     {
-      name: "default",
+      name: "context-menu-demo",
       title: "Basic",
       description:
         "Pass an `items` array of entries; `type: \"separator\"` and `type: \"label\"` entries organize the list.",
     },
     {
-      name: "simple",
+      name: "context-menu-simple",
       title: "Simple",
       description: "A minimal menu with a `danger` entry styled as destructive.",
     },
     {
-      name: "shortcuts",
+      name: "context-menu-shortcuts",
       title: "Shortcuts",
       description: "Add a `shortcut` string to an item to show a keyboard hint on the right.",
     },
     {
-      name: "groups",
+      name: "context-menu-groups",
       title: "Groups",
       description: "Use `type: \"label\"` and `type: \"separator\"` entries to group related actions.",
     },
     {
-      name: "destructive",
+      name: "context-menu-destructive",
       title: "Destructive",
       description: "Set `danger: true` on an item to style it as a destructive action.",
     },
     {
-      name: "disabled",
+      name: "context-menu-disabled",
       title: "Disabled",
       description: "Set `disabled: true` on an item to skip it during keyboard navigation and pointer input.",
     },
     {
-      name: "controlled",
+      name: "context-menu-controlled",
       title: "Controlled",
       description: "Pass a `select` handler to react to the chosen item's `value`.",
     },

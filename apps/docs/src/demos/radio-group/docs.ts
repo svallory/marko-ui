@@ -21,12 +21,12 @@ export const docs: ComponentDocs = {
         "Pass an `items: { value, label, disabled? }[]` array and the component renders every item internally — or compose options in markup with `<@item>` attribute tags (see the Compound example).",
     },
     {
-      name: "radio-group-disabled-item",
+      name: "radio-group-disabled",
       title: "Disabled item",
       description: "Set `disabled` on a single item to remove it from the tab order and ignore pointer input.",
     },
     {
-      name: "radio-group-disabled",
+      name: "radio-group-disabled-group",
       title: "Disabled",
       description: "Pass `disabled` on `RadioGroup` itself to disable every item in the group.",
     },

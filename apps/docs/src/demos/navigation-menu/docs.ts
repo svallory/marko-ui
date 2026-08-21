@@ -14,22 +14,22 @@ export const docs: ComponentDocs = {
   usageSnippet: `<NavigationMenu items=[{ type: "menu", value: "one", label: "Item One", links: [{ title: "Link", href: "#" }] }]/>`,
   examples: [
     {
-      name: "default",
+      name: "navigation-menu-demo",
       title: "Default",
       description: "Menu items open a shared content panel of links; plain items navigate directly.",
     },
     {
-      name: "panel",
+      name: "navigation-menu-panel",
       title: "Rich content panel",
       description: "Use the `content` body to append extra markup — like a featured link or a footer note — to a panel.",
     },
     {
-      name: "disabled",
+      name: "navigation-menu-disabled",
       title: "Disabled item",
       description: "Set `disabled` on a menu item to skip it in the tab order and ignore pointer input.",
     },
     {
-      name: "controlled",
+      name: "navigation-menu-controlled",
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, or use Marko's bind shorthand `value:=state`.",

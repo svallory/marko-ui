@@ -15,28 +15,28 @@ export const docs: ComponentDocs = {
   usageSnippet: `<TreeView items=FILE_TREE/>`,
   examples: [
     {
-      name: "default",
+      name: "tree-view-demo",
       title: "Default",
       description: "A tree of nested items, each expandable and selectable.",
     },
     {
-      name: "expanded",
+      name: "tree-view-expanded",
       title: "Default expanded",
       description: "Pass `expandedValue` with the ids of branches that should start open.",
     },
     {
-      name: "multiple-selection",
+      name: "tree-view-multiple-selection",
       title: "Multiple selection",
       description: "Set `selectionMode=\"multiple\"` to let users select more than one item at once.",
     },
     {
-      name: "controlled-selection",
+      name: "tree-view-controlled-selection",
       title: "Controlled selection",
       description:
         "Zag machines are controlled: a `selectedValue` prop without a change handler never moves. Pair it with `selectedValueChange`, or use Marko's bind shorthand `selectedValue:=state`.",
     },
     {
-      name: "disabled",
+      name: "tree-view-disabled",
       title: "Disabled items",
       description: "Mark any node `disabled` — branches and leaves are both skipped by pointer and keyboard interaction.",
     },

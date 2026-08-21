@@ -35,13 +35,13 @@ import TableCaption from "@/components/ui/table/caption.marko";`,
 </Table>`,
   examples: [
     {
-      name: "default",
+      name: "table-demo",
       title: "Basic",
       description:
         "A full table built from `TableCaption`, `TableHeader`, `TableBody`, and `TableFooter`, with `TableRow` holding `TableHead` or `TableCell` children.",
     },
     {
-      name: "selected-row",
+      name: "table-selected-row",
       title: "Selected row",
       description:
         "Add `data-state=\"selected\"` to a `TableRow` to highlight it — the row's `hover:bg-muted` and `data-[state=selected]:bg-muted` styles handle the rest.",

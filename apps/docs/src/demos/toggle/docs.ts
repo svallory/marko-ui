@@ -14,27 +14,27 @@ export const docs: ComponentDocs = {
   usageSnippet: `<Toggle>Toggle</Toggle>`,
   examples: [
     {
-      name: "default",
+      name: "toggle-demo",
       title: "Default",
       description: "A plain toggle button, off until clicked.",
     },
     {
-      name: "outline",
+      name: "toggle-outline",
       title: "Outline",
       description: 'Pass `variant="outline"` for an outline style.',
     },
     {
-      name: "sizes",
+      name: "toggle-sizes",
       title: "Size",
       description: "Pass `size` as `sm`, `default`, or `lg` to change the toggle's size.",
     },
     {
-      name: "disabled",
+      name: "toggle-disabled",
       title: "Disabled",
       description: "A disabled toggle is skipped by the tab order and ignores pointer input.",
     },
     {
-      name: "controlled",
+      name: "toggle-controlled",
       title: "Controlled",
       description:
         "Zag machines are controlled: a `pressed` prop without a change handler never moves. Pair it with `pressedChange`, or use Marko's bind shorthand `pressed:=state`.",

@@ -16,27 +16,27 @@ export const docs: ComponentDocs = {
 </AspectRatio>`,
   examples: [
     {
-      name: "default",
+      name: "aspect-ratio-demo",
       title: "Default",
       description: "A `16 / 9` ratio, the common case for images and video.",
     },
     {
-      name: "square",
+      name: "aspect-ratio-square",
       title: "Square",
       description: "A `1 / 1` ratio, useful for displaying images in a square format.",
     },
     {
-      name: "portrait",
+      name: "aspect-ratio-portrait",
       title: "Portrait",
       description: "A `9 / 16` ratio, useful for displaying images in a portrait format.",
     },
     {
-      name: "content-card",
+      name: "aspect-ratio-content-card",
       title: "Content card",
       description: "Ratios apply to any content, not just images — here a `4 / 3` placeholder card.",
     },
     {
-      name: "ultrawide-banner",
+      name: "aspect-ratio-ultrawide-banner",
       title: "Ultrawide banner",
       description: "A `21 / 9` ratio for wide banner layouts.",
     },

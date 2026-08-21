@@ -19,17 +19,17 @@ export const docs: ComponentDocs = {
       description: "A label paired with a checkbox via the shared id.",
     },
     {
-      name: "input-with-label",
+      name: "label-input-with-label",
       title: "With input",
       description: "A label stacked above an input, associated by `for`/`id`.",
     },
     {
-      name: "required",
+      name: "label-required",
       title: "Required field",
       description: "Compose arbitrary markup, such as a required-field marker, inside the label.",
     },
     {
-      name: "disabled",
+      name: "label-disabled",
       title: "Disabled",
       description:
         "Label styles react to a disabled peer or an ancestor with `data-disabled=\"true\"`, dimming the text and blocking pointer events.",

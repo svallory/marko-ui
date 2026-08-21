@@ -16,39 +16,39 @@ export const docs: ComponentDocs = {
 <Calendar value:=selectedDates/>`,
   examples: [
     {
-      name: "default",
+      name: "calendar-basic",
       title: "Basic",
       description: "An uncontrolled calendar with no date selected initially.",
     },
     {
-      name: "dropdown",
+      name: "calendar-demo",
       title: "Dropdown caption",
       description:
         "Set `captionLayout=\"dropdown\"` to swap the caption label for native month and year `<select>` controls.",
     },
     {
-      name: "controlled",
+      name: "calendar-controlled",
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, or use Marko's bind shorthand `value:=state`.",
     },
     {
-      name: "multiple",
+      name: "calendar-multiple",
       title: "Multiple",
       description: "Set `selectionMode=\"multiple\"` to allow selecting more than one date.",
     },
     {
-      name: "range",
+      name: "calendar-range",
       title: "Range",
       description: "Set `selectionMode=\"range\"` to select a start and end date.",
     },
     {
-      name: "min-max",
+      name: "calendar-min-max",
       title: "Min / Max",
       description: "Pass `min` and `max` as plain `{ year, month, day }` objects to restrict the selectable range.",
     },
     {
-      name: "disabled",
+      name: "calendar-disabled",
       title: "Disabled",
       description: "A disabled calendar ignores pointer input and is skipped by the tab order.",
     },

@@ -21,19 +21,19 @@ export const docs: ComponentDocs = {
         "Pass an array of `{ accessorKey, header }` column definitions and a matching data array. A `cell` function on a column formats its value — here the amount column renders as currency.",
     },
     {
-      name: "sorting",
+      name: "data-table-sorting",
       title: "Sorting",
       description:
         "Every column sorts by default: click a header to cycle ascending, descending, and unsorted. Sorting state lives inside the component, so no extra wiring is needed.",
     },
     {
-      name: "formatted-cells",
+      name: "data-table-formatted-cells",
       title: "Cell formatting",
       description:
         "A column's `cell(row)` function can return any string, number, or Marko body — use it to format values or capitalize text without changing the underlying data.",
     },
     {
-      name: "empty",
+      name: "data-table-empty",
       title: "Empty state",
       description: "An empty `data` array renders a single centered \"No results.\" row instead of an empty table body.",
     },

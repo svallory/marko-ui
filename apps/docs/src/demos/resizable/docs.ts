@@ -29,7 +29,7 @@ export const docs: ComponentDocs = {
       description: "Set `orientation=\"vertical\"` to stack panels top to bottom.",
     },
     {
-      name: "resizable-sizes",
+      name: "resizable-handle",
       title: "Min and max sizes",
       description: "Pass `minSize` and `maxSize` on a panel to constrain how far it can be dragged.",
     },

@@ -15,37 +15,37 @@ export const docs: ComponentDocs = {
   usageSnippet: `<Editable defaultValue="Edit this text"/>`,
   examples: [
     {
-      name: "default",
+      name: "editable-demo",
       title: "Basic",
       description: "An uncontrolled editable with an initial value.",
     },
     {
-      name: "placeholder",
+      name: "editable-placeholder",
       title: "Placeholder",
       description: "Shown in preview mode when the value is empty.",
     },
     {
-      name: "submit-mode",
+      name: "editable-submit-mode",
       title: "Submit on Enter only",
       description: "Set `submitMode=\"enter\"` so blurring the input cancels instead of submitting.",
     },
     {
-      name: "activation-mode",
+      name: "editable-activation-mode",
       title: "Activation: double-click",
       description: "Set `activationMode=\"dblclick\"` to require a double-click before entering edit mode.",
     },
     {
-      name: "disabled",
+      name: "editable-disabled",
       title: "Disabled",
       description: "A disabled editable ignores pointer input and is skipped by the tab order.",
     },
     {
-      name: "custom-trigger",
+      name: "editable-custom-trigger",
       title: "Custom trigger",
       description: "Replace the default edit-trigger button with the `@trigger` tag parameter.",
     },
     {
-      name: "controlled",
+      name: "editable-controlled",
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, and use `valueCommit` to react only when the value is submitted.",

@@ -32,28 +32,28 @@ import CardFooter from "@/components/ui/card/footer.marko";`,
 </Card>`,
   examples: [
     {
-      name: "default",
+      name: "card-demo",
       title: "Login form",
       description: "A card built from a header, content, and footer holding a login form.",
     },
     {
-      name: "full-composition",
+      name: "card-full-composition",
       title: "Full example",
       description:
         "The full part list — `CardHeader`, `CardTitle`, `CardDescription`, `CardAction`, `CardContent`, `CardFooter` — assembled together.",
     },
     {
-      name: "action",
+      name: "card-action",
       title: "With action",
       description: "`CardAction` places content in the top-right of the header, such as a button.",
     },
     {
-      name: "border-footer",
+      name: "card-border-footer",
       title: "With border",
       description: "Add `border-b` to `CardHeader` or `border-t` to `CardFooter` to separate sections.",
     },
     {
-      name: "content-only",
+      name: "card-content-only",
       title: "Content only",
       description: "A minimal card with only `CardContent`, no header or footer.",
     },

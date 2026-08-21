@@ -15,33 +15,33 @@ export const docs: ComponentDocs = {
   usageSnippet: `<TagsInput defaultValue=["marko", "zag-js"] placeholder="Add tag..."/>`,
   examples: [
     {
-      name: "default",
+      name: "tags-input-demo",
       title: "Basic",
       description: "An uncontrolled tags input seeded with `defaultValue`.",
     },
     {
-      name: "label",
+      name: "tags-input-label",
       title: "With label",
       description: "Pass `label` to render an associated `<label>` above the control.",
     },
     {
-      name: "max",
+      name: "tags-input-max",
       title: "Max tags",
       description: "Set `max` to cap how many tags can be added.",
     },
     {
-      name: "paste",
+      name: "tags-input-paste",
       title: "Paste splitting",
       description:
         "Set `addOnPaste` to split a comma-separated clipboard paste into individual tags.",
     },
     {
-      name: "disabled",
+      name: "tags-input-disabled",
       title: "Disabled",
       description: "A disabled tags input ignores pointer and keyboard input.",
     },
     {
-      name: "controlled",
+      name: "tags-input-controlled",
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, or use Marko's bind shorthand `value:=state`.",

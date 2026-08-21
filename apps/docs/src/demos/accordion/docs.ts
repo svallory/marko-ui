@@ -15,29 +15,29 @@ export const docs: ComponentDocs = {
   usageSnippet: `<Accordion items=items collapsible/>`,
   examples: [
     {
-      name: "default",
+      name: "accordion-demo",
       title: "Default",
       description:
         "A single item at a time can be open. Pass `collapsible` to allow closing the open item.",
     },
     {
-      name: "multiple",
+      name: "accordion-multiple",
       title: "Multiple",
       description: "Pass `multiple` to allow more than one item to be open at the same time.",
     },
     {
-      name: "not-collapsible",
+      name: "accordion-not-collapsible",
       title: "Not collapsible",
       description:
         "Without `collapsible`, the open item cannot be closed by clicking its own trigger.",
     },
     {
-      name: "disabled",
+      name: "accordion-disabled",
       title: "Disabled",
       description: "Pass `disabled` to disable every trigger in the accordion.",
     },
     {
-      name: "controlled",
+      name: "accordion-controlled",
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`.",

@@ -15,24 +15,24 @@ export const docs: ComponentDocs = {
   usageSnippet: `<ImageCropper src=imageUrl alt="Photo to crop"/>`,
   examples: [
     {
-      name: "default",
+      name: "image-cropper-demo",
       title: "Default",
       description: "A freely resizable crop region with the rule-of-thirds grid shown.",
     },
     {
-      name: "circle-aspect-ratio",
+      name: "image-cropper-circle-aspect-ratio",
       title: "Circle crop, locked 1:1",
       description:
         "Pass `aspectRatio` to lock the crop region's proportions, and `cropShape=\"circle\"` for an avatar-style mask.",
     },
     {
-      name: "fixed-crop-area",
+      name: "image-cropper-fixed-crop-area",
       title: "Fixed crop area",
       description:
         "`fixedCropArea` pins the selection's size and position — the user can only pan and zoom the image underneath it.",
     },
     {
-      name: "controlled",
+      name: "image-cropper-controlled",
       title: "Controlled zoom and rotation",
       description:
         "Zag machines are controlled: `zoom` and `rotation` props without change handlers never move. Pair them with `zoomChange` and `rotationChange`, or use Marko's bind shorthand `zoom:=state`.",

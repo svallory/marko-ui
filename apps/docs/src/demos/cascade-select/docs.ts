@@ -15,28 +15,28 @@ export const docs: ComponentDocs = {
   usageSnippet: `<CascadeSelect items=items placeholder="Select a city" label="Region / Country / City"/>`,
   examples: [
     {
-      name: "default",
+      name: "cascade-select-demo",
       title: "Default",
       description: "Each level of the `items` tree opens a new panel as you drill down.",
     },
     {
-      name: "default-value",
+      name: "cascade-select-default-value",
       title: "Default value",
       description: "Pass `value` as a list of path arrays to select a leaf on mount.",
     },
     {
-      name: "disabled-items",
+      name: "cascade-select-disabled-items",
       title: "Disabled items",
       description: "Mark an individual item `disabled` to skip it in navigation and selection.",
     },
     {
-      name: "controlled",
+      name: "cascade-select-controlled",
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`.",
     },
     {
-      name: "disabled",
+      name: "cascade-select-disabled",
       title: "Disabled",
       description: "Pass `disabled` to disable the whole control.",
     },

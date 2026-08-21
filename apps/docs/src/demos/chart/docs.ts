@@ -20,49 +20,49 @@ import BarChart from "@/components/ui/chart/bar.marko";`,
 </Chart>`,
   examples: [
     {
-      name: "bar-default",
+      name: "chart-bar-default",
       title: "Bar Chart",
       description:
         "A single-series bar chart. Colors flow from `chartConfig` through `--color-<key>` variables — never resolved in JS.",
     },
     {
-      name: "bar-multiple",
+      name: "chart-bar-multiple",
       title: "Bar Chart - Multiple",
       description:
         "Multiple `@series` split each band. Pass `indicator=\"dashed\"` to change the tooltip indicator.",
     },
     {
-      name: "line-default",
+      name: "chart-line-default",
       title: "Line Chart",
       description:
         "A single-series line chart with a natural curve. Pass `dot` on a series to render point markers.",
     },
     {
-      name: "line-multiple",
+      name: "chart-line-multiple",
       title: "Line Chart - Multiple",
       description:
         "Multiple lines share the same y scale. `type` picks the curve: `natural`, `linear`, `monotone`, or `step`.",
     },
     {
-      name: "area-default",
+      name: "chart-area-default",
       title: "Area Chart",
       description:
         "A single-series area chart. The fill uses the series color at `fillOpacity` 0.4, like the shadcn demos.",
     },
     {
-      name: "area-gradient",
+      name: "chart-area-gradient",
       title: "Area Chart - Gradient",
       description:
         "Stacked areas with `gradient` fills — per-series `<linearGradient>` defs fading the series color from 0.8 to 0.1 opacity.",
     },
     {
-      name: "pie-simple",
+      name: "chart-pie-simple",
       title: "Pie Chart",
       description:
         "Slice colors come from each row's `fill` (e.g. `var(--color-chrome)`), resolved by the chart's scoped style — exactly like shadcn's pie demos.",
     },
     {
-      name: "pie-donut",
+      name: "chart-pie-donut",
       title: "Pie Chart - Donut with Text",
       description:
         "Pass `innerRadius` for a donut and `centerLabel` to render content in the middle.",

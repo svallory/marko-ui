@@ -25,7 +25,7 @@ export const docs: ComponentDocs = {
         "The `trigger` render-prop receives the machine's trigger attributes — spread them onto whatever element the tooltip describes.",
     },
     {
-      name: "tooltip-positioning",
+      name: "tooltip-sides",
       title: "Positioning",
       description: "Pass `positioning={ placement: \"top\" | \"right\" | \"bottom\" | \"left\" }` to control where the tooltip renders relative to its trigger.",
     },

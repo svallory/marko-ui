@@ -15,18 +15,18 @@ export const docs: ComponentDocs = {
   usageSnippet: `<Icon name="SearchIcon" library="lucide"/>`,
   examples: [
     {
-      name: "default",
+      name: "icon-demo",
       title: "Default",
       description: "Renders from the default library (`lucide`) when `library` is omitted.",
     },
     {
-      name: "libraries",
+      name: "icon-libraries",
       title: "Libraries",
       description:
         "The same abstract `name` renders a different, authentic glyph per `library` — the `name` space (191 names) is shared across all five.",
     },
     {
-      name: "sizing",
+      name: "icon-sizing",
       title: "Sizing & color",
       description:
         "Icons inherit color from `currentColor` and size from Tailwind's `size-*` utilities via `class`, same as any other SVG.",

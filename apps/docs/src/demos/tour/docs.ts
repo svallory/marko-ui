@@ -19,19 +19,19 @@ export const docs: ComponentDocs = {
 </Tour>`,
   examples: [
     {
-      name: "default",
+      name: "tour-demo",
       title: "Default",
       description:
         "A four-step tour that opens on a dialog and then spotlights toolbar targets by CSS selector, one at a time.",
     },
     {
-      name: "sides",
+      name: "tour-sides",
       title: "Side placement",
       description:
         "Steps placed to the `right` and `left` of their targets, each with a single action.",
     },
     {
-      name: "controlled",
+      name: "tour-controlled",
       title: "Controlled",
       description:
         "Pair `stepId` with `stepIdChange` (or Marko's bind shorthand `stepId:=state`) to drive the current step from parent state, and `statusChange` to observe the tour's lifecycle.",

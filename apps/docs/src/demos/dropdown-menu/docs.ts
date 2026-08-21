@@ -40,7 +40,7 @@ export const docs: ComponentDocs = {
       description: "Handle `select(value)` on the menu to react to whichever item was chosen.",
     },
     {
-      name: "dropdown-menu-danger",
+      name: "dropdown-menu-destructive",
       title: "Danger action",
       description: "Mark an item `danger` to style it as a destructive action, such as deleting a resource.",
     },

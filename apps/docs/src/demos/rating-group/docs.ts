@@ -15,32 +15,32 @@ export const docs: ComponentDocs = {
   usageSnippet: `<RatingGroup label="Rate this" value:=rating/>`,
   examples: [
     {
-      name: "default",
+      name: "rating-group-demo",
       title: "Basic",
       description: "A star rating with an initial value, uncontrolled.",
     },
     {
-      name: "half-stars",
+      name: "rating-group-half-stars",
       title: "Half stars",
       description: "Pass `allowHalf` to accept and render 0.5 increments.",
     },
     {
-      name: "custom-count",
+      name: "rating-group-custom-count",
       title: "Custom count",
       description: "The `count` prop sets how many items render, independent of the value scale.",
     },
     {
-      name: "readonly",
+      name: "rating-group-readonly",
       title: "Readonly",
       description: "A `readOnly` rating displays a value without accepting hover or click input.",
     },
     {
-      name: "disabled",
+      name: "rating-group-disabled",
       title: "Disabled",
       description: "A disabled rating is skipped by the tab order and ignores pointer input.",
     },
     {
-      name: "controlled",
+      name: "rating-group-controlled",
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, or use Marko's bind shorthand `value:=state`.",

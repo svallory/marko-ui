@@ -22,17 +22,17 @@ import AlertDescription from "@/components/ui/alert/description.marko";`,
 </Alert>`,
   examples: [
     {
-      name: "default",
+      name: "alert-demo",
       title: "Default",
       description: "An alert with an icon, title, and description.",
     },
     {
-      name: "without-icon",
+      name: "alert-without-icon",
       title: "Without icon",
       description: "The icon column collapses automatically when the alert has no icon.",
     },
     {
-      name: "destructive",
+      name: "alert-destructive",
       title: "Destructive",
       description: "Use `variant=\"destructive\"` for errors that need urgent attention.",
     },

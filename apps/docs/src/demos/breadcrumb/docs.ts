@@ -30,7 +30,7 @@ import BreadcrumbSeparator from "@/components/ui/breadcrumb/separator.marko";`,
 </Breadcrumb>`,
   examples: [
     {
-      name: "breadcrumb-demo",
+      name: "breadcrumb-basic",
       title: "Basic",
       description: "A basic breadcrumb with a home link and a components link.",
     },
