@@ -1,0 +1,30 @@
+{
+  "drawer-demo": {
+    "steps": [{ "action": "click", "role": "button", "name": "Open Drawer" }],
+    "settleMs": 600
+  },
+  "drawer-no-footer": {
+    "steps": [{ "action": "click", "role": "button", "name": "View notifications" }],
+    "settleMs": 600
+  },
+  "drawer-sides": {
+    "steps": [{ "action": "click", "role": "button", "name": "Open from the right" }],
+    "settleMs": 600
+  },
+  "drawer-snap-points": {
+    "steps": [{ "action": "click", "role": "button", "name": "Open with snap points" }],
+    "settleMs": 600
+  },
+  "dialog-demo": {
+    "steps": [{ "action": "click", "role": "button", "name": "Edit Profile" }],
+    "settleMs": 400
+  },
+  "alert-dialog-demo": {
+    "steps": [{ "action": "click", "role": "button", "name": "Show Dialog" }],
+    "settleMs": 400
+  },
+  "sheet-demo": {
+    "steps": [{ "action": "click", "role": "button", "name": "Open" }],
+    "settleMs": 400
+  }
+}

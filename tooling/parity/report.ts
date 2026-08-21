@@ -86,17 +86,19 @@ function renderVisualGallery(visual: VisualReport, reportDir: string): string {
     .map((result) => {
       const upstreamSrc = result.upstreamImagePath ? relative(reportDir, result.upstreamImagePath) : ""
       const ourSrc = result.ourImagePath ? relative(reportDir, result.ourImagePath) : ""
+      const diffSrc = result.diffImagePath ? relative(reportDir, result.diffImagePath) : ""
       const flaggedClass = result.flagged ? "flagged" : ""
       return `
       <div class="visual-card ${flaggedClass}">
         <div class="visual-card-header">
           <strong>${escapeHtml(result.component)}</strong> / ${escapeHtml(result.demoName)}
           <span class="mismatch ${result.flagged ? "flagged" : ""}">${pct(result.mismatchRatio)} mismatch</span>
-          ${result.restingStateOnly ? '<span class="badge">resting-state only</span>' : ""}
+          ${result.interacted ? '<span class="badge">interacted (see interactions.json)</span>' : '<span class="badge">resting state</span>'}
         </div>
         <div class="visual-card-images">
           <figure><figcaption>Upstream</figcaption>${upstreamSrc ? `<img src="${escapeHtml(upstreamSrc)}" alt="upstream ${escapeHtml(result.demoName)}"/>` : '<span class="muted">no image</span>'}</figure>
           <figure><figcaption>Ours</figcaption>${ourSrc ? `<img src="${escapeHtml(ourSrc)}" alt="ours ${escapeHtml(result.demoName)}"/>` : '<span class="muted">no image</span>'}</figure>
+          <figure><figcaption>Diff</figcaption>${diffSrc ? `<img src="${escapeHtml(diffSrc)}" alt="diff ${escapeHtml(result.demoName)}"/>` : '<span class="muted">no image</span>'}</figure>
         </div>
       </div>`
     })
@@ -111,8 +113,8 @@ function renderVisualGallery(visual: VisualReport, reportDir: string): string {
       : ""
 
   return `
-    <p>Threshold: ${(visual.threshold * 100).toFixed(0)}% mismatch. Resting-state only (interaction not simulated): ${
-      visual.restingStateOnly.length === 0 ? "none" : escapeHtml(visual.restingStateOnly.join(", "))
+    <p>Threshold: ${(visual.threshold * 100).toFixed(0)}% mismatch · differ: ${escapeHtml(visual.differ)}. Interacted demos (steps applied from interactions.json before screenshot): ${
+      visual.interactedDemos.length === 0 ? "none" : escapeHtml(visual.interactedDemos.join(", "))
     }.</p>
     <div class="visual-gallery">${cards || '<p class="muted">No visual comparisons ran.</p>'}</div>
     ${errorList}`

@@ -1,41 +1,61 @@
 /**
- * visual.ts — visual parity-drift detector #2.
+ * visual.ts — visual parity-drift detector #2 (v2: isolated per-demo
+ * render harnesses, not live-site scraping).
  *
- * For every demo that exists on BOTH sides (per the coverage detector's
- * name-matched demo lists), screenshots the demo's preview container on
- * upstream (https://ui.shadcn.com/docs/components/base/<slug>) and on our
- * local docs app (DOCS_BASE_URL, default http://localhost:3000), then
- * pixel-diffs the two images with pixelmatch after normalizing size.
+ * Both sides render exactly ONE demo per page, on a blank/chrome-free
+ * route, with no shared layout to confuse the screenshot target:
  *
- * Selector: both sides render `<div data-slot="component-preview">…
- * <div data-slot="preview">…</div></div>` (verified by hand against a
- * fetched ui.shadcn.com/docs/components/base/drawer page and our own
- * /docs/components/drawer route — same shadcn-v4-derived markup
- * convention). Neither side stamps an id/name on the container tying it
- * to a specific demo, so correlation is POSITIONAL: the Nth
- * `<ComponentPreview>` in the upstream MDX (source order) is the Nth
- * `[data-slot="component-preview"]` in the rendered DOM, and likewise the
- * Nth example in our docs.ts is the Nth `[data-slot="component-preview"]`
- * on our page (hero preview, if present, is example 0's own preview
- * re-rendered — see +page.marko — so the two indexings line up by
- * example, not by an independent "hero + sections" count).
+ *   - upstream: tooling/parity/harness-react, a Vite+React app that
+ *     renders any of the upstream shadcn clone's registry examples at
+ *     `/demo/<name>` (see that dir's own comments for how it aliases
+ *     straight into the clone's node_modules). Booted here via
+ *     `bun run build && bun run preview` (port 4174 by default) — a
+ *     built+previewed app, not `dev`, so there's no HMR/websocket
+ *     nondeterminism between screenshots.
+ *   - ours: apps/docs's own `/parity/<name>` route
+ *     (apps/docs/src/routes/parity/$demo/+page.marko), which resolves
+ *     `<name>` against the demos-manifest and renders it via
+ *     demo-renderer.marko. Booted here too (dev server) unless
+ *     DOCS_BASE_URL is set, in which case an already-running docs server
+ *     is reused (handy for interactive debugging — start `bun run dev`
+ *     yourself and point DOCS_BASE_URL at it).
  *
- * Interactive demos: v1 takes the RESTING state only (no click-to-open).
- * Verified against upstream's drawer/dialog demos: the resting DOM is
- * just the trigger button, so a resting-state screenshot is a legitimate,
- * comparable snapshot on both sides — not a placeholder. Every demo
- * screenshotted this way is listed in `restingStateOnly` in the report.
+ * Both routes stamp the same `data-parity-demo="<name>"` attribute on a
+ * wrapper div — that's the screenshot target on both sides.
  *
- * Cross-framework rendering never pixel-matches exactly (font hinting,
- * anti-aliasing, subpixel layout). We report a mismatch RATIO
- * (differing pixels / total pixels of the common cropped box) and only
- * flag components above `threshold` (default 0.15) as drifted.
+ * Pairing: a demo is "paired" when its name is a key in some component's
+ * `demos: {}` object in our demos-manifest.ts AND matches (after
+ * normalizeName) an upstream `<ComponentPreview name="...">` ref for the
+ * SAME component's MDX doc — i.e. exactly the per-component demo diff
+ * coverage.ts already computes (`ourDemos`/`upstreamDemos` per
+ * ComponentCoverageResult). This reuses that detector rather than
+ * re-deriving pairing logic, so "paired" here means the same thing it
+ * means in the coverage report.
+ *
+ * Interactions: tooling/parity/interactions.json (see INTERACTIONS.md)
+ * gives some demo names a list of pre-screenshot steps (currently just
+ * `{action:"click", role, name}`), applied identically on both sides via
+ * Playwright's role+name locator, plus a settle wait for animations. Demos
+ * with no entry are screenshotted at rest — a legitimate snapshot on both
+ * sides, not a placeholder.
+ *
+ * Diff: odiff (root devDependency, `odiff-bin` — confirmed working on this
+ * machine, binary at node_modules/.bin/odiff; pixelmatch is NOT used as a
+ * fallback here because odiff ran cleanly — see HANDOFF/report for the
+ * verification). Diffing happens over the UNION bounding box of the two
+ * screenshots (not the whole canvas, not the min/cropped box like v1) —
+ * each screenshot is padded with transparent pixels up to the union size
+ * before odiff runs, so a demo that's taller/wider on one side counts that
+ * extra area as mismatch instead of silently cropping it away.
+ *
+ * Retries: navigation/timeout failures get 2 retries with linear backoff
+ * (1s, 2s) before the demo is recorded as errored.
  */
-import { mkdirSync, writeFileSync, existsSync } from "node:fs"
+import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs"
 import { join } from "node:path"
 import { createRequire } from "node:module"
+import { spawn, type ChildProcess } from "node:child_process"
 import { PNG } from "pngjs"
-import pixelmatch from "pixelmatch"
 import { REPO_ROOT } from "../fs-utils.ts"
 import { runCoverageDetector, normalizeName } from "./coverage.ts"
 
@@ -76,17 +96,128 @@ function loadPlaywright(): typeof import("playwright") {
   )
 }
 
-export const DOCS_BASE_URL = process.env.DOCS_BASE_URL ?? "http://localhost:3000"
-const UPSTREAM_BASE_URL = "https://ui.shadcn.com/docs/components/base"
+const HARNESS_REACT_DIR = join(REPO_ROOT, "tooling", "parity", "harness-react")
+const HARNESS_REACT_URL = process.env.HARNESS_REACT_URL ?? "http://localhost:4174"
+const DOCS_DIR = join(REPO_ROOT, "apps", "docs")
+export const DOCS_BASE_URL = process.env.DOCS_BASE_URL ?? null
+
+const ODIFF_BIN = join(REPO_ROOT, "node_modules", ".bin", "odiff")
+
+interface InteractionStep {
+  action: "click"
+  role: string
+  name: string
+  css?: string
+}
+
+interface InteractionEntry {
+  steps: InteractionStep[]
+  settleMs?: number
+}
+
+function loadInteractions(): Record<string, InteractionEntry> {
+  const path = join(REPO_ROOT, "tooling", "parity", "interactions.json")
+  if (!existsSync(path)) return {}
+  return JSON.parse(readFileSync(path, "utf8")) as Record<string, InteractionEntry>
+}
+
+/** Wait for a URL to start responding (any HTTP status), polling. */
+async function waitForServer(url: string, timeoutMs: number): Promise<void> {
+  const start = Date.now()
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const response = await fetch(url)
+      if (response.ok || response.status < 500) return
+    } catch {
+      // not up yet
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500))
+  }
+  throw new Error(`visual.ts: timed out waiting for ${url} to respond within ${timeoutMs}ms`)
+}
+
+interface ManagedServer {
+  process: ChildProcess | null
+  baseUrl: string
+}
+
+/** True if something is already answering HTTP requests at `url`. */
+async function isServerUp(url: string): Promise<boolean> {
+  try {
+    await fetch(url)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Boot the upstream harness-react app: build once, then `vite preview`.
+ * If HARNESS_REACT_URL is already serving (e.g. left running from a prior
+ * manual run), reuses it instead of failing on vite's strictPort bind
+ * error — the returned ManagedServer's `process` is null in that case, so
+ * stopServer() correctly leaves someone else's server alone.
+ */
+async function startHarnessReact(): Promise<ManagedServer> {
+  if (await isServerUp(HARNESS_REACT_URL)) {
+    console.log(`[visual] reusing already-running harness-react at ${HARNESS_REACT_URL}`)
+    return { process: null, baseUrl: HARNESS_REACT_URL }
+  }
+
+  console.log("[visual] building harness-react…")
+  await new Promise<void>((resolve, reject) => {
+    const build = spawn("bun", ["run", "build"], { cwd: HARNESS_REACT_DIR, stdio: "inherit" })
+    build.on("exit", (code) => (code === 0 ? resolve() : reject(new Error(`harness-react build failed (exit ${code})`))))
+    build.on("error", reject)
+  })
+
+  console.log("[visual] starting harness-react preview server…")
+  const preview = spawn("bun", ["run", "preview"], { cwd: HARNESS_REACT_DIR, stdio: "inherit" })
+  await waitForServer(HARNESS_REACT_URL, 30_000)
+  return { process: preview, baseUrl: HARNESS_REACT_URL }
+}
+
+/** Boot our docs app (dev server) unless DOCS_BASE_URL already points at a running one. */
+async function startDocs(): Promise<ManagedServer> {
+  if (DOCS_BASE_URL) {
+    await waitForServer(DOCS_BASE_URL, 10_000)
+    return { process: null, baseUrl: DOCS_BASE_URL }
+  }
+
+  const port = 3910
+  const baseUrl = `http://localhost:${port}`
+  if (await isServerUp(baseUrl)) {
+    console.log(`[visual] reusing already-running docs server at ${baseUrl}`)
+    return { process: null, baseUrl }
+  }
+
+  console.log("[visual] starting docs dev server…")
+  const dev = spawn("bun", ["run", "dev", "--port", String(port)], { cwd: DOCS_DIR, stdio: "inherit" })
+  // 180s, not 60s: a cold `bun run dev` here runs predev's build-registry.ts
+  // first, then marko-run's own Vite dep-optimization pass — measured at
+  // 45s-215s+ on a machine under heavy concurrent-agent CPU contention
+  // during this feature's development. Prefer DOCS_BASE_URL pointed at an
+  // already-running `bun run dev`/`bun run preview` for repeat local runs;
+  // this cold-boot path exists so `check:parity` works standalone.
+  await waitForServer(baseUrl, 180_000)
+  return { process: dev, baseUrl }
+}
+
+function stopServer(server: ManagedServer): void {
+  if (server.process && !server.process.killed) {
+    server.process.kill("SIGTERM")
+  }
+}
 
 export interface DemoVisualResult {
   component: string
   demoName: string
   mismatchRatio: number | null
   flagged: boolean
-  restingStateOnly: boolean
+  interacted: boolean
   upstreamImagePath: string | null
   ourImagePath: string | null
+  diffImagePath: string | null
   error: string | null
   timingMs: number
 }
@@ -94,49 +225,131 @@ export interface DemoVisualResult {
 export interface VisualReport {
   generatedAt: string
   threshold: number
+  differ: "odiff" | "pixelmatch"
   results: DemoVisualResult[]
-  restingStateOnly: string[]
+  interactedDemos: string[]
 }
 
 export interface VisualOptions {
   component?: string
   threshold?: number
   outDir?: string
+  /** Skip booting servers — assume HARNESS_REACT_URL / DOCS_BASE_URL are already up. */
+  reuseServers?: boolean
 }
 
-/** Demos interaction is known to be required for (drawer/dialog family opens on click). */
-const INTERACTIVE_DEMO_HINTS = [
-  "drawer",
-  "dialog",
-  "sheet",
-  "popover",
-  "dropdown",
-  "menu",
-  "tooltip",
-  "hover-card",
-  "context-menu",
-  "combobox",
-  "select",
-  "command",
-  "collapsible",
-  "accordion",
-]
-
-function looksInteractive(componentName: string): boolean {
-  return INTERACTIVE_DEMO_HINTS.some((hint) => componentName.includes(hint))
+/** Read a PNG's dimensions without decoding pixel data (cheap, for bbox union). */
+function pngDimensions(buffer: Buffer): { width: number; height: number } {
+  const png = PNG.sync.read(buffer)
+  return { width: png.width, height: png.height }
 }
 
-/** Crop/resize two PNGs to their common (min width, min height) box. */
-function normalizeToCommonBox(a: PNG, b: PNG): { a: PNG; b: PNG; width: number; height: number } {
-  const width = Math.min(a.width, b.width)
-  const height = Math.min(a.height, b.height)
+/** Pad a PNG buffer to (width, height), anchored top-left, with transparent fill. */
+function padToSize(buffer: Buffer, width: number, height: number): Buffer {
+  const src = PNG.sync.read(buffer)
+  if (src.width === width && src.height === height) return buffer
+  const padded = new PNG({ width, height })
+  PNG.bitblt(src, padded, 0, 0, src.width, src.height, 0, 0)
+  return PNG.sync.write(padded)
+}
 
-  const cropA = new PNG({ width, height })
-  PNG.bitblt(a, cropA, 0, 0, width, height, 0, 0)
-  const cropB = new PNG({ width, height })
-  PNG.bitblt(b, cropB, 0, 0, width, height, 0, 0)
+interface OdiffResult {
+  mismatchRatio: number
+  diffPixels: number
+}
 
-  return { a: cropA, b: cropB, width, height }
+/**
+ * Run odiff on two same-size PNG files, write the diff image, return the
+ * mismatch ratio. odiff's exit codes (confirmed against the installed
+ * odiff-bin@4.5.0 binary, `odiff --help`): 0 = images match (stdout: "0"
+ * with --parsable-stdout), 21 = layout difference (only with
+ * --fail-on-layout, not used here since both images are pre-padded to the
+ * same union size), 22 = pixel differences found (stdout:
+ * "<diffPixelCount>;<diffPercentage>" with --parsable-stdout). Any other
+ * exit code is a genuine tooling failure and is rethrown.
+ */
+async function runOdiff(
+  aPath: string,
+  bPath: string,
+  diffPath: string,
+  width: number,
+  height: number
+): Promise<OdiffResult> {
+  const { execFile } = await import("node:child_process")
+  const { promisify } = await import("node:util")
+  const execFileAsync = promisify(execFile)
+
+  try {
+    const { stdout } = await execFileAsync(ODIFF_BIN, [aPath, bPath, diffPath, "--parsable-stdout", "--threshold", "0.1"])
+    if (stdout.trim() !== "0") {
+      throw new Error(`visual.ts: odiff exited 0 (match) but printed non-zero stdout: ${JSON.stringify(stdout)}`)
+    }
+    return { mismatchRatio: 0, diffPixels: 0 }
+  } catch (error) {
+    const execError = error as { code?: number; stdout?: string }
+    if (execError.code !== 22) throw error
+    const stdout = execError.stdout ?? ""
+    const match = /^(\d+);([\d.]+)/.exec(stdout.trim())
+    if (!match) throw new Error(`visual.ts: unrecognized odiff --parsable-stdout output: ${JSON.stringify(stdout)}`)
+    const diffPixels = Number(match[1])
+    return { mismatchRatio: diffPixels / (width * height), diffPixels }
+  }
+}
+
+/** Apply this demo's interaction steps (if any) on `page`, then wait `settleMs`. */
+async function applyInteractions(
+  page: import("playwright").Page,
+  entry: InteractionEntry | undefined
+): Promise<void> {
+  if (!entry) return
+  for (const step of entry.steps) {
+    if (step.action !== "click") continue
+    let locator = page.getByRole(step.role as Parameters<typeof page.getByRole>[0], { name: step.name })
+    if ((await locator.count()) === 0 && step.css) {
+      locator = page.locator(step.css) as typeof locator
+    }
+    await locator.first().click()
+  }
+  await page.waitForTimeout(entry.settleMs ?? 300)
+}
+
+async function screenshotDemo(
+  page: import("playwright").Page,
+  baseUrl: string,
+  routePrefix: string,
+  demoName: string,
+  interaction: InteractionEntry | undefined,
+  attempt: number
+): Promise<Buffer> {
+  await page.goto(`${baseUrl}${routePrefix}${demoName}`, { waitUntil: "networkidle", timeout: 30_000 })
+  const target = page.locator(`[data-parity-demo="${demoName}"]`)
+  // 8s, not 30s: a demo name that's paired by coverage.ts (an MDX
+  // <ComponentPreview name="..."> ref) but has no matching .tsx file in
+  // the upstream registry's examples/ dir (this happens — upstream's own
+  // docs occasionally reference examples that were since removed/renamed)
+  // never grows a [data-parity-demo] wrapper on the harness-react side
+  // (its NotFound branch omits the attribute entirely, see App.tsx) — so
+  // this wait is guaranteed to time out for that case, and each of up to
+  // 3 attempts (withRetries below) should fail fast rather than burn 15s+
+  // each on something that will never appear.
+  await target.waitFor({ state: "visible", timeout: 8_000 })
+  await applyInteractions(page, interaction)
+  return target.screenshot()
+}
+
+async function withRetries<T>(fn: (attempt: number) => Promise<T>, retries: number): Promise<T> {
+  let lastError: unknown
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn(attempt)
+    } catch (error) {
+      lastError = error
+      if (attempt < retries) {
+        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)))
+      }
+    }
+  }
+  throw lastError
 }
 
 export async function runVisualDetector(options: VisualOptions = {}): Promise<VisualReport> {
@@ -145,29 +358,40 @@ export async function runVisualDetector(options: VisualOptions = {}): Promise<Vi
   const outDir = options.outDir ?? join(REPO_ROOT, "parity-report", "images")
   mkdirSync(outDir, { recursive: true })
 
+  const interactions = loadInteractions()
   const coverage = await runCoverageDetector(options.component ? { component: options.component } : {})
+
+  const servers: ManagedServer[] = []
+  let harnessBaseUrl = HARNESS_REACT_URL
+  let docsBaseUrl = DOCS_BASE_URL ?? "http://localhost:3910"
+
+  if (!options.reuseServers) {
+    const harnessServer = await startHarnessReact()
+    servers.push(harnessServer)
+    harnessBaseUrl = harnessServer.baseUrl
+
+    const docsServer = await startDocs()
+    servers.push(docsServer)
+    docsBaseUrl = docsServer.baseUrl
+  } else {
+    await waitForServer(harnessBaseUrl, 10_000)
+    await waitForServer(docsBaseUrl, 10_000)
+  }
 
   const browser = await playwright.chromium.launch({ headless: true })
   const results: DemoVisualResult[] = []
-  const restingStateOnly: string[] = []
+  const interactedDemos: string[] = []
 
   try {
     for (const componentResult of coverage.components) {
       const componentName = componentResult.component
 
-      // Shared demos = upstream demo names that also appear (normalized)
-      // in our demo names, in UPSTREAM source order (that order is what
-      // maps positionally to the upstream DOM containers).
       const ourNormalized = new Set(componentResult.ourDemos.map(normalizeName))
       const sharedUpstreamDemos = componentResult.upstreamDemos.filter((name) =>
         ourNormalized.has(normalizeName(name))
       )
       if (sharedUpstreamDemos.length === 0) continue
 
-      const isInteractive = looksInteractive(componentName)
-      if (isInteractive) restingStateOnly.push(componentName)
-
-      const start = Date.now()
       let upstreamContext, ourContext
       try {
         upstreamContext = await browser.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: "light" })
@@ -175,65 +399,57 @@ export async function runVisualDetector(options: VisualOptions = {}): Promise<Vi
         const upstreamPage = await upstreamContext.newPage()
         const ourPage = await ourContext.newPage()
 
-        const upstreamUrl = `${UPSTREAM_BASE_URL}/${componentName}`
-        const ourUrl = `${DOCS_BASE_URL}/docs/components/${componentName}`
-
-        await upstreamPage.goto(upstreamUrl, { waitUntil: "networkidle", timeout: 30_000 })
-        await ourPage.goto(ourUrl, { waitUntil: "networkidle", timeout: 30_000 })
-
-        const upstreamPreviews = upstreamPage.locator('[data-slot="component-preview"] [data-slot="preview"]')
-        const ourPreviews = ourPage.locator('[data-slot="component-preview"] [data-slot="preview"]')
-
-        for (let index = 0; index < sharedUpstreamDemos.length; index++) {
-          const demoName = sharedUpstreamDemos[index]
-          if (demoName === undefined) continue
-          const upstreamIndex = componentResult.upstreamDemos.indexOf(demoName)
-          const ourDemoName = componentResult.ourDemos.find(
-            (name) => normalizeName(name) === normalizeName(demoName)
-          )
-          const ourIndex = ourDemoName ? componentResult.ourDemos.indexOf(ourDemoName) : -1
+        for (const demoName of sharedUpstreamDemos) {
+          const ourDemoName =
+            componentResult.ourDemos.find((name) => normalizeName(name) === normalizeName(demoName)) ?? demoName
+          // Both harness routes are keyed by the upstream demo name (see
+          // route header comments) — the docs /parity/<name> route
+          // resolves `name` by scanning demos-manifest.ts, so pass the
+          // OUR-side key (post-normalization) there, and the upstream
+          // harness's own filename there.
+          const interactionEntry = interactions[demoName] ?? interactions[ourDemoName]
+          if (interactionEntry) interactedDemos.push(`${componentName}/${demoName}`)
 
           const demoStart = Date.now()
           let mismatchRatio: number | null = null
           let error: string | null = null
           let upstreamImagePath: string | null = null
           let ourImagePath: string | null = null
+          let diffImagePath: string | null = null
 
           try {
-            const upstreamCount = await upstreamPreviews.count()
-            const ourCount = await ourPreviews.count()
-            if (upstreamIndex < 0 || upstreamIndex >= upstreamCount) {
-              throw new Error(
-                `upstream preview index ${upstreamIndex} out of range (found ${upstreamCount} preview containers)`
-              )
-            }
-            if (ourIndex < 0 || ourIndex >= ourCount) {
-              throw new Error(
-                `our preview index ${ourIndex} out of range (found ${ourCount} preview containers)`
-              )
-            }
-
-            const upstreamBuffer = await upstreamPreviews.nth(upstreamIndex).screenshot()
-            const ourBuffer = await ourPreviews.nth(ourIndex).screenshot()
+            const upstreamBuffer = await withRetries(
+              () => screenshotDemo(upstreamPage, harnessBaseUrl, "/demo/", demoName, interactionEntry, 0),
+              2
+            )
+            const ourBuffer = await withRetries(
+              () => screenshotDemo(ourPage, docsBaseUrl, "/parity/", ourDemoName, interactionEntry, 0),
+              2
+            )
 
             const safeDemoName = demoName.replace(/[^a-z0-9-]/gi, "_")
             upstreamImagePath = join(outDir, `${componentName}__${safeDemoName}__upstream.png`)
             ourImagePath = join(outDir, `${componentName}__${safeDemoName}__ours.png`)
-            writeFileSync(upstreamImagePath, upstreamBuffer)
-            writeFileSync(ourImagePath, ourBuffer)
 
-            const upstreamPng = PNG.sync.read(upstreamBuffer)
-            const ourPng = PNG.sync.read(ourBuffer)
-            const { a, b, width, height } = normalizeToCommonBox(upstreamPng, ourPng)
+            const upstreamDims = pngDimensions(upstreamBuffer)
+            const ourDims = pngDimensions(ourBuffer)
+            const unionWidth = Math.max(upstreamDims.width, ourDims.width)
+            const unionHeight = Math.max(upstreamDims.height, ourDims.height)
 
-            const diffPng = new PNG({ width, height })
-            const diffPixels = pixelmatch(a.data, b.data, diffPng.data, width, height, {
-              threshold: 0.1,
-            })
-            mismatchRatio = width * height === 0 ? null : diffPixels / (width * height)
+            const upstreamPadded = padToSize(upstreamBuffer, unionWidth, unionHeight)
+            const ourPadded = padToSize(ourBuffer, unionWidth, unionHeight)
+            writeFileSync(upstreamImagePath, upstreamPadded)
+            writeFileSync(ourImagePath, ourPadded)
 
-            const diffPath = join(outDir, `${componentName}__${safeDemoName}__diff.png`)
-            writeFileSync(diffPath, PNG.sync.write(diffPng))
+            diffImagePath = join(outDir, `${componentName}__${safeDemoName}__diff.png`)
+            const odiffResult = await runOdiff(
+              upstreamImagePath,
+              ourImagePath,
+              diffImagePath,
+              unionWidth,
+              unionHeight
+            )
+            mismatchRatio = odiffResult.mismatchRatio
           } catch (demoError) {
             error = demoError instanceof Error ? demoError.message : String(demoError)
           }
@@ -243,9 +459,10 @@ export async function runVisualDetector(options: VisualOptions = {}): Promise<Vi
             demoName,
             mismatchRatio,
             flagged: mismatchRatio !== null && mismatchRatio > threshold,
-            restingStateOnly: isInteractive,
+            interacted: Boolean(interactionEntry),
             upstreamImagePath,
             ourImagePath,
+            diffImagePath,
             error,
             timingMs: Date.now() - demoStart,
           })
@@ -256,33 +473,39 @@ export async function runVisualDetector(options: VisualOptions = {}): Promise<Vi
           demoName: "(component-level failure)",
           mismatchRatio: null,
           flagged: false,
-          restingStateOnly: isInteractive,
+          interacted: false,
           upstreamImagePath: null,
           ourImagePath: null,
+          diffImagePath: null,
           error: componentError instanceof Error ? componentError.message : String(componentError),
-          timingMs: Date.now() - start,
+          timingMs: 0,
         })
       } finally {
         await upstreamContext?.close()
         await ourContext?.close()
       }
-
-      console.log(`[visual] ${componentName}: ${Date.now() - start}ms`)
     }
   } finally {
     await browser.close()
+    for (const server of servers) stopServer(server)
   }
 
   return {
     generatedAt: new Date().toISOString(),
     threshold,
+    differ: "odiff",
     results,
-    restingStateOnly,
+    interactedDemos,
   }
 }
 
 if (import.meta.main) {
-  const componentArg = process.argv[2]
-  const report = await runVisualDetector(componentArg ? { component: componentArg } : {})
+  const args = process.argv.slice(2)
+  const reuseServers = args.includes("--reuse-servers")
+  const componentArg = args.find((arg) => !arg.startsWith("--"))
+  const report = await runVisualDetector({
+    ...(componentArg ? { component: componentArg } : {}),
+    reuseServers,
+  })
   console.log(JSON.stringify(report, null, 2))
 }

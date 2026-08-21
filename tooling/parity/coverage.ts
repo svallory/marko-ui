@@ -72,7 +72,7 @@ export function normalizeName(name: string): string {
     .replace(/^-+|-+$/g, "")
 }
 
-function loadIgnoreList(): ParityIgnoreEntry[] {
+export function loadIgnoreList(): ParityIgnoreEntry[] {
   const path = join(REPO_ROOT, "tooling", "parity", "parity-ignore.json")
   if (!existsSync(path)) return []
   const parsed = JSON.parse(readFileSync(path, "utf8")) as { ignore: ParityIgnoreEntry[] }

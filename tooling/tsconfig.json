@@ -6,5 +6,8 @@
       "@/*": ["./packages/marko-ui/*"]
     }
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts"],
+  "exclude": [
+    "parity/harness-react/**"
+  ]
 }
