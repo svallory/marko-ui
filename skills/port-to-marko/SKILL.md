@@ -51,7 +51,7 @@ Commit per component or small group; each commit must build.
 
 ## Step 3 — Verify mechanically
 
-"It looks right" is not verification. Follow `references/verification.md`: typecheck with `marko-type-check` (NEVER plain `tsc` — it silently skips `.marko` files), render every component through SSR + hydration on a production build, drive every interaction with real pointer events in a real browser, and screenshot-compare against the source library's live docs. Log every deviation you could not close.
+"It looks right" is not verification. Set up parity the way `references/parity-process.md` describes — judgment once (demo-name pairing, harness shims, interaction steps), deterministic checks forever — then follow `references/verification.md`: typecheck with `marko-type-check` (NEVER plain `tsc` — it silently skips `.marko` files), render every component through SSR + hydration on a production build, drive every interaction with real pointer events in a real browser, and screenshot-compare against the source library's live docs. Log every deviation you could not close.
 
 ## Step 4 — Publish
 

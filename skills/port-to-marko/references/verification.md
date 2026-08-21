@@ -61,7 +61,7 @@ It runs two detectors against the upstream clone and writes `parity-report/repor
 
 `parity-ignore.json` is the machine-readable deviation log — every accepted difference lives there with its reason; the PR description summarizes them. Read the repo's `CLAUDE.md` and `TODO.md` conventions. A PR with failing checks, unexplained drift, or undisclosed deviations will not be reviewed.
 
-(The toolkit is monorepo-only today; community registries use the manual screenshot comparison in §4 until it ships as a standalone dev package.)
+The judgment steps behind those artifacts (name pairing, taxonomy, harness shims, interactions) are procedures in `parity-process.md`. (The toolkit is monorepo-only today; community registries use the manual screenshot comparison in §4 until it ships as a standalone dev package.)
 
 ## Report format
 
