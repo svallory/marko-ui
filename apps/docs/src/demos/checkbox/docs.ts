@@ -15,7 +15,7 @@ export const docs: ComponentDocs = {
   usageSnippet: `<Checkbox checked:=accepted>\n  <span>Accept terms and conditions</span>\n</Checkbox>`,
   examples: [
     {
-      name: "checkbox-demo",
+      name: "checkbox-basic",
       title: "Basic",
       description: "A checkbox paired with a label as its content.",
     },

@@ -23,7 +23,7 @@ export const docs: ComponentDocs = {
 </AlertDialog>`,
   examples: [
     {
-      name: "alert-dialog-demo",
+      name: "alert-dialog-basic",
       title: "Basic",
       description:
         "A dialog with a title, description, and cancel and continue buttons.",

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-21T19:48:00.934Z",
+  "generatedAt": "2026-08-21T19:59:53.054Z",
   "styles": [
     "default",
     "luma",
@@ -45,8 +45,8 @@
       "component": "alert-dialog",
       "route": "/verify/default/alert-dialog",
       "demos": [
+        "alert-dialog-basic",
         "alert-dialog-controlled",
-        "alert-dialog-demo",
         "alert-dialog-destructive"
       ]
     },
@@ -206,9 +206,9 @@
       "component": "checkbox",
       "route": "/verify/default/checkbox",
       "demos": [
+        "checkbox-basic",
         "checkbox-checked",
         "checkbox-controlled",
-        "checkbox-demo",
         "checkbox-disabled",
         "checkbox-indeterminate"
       ]
@@ -988,8 +988,8 @@
       "component": "alert-dialog",
       "route": "/verify/luma/alert-dialog",
       "demos": [
+        "alert-dialog-basic",
         "alert-dialog-controlled",
-        "alert-dialog-demo",
         "alert-dialog-destructive"
       ]
     },
@@ -1149,9 +1149,9 @@
       "component": "checkbox",
       "route": "/verify/luma/checkbox",
       "demos": [
+        "checkbox-basic",
         "checkbox-checked",
         "checkbox-controlled",
-        "checkbox-demo",
         "checkbox-disabled",
         "checkbox-indeterminate"
       ]
@@ -1931,8 +1931,8 @@
       "component": "alert-dialog",
       "route": "/verify/lyra/alert-dialog",
       "demos": [
+        "alert-dialog-basic",
         "alert-dialog-controlled",
-        "alert-dialog-demo",
         "alert-dialog-destructive"
       ]
     },
@@ -2092,9 +2092,9 @@
       "component": "checkbox",
       "route": "/verify/lyra/checkbox",
       "demos": [
+        "checkbox-basic",
         "checkbox-checked",
         "checkbox-controlled",
-        "checkbox-demo",
         "checkbox-disabled",
         "checkbox-indeterminate"
       ]
@@ -2874,8 +2874,8 @@
       "component": "alert-dialog",
       "route": "/verify/maia/alert-dialog",
       "demos": [
+        "alert-dialog-basic",
         "alert-dialog-controlled",
-        "alert-dialog-demo",
         "alert-dialog-destructive"
       ]
     },
@@ -3035,9 +3035,9 @@
       "component": "checkbox",
       "route": "/verify/maia/checkbox",
       "demos": [
+        "checkbox-basic",
         "checkbox-checked",
         "checkbox-controlled",
-        "checkbox-demo",
         "checkbox-disabled",
         "checkbox-indeterminate"
       ]
@@ -3817,8 +3817,8 @@
       "component": "alert-dialog",
       "route": "/verify/mira/alert-dialog",
       "demos": [
+        "alert-dialog-basic",
         "alert-dialog-controlled",
-        "alert-dialog-demo",
         "alert-dialog-destructive"
       ]
     },
@@ -3978,9 +3978,9 @@
       "component": "checkbox",
       "route": "/verify/mira/checkbox",
       "demos": [
+        "checkbox-basic",
         "checkbox-checked",
         "checkbox-controlled",
-        "checkbox-demo",
         "checkbox-disabled",
         "checkbox-indeterminate"
       ]
@@ -4760,8 +4760,8 @@
       "component": "alert-dialog",
       "route": "/verify/nova/alert-dialog",
       "demos": [
+        "alert-dialog-basic",
         "alert-dialog-controlled",
-        "alert-dialog-demo",
         "alert-dialog-destructive"
       ]
     },
@@ -4921,9 +4921,9 @@
       "component": "checkbox",
       "route": "/verify/nova/checkbox",
       "demos": [
+        "checkbox-basic",
         "checkbox-checked",
         "checkbox-controlled",
-        "checkbox-demo",
         "checkbox-disabled",
         "checkbox-indeterminate"
       ]
@@ -5703,8 +5703,8 @@
       "component": "alert-dialog",
       "route": "/verify/rhea/alert-dialog",
       "demos": [
+        "alert-dialog-basic",
         "alert-dialog-controlled",
-        "alert-dialog-demo",
         "alert-dialog-destructive"
       ]
     },
@@ -5864,9 +5864,9 @@
       "component": "checkbox",
       "route": "/verify/rhea/checkbox",
       "demos": [
+        "checkbox-basic",
         "checkbox-checked",
         "checkbox-controlled",
-        "checkbox-demo",
         "checkbox-disabled",
         "checkbox-indeterminate"
       ]
@@ -6646,8 +6646,8 @@
       "component": "alert-dialog",
       "route": "/verify/sera/alert-dialog",
       "demos": [
+        "alert-dialog-basic",
         "alert-dialog-controlled",
-        "alert-dialog-demo",
         "alert-dialog-destructive"
       ]
     },
@@ -6807,9 +6807,9 @@
       "component": "checkbox",
       "route": "/verify/sera/checkbox",
       "demos": [
+        "checkbox-basic",
         "checkbox-checked",
         "checkbox-controlled",
-        "checkbox-demo",
         "checkbox-disabled",
         "checkbox-indeterminate"
       ]
@@ -7589,8 +7589,8 @@
       "component": "alert-dialog",
       "route": "/verify/vega/alert-dialog",
       "demos": [
+        "alert-dialog-basic",
         "alert-dialog-controlled",
-        "alert-dialog-demo",
         "alert-dialog-destructive"
       ]
     },
@@ -7750,9 +7750,9 @@
       "component": "checkbox",
       "route": "/verify/vega/checkbox",
       "demos": [
+        "checkbox-basic",
         "checkbox-checked",
         "checkbox-controlled",
-        "checkbox-demo",
         "checkbox-disabled",
         "checkbox-indeterminate"
       ]

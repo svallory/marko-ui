@@ -17,8 +17,8 @@ import Demo_accordion_accordion_not_collapsible from "../../demos/accordion/acco
 import Demo_alert_alert_demo from "../../demos/alert/alert-demo.marko";
 import Demo_alert_alert_destructive from "../../demos/alert/alert-destructive.marko";
 import Demo_alert_alert_without_icon from "../../demos/alert/alert-without-icon.marko";
+import Demo_alert_dialog_alert_dialog_basic from "../../demos/alert-dialog/alert-dialog-basic.marko";
 import Demo_alert_dialog_alert_dialog_controlled from "../../demos/alert-dialog/alert-dialog-controlled.marko";
-import Demo_alert_dialog_alert_dialog_demo from "../../demos/alert-dialog/alert-dialog-demo.marko";
 import Demo_alert_dialog_alert_dialog_destructive from "../../demos/alert-dialog/alert-dialog-destructive.marko";
 import Demo_angle_slider_angle_slider_controlled from "../../demos/angle-slider/angle-slider-controlled.marko";
 import Demo_angle_slider_angle_slider_demo from "../../demos/angle-slider/angle-slider-demo.marko";
@@ -87,9 +87,9 @@ import Demo_chart_chart_line_default from "../../demos/chart/chart-line-default.
 import Demo_chart_chart_line_multiple from "../../demos/chart/chart-line-multiple.marko";
 import Demo_chart_chart_pie_donut from "../../demos/chart/chart-pie-donut.marko";
 import Demo_chart_chart_pie_simple from "../../demos/chart/chart-pie-simple.marko";
+import Demo_checkbox_checkbox_basic from "../../demos/checkbox/checkbox-basic.marko";
 import Demo_checkbox_checkbox_checked from "../../demos/checkbox/checkbox-checked.marko";
 import Demo_checkbox_checkbox_controlled from "../../demos/checkbox/checkbox-controlled.marko";
-import Demo_checkbox_checkbox_demo from "../../demos/checkbox/checkbox-demo.marko";
 import Demo_checkbox_checkbox_disabled from "../../demos/checkbox/checkbox-disabled.marko";
 import Demo_checkbox_checkbox_indeterminate from "../../demos/checkbox/checkbox-indeterminate.marko";
 import Demo_clipboard_clipboard_controlled from "../../demos/clipboard/clipboard-controlled.marko";
@@ -413,8 +413,8 @@ export interface Input {
 <else-if=(input.demoId === "alert/alert-demo")><Demo_alert_alert_demo/></else-if>
 <else-if=(input.demoId === "alert/alert-destructive")><Demo_alert_alert_destructive/></else-if>
 <else-if=(input.demoId === "alert/alert-without-icon")><Demo_alert_alert_without_icon/></else-if>
+<else-if=(input.demoId === "alert-dialog/alert-dialog-basic")><Demo_alert_dialog_alert_dialog_basic/></else-if>
 <else-if=(input.demoId === "alert-dialog/alert-dialog-controlled")><Demo_alert_dialog_alert_dialog_controlled/></else-if>
-<else-if=(input.demoId === "alert-dialog/alert-dialog-demo")><Demo_alert_dialog_alert_dialog_demo/></else-if>
 <else-if=(input.demoId === "alert-dialog/alert-dialog-destructive")><Demo_alert_dialog_alert_dialog_destructive/></else-if>
 <else-if=(input.demoId === "angle-slider/angle-slider-controlled")><Demo_angle_slider_angle_slider_controlled/></else-if>
 <else-if=(input.demoId === "angle-slider/angle-slider-demo")><Demo_angle_slider_angle_slider_demo/></else-if>
@@ -483,9 +483,9 @@ export interface Input {
 <else-if=(input.demoId === "chart/chart-line-multiple")><Demo_chart_chart_line_multiple/></else-if>
 <else-if=(input.demoId === "chart/chart-pie-donut")><Demo_chart_chart_pie_donut/></else-if>
 <else-if=(input.demoId === "chart/chart-pie-simple")><Demo_chart_chart_pie_simple/></else-if>
+<else-if=(input.demoId === "checkbox/checkbox-basic")><Demo_checkbox_checkbox_basic/></else-if>
 <else-if=(input.demoId === "checkbox/checkbox-checked")><Demo_checkbox_checkbox_checked/></else-if>
 <else-if=(input.demoId === "checkbox/checkbox-controlled")><Demo_checkbox_checkbox_controlled/></else-if>
-<else-if=(input.demoId === "checkbox/checkbox-demo")><Demo_checkbox_checkbox_demo/></else-if>
 <else-if=(input.demoId === "checkbox/checkbox-disabled")><Demo_checkbox_checkbox_disabled/></else-if>
 <else-if=(input.demoId === "checkbox/checkbox-indeterminate")><Demo_checkbox_checkbox_indeterminate/></else-if>
 <else-if=(input.demoId === "clipboard/clipboard-controlled")><Demo_clipboard_clipboard_controlled/></else-if>
