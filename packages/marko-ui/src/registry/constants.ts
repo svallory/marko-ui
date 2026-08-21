@@ -1,13 +1,10 @@
-import { registryConfigSchema } from "@/src/schema"
-import { z } from "zod"
+import type { registryConfigSchema } from "@/src/schema"
+import type { z } from "zod"
 
 export const REGISTRY_URL =
   process.env.REGISTRY_URL ?? "https://marko-ui.saulo.tech/r"
 
 export const MARKO_UI_URL = REGISTRY_URL.replace(/\/r\/?$/, "")
-
-// Kept as an alias while forked shadcn code is migrated.
-export const SHADCN_URL = MARKO_UI_URL
 
 export const FALLBACK_STYLE = "default"
 
@@ -71,4 +68,3 @@ export const VISUAL_STYLES = [
 ] as const
 
 export const DEFAULT_VISUAL_STYLE = "vega"
-

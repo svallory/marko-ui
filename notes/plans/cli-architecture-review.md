@@ -37,7 +37,7 @@ cli.md (design), cli-implementation-log.md (decisions).
 - **A6 — `status`/init link to URLs that don't exist.** info.ts CODE_BASE
   shadcn-v4 URL shapes on our domain (`/docs/components/{base}/x.md`,
   `.tsx` browser); canonical is `/docs/components/<name>.md`. Both
-  `${SHADCN_URL}/schema.json` and init's `$schema` point at an unserved
+  `${MARKO_UI_URL}/schema.json` and init's `$schema` point at an unserved
   file; get-project-info hardcodes the schema URL literal, ignoring
   REGISTRY_URL override.
 
@@ -88,7 +88,7 @@ cli.md (design), cli-implementation-log.md (decisions).
 - utils/templates.ts: Tailwind v3 template + UTILS strings, zero callers;
   DEFAULT_TAILWIND_CONFIG v3-era.
 - Schema fields printed but never consumed: iconLibrary (auto "lucide" in
-  a lucide-less framework), rtl, menuColor, menuAccent; unused SHADCN_URL
+  a lucide-less framework), rtl, menuColor, menuAccent; unused MARKO_UI_URL
   import in get-project-info.
 
 ## D. Install pipeline notes

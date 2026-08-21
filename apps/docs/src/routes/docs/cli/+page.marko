@@ -24,9 +24,9 @@ static const QUICKSTART = `bunx marko-ui init          # components.json + base 
 bunx marko-ui add button    # install a component as source
 bunx marko-ui doctor        # health checks (exit 3 on failure)`;
 
-static const SHADCN_INIT = `bunx shadcn@latest init https://marko-ui.saulo.tech/r/style.json`;
+static const INIT_CMD = `bunx marko-ui@latest init https://marko-ui.saulo.tech/r/style.json`;
 
-static const SHADCN_ADD = `bunx shadcn@latest add https://marko-ui.saulo.tech/r/dialog.json`;
+static const ADD_CMD = `bunx marko-ui@latest add https://marko-ui.saulo.tech/r/dialog.json`;
 
 static const REGISTRY_INDEX = `curl -s https://marko-ui.saulo.tech/r/registry.json | jq '.items[].name'`;
 
@@ -160,8 +160,8 @@ static function optionLines(cmd: CliCommand) {
     useful in mixed teams or tooling that already speaks the protocol. Point it at our item URLs:
   </p>
 
-  <code-block language="bash" code=SHADCN_INIT/>
-  <code-block language="bash" code=SHADCN_ADD/>
+  <code-block language="bash" code=INIT_CMD/>
+  <code-block language="bash" code=ADD_CMD/>
 
   <p>Two details make this work for a non-React framework:</p>
 

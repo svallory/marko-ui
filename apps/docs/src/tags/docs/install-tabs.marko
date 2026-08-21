@@ -19,10 +19,10 @@ export interface Input {
 
 // Every manager's own way of running a one-off binary.
 <const/commands=[
-  { manager: "bun", command: `bunx --bun shadcn@latest add ${input.registryUrl}` },
-  { manager: "pnpm", command: `pnpm dlx shadcn@latest add ${input.registryUrl}` },
-  { manager: "npm", command: `npx shadcn@latest add ${input.registryUrl}` },
-  { manager: "yarn", command: `yarn dlx shadcn@latest add ${input.registryUrl}` },
+  { manager: "bun", command: `bunx --bun marko-ui@latest add ${input.registryUrl}` },
+  { manager: "pnpm", command: `pnpm dlx marko-ui@latest add ${input.registryUrl}` },
+  { manager: "npm", command: `npx marko-ui@latest add ${input.registryUrl}` },
+  { manager: "yarn", command: `yarn dlx marko-ui@latest add ${input.registryUrl}` },
 ] as PackageManagerCommand[]/>
 
 <const/dependencyCommands=input.dependencies.length === 0 ? [] : [

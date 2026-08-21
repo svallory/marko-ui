@@ -49,10 +49,10 @@ marko-ui is distributed through the shadcn CLI's registry protocol:
 
 ```sh
 # initialize a Marko project with a marko-ui style
-bunx shadcn@latest init https://marko-ui.saulo.tech/r/style.json
+bunx marko-ui@latest init https://marko-ui.saulo.tech/r/style.json
 
 # add components
-bunx shadcn@latest add https://marko-ui.saulo.tech/r/switch.json
+bunx marko-ui@latest add https://marko-ui.saulo.tech/r/switch.json
 ```
 
 Existing shadcn themes drop in unchanged — marko-ui uses the canonical CSS
