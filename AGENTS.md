@@ -44,7 +44,7 @@ Behavior tests (`packages/shadcn/tests/behavior/`) drive real Playwright against
 - **marko is pinned to 6.3.34** — 6.3.35 has minification/reactivity regressions. Do not bump without verifying those are fixed.
 - **No React dependencies, ever.** Anything needed from the React shadcn package is vendored (e.g. `apps/docs/src/shadcn-tailwind.css` is a byte-copy of shadcn's `tailwind.css` export).
 - All `@zag-js/*` packages stay on one exact version (currently 1.43.0) across every package.
-- When porting a shadcn.com page or resource, use the `port-shadcn-resource` skill — freestyle ports have always drifted and had to be redone. shadcn source lives in the space clone at `../../data/shadcn-ui/`.
+- When porting a shadcn.com page or resource, use the `port-shadcn-resource` skill — freestyle ports have always drifted and had to be redone. shadcn source is resolved by `tooling/upstream-shadcn.ts`: `SHADCN_UI_DIR` env var, else the maintainer's sibling clone at `../../data/shadcn-ui/`, else an auto-cloned `.upstream/shadcn-ui/` inside the repo.
 
 ## Architecture: the SSR-safe Zag pattern
 

@@ -13,6 +13,7 @@
     "../../tooling/style-map.ts",
     "../../tooling/apply-style-map.ts",
     "../../tooling/transform-marko.ts",
-    "../../tooling/transform-variants.ts"
+    "../../tooling/transform-variants.ts",
+    "../../tooling/upstream-shadcn.ts"
   ]
 }

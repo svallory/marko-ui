@@ -30,12 +30,15 @@ import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, basename } from "node:path";
 
 import { REPO_ROOT, runCheck, walkAbsolute } from "./fs-utils";
+import { ensureShadcnClone } from "./upstream-shadcn";
 
-const SHADCN_ROOT = join(REPO_ROOT, "..", "..", "data", "shadcn-ui", "apps", "v4", "registry");
-const BASES_UI_DIR = join(SHADCN_ROOT, "bases", "radix", "ui");
-const SHADCN_STYLES_DIR = join(SHADCN_ROOT, "styles");
 const OUR_UI_DIR = join(REPO_ROOT, "packages", "shadcn", "ui");
 const OUR_STYLES_SRC = join(REPO_ROOT, "packages", "shadcn", "styles");
+
+// Resolved by requireShadcnClone() before anything below reads them.
+let SHADCN_ROOT = "";
+let BASES_UI_DIR = "";
+let SHADCN_STYLES_DIR = "";
 
 // ---------------------------------------------------------------------------
 // Token extraction
@@ -67,50 +70,74 @@ function extractSelectorStems(css: string, prefix: "cn" | "mu"): Set<string> {
 // ---------------------------------------------------------------------------
 // External dependency guard
 //
-// The canonical anchor list is read from a SIBLING clone of shadcn/ui that
-// lives OUTSIDE this repository (`../../data/shadcn-ui/`, per CLAUDE.md's
-// "shadcn source lives in the space clone" note). Without that checkout this
-// script used to die with a bare ENOENT from readdirSync.
+// The canonical anchor list is read from a shadcn/ui clone resolved by
+// tooling/upstream-shadcn.ts: an explicit SHADCN_UI_DIR, else the
+// maintainer's sibling "hyperspace" clone, else a repo-local clone that gets
+// auto-cloned into .upstream/shadcn-ui when none of those exist yet.
 //
-// This FAILS HARD rather than skipping. A skipped check is worse than a
-// crashed one for a gate wired into `bun run check` (package.json's
-// check:tooling): MISSING/EXTRA anchor drift is exactly the class of bug this
-// gate exists to catch, so a silent green on a machine lacking the clone would
-// let that drift land unnoticed. Failing loud with an actionable message costs
-// one clone; failing silent costs a broken registry.
+// A clone attempt that itself fails (offline machine, no network) still
+// FAILS HARD rather than skipping. A skipped check is worse than a crashed
+// one for a gate wired into `bun run check` (package.json's check:tooling):
+// MISSING/EXTRA anchor drift is exactly the class of bug this gate exists to
+// catch, so a silent green on a machine that couldn't clone would let that
+// drift land unnoticed. Failing loud with an actionable message costs one
+// clone; failing silent costs a broken registry.
 
 /**
- * Verifies the sibling shadcn clone is present. Returns normally when it is,
- * exits the process with an actionable message when it is not (or exits 0
- * with a warning if MARKO_UI_SKIP_ANCHOR_CHECK is set).
+ * Resolves (cloning if necessary) the shadcn clone and points SHADCN_ROOT /
+ * BASES_UI_DIR / SHADCN_STYLES_DIR at it. Exits the process with an
+ * actionable message if cloning fails (or exits 0 with a warning if
+ * MARKO_UI_SKIP_ANCHOR_CHECK is set).
  */
-function requireShadcnClone(): void {
+async function requireShadcnClone(): Promise<void> {
+  let clone: string;
+  try {
+    clone = await ensureShadcnClone();
+  } catch (error) {
+    if (process.env.MARKO_UI_SKIP_ANCHOR_CHECK) {
+      console.warn(
+        `check-anchors: SKIPPED — could not obtain the shadcn/ui clone (${
+          (error as Error).message
+        }) and MARKO_UI_SKIP_ANCHOR_CHECK is set. Anchor drift is NOT being verified.`,
+      );
+      process.exit(0);
+    }
+    console.error(
+      [
+        "check-anchors: could not obtain the shadcn/ui source clone.",
+        "",
+        (error as Error).message,
+        "",
+        "This check diffs our mu-* anchors against shadcn's cn-* anchors, so it",
+        "cannot run without that source. It auto-clones into .upstream/shadcn-ui;",
+        "the failure above is most likely a network problem. You can also point",
+        "SHADCN_UI_DIR at an existing checkout.",
+        "",
+        "Set MARKO_UI_SKIP_ANCHOR_CHECK=1 to skip this gate deliberately (it will",
+        "exit 0 with a warning; do NOT set it in CI).",
+      ].join("\n"),
+    );
+    process.exit(2);
+  }
+
+  SHADCN_ROOT = join(clone, "apps", "v4", "registry");
+  BASES_UI_DIR = join(SHADCN_ROOT, "bases", "radix", "ui");
+  SHADCN_STYLES_DIR = join(SHADCN_ROOT, "styles");
+
   const missing = [BASES_UI_DIR, SHADCN_STYLES_DIR].filter(
     (dir) => !existsSync(dir) || !statSync(dir).isDirectory(),
   );
   if (missing.length === 0) return;
-  if (process.env.MARKO_UI_SKIP_ANCHOR_CHECK) {
-    console.warn(
-      `check-anchors: SKIPPED — shadcn clone not found at ${SHADCN_ROOT} and ` +
-        `MARKO_UI_SKIP_ANCHOR_CHECK is set. Anchor drift is NOT being verified.`,
-    );
-    process.exit(0);
-  }
+
   console.error(
     [
-      "check-anchors: the shadcn/ui source clone is missing.",
+      "check-anchors: the shadcn/ui clone is missing expected directories.",
       "",
-      `  expected registry root: ${SHADCN_ROOT}`,
-      ...missing.map((dir) => `  missing directory:      ${dir}`),
+      `  registry root: ${SHADCN_ROOT}`,
+      ...missing.map((dir) => `  missing directory: ${dir}`),
       "",
-      "This check diffs our mu-* anchors against shadcn's cn-* anchors, so it",
-      "cannot run without that source. It is a sibling clone of this repo, not",
-      "a dependency — clone it next to the repo's space root:",
-      "",
-      `  git clone https://github.com/shadcn-ui/ui ${join(REPO_ROOT, "..", "..", "data", "shadcn-ui")}`,
-      "",
-      "Set MARKO_UI_SKIP_ANCHOR_CHECK=1 to skip this gate deliberately (it will",
-      "exit 0 with a warning; do NOT set it in CI).",
+      "The clone itself succeeded but doesn't look like shadcn/ui's registry —",
+      "has the upstream layout changed?",
     ].join("\n"),
   );
   process.exit(2);
@@ -217,13 +244,13 @@ function sortedDiff(a: Set<string>, b: Set<string>): string[] {
   return [...a].filter((x) => !b.has(x)).sort();
 }
 
-function main(): number {
+async function main(): Promise<number> {
   const argv = process.argv.slice(2);
   const json = argv.includes("--json");
   const selfCheck = argv.includes("--self-check");
   const requested = argv.filter((a) => !a.startsWith("--"));
 
-  requireShadcnClone();
+  await requireShadcnClone();
 
   const basesAnchors = loadBasesAnchors();
   const componentNames = [...basesAnchors.keys()];

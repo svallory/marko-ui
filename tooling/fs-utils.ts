@@ -60,11 +60,17 @@ export const ANCHOR_TOKEN_RE = /\bmu-[\w-]+\b/g
  *
  * Exit codes: whatever `main()` returns on a clean run; 2 on a thrown error,
  * kept distinct from the 1 that means "the check found real problems".
+ *
+ * `main` may be sync or async — `await` on a plain number resolves
+ * immediately, so this stays a drop-in for the three existing sync callers.
  */
-export function runCheck(name: string, main: () => number): never {
+export async function runCheck(
+  name: string,
+  main: () => number | Promise<number>
+): Promise<never> {
   let code: number
   try {
-    code = main()
+    code = await main()
   } catch (error) {
     const message = error instanceof Error ? (error.stack ?? error.message) : String(error)
     console.error(`\n${name}: CHECK CRASHED — this is a tooling failure, not a check result.\n`)

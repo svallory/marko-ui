@@ -3,20 +3,36 @@ import { join } from "node:path"
 import { describe, expect, test } from "vitest"
 
 import { createStyleMap } from "../../../tooling/style-map"
+import { ensureShadcnClone } from "../../../tooling/upstream-shadcn"
 
 const REGISTRY_DIR = join(import.meta.dirname, "..")
 const STYLES_SRC_DIR = join(REGISTRY_DIR, "styles")
-const SHADCN_STYLES_DIR = join(
-  REGISTRY_DIR,
-  "../../../../data/shadcn-ui/apps/v4/registry/styles"
-)
 
 const hasStylesSrc = existsSync(join(STYLES_SRC_DIR, "style-rhea.css"))
 
-// The shadcn originals live in a sibling clone (see CLAUDE.md: "shadcn source
-// lives in the space clone at ../../data/shadcn-ui/"). Contributors without
-// that checkout skip this block rather than crashing the whole run.
-const hasShadcnStyles = existsSync(join(SHADCN_STYLES_DIR, "style-rhea.css"))
+// The shadcn originals are resolved via tooling/upstream-shadcn.ts: an
+// explicit SHADCN_UI_DIR, else the maintainer's sibling "hyperspace" clone,
+// else a repo-local clone auto-cloned into .upstream/shadcn-ui. `skipIf`
+// predicates are evaluated at collection time (before any beforeAll runs),
+// so the resolution has to happen via top-level await, which Vitest
+// supports natively. Only a genuine clone failure (offline dev machine, no
+// network) falls back to skipping this block — resolution success should
+// never depend on manual setup.
+let SHADCN_STYLES_DIR = ""
+let hasShadcnStyles = false
+
+try {
+  const clone = await ensureShadcnClone()
+  SHADCN_STYLES_DIR = join(clone, "apps/v4/registry/styles")
+  hasShadcnStyles = existsSync(join(SHADCN_STYLES_DIR, "style-rhea.css"))
+} catch (error) {
+  console.warn(
+    `style-map.test.ts: SKIPPED shadcn-originals suite — could not obtain the shadcn/ui clone (${
+      (error as Error).message
+    }). This suite is skipped, not failed, so offline dev machines stay green.`
+  )
+  hasShadcnStyles = false
+}
 
 describe("createStyleMap (shadcn originals, cn- prefix)", () => {
   // Reading is deferred so the describe body itself never throws when the
