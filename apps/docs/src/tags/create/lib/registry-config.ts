@@ -33,6 +33,11 @@
  *     the `shadcn/schema` package here. The returned shape is unchanged.
  *   - `shadcn/icons`'s `iconLibraries` is ported verbatim (name/title/
  *     packages/import/usage/export metadata only — no actual icon sets).
+ *   - Dependencies and CSS imports now reference `@marko-ui/shadcn` instead
+ *     of the React `shadcn` package, since Marko consumers must never install
+ *     React shadcn. The generated theme's dependency list points at our package,
+ *     and the CSS import references our style layers instead of shadcn's
+ *     `tailwind.css` — consumers have no copy-path Tailwind to import from.
  *
  * Everything else (all data arrays/objects: THEMES, BASE_COLORS via THEMES
  * filter, BASES, STYLES, fonts, RADII, MENU_ACCENTS, MENU_COLORS, PRESETS,
@@ -1705,7 +1710,7 @@ export type IconLibraryName = keyof IconLibraries;
 // registry/config.ts (ported)
 // ---------------------------------------------------------------------------
 
-const SHADCN_VERSION = "latest";
+const MARKO_UI_SHADCN_VERSION = "latest";
 const DEFAULT_RADIUS_VALUE = "0.625rem";
 
 export type BaseName = Base["name"];
@@ -2648,7 +2653,7 @@ export function buildRegistryBase(config: DesignSystemConfig) {
 
   // Build dependencies.
   const dependencies = [
-    `shadcn@${SHADCN_VERSION}`,
+    `@marko-ui/shadcn@${MARKO_UI_SHADCN_VERSION}`,
     "class-variance-authority",
     "tw-animate-css",
     ...((baseItem as RegistryItem).dependencies ?? []),
@@ -2693,7 +2698,7 @@ export function buildRegistryBase(config: DesignSystemConfig) {
     },
     css: {
       '@import "tw-animate-css"': {},
-      '@import "shadcn/tailwind.css"': {},
+      '@import "@marko-ui/shadcn/styles/globals.css"': {},
       "@layer base": {
         "*": { "@apply border-border outline-ring/50": {} },
         body: { "@apply bg-background text-foreground": {} },
