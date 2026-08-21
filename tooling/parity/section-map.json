@@ -1,0 +1,12 @@
+{
+  "//": "Coverage checker v3 input — see notes/docs-canonical-structure.md for the full spec this implements. Global map, upstream heading slug (normalizeName-normalized) -> ARRAY of MapAction. Validated on load by coverage.ts's `validateSectionMap` (ignore must be sole action; at most one placement action per array; unknown action = hard error naming the entry).",
+  "map": {
+    "composition": [{ "action": "move", "parent": ["anatomy"] }],
+    "theming": [{ "action": "move", "parent": ["styling"] }],
+    "css-variables": [{ "action": "move", "parent": ["styling"], "title": "CSS Variables" }],
+    "custom-colors": [{ "action": "move", "parent": ["styling", "recipes"] }],
+    "rtl": [{ "action": "move", "parent": ["examples"], "title": "RTL" }],
+    "core-concepts": [{ "action": "keep" }],
+    "migrating-from-vaul": [{ "action": "ignore", "reason": "React/Vaul-specific migration guide" }]
+  }
+}

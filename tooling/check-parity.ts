@@ -3,19 +3,28 @@
  * parity-report/{report.json,index.html}.
  *
  * Usage:
- *   bun tooling/check-parity.ts [--static-only] [--component <slug>]
+ *   bun tooling/check-parity.ts [--static-only] [--component <slug>] [--strict]
  *
  * --static-only skips the Playwright visual detector entirely (for CI
  * without a running docs dev server, or a quick coverage-only check).
  * --component restricts both detectors to one shared component slug.
+ * --strict switches the coverage detector's presence check to
+ * post-migration mode (canonical bucket names only — see coverage.ts's
+ * `isTargetPresent` and SCHEMA.md's "Transition mode"). Off by default:
+ * our docs pages aren't migrated to the canonical hierarchy yet, so the
+ * default (transition) mode accepts either the canonical bucket name or
+ * the section's original upstream heading as "present."
  *
  * Exit-code contract (matches the repo's doctor/validate convention, see
  * `marko-ui doctor --json`): 0 = green, no drift found. 3 = drift found —
- * at least one non-ignored coverage mismatch (missing/extra section, demo,
- * or API prop) or at least one visual result over threshold. 2 = tooling
- * crash (thrown from `main`, handled by `runCheck`). The report is always
- * written on a successful run (coverage.json/index.html), regardless of
- * exit code — 3 means "look at the report," not "the run failed."
+ * at least one non-ignored coverage mismatch (missing demo/extra demo,
+ * missing mapped target, or API prop) or at least one visual result over
+ * threshold. UNCLASSIFIED sections never contribute to drift/exit 3 — see
+ * coverage.ts's classification pipeline and SCHEMA.md: they're a to-map
+ * queue, not drift. 2 = tooling crash (thrown from `main`, handled by
+ * `runCheck`). The report is always written on a successful run
+ * (coverage.json/index.html), regardless of exit code — 3 means "look at
+ * the report," not "the run failed."
  * tooling/parity/SCHEMA.md documents the report JSON shape this reads.
  */
 import { mkdirSync, writeFileSync } from "node:fs"
@@ -32,7 +41,8 @@ export interface ComponentSummary {
   pairedDemos: string[]
   missingDemos: string[]
   extraDemos: string[]
-  missingSections: string[]
+  missingMappedTargets: string[]
+  unclassifiedCount: number
   maxDiffPct: number | null
   ignored: string[]
 }
@@ -56,9 +66,10 @@ function buildSummary(coverage: CoverageReport, visual: VisualReport | null): Co
       .filter((ratio): ratio is number => ratio !== null)
     const maxDiffPct = diffRatios.length === 0 ? null : Math.max(...diffRatios) * 100
 
+    // Unclassified sections are NEVER drift (a to-map queue, not a defect)
+    // — see coverage.ts's classification pipeline and SCHEMA.md.
     const hasCoverageDrift =
-      component.missingSections.length > 0 ||
-      component.extraSections.length > 0 ||
+      component.missingMappedTargets.length > 0 ||
       component.missingDemos.length > 0 ||
       component.extraDemos.length > 0 ||
       component.missingApiProps.length > 0 ||
@@ -73,7 +84,8 @@ function buildSummary(coverage: CoverageReport, visual: VisualReport | null): Co
       ),
       missingDemos: component.missingDemos,
       extraDemos: component.extraDemos,
-      missingSections: component.missingSections,
+      missingMappedTargets: component.missingMappedTargets.map((entry) => entry.heading),
+      unclassifiedCount: component.unclassifiedCount,
       maxDiffPct,
       ignored: ignoredNames,
     }
@@ -83,14 +95,16 @@ function buildSummary(coverage: CoverageReport, visual: VisualReport | null): Co
 interface CliOptions {
   staticOnly: boolean
   component?: string
+  strict: boolean
 }
 
 function parseArgs(argv: string[]): CliOptions {
-  const options: CliOptions = { staticOnly: false }
+  const options: CliOptions = { staticOnly: false, strict: false }
   for (let index = 0; index < argv.length; index++) {
     const arg = argv[index]
     if (arg === "--static-only") options.staticOnly = true
     else if (arg === "--component") options.component = argv[++index]
+    else if (arg === "--strict") options.strict = true
     else throw new Error(`check-parity: unrecognized argument "${arg}"`)
   }
   return options
@@ -101,11 +115,11 @@ async function main(): Promise<number> {
   const outDir = join(REPO_ROOT, "parity-report")
   mkdirSync(outDir, { recursive: true })
 
-  console.log("[check-parity] running coverage detector…")
+  console.log(`[check-parity] running coverage detector… (strict: ${options.strict})`)
   const coverageStart = Date.now()
-  const coverage = await runCoverageDetector(options.component ? { component: options.component } : {})
+  const coverage = await runCoverageDetector({ component: options.component, strict: options.strict })
   console.log(
-    `[check-parity] coverage: ${coverage.components.length} shared components analyzed in ${Date.now() - coverageStart}ms`
+    `[check-parity] coverage: ${coverage.components.length} shared components analyzed in ${Date.now() - coverageStart}ms — ${coverage.unclassifiedTotal} unclassified section(s), see parity-report/unclassified.json`
   )
 
   let visual = null

@@ -26,15 +26,14 @@ function renderCoverageTable(coverage: CoverageReport): string {
   const rows = coverage.components
     .filter(
       (component) =>
-        component.missingSections.length > 0 ||
-        component.extraSections.length > 0 ||
+        component.missingMappedTargets.length > 0 ||
         component.missingDemos.length > 0 ||
         component.extraDemos.length > 0 ||
         component.missingApiProps.length > 0 ||
         component.extraApiProps.length > 0
     )
     .sort((a, b) => {
-      const score = (c: typeof a) => c.missingSections.length + c.missingDemos.length + c.missingApiProps.length
+      const score = (c: typeof a) => c.missingMappedTargets.length + c.missingDemos.length + c.missingApiProps.length
       return score(b) - score(a)
     })
 
@@ -48,14 +47,18 @@ function renderCoverageTable(coverage: CoverageReport): string {
       (component) => `
       <tr>
         <td class="component-name">${escapeHtml(component.component)}</td>
-        <td>${list(component.missingSections, "missing")}</td>
-        <td>${list(component.extraSections, "extra")}</td>
+        <td>${list(component.missingMappedTargets.map((entry) => `${entry.heading} → ${entry.target.parent.length ? entry.target.parent.join(" / ") + " / " : ""}${entry.target.title}`), "missing")}</td>
         <td>${list(component.missingDemos, "missing")}</td>
         <td>${list(component.extraDemos, "extra")}</td>
         <td>${
           component.apiTractable
             ? list(component.missingApiProps, "missing")
             : '<span class="muted">not tractable</span>'
+        }</td>
+        <td>${
+          component.unclassifiedCount > 0
+            ? `<a href="unclassified.json">${component.unclassifiedCount}</a>`
+            : '<span class="muted">0</span>'
         }</td>
       </tr>`
     )
@@ -66,11 +69,11 @@ function renderCoverageTable(coverage: CoverageReport): string {
       <thead>
         <tr>
           <th>Component</th>
-          <th>Missing sections</th>
-          <th>Extra sections (ours-only)</th>
+          <th>Missing mapped targets</th>
           <th>Missing demos</th>
           <th>Extra demos (ours-only)</th>
           <th>Missing API props</th>
+          <th>Unclassified (non-failing)</th>
         </tr>
       </thead>
       <tbody>${body || '<tr><td colspan="6" class="muted">No drift detected in the analyzed set.</td></tr>'}</tbody>
@@ -175,6 +178,8 @@ export function renderReport(
     Coverage generated: ${escapeHtml(coverage.generatedAt)}
     ${visual ? ` · Visual generated: ${escapeHtml(visual.generatedAt)}` : " · Visual detector not run (--static-only)"}
     · Ignored (parity-ignore.json) entries silenced: ${coverage.ignoredCount}
+    · Unclassified sections (non-failing, see <a href="unclassified.json">unclassified.json</a>): ${coverage.unclassifiedTotal}
+    · Presence mode: ${coverage.strict ? "strict (canonical bucket names only)" : "transition (canonical bucket name OR mapped upstream original)"}
   </div>
 
   <h2>Coverage drift (worst first)</h2>
