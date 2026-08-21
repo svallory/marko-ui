@@ -59,7 +59,7 @@ describe("addRegistryItems package.json registries", () => {
         throw new Error("Failed to start test registry server.")
       }
 
-      tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-add-registry-"))
+      tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-add-registry-"))
       await fs.writeFile(
         path.join(tempDir, "package.json"),
         JSON.stringify({
@@ -138,7 +138,7 @@ describe("addRegistryItems package.json registries", () => {
         throw new Error("Failed to start test registry server.")
       }
 
-      tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-add-registry-"))
+      tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-add-registry-"))
       await fs.writeFile(
         path.join(tempDir, "package.json"),
         JSON.stringify({
@@ -186,7 +186,7 @@ describe("addRegistryItems package.json registries", () => {
   })
 
   it("requires custom registry namespaces to be configured", async () => {
-    tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-add-registry-"))
+    tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-add-registry-"))
 
     await expect(
       addRegistryItems(["@missing/agent"], {

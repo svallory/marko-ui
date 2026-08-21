@@ -394,7 +394,7 @@ describe("resolveRegistryItemsFromRegistries", () => {
 describe("resolveRegistryTree universal validation", () => {
   it("rejects non-universal dependencies", async () => {
     const tempDir = await fs.mkdtemp(
-      path.join(tmpdir(), "shadcn-universal-tree-")
+      path.join(tmpdir(), "marko-ui-universal-tree-")
     )
     const dependencyPath = path.join(tempDir, "dependency.json")
     const itemPath = path.join(tempDir, "item.json")
@@ -467,7 +467,7 @@ describe("resolveRegistryItems with URL dependencies", () => {
 
     mockServer.listen({ onUnhandledRequest: "bypass" })
 
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const tempFile = path.join(tempDir, "component-with-url-deps.json")
 
     const componentData = {
@@ -668,7 +668,7 @@ describe("resolveRegistryItems with URL dependencies", () => {
 
     mockServer.listen({ onUnhandledRequest: "bypass" })
 
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const tempFile = path.join(tempDir, "component-with-namespace-deps.json")
 
     const componentData = {

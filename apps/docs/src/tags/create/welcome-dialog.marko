@@ -1,6 +1,6 @@
 // Ported from shadcn/ui app/(app)/(create)/components/welcome-dialog.tsx.
 // First-visit-only dialog: opens once on mount if
-// localStorage["shadcn-create-welcome-dialog"] is unset, and writes that key
+// localStorage["marko-ui-create-welcome-dialog"] is unset, and writes that key
 // (dismissed = "true") the moment it closes for any reason (Get Started
 // click, backdrop click, Escape) — matches source's onOpenChange writing the
 // flag on every close, not just the button.
@@ -32,7 +32,7 @@
 import Dialog from "@marko-ui/shadcn/ui/dialog/dialog.marko";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
-static const STORAGE_KEY = "shadcn-create-welcome-dialog";
+static const STORAGE_KEY = "marko-ui-create-welcome-dialog";
 
 <let/isOpen=false/>
 

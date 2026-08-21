@@ -177,7 +177,7 @@ describe("registry validate command", () => {
 })
 
 async function createFixture(files: Record<string, string>) {
-  const cwd = await fs.mkdtemp(path.join(tmpdir(), "shadcn-validate-command-"))
+  const cwd = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-validate-command-"))
 
   await Promise.all(
     Object.entries(files).map(async ([filePath, content]) => {

@@ -1,7 +1,7 @@
 // Chart config types + the ChartStyle CSS builder.
 //
 // Byte-parity port of the non-visual parts of shadcn's chart.tsx
-// (data/shadcn-ui/apps/v4/registry/new-york-v4/ui/chart.tsx):
+// (/apps/v4/registry/new-york-v4/ui/chart.tsx):
 // - `ChartConfig` mirrors shadcn's ChartConfig (label/icon + color XOR theme)
 // - `chartStyleCss` produces the exact same CSS text shadcn's <ChartStyle>
 //   injects, so `--color-<key>` variables resolve identically under any

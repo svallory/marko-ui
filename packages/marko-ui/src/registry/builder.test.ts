@@ -416,14 +416,14 @@ describe("buildHeadersFromRegistryConfig", () => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        "User-Agent": "shadcn-ui/1.0.0",
+        "User-Agent": "marko-ui/1.0.0",
       },
     }
 
     expect(buildHeadersFromRegistryConfig(config)).toEqual({
       "Content-Type": "application/json",
       Accept: "application/json",
-      "User-Agent": "shadcn-ui/1.0.0",
+      "User-Agent": "marko-ui/1.0.0",
     })
   })
 

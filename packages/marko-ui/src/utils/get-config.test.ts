@@ -519,7 +519,7 @@ describe("getWorkspaceConfig", () => {
   it("get workspace config shows an actionable error when a workspace package is missing imports", async () => {
     const fixtureRoot = getFixturesDir("frameworks/vite-monorepo-imports")
     const tempDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), "shadcn-workspace-config-")
+      path.join(os.tmpdir(), "marko-ui-workspace-config-")
     )
 
     try {
@@ -552,7 +552,7 @@ describe("getWorkspaceConfig", () => {
   it("get workspace config shows an actionable error when a workspace package is missing components.json", async () => {
     const fixtureRoot = getFixturesDir("frameworks/vite-monorepo-imports")
     const tempDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), "shadcn-workspace-config-")
+      path.join(os.tmpdir(), "marko-ui-workspace-config-")
     )
 
     try {

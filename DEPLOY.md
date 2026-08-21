@@ -1,6 +1,6 @@
 # Deploying to Coolify
 
-`apps/docs` (Marko + `@marko/run` 0.11.9, Vite) also serves the shadcn
+`apps/docs` (Marko + `@marko/run` 0.11.9, Vite) also serves the marko-ui
 registry as static JSON under `/r/*` (generated into `apps/docs/public/r` by
 `tooling/build-registry.ts` — that directory is
 `.gitignore`d, never committed, always built fresh). One image, one

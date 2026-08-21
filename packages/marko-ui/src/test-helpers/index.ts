@@ -12,7 +12,7 @@ export function getFixturesDir(...segments: string[]) {
 // Temp dir with guaranteed cleanup. Returns the callback's result.
 export async function withTempDir<T>(
   fn: (dir: string) => Promise<T>,
-  prefix = "shadcn-test-"
+  prefix = "marko-ui-test-"
 ): Promise<T> {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), prefix))
   try {

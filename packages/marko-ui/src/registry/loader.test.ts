@@ -591,7 +591,7 @@ describe("readRegistryWithIncludes", () => {
 })
 
 async function createFixture(files: Record<string, string>) {
-  const cwd = await fs.mkdtemp(path.join(tmpdir(), "shadcn-registry-"))
+  const cwd = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-registry-"))
 
   await Promise.all(
     Object.entries(files).map(async ([filePath, content]) => {

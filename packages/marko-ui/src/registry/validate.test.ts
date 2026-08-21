@@ -270,7 +270,7 @@ describe("validateRegistry", () => {
   })
 
   it("reports missing root registry files as validation diagnostics", async () => {
-    const cwd = await fs.mkdtemp(path.join(tmpdir(), "shadcn-validate-"))
+    const cwd = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-validate-"))
 
     const report = await validateRegistry({
       cwd,
@@ -350,7 +350,7 @@ describe("validateRegistry", () => {
   })
 
   it("reports root registry files outside cwd", async () => {
-    const cwd = await fs.mkdtemp(path.join(tmpdir(), "shadcn-validate-"))
+    const cwd = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-validate-"))
     const outside = await createFixture({
       "registry.json": JSON.stringify({
         name: "example",
@@ -572,7 +572,7 @@ describe("validateRegistry", () => {
 })
 
 async function createFixture(files: Record<string, string>) {
-  const cwd = await fs.mkdtemp(path.join(tmpdir(), "shadcn-validate-"))
+  const cwd = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-validate-"))
 
   await Promise.all(
     Object.entries(files).map(async ([filePath, content]) => {

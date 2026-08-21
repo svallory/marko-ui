@@ -62,7 +62,7 @@ describe("parseRegistryArg", () => {
 
 describe("addRegistriesToConfig", () => {
   it("should write registries to components.json when it exists", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const componentsJsonFile = path.join(tempDir, "components.json")
 
     await fs.writeJson(componentsJsonFile, { style: "new-york" })
@@ -87,7 +87,7 @@ describe("addRegistriesToConfig", () => {
   })
 
   it("should prefer components.json over package.json when both exist", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const componentsJsonFile = path.join(tempDir, "components.json")
     const packageJsonFile = path.join(tempDir, "package.json")
 
@@ -113,7 +113,7 @@ describe("addRegistriesToConfig", () => {
   })
 
   it("should write registries to package.json when components.json does not exist", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const packageJsonFile = path.join(tempDir, "package.json")
 
     await fs.writeJson(packageJsonFile, {
@@ -142,7 +142,7 @@ describe("addRegistriesToConfig", () => {
   })
 
   it("should preserve existing registries when adding to package.json", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const packageJsonFile = path.join(tempDir, "package.json")
 
     await fs.writeJson(packageJsonFile, {
@@ -170,7 +170,7 @@ describe("addRegistriesToConfig", () => {
   })
 
   it("should skip registries already configured in package.json", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const packageJsonFile = path.join(tempDir, "package.json")
 
     await fs.writeJson(packageJsonFile, {
@@ -197,7 +197,7 @@ describe("addRegistriesToConfig", () => {
   })
 
   it("should throw when neither components.json nor package.json exists", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
 
     try {
       await expect(

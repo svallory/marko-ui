@@ -19,7 +19,7 @@ import {
 const tempDirs: string[] = []
 
 async function createTempFile() {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "shadcn-file-helper-"))
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "marko-ui-file-helper-"))
   tempDirs.push(dir)
 
   const filePath = path.join(dir, "components.json")

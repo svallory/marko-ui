@@ -15,7 +15,7 @@ let tmpDir: string
 beforeEach(async () => {
   tmpDir = path.join(
     await fs.realpath(require("os").tmpdir()),
-    `shadcn-monorepo-test-${Date.now()}`
+    `marko-ui-monorepo-test-${Date.now()}`
   )
   await fs.ensureDir(tmpDir)
 })

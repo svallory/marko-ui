@@ -154,7 +154,7 @@ describe("registry metadata", () => {
 describe("getRegistryItem", () => {
   it("should read and parse a valid local JSON file", async () => {
     // Create a temporary file
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const tempFile = path.join(tempDir, "test-component.json")
 
     const componentData = {
@@ -195,7 +195,7 @@ describe("getRegistryItem", () => {
   })
 
   it("should handle relative paths", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const tempFile = path.join(tempDir, "relative-component.json")
 
     const componentData = {
@@ -229,7 +229,7 @@ describe("getRegistryItem", () => {
   it("should handle tilde (~) home directory paths", async () => {
     const os = await import("os")
     const homeDir = os.homedir()
-    const tempFile = path.join(homeDir, "shadcn-test-tilde.json")
+    const tempFile = path.join(homeDir, "marko-ui-test-tilde.json")
 
     const componentData = {
       name: "tilde-component",
@@ -241,7 +241,7 @@ describe("getRegistryItem", () => {
 
     try {
       // Test with tilde path
-      const tildeePath = "~/shadcn-test-tilde.json"
+      const tildeePath = "~/marko-ui-test-tilde.json"
       const [result] = await getRegistryItems([tildeePath])
 
       expect(result).toMatchObject({
@@ -261,7 +261,7 @@ describe("getRegistryItem", () => {
   })
 
   it("should throw error for invalid JSON", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const tempFile = path.join(tempDir, "invalid.json")
 
     await fs.writeFile(tempFile, "{ invalid json }")
@@ -276,7 +276,7 @@ describe("getRegistryItem", () => {
   })
 
   it("should throw error for JSON that doesn't match registry schema", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const tempFile = path.join(tempDir, "invalid-schema.json")
 
     const invalidData = {
@@ -341,7 +341,7 @@ describe("getRegistryItem", () => {
 
   it("should handle mixed inputs (URLs, local files, and registry names)", async () => {
     const itemUrl = "https://example.com/url-item.json"
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const localFile = path.join(tempDir, "local-item.json")
 
     // Setup URL mock
@@ -398,7 +398,7 @@ describe("getRegistryItem", () => {
       })
     )
 
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const tempFile = path.join(tempDir, "component-with-url-deps.json")
 
     const componentData = {
@@ -521,7 +521,7 @@ describe("getRegistryItem", () => {
   })
 
   it("should extract Zod validation issues in RegistryParseError", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const tempFile = path.join(tempDir, "invalid-schema.json")
 
     const invalidData = {
@@ -611,7 +611,7 @@ describe("getRegistryItem", () => {
   })
 
   it("should handle multiple validation errors in RegistryParseError", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const tempFile = path.join(tempDir, "multiple-errors.json")
 
     const invalidData = {
@@ -1445,7 +1445,7 @@ describe("getRegistry", () => {
     server.use(
       http.get(registryUrl, () => {
         return HttpResponse.json({
-          name: "shadcn-from-url",
+          name: "marko-ui-from-url",
           homepage: "https://ui.shadcn.com",
           items: [],
         })
@@ -1464,7 +1464,7 @@ describe("getRegistry", () => {
 
     // Fetch by URL should bypass registry config
     const urlResult = await getRegistry(registryUrl)
-    expect(urlResult.name).toBe("shadcn-from-url")
+    expect(urlResult.name).toBe("marko-ui-from-url")
 
     // Fetch by registry name should use config
     const nameResult = await getRegistry(registryName, { config: mockConfig })
@@ -1474,7 +1474,7 @@ describe("getRegistry", () => {
 
 describe("getRegistriesConfig", () => {
   it("should return no registries when no registry config exists", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
 
     try {
       const result = await getRegistriesConfig(tempDir)
@@ -1488,7 +1488,7 @@ describe("getRegistriesConfig", () => {
   })
 
   it("should parse registries from package.json", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const packageJsonFile = path.join(tempDir, "package.json")
 
     await fs.writeFile(
@@ -1531,7 +1531,7 @@ describe("getRegistriesConfig", () => {
   })
 
   it("should merge registries from components.json and package.json", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const componentsJsonFile = path.join(tempDir, "components.json")
     const packageJsonFile = path.join(tempDir, "package.json")
 
@@ -1568,7 +1568,7 @@ describe("getRegistriesConfig", () => {
   })
 
   it("should prefer components.json over package.json for conflicting registries", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const componentsJsonFile = path.join(tempDir, "components.json")
     const packageJsonFile = path.join(tempDir, "package.json")
 
@@ -1607,7 +1607,7 @@ describe("getRegistriesConfig", () => {
   })
 
   it("should merge package.json registries when components.json has no registries", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const componentsJsonFile = path.join(tempDir, "components.json")
     const packageJsonFile = path.join(tempDir, "package.json")
 
@@ -1641,7 +1641,7 @@ describe("getRegistriesConfig", () => {
   })
 
   it("should throw ConfigParseError for invalid package.json registries even when components.json exists", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const componentsJsonFile = path.join(tempDir, "components.json")
     const packageJsonFile = path.join(tempDir, "package.json")
 
@@ -1682,7 +1682,7 @@ describe("getRegistriesConfig", () => {
   })
 
   it("should only read registry config from the provided cwd", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const childDir = path.join(tempDir, "child")
     const componentsJsonFile = path.join(tempDir, "components.json")
 
@@ -1706,7 +1706,7 @@ describe("getRegistriesConfig", () => {
   })
 
   it("should throw ConfigParseError for invalid package.json registries", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const packageJsonFile = path.join(tempDir, "package.json")
 
     await fs.writeFile(
@@ -1744,7 +1744,7 @@ describe("getRegistriesConfig", () => {
   })
 
   it("should parse valid components.json with registries", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const configFile = path.join(tempDir, "components.json")
 
     const config = {
@@ -1789,7 +1789,7 @@ describe("getRegistriesConfig", () => {
   })
 
   it("should throw ConfigParseError for invalid components.json", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const configFile = path.join(tempDir, "components.json")
 
     const invalidConfig = {
@@ -1822,7 +1822,7 @@ describe("getRegistriesConfig", () => {
   })
 
   it("should handle components.json with no registries field", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const configFile = path.join(tempDir, "components.json")
 
     const config = {
@@ -1850,7 +1850,7 @@ describe("getRegistriesConfig", () => {
   })
 
   it("should handle malformed JSON file", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const configFile = path.join(tempDir, "components.json")
 
     await fs.writeFile(configFile, "{ invalid json }")
@@ -1869,7 +1869,7 @@ describe("getRegistriesConfig", () => {
   })
 
   it("should include error details in ConfigParseError", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const configFile = path.join(tempDir, "components.json")
 
     const invalidConfig = {
@@ -1902,7 +1902,7 @@ describe("getRegistriesConfig", () => {
   })
 
   it("should handle complex registry configurations", async () => {
-    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
     const configFile = path.join(tempDir, "components.json")
 
     const config = {
@@ -1951,7 +1951,7 @@ describe("getRegistriesConfig", () => {
 
   describe("caching behavior", () => {
     it("should cache package.json registries and clear them when requested", async () => {
-      const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+      const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
       const packageJsonFile = path.join(tempDir, "package.json")
 
       await fs.writeFile(
@@ -1996,7 +1996,7 @@ describe("getRegistriesConfig", () => {
     })
 
     it("should use cache by default", async () => {
-      const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+      const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
       const configFile = path.join(tempDir, "components.json")
 
       const initialConfig = {
@@ -2036,7 +2036,7 @@ describe("getRegistriesConfig", () => {
     })
 
     it("should use cache when explicitly enabled", async () => {
-      const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+      const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
       const configFile = path.join(tempDir, "components.json")
 
       const initialConfig = {
@@ -2076,7 +2076,7 @@ describe("getRegistriesConfig", () => {
     })
 
     it("should bypass cache when useCache is false", async () => {
-      const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+      const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
       const configFile = path.join(tempDir, "components.json")
 
       const initialConfig = {
@@ -2116,7 +2116,7 @@ describe("getRegistriesConfig", () => {
     })
 
     it("should clear cache for subsequent calls when useCache is false", async () => {
-      const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+      const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
       const configFile = path.join(tempDir, "components.json")
 
       const config1 = {
@@ -2179,7 +2179,7 @@ describe("getRegistriesConfig", () => {
     })
 
     it("should handle missing config with cache options", async () => {
-      const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+      const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
 
       try {
         // With cache enabled (default)
@@ -2199,7 +2199,7 @@ describe("getRegistriesConfig", () => {
     })
 
     it("should handle invalid config with cache options", async () => {
-      const tempDir = await fs.mkdtemp(path.join(tmpdir(), "shadcn-test-"))
+      const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
       const configFile = path.join(tempDir, "components.json")
 
       const invalidConfig = {
@@ -2366,5 +2366,3 @@ describe("getRegistriesConfig", () => {
     })
   })
 })
-
-

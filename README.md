@@ -8,7 +8,7 @@
 [![Hydration invariance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges%2Fhydration.json)](https://github.com/svallory/marko-ui/tree/main/packages/shadcn/tests)
 
 86 accessible, themeable components for Marko 6, in 9 complete styles,
-installable with the shadcn CLI. Interactive behavior comes from
+installable with the marko-ui CLI. Interactive behavior comes from
 [Zag.js](https://zagjs.com) state machines — the same core behind Chakra's
 Ark UI — not hand-rolled event handlers.
 
@@ -45,7 +45,7 @@ Ark UI — not hand-rolled event handlers.
 
 ## Quick start
 
-marko-ui is distributed through the shadcn CLI's registry protocol:
+marko-ui is distributed through shadcn's registry protocol:
 
 ```sh
 # initialize a Marko project with a marko-ui style
