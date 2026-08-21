@@ -1,0 +1,11 @@
+{
+  "//": "Reviewed-and-accepted parity differences between our Marko port and upstream shadcn (base-ui) docs. Each entry silences ONE normalized name for ONE component (or \"*\" for every component) and ONE kind (\"section\" | \"demo\" | \"api-prop\"). Add entries only after a human has actually looked at the diff and decided it's fine to keep — this file is a review record, not a shortcut to a green run.",
+  "ignore": [
+    {
+      "component": "*",
+      "kind": "section",
+      "name": "Migrating from Vaul",
+      "reason": "React/Base-UI migration-history section (drawer switched from the vaul npm package to Base UI upstream) — nothing in our Marko port ever used vaul, so there is no migration to document."
+    }
+  ]
+}
