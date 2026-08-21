@@ -142,7 +142,8 @@ static const DIRECTORY_ENTRY = `{
     <li><code>bun run check</code> — <code>marko-type-check</code> across every package (never plain <code>tsc</code>, which silently skips <code>.marko</code> files) plus the registry invariant scripts.</li>
     <li><code>bun run test</code> — unit, hydration-invariant, and behavior suites.</li>
     <li><code>bun run build:registry</code> — the registry build must exit 0.</li>
-    <li>Production-build browser verification with real pointer events, and screenshot parity against the source library's docs.</li>
+    <li><code>bun run check:parity</code> — the parity-drift toolkit: coverage (every upstream demo and doc section paired by name, or ignored with a reason in <code>parity-ignore.json</code>) and visual diff of paired demos, with <code>interactions.json</code> steps for stateful demos. Exit 3 means drift — read the gallery in <code>parity-report/</code>.</li>
+    <li>Production-build browser verification with real pointer events.</li>
     <li>Every deviation logged in the PR description — undisclosed approximations are the one thing that fails review outright.</li>
   </ul>
 </docs-article>
