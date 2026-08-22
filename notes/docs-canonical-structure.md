@@ -62,19 +62,33 @@ always exist.
 
 ## Upstream section map (coverage checker v3 input)
 
-Global map, upstream heading slug → ARRAY of actions. Values may also be
-an array of VARIANTS for slugs whose meaning differs per page (first match
-wins; a variant without `when` is the default):
+`tooling/parity/section-map.ts` — a typed TS module (`export default
+defineSectionMap({...})`, types in `tooling/parity/map-types.ts`), NOT
+JSON. Global map, upstream heading slug → ARRAY of actions. Values may
+also be an array of VARIANTS for slugs whose meaning differs per page
+(first match wins; a variant without `when` is the default):
 
 ```ts
 type MapVariant = {
-  when?: { component?: string[]; hasDemoMarker?: boolean };
+  when?: (ctx: SectionContext) => boolean;
   actions: MapAction[];
+}
+
+interface SectionContext {
+  component: string;
+  heading: string;
+  headingSlug: string;
+  hasDemoMarker: boolean;
+  body?: string;
 }
 ```
 
-The `when` context is deliberately tiny (component slug + marker presence —
-the only signals the checker has); it is a matcher, not a rules DSL.
+`when` is now a real predicate function, not a declarative matcher object
+— evaluated by `coverage.ts` against a `SectionContext` per section
+instance (component slug + heading + demo-marker presence + body when
+available). It is deliberately tiny in what it can inspect — a matcher,
+not a rules DSL — but being a function rather than data means it can
+express any predicate over that context (not just equality/membership).
 
 Action array schema:
 
@@ -85,14 +99,29 @@ type MapAction =
   | { action: "rename";  title: string }
   | { action: "keep" }                                       // presence at root, own name
   | { action: "ignore";  reason: string }                    // must be the sole action
-  | { action: "process"; mode: "llm"; prompt?: string }  // absent = ported as-is
-  // process.mode "function" (registered transforms) is RESERVED, unimplemented.
+  | { action: "process"; mode: "llm"; prompt?: string }       // absent = ported as-is
+  | { action: "process"; mode: "function"; fn: (content: string, ctx: SectionContext) => string }
 ```
+
+`process.mode "function"` is a real, typed transform reference — the
+checker (`coverage.ts`) still only RECORDS `process` actions of either
+mode for reporting; it never invokes `fn` (or calls an LLM for `"llm"`
+mode) — that's a future porter step's job.
 
 - The map is the shared contract between the CHECKER (presence assertions)
   and the future PORTER (how content transforms — `process`).
-- Validation: `ignore` alone; at most one placement action
-  (`move`/`rename`/`keep`) per array.
+- Validation split: `tsc` now enforces the map's SHAPE at compile time
+  (known action names, required per-action fields, `when`/`fn` being
+  functions) — a whole class of what used to be a JSON runtime-validation
+  error is now a `bun run check:tooling` failure instead. `coverage.ts`'s
+  runtime `loadSectionMap`/`validateMapEntry` still enforce what `tsc`
+  cannot: `ignore` alone; at most one placement action
+  (`move`/`rename`/`keep`) per array; at most one no-`when` default
+  variant per entry; a throwing `when` predicate is a hard error naming
+  the heading and component, never silently treated as "no match."
+  `loadSectionMap` also requires `section-map.ts` to have a `default`
+  export that is a plain object — a missing/malformed default export is
+  a named, clear error.
 - `move` with `parent: []` and omitted/identity title = noop at root;
   `keep` is the documented spelling for that.
 - Per-page pathologies stay in `parity-ignore.json`, not this map.
@@ -104,18 +133,28 @@ type MapAction =
   entry-level `prompt` is appended to (not replacing) the default, for
   section-specific guidance.
 
-Seed entries:
+**JSON proposals → TS promotion.** `tooling/parity/section-map.proposed.json`
+(LLM-written, unclassified-section proposals — see "Section
+classification" below) STAYS JSON: an LLM can't emit a predicate
+function, so proposals use the OLD declarative `when` object form
+(`{ component?: string[]; hasDemoMarker?: boolean }`). Promoting a
+reviewed proposal into `section-map.ts` converts that declarative object
+into a `(ctx: SectionContext) => boolean` predicate — a mechanical,
+human step (see `tooling/parity/SCHEMA.md`'s "JSON proposals → TS
+promotion" and `classify-prompt.md` for worked examples).
 
-```json
-{
-  "composition":   [{ "action": "move", "parent": ["anatomy"] }],
-  "theming":       [{ "action": "move", "parent": ["styling"] }],
-  "css-variables": [{ "action": "move", "parent": ["styling"], "title": "CSS Variables" }],
-  "custom-colors": [{ "action": "move", "parent": ["styling", "recipes"] }],
-  "rtl":           [{ "action": "move", "parent": ["examples"], "title": "RTL" }],
-  "core-concepts": [{ "action": "keep" }],
-  "migrating-from-vaul": [{ "action": "ignore", "reason": "React/Vaul-specific migration guide" }]
-}
+Seed entries (as they now appear in `section-map.ts`, illustratively):
+
+```ts
+export default defineSectionMap({
+  "composition":   [{ action: "move", parent: ["anatomy"] }],
+  "theming":       [{ action: "move", parent: ["styling"] }],
+  "css-variables": [{ action: "move", parent: ["styling"], title: "CSS Variables" }],
+  "custom-colors": [{ action: "move", parent: ["styling", "recipes"] }],
+  "rtl":           [{ action: "move", parent: ["examples"], title: "RTL" }],
+  "core-concepts": [{ action: "keep" }],
+  "migrating-from-vaul": [{ action: "ignore", reason: "React/Vaul-specific migration guide" }],
+})
 ```
 
 ## Section classification (checker pipeline)

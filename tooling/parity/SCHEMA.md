@@ -9,9 +9,22 @@ without needing to read `coverage.ts`/`visual.ts`/`check-parity.ts`
 source.
 
 **v3**: the coverage detector was rewritten around a section **map**
-(`tooling/parity/section-map.json`) and a presence-only classification
-pipeline. See `notes/docs-canonical-structure.md` for the full design
-rationale — this file documents the resulting schema and semantics.
+and a presence-only classification pipeline. See
+`notes/docs-canonical-structure.md` for the full design rationale — this
+file documents the resulting schema and semantics.
+
+**Map is a typed TS module, not JSON.** `tooling/parity/section-map.ts`
+(`export default defineSectionMap({...})`) is the canonical, committed
+map — a former `section-map.json` was converted to this module so `tsc`
+enforces the map's SHAPE (known action names, required per-action
+fields, `when` being a function) at compile time; `coverage.ts`'s runtime
+validation now only checks the SEMANTIC rules `tsc` can't express
+(ignore-sole, ≤1 placement action per array, ≤1 default variant). See
+"section-map.ts — the map schema" below.
+`tooling/parity/section-map.proposed.json` — LLM-written proposals,
+reviewed and promoted by hand into `section-map.ts` — stays JSON. See
+"JSON proposals → TS promotion" below for how a proposal's declarative
+`when` becomes a predicate on promotion.
 
 ## Exit-code contract
 
@@ -24,9 +37,10 @@ rationale — this file documents the resulting schema and semantics.
   broken"). The report is still written on exit 3 — 3 means "read the
   report," not "the run failed."
 - **2** — the run itself crashed (thrown exception, missing upstream
-  clone, malformed `section-map.json`, Playwright not resolvable, etc) —
-  a tooling failure, not a drift finding. Handled uniformly by
-  `fs-utils.ts`'s `runCheck`.
+  clone, a `section-map.ts` with no valid `default` export, a semantic
+  map-validation failure, Playwright not resolvable, etc) — a tooling
+  failure, not a drift finding. Handled uniformly by `fs-utils.ts`'s
+  `runCheck`.
 
 **Unclassified sections never affect the exit code**, in strict mode or
 otherwise. They're a to-map queue, not drift — see "Unclassified
@@ -88,7 +102,7 @@ Field notes:
 - **`missingMappedTargets`** replaces v2's `missingSections`/
   `extraSections`. v3 never diffs heading lists 1:1 — see "Classification
   pipeline" below. This field lists only sections that (a) have an
-  explicit `section-map.json` entry with a placement action, and (b)
+  explicit `section-map.ts` entry with a placement action, and (b)
   whose resolved target is absent from our page. There is no v3
   equivalent of "extra sections (ours-only)" — presence-only semantics
   never flag ours-only additions (Accessibility, generated API, Style
@@ -119,27 +133,43 @@ Field notes:
   fields shown in the same row without also checking `coverage`/`visual`
   if you need to know exactly why a component drifted.
 
-## `section-map.json` — the map schema
+## `section-map.ts` — the map schema
 
-`tooling/parity/section-map.json` is the shared contract between the
+`tooling/parity/section-map.ts` is the shared contract between the
 CHECKER (this file's presence assertions) and a future PORTER (how
-content transforms, via `process`). Shape:
+content transforms, via `process`). It is a typed TS module — types live
+in `tooling/parity/map-types.ts` (JSDoc'd per-symbol; read that file for
+the authoritative reference) — that exports its map via
+`defineSectionMap` (an identity function that exists purely so the map
+literal infers correctly against the union types, without an explicit
+`: SectionMap` annotation widening the `action` string literals away):
 
 ```ts
-interface SectionMapFile {
-  map: Record<string, SectionMapEntry> // key: upstream heading, normalized via coverage.ts's normalizeName
-}
+// tooling/parity/section-map.ts
+import { defineSectionMap } from "./map-types.ts"
+
+export default defineSectionMap({
+  // key: upstream heading, normalized via coverage.ts's normalizeName
+  "theming": [{ action: "move", parent: ["styling"] }],
+  // ...
+})
+```
+
+Shape (from `map-types.ts`):
+
+```ts
+type SectionMap = Record<string, SectionMapEntry>
 
 // A map entry value may be EITHER shape:
 type SectionMapEntry = MapAction[] | MapVariant[]
 
 type MapAction =
-  | { action: "move";    parent: string[]; title?: string }  // {title} template; parent = canonical bucket path, e.g. ["styling", "recipes"]
+  | { action: "move";    parent: string[]; title?: string }  // parent = canonical bucket path, e.g. ["styling", "recipes"]; title defaults to the original heading
   | { action: "rename";  title: string }                      // stays at root, renamed
   | { action: "keep" }                                        // stays at root, own name (documented spelling for a move with parent: [] and identity title)
   | { action: "ignore";  reason: string }                     // must be the SOLE action in the array
   | { action: "process"; mode: "llm"; prompt?: string }        // optional porter-transform hint, additive to a placement action
-  // process.mode "function" (registered transforms) is RESERVED, unimplemented.
+  | { action: "process"; mode: "function"; fn: (content: string, ctx: SectionContext) => string }
   // Absence of a "process" action for an entry means "as-is" (no transform).
 
 // MapVariant[] — for a heading whose right action DEPENDS on which
@@ -148,8 +178,16 @@ type MapAction =
 // variant wins (array order); a variant with no `when` is the default
 // (matches unconditionally, so put it last).
 type MapVariant = {
-  when?: { component?: string[]; hasDemoMarker?: boolean }
+  when?: (ctx: SectionContext) => boolean
   actions: MapAction[]  // same per-actions rules as the plain MapAction[] form
+}
+
+interface SectionContext {
+  component: string       // e.g. "combobox"
+  heading: string          // raw upstream heading text
+  headingSlug: string      // normalizeName(heading)
+  hasDemoMarker: boolean
+  body?: string
 }
 ```
 
@@ -157,22 +195,38 @@ The plain `MapAction[]` form is still the default and by far the common
 case — reach for `MapVariant[]` only when one heading genuinely needs
 different treatment per component; most entries never need it.
 
-### Validation (enforced on load, `coverage.ts`'s `loadSectionMap`/`validateMapEntry`)
+**`mode: "function"` is UNRESERVED and implemented** as a typed
+reference: `fn` is a real, statically-checked function value. `coverage.ts`
+still only RECORDS `process` actions of either mode (`"llm"` or
+`"function"`) for reporting (`ComponentCoverageResult.processActions`) —
+it never invokes `fn`; a future porter step is responsible for calling
+it. This is a behavior change from the pre-conversion JSON map, where
+`mode: "function"` was rejected at load (reserved, unimplemented).
 
-A malformed map is a **hard error naming the offending entry** — this is
-a tooling crash (exit 2), not a drift finding, because a broken map makes
-every presence check downstream unreliable.
+### Validation — what `tsc` now guarantees vs. what `coverage.ts` still checks at runtime
 
-- Each entry must be a non-empty array.
-- **Plain form** (array elements have an `action` string): every element
-  must have a known `action` (`move`/`rename`/`keep`/`ignore`/`process`)
-  — an unknown action name fails the load.
-- **Variant form** (array elements have an `actions` array instead): each
-  variant's `actions` is validated with the identical per-actions rules
-  as the plain form (below). At most ONE no-when (default) variant is
-  allowed per entry — two defaults is ambiguous and fails the load.
-  `when.component`, if present, must be a string array; `when.hasDemoMarker`,
-  if present, must be a boolean.
+Converting the map from JSON to a typed TS module moves SHAPE validation
+to compile time — `bun run check:tooling` (`tsc --noEmit -p tooling`)
+now fails on any of these, at the exact entry, with no need to run the
+checker at all:
+
+- An unknown `action` name (e.g. `"teleport"`) — a discriminated-union
+  member mismatch.
+- A missing required field for a given action (`move` without `parent`,
+  `rename`/`ignore` without `title`/`reason`, `process` without a valid
+  `mode`).
+- A `when` that isn't a function, or a `fn` with the wrong signature.
+
+`coverage.ts`'s `loadSectionMap`/`validateMapEntry` still enforce the
+SEMANTIC rules `tsc`'s structural typing cannot express — a malformed
+map remains a **hard error naming the offending entry** (a tooling crash,
+exit 2, not a drift finding, because a broken map makes every downstream
+presence check unreliable):
+
+- `loadSectionMap` REQUIRES `section-map.ts` to have a `default` export
+  that is a plain object — a missing or wrong-shaped default export
+  (e.g. a named export instead, or an array) fails with a clear, named
+  error before any entry is even inspected.
 - `ignore` must be the SOLE action in its array (an entry can't be
   "ignored" AND "moved"). This applies per-`actions` array, including
   inside each variant.
@@ -180,18 +234,63 @@ every presence check downstream unreliable.
   array — an entry can't be moved to two places. A `process` action may
   accompany a placement action (they compose: placement says where,
   `process` says how to transform on the way in).
-- `move` requires a `parent` array; `rename` requires a `title` string;
-  `process` requires `mode: "llm"` (the only implemented mode).
-- `move` with `parent: []` and an omitted/identity `title` is a no-op at
-  root — `keep` is the documented spelling for that case; prefer `keep`
-  over an equivalent empty `move` for readability.
+- At most ONE no-`when` (default) variant is allowed per entry — two
+  defaults is ambiguous and fails validation.
+- A `when` predicate that THROWS when evaluated is a hard error naming
+  the offending heading slug and the component it was evaluated against
+  — `coverage.ts` wraps every `when(context)` call in try/catch and never
+  silently skips a throwing predicate as "no match."
 
 Per-page pathologies (a single component's one-off difference) stay in
 `parity-ignore.json`, not this map — the map is upstream-heading-keyed
 and applies globally across every component that has that heading.
-`MapVariant[]`'s `when.component` is the one exception baked into the map
+`MapVariant[]`'s `when` predicate is the one exception baked into the map
 itself, for headings whose correct treatment is genuinely
 component-dependent rather than a one-off pathology.
+
+### JSON proposals → TS promotion
+
+`tooling/parity/section-map.proposed.json` STAYS JSON — it's LLM-written
+scratch output (see "Unclassified pipeline" below and
+`classify-prompt.md`), and JSON is the natural format for an LLM to
+emit and a human to diff/review before promoting entries into the real
+map. Its `when`, if a proposal includes one, remains the **declarative
+object form** from the pre-conversion map schema:
+
+```ts
+// section-map.proposed.json's declarative "when" shape (proposals only)
+{ when?: { component?: string[]; hasDemoMarker?: boolean }, actions: MapAction[] }
+```
+
+**Promotion** (a human copying a reviewed proposal from
+`section-map.proposed.json` into `section-map.ts`) converts that
+declarative object into a predicate function:
+
+```ts
+// proposed.json:
+{ "when": { "component": ["combobox", "select"] }, "actions": [...] }
+
+// promoted into section-map.ts:
+{ when: (ctx) => ["combobox", "select"].includes(ctx.component), actions: [...] }
+
+// proposed.json:
+{ "when": { "hasDemoMarker": true }, "actions": [...] }
+
+// promoted into section-map.ts:
+{ when: (ctx) => ctx.hasDemoMarker === true, actions: [...] }
+
+// proposed.json combining both:
+{ "when": { "component": ["combobox"], "hasDemoMarker": false }, "actions": [...] }
+
+// promoted:
+{ when: (ctx) => ctx.component === "combobox" && !ctx.hasDemoMarker, actions: [...] }
+```
+
+This conversion is mechanical (each declarative key becomes one `&&`-ed
+condition on the predicate) but is a manual, human step during
+promotion — there is no automated proposed.json → section-map.ts
+importer. `classify-prompt.md` documents this for the LLM/human doing
+the promotion.
 
 ### `process` prompt composition
 
@@ -215,7 +314,7 @@ same-or-higher-level heading), in order:
    itself one of the ten canonical bucket slugs (`installation`, `usage`,
    `api-reference`, `accessibility`, `changelog`, `anatomy`, `examples`,
    `styling`, `guides`, `concepts` — `coverage.ts`'s
-   `CANONICAL_BUCKET_SLUGS`) AND there is no explicit `section-map.json`
+   `CANONICAL_BUCKET_SLUGS`) AND there is no explicit `section-map.ts`
    entry overriding it, the section is classified `{ action: "keep" }`
    deterministically — it never reaches tier 3 (unclassified), so it
    never appears in `parity-report/unclassified.json` and never gets
@@ -226,7 +325,7 @@ same-or-higher-level heading), in order:
    canonical-named heading, e.g. a component-specific "Styling" that
    should actually be ignored) still wins over this pre-pass.
 1. **Explicit map entry wins.** `normalizeName(heading)` looked up in
-   `section-map.json`. An `ignore` entry drops the section from all
+   `section-map.ts`. An `ignore` entry drops the section from all
    further consideration (not presence-checked, not unclassified). A
    placement entry (`move`/`rename`/`keep`) resolves a **target**
    (canonical bucket path + display title) that tier's presence check
@@ -313,11 +412,11 @@ contributes to a component's `status`, with or without `--strict`. The
 intended workflow: `tooling/parity/classify-prompt.md` is a ready prompt
 template that bundles this file's entries into one/few LLM calls and
 proposes `section-map.proposed.json` entries (same `MapAction[]` shape as
-`section-map.json`). **This repo's tooling does not call any LLM
+`section-map.ts`). **This repo's tooling does not call any LLM
 provider** — that's the harness/skill layer's job; `coverage.ts` only
 emits the bundle, and `classify-prompt.md` only documents the prompt. A
 human reviews and promotes correct proposals into the real
-`section-map.json` by hand; proposals never auto-apply.
+`section-map.ts` by hand; proposals never auto-apply.
 
 `tooling/parity/process-prompt.md` is the companion template for the
 PORTER side (once content is mapped, how to adapt it) — also a template
@@ -416,7 +515,7 @@ interface ParityIgnoreEntry {
 `kind: "section"` entries match against a mapped section's ORIGINAL
 upstream heading (the same string reported in `missingMappedTargets`) —
 they suppress one component's one-off miss without touching the global
-`section-map.json`.
+`section-map.ts`.
 
 ## Example: a minimal external consumer
 

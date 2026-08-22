@@ -15,7 +15,7 @@ sections ... across components into one/few calls").
 `coverage.ts`'s classification pipeline puts an upstream section here
 when:
 
-- there is no `section-map.json` entry for its heading, AND
+- there is no `section-map.ts` entry for its heading, AND
 - either it has no demo-marker match at all, OR it has a demo-marker
   match but the surrounding prose exceeds `PROSE_THRESHOLD_CHARS` (400
   chars of prose, excluding fenced code blocks and the demo-marker tag
@@ -37,9 +37,19 @@ interface UnclassifiedEntry {
 
 ## Output: `section-map.proposed.json`
 
-Same shape as `section-map.json` (see SCHEMA.md), but proposals ONLY — a
-human reviews and promotes correct entries into the real
-`section-map.json` by hand. Proposals never auto-apply.
+Same logical shape as `section-map.ts`'s `SectionMap` (see SCHEMA.md),
+but written as JSON and proposals ONLY — this file STAYS JSON (an LLM
+target format, easy to diff/review) even though the canonical map is now
+a typed TS module. A human reviews and promotes correct entries into the
+real `section-map.ts` by hand. Proposals never auto-apply.
+
+**JSON → TS promotion.** A proposal's `when`, if present, uses the
+declarative object form `{ component?: string[]; hasDemoMarker?: boolean }`
+— not a predicate function, since JSON can't carry code. When a human
+promotes a reviewed proposal into `section-map.ts`, that declarative
+object is converted into a `(ctx: SectionContext) => boolean` predicate:
+each declarative key becomes one `&&`-ed condition. See SCHEMA.md's
+"JSON proposals → TS promotion" for worked examples of this conversion.
 
 ```json
 {
@@ -127,11 +137,11 @@ map.** Some upstream "component" pages are actually build-a-feature
 tutorials (e.g. `data-table.mdx`, `chart.mdx`) whose sections
 ("Prerequisites", "Set Up Table Features", "Add Pagination Controls", ...)
 are tutorial steps, not reusable doc-section concepts shared across
-components — they don't belong in `section-map.json` at all, mapped or
+components — they don't belong in `section-map.ts` at all, mapped or
 not. If EVERY component that contributed instances of a given heading
 slug is a guide-type page, list that slug under the OWNING component in a
 separate `guide-page-sections.json`-shaped structure instead of proposing
-a `section-map.json` entry for it — this global map is reserved for
+a `section-map.ts` entry for it — this global map is reserved for
 sections whose meaning is shared across ordinary component doc pages, and
 guide-page sections await a future `type:guide` checker path.
 
@@ -173,7 +183,9 @@ strip anything else non [a-z0-9-].
 1. Save its JSON output to `tooling/parity/section-map.proposed.json`.
 2. A human reviews each proposed entry against the actual upstream
    section and our current page, and either:
-   - copies it (as-is or edited) into `tooling/parity/section-map.json`, or
+   - copies it (as-is or edited) into `tooling/parity/section-map.ts`,
+     converting any declarative `when` into a predicate function per
+     SCHEMA.md's "JSON proposals → TS promotion", or
    - rejects it and leaves the section unclassified for a future pass.
 3. Delete or regenerate `section-map.proposed.json` once reviewed — it is
    a scratch file, not committed as a permanent artifact (same treatment
