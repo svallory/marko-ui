@@ -55,3 +55,30 @@ Apply the full process on the official-repo path (the tooling exists there). On 
 - HOW: pixel diff (odiff) over the UNION content bounding box — whole-canvas ratios dilute real differences (a totally different demo scored only 34% whole-canvas in v1). Default threshold 15%. Output: worst-first HTML gallery + stable `summary[]` JSON; exit 0 green / 3 drift / 2 tooling crash. A human reviews the gallery and, per entry, either fixes the port or adds a reasoned `parity-ignore.json` entry.
 - TRAP: full sweeps are resource-heavy (docs server + preview server + Playwright) and can OOM mid-run — keep servers warm and batch components.
 - LONG-TERM: a scheduled CI run against upstream HEAD attaching the gallery to one worst-first issue.
+
+## 8. Canonical hierarchy decision
+
+- WHEN: after taxonomy sampling (§3), before the checker and any page migration.
+- HOW: the agent proposes the hierarchy + section map from the taxonomy note; the human reviews the map SEMANTICS specifically for conflated actions (the rename-vs-relocate trap). Free-form styling recipes group under `Styling > Recipes > #### {title}`. Distribution-specific docs (e.g. hook-class styling that only applies to the import path) are gated behind a site-level copy/import toggle carried as page metadata — never a giant central guide, and never encoded in the map.
+- ARTIFACT: a canonical-structure note (hierarchy, toggle contract, map schema + seed entries, checker semantics, sequencing).
+
+## 9. Section classification pipeline
+
+- Demo detection is ADAPTER CONFIG (`demoMarkers` regex + name group) — one config line per new upstream library, not code.
+- Heuristic tiers before any model call: map entry → skip; preview + short prose → auto-demo; else classify.
+- Unclassified sections go to a BUNDLED cheap-model classifier (one or a few calls over the whole section bundle, never per-section) that writes `section-map.proposed.json`. Proposals never auto-apply — a human promotes them into the typed map.
+- Bundler pre-pass auto-keeps canonical-name slugs so they never reach the classifier.
+- Classifier prompt rules (each one fixed a real defect): a bucket heading maps to `keep`, never to a self-nesting `move`; `process` is opt-in (the first run attached it to every `keep`); guide/tutorial pages are out of the global map's scope.
+- The harness supports subagents; parallelize classification, serialize promotion.
+
+## 10. Classifier review — verify-then-promote
+
+- HOW: promote per CLASS with a mechanical check each: canonical names → keep; api-reference children verified against the upstream MDX position; examples moves verified by preview presence; guide-page slugs split out. Only the residue needs human judgment.
+- RULE: classifier self-reports are NOT evidence — recount the artifact. (The first run claimed 0 `process` actions; the file had 76.)
+
+## 11. Bulk repair — running many port agents at once
+
+- State template/schema capabilities EXPLICITLY in every repair brief. Agents "discovered" that the docs template lacked Accessibility/Concepts support twice when the schema existed — never let an agent infer absence. Adversarial per-component checkers catch these false justifications (they cited the schema file and sibling usage).
+- Exactly ONE build / manifest-regeneration agent, sequenced LAST. Concurrent agents each running the docs build race on the build output dir (5–7 simultaneous builds observed). Repair agents verify via package typecheck + direct single-file compile only.
+- Technically forced omissions (e.g. Zag has no equivalent for a source feature) are disclosed IN-FILE next to the gap, never silently dropped.
+- Verification claims about generated manifests are only valid if made AFTER the final regen — timestamp claims against regen order.
