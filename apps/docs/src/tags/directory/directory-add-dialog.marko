@@ -1,0 +1,124 @@
+// Ported from shadcn's components/directory-add-button.tsx
+// (DirectoryAddProvider). Deviations, logged in TODO.md:
+//   - No React context: <directory-list> owns the open/selected state and
+//     renders one instance of this dialog; row buttons call its `close`
+//     counterpart by setting the selected registry name.
+//   - Desktop-only Dialog — shadcn swaps in a Drawer under a mobile media
+//     query (useIsMobile); we render the Dialog at every width.
+//   - The package-manager tabs are reactive Marko state, NOT the shared
+//     <package-manager-switcher>: that tag binds its panels imperatively in
+//     onMount, but its shiki <await> panels don't exist yet when it mounts
+//     inside a client-opened dialog (tabs update, panels never swap). The
+//     command here is plain <code> exactly like shadcn's dialog. The choice
+//     still persists via the same localStorage key the switcher uses.
+import Dialog from "@marko-ui/shadcn/ui/dialog/dialog.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+export interface Input {
+  /** Namespace of the registry being added, e.g. "@acme". Null = closed. */
+  registryName: string | null;
+  close: () => void;
+}
+
+static const MANAGERS = ["bun", "pnpm", "npm", "yarn"] as const;
+static const STORAGE_KEY = "marko-ui.packageManager";
+
+static function commandFor(manager: string, registryName: string) {
+  switch (manager) {
+    case "pnpm":
+      return `pnpm dlx marko-ui registry add ${registryName}`;
+    case "npm":
+      return `npx marko-ui registry add ${registryName}`;
+    case "yarn":
+      return `yarn dlx marko-ui registry add ${registryName}`;
+    default:
+      return `bunx marko-ui registry add ${registryName}`;
+  }
+}
+
+<let/manager="bun"/>
+<let/hasCopied=false/>
+<let/copyTimer=(null as ReturnType<typeof setTimeout> | null)/>
+
+<lifecycle
+  onMount() {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored && (MANAGERS as readonly string[]).includes(stored)) manager = stored;
+    } catch {
+      // Blocked storage: keep the default.
+    }
+  }
+  onDestroy() {
+    if (copyTimer) clearTimeout(copyTimer);
+  }
+/>
+
+<Dialog
+  open=(input.registryName !== null)
+  openChange(open: boolean) { if (!open) input.close(); }
+  class="animate-none! sm:max-w-md"
+>
+  <@title>Add Registry</@title>
+  <@description>
+    Run this command to add ${input.registryName} to your project.
+  </@description>
+  <@content>
+    <if=input.registryName>
+      <div class="gap-0 overflow-hidden rounded-xl border">
+        <div class="flex items-center gap-2 border-b p-1.5">
+          <div role="tablist" aria-label="Package manager" class="flex items-center">
+            <for|m| of=MANAGERS by=(m) => m>
+              <button
+                type="button"
+                role="tab"
+                data-slot="tabs-trigger"
+                aria-selected=String(m === manager)
+                class="rounded-md px-3 py-1 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground aria-selected:bg-muted aria-selected:text-foreground"
+                onClick() {
+                  manager = m;
+                  try {
+                    localStorage.setItem(STORAGE_KEY, m);
+                  } catch {
+                    // Private-mode / blocked storage: the choice just does not persist.
+                  }
+                }
+              >
+                ${m}
+              </button>
+            </for>
+          </div>
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            class="ml-auto"
+            onClick() {
+              navigator.clipboard
+                .writeText(commandFor(manager, input.registryName ?? ""))
+                .catch(() => {
+                  // Clipboard denied (permissions/insecure context): the
+                  // copied indicator still confirms the intent; nothing to do.
+                });
+              hasCopied = true;
+              if (copyTimer) clearTimeout(copyTimer);
+              copyTimer = setTimeout(() => { hasCopied = false; }, 2000);
+            }
+          >
+            <if=hasCopied><Icon name="CheckIcon"/></if>
+            <else><Icon name="CopyIcon"/></else>
+            <span class="sr-only">Copy command</span>
+          </Button>
+        </div>
+        <div class="bg-surface px-3 py-3 text-surface-foreground">
+          <div class="no-scrollbar overflow-x-auto">
+            <code class="font-mono text-sm whitespace-nowrap">${commandFor(manager, input.registryName)}</code>
+          </div>
+        </div>
+      </div>
+    </if>
+  </@content>
+  <@footer>
+    <Button size="sm" variant="outline" onClick() { input.close(); }>Done</Button>
+  </@footer>
+</Dialog>

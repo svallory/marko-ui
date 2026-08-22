@@ -1,0 +1,149 @@
+// Contributing a library — the tiered contribution model behind the
+// Registry Directory (/docs/directory). Wanted list comes from the same
+// data file that feeds the directory page and /r/registries.json.
+import "../../../tags/docs/docs-article.marko";
+import "../../../tags/docs/code-block.marko";
+import directory from "../../../data/directory.json";
+
+static const TOC = [
+  { id: "how-it-works", label: "How It Works" },
+  { id: "port-with-an-agent", label: "Port with an AI Agent" },
+  { id: "community-registry", label: "Your Own Registry" },
+  { id: "official-contributions", label: "Official Contributions" },
+  { id: "parity-gate", label: "The Parity Gate" },
+];
+
+static const SKILL_INSTALL = "npx skills add svallory/marko-ui";
+
+static const DIRECTORY_ENTRY = `{
+  "name": "@your-namespace",
+  "homepage": "https://your-site.example.com",
+  "url": "https://your-registry.example.com/r/{name}.json",
+  "description": "One sentence about what you ship.",
+  "target": "marko",
+  "logo": "<svg ...>square inline SVG</svg>"
+}`;
+
+<docs-article
+  title="Contributing a Library"
+  description="Port any component library to Marko with your AI agent — host it yourself and get listed, or contribute a wanted library to the official repo."
+  href="/docs/contributing-a-library"
+  toc=TOC
+>
+  <h2 id="how-it-works">How It Works</h2>
+
+  <p>
+    marko-ui grows through <strong>registries</strong>, not monorepo PRs. There
+    are two contribution paths:
+  </p>
+
+  <ul>
+    <li>
+      <strong>Community registry (the default)</strong> — port any library,
+      host the registry yourself (we provide a template with CI), and get
+      listed in the <a href="/docs/directory">Registry Directory</a> with a
+      one-line PR. No review queue, no gatekeeping, you own the code.
+    </li>
+    <li>
+      <strong>Official contribution</strong> — a short, curated
+      <a href="/docs/directory#wanted-libraries"> wanted list</a> of libraries
+      we commit to maintaining in the official repo. Only wanted-list ports
+      are accepted as component PRs; everything else belongs in the directory.
+      Community registries with real traction can be promoted to the wanted
+      list later.
+    </li>
+  </ul>
+
+  <p>
+    Currently wanted:${" "}
+    <for|lib, index| of=directory.wanted by=(lib) => lib.name>
+      <a href=lib.homepage target="_blank" rel="noopener noreferrer external">${lib.name}</a>${index < directory.wanted.length - 1 ? ", " : "."}
+    </for>
+  </p>
+
+  <h2 id="port-with-an-agent">Port with an AI Agent</h2>
+
+  <p>
+    The whole process is packaged as an agent skill that works with any coding
+    agent. Install it in your project:
+  </p>
+
+  <code-block code=SKILL_INSTALL language="bash"/>
+
+  <p>
+    Then prompt your agent: <em>"Port &lt;library&gt; to Marko using the
+    port-to-marko skill."</em> The skill routes the port to the right
+    destination (it checks the wanted list first), teaches the agent the
+    SSR-safe Zag.js pattern and every Marko 6 landmine we hit porting 60+
+    components, and — most importantly — makes verification mechanical:
+    <code>marko-type-check</code>, SSR + hydration checks on a production
+    build, real-pointer-event interaction tests, and screenshot comparison
+    against the source library. Agent self-reports are not trusted; evidence
+    is.
+  </p>
+
+  <h2 id="community-registry">Your Own Registry</h2>
+
+  <ol>
+    <li>
+      Clone the${" "}
+      <a href="https://github.com/svallory/marko-ui-registry-template" target="_blank" rel="noopener noreferrer external">registry template</a>
+      — components.json, an example component, and a GitHub Pages deploy
+      workflow are already wired.
+    </li>
+    <li>Port components into <code>src/ui/</code> (the skill handles this).</li>
+    <li>
+      <code>bunx marko-ui registry build</code> emits installable${" "}
+      <code>public/r/{name}.json</code> payloads;${" "}
+      <code>bunx marko-ui registry validate</code> schema-checks them.
+    </li>
+    <li>
+      Push, enable GitHub Pages, and open a PR adding one entry to${" "}
+      <code>apps/docs/src/data/directory.json</code>:
+    </li>
+  </ol>
+
+  <code-block code=DIRECTORY_ENTRY language="json"/>
+
+  <p>
+    The compatibility contract is CLI-enforced: <code>target</code> must be${" "}
+    <code>"marko"</code> (every listed registry ships Marko source — the CLI
+    refuses React-source registries), the <code>url</code> must contain the${" "}
+    <code>{name}</code> placeholder, and the registry must be
+    open source.
+  </p>
+
+  <h2 id="official-contributions">Official Contributions</h2>
+
+  <p>
+    For wanted-list libraries only. Fork the repo <strong>before</strong> you
+    start porting (the skill does this when it detects a wanted library), work
+    on a branch, and follow the repo's own authoring docs
+    (<a href="/docs/creating-components">Creating Components</a>,${" "}
+    <a href="/docs/zag-adapter">Zag Adapter Anatomy</a>). Components land in${" "}
+    <code>packages/shadcn/ui/</code> with per-component${" "}
+    <code>registry.meta.json</code>, plus demo pages so the e2e verify-matrix
+    covers them.
+  </p>
+
+  <p>
+    PRs for libraries not on the wanted list will be closed with a pointer to
+    the directory path — that's not a rejection of the work, it's where the
+    work ships without waiting on us.
+  </p>
+
+  <h2 id="parity-gate">The Parity Gate</h2>
+
+  <p>
+    Official PRs must pass the repo's mechanical gate before human review:
+  </p>
+
+  <ul>
+    <li><code>bun run check</code> — <code>marko-type-check</code> across every package (never plain <code>tsc</code>, which silently skips <code>.marko</code> files) plus the registry invariant scripts.</li>
+    <li><code>bun run test</code> — unit, hydration-invariant, and behavior suites.</li>
+    <li><code>bun run build:registry</code> — the registry build must exit 0.</li>
+    <li><code>bun run check:parity</code> — the parity-drift toolkit: coverage (every upstream demo and doc section paired by name, or ignored with a reason in <code>parity-ignore.json</code>) and visual diff of paired demos, with <code>interactions.json</code> steps for stateful demos. Exit 3 means drift — read the gallery in <code>parity-report/</code>.</li>
+    <li>Production-build browser verification with real pointer events.</li>
+    <li>Every deviation logged in the PR description — undisclosed approximations are the one thing that fails review outright.</li>
+  </ul>
+</docs-article>

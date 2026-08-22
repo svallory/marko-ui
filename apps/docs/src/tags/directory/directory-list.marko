@@ -1,0 +1,298 @@
+// Ported from shadcn's components/directory-list.tsx (+ its
+// hooks/use-search-registry.ts). Same Item/Pagination DOM structure,
+// data-slots and class strings.
+//
+// State model (no React context, no nuqs): this tag owns query/page/add
+// state. The server renders the real page-1 list (shadcn renders a skeleton
+// until mount because nuqs is client-only — we skip the skeleton entirely);
+// onMount reads ?q= and ?page= from the URL and popstate keeps back/forward
+// working. Query edits debounce 250ms into replaceState; page changes push.
+import directory from "../../data/directory.json";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import { buttonVariants } from "@marko-ui/shadcn/ui/button/variants.ts";
+import Item from "@marko-ui/shadcn/ui/item/item.marko";
+import ItemActions from "@marko-ui/shadcn/ui/item/actions.marko";
+import ItemContent from "@marko-ui/shadcn/ui/item/content.marko";
+import ItemDescription from "@marko-ui/shadcn/ui/item/description.marko";
+import ItemFooter from "@marko-ui/shadcn/ui/item/footer.marko";
+import ItemGroup from "@marko-ui/shadcn/ui/item/group.marko";
+import ItemMedia from "@marko-ui/shadcn/ui/item/media.marko";
+import ItemSeparator from "@marko-ui/shadcn/ui/item/separator.marko";
+import ItemTitle from "@marko-ui/shadcn/ui/item/title.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+import { cn } from "@marko-ui/shadcn/lib/utils.ts";
+import "./directory-search.marko";
+import "./directory-add-dialog.marko";
+
+static const PAGE_SIZE = 10;
+
+export interface DirectoryRegistry {
+  name: string;
+  homepage: string;
+  url: string;
+  description: string;
+  target: string;
+  logo: string;
+}
+
+static const REGISTRIES = directory.registries as DirectoryRegistry[];
+
+static const normalizeQuery = (query: string) =>
+  query.toLowerCase().replaceAll(" ", "").replaceAll("@", "");
+
+static function searchDirectory(query: string) {
+  if (!query) return REGISTRIES;
+  const normalizedQuery = normalizeQuery(query);
+  return REGISTRIES.filter(
+    (registry) =>
+      normalizeQuery(registry.name).includes(normalizedQuery) ||
+      normalizeQuery(registry.description).includes(normalizedQuery),
+  );
+}
+
+static function getHomepageUrl(homepage: string) {
+  const url = new URL(homepage);
+  url.searchParams.set("utm_source", "marko-ui.saulo.tech");
+  url.searchParams.set("utm_medium", "referral");
+  url.searchParams.set("utm_campaign", "directory");
+  return url.toString();
+}
+
+static function getPageHref(query: string, page: number) {
+  const searchParams = new URLSearchParams();
+  if (query) searchParams.set("q", query);
+  if (page > 1) searchParams.set("page", page.toString());
+  const search = searchParams.toString();
+  return search ? `/docs/directory?${search}` : "/docs/directory";
+}
+
+static function getPageNumbers(current: number, total: number) {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1) as (number | "ellipsis")[];
+  }
+  const pages: (number | "ellipsis")[] = [1];
+  // Show ellipsis or page 2 directly if only one number would be hidden.
+  if (current > 4) {
+    pages.push("ellipsis");
+  } else if (current >= 4) {
+    pages.push(2);
+  }
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  for (let i = start; i <= end; i++) pages.push(i);
+  if (current < total - 3) {
+    pages.push("ellipsis");
+  } else if (current <= total - 3) {
+    pages.push(total - 1);
+  }
+  pages.push(total);
+  return pages;
+}
+
+<let/query=""/>
+<let/rawPage=1/>
+<let/addRegistryName=(null as string | null)/>
+<let/queryTimer=(null as ReturnType<typeof setTimeout> | null)/>
+
+<const/registries=searchDirectory(query)/>
+<const/totalPages=Math.ceil(registries.length / PAGE_SIZE)/>
+<const/page=Math.max(1, Math.min(rawPage, Math.max(totalPages, 1)))/>
+<const/paginatedRegistries=registries.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)/>
+
+<const/syncFromUrl=() => {
+  const params = new URLSearchParams(window.location.search);
+  query = params.get("q") ?? "";
+  rawPage = Number.parseInt(params.get("page") ?? "1", 10) || 1;
+}/>
+
+<const/setPage=(targetPage: number) => {
+  rawPage = targetPage;
+  history.pushState(null, "", getPageHref(query, targetPage));
+}/>
+
+<const/setQuery=(value: string) => {
+  query = value;
+  rawPage = 1;
+  if (queryTimer) clearTimeout(queryTimer);
+  queryTimer = setTimeout(() => {
+    history.replaceState(null, "", getPageHref(value, 1));
+  }, 250);
+}/>
+
+<const/handlePageClick=(event: MouseEvent, targetPage: number, disabled = false) => {
+  if (
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  ) {
+    return;
+  }
+  event.preventDefault();
+  if (disabled || targetPage === page) return;
+  setPage(targetPage);
+}/>
+
+<lifecycle
+  onMount() {
+    syncFromUrl();
+    window.addEventListener("popstate", syncFromUrl);
+  }
+  onDestroy() {
+    window.removeEventListener("popstate", syncFromUrl);
+    if (queryTimer) clearTimeout(queryTimer);
+  }
+/>
+
+<div data-not-typeset class="mt-6">
+  <directory-search
+    query=query
+    registriesCount=registries.length
+    queryChange=setQuery
+    queryClear=() => setQuery("")
+  />
+  <ItemGroup class="my-8">
+    <for|registry, index| of=paginatedRegistries by=(registry) => registry.name>
+      <Item class="group/item relative gap-6 px-0">
+        <ItemMedia
+          variant="image"
+          class="grayscale *:[svg]:size-8 *:[svg]:fill-foreground"
+        >
+          $!{registry.logo}
+        </ItemMedia>
+        <ItemContent>
+          <ItemTitle>
+            <a
+              href=getHomepageUrl(registry.homepage)
+              target="_blank"
+              rel="noopener noreferrer external"
+              class="group flex items-center gap-1"
+            >
+              ${registry.name}
+              <Icon name="ArrowUpRightIcon" class="size-4 opacity-0 group-hover:opacity-100"/>
+            </a>
+          </ItemTitle>
+          <if=registry.description>
+            <ItemDescription class="text-pretty">
+              ${registry.description}
+            </ItemDescription>
+          </if>
+        </ItemContent>
+        <ItemActions class="relative z-10 hidden self-start sm:flex">
+          <Button
+            size="sm"
+            variant="outline"
+            class="relative z-10"
+            onClick() { addRegistryName = registry.name; }
+          >
+            Add <Icon name="PlusIcon"/>
+          </Button>
+        </ItemActions>
+        <ItemFooter class="justify-start pl-16 sm:hidden">
+          <a
+            href=getHomepageUrl(registry.homepage)
+            target="_blank"
+            rel="noopener noreferrer external"
+            class=buttonVariants({ variant: "outline", size: "sm" })
+          >
+            View <Icon name="ArrowUpRightIcon"/>
+          </a>
+          <Button
+            size="sm"
+            variant="outline"
+            class="relative z-10"
+            onClick() { addRegistryName = registry.name; }
+          >
+            Add <Icon name="PlusIcon"/>
+          </Button>
+        </ItemFooter>
+      </Item>
+      <if=(index < paginatedRegistries.length - 1)>
+        <ItemSeparator class="my-1"/>
+      </if>
+    </for>
+  </ItemGroup>
+  <if=(totalPages > 1)>
+    <nav
+      role="navigation"
+      aria-label="pagination"
+      data-slot="pagination"
+      class="mx-auto flex w-full justify-center"
+    >
+      <ul data-slot="pagination-content" class="flex flex-row items-center gap-1">
+        <li data-slot="pagination-item">
+          <a
+            href=(page > 1 ? getPageHref(query, page - 1) : undefined)
+            aria-label="Go to previous page"
+            aria-disabled=(page <= 1 || undefined)
+            tabindex=(page <= 1 ? -1 : undefined)
+            data-slot="pagination-link"
+            onClick(event: MouseEvent) { handlePageClick(event, page - 1, page <= 1); }
+            class=cn(
+              buttonVariants({ variant: "ghost", size: "default" }),
+              "pl-1.5!",
+              page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer",
+            )
+          >
+            <Icon name="ChevronLeftIcon" class="mu-rtl-flip size-4"/>
+            <span class="hidden sm:block">Previous</span>
+          </a>
+        </li>
+        <for|p, i| of=getPageNumbers(page, totalPages) by=(p, i) => (p === "ellipsis" ? `ellipsis-${i}` : `page-${p}`)>
+          <li data-slot="pagination-item">
+            <if=p === "ellipsis">
+              <span
+                aria-hidden="true"
+                data-slot="pagination-ellipsis"
+                class="flex size-9 items-center justify-center"
+              >
+                &hellip;
+                <span class="sr-only">More pages</span>
+              </span>
+            </if>
+            <else>
+              <a
+                href=getPageHref(query, p as number)
+                aria-current=(p === page ? "page" : undefined)
+                data-slot="pagination-link"
+                data-active=String(p === page)
+                onClick(event: MouseEvent) { handlePageClick(event, p as number); }
+                class=cn(
+                  buttonVariants({ variant: p === page ? "outline" : "ghost", size: "icon" }),
+                  "cursor-pointer",
+                )
+              >
+                ${p}
+              </a>
+            </else>
+          </li>
+        </for>
+        <li data-slot="pagination-item">
+          <a
+            href=(page < totalPages ? getPageHref(query, page + 1) : undefined)
+            aria-label="Go to next page"
+            aria-disabled=(page >= totalPages || undefined)
+            tabindex=(page >= totalPages ? -1 : undefined)
+            data-slot="pagination-link"
+            onClick(event: MouseEvent) { handlePageClick(event, page + 1, page >= totalPages); }
+            class=cn(
+              buttonVariants({ variant: "ghost", size: "default" }),
+              "pr-1.5!",
+              page >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer",
+            )
+          >
+            <span class="hidden sm:block">Next</span>
+            <Icon name="ChevronRightIcon" class="mu-rtl-flip size-4"/>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </if>
+</div>
+
+<directory-add-dialog
+  registryName=addRegistryName
+  close=() => { addRegistryName = null; }
+/>

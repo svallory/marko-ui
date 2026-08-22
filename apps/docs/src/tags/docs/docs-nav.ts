@@ -23,6 +23,7 @@ export const DOCS_NAV: DocsNavSection[] = [
       { href: "/docs/installation", label: "Installation" },
       { href: "/docs/cli", label: "CLI" },
       { href: "/docs/components-json", label: "components.json" },
+      { href: "/docs/directory", label: "Directory" },
       { href: "/docs/changelog", label: "Changelog" },
     ],
   },
@@ -39,6 +40,7 @@ export const DOCS_NAV: DocsNavSection[] = [
     items: [
       { href: "/docs/creating-components", label: "Creating Components" },
       { href: "/docs/zag-adapter", label: "Zag Adapter Anatomy" },
+      { href: "/docs/contributing-a-library", label: "Contributing a Library" },
     ],
   },
   {

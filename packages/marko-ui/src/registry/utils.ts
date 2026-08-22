@@ -20,7 +20,10 @@ import {
 import { loadConfig } from "tsconfig-paths"
 import { z } from "zod"
 
-const FILE_EXTENSIONS_FOR_LOOKUP = [".tsx", ".ts", ".jsx", ".js", ".css"]
+// .marko included: registry build scans component sources for imports; the
+// text-level IMPORT_SPECIFIER_REGEX below reads .marko top-of-file imports
+// exactly like .ts ones.
+const FILE_EXTENSIONS_FOR_LOOKUP = [".marko", ".tsx", ".ts", ".jsx", ".js", ".css"]
 const FILE_PATH_SKIP_LIST = ["lib/utils.ts"]
 const DEPENDENCY_SKIP_LIST = [
   /^(node|jsr|npm):.*$/, // Matches node:, jsr:, and npm: prefixed modules
