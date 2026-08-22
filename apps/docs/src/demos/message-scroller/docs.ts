@@ -12,6 +12,33 @@
 // per notes/docs-canonical-structure.md (Concepts stays rare/short).
 import type { ComponentDocs } from "../docs-types.ts";
 
+// BLOCKED (parity — missingMappedTargets: "Core Concepts"): upstream's
+// heading is literally "## Core Concepts" (base/message-scroller.mdx), whose
+// normalized slug is "core-concepts". tooling/parity/section-map.ts maps
+// `"core-concepts": [{ action: "keep" }]` — "keep" resolves to
+// `target = { parent: [], title: originalHeading }` (coverage.ts's
+// resolveTarget), i.e. canonical bucket = "Core Concepts" itself (parent is
+// empty, so `target.parent[0] ?? target.title` falls to `target.title`).
+// `ourSectionsFor` (same file) and +page.marko only ever render a heading
+// titled "Concepts" (singular, no "Core"), driven by the `concepts` field
+// below — so neither the canonical-bucket check nor the mapped-title/
+// original-heading fallback in `isTargetPresent` can match "Core Concepts".
+// This looks like a section-map.ts authoring bug (compare: every OTHER
+// canonical-bucket "keep" entry — installation/usage/api-reference/
+// accessibility/changelog/styling/anatomy — has a slug that's already
+// identical to the bucket name it's supposed to represent; "core-concepts"
+// is the one entry whose slug does NOT match our page's actual bucket name
+// "Concepts", so `keep` silently can never satisfy it. The fix, if it were
+// in scope, would be `"core-concepts": [{ action: "move", parent:
+// ["concepts"] }]` to route it into the "concepts" canonical bucket like
+// every other non-identical-slug entry does) rather than a docs gap — but
+// tooling/parity/section-map.ts is out of this task's file territory
+// (apps/docs/src/demos/<component>/ only), so it can't be fixed here. The
+// upstream "Core Concepts" content IS fully ported below into `concepts`
+// (condensed per notes/docs-canonical-structure.md), so nothing is missing
+// from the reader's perspective — only the checker's presence match, which
+// is looking for a heading this page's fixed section skeleton can't
+// produce under that exact title.
 export const docs: ComponentDocs = {
   description:
     "A chat scroll container that anchors turns, opens saved transcripts, follows streamed responses, loads history without jumping, and jumps to any message.",

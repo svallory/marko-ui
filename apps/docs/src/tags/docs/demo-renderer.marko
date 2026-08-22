@@ -409,6 +409,7 @@ import Demo_kbd_kbd_group from "../../demos/kbd/kbd-group.marko";
 import Demo_kbd_kbd_input_group from "../../demos/kbd/kbd-input-group.marko";
 import Demo_kbd_kbd_rtl from "../../demos/kbd/kbd-rtl.marko";
 import Demo_kbd_kbd_tooltip from "../../demos/kbd/kbd-tooltip.marko";
+import Demo_label_field_demo from "../../demos/label/field-demo.marko";
 import Demo_label_label_demo from "../../demos/label/label-demo.marko";
 import Demo_label_label_disabled from "../../demos/label/label-disabled.marko";
 import Demo_label_label_in_field from "../../demos/label/label-in-field.marko";
@@ -553,6 +554,7 @@ import Demo_sheet_sheet_rtl from "../../demos/sheet/sheet-rtl.marko";
 import Demo_sheet_sheet_side from "../../demos/sheet/sheet-side.marko";
 import Demo_sidebar_sidebar_controlled from "../../demos/sidebar/sidebar-controlled.marko";
 import Demo_sidebar_sidebar_demo from "../../demos/sidebar/sidebar-demo.marko";
+import Demo_sidebar_sidebar_rtl from "../../demos/sidebar/sidebar-rtl.marko";
 import Demo_signature_pad_signature_pad_controlled from "../../demos/signature-pad/signature-pad-controlled.marko";
 import Demo_signature_pad_signature_pad_demo from "../../demos/signature-pad/signature-pad-demo.marko";
 import Demo_signature_pad_signature_pad_disabled from "../../demos/signature-pad/signature-pad-disabled.marko";
@@ -1076,6 +1078,7 @@ export interface Input {
 <else-if=(input.demoId === "kbd/kbd-input-group")><Demo_kbd_kbd_input_group/></else-if>
 <else-if=(input.demoId === "kbd/kbd-rtl")><Demo_kbd_kbd_rtl/></else-if>
 <else-if=(input.demoId === "kbd/kbd-tooltip")><Demo_kbd_kbd_tooltip/></else-if>
+<else-if=(input.demoId === "label/field-demo")><Demo_label_field_demo/></else-if>
 <else-if=(input.demoId === "label/label-demo")><Demo_label_label_demo/></else-if>
 <else-if=(input.demoId === "label/label-disabled")><Demo_label_label_disabled/></else-if>
 <else-if=(input.demoId === "label/label-in-field")><Demo_label_label_in_field/></else-if>
@@ -1220,6 +1223,7 @@ export interface Input {
 <else-if=(input.demoId === "sheet/sheet-side")><Demo_sheet_sheet_side/></else-if>
 <else-if=(input.demoId === "sidebar/sidebar-controlled")><Demo_sidebar_sidebar_controlled/></else-if>
 <else-if=(input.demoId === "sidebar/sidebar-demo")><Demo_sidebar_sidebar_demo/></else-if>
+<else-if=(input.demoId === "sidebar/sidebar-rtl")><Demo_sidebar_sidebar_rtl/></else-if>
 <else-if=(input.demoId === "signature-pad/signature-pad-controlled")><Demo_signature_pad_signature_pad_controlled/></else-if>
 <else-if=(input.demoId === "signature-pad/signature-pad-demo")><Demo_signature_pad_signature_pad_demo/></else-if>
 <else-if=(input.demoId === "signature-pad/signature-pad-disabled")><Demo_signature_pad_signature_pad_disabled/></else-if>

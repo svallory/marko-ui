@@ -31,7 +31,7 @@ export const docs: ComponentDocs = {
   // (api-reference.json sees one part → `isCompound` is false).
   composition:
     "`<Drawer>` is a single component, not a composed tree — `@trigger` is a render-prop slot (spread the given props onto your own trigger element), and `@title`/`@description`/`@content`/`@footer` are body slots that render into the drawer's header, body, and footer regions. Omit any slot you don't need; `@title`/`@description` render nothing without a wrapping header until at least one is supplied, and `@footer` is fully optional (see the “Without footer” example below).",
-  // NOTE (parity — missingMappedTargets: "Styling"): upstream's "Styling"
+  // BLOCKED (parity — missingMappedTargets: "Styling"): upstream's "Styling"
   // section documents `--drawer-inset`, `--drawer-bleed-background`,
   // `--drawer-overlay-min-opacity` CSS variables and `data-swipe-direction`/
   // `data-swipe-axis`/`data-snap-points`/`data-expanded`/`data-swiping`/
@@ -40,9 +40,13 @@ export const docs: ComponentDocs = {
   // data attributes genuinely differ (ours: `data-swipe-direction` matches,
   // but no `--drawer-*` custom properties or `data-nested-drawer-open` exist
   // on this machine). `ComponentDocs` (docs-types.ts) has no `styling` field
-  // and `+page.marko` has no Styling section renderer — this is a real
-  // template gap, not something closeable from this demo directory. Flagging
-  // as blocked-needs-template-change rather than fabricating a section.
+  // and `+page.marko` has no Styling section renderer (only Installation/
+  // Usage/Concepts/Composition/Examples/Accessibility/API Reference) — a
+  // real template gap, not something closeable from this demo directory.
+  // `tooling/parity/coverage.ts`'s `ourSectionsFor` never emits a heading
+  // titled "Styling", so `isTargetPresent` can't find a match regardless of
+  // what prose lives here. Flagging as blocked-needs-template-change rather
+  // than fabricating a section.
   examples: [
     {
       name: "drawer-demo",

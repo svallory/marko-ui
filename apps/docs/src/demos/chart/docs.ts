@@ -18,13 +18,23 @@ import BarChart from "@/components/ui/chart/bar.marko";`,
     <@series dataKey="desktop" radius=4/>
   </BarChart>
 </Chart>`,
-  // Theming/CSS Variables (upstream's "Theming" + "CSS Variables" sections)
-  // fold in here: chart is a compound component (10 parts under
-  // packages/shadcn/ui/chart/), so `isCompound` is true and the page renders
-  // the auto-generated composition tree instead of a hand-authored
-  // Composition section — this prose is the only hand-authored slot left for
-  // "read before using" chart-wide mental model content, which theming
-  // genuinely is here (every demo's colors flow through it).
+  // BLOCKED (parity — missingMappedTargets: "Theming", "CSS Variables"):
+  // upstream's "Theming" + "CSS Variables" sections (base/chart.mdx) are
+  // their own top-level headings. `ComponentDocs` (docs-types.ts) has no
+  // `styling`/`theming` field, and +page.marko has no Styling/Theming
+  // section renderer (only Installation/Usage/Concepts/Composition/
+  // Examples/Accessibility/API Reference) — a real template gap, not
+  // something closeable from this demo directory. `tooling/parity/
+  // coverage.ts`'s `ourSectionsFor` never emits a heading titled "Theming"
+  // or "CSS Variables", so `isTargetPresent` can't find a match no matter
+  // what prose lives in this file. The content itself IS fully ported below
+  // into `concepts` (the only hand-authored slot available for a compound
+  // component, since `isCompound` is true here — chart has 10 parts under
+  // packages/shadcn/ui/chart/ — so the page renders the auto-generated
+  // composition tree instead of a hand-authored Composition section, and
+  // `concepts` is the only remaining "read before using" slot). Nothing is
+  // missing from the reader's perspective; only the checker's per-heading
+  // presence check can't see it.
   concepts:
     "Every chart takes the same `config` object twice: once on `<Chart>` (which emits a scoped `<style>` resolving `--color-<key>` per theme) and again on the chart tag itself (Marko has no context/provider primitive, so the config can't be read implicitly by descendants). Each config entry's `color` can be a literal (`\"#2563eb\"`), an `hsl()`/`oklch()` string, or a `var(--chart-1)` reference into the 5 `--chart-1`..`--chart-5` custom properties a shadcn theme defines for light and dark — swap the theme and every chart restyles with zero code changes. Reference a resolved color from series data or Tailwind with `var(--color-<key>)`, e.g. `fill=\"var(--color-desktop)\"` or a `fill-(--color-desktop)` utility class.",
   examples: [

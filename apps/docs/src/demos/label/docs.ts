@@ -40,6 +40,19 @@ export const docs: ComponentDocs = {
       description:
         "For form fields, use the `Field` component, which includes built-in `FieldLabel`, `FieldDescription`, and `FieldError` parts.",
     },
+    // field-demo: upstream's "Label in Field" section (base/label.mdx) embeds
+    // this exact demo (also documented on the field page). demos-manifest.ts
+    // is generated per-component-directory with no cross-component reuse
+    // (see apps/docs/scripts/build-demos-manifest.ts's componentDirectories()
+    // + per-dir readdir), so field-demo.marko is duplicated verbatim here
+    // (byte-for-byte copy of apps/docs/src/demos/field/field-demo.marko)
+    // rather than symlinked or imported cross-directory.
+    {
+      name: "field-demo",
+      title: "Field",
+      description:
+        "The same `Field`/`FieldLabel`/`FieldDescription` composition shown on the Field page — reach for it whenever a label needs to sit inside a full form field.",
+    },
     {
       name: "label-rtl",
       title: "RTL",

@@ -522,6 +522,7 @@ export function isTargetPresent(
 export function ourSectionsFor(componentName: string, docs: {
   examples: { title: string }[]
   composition?: string
+  concepts?: string
   accessibilityKeyboard?: { keys: string; description: string }[]
   accessibilityNotes?: string[]
 }, isCompound: boolean, hasApiParts: boolean): string[] {
@@ -531,6 +532,11 @@ export function ourSectionsFor(componentName: string, docs: {
   // anatomy (e.g. tooltip) carry the section via docs.composition instead
   // — see docs-types.ts and +page.marko's isCompound/composition branch.
   if (isCompound || docs.composition) sections.push("Composition")
+  // Same class as the Accessibility fix below: a populated concepts field
+  // renders a Concepts section (+page.marko), so it must be visible here or
+  // upstream "Core Concepts"-style targets mapped into ["concepts"] can
+  // never be satisfied.
+  if (docs.concepts) sections.push("Concepts")
   for (const example of docs.examples) sections.push(example.title)
   // Mirrors +page.marko's `hasAccessibility` const: the section renders
   // when either field is non-empty. Previously never pushed here, so a

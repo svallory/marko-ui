@@ -33,6 +33,32 @@ import FieldDescription from "@/components/ui/field/field-description.marko";`,
   // a capability the shared composition-tree renderer has for a component
   // with multiple usable roots (Field/FieldGroup/FieldSet), and per FILE
   // TERRITORY that renderer is out of scope for this repair.
+  //
+  // BLOCKED (parity — missingMappedTargets: "Anatomy"): base/field.mdx has
+  // TWO distinct upstream headings that both matter here, and the above
+  // paragraph only accounts for one. `## Composition` (its own heading,
+  // Field/FieldGroup/FieldSet trio) maps via tooling/parity/section-map.ts
+  // (`composition: [{ action: "move", parent: ["anatomy"] }]`) and IS
+  // satisfied — its fallback target.title is "Composition" (no title
+  // override in that map entry), and our page always renders a heading
+  // literally titled "Composition" for a compound component, so
+  // `isTargetPresent`'s mappedTitlePresent branch matches.
+  // But upstream ALSO has a SEPARATE `## Anatomy` heading (line 140,
+  // sibling of `## Composition`, not nested under it) — a short prose +
+  // JSX-tree "how Field/FieldContent/FieldGroup/FieldSet compose" block.
+  // Its heading slug "anatomy" hits the CANONICAL_BUCKET_SLUGS pre-pass
+  // directly (coverage.ts's classifySection step 0), producing
+  // target = { parent: [], title: "Anatomy" } — canonical bucket "Anatomy"
+  // itself. `ourSectionsFor` (coverage.ts) never emits a heading titled
+  // "Anatomy" (only "Composition"), and +page.marko has no render branch
+  // that produces one either — a real template gap, not something
+  // closeable from this demo directory. The content of upstream's `##
+  // Anatomy` heading (the field-structure bullet list + JSX skeleton) is
+  // materially the same content our auto-generated <composition-tree>
+  // already provides under "Composition", so nothing is missing from the
+  // reader's perspective — only the checker's per-heading presence check,
+  // which is looking for a heading literally titled "Anatomy" that this
+  // page's fixed section skeleton has no path to produce.
   examples: [
     {
       name: "field-demo",

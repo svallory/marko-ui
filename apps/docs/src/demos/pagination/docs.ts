@@ -64,6 +64,17 @@ export const docs: ComponentDocs = {
   // is no `text` prop. `dir="rtl"` still mirrors the layout and flips the
   // chevron icons via the `mu-rtl-flip` class, but the button labels always
   // read in English.
+  //
+  // BLOCKED (parity — missingMappedTargets: "Changelog"): `ComponentDocs`
+  // (docs-types.ts) has no `changelog` field, and +page.marko has no
+  // Changelog section renderer. Same blocked-needs-template-change finding
+  // already recorded for card and toggle-group (see TODO.md "Component-
+  // source backlog from docs-parity repair" — "docs template: `changelog`
+  // field in docs-types.ts + render branch"). Recorded here for consistency
+  // rather than fabricating a Changelog section from this demo directory —
+  // the one real changelog item (the RTL `text` prop addition) is already
+  // documented above as a genuine deviation, and again in accessibilityNotes
+  // below.
   composition: `Our \`Pagination\` is a single component, not a composition:
 
 \`\`\`text

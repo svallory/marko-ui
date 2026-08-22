@@ -113,7 +113,7 @@ export default defineSectionMap({
   ],
   "custom-colors": [{ action: "move", parent: ["styling", "recipes"] }],
   rtl: [{ action: "move", parent: ["examples"], title: "RTL" }],
-  "core-concepts": [{ action: "keep" }],
+  "core-concepts": [{ action: "move", parent: ["concepts"] }],
   "migrating-from-vaul": [
     { action: "ignore", reason: "React/Vaul-specific migration guide" },
   ],
