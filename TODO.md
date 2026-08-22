@@ -371,3 +371,25 @@ current coverage — check `check-anchors.ts`'s 86/86 pass instead.
 
   **Acceptance gate**: `bun tooling/check-anchors.ts` and `bun tooling/check-consumption.ts`
   must both exit 0 once the anchors are restored and the component carries them.
+
+## Component-source backlog from docs-parity repair (2026-08-22)
+
+Blocked demos/targets needing component (not docs) changes — each verified
+against component source by the repair run's adversarial checkers:
+
+- [ ] combobox: item content render-slot (`combobox-custom`), trigger
+      render-prop / alternate anchor (`combobox-popup`), input-group addon
+      slot (`combobox-input-group`)
+- [ ] calendar: wire `getWeekNumberHeaderCellProps`/`getWeekNumberCellProps`
+      so `showWeekNumbers` renders (`calendar-week-numbers`)
+- [ ] context-menu: expose positioning/side input (`context-menu-sides`);
+      re-expose Zag `dir` for real RTL flip (also dropdown-menu, menubar)
+- [ ] radio-group: standalone `RadioGroupItem` tag (+ per-item invalid
+      threading) — unblocks description/choice-card/invalid demos
+- [ ] field-label: add upstream choice-card utility classes
+      (has-data-checked:* etc.) — style layers already ship the selectors
+- [ ] chart: `orientation`/`reversed` props on bar chart for RTL mirroring
+- [ ] context-menu (pre-existing): demos pass `danger:` but ContextMenuItem
+      only knows `variant` — inert prop, fix demo or component
+- [ ] docs template: `changelog` field in docs-types.ts + render branch
+      (card, toggle-group, pagination all blocked on it)
