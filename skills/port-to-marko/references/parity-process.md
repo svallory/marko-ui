@@ -24,12 +24,13 @@ Apply the full process on the official-repo path (the tooling exists there). On 
 - RULE: sample first for the big picture; full-sweep only a contested bucket (one contested bucket needed a 64-page sweep for 5 hits — don't sweep everything).
 - ARTIFACT: a taxonomy note → the canonical hierarchy decision.
 
-## 4. Section alias map (coverage checker input)
+## 4. Section map (coverage checker input)
 
 - WHEN: after the hierarchy is decided.
-- HOW: map upstream heading → `{ "into": "<bucket>", "as"?: "<subsection>" }`. `into` only = content merges into the bucket body; `as` = a named subsection the checker verifies exists.
-- RULE: renames and relocations are DIFFERENT actions — a bare string→string map conflated them and was caught in review. Per-page pathologies (duplicate headings with different content, guide pages) go in the ignore list with a reason, not in the map.
-- ARTIFACT: alias map JSON (global, small) + `parity-ignore.json` entries with mandatory `reason`. The checker is presence-only: every upstream demo present in your examples, every upstream bucket-with-content present on your page. Location and naming never flag. (Format still settling — check the repo's `tooling/parity/` docs for the current shape.)
+- HOW: a TYPED TS module, not JSON — `tooling/parity/section-map.ts` with `export default defineSectionMap({...})`; types in `map-types.ts`. `tsc` is the validation story (a bad map fails the typecheck, not a runtime surprise). Each upstream heading maps to an action list: `move { parent: [...bucket path], title? }`, `rename { title }`, `keep`, `ignore { reason }`, or `process` (opt-in LLM/function transform). Entries can be variant lists with a predicate `when?: (ctx) => boolean` over `{ component, heading, headingSlug, hasDemoMarker, body? }` — first match wins, at most one default variant.
+- RULES: renames and relocations are DIFFERENT actions (a bare string→string map conflated them). A bucket heading maps to `keep`, never to a self-nesting `move`. `process` is opt-in. Guide-type pages are out of the global map — per-page pathologies go in `parity-ignore.json` with a reason.
+- FLOW: an LLM classifier proposes in JSON (`section-map.proposed.json`, declarative matchers); a human promotes accepted proposals into the TS map. Canonical-name slugs are auto-kept by a bundler pre-pass and never reach the classifier.
+- ARTIFACT: `section-map.ts` + `parity-ignore.json`. The checker is presence-only: every upstream demo present in your examples, every upstream bucket-with-content present on your page. Location and naming never flag. Authority for the exact shape: the repo's `tooling/parity/SCHEMA.md`.
 
 ## 5. Render harness construction (visual comparison)
 
