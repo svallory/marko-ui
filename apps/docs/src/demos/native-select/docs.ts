@@ -34,5 +34,27 @@ import NativeSelectOption from "@/components/ui/native-select/native-select-opti
       title: "Disabled",
       description: "Pass `disabled` to disable the whole control.",
     },
+    {
+      name: "native-select-invalid",
+      title: "Invalid",
+      description: "Pass `aria-invalid` to show a validation error state.",
+    },
+    {
+      name: "native-select-rtl",
+      title: "RTL",
+      description:
+        "Pass `dir=\"rtl\"` — a plain native HTML attribute here, since native-select wraps a `<select>` with no Zag machine — to get the browser's own RTL rendering and keyboard handling.",
+    },
+  ],
+  // native-select has 3 parts (native-select, native-select-option,
+  // native-select-optgroup), so `isCompound` is true on the page and the
+  // auto-generated <composition-tree> renders from api-reference.json —
+  // this component never reads `docs.composition` (see docs-types.ts and
+  // $name/+page.marko), so that field is intentionally omitted here.
+  accessibilityNotes: [
+    "Renders a real native `<select>` element, so it gets full native keyboard support, screen-reader semantics, and the platform's own mobile picker UI for free — no ARIA wiring or Zag machine required.",
+    "Pass `aria-invalid=\"true\"` to announce a validation error state; pair it with a wrapping `Field` and `FieldError` for visible error styling and messaging (see the Invalid example).",
+    "`dir` is a plain native HTML attribute here (native-select has no Zag machine), so `dir=\"rtl\"` relies entirely on the browser's own RTL layout and keyboard handling rather than any library-level positioning logic.",
+    "Use `NativeSelect` for native browser behavior, better performance, or mobile-optimized dropdowns; use `Select` (the styled, Zag-driven component) for custom styling, animations, or complex interactions.",
   ],
 };

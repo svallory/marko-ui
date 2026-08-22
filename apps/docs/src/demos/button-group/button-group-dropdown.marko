@@ -1,0 +1,26 @@
+import ButtonGroup from "@marko-ui/shadcn/ui/button-group/button-group.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+static const ITEMS = [
+  { value: "mute", label: "Mute Conversation" },
+  { value: "read", label: "Mark as Read" },
+  { value: "report", label: "Report Conversation" },
+  { value: "block", label: "Block User" },
+  { value: "share", label: "Share Conversation" },
+  { value: "copy", label: "Copy Conversation" },
+  { type: "separator" },
+  { value: "delete", label: "Delete Conversation", variant: "destructive" },
+];
+
+<ButtonGroup>
+  <Button variant="outline">Follow</Button>
+  <DropdownMenu items=ITEMS class="w-44">
+    <@trigger|triggerProps|>
+      <Button variant="outline" ...triggerProps class="pl-2!" aria-label="More Options">
+        <Icon name="ChevronDownIcon"/>
+      </Button>
+    </@trigger>
+  </DropdownMenu>
+</ButtonGroup>

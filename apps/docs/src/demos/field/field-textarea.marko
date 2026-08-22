@@ -1,0 +1,18 @@
+import FieldSet from "@marko-ui/shadcn/ui/field/field-set.marko";
+import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
+import Textarea from "@marko-ui/shadcn/ui/textarea/textarea.marko";
+
+<div class="w-full max-w-md">
+  <FieldSet>
+    <FieldGroup>
+      <Field>
+        <FieldLabel for="field-textarea-feedback">Feedback</FieldLabel>
+        <Textarea id="field-textarea-feedback" placeholder="Your feedback helps us improve..." rows=4/>
+        <FieldDescription>Share your thoughts about our service.</FieldDescription>
+      </Field>
+    </FieldGroup>
+  </FieldSet>
+</div>

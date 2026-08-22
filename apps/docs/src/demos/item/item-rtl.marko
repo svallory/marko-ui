@@ -1,0 +1,48 @@
+// Static RTL port: upstream's item-rtl demo drives a live docs-site
+// language switcher (useTranslation across en/ar/he) that has no
+// equivalent in this app — same established precedent as
+// demos/card/card-rtl.marko and demos/dropdown-menu/dropdown-menu-rtl.marko.
+// This ports the RTL VISUAL and markup directly using the source's default
+// locale ("ar"): `dir="rtl"` items with Arabic copy. Item/ItemContent/
+// ItemActions already restyle correctly under dir="rtl" since their layout
+// is Tailwind flex with no hard-coded physical margins on the RTL-sensitive
+// elements.
+//
+// Technically-forced omission: upstream's second item uses `render={<a
+// href="#" />}` to make the whole Item a clickable anchor. Our Item has no
+// `render` prop (see missingApiProps in the parity report — a
+// component-source change, out of scope here). Ported the same way as
+// item-link.marko: wrap the Item in a plain `<a>`.
+import Item from "@marko-ui/shadcn/ui/item/item.marko";
+import ItemContent from "@marko-ui/shadcn/ui/item/content.marko";
+import ItemMedia from "@marko-ui/shadcn/ui/item/media.marko";
+import ItemTitle from "@marko-ui/shadcn/ui/item/title.marko";
+import ItemDescription from "@marko-ui/shadcn/ui/item/description.marko";
+import ItemActions from "@marko-ui/shadcn/ui/item/actions.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+<div class="flex w-full max-w-md flex-col gap-6" dir="rtl">
+  <Item variant="outline" dir="rtl">
+    <ItemContent>
+      <ItemTitle>عنصر أساسي</ItemTitle>
+      <ItemDescription>عنصر بسيط يحتوي على عنوان ووصف.</ItemDescription>
+    </ItemContent>
+    <ItemActions>
+      <Button variant="outline" size="sm">إجراء</Button>
+    </ItemActions>
+  </Item>
+  <a href="#" style="text-decoration: none; display: block;">
+    <Item variant="outline" size="sm" dir="rtl">
+      <ItemMedia>
+        <Icon name="BadgeCheckIcon" class="size-5"/>
+      </ItemMedia>
+      <ItemContent>
+        <ItemTitle>تم التحقق من ملفك الشخصي.</ItemTitle>
+      </ItemContent>
+      <ItemActions>
+        <Icon name="ChevronRight" class="size-4"/>
+      </ItemActions>
+    </Item>
+  </a>
+</div>

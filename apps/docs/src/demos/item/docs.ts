@@ -53,6 +53,11 @@ import ItemActions from "@/components/ui/item/actions.marko";`,
       description: 'Use `ItemMedia` with `variant="icon"` to display an icon.',
     },
     {
+      name: "item-avatar",
+      title: "Avatar",
+      description: "Use `ItemMedia` with an `Avatar` to display a user's picture, and stack multiple avatars for a group.",
+    },
+    {
       name: "item-image",
       title: "Image",
       description: 'Use `ItemMedia` with `variant="image"` to display an image.',
@@ -72,5 +77,19 @@ import ItemActions from "@/components/ui/item/actions.marko";`,
       title: "As link",
       description: "Wrap an `Item` in an anchor tag to make the entire item clickable.",
     },
+    {
+      name: "item-dropdown",
+      title: "Dropdown",
+      description: "Compose `Item` with `DropdownMenu` to render a rich list of selectable people or options.",
+    },
+    {
+      name: "item-rtl",
+      title: "RTL",
+      description: "Item's flex layout uses logical properties, so it restyles correctly under `dir=\"rtl\"` with no extra markup.",
+    },
+  ],
+  accessibilityNotes: [
+    "Item is a plain flex container with no ARIA role of its own — accessibility semantics come from its content (a heading in `ItemTitle`, an interactive control in `ItemActions`, etc.).",
+    "Upstream renders a clickable item as an anchor via a `render` prop (`<Item render={<a href=\"/dashboard\" />}>`); our `Item` has no `render` prop, so the equivalent pattern wraps the `<Item>` in a plain `<a>` element instead (see the \"As link\" and \"RTL\" examples).",
   ],
 };

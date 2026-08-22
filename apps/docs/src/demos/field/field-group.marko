@@ -1,0 +1,40 @@
+import Checkbox from "@marko-ui/shadcn/ui/checkbox/checkbox.marko";
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
+import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+import FieldSeparator from "@marko-ui/shadcn/ui/field/field-separator.marko";
+import FieldSet from "@marko-ui/shadcn/ui/field/field-set.marko";
+
+// See field-checkbox.marko for why the label text lives in Checkbox's own
+// `content` body instead of a separate <FieldLabel>.
+<div class="w-full max-w-md">
+  <FieldGroup>
+    <FieldSet>
+      <FieldLabel>Responses</FieldLabel>
+      <FieldDescription>
+        Get notified when the assistant responds to requests that take time, like research or image generation.
+      </FieldDescription>
+      <FieldGroup data-slot="checkbox-group" class="gap-3">
+        <Field orientation="horizontal">
+          <Checkbox id="field-group-push" defaultChecked disabled class="font-normal">Push notifications</Checkbox>
+        </Field>
+      </FieldGroup>
+    </FieldSet>
+    <FieldSeparator/>
+    <FieldSet>
+      <FieldLabel>Tasks</FieldLabel>
+      <FieldDescription>
+        Get notified when tasks you've created have updates. <a href="#">Manage tasks</a>
+      </FieldDescription>
+      <FieldGroup data-slot="checkbox-group" class="gap-3">
+        <Field orientation="horizontal">
+          <Checkbox id="field-group-push-tasks" class="font-normal">Push notifications</Checkbox>
+        </Field>
+        <Field orientation="horizontal">
+          <Checkbox id="field-group-email-tasks" class="font-normal">Email notifications</Checkbox>
+        </Field>
+      </FieldGroup>
+    </FieldSet>
+  </FieldGroup>
+</div>

@@ -1,0 +1,53 @@
+// Static RTL port: shadcn's field-rtl source drives a client-side language
+// selector (useTranslation) with no equivalent in this docs app — see
+// demos/input/input-rtl.marko for the established precedent. This ports
+// the RTL VISUAL and markup directly: a dir="rtl" payment-details form
+// with Arabic copy, matching the source's default locale ("ar"). Field's
+// layout is Tailwind logical properties, so it already restyles correctly
+// under dir="rtl" with no component changes.
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
+import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+import FieldLegend from "@marko-ui/shadcn/ui/field/field-legend.marko";
+import FieldSeparator from "@marko-ui/shadcn/ui/field/field-separator.marko";
+import FieldSet from "@marko-ui/shadcn/ui/field/field-set.marko";
+import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import Checkbox from "@marko-ui/shadcn/ui/checkbox/checkbox.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+
+<div dir="rtl" class="w-full max-w-md py-6">
+  <form>
+    <FieldGroup>
+      <FieldSet>
+        <FieldLegend>طريقة الدفع</FieldLegend>
+        <FieldDescription>جميع المعاملات آمنة ومشفرة</FieldDescription>
+        <FieldGroup>
+          <Field>
+            <FieldLabel for="field-rtl-card-name">الاسم على البطاقة</FieldLabel>
+            <Input id="field-rtl-card-name" placeholder="Evil Rabbit" required dir="rtl"/>
+          </Field>
+          <Field>
+            <FieldLabel for="field-rtl-card-number">رقم البطاقة</FieldLabel>
+            <Input id="field-rtl-card-number" placeholder="1234 5678 9012 3456" required dir="rtl"/>
+            <FieldDescription>أدخل رقم البطاقة المكون من 16 رقمًا</FieldDescription>
+          </Field>
+        </FieldGroup>
+      </FieldSet>
+      <FieldSeparator/>
+      <FieldSet>
+        <FieldLegend>عنوان الفوترة</FieldLegend>
+        <FieldDescription>عنوان الفوترة المرتبط بطريقة الدفع الخاصة بك</FieldDescription>
+        <FieldGroup>
+          <Field orientation="horizontal">
+            <Checkbox id="field-rtl-same-as-shipping" defaultChecked class="font-normal">نفس عنوان الشحن</Checkbox>
+          </Field>
+        </FieldGroup>
+      </FieldSet>
+      <Field orientation="horizontal">
+        <Button type="submit">إرسال</Button>
+        <Button type="button" variant="outline">إلغاء</Button>
+      </Field>
+    </FieldGroup>
+  </form>
+</div>

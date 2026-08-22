@@ -1,0 +1,12 @@
+import AlertDialog from "@marko-ui/shadcn/ui/alert-dialog/alert-dialog.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+
+<AlertDialog>
+  <@trigger|props|>
+    <Button ...props variant="outline">Show Dialog</Button>
+  </@trigger>
+  <@title>Are you absolutely sure?</@title>
+  <@description>
+    This action cannot be undone. This will permanently delete your account from our servers.
+  </@description>
+</AlertDialog>

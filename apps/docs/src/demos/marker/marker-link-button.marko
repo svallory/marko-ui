@@ -1,0 +1,37 @@
+import Marker from "@marko-ui/shadcn/ui/marker/marker.marko";
+import MarkerIcon from "@marko-ui/shadcn/ui/marker/icon.marko";
+import MarkerContent from "@marko-ui/shadcn/ui/marker/content.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+import Toaster from "@marko-ui/shadcn/ui/toast/toast.marko";
+import { toast } from "@marko-ui/shadcn/ui/toast/store.ts";
+
+<!--
+  Upstream's MarkerLinkButtonDemo uses the `render` prop to turn `Marker`
+  itself into an `<a>` or `<button>` (shadcn's `render` polymorphism, backed
+  by @base-ui/react's `useRender`). Our port has no runtime slot-merge
+  primitive for that: `packages/shadcn/ui/marker/marker.marko` documents
+  `asChild`/`render` as accepted-for-API-parity no-ops and always renders a
+  wrapping `<div>`. This demo instead wraps the marker markup directly in a
+  real `<a>`/`<button>`, which is visually and behaviorally equivalent
+  (focusable, correct role, accessible name from the marker text) but is not
+  a literal port of the `render` prop mechanism.
+-->
+<div class="flex w-full max-w-sm flex-col gap-8 py-12">
+  <a href="#links-and-buttons" class="mu-marker group/marker relative flex w-full items-center">
+    <MarkerIcon>
+      <Icon name="GitBranchIcon"/>
+    </MarkerIcon>
+    <MarkerContent>View the pull request</MarkerContent>
+  </a>
+  <button
+    type="button"
+    class="mu-marker group/marker relative flex w-full items-center transition-colors hover:text-foreground"
+    onClick() { toast.message({ title: "You clicked the revert button" }); }
+  >
+    <MarkerIcon>
+      <Icon name="RefreshCcwIcon"/>
+    </MarkerIcon>
+    <MarkerContent>Revert this change</MarkerContent>
+  </button>
+</div>
+<Toaster/>

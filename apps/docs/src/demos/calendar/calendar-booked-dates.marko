@@ -1,0 +1,38 @@
+// Technically-forced partial port: upstream renders booked dates with a
+// custom `modifiersClassNames` (line-through, still visibly selectable-
+// looking) alongside `disabled`. Our Calendar's day button only has a
+// generic `data-[disabled]:opacity-50` style hook — there is no per-day
+// custom-class slot, and `isDateUnavailable` marks the day
+// `data-unavailable` (a different attribute our component doesn't style
+// at all) rather than `data-disabled`. Styling booked days distinctly
+// would require editing packages/shadcn/ui/calendar/calendar.marko, which
+// is out of scope here. This port keeps the real behavior (booked dates
+// are unselectable) without the upstream strikethrough look.
+import Calendar from "@marko-ui/shadcn/ui/calendar/calendar.marko";
+import Card from "@marko-ui/shadcn/ui/card/card.marko";
+import CardContent from "@marko-ui/shadcn/ui/card/content.marko";
+
+static const today = new Date();
+static const bookedStart = new Date(today.getFullYear(), 0, 12);
+
+static function toPlain(date: Date) {
+  return { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() };
+}
+
+static const bookedDates = Array.from({ length: 15 }, (_, i) => {
+  const date = new Date(bookedStart);
+  date.setDate(date.getDate() + i);
+  return toPlain(date);
+});
+
+static function isBooked(candidate: { year: number; month: number; day: number }) {
+  return bookedDates.some(
+    (booked) => booked.year === candidate.year && booked.month === candidate.month && booked.day === candidate.day,
+  );
+}
+
+<Card class="mx-auto w-fit p-0">
+  <CardContent class="p-0">
+    <Calendar isDateUnavailable=(date) => isBooked({ year: date.year, month: date.month, day: date.day })/>
+  </CardContent>
+</Card>

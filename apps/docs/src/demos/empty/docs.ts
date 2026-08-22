@@ -64,5 +64,10 @@ import EmptyContent from "@/components/ui/empty/content.marko";`,
       title: "Icon",
       description: "A grid of compact empty states, each with just an icon, title, and description.",
     },
+    {
+      name: "empty-rtl",
+      title: "RTL",
+      description: "Empty and its parts restyle correctly for right-to-left layouts via `dir=\"rtl\"`.",
+    },
   ],
 };

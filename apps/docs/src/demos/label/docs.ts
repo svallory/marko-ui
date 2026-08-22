@@ -34,5 +34,16 @@ export const docs: ComponentDocs = {
       description:
         "Label styles react to a disabled peer or an ancestor with `data-disabled=\"true\"`, dimming the text and blocking pointer events.",
     },
+    {
+      name: "label-in-field",
+      title: "Label in Field",
+      description:
+        "For form fields, use the `Field` component, which includes built-in `FieldLabel`, `FieldDescription`, and `FieldError` parts.",
+    },
+    {
+      name: "label-rtl",
+      title: "RTL",
+      description: "Label restyles correctly under a `dir=\"rtl\"` ancestor — no component changes needed.",
+    },
   ],
 };

@@ -1,0 +1,19 @@
+import Marker from "@marko-ui/shadcn/ui/marker/marker.marko";
+import MarkerIcon from "@marko-ui/shadcn/ui/marker/icon.marko";
+import MarkerContent from "@marko-ui/shadcn/ui/marker/content.marko";
+import Spinner from "@marko-ui/shadcn/ui/spinner/spinner.marko";
+
+<div class="flex w-full max-w-sm flex-col gap-8 py-12">
+  <Marker role="status">
+    <MarkerIcon>
+      <Spinner/>
+    </MarkerIcon>
+    <MarkerContent>Compacting conversation</MarkerContent>
+  </Marker>
+  <Marker variant="separator" role="status">
+    <MarkerIcon>
+      <Spinner/>
+    </MarkerIcon>
+    <MarkerContent>Running tests</MarkerContent>
+  </Marker>
+</div>

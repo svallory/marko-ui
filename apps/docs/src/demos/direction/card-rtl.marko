@@ -1,0 +1,63 @@
+// Static RTL port: upstream's direction.mdx hero demo is the SAME card-rtl
+// example that ports the Card component's RTL demo (see
+// demos/card/card-rtl.marko for the identical precedent and its own
+// comment) — here it additionally demonstrates DirectionProvider itself,
+// since that is what this page documents. Upstream drives a live docs-site
+// language switcher (useTranslation across en/ar/he) that has no
+// equivalent in this app; this ports the RTL VISUAL directly using the
+// source's default locale ("ar"): Arabic copy under `direction="rtl"`.
+//
+// DirectionProvider renders a real wrapping <div dir="..."> (see the
+// SIMPLIFICATION FROM SOURCE comment in
+// packages/shadcn/ui/direction/direction-provider.marko — Base UI's
+// DirectionProvider is a pure context provider with no DOM node of its
+// own; Marko has no context primitive, so descendants inherit direction
+// via the DOM `dir` attribute instead of a JS context lookup). Card and
+// its parts restyle correctly under that inherited `dir="rtl"` since their
+// layout is Tailwind flex/grid with no hard-coded physical margins on the
+// RTL-sensitive elements (the "forgot password" link uses `ms-auto`,
+// matching upstream's swap from `ml-auto` to `ms-auto` on this exact demo).
+import DirectionProvider from "@marko-ui/shadcn/ui/direction/direction-provider.marko";
+import Card from "@marko-ui/shadcn/ui/card/card.marko";
+import CardHeader from "@marko-ui/shadcn/ui/card/header.marko";
+import CardTitle from "@marko-ui/shadcn/ui/card/title.marko";
+import CardDescription from "@marko-ui/shadcn/ui/card/description.marko";
+import CardAction from "@marko-ui/shadcn/ui/card/action.marko";
+import CardContent from "@marko-ui/shadcn/ui/card/content.marko";
+import CardFooter from "@marko-ui/shadcn/ui/card/footer.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import Label from "@marko-ui/shadcn/ui/label/label.marko";
+
+<DirectionProvider direction="rtl" class="w-full max-w-sm">
+  <Card>
+    <CardHeader>
+      <CardTitle>تسجيل الدخول إلى حسابك</CardTitle>
+      <CardDescription>أدخل بريدك الإلكتروني أدناه لتسجيل الدخول إلى حسابك</CardDescription>
+      <CardAction>
+        <Button variant="link">إنشاء حساب</Button>
+      </CardAction>
+    </CardHeader>
+    <CardContent>
+      <div class="flex flex-col gap-6">
+        <div class="grid gap-2">
+          <Label for="direction-card-rtl-email">البريد الإلكتروني</Label>
+          <Input id="direction-card-rtl-email" type="email" placeholder="m@example.com" required/>
+        </div>
+        <div class="grid gap-2">
+          <div class="flex items-center">
+            <Label for="direction-card-rtl-password">كلمة المرور</Label>
+            <a href="#" class="ms-auto inline-block text-sm underline-offset-4 hover:underline">
+              نسيت كلمة المرور؟
+            </a>
+          </div>
+          <Input id="direction-card-rtl-password" type="password" required/>
+        </div>
+      </div>
+    </CardContent>
+    <CardFooter class="flex-col gap-2">
+      <Button type="submit" class="w-full">تسجيل الدخول</Button>
+      <Button variant="outline" class="w-full">تسجيل الدخول باستخدام Google</Button>
+    </CardFooter>
+  </Card>
+</DirectionProvider>

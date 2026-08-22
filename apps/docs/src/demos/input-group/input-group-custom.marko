@@ -1,0 +1,23 @@
+import InputGroup from "@marko-ui/shadcn/ui/input-group/input-group.marko";
+import InputGroupAddon from "@marko-ui/shadcn/ui/input-group/addon.marko";
+import InputGroupButton from "@marko-ui/shadcn/ui/input-group/button.marko";
+
+// Upstream's demo wraps `react-textarea-autosize` (a React-only library) to
+// show that any custom control can opt into InputGroup's focus styling via
+// `data-slot="input-group-control"`. We have no Marko equivalent for that
+// library, so this port uses a plain `<textarea>` with the CSS
+// `field-sizing-content` property (already used verbatim in the upstream
+// class string) to reproduce the autosize behavior without JS — same
+// visual result, no React-only dependency.
+<div class="grid w-full max-w-sm gap-6">
+  <InputGroup>
+    <textarea
+      data-slot="input-group-control"
+      class="flex field-sizing-content min-h-16 w-full resize-none rounded-md bg-transparent px-3 py-2.5 text-base transition-[color,box-shadow] outline-none md:text-sm"
+      placeholder="Autoresize textarea..."
+    />
+    <InputGroupAddon align="block-end">
+      <InputGroupButton class="ml-auto" size="sm" variant="default">Submit</InputGroupButton>
+    </InputGroupAddon>
+  </InputGroup>
+</div>

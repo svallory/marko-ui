@@ -1,0 +1,26 @@
+// Port of shadcn's base.mdx "Add a Grid" step — same chart as chart-example
+// plus a CartesianGrid (our BarChart's `grid` prop, on by default; passed
+// explicitly here to mirror the upstream step-by-step narrative).
+import Chart from "@marko-ui/shadcn/ui/chart/chart.marko";
+import BarChart from "@marko-ui/shadcn/ui/chart/bar.marko";
+
+static const chartData = [
+  { month: "January", desktop: 186, mobile: 80 },
+  { month: "February", desktop: 305, mobile: 200 },
+  { month: "March", desktop: 237, mobile: 120 },
+  { month: "April", desktop: 73, mobile: 190 },
+  { month: "May", desktop: 209, mobile: 130 },
+  { month: "June", desktop: 214, mobile: 140 },
+];
+
+static const chartConfig = {
+  desktop: { label: "Desktop", color: "#2563eb" },
+  mobile: { label: "Mobile", color: "#60a5fa" },
+};
+
+<Chart config=chartConfig class="min-h-[200px] w-full">
+  <BarChart data=chartData config=chartConfig xKey="month" grid tooltip=false>
+    <@series dataKey="desktop" radius=4/>
+    <@series dataKey="mobile" radius=4/>
+  </BarChart>
+</Chart>

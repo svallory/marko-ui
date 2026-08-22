@@ -1,0 +1,18 @@
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldContent from "@marko-ui/shadcn/ui/field/field-content.marko";
+import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
+
+<div class="w-full max-w-md">
+  <Field orientation="horizontal">
+    <FieldContent>
+      <FieldLabel for="field-switch-2fa">Multi-factor authentication</FieldLabel>
+      <FieldDescription>
+        Enable multi-factor authentication. If you do not have a two-factor device, you can use a one-time code
+        sent to your email.
+      </FieldDescription>
+    </FieldContent>
+    <Switch id="field-switch-2fa"/>
+  </Field>
+</div>

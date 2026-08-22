@@ -1,0 +1,28 @@
+import ScrollArea from "@marko-ui/shadcn/ui/scroll-area/scroll-area.marko";
+import Separator from "@marko-ui/shadcn/ui/separator/separator.marko";
+
+// Upstream's scroll-area-rtl demo drives a live docs-site language switcher
+// (useTranslation across en/ar/he) that has no equivalent in this app —
+// same established precedent as demos/accordion/accordion-rtl.marko,
+// demos/avatar/avatar-rtl.marko, demos/card/card-rtl.marko, and
+// demos/tooltip/tooltip-rtl.marko. This ports the RTL VISUAL and markup
+// directly using the source's default locale ("ar"): a dir="rtl" scroll
+// area with an Arabic heading and tag list. ScrollArea's layout has no
+// hard-coded physical margins on RTL-sensitive elements, so it restyles
+// correctly under dir="rtl" with no component changes needed.
+static const tags = Array.from(
+  { length: 50 },
+  (_, index, all) => `v1.2.0-beta.${50 - index}`,
+);
+
+<ScrollArea dir="rtl" class="h-72 w-48 rounded-md border">
+  <div class="p-4">
+    <h4 class="mb-4 text-sm leading-none font-medium">العلامات</h4>
+    <for|tag| of=tags>
+      <div class="text-sm">
+        ${tag}
+      </div>
+      <Separator class="my-2"/>
+    </for>
+  </div>
+</ScrollArea>

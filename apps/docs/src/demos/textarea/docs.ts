@@ -44,5 +44,15 @@ export const docs: ComponentDocs = {
       title: "Invalid",
       description: "Set `aria-invalid` to mark the textarea as invalid.",
     },
+    {
+      name: "textarea-button",
+      title: "Button",
+      description: "Pair a textarea with a `Button` to create a message composer.",
+    },
+    {
+      name: "textarea-rtl",
+      title: "RTL",
+      description: "Textareas restyle correctly under `dir=\"rtl\"` — logical Tailwind properties, not physical ones, drive layout and text alignment.",
+    },
   ],
 };

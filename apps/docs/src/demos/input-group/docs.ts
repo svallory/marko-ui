@@ -47,14 +47,34 @@ import InputGroupAddon from "@/components/ui/input-group/addon.marko";`,
       description: "Use `align=\"block-end\"` to position the addon below the input.",
     },
     {
-      name: "input-group-button",
-      title: "Button",
-      description: "`InputGroupButton` renders a compact button sized to sit inside the group; pass `size=\"icon-xs\"` for icon-only actions.",
+      name: "input-group-icon",
+      title: "Icon",
+      description: "Any icon or inline SVG can sit in an `InputGroupAddon` on either edge of the input.",
     },
     {
       name: "input-group-text",
       title: "Text",
       description: "`InputGroupText` renders muted helper text or labels that share the group's addon padding.",
+    },
+    {
+      name: "input-group-button",
+      title: "Button",
+      description: "`InputGroupButton` renders a compact button sized to sit inside the group; pass `size=\"icon-xs\"` for icon-only actions.",
+    },
+    {
+      name: "input-group-kbd",
+      title: "Kbd",
+      description: "Pair `InputGroupAddon` with `Kbd` to show a keyboard shortcut for the input's action.",
+    },
+    {
+      name: "input-group-dropdown",
+      title: "Dropdown",
+      description: "An `InputGroupButton` can open a `DropdownMenu` by rendering it inside the menu's trigger render-prop.",
+    },
+    {
+      name: "input-group-spinner",
+      title: "Spinner",
+      description: "Show a `Spinner` in an addon to indicate the input's async state, such as searching or saving.",
     },
     {
       name: "input-group-textarea",
@@ -70,6 +90,18 @@ import InputGroupAddon from "@/components/ui/input-group/addon.marko";`,
       name: "input-group-invalid",
       title: "Invalid",
       description: "Set `aria-invalid=\"true\"` on the control to switch the group's focus ring and border to the destructive color.",
+    },
+    {
+      name: "input-group-custom",
+      title: "Custom Input",
+      description:
+        "Add `data-slot=\"input-group-control\"` to a custom control for automatic focus-state handling. Upstream wraps `react-textarea-autosize`; this port uses a plain `<textarea>` with CSS `field-sizing-content` for the same autosize behavior without a React-only dependency.",
+    },
+    {
+      name: "input-group-rtl",
+      title: "RTL",
+      description:
+        "InputGroup's parts use Tailwind logical properties, so they restyle correctly under `dir=\"rtl\"` with no component changes. See the [RTL configuration guide](/docs/rtl).",
     },
   ],
 };

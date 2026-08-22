@@ -1,0 +1,31 @@
+// Upstream's "Plugins" demo wires Embla's `embla-carousel-autoplay` plugin
+// through the `plugins=` prop, stopping/resuming on hover via the plugin
+// instance's own `stop`/`reset` methods. Our carousel is backed by
+// @zag-js/carousel, which has no plugin system — autoplay is a NATIVE
+// machine capability (`autoplay` prop + `play()`/`pause()` on the connect
+// api), so there is no `plugins` prop to port. This ports the demo's
+// BEHAVIOR (autoplay every 2s, pause on hover, resume on leave) using our
+// component's real autoplay support instead of a plugin abstraction we
+// don't have.
+import Carousel from "@marko-ui/shadcn/ui/carousel/carousel.marko";
+
+static const SLIDES = [1, 2, 3, 4, 5];
+
+<div class="w-full max-w-[10rem] sm:max-w-xs">
+  <Carousel
+    items=SLIDES
+    autoplay={ delay: 2000 }
+    class="w-full"
+    onMouseEnter() { carouselApi().pause(); }
+    onMouseLeave() { carouselApi().play(); }
+  >
+  <Carousel/carouselApi/>
+    <@content|item|>
+      <div class="p-1">
+        <div class="flex aspect-square items-center justify-center rounded-lg border bg-card">
+          <span class="text-4xl font-semibold">${item}</span>
+        </div>
+      </div>
+    </@content>
+  </Carousel>
+</div>

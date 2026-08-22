@@ -19,6 +19,11 @@ export const docs: ComponentDocs = {
       description: "An avatar and two lines of text, each represented by a skeleton.",
     },
     {
+      name: "skeleton-avatar",
+      title: "Avatar",
+      description: "A circular skeleton for an avatar, paired with two lines of text.",
+    },
+    {
       name: "skeleton-card",
       title: "Card",
       description: "A larger skeleton for an image or media block, paired with text lines.",
@@ -29,9 +34,23 @@ export const docs: ComponentDocs = {
       description: "A paragraph of loading text, with the last line shorter than the rest.",
     },
     {
+      name: "skeleton-form",
+      title: "Form",
+      description: "Skeleton placeholders for labeled form fields and a submit button.",
+    },
+    {
       name: "skeleton-table",
       title: "Table",
       description: "Skeleton rows for a table, each column a different width.",
     },
+    {
+      name: "skeleton-rtl",
+      title: "RTL",
+      description: "Skeleton markup mirrors correctly under `dir=\"rtl\"`.",
+    },
+  ],
+  accessibilityNotes: [
+    "`Skeleton` renders a plain `<div>` with no ARIA role of its own — it communicates loading state visually, not to assistive technology.",
+    "Wrap the region being replaced in a live region (e.g. `aria-busy=\"true\"` or `aria-live=\"polite\"` on a parent) so screen reader users are told content is loading, and update or remove it once real content renders.",
   ],
 };

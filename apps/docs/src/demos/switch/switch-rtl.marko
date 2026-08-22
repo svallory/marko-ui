@@ -1,0 +1,27 @@
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldContent from "@marko-ui/shadcn/ui/field/field-content.marko";
+import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
+
+// Static RTL port: shadcn's switch-rtl source drives a client-side
+// language selector (useTranslation) with no equivalent in this docs
+// app — see demos/input/input-rtl.marko and demos/field/field-rtl.marko
+// for the established precedent. This ports the RTL VISUAL and markup
+// directly: a dir="rtl" field with Arabic copy, matching the source's
+// default locale ("ar"). `dir` is a real @zag-js/switch machine prop
+// (picked from switchMachine.props), forwarded to the hidden input,
+// control, thumb and label parts, so the switch itself restyles/mirrors
+// correctly; Field's layout is Tailwind logical properties, so it already
+// restyles correctly under dir="rtl" with no component changes.
+<div dir="rtl" class="w-full max-w-sm">
+  <Field orientation="horizontal">
+    <FieldContent>
+      <FieldLabel for="switch-focus-mode-rtl" dir="rtl">المشاركة عبر الأجهزة</FieldLabel>
+      <FieldDescription dir="rtl">
+        يتم مشاركة التركيز عبر الأجهزة، ويتم إيقاف تشغيله عند مغادرة التطبيق.
+      </FieldDescription>
+    </FieldContent>
+    <Switch id="switch-focus-mode-rtl" dir="rtl"/>
+  </Field>
+</div>

@@ -1,0 +1,39 @@
+import Dialog from "@marko-ui/shadcn/ui/dialog/dialog.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import Label from "@marko-ui/shadcn/ui/label/label.marko";
+
+// Upstream's dialog-rtl demo drives a live language switcher
+// (English/Arabic/Hebrew, docs-site chrome we haven't ported — same
+// precedent as alert-dialog-rtl.marko, button-rtl.marko and
+// tooltip-rtl.marko): static Arabic content instead of a live switcher.
+// Our Dialog's `dir` prop is a plain native attribute pass-through
+// (dialogMachine.splitProps leaves it alone; see
+// packages/shadcn/ui/dialog/dialog.marko's nativeAttrs), so it lands on
+// the content element exactly like upstream's `dir={dir}` on
+// `DialogContent` — no machine-level RTL behavior is lost by this port.
+<div dir="rtl">
+  <Dialog dir="rtl" class="sm:max-w-sm">
+    <@trigger|props|>
+      <Button ...props variant="outline">فتح الحوار</Button>
+    </@trigger>
+    <@title>تعديل الملف الشخصي</@title>
+    <@description>قم بإجراء تغييرات على ملفك الشخصي هنا. انقر فوق حفظ عند الانتهاء.</@description>
+    <@content>
+      <div class="grid gap-4">
+        <div class="grid gap-2">
+          <Label for="name-rtl">الاسم</Label>
+          <Input id="name-rtl" name="name" value="Pedro Duarte"/>
+        </div>
+        <div class="grid gap-2">
+          <Label for="username-rtl">اسم المستخدم</Label>
+          <Input id="username-rtl" name="username" value="@peduarte"/>
+        </div>
+      </div>
+    </@content>
+    <@footer>
+      <Button variant="outline">إلغاء</Button>
+      <Button type="submit">حفظ التغييرات</Button>
+    </@footer>
+  </Dialog>
+</div>

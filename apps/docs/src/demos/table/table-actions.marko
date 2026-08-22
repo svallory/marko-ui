@@ -1,0 +1,50 @@
+import Table from "@marko-ui/shadcn/ui/table/table.marko";
+import TableHeader from "@marko-ui/shadcn/ui/table/header.marko";
+import TableBody from "@marko-ui/shadcn/ui/table/body.marko";
+import TableRow from "@marko-ui/shadcn/ui/table/row.marko";
+import TableHead from "@marko-ui/shadcn/ui/table/head.marko";
+import TableCell from "@marko-ui/shadcn/ui/table/cell.marko";
+import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+static const ITEMS = [
+  { value: "edit", label: "Edit" },
+  { value: "duplicate", label: "Duplicate" },
+  { type: "separator" },
+  { value: "delete", label: "Delete", variant: "destructive" },
+];
+
+static const products = [
+  { name: "Wireless Mouse", price: "$29.99" },
+  { name: "Mechanical Keyboard", price: "$129.99" },
+  { name: "USB-C Hub", price: "$49.99" },
+];
+
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Product</TableHead>
+      <TableHead>Price</TableHead>
+      <TableHead class="text-right">Actions</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <for|product| of=products>
+      <TableRow>
+        <TableCell class="font-medium">${product.name}</TableCell>
+        <TableCell>${product.price}</TableCell>
+        <TableCell class="text-right">
+          <DropdownMenu items=ITEMS>
+            <@trigger|triggerProps|>
+              <Button variant="ghost" size="icon" class="size-8" ...triggerProps>
+                <Icon name="MoreHorizontal"/>
+                <span class="sr-only">Open menu</span>
+              </Button>
+            </@trigger>
+          </DropdownMenu>
+        </TableCell>
+      </TableRow>
+    </for>
+  </TableBody>
+</Table>

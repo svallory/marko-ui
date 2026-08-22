@@ -1,0 +1,36 @@
+// Static RTL port: upstream's carousel-rtl demo drives a live docs-site
+// language switcher (useTranslation across en/ar/he) that has no
+// equivalent in this app — same established precedent as
+// demos/tabs/tabs-rtl.marko, demos/card/card-rtl.marko, and
+// demos/tooltip/tooltip-rtl.marko. This ports the RTL VISUAL directly using
+// the source's default locale ("ar") with Arabic-Indic numerals.
+//
+// Deviation from upstream: shadcn's Embla port needs an explicit
+// `opts={ direction: dir }` PLUS a manual `rtl:rotate-180` class on the
+// prev/next buttons to point the arrows correctly. Our carousel is a
+// @zag-js/carousel machine — `dir` is a real machine prop (not just a CSS
+// hint), so passing `dir="rtl"` alone flips scroll direction, keyboard
+// arrows, and item order at the machine level. The prev/next icons already
+// carry `mu-rtl-flip` in the component itself (baked in, not opt-in), so no
+// extra class is needed here — just `dir="rtl"`.
+import Carousel from "@marko-ui/shadcn/ui/carousel/carousel.marko";
+
+static const ARABIC_NUMERALS = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
+static function toArabicNumerals(num: number): string {
+  return String(num)
+    .split("")
+    .map((digit) => ARABIC_NUMERALS[Number(digit)])
+    .join("");
+}
+
+static const SLIDES = [1, 2, 3, 4, 5];
+
+<Carousel items=SLIDES dir="rtl" class="w-full max-w-[12rem] sm:max-w-xs">
+  <@content|item|>
+    <div class="p-1">
+      <div class="flex aspect-square items-center justify-center rounded-lg border bg-card">
+        <span class="text-4xl font-semibold">${toArabicNumerals(item)}</span>
+      </div>
+    </div>
+  </@content>
+</Carousel>

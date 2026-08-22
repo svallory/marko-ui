@@ -1,0 +1,16 @@
+import Checkbox from "@marko-ui/shadcn/ui/checkbox/checkbox.marko";
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldContent from "@marko-ui/shadcn/ui/field/field-content.marko";
+import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+
+// See field/field-checkbox.marko: Checkbox owns its root <label>, so the
+// label text lives inside a <FieldLabel for> that targets the checkbox's
+// id rather than wrapping it, avoiding nested <label> elements.
+<Field class="mx-auto w-72" orientation="horizontal">
+  <Checkbox id="checkbox-description-terms" defaultChecked/>
+  <FieldContent>
+    <FieldLabel for="checkbox-description-terms">Accept terms and conditions</FieldLabel>
+    <FieldDescription>By clicking this checkbox, you agree to the terms and conditions.</FieldDescription>
+  </FieldContent>
+</Field>

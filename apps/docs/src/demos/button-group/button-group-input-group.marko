@@ -1,0 +1,42 @@
+import ButtonGroup from "@marko-ui/shadcn/ui/button-group/button-group.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import InputGroup from "@marko-ui/shadcn/ui/input-group/input-group.marko";
+import InputGroupInput from "@marko-ui/shadcn/ui/input-group/input.marko";
+import InputGroupAddon from "@marko-ui/shadcn/ui/input-group/addon.marko";
+import InputGroupButton from "@marko-ui/shadcn/ui/input-group/button.marko";
+import Tooltip from "@marko-ui/shadcn/ui/tooltip/tooltip.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+<let/voiceEnabled=false/>
+
+<ButtonGroup class="[--radius:9999rem]">
+  <ButtonGroup>
+    <Button variant="outline" size="icon">
+      <Icon name="PlusIcon"/>
+    </Button>
+  </ButtonGroup>
+  <ButtonGroup>
+    <InputGroup>
+      <InputGroupInput
+        placeholder=(voiceEnabled ? "Record and send audio..." : "Send a message...")
+        disabled=voiceEnabled
+      />
+      <InputGroupAddon align="inline-end">
+        <Tooltip content="Voice Mode">
+          <@trigger|triggerProps|>
+            <InputGroupButton
+              ...triggerProps
+              onClick() { voiceEnabled = !voiceEnabled; }
+              size="icon-xs"
+              data-active=String(voiceEnabled)
+              class="data-[active=true]:bg-orange-100 data-[active=true]:text-orange-700 dark:data-[active=true]:bg-orange-800 dark:data-[active=true]:text-orange-100"
+              aria-pressed=voiceEnabled
+            >
+              <Icon name="AudioLinesIcon"/>
+            </InputGroupButton>
+          </@trigger>
+        </Tooltip>
+      </InputGroupAddon>
+    </InputGroup>
+  </ButtonGroup>
+</ButtonGroup>

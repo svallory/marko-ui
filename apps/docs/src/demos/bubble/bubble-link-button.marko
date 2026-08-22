@@ -1,0 +1,52 @@
+import Bubble from "@marko-ui/shadcn/ui/bubble/bubble.marko";
+import BubbleContent from "@marko-ui/shadcn/ui/bubble/bubble-content.marko";
+import BubbleGroup from "@marko-ui/shadcn/ui/bubble/bubble-group.marko";
+import { toast } from "@marko-ui/shadcn/ui/toast/store.ts";
+import Toaster from "@marko-ui/shadcn/ui/toast/toast.marko";
+
+// Deviation from upstream: upstream turns each bubble into a real `<button>`
+// via `BubbleContent`'s `render` prop (Radix `Slot.Root`-based
+// props-merging). Our `bubble-content.marko` intentionally drops `render`
+// (see the deviation comment in that file — Marko 6 has no
+// `asChild`/Slot.Root equivalent) and always renders a `<div>`. To keep the
+// interaction faithful, each option here wraps its `BubbleContent` text in a
+// real `<button type="button">` inside the content body instead — this
+// matches the documented fallback pattern ("put a `<button>`/`<a>` inside
+// the content body") and preserves the click behavior and focus semantics.
+<div class="flex w-full max-w-sm flex-col gap-8 py-12">
+  <Bubble variant="muted">
+    <BubbleContent>How can I help you today?</BubbleContent>
+  </Bubble>
+  <BubbleGroup>
+    <Bubble variant="tinted" align="end">
+      <BubbleContent>
+        <button type="button" class="text-left" onClick() { toast.message("You clicked forgot password"); }>
+          I forgot my password
+        </button>
+      </BubbleContent>
+    </Bubble>
+    <Bubble variant="tinted" align="end">
+      <BubbleContent>
+        <button
+          type="button"
+          class="text-left"
+          onClick() { toast.message("You clicked help with subscription"); }
+        >
+          I need help with my subscription
+        </button>
+      </BubbleContent>
+    </Bubble>
+    <Bubble variant="tinted" align="end">
+      <BubbleContent>
+        <button
+          type="button"
+          class="text-left"
+          onClick() { toast.message("You clicked something else. Talk to a human."); }
+        >
+          Something else. Talk to a human.
+        </button>
+      </BubbleContent>
+    </Bubble>
+  </BubbleGroup>
+</div>
+<Toaster/>

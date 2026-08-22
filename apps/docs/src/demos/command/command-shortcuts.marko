@@ -1,0 +1,35 @@
+import Dialog from "@marko-ui/shadcn/ui/dialog/dialog.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Command from "@marko-ui/shadcn/ui/command/command.marko";
+
+// Same CommandDialog composition as command-basic (see that file's comment).
+//
+// DEVIATION FROM UPSTREAM: upstream renders a lucide icon (UserIcon,
+// CreditCardIcon, SettingsIcon) before each item's label. Our
+// `CommandItem` type (command.marko) only carries `value`/`label`/
+// `shortcut` — there is no icon slot — so icons are omitted here rather
+// than faked. This is a component-source limitation, not something a demo
+// file can add; flagging per the technically-forced-omission rule.
+static const groups = [
+  {
+    label: "Settings",
+    items: [
+      { value: "profile", label: "Profile", shortcut: "⌘P" },
+      { value: "billing", label: "Billing", shortcut: "⌘B" },
+      { value: "settings", label: "Settings", shortcut: "⌘S" },
+    ],
+  },
+];
+
+<div class="flex flex-col gap-4">
+  <Dialog class="mu-command-dialog top-1/3 translate-y-0 overflow-hidden p-0" showCloseButton=false>
+    <@trigger|props|>
+      <Button ...props variant="outline" class="w-fit">Open Menu</Button>
+    </@trigger>
+    <@title class="sr-only">Command Palette</@title>
+    <@description class="sr-only">Search for a command to run...</@description>
+    <@content>
+      <Command groups=groups placeholder="Type a command or search..."/>
+    </@content>
+  </Dialog>
+</div>

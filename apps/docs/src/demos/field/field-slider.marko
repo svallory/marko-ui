@@ -1,0 +1,25 @@
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
+import FieldTitle from "@marko-ui/shadcn/ui/field/field-title.marko";
+import Slider from "@marko-ui/shadcn/ui/slider/slider.marko";
+
+<let/range=[200, 800]/>
+
+<div class="w-full max-w-md">
+  <Field>
+    <FieldTitle>Price Range</FieldTitle>
+    <FieldDescription>
+      Set your budget range ($<span class="font-medium tabular-nums">${range[0]}</span> -
+      $<span class="font-medium tabular-nums">${range[1]}</span>).
+    </FieldDescription>
+    <Slider
+      class="mt-2 w-full"
+      value=range
+      valueChange(value) { range = value; }
+      max=1000
+      min=0
+      step=10
+      aria-label=["Minimum price", "Maximum price"]
+    />
+  </Field>
+</div>

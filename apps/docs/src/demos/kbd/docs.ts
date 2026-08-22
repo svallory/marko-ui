@@ -38,5 +38,17 @@ export const docs: ComponentDocs = {
       title: "Input Group",
       description: "Use `Kbd` inside an `InputGroupAddon` component to display a keyboard key inside an input group.",
     },
+    {
+      name: "kbd-rtl",
+      title: "RTL",
+      description: "Pass `dir=\"rtl\"` to a wrapping element to mirror `Kbd`/`KbdGroup` layout for right-to-left languages.",
+    },
+  ],
+  composition:
+    "`Kbd` and `KbdGroup` are both plain, single-file elements (`<kbd>` and a styled wrapper `<div>` — no Zag machine, no sub-parts to import): `KbdGroup` renders `Kbd` children directly (`<KbdGroup><Kbd>...</Kbd><Kbd>...</Kbd></KbdGroup>`) — there is no separate `KbdKey` or similar sub-tag.",
+  accessibilityNotes: [
+    "`Kbd` renders a native `<kbd>` element, which the accessibility tree exposes as textual content (not an interactive control) — screen readers announce its text but do not treat it as a button or landmark.",
+    "`Kbd` sets `pointer-events-none` since it displays a static key/shortcut label rather than something clickable; wrap it in a `Button` or `Tooltip` trigger when the underlying action IS clickable, rather than making the `Kbd` itself interactive.",
+    "Neither `Kbd` nor `KbdGroup` exposes a machine `dir` prop — pass `dir=\"rtl\"` as a plain native attribute on `Kbd`, `KbdGroup`, or a wrapping element; layout mirrors via Tailwind's logical-property utilities with no component changes required.",
   ],
 };

@@ -1,0 +1,22 @@
+import Badge from "@marko-ui/shadcn/ui/badge/badge.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+// Upstream's badge-rtl demo drives a live language switcher (docs-site
+// chrome we haven't ported — see notes/docs-canonical-structure.md, RTL is
+// component behavior, not site machinery). The faithful equivalent is a
+// static dir="rtl" wrapper with Arabic content, matching the precedent set
+// by demos/button/button-rtl.marko and demos/avatar/avatar-rtl.marko.
+<div class="flex w-full flex-wrap justify-center gap-2" dir="rtl">
+  <Badge>شارة</Badge>
+  <Badge variant="secondary">ثانوي</Badge>
+  <Badge variant="destructive">مدمر</Badge>
+  <Badge variant="outline">مخطط</Badge>
+  <Badge variant="secondary">
+    <Icon name="BadgeCheck" data-icon="inline-start"/>
+    متحقق
+  </Badge>
+  <Badge variant="outline">
+    إشارة مرجعية
+    <Icon name="BookmarkIcon" data-icon="inline-end"/>
+  </Badge>
+</div>

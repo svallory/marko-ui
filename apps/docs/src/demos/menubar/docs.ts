@@ -30,6 +30,36 @@ import MenubarMenu from "@/components/ui/menubar/menu.marko";`,
         "Each `MenubarMenu` takes an `items` array of the same shape as the dropdown menu, plus its own `@trigger` body for the visible button.",
     },
     {
+      name: "menubar-checkbox",
+      title: "Checkbox",
+      description:
+        "Use `<@item type=\"checkbox\">` (or an `items` entry with `type: \"checkbox\"`) for toggleable options; drive `checked` from your own state and update it in `checkedChange`.",
+    },
+    {
+      name: "menubar-radio",
+      title: "Radio",
+      description:
+        "Group `<@item type=\"radio\">` entries with a shared `radioGroup` name for single-select options; `radioChange` fires with the group name and the newly selected value.",
+    },
+    {
+      name: "menubar-submenu",
+      title: "Submenu",
+      description:
+        "Use a `type: \"sub\"` entry with its own `subEntries` array for nested menus, opened from a `MenubarSubTrigger`-equivalent row inside the parent menu.",
+    },
+    {
+      name: "menubar-icons",
+      title: "With Icons",
+      description:
+        "Give an item a markup body (instead of `label=`) to render an `<Icon>` alongside its text; mark a destructive entry with `variant=\"destructive\"`.",
+    },
+    {
+      name: "menubar-rtl",
+      title: "RTL",
+      description:
+        "Wrap the menubar in a `dir=\"rtl\"` container for right-to-left layout and text; see the note in the demo source for the one behavioral gap versus upstream's floating-ui RTL placement flip.",
+    },
+    {
       name: "menubar-danger",
       title: "With danger item",
       description: "Mark a destructive entry with `danger` to style it distinctly, and group entries with a `label` item and separators.",

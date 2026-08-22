@@ -1,0 +1,18 @@
+import Drawer from "@marko-ui/shadcn/ui/drawer/drawer.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+
+// Upstream: registry/bases/base/examples/drawer-example.tsx (DrawerSwipeHandleExample).
+// `showSwipeHandle` is a Base UI-only prop with no matching zag-js/drawer
+// prop — our port always renders the grabber unless `hideGrabber` is set,
+// so this demo shows the grabber (the default) rather than gating it behind
+// a boolean.
+<Drawer swipeDirection="up">
+  <@trigger|props|>
+    <Button ...props variant="outline">Up</Button>
+  </@trigger>
+  <@title>Up drawer</@title>
+  <@description>Drawer with a swipe handle.</@description>
+  <@content>
+    <div class="h-80 w-full bg-muted"/>
+  </@content>
+</Drawer>

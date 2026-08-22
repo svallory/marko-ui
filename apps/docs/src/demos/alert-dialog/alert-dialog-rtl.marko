@@ -1,0 +1,36 @@
+import AlertDialog from "@marko-ui/shadcn/ui/alert-dialog/alert-dialog.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+// Upstream's alert-dialog-rtl demo drives a live language switcher
+// (English/Arabic/Hebrew, docs-site chrome we haven't ported — same
+// precedent as button-rtl.marko and tooltip-rtl.marko): static Arabic
+// content instead of a live switcher. Our AlertDialog's `dir` prop is a
+// plain native attribute pass-through (dialogMachine.splitProps leaves it
+// alone; see packages/shadcn/ui/alert-dialog/alert-dialog.marko's
+// nativeAttrs), so it lands on the content element exactly like upstream's
+// `dir={dir}` on `AlertDialogContent` — no machine-level RTL behavior is
+// lost by this port.
+<div class="flex gap-4" dir="rtl">
+  <AlertDialog dir="rtl" cancelText="إلغاء" actionText="متابعة">
+    <@trigger|props|>
+      <Button ...props variant="outline">إظهار الحوار</Button>
+    </@trigger>
+    <@title>هل أنت متأكد تمامًا؟</@title>
+    <@description>
+      لا يمكن التراجع عن هذا الإجراء. سيؤدي هذا إلى حذف حسابك نهائيًا من خوادمنا.
+    </@description>
+  </AlertDialog>
+  <AlertDialog dir="rtl" size="sm" cancelText="عدم السماح" actionText="السماح">
+    <@trigger|props|>
+      <Button ...props variant="outline">إظهار الحوار (صغير)</Button>
+    </@trigger>
+    <@media>
+      <Icon name="BluetoothIcon"/>
+    </@media>
+    <@title>السماح للملحق بالاتصال؟</@title>
+    <@description>
+      هل تريد السماح لملحق USB بالاتصال بهذا الجهاز؟
+    </@description>
+  </AlertDialog>
+</div>

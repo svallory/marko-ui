@@ -1,0 +1,35 @@
+import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+
+// Technically-forced omission: our submenu wiring (submenu.marko) supports
+// only ONE level of nesting — a `type: "sub"` entry inside a submenu's own
+// `subEntries` is not wired (see that file's header comment). Upstream's
+// dropdown-menu-submenu nests a second-level "More options" submenu inside
+// "Invite users". We port the first level faithfully and flatten the
+// second-level items ("Calendly", "Slack", "Webhook") directly into the
+// "Invite users" submenu instead of behind their own nested trigger.
+static const ITEMS = [
+  { value: "team", label: "Team" },
+  {
+    type: "sub",
+    label: "Invite users",
+    subEntries: [
+      { value: "email", label: "Email" },
+      { value: "message", label: "Message" },
+      { type: "separator" },
+      { value: "calendly", label: "Calendly" },
+      { value: "slack", label: "Slack" },
+      { type: "separator" },
+      { value: "webhook", label: "Webhook" },
+      { type: "separator" },
+      { value: "advanced", label: "Advanced..." },
+    ],
+  },
+  { value: "new-team", label: "New Team", shortcut: "⌘+T" },
+];
+
+<DropdownMenu items=ITEMS>
+  <@trigger|triggerProps|>
+    <Button variant="outline" ...triggerProps>Open</Button>
+  </@trigger>
+</DropdownMenu>

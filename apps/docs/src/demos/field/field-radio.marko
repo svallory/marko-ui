@@ -1,0 +1,25 @@
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+import FieldSet from "@marko-ui/shadcn/ui/field/field-set.marko";
+import RadioGroup from "@marko-ui/shadcn/ui/radio-group/radio-group.marko";
+
+static const PLANS = [
+  { value: "monthly", label: "Monthly ($9.99/month)" },
+  { value: "yearly", label: "Yearly ($99.99/year)" },
+  { value: "lifetime", label: "Lifetime ($299.99)" },
+];
+
+// Deviation from upstream: upstream renders each option as a bare
+// <RadioGroupItem> paired with an external <FieldLabel>, one <Field
+// orientation="horizontal"> per option. Our <RadioGroup> already renders
+// each item as its own root <label> (with `label`/`content`), so the per-
+// item <Field> wrapper isn't needed or nestable here — layout is delegated
+// to the RadioGroup's own item spacing instead.
+<div class="w-full max-w-md">
+  <FieldSet>
+    <FieldLabel>Subscription Plan</FieldLabel>
+    <FieldDescription>Yearly and lifetime plans offer significant savings.</FieldDescription>
+    <RadioGroup items=PLANS defaultValue="monthly" class="gap-3"/>
+  </FieldSet>
+</div>

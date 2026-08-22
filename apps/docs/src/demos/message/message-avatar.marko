@@ -1,0 +1,50 @@
+import Avatar from "@marko-ui/shadcn/ui/avatar/avatar.marko";
+import Bubble from "@marko-ui/shadcn/ui/bubble/bubble.marko";
+import BubbleContent from "@marko-ui/shadcn/ui/bubble/bubble-content.marko";
+import BubbleGroup from "@marko-ui/shadcn/ui/bubble/bubble-group.marko";
+import Message from "@marko-ui/shadcn/ui/message/message.marko";
+import MessageAvatar from "@marko-ui/shadcn/ui/message/avatar.marko";
+import MessageContent from "@marko-ui/shadcn/ui/message/content.marko";
+
+<div class="flex w-full max-w-sm flex-col gap-6 py-12">
+  <Message>
+    <MessageAvatar>
+      <Avatar src="https://github.com/leerob.png" alt="@avatar" fallback="R"/>
+    </MessageAvatar>
+    <MessageContent>
+      <Bubble variant="muted">
+        <BubbleContent>
+          The build failed during dependency installation.
+        </BubbleContent>
+      </Bubble>
+    </MessageContent>
+  </Message>
+  <Message align="end">
+    <MessageAvatar>
+      <Avatar src="https://github.com/shadcn.png" alt="@avatar" fallback="R"/>
+    </MessageAvatar>
+    <MessageContent>
+      <Bubble>
+        <BubbleContent>Can you share the exact error?</BubbleContent>
+      </Bubble>
+    </MessageContent>
+  </Message>
+  <Message>
+    <MessageAvatar>
+      <Avatar src="https://github.com/leerob.png" alt="@avatar" fallback="R"/>
+    </MessageAvatar>
+    <MessageContent>
+      <BubbleGroup>
+        <Bubble variant="muted">
+          <BubbleContent>Here's the error from the logs</BubbleContent>
+        </Bubble>
+        <Bubble variant="muted">
+          <BubbleContent>
+            Something went wrong with the build. The libraries are not
+            installed correctly. Try running the build again.
+          </BubbleContent>
+        </Bubble>
+      </BubbleGroup>
+    </MessageContent>
+  </Message>
+</div>

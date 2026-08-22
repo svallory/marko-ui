@@ -1,0 +1,24 @@
+import Kbd from "@marko-ui/shadcn/ui/kbd/kbd.marko";
+import KbdGroup from "@marko-ui/shadcn/ui/kbd/group.marko";
+
+// Upstream's kbd-rtl demo drives a live language selector (useTranslation)
+// defaulting to "ar" with no equivalent in this docs app — established
+// precedent: demos/switch/switch-rtl.marko, demos/radio-group/radio-group-rtl.marko.
+// This ports the RTL VISUAL directly: a static dir="rtl" wrapper around the
+// same key combos as upstream. `Kbd`/`KbdGroup` are plain elements (no Zag
+// machine), so `dir` passes through as a native attribute; Tailwind's
+// logical-property utilities on KbdGroup's `inline-flex` layout already
+// mirror correctly under dir="rtl" with no component changes.
+<div dir="rtl" class="flex flex-col items-center gap-4">
+  <KbdGroup>
+    <Kbd>⌘</Kbd>
+    <Kbd>⇧</Kbd>
+    <Kbd>⌥</Kbd>
+    <Kbd>⌃</Kbd>
+  </KbdGroup>
+  <KbdGroup>
+    <Kbd>Ctrl</Kbd>
+    <span>+</span>
+    <Kbd>B</Kbd>
+  </KbdGroup>
+</div>

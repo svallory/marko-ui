@@ -1,0 +1,33 @@
+import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+<let/email=true/>
+<let/sms=false/>
+<let/push=true/>
+
+<DropdownMenu
+  select(value) {
+    if (value === "email") email = !email;
+    else if (value === "sms") sms = !sms;
+    else if (value === "push") push = !push;
+  }
+  class="w-48"
+>
+  <@trigger|triggerProps|>
+    <Button variant="outline" ...triggerProps>Notifications</Button>
+  </@trigger>
+  <@item type="label" label="Notification Preferences"/>
+  <@item type="checkbox" value="email" checked=email>
+    <Icon name="Mail"/>
+    Email notifications
+  </@item>
+  <@item type="checkbox" value="sms" checked=sms>
+    <Icon name="MessageSquareIcon"/>
+    SMS notifications
+  </@item>
+  <@item type="checkbox" value="push" checked=push>
+    <Icon name="BellIcon"/>
+    Push notifications
+  </@item>
+</DropdownMenu>

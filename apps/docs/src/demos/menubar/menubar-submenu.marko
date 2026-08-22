@@ -1,0 +1,54 @@
+import Menubar from "@marko-ui/shadcn/ui/menubar/menubar.marko";
+import MenubarMenu from "@marko-ui/shadcn/ui/menubar/menu.marko";
+
+static const FILE_ITEMS = [
+  {
+    type: "sub",
+    label: "Share",
+    subEntries: [
+      { value: "email-link", label: "Email link" },
+      { value: "messages", label: "Messages" },
+      { value: "notes", label: "Notes" },
+    ],
+  },
+  { type: "separator" },
+  { value: "print", label: "Print...", shortcut: "⌘P" },
+];
+
+static const EDIT_ITEMS = [
+  { value: "undo", label: "Undo", shortcut: "⌘Z" },
+  { value: "redo", label: "Redo", shortcut: "⇧⌘Z" },
+  { type: "separator" },
+  {
+    type: "sub",
+    label: "Find",
+    subEntries: [
+      { value: "find", label: "Find..." },
+      { value: "find-next", label: "Find Next" },
+      { value: "find-previous", label: "Find Previous" },
+    ],
+  },
+  { type: "separator" },
+  { value: "cut", label: "Cut" },
+  { value: "copy", label: "Copy" },
+  { value: "paste", label: "Paste" },
+];
+
+<Menubar class="w-72">
+  <@content>
+    <MenubarMenu items=FILE_ITEMS>
+      <@trigger|triggerProps|>
+        <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+          File
+        </button>
+      </@trigger>
+    </MenubarMenu>
+    <MenubarMenu items=EDIT_ITEMS>
+      <@trigger|triggerProps|>
+        <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+          Edit
+        </button>
+      </@trigger>
+    </MenubarMenu>
+  </@content>
+</Menubar>

@@ -1,0 +1,11 @@
+import Slider from "@marko-ui/shadcn/ui/slider/slider.marko";
+
+// Upstream's slider-rtl demo drives a live language switcher (docs-site
+// chrome we haven't ported — see notes/docs-canonical-structure.md, RTL is
+// component behavior, not site machinery). The faithful equivalent is a
+// static dir="rtl" slider, matching the precedent set by
+// demos/accordion/accordion-rtl.marko and demos/badge/badge-rtl.marko.
+// `dir` is a Zag machine prop here (sliderMachine.props includes "dir"),
+// so it drives the machine's own RTL geometry, not just a passed-through
+// native attribute.
+<Slider class="mx-auto w-full max-w-xs" defaultValue=[75] max=100 step=1 dir="rtl" aria-label=["القيمة"]/>

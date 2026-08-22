@@ -37,5 +37,11 @@ export const docs: ComponentDocs = {
       title: "Empty state",
       description: "An empty `data` array renders a single centered \"No results.\" row instead of an empty table body.",
     },
+    {
+      name: "data-table-rtl",
+      title: "RTL",
+      description:
+        "The table works unchanged under `dir=\"rtl\"`; wrap it (or an ancestor) in `dir=\"rtl\"` and text alignment, sort-icon placement, and cell order follow the writing direction. See the [RTL guide](/docs/rtl) for site-wide setup.",
+    },
   ],
 };

@@ -1,0 +1,40 @@
+import Bubble from "@marko-ui/shadcn/ui/bubble/bubble.marko";
+import BubbleContent from "@marko-ui/shadcn/ui/bubble/bubble-content.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Collapsible from "@marko-ui/shadcn/ui/collapsible/collapsible.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+static const text = `The accessibility review found two focus states that were visually too subtle in dark mode.
+
+I checked the dialog, menu, and drawer paths because each one renders focusable controls inside a layered surface.
+
+The dialog and drawer are fine. The menu needs the hover and focus tokens split so keyboard focus stays visible when the pointer is not involved.
+
+I also recommend keeping the change in the style file instead of the primitive so the other themes can choose their own focus treatment later.`;
+static const previewLength = 180;
+
+<let/open=false/>
+<const/isLong=(text.length > previewLength)/>
+<const/preview=`${text.slice(0, previewLength)}...`/>
+
+<div class="flex w-full max-w-sm flex-col gap-8 py-12">
+  <Bubble variant="muted">
+    <BubbleContent>How can I help you today?</BubbleContent>
+  </Bubble>
+
+  <Bubble variant="muted" align="end">
+    <BubbleContent class="whitespace-pre-line">
+      <Collapsible open=open openChange(next) { open = next; }>
+        <div>${open || !isLong ? text : preview}</div>
+        <if=isLong>
+          <@trigger|triggerProps|>
+            <Button ...triggerProps variant="link" class="gap-1 p-0 text-muted-foreground">
+              ${open ? "Show less" : "Show more"}
+              <Icon name="ChevronDown" class=`transition-transform ${open ? "rotate-180" : ""}`/>
+            </Button>
+          </@trigger>
+        </if>
+      </Collapsible>
+    </BubbleContent>
+  </Bubble>
+</div>

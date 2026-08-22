@@ -1,0 +1,120 @@
+// Faithful port of upstream's `message-scroller-opening-position.tsx`. Tabs
+// switch `defaultScrollPosition` (start/end/last-anchor) and re-run the
+// opening scroll via the controller getter — this is the one demo that
+// exercises `useMessageScroller`'s equivalent (the provider's `content`
+// body-getter) OUTSIDE the scroller's own subtree markup, driven by a
+// `<lifecycle>` in place of upstream's `useLayoutEffect`.
+//
+// SIMPLIFICATION FROM SOURCE: none needed for behavior — upstream's demo
+// already used plain scripted message data. The remount trick (single-item
+// keyed `<for>`) stands in for React's `key={positionKey}` idiom, matching
+// message-scroller-previous-context.marko's pattern, since re-running the
+// opening scroll needs a fresh mount to fire onMount again.
+import MessageScrollerProvider from "@marko-ui/shadcn/ui/message-scroller/message-scroller-provider.marko";
+import MessageScroller from "@marko-ui/shadcn/ui/message-scroller/message-scroller.marko";
+import MessageScrollerViewport from "@marko-ui/shadcn/ui/message-scroller/viewport.marko";
+import MessageScrollerContent from "@marko-ui/shadcn/ui/message-scroller/content.marko";
+import MessageScrollerItem from "@marko-ui/shadcn/ui/message-scroller/item.marko";
+import MessageScrollerButton from "@marko-ui/shadcn/ui/message-scroller/button.marko";
+import type { MessageScrollerControllerGetter } from "@marko-ui/shadcn/ui/message-scroller/lib/controller.ts";
+import Card from "@marko-ui/shadcn/ui/card/card.marko";
+import CardHeader from "@marko-ui/shadcn/ui/card/header.marko";
+import CardTitle from "@marko-ui/shadcn/ui/card/title.marko";
+import CardDescription from "@marko-ui/shadcn/ui/card/description.marko";
+import CardContent from "@marko-ui/shadcn/ui/card/content.marko";
+import CardFooter from "@marko-ui/shadcn/ui/card/footer.marko";
+import Message from "@marko-ui/shadcn/ui/message/message.marko";
+import MessageContent from "@marko-ui/shadcn/ui/message/content.marko";
+import Bubble from "@marko-ui/shadcn/ui/bubble/bubble.marko";
+import BubbleContent from "@marko-ui/shadcn/ui/bubble/bubble-content.marko";
+import Tabs from "@marko-ui/shadcn/ui/tabs/tabs.marko";
+
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+}
+
+static const MESSAGES: ChatMessage[] = [
+  { id: "open-1", role: "user", text: "This is the first message the user sent in the conversation." },
+  { id: "open-2", role: "assistant", text: "Workspace creation rose 8%, but first invite completion only rose 2%." },
+  { id: "open-3", role: "user", text: "This is the last message the user sent in the conversation." },
+  { id: "open-4", role: "assistant", text: "Start with the invite step. Teams are creating workspaces but waiting to add collaborators.\n\nRecommended follow-up:\n\n1. Compare invite drop-off by account size.\n2. Check whether users who skip invites still return within 24 hours.\n3. Review the empty-state copy on the first project screen.\n4. Segment activation by template, since template users may not need invites right away.\n\nIf that pattern holds, the next experiment should make collaboration useful earlier instead of prompting for invites harder." },
+];
+
+export type Position = "start" | "end" | "last-anchor";
+
+<let/position=("last-anchor" as Position)/>
+<let/positionKey=0/>
+
+<const/onPositionChange=(value: string) => {
+  if (value === "start" || value === "end" || value === "last-anchor") {
+    position = value;
+    positionKey += 1;
+  }
+}/>
+
+<const/runOpeningScroll=(controller: MessageScrollerControllerGetter) => {
+  const frame = requestAnimationFrame(() => {
+    if (position === "start") {
+      controller().scrollToStart({ behavior: "auto" });
+      return;
+    }
+    if (position === "end") {
+      controller().scrollToEnd({ behavior: "auto" });
+      return;
+    }
+    controller().scrollToMessage("open-3", { align: "start", behavior: "auto", scrollMargin: 64 });
+  });
+  return { cleanup: () => cancelAnimationFrame(frame) };
+}/>
+
+<div class="relative flex flex-col gap-4">
+  <Card class="mx-auto h-140 w-full max-w-sm gap-0">
+    <CardHeader class="gap-1 border-b">
+      <CardTitle>Opening Position</CardTitle>
+      <CardDescription>Choose where a saved transcript opens.</CardDescription>
+    </CardHeader>
+    <CardContent class="flex-1 overflow-hidden p-0">
+      <MessageScrollerProvider>
+        <@content|controller|>
+          <for|generation| of=[positionKey] by=(value) => value>
+            <MessageScroller controller=controller>
+              <MessageScrollerViewport controller=controller>
+                <MessageScrollerContent controller=controller class="p-4">
+                  <for|message| of=MESSAGES by=(message) => message.id>
+                    <MessageScrollerItem controller=controller messageId=message.id scrollAnchor=(message.role === "user")>
+                      <Message align=(message.role === "user" ? "end" : "start")>
+                        <MessageContent>
+                          <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
+                            <BubbleContent class="space-y-2">
+                              <for|paragraph| of=message.text.split(/\n\s*\n/)>
+                                <p class="whitespace-pre-wrap">${paragraph}</p>
+                              </for>
+                            </BubbleContent>
+                          </Bubble>
+                        </MessageContent>
+                      </Message>
+                    </MessageScrollerItem>
+                  </for>
+                </MessageScrollerContent>
+              </MessageScrollerViewport>
+              <MessageScrollerButton controller=controller/>
+            </MessageScroller>
+            <lifecycle onMount() { return runOpeningScroll(controller); }/>
+          </for>
+        </@content>
+      </MessageScrollerProvider>
+    </CardContent>
+    <CardFooter class="flex items-center justify-center border-t">
+      <Tabs class="w-full" value=position valueChange=onPositionChange>
+        <@trigger value="start">start</@trigger>
+        <@trigger value="end">end</@trigger>
+        <@trigger value="last-anchor">last-anchor</@trigger>
+      </Tabs>
+    </CardFooter>
+  </Card>
+  <div class="mx-auto max-w-sm px-0.5 text-center text-xs text-muted-foreground">
+    Toggle the defaultScrollPosition to see where the transcript starts when you open the thread
+  </div>
+</div>

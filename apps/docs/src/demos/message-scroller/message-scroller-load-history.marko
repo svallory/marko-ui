@@ -1,0 +1,133 @@
+// Faithful port of upstream's `message-scroller-load-history.tsx`. Prepending
+// older messages preserves the reader's current position
+// (`preserveScrollOnPrepend`, enabled by default on the viewport).
+//
+// SIMPLIFICATION FROM SOURCE: upstream calls `sonner`'s `toast(...)`; this
+// port uses our own toast store's `toast.success(...)` (see
+// packages/shadcn/ui/toast/store.ts) — same user-facing notification, our
+// port's actual toast API. The remount trick (single-item keyed `<for>`)
+// stands in for React's `key={demoKey}` idiom used to reset the transcript.
+import MessageScrollerProvider from "@marko-ui/shadcn/ui/message-scroller/message-scroller-provider.marko";
+import MessageScroller from "@marko-ui/shadcn/ui/message-scroller/message-scroller.marko";
+import MessageScrollerViewport from "@marko-ui/shadcn/ui/message-scroller/viewport.marko";
+import MessageScrollerContent from "@marko-ui/shadcn/ui/message-scroller/content.marko";
+import MessageScrollerItem from "@marko-ui/shadcn/ui/message-scroller/item.marko";
+import MessageScrollerButton from "@marko-ui/shadcn/ui/message-scroller/button.marko";
+import Card from "@marko-ui/shadcn/ui/card/card.marko";
+import CardHeader from "@marko-ui/shadcn/ui/card/header.marko";
+import CardTitle from "@marko-ui/shadcn/ui/card/title.marko";
+import CardDescription from "@marko-ui/shadcn/ui/card/description.marko";
+import CardAction from "@marko-ui/shadcn/ui/card/action.marko";
+import CardContent from "@marko-ui/shadcn/ui/card/content.marko";
+import CardFooter from "@marko-ui/shadcn/ui/card/footer.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+import Marker from "@marko-ui/shadcn/ui/marker/marker.marko";
+import MarkerContent from "@marko-ui/shadcn/ui/marker/content.marko";
+import Message from "@marko-ui/shadcn/ui/message/message.marko";
+import MessageContent from "@marko-ui/shadcn/ui/message/content.marko";
+import Bubble from "@marko-ui/shadcn/ui/bubble/bubble.marko";
+import BubbleContent from "@marko-ui/shadcn/ui/bubble/bubble-content.marko";
+import Tooltip from "@marko-ui/shadcn/ui/tooltip/tooltip.marko";
+import Toaster from "@marko-ui/shadcn/ui/toast/toast.marko";
+import { toast } from "@marko-ui/shadcn/ui/toast/store.ts";
+
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+}
+
+static const HISTORY: ChatMessage[] = [
+  { id: "history-1-user", role: "user", text: "Can you summarize the incident channel?" },
+  { id: "history-1-assistant", role: "assistant", text: "The first alert was a delayed export job. It started backing up around 09:42 UTC and triggered the warning once the retry queue crossed the threshold.\n\nNo customer-facing checkout paths were affected, but exports for larger workspaces were running about 12 minutes behind." },
+  { id: "history-2-user", role: "user", text: "Was checkout affected?" },
+  { id: "history-2-assistant", role: "assistant", text: "No checkout errors were reported. Payment authorization, order creation, and confirmation emails stayed inside their normal latency bands." },
+  { id: "history-3-user", role: "user", text: "What changed in the last deploy?" },
+  { id: "history-3-assistant", role: "assistant", text: "Only the export queue worker changed. The deploy moved large CSV jobs onto the shared retry policy, which made each failed attempt hold a worker slot longer than before." },
+  { id: "history-4-user", role: "user", text: "Do we need to roll back?" },
+  { id: "history-4-assistant", role: "assistant", text: "Not yet. Queue depth is recovering after we reduced retry concurrency, and the oldest pending job is now under five minutes old." },
+  { id: "history-5-user", role: "user", text: "Keep watching for customer-visible issues." },
+  { id: "history-5-assistant", role: "assistant", text: "I will watch the queue and support tags for another 15 minutes. I am tracking export failures, delayed download requests, and any support thread that mentions missing reports." },
+];
+
+static const INITIAL_VISIBLE_COUNT = 5;
+
+<let/demoKey=0/>
+<let/visibleCount=INITIAL_VISIBLE_COUNT/>
+<const/visibleMessages=HISTORY.slice(-visibleCount)/>
+<const/canLoadHistory=(visibleCount < HISTORY.length)/>
+
+<const/reset=() => {
+  visibleCount = INITIAL_VISIBLE_COUNT;
+  demoKey += 1;
+}/>
+
+<const/loadHistory=() => {
+  visibleCount = HISTORY.length;
+  toast.success({ title: "History loaded", description: "Scroll up to see earlier messages." });
+}/>
+
+<div class="relative flex flex-col gap-4">
+  <Card class="mx-auto h-140 w-full max-w-sm gap-0">
+    <CardHeader class="gap-1 border-b">
+      <CardTitle>Load History</CardTitle>
+      <CardDescription>Prepended messages keep your place.</CardDescription>
+      <CardAction>
+        <Tooltip>
+          <@trigger|props|>
+            <Button ...props type="button" variant="outline" size="icon" aria-label="Reset loaded messages" disabled=(visibleCount === INITIAL_VISIBLE_COUNT) onClick=reset>
+              <Icon name="RotateCwIcon"/>
+            </Button>
+          </@trigger>
+          <@content>Reset</@content>
+        </Tooltip>
+      </CardAction>
+    </CardHeader>
+    <CardContent class="flex-1 overflow-hidden p-0">
+      <MessageScrollerProvider>
+        <@content|controller|>
+          <for|generation| of=[demoKey] by=(value) => value>
+            <MessageScroller controller=controller>
+              <MessageScrollerViewport controller=controller>
+                <MessageScrollerContent controller=controller class="p-4">
+                  <for|message| of=visibleMessages by=(message) => message.id>
+                    <MessageScrollerItem controller=controller messageId=message.id>
+                      <Message align=(message.role === "user" ? "end" : "start")>
+                        <MessageContent>
+                          <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
+                            <BubbleContent class="space-y-2">
+                              <for|paragraph| of=message.text.split(/\n\s*\n/)>
+                                <p class="whitespace-pre-wrap">${paragraph}</p>
+                              </for>
+                            </BubbleContent>
+                          </Bubble>
+                        </MessageContent>
+                      </Message>
+                    </MessageScrollerItem>
+                  </for>
+                  <MessageScrollerItem controller=controller scrollAnchor=false>
+                    <Marker variant="separator">
+                      <MarkerContent>End of Conversation</MarkerContent>
+                    </Marker>
+                  </MessageScrollerItem>
+                </MessageScrollerContent>
+              </MessageScrollerViewport>
+              <MessageScrollerButton controller=controller/>
+            </MessageScroller>
+          </for>
+        </@content>
+      </MessageScrollerProvider>
+    </CardContent>
+    <CardFooter class="flex flex-col items-center gap-2 border-t">
+      <Button type="button" disabled=(!canLoadHistory) onClick=loadHistory class="w-full" variant="secondary">
+        ${canLoadHistory ? "Load History" : "History Loaded"}
+      </Button>
+      <p class="text-xs text-muted-foreground">Restore earlier messages while keeping your place.</p>
+    </CardFooter>
+  </Card>
+  <div class="mx-auto max-w-sm px-0.5 text-center text-xs text-balance text-muted-foreground">
+    Click Load History to load the entire conversation
+  </div>
+</div>
+<Toaster/>

@@ -1,0 +1,16 @@
+// Static RTL port: upstream's progress-rtl demo drives a live docs-site
+// language switcher (useTranslation across en/ar/he) that has no
+// equivalent in this app — same established precedent as
+// demos/input/input-rtl.marko and demos/card/card-rtl.marko. This ports
+// the RTL VISUAL and markup directly using the source's default locale
+// ("ar"): a `dir="rtl"` progress bar with an Arabic label and
+// Arabic-Indic numerals for the value, matching upstream's
+// `toArabicNumerals` helper. Our <Progress> renders its indicator with
+// `size-full flex-1` (Zag's `getRangeProps()` handles fill direction),
+// unlike the upstream radix-nova style's manual `translateX` +
+// `rtl:rotate-180` workaround — so no extra RTL class is needed here.
+import Progress from "@marko-ui/shadcn/ui/progress/progress.marko";
+
+<div dir="rtl" class="w-full max-w-sm">
+  <Progress value=66 label="تقدم الرفع" class="w-full"/>
+</div>

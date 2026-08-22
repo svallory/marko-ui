@@ -1,0 +1,129 @@
+import NavigationMenu from "@marko-ui/shadcn/ui/navigation-menu/navigation-menu.marko";
+
+// Static-locale RTL port: upstream's navigation-menu-rtl demo drives a live
+// docs-site language switcher (useTranslation across en/ar/he via
+// components/language-selector.tsx) that has no equivalent in this app —
+// same established precedent as demos/dropdown-menu/dropdown-menu-rtl.marko
+// and demos/menubar/menubar-rtl.marko. This ports the RTL VISUAL and markup
+// directly using the source's default locale ("ar"): a `dir="rtl"` menu with
+// Arabic copy, `align="end"` (matching upstream's `align={dir === "rtl" ?
+// "end" : "start"}`), and the same Getting Started / Components / With Icon /
+// Docs structure as upstream.
+//
+// Unlike dropdown-menu/menubar's RTL demos, this one is NOT a
+// technically-forced static wrapper: @zag-js/navigation-menu's own `dir`
+// prop IS re-exposed by our Input type (`MachineInput<"nav",
+// navigationMenu.Props>` picks the machine's full prop set, `dir` included),
+// so `dir="rtl"` here drives the real machine — including its own
+// floating-ui-equivalent viewport/indicator positioning — not just a text/
+// layout-direction wrapper.
+<NavigationMenu dir="rtl" align="end">
+  <@entry type="menu" value="getting-started" label="البدء">
+    <ul class="w-96">
+      <li>
+        <a href="/docs" class="mu-navigation-menu-link">
+          <div class="flex flex-col gap-1 text-sm">
+            <div class="leading-none font-medium">مقدمة</div>
+            <div class="text-muted-foreground line-clamp-2">مكونات قابلة لإعادة الاستخدام مبنية باستخدام Tailwind CSS.</div>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a href="/docs/installation" class="mu-navigation-menu-link">
+          <div class="flex flex-col gap-1 text-sm">
+            <div class="leading-none font-medium">التثبيت</div>
+            <div class="text-muted-foreground line-clamp-2">كيفية تثبيت التبعيات وتنظيم تطبيقك.</div>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a href="/docs/primitives/typography" class="mu-navigation-menu-link">
+          <div class="flex flex-col gap-1 text-sm">
+            <div class="leading-none font-medium">الطباعة</div>
+            <div class="text-muted-foreground line-clamp-2">أنماط للعناوين والفقرات والقوائم...إلخ</div>
+          </div>
+        </a>
+      </li>
+    </ul>
+  </@entry>
+  <@entry type="menu" value="components" label="المكونات">
+    <ul class="grid w-[400px] gap-2 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+      <li>
+        <a href="/docs/primitives/alert-dialog" class="mu-navigation-menu-link">
+          <div class="flex flex-col gap-1 text-sm">
+            <div class="leading-none font-medium">حوار التنبيه</div>
+            <div class="text-muted-foreground line-clamp-2">حوار نافذة يقطع المستخدم بمحتوى مهم ويتوقع استجابة.</div>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a href="/docs/primitives/hover-card" class="mu-navigation-menu-link">
+          <div class="flex flex-col gap-1 text-sm">
+            <div class="leading-none font-medium">بطاقة التحويم</div>
+            <div class="text-muted-foreground line-clamp-2">للمستخدمين المبصرين لمعاينة المحتوى المتاح خلف الرابط.</div>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a href="/docs/primitives/progress" class="mu-navigation-menu-link">
+          <div class="flex flex-col gap-1 text-sm">
+            <div class="leading-none font-medium">التقدم</div>
+            <div class="text-muted-foreground line-clamp-2">يعرض مؤشرًا يوضح تقدم إتمام المهمة، عادةً يتم عرضه كشريط تقدم.</div>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a href="/docs/primitives/scroll-area" class="mu-navigation-menu-link">
+          <div class="flex flex-col gap-1 text-sm">
+            <div class="leading-none font-medium">منطقة التمرير</div>
+            <div class="text-muted-foreground line-clamp-2">يفصل المحتوى بصريًا أو دلاليًا.</div>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a href="/docs/primitives/tabs" class="mu-navigation-menu-link">
+          <div class="flex flex-col gap-1 text-sm">
+            <div class="leading-none font-medium">التبويبات</div>
+            <div class="text-muted-foreground line-clamp-2">مجموعة من أقسام المحتوى المتعددة الطبقات المعروفة بألواح التبويب.</div>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a href="/docs/primitives/tooltip" class="mu-navigation-menu-link">
+          <div class="flex flex-col gap-1 text-sm">
+            <div class="leading-none font-medium">تلميح</div>
+            <div class="text-muted-foreground line-clamp-2">نافذة منبثقة تعرض معلومات متعلقة بعنصر عند التركيز أو التحويم.</div>
+          </div>
+        </a>
+      </li>
+    </ul>
+  </@entry>
+  <@entry type="menu" value="with-icon" label="مع أيقونة">
+    <ul class="grid w-[200px]">
+      <li>
+        <a href="#" class="mu-navigation-menu-link flex-row items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          قائمة الانتظار
+        </a>
+        <a href="#" class="mu-navigation-menu-link flex-row items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" stroke-dasharray="2 4"/>
+          </svg>
+          المهام
+        </a>
+        <a href="#" class="mu-navigation-menu-link flex-row items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+          منجز
+        </a>
+      </li>
+    </ul>
+  </@entry>
+  <@entry value="docs" label="الوثائق" href="/docs"/>
+</NavigationMenu>

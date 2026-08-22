@@ -1,0 +1,41 @@
+import Bubble from "@marko-ui/shadcn/ui/bubble/bubble.marko";
+import BubbleContent from "@marko-ui/shadcn/ui/bubble/bubble-content.marko";
+import BubbleReactions from "@marko-ui/shadcn/ui/bubble/bubble-reactions.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+import Popover from "@marko-ui/shadcn/ui/popover/popover.marko";
+import PopoverHeader from "@marko-ui/shadcn/ui/popover/header.marko";
+import PopoverTitle from "@marko-ui/shadcn/ui/popover/title.marko";
+import PopoverDescription from "@marko-ui/shadcn/ui/popover/description.marko";
+
+<div class="flex w-full max-w-sm flex-col gap-4 py-12">
+  <Bubble align="end">
+    <BubbleContent>Run the build script.</BubbleContent>
+  </Bubble>
+  <Bubble variant="destructive">
+    <BubbleContent>Failed to run the command.</BubbleContent>
+    <BubbleReactions>
+      <Popover>
+        <@trigger|triggerProps|>
+          <Button
+            ...triggerProps
+            variant="ghost"
+            size="icon-xs"
+            aria-label="Show error details"
+            class="aria-expanded:text-destructive"
+          >
+            <Icon name="InfoIcon"/>
+          </Button>
+        </@trigger>
+        <@content>
+          <PopoverHeader>
+            <PopoverTitle class="text-sm">Command failed with exit code 1</PopoverTitle>
+            <PopoverDescription class="text-sm">
+              ENOENT: no such file or directory, open pnpm-lock.yaml
+            </PopoverDescription>
+          </PopoverHeader>
+        </@content>
+      </Popover>
+    </BubbleReactions>
+  </Bubble>
+</div>

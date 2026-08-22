@@ -1,0 +1,26 @@
+import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+<DropdownMenu>
+  <@trigger|triggerProps|>
+    <Button variant="outline" ...triggerProps>Open</Button>
+  </@trigger>
+  <@item value="profile">
+    <Icon name="User"/>
+    Profile
+  </@item>
+  <@item value="billing">
+    <Icon name="CreditCard"/>
+    Billing
+  </@item>
+  <@item value="settings">
+    <Icon name="Settings"/>
+    Settings
+  </@item>
+  <@item type="separator"/>
+  <@item value="logout" variant="destructive">
+    <Icon name="LogOutIcon"/>
+    Log out
+  </@item>
+</DropdownMenu>

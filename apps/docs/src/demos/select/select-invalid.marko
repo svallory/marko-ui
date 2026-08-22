@@ -1,0 +1,23 @@
+// Upstream wires `data-invalid` on `Field` and `aria-invalid` on
+// `SelectTrigger` (a Base UI/Radix subcomponent). Our select is a single
+// unsplit component with no exposed trigger element, so `aria-invalid`
+// passes straight through select.marko's native-attribute forwarding
+// (anything not machine-owned or component-owned spreads onto the root
+// `<div data-slot="select">` via `nativeAttrs()`) instead of being aimed
+// at a separate part.
+import Select from "@marko-ui/shadcn/ui/select/select.marko";
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldError from "@marko-ui/shadcn/ui/field/field-error.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+
+static const fruits = [
+  { value: "apple", label: "Apple" },
+  { value: "banana", label: "Banana" },
+  { value: "blueberry", label: "Blueberry" },
+];
+
+<Field invalid class="w-full max-w-48">
+  <FieldLabel>Fruit</FieldLabel>
+  <Select items=fruits placeholder="Select a fruit" aria-invalid="true"/>
+  <FieldError>Please select a fruit.</FieldError>
+</Field>

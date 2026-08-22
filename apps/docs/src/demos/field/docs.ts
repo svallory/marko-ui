@@ -19,6 +19,20 @@ import FieldDescription from "@/components/ui/field/field-description.marko";`,
   <Input id="name" autocomplete="off" placeholder="Evil Rabbit"/>
   <FieldDescription>This appears on invoices and emails.</FieldDescription>
 </Field>`,
+  // `field` is compound (10 parts in api-reference.json), so `isCompound` is
+  // true and the route renders the auto-generated <composition-tree> for
+  // "Anatomy" from api-reference.json's part list — this docs.composition
+  // field is never read for compound components (see
+  // routes/docs/components/$name/+page.marko: `<if=page.isCompound>` wins
+  // before `<else-if=page.docs.composition>` is ever reached). Upstream's
+  // "Composition" section shows THREE separate narrative trees (Field,
+  // FieldGroup, FieldSet) with prose under each; our auto-tree is one flat
+  // tree of all parts under the `field` root, which is the honest
+  // presence-only equivalent the canonical structure spec calls for
+  // ("Anatomy — tag tree, slots/attr-tags") — narrated per-root prose isn't
+  // a capability the shared composition-tree renderer has for a component
+  // with multiple usable roots (Field/FieldGroup/FieldSet), and per FILE
+  // TERRITORY that renderer is out of scope for this repair.
   examples: [
     {
       name: "field-demo",
@@ -37,6 +51,27 @@ import FieldDescription from "@/components/ui/field/field-description.marko";`,
       description: "`FieldError` accepts a list of errors and renders them as a bulleted list.",
     },
     {
+      name: "field-input",
+      title: "Input",
+      description: "Pair `Field` with `Input` for text and password controls.",
+    },
+    {
+      name: "field-textarea",
+      title: "Textarea",
+      description: "Pair `Field` with `Textarea` for multi-line input.",
+    },
+    {
+      name: "field-select",
+      title: "Select",
+      description:
+        "`Select` renders its own accessible label (via `label=`), so it pairs directly with `Field` — no separate `FieldLabel` needed.",
+    },
+    {
+      name: "field-slider",
+      title: "Slider",
+      description: "Pair `Field` with `Slider` and reflect the live value in `FieldDescription`.",
+    },
+    {
       name: "field-horizontal",
       title: "Horizontal orientation",
       description:
@@ -49,16 +84,61 @@ import FieldDescription from "@/components/ui/field/field-description.marko";`,
         "Group related fields with `FieldSet` and `FieldGroup`, and divide sections with `FieldSeparator`.",
     },
     {
+      name: "field-fieldset",
+      title: "Nested field groups",
+      description:
+        "Combine `FieldSet`, `FieldLegend` and a grid of `Field`s to build a labeled section like an address form.",
+    },
+    {
+      name: "field-checkbox",
+      title: "Checkbox",
+      description:
+        "`Checkbox` renders its own root `<label>` around the hidden input, so label text lives in its `content` body rather than a separate `FieldLabel`.",
+    },
+    {
+      name: "field-radio",
+      title: "Radio",
+      description: "`RadioGroup` renders every option as its own labeled item — pass `items=` and describe the group with `FieldSet`/`FieldLabel`.",
+    },
+    {
+      name: "field-switch",
+      title: "Switch",
+      description: "Pair `Field` with `Switch`, keeping the label and description in `FieldContent`.",
+    },
+    {
+      name: "field-choice-card",
+      title: "Choice card",
+      description:
+        "Render rich title/description content inside a `RadioGroup` item's `content` slot to build a selectable card group.",
+    },
+    {
+      name: "field-group",
+      title: "Field group",
+      description: "Stack related `FieldSet`s inside one `FieldGroup`, dividing sections with `FieldSeparator`.",
+    },
+    {
       name: "field-signup",
       title: "Sign up — live validation",
       description:
         "Native `ValidityState` drives client-side validation with zero dependencies — it already understands `required`, `type=email`, `minlength` and `pattern`.",
     },
     {
-      name: "field-fieldset",
-      title: "Nested field groups",
-      description:
-        "Combine `FieldSet`, `FieldLegend` and a grid of `Field`s to build a labeled section like an address form.",
+      name: "field-rtl",
+      title: "RTL",
+      description: "Field's layout uses Tailwind logical properties, so it restyles correctly under `dir=\"rtl\"` with no component changes.",
     },
+    {
+      name: "field-responsive",
+      title: "Responsive layout",
+      description:
+        "Set `orientation=\"responsive\"` to stack vertically on narrow containers and switch to a horizontal row once the `FieldGroup`'s `@container` query matches — apply `@md/field-group:` classes on `FieldGroup` to tune the breakpoint.",
+    },
+  ],
+  accessibilityNotes: [
+    "`FieldSet` and `FieldLegend` keep related controls grouped for keyboard and assistive-technology users.",
+    "`Field` renders `role=\"group\"` so nested controls inherit labeling from `FieldLabel` and `FieldLegend` when combined.",
+    "Apply `FieldSeparator` sparingly so screen reader users encounter clear section boundaries.",
+    "Set `invalid` on `Field` for the visual error state, and pair it with `aria-invalid` on the control itself — the `invalid` prop alone does not add `aria-invalid`.",
+    "Render `FieldError` immediately after the control (or inside `FieldContent`) and reference it from the control's `aria-describedby` so assistive technology announces the error with the field.",
   ],
 };

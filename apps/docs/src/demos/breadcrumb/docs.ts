@@ -30,6 +30,12 @@ import BreadcrumbSeparator from "@/components/ui/breadcrumb/separator.marko";`,
 </Breadcrumb>`,
   examples: [
     {
+      name: "breadcrumb-demo",
+      title: "Demo",
+      description:
+        "A breadcrumb combining a link, a dropdown-collapsed section, and the current page.",
+    },
+    {
       name: "breadcrumb-basic",
       title: "Basic",
       description: "A basic breadcrumb with a home link and a components link.",
@@ -41,9 +47,31 @@ import BreadcrumbSeparator from "@/components/ui/breadcrumb/separator.marko";`,
         "Pass children to `BreadcrumbSeparator` to replace the default `/` with a custom separator.",
     },
     {
+      name: "breadcrumb-dropdown",
+      title: "Dropdown",
+      description: "Compose `BreadcrumbItem` with `DropdownMenu` to create a dropdown in the breadcrumb.",
+    },
+    {
       name: "breadcrumb-ellipsis",
       title: "Collapsed",
       description: "Use `BreadcrumbEllipsis` to show a collapsed state when the path is too long.",
+    },
+    {
+      name: "breadcrumb-link",
+      title: "Link component",
+      // DEVIATION FROM UPSTREAM: upstream's `BreadcrumbLink` takes a
+      // `render` prop so a routing library's own Link component supplies
+      // the anchor markup. Our BreadcrumbLink always renders a real
+      // `<a href>` — there is no separate custom-link-component API, so
+      // this section documents that instead of a `render` prop we don't
+      // have.
+      description:
+        "Our `BreadcrumbLink` always renders a real `<a href>` — there is no `render`-prop indirection to swap in a routing library's Link component.",
+    },
+    {
+      name: "breadcrumb-rtl",
+      title: "RTL",
+      description: "Breadcrumb restyles correctly under `dir=\"rtl\"` with no component changes.",
     },
     {
       name: "breadcrumb-responsive",
@@ -51,5 +79,10 @@ import BreadcrumbSeparator from "@/components/ui/breadcrumb/separator.marko";`,
       description:
         "Hide middle items below the `md` breakpoint and swap in `BreadcrumbEllipsis` with Tailwind's responsive classes.",
     },
+  ],
+  accessibilityNotes: [
+    "The root `<nav>` carries `aria-label=\"breadcrumb\"` so assistive technology announces the trail as a landmark distinct from other navigation.",
+    "`BreadcrumbPage` renders `aria-current=\"page\"` and `aria-disabled=\"true\"` on a non-interactive `<span>`, marking the current location without an actionable (and redundant) link.",
+    "`BreadcrumbSeparator` and `BreadcrumbEllipsis` are `role=\"presentation\"` with `aria-hidden=\"true\"` — they are visual only and never reachable by keyboard or screen reader.",
   ],
 };

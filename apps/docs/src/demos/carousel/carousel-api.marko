@@ -1,0 +1,25 @@
+// Upstream drives this off a manually-managed `CarouselApi` from `setApi` +
+// a `React.useEffect`/`api.on("select", ...)` subscription (Embla's ref-based
+// API). Our carousel is a Zag machine: `api()` from `<connect>` already IS
+// the live, reactive snapshot — `api().page` and `api().pageSnapPoints`
+// update on every machine notify with no imperative subscription needed.
+// So "Slide N of M" is read straight off `api()` inside a render-prop-free
+// derived value, ported faithfully in *behavior* (same live counter) without
+// the setApi indirection upstream needs for its Embla ref.
+import Carousel from "@marko-ui/shadcn/ui/carousel/carousel.marko";
+
+static const SLIDES = [1, 2, 3, 4, 5];
+
+<div class="mx-auto max-w-[10rem] sm:max-w-xs">
+  <Carousel items=SLIDES class="w-full max-w-xs">
+  <Carousel/carouselApi/>
+    <@content|item|>
+      <div class="flex aspect-square items-center justify-center rounded-lg border bg-card m-px">
+        <span class="text-4xl font-semibold">${item}</span>
+      </div>
+    </@content>
+  </Carousel>
+  <div class="py-2 text-center text-sm text-muted-foreground">
+    Slide ${carouselApi().page + 1} of ${carouselApi().pageSnapPoints.length}
+  </div>
+</div>

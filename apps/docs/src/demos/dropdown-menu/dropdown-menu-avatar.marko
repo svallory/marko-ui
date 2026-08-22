@@ -1,0 +1,29 @@
+import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Avatar from "@marko-ui/shadcn/ui/avatar/avatar.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+<DropdownMenu class="w-auto">
+  <@trigger|triggerProps|>
+    <Button variant="ghost" size="icon" class="rounded-full" ...triggerProps>
+      <Avatar src="https://github.com/shadcn.png" alt="shadcn" fallback="LR"/>
+    </Button>
+  </@trigger>
+  <@item value="account">
+    <Icon name="BadgeCheckIcon"/>
+    Account
+  </@item>
+  <@item value="billing">
+    <Icon name="CreditCard"/>
+    Billing
+  </@item>
+  <@item value="notifications">
+    <Icon name="BellIcon"/>
+    Notifications
+  </@item>
+  <@item type="separator"/>
+  <@item value="logout">
+    <Icon name="LogOutIcon"/>
+    Sign Out
+  </@item>
+</DropdownMenu>

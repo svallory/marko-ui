@@ -1,0 +1,32 @@
+import Drawer from "@marko-ui/shadcn/ui/drawer/drawer.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+
+// Upstream: registry/bases/base/examples/drawer-example.tsx (DrawerNested).
+// Base UI's nested drawers keep the parent mounted and visually indented
+// behind the frontmost one via an internal drawer stack. Our zag-js/drawer
+// machine exposes createStack/connectStack for that indent effect, but our
+// drawer.marko port does not wire it (plain component nesting only) — so
+// this demo opens a real second drawer on top of the first without the
+// upstream stacked-indent visual.
+<Drawer swipeDirection="down">
+  <@trigger|props|>
+    <Button ...props variant="outline">Down</Button>
+  </@trigger>
+  <@title>Down drawer</@title>
+  <@description>Open another drawer from the same direction.</@description>
+  <@content>
+    <div class="h-80 w-full bg-muted"/>
+  </@content>
+  <@footer>
+    <Drawer swipeDirection="down">
+      <@trigger|props|>
+        <Button ...props>Open nested drawer</Button>
+      </@trigger>
+      <@title>Nested drawer</@title>
+      <@description>The parent drawer stays mounted behind this one.</@description>
+      <@content>
+        <div class="h-80 w-full bg-muted"/>
+      </@content>
+    </Drawer>
+  </@footer>
+</Drawer>

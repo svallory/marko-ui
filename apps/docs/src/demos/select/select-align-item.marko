@@ -1,0 +1,51 @@
+// PARTIAL PORT — disclosed API deviation (parity-process.md §11: technically
+// forced omissions are disclosed in-file, never silently dropped).
+//
+// Upstream (Base UI): `SelectContent` takes `alignItemWithTrigger` (Base UI)
+// / `position="item-aligned" | "popper"` (Radix) — a real positioning MODE
+// where the selected item is made to overlap the trigger visually ("item
+// aligned"), vs a plain edge-anchored popper.
+//
+// @zag-js/select (packages/shadcn/ui/select/select.marko) has no such mode:
+// its `positioning` prop is a plain floating-ui/@zag-js/popper placement
+// object (see @zag-js/popper's PositioningOptions) with no item-aligned
+// concept at all — the content is always edge-anchored to the trigger. This
+// demo therefore ports the switch UI faithfully but wires it to the closest
+// real analog, `positioning.placement` ("bottom-start" vs "bottom"), which
+// changes edge alignment only — it does NOT reproduce upstream's
+// item-over-trigger visual behavior. Do not read this as parity with
+// upstream's alignItemWithTrigger semantics.
+import Select from "@marko-ui/shadcn/ui/select/select.marko";
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldContent from "@marko-ui/shadcn/ui/field/field-content.marko";
+import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
+import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
+
+static const fruits = [
+  { value: "apple", label: "Apple" },
+  { value: "banana", label: "Banana" },
+  { value: "blueberry", label: "Blueberry" },
+  { value: "grapes", label: "Grapes" },
+  { value: "pineapple", label: "Pineapple" },
+];
+
+<let/alignItemWithTrigger=true>
+
+<FieldGroup class="w-full max-w-xs">
+  <Field orientation="horizontal">
+    <FieldContent>
+      <FieldLabel for="select-align-item-switch">Align Item</FieldLabel>
+      <FieldDescription>Toggle to align the item with the trigger.</FieldDescription>
+    </FieldContent>
+    <Switch id="select-align-item-switch" checked:=alignItemWithTrigger/>
+  </Field>
+  <Field>
+    <Select
+      items=fruits
+      defaultValue=["banana"]
+      positioning={ placement: alignItemWithTrigger ? "bottom-start" : "bottom" }
+    />
+  </Field>
+</FieldGroup>

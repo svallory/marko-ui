@@ -1,0 +1,68 @@
+import ContextMenu from "@marko-ui/shadcn/ui/context-menu/context-menu.marko";
+
+// Technically-forced omission: `menu.props` (from @zag-js/menu) includes a
+// `dir` prop the machine would use to auto-flip floating-ui placement under
+// RTL, but context-menu.marko's own `Input` interface is a plain object
+// type (not `MachineInput<...>`) that never re-exposes `dir` as a declared
+// prop — passing `dir="rtl"` to <ContextMenu> is a type error even though
+// the machine would accept it at runtime. Getting the real floating-ui RTL
+// flip needs a component-source change, out of scope for this repair (see
+// this port's territory rules) — reported as
+// blocked-needs-component-change. We fall back to the same static
+// `dir="rtl"` wrapper precedent already used by dropdown-menu-rtl.marko
+// (and button-rtl/avatar-rtl/input-rtl), which is correct for text
+// direction and Tailwind logical-property layout but does not exercise
+// floating-ui's own RTL placement flip the way upstream's demo does.
+<let/people="pedro"/>
+<let/showBookmarks=true/>
+<let/showFullUrls=false/>
+
+<const/items=[
+  {
+    type: "sub",
+    label: "التنقل",
+    subEntries: [
+      { value: "back", label: "رجوع", shortcut: "⌘[" },
+      { value: "forward", label: "تقدم", shortcut: "⌘]", disabled: true },
+      { value: "reload", label: "إعادة تحميل", shortcut: "⌘R" },
+    ],
+  },
+  {
+    type: "sub",
+    label: "المزيد من الأدوات",
+    subEntries: [
+      { value: "save-page", label: "حفظ الصفحة..." },
+      { value: "create-shortcut", label: "إنشاء اختصار..." },
+      { value: "name-window", label: "تسمية النافذة..." },
+      { type: "separator" },
+      { value: "developer-tools", label: "أدوات المطور" },
+      { type: "separator" },
+      { value: "delete", label: "حذف", variant: "destructive" },
+    ],
+  },
+  { type: "separator" },
+  { type: "checkbox", value: "show-bookmarks", label: "إظهار الإشارات المرجعية", checked: showBookmarks },
+  { type: "checkbox", value: "show-full-urls", label: "إظهار عناوين URL الكاملة", checked: showFullUrls },
+  { type: "separator" },
+  { type: "label", label: "الأشخاص" },
+  { type: "radio", value: "pedro", label: "Pedro Duarte", radioGroup: "people", checked: people === "pedro" },
+  { type: "radio", value: "colm", label: "Colm Tuite", radioGroup: "people", checked: people === "colm" },
+]/>
+
+<div dir="rtl" class="flex justify-center">
+  <ContextMenu
+    items=items
+    select(value) {
+      if (value === "show-bookmarks") showBookmarks = !showBookmarks;
+      else if (value === "show-full-urls") showFullUrls = !showFullUrls;
+      else if (value === "pedro" || value === "colm") people = value;
+    }
+    class="w-48"
+  >
+    <@content>
+      <div class="flex h-[100px] w-[250px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+        انقر بزر الماوس الأيمن هنا
+      </div>
+    </@content>
+  </ContextMenu>
+</div>

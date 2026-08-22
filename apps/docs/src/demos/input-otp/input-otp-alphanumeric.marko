@@ -1,0 +1,5 @@
+import InputOTP from "@marko-ui/shadcn/ui/input-otp/input-otp.marko";
+
+// REGEXP_ONLY_DIGITS_AND_CHARS inlined as a string pattern — see
+// input-otp-pattern.marko. Matches upstream: `pattern` only, no `type`.
+<InputOTP length=6 groupSize=3 pattern="^[a-zA-Z0-9]+$"/>

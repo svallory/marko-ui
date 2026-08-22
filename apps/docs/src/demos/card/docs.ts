@@ -37,6 +37,33 @@ import CardFooter from "@/components/ui/card/footer.marko";`,
       description: "A card built from a header, content, and footer holding a login form.",
     },
     {
+      name: "card-small",
+      title: "Size",
+      description: "Use `size=\"sm\"` on `Card` for smaller spacing between sections.",
+    },
+    {
+      name: "card-spacing",
+      title: "Spacing",
+      description:
+        "Set the `--card-spacing` CSS variable to control the gap between sections and the inset of card parts, independent of `size`.",
+    },
+    {
+      name: "card-edge-to-edge",
+      title: "Edge to edge",
+      description:
+        "Use `-mx-(--card-spacing)` on content to bleed it to the card's edges while keeping it aligned with the inset; add `-mb-(--card-spacing)` on `CardContent` when edge-to-edge content sits directly above a footer.",
+    },
+    {
+      name: "card-image",
+      title: "Image",
+      description: "Place an `img` before `CardHeader` (with `pt-0` on `Card`) to create a card with a cover image.",
+    },
+    {
+      name: "card-rtl",
+      title: "RTL",
+      description: "Card and its parts restyle correctly for right-to-left layouts via `dir=\"rtl\"`.",
+    },
+    {
       name: "card-full-composition",
       title: "Full example",
       description:

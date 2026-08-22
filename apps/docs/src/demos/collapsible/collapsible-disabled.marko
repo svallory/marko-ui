@@ -1,10 +1,13 @@
 import Collapsible from "@marko-ui/shadcn/ui/collapsible/collapsible.marko";
 
+// The machine marks a disabled trigger with `data-disabled`, not a native
+// `disabled` attribute (it only bails out of the click handler) — style off
+// `data-[disabled]:`, not the native-only `disabled:` variant.
 <Collapsible class="w-72 space-y-2" disabled>
   <@trigger|triggerProps|>
     <button
       ...triggerProps
-      class="flex w-full items-center justify-between text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+      class="flex w-full items-center justify-between text-sm font-semibold data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50"
     >
       This trigger is disabled
     </button>

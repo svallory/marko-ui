@@ -24,6 +24,26 @@ export const docs: ComponentDocs = {
     ...
   </@content>
 </Sheet>`,
+  // Sheet is single-file (parts.length === 1 → isCompound is false), so the
+  // auto-generated <composition-tree> never renders. Upstream documents a
+  // Composition tree of separate Sheet/SheetTrigger/SheetContent/
+  // SheetHeader/SheetTitle/SheetDescription/SheetFooter components — our
+  // port collapses that anatomy into named attr-tags (`@trigger`, `@title`,
+  // `@description`, `@content`, `@footer`) on a single `<Sheet>` tag, so the
+  // tree below documents the real (attr-tag) anatomy rather than restating
+  // upstream's separate-component shape, which doesn't exist in this port.
+  composition: `\`Sheet\` composes its anatomy from attr-tags instead of separate components:
+
+\`\`\`text
+Sheet
+├── @trigger   — render prop; spread the given props onto your own trigger element
+├── @title     — heading text, wired to the dialog's aria-labelledby
+├── @description — supporting text, wired to the dialog's aria-describedby
+├── @content   — the scrollable body
+└── @footer    — optional actions row, e.g. Save / Close buttons
+\`\`\`
+
+There is no separate close-button slot: the close button is rendered automatically (see \`showCloseButton\`).`,
   examples: [
     {
       name: "sheet-demo",
@@ -34,6 +54,17 @@ export const docs: ComponentDocs = {
       name: "sheet-side",
       title: "Side",
       description: "Pass `side` to set which edge of the screen the sheet slides in from: `top`, `right`, `bottom`, or `left`.",
+    },
+    {
+      name: "sheet-no-close-button",
+      title: "No Close Button",
+      description: "Pass `showCloseButton={false}` to hide the close button in the top-right corner. Click outside, or provide your own `@footer` action, to close.",
+    },
+    {
+      name: "sheet-rtl",
+      title: "RTL",
+      description:
+        "The `dir` prop is a native attribute pass-through — set it on `<Sheet>` to flip logical-property layout and typography for right-to-left languages. See the [RTL guide](/docs/rtl).",
     },
     {
       name: "sheet-controlled",

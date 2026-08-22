@@ -1,0 +1,12 @@
+import AlertDialog from "@marko-ui/shadcn/ui/alert-dialog/alert-dialog.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+
+<AlertDialog size="sm" cancelText="Don't allow" actionText="Allow">
+  <@trigger|props|>
+    <Button ...props variant="outline">Show Dialog</Button>
+  </@trigger>
+  <@title>Allow accessory to connect?</@title>
+  <@description>
+    Do you want to allow the USB accessory to connect to this device?
+  </@description>
+</AlertDialog>

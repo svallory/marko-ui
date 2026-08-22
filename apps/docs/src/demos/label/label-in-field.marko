@@ -1,0 +1,101 @@
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Checkbox from "@marko-ui/shadcn/ui/checkbox/checkbox.marko";
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
+import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+import FieldLegend from "@marko-ui/shadcn/ui/field/field-legend.marko";
+import FieldSeparator from "@marko-ui/shadcn/ui/field/field-separator.marko";
+import FieldSet from "@marko-ui/shadcn/ui/field/field-set.marko";
+import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import Select from "@marko-ui/shadcn/ui/select/select.marko";
+import Textarea from "@marko-ui/shadcn/ui/textarea/textarea.marko";
+
+// Faithful port of upstream's field-demo.tsx (referenced on both the Field
+// page and here, under label.mdx's "Label in Field" section, as the
+// canonical example of FieldLabel usage). Deviation from upstream: our
+// <Select> renders its own accessible label internally (Zag's
+// getLabelProps), so the month/year selects use `label=` + `placeholder=`
+// directly instead of pairing a bare <FieldLabel> with <SelectTrigger>
+// (same deviation already established in demos/field/field-select.marko).
+static const months = [
+  { value: "01", label: "01" },
+  { value: "02", label: "02" },
+  { value: "03", label: "03" },
+  { value: "04", label: "04" },
+  { value: "05", label: "05" },
+  { value: "06", label: "06" },
+  { value: "07", label: "07" },
+  { value: "08", label: "08" },
+  { value: "09", label: "09" },
+  { value: "10", label: "10" },
+  { value: "11", label: "11" },
+  { value: "12", label: "12" },
+];
+
+static const years = [
+  { value: "2024", label: "2024" },
+  { value: "2025", label: "2025" },
+  { value: "2026", label: "2026" },
+  { value: "2027", label: "2027" },
+  { value: "2028", label: "2028" },
+  { value: "2029", label: "2029" },
+];
+
+<div class="w-full max-w-md">
+  <form>
+    <FieldGroup>
+      <FieldSet>
+        <FieldLegend>Payment Method</FieldLegend>
+        <FieldDescription>All transactions are secure and encrypted</FieldDescription>
+        <FieldGroup>
+          <Field>
+            <FieldLabel for="label-field-card-name">Name on Card</FieldLabel>
+            <Input id="label-field-card-name" placeholder="Evil Rabbit" required/>
+          </Field>
+          <Field>
+            <FieldLabel for="label-field-card-number">Card Number</FieldLabel>
+            <Input id="label-field-card-number" placeholder="1234 5678 9012 3456" required/>
+            <FieldDescription>Enter your 16-digit card number</FieldDescription>
+          </Field>
+          <div class="grid grid-cols-3 gap-4">
+            <Field>
+              <Select items=months label="Month" placeholder="MM"/>
+            </Field>
+            <Field>
+              <Select items=years label="Year" placeholder="YYYY"/>
+            </Field>
+            <Field>
+              <FieldLabel for="label-field-cvv">CVV</FieldLabel>
+              <Input id="label-field-cvv" placeholder="123" required/>
+            </Field>
+          </div>
+        </FieldGroup>
+      </FieldSet>
+      <FieldSeparator/>
+      <FieldSet>
+        <FieldLegend>Billing Address</FieldLegend>
+        <FieldDescription>The billing address associated with your payment method</FieldDescription>
+        <FieldGroup>
+          <Field orientation="horizontal">
+            <Checkbox id="label-field-same-as-shipping" defaultChecked class="font-normal">
+              Same as shipping address
+            </Checkbox>
+          </Field>
+        </FieldGroup>
+      </FieldSet>
+      <FieldSet>
+        <FieldGroup>
+          <Field>
+            <FieldLabel for="label-field-comments">Comments</FieldLabel>
+            <Textarea id="label-field-comments" placeholder="Add any additional comments" class="resize-none"/>
+          </Field>
+        </FieldGroup>
+      </FieldSet>
+      <Field orientation="horizontal">
+        <Button type="submit">Submit</Button>
+        <Button variant="outline" type="button">Cancel</Button>
+      </Field>
+    </FieldGroup>
+  </form>
+</div>

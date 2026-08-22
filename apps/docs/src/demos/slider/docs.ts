@@ -35,15 +35,26 @@ export const docs: ComponentDocs = {
       description: "Set `min`, `max`, and `step` to control the value increments.",
     },
     {
-      name: "slider-disabled",
-      title: "Disabled",
-      description: "A disabled slider is skipped by the tab order and ignores pointer input.",
+      name: "slider-vertical",
+      title: "Vertical",
+      description: "Set `orientation=\"vertical\"` for a vertical slider.",
     },
     {
       name: "slider-controlled",
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`.",
+    },
+    {
+      name: "slider-disabled",
+      title: "Disabled",
+      description: "A disabled slider is skipped by the tab order and ignores pointer input.",
+    },
+    {
+      name: "slider-rtl",
+      title: "RTL",
+      description:
+        "`dir` is a Zag machine prop, so `dir=\"rtl\"` drives the slider's own layout and interaction direction, not just text flow.",
     },
   ],
 };

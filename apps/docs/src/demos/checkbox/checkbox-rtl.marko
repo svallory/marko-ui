@@ -1,0 +1,39 @@
+// Static RTL port: shadcn's source drives this demo through a client-side
+// language-selector (useTranslation) that has no equivalent in this docs
+// app — see demos/input/input-rtl.marko for the established precedent.
+// This ports the RTL VISUAL and behavior directly: a dir="rtl" field group
+// with Arabic copy, matching the source's default locale ("ar"). Field's
+// layout is Tailwind logical properties, so it already restyles correctly.
+// See field/field-checkbox.marko: Checkbox owns its root <label>, so plain
+// text/FieldLabel-for/FieldTitle each attach without a second wrapping
+// <label>.
+import Checkbox from "@marko-ui/shadcn/ui/checkbox/checkbox.marko";
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldContent from "@marko-ui/shadcn/ui/field/field-content.marko";
+import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
+import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+import FieldTitle from "@marko-ui/shadcn/ui/field/field-title.marko";
+
+<FieldGroup class="max-w-sm" dir="rtl">
+  <Field orientation="horizontal">
+    <Checkbox id="checkbox-rtl-terms">قبول الشروط والأحكام</Checkbox>
+  </Field>
+  <Field orientation="horizontal">
+    <Checkbox id="checkbox-rtl-terms-2" defaultChecked/>
+    <FieldContent>
+      <FieldLabel for="checkbox-rtl-terms-2">قبول الشروط والأحكام</FieldLabel>
+      <FieldDescription>بالنقر على هذا المربع، فإنك توافق على الشروط.</FieldDescription>
+    </FieldContent>
+  </Field>
+  <Field orientation="horizontal" disabled>
+    <Checkbox id="checkbox-rtl-toggle" disabled>تفعيل الإشعارات</Checkbox>
+  </Field>
+  <Field orientation="horizontal">
+    <Checkbox id="checkbox-rtl-toggle-2"/>
+    <FieldContent>
+      <FieldTitle>تفعيل الإشعارات</FieldTitle>
+      <FieldDescription>يمكنك تفعيل أو إلغاء تفعيل الإشعارات في أي وقت.</FieldDescription>
+    </FieldContent>
+  </Field>
+</FieldGroup>

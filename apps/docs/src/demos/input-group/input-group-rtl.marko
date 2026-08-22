@@ -1,0 +1,59 @@
+// Static RTL port: upstream's input-group-rtl demo drives a live docs-site
+// language switcher (useTranslation across en/ar/he) that has no
+// equivalent in this app — same established precedent as
+// demos/input/input-rtl.marko and demos/card/card-rtl.marko. This ports
+// the RTL VISUAL and markup directly using the source's default locale
+// ("ar"): a `dir="rtl"` input group with Arabic copy. InputGroup's parts
+// already restyle correctly under dir="rtl" since their layout uses
+// Tailwind logical properties (the textarea addon below uses `ms-auto`,
+// matching upstream's swap from `ml-auto`/`me-auto` on this exact demo).
+import InputGroup from "@marko-ui/shadcn/ui/input-group/input-group.marko";
+import InputGroupInput from "@marko-ui/shadcn/ui/input-group/input.marko";
+import InputGroupAddon from "@marko-ui/shadcn/ui/input-group/addon.marko";
+import InputGroupButton from "@marko-ui/shadcn/ui/input-group/button.marko";
+import InputGroupText from "@marko-ui/shadcn/ui/input-group/text.marko";
+import InputGroupTextarea from "@marko-ui/shadcn/ui/input-group/textarea.marko";
+import Spinner from "@marko-ui/shadcn/ui/spinner/spinner.marko";
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
+
+<div class="grid w-full max-w-sm gap-6" dir="rtl">
+  <InputGroup class="max-w-xs">
+    <InputGroupInput placeholder="بحث..." dir="rtl"/>
+    <InputGroupAddon>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </InputGroupAddon>
+    <InputGroupAddon align="inline-end">١٢ نتيجة</InputGroupAddon>
+  </InputGroup>
+  <InputGroup>
+    <InputGroupInput placeholder="جاري البحث..." dir="rtl"/>
+    <InputGroupAddon align="inline-end">
+      <Spinner/>
+    </InputGroupAddon>
+  </InputGroup>
+  <InputGroup>
+    <InputGroupInput placeholder="جاري حفظ التغييرات..." dir="rtl"/>
+    <InputGroupAddon align="inline-end">
+      <InputGroupText>جاري الحفظ...</InputGroupText>
+      <Spinner/>
+    </InputGroupAddon>
+  </InputGroup>
+  <FieldGroup class="max-w-sm">
+    <Field>
+      <FieldLabel for="input-group-rtl-textarea">منطقة النص</FieldLabel>
+      <InputGroup>
+        <InputGroupTextarea id="input-group-rtl-textarea" placeholder="اكتب تعليقًا..." dir="rtl"/>
+        <InputGroupAddon align="block-end">
+          <InputGroupText>٠/٢٨٠</InputGroupText>
+          <InputGroupButton variant="default" size="sm" class="ms-auto">نشر</InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
+      <FieldDescription>تذييل موضع أسفل منطقة النص.</FieldDescription>
+    </Field>
+  </FieldGroup>
+</div>

@@ -1,0 +1,32 @@
+import Avatar from "@marko-ui/shadcn/ui/avatar/avatar.marko";
+import Bubble from "@marko-ui/shadcn/ui/bubble/bubble.marko";
+import BubbleContent from "@marko-ui/shadcn/ui/bubble/bubble-content.marko";
+import Message from "@marko-ui/shadcn/ui/message/message.marko";
+import MessageAvatar from "@marko-ui/shadcn/ui/message/avatar.marko";
+import MessageContent from "@marko-ui/shadcn/ui/message/content.marko";
+import MessageGroup from "@marko-ui/shadcn/ui/message/group.marko";
+
+<div class="flex w-full max-w-sm flex-col gap-6 py-12">
+  <MessageGroup>
+    <Message>
+      <MessageAvatar/>
+      <MessageContent>
+        <Bubble variant="muted">
+          <BubbleContent>I checked the registry addresses.</BubbleContent>
+        </Bubble>
+      </MessageContent>
+    </Message>
+    <Message>
+      <MessageAvatar>
+        <Avatar src="https://github.com/evilrabbit.png" alt="@avatar" fallback="CN"/>
+      </MessageAvatar>
+      <MessageContent>
+        <Bubble variant="muted">
+          <BubbleContent>
+            The component and example JSON now live under the UI registry.
+          </BubbleContent>
+        </Bubble>
+      </MessageContent>
+    </Message>
+  </MessageGroup>
+</div>

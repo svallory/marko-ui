@@ -31,6 +31,17 @@ export const docs: ComponentDocs = {
       description: "A `9 / 16` ratio, useful for displaying images in a portrait format.",
     },
     {
+      name: "aspect-ratio-rtl",
+      title: "RTL",
+      // Static port note: see the in-file comment in aspect-ratio-rtl.marko
+      // — upstream's live en/ar/he language switcher has no equivalent
+      // here, so this is a static "ar" locale port (established precedent:
+      // progress-rtl, card-rtl). AspectRatio has no physical styling to
+      // flip; only the figure's dir and caption alignment are RTL-relevant.
+      description:
+        "To enable RTL support, set `dir=\"rtl\"` on an ancestor. AspectRatio itself has no physical (left/right) styling to flip.",
+    },
+    {
       name: "aspect-ratio-content-card",
       title: "Content card",
       description: "Ratios apply to any content, not just images — here a `4 / 3` placeholder card.",

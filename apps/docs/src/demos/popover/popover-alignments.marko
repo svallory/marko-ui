@@ -1,0 +1,35 @@
+import Popover from "@marko-ui/shadcn/ui/popover/popover.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+
+// Upstream's `align` is a prop on Radix's PopoverContent
+// (start/center/end). Our port has no separate `align` prop — Zag folds
+// align into `positioning.placement` (@zag-js/popper's floating-ui
+// Placement, e.g. "bottom-start" / "bottom" / "bottom-end"), already
+// forwarded through popoverMachine.props. Same visual outcome, one prop
+// instead of two.
+<div class="flex gap-6">
+  <Popover positioning={ placement: "bottom-start" } class="w-40">
+    <@trigger|props|>
+      <Button ...props variant="outline" size="sm">Start</Button>
+    </@trigger>
+    <@content>
+      <p class="text-sm">Aligned to start</p>
+    </@content>
+  </Popover>
+  <Popover positioning={ placement: "bottom" } class="w-40">
+    <@trigger|props|>
+      <Button ...props variant="outline" size="sm">Center</Button>
+    </@trigger>
+    <@content>
+      <p class="text-sm">Aligned to center</p>
+    </@content>
+  </Popover>
+  <Popover positioning={ placement: "bottom-end" } class="w-40">
+    <@trigger|props|>
+      <Button ...props variant="outline" size="sm">End</Button>
+    </@trigger>
+    <@content>
+      <p class="text-sm">Aligned to end</p>
+    </@content>
+  </Popover>
+</div>

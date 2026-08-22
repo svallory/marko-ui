@@ -1,0 +1,21 @@
+import Toggle from "@marko-ui/shadcn/ui/toggle/toggle.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+// Upstream's toggle-rtl demo drives a live docs-site language switcher
+// (useTranslation across en/ar/he, defaulting to "ar") that has no
+// equivalent in this app — same established precedent as
+// demos/badge/badge-rtl.marko, demos/menubar/menubar-rtl.marko,
+// demos/context-menu/context-menu-rtl.marko. This ports the RTL VISUAL
+// directly using the source's default locale ("ar"): a `dir="rtl"`
+// wrapper around the same `size="sm" variant="outline"` bookmark toggle,
+// with the Arabic label. Unlike the Zag-machine components in the
+// examples above, Toggle is a plain native `<button>` with local state
+// (no machine `dir` prop to thread through), so `dir="rtl"` on the
+// element itself is the complete, non-approximated port — no
+// blocked-needs-component-change gap here.
+<div dir="rtl">
+  <Toggle aria-label="Toggle bookmark" size="sm" variant="outline">
+    <Icon name="BookmarkIcon" class="group-aria-pressed/toggle:fill-foreground" data-icon="inline-start"/>
+    إشارة مرجعية
+  </Toggle>
+</div>

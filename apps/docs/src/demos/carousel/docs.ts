@@ -17,6 +17,16 @@ export const docs: ComponentDocs = {
     "    <div>${item}</div>\n" +
     "  </@content>\n" +
     "</Carousel>",
+  composition:
+    "`Carousel` is a single component, not four. Where upstream composes " +
+    "`Carousel` / `CarouselContent` / `CarouselItem` / `CarouselPrevious` / " +
+    "`CarouselNext`, this port folds the item group, previous/next " +
+    "triggers, and a page-indicator group into `Carousel` itself: pass " +
+    "`items=` with a `@content` render prop (or `@slide` attr tags for " +
+    "static markup) and the component renders the scroll container, " +
+    "buttons, and indicators for you. There is no separate " +
+    "`CarouselContent`, `CarouselItem`, `CarouselPrevious`, or " +
+    "`CarouselNext` tag to import.",
   examples: [
     {
       name: "carousel-demo",
@@ -38,6 +48,24 @@ export const docs: ComponentDocs = {
       name: "carousel-orientation",
       title: "Orientation",
       description: "Set `orientation` to `vertical` to stack slides top to bottom.",
+    },
+    {
+      name: "carousel-api",
+      title: "API",
+      description:
+        "A `<Carousel/carouselApi/>` tag-variable capture gives you the live, reactive machine api — read `carouselApi().page` and `carouselApi().pageSnapPoints` directly, no `setApi`/`useEffect` subscription needed.",
+    },
+    {
+      name: "carousel-plugin",
+      title: "Autoplay",
+      description:
+        "Our carousel is backed by `@zag-js/carousel`, which has autoplay built in — pass `autoplay={ delay }` instead of an Embla plugin, and call `api().pause()` / `api().play()` to stop on hover.",
+    },
+    {
+      name: "carousel-rtl",
+      title: "RTL",
+      description:
+        "`dir=\"rtl\"` is a real machine prop: it flips scroll direction, keyboard arrows, and item order. The previous/next icons already carry `mu-rtl-flip` in the component, so no extra classes are needed.",
     },
     {
       name: "carousel-loop",

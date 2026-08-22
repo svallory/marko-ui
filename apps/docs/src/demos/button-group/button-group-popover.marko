@@ -1,0 +1,41 @@
+import ButtonGroup from "@marko-ui/shadcn/ui/button-group/button-group.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+import Popover from "@marko-ui/shadcn/ui/popover/popover.marko";
+import PopoverHeader from "@marko-ui/shadcn/ui/popover/header.marko";
+import PopoverTitle from "@marko-ui/shadcn/ui/popover/title.marko";
+import PopoverDescription from "@marko-ui/shadcn/ui/popover/description.marko";
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
+import Textarea from "@marko-ui/shadcn/ui/textarea/textarea.marko";
+
+<ButtonGroup>
+  <Button variant="outline">
+    <Icon name="BotIcon"/> Copilot
+  </Button>
+  <Popover>
+    <@trigger|triggerProps|>
+      <Button variant="outline" size="icon" ...triggerProps aria-label="Open Popover">
+        <Icon name="ChevronDownIcon"/>
+      </Button>
+    </@trigger>
+    <@content>
+      <div class="rounded-xl text-sm">
+        <PopoverHeader>
+          <PopoverTitle>Start a new task with Copilot</PopoverTitle>
+          <PopoverDescription>
+            Describe your task in natural language.
+          </PopoverDescription>
+        </PopoverHeader>
+        <Field>
+          <FieldLabel for="task" class="sr-only">Task Description</FieldLabel>
+          <Textarea id="task" placeholder="I need to..." class="resize-none"/>
+          <FieldDescription>
+            Copilot will open a pull request for review.
+          </FieldDescription>
+        </Field>
+      </div>
+    </@content>
+  </Popover>
+</ButtonGroup>

@@ -21,6 +21,16 @@ import Sidebar from "@/components/ui/sidebar/sidebar.marko";`,
     <SidebarTrigger open=open toggle=toggle/>
   </@content>
 </SidebarProvider>`,
+  // Upstream ("Core Concepts"-style prose) covers sizing/width and the
+  // `--sidebar-*` theme tokens under separate "Width" and "Theming"
+  // headings (content/components/base/sidebar.mdx). Our port has no
+  // dedicated Styling/Theming page section (see
+  // notes/docs-canonical-structure.md's fixed hierarchy), so that
+  // grounding lives here as the pre-use mental model instead. Verified
+  // against packages/shadcn/ui/sidebar/provider.marko (width props) and
+  // apps/docs/src/app.css (token definitions).
+  concepts:
+    "`SidebarProvider` sets the panel width via CSS custom properties: pass `width`/`widthIcon` props (defaulting to `16rem`/`3rem`) rather than editing constants in the source, since this is the import/copy-safe surface. Colors come from the `--sidebar`, `--sidebar-foreground`, `--sidebar-primary`, `--sidebar-primary-foreground`, `--sidebar-accent`, `--sidebar-accent-foreground`, `--sidebar-border`, and `--sidebar-ring` tokens defined per style layer — the same token names upstream uses, though our values are OKLCH (matching this port's token system) rather than upstream's HSL triples, so copy the token block from your chosen style rather than upstream's CSS. Upstream's dedicated \"Styling\" section additionally documents data-attribute styling hooks; this port carries the same ones, verified in source: `Sidebar` sets `data-collapsible` (so `group-data-[collapsible=icon]:hidden` on descendants works the same as upstream), and `SidebarMenuButton` sets `data-active` (so `peer-data-active/menu-button:...` — this port's Tailwind-v4 boolean-attribute selector syntax for upstream's `peer-data-[active=true]/menu-button:...` — works the same way on a sibling `SidebarMenuAction`). RTL is handled automatically through logical-property and `rtl:`-variant classes baked into `Sidebar`/`SidebarTrigger`/`SidebarRail` (`mu-rtl-flip`, `ltr:`/`rtl:` translate classes) — there is no separate RTL demo route or `dir` prop to set, unlike upstream's `dir`-prop opt-in.",
   examples: [
     {
       name: "sidebar-demo",
@@ -34,5 +44,16 @@ import Sidebar from "@/components/ui/sidebar/sidebar.marko";`,
       description:
         "SidebarProvider is controlled: pass `open` alongside `openChange` to own the state outside the component, or omit both for uncontrolled behavior (defaults to open).",
     },
+  ],
+  // Grounded in packages/shadcn/ui/sidebar/{trigger,rail,sidebar}.marko:
+  // no keyboard-shortcut listener exists anywhere in the part files (no
+  // `keydown`/`metaKey`/`KeyB` handling), unlike upstream's SIDEBAR_KEYBOARD_SHORTCUT
+  // ("cmd+b"/"ctrl+b") wired up in SidebarProvider. Documented as a real
+  // deviation rather than silently ported as true.
+  accessibilityNotes: [
+    "Unlike upstream shadcn/ui, this port does not wire up a `cmd+b` / `ctrl+b` keyboard shortcut to toggle the sidebar — call `toggle()` (from the provider's `@sidebar`/`@content` body arguments) from your own key handler if you need one.",
+    "`SidebarTrigger` renders a real `<button>` with an `sr-only` \"Toggle Sidebar\" label, so it's reachable and named for screen readers without extra props.",
+    "`SidebarRail` is `tabindex=\"-1\"` and carries `aria-label=\"Toggle Sidebar\"` — it's a pointer-only resize/toggle affordance, not part of the tab order; keyboard users should use `SidebarTrigger` instead.",
+    "Layout mirrors automatically in RTL: `Sidebar`, `SidebarTrigger`, and `SidebarRail` use logical positioning and `rtl:`-variant classes, so no `dir` prop or separate RTL variant is needed.",
   ],
 };

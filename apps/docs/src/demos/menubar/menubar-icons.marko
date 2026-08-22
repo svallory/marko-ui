@@ -1,0 +1,48 @@
+import Menubar from "@marko-ui/shadcn/ui/menubar/menubar.marko";
+import MenubarMenu from "@marko-ui/shadcn/ui/menubar/menu.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+<Menubar class="w-72">
+  <@content>
+    <MenubarMenu>
+      <@trigger|triggerProps|>
+        <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+          File
+        </button>
+      </@trigger>
+      <@item value="new-file" shortcut="⌘N">
+        <Icon name="FileIcon"/>
+        New File
+      </@item>
+      <@item value="open-folder">
+        <Icon name="FolderIcon"/>
+        Open Folder
+      </@item>
+      <@item type="separator"/>
+      <@item value="save" shortcut="⌘S">
+        <Icon name="SaveIcon"/>
+        Save
+      </@item>
+    </MenubarMenu>
+    <MenubarMenu>
+      <@trigger|triggerProps|>
+        <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+          More
+        </button>
+      </@trigger>
+      <@item value="settings">
+        <Icon name="Settings"/>
+        Settings
+      </@item>
+      <@item value="help">
+        <Icon name="HelpCircleIcon"/>
+        Help
+      </@item>
+      <@item type="separator"/>
+      <@item value="delete" variant="destructive">
+        <Icon name="TrashIcon"/>
+        Delete
+      </@item>
+    </MenubarMenu>
+  </@content>
+</Menubar>

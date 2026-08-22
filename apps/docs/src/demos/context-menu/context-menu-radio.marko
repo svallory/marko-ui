@@ -1,0 +1,29 @@
+import ContextMenu from "@marko-ui/shadcn/ui/context-menu/context-menu.marko";
+
+<let/user="pedro"/>
+<let/theme="light"/>
+
+<const/items=[
+  { type: "label", label: "People" },
+  { type: "radio", value: "pedro", label: "Pedro Duarte", radioGroup: "user", checked: user === "pedro" },
+  { type: "radio", value: "colm", label: "Colm Tuite", radioGroup: "user", checked: user === "colm" },
+  { type: "separator" },
+  { type: "label", label: "Theme" },
+  { type: "radio", value: "light", label: "Light", radioGroup: "theme", checked: theme === "light" },
+  { type: "radio", value: "dark", label: "Dark", radioGroup: "theme", checked: theme === "dark" },
+  { type: "radio", value: "system", label: "System", radioGroup: "theme", checked: theme === "system" },
+]/>
+
+<ContextMenu
+  items=items
+  select(value) {
+    if (value === "pedro" || value === "colm") user = value;
+    else if (value === "light" || value === "dark" || value === "system") theme = value;
+  }
+>
+  <@content>
+    <div class="flex h-[100px] w-[250px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+      Right click here
+    </div>
+  </@content>
+</ContextMenu>

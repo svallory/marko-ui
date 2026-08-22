@@ -1,0 +1,49 @@
+import Checkbox from "@marko-ui/shadcn/ui/checkbox/checkbox.marko";
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldContent from "@marko-ui/shadcn/ui/field/field-content.marko";
+import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
+import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
+import FieldLegend from "@marko-ui/shadcn/ui/field/field-legend.marko";
+import FieldSeparator from "@marko-ui/shadcn/ui/field/field-separator.marko";
+import FieldSet from "@marko-ui/shadcn/ui/field/field-set.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+
+// Deviation from upstream: upstream pairs a bare <Checkbox id> with an
+// external <FieldLabel htmlFor>. Our <Checkbox> already renders its own
+// root <label> around the hidden input, so nesting it inside a second
+// <FieldLabel> (also a <label>) would produce an invalid nested-label
+// structure. We give each label text as the checkbox's own `content` body
+// instead, wrapped in a <Field orientation="horizontal"> for layout only.
+<div class="w-full max-w-md">
+  <FieldGroup>
+    <FieldSet>
+      <FieldLegend variant="label">Show these items on the desktop</FieldLegend>
+      <FieldDescription>Select the items you want to show on the desktop.</FieldDescription>
+      <FieldGroup class="gap-3">
+        <Field orientation="horizontal">
+          <Checkbox id="field-checkbox-hard-disks" defaultChecked class="font-normal">Hard disks</Checkbox>
+        </Field>
+        <Field orientation="horizontal">
+          <Checkbox id="field-checkbox-external-disks" class="font-normal">External disks</Checkbox>
+        </Field>
+        <Field orientation="horizontal">
+          <Checkbox id="field-checkbox-cds-dvds" class="font-normal">CDs, DVDs, and iPods</Checkbox>
+        </Field>
+        <Field orientation="horizontal">
+          <Checkbox id="field-checkbox-connected-servers" class="font-normal">Connected servers</Checkbox>
+        </Field>
+      </FieldGroup>
+    </FieldSet>
+    <FieldSeparator/>
+    <Field orientation="horizontal">
+      <Checkbox id="field-checkbox-sync-folders" defaultChecked/>
+      <FieldContent>
+        <FieldLabel for="field-checkbox-sync-folders">Sync Desktop & Documents folders</FieldLabel>
+        <FieldDescription>
+          Your Desktop & Documents folders are being synced with iCloud Drive. You can access them from other
+          devices.
+        </FieldDescription>
+      </FieldContent>
+    </Field>
+  </FieldGroup>
+</div>

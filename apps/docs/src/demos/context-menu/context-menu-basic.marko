@@ -1,0 +1,15 @@
+import ContextMenu from "@marko-ui/shadcn/ui/context-menu/context-menu.marko";
+
+static const ITEMS = [
+  { value: "back", label: "Back" },
+  { value: "forward", label: "Forward", disabled: true },
+  { value: "reload", label: "Reload" },
+];
+
+<ContextMenu items=ITEMS>
+  <@content>
+    <div class="flex h-[100px] w-[250px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+      Right click here
+    </div>
+  </@content>
+</ContextMenu>

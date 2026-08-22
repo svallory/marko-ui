@@ -1,0 +1,129 @@
+// Faithful port of upstream's `message-scroller-visibility.tsx`. A hover
+// card outline tracks the current anchored turn via visibility tracking —
+// upstream's `useMessageScrollerVisibility` equivalent here is subscribing
+// to the provider controller's own `visibilityStore` (see button.marko's
+// header comment for the same `stateStore` subscription idiom).
+//
+// SIMPLIFICATION FROM SOURCE: none needed for behavior — upstream's demo
+// already used plain scripted message data, no AI SDK / motion dependency.
+import MessageScrollerProvider from "@marko-ui/shadcn/ui/message-scroller/message-scroller-provider.marko";
+import MessageScroller from "@marko-ui/shadcn/ui/message-scroller/message-scroller.marko";
+import MessageScrollerViewport from "@marko-ui/shadcn/ui/message-scroller/viewport.marko";
+import MessageScrollerContent from "@marko-ui/shadcn/ui/message-scroller/content.marko";
+import MessageScrollerItem from "@marko-ui/shadcn/ui/message-scroller/item.marko";
+import MessageScrollerButton from "@marko-ui/shadcn/ui/message-scroller/button.marko";
+import type { MessageScrollerControllerGetter } from "@marko-ui/shadcn/ui/message-scroller/lib/controller.ts";
+import Card from "@marko-ui/shadcn/ui/card/card.marko";
+import CardHeader from "@marko-ui/shadcn/ui/card/header.marko";
+import CardTitle from "@marko-ui/shadcn/ui/card/title.marko";
+import CardDescription from "@marko-ui/shadcn/ui/card/description.marko";
+import CardContent from "@marko-ui/shadcn/ui/card/content.marko";
+import Message from "@marko-ui/shadcn/ui/message/message.marko";
+import MessageContent from "@marko-ui/shadcn/ui/message/content.marko";
+import Bubble from "@marko-ui/shadcn/ui/bubble/bubble.marko";
+import BubbleContent from "@marko-ui/shadcn/ui/bubble/bubble-content.marko";
+import HoverCard from "@marko-ui/shadcn/ui/hover-card/hover-card.marko";
+
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+}
+
+static const MESSAGES: ChatMessage[] = [
+  { id: "vis-brief", role: "user", text: "Review the incident handoff and tell me what to read first." },
+  { id: "vis-brief-reply", role: "assistant", text: "Start with the summary and the impact section. The regression affected the upload queue, but the recovery path completed for every queued job." },
+  { id: "vis-impact", role: "user", text: "What was the customer impact?" },
+  { id: "vis-impact-reply", role: "assistant", text: "Impact was limited to delayed processing.\n\nNo records were dropped, and the reconciliation worker confirmed each retry batch. Support saw confusion from two customers, but there were no checkout or billing errors." },
+  { id: "vis-actions", role: "user", text: "What actions are open?" },
+  { id: "vis-actions-reply", role: "assistant", text: "Keep the retry window enabled until the next deploy, then add a queue-depth alert as the long-term fix.\n\nThe alert should fire on sustained queue growth, not a single short spike." },
+  { id: "vis-checklist", role: "user", text: "Give me the follow-up checklist." },
+  { id: "vis-checklist-reply", role: "assistant", text: "After that, compare the queue recovery graph with the deploy timeline so the handoff shows exactly when processing returned to baseline.\n\nI would also add a short owner note beside each follow-up item. The checklist is small, but ownership keeps the retry-window decision, alert tuning, and support macro from drifting into separate follow-up conversations." },
+];
+
+static const USER_MESSAGES = MESSAGES.filter((message) => message.role === "user");
+
+static function trimmed(text: string) {
+  return text.length > 42 ? `${text.slice(0, 39)}...` : text;
+}
+
+<let/currentAnchorId=(null as string | null)/>
+
+<const/subscribeVisibility=(controller: MessageScrollerControllerGetter) => {
+  const store = controller().visibilityStore;
+  const sync = () => { currentAnchorId = store.getSnapshot().currentAnchorId; };
+  sync();
+  return { unsubscribe: store.subscribe(sync) };
+}/>
+
+<const/jumpTo=(controller: MessageScrollerControllerGetter, messageId: string) => {
+  controller().scrollToMessage(messageId, { align: "start", behavior: "smooth" });
+}/>
+
+<MessageScrollerProvider scrollMargin=12>
+  <@content|controller|>
+    <lifecycle onMount() { return subscribeVisibility(controller); } onDestroy() { this.unsubscribe?.(); }/>
+    <div class="relative flex flex-col gap-4">
+      <div class="relative mx-auto w-full max-w-sm">
+        <Card class="h-140 w-full gap-0">
+          <CardHeader class="gap-1 border-b">
+            <CardTitle>Transcript Outline</CardTitle>
+            <CardDescription>Track the current anchored turn.</CardDescription>
+          </CardHeader>
+          <CardContent class="flex-1 overflow-hidden p-0">
+            <MessageScroller controller=controller>
+              <MessageScrollerViewport controller=controller>
+                <MessageScrollerContent controller=controller class="p-4">
+                  <for|message| of=MESSAGES by=(message) => message.id>
+                    <MessageScrollerItem controller=controller messageId=message.id scrollAnchor=(message.role === "user")>
+                      <Message align=(message.role === "user" ? "end" : "start")>
+                        <MessageContent>
+                          <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
+                            <BubbleContent class="space-y-2">
+                              <for|paragraph| of=message.text.split(/\n\s*\n/)>
+                                <p class="whitespace-pre-wrap">${paragraph}</p>
+                              </for>
+                            </BubbleContent>
+                          </Bubble>
+                        </MessageContent>
+                      </Message>
+                    </MessageScrollerItem>
+                  </for>
+                </MessageScrollerContent>
+              </MessageScrollerViewport>
+              <MessageScrollerButton controller=controller/>
+            </MessageScroller>
+          </CardContent>
+        </Card>
+        <div class="absolute top-1/2 -right-12 -translate-y-1/2">
+          <HoverCard>
+            <@trigger|props|>
+              <button ...props type="button" aria-label="Open transcript outline" class="flex h-9 w-9 flex-col items-center justify-center gap-1 rounded-md transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+                <for|message| of=USER_MESSAGES by=(message) => message.id>
+                  <span data-current=String(message.id === currentAnchorId) class="h-0.5 w-4 rounded-full bg-muted-foreground/40 data-[current=true]:bg-foreground"/>
+                </for>
+              </button>
+            </@trigger>
+            <@content>
+              <div class="flex w-64 flex-col gap-1 rounded-2xl p-1">
+                <for|message| of=USER_MESSAGES by=(message) => message.id>
+                  <button
+                    type="button"
+                    aria-current=(currentAnchorId === message.id ? "location" : undefined)
+                    class="flex min-h-7 items-center rounded-xl px-2 py-1.5 text-left text-sm transition-colors outline-none hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground aria-current:bg-accent aria-current:text-accent-foreground"
+                    onClick() { jumpTo(controller, message.id); }
+                  >
+                    <span class="line-clamp-1 min-w-0">${trimmed(message.text)}</span>
+                  </button>
+                </for>
+              </div>
+            </@content>
+          </HoverCard>
+        </div>
+      </div>
+      <div class="mx-auto max-w-sm px-0.5 text-center text-xs text-muted-foreground">
+        Open the outline to jump between anchored turns as you read.
+      </div>
+    </div>
+  </@content>
+</MessageScrollerProvider>

@@ -1,0 +1,106 @@
+// Faithful port of upstream's `message-scroller-commands.tsx`. A dropdown
+// menu drives the transcript from OUTSIDE `MessageScroller`'s own markup —
+// this is the "commands" story for `useMessageScroller`, whose equivalent in
+// this port is calling the provider's controller getter directly (received
+// via `MessageScrollerProvider`'s `content` body param) rather than a hook.
+//
+// SIMPLIFICATION FROM SOURCE: none needed — upstream's demo already used
+// plain scripted message data, no AI SDK / motion dependency.
+import MessageScrollerProvider from "@marko-ui/shadcn/ui/message-scroller/message-scroller-provider.marko";
+import MessageScroller from "@marko-ui/shadcn/ui/message-scroller/message-scroller.marko";
+import MessageScrollerViewport from "@marko-ui/shadcn/ui/message-scroller/viewport.marko";
+import MessageScrollerContent from "@marko-ui/shadcn/ui/message-scroller/content.marko";
+import MessageScrollerItem from "@marko-ui/shadcn/ui/message-scroller/item.marko";
+import MessageScrollerButton from "@marko-ui/shadcn/ui/message-scroller/button.marko";
+import type { MessageScrollerControllerGetter } from "@marko-ui/shadcn/ui/message-scroller/lib/controller.ts";
+import Card from "@marko-ui/shadcn/ui/card/card.marko";
+import CardHeader from "@marko-ui/shadcn/ui/card/header.marko";
+import CardTitle from "@marko-ui/shadcn/ui/card/title.marko";
+import CardDescription from "@marko-ui/shadcn/ui/card/description.marko";
+import CardAction from "@marko-ui/shadcn/ui/card/action.marko";
+import CardContent from "@marko-ui/shadcn/ui/card/content.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Message from "@marko-ui/shadcn/ui/message/message.marko";
+import MessageContent from "@marko-ui/shadcn/ui/message/content.marko";
+import Bubble from "@marko-ui/shadcn/ui/bubble/bubble.marko";
+import BubbleContent from "@marko-ui/shadcn/ui/bubble/bubble-content.marko";
+import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+}
+
+static const MESSAGES: ChatMessage[] = [
+  { id: "command-activation", role: "user", text: "We're seeing activation dip after workspace creation. Can you help me find the likely step?" },
+  { id: "command-activation-reply", role: "assistant", text: "The sharpest drop is between creating the workspace and inviting the first teammate.\n\nWorkspace creation is still healthy, but the invite step is where users pause. That suggests the product is asking for collaboration before the user has enough confidence in the workspace." },
+  { id: "command-compare", role: "user", text: "What should I compare before we change the onboarding flow?" },
+  { id: "command-compare-reply", role: "assistant", text: "Compare three cohorts:\n\n1. Users who choose a template before inviting teammates.\n2. Users who start from a blank workspace.\n3. Users who skip invites and return within 24 hours.\n\nIf template users invite faster, the fix is probably better first-run guidance rather than a louder invite prompt." },
+  { id: "command-experiment", role: "user", text: "Can you turn that into an experiment?" },
+  { id: "command-experiment-reply", role: "assistant", text: "Yes. Create a variant that shows a short checklist after workspace creation:\n\n- Pick a template.\n- Add one project detail.\n- Invite a teammate when the workspace has context.\n\nMeasure first invite completion, 24-hour return rate, and whether teams create a second project." },
+  { id: "command-risk", role: "user", text: "What's the risk if we delay the invite prompt?" },
+  { id: "command-risk-reply", role: "assistant", text: "The main risk is reducing team creation for accounts that already know who they want to invite.\n\nTo protect that path, keep the invite action visible in the header and only change the primary empty-state guidance." },
+];
+
+static const USER_MESSAGES = MESSAGES.filter((message) => message.role === "user");
+
+static function trimmed(text: string) {
+  return text.length > 42 ? `${text.slice(0, 39)}...` : text;
+}
+
+static const MENU_ITEMS = USER_MESSAGES.map((message) => ({
+  value: message.id,
+  label: trimmed(message.text),
+}));
+
+<const/jumpTo=(controller: MessageScrollerControllerGetter, messageId: string) => {
+  controller().scrollToMessage(messageId, { align: "start", behavior: "smooth" });
+}/>
+
+<MessageScrollerProvider defaultScrollPosition="end">
+  <@content|controller|>
+    <div class="relative flex flex-col gap-4">
+      <Card class="mx-auto h-140 w-full max-w-sm gap-0">
+        <CardHeader class="gap-1 border-b">
+          <CardTitle>Commands</CardTitle>
+          <CardDescription>Drive the transcript from outside.</CardDescription>
+          <CardAction>
+            <DropdownMenu items=MENU_ITEMS select=(value) => jumpTo(controller, value)>
+              <@trigger|props|>
+                <Button ...props type="button" variant="secondary">Jump to...</Button>
+              </@trigger>
+            </DropdownMenu>
+          </CardAction>
+        </CardHeader>
+        <CardContent class="flex-1 overflow-hidden p-0">
+          <MessageScroller controller=controller>
+            <MessageScrollerViewport controller=controller>
+              <MessageScrollerContent controller=controller class="p-4">
+                <for|message| of=MESSAGES by=(message) => message.id>
+                  <MessageScrollerItem controller=controller messageId=message.id scrollAnchor=(message.role === "user")>
+                    <Message align=(message.role === "user" ? "end" : "start")>
+                      <MessageContent>
+                        <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
+                          <BubbleContent class="space-y-2">
+                            <for|paragraph| of=message.text.split(/\n\s*\n/)>
+                              <p class="whitespace-pre-wrap">${paragraph}</p>
+                            </for>
+                          </BubbleContent>
+                        </Bubble>
+                      </MessageContent>
+                    </Message>
+                  </MessageScrollerItem>
+                </for>
+              </MessageScrollerContent>
+            </MessageScrollerViewport>
+            <MessageScrollerButton controller=controller/>
+          </MessageScroller>
+        </CardContent>
+      </Card>
+      <div class="mx-auto max-w-sm px-0.5 text-center text-xs text-balance text-muted-foreground">
+        Use the controls to jump to any message in the conversation.
+      </div>
+    </div>
+  </@content>
+</MessageScrollerProvider>

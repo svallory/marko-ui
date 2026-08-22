@@ -19,6 +19,12 @@ export const docs: ComponentDocs = {
       description: "A spinner with the default size and color.",
     },
     {
+      name: "spinner-custom",
+      title: "Customization",
+      description:
+        "Spinner is a single-file component: swap its icon or markup by editing `spinner.marko` directly rather than passing a prop.",
+    },
+    {
       name: "spinner-size",
       title: "Size",
       description: "Use the `size-*` utility class to change the size of the spinner.",
@@ -43,5 +49,25 @@ export const docs: ComponentDocs = {
       title: "Badge",
       description: "Place a spinner before a badge's label to show a loading state.",
     },
+    {
+      name: "spinner-input-group",
+      title: "Input Group",
+      description: "Show a loading state inside an input group's addon.",
+    },
+    {
+      name: "spinner-empty",
+      title: "Empty",
+      description: "Use a spinner in an `Empty` state to indicate a request is in progress.",
+    },
+    {
+      name: "spinner-rtl",
+      title: "RTL",
+      description: "Spinner and its parts restyle correctly for right-to-left layouts via `dir=\"rtl\"`.",
+    },
+  ],
+  accessibilityNotes: [
+    "Spinner renders `role=\"status\"` and a fixed `aria-label=\"Loading\"` on the root `<svg>` so assistive technology announces the loading state without extra markup.",
+    "The `animate-spin` motion is purely decorative — screen readers rely on the `status` role and label, not the animation, so the loading state is still communicated if motion is reduced or disabled.",
+    "When pairing a spinner with visible text (see the \"With text\" and \"Button\" examples), the text is redundant with `aria-label=\"Loading\"` for screen reader users but still valuable for sighted users — this is the same tradeoff upstream ships and is not a deviation.",
   ],
 };

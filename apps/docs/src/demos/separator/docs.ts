@@ -25,6 +25,22 @@ export const docs: ComponentDocs = {
       description: "Set `orientation=\"vertical\"` to separate content side by side.",
     },
     {
+      name: "separator-menu",
+      title: "Menu",
+      description: "Vertical separators between menu items with descriptions.",
+    },
+    {
+      name: "separator-list",
+      title: "List",
+      description: "Horizontal separators between list items.",
+    },
+    {
+      name: "separator-rtl",
+      title: "RTL",
+      description:
+        "Separators have no directional geometry of their own, so they need no RTL-specific handling — they simply follow the surrounding `dir=\"rtl\"` layout, shown here with Arabic content.",
+    },
+    {
       name: "separator-semantic",
       title: "Semantic (non-decorative)",
       description:

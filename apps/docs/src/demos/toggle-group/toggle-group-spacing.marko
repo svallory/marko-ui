@@ -1,0 +1,10 @@
+import ToggleGroup from "@marko-ui/shadcn/ui/toggle-group/toggle-group.marko";
+
+static const SIDES = [
+  { value: "top", label: "Top" },
+  { value: "bottom", label: "Bottom" },
+  { value: "left", label: "Left" },
+  { value: "right", label: "Right" },
+];
+
+<ToggleGroup items=SIDES size="sm" variant="outline" spacing=2 value=["top"]/>

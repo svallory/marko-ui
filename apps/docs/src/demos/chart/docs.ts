@@ -18,7 +18,52 @@ import BarChart from "@/components/ui/chart/bar.marko";`,
     <@series dataKey="desktop" radius=4/>
   </BarChart>
 </Chart>`,
+  // Theming/CSS Variables (upstream's "Theming" + "CSS Variables" sections)
+  // fold in here: chart is a compound component (10 parts under
+  // packages/shadcn/ui/chart/), so `isCompound` is true and the page renders
+  // the auto-generated composition tree instead of a hand-authored
+  // Composition section — this prose is the only hand-authored slot left for
+  // "read before using" chart-wide mental model content, which theming
+  // genuinely is here (every demo's colors flow through it).
+  concepts:
+    "Every chart takes the same `config` object twice: once on `<Chart>` (which emits a scoped `<style>` resolving `--color-<key>` per theme) and again on the chart tag itself (Marko has no context/provider primitive, so the config can't be read implicitly by descendants). Each config entry's `color` can be a literal (`\"#2563eb\"`), an `hsl()`/`oklch()` string, or a `var(--chart-1)` reference into the 5 `--chart-1`..`--chart-5` custom properties a shadcn theme defines for light and dark — swap the theme and every chart restyles with zero code changes. Reference a resolved color from series data or Tailwind with `var(--color-<key>)`, e.g. `fill=\"var(--color-desktop)\"` or a `fill-(--color-desktop)` utility class.",
   examples: [
+    {
+      name: "chart-demo",
+      title: "Bar Chart - Interactive",
+      description:
+        "The hero interactive demo: a series-toggle header swaps which `@series` the chart renders, backed by plain demo-file `<let>` state — no primitive changes needed.",
+    },
+    {
+      name: "chart-example",
+      title: "Your First Chart",
+      description:
+        "The minimal composition: `<Chart>` wrapping a `<BarChart>` with two `@series`, grid and tooltip both off.",
+    },
+    {
+      name: "chart-example-grid",
+      title: "Add a Grid",
+      description:
+        "The same chart with `grid` turned on — horizontal `CartesianGrid` lines behind the bars.",
+    },
+    {
+      name: "chart-example-axis",
+      title: "Add an Axis",
+      description:
+        "Grid plus an `xTickFormatter` that slices each month name down to 3 letters, with `tickMargin=10`.",
+    },
+    {
+      name: "chart-example-tooltip",
+      title: "Add Tooltip",
+      description:
+        "Grid, axis, and the default hover tooltip (`tooltip` defaults to `true` — shown here explicitly to match the step-by-step build-up).",
+    },
+    {
+      name: "chart-example-legend",
+      title: "Add Legend",
+      description:
+        "The full build: grid, axis, tooltip, and `legend=\"bottom\"` rendering a `<ChartLegendContent>`-equivalent swatch row.",
+    },
     {
       name: "chart-bar-default",
       title: "Bar Chart",
@@ -67,5 +112,22 @@ import BarChart from "@/components/ui/chart/bar.marko";`,
       description:
         "Pass `innerRadius` for a donut and `centerLabel` to render content in the middle.",
     },
+    {
+      name: "chart-tooltip",
+      title: "Tooltip Anatomy",
+      description:
+        "The four tooltip pieces — label, name, value, and indicator — shown at their default sizes with the `indicator` variants (`dot`, `line`, `dashed`).",
+    },
+    {
+      name: "chart-rtl",
+      title: "RTL",
+      description:
+        "Static Arabic labels under a `dir=\"rtl\"` wrapper. **Deviation from upstream:** shadcn's RTL demo also mirrors the plot itself (grid orientation, axis direction); our `BarChart` has no `orientation`/`reversed` props yet, so only the labels/legend/tooltip flip — the plot geometry stays left-to-right. See the in-file comment in `chart-rtl.marko`.",
+    },
+  ],
+  accessibilityNotes: [
+    "Charts are pure SSR SVG plus one small client hydration for hover tooltips — there is no keyboard navigation or `accessibilityLayer`-equivalent focus ring today (upstream's Recharts `accessibilityLayer` prop, which adds keyboard access and screen-reader summaries, has no port here — a component-source gap, not a docs gap).",
+    "Chart color is never the only signal in a well-built chart: pair every series color with a label in the legend or tooltip (`ChartConfig.label`) rather than color alone.",
+    "The tooltip's indicator + label + value are read together in DOM order, so screen readers announce a coherent row per series when the tooltip is inspected.",
   ],
 };

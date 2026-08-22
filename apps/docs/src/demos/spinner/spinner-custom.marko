@@ -1,0 +1,12 @@
+// Upstream's spinner-custom demo shows swapping the Spinner's icon (lucide
+// LoaderIcon) for a different icon by editing components/ui/spinner.tsx
+// directly — copy-path customization, not a runtime prop. Our Spinner is a
+// single .marko file with the same "edit the source to change the icon"
+// model, so this demo renders our own default Spinner (already the
+// customization target upstream's snippet describes) rather than
+// re-implementing a second inline icon component.
+import Spinner from "@marko-ui/shadcn/ui/spinner/spinner.marko";
+
+<div class="flex items-center gap-4">
+  <Spinner/>
+</div>

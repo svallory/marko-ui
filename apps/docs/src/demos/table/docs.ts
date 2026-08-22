@@ -41,10 +41,28 @@ import TableCaption from "@/components/ui/table/caption.marko";`,
         "A full table built from `TableCaption`, `TableHeader`, `TableBody`, and `TableFooter`, with `TableRow` holding `TableHead` or `TableCell` children.",
     },
     {
+      name: "table-footer",
+      title: "Footer",
+      description:
+        "Add a `TableFooter` after `TableBody` for a summary row — it renders a `<tfoot>` styled to match the header.",
+    },
+    {
+      name: "table-actions",
+      title: "Actions",
+      description:
+        "A table showing per-row actions using a `DropdownMenu` in the last cell.",
+    },
+    {
       name: "table-selected-row",
       title: "Selected row",
       description:
         "Add `data-state=\"selected\"` to a `TableRow` to highlight it — the row's `hover:bg-muted` and `data-[state=selected]:bg-muted` styles handle the rest.",
+    },
+    {
+      name: "table-rtl",
+      title: "RTL",
+      description:
+        "`Table` and its parts restyle for right-to-left reading direction with no extra markup — set `dir=\"rtl\"` on the `Table` root.",
     },
   ],
 };

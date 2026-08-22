@@ -1,0 +1,15 @@
+// Static RTL port: shadcn's source drives this demo through a client-side
+// language-selector (useTranslation) that has no equivalent in this docs
+// app (see skills/port-to-marko — no such utility exists here; same
+// approach as button-rtl/input-rtl). Ports the RTL visual/markup directly:
+// a dir="rtl" DatePicker with Arabic copy, matching the source's default
+// locale ("ar"). Our <DatePicker> renders its own input+calendar (no
+// Popover/Calendar composition needed here — its trigger/positioner
+// already restyle correctly under dir="rtl" via mu-rtl-flip on the chevron
+// icons), so this exercises the actual shipped component rather than a
+// manual composition.
+import DatePicker from "@marko-ui/shadcn/ui/date-picker/date-picker.marko";
+
+<div dir="rtl">
+  <DatePicker placeholder="اختر تاريخًا" class="w-[212px]"/>
+</div>
