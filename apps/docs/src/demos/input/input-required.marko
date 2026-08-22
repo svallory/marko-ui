@@ -1,0 +1,12 @@
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+import Input from "@marko-ui/shadcn/ui/input/input.marko";
+
+<Field>
+  <FieldLabel for="input-required">
+    Required Field <span class="text-destructive">*</span>
+  </FieldLabel>
+  <Input id="input-required" placeholder="This field is required" required/>
+  <FieldDescription>This field must be filled out.</FieldDescription>
+</Field>

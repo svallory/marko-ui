@@ -1,0 +1,25 @@
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Spinner from "@marko-ui/shadcn/ui/spinner/spinner.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+// Upstream's button-rtl demo drives a live language switcher (docs-site
+// chrome we haven't ported — see notes/docs-canonical-structure.md, RTL
+// section is component behavior, not site machinery) that toggles between
+// English/Arabic/Hebrew translations. Button has no machine/positioning
+// logic to exercise under `dir`, so the faithful equivalent is the same
+// static Arabic content upstream defaults to, wrapped in `dir="rtl"` — the
+// arrow icon flips via `rtl:rotate-180` exactly as upstream does.
+<div class="flex flex-wrap items-center gap-2 md:flex-row" dir="rtl">
+  <Button variant="outline">زر</Button>
+  <Button variant="destructive">حذف</Button>
+  <Button variant="outline">
+    إرسال
+    <Icon name="ArrowRight" class="rtl:rotate-180" data-icon="inline-end"/>
+  </Button>
+  <Button variant="outline" size="icon" aria-label="Add">
+    <Icon name="Plus"/>
+  </Button>
+  <Button variant="secondary" disabled>
+    <Spinner data-icon="inline-start"/> جاري التحميل
+  </Button>
+</div>

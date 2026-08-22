@@ -1,0 +1,24 @@
+import Avatar from "@marko-ui/shadcn/ui/avatar/avatar.marko";
+import AvatarBadge from "@marko-ui/shadcn/ui/avatar/badge.marko";
+import AvatarGroup from "@marko-ui/shadcn/ui/avatar/group.marko";
+import AvatarGroupCount from "@marko-ui/shadcn/ui/avatar/group-count.marko";
+
+// Upstream's avatar-rtl demo drives a live language switcher (docs-site
+// chrome we haven't ported — see notes/docs-canonical-structure.md, RTL is
+// component behavior, not site machinery). The faithful equivalent is a
+// static dir="rtl" wrapper with Arabic content, matching the precedent set
+// by demos/tooltip/tooltip-rtl.marko.
+<div dir="rtl" class="flex flex-row flex-wrap items-center gap-6 md:gap-12">
+  <Avatar src="https://github.com/shadcn.png" alt="@shadcn" fallback="CN" class="grayscale"/>
+  <Avatar src="https://github.com/evilrabbit.png" alt="@evilrabbit" fallback="ER">
+    <@badge>
+      <AvatarBadge class="bg-green-600 dark:bg-green-800"/>
+    </@badge>
+  </Avatar>
+  <AvatarGroup class="grayscale">
+    <Avatar src="https://github.com/shadcn.png" alt="@shadcn" fallback="CN"/>
+    <Avatar src="https://github.com/maxleiter.png" alt="@maxleiter" fallback="LR"/>
+    <Avatar src="https://github.com/evilrabbit.png" alt="@evilrabbit" fallback="ER"/>
+    <AvatarGroupCount>+٣</AvatarGroupCount>
+  </AvatarGroup>
+</div>

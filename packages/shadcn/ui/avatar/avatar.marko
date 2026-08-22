@@ -10,6 +10,8 @@ export type Input = MachineInput<"span", avatarMachine.Props> & {
   alt?: string;
   fallback?: string;
   content?: Marko.Body;
+  /** Renders an `AvatarBadge` (or any markup) as a root-level sibling of the image/fallback, per upstream's Composition tree — never inside the fallback span. */
+  badge?: Marko.Body;
   statusChange?: (status: avatarMachine.LoadStatus) => void;
   /** Size variant — also exposed as `data-size` for group/badge styling. */
   size?: "default" | "sm" | "lg";
@@ -46,6 +48,7 @@ export type Input = MachineInput<"span", avatarMachine.Props> & {
     "alt",
     "fallback",
     "content",
+    "badge",
     "statusChange",
     "size",
   )
@@ -83,6 +86,9 @@ export type Input = MachineInput<"span", avatarMachine.Props> & {
       ${input.fallback}
     </else>
   </span>
+  <if=input.badge>
+    <${input.badge}/>
+  </if>
 </span>
 
 // Parents can receive the api getter: <Avatar/avatarApi/> then

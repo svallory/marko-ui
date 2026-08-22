@@ -1,0 +1,66 @@
+import Attachment from "@marko-ui/shadcn/ui/attachment/attachment.marko";
+import AttachmentGroup from "@marko-ui/shadcn/ui/attachment/group.marko";
+import AttachmentMedia from "@marko-ui/shadcn/ui/attachment/media.marko";
+import AttachmentContent from "@marko-ui/shadcn/ui/attachment/content.marko";
+import AttachmentTitle from "@marko-ui/shadcn/ui/attachment/title.marko";
+import AttachmentDescription from "@marko-ui/shadcn/ui/attachment/description.marko";
+import AttachmentActions from "@marko-ui/shadcn/ui/attachment/actions.marko";
+import AttachmentAction from "@marko-ui/shadcn/ui/attachment/action.marko";
+import AttachmentTrigger from "@marko-ui/shadcn/ui/attachment/trigger.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+<const/images=[
+  {
+    name: "workspace.png",
+    meta: "PNG · 820 KB",
+    src: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=900&auto=format&fit=crop&q=80",
+    alt: "Workspace",
+  },
+  {
+    name: "desk-reference.jpg",
+    meta: "JPG · 1.1 MB",
+    src: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=900&auto=format&fit=crop&q=80",
+    alt: "Desk",
+  },
+  {
+    name: "office-reference.jpg",
+    meta: "JPG · 940 KB",
+    src: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=900&auto=format&fit=crop&q=80",
+    alt: "Office",
+  },
+]/>
+
+<div class="mx-auto w-full max-w-sm py-12">
+  <AttachmentGroup class="w-full">
+    <for|image| of=images by=(image) => image.name>
+      <Attachment orientation="vertical">
+        <AttachmentMedia variant="image">
+          <img src=image.src alt=image.alt/>
+        </AttachmentMedia>
+        <AttachmentContent>
+          <AttachmentTitle>${image.name}</AttachmentTitle>
+          <AttachmentDescription>${image.meta}</AttachmentDescription>
+        </AttachmentContent>
+        <AttachmentActions>
+          <AttachmentAction aria-label=`Remove ${image.name}`>
+            <Icon name="X"/>
+          </AttachmentAction>
+        </AttachmentActions>
+        // Upstream renders AttachmentTrigger as an <a> via Radix's `render`
+        // prop (Slot.Root merges the trigger's props/classes onto the
+        // caller's element). Our port has no Slot.Root equivalent (see
+        // trigger.marko's header comment) and always renders its own
+        // <button>, so an anchor-triggered card is built by placing a plain
+        // <a> with the same "cover the card" positioning classes instead.
+        <a
+          data-slot="attachment-trigger"
+          href=image.src
+          target="_blank"
+          rel="noreferrer"
+          aria-label=`Open ${image.name}`
+          class="mu-attachment-trigger absolute inset-0 z-10 outline-none"
+        />
+      </Attachment>
+    </for>
+  </AttachmentGroup>
+</div>

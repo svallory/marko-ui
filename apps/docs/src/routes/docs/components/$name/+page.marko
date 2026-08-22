@@ -38,11 +38,18 @@ import { getComponentPageData } from "../../../../lib/component-page-data.ts";
 </if>
 <else>
   <!-- TOC entries mirror the h2s below, in the same order. -->
+  <const/hasAccessibility=Boolean(
+    (page.docs.accessibilityKeyboard && page.docs.accessibilityKeyboard.length !== 0) ||
+    (page.docs.accessibilityNotes && page.docs.accessibilityNotes.length !== 0),
+  )/>
   <const/tocEntries=[
     { id: "installation", label: "Installation" },
     { id: "usage", label: "Usage" },
-    ...(page.isCompound ? [{ id: "composition", label: "Composition" }] : []),
-    ...page.examples.map((example) => ({ id: example.id, label: example.title })),
+    ...(page.docs.concepts ? [{ id: "concepts", label: "Concepts" }] : []),
+    ...(page.isCompound || page.docs.composition ? [{ id: "composition", label: "Composition" }] : []),
+    ...(page.examples.length !== 0 ? [{ id: "examples", label: "Examples" }] : []),
+    ...page.examples.map((example) => ({ id: example.id, label: example.title, level: 3 })),
+    ...(hasAccessibility ? [{ id: "accessibility", label: "Accessibility" }] : []),
     ...(page.parts.length !== 0 ? [{ id: "api-reference", label: "API Reference" }] : []),
   ]/>
 
@@ -113,6 +120,15 @@ import { getComponentPageData } from "../../../../lib/component-page-data.ts";
               <code-block code=page.docs.importSnippet language="marko"/>
             </section>
 
+            <if=page.docs.concepts>
+              <section>
+                <h2 id="concepts" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
+                  Concepts
+                </h2>
+                <p class="mt-4 text-sm leading-7 text-muted-foreground">${page.docs.concepts}</p>
+              </section>
+            </if>
+
             <if=page.isCompound>
               <section>
                 <h2 id="composition" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
@@ -121,18 +137,75 @@ import { getComponentPageData } from "../../../../lib/component-page-data.ts";
                 <composition-tree componentName=page.name parts=page.parts/>
               </section>
             </if>
-
-            <for|example| of=page.examples by=(example) => example.name>
+            <!-- Single-file components whose anatomy is expressed through
+                 slots/render-props (e.g. tooltip's @trigger/@content) have
+                 nothing for composition-tree to enumerate — api-reference.json
+                 sees one part, so isCompound is false. docs.composition is
+                 the prose fallback for those. -->
+            <else-if=page.docs.composition>
               <section>
-                <h2 id=example.id class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
-                  ${example.title}
+                <h2 id="composition" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
+                  Composition
                 </h2>
-                <if=example.description>
-                  <p class="mt-4 text-sm leading-7 text-muted-foreground">${example.description}</p>
-                </if>
-                <component-preview demoId=example.demoId source=example.source/>
+                <p class="mt-4 text-sm leading-7 text-muted-foreground">${page.docs.composition}</p>
               </section>
-            </for>
+            </else-if>
+
+            <if=page.examples.length !== 0>
+              <section>
+                <h2 id="examples" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
+                  Examples
+                </h2>
+                <for|example| of=page.examples by=(example) => example.name>
+                  <div class="mt-8">
+                    <h3 id=example.id class="scroll-mt-20 text-lg font-semibold tracking-tight">
+                      ${example.title}
+                    </h3>
+                    <if=example.description>
+                      <p class="mt-2 text-sm leading-7 text-muted-foreground">${example.description}</p>
+                    </if>
+                    <component-preview demoId=example.demoId source=example.source/>
+                  </div>
+                </for>
+              </section>
+            </if>
+
+            <if=hasAccessibility>
+              <section>
+                <h2 id="accessibility" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
+                  Accessibility
+                </h2>
+                <if=(page.docs.accessibilityKeyboard && page.docs.accessibilityKeyboard.length !== 0)>
+                  <div class="mt-4 overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead>
+                        <tr class="border-b border-border text-left">
+                          <th class="py-2 pr-4 font-medium text-foreground">Key</th>
+                          <th class="py-2 font-medium text-foreground">Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <for|entry| of=page.docs.accessibilityKeyboard by=(entry) => entry.keys>
+                          <tr class="border-b border-border/50">
+                            <td class="py-2 pr-4 align-top">
+                              <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">${entry.keys}</code>
+                            </td>
+                            <td class="py-2 align-top text-muted-foreground">${entry.description}</td>
+                          </tr>
+                        </for>
+                      </tbody>
+                    </table>
+                  </div>
+                </if>
+                <if=(page.docs.accessibilityNotes && page.docs.accessibilityNotes.length !== 0)>
+                  <ul class="mt-4 list-disc space-y-2 pl-5 text-sm leading-7 text-muted-foreground">
+                    <for|note| of=page.docs.accessibilityNotes by=(note) => note>
+                      <li>${note}</li>
+                    </for>
+                  </ul>
+                </if>
+              </section>
+            </if>
 
             <if=page.parts.length !== 0>
               <section>

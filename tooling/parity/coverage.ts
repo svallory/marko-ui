@@ -521,10 +521,25 @@ export function isTargetPresent(
 /** Our section headings: fixed page skeleton (see +page.marko) + per-example titles. Pre-migration flat skeleton — see notes/docs-canonical-structure.md "Sequencing" step 2 for when this changes. */
 export function ourSectionsFor(componentName: string, docs: {
   examples: { title: string }[]
+  composition?: string
+  accessibilityKeyboard?: { keys: string; description: string }[]
+  accessibilityNotes?: string[]
 }, isCompound: boolean, hasApiParts: boolean): string[] {
   const sections = ["Installation", "Usage"]
-  if (isCompound) sections.push("Composition")
+  // Compound components (multiple .marko parts) get the auto-generated
+  // <composition-tree>; single-file components with slot/render-prop
+  // anatomy (e.g. tooltip) carry the section via docs.composition instead
+  // — see docs-types.ts and +page.marko's isCompound/composition branch.
+  if (isCompound || docs.composition) sections.push("Composition")
   for (const example of docs.examples) sections.push(example.title)
+  // Mirrors +page.marko's `hasAccessibility` const: the section renders
+  // when either field is non-empty. Previously never pushed here, so a
+  // populated accessibilityNotes/accessibilityKeyboard could never satisfy
+  // an upstream "Accessibility" mapped target — see attachment's fix.
+  const hasAccessibility =
+    (docs.accessibilityKeyboard && docs.accessibilityKeyboard.length !== 0) ||
+    (docs.accessibilityNotes && docs.accessibilityNotes.length !== 0)
+  if (hasAccessibility) sections.push("Accessibility")
   if (hasApiParts) sections.push("API Reference")
   return sections
 }

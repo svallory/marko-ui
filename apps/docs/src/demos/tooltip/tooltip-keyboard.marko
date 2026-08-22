@@ -1,0 +1,15 @@
+import Tooltip from "@marko-ui/shadcn/ui/tooltip/tooltip.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Kbd from "@marko-ui/shadcn/ui/kbd/kbd.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+<Tooltip>
+  <@trigger|props|>
+    <Button ...props variant="outline" size="icon-sm">
+      <Icon name="SaveIcon"/>
+    </Button>
+  </@trigger>
+  <@content>
+    Save Changes <Kbd>S</Kbd>
+  </@content>
+</Tooltip>

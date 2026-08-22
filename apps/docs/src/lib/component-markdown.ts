@@ -82,6 +82,10 @@ export function renderComponentMarkdown(page: ComponentPageData): string {
     "",
   );
 
+  if (page.docs.concepts) {
+    sections.push("## Concepts", "", page.docs.concepts, "");
+  }
+
   if (page.isCompound) {
     const rootTag = pascalCase(page.name);
     const children = page.parts.filter((part) => part.name !== page.name);
@@ -98,10 +102,33 @@ export function renderComponentMarkdown(page: ComponentPageData): string {
     sections.push("```", "");
   }
 
-  for (const example of page.examples) {
-    sections.push(`## ${example.title}`, "");
-    if (example.description) sections.push(example.description, "");
-    sections.push("```marko", example.source, "```", "");
+  if (page.examples.length !== 0) {
+    sections.push("## Examples", "");
+    for (const example of page.examples) {
+      sections.push(`### ${example.title}`, "");
+      if (example.description) sections.push(example.description, "");
+      sections.push("```marko", example.source, "```", "");
+    }
+  }
+
+  const hasAccessibility =
+    (page.docs.accessibilityKeyboard && page.docs.accessibilityKeyboard.length !== 0) ||
+    (page.docs.accessibilityNotes && page.docs.accessibilityNotes.length !== 0);
+  if (hasAccessibility) {
+    sections.push("## Accessibility", "");
+    if (page.docs.accessibilityKeyboard && page.docs.accessibilityKeyboard.length !== 0) {
+      sections.push("| Key | Description |", "| --- | --- |");
+      for (const entry of page.docs.accessibilityKeyboard) {
+        sections.push(`| \`${entry.keys}\` | ${escapeTableCell(entry.description)} |`);
+      }
+      sections.push("");
+    }
+    if (page.docs.accessibilityNotes && page.docs.accessibilityNotes.length !== 0) {
+      for (const note of page.docs.accessibilityNotes) {
+        sections.push(`- ${note}`);
+      }
+      sections.push("");
+    }
   }
 
   if (page.parts.length !== 0) {

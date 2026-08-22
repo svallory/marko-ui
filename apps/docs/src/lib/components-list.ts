@@ -1,6 +1,6 @@
 // Component index — regenerated centrally after each phase.
 export const COMPONENTS = [
-  "accordion", "alert", "alert-dialog", "angle-slider", "aspect-ratio", "avatar",
+  "accordion", "alert", "alert-dialog", "angle-slider", "aspect-ratio", "attachment", "avatar",
   "badge", "breadcrumb", "button", "button-group", "calendar", "card",
   "carousel", "cascade-select", "chart", "checkbox", "clipboard", "collapsible", "color-picker",
   "combobox", "command", "context-menu", "data-table", "date-input", "date-picker",

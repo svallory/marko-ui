@@ -1,0 +1,69 @@
+import ButtonGroup from "@marko-ui/shadcn/ui/button-group/button-group.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+
+// Upstream icons with no equivalent in our icon set (see
+// packages/shadcn/ui/icon/icon-names.ts) are swapped for the closest
+// available name: MailCheckIcon -> Mail, CalendarPlusIcon -> Calendar,
+// ListFilterIcon -> ListIcon. TagIcon (on the "Label As..." sub-trigger) is
+// dropped entirely — dropdown-menu.marko's sub-trigger row renders only
+// `entry.label` as plain text, with no icon slot to put it in. All
+// substitutions are decorative — no behavior depends on the exact glyph.
+//
+// Upstream's "Label As..." submenu holds a DropdownMenuRadioGroup (single-
+// select). Our submenu.marko (packages/shadcn/ui/dropdown-menu/submenu.marko)
+// only renders one level of PLAIN items for subEntries — its item loop has
+// no "radio"/"checkbox" branch, so a radioGroup there would render but
+// silently never show a checked indicator. Faking a working radio-select
+// would violate the "no approximations" rule, so this submenu ships plain
+// selectable items instead; the radio-in-submenu gap is a real port gap in
+// submenu.marko, not something this demo can paper over.
+static const LABEL_ITEMS = [
+  { value: "personal", label: "Personal" },
+  { value: "work", label: "Work" },
+  { value: "other", label: "Other" },
+];
+
+<ButtonGroup>
+  <ButtonGroup class="hidden sm:flex">
+    <Button variant="outline" size="icon" aria-label="Go Back">
+      <Icon name="ArrowLeft"/>
+    </Button>
+  </ButtonGroup>
+  <ButtonGroup>
+    <Button variant="outline">Archive</Button>
+    <Button variant="outline">Report</Button>
+  </ButtonGroup>
+  <ButtonGroup>
+    <Button variant="outline">Snooze</Button>
+    <DropdownMenu>
+      <@trigger|triggerProps|>
+        <Button variant="outline" size="icon" aria-label="More Options" ...triggerProps>
+          <Icon name="MoreHorizontal"/>
+        </Button>
+      </@trigger>
+      <@item value="mark-read">
+        <Icon name="Mail" data-icon="inline-start"/> Mark as Read
+      </@item>
+      <@item value="archive">
+        <Icon name="ArchiveIcon" data-icon="inline-start"/> Archive
+      </@item>
+      <@item type="separator"/>
+      <@item value="snooze">
+        <Icon name="ClockIcon" data-icon="inline-start"/> Snooze
+      </@item>
+      <@item value="add-calendar">
+        <Icon name="Calendar" data-icon="inline-start"/> Add to Calendar
+      </@item>
+      <@item value="add-list">
+        <Icon name="ListIcon" data-icon="inline-start"/> Add to List
+      </@item>
+      <@item type="sub" label="Label As..." subEntries=LABEL_ITEMS/>
+      <@item type="separator"/>
+      <@item value="trash" variant="destructive">
+        <Icon name="Trash2Icon" data-icon="inline-start"/> Trash
+      </@item>
+    </DropdownMenu>
+  </ButtonGroup>
+</ButtonGroup>

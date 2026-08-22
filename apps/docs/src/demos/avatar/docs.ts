@@ -19,6 +19,11 @@ export const docs: ComponentDocs = {
       description: "An avatar with an image, and one falling back to initials when it has no `src`.",
     },
     {
+      name: "avatar-basic",
+      title: "Basic image",
+      description: "A basic avatar with an image and a fallback.",
+    },
+    {
       name: "avatar-fallback",
       title: "Fallback",
       description: "Without a `src`, the fallback content renders immediately.",
@@ -37,6 +42,47 @@ export const docs: ComponentDocs = {
       name: "avatar-controlled",
       title: "Controlled",
       description: "Listen for `statusChange` to react to `loading`, `loaded`, or `error` as `src` changes.",
+    },
+    {
+      name: "avatar-badge",
+      title: "Badge",
+      description:
+        "Pass an `AvatarBadge` through the `@badge` slot to add a badge to the avatar, positioned at the bottom right. Use `class` to customize its color and size.",
+    },
+    {
+      name: "avatar-badge-icon",
+      title: "Badge with Icon",
+      description: "You can also render an icon inside `AvatarBadge`.",
+    },
+    {
+      name: "avatar-group",
+      title: "Avatar Group",
+      description: "Use `AvatarGroup` to render a group of overlapping avatars.",
+    },
+    {
+      name: "avatar-group-count",
+      title: "Avatar Group Count",
+      description: "Use `AvatarGroupCount` to add a count indicator to the group.",
+    },
+    {
+      name: "avatar-group-count-icon",
+      title: "Avatar Group with Icon",
+      description: "You can also render an icon inside `AvatarGroupCount`.",
+    },
+    {
+      name: "avatar-size",
+      title: "Sizes",
+      description: 'Use the `size` prop ("sm" | "default" | "lg") to change the size of the avatar.',
+    },
+    {
+      name: "avatar-dropdown",
+      title: "Dropdown",
+      description: "Use `Avatar` as the trigger for a dropdown menu.",
+    },
+    {
+      name: "avatar-rtl",
+      title: "RTL",
+      description: "Avatar, badge, and group markup mirror correctly under `dir=\"rtl\"`.",
     },
   ],
 };

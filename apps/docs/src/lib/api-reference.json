@@ -1,5 +1,5 @@
 {
-  "generatedBy": "packages/registry/scripts/extract-api.ts",
+  "generatedBy": "tooling/extract-api.ts",
   "components": [
     {
       "name": "accordion",
@@ -120,6 +120,12 @@
       "name": "alert",
       "parts": [
         {
+          "file": "action.marko",
+          "name": "action",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
           "file": "alert.marko",
           "name": "alert",
           "properties": [
@@ -171,6 +177,12 @@
               "kind": "own"
             },
             {
+              "name": "actionVariant",
+              "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "aria-label",
               "type": "string | undefined",
               "required": false,
@@ -180,6 +192,12 @@
             {
               "name": "cancelText",
               "type": "string",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "cancelVariant",
+              "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
               "required": false,
               "kind": "own"
             },
@@ -251,6 +269,12 @@
               "required": false,
               "kind": "machine",
               "description": "Element to receive focus when the dialog is opened"
+            },
+            {
+              "name": "media",
+              "type": "Marko.Body<[], void>",
+              "required": false,
+              "kind": "own"
             },
             {
               "name": "modal",
@@ -348,6 +372,13 @@
               "required": false,
               "kind": "machine",
               "description": "The dialog's role"
+            },
+            {
+              "name": "size",
+              "type": "'default' | 'sm'",
+              "required": false,
+              "kind": "own",
+              "description": "`\"default\" | \"sm\"` — mirrors upstream's `AlertDialogContent` size prop."
             },
             {
               "name": "title",
@@ -520,6 +551,112 @@
       ]
     },
     {
+      "name": "attachment",
+      "parts": [
+        {
+          "file": "action.marko",
+          "name": "action",
+          "properties": [],
+          "nativeAttributes": "button"
+        },
+        {
+          "file": "actions.marko",
+          "name": "actions",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "attachment.marko",
+          "name": "attachment",
+          "properties": [
+            {
+              "name": "orientation",
+              "type": "'horizontal' | 'vertical' | null | undefined",
+              "required": false,
+              "kind": "variant",
+              "options": [
+                "horizontal",
+                "vertical"
+              ]
+            },
+            {
+              "name": "size",
+              "type": "'default' | 'sm' | 'xs' | null | undefined",
+              "required": false,
+              "kind": "variant",
+              "options": [
+                "default",
+                "sm",
+                "xs"
+              ]
+            },
+            {
+              "name": "state",
+              "type": "'idle' | 'uploading' | 'processing' | 'error' | 'done'",
+              "required": false,
+              "kind": "own"
+            }
+          ],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "content.marko",
+          "name": "content",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "description.marko",
+          "name": "description",
+          "properties": [],
+          "nativeAttributes": "span"
+        },
+        {
+          "file": "group.marko",
+          "name": "group",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "media.marko",
+          "name": "media",
+          "properties": [
+            {
+              "name": "variant",
+              "type": "'image' | 'icon' | null | undefined",
+              "required": false,
+              "kind": "variant",
+              "options": [
+                "icon",
+                "image"
+              ],
+              "default": "icon"
+            }
+          ],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "title.marko",
+          "name": "title",
+          "properties": [],
+          "nativeAttributes": "span"
+        },
+        {
+          "file": "trigger.marko",
+          "name": "trigger",
+          "properties": [
+            {
+              "name": "asChild",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            }
+          ],
+          "nativeAttributes": "button"
+        }
+      ]
+    },
+    {
       "name": "avatar",
       "parts": [
         {
@@ -573,6 +710,13 @@
               "description": "Functional called when the image loading status changes."
             },
             {
+              "name": "size",
+              "type": "'default' | 'sm' | 'lg'",
+              "required": false,
+              "kind": "own",
+              "description": "Size variant — also exposed as `data-size` for group/badge styling."
+            },
+            {
               "name": "src",
               "type": "string",
               "required": false,
@@ -587,6 +731,24 @@
           ],
           "nativeAttributes": "span",
           "machineModule": "@zag-js/avatar"
+        },
+        {
+          "file": "badge.marko",
+          "name": "badge",
+          "properties": [],
+          "nativeAttributes": "span"
+        },
+        {
+          "file": "group-count.marko",
+          "name": "group-count",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "group.marko",
+          "name": "group",
+          "properties": [],
+          "nativeAttributes": "div"
         }
       ],
       "machineModule": "@zag-js/avatar"
@@ -600,14 +762,16 @@
           "properties": [
             {
               "name": "variant",
-              "type": "'default' | 'destructive' | 'secondary' | 'outline' | null | undefined",
+              "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
                 "default",
                 "secondary",
                 "destructive",
-                "outline"
+                "outline",
+                "ghost",
+                "link"
               ],
               "default": "default"
             }
@@ -658,6 +822,71 @@
       ]
     },
     {
+      "name": "bubble",
+      "parts": [
+        {
+          "file": "bubble-content.marko",
+          "name": "bubble-content",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "bubble-group.marko",
+          "name": "bubble-group",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "bubble-reactions.marko",
+          "name": "bubble-reactions",
+          "properties": [
+            {
+              "name": "align",
+              "type": "'start' | 'end'",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "side",
+              "type": "'top' | 'bottom'",
+              "required": false,
+              "kind": "own"
+            }
+          ],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "bubble.marko",
+          "name": "bubble",
+          "properties": [
+            {
+              "name": "align",
+              "type": "'start' | 'end'",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "variant",
+              "type": "'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'muted' | 'tinted' | null | undefined",
+              "required": false,
+              "kind": "variant",
+              "options": [
+                "default",
+                "secondary",
+                "muted",
+                "tinted",
+                "outline",
+                "ghost",
+                "destructive"
+              ],
+              "default": "default"
+            }
+          ],
+          "nativeAttributes": "div"
+        }
+      ]
+    },
+    {
       "name": "button",
       "parts": [
         {
@@ -666,28 +895,32 @@
           "properties": [
             {
               "name": "size",
-              "type": "'default' | 'sm' | 'lg' | 'icon' | null | undefined",
+              "type": "'default' | 'sm' | 'xs' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
                 "default",
+                "xs",
                 "sm",
                 "lg",
-                "icon"
+                "icon",
+                "icon-xs",
+                "icon-sm",
+                "icon-lg"
               ],
               "default": "default"
             },
             {
               "name": "variant",
-              "type": "'link' | 'default' | 'destructive' | 'secondary' | 'outline' | 'ghost' | null | undefined",
+              "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
                 "default",
-                "destructive",
                 "outline",
                 "secondary",
                 "ghost",
+                "destructive",
                 "link"
               ],
               "default": "default"
@@ -746,6 +979,13 @@
           "file": "calendar.marko",
           "name": "calendar",
           "properties": [
+            {
+              "name": "captionLayout",
+              "type": "'label' | 'dropdown'",
+              "required": false,
+              "kind": "own",
+              "description": "Caption presentation. `\"label\"` (default) shows the visible range as a\nplain view-trigger button; `\"dropdown\"` swaps it for native month and year\n`<select>` controls. Component-owned — not forwarded to the machine."
+            },
             {
               "name": "createCalendar",
               "type": "((identifier: CalendarIdentifier) => Calendar) | undefined",
@@ -1059,7 +1299,14 @@
         {
           "file": "card.marko",
           "name": "card",
-          "properties": [],
+          "properties": [
+            {
+              "name": "size",
+              "type": "'default' | 'sm'",
+              "required": false,
+              "kind": "own"
+            }
+          ],
           "nativeAttributes": "div"
         },
         {
@@ -1124,9 +1371,10 @@
             },
             {
               "name": "content",
-              "type": "Marko.Body<[T, number], void>",
+              "type": "Marko.Body<[T | undefined, number], void>",
               "required": false,
-              "kind": "own"
+              "kind": "own",
+              "description": "Render prop for `items=` entries.\n\nThe item is `T | undefined`, not `T`: a bodyless `<@slide/>` produces an\nentry with no datum, and the render path below deliberately still invokes\nthis body for it (see the comment at the call site — the render prop owns\nplaceholder slides). Declaring it as `T` promised a value this component\ndoes not always pass."
             },
             {
               "name": "defaultPage",
@@ -1573,6 +1821,12 @@
               "kind": "own"
             },
             {
+              "name": "hideLabel",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "indicator",
               "type": "'line' | 'dot' | 'dashed'",
               "required": false,
@@ -1597,10 +1851,24 @@
               "kind": "own"
             },
             {
+              "name": "stackOffset",
+              "type": "'expand'",
+              "required": false,
+              "kind": "own",
+              "description": "\"expand\" ⇒ 100% stacked (recharts stackOffset=\"expand\"). Requires stacked series."
+            },
+            {
               "name": "tooltip",
               "type": "boolean",
               "required": false,
               "kind": "own"
+            },
+            {
+              "name": "tooltipLabelFormatter",
+              "type": "(value: string) => string",
+              "required": false,
+              "kind": "own",
+              "description": "Applied to the tooltip's label row only (recharts ChartTooltipContent labelFormatter)."
             },
             {
               "name": "width",
@@ -1617,10 +1885,24 @@
               "description": "Applied to axis tick labels only (like recharts' XAxis tickFormatter)."
             },
             {
+              "name": "xTickMinGap",
+              "type": "number",
+              "required": false,
+              "kind": "own",
+              "description": "Minimum pixel gap between kept x-axis ticks (recharts XAxis minTickGap) — thins dense date-series ticks."
+            },
+            {
               "name": "yAxis",
               "type": "boolean",
               "required": false,
               "kind": "own"
+            },
+            {
+              "name": "yAxisTickCount",
+              "type": "number",
+              "required": false,
+              "kind": "own",
+              "description": "Approximate number of y-axis ticks (recharts YAxis tickCount). Default 5."
             }
           ]
         },
@@ -1646,6 +1928,20 @@
               "type": "string",
               "required": true,
               "kind": "own"
+            },
+            {
+              "name": "activeIndex",
+              "type": "number",
+              "required": false,
+              "kind": "own",
+              "description": "Highlights one bar (fill-opacity 0.8, dashed stroke in its own row.fill color) — mirrors chart-bar-active."
+            },
+            {
+              "name": "categoryTickFormatter",
+              "type": "(value: string) => string",
+              "required": false,
+              "kind": "own",
+              "description": "category-axis tick formatter (Y axis in horizontal layout, X axis otherwise)."
             },
             {
               "name": "class",
@@ -1674,6 +1970,12 @@
               "kind": "own"
             },
             {
+              "name": "hideIndicator",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "hideLabel",
               "type": "boolean",
               "required": false,
@@ -1686,11 +1988,18 @@
               "kind": "own"
             },
             {
+              "name": "labels",
+              "type": "LabelSpec[]",
+              "required": false,
+              "kind": "own",
+              "description": "Bar (or, in horizontal layout, the single-series bar) LabelList-equivalents."
+            },
+            {
               "name": "layout",
               "type": "'horizontal'",
               "required": false,
               "kind": "own",
-              "description": "Reserved for a future horizontal layout — v1 renders vertical bars only."
+              "description": "recharts' own (confusing) naming: \"horizontal\" renders HORIZONTAL bars."
             },
             {
               "name": "legend",
@@ -1730,6 +2039,13 @@
               "description": "Default true. `false` ⇒ no tooltip panel and no cursor."
             },
             {
+              "name": "tooltipLabelFormatter",
+              "type": "(value: string) => string",
+              "required": false,
+              "kind": "own",
+              "description": "Applied to the tooltip's label row only (recharts ChartTooltipContent labelFormatter)."
+            },
+            {
               "name": "width",
               "type": "number",
               "required": false,
@@ -1740,6 +2056,13 @@
               "type": "(value: string) => string",
               "required": false,
               "kind": "own"
+            },
+            {
+              "name": "xTickMinGap",
+              "type": "number",
+              "required": false,
+              "kind": "own",
+              "description": "Minimum pixel gap between kept x-axis ticks (recharts XAxis minTickGap) — thins dense date-series ticks."
             },
             {
               "name": "yAxis",
@@ -1906,6 +2229,13 @@
               "description": "false ⇒ no tooltip (and no hover state at all). Default true."
             },
             {
+              "name": "tooltipLabelFormatter",
+              "type": "(value: string) => string",
+              "required": false,
+              "kind": "own",
+              "description": "Applied to the tooltip's label row only (recharts ChartTooltipContent labelFormatter)."
+            },
+            {
               "name": "width",
               "type": "number",
               "required": false,
@@ -1916,6 +2246,13 @@
               "type": "(value: string) => string",
               "required": false,
               "kind": "own"
+            },
+            {
+              "name": "xTickMinGap",
+              "type": "number",
+              "required": false,
+              "kind": "own",
+              "description": "Minimum pixel gap between kept x-axis ticks (recharts XAxis minTickGap) — thins dense date-series ticks."
             },
             {
               "name": "yAxis",
@@ -1956,6 +2293,19 @@
               "required": true,
               "kind": "own",
               "description": "Category field, e.g. \"browser\"."
+            },
+            {
+              "name": "activeIndex",
+              "type": "number",
+              "required": false,
+              "kind": "own",
+              "description": "Highlights one sector at outerRadius + activeOuterRadiusDelta (default 10) — mirrors chart-pie-donut-active / chart-pie-interactive."
+            },
+            {
+              "name": "activeOuterRadiusDelta",
+              "type": "number",
+              "required": false,
+              "kind": "own"
             },
             {
               "name": "centerLabel",
@@ -2003,11 +2353,39 @@
               "description": "Defaults to 80% of the max radius, like recharts."
             },
             {
+              "name": "outsideLabel",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Plain numeric-value label with a leader line, positioned outside each slice (recharts' bare `label` prop)."
+            },
+            {
               "name": "paddingAngle",
               "type": "number",
               "required": false,
               "kind": "own",
               "description": "Degrees between sectors, like recharts' paddingAngle."
+            },
+            {
+              "name": "rings",
+              "type": "PieRing[]",
+              "required": false,
+              "kind": "own",
+              "description": "Additional concentric rings — e.g. chart-pie-stacked's inner/outer donut pair. `data`'s own ring uses `dataKey`/`nameKey`/`innerRadius`/`outerRadius` above as ring 0."
+            },
+            {
+              "name": "sliceLabel",
+              "type": "Marko.Body<[{ x: number; y: number; row: Row; value: number; index: number; }], void>",
+              "required": false,
+              "kind": "own",
+              "description": "Custom label rendered at each slice's centroid — e.g. value-in-foreground-color or category-name-in-background-color."
+            },
+            {
+              "name": "strokeWidth",
+              "type": "number",
+              "required": false,
+              "kind": "own",
+              "description": "Sector border width (recharts Pie strokeWidth, default 1). 0 removes the white separator."
             },
             {
               "name": "tooltip",
@@ -2095,6 +2473,13 @@
               "type": "CartesianCtx",
               "required": true,
               "kind": "own"
+            },
+            {
+              "name": "tickCount",
+              "type": "number",
+              "required": false,
+              "kind": "own",
+              "description": "Approximate number of ticks (d3 `ticks()` count) — recharts' tickCount. Default 5."
             },
             {
               "name": "tickMargin",
@@ -2777,6 +3162,12 @@
               "description": "A root node to correctly resolve document in custom environments. E.x.: Iframes, Electron."
             },
             {
+              "name": "groups",
+              "type": "ComboboxGroupData[]",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "highlightChange",
               "type": "(highlightedValue: string | null) => void",
               "required": false,
@@ -2976,6 +3367,13 @@
               "required": false,
               "kind": "machine",
               "description": "The behavior of the combobox input when an item is selected\n\n- `replace`: The selected item string is set as the input value\n- `clear`: The input value is cleared\n- `preserve`: The input value is preserved"
+            },
+            {
+              "name": "showClear",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Show the clear (\"x\") button when a value is selected."
             },
             {
               "name": "translations",
@@ -3353,6 +3751,60 @@
               "type": "(value: string) => void",
               "required": false,
               "kind": "own"
+            }
+          ],
+          "machineModule": "@zag-js/menu"
+        },
+        {
+          "file": "submenu.marko",
+          "name": "submenu",
+          "properties": [
+            {
+              "name": "entries",
+              "type": "ContextMenuItem[]",
+              "required": true,
+              "kind": "own",
+              "description": "This submenu's own item list — same entry shape as the top-level menu."
+            },
+            {
+              "name": "parent",
+              "type": "() => menu.Service | null",
+              "required": true,
+              "kind": "own",
+              "description": "Getter for the parent menu's raw service — this submenu registers onto it via `setParent`."
+            },
+            {
+              "name": "trigger",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[menu.Api]>; }>",
+              "required": true,
+              "kind": "own",
+              "description": "Trigger render-prop: receives this submenu's connected api so the caller\n(the parent menu's item loop) can build the row with\n`parentApi().getTriggerItemProps(childApi)`."
+            },
+            {
+              "name": "disabled",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "inset",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "required": false,
+              "kind": "own",
+              "description": "Label rendered on the sub-trigger row."
+            },
+            {
+              "name": "onChildReady",
+              "type": "(childService: menu.Service) => void",
+              "required": false,
+              "kind": "own",
+              "description": "Fires once this submenu's own raw service exists (on mount), so the\nparent can complete the link with `parentApi().setChild(childService)` —\n`setChild` needs the RAW service (see menu.connect's `child.prop(\"id\")`),\nwhich only exists after this component's own `<service>` has mounted."
             }
           ],
           "machineModule": "@zag-js/menu"
@@ -4157,6 +4609,13 @@
               "description": "The dialog's role"
             },
             {
+              "name": "showCloseButton",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Show the top-right close button. Defaults to true."
+            },
+            {
               "name": "title",
               "type": "Marko.Body<[], void>",
               "required": false,
@@ -4188,6 +4647,32 @@
         }
       ],
       "machineModule": "@zag-js/dialog"
+    },
+    {
+      "name": "direction",
+      "parts": [
+        {
+          "file": "direction-provider.marko",
+          "name": "direction-provider",
+          "properties": [
+            {
+              "name": "dir",
+              "type": "'ltr' | 'rtl'",
+              "required": false,
+              "kind": "own",
+              "description": "Text direction propagated to descendants."
+            },
+            {
+              "name": "direction",
+              "type": "'ltr' | 'rtl'",
+              "required": false,
+              "kind": "own",
+              "description": "Alias for `dir`, matching the shadcn source's extra `direction` prop."
+            }
+          ],
+          "nativeAttributes": "div"
+        }
+      ]
     },
     {
       "name": "drawer",
@@ -4550,6 +5035,60 @@
               "type": "(value: string) => void",
               "required": false,
               "kind": "own"
+            }
+          ],
+          "machineModule": "@zag-js/menu"
+        },
+        {
+          "file": "submenu.marko",
+          "name": "submenu",
+          "properties": [
+            {
+              "name": "entries",
+              "type": "DropdownMenuItem[]",
+              "required": true,
+              "kind": "own",
+              "description": "This submenu's own item list — same entry shape as the top-level menu."
+            },
+            {
+              "name": "parent",
+              "type": "() => menu.Service | null",
+              "required": true,
+              "kind": "own",
+              "description": "Getter for the parent menu's raw service — this submenu registers onto it via `setParent`."
+            },
+            {
+              "name": "trigger",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[menu.Api]>; }>",
+              "required": true,
+              "kind": "own",
+              "description": "Trigger render-prop: receives this submenu's connected api so the caller\n(the parent menu's item loop) can build the row with\n`parentApi().getTriggerItemProps(childApi)`."
+            },
+            {
+              "name": "disabled",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "inset",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "required": false,
+              "kind": "own",
+              "description": "Label rendered on the sub-trigger row."
+            },
+            {
+              "name": "onChildReady",
+              "type": "(childService: menu.Service) => void",
+              "required": false,
+              "kind": "own",
+              "description": "Fires once this submenu's own raw service exists (on mount), so the\nparent can complete the link with `parentApi().setChild(childService)` —\n`setChild` needs the RAW service (see menu.connect's `child.prop(\"id\")`),\nwhich only exists after this component's own `<service>` has mounted."
             }
           ],
           "machineModule": "@zag-js/menu"
@@ -5629,6 +6168,45 @@
       "machineModule": "@zag-js/hover-card"
     },
     {
+      "name": "icon",
+      "parts": [
+        {
+          "file": "icon.marko",
+          "name": "icon",
+          "properties": [
+            {
+              "name": "name",
+              "type": "string",
+              "required": true,
+              "kind": "own",
+              "description": "Abstract icon name, e.g. \"SearchIcon\" — shared across all 5 libraries."
+            },
+            {
+              "name": "class",
+              "type": "string",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "library",
+              "type": "IconLibraryName",
+              "required": false,
+              "kind": "own",
+              "description": "Which icon library to render from. Defaults to \"lucide\"."
+            },
+            {
+              "name": "unsized",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Suppress the default `size-4` class so the emitted <svg> carries no\n`size-*` utility at all.\n\nThe 8 style layers size icons through shadcn's vendored\n`[&_svg:not([class*='size-'])]:size-N` escape hatch, which only reaches\nan <svg> that has NO size class. Upstream shadcn's icon loader emits no\ndefault size for exactly this reason; this component adds `size-4` as a\nconvenience, which silently disables that hatch. Set `unsized` at any\ncall site whose size is owned by an ancestor's `mu-*` style rule."
+            }
+          ],
+          "nativeAttributes": "div"
+        }
+      ]
+    },
+    {
       "name": "image-cropper",
       "parts": [
         {
@@ -5982,16 +6560,198 @@
           "name": "input-otp",
           "properties": [
             {
+              "name": "autoFocus",
+              "type": "boolean | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "Whether to auto-focus the first input."
+            },
+            {
+              "name": "autoSubmit",
+              "type": "boolean | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "Whether to auto-submit the owning form when all inputs are filled."
+            },
+            {
+              "name": "blurOnComplete",
+              "type": "boolean | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "Whether to blur the input when the value is complete"
+            },
+            {
+              "name": "count",
+              "type": "number | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "The number of inputs to render to improve SSR aria attributes.\nThis will be required in next major version."
+            },
+            {
+              "name": "defaultValue",
+              "type": "string[] | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "The initial value of the the pin input when rendered.\nUse when you don't need to control the value of the pin input."
+            },
+            {
+              "name": "dir",
+              "type": "'ltr' | 'rtl' | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "The document's text/writing direction."
+            },
+            {
+              "name": "disabled",
+              "type": "boolean | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "Whether the inputs are disabled"
+            },
+            {
+              "name": "form",
+              "type": "string | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "The associate form of the underlying input element."
+            },
+            {
+              "name": "getRootNode",
+              "type": "(() => ShadowRoot | Document | Node) | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "A root node to correctly resolve document in custom environments. E.x.: Iframes, Electron."
+            },
+            {
               "name": "groupSize",
               "type": "number",
               "required": false,
               "kind": "own"
             },
             {
+              "name": "ids",
+              "type": "Partial<{ root: string; hiddenInput: string; label: string; control: string; input: (id: string) => string; }> | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "The ids of the elements in the pin input. Useful for composition."
+            },
+            {
+              "name": "invalid",
+              "type": "boolean | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "Whether the pin input is in the invalid state"
+            },
+            {
               "name": "length",
               "type": "number",
               "required": false,
               "kind": "own"
+            },
+            {
+              "name": "mask",
+              "type": "boolean | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "If `true`, the input's value will be masked just like `type=password`"
+            },
+            {
+              "name": "name",
+              "type": "string | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "The name of the input element. Useful for form submission."
+            },
+            {
+              "name": "onValueChange",
+              "type": "((details: ValueChangeDetails) => void) | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "Function called on input change"
+            },
+            {
+              "name": "onValueComplete",
+              "type": "((details: ValueChangeDetails) => void) | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "Function called when all inputs have valid values"
+            },
+            {
+              "name": "onValueInvalid",
+              "type": "((details: ValueInvalidDetails) => void) | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "Function called when an invalid value is entered"
+            },
+            {
+              "name": "otp",
+              "type": "boolean | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "If `true`, the pin input component signals to its fields that they should\nuse `autocomplete=\"one-time-code\"`."
+            },
+            {
+              "name": "pattern",
+              "type": "string | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "The regular expression that the user-entered input value is checked against."
+            },
+            {
+              "name": "placeholder",
+              "type": "string | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "The placeholder text for the input"
+            },
+            {
+              "name": "readOnly",
+              "type": "boolean | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "Whether the pin input is in the valid state"
+            },
+            {
+              "name": "required",
+              "type": "boolean | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "Whether the pin input is required"
+            },
+            {
+              "name": "sanitizeValue",
+              "type": "((value: string) => string) | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "Function to sanitize pasted values before validation.\nUseful for stripping dashes, spaces, or other formatting."
+            },
+            {
+              "name": "selectOnFocus",
+              "type": "boolean | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "Whether to select input value when input is focused"
+            },
+            {
+              "name": "translations",
+              "type": "IntlTranslations | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "Specifies the localized strings that identifies the accessibility elements and their states"
+            },
+            {
+              "name": "type",
+              "type": "'alphanumeric' | 'numeric' | 'alphabetic' | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "The type of value the pin-input should allow"
+            },
+            {
+              "name": "value",
+              "type": "string[] | undefined",
+              "required": false,
+              "kind": "machine",
+              "description": "The controlled value of the the pin input."
             },
             {
               "name": "valueChange",
@@ -6031,7 +6791,7 @@
           "file": "description.marko",
           "name": "description",
           "properties": [],
-          "nativeAttributes": "div"
+          "nativeAttributes": "p"
         },
         {
           "file": "footer.marko",
@@ -6057,12 +6817,13 @@
           "properties": [
             {
               "name": "size",
-              "type": "'default' | 'sm' | null | undefined",
+              "type": "'default' | 'sm' | 'xs' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
                 "default",
-                "sm"
+                "sm",
+                "xs"
               ],
               "default": "default"
             },
@@ -6320,6 +7081,48 @@
       "machineModule": "@zag-js/listbox"
     },
     {
+      "name": "marker",
+      "parts": [
+        {
+          "file": "content.marko",
+          "name": "content",
+          "properties": [],
+          "nativeAttributes": "span"
+        },
+        {
+          "file": "icon.marko",
+          "name": "icon",
+          "properties": [],
+          "nativeAttributes": "span"
+        },
+        {
+          "file": "marker.marko",
+          "name": "marker",
+          "properties": [
+            {
+              "name": "asChild",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "shadcn's source renders via Radix `Slot.Root` when `asChild` is set, so\nthe marker's own attrs/class merge onto the single child element instead\nof wrapping it in a `<div>`. Marko has no equivalent runtime slot-merge\nprimitive, so `asChild` is accepted for API parity but is a no-op here:\nwe always render the wrapping `<div>`. Content still renders normally."
+            },
+            {
+              "name": "variant",
+              "type": "'default' | 'separator' | 'border' | null | undefined",
+              "required": false,
+              "kind": "variant",
+              "options": [
+                "default",
+                "separator",
+                "border"
+              ]
+            }
+          ],
+          "nativeAttributes": "div"
+        }
+      ]
+    },
+    {
       "name": "marquee",
       "parts": [
         {
@@ -6335,9 +7138,10 @@
             },
             {
               "name": "content",
-              "type": "Marko.Body<[T, number], void>",
+              "type": "Marko.Body<[T | undefined, number], void>",
               "required": false,
-              "kind": "own"
+              "kind": "own",
+              "description": "Render prop for `items=` entries.\n\nThe item is `T | undefined`, not `T`: a bodyless `<@item/>` produces an\nentry with no datum, and the render path below still reaches this body for\nit (the `<else if=input.content>` branch). Declaring it as `T` promised a\nvalue this component does not always pass."
             },
             {
               "name": "defaultPaused",
@@ -6490,6 +7294,13 @@
               "kind": "own"
             },
             {
+              "name": "checkedChange",
+              "type": "(value: string, checked: boolean) => void",
+              "required": false,
+              "kind": "own",
+              "description": "Fires when a checkbox item's checked state changes; receives its value and new checked state."
+            },
+            {
               "name": "class",
               "type": "string",
               "required": false,
@@ -6506,6 +7317,13 @@
               "type": "DropdownMenuItem[]",
               "required": false,
               "kind": "own"
+            },
+            {
+              "name": "radioChange",
+              "type": "(group: string, value: string) => void",
+              "required": false,
+              "kind": "own",
+              "description": "Fires when a radio group's selected value changes; receives the group name and new value."
             },
             {
               "name": "select",
@@ -6525,6 +7343,273 @@
               "type": "Marko.Body<[], void>",
               "required": false,
               "kind": "own"
+            }
+          ],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "submenu.marko",
+          "name": "submenu",
+          "properties": [
+            {
+              "name": "entries",
+              "type": "MenubarItemAttrs[]",
+              "required": true,
+              "kind": "own",
+              "description": "This submenu's own item list — same entry shape as the top-level menu."
+            },
+            {
+              "name": "parent",
+              "type": "() => menu.Service | null",
+              "required": true,
+              "kind": "own",
+              "description": "Getter for the parent menu's raw service — this submenu registers onto it via `setParent`."
+            },
+            {
+              "name": "trigger",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[menu.Api]>; }>",
+              "required": true,
+              "kind": "own",
+              "description": "Trigger render-prop: receives this submenu's connected api so the caller\n(the parent menu's item loop) can build the row with\n`parentApi().getTriggerItemProps(childApi)`."
+            },
+            {
+              "name": "disabled",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "inset",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "required": false,
+              "kind": "own",
+              "description": "Label rendered on the sub-trigger row."
+            },
+            {
+              "name": "onChildReady",
+              "type": "(childService: menu.Service) => void",
+              "required": false,
+              "kind": "own",
+              "description": "Fires once this submenu's own raw service exists (on mount), so the\nparent can complete the link with `parentApi().setChild(childService)` —\n`setChild` needs the RAW service (see menu.connect's `child.prop(\"id\")`),\nwhich only exists after this component's own `<service>` has mounted."
+            }
+          ],
+          "machineModule": "@zag-js/menu"
+        }
+      ]
+    },
+    {
+      "name": "message",
+      "parts": [
+        {
+          "file": "avatar.marko",
+          "name": "avatar",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "content.marko",
+          "name": "content",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "footer.marko",
+          "name": "footer",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "group.marko",
+          "name": "group",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "header.marko",
+          "name": "header",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "message.marko",
+          "name": "message",
+          "properties": [
+            {
+              "name": "align",
+              "type": "'start' | 'end'",
+              "required": false,
+              "kind": "own"
+            }
+          ],
+          "nativeAttributes": "div"
+        }
+      ]
+    },
+    {
+      "name": "message-scroller",
+      "parts": [
+        {
+          "file": "button.marko",
+          "name": "button",
+          "properties": [
+            {
+              "name": "controller",
+              "type": "MessageScrollerControllerGetter",
+              "required": true,
+              "kind": "own",
+              "description": "Controller getter provided by the nearest `<message-scroller-provider>`."
+            },
+            {
+              "name": "behavior",
+              "type": "ScrollBehavior",
+              "required": false,
+              "kind": "own",
+              "description": "Native scroll behavior when clicked. Defaults to \"smooth\"."
+            },
+            {
+              "name": "direction",
+              "type": "'start' | 'end'",
+              "required": false,
+              "kind": "own",
+              "description": "Transcript edge to scroll toward. Defaults to \"end\"."
+            }
+          ],
+          "nativeAttributes": "button"
+        },
+        {
+          "file": "content.marko",
+          "name": "content",
+          "properties": [
+            {
+              "name": "controller",
+              "type": "MessageScrollerControllerGetter",
+              "required": true,
+              "kind": "own",
+              "description": "Controller getter provided by the nearest `<message-scroller-provider>`."
+            },
+            {
+              "name": "spacerClassName",
+              "type": "string",
+              "required": false,
+              "kind": "own",
+              "description": "Class name for the internal tail spacer used when anchoring turns near the top."
+            }
+          ],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "item.marko",
+          "name": "item",
+          "properties": [
+            {
+              "name": "controller",
+              "type": "MessageScrollerControllerGetter",
+              "required": true,
+              "kind": "own",
+              "description": "Controller getter provided by the nearest `<message-scroller-provider>`."
+            },
+            {
+              "name": "messageId",
+              "type": "string",
+              "required": false,
+              "kind": "own",
+              "description": "Stable row id for scrollToMessage, visibility, and prepend preservation."
+            },
+            {
+              "name": "scrollAnchor",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Marks a turn boundary that newly appended anchors and last-anchor restore use."
+            }
+          ],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "message-scroller-provider.marko",
+          "name": "message-scroller-provider",
+          "properties": [
+            {
+              "name": "autoScroll",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Follow new content at the bottom while the viewport is already at the end."
+            },
+            {
+              "name": "content",
+              "type": "Marko.Body<[MessageScrollerControllerGetter], void>",
+              "required": false,
+              "kind": "own",
+              "description": "Subtree that receives the controller GETTER as its single argument."
+            },
+            {
+              "name": "defaultScrollPosition",
+              "type": "MessageScrollerDefaultScrollPosition",
+              "required": false,
+              "kind": "own",
+              "description": "Opening position on the first non-empty render, applied once."
+            },
+            {
+              "name": "scrollEdgeThreshold",
+              "type": "number",
+              "required": false,
+              "kind": "own",
+              "description": "Distance from an edge that still counts as at-top/at-bottom. Defaults to 8."
+            },
+            {
+              "name": "scrollMargin",
+              "type": "number",
+              "required": false,
+              "kind": "own",
+              "description": "Default margin on the aligned edge for commands and visibility. Defaults to 0."
+            },
+            {
+              "name": "scrollPreviousItemPeek",
+              "type": "number",
+              "required": false,
+              "kind": "own",
+              "description": "Extra top margin for a newly anchored row, added to scrollMargin. Defaults to 64."
+            }
+          ]
+        },
+        {
+          "file": "message-scroller.marko",
+          "name": "message-scroller",
+          "properties": [
+            {
+              "name": "controller",
+              "type": "MessageScrollerControllerGetter",
+              "required": true,
+              "kind": "own",
+              "description": "Controller getter provided by the nearest `<message-scroller-provider>`."
+            }
+          ],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "viewport.marko",
+          "name": "viewport",
+          "properties": [
+            {
+              "name": "controller",
+              "type": "MessageScrollerControllerGetter",
+              "required": true,
+              "kind": "own",
+              "description": "Controller getter provided by the nearest `<message-scroller-provider>`."
+            },
+            {
+              "name": "preserveScrollOnPrepend",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Keep the first visible messageId row stable on prepend. Defaults to true."
             }
           ],
           "nativeAttributes": "div"
@@ -7182,6 +8267,18 @@
       "name": "popover",
       "parts": [
         {
+          "file": "description.marko",
+          "name": "description",
+          "properties": [],
+          "nativeAttributes": "p"
+        },
+        {
+          "file": "header.marko",
+          "name": "header",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
           "file": "popover.marko",
           "name": "popover",
           "properties": [
@@ -7205,6 +8302,13 @@
               "required": false,
               "kind": "machine",
               "description": "Whether to automatically set focus on the first focusable\ncontent within the popover when opened."
+            },
+            {
+              "name": "class",
+              "type": "string",
+              "required": false,
+              "kind": "own",
+              "description": "Extra class for the content panel."
             },
             {
               "name": "closeOnEscape",
@@ -7383,6 +8487,12 @@
           ],
           "nativeAttributes": "div",
           "machineModule": "@zag-js/popover"
+        },
+        {
+          "file": "title.marko",
+          "name": "title",
+          "properties": [],
+          "nativeAttributes": "div"
         }
       ],
       "machineModule": "@zag-js/popover"
@@ -7976,7 +9086,7 @@
               "type": "boolean",
               "required": false,
               "kind": "own",
-              "description": "Render a horizontal scrollbar + thumb in addition to the vertical one."
+              "description": "Render a horizontal scrollbar + thumb. Defaults to false."
             },
             {
               "name": "ids",
@@ -7984,6 +9094,13 @@
               "required": false,
               "kind": "machine",
               "description": "The ids of the scroll area elements"
+            },
+            {
+              "name": "vertical",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Render a vertical scrollbar + thumb. Defaults to true, matching Radix\nScrollArea's implicit vertical-only behavior when no <ScrollBar> is\ngiven. Set to false for horizontal-only rails (e.g. a category nav)\nwhere a vertical scrollbar/thumb would render as a stray pill even\nthough the container never scrolls vertically."
             }
           ],
           "nativeAttributes": "div",
@@ -8077,6 +9194,12 @@
               "description": "A root node to correctly resolve document in custom environments. E.x.: Iframes, Electron."
             },
             {
+              "name": "groups",
+              "type": "SelectGroup[]",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "highlightedValue",
               "type": "string | null | undefined",
               "required": false,
@@ -8107,7 +9230,8 @@
               "name": "label",
               "type": "string",
               "required": false,
-              "kind": "own"
+              "kind": "own",
+              "description": "Field label rendered above the trigger (NOT the shadcn listbox group\nlabel — see `select-label` note on the group label below)."
             },
             {
               "name": "loopFocus",
@@ -8225,6 +9349,12 @@
               "required": false,
               "kind": "machine",
               "description": "Function to scroll to a specific index"
+            },
+            {
+              "name": "size",
+              "type": "'default' | 'sm'",
+              "required": false,
+              "kind": "own"
             },
             {
               "name": "translations",
@@ -8346,6 +9476,12 @@
               "description": "Element to receive focus when the dialog is closed"
             },
             {
+              "name": "footer",
+              "type": "Marko.Body<[], void>",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "getRootNode",
               "type": "(() => ShadowRoot | Document | Node) | undefined",
               "required": false,
@@ -8464,17 +9600,18 @@
               "description": "The dialog's role"
             },
             {
-              "name": "side",
-              "type": "'top' | 'bottom' | 'left' | 'right' | null | undefined",
+              "name": "showCloseButton",
+              "type": "boolean",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "top",
-                "bottom",
-                "left",
-                "right"
-              ],
-              "default": "right"
+              "kind": "own",
+              "description": "Show the top-right close button. Defaults to true."
+            },
+            {
+              "name": "side",
+              "type": "'top' | 'bottom' | 'right' | 'left'",
+              "required": false,
+              "kind": "own",
+              "description": "`\"top\" | \"right\" | \"bottom\" | \"left\"` — which edge the sheet slides in from."
             },
             {
               "name": "title",
@@ -8525,6 +9662,18 @@
           "nativeAttributes": "div"
         },
         {
+          "file": "group-action.marko",
+          "name": "group-action",
+          "properties": [],
+          "nativeAttributes": "button"
+        },
+        {
+          "file": "group-content.marko",
+          "name": "group-content",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
           "file": "group-label.marko",
           "name": "group-label",
           "properties": [],
@@ -8543,6 +9692,38 @@
           "nativeAttributes": "div"
         },
         {
+          "file": "input.marko",
+          "name": "input",
+          "properties": [],
+          "nativeAttributes": "input"
+        },
+        {
+          "file": "inset.marko",
+          "name": "inset",
+          "properties": [],
+          "nativeAttributes": "main"
+        },
+        {
+          "file": "menu-action.marko",
+          "name": "menu-action",
+          "properties": [
+            {
+              "name": "showOnHover",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Only reveal the action on hover/focus of its menu item (md and up)."
+            }
+          ],
+          "nativeAttributes": "button"
+        },
+        {
+          "file": "menu-badge.marko",
+          "name": "menu-badge",
+          "properties": [],
+          "nativeAttributes": "div"
+        },
+        {
           "file": "menu-button.marko",
           "name": "menu-button",
           "properties": [
@@ -8553,26 +9734,87 @@
               "kind": "own"
             },
             {
-              "name": "asChild",
-              "type": "boolean",
+              "name": "href",
+              "type": "string",
               "required": false,
               "kind": "own",
               "description": "Renders an <a> instead of a <button> when set (with href passed through rest)."
             },
             {
-              "name": "href",
-              "type": "string",
+              "name": "size",
+              "type": "'default' | 'sm' | 'lg' | null | undefined",
               "required": false,
-              "kind": "own"
+              "kind": "variant",
+              "options": [
+                "default",
+                "sm",
+                "lg"
+              ],
+              "default": "default"
+            },
+            {
+              "name": "variant",
+              "type": "'default' | 'outline' | null | undefined",
+              "required": false,
+              "kind": "variant",
+              "options": [
+                "default",
+                "outline"
+              ],
+              "default": "default"
             }
           ],
-          "nativeAttributes": "button"
+          "nativeAttributes": "div"
         },
         {
           "file": "menu-item.marko",
           "name": "menu-item",
           "properties": [],
           "nativeAttributes": "li"
+        },
+        {
+          "file": "menu-skeleton.marko",
+          "name": "menu-skeleton",
+          "properties": [
+            {
+              "name": "showIcon",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            }
+          ],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "menu-sub-button.marko",
+          "name": "menu-sub-button",
+          "properties": [
+            {
+              "name": "active",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "size",
+              "type": "'sm' | 'md'",
+              "required": false,
+              "kind": "own"
+            }
+          ],
+          "nativeAttributes": "a"
+        },
+        {
+          "file": "menu-sub-item.marko",
+          "name": "menu-sub-item",
+          "properties": [],
+          "nativeAttributes": "li"
+        },
+        {
+          "file": "menu-sub.marko",
+          "name": "menu-sub",
+          "properties": [],
+          "nativeAttributes": "ul"
         },
         {
           "file": "menu.marko",
@@ -8617,6 +9859,46 @@
               "required": false,
               "kind": "own",
               "description": "CSS length for --sidebar-width, default 16rem."
+            },
+            {
+              "name": "widthIcon",
+              "type": "string",
+              "required": false,
+              "kind": "own",
+              "description": "CSS length for --sidebar-width-icon, default 3rem."
+            }
+          ],
+          "nativeAttributes": "div"
+        },
+        {
+          "file": "rail.marko",
+          "name": "rail",
+          "properties": [
+            {
+              "name": "toggle",
+              "type": "() => void",
+              "required": false,
+              "kind": "own",
+              "description": "Toggles the sidebar, provided by the provider's body args."
+            }
+          ],
+          "nativeAttributes": "button"
+        },
+        {
+          "file": "separator.marko",
+          "name": "separator",
+          "properties": [
+            {
+              "name": "decorative",
+              "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "orientation",
+              "type": "'horizontal' | 'vertical'",
+              "required": false,
+              "kind": "own"
             }
           ],
           "nativeAttributes": "div"
@@ -8626,6 +9908,12 @@
           "name": "sidebar",
           "properties": [
             {
+              "name": "collapsible",
+              "type": "'none' | 'icon' | 'offcanvas'",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "content",
               "type": "Marko.Body<[], void>",
               "required": false,
@@ -8634,6 +9922,19 @@
             {
               "name": "open",
               "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Expanded/collapsed state, provided by the provider's"
+            },
+            {
+              "name": "side",
+              "type": "'right' | 'left'",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "variant",
+              "type": "'sidebar' | 'floating' | 'inset'",
               "required": false,
               "kind": "own"
             }
@@ -8992,6 +10293,25 @@
       "machineModule": "@zag-js/slider"
     },
     {
+      "name": "sonner",
+      "parts": [
+        {
+          "file": "sonner.marko",
+          "name": "sonner",
+          "properties": [
+            {
+              "name": "theme",
+              "type": "'light' | 'dark' | 'system'",
+              "required": false,
+              "kind": "own",
+              "description": "Accepted for source-shape parity with sonner's `ToasterProps[\"theme\"]`.\nINERT: see file header. Threaded into `style` as `--sonner-theme` only."
+            }
+          ],
+          "nativeAttributes": "div"
+        }
+      ]
+    },
+    {
       "name": "spinner",
       "parts": [
         {
@@ -9152,6 +10472,13 @@
               "kind": "own"
             },
             {
+              "name": "content",
+              "type": "Marko.Body<[], void>",
+              "required": false,
+              "kind": "own",
+              "description": "Label text rendered after the control (Zag's `label` part), which also\nbecomes the accessible name of the hidden checkbox. Without it, pass\n`aria-label` instead — a switch must have a name."
+            },
+            {
               "name": "defaultChecked",
               "type": "boolean | undefined",
               "required": false,
@@ -9234,6 +10561,13 @@
               "required": false,
               "kind": "machine",
               "description": "If `true`, the switch input is marked as required,"
+            },
+            {
+              "name": "size",
+              "type": "'default' | 'sm'",
+              "required": false,
+              "kind": "own",
+              "description": "Control size. Upstream (shadcn) styling API; the zag switch machine has\nno `size` prop, so this is purely presentational — forwarded as\n`data-size` on the control, not to the machine."
             },
             {
               "name": "value",
@@ -9492,6 +10826,17 @@
               "type": "(value: string) => void",
               "required": false,
               "kind": "own"
+            },
+            {
+              "name": "variant",
+              "type": "'line' | 'default' | null | undefined",
+              "required": false,
+              "kind": "variant",
+              "options": [
+                "default",
+                "line"
+              ],
+              "default": "default"
             }
           ],
           "nativeAttributes": "div",
@@ -9913,10 +11258,17 @@
             },
             {
               "name": "parent",
-              "type": "() => MarkoService",
+              "type": "() => toastMachine.GroupService",
               "required": true,
               "kind": "own",
               "description": "Getter for the running group service that owns this toast."
+            },
+            {
+              "name": "toastClass",
+              "type": "string",
+              "required": false,
+              "kind": "own",
+              "description": "Extra class(es) applied to this toast's root, merged after the built-in\nones. Threaded down from `<Toaster>`'s `toastClass` input — the zag-native\nequivalent of sonner's `toastOptions.classNames.toast`."
             }
           ],
           "machineModule": "@zag-js/toast"
@@ -9927,10 +11279,10 @@
           "properties": [
             {
               "name": "dir",
-              "type": "'ltr' | 'rtl'",
+              "type": "import(\"/Users/svallory/work/marko-ui/worktrees/main/node_modules/.bun/marko@6.3.34/node_modules/marko/tags-html\").AttrMissing | 'ltr' | 'rtl' | 'auto'",
               "required": false,
               "kind": "own",
-              "description": "Text direction passed to the group machine."
+              "description": "Text direction passed to the group machine.\n\nTyped as the full HTML `dir` surface, not just `\"ltr\" | \"rtl\"`: this Input\nextends `Marko.Input<\"div\">`, and re-declaring `dir` more narrowly than\nthe attribute it inherits makes every `...rest` spread from a div-shaped\nparent (e.g. `sonner.marko`) a type error. `\"auto\"` and the absent values\nare normalized away below, since Zag's group machine accepts only the two\nconcrete directions."
             },
             {
               "name": "label",
@@ -9938,6 +11290,13 @@
               "required": false,
               "kind": "own",
               "description": "Accessible label for the notification region."
+            },
+            {
+              "name": "toastClass",
+              "type": "string",
+              "required": false,
+              "kind": "own",
+              "description": "Extra class(es) applied to every toast's root element. The zag-native\nequivalent of sonner's `toastOptions.classNames.toast`. `sonner.marko`\npasses the `mu-toast` style hook through here, mirroring upstream\n`sonner.tsx`'s `toastOptions={{ classNames: { toast: \"cn-toast\" } }}`."
             }
           ],
           "nativeAttributes": "div",
@@ -10206,6 +11565,12 @@
               "description": "Whether to use roving tab index to manage focus."
             },
             {
+              "name": "spacing",
+              "type": "number",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "value",
               "type": "string[] | undefined",
               "required": false,
@@ -10386,7 +11751,7 @@
               "description": "The controlled trigger value"
             }
           ],
-          "nativeAttributes": "div",
+          "nativeAttributes": "span",
           "machineModule": "@zag-js/tooltip"
         }
       ],
