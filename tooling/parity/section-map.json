@@ -1,12 +1,774 @@
 {
   "//": "Coverage checker v3 input — see notes/docs-canonical-structure.md for the full spec this implements. Global map, upstream heading slug (normalizeName-normalized) -> ARRAY of MapAction. Validated on load by coverage.ts's `validateSectionMap` (ignore must be sole action; at most one placement action per array; unknown action = hard error naming the entry).",
   "map": {
-    "composition": [{ "action": "move", "parent": ["anatomy"] }],
-    "theming": [{ "action": "move", "parent": ["styling"] }],
-    "css-variables": [{ "action": "move", "parent": ["styling"], "title": "CSS Variables" }],
-    "custom-colors": [{ "action": "move", "parent": ["styling", "recipes"] }],
-    "rtl": [{ "action": "move", "parent": ["examples"], "title": "RTL" }],
-    "core-concepts": [{ "action": "keep" }],
-    "migrating-from-vaul": [{ "action": "ignore", "reason": "React/Vaul-specific migration guide" }]
+    "installation": [
+      {
+        "action": "keep"
+      }
+    ],
+    "usage": [
+      {
+        "action": "keep"
+      }
+    ],
+    "api-reference": [
+      {
+        "action": "keep"
+      }
+    ],
+    "accessibility": [
+      {
+        "action": "keep"
+      }
+    ],
+    "changelog": [
+      {
+        "action": "keep"
+      }
+    ],
+    "styling": [
+      {
+        "action": "keep"
+      }
+    ],
+    "anatomy": [
+      {
+        "action": "keep"
+      }
+    ],
+    "alert": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "alerttitle": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "alertdescription": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "alertaction": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "aspectratio": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "attachment": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "attachmentmedia": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "attachmentcontent": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "attachmenttitle": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "attachmentdescription": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "attachmentactions": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "attachmentaction": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "attachmenttrigger": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "attachmentgroup": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "avatar": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "avatarimage": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "avatarfallback": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "avatarbadge": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "avatargroup": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "avatargroupcount": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "badge": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "breadcrumb": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "breadcrumblist": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "breadcrumbitem": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "breadcrumblink": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "breadcrumbpage": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "breadcrumbseparator": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "breadcrumbellipsis": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "bubble": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "bubblecontent": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "bubblereactions": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "bubblegroup": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "button": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "buttongroup": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "buttongroupseparator": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "buttongrouptext": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "card": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "cardheader": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "cardtitle": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "carddescription": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "cardaction": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "cardcontent": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "cardfooter": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "empty": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "emptyheader": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "emptymedia": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "emptytitle": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "emptydescription": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "emptycontent": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "fieldgroup": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "fieldlegend": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "fieldcontent": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "fieldlabel": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "fieldtitle": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "fielddescription": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "fieldseparator": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "fielderror": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "inputgroup": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "inputgroupaddon": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "inputgroupbutton": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "inputgroupinput": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "inputgrouptextarea": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "item": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "itemgroup": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "itemmedia": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "itemcontent": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "itemtitle": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "itemdescription": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "kbd": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "kbdgroup": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "marker": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "markericon": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "markercontent": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "message": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "messagegroup": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "messageavatar": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "messagecontent": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "messageheader": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "messagefooter": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "nativeselectoption": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "nativeselectoptgroup": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      }
+    ],
+    "responsive-layout": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      }
+    ],
+    "with-chips": [
+      {
+        "action": "move",
+        "parent": [
+          "anatomy"
+        ]
+      }
+    ],
+    "with-groups-and-collection": [
+      {
+        "action": "move",
+        "parent": [
+          "anatomy"
+        ]
+      }
+    ],
+    "multiple-selection": [
+      {
+        "action": "move",
+        "parent": [
+          "guides"
+        ]
+      }
+    ],
+    "composition": [
+      {
+        "action": "move",
+        "parent": [
+          "anatomy"
+        ]
+      }
+    ],
+    "theming": [
+      {
+        "action": "move",
+        "parent": [
+          "styling"
+        ]
+      }
+    ],
+    "css-variables": [
+      {
+        "action": "move",
+        "parent": [
+          "styling"
+        ],
+        "title": "CSS Variables"
+      }
+    ],
+    "custom-colors": [
+      {
+        "action": "move",
+        "parent": [
+          "styling",
+          "recipes"
+        ]
+      }
+    ],
+    "rtl": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ],
+        "title": "RTL"
+      }
+    ],
+    "core-concepts": [
+      {
+        "action": "keep"
+      }
+    ],
+    "migrating-from-vaul": [
+      {
+        "action": "ignore",
+        "reason": "React/Vaul-specific migration guide"
+      }
+    ]
   }
 }

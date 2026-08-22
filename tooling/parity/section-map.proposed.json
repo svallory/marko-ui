@@ -1,0 +1,789 @@
+{
+  "map": {
+    "size": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      },
+      {
+        "_review": "ambiguous across components"
+      }
+    ],
+    "features": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "label-icon-only-actions": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "label-the-trigger": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "keyboard-scrolling": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "meaning-beyond-color": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "labeling-reactions": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "interactive-bubbles": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "cursor": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "buttongroup-vs-togglegroup": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "about": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "date-picker": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "selected-date-with-timezone": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "rtl-support": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "spacing-variable": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "options": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      },
+      {
+        "_review": "api-target unverified"
+      }
+    ],
+    "events": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "props": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      },
+      {
+        "_review": "api-target unverified"
+      }
+    ],
+    "checked-state": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "controlled-state": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "simple": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "custom-items": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "usedirection": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "custom-sizes": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "snap-points": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "field": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "fieldset": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "form": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "validation-and-errors": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "trigger-delays": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "positioning": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "align": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "item-vs-field": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "itemseparator": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "itemactions": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "itemheader": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "itemfooter": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "status-and-progress": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "labeled-separators": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "bordered-markers": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "decorative-icons": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "interactive-markers": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "status-updates": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "what-makes-a-great-streaming-chat-experience": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "messagescroller": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "anchoring-turns": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "following-the-live-edge": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "opening-saved-threads": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "loading-earlier-messages": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "animating-new-messages": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "jumping-to-messages": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "tracking-the-readers-position": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "performance": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "virtualization": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "unstyled": [
+      {
+        "action": "move",
+        "parent": [
+          "styling"
+        ]
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "with-groups": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "native-select-vs-select": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "nativeselect": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "link-component": [
+      {
+        "action": "ignore",
+        "reason": "Next.js-specific integration guide"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "nextjs": [
+      {
+        "action": "ignore",
+        "reason": "Next.js-specific integration guide"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "with-label-and-value": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "2025-02-02-react-resizable-panels-v4": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "structure": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "sidebarprovider": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "width": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "keyboard-shortcut": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "sidebar": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "usesidebar": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "sidebarheader": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "sidebarfooter": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "sidebarcontent": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      },
+      {
+        "_review": "api-target unverified"
+      }
+    ],
+    "sidebargroup": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      },
+      {
+        "_review": "api-target unverified"
+      }
+    ],
+    "sidebarmenu": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "sidebarmenubutton": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "sidebarmenuaction": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      },
+      {
+        "_review": "api-target unverified"
+      }
+    ],
+    "sidebarmenusub": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "sidebarmenubadge": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      },
+      {
+        "_review": "api-target unverified"
+      }
+    ],
+    "sidebarmenuskeleton": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "sidebartrigger": [
+      {
+        "action": "move",
+        "parent": [
+          "api-reference"
+        ]
+      },
+      {
+        "_review": "api-target unverified"
+      }
+    ],
+    "sidebarrail": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "controlled-sidebar": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "data-table": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ],
+    "action": [
+      {
+        "action": "move",
+        "parent": [
+          "examples"
+        ]
+      },
+      {
+        "_review": "no preview — likely guides/anatomy, needs human"
+      }
+    ],
+    "2026-05-17-default-spacing": [
+      {
+        "action": "keep"
+      },
+      {
+        "_review": "unreviewed"
+      }
+    ]
+  }
+}

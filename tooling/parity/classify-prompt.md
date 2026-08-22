@@ -86,6 +86,65 @@ Variables, Recipes, Style Hooks — present only when non-empty)
 Rules: "ignore" must be alone. At most one placement action (move/rename/
 keep) per array. Never invent a new action name.
 
+## Classification rules exposed by past mistakes
+
+(a) **A heading that already IS a canonical bucket name → "keep". A
+heading that BECOMES a subsection of a bucket → "move", with `parent` set
+to the bucket it nests INSIDE — never the slug itself.** A heading is
+never its own parent.
+  - Right: `"installation": [{ "action": "keep" }]` — "Installation" IS
+    the canonical bucket "installation"; there's nowhere for it to move
+    to.
+  - Right: `"css-variables": [{ "action": "move", "parent": ["styling"],
+    "title": "CSS Variables" }]` — "CSS Variables" is content that lives
+    INSIDE the "styling" bucket; `parent` names styling, not
+    "css-variables".
+  - Wrong: `"installation": [{ "action": "move", "parent":
+    ["installation"] }]` — self-nesting a canonical name under itself is
+    a no-op dressed up as a move; it's also exactly the classifier bug a
+    past run produced and a human had to strip back out to "keep" during
+    review. (This case is now caught automatically — see "Deterministic
+    pre-pass" below — but the underlying rule still applies whenever you
+    hand-propose an entry.)
+
+(b) **Never attach "process" to a "keep" by default.** `process` is
+OPT-IN, only when the content clearly needs adaptation on the way in
+(rewritten framework-specific code, restructured prose, etc). Omitting
+`process` means "ported as-is" — that is the common case, not an
+exception, so most entries should have NO `process` action at all.
+  - Right: `"anatomy": [{ "action": "move", "parent": ["anatomy"] }]` —
+    no process action; the content is used as-is.
+  - Wrong: `"anatomy": [{ "action": "move", "parent": ["anatomy"] },
+    { "action": "process", "mode": "llm", "prompt": "Review: heading does
+    not match common patterns; determine parent bucket based on
+    content." }]` — a boilerplate "review this" prompt attached to every
+    single proposal (including ones the classifier was fully confident
+    about) is noise, not a real transform hint, and defeats the point of
+    `process` as a targeted signal.
+
+(c) **Sections from guide-type pages are OUT of scope for the global
+map.** Some upstream "component" pages are actually build-a-feature
+tutorials (e.g. `data-table.mdx`, `chart.mdx`) whose sections
+("Prerequisites", "Set Up Table Features", "Add Pagination Controls", ...)
+are tutorial steps, not reusable doc-section concepts shared across
+components — they don't belong in `section-map.json` at all, mapped or
+not. If EVERY component that contributed instances of a given heading
+slug is a guide-type page, list that slug under the OWNING component in a
+separate `guide-page-sections.json`-shaped structure instead of proposing
+a `section-map.json` entry for it — this global map is reserved for
+sections whose meaning is shared across ordinary component doc pages, and
+guide-page sections await a future `type:guide` checker path.
+
+## Deterministic pre-pass (no LLM call needed)
+
+Before you even see a bundle, `coverage.ts` applies a pre-pass: any
+heading slug that IS itself a canonical bucket name (`installation`,
+`usage`, `api-reference`, `accessibility`, `changelog`, `anatomy`,
+`examples`, `styling`, `guides`, `concepts`) is auto-classified `keep`
+and never reaches `parity-report/unclassified.json` or an LLM batch —
+see SCHEMA.md's classification pipeline, step 0. You will not see these
+headings in the entries below; don't propose entries for them.
+
 ## Task
 
 For each entry below (component, heading, body excerpt), propose ONE

@@ -110,21 +110,45 @@ export type MapAction =
   // Absence of a "process" action means as-is (no transform). mode
   // "function" (registered transforms) is RESERVED, unimplemented.
 
-export type SectionMap = Record<string, MapAction[]>
+/**
+ * A map entry value may be EITHER a plain MapAction[] (default, unchanged
+ * shape) OR an array of MapVariant — variants let one heading resolve to
+ * different actions depending on which component/context it came from.
+ * `when` conditions are matched in array order, first match wins; a
+ * variant with no `when` is the default (falls through when no earlier
+ * variant's `when` matched). See SCHEMA.md, "section-map.json — the map
+ * schema".
+ */
+export interface MapVariant {
+  when?: {
+    component?: string[]
+    hasDemoMarker?: boolean
+  }
+  actions: MapAction[]
+}
+
+export type SectionMapEntry = MapAction[] | MapVariant[]
+export type SectionMap = Record<string, SectionMapEntry>
 
 const PLACEMENT_ACTIONS = new Set(["move", "rename", "keep"])
 const KNOWN_ACTIONS = new Set(["move", "rename", "keep", "ignore", "process"])
 
+/** True if `actions` looks like a MapVariant[] (elements are objects with an "actions" array) rather than a plain MapAction[] (elements have an "action" string). */
+function isVariantForm(value: unknown[]): value is MapVariant[] {
+  return value.length > 0 && value.every((entry) => typeof entry === "object" && entry !== null && Array.isArray((entry as Record<string, unknown>).actions))
+}
+
 /**
- * Validates one map entry's action array per notes/docs-canonical-structure.md:
- * "ignore" must be the sole action; at most one placement action
- * (move/rename/keep) per array; unknown action or malformed entry is a
- * hard error naming the entry (so a typo in section-map.json fails loudly
- * instead of silently no-op'ing).
+ * Validates one action array (the same rules regardless of whether it
+ * came from the plain form or from inside a variant's `actions`): "ignore"
+ * must be the sole action; at most one placement action (move/rename/
+ * keep) per array; unknown action or malformed entry is a hard error
+ * naming the entry (so a typo in section-map.json fails loudly instead of
+ * silently no-op'ing).
  */
-export function validateMapEntry(heading: string, actions: unknown): asserts actions is MapAction[] {
+function validateActionsArray(heading: string, actions: unknown, context: string): asserts actions is MapAction[] {
   if (!Array.isArray(actions) || actions.length === 0) {
-    throw new Error(`section-map.json: entry "${heading}" must be a non-empty array of actions`)
+    throw new Error(`section-map.json: entry "${heading}"${context} must be a non-empty array of actions`)
   }
 
   let placementCount = 0
@@ -132,41 +156,106 @@ export function validateMapEntry(heading: string, actions: unknown): asserts act
 
   for (const raw of actions) {
     if (typeof raw !== "object" || raw === null || typeof (raw as Record<string, unknown>).action !== "string") {
-      throw new Error(`section-map.json: entry "${heading}" has a malformed action: ${JSON.stringify(raw)}`)
+      throw new Error(`section-map.json: entry "${heading}"${context} has a malformed action: ${JSON.stringify(raw)}`)
     }
     const action = (raw as Record<string, unknown>).action as string
     if (!KNOWN_ACTIONS.has(action)) {
-      throw new Error(`section-map.json: entry "${heading}" has unknown action "${action}"`)
+      throw new Error(`section-map.json: entry "${heading}"${context} has unknown action "${action}"`)
     }
     if (action === "ignore") {
       hasIgnore = true
       if (typeof (raw as Record<string, unknown>).reason !== "string") {
-        throw new Error(`section-map.json: entry "${heading}" ignore action requires a "reason" string`)
+        throw new Error(`section-map.json: entry "${heading}"${context} ignore action requires a "reason" string`)
       }
     }
     if (action === "rename" && typeof (raw as Record<string, unknown>).title !== "string") {
-      throw new Error(`section-map.json: entry "${heading}" rename action requires a "title" string`)
+      throw new Error(`section-map.json: entry "${heading}"${context} rename action requires a "title" string`)
     }
     if (action === "move" && !Array.isArray((raw as Record<string, unknown>).parent)) {
-      throw new Error(`section-map.json: entry "${heading}" move action requires a "parent" string array`)
+      throw new Error(`section-map.json: entry "${heading}"${context} move action requires a "parent" string array`)
     }
     if (action === "process") {
       const mode = (raw as Record<string, unknown>).mode
       if (mode !== "llm") {
-        throw new Error(`section-map.json: entry "${heading}" process action requires mode "llm" (absence of a process action means as-is; "function" mode is reserved/unimplemented)`)
+        throw new Error(`section-map.json: entry "${heading}"${context} process action requires mode "llm" (absence of a process action means as-is; "function" mode is reserved/unimplemented)`)
       }
     }
     if (PLACEMENT_ACTIONS.has(action)) placementCount++
   }
 
   if (hasIgnore && actions.length > 1) {
-    throw new Error(`section-map.json: entry "${heading}" — "ignore" must be the sole action in its array`)
+    throw new Error(`section-map.json: entry "${heading}"${context} — "ignore" must be the sole action in its array`)
   }
   if (placementCount > 1) {
     throw new Error(
-      `section-map.json: entry "${heading}" has ${placementCount} placement actions (move/rename/keep); at most one is allowed`
+      `section-map.json: entry "${heading}"${context} has ${placementCount} placement actions (move/rename/keep); at most one is allowed`
     )
   }
+}
+
+/**
+ * Validates one map entry per notes/docs-canonical-structure.md and
+ * SCHEMA.md's variant-form spec. Accepts either a plain MapAction[] (same
+ * rules as before) or a MapVariant[] (each variant's `actions` validated
+ * with the same per-actions rules, plus: at most one no-when variant
+ * allowed — a no-when variant is the default, and two defaults is
+ * ambiguous).
+ */
+export function validateMapEntry(heading: string, actions: unknown): asserts actions is SectionMapEntry {
+  if (!Array.isArray(actions) || actions.length === 0) {
+    throw new Error(`section-map.json: entry "${heading}" must be a non-empty array`)
+  }
+
+  if (!isVariantForm(actions)) {
+    validateActionsArray(heading, actions, "")
+    return
+  }
+
+  let noWhenCount = 0
+  for (let index = 0; index < actions.length; index++) {
+    const variant = actions[index] as unknown as Record<string, unknown>
+    if (variant.when !== undefined) {
+      if (typeof variant.when !== "object" || variant.when === null) {
+        throw new Error(`section-map.json: entry "${heading}" variant[${index}] has a malformed "when"`)
+      }
+      const when = variant.when as Record<string, unknown>
+      if (when.component !== undefined && !Array.isArray(when.component)) {
+        throw new Error(`section-map.json: entry "${heading}" variant[${index}] "when.component" must be a string array`)
+      }
+      if (when.hasDemoMarker !== undefined && typeof when.hasDemoMarker !== "boolean") {
+        throw new Error(`section-map.json: entry "${heading}" variant[${index}] "when.hasDemoMarker" must be a boolean`)
+      }
+    } else {
+      noWhenCount++
+    }
+    validateActionsArray(heading, variant.actions, ` variant[${index}]`)
+  }
+
+  if (noWhenCount > 1) {
+    throw new Error(`section-map.json: entry "${heading}" has ${noWhenCount} no-when (default) variants; at most one is allowed`)
+  }
+}
+
+/**
+ * Resolves a (possibly variant-form) map entry down to the concrete
+ * MapAction[] that applies for one section instance. First matching
+ * variant wins (array order); a variant with no `when` matches anything
+ * (the default). Returns null if no variant matches (variant-form entry,
+ * none matched, and no default present).
+ */
+export function resolveMapEntry(
+  entry: SectionMapEntry,
+  context: { component: string; hasDemoMarker: boolean }
+): MapAction[] | null {
+  if (!isVariantForm(entry)) return entry
+
+  for (const variant of entry) {
+    if (!variant.when) return variant.actions
+    if (variant.when.component && !variant.when.component.includes(context.component)) continue
+    if (variant.when.hasDemoMarker !== undefined && variant.when.hasDemoMarker !== context.hasDemoMarker) continue
+    return variant.actions
+  }
+  return null
 }
 
 /** Loads and validates tooling/parity/section-map.json. Throws (naming the offending entry) on any malformed entry. */
@@ -379,29 +468,61 @@ export type SectionClassification =
   | { tier: "unclassified" }
   | { tier: "ignored"; reason: string }
 
+/** Canonical bucket names: a heading whose slug IS one of these is a bucket itself, not content nested under one — see the bundler pre-pass in `bundleUnclassified`/`classifySection` and classify-prompt.md's rule (a). */
+export const CANONICAL_BUCKET_SLUGS = new Set([
+  "installation",
+  "usage",
+  "api-reference",
+  "accessibility",
+  "changelog",
+  "anatomy",
+  "examples",
+  "styling",
+  "guides",
+  "concepts",
+])
+
 /**
  * Classifies one upstream section per the pipeline in
  * notes/docs-canonical-structure.md:
- *   1. Explicit map entry wins (including "ignore").
+ *   0. Heading slug IS a canonical bucket name -> deterministic keep (the
+ *      BUNDLER pre-pass — see SCHEMA.md's "Spec sync" note; this never
+ *      reaches the unclassified queue / LLM batch even without an
+ *      explicit section-map.json entry).
+ *   1. Explicit map entry wins (including "ignore"). Variant-form entries
+ *      are resolved against this section's component/demo-marker context
+ *      first — see `resolveMapEntry`.
  *   2. No entry + demo-marker match + short prose -> demo.
  *   3. Otherwise -> unclassified.
  */
 export function classifySection(
   section: UpstreamSection,
   sectionMap: SectionMap,
-  adapter: AdapterConfig
+  adapter: AdapterConfig,
+  component: string
 ): SectionClassification {
   const key = normalizeName(section.heading)
-  const mapEntry = sectionMap[key]
-  if (mapEntry) {
-    if (isIgnoreAction(mapEntry)) {
-      const ignoreAction = mapEntry.find((action) => action.action === "ignore") as Extract<
-        MapAction,
-        { action: "ignore" }
-      >
-      return { tier: "ignored", reason: ignoreAction.reason }
+
+  if (CANONICAL_BUCKET_SLUGS.has(key) && !sectionMap[key]) {
+    return { tier: "mapped", actions: [{ action: "keep" }] }
+  }
+
+  const rawEntry = sectionMap[key]
+  if (rawEntry) {
+    const hasDemoMarker = bodyMatchesDemoMarker(adapter, section.body)
+    const mapEntry = resolveMapEntry(rawEntry, { component, hasDemoMarker })
+    if (mapEntry) {
+      if (isIgnoreAction(mapEntry)) {
+        const ignoreAction = mapEntry.find((action) => action.action === "ignore") as Extract<
+          MapAction,
+          { action: "ignore" }
+        >
+        return { tier: "ignored", reason: ignoreAction.reason }
+      }
+      return { tier: "mapped", actions: mapEntry }
     }
-    return { tier: "mapped", actions: mapEntry }
+    // Variant-form entry with no matching variant (and no default) falls
+    // through to the normal demo/unclassified tiers below.
   }
 
   if (bodyMatchesDemoMarker(adapter, section.body) && proseLength(section.body, adapter) <= PROSE_THRESHOLD_CHARS) {
@@ -619,7 +740,7 @@ export async function runCoverageDetector(options: CoverageOptions = {}): Promis
     let ignoredSectionCount = 0
 
     for (const section of sections) {
-      const classification = classifySection(section, sectionMap, shadcnAdapter)
+      const classification = classifySection(section, sectionMap, shadcnAdapter, componentName)
 
       if (classification.tier === "ignored") {
         ignoredSectionCount++

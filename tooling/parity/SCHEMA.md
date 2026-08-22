@@ -127,8 +127,11 @@ content transforms, via `process`). Shape:
 
 ```ts
 interface SectionMapFile {
-  map: Record<string, MapAction[]> // key: upstream heading, normalized via coverage.ts's normalizeName
+  map: Record<string, SectionMapEntry> // key: upstream heading, normalized via coverage.ts's normalizeName
 }
+
+// A map entry value may be EITHER shape:
+type SectionMapEntry = MapAction[] | MapVariant[]
 
 type MapAction =
   | { action: "move";    parent: string[]; title?: string }  // {title} template; parent = canonical bucket path, e.g. ["styling", "recipes"]
@@ -138,7 +141,21 @@ type MapAction =
   | { action: "process"; mode: "llm"; prompt?: string }        // optional porter-transform hint, additive to a placement action
   // process.mode "function" (registered transforms) is RESERVED, unimplemented.
   // Absence of a "process" action for an entry means "as-is" (no transform).
+
+// MapVariant[] — for a heading whose right action DEPENDS on which
+// component/context it came from (e.g. the same upstream heading text
+// means different things on different component pages). First matching
+// variant wins (array order); a variant with no `when` is the default
+// (matches unconditionally, so put it last).
+type MapVariant = {
+  when?: { component?: string[]; hasDemoMarker?: boolean }
+  actions: MapAction[]  // same per-actions rules as the plain MapAction[] form
+}
 ```
+
+The plain `MapAction[]` form is still the default and by far the common
+case — reach for `MapVariant[]` only when one heading genuinely needs
+different treatment per component; most entries never need it.
 
 ### Validation (enforced on load, `coverage.ts`'s `loadSectionMap`/`validateMapEntry`)
 
@@ -147,14 +164,22 @@ a tooling crash (exit 2), not a drift finding, because a broken map makes
 every presence check downstream unreliable.
 
 - Each entry must be a non-empty array.
-- Every element must have a known `action` (`move`/`rename`/`keep`/
-  `ignore`/`process`) — an unknown action name fails the load.
+- **Plain form** (array elements have an `action` string): every element
+  must have a known `action` (`move`/`rename`/`keep`/`ignore`/`process`)
+  — an unknown action name fails the load.
+- **Variant form** (array elements have an `actions` array instead): each
+  variant's `actions` is validated with the identical per-actions rules
+  as the plain form (below). At most ONE no-when (default) variant is
+  allowed per entry — two defaults is ambiguous and fails the load.
+  `when.component`, if present, must be a string array; `when.hasDemoMarker`,
+  if present, must be a boolean.
 - `ignore` must be the SOLE action in its array (an entry can't be
-  "ignored" AND "moved").
-- At most ONE placement action (`move`/`rename`/`keep`) per array — an
-  entry can't be moved to two places. A `process` action may accompany a
-  placement action (they compose: placement says where, `process` says
-  how to transform on the way in).
+  "ignored" AND "moved"). This applies per-`actions` array, including
+  inside each variant.
+- At most ONE placement action (`move`/`rename`/`keep`) per `actions`
+  array — an entry can't be moved to two places. A `process` action may
+  accompany a placement action (they compose: placement says where,
+  `process` says how to transform on the way in).
 - `move` requires a `parent` array; `rename` requires a `title` string;
   `process` requires `mode: "llm"` (the only implemented mode).
 - `move` with `parent: []` and an omitted/identity `title` is a no-op at
@@ -164,6 +189,9 @@ every presence check downstream unreliable.
 Per-page pathologies (a single component's one-off difference) stay in
 `parity-ignore.json`, not this map — the map is upstream-heading-keyed
 and applies globally across every component that has that heading.
+`MapVariant[]`'s `when.component` is the one exception baked into the map
+itself, for headings whose correct treatment is genuinely
+component-dependent rather than a one-off pathology.
 
 ### `process` prompt composition
 
@@ -182,6 +210,21 @@ concatenating entry `prompt` onto the default, and making the call.
 For every upstream `##`/`###` section (heading + body text up to the next
 same-or-higher-level heading), in order:
 
+0. **BUNDLER pre-pass: canonical-bucket-name headings are a deterministic
+   keep, before anything else runs.** If `normalizeName(heading)` is
+   itself one of the ten canonical bucket slugs (`installation`, `usage`,
+   `api-reference`, `accessibility`, `changelog`, `anatomy`, `examples`,
+   `styling`, `guides`, `concepts` — `coverage.ts`'s
+   `CANONICAL_BUCKET_SLUGS`) AND there is no explicit `section-map.json`
+   entry overriding it, the section is classified `{ action: "keep" }`
+   deterministically — it never reaches tier 3 (unclassified), so it
+   never appears in `parity-report/unclassified.json` and never gets
+   bundled into an LLM classification batch. Rationale: a heading that
+   already IS a canonical bucket needs no classification decision — proposing
+   "keep" for e.g. "Installation" wastes an LLM call on a foregone
+   conclusion. An explicit map entry (including one that reclassifies a
+   canonical-named heading, e.g. a component-specific "Styling" that
+   should actually be ignored) still wins over this pre-pass.
 1. **Explicit map entry wins.** `normalizeName(heading)` looked up in
    `section-map.json`. An `ignore` entry drops the section from all
    further consideration (not presence-checked, not unclassified). A
