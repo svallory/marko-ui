@@ -1,3 +1,40 @@
+import "../../../../tags/docs/code-block.marko";
+import Table from "@marko-ui/shadcn/ui/table/table.marko";
+import TableHeader from "@marko-ui/shadcn/ui/table/header.marko";
+import TableBody from "@marko-ui/shadcn/ui/table/body.marko";
+import TableRow from "@marko-ui/shadcn/ui/table/row.marko";
+import TableHead from "@marko-ui/shadcn/ui/table/head.marko";
+import TableCell from "@marko-ui/shadcn/ui/table/cell.marko";
+
+static const BINDABLE_INTERFACE = `export interface Bindable<T> {
+  initial: T | undefined
+  ref: any
+  get: () => T
+  set(value: ValueOrFn<T>): void
+  invoke(nextValue: T, prevValue: T): void
+  hash(value: T): string
+}`;
+
+static const MICROTASK_DEFERRAL = `// react — packages/frameworks/react/src/machine.ts
+useSafeLayoutEffect(() => {
+  queueMicrotask(() => {
+    const started = statusRef.current === MachineStatus.Started
+    statusRef.current = MachineStatus.Started
+    const initialState = hydratedStateRef.current ?? state.initial!
+    state.invoke(initialState, started ? state.get() : INIT_STATE)
+  })
+  ...
+}, [])
+
+// preact — packages/frameworks/preact/src/machine.ts
+useLayoutEffect(() => {
+  const started = statusRef.current === MachineStatus.Started
+  statusRef.current = MachineStatus.Started
+  const initialState = hydratedStateRef.current ?? state.initial!
+  state.invoke(initialState, started ? state.get() : INIT_STATE)
+  ...
+}, [])`;
+
 <docs-page
   title="The five responsibilities"
   description="Every adapter implements the same five jobs. This page compares HOW each of the six frameworks does it, file by file."
@@ -8,14 +45,7 @@
     <code>Bindable&lt;T&gt;</code> (<code>packages/core/src/types.ts</code>) is the primitive
     behind both machine <code>state</code> and every <code>context</code> key. Its contract:
   </p>
-  <pre><code>export interface Bindable&lt;T&gt; {
-  initial: T | undefined
-  ref: any
-  get: () =&gt; T
-  set(value: ValueOrFn&lt;T&gt;): void
-  invoke(nextValue: T, prevValue: T): void
-  hash(value: T): string
-}</code></pre>
+  <code-block language="typescript" code=BINDABLE_INTERFACE/>
   <p>
     Each adapter implements a <code>bindable</code>/<code>useBindable</code>/<code>createBindable</code>
     factory taking <code>BindableParams&lt;T&gt;</code> (<code>defaultValue</code>,
@@ -26,17 +56,68 @@
     <code>onChange(next, prev)</code> only when <code>!eq(next, prev)</code>.
   </p>
 
-  <table>
-    <thead><tr><th>Framework</th><th>File</th><th>Storage primitive</th><th>Equality default</th><th>Prev-value tracking</th><th><code>set()</code> sync path</th></tr></thead>
-    <tbody>
-      <tr><td>react</td><td><code>src/bindable.ts</code></td><td><code>useState</code> + a live <code>useRef</code> mirror</td><td><code>Object.is</code></td><td><code>useRef</code> updated in a <code>useSafeLayoutEffect([value, props().value])</code></td><td><code>props().sync ? flushSync : identity</code></td></tr>
-      <tr><td>preact</td><td><code>src/bindable.ts</code></td><td><code>useState</code> (preact/hooks) + <code>useRef</code> mirror</td><td><code>isEqual</code> from <code>@zag-js/utils</code> (deep-ish, not <code>Object.is</code>)</td><td><code>useLayoutEffect([value, props().value])</code> (no SSR fallback, unlike react)</td><td><code>props().sync ? flushSync : identity</code> (uses <code>preact/compat</code> flushSync)</td></tr>
-      <tr><td>solid</td><td><code>src/bindable.ts</code></td><td><code>createSignal</code></td><td><code>Object.is</code></td><td><code>createEffect</code> writes both <code>valueRef.current</code> and <code>prevValue.current</code> from the same reactive read</td><td>no sync branch — Solid signals are already synchronous; <code>set</code> just calls <code>setValue</code></td></tr>
-      <tr><td>vue</td><td><code>src/bindable.ts</code></td><td><code>shallowRef</code></td><td><code>Object.is</code></td><td>no separate prev-tracking effect — <code>prev</code> is read inline in <code>set()</code> from <code>controlled.value ? props().value : v.value</code> before assigning <code>next</code></td><td>no sync branch — Vue refs mutate synchronously; no <code>flushSync</code> import at all</td></tr>
-      <tr><td>svelte</td><td><code>src/bindable.svelte.ts</code></td><td><code>$state</code> rune</td><td><code>Object.is</code></td><td><code>$effect.pre</code> recomputes <code>valueRef</code>/<code>prevValue</code> plain objects before DOM updates; <code>set()</code> wraps the mutation in <code>untrack()</code> to avoid self-triggering</td><td><code>props().sync ? flushSync : identity</code>, using Svelte's own <code>flushSync</code> from the <code>"svelte"</code> package, additionally wrapped in <code>untrack()</code></td></tr>
-      <tr><td>vanilla</td><td><code>src/bindable.ts</code></td><td><code>@zag-js/store</code> <code>proxy({ value })</code></td><td><code>Object.is</code></td><td>no dedicated prev-ref — <code>prev</code> is computed inline in <code>set()</code> the same way as Vue, from the proxy's current value</td><td>no sync branch at all — the proxy write is synchronous by construction; consumers subscribe via <code>subscribe(store, cb)</code> from <code>@zag-js/store</code></td></tr>
-    </tbody>
-  </table>
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Framework</TableHead>
+        <TableHead>File</TableHead>
+        <TableHead>Storage primitive</TableHead>
+        <TableHead>Equality default</TableHead>
+        <TableHead>Prev-value tracking</TableHead>
+        <TableHead><code>set()</code> sync path</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      <TableRow>
+        <TableCell>react</TableCell>
+        <TableCell><code>src/bindable.ts</code></TableCell>
+        <TableCell><code>useState</code> + a live <code>useRef</code> mirror</TableCell>
+        <TableCell><code>Object.is</code></TableCell>
+        <TableCell><code>useRef</code> updated in a <code>useSafeLayoutEffect([value, props().value])</code></TableCell>
+        <TableCell><code>props().sync ? flushSync : identity</code></TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>preact</TableCell>
+        <TableCell><code>src/bindable.ts</code></TableCell>
+        <TableCell><code>useState</code> (preact/hooks) + <code>useRef</code> mirror</TableCell>
+        <TableCell><code>isEqual</code> from <code>@zag-js/utils</code> (deep-ish, not <code>Object.is</code>)</TableCell>
+        <TableCell><code>useLayoutEffect([value, props().value])</code> (no SSR fallback, unlike react)</TableCell>
+        <TableCell><code>props().sync ? flushSync : identity</code> (uses <code>preact/compat</code> flushSync)</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>solid</TableCell>
+        <TableCell><code>src/bindable.ts</code></TableCell>
+        <TableCell><code>createSignal</code></TableCell>
+        <TableCell><code>Object.is</code></TableCell>
+        <TableCell><code>createEffect</code> writes both <code>valueRef.current</code> and <code>prevValue.current</code> from the same reactive read</TableCell>
+        <TableCell>no sync branch — Solid signals are already synchronous; <code>set</code> just calls <code>setValue</code></TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>vue</TableCell>
+        <TableCell><code>src/bindable.ts</code></TableCell>
+        <TableCell><code>shallowRef</code></TableCell>
+        <TableCell><code>Object.is</code></TableCell>
+        <TableCell>no separate prev-tracking effect — <code>prev</code> is read inline in <code>set()</code> from <code>controlled.value ? props().value : v.value</code> before assigning <code>next</code></TableCell>
+        <TableCell>no sync branch — Vue refs mutate synchronously; no <code>flushSync</code> import at all</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>svelte</TableCell>
+        <TableCell><code>src/bindable.svelte.ts</code></TableCell>
+        <TableCell><code>$state</code> rune</TableCell>
+        <TableCell><code>Object.is</code></TableCell>
+        <TableCell><code>$effect.pre</code> recomputes <code>valueRef</code>/<code>prevValue</code> plain objects before DOM updates; <code>set()</code> wraps the mutation in <code>untrack()</code> to avoid self-triggering</TableCell>
+        <TableCell><code>props().sync ? flushSync : identity</code>, using Svelte's own <code>flushSync</code> from the <code>"svelte"</code> package, additionally wrapped in <code>untrack()</code></TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>vanilla</TableCell>
+        <TableCell><code>src/bindable.ts</code></TableCell>
+        <TableCell><code>@zag-js/store</code> <code>proxy({ value })</code></TableCell>
+        <TableCell><code>Object.is</code></TableCell>
+        <TableCell>no dedicated prev-ref — <code>prev</code> is computed inline in <code>set()</code> the same way as Vue, from the proxy's current value</TableCell>
+        <TableCell>no sync branch at all — the proxy write is synchronous by construction; consumers subscribe via <code>subscribe(store, cb)</code> from <code>@zag-js/store</code></TableCell>
+      </TableRow>
+    </TableBody>
+  </Table>
 
   <p>
     <strong>Notably identical:</strong> the exported <code>*.cleanup</code> and <code>*.ref</code>
@@ -60,17 +141,47 @@
     reactive primitives that back <code>props</code>, <code>scope</code>, and
     <code>computed</code>.
   </p>
-  <table>
-    <thead><tr><th>Framework</th><th>Re-render trigger</th><th>Where memoization lives</th></tr></thead>
-    <tbody>
-      <tr><td>react</td><td><code>useState</code> setter inside <code>bindable</code> triggers component re-render; <code>state</code>/<code>context</code> updates call it</td><td><code>scope</code> via <code>useMemo(..., [userProps])</code>; stable function identities via <code>useStableFn</code>/<code>useConst</code> (<code>src/stable.ts</code>) so consumers can depend on <code>send</code>/<code>computed</code> without re-subscribing</td></tr>
-      <tr><td>preact</td><td>same as react (preact's <code>useState</code>)</td><td><code>scope</code> via <code>useMemo(..., [userProps])</code>; no <code>stable.ts</code> equivalent — <code>send</code>/<code>computed</code>/<code>guard</code> are re-created every render (plain closures, not wrapped)</td></tr>
-      <tr><td>solid</td><td>signal writes (<code>setValue</code> in bindable) trigger fine-grained DOM updates in dependent computations, no component re-render concept</td><td><code>scope</code>, <code>props</code> are <code>createMemo</code>; <code>state</code>/<code>event</code>/<code>context</code> exposed via solid's own <code>mergeProps</code> (<code>src/merge-props.ts</code>) which defines lazy getters per source instead of eagerly merging</td></tr>
-      <tr><td>vue</td><td><code>shallowRef</code> writes trigger Vue's reactivity graph</td><td><code>scope</code> and <code>props</code> are <code>computed()</code>; <code>ctx</code>, <code>getState()</code>/<code>getEvent()</code> are plain object literals with getters (<code>get scope() { return scope.value }</code>) recreated on each service access</td></tr>
-      <tr><td>svelte</td><td><code>$state</code> rune mutation triggers Svelte 5's fine-grained reactivity</td><td><code>scope</code>/<code>props</code> via <code>$derived</code>/<code>$derived.by</code>; the returned <code>Service</code> uses Svelte-native getters (<code>get state()</code>, <code>get event()</code>) so property reads stay reactive when destructured in a template via <code>reflect()</code> (<code>src/reflect.ts</code>) — a Proxy that re-reads the source object on every property access and rebinds methods</td></tr>
-      <tr><td>vanilla</td><td>manual pub/sub: <code>this.notify()</code> → <code>this.publish()</code> → iterates <code>this.subscriptions</code>; wired to bindable stores via <code>@zag-js/store</code>'s <code>subscribe(store, cb)</code></td><td>no framework memoization at all — consumers call <code>service.state</code>/<code>service.context</code> and get a freshly built plain object each time; the "memo" concept is replaced by the explicit dependency-diffing in <code>callTrackers()</code> (see Track below)</td></tr>
-    </tbody>
-  </table>
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Framework</TableHead>
+        <TableHead>Re-render trigger</TableHead>
+        <TableHead>Where memoization lives</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      <TableRow>
+        <TableCell>react</TableCell>
+        <TableCell><code>useState</code> setter inside <code>bindable</code> triggers component re-render; <code>state</code>/<code>context</code> updates call it</TableCell>
+        <TableCell><code>scope</code> via <code>useMemo(..., [userProps])</code>; stable function identities via <code>useStableFn</code>/<code>useConst</code> (<code>src/stable.ts</code>) so consumers can depend on <code>send</code>/<code>computed</code> without re-subscribing</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>preact</TableCell>
+        <TableCell>same as react (preact's <code>useState</code>)</TableCell>
+        <TableCell><code>scope</code> via <code>useMemo(..., [userProps])</code>; no <code>stable.ts</code> equivalent — <code>send</code>/<code>computed</code>/<code>guard</code> are re-created every render (plain closures, not wrapped)</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>solid</TableCell>
+        <TableCell>signal writes (<code>setValue</code> in bindable) trigger fine-grained DOM updates in dependent computations, no component re-render concept</TableCell>
+        <TableCell><code>scope</code>, <code>props</code> are <code>createMemo</code>; <code>state</code>/<code>event</code>/<code>context</code> exposed via solid's own <code>mergeProps</code> (<code>src/merge-props.ts</code>) which defines lazy getters per source instead of eagerly merging</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>vue</TableCell>
+        <TableCell><code>shallowRef</code> writes trigger Vue's reactivity graph</TableCell>
+        <TableCell><code>scope</code> and <code>props</code> are <code>computed()</code>; <code>ctx</code>, <code>getState()</code>/<code>getEvent()</code> are plain object literals with getters (<code>get scope() { return scope.value }</code>) recreated on each service access</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>svelte</TableCell>
+        <TableCell><code>$state</code> rune mutation triggers Svelte 5's fine-grained reactivity</TableCell>
+        <TableCell><code>scope</code>/<code>props</code> via <code>$derived</code>/<code>$derived.by</code>; the returned <code>Service</code> uses Svelte-native getters (<code>get state()</code>, <code>get event()</code>) so property reads stay reactive when destructured in a template via <code>reflect()</code> (<code>src/reflect.ts</code>) — a Proxy that re-reads the source object on every property access and rebinds methods</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>vanilla</TableCell>
+        <TableCell>manual pub/sub: <code>this.notify()</code> → <code>this.publish()</code> → iterates <code>this.subscriptions</code>; wired to bindable stores via <code>@zag-js/store</code>'s <code>subscribe(store, cb)</code></TableCell>
+        <TableCell>no framework memoization at all — consumers call <code>service.state</code>/<code>service.context</code> and get a freshly built plain object each time; the "memo" concept is replaced by the explicit dependency-diffing in <code>callTrackers()</code> (see Track below)</TableCell>
+      </TableRow>
+    </TableBody>
+  </Table>
 
   <h2>3. Lifecycle — start/init timing, effect registration, StrictMode/re-mount handling</h2>
   <p>
@@ -81,39 +192,65 @@
     run; on unmount, run all accumulated cleanup functions and <code>machine.exit</code>. What
     differs is exactly *when* relative to DOM commit, and how re-mounts are handled.
   </p>
-  <table>
-    <thead><tr><th>Framework</th><th>Mount hook</th><th>Timing relative to DOM</th><th>Re-mount / StrictMode handling</th><th>Unmount hook</th></tr></thead>
-    <tbody>
-      <tr><td>react</td><td><code>useSafeLayoutEffect</code> (<code>useLayoutEffect</code> if <code>document</code> exists, else <code>useEffect</code> — <code>src/use-layout-effect.ts</code>)</td><td>Layout effect body wraps the actual init in <code>queueMicrotask</code>, so the state transition itself runs one microtask after DOM commit</td><td><code>hydratedStateRef</code> persists the last-known state value across the effect's cleanup/re-run; the <code>onChange</code> handler explicitly composes cleanups with <code>callAll</code> so a StrictMode double-invoke doesn't clobber the first mount's cleanup — see the code comment in <code>machine.ts</code>: &quot;React Strict Mode remount that re-enters the same path before the prior cleanup ran&quot;</td><td>cleanup fn returned from the layout effect; runs effects then <code>queueMicrotask(() =&gt; action(machine.exit))</code></td></tr>
-      <tr><td>preact</td><td><code>useLayoutEffect</code> (preact/hooks, unconditional — no SSR guard)</td><td>Init runs synchronously inside the layout effect body — no <code>queueMicrotask</code> wrapper unlike react</td><td>no special StrictMode composition logic (preact has no StrictMode double-invoke); tracks current state via a separate <code>currentStateRef</code> updated eagerly in <code>send</code></td><td>cleanup fn returned from the same layout effect; calls <code>action(machine.exit)</code> synchronously (not deferred via microtask)</td></tr>
-      <tr><td>solid</td><td><code>onMount</code></td><td>Runs after the component's DOM is attached (Solid schedules <code>onMount</code> post-render)</td><td>no re-mount composition logic — Solid doesn't double-invoke effects</td><td><code>onCleanup</code>; guarded by <code>if (status !== MachineStatus.Started) return</code></td></tr>
-      <tr><td>vue</td><td><code>onMounted</code></td><td>After DOM insertion, standard Vue timing</td><td>none; additionally buffers <code>send()</code> calls into <code>pendingEvents</code> if called before mount completes (&quot;child mounts before parent in Vue&quot; per the code comment) and replays them once started</td><td><code>onBeforeUnmount</code></td></tr>
-      <tr><td>svelte</td><td><code>onMount</code> (from <code>"svelte"</code>)</td><td>After the component is attached to the DOM</td><td>none</td><td><code>onDestroy</code>; guarded by <code>if (status !== MachineStatus.Started) return</code></td></tr>
-      <tr><td>vanilla</td><td>explicit <code>.start()</code> method, called by the consumer</td><td>whenever the caller invokes it — no framework schedules this</td><td>n/a — caller owns the lifecycle entirely</td><td>explicit <code>.stop()</code> method</td></tr>
-    </tbody>
-  </table>
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Framework</TableHead>
+        <TableHead>Mount hook</TableHead>
+        <TableHead>Timing relative to DOM</TableHead>
+        <TableHead>Re-mount / StrictMode handling</TableHead>
+        <TableHead>Unmount hook</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      <TableRow>
+        <TableCell>react</TableCell>
+        <TableCell><code>useSafeLayoutEffect</code> (<code>useLayoutEffect</code> if <code>document</code> exists, else <code>useEffect</code> — <code>src/use-layout-effect.ts</code>)</TableCell>
+        <TableCell>Layout effect body wraps the actual init in <code>queueMicrotask</code>, so the state transition itself runs one microtask after DOM commit</TableCell>
+        <TableCell><code>hydratedStateRef</code> persists the last-known state value across the effect's cleanup/re-run; the <code>onChange</code> handler explicitly composes cleanups with <code>callAll</code> so a StrictMode double-invoke doesn't clobber the first mount's cleanup — see the code comment in <code>machine.ts</code>: &quot;React Strict Mode remount that re-enters the same path before the prior cleanup ran&quot;</TableCell>
+        <TableCell>cleanup fn returned from the layout effect; runs effects then <code>queueMicrotask(() =&gt; action(machine.exit))</code></TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>preact</TableCell>
+        <TableCell><code>useLayoutEffect</code> (preact/hooks, unconditional — no SSR guard)</TableCell>
+        <TableCell>Init runs synchronously inside the layout effect body — no <code>queueMicrotask</code> wrapper unlike react</TableCell>
+        <TableCell>no special StrictMode composition logic (preact has no StrictMode double-invoke); tracks current state via a separate <code>currentStateRef</code> updated eagerly in <code>send</code></TableCell>
+        <TableCell>cleanup fn returned from the same layout effect; calls <code>action(machine.exit)</code> synchronously (not deferred via microtask)</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>solid</TableCell>
+        <TableCell><code>onMount</code></TableCell>
+        <TableCell>Runs after the component's DOM is attached (Solid schedules <code>onMount</code> post-render)</TableCell>
+        <TableCell>no re-mount composition logic — Solid doesn't double-invoke effects</TableCell>
+        <TableCell><code>onCleanup</code>; guarded by <code>if (status !== MachineStatus.Started) return</code></TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>vue</TableCell>
+        <TableCell><code>onMounted</code></TableCell>
+        <TableCell>After DOM insertion, standard Vue timing</TableCell>
+        <TableCell>none; additionally buffers <code>send()</code> calls into <code>pendingEvents</code> if called before mount completes (&quot;child mounts before parent in Vue&quot; per the code comment) and replays them once started</TableCell>
+        <TableCell><code>onBeforeUnmount</code></TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>svelte</TableCell>
+        <TableCell><code>onMount</code> (from <code>"svelte"</code>)</TableCell>
+        <TableCell>After the component is attached to the DOM</TableCell>
+        <TableCell>none</TableCell>
+        <TableCell><code>onDestroy</code>; guarded by <code>if (status !== MachineStatus.Started) return</code></TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>vanilla</TableCell>
+        <TableCell>explicit <code>.start()</code> method, called by the consumer</TableCell>
+        <TableCell>whenever the caller invokes it — no framework schedules this</TableCell>
+        <TableCell>n/a — caller owns the lifecycle entirely</TableCell>
+        <TableCell>explicit <code>.stop()</code> method</TableCell>
+      </TableRow>
+    </TableBody>
+  </Table>
   <p>
     Side-by-side, the microtask deferral is a real divergence worth flagging for a new adapter:
   </p>
-  <pre><code>// react — packages/frameworks/react/src/machine.ts
-useSafeLayoutEffect(() =&gt; {
-  queueMicrotask(() =&gt; {
-    const started = statusRef.current === MachineStatus.Started
-    statusRef.current = MachineStatus.Started
-    const initialState = hydratedStateRef.current ?? state.initial!
-    state.invoke(initialState, started ? state.get() : INIT_STATE)
-  })
-  ...
-}, [])
-
-// preact — packages/frameworks/preact/src/machine.ts
-useLayoutEffect(() =&gt; {
-  const started = statusRef.current === MachineStatus.Started
-  statusRef.current = MachineStatus.Started
-  const initialState = hydratedStateRef.current ?? state.initial!
-  state.invoke(initialState, started ? state.get() : INIT_STATE)
-  ...
-}, [])</code></pre>
+  <code-block language="typescript" code=MICROTASK_DEFERRAL/>
 
   <h2>4. normalizeProps — PropTypes mapping per framework</h2>
   <p>
@@ -124,17 +261,68 @@ useLayoutEffect(() =&gt; {
     <code>normalizeProps.style</code> which unwraps the result. Adapters differ only in the
     transform function passed in.
   </p>
-  <table>
-    <thead><tr><th>Framework</th><th>File</th><th>Attribute renames</th><th>Event convention</th><th>Style handling</th><th>children/textContent</th></tr></thead>
-    <tbody>
-      <tr><td>react</td><td><code>src/normalize-props.ts</code></td><td>none — identity function <code>(v) =&gt; v</code>; React's JSX runtime does its own attribute mapping</td><td>native React <code>onX</code> camelCase, untouched</td><td>passthrough object, React handles serialization</td><td>passthrough</td></tr>
-      <tr><td>preact</td><td><code>src/normalize-props.ts</code></td><td><code>onFocus→onfocusin</code>, <code>onBlur→onfocusout</code>, <code>onDoubleClick→onDblClick</code>, <code>onChange→onInput</code> via an explicit <code>eventMap</code></td><td>lowercase DOM-ish event names for focus/blur (preact/compat quirk), rest pass through</td><td>passthrough object</td><td>passthrough</td></tr>
-      <tr><td>solid</td><td><code>src/normalize-props.ts</code></td><td><code>eventMap</code>: <code>onFocus→onFocusIn</code>, <code>onBlur→onFocusOut</code>, <code>onDoubleClick→onDblClick</code>, <code>onChange→onInput</code>, <code>defaultChecked→checked</code>, <code>defaultValue→value</code>, <code>htmlFor→for</code>, <code>className→class</code>; also drops <code>readOnly: false</code> entirely</td><td>Solid's native <code>onX</code> camelCase (delegated events), remapped subset above</td><td>object → <code>cssify()</code> converts camelCase keys to hyphenated (except custom props starting <code>--</code>) via a memoizing <code>hyphenateStyleName</code> cache</td><td><code>children</code> string → sets <code>textContent</code> key (Solid-specific escape hatch, not <code>children</code> prop)</td></tr>
-      <tr><td>vue</td><td><code>src/normalize-props.ts</code></td><td><code>propMap</code>: <code>htmlFor→for</code>, <code>className→class</code>, <code>onDoubleClick→onDblclick</code>, <code>onChange→onInput</code>, <code>onFocus→onFocusin</code>, <code>onBlur→onFocusout</code>, <code>defaultValue→value</code>, <code>defaultChecked→checked</code>; all other non-<code>on</code>, non-preserved keys are <strong>lowercased</strong> via <code>toVueProp</code>; an explicit <code>preserveKeys</code> allowlist (viewBox, strokeWidth, etc.) skips lowercasing for SVG/camelCase-sensitive attrs</td><td><code>on</code>-prefixed keys get PascalCase rest: <code>onCustomThing → onCustomThing</code> preserved via <code>on&#36;{toCase(prop.substr(2))}</code></td><td>passthrough object (Vue's runtime handles style objects natively)</td><td><code>children</code> string → <code>innerHTML</code> (not <code>textContent</code>); warns via <code>console.warn</code> in dev if children is non-primitive</td></tr>
-      <tr><td>svelte</td><td><code>src/normalize-props.ts</code></td><td><code>propMap</code>: <code>className→class</code>, <code>defaultChecked→checked</code>, <code>defaultValue→value</code>, <code>htmlFor→for</code>, <code>onBlur→onfocusout</code>, <code>onChange→oninput</code>, <code>onFocus→onfocusin</code>, <code>onDoubleClick→ondblclick</code> (all lowercase, Svelte's native DOM event attribute style); unmapped keys pass through <code>toSvelteProp</code> which lowercases unless in <code>preserveKeys</code></td><td>lowercase native DOM event attribute names (<code>onclick</code>, not <code>onClick</code>)</td><td>object → <code>toStyleString()</code> serializes to a CSS string (<code>key:value;</code> pairs, camelCase→kebab-case except <code>--</code> custom props) — same algorithm duplicated in vanilla's normalize-props.ts</td><td>not special-cased in <code>normalizeProps</code> itself (Svelte templates interpolate children directly)</td></tr>
-      <tr><td>vanilla</td><td><code>src/normalize-props.ts</code></td><td>same <code>propMap</code> shape as svelte/vue (<code>onFocus→onFocusin</code>, <code>onBlur→onFocusout</code>, <code>onChange→onInput</code>, <code>onDoubleClick→onDblclick</code>, <code>htmlFor→for</code>, <code>className→class</code>, <code>defaultValue→value</code>, <code>defaultChecked→checked</code>)</td><td>mapped subset above, otherwise lowercased key (since output is real DOM attribute names)</td><td>object → <code>toStyleString()</code> (identical algorithm to svelte's, independently duplicated — not shared)</td><td>no special <code>children</code> case in <code>normalize-props.ts</code> itself; <code>spread-props.ts</code> handles a literal <code>children</code> attr by setting <code>node.innerHTML = value</code></td></tr>
-    </tbody>
-  </table>
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Framework</TableHead>
+        <TableHead>File</TableHead>
+        <TableHead>Attribute renames</TableHead>
+        <TableHead>Event convention</TableHead>
+        <TableHead>Style handling</TableHead>
+        <TableHead>children/textContent</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      <TableRow>
+        <TableCell>react</TableCell>
+        <TableCell><code>src/normalize-props.ts</code></TableCell>
+        <TableCell>none — identity function <code>(v) =&gt; v</code>; React's JSX runtime does its own attribute mapping</TableCell>
+        <TableCell>native React <code>onX</code> camelCase, untouched</TableCell>
+        <TableCell>passthrough object, React handles serialization</TableCell>
+        <TableCell>passthrough</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>preact</TableCell>
+        <TableCell><code>src/normalize-props.ts</code></TableCell>
+        <TableCell><code>onFocus→onfocusin</code>, <code>onBlur→onfocusout</code>, <code>onDoubleClick→onDblClick</code>, <code>onChange→onInput</code> via an explicit <code>eventMap</code></TableCell>
+        <TableCell>lowercase DOM-ish event names for focus/blur (preact/compat quirk), rest pass through</TableCell>
+        <TableCell>passthrough object</TableCell>
+        <TableCell>passthrough</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>solid</TableCell>
+        <TableCell><code>src/normalize-props.ts</code></TableCell>
+        <TableCell><code>eventMap</code>: <code>onFocus→onFocusIn</code>, <code>onBlur→onFocusOut</code>, <code>onDoubleClick→onDblClick</code>, <code>onChange→onInput</code>, <code>defaultChecked→checked</code>, <code>defaultValue→value</code>, <code>htmlFor→for</code>, <code>className→class</code>; also drops <code>readOnly: false</code> entirely</TableCell>
+        <TableCell>Solid's native <code>onX</code> camelCase (delegated events), remapped subset above</TableCell>
+        <TableCell>object → <code>cssify()</code> converts camelCase keys to hyphenated (except custom props starting <code>--</code>) via a memoizing <code>hyphenateStyleName</code> cache</TableCell>
+        <TableCell><code>children</code> string → sets <code>textContent</code> key (Solid-specific escape hatch, not <code>children</code> prop)</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>vue</TableCell>
+        <TableCell><code>src/normalize-props.ts</code></TableCell>
+        <TableCell><code>propMap</code>: <code>htmlFor→for</code>, <code>className→class</code>, <code>onDoubleClick→onDblclick</code>, <code>onChange→onInput</code>, <code>onFocus→onFocusin</code>, <code>onBlur→onFocusout</code>, <code>defaultValue→value</code>, <code>defaultChecked→checked</code>; all other non-<code>on</code>, non-preserved keys are <strong>lowercased</strong> via <code>toVueProp</code>; an explicit <code>preserveKeys</code> allowlist (viewBox, strokeWidth, etc.) skips lowercasing for SVG/camelCase-sensitive attrs</TableCell>
+        <TableCell><code>on</code>-prefixed keys get PascalCase rest: <code>onCustomThing → onCustomThing</code> preserved via <code>on&#36;{toCase(prop.substr(2))}</code></TableCell>
+        <TableCell>passthrough object (Vue's runtime handles style objects natively)</TableCell>
+        <TableCell><code>children</code> string → <code>innerHTML</code> (not <code>textContent</code>); warns via <code>console.warn</code> in dev if children is non-primitive</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>svelte</TableCell>
+        <TableCell><code>src/normalize-props.ts</code></TableCell>
+        <TableCell><code>propMap</code>: <code>className→class</code>, <code>defaultChecked→checked</code>, <code>defaultValue→value</code>, <code>htmlFor→for</code>, <code>onBlur→onfocusout</code>, <code>onChange→oninput</code>, <code>onFocus→onfocusin</code>, <code>onDoubleClick→ondblclick</code> (all lowercase, Svelte's native DOM event attribute style); unmapped keys pass through <code>toSvelteProp</code> which lowercases unless in <code>preserveKeys</code></TableCell>
+        <TableCell>lowercase native DOM event attribute names (<code>onclick</code>, not <code>onClick</code>)</TableCell>
+        <TableCell>object → <code>toStyleString()</code> serializes to a CSS string (<code>key:value;</code> pairs, camelCase→kebab-case except <code>--</code> custom props) — same algorithm duplicated in vanilla's normalize-props.ts</TableCell>
+        <TableCell>not special-cased in <code>normalizeProps</code> itself (Svelte templates interpolate children directly)</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>vanilla</TableCell>
+        <TableCell><code>src/normalize-props.ts</code></TableCell>
+        <TableCell>same <code>propMap</code> shape as svelte/vue (<code>onFocus→onFocusin</code>, <code>onBlur→onFocusout</code>, <code>onChange→onInput</code>, <code>onDoubleClick→onDblclick</code>, <code>htmlFor→for</code>, <code>className→class</code>, <code>defaultValue→value</code>, <code>defaultChecked→checked</code>)</TableCell>
+        <TableCell>mapped subset above, otherwise lowercased key (since output is real DOM attribute names)</TableCell>
+        <TableCell>object → <code>toStyleString()</code> (identical algorithm to svelte's, independently duplicated — not shared)</TableCell>
+        <TableCell>no special <code>children</code> case in <code>normalize-props.ts</code> itself; <code>spread-props.ts</code> handles a literal <code>children</code> attr by setting <code>node.innerHTML = value</code></TableCell>
+      </TableRow>
+    </TableBody>
+  </Table>
   <p>
     All non-react/preact-JSX adapters (solid, vue, svelte, vanilla) additionally lowercase or
     special-case SVG attributes to avoid mangling camelCase SVG properties like
@@ -157,17 +345,61 @@ useLayoutEffect(() =&gt; {
     <code>track(deps, effect)</code> one or more times internally (machine-authored code, not
     shown here) to run side effects when specific derived values change between renders.
   </p>
-  <table>
-    <thead><tr><th>Framework</th><th>File</th><th>Dependency comparison</th><th>When it runs</th><th>First-run behavior</th></tr></thead>
-    <tbody>
-      <tr><td>react</td><td><code>src/track.ts</code></td><td><code>useEffect</code> dependency array — deps are unwrapped (<code>typeof d === "function" ? d() : d</code>) so React's own <code>Object.is</code> array-diffing decides when to re-run</td><td>after commit, standard <code>useEffect</code> timing</td><td>skipped: a <code>called</code> ref gates the very first invocation so <code>effect()</code> only fires on genuine changes, not initial mount</td></tr>
-      <tr><td>preact</td><td><code>src/track.ts</code></td><td>identical implementation to react's, byte-for-byte except the import source (<code>preact/hooks</code> vs <code>react</code>)</td><td>after commit</td><td>same double-<code>useEffect</code> mount-guard pattern as react</td></tr>
-      <tr><td>solid</td><td><code>src/track.ts</code></td><td>manual loop using <code>isEqual</code> from <code>@zag-js/utils</code> inside a single <code>createEffect</code></td><td>Solid's reactive scheduler (synchronous-ish, fine-grained)</td><td><code>isFirstRun</code> flag records deps but does not call <code>effect()</code> on the first pass</td></tr>
-      <tr><td>vue</td><td><code>src/track.ts</code></td><td><code>watch(() =&gt; deps.map(d =&gt; d()), (current, previous) =&gt; ...)</code> with a manual <code>isEqual</code> loop over the callback args Vue already supplies</td><td>Vue's <code>watch</code> scheduler (post-flush by default)</td><td>Vue's <code>watch</code> does not invoke the callback on registration by default (<code>immediate</code> not set), so effectively equivalent to skipping first run</td></tr>
-      <tr><td>svelte</td><td><code>src/track.svelte.ts</code></td><td>manual loop with <code>isEqual</code>, structurally identical to solid's <code>track.ts</code></td><td>inside <code>$effect</code> (Svelte 5 rune, runs after DOM updates)</td><td><code>isFirstRun</code> flag, same pattern as solid</td></tr>
-      <tr><td>vanilla</td><td><code>src/machine.ts</code> (inline in <code>VanillaMachine.getParams()</code> and <code>callTrackers()</code>, no separate <code>track.ts</code> file)</td><td><code>isEqual</code> comparison of <code>deps.map(dep =&gt; dep())</code> against a cached <code>fn.prev</code> array stashed as a property on the effect function itself</td><td>manually driven — <code>callTrackers()</code> runs from <code>publish()</code>, which fires whenever a bindable notifies (state or context change), not on a framework render cycle</td><td>the first call to <code>track()</code> seeds <code>fn.prev</code> immediately without invoking <code>fn</code> (see <code>getParams(): track: (deps, fn) =&gt; { fn.prev = deps.map(dep =&gt; dep()); this.trackers.push(...) }</code>)</td></tr>
-    </tbody>
-  </table>
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Framework</TableHead>
+        <TableHead>File</TableHead>
+        <TableHead>Dependency comparison</TableHead>
+        <TableHead>When it runs</TableHead>
+        <TableHead>First-run behavior</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      <TableRow>
+        <TableCell>react</TableCell>
+        <TableCell><code>src/track.ts</code></TableCell>
+        <TableCell><code>useEffect</code> dependency array — deps are unwrapped (<code>typeof d === "function" ? d() : d</code>) so React's own <code>Object.is</code> array-diffing decides when to re-run</TableCell>
+        <TableCell>after commit, standard <code>useEffect</code> timing</TableCell>
+        <TableCell>skipped: a <code>called</code> ref gates the very first invocation so <code>effect()</code> only fires on genuine changes, not initial mount</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>preact</TableCell>
+        <TableCell><code>src/track.ts</code></TableCell>
+        <TableCell>identical implementation to react's, byte-for-byte except the import source (<code>preact/hooks</code> vs <code>react</code>)</TableCell>
+        <TableCell>after commit</TableCell>
+        <TableCell>same double-<code>useEffect</code> mount-guard pattern as react</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>solid</TableCell>
+        <TableCell><code>src/track.ts</code></TableCell>
+        <TableCell>manual loop using <code>isEqual</code> from <code>@zag-js/utils</code> inside a single <code>createEffect</code></TableCell>
+        <TableCell>Solid's reactive scheduler (synchronous-ish, fine-grained)</TableCell>
+        <TableCell><code>isFirstRun</code> flag records deps but does not call <code>effect()</code> on the first pass</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>vue</TableCell>
+        <TableCell><code>src/track.ts</code></TableCell>
+        <TableCell><code>watch(() =&gt; deps.map(d =&gt; d()), (current, previous) =&gt; ...)</code> with a manual <code>isEqual</code> loop over the callback args Vue already supplies</TableCell>
+        <TableCell>Vue's <code>watch</code> scheduler (post-flush by default)</TableCell>
+        <TableCell>Vue's <code>watch</code> does not invoke the callback on registration by default (<code>immediate</code> not set), so effectively equivalent to skipping first run</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>svelte</TableCell>
+        <TableCell><code>src/track.svelte.ts</code></TableCell>
+        <TableCell>manual loop with <code>isEqual</code>, structurally identical to solid's <code>track.ts</code></TableCell>
+        <TableCell>inside <code>$effect</code> (Svelte 5 rune, runs after DOM updates)</TableCell>
+        <TableCell><code>isFirstRun</code> flag, same pattern as solid</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>vanilla</TableCell>
+        <TableCell><code>src/machine.ts</code> (inline in <code>VanillaMachine.getParams()</code> and <code>callTrackers()</code>, no separate <code>track.ts</code> file)</TableCell>
+        <TableCell><code>isEqual</code> comparison of <code>deps.map(dep =&gt; dep())</code> against a cached <code>fn.prev</code> array stashed as a property on the effect function itself</TableCell>
+        <TableCell>manually driven — <code>callTrackers()</code> runs from <code>publish()</code>, which fires whenever a bindable notifies (state or context change), not on a framework render cycle</TableCell>
+        <TableCell>the first call to <code>track()</code> seeds <code>fn.prev</code> immediately without invoking <code>fn</code> (see <code>getParams(): track: (deps, fn) =&gt; { fn.prev = deps.map(dep =&gt; dep()); this.trackers.push(...) }</code>)</TableCell>
+      </TableRow>
+    </TableBody>
+  </Table>
   <p>
     <code>refs</code> (<code>BindableRefs&lt;T&gt;</code>) is trivial and byte-for-byte identical
     across solid, vue, svelte, and vanilla — a plain <code>{ current: refs }</code> box with

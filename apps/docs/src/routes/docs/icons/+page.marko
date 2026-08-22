@@ -6,6 +6,12 @@
 // code-block sections keyed to a hand-authored TOC).
 import "../../../tags/docs/docs-article.marko";
 import "../../../tags/docs/code-block.marko";
+import Table from "@marko-ui/shadcn/ui/table/table.marko";
+import TableHeader from "@marko-ui/shadcn/ui/table/header.marko";
+import TableBody from "@marko-ui/shadcn/ui/table/body.marko";
+import TableRow from "@marko-ui/shadcn/ui/table/row.marko";
+import TableHead from "@marko-ui/shadcn/ui/table/head.marko";
+import TableCell from "@marko-ui/shadcn/ui/table/cell.marko";
 
 static const TOC = [
   { id: "overview", label: "Overview" },
@@ -53,18 +59,48 @@ static const REGEN = `bun tooling/build-icons.ts`;
 
   <p>Five icon libraries are supported, selectable per-icon via the <code>library</code> prop:</p>
 
-  <table>
-    <thead>
-      <tr><th>Library</th><th><code>library</code> value</th><th>Style</th><th>License</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>Lucide</td><td><code>lucide</code></td><td>Stroke, 24×24</td><td>ISC</td></tr>
-      <tr><td>Tabler Icons</td><td><code>tabler</code></td><td>Stroke, 24×24</td><td>MIT</td></tr>
-      <tr><td>HugeIcons</td><td><code>hugeicons</code></td><td>Stroke, 24×24</td><td>MIT</td></tr>
-      <tr><td>Phosphor Icons</td><td><code>phosphor</code></td><td>Filled outline, 256×256</td><td>MIT</td></tr>
-      <tr><td>Remix Icon</td><td><code>remixicon</code></td><td>Filled, 24×24</td><td>Apache-2.0</td></tr>
-    </tbody>
-  </table>
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Library</TableHead>
+        <TableHead><code>library</code> value</TableHead>
+        <TableHead>Style</TableHead>
+        <TableHead>License</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      <TableRow>
+        <TableCell>Lucide</TableCell>
+        <TableCell><code>lucide</code></TableCell>
+        <TableCell>Stroke, 24×24</TableCell>
+        <TableCell>ISC</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>Tabler Icons</TableCell>
+        <TableCell><code>tabler</code></TableCell>
+        <TableCell>Stroke, 24×24</TableCell>
+        <TableCell>MIT</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>HugeIcons</TableCell>
+        <TableCell><code>hugeicons</code></TableCell>
+        <TableCell>Stroke, 24×24</TableCell>
+        <TableCell>MIT</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>Phosphor Icons</TableCell>
+        <TableCell><code>phosphor</code></TableCell>
+        <TableCell>Filled outline, 256×256</TableCell>
+        <TableCell>MIT</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>Remix Icon</TableCell>
+        <TableCell><code>remixicon</code></TableCell>
+        <TableCell>Filled, 24×24</TableCell>
+        <TableCell>Apache-2.0</TableCell>
+      </TableRow>
+    </TableBody>
+  </Table>
 
   <p>
     <code>lucide</code> is the default when <code>library</code> is omitted. Phosphor's icons look

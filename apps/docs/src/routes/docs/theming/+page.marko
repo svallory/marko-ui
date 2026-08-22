@@ -4,6 +4,12 @@
 // shadcn's (notably: our radius scale uses +/- px offsets, not multipliers).
 import "../../../tags/docs/docs-article.marko";
 import "../../../tags/docs/code-block.marko";
+import Table from "@marko-ui/shadcn/ui/table/table.marko";
+import TableHeader from "@marko-ui/shadcn/ui/table/header.marko";
+import TableBody from "@marko-ui/shadcn/ui/table/body.marko";
+import TableRow from "@marko-ui/shadcn/ui/table/row.marko";
+import TableHead from "@marko-ui/shadcn/ui/table/head.marko";
+import TableCell from "@marko-ui/shadcn/ui/table/cell.marko";
 
 static const TOC = [
   { id: "convention", label: "Token Convention" },
@@ -232,24 +238,24 @@ static const SWATCHES = [
     exposed to Tailwind through <code>@theme inline</code>.
   </p>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Token</th>
-        <th>What it controls</th>
-        <th>Used by</th>
-      </tr>
-    </thead>
-    <tbody>
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Token</TableHead>
+        <TableHead>What it controls</TableHead>
+        <TableHead>Used by</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
       <for|entry| of=TOKENS by=(entry)=>entry.token>
-        <tr>
-          <td><code>${entry.token}</code></td>
-          <td>${entry.controls}</td>
-          <td>${entry.usedBy}</td>
-        </tr>
+        <TableRow>
+          <TableCell><code>${entry.token}</code></TableCell>
+          <TableCell>${entry.controls}</TableCell>
+          <TableCell>${entry.usedBy}</TableCell>
+        </TableRow>
       </for>
-    </tbody>
-  </table>
+    </TableBody>
+  </Table>
 
   <h2 id="base-colors">Base Colors</h2>
 
@@ -259,24 +265,24 @@ static const SWATCHES = [
     whichever you pick.
   </p>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Base color</th>
-        <th>Registry item</th>
-        <th>Character</th>
-      </tr>
-    </thead>
-    <tbody>
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Base color</TableHead>
+        <TableHead>Registry item</TableHead>
+        <TableHead>Character</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
       <for|base| of=BASE_COLORS by=(base)=>base.name>
-        <tr>
-          <td><code>${base.name}</code></td>
-          <td><code>${base.item}</code></td>
-          <td>${base.note}</td>
-        </tr>
+        <TableRow>
+          <TableCell><code>${base.name}</code></TableCell>
+          <TableCell><code>${base.item}</code></TableCell>
+          <TableCell>${base.note}</TableCell>
+        </TableRow>
       </for>
-    </tbody>
-  </table>
+    </TableBody>
+  </Table>
 
   <code-block language="bash" code=INSTALL_BASE/>
 

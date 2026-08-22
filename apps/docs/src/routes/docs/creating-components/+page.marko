@@ -1,3 +1,47 @@
+import "../../../tags/docs/code-block.marko";
+
+static const EXAMPLE_1 = `import * as switchMachine from "@zag-js/switch";
+import type { MachineInput } from "marko-zag";
+
+export type Input = MachineInput<"input", switchMachine.Props> & {
+  checkedChange?: (checked: boolean) => void;
+};`;
+
+static const EXAMPLE_2 = `<machine-props/machineProps from=input pick=switchMachine.props
+  onCheckedChange(details: switchMachine.CheckedChangeDetails) {
+    input.onCheckedChange?.(details);
+    input.checkedChange?.(details.checked);
+  }/>
+<service/service machine=() => switchMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  switchMachine.connect(service, normalizeProps)
+  service=service
+/>`;
+
+static const EXAMPLE_3 = `<label ...api().getRootProps() data-slot="switch-label" class="...">
+  <span ...api().getControlProps() data-slot="switch" class=cn("...", input.class)>
+    <span ...api().getThumbProps() data-slot="switch-thumb" class="..."/>
+  </span>
+  <input ...nativeAttrs() ...api().getHiddenInputProps()>
+</label>
+
+<return=api>`;
+
+static const EXAMPLE_4 = `export interface TriggerAttrs { value: string; disabled?: boolean; content?: Marko.Body }
+
+export type Input = MachineInput<"div", tabsMachine.Props> & {
+  items?: TabItem[];                              // sugar for the data-driven case
+  trigger?: Marko.AttrTag<TriggerAttrs>;      // primary compound API
+  content?: Marko.Body<[string]>;
+};
+
+// Repeated attr tags collect into an ITERABLE, not an array — spread it.
+<const/triggerTags=[...(input.trigger ?? [])]/>
+
+// Normalize whichever source was supplied into ONE shape, once, up front —
+// the render path below never branches. Attr tags win if both are present.
+<const/triggers=(triggerTags.length > 0 ? triggerTags : (input.items ?? []).map((item) => ({ value: item.value, disabled: item.disabled })))/>`;
+
 <docs-page title="How to Create a Marko-Zag Component" description="The complete recipe, using Switch — the reference implementation — as the worked example.">
   <section class="space-y-3">
     <h2 class="text-lg font-semibold">The mental model</h2>
@@ -26,12 +70,7 @@
 
   <section class="space-y-3">
     <h2 class="text-lg font-semibold">2. Type the Input</h2>
-    <pre class="overflow-x-auto rounded-lg border bg-muted/50 p-4 text-sm"><code>import * as switchMachine from "@zag-js/switch";
-import type { MachineInput } from "marko-zag";
-
-export type Input = MachineInput&lt;"input", switchMachine.Props&gt; &amp; {
-  checkedChange?: (checked: boolean) =&gt; void;
-};</code></pre>
+    <code-block language="typescript" code=EXAMPLE_1/>
     <p>
       <code>MachineInput&lt;Tag, Props&gt;</code> is the native tag's attributes intersected with
       the machine's full <code>Props</code>, with only <code>id</code> made optional (it is
@@ -44,16 +83,7 @@ export type Input = MachineInput&lt;"input", switchMachine.Props&gt; &amp; {
 
   <section class="space-y-3">
     <h2 class="text-lg font-semibold">3. Wire the machine — three tags</h2>
-    <pre class="overflow-x-auto rounded-lg border bg-muted/50 p-4 text-sm"><code>&lt;machine-props/machineProps from=input pick=switchMachine.props
-  onCheckedChange(details: switchMachine.CheckedChangeDetails) {
-    input.onCheckedChange?.(details);
-    input.checkedChange?.(details.checked);
-  }/&gt;
-&lt;service/service machine=() =&gt; switchMachine.machine props=machineProps/&gt;
-&lt;connect/api=(service, normalizeProps) =&gt;
-  switchMachine.connect(service, normalizeProps)
-  service=service
-/&gt;</code></pre>
+    <code-block language="marko" code=EXAMPLE_2/>
     <ul class="list-disc space-y-2 pl-6 text-sm">
       <li>
         <strong><code>&lt;machine-props&gt;</code></strong> builds the machine's props closure:
@@ -87,14 +117,7 @@ export type Input = MachineInput&lt;"input", switchMachine.Props&gt; &amp; {
 
   <section class="space-y-3">
     <h2 class="text-lg font-semibold">4. Render with api() spreads</h2>
-    <pre class="overflow-x-auto rounded-lg border bg-muted/50 p-4 text-sm"><code>&lt;label ...api().getRootProps() data-slot="switch-label" class="..."&gt;
-  &lt;span ...api().getControlProps() data-slot="switch" class=cn("...", input.class)&gt;
-    &lt;span ...api().getThumbProps() data-slot="switch-thumb" class="..."/&gt;
-  &lt;/span&gt;
-  &lt;input ...nativeAttrs() ...api().getHiddenInputProps()&gt;
-&lt;/label&gt;
-
-&lt;return=api&gt;</code></pre>
+    <code-block language="marko" code=EXAMPLE_3/>
     <ul class="list-disc space-y-2 pl-6 text-sm">
       <li>Faithful shadcn Tailwind classes; semantic tokens only — never raw colors.</li>
       <li>Every part carries a <code>data-slot</code>; style states via Zag's
@@ -120,20 +143,7 @@ export type Input = MachineInput&lt;"input", switchMachine.Props&gt; &amp; {
       <em>data</em> collected by the parent's own render, so the api getter never crosses a tag
       boundary.
     </p>
-    <pre class="overflow-x-auto rounded-lg border bg-muted/50 p-4 text-sm"><code>export interface TriggerAttrs { value: string; disabled?: boolean; content?: Marko.Body }
-
-export type Input = MachineInput&lt;"div", tabsMachine.Props&gt; &amp; {
-  items?: TabItem[];                              // sugar for the data-driven case
-  trigger?: Marko.AttrTag&lt;TriggerAttrs&gt;;      // primary compound API
-  content?: Marko.Body&lt;[string]&gt;;
-};
-
-// Repeated attr tags collect into an ITERABLE, not an array — spread it.
-&lt;const/triggerTags=[...(input.trigger ?? [])]/&gt;
-
-// Normalize whichever source was supplied into ONE shape, once, up front —
-// the render path below never branches. Attr tags win if both are present.
-&lt;const/triggers=(triggerTags.length &gt; 0 ? triggerTags : (input.items ?? []).map((item) =&gt; ({ value: item.value, disabled: item.disabled })))/&gt;</code></pre>
+    <code-block language="typescript" code=EXAMPLE_4/>
     <p class="text-sm">
       Call site: <code>&lt;Tabs&gt;&lt;@trigger value="one"&gt;One&lt;/@trigger&gt;...&lt;/Tabs&gt;</code>.
       Keep <code>items=</code> working unchanged for the data-driven case (a select bound to

@@ -1,3 +1,29 @@
+import "../../../tags/docs/code-block.marko";
+import Table from "@marko-ui/shadcn/ui/table/table.marko";
+import TableHeader from "@marko-ui/shadcn/ui/table/header.marko";
+import TableBody from "@marko-ui/shadcn/ui/table/body.marko";
+import TableRow from "@marko-ui/shadcn/ui/table/row.marko";
+import TableHead from "@marko-ui/shadcn/ui/table/head.marko";
+import TableCell from "@marko-ui/shadcn/ui/table/cell.marko";
+
+static const SERVICE_TYPE = `export type Service<T extends MachineSchema> = {
+  getStatus: () => MachineStatus
+  state: State<T> & {
+    matches: (...values: T["state"][]) => boolean
+    hasTag: (tag: T["tag"]) => boolean
+  }
+  context: BindableContext<T>
+  send: (event: EventType<T["event"]>) => void
+  prop: PropFn<T>
+  scope: Scope
+  computed: ComputedFn<T>
+  refs: BindableRefs<T>
+  event: EventType<T["event"]> & {
+    current: () => EventType<T["event"]>
+    previous: () => EventType<T["event"]>
+  }
+}`;
+
 <docs-page
   title="Zag.js Framework Adapter Anatomy"
   description="What a Zag.js framework adapter must implement, derived from reading every source file in the six official adapters (react, solid, svelte, vue, preact, vanilla)."
@@ -37,20 +63,69 @@
     minimal surface. Confirmed from each package's <code>index.ts</code>:
   </p>
 
-  <table>
-    <thead>
-      <tr><th>Export</th><th>react</th><th>solid</th><th>svelte</th><th>vue</th><th>preact</th><th>vanilla</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><code>useMachine</code> (or <code>VanillaMachine</code> class)</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td><code>VanillaMachine</code></td></tr>
-      <tr><td><code>normalizeProps</code></td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
-      <tr><td><code>mergeProps</code></td><td>re-export of <code>@zag-js/core</code></td><td>own impl (accessor-aware)</td><td>own impl (class handling + style)</td><td>re-export of core</td><td>re-export of core</td><td>own impl (style stringify)</td></tr>
-      <tr><td><code>useSyncExternalStore</code></td><td>re-export from <code>react</code></td><td>own impl</td><td>own impl (<code>.svelte.ts</code>)</td><td>own impl</td><td>own impl (wraps <code>preact/compat</code>)</td><td>n/a (uses <code>subscribe</code>/<code>publish</code> instead)</td></tr>
-      <tr><td><code>Portal</code> / <code>portal</code></td><td>yes (<code>portal.tsx</code>)</td><td>no</td><td>yes (Svelte action, <code>portal.ts</code>)</td><td>no (not present in <code>src/</code>)</td><td>declared in <code>index.ts</code> but no <code>portal.tsx</code> file exists in <code>src/</code></td><td>no</td></tr>
-      <tr><td><code>reflect</code></td><td>no</td><td>no</td><td>yes (<code>reflect.ts</code>, Proxy that rebinds methods each access)</td><td>no</td><td>no</td><td>no</td></tr>
-      <tr><td><code>spreadProps</code></td><td>no (JSX handles spreading)</td><td>no</td><td>no</td><td>no</td><td>no</td><td>yes (<code>spread-props.ts</code>, imperative DOM diffing)</td></tr>
-    </tbody>
-  </table>
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Export</TableHead>
+        <TableHead>react</TableHead>
+        <TableHead>solid</TableHead>
+        <TableHead>svelte</TableHead>
+        <TableHead>vue</TableHead>
+        <TableHead>preact</TableHead>
+        <TableHead>vanilla</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      <TableRow>
+        <TableCell><code>useMachine</code> (or <code>VanillaMachine</code> class)</TableCell>
+        <TableCell>yes</TableCell><TableCell>yes</TableCell><TableCell>yes</TableCell><TableCell>yes</TableCell><TableCell>yes</TableCell>
+        <TableCell><code>VanillaMachine</code></TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>normalizeProps</code></TableCell>
+        <TableCell>yes</TableCell><TableCell>yes</TableCell><TableCell>yes</TableCell><TableCell>yes</TableCell><TableCell>yes</TableCell><TableCell>yes</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>mergeProps</code></TableCell>
+        <TableCell>re-export of <code>@zag-js/core</code></TableCell>
+        <TableCell>own impl (accessor-aware)</TableCell>
+        <TableCell>own impl (class handling + style)</TableCell>
+        <TableCell>re-export of core</TableCell>
+        <TableCell>re-export of core</TableCell>
+        <TableCell>own impl (style stringify)</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>useSyncExternalStore</code></TableCell>
+        <TableCell>re-export from <code>react</code></TableCell>
+        <TableCell>own impl</TableCell>
+        <TableCell>own impl (<code>.svelte.ts</code>)</TableCell>
+        <TableCell>own impl</TableCell>
+        <TableCell>own impl (wraps <code>preact/compat</code>)</TableCell>
+        <TableCell>n/a (uses <code>subscribe</code>/<code>publish</code> instead)</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>Portal</code> / <code>portal</code></TableCell>
+        <TableCell>yes (<code>portal.tsx</code>)</TableCell>
+        <TableCell>no</TableCell>
+        <TableCell>yes (Svelte action, <code>portal.ts</code>)</TableCell>
+        <TableCell>no (not present in <code>src/</code>)</TableCell>
+        <TableCell>declared in <code>index.ts</code> but no <code>portal.tsx</code> file exists in <code>src/</code></TableCell>
+        <TableCell>no</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>reflect</code></TableCell>
+        <TableCell>no</TableCell><TableCell>no</TableCell>
+        <TableCell>yes (<code>reflect.ts</code>, Proxy that rebinds methods each access)</TableCell>
+        <TableCell>no</TableCell><TableCell>no</TableCell><TableCell>no</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>spreadProps</code></TableCell>
+        <TableCell>no (JSX handles spreading)</TableCell>
+        <TableCell>no</TableCell><TableCell>no</TableCell><TableCell>no</TableCell><TableCell>no</TableCell>
+        <TableCell>yes (<code>spread-props.ts</code>, imperative DOM diffing)</TableCell>
+      </TableRow>
+    </TableBody>
+  </Table>
 
   <p>
     Note: preact's <code>packages/frameworks/preact/src/index.ts</code> re-exports
@@ -67,40 +142,66 @@
     <code>packages/core/src/types.ts</code>:
   </p>
 
-  <pre><code>export type Service&lt;T extends MachineSchema&gt; = {
-  getStatus: () =&gt; MachineStatus
-  state: State&lt;T&gt; &amp; {
-    matches: (...values: T["state"][]) =&gt; boolean
-    hasTag: (tag: T["tag"]) =&gt; boolean
-  }
-  context: BindableContext&lt;T&gt;
-  send: (event: EventType&lt;T["event"]&gt;) =&gt; void
-  prop: PropFn&lt;T&gt;
-  scope: Scope
-  computed: ComputedFn&lt;T&gt;
-  refs: BindableRefs&lt;T&gt;
-  event: EventType&lt;T["event"]&gt; &amp; {
-    current: () =&gt; EventType&lt;T["event"]&gt;
-    previous: () =&gt; EventType&lt;T["event"]&gt;
-  }
-}</code></pre>
+  <code-block language="typescript" code=SERVICE_TYPE/>
 
   <p>Field by field, with the core type each must satisfy:</p>
 
-  <table>
-    <thead><tr><th>Field</th><th>Type contract (core/src/types.ts)</th><th>Purpose</th></tr></thead>
-    <tbody>
-      <tr><td><code>state</code></td><td><code>Bindable&lt;T["state"]&gt; &amp; { matches, hasTag }</code></td><td>Current machine state as a bindable cell, plus state-value helpers</td></tr>
-      <tr><td><code>send</code></td><td><code>(event: EventType&lt;T["event"]&gt;) =&gt; void</code></td><td>Dispatch an event into the machine</td></tr>
-      <tr><td><code>context</code></td><td><code>BindableContext&lt;T&gt;</code> — <code>get/set/initial/hash</code> per key</td><td>Controlled/uncontrolled context values (bindables)</td></tr>
-      <tr><td><code>prop</code></td><td><code>PropFn&lt;T&gt;</code> — <code>&lt;K&gt;(key: K) =&gt; T["props"][K]</code></td><td>Read the live, framework-reactive props object by key</td></tr>
-      <tr><td><code>scope</code></td><td><code>Scope</code> — <code>getRootNode/getDoc/getWin/getById/getActiveElement/isActiveElement</code></td><td>DOM environment abstraction (see <code>packages/core/src/scope.ts</code>)</td></tr>
-      <tr><td><code>refs</code></td><td><code>BindableRefs&lt;T&gt;</code> — <code>get/set</code> by key</td><td>Mutable, non-reactive machine-owned refs (e.g. timers, DOM handles)</td></tr>
-      <tr><td><code>computed</code></td><td><code>ComputedFn&lt;T&gt;</code> — <code>&lt;K&gt;(key: K) =&gt; T["computed"][K]</code></td><td>Derived values recomputed on each access from <code>machine.computed</code></td></tr>
-      <tr><td><code>event</code></td><td><code>EventType&lt;T["event"]&gt; &amp; { current, previous }</code></td><td>Last dispatched event plus current/previous accessors</td></tr>
-      <tr><td><code>getStatus</code></td><td><code>() =&gt; MachineStatus</code> (<code>NotStarted | Started | Stopped</code>, an enum in <code>core/src/types.ts</code>)</td><td>Lifecycle status query, used to guard <code>send</code> before start / after stop</td></tr>
-    </tbody>
-  </table>
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Field</TableHead>
+        <TableHead>Type contract (core/src/types.ts)</TableHead>
+        <TableHead>Purpose</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      <TableRow>
+        <TableCell><code>state</code></TableCell>
+        <TableCell><code>Bindable&lt;T["state"]&gt; &amp; { matches, hasTag }</code></TableCell>
+        <TableCell>Current machine state as a bindable cell, plus state-value helpers</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>send</code></TableCell>
+        <TableCell><code>(event: EventType&lt;T["event"]&gt;) =&gt; void</code></TableCell>
+        <TableCell>Dispatch an event into the machine</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>context</code></TableCell>
+        <TableCell><code>BindableContext&lt;T&gt;</code> — <code>get/set/initial/hash</code> per key</TableCell>
+        <TableCell>Controlled/uncontrolled context values (bindables)</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>prop</code></TableCell>
+        <TableCell><code>PropFn&lt;T&gt;</code> — <code>&lt;K&gt;(key: K) =&gt; T["props"][K]</code></TableCell>
+        <TableCell>Read the live, framework-reactive props object by key</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>scope</code></TableCell>
+        <TableCell><code>Scope</code> — <code>getRootNode/getDoc/getWin/getById/getActiveElement/isActiveElement</code></TableCell>
+        <TableCell>DOM environment abstraction (see <code>packages/core/src/scope.ts</code>)</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>refs</code></TableCell>
+        <TableCell><code>BindableRefs&lt;T&gt;</code> — <code>get/set</code> by key</TableCell>
+        <TableCell>Mutable, non-reactive machine-owned refs (e.g. timers, DOM handles)</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>computed</code></TableCell>
+        <TableCell><code>ComputedFn&lt;T&gt;</code> — <code>&lt;K&gt;(key: K) =&gt; T["computed"][K]</code></TableCell>
+        <TableCell>Derived values recomputed on each access from <code>machine.computed</code></TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>event</code></TableCell>
+        <TableCell><code>EventType&lt;T["event"]&gt; &amp; { current, previous }</code></TableCell>
+        <TableCell>Last dispatched event plus current/previous accessors</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>getStatus</code></TableCell>
+        <TableCell><code>() =&gt; MachineStatus</code> (<code>NotStarted | Started | Stopped</code>, an enum in <code>core/src/types.ts</code>)</TableCell>
+        <TableCell>Lifecycle status query, used to guard <code>send</code> before start / after stop</TableCell>
+      </TableRow>
+    </TableBody>
+  </Table>
 
   <p>
     <strong>Flush semantics.</strong> The <code>Machine&lt;T&gt;.context</code> factory receives a

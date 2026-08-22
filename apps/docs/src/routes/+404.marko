@@ -3,6 +3,7 @@
 // gets the site header/footer/theme script like every other page — no
 // separate chrome to maintain here.
 import { COMPONENTS } from "../lib/components-list.ts";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
 <main class="mx-auto flex max-w-2xl flex-1 flex-col items-center justify-center gap-6 px-4 py-24 text-center sm:px-6 lg:px-8">
   <p class="font-mono text-sm text-muted-foreground">404</p>
@@ -14,17 +15,15 @@ import { COMPONENTS } from "../lib/components-list.ts";
   </div>
 
   <div class="flex flex-wrap items-center justify-center gap-3">
-    <a
-      href="/"
-      class="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-    >
-      Back home
+    <a href="/">
+      <Button class="rounded-lg">
+        Back home
+      </Button>
     </a>
-    <a
-      href="/docs"
-      class="inline-flex h-9 items-center justify-center rounded-md border border-border px-4 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-    >
-      Browse the docs
+    <a href="/docs">
+      <Button variant="outline" class="rounded-lg">
+        Browse the docs
+      </Button>
     </a>
   </div>
 

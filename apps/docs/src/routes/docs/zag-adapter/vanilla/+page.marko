@@ -1,3 +1,108 @@
+import "../../../../tags/docs/code-block.marko";
+
+static const SNIPPET_1 = `const store = proxy({ value: initial as T })
+
+return {
+  initial,
+  ref: store,
+  get() {
+    return controlled() ? (props().value as T) : store.value
+  },
+  set(nextValue) {
+    const prev = controlled() ? (props().value as T) : store.value
+    const next = isFunction(nextValue) ? nextValue(prev as T) : nextValue
+    if (!controlled()) store.value = next
+    if (!eq(next, prev)) {
+      props().onChange?.(next, prev)
+    }
+  },
+  ...
+}`;
+
+static const SNIPPET_2 = `// context stores
+if (context) {
+  Object.values(context).forEach((item: any) => {
+    const unsub = subscribe(item.ref, () => this.notify())
+    this.cleanups.push(unsub)
+  })
+}
+
+// state store (after building \`state\`)
+this.cleanups.push(subscribe(this.state.ref, () => this.notify()))`;
+
+static const SNIPPET_3 = `private notify = () => {
+  this.publish()
+}
+
+private publish = () => {
+  this.callTrackers()
+  this.subscriptions.forEach((fn) => fn(this.service))
+}`;
+
+static const SNIPPET_4 = `subscribe = (fn: (service: Service<T>) => void) => {
+  this.subscriptions.push(fn)
+  return () => {
+    const index = this.subscriptions.indexOf(fn)
+    if (index > -1) this.subscriptions.splice(index, 1)
+  }
+}`;
+
+static const SNIPPET_5 = `get service(): Service<T> {
+  return {
+    state: this.getState(),
+    send: this.send,
+    context: this.context,
+    prop: this.prop,
+    scope: this.scope,
+    refs: this.refs,
+    computed: this.computed,
+    event: this.getEvent(),
+    getStatus: () => this.status,
+  } as Service<T>
+}`;
+
+static const SNIPPET_6 = `start() {
+  this.status = MachineStatus.Started
+  this.state.invoke(this.state.initial!, INIT_STATE)
+  this.setupTrackers()
+}
+
+stop() {
+  this.effects.forEach((fn) => fn?.())
+  this.effects.clear()
+  this.transition = null
+  this.action(this.machine.exit)
+  this.cleanups.forEach((unsub) => unsub())
+  this.cleanups = []
+  this.subscriptions = []
+  this.status = MachineStatus.Stopped
+}`;
+
+static const SNIPPET_7 = `track: (deps: any[], fn: any) => {
+  fn.prev = deps.map((dep) => dep())
+  this.trackers.push({ deps, fn })
+},`;
+
+static const SNIPPET_8 = `private callTrackers = () => {
+  this.trackers.forEach(({ deps, fn }) => {
+    const next = deps.map((dep) => dep())
+    if (!isEqual(fn.prev, next)) {
+      fn()
+      fn.prev = next
+    }
+  })
+}`;
+
+static const SNIPPET_9 = `updateProps(newProps) {
+  const prevSource = this.userPropsRef.current
+  this.userPropsRef.current = () => {
+    const prev = runIfFn(prevSource)
+    const next = runIfFn(newProps)
+    return mergeMachineProps(prev, next)
+  }
+  this.notify()
+}`;
+
 <docs-page
   title="The vanilla adapter deep-dive"
   description="Vanilla has no reactive runtime, making it the closest analog to a resumability-constrained target (e.g. Marko). This page documents exactly how it schedules updates, subscribes consumers, and re-applies props to the DOM."
@@ -18,24 +123,7 @@
     <code>packages/frameworks/vanilla/src/bindable.ts</code> backs both <code>state</code> and
     every <code>context</code> key with a <code>@zag-js/store</code> proxy:
   </p>
-  <pre><code>const store = proxy({ value: initial as T })
-
-return {
-  initial,
-  ref: store,
-  get() {
-    return controlled() ? (props().value as T) : store.value
-  },
-  set(nextValue) {
-    const prev = controlled() ? (props().value as T) : store.value
-    const next = isFunction(nextValue) ? nextValue(prev as T) : nextValue
-    if (!controlled()) store.value = next
-    if (!eq(next, prev)) {
-      props().onChange?.(next, prev)
-    }
-  },
-  ...
-}</code></pre>
+  <code-block language="typescript" code=SNIPPET_1/>
   <p>
     Mutating <code>store.value</code> is what triggers downstream notification — the proxy is
     observable via <code>subscribe()</code> from the same package. There is no debouncing or
@@ -50,27 +138,11 @@ return {
     underlying store and the state bindable's store are individually subscribed to a single
     <code>notify</code> callback:
   </p>
-  <pre><code>// context stores
-if (context) {
-  Object.values(context).forEach((item: any) =&gt; {
-    const unsub = subscribe(item.ref, () =&gt; this.notify())
-    this.cleanups.push(unsub)
-  })
-}
-
-// state store (after building `state`)
-this.cleanups.push(subscribe(this.state.ref, () =&gt; this.notify()))</code></pre>
+  <code-block language="typescript" code=SNIPPET_2/>
   <p>
     <code>notify()</code> is a one-line trampoline to <code>publish()</code>:
   </p>
-  <pre><code>private notify = () =&gt; {
-  this.publish()
-}
-
-private publish = () =&gt; {
-  this.callTrackers()
-  this.subscriptions.forEach((fn) =&gt; fn(this.service))
-}</code></pre>
+  <code-block language="typescript" code=SNIPPET_3/>
   <p>
     So the scheduling model is: <strong>every store mutation synchronously fans out to every
     subscriber</strong>, no batching, no microtask deferral, no dedup across multiple mutations in
@@ -86,13 +158,7 @@ private publish = () =&gt; {
     Consumers do not get reactive bindings automatically. They call <code>machine.subscribe(fn)</code>
     (a plain array-based pub/sub, not <code>@zag-js/store</code>'s):
   </p>
-  <pre><code>subscribe = (fn: (service: Service&lt;T&gt;) =&gt; void) =&gt; {
-  this.subscriptions.push(fn)
-  return () =&gt; {
-    const index = this.subscriptions.indexOf(fn)
-    if (index &gt; -1) this.subscriptions.splice(index, 1)
-  }
-}</code></pre>
+  <code-block language="typescript" code=SNIPPET_4/>
   <p>
     Each invocation of <code>fn</code> receives a freshly built <code>this.service</code> getter
     (see below) — there is no diffing of the previous service against the next; it is the
@@ -106,41 +172,14 @@ private publish = () =&gt; {
     (including the one performed by <code>publish()</code> right before calling each
     subscriber) rebuilds the object fresh from current bindable/ref state:
   </p>
-  <pre><code>get service(): Service&lt;T&gt; {
-  return {
-    state: this.getState(),
-    send: this.send,
-    context: this.context,
-    prop: this.prop,
-    scope: this.scope,
-    refs: this.refs,
-    computed: this.computed,
-    event: this.getEvent(),
-    getStatus: () =&gt; this.status,
-  } as Service&lt;T&gt;
-}</code></pre>
+  <code-block language="typescript" code=SNIPPET_5/>
 
   <h2>5. Lifecycle: explicit start/stop, no framework hook</h2>
   <p>
     Every other adapter ties <code>start</code>/<code>stop</code> to a framework mount hook.
     Vanilla exposes them as plain methods the caller must invoke:
   </p>
-  <pre><code>start() {
-  this.status = MachineStatus.Started
-  this.state.invoke(this.state.initial!, INIT_STATE)
-  this.setupTrackers()
-}
-
-stop() {
-  this.effects.forEach((fn) =&gt; fn?.())
-  this.effects.clear()
-  this.transition = null
-  this.action(this.machine.exit)
-  this.cleanups.forEach((unsub) =&gt; unsub())
-  this.cleanups = []
-  this.subscriptions = []
-  this.status = MachineStatus.Stopped
-}</code></pre>
+  <code-block language="typescript" code=SNIPPET_6/>
   <p>
     <code>setupTrackers()</code> just calls <code>this.machine.watch?.(this.getParams())</code> —
     same as every other adapter — but because there's no reactive scheduler, the "watch" pattern
@@ -154,23 +193,12 @@ stop() {
     <code>fn.prev</code> immediately and pushes <code>{ deps, fn }</code> onto
     <code>this.trackers</code>:
   </p>
-  <pre><code>track: (deps: any[], fn: any) =&gt; {
-  fn.prev = deps.map((dep) =&gt; dep())
-  this.trackers.push({ deps, fn })
-},</code></pre>
+  <code-block language="typescript" code=SNIPPET_7/>
   <p>
     Trackers are evaluated inside <code>callTrackers()</code>, called from <em>every</em>
     <code>publish()</code> — i.e. on every state or context mutation, not on a fixed schedule:
   </p>
-  <pre><code>private callTrackers = () =&gt; {
-  this.trackers.forEach(({ deps, fn }) =&gt; {
-    const next = deps.map((dep) =&gt; dep())
-    if (!isEqual(fn.prev, next)) {
-      fn()
-      fn.prev = next
-    }
-  })
-}</code></pre>
+  <code-block language="typescript" code=SNIPPET_8/>
   <p>
     This makes vanilla's tracking O(mutations × trackers) rather than O(renders × trackers) — it
     re-diffs every tracker's dependency array on every single notification, since there is no
@@ -236,15 +264,7 @@ stop() {
     don't blow away unrelated keys, then calls <code>this.notify()</code> to trigger a publish
     pass with the new prop function result.
   </p>
-  <pre><code>updateProps(newProps) {
-  const prevSource = this.userPropsRef.current
-  this.userPropsRef.current = () =&gt; {
-    const prev = runIfFn(prevSource)
-    const next = runIfFn(newProps)
-    return mergeMachineProps(prev, next)
-  }
-  this.notify()
-}</code></pre>
+  <code-block language="typescript" code=SNIPPET_9/>
 
   <h2>Why this matters for a resumability-constrained target</h2>
   <p>

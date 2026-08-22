@@ -4,6 +4,12 @@
 // React-shaped and inert for us".
 import "../../../tags/docs/docs-article.marko";
 import "../../../tags/docs/code-block.marko";
+import Table from "@marko-ui/shadcn/ui/table/table.marko";
+import TableHeader from "@marko-ui/shadcn/ui/table/header.marko";
+import TableBody from "@marko-ui/shadcn/ui/table/body.marko";
+import TableRow from "@marko-ui/shadcn/ui/table/row.marko";
+import TableHead from "@marko-ui/shadcn/ui/table/head.marko";
+import TableCell from "@marko-ui/shadcn/ui/table/cell.marko";
 
 static const TOC = [
   { id: "whats-it-for", label: "What It Is For" },
@@ -89,51 +95,51 @@ bunx marko-ui@latest search @marko-ui -q "menu"`;
 
   <h2 id="tailwind">tailwind</h2>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Field</th>
-        <th>What to set</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><code>tailwind.config</code></td>
-        <td>Leave empty. Tailwind v4 has no JS config file, and marko-ui requires v4.</td>
-      </tr>
-      <tr>
-        <td><code>tailwind.css</code></td>
-        <td>
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Field</TableHead>
+        <TableHead>What to set</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      <TableRow>
+        <TableCell><code>tailwind.config</code></TableCell>
+        <TableCell>Leave empty. Tailwind v4 has no JS config file, and marko-ui requires v4.</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>tailwind.css</code></TableCell>
+        <TableCell>
           Path to the stylesheet holding your theme tokens — <code>src/styles/globals.css</code> in
           the layout the installation guide sets up. The CLI merges <code>cssVars</code> into this
           file.
-        </td>
-      </tr>
-      <tr>
-        <td><code>tailwind.baseColor</code></td>
-        <td>
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>tailwind.baseColor</code></TableCell>
+        <TableCell>
           <code>neutral</code>, <code>zinc</code>, <code>slate</code>, <code>stone</code>, or
           <code>gray</code>. Match whichever theme item you installed. Changing it later does not
           retheme anything already on disk.
-        </td>
-      </tr>
-      <tr>
-        <td><code>tailwind.cssVariables</code></td>
-        <td>
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>tailwind.cssVariables</code></TableCell>
+        <TableCell>
           Must be <code>true</code>. marko-ui components are written entirely against semantic
           tokens; the <code>false</code> path emits literal color utilities and would produce
           components that ignore your theme.
-        </td>
-      </tr>
-      <tr>
-        <td><code>tailwind.prefix</code></td>
-        <td>
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>tailwind.prefix</code></TableCell>
+        <TableCell>
           Leave empty unless you run a prefixed Tailwind setup. Our component source is not
           prefix-aware, so a prefix requires editing the installed files.
-        </td>
-      </tr>
-    </tbody>
-  </table>
+        </TableCell>
+      </TableRow>
+    </TableBody>
+  </Table>
 
   <h2 id="aliases">aliases</h2>
 
@@ -145,36 +151,36 @@ bunx marko-ui@latest search @marko-ui -q "menu"`;
 
   <code-block language="json" filename="tsconfig.json" code=TSCONFIG/>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Alias</th>
-        <th>What lands there</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><code>aliases.ui</code></td>
-        <td>
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Alias</TableHead>
+        <TableHead>What lands there</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      <TableRow>
+        <TableCell><code>aliases.ui</code></TableCell>
+        <TableCell>
           Component directories. <code>dialog.json</code> writes
           <code>&lt;ui&gt;/dialog/dialog.marko</code>. Each component gets its own folder, since
           multi-part components ship several files plus a <code>variants.ts</code>.
-        </td>
-      </tr>
-      <tr>
-        <td><code>aliases.utils</code></td>
-        <td>The <code>cn()</code> helper from <code>utils.json</code>.</td>
-      </tr>
-      <tr>
-        <td><code>aliases.lib</code></td>
-        <td>Other library code. In practice only <code>utils</code> uses it today.</td>
-      </tr>
-      <tr>
-        <td><code>aliases.components</code></td>
-        <td>The parent of <code>ui</code>. Nothing in our registry writes here directly.</td>
-      </tr>
-    </tbody>
-  </table>
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>aliases.utils</code></TableCell>
+        <TableCell>The <code>cn()</code> helper from <code>utils.json</code>.</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>aliases.lib</code></TableCell>
+        <TableCell>Other library code. In practice only <code>utils</code> uses it today.</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>aliases.components</code></TableCell>
+        <TableCell>The parent of <code>ui</code>. Nothing in our registry writes here directly.</TableCell>
+      </TableRow>
+    </TableBody>
+  </Table>
 
   <p>
     <code>aliases.hooks</code> appears in shadcn's schema but has no meaning here — Marko has no
@@ -188,45 +194,45 @@ bunx marko-ui@latest search @marko-ui -q "menu"`;
     time tuning them.
   </p>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Field</th>
-        <th>Why it is inert</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><code>style</code></td>
-        <td>
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Field</TableHead>
+        <TableHead>Why it is inert</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      <TableRow>
+        <TableCell><code>style</code></TableCell>
+        <TableCell>
           Selects between shadcn's React style variants. marko-ui has exactly one implementation of
           each component, so this changes nothing. Leave whatever init wrote.
-        </td>
-      </tr>
-      <tr>
-        <td><code>rsc</code></td>
-        <td>
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>rsc</code></TableCell>
+        <TableCell>
           React Server Components. Set <code>false</code>; it only controls whether a
           <code>"use client"</code> directive is prepended, which is meaningless in a
           <code>.marko</code> file.
-        </td>
-      </tr>
-      <tr>
-        <td><code>tsx</code></td>
-        <td>
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>tsx</code></TableCell>
+        <TableCell>
           Chooses <code>.tsx</code> over <code>.jsx</code> output. Our files ship as
           <code>.marko</code> with explicit targets, so the extension is never derived from this.
-        </td>
-      </tr>
-      <tr>
-        <td><code>iconLibrary</code></td>
-        <td>
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell><code>iconLibrary</code></TableCell>
+        <TableCell>
           Picks a React icon package. Our components inline their SVGs rather than depending on an
           icon library.
-        </td>
-      </tr>
-    </tbody>
-  </table>
+        </TableCell>
+      </TableRow>
+    </TableBody>
+  </Table>
 
   <p>
     This is the tradeoff of reusing someone else's CLI instead of writing our own: a handful of
