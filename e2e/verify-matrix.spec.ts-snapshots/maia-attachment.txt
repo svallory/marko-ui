@@ -1,0 +1,282 @@
+section
+  div
+    div data-slot="attachment-group"
+      div data-slot="attachment" data-state="done"
+        div data-slot="attachment-media"
+          img
+        div data-slot="attachment-content"
+          span data-slot="attachment-title"
+          span data-slot="attachment-description"
+      div data-slot="attachment" data-state="done"
+        div data-slot="attachment-media"
+          img
+        div data-slot="attachment-content"
+          span data-slot="attachment-title"
+          span data-slot="attachment-description"
+      div data-slot="attachment" data-state="done"
+        div data-slot="attachment-media"
+          img
+        div data-slot="attachment-content"
+          span data-slot="attachment-title"
+          span data-slot="attachment-description"
+    div data-slot="attachment" data-state="uploading"
+      div data-slot="attachment-media"
+        svg data-slot="spinner" role="status" aria-label="Loading"
+          path
+      div data-slot="attachment-content"
+        span data-slot="attachment-title"
+        span data-slot="attachment-description"
+      div data-slot="attachment-actions"
+        button data-slot="attachment-action" aria-label="Cancel upload"
+          svg
+            path
+            path
+    div data-slot="attachment" data-state="done"
+      div data-slot="attachment-media"
+        svg
+          path
+          path
+          path
+          path
+      div data-slot="attachment-content"
+        span data-slot="attachment-title"
+        span data-slot="attachment-description"
+      div data-slot="attachment-actions"
+        button data-slot="attachment-action" aria-label="Remove message-renderer.tsx"
+          svg
+            path
+            path
+---
+section
+  div
+    div data-slot="attachment-group"
+      div data-slot="attachment" data-state="done"
+        div data-slot="attachment-media"
+          svg
+            path
+            path
+            path
+            path
+            path
+        div data-slot="attachment-content"
+          span data-slot="attachment-title"
+          span data-slot="attachment-description"
+        div data-slot="attachment-actions"
+          button data-slot="attachment-action" aria-label="Remove briefing-notes.pdf"
+            svg
+              path
+              path
+      div data-slot="attachment" data-state="done"
+        div data-slot="attachment-media"
+          img
+        div data-slot="attachment-content"
+          span data-slot="attachment-title"
+          span data-slot="attachment-description"
+        div data-slot="attachment-actions"
+          button data-slot="attachment-action" aria-label="Remove workspace.png"
+            svg
+              path
+              path
+      div data-slot="attachment" data-state="done"
+        div data-slot="attachment-media"
+          svg
+            path
+            rect
+            path
+            path
+        div data-slot="attachment-content"
+          span data-slot="attachment-title"
+          span data-slot="attachment-description"
+        div data-slot="attachment-actions"
+          button data-slot="attachment-action" aria-label="Remove customers.csv"
+            svg
+              path
+              path
+      div data-slot="attachment" data-state="done"
+        div data-slot="attachment-media"
+          svg
+            path
+            path
+            path
+            path
+        div data-slot="attachment-content"
+          span data-slot="attachment-title"
+          span data-slot="attachment-description"
+        div data-slot="attachment-actions"
+          button data-slot="attachment-action" aria-label="Remove renderer.tsx"
+            svg
+              path
+              path
+---
+section
+  div
+    div data-slot="attachment-group"
+      div data-slot="attachment" data-state="done"
+        div data-slot="attachment-media"
+          img
+        div data-slot="attachment-content"
+          span data-slot="attachment-title"
+          span data-slot="attachment-description"
+        div data-slot="attachment-actions"
+          button data-slot="attachment-action" aria-label="Remove workspace.png"
+            svg
+              path
+              path
+        a data-slot="attachment-trigger" aria-label="Open workspace.png"
+      div data-slot="attachment" data-state="done"
+        div data-slot="attachment-media"
+          img
+        div data-slot="attachment-content"
+          span data-slot="attachment-title"
+          span data-slot="attachment-description"
+        div data-slot="attachment-actions"
+          button data-slot="attachment-action" aria-label="Remove desk-reference.jpg"
+            svg
+              path
+              path
+        a data-slot="attachment-trigger" aria-label="Open desk-reference.jpg"
+      div data-slot="attachment" data-state="done"
+        div data-slot="attachment-media"
+          img
+        div data-slot="attachment-content"
+          span data-slot="attachment-title"
+          span data-slot="attachment-description"
+        div data-slot="attachment-actions"
+          button data-slot="attachment-action" aria-label="Remove office-reference.jpg"
+            svg
+              path
+              path
+        a data-slot="attachment-trigger" aria-label="Open office-reference.jpg"
+---
+section
+  div
+    div data-slot="attachment" data-state="done"
+      div data-slot="attachment-media"
+        svg
+          path
+          path
+          path
+          path
+          path
+      div data-slot="attachment-content"
+        span data-slot="attachment-title"
+        span data-slot="attachment-description"
+    div data-slot="attachment" data-state="done"
+      div data-slot="attachment-media"
+        svg
+          path
+          path
+          path
+          path
+          path
+      div data-slot="attachment-content"
+        span data-slot="attachment-title"
+        span data-slot="attachment-description"
+    div data-slot="attachment" data-state="done"
+      div data-slot="attachment-media"
+        svg
+          path
+          path
+          path
+          path
+          path
+      div data-slot="attachment-content"
+        span data-slot="attachment-title"
+---
+section
+  div
+    div data-slot="attachment" data-state="idle"
+      div data-slot="attachment-media"
+        svg
+          circle
+          path
+      div data-slot="attachment-content"
+        span data-slot="attachment-title"
+        span data-slot="attachment-description"
+      div data-slot="attachment-actions"
+        button data-slot="attachment-action" aria-label="Remove selected-file.pdf"
+          svg
+            path
+            path
+    div data-slot="attachment" data-state="uploading"
+      div data-slot="attachment-media"
+        svg data-slot="spinner" role="status" aria-label="Loading"
+          path
+      div data-slot="attachment-content"
+        span data-slot="attachment-title"
+        span data-slot="attachment-description"
+      div data-slot="attachment-actions"
+        button data-slot="attachment-action" aria-label="Cancel upload"
+          svg
+            path
+            path
+    div data-slot="attachment" data-state="processing"
+      div data-slot="attachment-media"
+        svg
+          path
+          path
+          path
+          path
+          path
+      div data-slot="attachment-content"
+        span data-slot="attachment-title"
+        span data-slot="attachment-description"
+      div data-slot="attachment-actions"
+        button data-slot="attachment-action" aria-label="Remove market-research.pdf"
+          svg
+            path
+            path
+    div data-slot="attachment" data-state="error"
+      div data-slot="attachment-media"
+        svg
+          path
+          path
+          path
+      div data-slot="attachment-content"
+        span data-slot="attachment-title"
+        span data-slot="attachment-description"
+      div data-slot="attachment-actions"
+        button data-slot="attachment-action" aria-label="Retry upload"
+          svg
+            path
+            path
+            path
+            path
+        button data-slot="attachment-action" aria-label="Remove financial-model.xlsx"
+          svg
+            path
+            path
+    div data-slot="attachment" data-state="done"
+      div data-slot="attachment-media"
+        svg
+          path
+      div data-slot="attachment-content"
+        span data-slot="attachment-title"
+        span data-slot="attachment-description"
+      div data-slot="attachment-actions"
+        button data-slot="attachment-action" aria-label="Remove uploaded-report.pdf"
+          svg
+            path
+            path
+---
+section
+  div data-slot="attachment" data-state="done"
+    div data-slot="attachment-media"
+      svg
+        path
+        path
+        circle
+        path
+    div data-slot="attachment-content"
+      span data-slot="attachment-title"
+      span data-slot="attachment-description"
+    div data-slot="attachment-actions"
+      button data-slot="attachment-action" aria-label="Copy link"
+        svg
+          rect
+          path
+      button data-slot="attachment-action" aria-label="Remove research-summary.pdf"
+        svg
+          path
+          path
+    button data-slot="dialog-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>" aria-label="Preview research-summary.pdf"

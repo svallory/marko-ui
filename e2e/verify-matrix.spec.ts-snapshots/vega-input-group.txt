@@ -14,24 +14,17 @@ section
   div data-slot="input-group" role="group"
     input data-slot="input-group-control"
     div data-slot="input-group-addon" role="group"
-      span
----
-section
-  div data-slot="input-group" role="group"
-    div data-slot="input-group-addon" role="group"
-      svg
-        path
-        circle
-    input data-slot="input-group-control"
----
-section
-  div data-slot="input-group" role="group"
-    input data-slot="input-group-control"
-    div data-slot="input-group-addon" role="group"
       button data-slot="button" aria-label="Search"
         svg
           circle
           line
+---
+section
+  div
+    div data-slot="input-group" role="group"
+      textarea data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        button data-slot="button"
 ---
 section
   div data-slot="input-group" role="group"
@@ -50,6 +43,70 @@ section
         path
 ---
 section
+  div
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        button data-slot="dropdown-menu-trigger" data-state="closed" aria-label="More" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+          svg
+            circle
+            circle
+            circle
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        button data-slot="dropdown-menu-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+          svg
+            path
+---
+section
+  div
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        svg
+          circle
+          line
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        svg
+          rect
+          path
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        svg
+          rect
+          line
+      div data-slot="input-group-addon" role="group"
+        svg
+          path
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        svg
+          polygon
+        svg
+          circle
+          line
+          line
+---
+section
+  div data-slot="input-group" role="group"
+    input data-slot="input-group-control"
+    div data-slot="input-group-addon" role="group"
+      span
+---
+section
+  div data-slot="input-group" role="group"
+    div data-slot="input-group-addon" role="group"
+      svg
+        path
+        circle
+    input data-slot="input-group-control"
+---
+section
   div data-slot="input-group" role="group"
     input data-slot="input-group-control" aria-invalid="true"
     div data-slot="input-group-addon" role="group"
@@ -57,6 +114,72 @@ section
         circle
         line
         line
+---
+section
+  div data-slot="input-group" role="group"
+    input data-slot="input-group-control"
+    div data-slot="input-group-addon" role="group"
+      svg
+        circle
+        line
+    div data-slot="input-group-addon" role="group"
+      kbd data-slot="kbd"
+---
+section
+  div
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        svg
+          circle
+          line
+      div data-slot="input-group-addon" role="group"
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        svg data-slot="spinner" role="status" aria-label="Loading"
+          path
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        span
+        svg data-slot="spinner" role="status" aria-label="Loading"
+          path
+    div data-slot="field-group"
+      div data-slot="field" role="group"
+        label data-slot="field-label"
+        div data-slot="input-group" role="group"
+          textarea data-slot="input-group-control"
+          div data-slot="input-group-addon" role="group"
+            span
+            button data-slot="button"
+        p data-slot="field-description"
+---
+section
+  div
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        svg data-slot="spinner" role="status" aria-label="Loading"
+          path
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        svg data-slot="spinner" role="status" aria-label="Loading"
+          path
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        span
+        svg data-slot="spinner" role="status" aria-label="Loading"
+          path
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        svg
+          path
+      div data-slot="input-group-addon" role="group"
+        span
 ---
 section
   div data-slot="input-group" role="group"

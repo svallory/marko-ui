@@ -16,6 +16,19 @@ section
 ---
 section
   div
+    button data-slot="toggle" data-state="off" aria-pressed="false" aria-label="Toggle bookmark"
+      svg
+        path
+---
+section
+  div
     button data-slot="toggle" data-state="off" aria-pressed="false" aria-label="Toggle italic"
     button data-slot="toggle" data-state="off" aria-pressed="false" aria-label="Toggle italic"
     button data-slot="toggle" data-state="off" aria-pressed="false" aria-label="Toggle italic"
+---
+section
+  button data-slot="toggle" data-state="off" aria-pressed="false" aria-label="Toggle italic"
+    svg
+      line
+      line
+      line

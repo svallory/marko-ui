@@ -1,4 +1,36 @@
 section
+  div data-slot="input-otp"
+    input aria-hidden="true"
+    div data-slot="input-otp-group"
+      div data-slot="input-otp-slot"
+        input data-slot="input-otp-input" aria-label="pin code 1 of 6"
+        div
+          div
+      div data-slot="input-otp-slot"
+        input data-slot="input-otp-input" aria-label="pin code 2 of 6"
+        div
+          div
+      div data-slot="input-otp-slot"
+        input data-slot="input-otp-input" aria-label="pin code 3 of 6"
+        div
+          div
+      div data-slot="input-otp-separator"
+        svg
+          path
+      div data-slot="input-otp-slot"
+        input data-slot="input-otp-input" aria-label="pin code 4 of 6"
+        div
+          div
+      div data-slot="input-otp-slot"
+        input data-slot="input-otp-input" aria-label="pin code 5 of 6"
+        div
+          div
+      div data-slot="input-otp-slot"
+        input data-slot="input-otp-input" aria-label="pin code 6 of 6"
+        div
+          div
+---
+section
   div
     div data-slot="input-otp"
       input aria-hidden="true"
@@ -88,6 +120,116 @@ section
           div
 ---
 section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="card-title"
+      div data-slot="card-description"
+        span
+    div data-slot="card-content"
+      div data-slot="field" role="group"
+        div
+          label data-slot="field-label"
+          button data-slot="button"
+            svg
+              path
+              path
+              path
+              path
+        div data-slot="input-otp"
+          input aria-hidden="true"
+          div data-slot="input-otp-group"
+            div data-slot="input-otp-slot"
+              input data-slot="input-otp-input" aria-label="pin code 1 of 6"
+              div
+                div
+            div data-slot="input-otp-slot"
+              input data-slot="input-otp-input" aria-label="pin code 2 of 6"
+              div
+                div
+            div data-slot="input-otp-slot"
+              input data-slot="input-otp-input" aria-label="pin code 3 of 6"
+              div
+                div
+            div data-slot="input-otp-separator"
+              svg
+                path
+            div data-slot="input-otp-slot"
+              input data-slot="input-otp-input" aria-label="pin code 4 of 6"
+              div
+                div
+            div data-slot="input-otp-slot"
+              input data-slot="input-otp-input" aria-label="pin code 5 of 6"
+              div
+                div
+            div data-slot="input-otp-slot"
+              input data-slot="input-otp-input" aria-label="pin code 6 of 6"
+              div
+                div
+        p data-slot="field-description"
+          a
+    div data-slot="card-footer"
+      div data-slot="field" role="group"
+        button data-slot="button"
+        div
+          a
+---
+section
+  div data-slot="input-otp"
+    input aria-hidden="true"
+    div data-slot="input-otp-group"
+      div data-slot="input-otp-slot"
+        input data-slot="input-otp-input" aria-label="pin code 1 of 4"
+        div
+          div
+      div data-slot="input-otp-slot"
+        input data-slot="input-otp-input" aria-label="pin code 2 of 4"
+        div
+          div
+      div data-slot="input-otp-slot"
+        input data-slot="input-otp-input" aria-label="pin code 3 of 4"
+        div
+          div
+      div data-slot="input-otp-slot"
+        input data-slot="input-otp-input" aria-label="pin code 4 of 4"
+        div
+          div
+---
+section
+  div data-slot="input-otp"
+    input aria-hidden="true"
+    div data-slot="input-otp-group"
+      div data-slot="input-otp-slot"
+        input data-slot="input-otp-input" aria-label="pin code 1 of 6" aria-invalid="true"
+        div
+          div
+      div data-slot="input-otp-slot"
+        input data-slot="input-otp-input" aria-label="pin code 2 of 6" aria-invalid="true"
+        div
+          div
+      div data-slot="input-otp-separator"
+        svg
+          path
+      div data-slot="input-otp-slot"
+        input data-slot="input-otp-input" aria-label="pin code 3 of 6" aria-invalid="true"
+        div
+          div
+      div data-slot="input-otp-slot"
+        input data-slot="input-otp-input" aria-label="pin code 4 of 6" aria-invalid="true"
+        div
+          div
+      div data-slot="input-otp-separator"
+        svg
+          path
+      div data-slot="input-otp-slot"
+        input data-slot="input-otp-input" aria-label="pin code 5 of 6" aria-invalid="true"
+        div
+          div
+      div data-slot="input-otp-slot"
+        input data-slot="input-otp-input" aria-label="pin code 6 of 6" aria-invalid="true"
+        div
+          div
+---
+section
   div data-slot="input-otp"
     input aria-hidden="true"
     div data-slot="input-otp-group"
@@ -115,6 +257,68 @@ section
         input data-slot="input-otp-input" aria-label="pin code 6 of 6"
         div
           div
+---
+section
+  div data-slot="field" role="group"
+    label data-slot="field-label"
+    div data-slot="input-otp"
+      input aria-hidden="true"
+      div data-slot="input-otp-group"
+        div data-slot="input-otp-slot"
+          input data-slot="input-otp-input" aria-label="pin code 1 of 6"
+          div
+            div
+        div data-slot="input-otp-slot"
+          input data-slot="input-otp-input" aria-label="pin code 2 of 6"
+          div
+            div
+        div data-slot="input-otp-slot"
+          input data-slot="input-otp-input" aria-label="pin code 3 of 6"
+          div
+            div
+        div data-slot="input-otp-slot"
+          input data-slot="input-otp-input" aria-label="pin code 4 of 6"
+          div
+            div
+        div data-slot="input-otp-slot"
+          input data-slot="input-otp-input" aria-label="pin code 5 of 6"
+          div
+            div
+        div data-slot="input-otp-slot"
+          input data-slot="input-otp-input" aria-label="pin code 6 of 6"
+          div
+            div
+---
+section
+  div data-slot="field" role="group"
+    label data-slot="field-label"
+    div data-slot="input-otp"
+      input aria-hidden="true"
+      div data-slot="input-otp-group"
+        div data-slot="input-otp-slot"
+          input data-slot="input-otp-input" aria-label="pin code 1 of 6"
+          div
+            div
+        div data-slot="input-otp-slot"
+          input data-slot="input-otp-input" aria-label="pin code 2 of 6"
+          div
+            div
+        div data-slot="input-otp-slot"
+          input data-slot="input-otp-input" aria-label="pin code 3 of 6"
+          div
+            div
+        div data-slot="input-otp-slot"
+          input data-slot="input-otp-input" aria-label="pin code 4 of 6"
+          div
+            div
+        div data-slot="input-otp-slot"
+          input data-slot="input-otp-input" aria-label="pin code 5 of 6"
+          div
+            div
+        div data-slot="input-otp-slot"
+          input data-slot="input-otp-input" aria-label="pin code 6 of 6"
+          div
+            div
 ---
 section
   div data-slot="input-otp"

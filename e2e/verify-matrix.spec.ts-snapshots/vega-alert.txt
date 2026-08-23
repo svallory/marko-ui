@@ -1,5 +1,29 @@
 section
   div data-slot="alert" role="alert"
+    div data-slot="alert-title"
+    div data-slot="alert-description"
+    div data-slot="alert-action"
+      button data-slot="button"
+---
+section
+  div data-slot="alert" role="alert"
+    svg
+      circle
+      path
+    div data-slot="alert-title"
+    div data-slot="alert-description"
+---
+section
+  div data-slot="alert" role="alert"
+    svg
+      path
+      path
+      path
+    div data-slot="alert-title"
+    div data-slot="alert-description"
+---
+section
+  div data-slot="alert" role="alert"
     svg
       path
       line
@@ -17,6 +41,22 @@ section
     div data-slot="alert-description"
       p
       p
+---
+section
+  div
+    div data-slot="alert" role="alert"
+      svg
+        circle
+        path
+      div data-slot="alert-title"
+      div data-slot="alert-description"
+    div data-slot="alert" role="alert"
+      svg
+        circle
+        path
+        path
+      div data-slot="alert-title"
+      div data-slot="alert-description"
 ---
 section
   div data-slot="alert" role="alert"

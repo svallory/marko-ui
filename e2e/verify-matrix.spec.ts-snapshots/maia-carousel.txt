@@ -1,4 +1,49 @@
 section
+  div
+    div data-slot="carousel" role="region" aria-roledescription="carousel"
+      div data-slot="carousel-item-group" aria-live="polite"
+        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 5"
+          div
+            span
+        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 5" aria-hidden="true"
+          div
+            span
+        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 5" aria-hidden="true"
+          div
+            span
+        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="4 of 5" aria-hidden="true"
+          div
+            span
+        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true"
+          div
+            span
+      button data-slot="carousel-prev" aria-label="Previous slide" aria-controls="<id>"
+        svg
+          path
+        span
+      button data-slot="carousel-next" aria-label="Next slide" aria-controls="<id>"
+        svg
+          path
+        span
+      div data-slot="carousel-indicator-group"
+        button data-slot="carousel-indicator" aria-label="Go to slide 1"
+          span aria-hidden="true"
+          span
+        button data-slot="carousel-indicator" aria-label="Go to slide 2"
+          span aria-hidden="true"
+          span
+        button data-slot="carousel-indicator" aria-label="Go to slide 3"
+          span aria-hidden="true"
+          span
+        button data-slot="carousel-indicator" aria-label="Go to slide 4"
+          span aria-hidden="true"
+          span
+        button data-slot="carousel-indicator" aria-label="Go to slide 5"
+          span aria-hidden="true"
+          span
+    div
+---
+section
   div data-slot="carousel" role="region" aria-roledescription="carousel"
     div data-slot="carousel-item-group" aria-live="polite"
       div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 3"
@@ -178,6 +223,103 @@ section
       div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true"
         div
           span
+    button data-slot="carousel-prev" aria-label="Previous slide" aria-controls="<id>"
+      svg
+        path
+      span
+    button data-slot="carousel-next" aria-label="Next slide" aria-controls="<id>"
+      svg
+        path
+      span
+    div data-slot="carousel-indicator-group"
+      button data-slot="carousel-indicator" aria-label="Go to slide 1"
+        span aria-hidden="true"
+        span
+      button data-slot="carousel-indicator" aria-label="Go to slide 2"
+        span aria-hidden="true"
+        span
+      button data-slot="carousel-indicator" aria-label="Go to slide 3"
+        span aria-hidden="true"
+        span
+      button data-slot="carousel-indicator" aria-label="Go to slide 4"
+        span aria-hidden="true"
+        span
+      button data-slot="carousel-indicator" aria-label="Go to slide 5"
+        span aria-hidden="true"
+        span
+---
+section
+  div
+    div data-slot="carousel" role="region" aria-roledescription="carousel"
+      div data-slot="carousel-item-group" aria-live="off"
+        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 5"
+          div
+            div
+              span
+        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 5" aria-hidden="true"
+          div
+            div
+              span
+        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 5" aria-hidden="true"
+          div
+            div
+              span
+        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="4 of 5" aria-hidden="true"
+          div
+            div
+              span
+        div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true"
+          div
+            div
+              span
+      button data-slot="carousel-prev" aria-label="Previous slide" aria-controls="<id>"
+        svg
+          path
+        span
+      button data-slot="carousel-next" aria-label="Next slide" aria-controls="<id>"
+        svg
+          path
+        span
+      div data-slot="carousel-indicator-group"
+        button data-slot="carousel-indicator" aria-label="Go to slide 1"
+          span aria-hidden="true"
+          span
+        button data-slot="carousel-indicator" aria-label="Go to slide 2"
+          span aria-hidden="true"
+          span
+        button data-slot="carousel-indicator" aria-label="Go to slide 3"
+          span aria-hidden="true"
+          span
+        button data-slot="carousel-indicator" aria-label="Go to slide 4"
+          span aria-hidden="true"
+          span
+        button data-slot="carousel-indicator" aria-label="Go to slide 5"
+          span aria-hidden="true"
+          span
+---
+section
+  div data-slot="carousel" role="region" aria-roledescription="carousel"
+    div data-slot="carousel-item-group" aria-live="polite"
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="1 of 5"
+        div
+          div
+            span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="2 of 5" aria-hidden="true"
+        div
+          div
+            span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="3 of 5" aria-hidden="true"
+        div
+          div
+            span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="4 of 5" aria-hidden="true"
+        div
+          div
+            span
+      div data-slot="carousel-item" role="group" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true"
+        div
+          div
+            span
     button data-slot="carousel-prev" aria-label="Previous slide" aria-controls="<id>"
       svg
         path

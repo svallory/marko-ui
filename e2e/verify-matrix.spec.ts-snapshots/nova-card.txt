@@ -49,9 +49,107 @@ section
     div data-slot="card-header"
       div data-slot="card-title"
       div data-slot="card-description"
+    div data-slot="card-content"
+      div
+        p
+        p
+        p
+        p
+    div data-slot="card-footer"
+      button data-slot="button"
+      button data-slot="button"
+---
+section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="card-title"
+      div data-slot="card-description"
       div data-slot="card-action"
         button data-slot="button"
     div data-slot="card-content"
       p
     div data-slot="card-footer"
       p
+---
+section
+  div data-slot="card"
+    div
+    img
+    div data-slot="card-header"
+      div data-slot="card-action"
+        span data-slot="badge"
+      div data-slot="card-title"
+      div data-slot="card-description"
+    div data-slot="card-footer"
+      button data-slot="button"
+---
+section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="card-title"
+      div data-slot="card-description"
+      div data-slot="card-action"
+        button data-slot="button"
+    div data-slot="card-content"
+      div
+        div
+          label data-slot="label"
+          input data-slot="input"
+        div
+          div
+            label data-slot="label"
+            a
+          input data-slot="input"
+    div data-slot="card-footer"
+      button data-slot="button"
+      button data-slot="button"
+---
+section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="card-title"
+      div data-slot="card-description"
+    div data-slot="card-content"
+      ul
+        li
+          svg
+            path
+          span
+        li
+          svg
+            path
+          span
+        li
+          svg
+            path
+          span
+    div data-slot="card-footer"
+      button data-slot="button"
+      button data-slot="button"
+---
+section
+  div
+    div data-slot="toggle-group" role="radiogroup"
+      button data-slot="toggle-group-item" role="radio" data-state="on" aria-checked="true"
+      button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+      button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+      button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+    div data-slot="card"
+      div data-slot="card-header"
+        div data-slot="card-title"
+        div data-slot="card-description"
+        div data-slot="card-action"
+          button data-slot="button"
+      div data-slot="card-content"
+        div
+          div
+            label data-slot="label"
+            input data-slot="input"
+          div
+            div
+              label data-slot="label"
+              a
+            input data-slot="input"
+      div data-slot="card-footer"
+        button data-slot="button"
+        button data-slot="button"

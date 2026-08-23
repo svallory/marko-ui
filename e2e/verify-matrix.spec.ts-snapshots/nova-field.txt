@@ -1,23 +1,74 @@
 section
+  div
+    div data-slot="field-group"
+      fieldset data-slot="field-set"
+        legend data-slot="field-legend"
+        p data-slot="field-description"
+        div data-slot="field-group"
+          div data-slot="field" role="group"
+            label data-slot="checkbox-root" data-state="checked"
+              input aria-labelledby="<id>" aria-invalid="false"
+              span data-slot="checkbox" data-state="checked" aria-hidden="true"
+                span data-slot="checkbox-indicator" data-state="checked"
+                  svg
+                    path
+          div data-slot="field" role="group"
+            label data-slot="checkbox-root" data-state="unchecked"
+              input aria-labelledby="<id>" aria-invalid="false"
+              span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+                span data-slot="checkbox-indicator" data-state="unchecked"
+          div data-slot="field" role="group"
+            label data-slot="checkbox-root" data-state="unchecked"
+              input aria-labelledby="<id>" aria-invalid="false"
+              span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+                span data-slot="checkbox-indicator" data-state="unchecked"
+          div data-slot="field" role="group"
+            label data-slot="checkbox-root" data-state="unchecked"
+              input aria-labelledby="<id>" aria-invalid="false"
+              span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+                span data-slot="checkbox-indicator" data-state="unchecked"
+      div data-slot="field-separator"
+        div data-slot="separator" role="none"
+      div data-slot="field" role="group"
+        label data-slot="checkbox-root" data-state="checked"
+          input aria-labelledby="<id>" aria-invalid="false"
+          span data-slot="checkbox" data-state="checked" aria-hidden="true"
+            span data-slot="checkbox-indicator" data-state="checked"
+              svg
+                path
+        div data-slot="field-content"
+          label data-slot="field-label"
+          p data-slot="field-description"
+---
+section
+  div
+    div data-slot="field-group"
+      fieldset data-slot="field-set"
+        label data-slot="field-label"
+        p data-slot="field-description"
+        div data-slot="radio-group" role="radiogroup" aria-labelledby="<id>" aria-orientation="vertical"
+          label data-slot="radio-group-item-wrapper" data-state="checked"
+            span data-slot="radio-group-item" data-state="checked" aria-hidden="true"
+              span data-slot="radio-group-indicator"
+                span
+            input aria-labelledby="<id>"
+            span data-slot="radio-group-item-text" data-state="checked"
+              div data-slot="field-content"
+                div data-slot="field-label"
+                p data-slot="field-description"
+          label data-slot="radio-group-item-wrapper" data-state="unchecked"
+            span data-slot="radio-group-item" data-state="unchecked" aria-hidden="true"
+            input aria-labelledby="<id>"
+            span data-slot="radio-group-item-text" data-state="unchecked"
+              div data-slot="field-content"
+                div data-slot="field-label"
+                p data-slot="field-description"
+---
+section
   div data-slot="field" role="group"
     label data-slot="field-label"
     input data-slot="input"
     p data-slot="field-description"
----
-section
-  fieldset data-slot="field-set"
-    legend data-slot="field-legend"
-    p data-slot="field-description"
-    div data-slot="field-group"
-      div data-slot="field" role="group"
-        label data-slot="field-label"
-        input data-slot="input"
-      div data-slot="field-separator"
-        div data-slot="separator" role="none"
-        span data-slot="field-separator-content"
-      div data-slot="field" role="group"
-        label data-slot="field-label"
-        input data-slot="input"
 ---
 section
   div
@@ -37,11 +88,71 @@ section
             input data-slot="input"
 ---
 section
+  fieldset data-slot="field-set"
+    legend data-slot="field-legend"
+    p data-slot="field-description"
+    div data-slot="field-group"
+      div data-slot="field" role="group"
+        label data-slot="field-label"
+        input data-slot="input"
+      div data-slot="field-separator"
+        div data-slot="separator" role="none"
+        span data-slot="field-separator-content"
+      div data-slot="field" role="group"
+        label data-slot="field-label"
+        input data-slot="input"
+---
+section
+  div
+    div data-slot="field-group"
+      fieldset data-slot="field-set"
+        label data-slot="field-label"
+        p data-slot="field-description"
+        div data-slot="checkbox-group"
+          div data-slot="field" role="group"
+            label data-slot="checkbox-root" data-state="checked"
+              input aria-labelledby="<id>" aria-invalid="false"
+              span data-slot="checkbox" data-state="checked" aria-hidden="true"
+                span data-slot="checkbox-indicator" data-state="checked"
+                  svg
+                    path
+      div data-slot="field-separator"
+        div data-slot="separator" role="none"
+      fieldset data-slot="field-set"
+        label data-slot="field-label"
+        p data-slot="field-description"
+          a
+        div data-slot="checkbox-group"
+          div data-slot="field" role="group"
+            label data-slot="checkbox-root" data-state="unchecked"
+              input aria-labelledby="<id>" aria-invalid="false"
+              span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+                span data-slot="checkbox-indicator" data-state="unchecked"
+          div data-slot="field" role="group"
+            label data-slot="checkbox-root" data-state="unchecked"
+              input aria-labelledby="<id>" aria-invalid="false"
+              span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+                span data-slot="checkbox-indicator" data-state="unchecked"
+---
+section
   div data-slot="field" role="group"
     div data-slot="field-content"
       div data-slot="field-label"
       p data-slot="field-description"
     input data-slot="input" aria-label="Email notifications"
+---
+section
+  div
+    fieldset data-slot="field-set"
+      div data-slot="field-group"
+        div data-slot="field" role="group"
+          label data-slot="field-label"
+          input data-slot="input"
+          p data-slot="field-description"
+        div data-slot="field" role="group"
+          label data-slot="field-label"
+          p data-slot="field-description"
+          input data-slot="input"
 ---
 section
   div data-slot="field" role="group"
@@ -57,6 +168,106 @@ section
       ul
         li
         li
+---
+section
+  div
+    fieldset data-slot="field-set"
+      label data-slot="field-label"
+      p data-slot="field-description"
+      div data-slot="radio-group" role="radiogroup" aria-labelledby="<id>" aria-orientation="vertical"
+        label data-slot="radio-group-item-wrapper" data-state="checked"
+          span data-slot="radio-group-item" data-state="checked" aria-hidden="true"
+            span data-slot="radio-group-indicator"
+              span
+          input aria-labelledby="<id>"
+          span data-slot="radio-group-item-text" data-state="checked"
+        label data-slot="radio-group-item-wrapper" data-state="unchecked"
+          span data-slot="radio-group-item" data-state="unchecked" aria-hidden="true"
+          input aria-labelledby="<id>"
+          span data-slot="radio-group-item-text" data-state="unchecked"
+        label data-slot="radio-group-item-wrapper" data-state="unchecked"
+          span data-slot="radio-group-item" data-state="unchecked" aria-hidden="true"
+          input aria-labelledby="<id>"
+          span data-slot="radio-group-item-text" data-state="unchecked"
+---
+section
+  div
+    form
+      fieldset data-slot="field-set"
+        legend data-slot="field-legend"
+        p data-slot="field-description"
+        div data-slot="field-separator"
+          div data-slot="separator" role="none"
+        div data-slot="field-group"
+          div data-slot="field" role="group"
+            div data-slot="field-content"
+              label data-slot="field-label"
+              p data-slot="field-description"
+            input data-slot="input"
+          div data-slot="field-separator"
+            div data-slot="separator" role="none"
+          div data-slot="field" role="group"
+            div data-slot="field-content"
+              label data-slot="field-label"
+              p data-slot="field-description"
+            textarea data-slot="textarea"
+          div data-slot="field-separator"
+            div data-slot="separator" role="none"
+          div data-slot="field" role="group"
+            button data-slot="button"
+            button data-slot="button"
+---
+section
+  div
+    form
+      div data-slot="field-group"
+        fieldset data-slot="field-set"
+          legend data-slot="field-legend"
+          p data-slot="field-description"
+          div data-slot="field-group"
+            div data-slot="field" role="group"
+              label data-slot="field-label"
+              input data-slot="input"
+            div data-slot="field" role="group"
+              label data-slot="field-label"
+              input data-slot="input"
+              p data-slot="field-description"
+        div data-slot="field-separator"
+          div data-slot="separator" role="none"
+        fieldset data-slot="field-set"
+          legend data-slot="field-legend"
+          p data-slot="field-description"
+          div data-slot="field-group"
+            div data-slot="field" role="group"
+              label data-slot="checkbox-root" data-state="checked"
+                input aria-labelledby="<id>" aria-invalid="false"
+                span data-slot="checkbox" data-state="checked" aria-hidden="true"
+                  span data-slot="checkbox-indicator" data-state="checked"
+                    svg
+                      path
+        div data-slot="field" role="group"
+          button data-slot="button"
+          button data-slot="button"
+---
+section
+  div data-slot="field" role="group"
+    div data-slot="select"
+      label data-slot="select-field-label"
+      div data-slot="select-control" data-state="closed"
+        button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+          span data-slot="select-value"
+          svg data-state="closed" aria-hidden="true"
+            path
+      select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+        option
+        option
+        option
+        option
+        option
+        option
+        option
+        option
+    p data-slot="field-description"
 ---
 section
   form
@@ -76,3 +287,39 @@ section
           input data-slot="input" aria-describedby="<id>"
           p data-slot="field-description"
         button data-slot="button"
+---
+section
+  div
+    div data-slot="field" role="group"
+      div data-slot="field-label"
+      p data-slot="field-description"
+        span
+        span
+      div data-slot="slider"
+        div data-slot="slider-control"
+          div data-slot="slider-track"
+            div data-slot="slider-range"
+          input
+          div data-slot="slider-thumb" role="slider" aria-label="Minimum price" aria-labelledby="<id>" aria-orientation="horizontal" aria-valuemax="800" aria-valuemin="0" aria-valuenow="200"
+          input
+          div data-slot="slider-thumb" role="slider" aria-label="Maximum price" aria-labelledby="<id>" aria-orientation="horizontal" aria-valuemax="1000" aria-valuemin="200" aria-valuenow="800"
+---
+section
+  div
+    div data-slot="field" role="group"
+      div data-slot="field-content"
+        label data-slot="field-label"
+        p data-slot="field-description"
+      label data-slot="switch-label" data-state="unchecked"
+        span data-slot="switch" data-state="unchecked" aria-hidden="true"
+          span data-slot="switch-thumb" data-state="unchecked" aria-hidden="true"
+        input
+---
+section
+  div
+    fieldset data-slot="field-set"
+      div data-slot="field-group"
+        div data-slot="field" role="group"
+          label data-slot="field-label"
+          textarea data-slot="textarea"
+          p data-slot="field-description"

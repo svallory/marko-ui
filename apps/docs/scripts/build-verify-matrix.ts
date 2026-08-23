@@ -126,6 +126,23 @@ function importedRegistryFiles(source: string): Array<{ component: string; file:
   return results;
 }
 
+/**
+ * Basenames (no extension) of sibling demo files a demo imports by relative
+ * path — e.g. `collapsible-file-tree.marko` importing
+ * `./collapsible-file-tree-item.marko` — a helper component that isn't
+ * itself a top-level demo (not listed in docs.ts's examples[]) but must
+ * still exist alongside the copied demo file for that import to resolve.
+ * Transitively resolved by the caller so a helper that itself imports
+ * another helper still gets copied.
+ */
+function importedSiblingDemos(source: string): string[] {
+  const results: string[] = [];
+  for (const match of source.matchAll(/from\s+["']\.\/([^"'\s]+)\.marko["']/g)) {
+    results.push(match[1]!);
+  }
+  return results;
+}
+
 interface DemoRecord {
   componentName: string;
   exampleName: string;
@@ -154,14 +171,33 @@ async function main() {
   await rm(ROUTES_OUT_DIR, { recursive: true, force: true });
 
   // Discover demo files per component up front (shared across all styles).
+  //
+  // The authoritative demo list is docs.ts's `examples[].name` — NOT every
+  // .marko file in the directory. A component's demo directory can contain
+  // helper/leaf .marko files that a top-level demo imports and renders with
+  // required props (e.g. collapsible/collapsible-file-tree-item.marko, a
+  // recursive tree-node renderer that collapsible-file-tree.marko drives —
+  // see docs.ts's own example list, which omits it). Globbing every
+  // "*.marko" file and treating each as its own standalone demo section (as
+  // an earlier version of this script did) renders those helpers directly
+  // with no props at all, crashing SSR on `input.item.items` reads of
+  // undefined `input.item` — and Marko's dynamic-tag SSR render path has no
+  // per-request try/catch, so that uncaught throw takes the whole Node
+  // process down, failing every route after it (not just the broken one).
+  // The real docs pages never hit this because they render demos through
+  // demo-renderer.marko's static if-chain, keyed by docs.ts's example list —
+  // helper files get an unused, never-invoked branch there instead of their
+  // own section. Mirror that by reading docs.ts here too.
   const demosByComponent = new Map<string, DemoRecord[]>();
   for (const componentName of components) {
     const componentDir = join(DEMOS_DIR, componentName);
-    const files = await readdir(componentDir);
-    const exampleNames = files
-      .filter((file) => file.endsWith(".marko"))
-      .map((file) => file.slice(0, -".marko".length))
-      .sort();
+    const docsPath = join(componentDir, "docs.ts");
+    if (!existsSync(docsPath)) {
+      console.warn(`SKIP src/demos/${componentName}/ — no docs.ts yet (in progress?)`);
+      continue;
+    }
+    const { docs } = (await import(docsPath)) as { docs: { examples: Array<{ name: string }> } };
+    const exampleNames = docs.examples.map((example) => example.name).sort();
     demosByComponent.set(
       componentName,
       exampleNames.map((exampleName) => ({
@@ -260,6 +296,28 @@ async function main() {
         await mkdir(tagDir, { recursive: true });
         await writeFile(join(tagDir, `${demo.exampleName}.marko`), GENERATED_HEADER + rewritten);
         demosGenerated++;
+
+        // Transitively copy relative-sibling helper files (e.g.
+        // collapsible-file-tree-item.marko) so the demo's own relative
+        // import resolves — these are NOT top-level demos and get no
+        // <section> of their own (see the demosByComponent docs.ts-driven
+        // discovery above for why: rendering them standalone with no props
+        // crashes SSR).
+        const copiedHelpers = new Set<string>([demo.exampleName]);
+        const helperQueue = importedSiblingDemos(source);
+        while (helperQueue.length !== 0) {
+          const helperName = helperQueue.shift()!;
+          if (copiedHelpers.has(helperName)) continue;
+          copiedHelpers.add(helperName);
+          const helperSourcePath = join(DEMOS_DIR, componentName, `${helperName}.marko`);
+          if (!existsSync(helperSourcePath)) continue;
+          const helperSource = await readFile(helperSourcePath, "utf8");
+          await writeFile(
+            join(tagDir, `${helperName}.marko`),
+            GENERATED_HEADER + rewriteImports(helperSource, style),
+          );
+          helperQueue.push(...importedSiblingDemos(helperSource));
+        }
 
         const identifier = toIdentifier(componentName, demo.exampleName);
         tagImportLines.push(`import ${identifier} from "../../../../tags/verify/${style}/${componentName}/${demo.exampleName}.marko";`);

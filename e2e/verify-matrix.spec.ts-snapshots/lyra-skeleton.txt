@@ -14,6 +14,30 @@ section
 ---
 section
   div
+    div data-slot="skeleton"
+    div
+      div data-slot="skeleton"
+      div data-slot="skeleton"
+---
+section
+  div
+    div
+      div data-slot="skeleton"
+      div data-slot="skeleton"
+    div
+      div data-slot="skeleton"
+      div data-slot="skeleton"
+    div data-slot="skeleton"
+---
+section
+  div
+    div data-slot="skeleton"
+    div
+      div data-slot="skeleton"
+      div data-slot="skeleton"
+---
+section
+  div
     div
       div data-slot="skeleton"
       div data-slot="skeleton"

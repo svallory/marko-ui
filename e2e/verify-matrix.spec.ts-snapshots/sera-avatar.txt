@@ -1,5 +1,25 @@
 section
   span data-slot="avatar"
+    img data-slot="avatar-image" data-state="visible"
+    span data-slot="avatar-fallback" data-state="hidden"
+    span data-slot="avatar-badge"
+---
+section
+  span data-slot="avatar"
+    img data-slot="avatar-image" data-state="visible"
+    span data-slot="avatar-fallback" data-state="hidden"
+    span data-slot="avatar-badge"
+      svg
+        path
+        path
+---
+section
+  span data-slot="avatar"
+    img data-slot="avatar-image" data-state="visible"
+    span data-slot="avatar-fallback" data-state="hidden"
+---
+section
+  span data-slot="avatar"
     img data-slot="avatar-image" data-state="hidden"
     span data-slot="avatar-fallback" data-state="visible"
 ---
@@ -30,5 +50,85 @@ section
       span data-slot="avatar-fallback" data-state="visible"
 ---
 section
+  button data-slot="dropdown-menu-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+---
+section
   span data-slot="avatar"
     span data-slot="avatar-fallback" data-state="visible"
+---
+section
+  div data-slot="avatar-group"
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+---
+section
+  div data-slot="avatar-group"
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+    div data-slot="avatar-group-count"
+---
+section
+  div data-slot="avatar-group"
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+    div data-slot="avatar-group-count"
+      svg
+        path
+        path
+---
+section
+  div
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+      span data-slot="avatar-badge"
+    div data-slot="avatar-group"
+      span data-slot="avatar"
+        img data-slot="avatar-image" data-state="visible"
+        span data-slot="avatar-fallback" data-state="hidden"
+      span data-slot="avatar"
+        img data-slot="avatar-image" data-state="visible"
+        span data-slot="avatar-fallback" data-state="hidden"
+      span data-slot="avatar"
+        img data-slot="avatar-image" data-state="visible"
+        span data-slot="avatar-fallback" data-state="hidden"
+      div data-slot="avatar-group-count"
+---
+section
+  div
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"
+    span data-slot="avatar"
+      img data-slot="avatar-image" data-state="visible"
+      span data-slot="avatar-fallback" data-state="hidden"

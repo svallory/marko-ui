@@ -5,6 +5,42 @@ section
 ---
 section
   div data-slot="button-group" role="group"
+    button data-slot="button"
+    button data-slot="dropdown-menu-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false" aria-label="More Options"
+      svg
+        path
+---
+section
+  div data-slot="button-group" role="group"
+    input data-slot="input"
+    button data-slot="button" aria-label="Search"
+      svg
+        path
+        circle
+---
+section
+  div data-slot="button-group" role="group"
+    div data-slot="button-group" role="group"
+      button data-slot="button"
+        svg
+          path
+          path
+    div data-slot="button-group" role="group"
+      div data-slot="input-group" role="group"
+        input data-slot="input-group-control"
+        div data-slot="input-group-addon" role="group"
+          span data-slot="tooltip"
+            button data-slot="tooltip-trigger" data-state="closed"
+              svg
+                path
+                path
+                path
+                path
+                path
+                path
+---
+section
+  div data-slot="button-group" role="group"
     div data-slot="button-group" role="group"
       button data-slot="button"
       button data-slot="button"
@@ -20,6 +56,61 @@ section
     button data-slot="button"
     button data-slot="button"
     button data-slot="button"
+---
+section
+  div data-slot="button-group" role="group"
+    button data-slot="button"
+      svg
+        path
+        rect
+        path
+        path
+        path
+        path
+    div data-slot="popover"
+      button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>" aria-label="Open Popover"
+        svg
+          path
+---
+section
+  div
+    div data-slot="button-group" role="group"
+      div data-slot="button-group" role="group"
+        button data-slot="button" aria-label="Go Back"
+          svg
+            path
+            path
+      div data-slot="button-group" role="group"
+        button data-slot="button"
+        button data-slot="button"
+      div data-slot="button-group" role="group"
+        button data-slot="button"
+        button data-slot="dropdown-menu-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false" aria-label="More Options"
+          svg
+            circle
+            circle
+            circle
+---
+section
+  div data-slot="button-group" role="group"
+    div data-slot="button-group" role="group"
+      div data-slot="select"
+        label data-slot="select-field-label"
+        div data-slot="select-control" data-state="closed"
+          button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+            span data-slot="select-value"
+            svg data-state="closed" aria-hidden="true"
+              path
+        select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+          option
+          option
+          option
+      input data-slot="input"
+    div data-slot="button-group" role="group"
+      button data-slot="button" aria-label="Send"
+        svg
+          path
+          path
 ---
 section
   div data-slot="button-group" role="group"

@@ -1,4 +1,29 @@
 section
+  div data-slot="field-group"
+    div data-slot="field" role="group"
+      div data-slot="field-content"
+        label data-slot="field-label"
+        p data-slot="field-description"
+      label data-slot="switch-label" data-state="checked"
+        span data-slot="switch" data-state="checked" aria-hidden="true"
+          span data-slot="switch-thumb" data-state="checked" aria-hidden="true"
+        input
+    div data-slot="field" role="group"
+      div data-slot="select"
+        label data-slot="select-field-label"
+        div data-slot="select-control" data-state="closed"
+          button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+            span data-slot="select-value"
+            svg data-state="closed" aria-hidden="true"
+              path
+        select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+          option
+          option
+          option
+          option
+          option
+---
+section
   div data-slot="select"
     label data-slot="select-field-label"
     div data-slot="select-control" data-state="closed"
@@ -84,6 +109,93 @@ section
         svg data-state="closed" aria-hidden="true"
           path
     select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+      option
+      option
+      option
+      option
+      option
+---
+section
+  div data-slot="select"
+    label data-slot="select-field-label"
+    div data-slot="select-control" data-state="closed"
+      button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+        span data-slot="select-value"
+        svg data-state="closed" aria-hidden="true"
+          path
+    select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+      option
+      option
+      option
+      option
+      option
+      option
+---
+section
+  div data-slot="field" role="group"
+    label data-slot="field-label"
+    div data-slot="select" aria-invalid="true"
+      label data-slot="select-field-label"
+      div data-slot="select-control" data-state="closed"
+        button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+          span data-slot="select-value"
+          svg data-state="closed" aria-hidden="true"
+            path
+      select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+        option
+        option
+        option
+    div data-slot="field-error" role="alert"
+---
+section
+  div data-slot="select"
+    label data-slot="select-field-label"
+    div data-slot="select-control" data-state="closed"
+      button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+        span data-slot="select-value"
+        svg data-state="closed" aria-hidden="true"
+          path
+    select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+---
+section
+  div data-slot="select"
+    label data-slot="select-field-label"
+    div data-slot="select-control" data-state="closed"
+      button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+        span data-slot="select-value"
+        svg data-state="closed" aria-hidden="true"
+          path
+    select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+      option
+      option
       option
       option
       option

@@ -1,0 +1,126 @@
+section
+  div
+    div data-slot="marker"
+      span data-slot="marker-icon" aria-hidden="true"
+        svg
+          path
+          circle
+          circle
+      span data-slot="marker-content"
+    div data-slot="marker"
+      span data-slot="marker-icon" aria-hidden="true"
+        svg
+          path
+          circle
+      span data-slot="marker-content"
+    div data-slot="marker"
+      span data-slot="marker-icon" aria-hidden="true"
+        svg
+          path
+          path
+          path
+          path
+          path
+      span data-slot="marker-content"
+---
+section
+  div
+    div data-slot="marker"
+      span data-slot="marker-icon" aria-hidden="true"
+        svg
+          path
+          circle
+          circle
+      span data-slot="marker-content"
+    div data-slot="marker" role="status"
+      span data-slot="marker-icon" aria-hidden="true"
+        svg data-slot="spinner" role="status" aria-label="Loading"
+          path
+      span data-slot="marker-content"
+    div data-slot="marker"
+      span data-slot="marker-content"
+    div data-slot="marker"
+      span data-slot="marker-icon" aria-hidden="true"
+        svg
+          path
+          circle
+      span data-slot="marker-content"
+---
+section
+  div
+    div data-slot="marker"
+      span data-slot="marker-icon" aria-hidden="true"
+        svg
+          path
+          circle
+          circle
+      span data-slot="marker-content"
+    div data-slot="marker"
+      span data-slot="marker-icon" aria-hidden="true"
+        svg
+          path
+          circle
+      span data-slot="marker-content"
+    div data-slot="marker"
+      span data-slot="marker-icon" aria-hidden="true"
+        svg
+          path
+          path
+      span data-slot="marker-content"
+---
+section
+  div
+    a
+      span data-slot="marker-icon" aria-hidden="true"
+        svg
+          path
+          circle
+          circle
+      span data-slot="marker-content"
+    button
+      span data-slot="marker-icon" aria-hidden="true"
+        svg
+          path
+          path
+          path
+          path
+      span data-slot="marker-content"
+  div data-slot="toaster" role="region" aria-label="Notifications, bottom-end (alt+T)" aria-live="polite" aria-relevant="additions text" aria-atomic="false"
+---
+section
+  div
+    div data-slot="marker"
+      span data-slot="marker-content"
+    div data-slot="marker"
+      span data-slot="marker-content"
+    div data-slot="marker"
+      span data-slot="marker-content"
+---
+section
+  div
+    div data-slot="marker" role="status"
+      span data-slot="marker-content"
+    div data-slot="marker" role="status"
+      span data-slot="marker-content"
+---
+section
+  div
+    div data-slot="marker" role="status"
+      span data-slot="marker-icon" aria-hidden="true"
+        svg data-slot="spinner" role="status" aria-label="Loading"
+          path
+      span data-slot="marker-content"
+    div data-slot="marker" role="status"
+      span data-slot="marker-icon" aria-hidden="true"
+        svg data-slot="spinner" role="status" aria-label="Loading"
+          path
+      span data-slot="marker-content"
+---
+section
+  div
+    div data-slot="marker"
+      span data-slot="marker-content"
+    div data-slot="marker"
+      span data-slot="marker-content"
+    div data-slot="marker"
+      span data-slot="marker-content"

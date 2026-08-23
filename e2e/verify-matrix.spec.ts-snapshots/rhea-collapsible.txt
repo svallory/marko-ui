@@ -1,4 +1,15 @@
 section
+  div data-slot="card"
+    div data-slot="collapsible" data-state="closed"
+      button data-slot="collapsible-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+        svg
+          path
+      div data-slot="collapsible-content" data-state="closed"
+        div
+          div
+          button data-slot="button"
+---
+section
   div
     p
       strong
@@ -28,6 +39,221 @@ section
     button data-slot="collapsible-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
     div data-slot="collapsible-content" data-state="closed"
       p
+---
+section
+  div data-slot="card"
+    div data-slot="card-header"
+      div data-slot="tabs"
+        div data-slot="tabs-list" role="tablist" aria-orientation="horizontal"
+          button data-slot="tabs-trigger" role="tab" aria-selected="true" aria-controls="<id>"
+          button data-slot="tabs-trigger" role="tab" aria-selected="false"
+    div data-slot="card-content"
+      div
+        div data-slot="collapsible" data-state="closed"
+          button data-slot="collapsible-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+            svg
+              path
+            svg
+              path
+          div data-slot="collapsible-content" data-state="closed"
+            div
+              div
+                div data-slot="collapsible" data-state="closed"
+                  button data-slot="collapsible-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+                    svg
+                      path
+                    svg
+                      path
+                  div data-slot="collapsible-content" data-state="closed"
+                    div
+                      div
+                        button data-slot="button"
+                          svg
+                            path
+                            path
+                          span
+                        button data-slot="button"
+                          svg
+                            path
+                            path
+                          span
+                        button data-slot="button"
+                          svg
+                            path
+                            path
+                          span
+                        button data-slot="button"
+                          svg
+                            path
+                            path
+                          span
+                        button data-slot="button"
+                          svg
+                            path
+                            path
+                          span
+                        button data-slot="button"
+                          svg
+                            path
+                            path
+                          span
+                button data-slot="button"
+                  svg
+                    path
+                    path
+                  span
+                button data-slot="button"
+                  svg
+                    path
+                    path
+                  span
+        div data-slot="collapsible" data-state="closed"
+          button data-slot="collapsible-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+            svg
+              path
+            svg
+              path
+          div data-slot="collapsible-content" data-state="closed"
+            div
+              div
+                button data-slot="button"
+                  svg
+                    path
+                    path
+                  span
+                button data-slot="button"
+                  svg
+                    path
+                    path
+                  span
+                button data-slot="button"
+                  svg
+                    path
+                    path
+                  span
+        div data-slot="collapsible" data-state="closed"
+          button data-slot="collapsible-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+            svg
+              path
+            svg
+              path
+          div data-slot="collapsible-content" data-state="closed"
+            div
+              div
+                button data-slot="button"
+                  svg
+                    path
+                    path
+                  span
+                button data-slot="button"
+                  svg
+                    path
+                    path
+                  span
+                button data-slot="button"
+                  svg
+                    path
+                    path
+                  span
+        div data-slot="collapsible" data-state="closed"
+          button data-slot="collapsible-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+            svg
+              path
+            svg
+              path
+          div data-slot="collapsible-content" data-state="closed"
+            div
+              div
+                button data-slot="button"
+                  svg
+                    path
+                    path
+                  span
+                button data-slot="button"
+                  svg
+                    path
+                    path
+                  span
+        div data-slot="collapsible" data-state="closed"
+          button data-slot="collapsible-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+            svg
+              path
+            svg
+              path
+          div data-slot="collapsible-content" data-state="closed"
+            div
+              div
+                button data-slot="button"
+                  svg
+                    path
+                    path
+                  span
+                button data-slot="button"
+                  svg
+                    path
+                    path
+                  span
+                button data-slot="button"
+                  svg
+                    path
+                    path
+                  span
+        button data-slot="button"
+          svg
+            path
+            path
+          span
+        button data-slot="button"
+          svg
+            path
+            path
+          span
+        button data-slot="button"
+          svg
+            path
+            path
+          span
+        button data-slot="button"
+          svg
+            path
+            path
+          span
+        button data-slot="button"
+          svg
+            path
+            path
+          span
+        button data-slot="button"
+          svg
+            path
+            path
+          span
+        button data-slot="button"
+          svg
+            path
+            path
+          span
+---
+section
+  div data-slot="collapsible" data-state="closed"
+    div
+      h4
+      button data-slot="collapsible-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+        svg
+          path
+          path
+        span
+    div data-slot="collapsible-content" data-state="closed"
+      div
+        span
+        span
+      div
+        div
+          p
+          p
+        div
+          p
+          p
 ---
 section
   div data-slot="collapsible" data-state="closed"

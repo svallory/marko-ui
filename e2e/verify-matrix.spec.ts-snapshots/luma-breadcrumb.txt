@@ -23,12 +23,74 @@ section
         svg
           path
       li data-slot="breadcrumb-item"
+        button data-slot="dropdown-menu-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+          span data-slot="breadcrumb-ellipsis" role="presentation" aria-hidden="true"
+            svg
+              circle
+              circle
+              circle
+            span
+          span
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
+      li data-slot="breadcrumb-item"
+        a data-slot="breadcrumb-link"
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
+      li data-slot="breadcrumb-item"
+        span data-slot="breadcrumb-page" role="link" aria-disabled="true" aria-current="page"
+---
+section
+  nav data-slot="breadcrumb" aria-label="breadcrumb"
+    ol data-slot="breadcrumb-list"
+      li data-slot="breadcrumb-item"
+        a data-slot="breadcrumb-link"
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          circle
+      li data-slot="breadcrumb-item"
+        button data-slot="dropdown-menu-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+          svg
+            path
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          circle
+      li data-slot="breadcrumb-item"
+        span data-slot="breadcrumb-page" role="link" aria-disabled="true" aria-current="page"
+---
+section
+  nav data-slot="breadcrumb" aria-label="breadcrumb"
+    ol data-slot="breadcrumb-list"
+      li data-slot="breadcrumb-item"
+        a data-slot="breadcrumb-link"
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
+      li data-slot="breadcrumb-item"
         span data-slot="breadcrumb-ellipsis" role="presentation" aria-hidden="true"
           svg
             circle
             circle
             circle
           span
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
+      li data-slot="breadcrumb-item"
+        a data-slot="breadcrumb-link"
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          path
+      li data-slot="breadcrumb-item"
+        span data-slot="breadcrumb-page" role="link" aria-disabled="true" aria-current="page"
+---
+section
+  nav data-slot="breadcrumb" aria-label="breadcrumb"
+    ol data-slot="breadcrumb-list"
+      li data-slot="breadcrumb-item"
+        a data-slot="breadcrumb-link"
       li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
         svg
           path
@@ -68,6 +130,24 @@ section
       li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
         svg
           path
+      li data-slot="breadcrumb-item"
+        span data-slot="breadcrumb-page" role="link" aria-disabled="true" aria-current="page"
+---
+section
+  nav data-slot="breadcrumb" aria-label="breadcrumb"
+    ol data-slot="breadcrumb-list"
+      li data-slot="breadcrumb-item"
+        a data-slot="breadcrumb-link"
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          circle
+      li data-slot="breadcrumb-item"
+        button data-slot="dropdown-menu-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+          svg
+            path
+      li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true"
+        svg
+          circle
       li data-slot="breadcrumb-item"
         span data-slot="breadcrumb-page" role="link" aria-disabled="true" aria-current="page"
 ---

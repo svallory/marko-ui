@@ -38,3 +38,24 @@ section
         option data-slot="native-select-option"
     svg data-slot="native-select-icon" aria-hidden="true"
       path
+---
+section
+  div data-slot="native-select-wrapper"
+    select data-slot="native-select" aria-invalid="true" aria-label="Error state"
+      option data-slot="native-select-option"
+      option data-slot="native-select-option"
+      option data-slot="native-select-option"
+      option data-slot="native-select-option"
+    svg data-slot="native-select-icon" aria-hidden="true"
+      path
+---
+section
+  div data-slot="native-select-wrapper"
+    select data-slot="native-select" aria-label="اختر الحالة"
+      option data-slot="native-select-option"
+      option data-slot="native-select-option"
+      option data-slot="native-select-option"
+      option data-slot="native-select-option"
+      option data-slot="native-select-option"
+    svg data-slot="native-select-icon" aria-hidden="true"
+      path

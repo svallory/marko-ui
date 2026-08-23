@@ -73,6 +73,38 @@ section
     div data-slot="resizable-panel"
       div
         span
+    div data-slot="resizable-handle" role="separator" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-orientation="horizontal" aria-controls="<id>"
+      div
+        svg
+          circle
+          circle
+          circle
+          circle
+          circle
+          circle
+    div data-slot="resizable-panel"
+      div data-slot="resizable-panel-group"
+        div data-slot="resizable-panel"
+          div
+            span
+        div data-slot="resizable-handle" role="separator" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" aria-orientation="vertical" aria-controls="<id>"
+          div
+            svg
+              circle
+              circle
+              circle
+              circle
+              circle
+              circle
+        div data-slot="resizable-panel"
+          div
+            span
+---
+section
+  div data-slot="resizable-panel-group"
+    div data-slot="resizable-panel"
+      div
+        span
     div data-slot="resizable-handle" role="separator" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" aria-orientation="vertical" aria-controls="<id>"
       div
         svg

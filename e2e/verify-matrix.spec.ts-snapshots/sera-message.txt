@@ -1,0 +1,172 @@
+section
+  div
+    div data-slot="message"
+      div data-slot="message-content"
+        div data-slot="bubble"
+          div data-slot="bubble-content"
+        div data-slot="message-footer"
+          button data-slot="button" aria-label="Copy"
+            svg
+              rect
+              path
+          button data-slot="button" aria-label="Like"
+            svg
+              path
+              path
+          button data-slot="button" aria-label="Dislike"
+            svg
+              path
+              path
+    div data-slot="message"
+      div data-slot="message-content"
+        div data-slot="bubble"
+          div data-slot="bubble-content"
+        div data-slot="message-footer"
+          span
+          button data-slot="button" aria-label="Retry"
+            svg
+              path
+              path
+              path
+              path
+---
+section
+  div
+    div data-slot="message"
+      div data-slot="message-content"
+        div data-slot="attachment" data-state="done"
+          div data-slot="attachment-media"
+            img
+        div data-slot="bubble"
+          div data-slot="bubble-content"
+    div data-slot="message"
+      div data-slot="message-content"
+        div data-slot="bubble"
+          div data-slot="bubble-content"
+        div data-slot="attachment" data-state="done"
+          div data-slot="attachment-media"
+            svg
+              path
+              path
+              path
+              path
+              path
+          div data-slot="attachment-content"
+            span data-slot="attachment-title"
+            span data-slot="attachment-description"
+          div data-slot="attachment-actions"
+            button data-slot="attachment-action" aria-label="Download"
+              svg
+                path
+                path
+                path
+    div data-slot="message"
+      div data-slot="message-content"
+        div data-slot="bubble"
+          div data-slot="bubble-content"
+---
+section
+  div
+    div data-slot="message"
+      div data-slot="message-avatar"
+        span data-slot="avatar"
+          img data-slot="avatar-image" data-state="visible"
+          span data-slot="avatar-fallback" data-state="hidden"
+      div data-slot="message-content"
+        div data-slot="bubble"
+          div data-slot="bubble-content"
+    div data-slot="message"
+      div data-slot="message-avatar"
+        span data-slot="avatar"
+          img data-slot="avatar-image" data-state="visible"
+          span data-slot="avatar-fallback" data-state="hidden"
+      div data-slot="message-content"
+        div data-slot="bubble"
+          div data-slot="bubble-content"
+    div data-slot="message"
+      div data-slot="message-avatar"
+        span data-slot="avatar"
+          img data-slot="avatar-image" data-state="visible"
+          span data-slot="avatar-fallback" data-state="hidden"
+      div data-slot="message-content"
+        div data-slot="bubble-group"
+          div data-slot="bubble"
+            div data-slot="bubble-content"
+          div data-slot="bubble"
+            div data-slot="bubble-content"
+---
+section
+  div
+    div data-slot="message"
+      div data-slot="message-avatar"
+        span data-slot="avatar"
+          img data-slot="avatar-image" data-state="visible"
+          span data-slot="avatar-fallback" data-state="hidden"
+      div data-slot="message-content"
+        div data-slot="bubble"
+          div data-slot="bubble-content"
+    div data-slot="message"
+      div data-slot="message-avatar"
+        span data-slot="avatar"
+          img data-slot="avatar-image" data-state="visible"
+          span data-slot="avatar-fallback" data-state="hidden"
+      div data-slot="message-content"
+        div data-slot="bubble"
+          div data-slot="bubble-content"
+    div data-slot="message"
+      div data-slot="message-avatar"
+        span data-slot="avatar"
+          img data-slot="avatar-image" data-state="visible"
+          span data-slot="avatar-fallback" data-state="hidden"
+      div data-slot="message-content"
+        div data-slot="bubble"
+          div data-slot="bubble-content"
+        div data-slot="message-footer"
+    div data-slot="message"
+      div data-slot="message-avatar"
+        span data-slot="avatar"
+          img data-slot="avatar-image" data-state="visible"
+          span data-slot="avatar-fallback" data-state="hidden"
+      div data-slot="message-content"
+        div data-slot="bubble-group"
+          div data-slot="bubble"
+            div data-slot="bubble-content"
+          div data-slot="bubble"
+            div data-slot="bubble-content"
+            div data-slot="bubble-reactions" role="img" aria-label="Reactions: thumbs up"
+              span
+    div data-slot="marker" role="status"
+      span data-slot="marker-content"
+        span
+---
+section
+  div
+    div data-slot="message-group"
+      div data-slot="message"
+        div data-slot="message-avatar"
+        div data-slot="message-content"
+          div data-slot="bubble"
+            div data-slot="bubble-content"
+      div data-slot="message"
+        div data-slot="message-avatar"
+          span data-slot="avatar"
+            img data-slot="avatar-image" data-state="visible"
+            span data-slot="avatar-fallback" data-state="hidden"
+        div data-slot="message-content"
+          div data-slot="bubble"
+            div data-slot="bubble-content"
+---
+section
+  div
+    div data-slot="message"
+      div data-slot="message-content"
+        div data-slot="message-header"
+        div data-slot="bubble"
+          div data-slot="bubble-content"
+    div data-slot="message"
+      div data-slot="message-content"
+        div data-slot="bubble"
+          div data-slot="bubble-content"
+        div data-slot="message-footer"
+          div
+            span

@@ -1,4 +1,594 @@
 section
+  div data-slot="calendar" data-state="open"
+    div data-slot="calendar-content" role="application" data-state="open" aria-roledescription="datepicker" aria-label="calendar"
+      div
+        button data-slot="calendar-prev-trigger" aria-label="Switch to previous month"
+          svg
+            path
+          span
+        button data-slot="calendar-view-trigger" aria-label="Switch to year view"
+        button data-slot="calendar-next-trigger" aria-label="Switch to next month"
+          svg
+            path
+          span
+      table data-slot="calendar-table" role="grid" aria-roledescription="calendar month"
+        thead data-slot="calendar-table-head" aria-hidden="true"
+          tr
+            th
+              span
+            th
+              span
+            th
+              span
+            th
+              span
+            th
+              span
+            th
+              span
+            th
+              span
+        tbody data-slot="calendar-table-body"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, July 26, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, July 27, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, July 28, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, July 29, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, July 30, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, July 31, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 1, 2026"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 2, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 3, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 4, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 5, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 6, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 7, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 8, 2026"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 9, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 10, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 11, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 12, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 13, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 14, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 15, 2026"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 16, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 17, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 18, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 19, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 20, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 21, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 22, 2026"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 23, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 24, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 25, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 26, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 27, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 28, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 29, 2026"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 30, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 31, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, September 1, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, September 2, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, September 3, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, September 4, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, September 5, 2026" aria-disabled="true"
+---
+section
+  div data-slot="card"
+    div data-slot="card-content"
+      div data-slot="calendar" data-state="open"
+        div data-slot="calendar-content" role="application" data-state="open" aria-roledescription="datepicker" aria-label="calendar"
+          div
+            button data-slot="calendar-prev-trigger" aria-label="Switch to previous month"
+              svg
+                path
+              span
+            button data-slot="calendar-view-trigger" aria-label="Switch to year view"
+            button data-slot="calendar-next-trigger" aria-label="Switch to next month"
+              svg
+                path
+              span
+          table data-slot="calendar-table" role="grid" aria-roledescription="calendar month"
+            thead data-slot="calendar-table-head" aria-hidden="true"
+              tr
+                th
+                  span
+                th
+                  span
+                th
+                  span
+                th
+                  span
+                th
+                  span
+                th
+                  span
+                th
+                  span
+            tbody data-slot="calendar-table-body"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, July 26, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, July 27, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, July 28, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, July 29, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, July 30, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, July 31, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 1, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 2, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 3, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 4, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 5, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 6, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 7, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 8, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 9, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 10, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 11, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 12, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 13, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 14, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 15, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 16, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 17, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 18, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 19, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 20, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 21, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 22, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 23, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 24, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 25, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 26, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 27, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 28, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 29, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 30, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 31, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, September 1, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, September 2, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, September 3, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, September 4, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, September 5, 2026" aria-disabled="true"
+---
+section
+  div data-slot="calendar" data-state="open"
+    div data-slot="calendar-content" role="application" data-state="open" aria-roledescription="datepicker" aria-label="calendar"
+      div
+        button data-slot="calendar-prev-trigger" aria-label="Switch to previous month"
+          svg
+            path
+          span
+        div data-slot="calendar-dropdowns"
+          div data-slot="calendar-dropdown-root"
+            select data-slot="calendar-month-select" aria-label="Select month"
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+            span data-slot="calendar-caption-label" aria-hidden="true"
+              svg
+                path
+          div data-slot="calendar-dropdown-root"
+            select data-slot="calendar-year-select" aria-label="Select year"
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+              option
+            span data-slot="calendar-caption-label" aria-hidden="true"
+              svg
+                path
+        button data-slot="calendar-next-trigger" aria-label="Switch to next month"
+          svg
+            path
+          span
+      table data-slot="calendar-table" role="grid" aria-roledescription="calendar month"
+        thead data-slot="calendar-table-head" aria-hidden="true"
+          tr
+            th
+              span
+            th
+              span
+            th
+              span
+            th
+              span
+            th
+              span
+            th
+              span
+            th
+              span
+        tbody data-slot="calendar-table-body"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, July 26, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, July 27, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, July 28, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, July 29, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, July 30, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, July 31, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 1, 2026"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 2, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 3, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 4, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 5, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 6, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 7, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 8, 2026"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 9, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 10, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 11, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 12, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 13, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 14, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 15, 2026"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 16, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 17, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 18, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 19, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 20, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 21, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 22, 2026"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 23, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 24, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 25, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 26, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 27, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 28, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 29, 2026"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 30, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 31, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, September 1, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, September 2, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, September 3, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, September 4, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, September 5, 2026" aria-disabled="true"
+---
+section
   div
     div data-slot="calendar" data-state="open"
       div data-slot="calendar-content" role="application" data-state="open" aria-roledescription="datepicker" aria-label="calendar"
@@ -123,248 +713,335 @@ section
     span
 ---
 section
-  div data-slot="calendar" data-state="open"
-    div data-slot="calendar-content" role="application" data-state="open" aria-roledescription="datepicker" aria-label="calendar"
-      div
-        button data-slot="calendar-prev-trigger" aria-label="Switch to previous month"
-          svg
-            path
-          span
-        button data-slot="calendar-view-trigger" aria-label="Switch to year view"
-        button data-slot="calendar-next-trigger" aria-label="Switch to next month"
-          svg
-            path
-          span
-      table data-slot="calendar-table" role="grid" aria-roledescription="calendar month"
-        thead data-slot="calendar-table-head" aria-hidden="true"
-          tr
-            th
+  div data-slot="card"
+    div data-slot="card-content"
+      div data-slot="calendar" data-state="open"
+        div data-slot="calendar-content" role="application" data-state="open" aria-roledescription="datepicker" aria-label="calendar"
+          div
+            button data-slot="calendar-prev-trigger" aria-label="Switch to previous month"
+              svg
+                path
               span
-            th
+            div data-slot="calendar-dropdowns"
+              div data-slot="calendar-dropdown-root"
+                select data-slot="calendar-month-select" aria-label="Select month"
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                span data-slot="calendar-caption-label" aria-hidden="true"
+                  svg
+                    path
+              div data-slot="calendar-dropdown-root"
+                select data-slot="calendar-year-select" aria-label="Select year"
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                  option
+                span data-slot="calendar-caption-label" aria-hidden="true"
+                  svg
+                    path
+            button data-slot="calendar-next-trigger" aria-label="Switch to next month"
+              svg
+                path
               span
-            th
-              span
-            th
-              span
-            th
-              span
-            th
-              span
-            th
-              span
-        tbody data-slot="calendar-table-body"
-          tr
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, July 26, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Monday, July 27, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, July 28, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, July 29, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, July 30, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Friday, July 31, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 1, 2026"
-          tr
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 2, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 3, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 4, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 5, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 6, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 7, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 8, 2026"
-          tr
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 9, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 10, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 11, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 12, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 13, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 14, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 15, 2026"
-          tr
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 16, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 17, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 18, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 19, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 20, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 21, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 22, 2026"
-          tr
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 23, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 24, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 25, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 26, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 27, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 28, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 29, 2026"
-          tr
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 30, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 31, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, September 1, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, September 2, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, September 3, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Friday, September 4, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, September 5, 2026" aria-disabled="true"
----
-section
-  div data-slot="calendar" data-state="open"
-    div data-slot="calendar-content" role="application" data-state="open" aria-roledescription="datepicker" aria-label="calendar"
-      div
-        button data-slot="calendar-prev-trigger" aria-label="Switch to previous month"
-          svg
-            path
-          span
-        button data-slot="calendar-view-trigger" aria-label="Switch to year view"
-        button data-slot="calendar-next-trigger" aria-label="Switch to next month"
-          svg
-            path
-          span
-      table data-slot="calendar-table" role="grid" aria-roledescription="calendar month" aria-disabled="true"
-        thead data-slot="calendar-table-head" aria-hidden="true"
-          tr
-            th
-              span
-            th
-              span
-            th
-              span
-            th
-              span
-            th
-              span
-            th
-              span
-            th
-              span
-        tbody data-slot="calendar-table-body"
-          tr
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, July 26, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Monday, July 27, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, July 28, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, July 29, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, July 30, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Friday, July 31, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 1, 2026"
-          tr
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 2, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 3, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 4, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 5, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 6, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 7, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 8, 2026"
-          tr
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 9, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 10, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 11, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 12, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 13, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 14, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 15, 2026"
-          tr
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 16, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 17, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 18, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 19, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 20, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 21, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 22, 2026"
-          tr
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 23, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 24, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 25, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 26, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 27, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 28, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 29, 2026"
-          tr
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 30, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 31, 2026"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, September 1, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, September 2, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, September 3, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Friday, September 4, 2026" aria-disabled="true"
-            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
-              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, September 5, 2026" aria-disabled="true"
+          table data-slot="calendar-table" role="grid" aria-roledescription="calendar month" aria-multiselectable="true"
+            thead data-slot="calendar-table-head" aria-hidden="true"
+              tr
+                th
+                  span
+                th
+                  span
+                th
+                  span
+                th
+                  span
+                th
+                  span
+                th
+                  span
+                th
+                  span
+            tbody data-slot="calendar-table-body"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, November 29, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, November 30, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, December 1, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, December 2, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, December 3, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, December 4, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, December 5, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, December 6, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, December 7, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="true"
+                  button data-slot="calendar-day" role="button" aria-label="Starting range from Tuesday, December 8, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="true"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, December 9, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="true"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, December 10, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="true"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, December 11, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="true"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, December 12, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="true"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, December 13, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="true"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, December 14, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="true"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, December 15, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="true"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, December 16, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="true"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, December 17, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="true"
+                  button data-slot="calendar-day" role="button" aria-label="Range ending at Friday, December 18, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, December 19, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, December 20, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, December 21, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, December 22, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, December 23, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, December 24, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, December 25, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, December 26, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, December 27, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, December 28, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, December 29, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, December 30, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, December 31, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, January 1, 2027" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, January 2, 2027" aria-disabled="true"
 ---
 section
   div data-slot="calendar" data-state="open"
@@ -723,6 +1400,235 @@ section
           svg
             path
           span
+      table data-slot="calendar-table" role="grid" aria-roledescription="calendar month" aria-disabled="true"
+        thead data-slot="calendar-table-head" aria-hidden="true"
+          tr
+            th
+              span
+            th
+              span
+            th
+              span
+            th
+              span
+            th
+              span
+            th
+              span
+            th
+              span
+        tbody data-slot="calendar-table-body"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, July 26, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, July 27, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, July 28, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, July 29, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, July 30, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, July 31, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 1, 2026"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 2, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 3, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 4, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 5, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 6, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 7, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 8, 2026"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 9, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 10, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 11, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 12, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 13, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 14, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 15, 2026"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 16, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 17, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 18, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 19, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 20, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 21, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 22, 2026"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 23, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 24, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 25, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 26, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 27, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 28, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 29, 2026"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 30, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 31, 2026"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, September 1, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, September 2, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Thursday, September 3, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Friday, September 4, 2026" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose Saturday, September 5, 2026" aria-disabled="true"
+---
+section
+  div data-slot="calendar" data-state="open"
+    div data-slot="calendar-content" role="application" data-state="open" aria-roledescription="datepicker" aria-label="calendar"
+      div
+        button data-slot="calendar-prev-trigger" aria-label="Switch to previous month"
+          svg
+            path
+          span
+        button data-slot="calendar-view-trigger" aria-label="Switch to year view"
+        button data-slot="calendar-next-trigger" aria-label="Switch to next month"
+          svg
+            path
+          span
+      table data-slot="calendar-table" role="grid" aria-roledescription="calendar month"
+        thead data-slot="calendar-table-head" aria-hidden="true"
+          tr
+            th
+              span
+            th
+              span
+            th
+              span
+            th
+              span
+            th
+              span
+            th
+              span
+            th
+              span
+        tbody data-slot="calendar-table-body"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose شنبه ۱ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose یکشنبه ۲ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose دوشنبه ۳ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose سه‌شنبه ۴ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose چهارشنبه ۵ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose پنجشنبه ۶ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose جمعه ۷ اوت ۲۰۲۶"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose شنبه ۸ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose یکشنبه ۹ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose دوشنبه ۱۰ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose سه‌شنبه ۱۱ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose چهارشنبه ۱۲ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose پنجشنبه ۱۳ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose جمعه ۱۴ اوت ۲۰۲۶"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose شنبه ۱۵ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose یکشنبه ۱۶ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose دوشنبه ۱۷ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose سه‌شنبه ۱۸ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose چهارشنبه ۱۹ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose پنجشنبه ۲۰ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose جمعه ۲۱ اوت ۲۰۲۶"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose شنبه ۲۲ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose یکشنبه ۲۳ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose دوشنبه ۲۴ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose سه‌شنبه ۲۵ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose چهارشنبه ۲۶ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose پنجشنبه ۲۷ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose جمعه ۲۸ اوت ۲۰۲۶"
+          tr
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose شنبه ۲۹ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose یکشنبه ۳۰ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose دوشنبه ۳۱ اوت ۲۰۲۶"
+            td data-slot="calendar-cell" role="gridcell" aria-selected="false" aria-disabled="true"
+              button data-slot="calendar-day" role="button" aria-label="Choose سه‌شنبه ۱ سپتامبر ۲۰۲۶" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose چهارشنبه ۲ سپتامبر ۲۰۲۶" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose پنجشنبه ۳ سپتامبر ۲۰۲۶" aria-disabled="true"
+            td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+              button data-slot="calendar-day" role="button" aria-label="Choose جمعه ۴ سپتامبر ۲۰۲۶" aria-disabled="true"
+---
+section
+  div data-slot="calendar" data-state="open"
+    div data-slot="calendar-content" role="application" data-state="open" aria-roledescription="datepicker" aria-label="calendar"
+      div
+        button data-slot="calendar-prev-trigger" aria-label="Switch to previous month"
+          svg
+            path
+          span
+        button data-slot="calendar-view-trigger" aria-label="Switch to year view"
+        button data-slot="calendar-next-trigger" aria-label="Switch to next month"
+          svg
+            path
+          span
       table data-slot="calendar-table" role="grid" aria-roledescription="calendar month"
         thead data-slot="calendar-table-head" aria-hidden="true"
           tr
@@ -955,6 +1861,136 @@ section
               button data-slot="calendar-day" role="button" aria-label="Choose Saturday, September 5, 2026" aria-disabled="true"
 ---
 section
+  div data-slot="card"
+    div data-slot="card-content"
+      div data-slot="calendar" data-state="open"
+        div data-slot="calendar-content" role="application" data-state="open" aria-roledescription="datepicker" aria-label="calendar"
+          div
+            button data-slot="calendar-prev-trigger" aria-label="Switch to previous month"
+              svg
+                path
+              span
+            button data-slot="calendar-view-trigger" aria-label="Switch to year view"
+            button data-slot="calendar-next-trigger" aria-label="Switch to next month"
+              svg
+                path
+              span
+          table data-slot="calendar-table" role="grid" aria-roledescription="calendar month"
+            thead data-slot="calendar-table-head" aria-hidden="true"
+              tr
+                th
+                  span
+                th
+                  span
+                th
+                  span
+                th
+                  span
+                th
+                  span
+                th
+                  span
+                th
+                  span
+            tbody data-slot="calendar-table-body"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, July 26, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, July 27, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, July 28, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, July 29, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, July 30, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, July 31, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 1, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 2, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 3, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 4, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 5, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 6, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 7, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 8, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 9, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 10, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 11, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 12, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 13, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 14, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 15, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 16, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 17, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 18, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 19, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 20, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 21, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 22, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="true"
+                  button data-slot="calendar-day" role="button" aria-label="Selected date. Sunday, August 23, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 24, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 25, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 26, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 27, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 28, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 29, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 30, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 31, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, September 1, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, September 2, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, September 3, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, September 4, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, September 5, 2026" aria-disabled="true"
+    div data-slot="card-footer"
+      button data-slot="button"
+      button data-slot="button"
+      button data-slot="button"
+      button data-slot="button"
+      button data-slot="button"
+---
+section
   div data-slot="calendar" data-state="open"
     div data-slot="calendar-content" role="application" data-state="open" aria-roledescription="datepicker" aria-label="calendar"
       div
@@ -1075,3 +2111,490 @@ section
               button data-slot="calendar-day" role="button" aria-label="Choose Friday, September 4, 2026" aria-disabled="true"
             td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
               button data-slot="calendar-day" role="button" aria-label="Choose Saturday, September 5, 2026" aria-disabled="true"
+---
+section
+  div
+    div data-slot="calendar" data-state="open"
+      div data-slot="calendar-content" role="application" data-state="open" aria-roledescription="datepicker" aria-label="calendar"
+        div
+          button data-slot="calendar-prev-trigger" aria-label="Switch to previous month"
+            svg
+              path
+            span
+          div data-slot="calendar-dropdowns"
+            div data-slot="calendar-dropdown-root"
+              select data-slot="calendar-month-select" aria-label="Select month"
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+              span data-slot="calendar-caption-label" aria-hidden="true"
+                svg
+                  path
+            div data-slot="calendar-dropdown-root"
+              select data-slot="calendar-year-select" aria-label="Select year"
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+                option
+              span data-slot="calendar-caption-label" aria-hidden="true"
+                svg
+                  path
+          button data-slot="calendar-next-trigger" aria-label="Switch to next month"
+            svg
+              path
+            span
+        table data-slot="calendar-table" role="grid" aria-roledescription="calendar month"
+          thead data-slot="calendar-table-head" aria-hidden="true"
+            tr
+              th
+                span
+              th
+                span
+              th
+                span
+              th
+                span
+              th
+                span
+              th
+                span
+              th
+                span
+          tbody data-slot="calendar-table-body"
+            tr
+              td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الأحد، ٢٦ يوليو ٢٠٢٦" aria-disabled="true"
+              td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الاثنين، ٢٧ يوليو ٢٠٢٦" aria-disabled="true"
+              td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الثلاثاء، ٢٨ يوليو ٢٠٢٦" aria-disabled="true"
+              td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الأربعاء، ٢٩ يوليو ٢٠٢٦" aria-disabled="true"
+              td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الخميس، ٣٠ يوليو ٢٠٢٦" aria-disabled="true"
+              td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الجمعة، ٣١ يوليو ٢٠٢٦" aria-disabled="true"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose السبت، ١ أغسطس ٢٠٢٦"
+            tr
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الأحد، ٢ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الاثنين، ٣ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الثلاثاء، ٤ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الأربعاء، ٥ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الخميس، ٦ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الجمعة، ٧ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose السبت، ٨ أغسطس ٢٠٢٦"
+            tr
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الأحد، ٩ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الاثنين، ١٠ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الثلاثاء، ١١ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الأربعاء، ١٢ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الخميس، ١٣ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الجمعة، ١٤ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose السبت، ١٥ أغسطس ٢٠٢٦"
+            tr
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الأحد، ١٦ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الاثنين، ١٧ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الثلاثاء، ١٨ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الأربعاء، ١٩ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الخميس، ٢٠ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الجمعة، ٢١ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose السبت، ٢٢ أغسطس ٢٠٢٦"
+            tr
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الأحد، ٢٣ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الاثنين، ٢٤ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الثلاثاء، ٢٥ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الأربعاء، ٢٦ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الخميس، ٢٧ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الجمعة، ٢٨ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose السبت، ٢٩ أغسطس ٢٠٢٦"
+            tr
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الأحد، ٣٠ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الاثنين، ٣١ أغسطس ٢٠٢٦"
+              td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الثلاثاء، ١ سبتمبر ٢٠٢٦" aria-disabled="true"
+              td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الأربعاء، ٢ سبتمبر ٢٠٢٦" aria-disabled="true"
+              td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الخميس، ٣ سبتمبر ٢٠٢٦" aria-disabled="true"
+              td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose الجمعة، ٤ سبتمبر ٢٠٢٦" aria-disabled="true"
+              td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                button data-slot="calendar-day" role="button" aria-label="Choose السبت، ٥ سبتمبر ٢٠٢٦" aria-disabled="true"
+---
+section
+  div data-slot="card"
+    div data-slot="card-content"
+      div data-slot="calendar" data-state="open"
+        div data-slot="calendar-content" role="application" data-state="open" aria-roledescription="datepicker" aria-label="calendar"
+          div
+            button data-slot="calendar-prev-trigger" aria-label="Switch to previous month"
+              svg
+                path
+              span
+            button data-slot="calendar-view-trigger" aria-label="Switch to year view"
+            button data-slot="calendar-next-trigger" aria-label="Switch to next month"
+              svg
+                path
+              span
+          table data-slot="calendar-table" role="grid" aria-roledescription="calendar month"
+            thead data-slot="calendar-table-head" aria-hidden="true"
+              tr
+                th
+                  span
+                th
+                  span
+                th
+                  span
+                th
+                  span
+                th
+                  span
+                th
+                  span
+                th
+                  span
+            tbody data-slot="calendar-table-body"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, July 26, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, July 27, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, July 28, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, July 29, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, July 30, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, July 31, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 1, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 2, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 3, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 4, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 5, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 6, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 7, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 8, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 9, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 10, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 11, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 12, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 13, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 14, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 15, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 16, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 17, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 18, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 19, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 20, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 21, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 22, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 23, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 24, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, August 25, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, August 26, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, August 27, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, August 28, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, August 29, 2026"
+              tr
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, August 30, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, August 31, 2026"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, September 1, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, September 2, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, September 3, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, September 4, 2026" aria-disabled="true"
+                td data-slot="calendar-cell" role="gridcell" aria-disabled="true" aria-selected="false"
+                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, September 5, 2026" aria-disabled="true"
+    div data-slot="card-footer"
+      div data-slot="field-group"
+        div data-slot="field" role="group"
+          label data-slot="field-label"
+          div data-slot="input-group" role="group"
+            input data-slot="input-group-control"
+            div data-slot="input-group-addon" role="group"
+              svg
+                circle
+                path
+        div data-slot="field" role="group"
+          label data-slot="field-label"
+          div data-slot="input-group" role="group"
+            input data-slot="input-group-control"
+            div data-slot="input-group-addon" role="group"
+              svg
+                circle
+                path

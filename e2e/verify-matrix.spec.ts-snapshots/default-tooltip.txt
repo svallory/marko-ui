@@ -7,6 +7,30 @@ section
     button data-slot="tooltip-trigger" data-state="closed"
 ---
 section
+  span data-slot="tooltip"
+    span data-slot="tooltip-trigger" data-state="closed"
+      button data-slot="button"
+---
+section
+  span data-slot="tooltip"
+    button data-slot="tooltip-trigger" data-state="closed"
+      svg
+        path
+        path
+        path
+---
+section
+  div
+    span data-slot="tooltip"
+      button data-slot="tooltip-trigger" data-state="closed"
+    span data-slot="tooltip"
+      button data-slot="tooltip-trigger" data-state="closed"
+    span data-slot="tooltip"
+      button data-slot="tooltip-trigger" data-state="closed"
+    span data-slot="tooltip"
+      button data-slot="tooltip-trigger" data-state="closed"
+---
+section
   div
     span data-slot="tooltip"
       button data-slot="tooltip-trigger" data-state="closed"

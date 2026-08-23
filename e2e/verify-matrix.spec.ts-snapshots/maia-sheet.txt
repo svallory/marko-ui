@@ -9,6 +9,15 @@ section
     button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
 ---
 section
+  div data-slot="sheet"
+    button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+---
+section
+  div
+    div data-slot="sheet"
+      button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+---
+section
   div
     div data-slot="sheet"
       button data-slot="sheet-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"

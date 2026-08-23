@@ -1,17 +1,13 @@
 section
+  div
+    span data-slot="badge"
+    span data-slot="badge"
+    span data-slot="badge"
+    span data-slot="badge"
+    span data-slot="badge"
+---
+section
   span data-slot="badge"
----
-section
-  div
-    span data-slot="badge"
-    span data-slot="badge"
----
-section
-  div
-    span data-slot="badge"
-    span data-slot="badge"
-    span data-slot="badge"
-    span data-slot="badge"
 ---
 section
   div
@@ -24,3 +20,53 @@ section
   span data-slot="badge"
     svg
       polyline
+---
+section
+  span data-slot="badge"
+    a
+      svg
+        path
+        path
+---
+section
+  div
+    span data-slot="badge"
+    span data-slot="badge"
+---
+section
+  div
+    span data-slot="badge"
+    span data-slot="badge"
+    span data-slot="badge"
+    span data-slot="badge"
+    span data-slot="badge"
+      svg
+        path
+        path
+    span data-slot="badge"
+      svg
+        path
+---
+section
+  div
+    span data-slot="badge"
+      svg data-slot="spinner" role="status" aria-label="Loading"
+        path
+    span data-slot="badge"
+      svg data-slot="spinner" role="status" aria-label="Loading"
+        path
+---
+section
+  div
+    span data-slot="badge"
+    span data-slot="badge"
+    span data-slot="badge"
+    span data-slot="badge"
+---
+section
+  div
+    span data-slot="badge"
+    span data-slot="badge"
+    span data-slot="badge"
+    span data-slot="badge"
+    span data-slot="badge"

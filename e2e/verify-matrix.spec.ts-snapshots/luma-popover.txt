@@ -2,6 +2,19 @@ section
   div
     div data-slot="popover"
       button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+    div data-slot="popover"
+      button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+    div data-slot="popover"
+      button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+---
+section
+  div data-slot="popover"
+    button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+---
+section
+  div
+    div data-slot="popover"
+      button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
     span
 ---
 section
@@ -11,3 +24,18 @@ section
 section
   div data-slot="popover"
     button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+---
+section
+  div data-slot="popover"
+    button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+---
+section
+  div
+    div data-slot="popover"
+      button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+    div data-slot="popover"
+      button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+    div data-slot="popover"
+      button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+    div data-slot="popover"
+      button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"

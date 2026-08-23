@@ -1,11 +1,107 @@
 section
+  div data-slot="field" role="group"
+    label data-slot="field-label"
+      span data-slot="badge"
+    input data-slot="input"
+---
+section
+  input data-slot="input"
+---
+section
+  div data-slot="field" role="group"
+    label data-slot="field-label"
+    div data-slot="button-group" role="group"
+      input data-slot="input"
+      button data-slot="button"
+---
+section
   input data-slot="input"
 ---
 section
   input data-slot="input"
+---
+section
+  div data-slot="field" role="group"
+    label data-slot="field-label"
+    input data-slot="input"
+    p data-slot="field-description"
+---
+section
+  div data-slot="field-group"
+    div data-slot="field" role="group"
+      label data-slot="field-label"
+      input data-slot="input"
+    div data-slot="field" role="group"
+      label data-slot="field-label"
+      input data-slot="input"
+      p data-slot="field-description"
+    div data-slot="field" role="group"
+      button data-slot="button"
+      button data-slot="button"
 ---
 section
   input data-slot="input" aria-label="Upload file"
+---
+section
+  form
+    div data-slot="field-group"
+      div data-slot="field" role="group"
+        label data-slot="field-label"
+        input data-slot="input"
+      div data-slot="field" role="group"
+        label data-slot="field-label"
+        input data-slot="input"
+        p data-slot="field-description"
+      div
+        div data-slot="field" role="group"
+          label data-slot="field-label"
+          input data-slot="input"
+        div data-slot="field" role="group"
+          label data-slot="field-label"
+          div data-slot="select"
+            label data-slot="select-field-label"
+            div data-slot="select-control" data-state="closed"
+              button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+                span data-slot="select-value"
+                svg data-state="closed" aria-hidden="true"
+                  path
+            select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+              option
+              option
+              option
+      div data-slot="field" role="group"
+        label data-slot="field-label"
+        input data-slot="input"
+      div data-slot="field" role="group"
+        button data-slot="button"
+        button data-slot="button"
+---
+section
+  div data-slot="field-group"
+    div data-slot="field" role="group"
+      label data-slot="field-label"
+      input data-slot="input"
+    div data-slot="field" role="group"
+      label data-slot="field-label"
+      input data-slot="input"
+---
+section
+  div data-slot="field" role="group"
+    input data-slot="input"
+    button data-slot="button"
+---
+section
+  div data-slot="field" role="group"
+    label data-slot="field-label"
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        span
+      div data-slot="input-group-addon" role="group"
+        svg
+          circle
+          path
+          path
 ---
 section
   input data-slot="input" aria-invalid="true"
@@ -20,6 +116,19 @@ section
 ---
 section
   input data-slot="input"
+---
+section
+  div data-slot="field" role="group"
+    label data-slot="field-label"
+      span
+    input data-slot="input"
+    p data-slot="field-description"
+---
+section
+  div data-slot="field" role="group"
+    label data-slot="field-label"
+    input data-slot="input"
+    p data-slot="field-description"
 ---
 section
   input data-slot="input" aria-label="Project name"

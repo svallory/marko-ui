@@ -1,4 +1,35 @@
 section
+  div data-slot="combobox"
+    span data-slot="combobox-value"
+    div data-slot="combobox-control" data-state="closed"
+      input data-slot="combobox-input" role="combobox" data-state="closed" aria-autocomplete="list" aria-controls="<id>" aria-expanded="false"
+      button data-slot="combobox-trigger" data-state="closed" aria-haspopup="listbox" aria-label="Toggle suggestions" aria-expanded="false"
+        svg
+          path
+---
+section
+  div data-slot="combobox"
+    span data-slot="combobox-value"
+    div data-slot="combobox-control" data-state="closed"
+      input data-slot="combobox-input" role="combobox" data-state="closed" aria-autocomplete="list" aria-controls="<id>" aria-expanded="false"
+      button data-slot="combobox-trigger" data-state="closed" aria-haspopup="listbox" aria-label="Toggle suggestions" aria-expanded="false"
+        svg
+          path
+---
+section
+  div data-slot="combobox"
+    span data-slot="combobox-value"
+    div data-slot="combobox-control" data-state="closed"
+      input data-slot="combobox-input" role="combobox" data-state="closed" aria-autocomplete="list" aria-controls="<id>" aria-expanded="false"
+      button data-slot="combobox-clear" aria-label="Clear value" aria-controls="<id>"
+        svg
+          path
+          path
+      button data-slot="combobox-trigger" data-state="closed" aria-haspopup="listbox" aria-label="Toggle suggestions" aria-expanded="false"
+        svg
+          path
+---
+section
   div
     div data-slot="combobox"
       span data-slot="combobox-value"
@@ -26,3 +57,53 @@ section
       button data-slot="combobox-trigger" data-state="closed" aria-haspopup="listbox" aria-label="Toggle suggestions" aria-expanded="false"
         svg
           path
+---
+section
+  div data-slot="combobox"
+    span data-slot="combobox-value"
+    div data-slot="combobox-control" data-state="closed"
+      input data-slot="combobox-input" role="combobox" data-state="closed" aria-autocomplete="list" aria-controls="<id>" aria-expanded="false"
+      button data-slot="combobox-trigger" data-state="closed" aria-haspopup="listbox" aria-label="Toggle suggestions" aria-expanded="false"
+        svg
+          path
+---
+section
+  div data-slot="combobox"
+    span data-slot="combobox-value"
+    div data-slot="combobox-control" data-state="closed"
+      input data-slot="combobox-input" role="combobox" data-state="closed" aria-invalid="true" aria-autocomplete="list" aria-controls="<id>" aria-expanded="false"
+      button data-slot="combobox-trigger" data-state="closed" aria-haspopup="listbox" aria-label="Toggle suggestions" aria-expanded="false"
+        svg
+          path
+---
+section
+  div data-slot="combobox"
+    span data-slot="combobox-value"
+    div data-slot="combobox-control" data-state="closed"
+      div data-slot="combobox-chips"
+        span data-slot="combobox-chip"
+          button data-slot="combobox-chip-remove"
+            svg
+              path
+              path
+        input data-slot="combobox-chip-input" role="combobox" data-state="closed" aria-autocomplete="list" aria-controls="<id>" aria-expanded="false"
+      button data-slot="combobox-trigger" data-state="closed" aria-haspopup="listbox" aria-label="Toggle suggestions" aria-expanded="false"
+        svg
+          path
+---
+section
+  div data-slot="field" role="group"
+    label data-slot="field-label"
+    div data-slot="combobox"
+      span data-slot="combobox-value"
+      div data-slot="combobox-control" data-state="closed"
+        div data-slot="combobox-chips"
+          span data-slot="combobox-chip"
+            button data-slot="combobox-chip-remove"
+              svg
+                path
+                path
+          input data-slot="combobox-chip-input" role="combobox" data-state="closed" aria-autocomplete="list" aria-controls="<id>" aria-expanded="false"
+        button data-slot="combobox-trigger" data-state="closed" aria-haspopup="listbox" aria-label="Toggle suggestions" aria-expanded="false"
+          svg
+            path

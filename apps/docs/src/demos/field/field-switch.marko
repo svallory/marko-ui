@@ -13,6 +13,15 @@ import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
         sent to your email.
       </FieldDescription>
     </FieldContent>
-    <Switch id="field-switch-2fa"/>
+    // switch.marko only points aria-labelledby at its label part when
+    // `content` is rendered — with none, the hidden input gets NO
+    // accessible name at all (axe: "Form elements must have labels",
+    // verified via axe-core scan; the component's own header comment
+    // documents the tradeoff). FieldLabel already shows the same text
+    // beside the switch, so this content is visually hidden, not
+    // duplicated on screen.
+    <Switch id="field-switch-2fa">
+      <span class="sr-only">Multi-factor authentication</span>
+    </Switch>
   </Field>
 </div>

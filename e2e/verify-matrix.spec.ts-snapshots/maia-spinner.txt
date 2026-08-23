@@ -44,6 +44,51 @@ section
   div
     svg data-slot="spinner" role="status" aria-label="Loading"
       path
+---
+section
+  div data-slot="empty"
+    div data-slot="empty-header"
+      div data-slot="empty-icon"
+        svg data-slot="spinner" role="status" aria-label="Loading"
+          path
+      div data-slot="empty-title"
+      div data-slot="empty-description"
+    div data-slot="empty-content"
+      button data-slot="button"
+---
+section
+  div
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        svg data-slot="spinner" role="status" aria-label="Loading"
+          path
+    div data-slot="input-group" role="group"
+      textarea data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        svg data-slot="spinner" role="status" aria-label="Loading"
+          path
+        button data-slot="button"
+          svg
+            path
+            path
+          span
+---
+section
+  div
+    div data-slot="item"
+      div data-slot="item-media"
+        svg data-slot="spinner" role="status" aria-label="Loading"
+          path
+      div data-slot="item-content"
+        div data-slot="item-title"
+      div data-slot="item-content"
+        span
+---
+section
+  div
+    svg data-slot="spinner" role="status" aria-label="Loading"
+      path
     svg data-slot="spinner" role="status" aria-label="Loading"
       path
     svg data-slot="spinner" role="status" aria-label="Loading"

@@ -102,9 +102,13 @@ describe("switch keyboard contract (APG)", () => {
 describe("checkbox keyboard contract (APG)", () => {
   it("toggles with Space", { timeout: 60_000 }, async () => {
     await withComponentPage("checkbox", async (page) => {
+      // checkbox-demo.marko's "Basic" example intentionally shows 4 labeling
+      // variants (plain content, FieldLabel+description, disabled, FieldTitle
+      // — see notes/component-authoring.md and the demo's own header
+      // comment); `.first()` targets the same one `input` already does.
       const demo = demoByTitle(page, "Basic");
       const input = hiddenInputIn(demo).first();
-      const root = demo.locator('[data-scope="checkbox"][data-part="root"]');
+      const root = demo.locator('[data-scope="checkbox"][data-part="root"]').first();
 
       await focusElement(input);
       await pressKey(page, "Space");

@@ -47,6 +47,25 @@ section
 ---
 section
   div
+    kbd data-slot="kbd-group"
+      kbd data-slot="kbd"
+      kbd data-slot="kbd"
+      kbd data-slot="kbd"
+      kbd data-slot="kbd"
+    kbd data-slot="kbd"
+    kbd data-slot="kbd"
+    kbd data-slot="kbd"
+    kbd data-slot="kbd"
+    kbd data-slot="kbd-group"
+      kbd data-slot="kbd"
+      span
+      kbd data-slot="kbd"
+    kbd data-slot="kbd"
+    span
+    kbd data-slot="kbd"
+---
+section
+  div
     div data-slot="button-group" role="group"
       span data-slot="tooltip"
         button data-slot="tooltip-trigger" data-state="closed"

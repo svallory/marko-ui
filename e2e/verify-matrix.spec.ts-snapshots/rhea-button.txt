@@ -4,7 +4,81 @@ section
 section
   div
     button data-slot="button"
+    button data-slot="button" aria-label="Submit"
+      svg
+        path
+        path
+---
+section
+  button data-slot="button"
+---
+section
+  div
     button data-slot="button"
+    button data-slot="button"
+---
+section
+  button data-slot="button"
+---
+section
+  div data-slot="button-group" role="group"
+    div data-slot="button-group" role="group"
+      button data-slot="button" aria-label="Go Back"
+        svg
+          path
+          path
+    div data-slot="button-group" role="group"
+      button data-slot="button"
+      button data-slot="button"
+    div data-slot="button-group" role="group"
+      button data-slot="button"
+      button data-slot="dropdown-menu-trigger" data-state="closed" aria-label="More Options" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+        svg
+          circle
+          circle
+          circle
+---
+section
+  button data-slot="button" aria-label="Submit"
+    svg
+      path
+      path
+---
+section
+  button data-slot="button"
+---
+section
+  button data-slot="button"
+---
+section
+  a
+---
+section
+  div
+    button data-slot="button"
+    button data-slot="button"
+      svg
+        path
+        path
+---
+section
+  div
+    button data-slot="button"
+    button data-slot="button"
+    button data-slot="button"
+      svg
+        path
+        path
+    button data-slot="button" aria-label="Add"
+      svg
+        path
+        path
+    button data-slot="button"
+      svg data-slot="spinner" role="status" aria-label="Loading"
+        path
+---
+section
+  button data-slot="button"
 ---
 section
   div
@@ -15,8 +89,30 @@ section
 section
   div
     button data-slot="button"
+      svg data-slot="spinner" role="status" aria-label="Loading"
+        path
+    button data-slot="button"
+      svg data-slot="spinner" role="status" aria-label="Loading"
+        path
+---
+section
+  div
     button data-slot="button"
     button data-slot="button"
     button data-slot="button"
     button data-slot="button"
     button data-slot="button"
+    button data-slot="button"
+---
+section
+  div
+    button data-slot="button"
+      svg
+        path
+        circle
+        circle
+    button data-slot="button"
+      svg
+        path
+        circle
+        circle

@@ -121,3 +121,21 @@ section
       div data-slot="empty-description"
     div data-slot="empty-content"
       button data-slot="button"
+---
+section
+  div data-slot="empty"
+    div data-slot="empty-header"
+      div data-slot="empty-icon"
+        svg
+          path
+          path
+          path
+      div data-slot="empty-title"
+      div data-slot="empty-description"
+    div data-slot="empty-content"
+      button data-slot="button"
+      button data-slot="button"
+    a
+      svg
+        path
+        path

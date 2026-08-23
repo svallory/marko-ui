@@ -1,5 +1,9 @@
 section
   div
+    button data-slot="dialog-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+---
+section
+  div
     div data-slot="command"
       div data-slot="command-input-wrapper"
         div data-slot="command-input-group" data-state="open"
@@ -115,6 +119,54 @@ section
 ---
 section
   div
+    button data-slot="dialog-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+---
+section
+  div
+    div data-slot="command"
+      div data-slot="command-input-wrapper"
+        div data-slot="command-input-group" data-state="open"
+          input data-slot="command-input" role="combobox" data-state="open" aria-autocomplete="list" aria-controls="<id>" aria-expanded="true"
+          div data-slot="command-input-addon"
+            svg data-slot="command-input-icon"
+              path
+              circle
+      div data-slot="command-list" role="listbox" data-state="open" aria-labelledby="<id>"
+        div data-slot="command-group" role="group" aria-labelledby="<id>"
+          div role="presentation"
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+            svg data-slot="command-item-indicator"
+              path
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+            svg data-slot="command-item-indicator"
+              path
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+            svg data-slot="command-item-indicator"
+              path
+        div data-slot="command-separator"
+        div data-slot="command-group" role="group" aria-labelledby="<id>"
+          div role="presentation"
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+            span data-slot="command-shortcut"
+            svg data-slot="command-item-indicator"
+              path
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+            span data-slot="command-shortcut"
+            svg data-slot="command-item-indicator"
+              path
+          div data-slot="command-item" role="option" data-state="unchecked"
+            span
+            span data-slot="command-shortcut"
+            svg data-slot="command-item-indicator"
+              path
+---
+section
+  div
     div data-slot="command"
       div data-slot="command-input-wrapper"
         div data-slot="command-input-group" data-state="open"
@@ -174,3 +226,7 @@ section
             span
             svg data-slot="command-item-indicator"
               path
+---
+section
+  div
+    button data-slot="dialog-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"

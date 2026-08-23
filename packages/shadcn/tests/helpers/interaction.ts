@@ -11,17 +11,28 @@
 import type { Locator, Page } from "playwright";
 
 /**
- * Scope a query to the demo section carrying the given heading.
+ * Scope a query to the demo container carrying the given heading.
  *
- * The docs `<demo-box>` tag renders `<section><h2>{title}</h2><div>…</div></section>`,
- * so the section is addressed through its heading text. Matching on the exact
- * heading (not a substring of the whole section) keeps "Default" from also
- * selecting "With default value".
+ * apps/docs/src/routes/docs/components/$name/+page.marko renders each
+ * example as `<div class="mt-8"><h3>{title}</h3>…</div>` — one `<div>` per
+ * `page.examples` entry, the heading as its direct child. There is no
+ * `<section>` on this page (that markup predates the `4e1b1adf` route
+ * restructuring — "remove static per-component routes in favor of a
+ * data-driven $name route" — which replaced it; `page.locator("section")`
+ * here matched only the handful of *generic*, unattributed `<section>`
+ * elements the shared docs layout still emits elsewhere on the page, each
+ * wrapping far more than one example — verified: `.filter({has: heading})`
+ * resolved to 25 checkbox roots for a page with one checkbox per example).
+ * Scoping to the heading's own parent `<div>` is exact regardless of class
+ * churn — every example wraps exactly one heading, one level up. Matching
+ * on the exact heading (not a substring of the whole container) keeps
+ * "Default" from also selecting "With default value".
  */
 export function demoByTitle(page: Page, title: string): Locator {
   return page
-    .locator("section")
+    .locator("div")
     .filter({ has: page.getByRole("heading", { name: title, exact: true }) })
+    .filter({ has: page.locator(":scope > :is(h1, h2, h3, h4, h5, h6)") })
     .first();
 }
 

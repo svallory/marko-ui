@@ -1,4 +1,11 @@
 section
+  div data-slot="field" role="group"
+    label data-slot="field-label"
+    div data-slot="popover"
+      button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+        span
+---
+section
   div
     div data-slot="date-picker" data-state="closed"
       div data-slot="date-picker-control"
@@ -37,16 +44,25 @@ section
         span
 ---
 section
-  div data-slot="date-picker" data-state="closed"
-    div data-slot="date-picker-control"
-      input data-slot="date-picker-input" data-state="closed"
-      button data-slot="date-picker-trigger" data-state="closed" aria-label="Open calendar" aria-controls="<id>" aria-expanded="false" aria-haspopup="grid"
-        svg
-          path
-          path
-          rect
-          path
-        span
+  div data-slot="field" role="group"
+    label data-slot="field-label"
+    div data-slot="popover"
+      button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+---
+section
+  div data-slot="field" role="group"
+    label data-slot="field-label"
+    div data-slot="input-group" role="group"
+      input data-slot="input-group-control"
+      div data-slot="input-group-addon" role="group"
+        div data-slot="popover"
+          button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>" aria-label="Select date"
+            svg
+              path
+              path
+              rect
+              path
+            span
 ---
 section
   div data-slot="date-picker" data-state="closed"
@@ -59,6 +75,54 @@ section
           rect
           path
         span
+---
+section
+  div data-slot="field" role="group"
+    label data-slot="field-label"
+    div data-slot="popover"
+      button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+        svg
+          path
+          path
+          rect
+          path
+---
+section
+  div data-slot="date-picker" data-state="closed"
+    div data-slot="date-picker-control"
+      input data-slot="date-picker-input" data-state="closed"
+      button data-slot="date-picker-trigger" data-state="closed" aria-label="Open calendar" aria-controls="<id>" aria-expanded="false" aria-haspopup="grid"
+        svg
+          path
+          path
+          rect
+          path
+        span
+---
+section
+  div
+    div data-slot="date-picker" data-state="closed"
+      div data-slot="date-picker-control"
+        input data-slot="date-picker-input" data-state="closed"
+        button data-slot="date-picker-trigger" data-state="closed" aria-label="Open calendar" aria-controls="<id>" aria-expanded="false" aria-haspopup="grid"
+          svg
+            path
+            path
+            rect
+            path
+          span
+---
+section
+  div data-slot="field-group"
+    div data-slot="field" role="group"
+      label data-slot="field-label"
+      div data-slot="popover"
+        button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>"
+          svg
+            path
+    div data-slot="field" role="group"
+      label data-slot="field-label"
+      input data-slot="input"
 ---
 section
   div data-slot="date-picker" data-state="closed"

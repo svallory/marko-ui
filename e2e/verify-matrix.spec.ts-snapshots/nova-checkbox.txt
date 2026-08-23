@@ -1,4 +1,11 @@
 section
+  label data-slot="checkbox-root" data-state="unchecked"
+    input aria-labelledby="<id>" aria-invalid="false"
+    span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+      span data-slot="checkbox-indicator" data-state="unchecked"
+    span
+---
+section
   label data-slot="checkbox-root" data-state="checked"
     input aria-labelledby="<id>" aria-invalid="false"
     span data-slot="checkbox" data-state="checked" aria-hidden="true"
@@ -17,11 +24,47 @@ section
     span
 ---
 section
-  label data-slot="checkbox-root" data-state="unchecked"
-    input aria-labelledby="<id>" aria-invalid="false"
-    span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
-      span data-slot="checkbox-indicator" data-state="unchecked"
-    span
+  div data-slot="field-group"
+    div data-slot="field" role="group"
+      label data-slot="checkbox-root" data-state="unchecked"
+        input aria-labelledby="<id>" aria-invalid="false"
+        span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+          span data-slot="checkbox-indicator" data-state="unchecked"
+    div data-slot="field" role="group"
+      label data-slot="checkbox-root" data-state="checked"
+        input aria-labelledby="<id>" aria-invalid="false"
+        span data-slot="checkbox" data-state="checked" aria-hidden="true"
+          span data-slot="checkbox-indicator" data-state="checked"
+            svg
+              path
+      div data-slot="field-content"
+        label data-slot="field-label"
+        p data-slot="field-description"
+    div data-slot="field" role="group"
+      label data-slot="checkbox-root" data-state="unchecked"
+        input aria-labelledby="<id>" aria-invalid="false"
+        span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+          span data-slot="checkbox-indicator" data-state="unchecked"
+    div data-slot="field" role="group"
+      label data-slot="checkbox-root" data-state="unchecked"
+        input aria-labelledby="<id>" aria-invalid="false"
+        span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+          span data-slot="checkbox-indicator" data-state="unchecked"
+      div data-slot="field-content"
+        div data-slot="field-label"
+        p data-slot="field-description"
+---
+section
+  div data-slot="field" role="group"
+    label data-slot="checkbox-root" data-state="checked"
+      input aria-labelledby="<id>" aria-invalid="false"
+      span data-slot="checkbox" data-state="checked" aria-hidden="true"
+        span data-slot="checkbox-indicator" data-state="checked"
+          svg
+            path
+    div data-slot="field-content"
+      label data-slot="field-label"
+      p data-slot="field-description"
 ---
 section
   div
@@ -39,6 +82,36 @@ section
       span
 ---
 section
+  fieldset data-slot="field-set"
+    legend data-slot="field-legend"
+    p data-slot="field-description"
+    div data-slot="field-group"
+      div data-slot="field" role="group"
+        label data-slot="checkbox-root" data-state="checked"
+          input aria-labelledby="<id>" aria-invalid="false"
+          span data-slot="checkbox" data-state="checked" aria-hidden="true"
+            span data-slot="checkbox-indicator" data-state="checked"
+              svg
+                path
+      div data-slot="field" role="group"
+        label data-slot="checkbox-root" data-state="checked"
+          input aria-labelledby="<id>" aria-invalid="false"
+          span data-slot="checkbox" data-state="checked" aria-hidden="true"
+            span data-slot="checkbox-indicator" data-state="checked"
+              svg
+                path
+      div data-slot="field" role="group"
+        label data-slot="checkbox-root" data-state="unchecked"
+          input aria-labelledby="<id>" aria-invalid="false"
+          span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+            span data-slot="checkbox-indicator" data-state="unchecked"
+      div data-slot="field" role="group"
+        label data-slot="checkbox-root" data-state="unchecked"
+          input aria-labelledby="<id>" aria-invalid="false"
+          span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+            span data-slot="checkbox-indicator" data-state="unchecked"
+---
+section
   label data-slot="checkbox-root" data-state="indeterminate"
     input aria-labelledby="<id>" aria-invalid="false"
     span data-slot="checkbox" data-state="indeterminate" aria-hidden="true"
@@ -46,3 +119,94 @@ section
         svg
           path
     span
+---
+section
+  div data-slot="field" role="group"
+    label data-slot="checkbox-root" data-state="unchecked"
+      input aria-invalid="false" aria-labelledby="<id>"
+      span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+        span data-slot="checkbox-indicator" data-state="unchecked"
+---
+section
+  div data-slot="field-group"
+    div data-slot="field" role="group"
+      label data-slot="checkbox-root" data-state="unchecked"
+        input aria-labelledby="<id>" aria-invalid="false"
+        span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+          span data-slot="checkbox-indicator" data-state="unchecked"
+    div data-slot="field" role="group"
+      label data-slot="checkbox-root" data-state="checked"
+        input aria-labelledby="<id>" aria-invalid="false"
+        span data-slot="checkbox" data-state="checked" aria-hidden="true"
+          span data-slot="checkbox-indicator" data-state="checked"
+            svg
+              path
+      div data-slot="field-content"
+        label data-slot="field-label"
+        p data-slot="field-description"
+    div data-slot="field" role="group"
+      label data-slot="checkbox-root" data-state="unchecked"
+        input aria-labelledby="<id>" aria-invalid="false"
+        span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+          span data-slot="checkbox-indicator" data-state="unchecked"
+    div data-slot="field" role="group"
+      label data-slot="checkbox-root" data-state="unchecked"
+        input aria-labelledby="<id>" aria-invalid="false"
+        span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+          span data-slot="checkbox-indicator" data-state="unchecked"
+      div data-slot="field-content"
+        div data-slot="field-label"
+        p data-slot="field-description"
+---
+section
+  div data-slot="table-container"
+    table data-slot="table"
+      thead data-slot="table-header"
+        tr data-slot="table-row"
+          th data-slot="table-head"
+            label data-slot="checkbox-root" data-state="unchecked"
+              input aria-label="Select all" aria-labelledby="<id>" aria-invalid="false"
+              span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+                span data-slot="checkbox-indicator" data-state="unchecked"
+          th data-slot="table-head"
+          th data-slot="table-head"
+          th data-slot="table-head"
+      tbody data-slot="table-body"
+        tr data-slot="table-row" data-state="selected"
+          td data-slot="table-cell"
+            label data-slot="checkbox-root" data-state="checked"
+              input aria-label="Select Sarah Chen" aria-labelledby="<id>" aria-invalid="false"
+              span data-slot="checkbox" data-state="checked" aria-hidden="true"
+                span data-slot="checkbox-indicator" data-state="checked"
+                  svg
+                    path
+          td data-slot="table-cell"
+          td data-slot="table-cell"
+          td data-slot="table-cell"
+        tr data-slot="table-row"
+          td data-slot="table-cell"
+            label data-slot="checkbox-root" data-state="unchecked"
+              input aria-label="Select Marcus Rodriguez" aria-labelledby="<id>" aria-invalid="false"
+              span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+                span data-slot="checkbox-indicator" data-state="unchecked"
+          td data-slot="table-cell"
+          td data-slot="table-cell"
+          td data-slot="table-cell"
+        tr data-slot="table-row"
+          td data-slot="table-cell"
+            label data-slot="checkbox-root" data-state="unchecked"
+              input aria-label="Select Priya Patel" aria-labelledby="<id>" aria-invalid="false"
+              span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+                span data-slot="checkbox-indicator" data-state="unchecked"
+          td data-slot="table-cell"
+          td data-slot="table-cell"
+          td data-slot="table-cell"
+        tr data-slot="table-row"
+          td data-slot="table-cell"
+            label data-slot="checkbox-root" data-state="unchecked"
+              input aria-label="Select David Kim" aria-labelledby="<id>" aria-invalid="false"
+              span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
+                span data-slot="checkbox-indicator" data-state="unchecked"
+          td data-slot="table-cell"
+          td data-slot="table-cell"
+          td data-slot="table-cell"

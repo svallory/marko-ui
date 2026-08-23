@@ -35,8 +35,25 @@ import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
       </FieldGroup>
     </FieldSet>
     <FieldSeparator/>
+    // Same trap as above, just easier to miss: pairing a bare `<Checkbox
+    // id>` with an external `<FieldLabel for>` (this instance visually
+    // separates the label+description from the control, matching upstream's
+    // layout) still nests two <label>s around one input — Checkbox's own
+    // `getHiddenInputProps()` sets `aria-labelledby` to its OWN root
+    // <label>'s id, which has no accessible text when `content` is empty
+    // (axe: "Form elements must have labels", verified via axe-core scan).
+    // Tried overriding with `aria-label` on <Checkbox> first: it never
+    // reaches the rendered <input> at all (nativeAttrs()'s stripOwnProps
+    // only forwards Marko-typed native attrs, and getHiddenInputProps()'s
+    // own aria-labelledby spreads after nativeAttrs() regardless), so the
+    // real fix is giving the checkbox actual `content` — visually hidden
+    // since FieldLabel already renders the same text alongside it, exactly
+    // like the sr-only pattern already used elsewhere in this repo's demos
+    // (e.g. button-group-popover.marko's sr-only FieldLabel).
     <Field orientation="horizontal">
-      <Checkbox id="field-checkbox-sync-folders" defaultChecked/>
+      <Checkbox id="field-checkbox-sync-folders" defaultChecked>
+        <span class="sr-only">Sync Desktop & Documents folders</span>
+      </Checkbox>
       <FieldContent>
         <FieldLabel for="field-checkbox-sync-folders">Sync Desktop & Documents folders</FieldLabel>
         <FieldDescription>

@@ -1,18 +1,23 @@
 // Upstream drives this off a manually-managed `CarouselApi` from `setApi` +
 // a `React.useEffect`/`api.on("select", ...)` subscription (Embla's ref-based
-// API). Our carousel is a Zag machine: `api()` from `<connect>` already IS
-// the live, reactive snapshot — `api().page` and `api().pageSnapPoints`
-// update on every machine notify with no imperative subscription needed.
-// So "Slide N of M" is read straight off `api()` inside a render-prop-free
-// derived value, ported faithfully in *behavior* (same live counter) without
-// the setApi indirection upstream needs for its Embla ref.
+// API). Our carousel is a Zag machine, so the natural port is its own
+// `pageChange` callback prop feeding a local `<let>` — no imperative
+// subscription needed, and no reliance on pulling the connect api back out
+// via `<Carousel/carouselApi/>`. That attr-tag-return binding, read from a
+// sibling block outside the tag it's bound on, is a reference Marko
+// 6.3.34's compiler cannot hoist correctly: it silently compiles to its
+// `_hoist_read_error` sentinel (always `undefined` at runtime, both SSR and
+// client) instead of erroring at build time. Verified: this crashed SSR
+// with "Cannot read properties of undefined (reading 'page')" on every
+// style. `pageChange` sidesteps the whole pattern.
 import Carousel from "@marko-ui/shadcn/ui/carousel/carousel.marko";
 
 static const SLIDES = [1, 2, 3, 4, 5];
 
+<let/page=0/>
+
 <div class="mx-auto max-w-[10rem] sm:max-w-xs">
-  <Carousel items=SLIDES class="w-full max-w-xs">
-  <Carousel/carouselApi/>
+  <Carousel items=SLIDES class="w-full max-w-xs" pageChange(newPage) { page = newPage; }>
     <@content|item|>
       <div class="flex aspect-square items-center justify-center rounded-lg border bg-card m-px">
         <span class="text-4xl font-semibold">${item}</span>
@@ -20,6 +25,6 @@ static const SLIDES = [1, 2, 3, 4, 5];
     </@content>
   </Carousel>
   <div class="py-2 text-center text-sm text-muted-foreground">
-    Slide ${carouselApi().page + 1} of ${carouselApi().pageSnapPoints.length}
+    Slide ${page + 1} of ${SLIDES.length}
   </div>
 </div>

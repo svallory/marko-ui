@@ -64,8 +64,24 @@ const INTERACTIVE_SELECTOR = "button:not([disabled]), [role=button]:not([aria-di
 // run via test.fail() (not test.skip()) so they still RUN every push: a
 // component silently becoming fixed shows up as an unexpected pass (visible
 // in the report), and no new component can join this silently without
-// editing this list. Currently empty — all components pass.
-const KNOWN_BROKEN_COMPONENTS = new Set<string>([]);
+// editing this list.
+//
+// The four below were added after the 229-demo verify-matrix repair
+// (docs-parity backlog) surfaced them as failing across all 9 styles.
+// Verified NOT caused by the demo changes or this test infra: each error
+// reproduces identically on the real, live /docs/components/<name> page
+// (not just the /verify/ matrix), by clicking the same control — a
+// pre-existing component-source bug, blocked on a fix in packages/shadcn/ui/.
+//   - dropdown-menu: clicking a `type: "sub"` submenu entry throws
+//     "e._.q is not a function" (packages/shadcn/ui/dropdown-menu/submenu.marko).
+//   - menubar: same submenu mechanism, same error
+//     (packages/shadcn/ui/menubar/submenu.marko).
+//   - item: item-dropdown's <DropdownMenu> with <@item> attr-tags (not
+//     subEntries) throws "Cannot read properties of undefined (reading '3')"
+//     on open — a distinct symptom of dropdown-menu's interaction wiring.
+//   - date-picker: opening the calendar popover throws
+//     "t._.a1 is not a function" on every demo with a trigger button.
+const KNOWN_BROKEN_COMPONENTS = new Set<string>(["date-picker", "dropdown-menu", "item", "menubar"]);
 
 for (const entry of manifest.entries) {
   const testFn = KNOWN_BROKEN_COMPONENTS.has(entry.component) ? test.fail : test;

@@ -1,0 +1,586 @@
+section
+  div
+    div data-slot="card"
+      div data-slot="card-header"
+        div data-slot="card-title"
+        div data-slot="card-description"
+        div data-slot="card-action"
+          button data-slot="button" aria-label="Reset anchored turns"
+            svg
+              path
+              path
+      div data-slot="card-content"
+        div data-slot="empty"
+          div data-slot="empty-header"
+            div data-slot="empty-icon"
+              svg
+                path
+            div data-slot="empty-title"
+            div data-slot="empty-description"
+      div data-slot="card-footer"
+        div data-slot="toggle-group" role="radiogroup" aria-label="Select scroll anchor role"
+          button data-slot="toggle-group-item" role="radio" data-state="on" aria-checked="true"
+          button data-slot="toggle-group-item" role="radio" data-state="off" aria-checked="false"
+        button data-slot="button"
+          svg
+            path
+            path
+          span
+    div
+---
+section
+  div
+    div data-slot="card"
+      div data-slot="card-header"
+        div data-slot="card-title"
+        div data-slot="card-description"
+        div data-slot="card-action"
+          button data-slot="button" aria-label="Reset animated messages"
+            svg
+              path
+              path
+      div data-slot="card-content"
+        div data-slot="empty"
+          div data-slot="empty-header"
+            div data-slot="empty-icon"
+              svg
+                path
+            div data-slot="empty-title"
+            div data-slot="empty-description"
+      div data-slot="card-footer"
+        div data-slot="select" aria-label="Animation preset"
+          label data-slot="select-field-label"
+          div data-slot="select-control" data-state="closed"
+            button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+              span data-slot="select-value"
+              svg data-state="closed" aria-hidden="true"
+                path
+          select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+            option
+            option
+            option
+        button data-slot="button"
+          svg
+            path
+            path
+          span
+    div
+---
+section
+  div
+    div data-slot="card"
+      div data-slot="card-header"
+        div data-slot="card-title"
+        div data-slot="card-description"
+        div data-slot="card-action"
+          button data-slot="dropdown-menu-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+      div data-slot="card-content"
+        div data-slot="message-scroller"
+          div data-slot="message-scroller-viewport" role="region" aria-label="Messages"
+            div data-slot="message-scroller-content" role="log" aria-relevant="additions"
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+                        p
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+                        p
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+                        p
+              div aria-hidden="true"
+          button data-slot="message-scroller-button"
+            svg
+              path
+              path
+            span
+    div
+---
+section
+  div
+    div data-slot="card"
+      div data-slot="card-header"
+        div data-slot="card-title"
+        div data-slot="card-description"
+        div data-slot="card-action"
+          span data-slot="tooltip"
+            button data-slot="tooltip-trigger" data-state="closed" aria-label="Reset conversation"
+              svg
+                path
+                path
+      div data-slot="card-content"
+        div data-slot="empty"
+          div data-slot="empty-header"
+            div data-slot="empty-icon"
+              svg
+                path
+            div data-slot="empty-title"
+            div data-slot="empty-description"
+      div data-slot="card-footer"
+        div
+          span
+          button data-slot="button"
+            svg
+              path
+              path
+            span
+    div
+---
+section
+  div
+    div data-slot="card"
+      div data-slot="card-header"
+        div data-slot="card-title"
+        div data-slot="card-description"
+        div data-slot="card-action"
+          span data-slot="tooltip"
+            button data-slot="tooltip-trigger" data-state="closed" aria-label="Reset conversation"
+              svg
+                path
+                path
+      div data-slot="card-content"
+        div data-slot="message-scroller"
+          div data-slot="message-scroller-viewport" role="region" aria-label="Messages"
+            div data-slot="message-scroller-content" role="log" aria-relevant="additions"
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="message-header"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+              div aria-hidden="true"
+          button data-slot="message-scroller-button"
+            svg
+              path
+              path
+            span
+      div data-slot="card-footer"
+        button data-slot="button"
+        p
+    div
+---
+section
+  div
+    div data-slot="card"
+      div data-slot="card-header"
+        div data-slot="card-title"
+        div data-slot="card-description"
+        div data-slot="card-action"
+          span data-slot="tooltip"
+            button data-slot="tooltip-trigger" data-state="closed" aria-label="Reset loaded messages"
+              svg
+                path
+                path
+      div data-slot="card-content"
+        div data-slot="message-scroller"
+          div data-slot="message-scroller-viewport" role="region" aria-label="Messages"
+            div data-slot="message-scroller-content" role="log" aria-relevant="additions"
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="marker"
+                  span data-slot="marker-content"
+              div aria-hidden="true"
+          button data-slot="message-scroller-button"
+            svg
+              path
+              path
+            span
+      div data-slot="card-footer"
+        button data-slot="button"
+        p
+    div
+  div data-slot="toaster" role="region" aria-label="Notifications, bottom-end (alt+T)" aria-live="polite" aria-relevant="additions text" aria-atomic="false"
+---
+section
+  div
+    div data-slot="card"
+      div data-slot="card-header"
+        div data-slot="card-title"
+        div data-slot="card-description"
+      div data-slot="card-content"
+        div data-slot="message-scroller"
+          div data-slot="message-scroller-viewport" role="region" aria-label="Messages"
+            div data-slot="message-scroller-content" role="log" aria-relevant="additions"
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+                        p
+                        p
+                        p
+              div aria-hidden="true"
+          button data-slot="message-scroller-button"
+            svg
+              path
+              path
+            span
+      div data-slot="card-footer"
+        div data-slot="tabs"
+          div data-slot="tabs-list" role="tablist" aria-orientation="horizontal"
+            button data-slot="tabs-trigger" role="tab" aria-selected="false"
+            button data-slot="tabs-trigger" role="tab" aria-selected="false"
+            button data-slot="tabs-trigger" role="tab" aria-selected="true" aria-controls="<id>"
+    div
+---
+section
+  div
+    div data-slot="card"
+      div data-slot="card-header"
+        div data-slot="card-title"
+        div data-slot="card-description"
+        div data-slot="card-action"
+          span data-slot="tooltip"
+            button data-slot="tooltip-trigger" data-state="closed" aria-label="Reset context example"
+              svg
+                path
+                path
+      div data-slot="card-content"
+        div data-slot="message-scroller"
+          div data-slot="message-scroller-viewport" role="region" aria-label="Messages"
+            div data-slot="message-scroller-content" role="log" aria-relevant="additions"
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div aria-hidden="true"
+          button data-slot="message-scroller-button"
+            svg
+              path
+              path
+            span
+      div data-slot="card-footer"
+        div
+          span
+          div data-slot="slider"
+            div data-slot="slider-control"
+              div data-slot="slider-track"
+                div data-slot="slider-range"
+              input
+              div data-slot="slider-thumb" role="slider" aria-label="Previous context peek" aria-labelledby="<id>" aria-orientation="horizontal" aria-valuemax="128" aria-valuemin="64" aria-valuenow="64"
+          button data-slot="button"
+            svg
+              path
+              path
+            span
+    div
+---
+section
+  div
+    div data-slot="card"
+      div data-slot="card-header"
+        div data-slot="card-title"
+        div data-slot="card-description"
+      div data-slot="card-content"
+        div data-slot="message-scroller"
+          div data-slot="message-scroller-viewport" role="region" aria-label="Messages"
+            div data-slot="message-scroller-content" role="log" aria-relevant="additions"
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+                        p
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+                        p
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+                        p
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+                        p
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+                        p
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+              div data-slot="message-scroller-item"
+                div data-slot="message"
+                  div data-slot="message-content"
+                    div data-slot="bubble"
+                      div data-slot="bubble-content"
+                        p
+                        p
+                        p
+              div aria-hidden="true"
+          button data-slot="message-scroller-button"
+            svg
+              path
+              path
+            span
+      div data-slot="card-footer"
+    div
+---
+section
+  div
+    div data-slot="card"
+      div data-slot="card-header"
+        div data-slot="card-title"
+        div data-slot="card-description"
+        div data-slot="card-action"
+          span data-slot="tooltip"
+            button data-slot="tooltip-trigger" data-state="closed" aria-label="Reset stream"
+              svg
+                path
+                path
+      div data-slot="card-content"
+        div data-slot="empty"
+          div data-slot="empty-header"
+            div data-slot="empty-icon"
+              svg
+                path
+            div data-slot="empty-title"
+            div data-slot="empty-description"
+      div data-slot="card-footer"
+        div
+          span
+          button data-slot="button"
+            svg
+              path
+              path
+            span
+    div
+---
+section
+  div
+    div
+      div data-slot="card"
+        div data-slot="card-header"
+          div data-slot="card-title"
+          div data-slot="card-description"
+        div data-slot="card-content"
+          div data-slot="message-scroller"
+            div data-slot="message-scroller-viewport" role="region" aria-label="Messages"
+              div data-slot="message-scroller-content" role="log" aria-relevant="additions"
+                div data-slot="message-scroller-item"
+                  div data-slot="message"
+                    div data-slot="message-content"
+                      div data-slot="bubble"
+                        div data-slot="bubble-content"
+                          p
+                div data-slot="message-scroller-item"
+                  div data-slot="message"
+                    div data-slot="message-content"
+                      div data-slot="bubble"
+                        div data-slot="bubble-content"
+                          p
+                div data-slot="message-scroller-item"
+                  div data-slot="message"
+                    div data-slot="message-content"
+                      div data-slot="bubble"
+                        div data-slot="bubble-content"
+                          p
+                div data-slot="message-scroller-item"
+                  div data-slot="message"
+                    div data-slot="message-content"
+                      div data-slot="bubble"
+                        div data-slot="bubble-content"
+                          p
+                          p
+                div data-slot="message-scroller-item"
+                  div data-slot="message"
+                    div data-slot="message-content"
+                      div data-slot="bubble"
+                        div data-slot="bubble-content"
+                          p
+                div data-slot="message-scroller-item"
+                  div data-slot="message"
+                    div data-slot="message-content"
+                      div data-slot="bubble"
+                        div data-slot="bubble-content"
+                          p
+                          p
+                div data-slot="message-scroller-item"
+                  div data-slot="message"
+                    div data-slot="message-content"
+                      div data-slot="bubble"
+                        div data-slot="bubble-content"
+                          p
+                div data-slot="message-scroller-item"
+                  div data-slot="message"
+                    div data-slot="message-content"
+                      div data-slot="bubble"
+                        div data-slot="bubble-content"
+                          p
+                          p
+                div aria-hidden="true"
+            button data-slot="message-scroller-button"
+              svg
+                path
+                path
+              span
+      div
+        span data-slot="hover-card"
+          button data-slot="hover-card-trigger" data-state="closed" aria-label="Open transcript outline"
+            span
+            span
+            span
+            span
+    div

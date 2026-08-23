@@ -1,8 +1,46 @@
 section
+  div
+    div data-slot="item"
+      div data-slot="item-media"
+        span data-slot="avatar"
+          img data-slot="avatar-image" data-state="visible"
+          span data-slot="avatar-fallback" data-state="hidden"
+      div data-slot="item-content"
+        div data-slot="item-title"
+        p data-slot="item-description"
+      div data-slot="item-actions"
+        button data-slot="button" aria-label="Invite"
+          svg
+            path
+            path
+    div data-slot="item"
+      div data-slot="item-media"
+        div
+          span data-slot="avatar"
+            img data-slot="avatar-image" data-state="visible"
+            span data-slot="avatar-fallback" data-state="hidden"
+          span data-slot="avatar"
+            img data-slot="avatar-image" data-state="visible"
+            span data-slot="avatar-fallback" data-state="hidden"
+          span data-slot="avatar"
+            img data-slot="avatar-image" data-state="visible"
+            span data-slot="avatar-fallback" data-state="hidden"
+      div data-slot="item-content"
+        div data-slot="item-title"
+        p data-slot="item-description"
+      div data-slot="item-actions"
+        button data-slot="button"
+---
+section
   div data-slot="item"
     div data-slot="item-content"
       div data-slot="item-title"
       p data-slot="item-description"
+---
+section
+  button data-slot="dropdown-menu-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+    svg
+      path
 ---
 section
   div data-slot="item-group"
@@ -68,6 +106,26 @@ section
       div data-slot="item-content"
         div data-slot="item-title"
         p data-slot="item-description"
+---
+section
+  div
+    div data-slot="item"
+      div data-slot="item-content"
+        div data-slot="item-title"
+        p data-slot="item-description"
+      div data-slot="item-actions"
+        button data-slot="button"
+    a
+      div data-slot="item"
+        div data-slot="item-media"
+          svg
+            path
+            path
+        div data-slot="item-content"
+          div data-slot="item-title"
+        div data-slot="item-actions"
+          svg
+            path
 ---
 section
   div

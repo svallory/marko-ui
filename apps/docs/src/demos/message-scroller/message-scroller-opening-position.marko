@@ -44,6 +44,12 @@ static const MESSAGES: ChatMessage[] = [
 
 export type Position = "start" | "end" | "last-anchor";
 
+static const POSITION_TABS = [
+  { value: "start", label: "start" },
+  { value: "end", label: "end" },
+  { value: "last-anchor", label: "last-anchor" },
+];
+
 <let/position=("last-anchor" as Position)/>
 <let/positionKey=0/>
 
@@ -107,11 +113,16 @@ export type Position = "start" | "end" | "last-anchor";
       </MessageScrollerProvider>
     </CardContent>
     <CardFooter class="flex items-center justify-center border-t">
-      <Tabs class="w-full" value=position valueChange=onPositionChange>
-        <@trigger value="start">start</@trigger>
-        <@trigger value="end">end</@trigger>
-        <@trigger value="last-anchor">last-anchor</@trigger>
-      </Tabs>
+      // Used purely as a segmented control (position is driven externally by
+      // runOpeningScroll, not by tab-panel content) — `<@trigger>`-only usage
+      // leaves `panels` empty (tabs.marko only auto-derives panels from
+      // `items=`, not from bare `<@trigger>` tags), so every trigger's
+      // `aria-controls` pointed at a tabpanel id that was never rendered
+      // (axe: "aria-valid-attr-value", verified via axe-core scan — same
+      // dangling-reference class of bug as switch/checkbox's aria-labelledby
+      // above). `items=` + an (empty) body makes tabs.marko render real,
+      // empty tabpanels so the ids resolve.
+      <Tabs items=POSITION_TABS class="w-full" value=position valueChange=onPositionChange></Tabs>
     </CardFooter>
   </Card>
   <div class="mx-auto max-w-sm px-0.5 text-center text-xs text-muted-foreground">

@@ -1,16 +1,27 @@
 section
-  textarea data-slot="textarea"
+  div
+    textarea data-slot="textarea"
+    button data-slot="button"
 ---
 section
   textarea data-slot="textarea"
 ---
 section
-  textarea data-slot="textarea" aria-invalid="true"
+  textarea data-slot="textarea"
 ---
 section
   div
     label data-slot="label"
     textarea data-slot="textarea"
+---
+section
+  textarea data-slot="textarea" aria-invalid="true"
+---
+section
+  div data-slot="field" role="group"
+    label data-slot="field-label"
+    textarea data-slot="textarea"
+    p data-slot="field-description"
 ---
 section
   div

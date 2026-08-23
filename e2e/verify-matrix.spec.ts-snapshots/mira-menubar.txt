@@ -1,6 +1,11 @@
 section
   div data-slot="menubar"
     button data-slot="menubar-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+    button data-slot="menubar-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+---
+section
+  div data-slot="menubar"
+    button data-slot="menubar-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
 ---
 section
   div
@@ -21,4 +26,27 @@ section
 ---
 section
   div data-slot="menubar"
+    button data-slot="menubar-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+---
+section
+  div data-slot="menubar"
+    button data-slot="menubar-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+    button data-slot="menubar-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+---
+section
+  div data-slot="menubar"
+    button data-slot="menubar-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+    button data-slot="menubar-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+---
+section
+  div
+    div data-slot="menubar"
+      button data-slot="menubar-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+      button data-slot="menubar-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+      button data-slot="menubar-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+      button data-slot="menubar-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
+---
+section
+  div data-slot="menubar"
+    button data-slot="menubar-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
     button data-slot="menubar-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"

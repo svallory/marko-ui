@@ -1,0 +1,143 @@
+section
+  div
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+---
+section
+  div
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+        div data-slot="collapsible" data-state="closed"
+          button data-slot="collapsible-trigger" data-state="closed" aria-controls="<id>" aria-expanded="false"
+            svg
+              path
+          div data-slot="collapsible-content" data-state="closed"
+            div
+---
+section
+  div
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+    div data-slot="bubble-group"
+      div data-slot="bubble"
+        div data-slot="bubble-content"
+      div data-slot="bubble"
+        div data-slot="bubble-content"
+        div data-slot="bubble-reactions" role="img" aria-label="Reaction: thumbs up"
+          span
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+      div data-slot="bubble-reactions" role="img" aria-label="Reactions: thumbs up, fire, eyes, and 2 more"
+        span
+        span
+        span
+        span
+---
+section
+  div
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+    div data-slot="bubble-group"
+      div data-slot="bubble"
+        div data-slot="bubble-content"
+      div data-slot="bubble"
+        div data-slot="bubble-content"
+      div data-slot="bubble"
+        div data-slot="bubble-content"
+        div data-slot="bubble-reactions" aria-label="Reactions: eyes"
+          span
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+---
+section
+  div
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+    div data-slot="bubble-group"
+      div data-slot="bubble"
+        div data-slot="bubble-content"
+          button
+      div data-slot="bubble"
+        div data-slot="bubble-content"
+          button
+      div data-slot="bubble"
+        div data-slot="bubble-content"
+          button
+  div data-slot="toaster" role="region" aria-label="Notifications, bottom-end (alt+T)" aria-live="polite" aria-relevant="additions text" aria-atomic="false"
+---
+section
+  div
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+      div data-slot="bubble-reactions"
+        div data-slot="popover"
+          button data-slot="popover-trigger" data-state="closed" aria-haspopup="dialog" aria-expanded="false" aria-controls="<id>" aria-label="Show error details"
+            svg
+              circle
+              path
+              path
+---
+section
+  div
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+      div data-slot="bubble-reactions" role="img" aria-label="Reactions: thumbs up, surprised"
+        span
+        span
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+      div data-slot="bubble-reactions" role="img" aria-label="Reactions: eyes, rocket, and 2 more"
+        span
+        span
+        span
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+      div data-slot="bubble-reactions" role="img" aria-label="Reactions: party popper, clapping hands"
+        span
+        span
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+      div data-slot="bubble-reactions"
+        button data-slot="button"
+  div data-slot="toaster" role="region" aria-label="Notifications, bottom-end (alt+T)" aria-live="polite" aria-relevant="additions text" aria-atomic="false"
+---
+section
+  div
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+      div data-slot="bubble-reactions"
+        span data-slot="tooltip"
+          button data-slot="tooltip-trigger" data-state="closed"
+            svg
+              path
+---
+section
+  div
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+      div data-slot="bubble-reactions" role="img" aria-label="Reaction: thumbs up"
+        span
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+    div data-slot="bubble"
+      div data-slot="bubble-content"
+      div data-slot="bubble-reactions" role="img" aria-label="Reaction: fire"
+        span
+    div data-slot="bubble"
+      div data-slot="bubble-content"

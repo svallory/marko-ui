@@ -58,6 +58,50 @@ section
             path
 ---
 section
+  div
+    div data-slot="field" role="group"
+      label data-slot="field-label"
+      div data-slot="select"
+        label data-slot="select-field-label"
+        div data-slot="select-control" data-state="closed"
+          button data-slot="select-trigger" role="combobox" data-state="closed" aria-controls="<id>" aria-expanded="false" aria-haspopup="listbox" aria-invalid="false" aria-required="false" aria-labelledby="<id>"
+            span data-slot="select-value"
+            svg data-state="closed" aria-hidden="true"
+              path
+        select data-slot="select-hidden-select" aria-hidden="true" aria-labelledby="<id>"
+          option
+          option
+          option
+          option
+    nav data-slot="pagination" role="navigation" aria-label="pagination"
+      ul data-slot="pagination-content"
+        li data-slot="pagination-item"
+          button data-slot="pagination-link" aria-label="Go to previous page"
+            svg
+              path
+            span
+        li data-slot="pagination-item"
+          button data-slot="pagination-link" aria-current="page" aria-label="page 1"
+        li data-slot="pagination-item"
+          button data-slot="pagination-link" aria-label="page 2"
+        li data-slot="pagination-item"
+          button data-slot="pagination-link" aria-label="page 3"
+        li data-slot="pagination-item"
+          button data-slot="pagination-link" aria-label="page 4"
+        li data-slot="pagination-item"
+          button data-slot="pagination-link" aria-label="page 5"
+        li data-slot="pagination-item"
+          span data-slot="pagination-ellipsis" aria-hidden="true"
+            span
+        li data-slot="pagination-item"
+          button data-slot="pagination-link" aria-label="last page, page 10"
+        li data-slot="pagination-item"
+          button data-slot="pagination-link" aria-label="Go to next page"
+            span
+            svg
+              path
+---
+section
   nav data-slot="pagination" role="navigation" aria-label="pagination"
     ul data-slot="pagination-content"
       li data-slot="pagination-item"
@@ -70,7 +114,16 @@ section
       li data-slot="pagination-item"
         button data-slot="pagination-link" aria-current="page" aria-label="page 2"
       li data-slot="pagination-item"
-        button data-slot="pagination-link" aria-label="last page, page 3"
+        button data-slot="pagination-link" aria-label="page 3"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 4"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 5"
+      li data-slot="pagination-item"
+        span data-slot="pagination-ellipsis" aria-hidden="true"
+          span
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="last page, page 10"
       li data-slot="pagination-item"
         button data-slot="pagination-link" aria-label="Go to next page"
           span
@@ -107,6 +160,26 @@ section
           span
       li data-slot="pagination-item"
         button data-slot="pagination-link" aria-label="last page, page 50"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="Go to next page"
+          span
+          svg
+            path
+---
+section
+  nav data-slot="pagination" role="navigation" aria-label="pagination"
+    ul data-slot="pagination-content"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="Go to previous page"
+          svg
+            path
+          span
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="page 1"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-current="page" aria-label="page 2"
+      li data-slot="pagination-item"
+        button data-slot="pagination-link" aria-label="last page, page 3"
       li data-slot="pagination-item"
         button data-slot="pagination-link" aria-label="Go to next page"
           span
