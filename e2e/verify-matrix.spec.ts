@@ -70,17 +70,53 @@ const INTERACTIVE_SELECTOR = "button:not([disabled]), [role=button]:not([aria-di
 // (docs-parity backlog) surfaced them as failing across all 9 styles.
 // Verified NOT caused by the demo changes or this test infra: each error
 // reproduces identically on the real, live /docs/components/<name> page
-// (not just the /verify/ matrix), by clicking the same control — a
-// pre-existing component-source bug, blocked on a fix in packages/shadcn/ui/.
-//   - dropdown-menu: clicking a `type: "sub"` submenu entry throws
-//     "e._.q is not a function" (packages/shadcn/ui/dropdown-menu/submenu.marko).
-//   - menubar: same submenu mechanism, same error
-//     (packages/shadcn/ui/menubar/submenu.marko).
+// (not just the /verify/ matrix), by clicking the same control.
+//
+// RCA (2026-08-23, production preview build + sourcemapped stacks):
+// all four are the SAME root cause, not four separate defects. Every crash
+// site resolves (via the emitted .js.map) to a reactive closure — a Zag
+// `api()` read, or a `<for>`-captured loop variable — inside content that
+// was rendered through marko-zag's <portal>'s `<${input.content}/>`
+// dynamic-tag-content invocation, where that content itself contains
+// (or IS) another Zag-connected component instance with its own reactive
+// closures. Marko 6.3.34 corrupts the client resume/effects walk for that
+// inner scope — the exact bug class in
+// notes/bug-marko-dynamic-tag-hydration-crash.md, just triggered by nested
+// <portal>+dynamic-content instead of a dynamic component-tag reference.
+// Confirmed per-component:
+//   - dropdown-menu / menubar: opening a `type: "sub"` submenu throws
+//     "e._.q is not a function" / "$scope._.api is not a function".
+//     Sourcemapped to `<if=api().open>` inside submenu.marko's OWN
+//     <portal> (dropdown-menu/submenu.marko:87, menubar/submenu.marko) —
+//     Submenu is a second Zag-connected component nested (via a plain
+//     <for>, no dynamic tag needed) inside the parent menu's own
+//     <portal><if=api().open> block. Reproduces even after hardening
+//     submenu.marko's trigger render-prop to hand the parent a `() =>
+//     api()` getter instead of the live `api()` object (a real, kept fix
+//     for a secondary unserializable-argument issue — see that file — but
+//     orthogonal to this crash, which fires deeper, on close/reopen of the
+//     submenu's own portal content, not at the trigger invocation site).
 //   - item: item-dropdown's <DropdownMenu> with <@item> attr-tags (not
-//     subEntries) throws "Cannot read properties of undefined (reading '3')"
-//     on open — a distinct symptom of dropdown-menu's interaction wiring.
-//   - date-picker: opening the calendar popover throws
-//     "t._.a1 is not a function" on every demo with a trigger button.
+//     subEntries) throws "Cannot read properties of undefined (reading
+//     '3')" on open. Sourcemapped into the generated demo wrapper's
+//     <for|person|> body rendered via dropdown-menu.marko's
+//     `<${entry.content}/>` — same <portal>-scoped closure corruption,
+//     this time on a loop-captured variable instead of `api`.
+//   - date-picker: opening a Popover+Calendar composition (NOT the
+//     standalone <DatePicker>, which is clean in isolation) throws
+//     "t._.a1 is not a function" on close. Sourcemapped to Calendar's own
+//     reactive `api()` reads (calendar.marko:170) — Calendar is a second
+//     Zag-connected component rendered via popover.marko's
+//     `<${input.content}/>` inside popover's own <portal><if=api().open>.
+//
+// Not fixable inside packages/shadcn/ui/** without abandoning the <portal>
+// primitive project-wide: every affected component already follows the
+// same correct SSR-safe Zag pattern as every WORKING portal-using
+// component (popover, dialog, hover-card, tooltip, context-menu's own
+// submenu — untested here but structurally identical, so likely latent
+// too). The defect is in marko-zag's <portal> (`<${input.content}/>`)
+// combined with Marko 6.3.34's resume-effects handling of nested
+// Zag-connected children — needs a marko-zag and/or Marko-core fix.
 const KNOWN_BROKEN_COMPONENTS = new Set<string>(["date-picker", "dropdown-menu", "item", "menubar"]);
 
 for (const entry of manifest.entries) {

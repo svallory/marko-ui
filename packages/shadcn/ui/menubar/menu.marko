@@ -179,7 +179,7 @@ export interface Input {
             >
               <@trigger|childApi|>
                 <div
-                  ...api().getTriggerItemProps(childApi)
+                  ...api().getTriggerItemProps(childApi())
                   data-slot="menubar-sub-trigger"
                   data-inset=entry.inset || undefined
                   class="mu-menubar-sub-trigger flex cursor-default items-center outline-none select-none"

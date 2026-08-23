@@ -37,11 +37,12 @@ export interface Input {
    */
   onChildReady?: (childService: menu.Service) => void;
   /**
-   * Trigger render-prop: receives this submenu's connected api so the caller
-   * (the parent menu's item loop) can build the row with
-   * `parentApi().getTriggerItemProps(childApi)`.
+   * Trigger render-prop: receives a GETTER for this submenu's connected api
+   * (never the live api object itself — see the invocation site below for
+   * why) so the caller (the parent menu's item loop) can build the row with
+   * `parentApi().getTriggerItemProps(childApi())`.
    */
-  trigger: Marko.AttrTag<{ content: Marko.Body<[menu.Api]> }>;
+  trigger: Marko.AttrTag<{ content: Marko.Body<[() => menu.Api]> }>;
 }
 
 <machine-props/machineProps from=input pick=menu.props/>
@@ -67,7 +68,16 @@ export interface Input {
   }
 />
 
-<${input.trigger.content}(api())/>
+// Pass a GETTER, not `api()` itself: this is a dynamic tag-content
+// invocation (`<${...}/>`) crossing into the PARENT's template scope, and
+// a live, function-bearing object (the connected api, unserializable per
+// the SSR-safe Zag pattern) carried through as a render-prop argument here
+// is exactly the currency Marko's tag-input serialization forbids (see
+// service.marko's `machine=() => ...` requirement — a template-created
+// closure is serializable, a raw unserializable value is not). Hand over
+// `() => api()` and let the parent call it when it actually needs the
+// live api.
+<${input.trigger.content}(() => api())/>
 <portal>
   <if=api().open>
     <div ...api().getPositionerProps() style=positionerStyle data-slot="menubar-sub-content-positioner">

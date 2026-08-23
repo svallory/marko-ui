@@ -41,11 +41,12 @@ export interface Input {
    */
   onChildReady?: (childService: menu.Service) => void;
   /**
-   * Trigger render-prop: receives this submenu's connected api so the caller
-   * (the parent menu's item loop) can build the row with
-   * `parentApi().getTriggerItemProps(childApi)`.
+   * Trigger render-prop: receives a GETTER for this submenu's connected api
+   * (never the live api object itself — see the invocation site below for
+   * why) so the caller (the parent menu's item loop) can build the row with
+   * `parentApi().getTriggerItemProps(childApi())`.
    */
-  trigger: Marko.AttrTag<{ content: Marko.Body<[menu.Api]> }>;
+  trigger: Marko.AttrTag<{ content: Marko.Body<[() => menu.Api]> }>;
 }
 
 <machine-props/machineProps from=input pick=menu.props/>
@@ -71,7 +72,17 @@ export interface Input {
   }
 />
 
-<${input.trigger.content}(api())/>
+// Pass a GETTER, not `api()` itself: this is a dynamic tag-content
+// invocation (`<${...}/>`) crossing into the PARENT's template scope, and
+// Marko 6.3.34 corrupts the resume-effects payload when a live,
+// function-bearing object (the connected api, unserializable per the
+// SSR-safe Zag pattern) is carried through as a render-prop argument here —
+// same failure class as notes/bug-marko-dynamic-tag-hydration-crash.md,
+// manifesting as `$scope._.api is not a function` on the client. A
+// template-created closure is serializable currency in Marko (see
+// service.marko's `machine=() => ...` requirement), so hand over `() =>
+// api()` and let the parent call it when it actually needs the live api.
+<${input.trigger.content}(() => api())/>
 <portal>
   <if=api().open>
     <div ...api().getPositionerProps() style=positionerStyle data-slot="dropdown-menu-sub-content-positioner">
