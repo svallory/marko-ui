@@ -1,0 +1,8 @@
+/* Reuses the real docs app's CSS build (same token map, same style layers)
+ * by importing it directly — never a copy. See PROTOCOL.md: this harness
+ * forces light theme + style-nova, matching what apps/docs/src/routes/
+ * +layout.marko's <body class="style-nova theme-default"> already defaults
+ * to, so no override is needed beyond ensuring `.dark` is never toggled on
+ * (this harness never renders the theme-toggle script that would add it).
+ */
+@import "../../../../../apps/docs/src/app.css";

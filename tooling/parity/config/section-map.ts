@@ -11,7 +11,7 @@
  * (ignore must be sole action; at most one placement action per array; at
  * most one no-when default variant).
  */
-import { defineSectionMap } from "./map-types.ts"
+import { defineSectionMap } from "../runner/map-types.ts"
 
 export default defineSectionMap({
   installation: [{ action: "keep" }],

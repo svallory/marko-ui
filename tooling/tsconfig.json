@@ -8,6 +8,8 @@
   },
   "include": ["**/*.ts"],
   "exclude": [
-    "parity/harness-react/**"
+    "parity/harnesses/shadcn/harness-react/**",
+    "parity/harnesses/marko-ui/src/**",
+    "parity/harnesses/marko-ui/.marko-run/**"
   ]
 }

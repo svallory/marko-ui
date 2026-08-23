@@ -180,10 +180,10 @@ strip anything else non [a-z0-9-].
 
 ## After the LLM responds
 
-1. Save its JSON output to `tooling/parity/section-map.proposed.json`.
+1. Save its JSON output to `tooling/parity/config/section-map.proposed.json`.
 2. A human reviews each proposed entry against the actual upstream
    section and our current page, and either:
-   - copies it (as-is or edited) into `tooling/parity/section-map.ts`,
+   - copies it (as-is or edited) into `tooling/parity/config/section-map.ts`,
      converting any declarative `when` into a predicate function per
      SCHEMA.md's "JSON proposals → TS promotion", or
    - rejects it and leaves the section unclassified for a future pass.

@@ -1,0 +1,6 @@
+{
+  "name": "marko-ui",
+  "start": "bun run build && bun run preview",
+  "port": 4175,
+  "demoPath": "/demo/"
+}

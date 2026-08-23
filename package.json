@@ -4,7 +4,8 @@
   "type": "module",
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "tooling/parity/harnesses/marko-ui"
   ],
   "scripts": {
     "check": "bun run --filter '*' check && bun run check:tooling",
@@ -20,6 +21,8 @@
     "test:e2e": "playwright test",
     "build:cli-manifest": "bun apps/docs/scripts/build-cli-manifest.ts",
     "check:parity": "bun tooling/check-parity.ts",
+    "parity:extract:shadcn": "bun tooling/parity/harnesses/shadcn/extract/index.ts",
+    "parity:extract:marko-ui": "bun tooling/parity/harnesses/marko-ui/extract/index.ts",
     "format": "prettier --write ."
   },
   "devDependencies": {

@@ -25,14 +25,17 @@
  * `runCheck`). The report is always written on a successful run
  * (coverage.json/index.html), regardless of exit code — 3 means "look at
  * the report," not "the run failed."
- * tooling/parity/SCHEMA.md documents the report JSON shape this reads.
+ * tooling/parity/runner/SCHEMA.md documents the report JSON shape this
+ * reads. See tooling/parity/PROTOCOL.md for the harness protocol (how
+ * parity-facts.json is produced) that the coverage detector now consumes
+ * instead of parsing MDX/manifests directly.
  */
 import { mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { REPO_ROOT, runCheck } from "./fs-utils.ts"
-import { runCoverageDetector, normalizeName, loadIgnoreList, type CoverageReport } from "./parity/coverage.ts"
-import { runVisualDetector, type VisualReport } from "./parity/visual.ts"
-import { renderReport } from "./parity/report.ts"
+import { runCoverageDetector, normalizeName, loadIgnoreList, type CoverageReport } from "./parity/runner/coverage.ts"
+import { runVisualDetector, type VisualReport } from "./parity/runner/visual.ts"
+import { renderReport } from "./parity/runner/report.ts"
 
 /** One component's entry in report.json's stable `summary` array — see SCHEMA.md. */
 export interface ComponentSummary {
@@ -110,10 +113,39 @@ function parseArgs(argv: string[]): CliOptions {
   return options
 }
 
+/**
+ * Runs both harnesses' extract steps (tooling/parity/PROTOCOL.md, "The
+ * extraction step contract") so a fresh parity-facts.json backs every
+ * check-parity run — mirrors the old coverage.ts's behavior of parsing
+ * MDX/manifests live on every invocation, now done by each harness's own
+ * extract script instead of inline here.
+ */
+async function extractFacts(): Promise<void> {
+  const shadcnExtract = join(REPO_ROOT, "tooling", "parity", "harnesses", "shadcn", "extract", "index.ts")
+  const markoUiExtract = join(REPO_ROOT, "tooling", "parity", "harnesses", "marko-ui", "extract", "index.ts")
+  const { extract: extractShadcn } = (await import(shadcnExtract)) as { extract: () => Promise<unknown> }
+  const { extract: extractMarkoUi } = (await import(markoUiExtract)) as { extract: () => Promise<unknown> }
+
+  const { writeFileSync: write } = await import("node:fs")
+  const shadcnFacts = await extractShadcn()
+  write(
+    join(REPO_ROOT, "tooling", "parity", "harnesses", "shadcn", "parity-facts.json"),
+    JSON.stringify(shadcnFacts, null, 2)
+  )
+  const markoUiFacts = await extractMarkoUi()
+  write(
+    join(REPO_ROOT, "tooling", "parity", "harnesses", "marko-ui", "parity-facts.json"),
+    JSON.stringify(markoUiFacts, null, 2)
+  )
+}
+
 async function main(): Promise<number> {
   const options = parseArgs(process.argv.slice(2))
   const outDir = join(REPO_ROOT, "parity-report")
   mkdirSync(outDir, { recursive: true })
+
+  console.log("[check-parity] extracting parity-facts.json for both harnesses…")
+  await extractFacts()
 
   console.log(`[check-parity] running coverage detector… (strict: ${options.strict})`)
   const coverageStart = Date.now()

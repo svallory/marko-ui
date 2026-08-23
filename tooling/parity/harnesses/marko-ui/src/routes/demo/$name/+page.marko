@@ -1,0 +1,51 @@
+// Blank-page render of ONE of our demos by name, per PROTOCOL.md's
+// "GET /demo/<name>" contract. This is a port of the removed
+// apps/docs/src/routes/parity/$demo/+page.marko, moved into this
+// standalone harness app so the docs app itself ships no test routes.
+//
+// Resolves the URL's `<name>` segment against the demos-manifest (built
+// by build-demos-manifest.ts, imported by relative path — never
+// duplicated) at request time, by SEARCHING every component's `demos`
+// object for a matching key. A resolvable name gives us a `demoId` (e.g.
+// "drawer/drawer-demo") to pass straight to demo-renderer.marko, which
+// dispatches via a static if-chain instead of a dynamic tag — Marko
+// 6.3.34 crashes hydration on a runtime-resolved dynamic tag (see
+// notes/bug-marko-dynamic-tag-hydration-crash.md in the main repo). Do
+// NOT replace this with `<${SomeDynamicTag}/>`.
+//
+// Imports the LOCAL copy at src/tags/demo-renderer.marko (see
+// ../../../../generate-demo-renderer.ts), not apps/docs's original,
+// directly. Marko's relative-custom-tag resolution (the mechanism that
+// makes a bare `import "x.marko"` register `<x>` as a usable tag) does
+// not register a tag reached through a path that crosses outside this
+// harness's own Vite project root — that import compiles as a module
+// reference fine, but `<demo-renderer>` itself fails to resolve as a
+// tag. The local copy's own demo imports still point at the real
+// content under apps/docs/src/demos/**, unchanged.
+import "../../../tags/demo-renderer.marko";
+import { DEMOS } from "../../../../../../../../apps/docs/src/demos/demos-manifest.ts";
+
+static function resolveDemoId(demoName: string): string | null {
+  for (const component of Object.values(DEMOS)) {
+    const entry = component.demos[demoName];
+    if (entry) return entry.demoId;
+  }
+  return null;
+}
+
+<const/demoName=$global.params.name/>
+<const/demoId=resolveDemoId(demoName)/>
+
+<if=!demoId>
+  <div data-parity-demo=demoName style="padding:24px;font-family:monospace">
+    unknown demo "${demoName}" — no demos-manifest.ts entry with this key
+  </div>
+</if>
+<else>
+  <div
+    data-parity-demo=demoName
+    style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px"
+  >
+    <demo-renderer demoId=demoId/>
+  </div>
+</else>

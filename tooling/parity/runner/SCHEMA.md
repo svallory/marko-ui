@@ -13,7 +13,15 @@ and a presence-only classification pipeline. See
 `notes/docs-canonical-structure.md` for the full design rationale — this
 file documents the resulting schema and semantics.
 
-**Map is a typed TS module, not JSON.** `tooling/parity/section-map.ts`
+**v4**: the runner (this directory) no longer parses MDX or manifests
+itself — it reads `parity-facts.json`, a harness-agnostic input format
+each harness's own `extract/` step produces. See
+`tooling/parity/PROTOCOL.md` for the full harness protocol (what a
+harness must provide, `parity-facts.json`'s schema, the extraction step
+contract); this file's classification/presence semantics are unchanged
+by that split.
+
+**Map is a typed TS module, not JSON.** `tooling/parity/config/section-map.ts`
 (`export default defineSectionMap({...})`) is the canonical, committed
 map — a former `section-map.json` was converted to this module so `tsc`
 enforces the map's SHAPE (known action names, required per-action
@@ -21,7 +29,7 @@ fields, `when` being a function) at compile time; `coverage.ts`'s runtime
 validation now only checks the SEMANTIC rules `tsc` can't express
 (ignore-sole, ≤1 placement action per array, ≤1 default variant). See
 "section-map.ts — the map schema" below.
-`tooling/parity/section-map.proposed.json` — LLM-written proposals,
+`tooling/parity/config/section-map.proposed.json` — LLM-written proposals,
 reviewed and promoted by hand into `section-map.ts` — stays JSON. See
 "JSON proposals → TS promotion" below for how a proposal's declarative
 `when` becomes a predicate on promotion.
@@ -135,17 +143,17 @@ Field notes:
 
 ## `section-map.ts` — the map schema
 
-`tooling/parity/section-map.ts` is the shared contract between the
+`tooling/parity/config/section-map.ts` is the shared contract between the
 CHECKER (this file's presence assertions) and a future PORTER (how
 content transforms, via `process`). It is a typed TS module — types live
-in `tooling/parity/map-types.ts` (JSDoc'd per-symbol; read that file for
+in `tooling/parity/runner/map-types.ts` (JSDoc'd per-symbol; read that file for
 the authoritative reference) — that exports its map via
 `defineSectionMap` (an identity function that exists purely so the map
 literal infers correctly against the union types, without an explicit
 `: SectionMap` annotation widening the `action` string literals away):
 
 ```ts
-// tooling/parity/section-map.ts
+// tooling/parity/config/section-map.ts
 import { defineSectionMap } from "./map-types.ts"
 
 export default defineSectionMap({
@@ -250,7 +258,7 @@ component-dependent rather than a one-off pathology.
 
 ### JSON proposals → TS promotion
 
-`tooling/parity/section-map.proposed.json` STAYS JSON — it's LLM-written
+`tooling/parity/config/section-map.proposed.json` STAYS JSON — it's LLM-written
 scratch output (see "Unclassified pipeline" below and
 `classify-prompt.md`), and JSON is the natural format for an LLM to
 emit and a human to diff/review before promoting entries into the real
@@ -296,7 +304,7 @@ the promotion.
 
 When a `process` action's `prompt` is present, it is **section-specific
 guidance APPENDED to** the default prompt in
-`tooling/parity/process-prompt.md` — never a replacement for it. When
+`tooling/parity/runner/process-prompt.md` — never a replacement for it. When
 `prompt` is omitted, the default alone applies. See
 `process-prompt.md`'s "Composition rule" for the exact mechanics and
 placeholder list. Like `classify-prompt.md`, `process-prompt.md` is a
@@ -409,7 +417,7 @@ interface UnclassifiedEntry {
 
 This is a **to-map queue, not drift** — `unclassifiedCount` never
 contributes to a component's `status`, with or without `--strict`. The
-intended workflow: `tooling/parity/classify-prompt.md` is a ready prompt
+intended workflow: `tooling/parity/runner/classify-prompt.md` is a ready prompt
 template that bundles this file's entries into one/few LLM calls and
 proposes `section-map.proposed.json` entries (same `MapAction[]` shape as
 `section-map.ts`). **This repo's tooling does not call any LLM
@@ -418,7 +426,7 @@ emits the bundle, and `classify-prompt.md` only documents the prompt. A
 human reviews and promotes correct proposals into the real
 `section-map.ts` by hand; proposals never auto-apply.
 
-`tooling/parity/process-prompt.md` is the companion template for the
+`tooling/parity/runner/process-prompt.md` is the companion template for the
 PORTER side (once content is mapped, how to adapt it) — also a template
 only, also never auto-applied.
 

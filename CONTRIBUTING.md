@@ -29,7 +29,7 @@ The `wanted` array in `apps/docs/src/data/directory.json` lists the libraries we
   bun run build:registry
   bun run check:parity    # coverage + visual drift vs upstream; exit 3 = drift, read parity-report/
   ```
-  Demos must be named exactly like upstream's (pairing is by name); stateful demos need `tooling/parity/interactions.json` steps (see `tooling/parity/INTERACTIONS.md`); accepted differences go in `tooling/parity/parity-ignore.json` with a reason. Plus production-build browser verification with real pointer events.
+  Demos must be named exactly like upstream's (pairing is by name); stateful demos need `tooling/parity/config/interactions.json` steps (see `tooling/parity/config/INTERACTIONS.md`); accepted differences go in `tooling/parity/config/parity-ignore.json` with a reason. Plus production-build browser verification with real pointer events.
 - Log every deviation in the PR description. Undisclosed approximations fail review outright.
 
 PRs adding non-wanted libraries to this repo will be closed with a pointer to the directory path. Community registries with traction can be promoted to the wanted list — open an issue to nominate one.

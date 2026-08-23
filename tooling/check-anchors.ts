@@ -30,7 +30,7 @@ import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, basename } from "node:path";
 
 import { REPO_ROOT, runCheck, walkAbsolute } from "./fs-utils";
-import { ensureShadcnClone } from "./upstream-shadcn";
+import { ensureShadcnClone } from "./parity/harnesses/shadcn/upstream-shadcn";
 
 const OUR_UI_DIR = join(REPO_ROOT, "packages", "shadcn", "ui");
 const OUR_STYLES_SRC = join(REPO_ROOT, "packages", "shadcn", "styles");
@@ -71,7 +71,7 @@ function extractSelectorStems(css: string, prefix: "cn" | "mu"): Set<string> {
 // External dependency guard
 //
 // The canonical anchor list is read from a shadcn/ui clone resolved by
-// tooling/upstream-shadcn.ts: an explicit SHADCN_UI_DIR, else the
+// tooling/parity/harnesses/shadcn/upstream-shadcn.ts: an explicit SHADCN_UI_DIR, else the
 // maintainer's sibling "hyperspace" clone, else a repo-local clone that gets
 // auto-cloned into .upstream/shadcn-ui when none of those exist yet.
 //

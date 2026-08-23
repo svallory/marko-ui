@@ -14,6 +14,6 @@
     "../../tooling/apply-style-map.ts",
     "../../tooling/transform-marko.ts",
     "../../tooling/transform-variants.ts",
-    "../../tooling/upstream-shadcn.ts"
+    "../../tooling/parity/harnesses/shadcn/upstream-shadcn.ts"
   ]
 }

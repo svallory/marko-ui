@@ -3,14 +3,14 @@ import { join } from "node:path"
 import { describe, expect, test } from "vitest"
 
 import { createStyleMap } from "../../../tooling/style-map"
-import { ensureShadcnClone } from "../../../tooling/upstream-shadcn"
+import { ensureShadcnClone } from "../../../tooling/parity/harnesses/shadcn/upstream-shadcn"
 
 const REGISTRY_DIR = join(import.meta.dirname, "..")
 const STYLES_SRC_DIR = join(REGISTRY_DIR, "styles")
 
 const hasStylesSrc = existsSync(join(STYLES_SRC_DIR, "style-rhea.css"))
 
-// The shadcn originals are resolved via tooling/upstream-shadcn.ts: an
+// The shadcn originals are resolved via tooling/parity/harnesses/shadcn/upstream-shadcn.ts: an
 // explicit SHADCN_UI_DIR, else the maintainer's sibling "hyperspace" clone,
 // else a repo-local clone auto-cloned into .upstream/shadcn-ui. `skipIf`
 // predicates are evaluated at collection time (before any beforeAll runs),

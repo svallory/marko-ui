@@ -1,52 +1,37 @@
 /**
- * visual.ts — visual parity-drift detector #2 (v2: isolated per-demo
- * render harnesses, not live-site scraping).
+ * visual.ts — visual parity-drift detector (protocol-first: harness.json
+ * driven, not hardcoded per-harness paths/ports/routes).
  *
- * Both sides render exactly ONE demo per page, on a blank/chrome-free
- * route, with no shared layout to confuse the screenshot target:
+ * Both harnesses render exactly ONE demo per page, on a blank/chrome-free
+ * route, with no shared layout to confuse the screenshot target — see
+ * PROTOCOL.md's "GET /demo/<name>" contract. This runner is harness-
+ * agnostic: it reads each harness's harness.json (name/start/port/
+ * demoPath) from config/parity.config.ts's `upstream`/`ours` entries,
+ * boots each server with its own `start` command, and navigates to
+ * `${demoPath}${name}` on each. Both routes stamp the same
+ * `data-parity-demo="<name>"` attribute on a wrapper div — that's the
+ * screenshot target on both sides.
  *
- *   - upstream: tooling/parity/harness-react, a Vite+React app that
- *     renders any of the upstream shadcn clone's registry examples at
- *     `/demo/<name>` (see that dir's own comments for how it aliases
- *     straight into the clone's node_modules). Booted here via
- *     `bun run build && bun run preview` (port 4174 by default) — a
- *     built+previewed app, not `dev`, so there's no HMR/websocket
- *     nondeterminism between screenshots.
- *   - ours: apps/docs's own `/parity/<name>` route
- *     (apps/docs/src/routes/parity/$demo/+page.marko), which resolves
- *     `<name>` against the demos-manifest and renders it via
- *     demo-renderer.marko. Booted here too (dev server) unless
- *     DOCS_BASE_URL is set, in which case an already-running docs server
- *     is reused (handy for interactive debugging — start `bun run dev`
- *     yourself and point DOCS_BASE_URL at it).
+ * Pairing: a demo is "paired" when its name is in the `ours` harness's
+ * ComponentFacts.demoNames AND matches (after normalizeName) an entry in
+ * the `upstream` harness's ComponentFacts.demoNames for the SAME
+ * component — i.e. exactly the per-component demo diff coverage.ts
+ * already computes (`ourDemos`/`upstreamDemos` per ComponentCoverageResult).
+ * This reuses that detector rather than re-deriving pairing logic, so
+ * "paired" here means the same thing it means in the coverage report.
  *
- * Both routes stamp the same `data-parity-demo="<name>"` attribute on a
- * wrapper div — that's the screenshot target on both sides.
- *
- * Pairing: a demo is "paired" when its name is a key in some component's
- * `demos: {}` object in our demos-manifest.ts AND matches (after
- * normalizeName) an upstream `<ComponentPreview name="...">` ref for the
- * SAME component's MDX doc — i.e. exactly the per-component demo diff
- * coverage.ts already computes (`ourDemos`/`upstreamDemos` per
- * ComponentCoverageResult). This reuses that detector rather than
- * re-deriving pairing logic, so "paired" here means the same thing it
- * means in the coverage report.
- *
- * Interactions: tooling/parity/interactions.json (see INTERACTIONS.md)
+ * Interactions: config/interactions.json (see config/INTERACTIONS.md)
  * gives some demo names a list of pre-screenshot steps (currently just
  * `{action:"click", role, name}`), applied identically on both sides via
  * Playwright's role+name locator, plus a settle wait for animations. Demos
  * with no entry are screenshotted at rest — a legitimate snapshot on both
  * sides, not a placeholder.
  *
- * Diff: odiff (root devDependency, `odiff-bin` — confirmed working on this
- * machine, binary at node_modules/.bin/odiff; pixelmatch is NOT used as a
- * fallback here because odiff ran cleanly — see HANDOFF/report for the
- * verification). Diffing happens over the UNION bounding box of the two
- * screenshots (not the whole canvas, not the min/cropped box like v1) —
- * each screenshot is padded with transparent pixels up to the union size
- * before odiff runs, so a demo that's taller/wider on one side counts that
- * extra area as mismatch instead of silently cropping it away.
+ * Diff: odiff (root devDependency, `odiff-bin`). Diffing happens over the
+ * UNION bounding box of the two screenshots — each screenshot is padded
+ * with transparent pixels up to the union size before odiff runs, so a
+ * demo that's taller/wider on one side counts that extra area as mismatch
+ * instead of silently cropping it away.
  *
  * Retries: navigation/timeout failures get 2 retries with linear backoff
  * (1s, 2s) before the demo is recorded as errored.
@@ -56,7 +41,8 @@ import { join } from "node:path"
 import { createRequire } from "node:module"
 import { spawn, type ChildProcess } from "node:child_process"
 import { PNG } from "pngjs"
-import { REPO_ROOT } from "../fs-utils.ts"
+import { REPO_ROOT } from "../../fs-utils.ts"
+import defaultConfig from "../config/parity.config.ts"
 import { runCoverageDetector, normalizeName } from "./coverage.ts"
 
 const requireFromHere = createRequire(import.meta.url)
@@ -96,10 +82,23 @@ function loadPlaywright(): typeof import("playwright") {
   )
 }
 
-const HARNESS_REACT_DIR = join(REPO_ROOT, "tooling", "parity", "harness-react")
-const HARNESS_REACT_URL = process.env.HARNESS_REACT_URL ?? "http://localhost:4174"
-const DOCS_DIR = join(REPO_ROOT, "apps", "docs")
-export const DOCS_BASE_URL = process.env.DOCS_BASE_URL ?? null
+const HARNESSES_ROOT = join(REPO_ROOT, "tooling", "parity", "harnesses")
+
+interface HarnessManifest {
+  name: string
+  start: string
+  port: number
+  demoPath: string
+}
+
+function loadHarnessManifest(dirName: string): { dir: string; manifest: HarnessManifest } {
+  const dir = join(HARNESSES_ROOT, dirName)
+  const path = join(dir, "harness.json")
+  if (!existsSync(path)) {
+    throw new Error(`visual.ts: missing ${path} — every harness must have a harness.json (see PROTOCOL.md).`)
+  }
+  return { dir, manifest: JSON.parse(readFileSync(path, "utf8")) as HarnessManifest }
+}
 
 const ODIFF_BIN = join(REPO_ROOT, "node_modules", ".bin", "odiff")
 
@@ -116,7 +115,7 @@ interface InteractionEntry {
 }
 
 function loadInteractions(): Record<string, InteractionEntry> {
-  const path = join(REPO_ROOT, "tooling", "parity", "interactions.json")
+  const path = join(REPO_ROOT, "tooling", "parity", "config", "interactions.json")
   if (!existsSync(path)) return {}
   return JSON.parse(readFileSync(path, "utf8")) as Record<string, InteractionEntry>
 }
@@ -139,6 +138,8 @@ async function waitForServer(url: string, timeoutMs: number): Promise<void> {
 interface ManagedServer {
   process: ChildProcess | null
   baseUrl: string
+  demoPath: string
+  label: string
 }
 
 /** True if something is already answering HTTP requests at `url`. */
@@ -152,55 +153,29 @@ async function isServerUp(url: string): Promise<boolean> {
 }
 
 /**
- * Boot the upstream harness-react app: build once, then `vite preview`.
- * If HARNESS_REACT_URL is already serving (e.g. left running from a prior
- * manual run), reuses it instead of failing on vite's strictPort bind
- * error — the returned ManagedServer's `process` is null in that case, so
- * stopServer() correctly leaves someone else's server alone.
+ * Boots a harness's demo server per its harness.json `start` command,
+ * unless something is already answering on its port (e.g. left running
+ * from a prior manual run) — the returned ManagedServer's `process` is
+ * null in that case, so stopServer() correctly leaves someone else's
+ * server alone. `DOCS_BASE_URL`-style env overrides are intentionally NOT
+ * hardcoded per-harness anymore (that was shadcn/ours-specific); a
+ * harness that needs to be pointed at an already-running dev server
+ * simply has that server already answering on harness.json's `port`
+ * before this runs.
  */
-async function startHarnessReact(): Promise<ManagedServer> {
-  if (await isServerUp(HARNESS_REACT_URL)) {
-    console.log(`[visual] reusing already-running harness-react at ${HARNESS_REACT_URL}`)
-    return { process: null, baseUrl: HARNESS_REACT_URL }
-  }
+async function startHarness(dirName: string): Promise<ManagedServer> {
+  const { dir, manifest } = loadHarnessManifest(dirName)
+  const baseUrl = `http://localhost:${manifest.port}`
 
-  console.log("[visual] building harness-react…")
-  await new Promise<void>((resolve, reject) => {
-    const build = spawn("bun", ["run", "build"], { cwd: HARNESS_REACT_DIR, stdio: "inherit" })
-    build.on("exit", (code) => (code === 0 ? resolve() : reject(new Error(`harness-react build failed (exit ${code})`))))
-    build.on("error", reject)
-  })
-
-  console.log("[visual] starting harness-react preview server…")
-  const preview = spawn("bun", ["run", "preview"], { cwd: HARNESS_REACT_DIR, stdio: "inherit" })
-  await waitForServer(HARNESS_REACT_URL, 30_000)
-  return { process: preview, baseUrl: HARNESS_REACT_URL }
-}
-
-/** Boot our docs app (dev server) unless DOCS_BASE_URL already points at a running one. */
-async function startDocs(): Promise<ManagedServer> {
-  if (DOCS_BASE_URL) {
-    await waitForServer(DOCS_BASE_URL, 10_000)
-    return { process: null, baseUrl: DOCS_BASE_URL }
-  }
-
-  const port = 3910
-  const baseUrl = `http://localhost:${port}`
   if (await isServerUp(baseUrl)) {
-    console.log(`[visual] reusing already-running docs server at ${baseUrl}`)
-    return { process: null, baseUrl }
+    console.log(`[visual] reusing already-running ${manifest.name} harness at ${baseUrl}`)
+    return { process: null, baseUrl, demoPath: manifest.demoPath, label: manifest.name }
   }
 
-  console.log("[visual] starting docs dev server…")
-  const dev = spawn("bun", ["run", "dev", "--port", String(port)], { cwd: DOCS_DIR, stdio: "inherit" })
-  // 180s, not 60s: a cold `bun run dev` here runs predev's build-registry.ts
-  // first, then marko-run's own Vite dep-optimization pass — measured at
-  // 45s-215s+ on a machine under heavy concurrent-agent CPU contention
-  // during this feature's development. Prefer DOCS_BASE_URL pointed at an
-  // already-running `bun run dev`/`bun run preview` for repeat local runs;
-  // this cold-boot path exists so `check:parity` works standalone.
+  console.log(`[visual] starting ${manifest.name} harness (${manifest.start})…`)
+  const child = spawn(manifest.start, { cwd: dir, stdio: "inherit", shell: true })
   await waitForServer(baseUrl, 180_000)
-  return { process: dev, baseUrl }
+  return { process: child, baseUrl, demoPath: manifest.demoPath, label: manifest.name }
 }
 
 function stopServer(server: ManagedServer): void {
@@ -234,7 +209,7 @@ export interface VisualOptions {
   component?: string
   threshold?: number
   outDir?: string
-  /** Skip booting servers — assume HARNESS_REACT_URL / DOCS_BASE_URL are already up. */
+  /** Skip booting servers — assume both harnesses are already up on their harness.json ports. */
   reuseServers?: boolean
 }
 
@@ -326,38 +301,31 @@ async function applyInteractions(
 // interactions + screenshot combined). Individual steps inside already carry
 // their own Playwright timeouts (goto: 30s, waitFor: 8s, click: 10s), but
 // nothing previously bounded the SUM, and a hang inside Playwright's
-// actionability/auto-wait machinery (observed: an interaction-step demo's
-// click locator never resolving to a stable, clickable state — see
-// INTERACTIONS.md-listed demos immediately after a plain/no-interaction demo
-// in manifest order) doesn't reject, it just hangs — which escapes
-// withRetries entirely, since withRetries only re-tries on rejection.
-// 45s comfortably covers the sum of the inner timeouts (30+8+10=48s already
-// exceeds it in the worst case, which is fine — Promise.race below cuts in
-// at 45s regardless of which inner step is stuck) while still failing fast
-// enough that one wedged demo costs at most 45s x (retries+1), not
-// unbounded wall-clock time.
+// actionability/auto-wait machinery doesn't reject, it just hangs — which
+// escapes withRetries entirely, since withRetries only re-tries on
+// rejection. 45s comfortably covers the sum of the inner timeouts while
+// still failing fast enough that one wedged demo costs at most
+// 45s x (retries+1), not unbounded wall-clock time.
 const PER_DEMO_TIMEOUT_MS = 45_000
 
 async function screenshotDemo(
   page: import("playwright").Page,
   baseUrl: string,
-  routePrefix: string,
+  demoPath: string,
   demoName: string,
   interaction: InteractionEntry | undefined,
   attempt: number
 ): Promise<Buffer> {
   const run = async (): Promise<Buffer> => {
-    await page.goto(`${baseUrl}${routePrefix}${demoName}`, { waitUntil: "networkidle", timeout: 30_000 })
+    await page.goto(`${baseUrl}${demoPath}${demoName}`, { waitUntil: "networkidle", timeout: 30_000 })
     const target = page.locator(`[data-parity-demo="${demoName}"]`)
-    // 8s, not 30s: a demo name that's paired by coverage.ts (an MDX
-    // <ComponentPreview name="..."> ref) but has no matching .tsx file in
-    // the upstream registry's examples/ dir (this happens — upstream's own
-    // docs occasionally reference examples that were since removed/renamed)
-    // never grows a [data-parity-demo] wrapper on the harness-react side
-    // (its NotFound branch omits the attribute entirely, see App.tsx) — so
-    // this wait is guaranteed to time out for that case, and each of up to
-    // 3 attempts (withRetries below) should fail fast rather than burn 15s+
-    // each on something that will never appear.
+    // 8s, not 30s: a demo name that's paired by coverage.ts but has no
+    // matching demo file on this harness's side never grows a
+    // [data-parity-demo] wrapper (its not-found branch omits the
+    // attribute entirely) — so this wait is guaranteed to time out for
+    // that case, and each of up to 3 attempts (withRetries below) should
+    // fail fast rather than burn 15s+ each on something that will never
+    // appear.
     await target.waitFor({ state: "visible", timeout: 8_000 })
     await applyInteractions(page, interaction)
     return target.screenshot()
@@ -398,20 +366,31 @@ export async function runVisualDetector(options: VisualOptions = {}): Promise<Vi
   const coverage = await runCoverageDetector(options.component ? { component: options.component } : {})
 
   const servers: ManagedServer[] = []
-  let harnessBaseUrl = HARNESS_REACT_URL
-  let docsBaseUrl = DOCS_BASE_URL ?? "http://localhost:3910"
+  let upstreamServer: ManagedServer
+  let ourServer: ManagedServer
 
   if (!options.reuseServers) {
-    const harnessServer = await startHarnessReact()
-    servers.push(harnessServer)
-    harnessBaseUrl = harnessServer.baseUrl
-
-    const docsServer = await startDocs()
-    servers.push(docsServer)
-    docsBaseUrl = docsServer.baseUrl
+    upstreamServer = await startHarness(defaultConfig.upstream.dir)
+    servers.push(upstreamServer)
+    ourServer = await startHarness(defaultConfig.ours.dir)
+    servers.push(ourServer)
   } else {
-    await waitForServer(harnessBaseUrl, 10_000)
-    await waitForServer(docsBaseUrl, 10_000)
+    const upstreamManifest = loadHarnessManifest(defaultConfig.upstream.dir).manifest
+    const ourManifest = loadHarnessManifest(defaultConfig.ours.dir).manifest
+    upstreamServer = {
+      process: null,
+      baseUrl: `http://localhost:${upstreamManifest.port}`,
+      demoPath: upstreamManifest.demoPath,
+      label: upstreamManifest.name,
+    }
+    ourServer = {
+      process: null,
+      baseUrl: `http://localhost:${ourManifest.port}`,
+      demoPath: ourManifest.demoPath,
+      label: ourManifest.name,
+    }
+    await waitForServer(upstreamServer.baseUrl, 10_000)
+    await waitForServer(ourServer.baseUrl, 10_000)
   }
 
   const browser = await playwright.chromium.launch({ headless: true })
@@ -438,11 +417,6 @@ export async function runVisualDetector(options: VisualOptions = {}): Promise<Vi
         for (const demoName of sharedUpstreamDemos) {
           const ourDemoName =
             componentResult.ourDemos.find((name) => normalizeName(name) === normalizeName(demoName)) ?? demoName
-          // Both harness routes are keyed by the upstream demo name (see
-          // route header comments) — the docs /parity/<name> route
-          // resolves `name` by scanning demos-manifest.ts, so pass the
-          // OUR-side key (post-normalization) there, and the upstream
-          // harness's own filename there.
           const interactionEntry = interactions[demoName] ?? interactions[ourDemoName]
           if (interactionEntry) interactedDemos.push(`${componentName}/${demoName}`)
 
@@ -455,11 +429,11 @@ export async function runVisualDetector(options: VisualOptions = {}): Promise<Vi
 
           try {
             const upstreamBuffer = await withRetries(
-              () => screenshotDemo(upstreamPage, harnessBaseUrl, "/demo/", demoName, interactionEntry, 0),
+              () => screenshotDemo(upstreamPage, upstreamServer.baseUrl, upstreamServer.demoPath, demoName, interactionEntry, 0),
               2
             )
             const ourBuffer = await withRetries(
-              () => screenshotDemo(ourPage, docsBaseUrl, "/parity/", ourDemoName, interactionEntry, 0),
+              () => screenshotDemo(ourPage, ourServer.baseUrl, ourServer.demoPath, ourDemoName, interactionEntry, 0),
               2
             )
 

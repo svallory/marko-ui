@@ -1,0 +1,25 @@
+// Blank-page shell for the marko-ui parity harness — no site chrome
+// (header/nav/footer). Forced light theme + style-nova per PROTOCOL.md's
+// "GET /demo/<name>" requirements: deliberately NEVER emits the real docs
+// app's theme-toggle script (apps/docs/src/routes/+layout.marko's
+// `matchMedia("prefers-color-scheme: dark")` no-FOUC snippet) — that
+// script would let a screenshot's theme vary with the machine running it,
+// which is exactly the noise this harness must not introduce. Light is
+// the CSS default here (no `.dark` class is ever added), so omitting the
+// script is sufficient; there's nothing to force explicitly beyond that.
+// Mirrors the shape of the removed apps/docs/src/routes/parity/$demo/
+// +page.marko this harness replaces.
+import "../app.css";
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>marko-ui parity harness</title>
+  </head>
+  <body class="style-nova theme-default overscroll-none antialiased">
+    <${input.content}/>
+  </body>
+</html>

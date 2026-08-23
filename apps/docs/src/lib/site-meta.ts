@@ -203,18 +203,6 @@ export function resolveMeta(pathname: string): PageMeta {
       };
     }
 
-    // /parity/<demo> is the visual-parity harness's blank per-demo render
-    // route (tooling/parity/visual.ts screenshots it), not public content.
-    if (path.startsWith("/parity/")) {
-      return {
-        title: `Visual Parity Harness — ${SITE_NAME}`,
-        description:
-          "Internal blank-page per-demo render route used by the visual parity detector. Not part of the public docs.",
-        canonical: `${SITE_URL}${path}`,
-        ogType: "website",
-      };
-    }
-
     return {
       title: `Page Not Found — ${SITE_NAME}`,
       description: DEFAULT_DESCRIPTION,

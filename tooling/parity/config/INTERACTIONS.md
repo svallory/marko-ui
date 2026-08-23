@@ -1,6 +1,6 @@
 # interactions.json — authoring guide
 
-`tooling/parity/interactions.json` tells `visual.ts` what to do to a demo
+`tooling/parity/config/interactions.json` tells `visual.ts` what to do to a demo
 *before* screenshotting it, on both the upstream harness and ours. The
 runner applies each demo's steps identically on both sides using
 Playwright's role+name locators, so the two screenshots capture the same

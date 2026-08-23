@@ -20,7 +20,12 @@ import { spawnSync } from "node:child_process"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-const REPO_ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
+// This file lives at tooling/parity/harnesses/shadcn/upstream-shadcn.ts —
+// the module's OWN directory is tooling/parity/harnesses/shadcn/ (one
+// dirname() off the file path), and that directory is four levels below
+// the repo root (shadcn/ -> harnesses/ -> parity/ -> tooling/ -> repo
+// root), hence five dirname() calls in total.
+const REPO_ROOT = dirname(dirname(dirname(dirname(dirname(fileURLToPath(import.meta.url))))))
 const HYPERSPACE_DIR = join(REPO_ROOT, "..", "..", "data", "shadcn-ui")
 const LOCAL_DIR = join(REPO_ROOT, ".upstream", "shadcn-ui")
 const UPSTREAM_URL = "https://github.com/shadcn-ui/ui.git"

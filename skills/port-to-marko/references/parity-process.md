@@ -27,10 +27,10 @@ Apply the full process on the official-repo path (the tooling exists there). On 
 ## 4. Section map (coverage checker input)
 
 - WHEN: after the hierarchy is decided.
-- HOW: a TYPED TS module, not JSON — `tooling/parity/section-map.ts` with `export default defineSectionMap({...})`; types in `map-types.ts`. `tsc` is the validation story (a bad map fails the typecheck, not a runtime surprise). Each upstream heading maps to an action list: `move { parent: [...bucket path], title? }`, `rename { title }`, `keep`, `ignore { reason }`, or `process` (opt-in LLM/function transform). Entries can be variant lists with a predicate `when?: (ctx) => boolean` over `{ component, heading, headingSlug, hasDemoMarker, body? }` — first match wins, at most one default variant.
+- HOW: a TYPED TS module, not JSON — `tooling/parity/config/section-map.ts` with `export default defineSectionMap({...})`; types in `tooling/parity/runner/map-types.ts`. `tsc` is the validation story (a bad map fails the typecheck, not a runtime surprise). Each upstream heading maps to an action list: `move { parent: [...bucket path], title? }`, `rename { title }`, `keep`, `ignore { reason }`, or `process` (opt-in LLM/function transform). Entries can be variant lists with a predicate `when?: (ctx) => boolean` over `{ component, heading, headingSlug, hasDemoMarker, body? }` — first match wins, at most one default variant.
 - RULES: renames and relocations are DIFFERENT actions (a bare string→string map conflated them). A bucket heading maps to `keep`, never to a self-nesting `move`. `process` is opt-in. Guide-type pages are out of the global map — per-page pathologies go in `parity-ignore.json` with a reason.
 - FLOW: an LLM classifier proposes in JSON (`section-map.proposed.json`, declarative matchers); a human promotes accepted proposals into the TS map. Canonical-name slugs are auto-kept by a bundler pre-pass and never reach the classifier.
-- ARTIFACT: `section-map.ts` + `parity-ignore.json`. The checker is presence-only: every upstream demo present in your examples, every upstream bucket-with-content present on your page. Location and naming never flag. Authority for the exact shape: the repo's `tooling/parity/SCHEMA.md`.
+- ARTIFACT: `section-map.ts` + `parity-ignore.json`. The checker is presence-only: every upstream demo present in your examples, every upstream bucket-with-content present on your page. Location and naming never flag. Authority for the exact shape: the repo's `tooling/parity/runner/SCHEMA.md`.
 
 ## 5. Render harness construction (visual comparison)
 
@@ -47,7 +47,7 @@ Apply the full process on the official-repo path (the tooling exists there). On 
 ## 6. Interaction steps (stateful demos)
 
 - WHEN: any demo whose interesting state is behind an interaction (open drawer/dialog, pick a date). Clicking is in scope; dragging is not.
-- HOW: per-demo `{ steps: [{ action: "click", role, name }], settleMs }` applied IDENTICALLY to both harnesses (Playwright role+name locators). Read each demo's source, find the trigger's role+name, write the step. The official repo's `tooling/parity/INTERACTIONS.md` is the authoring guide.
+- HOW: per-demo `{ steps: [{ action: "click", role, name }], settleMs }` applied IDENTICALLY to both harnesses (Playwright role+name locators). Read each demo's source, find the trigger's role+name, write the step. The official repo's `tooling/parity/config/INTERACTIONS.md` is the authoring guide.
 - ARTIFACT: `interactions.json` — THE reasoning-once artifact.
 
 ## 7. Comparison + review loop

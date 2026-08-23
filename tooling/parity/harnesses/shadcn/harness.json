@@ -1,0 +1,6 @@
+{
+  "name": "shadcn",
+  "start": "bun run build && bun run preview",
+  "port": 4174,
+  "demoPath": "/demo/"
+}

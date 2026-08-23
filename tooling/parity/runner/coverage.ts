@@ -1,59 +1,99 @@
 /**
- * coverage.ts — static parity-drift detector #1, v3 (presence-only).
+ * coverage.ts — static parity-drift detector, v4 (protocol-first,
+ * facts-consuming). Presence-only, same semantics as v3 — see
+ * SCHEMA.md and notes/docs-canonical-structure.md, which still govern
+ * the classification pipeline and what "presence-only" means. This
+ * header summarizes what changed for v4: everything else is unchanged
+ * behavior, moved.
  *
- * Rewritten per notes/docs-canonical-structure.md ("coverage checker v3
- * input" / "Section classification (checker pipeline)" /
- * "Checker v3 semantics (presence-only)"). Read that doc before touching
- * this file — it is the source of truth for the map schema, the
- * classification tiers, and what "presence-only" means. This header
- * summarizes; the doc governs on any conflict.
+ * v4 in one paragraph: v3 parsed shadcn's MDX docs source and our own
+ * demos-manifest.ts/api-reference.json directly, inline in this file. v4
+ * splits that source-format-specific work out into each harness's own
+ * `extract/` step (see PROTOCOL.md), which writes a harness-agnostic
+ * `parity-facts.json`. This file now only READS two parity-facts.json
+ * files (one per harness, named in config/parity.config.ts) and runs the
+ * same classification/presence pipeline over them — it has no knowledge
+ * of MDX, demos-manifest.ts, or any other harness-specific source format.
+ * Porting the checker to compare two different libraries means writing
+ * two new harnesses that each emit conformant parity-facts.json; this
+ * file does not change.
  *
- * v3 in one paragraph: upstream's docs hierarchy is inconsistent (demos
- * flat against concepts, Styling/Theming/CSS-Variables naming chaos, four
- * API-reference shapes) so v3 stops diffing our page's headings 1:1
- * against upstream's. Instead, every upstream section is classified:
- *
- *   1. An explicit `section-map.json` entry wins — it says where the
+ *   1. An explicit `section-map.ts` entry wins — it says where the
  *      section's content should live in OUR hierarchy (or that it should
  *      be ignored, or processed later by a porter).
- *   2. No map entry, but the section's body matches an adapter demo
- *      marker (see adapter-shadcn.ts) and the surrounding prose is short
- *      → it's a demo wrapper, not real prose content: the referenced demo
- *      name(s) join the upstream DEMO set (checked by name against our
- *      demos manifest, same as before). The heading text itself is never
- *      interpreted or presence-checked.
+ *   2. No map entry, but the section's `demoRefs` is non-empty (the
+ *      extract step already resolved demo markers into this field) and
+ *      the surrounding prose is short → it's a demo wrapper, not real
+ *      prose content: its demo name(s) join the upstream DEMO set. The
+ *      heading text itself is never interpreted or presence-checked.
  *   3. Anything else (a preview + substantial prose, or no preview and no
  *      map entry) → UNCLASSIFIED. Never guessed — reported distinctly so
  *      a human (or the classify-prompt.md LLM pipeline) can map it later.
  *      Unclassified sections are NEVER drift; they're a to-map queue.
  *
  * Presence-only semantics: the checker flags exactly two things —
- *   (a) an upstream demo name absent from our demos manifest, and
- *   (b) a mapped section's target bucket/subsection absent from our page.
+ *   (a) an upstream demo name absent from our harness's demoNames, and
+ *   (b) a mapped section's target bucket/subsection absent from our
+ *       harness's sections.
  * Location, ordering, and upstream-only naming are never flagged when
  * covered by the map. Ours-only additions (Accessibility, generated API,
  * Style Hooks) are never flagged.
  *
  * Transition mode: our docs pages are NOT YET migrated to the canonical
- * hierarchy (see the doc's "Sequencing" section — migration is step 2,
- * after this checker). So by default (`strict: false`) a mapped target is
- * considered present if EITHER the canonical bucket name OR the mapped
- * section's original upstream heading is present on our page. Pass
- * `--strict` (or `{ strict: true }`) to require the canonical bucket name
- * only — that's the post-migration behavior. See SCHEMA.md, "Transition
- * mode", for the full rationale.
+ * hierarchy (see notes/docs-canonical-structure.md's "Sequencing" —
+ * migration is step 2, after this checker). So by default (`strict:
+ * false`) a mapped target is considered present if EITHER the canonical
+ * bucket name OR the mapped section's original upstream heading is
+ * present on our page. Pass `--strict` (or `{ strict: true }`) to require
+ * the canonical bucket name only — that's the post-migration behavior.
+ * See SCHEMA.md, "Transition mode", for the full rationale.
  */
-import { readdirSync, readFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs"
+import { existsSync, readFileSync, mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { REPO_ROOT } from "../fs-utils.ts"
-import { resolveShadcnClone } from "../upstream-shadcn.ts"
-import { shadcnAdapter, bodyMatchesDemoMarker, extractDemoNamesFromBody, type AdapterConfig } from "./adapter-shadcn.ts"
+import { REPO_ROOT } from "../../fs-utils.ts"
+import defaultConfig from "../config/parity.config.ts"
 import type { MapAction, MapVariant, SectionMap, SectionMapEntry, SectionContext } from "./map-types.ts"
 
 export type { MapAction, MapVariant, SectionMap, SectionMapEntry, SectionContext }
 
 // ---------------------------------------------------------------------------
-// Ignore list (per-page pathologies; unchanged shape from v2)
+// parity-facts.json — harness-agnostic input shape (see PROTOCOL.md)
+// ---------------------------------------------------------------------------
+
+export interface FactsSection {
+  heading: string
+  slug: string
+  body: string
+  demoRefs: string[]
+}
+
+export interface ComponentFacts {
+  component: string
+  demoNames: string[]
+  sections: FactsSection[]
+  apiProps: string[]
+  apiTractable: boolean
+  guidePage: boolean
+}
+
+export interface ParityFacts {
+  generatedAt: string
+  harness: string
+  components: ComponentFacts[]
+}
+
+export function loadFacts(harnessDir: string): ParityFacts {
+  const path = join(harnessDir, "parity-facts.json")
+  if (!existsSync(path)) {
+    throw new Error(
+      `coverage: missing ${path} — run that harness's extract step first (see tooling/parity/PROTOCOL.md).`
+    )
+  }
+  return JSON.parse(readFileSync(path, "utf8")) as ParityFacts
+}
+
+// ---------------------------------------------------------------------------
+// Ignore list (unchanged shape from v3)
 // ---------------------------------------------------------------------------
 
 export interface ParityIgnoreEntry {
@@ -64,7 +104,7 @@ export interface ParityIgnoreEntry {
 }
 
 export function loadIgnoreList(): ParityIgnoreEntry[] {
-  const path = join(REPO_ROOT, "tooling", "parity", "parity-ignore.json")
+  const path = join(REPO_ROOT, "tooling", "parity", "config", "parity-ignore.json")
   if (!existsSync(path)) return []
   const parsed = JSON.parse(readFileSync(path, "utf8")) as { ignore: ParityIgnoreEntry[] }
   return parsed.ignore ?? []
@@ -86,7 +126,7 @@ function isIgnored(
 }
 
 // ---------------------------------------------------------------------------
-// Name normalization (unchanged from v2)
+// Name normalization (unchanged from v3)
 // ---------------------------------------------------------------------------
 
 /** Normalize a heading/demo/prop name for cross-ecosystem comparison. */
@@ -101,7 +141,7 @@ export function normalizeName(name: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// section-map.json: schema, loading, validation
+// section-map.ts: schema, loading, validation (unchanged from v3)
 // ---------------------------------------------------------------------------
 
 const PLACEMENT_ACTIONS = new Set(["move", "rename", "keep"])
@@ -202,14 +242,15 @@ export function resolveMapEntry(heading: string, entry: SectionMapEntry, context
 }
 
 /**
- * Loads tooling/parity/section-map.ts via dynamic import and validates
- * its semantic rules. REQUIRES a `default` export that is a plain object
- * (the shape itself — SectionMap — is enforced by `tsc` at compile time,
- * see map-types.ts's `defineSectionMap`); a missing/wrong-shaped default
- * export is a clear, named hard error, not a silent empty map.
+ * Loads tooling/parity/config/section-map.ts via dynamic import and
+ * validates its semantic rules. REQUIRES a `default` export that is a
+ * plain object (the shape itself — SectionMap — is enforced by `tsc` at
+ * compile time, see map-types.ts's `defineSectionMap`); a
+ * missing/wrong-shaped default export is a clear, named hard error, not a
+ * silent empty map.
  */
 export async function loadSectionMap(): Promise<SectionMap> {
-  const path = join(REPO_ROOT, "tooling", "parity", "section-map.ts")
+  const path = join(REPO_ROOT, "tooling", "parity", "config", "section-map.ts")
   if (!existsSync(path)) return {}
   const module = (await import(path)) as { default?: unknown }
   const map = module.default
@@ -257,159 +298,25 @@ function resolveTarget(originalHeading: string, action: Extract<MapAction, { act
 }
 
 // ---------------------------------------------------------------------------
-// Component listing (unchanged from v2)
+// Classification pipeline (unchanged semantics from v3, now over FactsSection)
 // ---------------------------------------------------------------------------
 
-/** Our components: directory names under packages/shadcn/ui. */
-export function listOurComponents(): string[] {
-  const dir = join(REPO_ROOT, "packages", "shadcn", "ui")
-  return readdirSync(dir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name)
-    .sort()
-}
-
-/** Upstream components: *.mdx basenames under apps/v4/content/docs/components/base. */
-export function listUpstreamComponents(upstreamDir: string): string[] {
-  const dir = join(upstreamDir, "apps", "v4", "content", "docs", "components", "base")
-  return readdirSync(dir, { withFileTypes: true })
-    .filter((entry) => entry.isFile() && entry.name.endsWith(".mdx"))
-    .map((entry) => entry.name.slice(0, -".mdx".length))
-    .sort()
-}
-
-// ---------------------------------------------------------------------------
-// Upstream sectioning: heading + body extraction
-// ---------------------------------------------------------------------------
-
-export interface UpstreamSection {
-  heading: string
-  level: 2 | 3
-  /** Raw MDX text between this heading and the next ## or ### heading (exclusive of both). */
-  body: string
-}
-
-/**
- * Splits an MDX source into ## / ### sections in document order, each
- * carrying its own body text (everything up to the next ## or ### line).
- * A ### section nested under a ## is still a standalone entry here — the
- * map operates on individual headings regardless of nesting depth; v2's
- * `extractHeadings` (flat heading list) is superseded by this.
- */
-export function extractSections(mdxSource: string): UpstreamSection[] {
-  const lines = mdxSource.split("\n")
-  const headingLineIndices: { index: number; level: 2 | 3; heading: string }[] = []
-  for (let index = 0; index < lines.length; index++) {
-    const match = /^(#{2,3})\s+(.+?)\s*$/.exec(lines[index] ?? "")
-    if (!match) continue
-    const level = match[1]?.length === 2 ? 2 : 3
-    const heading = match[2]?.trim()
-    if (heading) headingLineIndices.push({ index, level, heading })
-  }
-
-  const sections: UpstreamSection[] = []
-  for (let index = 0; index < headingLineIndices.length; index++) {
-    const current = headingLineIndices[index]
-    if (!current) continue
-    const nextIndex = headingLineIndices[index + 1]?.index ?? lines.length
-    const body = lines.slice(current.index + 1, nextIndex).join("\n")
-    sections.push({ heading: current.heading, level: current.level, body })
-  }
-  return sections
-}
-
-/** Back-compat flat heading list (order-preserved), derived from extractSections. Used for "our sections" diffing paths that don't need bodies. */
-export function extractHeadings(mdxSource: string): string[] {
-  return extractSections(mdxSource).map((section) => section.heading)
-}
-
-/** Extract `<ComponentPreview ... name="..." .../>` demo refs from an MDX file (whole-document scan, used only for the top-level demo/API extraction paths that don't need per-section classification). */
-export function extractUpstreamDemoNames(mdxSource: string): string[] {
-  return extractDemoNamesFromBody(shadcnAdapter, mdxSource)
-}
-
-/**
- * Extract API prop row names from the "## API Reference" section, when it
- * contains a literal markdown table with a `Prop` (or `Property`) header
- * column. Many upstream base-ui components just link out to the Base UI
- * docs instead of embedding a table — those return `tractable: false`.
- */
-export function extractUpstreamApiProps(mdxSource: string): { tractable: boolean; props: string[] } {
-  const sectionMatch = /^##\s+API Reference\s*$/m.exec(mdxSource)
-  if (!sectionMatch) return { tractable: false, props: [] }
-
-  const rest = mdxSource.slice((sectionMatch.index ?? 0) + sectionMatch[0].length)
-  // Stop at the next top-level heading, if any.
-  const nextHeading = /^##\s+/m.exec(rest)
-  const section = nextHeading ? rest.slice(0, nextHeading.index) : rest
-
-  const lines = section.split("\n")
-  const props: string[] = []
-  let tractable = false
-
-  for (let index = 0; index < lines.length; index++) {
-    const line = lines[index]
-    if (line === undefined || !/^\s*\|/.test(line)) continue
-    const cells = line
-      .split("|")
-      .map((cell) => cell.trim())
-      .filter((cell) => cell.length > 0)
-    const firstCell = cells[0]
-    if (firstCell === undefined) continue
-
-    const header = firstCell.toLowerCase()
-    if (header === "prop" || header === "property" || header === "attribute") {
-      tractable = true
-      // Next line is the `---|---|---` separator; data rows follow.
-      for (let dataIndex = index + 2; dataIndex < lines.length; dataIndex++) {
-        const dataLine = lines[dataIndex]
-        if (dataLine === undefined || !/^\s*\|/.test(dataLine)) break
-        const dataCells = dataLine
-          .split("|")
-          .map((cell) => cell.trim())
-          .filter((cell) => cell.length > 0)
-        const firstDataCell = dataCells[0]
-        if (firstDataCell === undefined) break
-        const propName = firstDataCell.replace(/[`*]/g, "").trim()
-        if (propName) props.push(propName)
-      }
-    }
-  }
-
-  return { tractable, props }
-}
-
-// ---------------------------------------------------------------------------
-// Classification pipeline (v3 core)
-// ---------------------------------------------------------------------------
-
-/** Substantial-prose threshold: prose length (chars), EXCLUDING fenced code blocks and the demo marker tag itself, above which a demo-marker section is treated as having real content worth mapping rather than a bare demo wrapper. Documented in SCHEMA.md — tune here, not by magic numbers elsewhere. */
+/** Substantial-prose threshold: prose length (chars) above which a demo-marker section is treated as having real content worth mapping rather than a bare demo wrapper. Documented in SCHEMA.md — tune here, not by magic numbers elsewhere. */
 export const PROSE_THRESHOLD_CHARS = 400
 
 /**
  * Strips fenced code blocks (```...```), markdown tables, and JSX-ish tags
- * (demo markers included) from a section body, returning the length of
- * what's left as "prose" for the substantial-prose check. Tables are
- * excluded because a demo section commonly carries a short prop-reference
- * table (e.g. bubble.mdx's "Alignment" section: one sentence of prose + a
- * demo + a 2-row `align` table + a one-line note) — that's still a bare
- * demo wrapper in spirit, not "substantial prose" that needs its own map
- * entry.
+ * from a section body, returning the length of what's left as "prose" for
+ * the substantial-prose check. A harness's extract step already resolved
+ * demo markers into `demoRefs`, but the raw body text still carries the
+ * marker markup itself (and any prop tables) — this strips both so a demo
+ * wrapped only in a one-sentence intro, a demo embed, and a short
+ * prop-reference table counts as short, even though the raw body includes
+ * all that markup.
  */
-export function proseLength(body: string, _adapter: AdapterConfig): number {
+export function proseLength(body: string): number {
   let stripped = body.replace(/```[\s\S]*?```/g, "")
-  // Markdown table rows: lines starting with `|` (header, separator, and
-  // data rows all match this shape).
   stripped = stripped.replace(/^\s*\|.*\|\s*$/gm, "")
-  // Remove all JSX-ish tags entirely (opening/closing/self-closing,
-  // including ones spanning multiple lines, e.g. a wrapped
-  // `<ComponentPreview\n  name="..."\n/>`) — one general tag-stripping pass
-  // handles demo markers too, so there's no separate per-marker step to
-  // keep in sync with this one (a marker pattern only needs to match
-  // enough to capture the demo name via `nameGroup`; it is not expected to
-  // also consume the whole tag). Conservative: only strips tags, not their
-  // text content, so genuine prose inside surviving markup is still
-  // counted.
   stripped = stripped.replace(/<\/?[A-Za-z][\w.-]*(\s[\s\S]*?)?\/?>/g, "")
   return stripped.trim().length
 }
@@ -420,7 +327,7 @@ export type SectionClassification =
   | { tier: "unclassified" }
   | { tier: "ignored"; reason: string }
 
-/** Canonical bucket names: a heading whose slug IS one of these is a bucket itself, not content nested under one — see the bundler pre-pass in `bundleUnclassified`/`classifySection` and classify-prompt.md's rule (a). */
+/** Canonical bucket names: a heading whose slug IS one of these is a bucket itself, not content nested under one. */
 export const CANONICAL_BUCKET_SLUGS = new Set([
   "installation",
   "usage",
@@ -440,19 +347,14 @@ export const CANONICAL_BUCKET_SLUGS = new Set([
  *   0. Heading slug IS a canonical bucket name -> deterministic keep (the
  *      BUNDLER pre-pass — see SCHEMA.md's "Spec sync" note; this never
  *      reaches the unclassified queue / LLM batch even without an
- *      explicit section-map.json entry).
+ *      explicit section-map.ts entry).
  *   1. Explicit map entry wins (including "ignore"). Variant-form entries
  *      are resolved against this section's component/demo-marker context
  *      first — see `resolveMapEntry`.
- *   2. No entry + demo-marker match + short prose -> demo.
+ *   2. No entry + section.demoRefs non-empty + short prose -> demo.
  *   3. Otherwise -> unclassified.
  */
-export function classifySection(
-  section: UpstreamSection,
-  sectionMap: SectionMap,
-  adapter: AdapterConfig,
-  component: string
-): SectionClassification {
+export function classifySection(section: FactsSection, sectionMap: SectionMap, component: string): SectionClassification {
   const key = normalizeName(section.heading)
 
   if (CANONICAL_BUCKET_SLUGS.has(key) && !sectionMap[key]) {
@@ -461,7 +363,7 @@ export function classifySection(
 
   const rawEntry = sectionMap[key]
   if (rawEntry) {
-    const hasDemoMarker = bodyMatchesDemoMarker(adapter, section.body)
+    const hasDemoMarker = section.demoRefs.length > 0
     const context: SectionContext = { component, heading: section.heading, headingSlug: key, hasDemoMarker, body: section.body }
     const mapEntry = resolveMapEntry(section.heading, rawEntry, context)
     if (mapEntry) {
@@ -478,8 +380,8 @@ export function classifySection(
     // through to the normal demo/unclassified tiers below.
   }
 
-  if (bodyMatchesDemoMarker(adapter, section.body) && proseLength(section.body, adapter) <= PROSE_THRESHOLD_CHARS) {
-    return { tier: "demo", demoNames: extractDemoNamesFromBody(adapter, section.body) }
+  if (section.demoRefs.length > 0 && proseLength(section.body) <= PROSE_THRESHOLD_CHARS) {
+    return { tier: "demo", demoNames: section.demoRefs }
   }
 
   return { tier: "unclassified" }
@@ -490,7 +392,7 @@ export function classifySection(
 // ---------------------------------------------------------------------------
 
 export interface OurPageStructure {
-  /** Flat set of our page's current section headings/titles (pre-migration: Installation/Usage/Composition/<example titles>/API Reference — see ourSectionsFor). Presence-checked case/kebab-insensitively via normalizeName. */
+  /** Flat set of our page's current section headings/titles, presence-checked case/kebab-insensitively via normalizeName. */
   sections: Set<string>
 }
 
@@ -516,38 +418,6 @@ export function isTargetPresent(
   const mappedTitlePresent = ourPage.sections.has(normalizeName(target.title))
   const originalHeadingPresent = ourPage.sections.has(normalizeName(originalHeading))
   return canonicalPresent || mappedTitlePresent || originalHeadingPresent
-}
-
-/** Our section headings: fixed page skeleton (see +page.marko) + per-example titles. Pre-migration flat skeleton — see notes/docs-canonical-structure.md "Sequencing" step 2 for when this changes. */
-export function ourSectionsFor(componentName: string, docs: {
-  examples: { title: string }[]
-  composition?: string
-  concepts?: string
-  accessibilityKeyboard?: { keys: string; description: string }[]
-  accessibilityNotes?: string[]
-}, isCompound: boolean, hasApiParts: boolean): string[] {
-  const sections = ["Installation", "Usage"]
-  // Compound components (multiple .marko parts) get the auto-generated
-  // <composition-tree>; single-file components with slot/render-prop
-  // anatomy (e.g. tooltip) carry the section via docs.composition instead
-  // — see docs-types.ts and +page.marko's isCompound/composition branch.
-  if (isCompound || docs.composition) sections.push("Composition")
-  // Same class as the Accessibility fix below: a populated concepts field
-  // renders a Concepts section (+page.marko), so it must be visible here or
-  // upstream "Core Concepts"-style targets mapped into ["concepts"] can
-  // never be satisfied.
-  if (docs.concepts) sections.push("Concepts")
-  for (const example of docs.examples) sections.push(example.title)
-  // Mirrors +page.marko's `hasAccessibility` const: the section renders
-  // when either field is non-empty. Previously never pushed here, so a
-  // populated accessibilityNotes/accessibilityKeyboard could never satisfy
-  // an upstream "Accessibility" mapped target — see attachment's fix.
-  const hasAccessibility =
-    (docs.accessibilityKeyboard && docs.accessibilityKeyboard.length !== 0) ||
-    (docs.accessibilityNotes && docs.accessibilityNotes.length !== 0)
-  if (hasAccessibility) sections.push("Accessibility")
-  if (hasApiParts) sections.push("API Reference")
-  return sections
 }
 
 // ---------------------------------------------------------------------------
@@ -594,52 +464,6 @@ export interface CoverageReport {
 }
 
 // ---------------------------------------------------------------------------
-// Demos manifest / API reference loading (unchanged from v2)
-// ---------------------------------------------------------------------------
-
-interface DemosManifestModule {
-  DEMOS: Record<
-    string,
-    {
-      docs: { examples: { name: string; title: string }[] }
-      demos: Record<string, unknown>
-    }
-  >
-}
-
-interface ApiReferenceModule {
-  components: { name: string; parts: { name: string; properties: { name: string }[] }[] }[]
-}
-
-async function loadOurData(): Promise<{
-  demosManifest: DemosManifestModule["DEMOS"]
-  apiReference: ApiReferenceModule["components"]
-}> {
-  const demosManifestPath = join(
-    REPO_ROOT,
-    "apps",
-    "docs",
-    "src",
-    "demos",
-    "demos-manifest.ts"
-  )
-  const apiReferencePath = join(REPO_ROOT, "apps", "docs", "src", "lib", "api-reference.json")
-
-  if (!existsSync(demosManifestPath)) {
-    throw new Error(
-      `coverage: missing ${demosManifestPath} — run \`bun apps/docs/scripts/build-demos-manifest.ts\` first.`
-    )
-  }
-
-  const demosModule = (await import(demosManifestPath)) as DemosManifestModule
-  const apiReference = existsSync(apiReferencePath)
-    ? (JSON.parse(readFileSync(apiReferencePath, "utf8")) as ApiReferenceModule).components
-    : []
-
-  return { demosManifest: demosModule.DEMOS, apiReference }
-}
-
-// ---------------------------------------------------------------------------
 // Main detector
 // ---------------------------------------------------------------------------
 
@@ -651,70 +475,49 @@ export interface CoverageOptions {
 }
 
 export async function runCoverageDetector(options: CoverageOptions = {}): Promise<CoverageReport> {
-  const upstreamDir = resolveShadcnClone()
-  if (!upstreamDir) {
-    throw new Error(
-      "coverage: no upstream shadcn/ui clone found. Run `bun -e 'import(\"./tooling/upstream-shadcn.ts\").then(m=>m.ensureShadcnClone())'` or set SHADCN_UI_DIR."
-    )
-  }
+  const upstreamHarnessDir = join(REPO_ROOT, "tooling", "parity", "harnesses", defaultConfig.upstream.dir)
+  const oursHarnessDir = join(REPO_ROOT, "tooling", "parity", "harnesses", defaultConfig.ours.dir)
+
+  const upstreamFacts = loadFacts(upstreamHarnessDir)
+  const oursFacts = loadFacts(oursHarnessDir)
 
   const strict = options.strict ?? false
   const ignoreList = loadIgnoreList()
   const sectionMap = await loadSectionMap()
-  const ourComponents = listOurComponents()
-  const upstreamComponents = listUpstreamComponents(upstreamDir)
 
-  const ourSet = new Set(ourComponents)
-  const upstreamSet = new Set(upstreamComponents)
+  const upstreamByComponent = new Map(upstreamFacts.components.map((component) => [component.component, component]))
+  const oursByComponent = new Map(oursFacts.components.map((component) => [component.component, component]))
 
-  const oursOnly = ourComponents.filter((name) => !upstreamSet.has(name))
-  const upstreamOnly = upstreamComponents.filter((name) => !ourSet.has(name))
+  const ourComponents = [...oursByComponent.keys()].sort()
+  const upstreamComponents = [...upstreamByComponent.keys()].sort()
 
-  let shared = ourComponents.filter((name) => upstreamSet.has(name))
+  const oursOnly = ourComponents.filter((name) => !upstreamByComponent.has(name))
+  const upstreamOnly = upstreamComponents.filter((name) => !oursByComponent.has(name))
+
+  let shared = ourComponents.filter((name) => upstreamByComponent.has(name))
   if (options.component) {
     shared = shared.filter((name) => name === options.component)
   }
-
-  const { demosManifest, apiReference } = await loadOurData()
-
-  const baseDocsDir = join(upstreamDir, "apps", "v4", "content", "docs", "components", "base")
 
   const components: ComponentCoverageResult[] = []
   const unclassifiedEntries: UnclassifiedEntry[] = []
   let ignoredCount = 0
 
   for (const componentName of shared) {
-    const mdxPath = join(baseDocsDir, `${componentName}.mdx`)
-    const mdxSource = readFileSync(mdxPath, "utf8")
+    const upstream = upstreamByComponent.get(componentName)
+    const ours = oursByComponent.get(componentName)
+    if (!upstream || !ours) continue
 
-    const sections = extractSections(mdxSource)
-    const { tractable: apiTractable, props: upstreamApiProps } = extractUpstreamApiProps(mdxSource)
+    const ourPage: OurPageStructure = { sections: new Set(ours.sections.map((section) => normalizeName(section.heading))) }
 
-    const ourEntry = demosManifest[componentName]
-    const ourDocs = ourEntry?.docs ?? { examples: [] }
-    const ourDemoNames = ourEntry ? Object.keys(ourEntry.demos) : []
-
-    const apiComponent = apiReference.find((entry) => entry.name === componentName)
-    const hasApiParts = Boolean(apiComponent && apiComponent.parts.length > 0)
-    const ourApiProps = apiComponent
-      ? apiComponent.parts.flatMap((part) => part.properties.map((prop) => prop.name))
-      : []
-
-    const isCompound = Boolean(apiComponent && apiComponent.parts.length > 1)
-    const ourSectionTitles = ourSectionsFor(componentName, ourDocs, isCompound, hasApiParts)
-    const ourPage: OurPageStructure = { sections: new Set(ourSectionTitles.map(normalizeName)) }
-
-    // Classify every section, accumulating demo names (tier b) and mapped
-    // presence checks (tier a), skipping ignored (map "ignore") entirely,
-    // and collecting unclassified for the bundle.
-    const upstreamDemoNames: string[] = []
+    const upstreamDemoNames: string[] = [...upstream.demoNames]
     const missingMappedTargets: MappedSectionResult[] = []
     const processActions: ComponentCoverageResult["processActions"] = []
     let unclassifiedCount = 0
     let ignoredSectionCount = 0
 
-    for (const section of sections) {
-      const classification = classifySection(section, sectionMap, shadcnAdapter, componentName)
+    for (const section of upstream.sections) {
+      const classification = classifySection(section, sectionMap, componentName)
 
       if (classification.tier === "ignored") {
         ignoredSectionCount++
@@ -722,7 +525,9 @@ export async function runCoverageDetector(options: CoverageOptions = {}): Promis
       }
 
       if (classification.tier === "demo") {
-        upstreamDemoNames.push(...classification.demoNames)
+        for (const name of classification.demoNames) {
+          if (!upstreamDemoNames.includes(name)) upstreamDemoNames.push(name)
+        }
         continue
       }
 
@@ -752,13 +557,6 @@ export async function runCoverageDetector(options: CoverageOptions = {}): Promis
           processActions.push({ heading: section.heading, action })
         }
       }
-    }
-
-    // Also fold in whole-document demo refs not caught by section
-    // classification (defensive: a demo marker outside any ## / ### body,
-    // e.g. the header hero preview before the first heading).
-    for (const name of extractUpstreamDemoNames(mdxSource)) {
-      if (!upstreamDemoNames.includes(name)) upstreamDemoNames.push(name)
     }
 
     const diffNamed = (
@@ -792,9 +590,9 @@ export async function runCoverageDetector(options: CoverageOptions = {}): Promis
       return { missing, extra }
     }
 
-    const demoDiff = diffNamed("demo", upstreamDemoNames, ourDemoNames)
-    const apiDiff = apiTractable
-      ? diffNamed("api-prop", upstreamApiProps, ourApiProps)
+    const demoDiff = diffNamed("demo", upstreamDemoNames, ours.demoNames)
+    const apiDiff = upstream.apiTractable
+      ? diffNamed("api-prop", upstream.apiProps, ours.apiProps)
       : { missing: [], extra: [] }
 
     components.push({
@@ -804,9 +602,9 @@ export async function runCoverageDetector(options: CoverageOptions = {}): Promis
       missingMappedTargets,
       missingApiProps: apiDiff.missing,
       extraApiProps: apiDiff.extra,
-      apiTractable,
+      apiTractable: upstream.apiTractable,
       upstreamDemos: upstreamDemoNames,
-      ourDemos: ourDemoNames,
+      ourDemos: ours.demoNames,
       unclassifiedCount,
       ignoredSectionCount,
       processActions,
@@ -814,7 +612,7 @@ export async function runCoverageDetector(options: CoverageOptions = {}): Promis
   }
 
   // Emit the unclassified bundle for the LLM classify-prompt pipeline
-  // (tooling/parity/classify-prompt.md documents how to consume this).
+  // (runner/classify-prompt.md documents how to consume this).
   if (unclassifiedEntries.length > 0 || shared.length > 0) {
     const outDir = join(REPO_ROOT, "parity-report")
     mkdirSync(outDir, { recursive: true })
@@ -832,7 +630,7 @@ export async function runCoverageDetector(options: CoverageOptions = {}): Promis
   }
 }
 
-// Allow running standalone: `bun tooling/parity/coverage.ts [component] [--strict]`
+// Allow running standalone: `bun tooling/parity/runner/coverage.ts [component] [--strict]`
 if (import.meta.main) {
   const args = process.argv.slice(2)
   const strict = args.includes("--strict")

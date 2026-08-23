@@ -62,8 +62,8 @@ always exist.
 
 ## Upstream section map (coverage checker v3 input)
 
-`tooling/parity/section-map.ts` — a typed TS module (`export default
-defineSectionMap({...})`, types in `tooling/parity/map-types.ts`), NOT
+`tooling/parity/config/section-map.ts` — a typed TS module (`export default
+defineSectionMap({...})`, types in `tooling/parity/runner/map-types.ts`), NOT
 JSON. Global map, upstream heading slug → ARRAY of actions. Values may
 also be an array of VARIANTS for slugs whose meaning differs per page
 (first match wins; a variant without `when` is the default):
@@ -126,21 +126,21 @@ mode) — that's a future porter step's job.
   `keep` is the documented spelling for that.
 - Per-page pathologies stay in `parity-ignore.json`, not this map.
 - `process` without `prompt` uses the DEFAULT PROMPT (adapter-level
-  template, `tooling/parity/process-prompt.md`): guides the LLM to adapt
+  template, `tooling/parity/runner/process-prompt.md`): guides the LLM to adapt
   the section content to marko-ui and this port's specifics (React→Marko
   idioms, three-tag Zag pattern, mu-*/styles conventions, our canonical
   hierarchy), with the adapter injecting upstream/library context. An
   entry-level `prompt` is appended to (not replacing) the default, for
   section-specific guidance.
 
-**JSON proposals → TS promotion.** `tooling/parity/section-map.proposed.json`
+**JSON proposals → TS promotion.** `tooling/parity/config/section-map.proposed.json`
 (LLM-written, unclassified-section proposals — see "Section
 classification" below) STAYS JSON: an LLM can't emit a predicate
 function, so proposals use the OLD declarative `when` object form
 (`{ component?: string[]; hasDemoMarker?: boolean }`). Promoting a
 reviewed proposal into `section-map.ts` converts that declarative object
 into a `(ctx: SectionContext) => boolean` predicate — a mechanical,
-human step (see `tooling/parity/SCHEMA.md`'s "JSON proposals → TS
+human step (see `tooling/parity/runner/SCHEMA.md`'s "JSON proposals → TS
 promotion" and `classify-prompt.md` for worked examples).
 
 Seed entries (as they now appear in `section-map.ts`, illustratively):

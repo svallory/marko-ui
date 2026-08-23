@@ -12,19 +12,22 @@ import {
 } from "../lib/site-meta.ts";
 
 // Block previews under /blocks/view/, the /create theme-builder's own
-// preview iframe target (/create/preview), /typeset's specimen iframe
-// target (/typeset/preview), and the /parity/<demo> visual-parity harness
-// route render chrome-free: each is a full page meant to be embedded in an
-// <iframe> or screenshotted in isolation, so site header/footer would frame
-// it wrongly (mirrors shadcn's isolated /view and /preview routes, both
-// chrome-free in the source too). Resolved from the request URL
-// server-side so the chrome is absent from the SSR payload rather than
-// hidden after hydration.
+// preview iframe target (/create/preview), and /typeset's specimen iframe
+// target (/typeset/preview) render chrome-free: each is a full page meant
+// to be embedded in an <iframe> or screenshotted in isolation, so site
+// header/footer would frame it wrongly (mirrors shadcn's isolated /view
+// and /preview routes, both chrome-free in the source too). Resolved from
+// the request URL server-side so the chrome is absent from the SSR
+// payload rather than hidden after hydration.
+//
+// The visual-parity harness's blank per-demo render route used to live
+// here too (/parity/<demo>), but moved to its own standalone app —
+// tooling/parity/harnesses/marko-ui/ — so this docs app ships no test
+// routes. See tooling/parity/PROTOCOL.md.
 <const/isBlockPreview=(
   $global.url.pathname.startsWith("/blocks/view/") ||
   $global.url.pathname.startsWith("/create/preview") ||
-  $global.url.pathname.startsWith("/typeset/preview") ||
-  $global.url.pathname.startsWith("/parity/")
+  $global.url.pathname.startsWith("/typeset/preview")
 )/>
 
 // Per-route title/description/canonical/OG, looked up by pathname. See

@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite"
 import { existsSync, readdirSync, writeFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { dirname, join, relative } from "node:path"
-import { resolveShadcnClone } from "../../upstream-shadcn.ts"
+import { resolveShadcnClone } from "../upstream-shadcn.ts"
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 
@@ -37,8 +37,8 @@ const cloneRoot = resolveShadcnClone()
 if (!cloneRoot) {
   throw new Error(
     "harness-react/vite.config.ts: no upstream shadcn/ui clone found. " +
-      "Set SHADCN_UI_DIR or run the coverage detector once to auto-clone " +
-      "(bun tooling/parity/coverage.ts)."
+      "Set SHADCN_UI_DIR or run the shadcn harness's extract step once to " +
+      "auto-clone (bun tooling/parity/harnesses/shadcn/extract/index.ts)."
   )
 }
 

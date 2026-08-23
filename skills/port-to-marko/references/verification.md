@@ -54,10 +54,10 @@ plus the e2e verify-matrix where your components have demos, **plus the parity-d
 bun run check:parity    # exit 0 green, 3 drift (read parity-report/), 2 tooling crash
 ```
 
-It runs two detectors against the upstream clone and writes `parity-report/report.json` (stable `summary[]` per component: `status`, `pairedDemos`, `missingDemos`, `extraDemos`, `missingSections`, `maxDiffPct`, `ignored[]` — schema in `tooling/parity/SCHEMA.md`) plus a worst-first HTML gallery:
+It runs two detectors against the upstream clone and writes `parity-report/report.json` (stable `summary[]` per component: `status`, `pairedDemos`, `missingDemos`, `extraDemos`, `missingSections`, `maxDiffPct`, `ignored[]` — schema in `tooling/parity/runner/SCHEMA.md`) plus a worst-first HTML gallery:
 
-- **Coverage** (static): every upstream demo and doc section must pair with yours by name, or be listed in `tooling/parity/parity-ignore.json` with a mandatory reason. Name your demos exactly like upstream's — pairing is by name.
-- **Visual**: paired demos are rendered blank-page on both sides and diffed. Demos whose interesting state needs interaction (open a drawer, pick a date) need an entry in `tooling/parity/interactions.json` — role+name click steps applied identically to both sides. **Authoring that file is part of the port** (the reasoning happens once; every later run is mechanical): read `tooling/parity/INTERACTIONS.md` and write steps for each stateful demo you add.
+- **Coverage** (static): every upstream demo and doc section must pair with yours by name, or be listed in `tooling/parity/config/parity-ignore.json` with a mandatory reason. Name your demos exactly like upstream's — pairing is by name.
+- **Visual**: paired demos are rendered blank-page on both sides and diffed. Demos whose interesting state needs interaction (open a drawer, pick a date) need an entry in `tooling/parity/config/interactions.json` — role+name click steps applied identically to both sides. **Authoring that file is part of the port** (the reasoning happens once; every later run is mechanical): read `tooling/parity/config/INTERACTIONS.md` and write steps for each stateful demo you add.
 
 `parity-ignore.json` is the machine-readable deviation log — every accepted difference lives there with its reason; the PR description summarizes them. Read the repo's `CLAUDE.md` and `TODO.md` conventions. A PR with failing checks, unexplained drift, or undisclosed deviations will not be reviewed.
 

@@ -10,3 +10,5 @@ test-results/
 packages/shadcn/styles-gen/
 .upstream/
 parity-report/
+tooling/parity/harnesses/*/parity-facts.json
+tooling/parity/harnesses/marko-ui/src/tags/demo-renderer.marko

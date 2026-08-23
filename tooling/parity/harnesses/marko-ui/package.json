@@ -1,0 +1,24 @@
+{
+  "name": "parity-harness-marko-ui",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "predev": "bun generate-demo-renderer.ts",
+    "dev": "marko-run",
+    "prebuild": "bun generate-demo-renderer.ts",
+    "build": "marko-run build",
+    "preview": "marko-run preview --port 4175",
+    "extract": "bun extract/index.ts"
+  },
+  "dependencies": {
+    "@marko-ui/shadcn": "workspace:*",
+    "marko": "6.3.34"
+  },
+  "devDependencies": {
+    "@marko/run": "0.11.9",
+    "@marko/vite": "^6.1.9",
+    "@tailwindcss/vite": "^4.3.3",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.2.1"
+  }
+}
