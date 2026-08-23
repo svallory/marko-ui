@@ -323,6 +323,9 @@ section
             button data-slot="tabs-trigger" role="tab" aria-selected="false"
             button data-slot="tabs-trigger" role="tab" aria-selected="false"
             button data-slot="tabs-trigger" role="tab" aria-selected="true" aria-controls="<id>"
+          div data-slot="tabs-content" role="tabpanel" aria-labelledby="<id>"
+          div data-slot="tabs-content" role="tabpanel" aria-labelledby="<id>"
+          div data-slot="tabs-content" role="tabpanel" aria-labelledby="<id>"
     div
 ---
 section
