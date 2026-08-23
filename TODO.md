@@ -393,3 +393,16 @@ against component source by the repair run's adversarial checkers:
       only knows `variant` — inert prop, fix demo or component
 - [ ] docs template: `changelog` field in docs-types.ts + render branch
       (card, toggle-group, pagination all blocked on it)
+
+## BLOCKER for 4 components — needs marko-zag/Marko-core (2026-08-23)
+
+Nested-portal resume corruption (Marko 6.3.34, production builds only):
+a Zag-connected child rendered via marko-zag's <portal> content mechanism
+inside an ancestor's own <portal><if=api().open> gets its api() closures
+corrupted on resume (`e._.q is not a function` class). Affects
+dropdown-menu submenu, menubar submenu, dropdown-menu <@item> path,
+date-picker Popover+Calendar composition (context-menu submenu latent).
+Full sourcemapped RCA in e2e/verify-matrix.spec.ts KNOWN_BROKEN comment
+(commit 87cc253a). Same class as notes/bug-marko-dynamic-tag-hydration-
+crash.md. → relay to the marko-zag session: fixable in portal impl, or
+minimal-repro upstream to Marko core?
