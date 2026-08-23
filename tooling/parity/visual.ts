@@ -296,7 +296,16 @@ async function runOdiff(
   }
 }
 
-/** Apply this demo's interaction steps (if any) on `page`, then wait `settleMs`. */
+/** Apply this demo's interaction steps (if any) on `page`, then wait `settleMs`.
+ *
+ * Each click is bounded by Playwright's own `timeout` option (10s) — without
+ * an explicit timeout, `locator.click()` uses Playwright's actionability
+ * polling which can, in pathological cases (element present but never
+ * satisfies hit-testing/stability), poll far longer than expected. This
+ * alone doesn't fully bound applyInteractions (see screenshotDemo's
+ * PER_DEMO_TIMEOUT_MS wrapper for the hard outer deadline), but it turns a
+ * silent multi-minute hang into a clear, attributable per-step error.
+ */
 async function applyInteractions(
   page: import("playwright").Page,
   entry: InteractionEntry | undefined
@@ -308,10 +317,26 @@ async function applyInteractions(
     if ((await locator.count()) === 0 && step.css) {
       locator = page.locator(step.css) as typeof locator
     }
-    await locator.first().click()
+    await locator.first().click({ timeout: 10_000 })
   }
   await page.waitForTimeout(entry.settleMs ?? 300)
 }
+
+// Hard outer deadline for one screenshotDemo() call (goto + waitFor +
+// interactions + screenshot combined). Individual steps inside already carry
+// their own Playwright timeouts (goto: 30s, waitFor: 8s, click: 10s), but
+// nothing previously bounded the SUM, and a hang inside Playwright's
+// actionability/auto-wait machinery (observed: an interaction-step demo's
+// click locator never resolving to a stable, clickable state — see
+// INTERACTIONS.md-listed demos immediately after a plain/no-interaction demo
+// in manifest order) doesn't reject, it just hangs — which escapes
+// withRetries entirely, since withRetries only re-tries on rejection.
+// 45s comfortably covers the sum of the inner timeouts (30+8+10=48s already
+// exceeds it in the worst case, which is fine — Promise.race below cuts in
+// at 45s regardless of which inner step is stuck) while still failing fast
+// enough that one wedged demo costs at most 45s x (retries+1), not
+// unbounded wall-clock time.
+const PER_DEMO_TIMEOUT_MS = 45_000
 
 async function screenshotDemo(
   page: import("playwright").Page,
@@ -321,20 +346,31 @@ async function screenshotDemo(
   interaction: InteractionEntry | undefined,
   attempt: number
 ): Promise<Buffer> {
-  await page.goto(`${baseUrl}${routePrefix}${demoName}`, { waitUntil: "networkidle", timeout: 30_000 })
-  const target = page.locator(`[data-parity-demo="${demoName}"]`)
-  // 8s, not 30s: a demo name that's paired by coverage.ts (an MDX
-  // <ComponentPreview name="..."> ref) but has no matching .tsx file in
-  // the upstream registry's examples/ dir (this happens — upstream's own
-  // docs occasionally reference examples that were since removed/renamed)
-  // never grows a [data-parity-demo] wrapper on the harness-react side
-  // (its NotFound branch omits the attribute entirely, see App.tsx) — so
-  // this wait is guaranteed to time out for that case, and each of up to
-  // 3 attempts (withRetries below) should fail fast rather than burn 15s+
-  // each on something that will never appear.
-  await target.waitFor({ state: "visible", timeout: 8_000 })
-  await applyInteractions(page, interaction)
-  return target.screenshot()
+  const run = async (): Promise<Buffer> => {
+    await page.goto(`${baseUrl}${routePrefix}${demoName}`, { waitUntil: "networkidle", timeout: 30_000 })
+    const target = page.locator(`[data-parity-demo="${demoName}"]`)
+    // 8s, not 30s: a demo name that's paired by coverage.ts (an MDX
+    // <ComponentPreview name="..."> ref) but has no matching .tsx file in
+    // the upstream registry's examples/ dir (this happens — upstream's own
+    // docs occasionally reference examples that were since removed/renamed)
+    // never grows a [data-parity-demo] wrapper on the harness-react side
+    // (its NotFound branch omits the attribute entirely, see App.tsx) — so
+    // this wait is guaranteed to time out for that case, and each of up to
+    // 3 attempts (withRetries below) should fail fast rather than burn 15s+
+    // each on something that will never appear.
+    await target.waitFor({ state: "visible", timeout: 8_000 })
+    await applyInteractions(page, interaction)
+    return target.screenshot()
+  }
+  return Promise.race([
+    run(),
+    new Promise<Buffer>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`visual.ts: screenshotDemo(${demoName}) exceeded ${PER_DEMO_TIMEOUT_MS}ms hard deadline (attempt ${attempt})`)),
+        PER_DEMO_TIMEOUT_MS
+      )
+    ),
+  ])
 }
 
 async function withRetries<T>(fn: (attempt: number) => Promise<T>, retries: number): Promise<T> {
