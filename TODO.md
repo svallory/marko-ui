@@ -404,12 +404,14 @@ dropdown-menu submenu, menubar submenu, dropdown-menu <@item> path,
 date-picker Popover+Calendar composition (context-menu submenu latent).
 Full sourcemapped RCA in e2e/verify-matrix.spec.ts KNOWN_BROKEN comment
 (commit 87cc253a). Same class as notes/bug-marko-dynamic-tag-hydration-
-crash.md. → NOTE (framing corrected 2026-08-23): serializability across the
-boundary is OUR contract under Marko's resumability model — closure-
-wrapping is the correct design, not a workaround. A full boundary audit
-is in progress; only if every crossing value is demonstrably
-serializable and resume still corrupts does this go to marko-zag/Marko
-as a suspected platform issue.
+crash.md. → EVIDENCE COMPLETE (2026-08-24): minimal repro at
+../../scratch/nested-portal-repro/ (space scratch). All 10 boundary
+crossings enumerated serializable; crash persists ($scope._.api is not
+a function at the inner component's own api() read). Discriminator:
+identical structure with plain <let> state and NO Zag does not crash →
+marko-zag <service>/<connect> machinery is a required ingredient. Also
+reproduces in DEV (unlike the older prod-only dynamic-tag bug). Hand
+the repro README to the marko-zag session.
 
 ## marko-zag relay additions (2026-08-23)
 
