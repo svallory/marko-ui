@@ -1,11 +1,19 @@
 {
-  "//": "Reviewed-and-accepted parity differences between our Marko port and upstream shadcn (base-ui) docs. Each entry silences ONE normalized name for ONE component (or \"*\" for every component) and ONE kind (\"section\" | \"demo\" | \"api-prop\"). Add entries only after a human has actually looked at the diff and decided it's fine to keep — this file is a review record, not a shortcut to a green run.",
+  "//": "Reviewed-and-accepted parity differences between our Marko port and upstream shadcn (base-ui) docs. Each entry silences ONE normalized name for ONE component (or \"*\" for every component) and ONE kind (\"section\" | \"demo\" | \"api-prop\"). Add entries only after a human has actually looked at the diff and decided it's fine to keep \u2014 this file is a review record, not a shortcut to a green run.",
   "ignore": [
     {
       "component": "*",
       "kind": "section",
       "name": "Migrating from Vaul",
-      "reason": "React/Base-UI migration-history section (drawer switched from the vaul npm package to Base UI upstream) — nothing in our Marko port ever used vaul, so there is no migration to document."
+      "reason": "React/Base-UI migration-history section (drawer switched from the vaul npm package to Base UI upstream) \u2014 nothing in our Marko port ever used vaul, so there is no migration to document."
     }
-  ]
+  ],
+  "visualDemos": {
+    "sheet-demo": {
+      "reason": "open-state overlay: upstream harness renders shadcn's site-default style (bg-black/50-class overlay); our harness renders nova, whose overlay is bg-black/10 \u2014 verified byte-identical to upstream's own style-nova.css (2026-08-24). Content parity confirmed; residual ratio is the overlay/backdrop difference plus drawer's inner max-w wrapper (no class-passthrough hook on @content). Re-evaluate if harnesses gain same-style pairing."
+    },
+    "drawer-demo": {
+      "reason": "open-state overlay: upstream harness renders shadcn's site-default style (bg-black/50-class overlay); our harness renders nova, whose overlay is bg-black/10 \u2014 verified byte-identical to upstream's own style-nova.css (2026-08-24). Content parity confirmed; residual ratio is the overlay/backdrop difference plus drawer's inner max-w wrapper (no class-passthrough hook on @content). Re-evaluate if harnesses gain same-style pairing."
+    }
+  }
 }
