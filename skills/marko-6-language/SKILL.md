@@ -1,159 +1,82 @@
 ---
 name: marko-6-language
-description: Marko 6 language reference — syntax, reactivity timing (let/const/script/lifecycle/static), and the specific mistakes agents keep making when writing .marko files. Use before writing or editing any .marko file, or when a component compiles but behaves wrong (stale values, hydration crashes, dead reactivity).
+description: Use when writing or editing any .marko file, reviewing Marko 6 (Tags API) code, or when a component compiles but misbehaves — stale values, hydration/serialization errors, dead reactivity, wrong attribute/handler shapes. Covers language syntax, core tags, native-tag enhancements, TypeScript types, template API, custom-tag discovery, styling, lazy loading, and agent-error catalog. Not for routing/servers (see marko-run skill) or Marko 5 class API.
 ---
 
-# Marko 6 language reference
+# Marko 6 language
 
-Compact, correct rules for writing `.marko` files. Every rule is one line plus a wrong/right pair. Read this before writing any `.marko` file; it does not cover component *architecture* (Zag wiring, attr-tag APIs) — that's `skills/port-to-marko/references/marko-gotchas.md`.
+Distilled from the full Marko 6 docs (https://markojs.com/docs — reference, explanation, guide, tutorial; Marko 5 / class API intentionally excluded). This file = rules agents get wrong + quick reference. Full detail lives in `references/`:
 
-Docs: https://markojs.com/docs/reference/language (index) · https://markojs.com/docs/reference/core-tag · https://markojs.com/docs/reference/custom-tag · https://markojs.com/docs/reference/reactivity · https://markojs.com/docs/reference/concise-syntax · https://markojs.com/docs/reference/typescript
+| File | Read when |
+|---|---|
+| `references/language.md` | syntax: statements, attributes & shorthands, content, attr tags, tag vars/params, dynamic tags, concise mode, whitespace |
+| `references/core-tags.md` | `<if>` `<show>` `<for>` `<let>` `<const>` `<return>` `<script>` `<style>` `<define>` `<lifecycle>` `<id>` `<await>` `<try>` + reactivity/scheduling model |
+| `references/native-tags.md` | `class=`/`style=`/`content=`, event delegation, controllable `value:=`/`checked:=`/`open:=`, spread ownership |
+| `references/typescript.md` | `Input`, `Marko.*` types, augmenting natives/globals/CSS, TS syntax in tags |
+| `references/template-api.md` | `render`/`mount`, `$global` (`serializedGlobals`, `cspNonce`, `renderId`, `runtimeId`) |
+| `references/custom-tags-styling.md` | tag discovery order, `tags/` dirs, `marko.json`, styles, lazy `with { load }` |
+| `references/patterns.md` | controllable components, nested state, serializable/immutable state, streaming, tooling |
 
-All non-trivial samples in this skill were compiled with `@marko/compiler` (`compileFile`) from this repo's `node_modules/.bun/marko@6.3.34/.../@marko/compiler` — see "Samples verified" at the bottom for the pass/fail log.
+Component *architecture* for this repo (Zag wiring, attr-tag APIs): `skills/port-to-marko/references/marko-gotchas.md`.
 
-## 1. Core syntax
+## Mental model (10 lines)
 
-Source: https://markojs.com/docs/reference/language
+1. File = component. `input` = attrs. `tags/` dirs auto-discover `<tag-name>`; PascalCase variables are tags; strings in `<${...}>` are always native elements.
+2. Module statements only: `import`, `export`, `static`, `server`, `client`. Everything else is template body (reactive).
+3. Reactive sources: tag vars (`/x`), tag params (`|x|`), `input`. Graph is compiled, not tracked at runtime. Expressions must be pure.
+4. `<let>` = state (assignment-reactive, immutable updates, serialized on SSR). `<const>` = derived (lazy, flush-time). `static const` = module constant.
+5. Updates batch after a microtask. After `count++` the `<let>` is new, every `<const>`/DOM is stale until flush.
+6. `<script>` = browser-only effect that re-runs on referenced tag var/param changes; cleanup via `$signal.onabort`. `<lifecycle>` = `onMount/onUpdate/onDestroy` with persistent `this`.
+7. Native tag var `<div/el/>` is a **getter function**, browser-only, usable only after render.
+8. Controllable everything: `value:=x` ≡ `value=x valueChange(v){x=v}`; on member exprs ≡ `value=input.x valueChange=input.xChange`. `<let/x:=input.x>` makes a component controllable.
+9. Server/client boundary: only serializable plain data crosses; no class instances, DOM nodes, or foreign-module closures in state; `$global` stays server-side unless in `serializedGlobals`.
+10. Zero-JS by default: only reactive parts ship to the browser; component granularity doesn't change bundle size.
 
-- **Native/custom tags share one syntax.** `<div>`/`<my-tag>` in HTML mode, `div`/`my-tag` in concise mode (indentation-based, no brackets). A file is concise unless an HTML-syntax tag switches the parser.
-  ```marko
-  <!-- right -->
-  <div class="card">Hi</div>
-  <!-- wrong: mixing bracket and concise syntax for the same tag is a parse error, not "flexible" -->
-  ```
+## Quick reference — the rules that bite
 
-- **Shorthand class/id is Emmet-style, dot/hash directly on the tag name** — not a `class=` string.
-  ```marko
-  <!-- right -->
-  <div#panel.card.card-active/>
-  <div.icon-${iconName}/>
-  <!-- wrong: dot syntax is NOT string concatenation into class= -->
-  <div class="icon-" + iconName/>
-  ```
+### Syntax
+- Unenclosed `>` in attr value → `value=(a > b)`. `>=` and `=>` OK.
+- `<div#id.cls.cls2/>` shorthand; `<Comp.x/>` is `class="x"`, not property access → `<${Comp.x}/>`.
+- Bare root text in concise mode parses as tags → `-- text`. Multi-line attrs: leading commas.
+- Attribute string is a JS literal; `aria-*` enumerated attrs need strings: `aria-pressed=on && "true"`.
+- `null|undefined|false` attrs skipped; `0`, `""`, `NaN` written. Text: `null|undefined|false|""|NaN|0n` skipped, `0` rendered.
+- Line break between two inline tags = **no space**. Put the space on the same line.
+- `<if>`/`<else if=…>`/`<else>` are direct siblings. Docs write `<else if=cond>`; `<else-if=cond>` also compiles on 6.3.34 (verified).
+- `<${input.content}/>` forwards content; native tags also accept `content=input.content` or just `<div ...input/>`. Literal body (even a comment) overrides `content=`.
+- Repeated `<@item>` → `input.item` is first + iterable: `<for|it| of=input.item>` or `[...input.item || []]`. Type `Marko.AttrTag<{...}>`.
+- Tag params: `<child|{ n }|>`; args form `<${input.content}(1,2)/>` → `|a, b|`. Attrs or args, not both. Attr tags can't read params.
+- Closing tag name optional (`</>`); dynamic tags close with `</>`.
 
-- **Dynamic tags use `${...}` in place of the tag name.** Custom dynamic tags need a reference (component import, not a string); native dynamic tags accept a string.
-  ```marko
-  <!-- right: dynamic native tag -->
-  <${"h" + input.headingSize}>Hello!</>
-  <!-- right: dynamic custom tag -->
-  import MyTagA from "./my-tag-a.marko";
-  <${Math.random() > 0.5 ? MyTagA : MyTagB}/>
-  <!-- wrong: a string naming a custom tag does not resolve -->
-  <${"my-tag-a"}/>
-  ```
-  PascalCase variables are usable directly as tag names without the `${}` wrapper: `<MyTag/>` is sugar for `<${MyTag}/>`. **Caution**: a dot after a PascalCase tag name is the class shorthand, not property access — `<Toolbar.Undo/>` adds a `Undo` class to `<Toolbar>`; to reference `Toolbar.Undo` as a component, write `<${Toolbar.Undo}/>`.
+### Reactivity & timing
+- `<let/x=input.x>` does NOT follow later `input.x` changes. Use `<let/x:=input.x>` (controllable) or read `input.x` directly.
+- Mutation isn't reactive: `arr.push()` ❌ → `arr = arr.concat()`; `obj.k = v` ❌ → `obj = { ...obj, k: v }`.
+- In handlers recompute from `<let>`s; `<const>` values and DOM are stale until flush.
+- `<if>` destroys/recreates state; `<show>` keeps it mounted. `<for ... by="id">` to preserve state on reorder.
+- `$signal` only inside `<script>`/`<lifecycle>`/handlers (throws on server elsewhere). Capture it before `await`.
+- `<lifecycle>`: return an **object** from `onMount` (bare fn cleanup is dropped); don't overwrite attribute props on `this`.
+- `<return>`: one per template/content, top-level; vary its `value=`.
 
-- **Tag content is `input.content`; forward it with `<${input.content}/>` directly** — this is the canonical form. Do not destructure or re-bind it through `<const>` first (breaks walk-order compilation and gains nothing; see §3).
-  ```marko
-  <!-- right -->
-  <div class="wrapper">
-    <${input.content}/>
-  </div>
-  <!-- wrong -->
-  <const/content=input.content>
-  <div class="wrapper">
-    <${content}/>
-  </div>
-  ```
+### Native tags & events
+- Handler `(event, element)`; **no `event.currentTarget`** (delegated) — use 2nd arg or ref. Marko handlers run before native listeners; non-bubbling events only on the target.
+- `<input value:=n>` gives strings → `value:parseFloat:=n` / `valueChange(v){ n = +v }`.
+- `<select value:=x>`: every `<option>` needs `value=`; no `selected=`.
+- `style={}` keys hyphen-case, no unit inference; conditional declarations at array level.
+- Spread owns attrs (removed when missing later); write fixed attrs **after** the spread.
+- `<details open:=o>`, `<dialog open:=o>`; `showModal()` doesn't fire `openChange`.
 
-- **Attr-tags (`<@name>`) pass named/repeated content as data, not markup**, collected onto `input` under that name (with `.content` for the attr-tag's own body). Repeated same-named attr-tags collect into an **iterable**, not an array — always spread: `[...(input.item ?? [])]`.
-  ```marko
-  <!-- right -->
-  <my-menu>
-    <@item value="foo">Foo</@item>
-    <@item value="bar">Bar</@item>
-  </my-menu>
-  <!-- inside my-menu.marko -->
-  <for|entry| of=[...(input.item ?? [])]>${entry.value}: <${entry.content}/></for>
-  ```
+### Types
+- `export interface Input {}` (bare `interface` = parse error). `Marko.Body<[params], { value }>`, `Marko.AttrTag<T>`, `Marko.HTML.Button` for extending natives, `Marko.Global` augmentation, `Marko.NativeTags` for custom elements. Typecheck with `mtc` (`@marko/type-check`), not `tsc`.
 
-- **Tag parameters (`|params|`) let a child pass data back up to the parent's content block**, via call-style arguments on the forwarded content tag.
-  ```marko
-  <!-- child.marko -->
-  <div><${input.content}(1337)/></div>
-  <!-- parent -->
-  <child|number|>Got ${number}</child>
-  ```
+### Discovery & assets
+- Only `tags/` dirs are searched (upward); sibling files need `import`. Packages export via `marko.json` `exports`. Adjacent `style.css` / `foo.style.css` auto-attached.
+- `<style>` global, once; `<style/styles>` CSS Modules; `${}` inside `<style>` → custom props, declaration values only, above the styled content.
+- Lazy: `import X from "<x>" with { load: "visible#id | idle?timeout=2000" }` static string; facade tag to centralize.
 
-- **Tag variables (`/name`) expose a tag's return value**, most commonly an element ref. **Tag variables are functions — call them, don't read properties off them.**
-  ```marko
-  <!-- right -->
-  <div/myDiv/>
-  <script>
-    myDiv().innerHTML = "Hello";
-  </script>
-  <!-- wrong: silently fails, myDiv is a function not the element -->
-  <script>
-    myDiv.innerHTML = "Hello";
-  </script>
-  ```
+### Template API
+- `T.render(input)` consumed once: `for await`, `.pipe(res)`, `.toReadable()`, `await`, `.toString()` (sync-only). `T.mount(input, node, pos)` → `update/destroy/value`.
+- `$global.serializedGlobals` to expose globals to the client (never secrets); `cspNonce`; `renderId`/`runtimeId` identifier-safe.
 
-## 2. Reactivity primitives — timing is where agents fail
-
-Source: https://markojs.com/docs/reference/core-tag · https://markojs.com/docs/reference/reactivity
-
-Marko discovers the reactive graph at **compile time**, not via runtime signal tracking (unlike SolidJS/React). Only `import`/`export`/`static`/`server`/`client` statements are non-reactive, evaluated once at module load; everything else in the template body may be reactive.
-
-- **`<let>` — eager, reactive, serialized for hydration when SSR-assigned.** Assigning a `<let>` writes the value into scope **immediately** — the next line reads the new value. It is real mutable state and crosses the SSR→client boundary (must be serializable — see §3 closure-wrap rule).
-  ```marko
-  <!-- right -->
-  <let/count=1>
-  <button onClick() { count++ }>Count: ${count}</button>
-  ```
-
-- **`<const>` — derived, LAZY / signal-deferred, recomputed only when the update queue flushes.** Read-only; everything downstream (including rendered output) sees the *previous* flush's value until the queue drains — reading a `<const>` synchronously right after mutating its dependency inside the same handler returns the STALE value.
-  ```marko
-  <!-- wrong: reports the total for the PREVIOUS quantity, not the one just set -->
-  <let/quantity=1>
-  <const/subtotal=quantity * price>
-  <button onClick() {
-    quantity = 5;
-    save(subtotal); // stale — queue hasn't flushed yet
-  }>Buy</button>
-  <!-- right: read derived values from the template body / next task, not synchronously post-mutation -->
-  ```
-  Module-wide constants: `static const X = ...` at the top of the file, not a template-body `<const>`.
-
-- **`<script>` — deferred, client-only reactive effect.** Runs after the initial render completes and **re-runs whenever a referenced tag variable/param changes** (like an always-on `useEffect` with auto-tracked deps, browser-only — never runs during SSR). Clean up with `$signal.onabort`, not a returned function.
-  ```marko
-  <!-- right -->
-  <let/count=1>
-  <script>
-    const id = setInterval(() => console.log(count), 1000);
-    $signal.onabort = () => clearInterval(id);
-  </script>
-  ```
-
-- **`<lifecycle>` — `onMount`/`onUpdate`/`onDestroy`, imperative client hooks.** `onMount` runs once; `onUpdate` runs when the handler's own dependencies invalidate; `onDestroy` runs on removal. **Cleanup must be returned as a named property, never a bare closure** — `Object.assign`-style merge onto `this` means `return () => cleanup()` is silently dropped.
-  ```marko
-  <!-- wrong: cleanup silently discarded -->
-  <lifecycle
-    onMount() {
-      const timer = setInterval(tick, 1000);
-      return () => clearInterval(timer);
-    }
-  />
-  <!-- right -->
-  <lifecycle
-    onMount() {
-      const timer = setInterval(tick, 1000);
-      return { timer };
-    }
-    onDestroy() { clearInterval(this.timer); }
-  />
-  ```
-
-- **`static` — module-level, no reactivity, runs once at load, both server and browser.** Use for helper functions/constants with no per-instance state — including as an escape hatch from the walk-order `<const>` hazard (§3).
-  ```marko
-  static function formatPrice(cents: number) {
-    return (cents / 100).toFixed(2);
-  }
-  <span>${formatPrice(input.amount)}</span>
-  ```
-
-- **Top-level statements needing prefixes.** Only `import`, `export`, `static`, `server`, `client` are recognized as module-scope statements at the template root. A bare `interface`/`type`/`const`/`function` at the root is NOT one of these and gets parsed as a tag attempt, not TypeScript (see §3).
-
-## 3. Known agent-error catalog
+## Known agent-error catalog (verified against this repo)
 
 Verified against real components in `packages/shadcn/ui/` and `notes/bug-marko-dynamic-tag-hydration-crash.md`.
 
