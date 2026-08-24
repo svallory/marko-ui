@@ -1,12 +1,24 @@
 import { cn } from "#lib/utils.ts";
 
-export interface Input extends Marko.Input<"div"> {}
+export interface Input extends Marko.Input<"div"> {
+  /**
+   * Marks the group as disabled. Sets `aria-disabled="true"` on the root (the
+   * ARIA signal that the group's addons are dimmed for) and `data-disabled`,
+   * which every descendant addon restyles against via `group-data-*`
+   * selectors — mirrors `Field`'s `disabled` prop. Does not itself disable
+   * the inner control; pass `disabled` to `InputGroupInput`/
+   * `InputGroupTextarea` (or a custom control) too, same as `Field`.
+   */
+  disabled?: boolean;
+}
 
-<const/{ class: className, content, ...rest }=input/>
+<const/{ disabled, class: className, content, ...rest }=input/>
 
 <div
   role="group"
   data-slot="input-group"
+  aria-disabled=(disabled ? "true" : undefined)
+  data-disabled=(disabled ? "true" : undefined)
   ...rest
   class=cn(
     "group/input-group mu-input-group relative flex w-full min-w-0 items-center outline-none has-[>textarea]:h-auto",

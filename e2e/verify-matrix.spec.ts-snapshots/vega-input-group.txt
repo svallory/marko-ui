@@ -35,7 +35,7 @@ section
         line
 ---
 section
-  div data-slot="input-group" role="group"
+  div data-slot="input-group" role="group" aria-disabled="true"
     input data-slot="input-group-control"
     div data-slot="input-group-addon" role="group"
       svg

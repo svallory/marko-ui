@@ -6529,7 +6529,15 @@
         {
           "file": "input-group.marko",
           "name": "input-group",
-          "properties": [],
+          "properties": [
+            {
+              "name": "disabled",
+              "type": "boolean",
+              "required": false,
+              "kind": "own",
+              "description": "Marks the group as disabled. Sets `aria-disabled=\"true\"` on the root (the\nARIA signal that the group's addons are dimmed for) and `data-disabled`,\nwhich every descendant addon restyles against via `group-data-*`\nselectors — mirrors `Field`'s `disabled` prop. Does not itself disable\nthe inner control; pass `disabled` to `InputGroupInput`/\n`InputGroupTextarea` (or a custom control) too, same as `Field`."
+            }
+          ],
           "nativeAttributes": "div"
         },
         {
