@@ -1,6 +1,7 @@
 {
   "name": "shadcn",
-  "start": "bun run build && bun run preview",
+  "start": "cd harness-react && bun run build && bun run preview",
   "port": 4174,
-  "demoPath": "/demo/"
+  "demoPath": "/demo/",
+  "style": "new-york-v4 (base, no style-layer indirection — upstream has no such concept; component .tsx source classes like bg-black/50 are compiled as-is)"
 }

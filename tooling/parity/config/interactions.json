@@ -25,6 +25,6 @@
   },
   "sheet-demo": {
     "steps": [{ "action": "click", "role": "button", "name": "Open" }],
-    "settleMs": 400
+    "settleMs": 600
   }
 }

@@ -192,6 +192,86 @@ A minimal example (`harnesses/shadcn/parity-facts.json`, one component):
 }
 ```
 
+## Style pairing
+
+A visual diff between two harnesses is only meaningful if both sides
+render the **same declared style**. `harness.json` therefore carries an
+optional `style` field:
+
+```ts
+interface HarnessManifest {
+  // ...fields above...
+  /** Free-text description of the single style/theme this harness's
+   * demo server renders, e.g. "new-york-v4 (base, no style layer)" or
+   * "style-nova". Comparisons between two harnesses are valid ONLY when
+   * their declared `style` values describe the same rendered look —
+   * see below for how that was verified for shadcn <-> marko-ui. */
+  style?: string
+}
+```
+
+This isn't machine-checked (style descriptions aren't a controlled
+vocabulary across arbitrary library pairs) — it's a documentation
+requirement so a human auditing a visual residual can immediately see
+whether "both sides claim to render the same style" before spending time
+diagnosing the residual as a real component bug.
+
+### How shadcn <-> marko-ui's pairing was determined (2026-08-24)
+
+Investigated empirically, by reading both harnesses' CSS/build wiring and
+the upstream clone's component source (not by guessing):
+
+- `harnesses/shadcn/harness-react/src/main.css` imports the vendored,
+  byte-identical `shadcn-tailwind.css` (verified via `diff -q` against
+  `<clone>/packages/shadcn/dist/tailwind.css` — see that file's header
+  comment) plus a generated `@source` directive pointing Tailwind's JIT
+  scanner at the resolved clone's
+  `apps/v4/registry/new-york-v4/{examples,ui}/**/*.tsx`. There is **no
+  style-layer import of any kind** — no `style-nova.css`, no equivalent.
+  Upstream shadcn/ui has no "8 interchangeable style layers" concept at
+  all; that's a marko-ui-specific abstraction with no upstream
+  counterpart.
+- The overlay color difference that motivated this investigation
+  (`bg-black/50` in upstream captures vs `bg-black/10` in ours) traces to
+  a **hardcoded Tailwind utility class literal in the upstream component
+  source itself** — `apps/v4/registry/new-york-v4/ui/sheet.tsx` line 39
+  and `ui/drawer.tsx` line 40 both read
+  `"fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out ..."`
+  directly on the `<SheetOverlay>`/`<DrawerOverlay>` className. It is not
+  a CSS custom property, not a themeable token, not something any
+  style-layer file could override upstream — the harness renders it
+  because it renders the clone's `.tsx` source completely unmodified (by
+  design, see `vite.config.ts`'s alias comments).
+- Checked whether any of marko-ui's 8 style layers (`packages/shadcn/styles/style-*.css`)
+  produces the same `bg-black/50` value for `.mu-sheet-overlay` /
+  `.mu-drawer-overlay`: none do (`luma`/`rhea` use `/30`, `sera` uses
+  `/20`, `lyra`/`nova`/`vega` use `/10`, `maia`/`mira` use `/80`). Nova is
+  our documented default (matches `apps/docs/src/routes/+layout.marko`'s
+  `<body class="style-nova ...">`) and was already byte-verified identical
+  to a `style-nova.css` this repo ships — but that comparison was against
+  our *own* file, not anything upstream serves; upstream never had a
+  `style-nova.css` to begin with, so "load upstream's style-nova.css" is
+  not an available fix.
+- Also checked whether "no style layer" is a viable choice for our side,
+  to structurally match upstream's "no style layer" rendering: it is not.
+  `.mu-sheet-overlay`/`.mu-drawer-overlay` (and every other `mu-*` class)
+  have **zero base definition** outside `styles/style-*.css` — an
+  unstyled marko-ui component renders with no overlay treatment at all,
+  which would not be closer to upstream, just differently wrong.
+
+**Conclusion**: this pair's styles were already correctly matched at the
+only level that's actually comparable — both harnesses render their
+respective library's documented default look (upstream: raw new-york-v4
+component source, no style layer, because none exists; ours: style-nova,
+our shipped default). The overlay-opacity residual on sheet/drawer is a
+**genuine, intentional design difference** between marko-ui's default
+style and shadcn's hardcoded default, not a harness measurement defect.
+`harness.json`'s `style` field now makes this pairing explicit and
+auditable for future residual triage, and the previous
+`parity-ignore.json` `visualDemos` entries (which described this same
+finding as a per-demo exception rather than a structural harness fact)
+are removed in favor of it — see the ratios captured below.
+
 ## The extraction step contract
 
 Each harness owns a script that produces its `parity-facts.json` by
