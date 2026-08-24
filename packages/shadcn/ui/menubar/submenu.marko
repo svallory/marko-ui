@@ -78,8 +78,34 @@ export interface Input {
 // `() => api()` and let the parent call it when it actually needs the
 // live api.
 <${input.trigger.content}(() => api())/>
+
+// `<let/open>` mirror of `api().open`, read by the walk-time branch
+// selector below instead of `api()` (a `<const>`) directly. This works
+// around a Marko-core walk-order defect: when THIS component is mounted
+// via dynamic-tag-content (the `<${...}/>` above / marko-zag's `<portal>`
+// mechanism) nested inside an ANCESTOR's own `<portal><if=api().open>`,
+// the `<if>` below runs its branch-selector read during the walk pass,
+// which fires before `<const/api>`'s own deferred signal has ever
+// computed on this component's freshly-created scope — throwing
+// `TypeError: $scope._.<api> is not a function` on first client mount
+// (crash reproduces merely opening the ANCESTOR menu; the submenu trigger
+// is never touched). `<let>` is a plain, eagerly-available scope
+// property from the moment the scope is created, so it has no such
+// "hasn't computed yet" window. `service.rev` is the same reactive
+// dependency `<const/api>` itself keys off (see marko-zag's connect.marko
+// — `input.service` is `api`'s first comma-expression dep, and `rev`
+// bumps on every machine notify), so this stays in lockstep with the
+// service without introducing a second source of truth. Full RCA:
+// notes/bug-marko-dynamic-tag-hydration-crash.md. Only the branch
+// SELECTOR below is swapped to `open` — every other `api()` read (inside
+// the branch body) is unaffected and stays as-is.
+<let/open=false/>
+<script>
+  service.rev;
+  open = api().open;
+</script>
 <portal>
-  <if=api().open>
+  <if=open>
     <div ...api().getPositionerProps() style=positionerStyle data-slot="menubar-sub-content-positioner">
       <div
         ...api().getContentProps()

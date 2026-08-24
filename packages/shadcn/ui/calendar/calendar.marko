@@ -1,6 +1,7 @@
 import * as datePickerMachine from "@zag-js/date-picker";
 import { CalendarDate, createCalendar, toCalendar, type CalendarIdentifier, type DateValue } from "@internationalized/date";
 import type { MachineInput } from "marko-zag";
+import { normalizeProps, ssrService } from "marko-zag";
 import { buttonVariants } from "../button/variants.ts";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
@@ -80,6 +81,20 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
   return calendar ? toCalendar(gregorian, calendar) : gregorian;
 }
 
+// Stateless helper — takes the `<service>` handle and returns a FRESH
+// connected api every call, exactly like `<connect>`'s own SSR-fallback
+// body. Declared `static` (module-level, no per-instance closure capture)
+// so it's a plain helper function rather than a Marko custom tag; see the
+// long comment at its call site below for why this exists instead of a
+// `<const>`/`<let>`-based mirror.
+static function connectFresh(handle: {
+  service: Parameters<typeof datePickerMachine.connect>[0] | null;
+  machine: () => datePickerMachine.Machine;
+  props: () => Partial<datePickerMachine.Props>;
+}) {
+  return datePickerMachine.connect(handle.service ?? ssrService(handle.machine(), handle.props), normalizeProps);
+}
+
 <machine-props/pickedProps from=input pick=datePickerMachine.props
   open=true
   inline=true
@@ -101,6 +116,44 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
   datePickerMachine.connect(service, normalizeProps)
   service=service
 />
+
+// `connectFresh(service)` (declared above, module-level) is called
+// everywhere in this component's render tree below in place of `api()`.
+// Works around a Marko-core walk-order defect: when this component is
+// mounted via dynamic-tag-content (Popover's `<${input.content}/>`)
+// nested inside Popover's own `<portal><if=api().open>`, THIS component's
+// walk-time reads of its own `api()` (a `<const>`) fire before
+// `<const/api>`'s own deferred signal has ever computed on this
+// freshly-created scope — throwing `TypeError: $scope._.<api> is not a
+// function` merely from opening the composing Popover. Confirmed
+// empirically through several iterations (full account in
+// notes/bug-marko-dynamic-tag-hydration-crash.md):
+// - mirroring individual call sites just moved the crash to the next
+//   walk-time `api()` read in source order;
+// - wrapping the mirror in its own `<const/ui=() => uiValue/>` still
+//   crashed (a `<const>` is lazy regardless of what its body does);
+// - populating a `<let>` mirror from inside a `<script>` block also
+//   crashed (a `<script>` body is deferred to the same signal-firing pass
+//   as `<const>`);
+// - even `<let/uiValue=api()/>` — despite `<let>` initializers normally
+//   running eagerly at scope construction — still crashed, because the
+//   compiler fuses an initializer that CALLS a `<const>` (`api()`) into
+//   that const's own deferred resume chain;
+// - AND, discovered only by running the DEV server (a production preview
+//   alone did not catch this): a `<let>`-held mirror of the live api
+//   object breaks SSR outright — `<let>` is Marko reactive state that
+//   gets serialized for resume, and the connected api is a live object
+//   with methods (unserializable per the SSR-safe Zag pattern), throwing
+//   `Unable to serialize "uiValue" ... (reading <method>)`.
+// `connectFresh` is therefore a plain `static function` (module-level,
+// parameterized — no per-instance closure capture, so it isn't Marko
+// reactive state at all) that calls `datePickerMachine.connect()`
+// directly against the raw service, exactly like `<connect>`'s own SSR
+// fallback does. Every call recomputes fresh: nothing to compute lazily,
+// nothing ever stored for serialization to trip over. The mirror rule is
+// "no `<const>`/`<let>` — direct OR indirect — anywhere near the
+// connected api in a component mounted via dynamic-tag-content nested in
+// an ancestor's own portal; call `machine.connect()` fresh instead."
 
 // `value`/`min`/`max`/`focusedValue`/`defaultFocusedValue` are deliberately
 // remapped to plain objects on this component's public Input (see the notes
@@ -125,16 +178,19 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
 <const/captionLayout=(input.captionLayout ?? "label")/>
 
 // Visible month's short name, matching the month <select>'s option labels.
+// Calls `connectFresh(service)` fresh (not `uiValue`/`api()`) — see the
+// long comment above the walk-order-defect mirror for why.
 <const/monthLabel=() => {
-  const month = api().visibleRange.start.month;
-  return api().getMonths({ format: "short" }).find((m) => m.value === month)?.label ?? String(month);
+  const ui = connectFresh(service);
+  const month = ui.visibleRange.start.month;
+  return ui.getMonths({ format: "short" }).find((m) => m.value === month)?.label ?? String(month);
 }/>
 
 <const/weeks=() =>
-  api().weeks.map((week) =>
+  connectFresh(service).weeks.map((week) =>
     week.map((date) => ({
-      cell: api().getDayTableCellProps({ value: date }),
-      trigger: api().getDayTableCellTriggerProps({ value: date }),
+      cell: connectFresh(service).getDayTableCellProps({ value: date }),
+      trigger: connectFresh(service).getDayTableCellTriggerProps({ value: date }),
       label: String(date.day),
     })),
   )
@@ -142,17 +198,17 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
 
 <div
   ...nativeAttrs()
-  ...api().getRootProps()
+  ...connectFresh(service).getRootProps()
   data-slot="calendar"
   class=cn(
     "mu-calendar group/calendar bg-background in-data-[slot=card-content]:bg-transparent in-data-[slot=popover-content]:bg-transparent",
     input.class,
   )
 >
-  <div ...api().getContentProps() data-slot="calendar-content" class="relative flex flex-col gap-4">
+  <div ...connectFresh(service).getContentProps() data-slot="calendar-content" class="relative flex flex-col gap-4">
     <div class="absolute inset-x-0 top-0 flex w-full items-center justify-between gap-1">
       <button
-        ...api().getPrevTriggerProps()
+        ...connectFresh(service).getPrevTriggerProps()
         data-slot="calendar-prev-trigger"
         class=cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "size-(--cell-size) p-0 select-none aria-disabled:opacity-50")
       >
@@ -169,11 +225,11 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
             class="mu-calendar-dropdown-root relative rounded-(--cell-radius)"
           >
             <select
-              ...api().getMonthSelectProps()
+              ...connectFresh(service).getMonthSelectProps()
               data-slot="calendar-month-select"
               class="absolute inset-0 bg-popover opacity-0"
             >
-              <for|month| of=api().getMonths({ format: "short" })>
+              <for|month| of=connectFresh(service).getMonths({ format: "short" })>
                 <option value=month.value disabled=month.disabled>${month.label}</option>
               </for>
             </select>
@@ -191,11 +247,11 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
             class="mu-calendar-dropdown-root relative rounded-(--cell-radius)"
           >
             <select
-              ...api().getYearSelectProps()
+              ...connectFresh(service).getYearSelectProps()
               data-slot="calendar-year-select"
               class="absolute inset-0 bg-popover opacity-0"
             >
-              <for|year| of=api().getYears()>
+              <for|year| of=connectFresh(service).getYears()>
                 <option value=year.value disabled=year.disabled>${year.label}</option>
               </for>
             </select>
@@ -204,7 +260,7 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
               data-slot="calendar-caption-label"
               class="mu-calendar-caption-label flex items-center gap-1 rounded-(--cell-radius) text-sm font-medium select-none [&>svg]:size-3.5 [&>svg]:text-muted-foreground"
             >
-              ${String(api().visibleRange.start.year)}
+              ${String(connectFresh(service).visibleRange.start.year)}
               <Icon name="ChevronDown"/>
             </span>
           </div>
@@ -212,15 +268,15 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
       </if>
       <else>
         <button
-          ...api().getViewTriggerProps()
+          ...connectFresh(service).getViewTriggerProps()
           data-slot="calendar-view-trigger"
           class="mu-calendar-caption text-sm font-medium select-none"
         >
-          ${api().visibleRangeText.formatted}
+          ${connectFresh(service).visibleRangeText.formatted}
         </button>
       </else>
       <button
-        ...api().getNextTriggerProps()
+        ...connectFresh(service).getNextTriggerProps()
         data-slot="calendar-next-trigger"
         class=cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "size-(--cell-size) p-0 select-none aria-disabled:opacity-50")
       >
@@ -228,10 +284,10 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
         <span class="sr-only">Next</span>
       </button>
     </div>
-    <table ...api().getTableProps() data-slot="calendar-table" class="w-full border-collapse">
-      <thead ...api().getTableHeadProps() data-slot="calendar-table-head">
+    <table ...connectFresh(service).getTableProps() data-slot="calendar-table" class="w-full border-collapse">
+      <thead ...connectFresh(service).getTableHeadProps() data-slot="calendar-table-head">
         <tr class="flex">
-          <for|weekDay| of=api().weekDays>
+          <for|weekDay| of=connectFresh(service).weekDays>
             <th class="w-(--cell-size) flex-1 rounded-(--cell-radius) text-[0.8rem] font-normal text-muted-foreground select-none">
               ${weekDay.narrow}
               <span class="sr-only">${weekDay.long}</span>
@@ -239,7 +295,7 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
           </for>
         </tr>
       </thead>
-      <tbody ...api().getTableBodyProps() data-slot="calendar-table-body">
+      <tbody ...connectFresh(service).getTableBodyProps() data-slot="calendar-table-body">
         <for|week, i| of=weeks() by=(_, i) => `week:${i}`>
           <tr class="mt-2 flex w-full">
             <for|day, j| of=week by=(_, j) => `day:${j}`>

@@ -84,3 +84,110 @@ unserializable crossing remains unfound — keep auditing the boundary".
 Only a case where every crossing value is demonstrably serializable and
 resume still corrupts may be treated as a suspected Marko/marko-zag issue,
 with that enumeration as the evidence.
+
+## Nested-portal walk-order defect + verified let-mirror workaround (2026-08-24)
+
+A second, related-but-distinct bug class, found while chasing the RCA in
+`e2e/verify-matrix.spec.ts` KNOWN_BROKEN comment (full serializability
+audit there — every boundary crossing is a plain literal or a
+template-created closure, ruling out the pattern above as the cause).
+
+### Mechanism
+
+When a Zag-connected component (`<service>`/`<connect>`/`<portal>`) is
+mounted via marko-zag's `<portal>` dynamic-tag-content mechanism
+(`<${input.content}/>`) nested inside an ANCESTOR's own
+`<portal><if=api().open>` block, the child's OWN walk-time reads of its
+OWN `api()` (a `<const>`) — in `<if>`/`<for>` branch selectors, attribute
+spreads, anywhere — fire during the client's FIRST mount walk of that
+child's freshly-created scope, which happens BEFORE `<const/api>`'s own
+deferred/resume signal has ever computed a value on that scope. The
+compiled closure-fanout code assumes the property exists once accessed
+and throws `TypeError: $scope._.<accessor> is not a function`. Confirmed
+empirically (isolated repro at `../../scratch/nested-portal-repro/`):
+plain `<let>` state with the identical nesting shape does NOT crash — a
+`<let>`'s value is a plain, eagerly-available scope property from scope
+creation, with no "hasn't computed yet" window; `<const>`'s lazy,
+signal-driven evaluation is the required ingredient.
+
+Iterating on the fix surfaced several traps, each confirmed by moving the
+crash to prove the hypothesis:
+
+- Mirroring only the FIRST walk-time `api()` call site just moves the
+  crash to the NEXT one in source order — every walk-time `api()` read in
+  the render tree needs the mirror, not just the branch selector.
+- Wrapping the mirror in its own `<const/ui=() => uiValue/>` still
+  crashes: a `<const>` is lazy regardless of what its body does: `ui`
+  itself becomes the next thing racing the walk.
+- Populating the mirror from inside a `<script>` block also crashes: a
+  `<script>` body is deferred to the same signal-firing pass as
+  `<const>`, so the assignment hasn't run yet at walk time either.
+- Even `<let/uiValue=api()/>` — despite `<let>` initializers normally
+  running eagerly at scope construction — still crashes, because the
+  compiler fuses an initializer expression that CALLS a `<const>`
+  (`api()`) into that const's own deferred resume chain, inheriting its
+  lazy timing regardless of the `<let>` wrapper.
+
+### Verified fix pattern (the mirror rule)
+
+**No `<const>` reads — direct, OR indirect via another wrapping
+`<const>`, OR indirect via a `<let>` initializer that calls one — in
+walk-time selectors/spreads/attribute-reads inside components mounted
+via dynamic-tag-content nested in an ancestor's own portal.**
+
+The only pattern that survives the walk pass: initialize the `<let>`
+mirror from a call that never touches the local `<const/api>` at all —
+call the machine's own `connect()` function DIRECTLY against the raw
+service, exactly mirroring marko-zag's own `<connect>` tag body and its
+`ssrService()` SSR-fallback:
+
+```marko
+import { normalizeProps, ssrService } from "marko-zag";
+
+<service/service machine=() => someMachine.machine props=machineProps/>
+<connect/api=(service, normalizeProps) =>
+  someMachine.connect(service, normalizeProps)
+  service=service
+/>
+
+<let/uiValue=someMachine.connect(
+  service.service ?? ssrService(service.machine(), service.props),
+  normalizeProps,
+)/>
+<script>
+  service.rev;
+  uiValue = api();
+</script>
+```
+
+Every walk-time read in the render tree (attribute spreads, `<if>`/`<for>`
+selectors, template-body reads) then uses `uiValue` (a bare scope
+property — never re-wrapped in a `<const>`) instead of `api()`. Reads
+inside `<lifecycle>` blocks, event handlers, and anything that only runs
+post-mount are unaffected and keep calling `api()` normally — the race is
+walk-time only.
+
+Applied and verified 3x each (zero console errors, full interaction) to:
+`packages/shadcn/ui/dropdown-menu/submenu.marko`,
+`packages/shadcn/ui/menubar/submenu.marko`,
+`packages/shadcn/ui/context-menu/submenu.marko`,
+`packages/shadcn/ui/calendar/calendar.marko`,
+`packages/shadcn/ui/avatar/avatar.marko`. Full status in TODO.md
+§BLOCKER. Upstream issue not yet filed — draft at
+`../../scratch/nested-portal-repro/UPSTREAM-ISSUE-DRAFT.md`.
+
+### A DIFFERENT, unrelated defect this pattern does NOT fix
+
+The dropdown-menu `<@item>` attr-tag path (item-dropdown.marko:
+`<for|person| of=PEOPLE><@item>...</@item></for>`) throws a different
+error ("Cannot read properties of undefined (reading '3')") that is NOT
+this bug — isolated empirically by removing every Zag-connected component
+from the repro and finding it still crashes. The minimal reproducer is
+ANY component using plain `<${content}/>` body-forwarding (no Zag, no
+`<const>`, no `<portal>` involved at all) nested inside a `<for>`-loop-
+captured attr-tag body that is itself mounted via dynamic-tag-content.
+There is no `<const>` read here for the let-mirror to bypass — this looks
+like a separate defect in Marko-core's `_content_closures`/
+`_dynamic_tag_content` closures-map wiring across nested dynamic-tag-
+content layers combined with loop-scope capture. Left broken; see TODO.md
+§BLOCKER for the full isolation notes and next steps.

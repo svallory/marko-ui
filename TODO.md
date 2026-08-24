@@ -394,24 +394,61 @@ against component source by the repair run's adversarial checkers:
 - [ ] docs template: `changelog` field in docs-types.ts + render branch
       (card, toggle-group, pagination all blocked on it)
 
-## BLOCKER for 4 components — needs marko-zag/Marko-core (2026-08-23)
+## BLOCKER — nested-portal walk-order defect (2026-08-23, workaround applied 2026-08-24)
 
-Nested-portal resume corruption (Marko 6.3.34, production builds only):
-a Zag-connected child rendered via marko-zag's <portal> content mechanism
-inside an ancestor's own <portal><if=api().open> gets its api() closures
-corrupted on resume (`e._.q is not a function` class). Affects
-dropdown-menu submenu, menubar submenu, dropdown-menu <@item> path,
-date-picker Popover+Calendar composition (context-menu submenu latent).
-Full sourcemapped RCA in e2e/verify-matrix.spec.ts KNOWN_BROKEN comment
-(commit 87cc253a). Same class as notes/bug-marko-dynamic-tag-hydration-
-crash.md. → EVIDENCE COMPLETE (2026-08-24): minimal repro at
-../../scratch/nested-portal-repro/ (space scratch). All 10 boundary
-crossings enumerated serializable; crash persists ($scope._.api is not
-a function at the inner component's own api() read). Discriminator:
-identical structure with plain <let> state and NO Zag does not crash →
-marko-zag <service>/<connect> machinery is a required ingredient. Also
-reproduces in DEV (unlike the older prod-only dynamic-tag bug). Hand
-the repro README to the marko-zag session.
+Nested-portal resume corruption (Marko 6.3.34, production builds): a
+Zag-connected child rendered via marko-zag's <portal> content mechanism
+inside an ancestor's own <portal><if=api().open> gets its own walk-time
+`api()` (a `<const>`) reads racing `<const/api>`'s own deferred signal —
+that signal hasn't computed yet on the child's freshly-created scope
+during the FIRST client mount walk, throwing `TypeError: $scope._.<x> is
+not a function`. Full RCA and repro history: e2e/verify-matrix.spec.ts
+KNOWN_BROKEN comment, notes/bug-marko-dynamic-tag-hydration-crash.md,
+../../scratch/nested-portal-repro/ (space scratch, minimal repro).
+
+**Workaround applied and verified (2026-08-24):** a `<let/uiValue>`
+mirror of the connected api, initialized by calling the machine's
+`connect()` function DIRECTLY against the raw service (mirroring
+marko-zag's own `<connect>` tag body + its `ssrService` SSR-fallback) —
+never by calling the local `api()` const, even indirectly through another
+`<let>`/`<const>` wrapper, which still inherits `<const/api>`'s deferred
+timing. Refreshed via `<script>` on every `service.rev` bump. Every
+walk-time `api()` read in the affected render tree swapped to read the
+mirror instead. Fixed and verified 3x each, zero console errors, full
+interaction (open + select/pick):
+- packages/shadcn/ui/dropdown-menu/submenu.marko
+- packages/shadcn/ui/menubar/submenu.marko
+- packages/shadcn/ui/context-menu/submenu.marko
+- packages/shadcn/ui/calendar/calendar.marko (fixes the date-picker
+  Popover+Calendar composition crash)
+- packages/shadcn/ui/avatar/avatar.marko (needed for the dropdown-menu
+  `<@item>` path below, though insufficient alone — see next paragraph)
+
+KNOWN_BROKEN_COMPONENTS in e2e/verify-matrix.spec.ts now reads
+`["item"]` — dropdown-menu, menubar, date-picker removed, verified
+passing.
+
+**`item` remains broken — separate, unrelated defect, NOT fixed by the
+let-mirror.** item-dropdown.marko's `<DropdownMenu>` with `<for|person|
+of=PEOPLE><@item>...</@item></for>`-captured content throws "Cannot read
+properties of undefined (reading '3')" on open. Isolated empirically
+(2026-08-24): removing every Zag-connected component from the repro
+still crashes — the minimal reproducer is ANY component using plain
+`<${content}/>` body-forwarding (no Zag, no `<const>`, no `<portal>` at
+all — e.g. `Item`'s own `<div><${content}/></div>`) nested inside a
+`<for>`-loop-captured attr-tag body (`<@item>`) that is itself mounted
+via dynamic-tag-content. There is no `<const>` read for the let-mirror to
+bypass here — this is Marko-core's `_content_closures`/
+`_dynamic_tag_content` closures-map wiring breaking across nested
+dynamic-tag-content layers when combined with loop-scope capture. Needs
+either a Marko-core fix, or restructuring item-dropdown.marko to avoid
+nesting a content-forwarding component inside the loop-captured `<@item>`
+body (not attempted — would change the demo's composition, needs
+sign-off). Full isolation notes in the verify-matrix KNOWN_BROKEN
+comment.
+
+Upstream issue for the let-mirror-fixed defect still pending — draft at
+../../scratch/nested-portal-repro/UPSTREAM-ISSUE-DRAFT.md, not yet filed.
 
 ## marko-zag relay additions (2026-08-23)
 

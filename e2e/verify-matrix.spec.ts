@@ -58,102 +58,38 @@ function attachErrorCollectors(page: Page): CollectedErrors {
 const INTERACTIVE_SELECTOR = "button:not([disabled]), [role=button]:not([aria-disabled=true]), input[type=checkbox]:not([disabled]), input[type=radio]:not([disabled])";
 
 // Known-broken components: populate this set if a component is confirmed
-// broken for reasons a test change can't fix (see git history for a past
-// example — a marko-zag@1.2.0 packaging bug that dropped compiled .marko
-// registrations from production builds, fixed in marko-zag@1.2.1). Entries
-// run via test.fail() (not test.skip()) so they still RUN every push: a
-// component silently becoming fixed shows up as an unexpected pass (visible
-// in the report), and no new component can join this silently without
-// editing this list.
+// broken for reasons a test change can't fix. Entries run via test.fail()
+// (not test.skip()) so they still RUN every push: a component silently
+// becoming fixed shows up as an unexpected pass (visible in the report),
+// and no new component can join this silently without editing this list.
 //
-// The four below were added after the 229-demo verify-matrix repair
-// (docs-parity backlog) surfaced them as failing across all 9 styles.
-// Verified NOT caused by the demo changes or this test infra: each error
-// reproduces identically on the real, live /docs/components/<name> page
-// (not just the /verify/ matrix), by clicking the same control.
+// RCA + fix history: see TODO.md §BLOCKER and
+// notes/bug-marko-dynamic-tag-hydration-crash.md for the full account.
+// dropdown-menu, menubar, and date-picker were removed from this set
+// (2026-08-24) after applying a verified let-mirror workaround for the
+// Marko-core walk-order defect in submenu.marko (dropdown-menu, menubar,
+// context-menu) and calendar.marko — each verified fixed 3x in production
+// preview with zero console errors.
 //
-// RCA (2026-08-24, production preview build + sourcemapped stacks, second
-// pass): all four are the SAME root cause, not four separate defects.
-// Marko's resumability model requires every value crossing the
-// SSR->hydration boundary to be serializable — that is OUR contract to
-// satisfy, not optional. This pass did a full boundary audit of every
-// value crossing a props/argument boundary in all four crash paths
-// (dropdown-menu.marko, menubar/menu.marko, their submenu.marko files,
-// popover.marko, calendar.marko) and found none unserializable — every
-// array/object passed as a component Input is a plain literal computed
-// fresh per render inside a `<const/>` closure, every callback is a
-// template-created closure (safe currency per service.marko's own
-// `machine=() => ...` pattern), and the dropdown-menu/menubar submenu
-// trigger render-prop was hardened to hand over `() => api()` instead of
-// the live api object (see submenu.marko's header comment) — a real,
-// verified-necessary fix that nonetheless left this exact crash
-// reproducing byte-for-byte, proving the render-prop was never this
-// crash's cause.
-//
-// Every crash site resolves (via the emitted .js.map) to `api()` called
-// INSIDE THE CRASHING COMPONENT'S OWN TEMPLATE BODY — not received as a
-// prop, not crossing any boundary this package controls — evaluating the
-// `<if=api().open>` condition of a SECOND, independently Zag-connected
-// component instance that Marko renders as content of an ancestor's own
-// <portal>. That is: a Submenu (or Calendar) component, itself using
-// <service>/<connect>/<portal>, mounted via marko-zag's <portal>'s
-// `<${input.content}/>` dynamic-tag-content mechanism nested inside an
-// OUTER component's own <portal><if=api().open> block. Confirmed
-// per-component:
-//   - dropdown-menu / menubar: merely opening the top-level menu (never
-//     touching the submenu trigger) throws "e._.q is not a function" /
-//     "$scope._.api is not a function" — a MOUNT-time crash, not an
-//     interaction-time one. Sourcemapped to `<if=api().open>` inside
-//     submenu.marko's OWN <portal> (dropdown-menu/submenu.marko:87,
-//     menubar/submenu.marko:82). A demo with an equivalent item list and
-//     NO <Submenu> present (dropdown-menu-compound.marko: static <@item>
-//     tags, no <for>, no sub entries) opens with zero errors — isolating
-//     the trigger as "a <Submenu> instance exists in the portal-nested
-//     tree", independent of any prop passed to it.
-//   - item: item-dropdown's <DropdownMenu> with <@item> attr-tags whose
-//     body is a <for|person|>-captured render (not subEntries) throws
-//     "Cannot read properties of undefined (reading '3')" on open.
-//     Sourcemapped into the generated verify-matrix wrapper's compiled
-//     `<for|entry,index|>` body, at dropdown-menu.marko's own
-//     `<${entry.content}/>` invocation (line 179) — inside the SAME
-//     <portal><if=api().open> block as the other three. A sibling
-//     dropdown-menu-compound.marko demo using `<${entry.content}/>` on the
-//     SAME line but with statically-authored (non-loop-captured) content
-//     does not crash — isolating this one to loop-captured tag-content,
-//     not the dynamic-tag-content mechanism itself.
-//   - date-picker: opening a Popover+Calendar composition (NOT the
-//     standalone <DatePicker>, which is clean in isolation) throws
-//     "t._.a1 is not a function" on open (date-picker-basic.marko).
-//     Sourcemapped to Calendar's own reactive `api()` read
-//     (calendar.marko:170) — Calendar is a second Zag-connected component
-//     rendered via popover.marko's `<${input.content}/>` inside popover's
-//     own <portal><if=api().open>.
-//
-// Additional confirmation (not one of the four, so not added to this set,
-// but recorded so it isn't mistaken for "fine"): context-menu/submenu.marko
-// has the EXACT same <portal><if=api().open> nesting shape and reproduces
-// the identical "e._.q is not a function" crash on its own submenu demo —
-// confirmed live, not assumed by structural similarity.
-//
-// Conclusion: every value this package hands across the boundary in these
-// paths is a plain literal or a template-created closure — both
-// serializable currency under Marko's own contract. The crash is Marko's
-// OWN internal resume-scope bookkeeping failing to correctly link a nested
-// Zag-connected component's `<connect>`-closure scope when that component
-// is instantiated through marko-zag's <portal> dynamic-content mechanism
-// while nested inside an ancestor's own <portal>-gated <if>. There is no
-// remaining wrappable boundary inside packages/shadcn/ui/** — a `<portal>`
-// physically reparents its host DOM node to a different document position
-// on mount (see marko-zag's portal.marko onMount), while the compiled
-// resume/effects walk still assumes the DOM tree mirrors the scope tree;
-// nesting a second portal-using Zag component inside that relocated
-// subtree is exactly the case that walk gets wrong. Suspected
-// marko-zag/Marko-core defect in nested-portal resume-scope linking —
-// needs a marko-zag and/or Marko-core fix, or a structural change (e.g.
-// not using <portal> for submenu content) that is out of scope for a
-// targeted retry and would need explicit sign-off given the layout/overflow
-// behavior <portal> exists to provide.
-const KNOWN_BROKEN_COMPONENTS = new Set<string>(["date-picker", "dropdown-menu", "item", "menubar"]);
+// `item` stays broken — its crash ("Cannot read properties of undefined
+// (reading '3')", item-dropdown.marko demo) is a DIFFERENT, unrelated
+// Marko-core defect from the walk-order/`<const>` race the let-mirror
+// fixes: isolated empirically (removing every Zag-connected component from
+// the repro still crashes) to ANY component using plain `<${content}/>`
+// body-forwarding (no Zag, no `<const>`, no `<portal>` involved at all —
+// e.g. `Item`'s own `<div><${content}/></div>`) when nested inside a
+// `<for>`-loop-captured attr-tag body (`<@item>`) that is itself mounted
+// via dynamic-tag-content. The let-mirror pattern has no `<const>` read to
+// bypass here, so it does not apply. Minimal repro: `<for|x| of=list>
+// <@item><SomeComponentWithContentForwarding><div>${x}</div>
+// </SomeComponentWithContentForwarding></@item></for>` crashes;
+// the same loop with a plain `<div>${x}</div>` (no wrapping
+// content-forwarding component) does not. Fix requires either restructuring
+// item-dropdown.marko to avoid nesting a content-forwarding component
+// inside the loop-captured `<@item>` body, or a Marko-core fix — flagged
+// as a separate, still-open item in TODO.md §BLOCKER; not fixed in this
+// pass.
+const KNOWN_BROKEN_COMPONENTS = new Set<string>(["item"]);
 
 for (const entry of manifest.entries) {
   const testFn = KNOWN_BROKEN_COMPONENTS.has(entry.component) ? test.fail : test;
