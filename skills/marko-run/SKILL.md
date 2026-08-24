@@ -1,6 +1,6 @@
 ---
 name: marko-run
-description: Use when building or editing a Marko Run (@marko/run) app — anything under src/routes (+page, +layout, +handler, +middleware, +meta, +404, +500), route path syntax ($id, $$rest, _pathless, flat routes), Run.GET/POST verb helpers, ctx/$global request context, validation (params/search/json/form), data loading via next(), Run.href, vite.config adapters (node/static/netlify), or the marko-run CLI. Not for Marko template syntax itself (see marko-6-language).
+description: Use when building or editing a Marko Run (@marko/run) app — anything under src/routes (+page, +layout, +handler, +middleware, +meta, +404, +500), route path syntax ($id, $$rest, _pathless, flat routes), Run.GET/POST verb helpers, ctx/$global request context, validation (params/search/json/form), data loading via next(), Run.href, vite.config adapters (node/static/netlify), or the marko-run CLI. Not for Marko template syntax itself (see marko6).
 ---
 
 # Marko Run

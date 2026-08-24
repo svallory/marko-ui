@@ -1,11 +1,27 @@
 ---
-name: marko-6-language
+name: marko6
 description: Use when writing or editing any .marko file, reviewing Marko 6 (Tags API) code, or when a component compiles but misbehaves — stale values, hydration/serialization errors, dead reactivity, wrong attribute/handler shapes. Covers language syntax, core tags, native-tag enhancements, TypeScript types, template API, custom-tag discovery, styling, lazy loading, and agent-error catalog. Not for routing/servers (see marko-run skill) or Marko 5 class API.
 ---
 
 # Marko 6 language
 
-Distilled from the full Marko 6 docs (https://markojs.com/docs — reference, explanation, guide, tutorial; Marko 5 / class API intentionally excluded). This file = rules agents get wrong + quick reference. Full detail lives in `references/`:
+Distilled from the full Marko 6 docs (reference, explanation, guide, tutorial; Marko 5 / class API intentionally excluded). This file = rules agents get wrong + quick reference. Full detail lives in `references/`. When something here doesn't match observed behavior, the live docs win — Marko moves fast: index at https://markojs.com/llms.txt; any page fetches as markdown by appending `.md` (e.g. https://markojs.com/docs/reference/core-tag.md).
+
+## Marko 6 only — never write Marko 5
+
+Reject on sight: `class { onCreate/onMount... }` blocks, `$ const x = ...` scriptlets, `<if(cond)>`/`<for(x in y)>` paren args, string handlers `on-click("handleClick")`, `state`/`this.state`, `<include>`/`<invoke>`, `components/` discovery, `Marko.Component` types. Marko 6 equivalents: `<let>`/`<const>`/`<script>`/`<lifecycle>`, `<if=cond>`, `<for|x| of=y>`, `onClick() {}`, `tags/` discovery, `export interface Input`.
+
+## Checklist for any new or edited `.marko` file
+
+- [ ] Marko 6 syntax only (list above).
+- [ ] State first: no `<script>`/`<lifecycle>` where `<let>`/`<const>`/controllable natives (`value:=`) do the job; `<script>` only for genuine browser effects.
+- [ ] Handlers are functions (`onClick() {}` / `onClick=fn`), never strings; `(event, element)` args, no `currentTarget`.
+- [ ] `export interface Input` declared; typecheck with `mtc` (`@marko/type-check`) — `tsc` skips `.marko` and reports success.
+- [ ] Ship minimal client JS: prefer HTML/CSS (`<details>`, `<dialog>`, `:has`, `popover`) over scripted behavior; only reactive parts ship anyway.
+- [ ] Keep components small; split by concern, not by technology (bundle size is unaffected by splitting).
+- [ ] SSR-safe: nothing unserializable in `<let>`; `$signal`/element refs only in `<script>`/`<lifecycle>`/handlers.
+- [ ] Immutable updates (`x = x.concat()`), `by=` on reorderable `<for>`s, `<show>` vs `<if>` chosen deliberately.
+
 
 | File | Read when |
 |---|---|

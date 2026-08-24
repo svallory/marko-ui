@@ -38,7 +38,7 @@ Read the source library's actual code (clone it; don't work from screenshots or 
 
 ## Step 2 — Port components
 
-Work component by component, simplest first (build confidence in the pattern with a static component before the first machine). Load `marko-6-language` for language-level syntax/reactivity rules (tag/attribute syntax, `<let>`/`<const>`/`<script>`/`<lifecycle>` timing, concise-mode gotchas) before writing `.marko` files — this skill's own gotchas file stays focused on component-architecture landmines.
+Work component by component, simplest first (build confidence in the pattern with a static component before the first machine). Load `marko6` for language-level syntax/reactivity rules (tag/attribute syntax, `<let>`/`<const>`/`<script>`/`<lifecycle>` timing, concise-mode gotchas) before writing `.marko` files — this skill's own gotchas file stays focused on component-architecture landmines.
 
 **The parity bar**: same DOM structure as the source library, same class strings, same data attributes, same keyboard/pointer behavior. Internals differ (Zag instead of the source's JS) only where invisible to users and themes.
 
