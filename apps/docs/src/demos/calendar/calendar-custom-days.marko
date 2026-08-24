@@ -10,8 +10,11 @@ import Calendar from "@marko-ui/shadcn/ui/calendar/calendar.marko";
 import Card from "@marko-ui/shadcn/ui/card/card.marko";
 import CardContent from "@marko-ui/shadcn/ui/card/content.marko";
 
-static const today = new Date();
-static const rangeStart = new Date(today.getFullYear(), 11, 8);
+// Pinned to a fixed date (not wall-clock `new Date()`): this demo's
+// selected range is derived from "today" at render time, so a wall-clock
+// `today` makes the rendered range drift daily — a demo is only correct
+// if it renders byte-identical on any machine, any day, any TZ.
+static const rangeStart = new Date(2026, 5, 8);
 
 static function toPlain(date: Date) {
   return { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() };

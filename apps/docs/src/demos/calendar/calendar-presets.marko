@@ -11,7 +11,12 @@ import CardContent from "@marko-ui/shadcn/ui/card/content.marko";
 import CardFooter from "@marko-ui/shadcn/ui/card/footer.marko";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
-static const today = new Date();
+// Pinned to a fixed date (not wall-clock `new Date()`): both the initial
+// selected value and every preset button derive their target date from
+// `today`, so a wall-clock `today` makes the initial selection AND every
+// preset's resulting date drift daily — a demo is only correct if it
+// renders byte-identical on any machine, any day, any TZ.
+static const today = new Date(2026, 5, 15);
 
 static function addDays(base: Date, days: number) {
   const result = new Date(base);

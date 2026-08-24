@@ -19,9 +19,12 @@ static function formatDate(date: { year: number; month: number; day: number }) {
   });
 }
 
-<const/today=new Date()/>
-<const/fromDate={ year: today.getFullYear(), month: 1, day: 20 }/>
-<const/toDate={ year: today.getFullYear(), month: 2, day: 9 }/>
+// Pinned to a fixed year (not wall-clock `new Date()`): the range's
+// from/to dates are derived from "today"'s year, so a wall-clock `today`
+// makes the rendered range drift at every year boundary — a demo is only
+// correct if it renders byte-identical on any machine, any day, any TZ.
+<const/fromDate={ year: 2026, month: 1, day: 20 }/>
+<const/toDate={ year: 2026, month: 2, day: 9 }/>
 
 <let/value=[fromDate, toDate]/>
 

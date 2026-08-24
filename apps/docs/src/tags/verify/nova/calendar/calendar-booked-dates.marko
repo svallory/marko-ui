@@ -13,8 +13,12 @@ import Calendar from "@marko-ui/shadcn/ui/calendar/calendar.marko";
 import Card from "@marko-ui/shadcn/ui/card/card.marko";
 import CardContent from "@marko-ui/shadcn/ui/card/content.marko";
 
-static const today = new Date();
-static const bookedStart = new Date(today.getFullYear(), 0, 12);
+// Pinned to a fixed date (not wall-clock `new Date()`): this demo's day
+// grid (and the booked-date range computed from it) must render
+// byte-identical on any machine, any day, any TZ — a wall-clock "today"
+// here drifts this demo's rendered content daily, which is exactly what
+// the style-matrix DOM snapshots caught.
+static const bookedStart = new Date(2026, 0, 12);
 
 static function toPlain(date: Date) {
   return { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() };
