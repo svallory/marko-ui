@@ -4,8 +4,11 @@
   "type": "module",
   "version": "0.0.0",
   "scripts": {
+    "predev": "bun generate-styled-registry.ts",
     "dev": "vite --port 4174",
+    "prebuild": "bun generate-styled-registry.ts",
     "build": "vite build",
+    "prepreview": "bun generate-styled-registry.ts",
     "preview": "vite preview --port 4174 --strictPort"
   },
   "dependencies": {

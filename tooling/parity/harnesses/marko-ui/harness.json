@@ -3,5 +3,5 @@
   "start": "bun run build && bun run preview",
   "port": 4175,
   "demoPath": "/demo/",
-  "style": "style-nova (marko-ui's default style layer; no marko-ui style produces upstream's literal bg-black/50 overlay class, so overlay-opacity residuals on sheet/drawer are a genuine documented design divergence, not a harness wiring defect — see PROTOCOL.md 'Style pairing')"
+  "style": "nova"
 }

@@ -196,81 +196,135 @@ A minimal example (`harnesses/shadcn/parity-facts.json`, one component):
 
 A visual diff between two harnesses is only meaningful if both sides
 render the **same declared style**. `harness.json` therefore carries an
-optional `style` field:
+optional `style` field naming the single style both harnesses render for
+every comparison:
 
 ```ts
 interface HarnessManifest {
   // ...fields above...
-  /** Free-text description of the single style/theme this harness's
-   * demo server renders, e.g. "new-york-v4 (base, no style layer)" or
-   * "style-nova". Comparisons between two harnesses are valid ONLY when
-   * their declared `style` values describe the same rendered look —
-   * see below for how that was verified for shadcn <-> marko-ui. */
+  /** The single style/theme name this harness's demo server renders for
+   * every demo, e.g. "nova". Comparisons between two harnesses are valid
+   * ONLY when both declare the same `style` value. */
   style?: string
 }
 ```
 
-This isn't machine-checked (style descriptions aren't a controlled
-vocabulary across arbitrary library pairs) — it's a documentation
-requirement so a human auditing a visual residual can immediately see
-whether "both sides claim to render the same style" before spending time
-diagnosing the residual as a real component bug.
+**Rule: comparisons run in the target port's declared default style —
+never whichever style an individual upstream showcase page happens to
+have chosen for that one component.** Concretely for this repo:
+marko-ui's docs site renders every component under `style-nova`,
+globally, with no per-component override
+(`apps/docs/src/routes/+layout.marko`'s `<body class="style-nova ...">`).
+So `harnesses/marko-ui/harness.json` declares `"style": "nova"`, and
+`harnesses/shadcn/harness.json` — the upstream side — is **forced** to
+render `nova` for every demo too, regardless of what that demo's own
+`base/*.mdx` page's `<ComponentPreview styleName="base-<style>">` says
+(most say `base-nova`; `drawer.mdx` and a few chat/message pages say
+`base-rhea`). See `harness-react/vite.config.ts`'s
+`forceNovaStylePlugin` — a Vite `resolveId` hook that rewrites every
+`@/styles/<base>-<style>/...` import to `@/styles/<base>-nova/...` at
+resolve time, before any demo's own hardcoded style import reaches the
+module graph.
 
-### How shadcn <-> marko-ui's pairing was determined (2026-08-24)
+This isn't machine-checked beyond that one hardcoded rewrite (a harness
+pairing a different pair of libraries would need its own equivalent
+mechanism) — it's a policy documented here so a human auditing a visual
+residual knows why upstream's rendered style may differ from what that
+demo's own upstream doc page shows in a browser, and why that's correct,
+not a bug.
 
-Investigated empirically, by reading both harnesses' CSS/build wiring and
-the upstream clone's component source (not by guessing):
+### Why "target port's default", not "whichever style each demo showcases"
 
-- `harnesses/shadcn/harness-react/src/main.css` imports the vendored,
-  byte-identical `shadcn-tailwind.css` (verified via `diff -q` against
-  `<clone>/packages/shadcn/dist/tailwind.css` — see that file's header
-  comment) plus a generated `@source` directive pointing Tailwind's JIT
-  scanner at the resolved clone's
-  `apps/v4/registry/new-york-v4/{examples,ui}/**/*.tsx`. There is **no
-  style-layer import of any kind** — no `style-nova.css`, no equivalent.
-  Upstream shadcn/ui has no "8 interchangeable style layers" concept at
-  all; that's a marko-ui-specific abstraction with no upstream
-  counterpart.
-- The overlay color difference that motivated this investigation
-  (`bg-black/50` in upstream captures vs `bg-black/10` in ours) traces to
-  a **hardcoded Tailwind utility class literal in the upstream component
-  source itself** — `apps/v4/registry/new-york-v4/ui/sheet.tsx` line 39
-  and `ui/drawer.tsx` line 40 both read
-  `"fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out ..."`
-  directly on the `<SheetOverlay>`/`<DrawerOverlay>` className. It is not
-  a CSS custom property, not a themeable token, not something any
-  style-layer file could override upstream — the harness renders it
-  because it renders the clone's `.tsx` source completely unmodified (by
-  design, see `vite.config.ts`'s alias comments).
-- Checked whether any of marko-ui's 8 style layers (`packages/shadcn/styles/style-*.css`)
-  produces the same `bg-black/50` value for `.mu-sheet-overlay` /
-  `.mu-drawer-overlay`: none do (`luma`/`rhea` use `/30`, `sera` uses
-  `/20`, `lyra`/`nova`/`vega` use `/10`, `maia`/`mira` use `/80`). Nova is
-  our documented default (matches `apps/docs/src/routes/+layout.marko`'s
-  `<body class="style-nova ...">`) and was already byte-verified identical
-  to a `style-nova.css` this repo ships — but that comparison was against
-  our *own* file, not anything upstream serves; upstream never had a
-  `style-nova.css` to begin with, so "load upstream's style-nova.css" is
-  not an available fix.
-- Also checked whether "no style layer" is a viable choice for our side,
-  to structurally match upstream's "no style layer" rendering: it is not.
-  `.mu-sheet-overlay`/`.mu-drawer-overlay` (and every other `mu-*` class)
-  have **zero base definition** outside `styles/style-*.css` — an
-  unstyled marko-ui component renders with no overlay treatment at all,
-  which would not be closer to upstream, just differently wrong.
+An earlier version of this policy paired each demo against upstream's
+own showcase choice (nova demos vs nova, the one rhea demo — drawer —
+vs rhea). That produced a technically-accurate per-demo comparison but
+reintroduced the same class of bug this section exists to prevent:
+marko-ui's drawer docs page is *not* rhea — it's nova, same as every
+other component, because marko-ui's docs site has no per-component style
+mechanism. Comparing upstream's rhea drawer against our nova drawer
+would always show a real, unfixable overlay/token delta having nothing
+to do with content or layout parity — exactly the "different styles,
+meaningless residual" defect this whole investigation exists to kill.
+Forcing nova on both sides for every demo, including drawer, keeps every
+comparison measuring the thing parity actually cares about: does our
+port faithfully reproduce upstream's component *structure and content*,
+holding style constant.
 
-**Conclusion**: this pair's styles were already correctly matched at the
-only level that's actually comparable — both harnesses render their
-respective library's documented default look (upstream: raw new-york-v4
-component source, no style layer, because none exists; ours: style-nova,
-our shipped default). The overlay-opacity residual on sheet/drawer is a
-**genuine, intentional design difference** between marko-ui's default
-style and shadcn's hardcoded default, not a harness measurement defect.
-`harness.json`'s `style` field now makes this pairing explicit and
-auditable for future residual triage, and the previous
-`parity-ignore.json` `visualDemos` entries (which described this same
-finding as a per-demo exception rather than a structural harness fact)
-are removed in favor of it — see the ratios captured below.
+### How shadcn <-> marko-ui's pairing was determined (2026-08-24, corrected twice)
+
+**This section was wrong twice before landing here.** First pass:
+concluded upstream shadcn/ui had "no style layer concept at all" — false;
+the harness was pointed at a stale, unused registry tree
+(`apps/v4/registry/new-york-v4`) that predates upstream's real style
+mechanism. Second pass: fixed the harness to render upstream's *actual*
+per-component showcase style (nova or rhea, whichever that demo's own
+`base/*.mdx` page declares) — correct as a description of what upstream's
+site shows a visitor, but wrong as a *parity comparison policy*, per the
+reasoning above. Corrected to "target port's default, forced on both
+sides" here.
+
+Verification, kept from the second pass (still true — this is about what
+upstream's mechanism *is*, independent of which policy uses it):
+
+- `apps/v4/content/docs/components/base/*.mdx` — the docs pages our own
+  `harnesses/shadcn/extract/` already reads for `parity-facts.json` — call
+  `<ComponentPreview styleName="base-<style>" name="sheet-demo" />` for
+  every demo. `ComponentPreview` resolves that `styleName` through
+  `getRegistryComponent` -> `@/styles/base-<style>/ui/*`, and each demo's
+  own source in `apps/v4/examples/base/*.tsx` imports directly from that
+  same `@/styles/base-<style>/ui/*` path (e.g.
+  `examples/base/sheet-demo.tsx` imports `from "@/styles/base-nova/ui/sheet"`).
+  `apps/v4/styles/` is **generated, gitignored** output of the clone's own
+  registry build (`pnpm --filter=v4 registry:build --style <name>`, see
+  `apps/v4/styles/README.md`) — not committed source.
+- The generator: `registry/bases/base/ui/sheet.tsx`'s overlay className is
+  `"cn-sheet-overlay fixed inset-0 z-50 ..."` — a `cn-*` **marker class**,
+  no color/opacity utility at all in the raw, committed source. The
+  registry build's `transformStyle` (ts-morph,
+  `packages/shadcn/src/styles/transform.ts`) replaces each `cn-*` marker
+  with that style's actual Tailwind classes, read from
+  `registry/styles/style-<name>.css`'s `.cn-sheet-overlay { @apply ...; }`
+  rule — architecturally identical to marko-ui's own `mu-*` marker-class +
+  `style-*.css` scoping, because marko-ui's port was originally modeled on
+  this exact mechanism. `style-nova.css`'s `.cn-sheet-overlay` rule is
+  `bg-black/10 supports-backdrop-filter:backdrop-blur-xs` — byte-identical
+  in substance to our own `style-nova.css`'s `.mu-sheet-overlay` rule.
+  `style-rhea.css`'s `.cn-drawer-overlay` is
+  `bg-black/30 supports-backdrop-filter:backdrop-blur-sm`, likewise
+  byte-identical to our `style-rhea.css`'s `.mu-drawer-overlay`.
+- `harnesses/shadcn/harness-react/generate-styled-registry.ts` runs the
+  clone's own `transformStyle`/`createStyleMap`/`transformDirection`
+  transform functions directly via `bun`, rather than the clone's full
+  `pnpm registry:build` (which rebuilds the clone's `packages/shadcn` CLI
+  package as a prerequisite and was observed to run its TS type-checker
+  worker out of memory in this environment — the transform itself has no
+  other build dependency). It only materializes the `-nova` variants of
+  each base the harness's demo set spans (`base`, `radix`) — sufficient
+  given `forceNovaStylePlugin` above rewrites every import to `-nova`
+  regardless of what a demo file's own source says.
+- Verified live, not just by reading CSS: a Playwright check of the
+  built-and-previewed upstream harness with the nova-forcing policy shows
+  `sheet-demo`'s overlay computed `background-color: oklab(0 0 0 / 0.1)`
+  (i.e. `bg-black/10`) with `backdrop-filter: blur(4px)` — matching our
+  own marko-ui harness's identical computed values for the same demo.
+  `drawer-demo`, forced to nova on the upstream side despite `drawer.mdx`
+  declaring `base-rhea`, computes the same `oklab(0 0 0 / 0.1)` /
+  `blur(4px)` as our nova-rendered drawer overlay — no residual style
+  delta between the two sides for drawer either, now that both are
+  genuinely nova.
+
+**Conclusion**: upstream ships and renders 8 style layers, same as
+marko-ui, through an architecturally near-identical marker-class +
+generated-CSS-transform mechanism. The correct pairing policy compares
+both harnesses in the *comparison target's* fixed default style (nova,
+here) rather than upstream's own per-component showcase choice — see
+"Why 'target port's default'" above for why the latter reintroduces a
+cross-style measurement bug. `harness.json`'s `style` field on both
+harnesses now says plainly `"nova"`. The previous `parity-ignore.json`
+`visualDemos` entries (which described the original, wrong "unfixable
+overlay mismatch" finding from before any of this was fixed) remain
+removed — see the ratios captured below for what's left after the real
+fix.
 
 ## The extraction step contract
 

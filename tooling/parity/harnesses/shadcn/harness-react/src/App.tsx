@@ -1,27 +1,42 @@
 import { Suspense, lazy, useMemo } from "react"
 // @ts-expect-error -- virtual module supplied by the parity-demo-registry
 // Vite plugin in vite.config.ts, generated from the resolved upstream
-// clone's registry/new-york-v4/examples/ directory listing.
+// clone's apps/v4/examples/base/ directory listing.
 import { demoLoaders } from "virtual:demo-registry"
 
 /**
- * Every example file in the clone's registry/new-york-v4/examples/
- * directory, lazily. Keyed by basename without extension (e.g.
- * "drawer-demo"), matching the `name` shadcn's own
- * `<ComponentPreview name="...">` MDX tags use — the same demo-name
- * vocabulary tooling/parity/coverage.ts already extracts.
+ * Every example file in the clone's apps/v4/examples/base/ directory,
+ * lazily. Keyed by basename without extension (e.g. "drawer-demo"),
+ * matching the `name` shadcn's own `<ComponentPreview name="...">` MDX
+ * tags use — the same demo-name vocabulary
+ * tooling/parity/harnesses/shadcn/extract/ already extracts.
  *
  * Sourced from a generated virtual module rather than a compile-time
  * `import.meta.glob` string because the clone's absolute path varies by
  * machine (env var / hyperspace sibling / repo-local .upstream/); the
  * plugin resolves that path once and bakes a static glob into the
  * generated module, so demo code-splitting still works per-route (a
- * drawer-demo visit doesn't pull in every other demo's recharts/vaul/etc.
+ * drawer-demo visit doesn't pull in every other demo's recharts/sonner/etc.
  * imports).
+ *
+ * Unlike the old registry/new-york-v4/examples tree (all default
+ * exports), apps/v4/examples/base files mix default and single named
+ * exports (see examples/README.md: "Both named exports and default
+ * exports are supported") — resolveDemoModule below picks whichever this
+ * module provides.
  */
-const demosByName = new Map<string, () => Promise<{ default: React.ComponentType }>>(
-  Object.entries(demoLoaders as Record<string, () => Promise<{ default: React.ComponentType }>>)
+const demosByName = new Map<string, () => Promise<Record<string, unknown>>>(
+  Object.entries(demoLoaders as Record<string, () => Promise<Record<string, unknown>>>)
 )
+
+function resolveDemoModule(mod: Record<string, unknown>): React.ComponentType {
+  if (typeof mod.default === "function") return mod.default as React.ComponentType
+  const named = Object.values(mod).find((value) => typeof value === "function")
+  if (!named) {
+    throw new Error("resolveDemoModule: module has neither a default export nor a named function export")
+  }
+  return named as React.ComponentType
+}
 
 function parseDemoName(): string | null {
   const match = /^\/demo\/([\w-]+)\/?$/.exec(window.location.pathname)
@@ -33,7 +48,7 @@ function NotFound({ demoName }: { demoName: string | null }) {
     <div style={{ padding: 24, fontFamily: "monospace" }}>
       {demoName === null
         ? 'no demo route matched — expected "/demo/<name>"'
-        : `unknown demo "${demoName}" — not found under registry/new-york-v4/examples/`}
+        : `unknown demo "${demoName}" — not found under apps/v4/examples/base/`}
       <ul>
         {[...demosByName.keys()].sort().map((name) => (
           <li key={name}>{name}</li>
@@ -51,7 +66,7 @@ export default function App() {
 
   // Lazy per-route so a bad demo name never touches React.lazy's module
   // cache for other names.
-  const Demo = lazy(loader)
+  const Demo = lazy(async () => ({ default: resolveDemoModule(await loader()) }))
 
   return (
     <div

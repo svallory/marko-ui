@@ -18,8 +18,11 @@
 @import "./shadcn-tailwind.css";
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
-/* generated-source.css contains a single @source line pointed at the
-   resolved clone's apps/v4/registry/new-york-v4 examples/ui tree —
+/* generated-source.css contains @source lines pointed at the resolved
+   clone's apps/v4/registry/bases + apps/v4/examples trees, plus this
+   harness's own .generated/styles output (the style-transformed
+   registry/bases/base/ui -> styles/base-<style>/ui trees — see
+   generate-styled-registry.ts and PROTOCOL.md's "Style pairing") —
    written by vite.config.ts at startup (see writeGeneratedSourceCss)
    because the clone's actual path is resolved at runtime (SHADCN_UI_DIR
    env / hyperspace sibling / repo-local .upstream/) and Tailwind's
