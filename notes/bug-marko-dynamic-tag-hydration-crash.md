@@ -224,20 +224,21 @@ submenu, zero console errors) to:
 `packages/shadcn/ui/menubar/menu.marko`,
 `packages/shadcn/ui/context-menu/context-menu.marko`.
 
-### A DIFFERENT, unrelated defect neither fix above resolves
+### A DIFFERENT, unrelated defect neither fix above resolves — fixed 2026-08-24 by restructuring the demo
 
 The dropdown-menu `<@item>` attr-tag path (item-dropdown.marko:
-`<for|person| of=PEOPLE><@item>...</@item></for>`) throws a different
-error ("Cannot read properties of undefined (reading '3')") that is NOT
+`<for|person| of=PEOPLE><@item>...</@item></for>`) threw a different
+error ("Cannot read properties of undefined (reading 'N')") that is NOT
 this bug — isolated empirically by removing every Zag-connected component
-from the repro and finding it still crashes. The minimal reproducer is
-ANY component using plain `<${content}/>` body-forwarding (no Zag, no
-`<const>`, no `<portal>` involved at all) nested inside a `<for>`-loop-
-captured attr-tag body that is itself mounted via dynamic-tag-content.
-There is no `<const>` read anywhere in this path — not in `Item`, not in
-`DropdownMenu` (confirmed by re-testing after the `menuEntries` fix above
-removed dropdown-menu.marko's last walk-time const, with the crash
-unchanged) — for a let-mirror or a static function to bypass.
+from the repro and finding it still crashed. The minimal reproducer is
+ANY component whose template unconditionally forwards its `content` input
+via `<${content}/>` (no Zag, no `<const>`, no `<portal>` involved at all),
+placed ANYWHERE inside a `<for>`-loop-captured attr-tag body that is
+itself mounted via dynamic-tag-content. There is no `<const>` read
+anywhere in this path — not in `Item`, not in `DropdownMenu` (confirmed
+by re-testing after the `menuEntries` fix above removed dropdown-menu.
+marko's last walk-time const, with the crash unchanged) — for a
+let-mirror or a static function to bypass.
 
 Independently confirmed (2026-08-24) via source-mapped stack trace against
 a clean production build with both fixes applied: the crash's minified
@@ -247,6 +248,43 @@ on `renderer.g[accessor](scope[childScopeAccessor], renderer.h[accessor])`
 runtime, not application code. This is Marko-core's `_content_closures`/
 `_dynamic_tag_content` closures-map wiring breaking across nested
 dynamic-tag-content layers combined with loop-scope capture, exactly as
-previously isolated by hand. Left broken; see TODO.md §BLOCKER for the
-full isolation notes and next steps. `item` stays in
-`KNOWN_BROKEN_COMPONENTS` in `e2e/verify-matrix.spec.ts`.
+previously isolated by hand.
+
+A standalone, dependency-light minimal repro (pure Marko, no Zag) was
+built at `../../scratch/content-closures-repro/` to isolate the exact
+required ingredients independent of this app's own component tree. Beyond
+confirming the mechanism above, it established one additional, practically
+useful fact: a component whose template CONTAINS a `<${content}/>` call
+but is invoked WITHOUT `content` (e.g. `Avatar`, called throughout this
+codebase with `fallback` — a plain string — never `content`) does NOT
+crash, because the dynamic-tag-content call is compiled but never actually
+fires at that use site. See that repro's `README.md` ("Ingredients" #1-#7)
+and `UPSTREAM-ISSUE-DRAFT.md` for the full account; upstream issue drafted
+but not yet filed.
+
+**Fix applied and verified (2026-08-24), application-level, not a
+Marko-core fix:** `apps/docs/src/demos/item/item-dropdown.marko`'s
+`<@item>` body now inlines `Item`/`ItemMedia`/`ItemContent`/`ItemTitle`/
+`ItemDescription`'s own rendered output (their `data-slot` attributes and
+classes, copied by hand from each component's source) directly as `<div>`/
+`<p>` markup, instead of nesting those components — removing every
+content-forwarding custom-tag boundary from the loop body entirely.
+`Avatar` was left as a real component (confirmed safe per the finding
+above — this demo calls it with `fallback`, never `content`). The
+resulting markup is visually and semantically identical to both the prior
+version and upstream's own composition
+(`data/shadcn-ui/apps/v4/registry/new-york-v4/examples/item-dropdown.tsx`);
+the deviation from upstream's `Item`-component-based composition is
+documented in the demo file's own header comment, pointing back to the
+repro directory and this note. Verified: production build, 3 fresh page
+loads with the dropdown opened, zero console errors each time; full
+9-style verify-matrix green as a normal test (previously ran via
+`test.fail`). `KNOWN_BROKEN_COMPONENTS` in `e2e/verify-matrix.spec.ts` is
+now empty (`[]`). Full account also in TODO.md §BLOCKER.
+
+The Marko-core defect itself remains open and unfiled upstream — this was
+an application-level workaround (avoiding the crashing composition shape
+entirely), not a fix to Marko. Any future component that nests a
+content-forwarding component inside a `<for>`-loop-captured attr-tag body
+mounted via dynamic-tag-content will hit the same crash and need the same
+kind of restructuring (or a Marko-core fix, if one lands upstream first).

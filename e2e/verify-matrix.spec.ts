@@ -85,32 +85,37 @@ const INTERACTIVE_SELECTOR = "button:not([disabled]), [role=button]:not([aria-di
 // submenus) with zero console errors. Full account in
 // notes/bug-marko-dynamic-tag-hydration-crash.md.
 //
-// `item` stays broken — its crash ("Cannot read properties of undefined
-// (reading '3')", item-dropdown.marko demo) is a DIFFERENT, unrelated
-// Marko-core defect from BOTH walk-order/`<const>` race variants above:
-// isolated empirically (removing every Zag-connected component from the
-// repro still crashes) to ANY component using plain `<${content}/>`
-// body-forwarding (no Zag, no `<const>`, no `<portal>` involved at all —
-// e.g. `Item`'s own `<div><${content}/></div>`) when nested inside a
-// `<for>`-loop-captured attr-tag body (`<@item>`) that is itself mounted
-// via dynamic-tag-content. Neither the let-mirror nor the `menuEntries`
-// static-function fix has a `<const>`/`<let>` read to bypass here, so
-// neither applies — reproduced unchanged after both fixes were applied
-// (dropdown-menu.marko has no remaining walk-time const in its own render
-// path). Minimal repro: `<for|x| of=list>
-// <@item><SomeComponentWithContentForwarding><div>${x}</div>
-// </SomeComponentWithContentForwarding></@item></for>` crashes;
-// the same loop with a plain `<div>${x}</div>` (no wrapping
-// content-forwarding component) does not. Independently confirmed via a
-// source-mapped stack trace against a clean production build: the crash
-// maps to `marko@6.3.34/dist/dom-6hBvZW7X.mjs:81:357`, inside Marko's own
-// compiled `_content_closures`/`_dynamic_tag_content` closures-fanout code
-// — not application code. Fix requires either restructuring
-// item-dropdown.marko to avoid nesting a content-forwarding component
-// inside the loop-captured `<@item>` body, or a Marko-core fix — flagged
-// as a separate, still-open item in TODO.md §BLOCKER; not fixed in this
-// pass.
-const KNOWN_BROKEN_COMPONENTS = new Set<string>(["item"]);
+// `item` was broken by a THIRD, unrelated Marko-core defect — a crash
+// ("Cannot read properties of undefined (reading 'N')") distinct from
+// BOTH walk-order/`<const>` race variants above: isolated (2026-08-24) to
+// ANY component whose template unconditionally forwards its `content`
+// input via `<${content}/>` (Item, ItemMedia, ItemContent, ItemTitle,
+// ItemDescription all do this), placed ANYWHERE inside a `<for>`-loop-
+// captured attr-tag body (`<@item>`) that is itself mounted via
+// dynamic-tag-content — with NO `<const>`/`<let>` read anywhere in the
+// path, so neither the let-mirror nor the `menuEntries` static-function
+// fix applies (confirmed unchanged after both were applied). Source-mapped
+// stack trace against a clean production build: the crash lands inside
+// Marko's own compiled `_content_closures`/`_dynamic_tag_content`
+// closures-fanout code, not application code. Standalone minimal repro
+// (isolates the exact required ingredients, including that a
+// dynamic-tag-content call merely present but never firing — e.g. Avatar
+// called with `fallback` instead of `content` — does NOT crash):
+// ../../scratch/content-closures-repro/.
+//
+// Fixed (2026-08-24) by restructuring item-dropdown.marko's demo, NOT a
+// Marko-core fix (still unfiled upstream — see the repro's
+// UPSTREAM-ISSUE-DRAFT.md): Item/ItemMedia/ItemContent/ItemTitle/
+// ItemDescription's own rendered output (data-slot, classes) is inlined by
+// hand inside the `<@item>` body instead of nesting those components,
+// removing every content-forwarding custom-tag boundary from the loop
+// body. `Avatar` stays a real component — safe at this use site since
+// it's called with `fallback`, never `content`. Verified: production
+// build, 3 fresh page loads + dropdown open with zero console errors,
+// full 9-style verify-matrix green. See the demo file's own header
+// comment, notes/bug-marko-dynamic-tag-hydration-crash.md, and TODO.md
+// §BLOCKER for the full account.
+const KNOWN_BROKEN_COMPONENTS = new Set<string>([]);
 
 for (const entry of manifest.entries) {
   const testFn = KNOWN_BROKEN_COMPONENTS.has(entry.component) ? test.fail : test;

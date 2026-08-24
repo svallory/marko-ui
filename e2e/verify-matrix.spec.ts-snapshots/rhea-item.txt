@@ -32,10 +32,24 @@ section
         button data-slot="button"
 ---
 section
-  div data-slot="item"
-    div data-slot="item-content"
-      div data-slot="item-title"
-      p data-slot="item-description"
+  div
+    div data-slot="item"
+      div data-slot="item-content"
+        div data-slot="item-title"
+        p data-slot="item-description"
+      div data-slot="item-actions"
+        button data-slot="button"
+    a
+      div data-slot="item"
+        div data-slot="item-media"
+          svg
+            path
+            path
+        div data-slot="item-content"
+          div data-slot="item-title"
+        div data-slot="item-actions"
+          svg
+            path
 ---
 section
   button data-slot="dropdown-menu-trigger" data-state="closed" aria-haspopup="menu" aria-controls="<id>" aria-expanded="false"
@@ -46,38 +60,65 @@ section
   div data-slot="item-group"
     div data-slot="item"
       div data-slot="item-media"
-        svg
-          circle
+        span data-slot="avatar"
+          img data-slot="avatar-image" data-state="visible"
+          span data-slot="avatar-fallback" data-state="hidden"
       div data-slot="item-content"
         div data-slot="item-title"
         p data-slot="item-description"
-    div data-slot="item-separator" role="separator" aria-hidden="true"
+      div data-slot="item-actions"
+        button data-slot="button"
+          svg
+            path
+            path
     div data-slot="item"
       div data-slot="item-media"
-        svg
-          rect
+        span data-slot="avatar"
+          img data-slot="avatar-image" data-state="visible"
+          span data-slot="avatar-fallback" data-state="hidden"
       div data-slot="item-content"
         div data-slot="item-title"
         p data-slot="item-description"
-    div data-slot="item-separator" role="separator" aria-hidden="true"
+      div data-slot="item-actions"
+        button data-slot="button"
+          svg
+            path
+            path
     div data-slot="item"
       div data-slot="item-media"
-        svg
-          path
+        span data-slot="avatar"
+          img data-slot="avatar-image" data-state="visible"
+          span data-slot="avatar-fallback" data-state="hidden"
       div data-slot="item-content"
         div data-slot="item-title"
         p data-slot="item-description"
+      div data-slot="item-actions"
+        button data-slot="button"
+          svg
+            path
+            path
 ---
 section
-  div data-slot="item"
-    div data-slot="item-header"
-      div data-slot="item-title"
-      span data-slot="badge"
-    div data-slot="item-content"
-      p data-slot="item-description"
-    div data-slot="item-footer"
-      span
-      button data-slot="button"
+  div
+    div data-slot="item-group"
+      div data-slot="item"
+        div data-slot="item-header"
+          img
+        div data-slot="item-content"
+          div data-slot="item-title"
+          p data-slot="item-description"
+      div data-slot="item"
+        div data-slot="item-header"
+          img
+        div data-slot="item-content"
+          div data-slot="item-title"
+          p data-slot="item-description"
+      div data-slot="item"
+        div data-slot="item-header"
+          img
+        div data-slot="item-content"
+          div data-slot="item-title"
+          p data-slot="item-description"
 ---
 section
   div data-slot="item"
@@ -93,7 +134,7 @@ section
 section
   div
     div data-slot="item-group"
-      a role="listitem"
+      a
         div data-slot="item"
           div data-slot="item-media"
             img
@@ -103,7 +144,7 @@ section
             p data-slot="item-description"
           div data-slot="item-content"
             p data-slot="item-description"
-      a role="listitem"
+      a
         div data-slot="item"
           div data-slot="item-media"
             img
@@ -113,7 +154,7 @@ section
             p data-slot="item-description"
           div data-slot="item-content"
             p data-slot="item-description"
-      a role="listitem"
+      a
         div data-slot="item"
           div data-slot="item-media"
             img
@@ -125,11 +166,25 @@ section
             p data-slot="item-description"
 ---
 section
-  a
-    div data-slot="item"
-      div data-slot="item-content"
-        div data-slot="item-title"
-        p data-slot="item-description"
+  div
+    a
+      div data-slot="item"
+        div data-slot="item-content"
+          div data-slot="item-title"
+          p data-slot="item-description"
+        div data-slot="item-actions"
+          svg
+            path
+    a
+      div data-slot="item"
+        div data-slot="item-content"
+          div data-slot="item-title"
+          p data-slot="item-description"
+        div data-slot="item-actions"
+          svg
+            path
+            path
+            path
 ---
 section
   div
@@ -154,10 +209,26 @@ section
 section
   div
     div data-slot="item"
+      div data-slot="item-media"
+        svg
+          polyline
+          path
       div data-slot="item-content"
         div data-slot="item-title"
         p data-slot="item-description"
     div data-slot="item"
+      div data-slot="item-media"
+        svg
+          polyline
+          path
+      div data-slot="item-content"
+        div data-slot="item-title"
+        p data-slot="item-description"
+    div data-slot="item"
+      div data-slot="item-media"
+        svg
+          polyline
+          path
       div data-slot="item-content"
         div data-slot="item-title"
         p data-slot="item-description"
@@ -165,14 +236,26 @@ section
 section
   div
     div data-slot="item"
+      div data-slot="item-media"
+        svg
+          polyline
+          path
       div data-slot="item-content"
         div data-slot="item-title"
         p data-slot="item-description"
     div data-slot="item"
+      div data-slot="item-media"
+        svg
+          polyline
+          path
       div data-slot="item-content"
         div data-slot="item-title"
         p data-slot="item-description"
     div data-slot="item"
+      div data-slot="item-media"
+        svg
+          polyline
+          path
       div data-slot="item-content"
         div data-slot="item-title"
         p data-slot="item-description"

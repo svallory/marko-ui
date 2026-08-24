@@ -394,7 +394,7 @@ against component source by the repair run's adversarial checkers:
 - [ ] docs template: `changelog` field in docs-types.ts + render branch
       (card, toggle-group, pagination all blocked on it)
 
-## BLOCKER — nested-portal walk-order defect (2026-08-23, workaround applied 2026-08-24)
+## BLOCKER — nested-portal walk-order defect (2026-08-23, workarounds applied 2026-08-24; KNOWN_BROKEN_COMPONENTS now empty)
 
 Nested-portal resume corruption (Marko 6.3.34, production builds): a
 Zag-connected child rendered via marko-zag's <portal> content mechanism
@@ -424,9 +424,10 @@ interaction (open + select/pick):
 - packages/shadcn/ui/avatar/avatar.marko (needed for the dropdown-menu
   `<@item>` path below, though insufficient alone — see next paragraph)
 
-KNOWN_BROKEN_COMPONENTS in e2e/verify-matrix.spec.ts now reads
+KNOWN_BROKEN_COMPONENTS in e2e/verify-matrix.spec.ts at this point read
 `["item"]` — dropdown-menu, menubar, date-picker removed, verified
-passing.
+passing. (`item` itself was fixed in a later pass, same day — see below;
+the set is now empty.)
 
 **Second fix, same defect CLASS, different const (2026-08-24):**
 dropdown-menu.marko, menubar/menu.marko, and context-menu.marko each had
@@ -451,42 +452,55 @@ zero console errors) in:
 - packages/shadcn/ui/menubar/menu.marko
 - packages/shadcn/ui/context-menu/context-menu.marko
 
-**`item` remains broken — confirmed separate, unrelated Marko-core
-defect, NOT fixed by either the let-mirror or the `menuEntries` fix
-above.** item-dropdown.marko's `<DropdownMenu>` with `<for|person| of=
-PEOPLE><@item>...</@item></for>`-captured content still throws "Cannot
-read properties of undefined (reading '3')" on open, reproduced fresh
-against a clean production build with BOTH fixes applied (dropdown-menu.
+**`item` was broken by a THIRD, unrelated Marko-core defect — fixed
+2026-08-24 by restructuring the demo, not by a Marko-core fix.**
+item-dropdown.marko's `<DropdownMenu>` with `<for|person| of=
+PEOPLE><@item>...</@item></for>`-captured content threw "Cannot read
+properties of undefined (reading 'N')" on open, reproduced fresh against a
+clean production build with both walk-order fixes applied (dropdown-menu.
 marko has no remaining walk-time `<const>`/`<let>` read in its own render
-path after the `menuEntries` fix, and the crash is unchanged). Isolated
-empirically (2026-08-24): removing every Zag-connected component from the
-repro still crashes — the minimal reproducer is ANY component using plain
-`<${content}/>` body-forwarding (no Zag, no `<const>`, no `<portal>` at
-all — e.g. `Item`'s own `<div><${content}/></div>`) nested inside a
-`<for>`-loop-captured attr-tag body (`<@item>`) that is itself mounted
-via dynamic-tag-content. Independently confirmed via source-mapped stack
-trace against the production chunk (`_CIBnu5TE.js:1:2061` in this build,
-hash changes per build): maps to `marko@6.3.34/dist/dom-6hBvZW7X.mjs:81:
-357`, landing exactly on `renderer.g[accessor](scope[childScopeAccessor],
-renderer.h[accessor])` — the child-scope closures-fanout call inside
-Marko's own compiled DOM runtime, not application code. Confirms this is
-Marko-core's `_content_closures`/`_dynamic_tag_content` closures-map
-wiring breaking across nested dynamic-tag-content layers combined with
-loop-scope capture, exactly as previously isolated. There is no
-`<const>`/`<let>` read anywhere in the path for a mirror or static
-function to bypass. Needs either a Marko-core fix, or restructuring
-item-dropdown.marko to avoid nesting a content-forwarding component
-inside the loop-captured `<@item>` body (not attempted — would change the
-demo's composition, needs sign-off, and apps/docs/src/demos/item/* was
-being actively edited by another agent during this pass — read-only).
-KNOWN_BROKEN_COMPONENTS in e2e/verify-matrix.spec.ts stays `["item"]`.
-Full isolation notes in the verify-matrix KNOWN_BROKEN comment and
-notes/bug-marko-dynamic-tag-hydration-crash.md.
+path after the `menuEntries` fix, and the crash was unchanged). Isolated
+empirically (2026-08-24) to a standalone minimal repro
+(../../scratch/content-closures-repro/, pure Marko, no Zag): ANY component
+whose template unconditionally forwards its `content` input via
+`<${content}/>` (Item, ItemMedia, ItemContent, ItemTitle, ItemDescription
+all do this), placed ANYWHERE inside a `<for>`-loop-captured attr-tag body
+(`<@item>`) that is itself mounted via dynamic-tag-content, crashes on
+first client-side mount — with no `<const>`/`<let>` read anywhere in the
+path for a mirror or static-function workaround to bypass. The repro also
+established that a dynamic-tag-content call merely PRESENT in a
+component's compiled template but never firing at a given use site (e.g.
+`Avatar` called with `fallback` instead of `content`) does NOT crash —
+important because it means `Avatar` did not need to be touched in the
+fix. Independently confirmed via source-mapped stack trace against the
+production chunk: maps to Marko's own compiled `_content_closures`/
+`_dynamic_tag_content` closures-fanout code (`renderer.g[accessor]
+(scope[childScopeAccessor], renderer.h[accessor])`), not application
+code.
+
+**Fix applied and verified (2026-08-24):** item-dropdown.marko's `<@item>`
+body now inlines Item/ItemMedia/ItemContent/ItemTitle/ItemDescription's
+own rendered output (data-slot attributes, classes) by hand instead of
+nesting those components — removing every content-forwarding custom-tag
+boundary from the loop body. `Avatar` is kept as a real component (safe
+per the repro finding above — this demo calls it with `fallback`, never
+`content`). Visually and semantically identical to upstream's composition
+(data/shadcn-ui/apps/v4/registry/new-york-v4/examples/item-dropdown.tsx);
+the deviation is documented in the demo file's own header comment.
+Verified: production build, 3 fresh page loads + dropdown open with zero
+console errors, full 9-style verify-matrix green (now runs as a normal
+`test`, not `test.fail`). KNOWN_BROKEN_COMPONENTS in
+e2e/verify-matrix.spec.ts is now empty (`[]`). Full isolation notes in the
+verify-matrix KNOWN_BROKEN comment, notes/bug-marko-dynamic-tag-hydration-
+crash.md, and ../../scratch/content-closures-repro/README.md.
 
 Upstream issue for the let-mirror-fixed defect still pending — draft at
 ../../scratch/nested-portal-repro/UPSTREAM-ISSUE-DRAFT.md, not yet filed.
-The `item`/`_content_closures` defect above is a separate, still-unfiled
-upstream candidate.
+The `_content_closures`/`_dynamic_tag_content` defect worked around above
+is a separate, still-unfiled upstream candidate — draft at
+../../scratch/content-closures-repro/UPSTREAM-ISSUE-DRAFT.md, not yet
+filed. Both remain open in Marko core; both were worked around at the
+application level in this repo, not fixed upstream.
 
 ## marko-zag relay additions (2026-08-23)
 
