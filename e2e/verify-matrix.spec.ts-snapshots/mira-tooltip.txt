@@ -13,7 +13,7 @@ section
 ---
 section
   span data-slot="tooltip"
-    button data-slot="tooltip-trigger" data-state="closed"
+    button data-slot="tooltip-trigger" data-state="closed" aria-label="Save Changes"
       svg
         path
         path

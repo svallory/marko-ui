@@ -1,9 +1,12 @@
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
 import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
 
+// `aria-label` on the icon-only button: it renders only an <ArrowUpIcon>
+// with no text content, so it has no accessible name on its own (axe:
+// button-name) — upstream's own demo has the same gap.
 <div class="flex gap-2">
   <Button class="rounded-full">Get Started</Button>
-  <Button variant="outline" size="icon" class="rounded-full">
+  <Button variant="outline" size="icon" class="rounded-full" aria-label="Scroll to top">
     <Icon name="ArrowUpIcon"/>
   </Button>
 </div>

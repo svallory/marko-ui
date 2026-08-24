@@ -3,10 +3,24 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 import Avatar from "@marko-ui/shadcn/ui/avatar/avatar.marko";
 import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
 
+// A local `data:` URI, not a `https://github.com/*.png` remote image: the
+// Avatar's image/fallback visibility flips from Zag's `state.matches("loaded")`,
+// which only becomes true once the browser's image `load` event fires —
+// SSR always renders the pre-load (fallback-visible) state. With a real
+// network image, that load event lands at an unpredictable point relative
+// to hydration, so the SSR-vs-hydrated attribute snapshot is a genuine
+// race, not just slow: it passes or fails depending on network timing.
+// An inline SVG data URI decodes synchronously with no network round trip,
+// so the image is reliably still "loading" (or already resolved,
+// consistently) at the moments the hydration-invariant suite samples —
+// deterministic either way, unlike a remote fetch.
+static const AVATAR_SRC =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23404040'/%3E%3C/svg%3E";
+
 <DropdownMenu class="w-auto">
   <@trigger|triggerProps|>
     <Button variant="ghost" size="icon" class="rounded-full" ...triggerProps>
-      <Avatar src="https://github.com/shadcn.png" alt="shadcn" fallback="LR"/>
+      <Avatar src=AVATAR_SRC alt="shadcn" fallback="LR"/>
     </Button>
   </@trigger>
   <@item value="account">

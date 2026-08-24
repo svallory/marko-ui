@@ -4,9 +4,13 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 import Kbd from "@marko-ui/shadcn/ui/kbd/kbd.marko";
 import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
 
+// `aria-label` is required on the trigger itself: @zag-js/tooltip's
+// getTriggerProps() only sets `aria-describedby` while the tooltip is
+// actually open, so this icon-only button has no accessible name at all
+// in its default/closed state (axe: button-name).
 <Tooltip>
   <@trigger|props|>
-    <Button ...props variant="outline" size="icon-sm">
+    <Button ...props variant="outline" size="icon-sm" aria-label="Save Changes">
       <Icon name="SaveIcon"/>
     </Button>
   </@trigger>

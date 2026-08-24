@@ -14,6 +14,11 @@ import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
 // control, thumb and label parts, so the switch itself restyles/mirrors
 // correctly; Field's layout is Tailwind logical properties, so it already
 // restyles correctly under dir="rtl" with no component changes.
+//
+// `ids={{ hiddenInput: "..." }}`: our Switch is Zag-backed, so its native
+// `id` input becomes a machine scope -- the rendered hidden <input> gets
+// a derived id, not the literal string passed in. This pins the literal
+// DOM id so `FieldLabel for=` actually resolves (axe: label).
 <div dir="rtl" class="w-full max-w-sm">
   <Field orientation="horizontal">
     <FieldContent>
@@ -22,6 +27,6 @@ import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
         يتم مشاركة التركيز عبر الأجهزة، ويتم إيقاف تشغيله عند مغادرة التطبيق.
       </FieldDescription>
     </FieldContent>
-    <Switch id="switch-focus-mode-rtl" dir="rtl"/>
+    <Switch id="switch-focus-mode-rtl" ids={ hiddenInput: "switch-focus-mode-rtl" } dir="rtl"/>
   </Field>
 </div>

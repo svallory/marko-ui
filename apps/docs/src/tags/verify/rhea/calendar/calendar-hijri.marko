@@ -23,11 +23,41 @@
 // something this demo can work around. Supporting a controlled initial
 // selection for non-Gregorian locales would need calendar-system-aware
 // value conversion in calendar.marko itself, which is out of scope here.
+//
+// `defaultFocusedValue` is different: it bypasses that plain-object
+// mapping entirely (Calendar's Input only omits `value`/`min`/`max`, not
+// `focusedValue`/`defaultFocusedValue`), so it takes a real Zag/
+// @internationalized/date `DateValue` directly, calendar-system and all.
+// It's required here, not just nice-to-have: without it the Zag
+// date-picker machine falls back to the browser's wall-clock "today"
+// (`getTodayDate`), which makes this demo's SSR markup diverge from its
+// hydrated markup near midnight or across timezones — this page is
+// exactly what the hydration-invariant suite scans. `toCalendar()`
+// converts a fixed Gregorian date into the Persian calendar system so the
+// pinned date renders correctly in Farsi digits/months, not
+// (re)interpreted as a raw Gregorian date the way the `value` prop would.
 import Calendar from "@marko-ui/shadcn/ui/calendar/calendar.marko";
-import { createCalendar } from "@internationalized/date";
+import { CalendarDate, createCalendar as createCalendarInstance, toCalendar } from "@internationalized/date";
 
+// `createCalendar` and `defaultFocusedValue` are BOTH computed inline
+// (function calls in the tag body) rather than as `static const` values
+// referenced by name: a `CalendarDate` built against a non-Gregorian
+// calendar carries a `.calendar` field that is itself a class instance
+// with methods — same class of value as a bare function reference — and
+// neither survives Marko's SSR-to-hydration resume boundary as a `static
+// const` binding the way a plain object/string/number does. Passing
+// either by reference left the client silently reconstructing its own
+// default (Gregorian calendar, wall-clock "today" focus) after hydration
+// while SSR correctly rendered the pinned Persian date, which showed up
+// as both a visible flash and a structural (day-count) SSR/hydration
+// mismatch. Recomputing them inline, the same way
+// calendar-booked-dates.marko's `isDateUnavailable=(date) => ...` does,
+// makes each render (server AND client) independently produce the same
+// value from the same fixed inputs, instead of relying on one instance
+// resuming across the boundary.
 <Calendar
   locale="fa-IR"
-  createCalendar=createCalendar
+  createCalendar=(id) => createCalendarInstance(id)
+  defaultFocusedValue=toCalendar(new CalendarDate(2026, 8, 15), createCalendarInstance("persian"))
   class="rounded-lg border"
 />

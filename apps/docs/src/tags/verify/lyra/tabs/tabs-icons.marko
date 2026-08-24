@@ -2,6 +2,12 @@
 import Tabs from "@marko-ui/shadcn/ui/tabs/tabs.marko";
 import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
 
+// Each <@trigger> needs a matching <@panel> even in a trigger-styling demo
+// like this one: Zag's tabs machine always emits `aria-controls` on the
+// trigger pointing at the content id for its value, whether or not a panel
+// with that value is actually rendered. A trigger-only composition (as
+// this demo previously was) leaves that id dangling — no element in the
+// DOM has it — which is an invalid ARIA reference (axe: aria-valid-attr-value).
 <Tabs class="w-fit">
   <@trigger value="preview">
     <Icon name="AppWindowIcon"/>
@@ -11,4 +17,6 @@ import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
     <Icon name="CodeIcon"/>
     Code
   </@trigger>
+  <@panel value="preview">Preview panel content.</@panel>
+  <@panel value="code">Code panel content.</@panel>
 </Tabs>

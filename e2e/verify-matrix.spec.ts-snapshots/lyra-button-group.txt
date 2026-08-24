@@ -21,7 +21,7 @@ section
 section
   div data-slot="button-group" role="group"
     div data-slot="button-group" role="group"
-      button data-slot="button"
+      button data-slot="button" aria-label="Add"
         svg
           path
           path
@@ -30,7 +30,7 @@ section
         input data-slot="input-group-control"
         div data-slot="input-group-addon" role="group"
           span data-slot="tooltip"
-            button data-slot="tooltip-trigger" data-state="closed"
+            button data-slot="tooltip-trigger" data-state="closed" aria-label="Voice Mode"
               svg
                 path
                 path

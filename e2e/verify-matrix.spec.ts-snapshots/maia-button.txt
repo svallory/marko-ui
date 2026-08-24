@@ -56,7 +56,7 @@ section
 section
   div
     button data-slot="button"
-    button data-slot="button"
+    button data-slot="button" aria-label="Scroll to top"
       svg
         path
         path

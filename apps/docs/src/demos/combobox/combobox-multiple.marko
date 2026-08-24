@@ -1,4 +1,5 @@
 import Combobox from "@marko-ui/shadcn/ui/combobox/combobox.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
 
 static const frameworks = [
   { value: "next", label: "Next.js" },
@@ -8,10 +9,27 @@ static const frameworks = [
   { value: "astro", label: "Astro" },
 ];
 
-<Combobox
-  items=frameworks
-  multiple
-  inputBehavior="autohighlight"
-  defaultValue=["next"]
-  class="w-full max-w-xs"
-/>
+// This standalone combobox has no visible heading or paired <label> in the
+// layout, and @zag-js/combobox's getInputProps() never synthesizes an
+// accessible name on its own — without one the input has no accessible
+// name at all (axe: label). A bare `aria-label` on <Combobox> does NOT
+// fix this: combobox.marko's `Input` type is `MachineInput<"div", ...>`,
+// so an unrecognized attribute like `aria-label` lands on the component's
+// ROOT <div data-slot="combobox"> via nativeAttrs(), not on the actual
+// `role="combobox"` <input> that axe/AT look at.
+//
+// `ids={{ input: "..." }}` pins the literal DOM id of that input (Zag's
+// `getInputProps()` otherwise derives a scoped id like
+// "combobox:<generated>:input"), so `FieldLabel for=` can address it
+// directly — the same pattern used for Checkbox/Switch elsewhere.
+<div class="flex w-full max-w-xs flex-col gap-2">
+  <FieldLabel for="combobox-multiple-input">Frameworks</FieldLabel>
+  <Combobox
+    items=frameworks
+    multiple
+    inputBehavior="autohighlight"
+    defaultValue=["next"]
+    ids={ input: "combobox-multiple-input" }
+    class="w-full"
+  />
+</div>

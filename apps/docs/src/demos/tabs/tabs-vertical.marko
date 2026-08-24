@@ -1,7 +1,14 @@
 import Tabs from "@marko-ui/shadcn/ui/tabs/tabs.marko";
 
+// Each <@trigger> needs a matching <@panel>: Zag's tabs machine always
+// emits `aria-controls` on the trigger pointing at the content id for its
+// value, whether or not a panel with that value is actually rendered. A
+// trigger-only composition leaves that id dangling (axe: aria-valid-attr-value).
 <Tabs orientation="vertical">
   <@trigger value="account">Account</@trigger>
   <@trigger value="password">Password</@trigger>
   <@trigger value="notifications">Notifications</@trigger>
+  <@panel value="account">Account panel content.</@panel>
+  <@panel value="password">Password panel content.</@panel>
+  <@panel value="notifications">Notifications panel content.</@panel>
 </Tabs>

@@ -19,14 +19,21 @@ static const categories = [
   { value: "health", label: "الصحة" },
 ];
 
+// `ids={{ input: "..." }}` pins the literal DOM id of the combobox's
+// input (Zag's getInputProps() otherwise derives a scoped id), so
+// `FieldLabel for=` actually resolves — see combobox-multiple.marko for
+// the full explanation. Without it this label was unassociated (axe:
+// label): a bare `aria-label` doesn't help either, since combobox.marko
+// forwards unrecognized attributes to its ROOT <div>, not the input.
 <Field dir="rtl" class="mx-auto w-full max-w-xs">
-  <FieldLabel>الفئات</FieldLabel>
+  <FieldLabel for="combobox-rtl-input">الفئات</FieldLabel>
   <Combobox
     items=categories
     multiple
     inputBehavior="autohighlight"
     defaultValue=["technology"]
     placeholder="أضف فئات"
+    ids={ input: "combobox-rtl-input" }
     dir="rtl"
   />
 </Field>

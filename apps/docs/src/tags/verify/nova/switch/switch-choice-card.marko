@@ -49,6 +49,12 @@ import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
 // onto both getRootProps() and getControlProps(); see @zag-js/switch's
 // switch.connect.mjs). Accessible name comes from `id`/`for`, same as
 // switch-description.marko, not from Switch's own `content` slot.
+//
+// `ids={{ hiddenInput: "..." }}`: our Switch is Zag-backed, so its native
+// `id` input becomes a machine *scope* — the rendered hidden <input> gets
+// a derived id like "switch:switch-share:input", not the literal string
+// passed in. Without pinning `ids.hiddenInput` to match the external
+// `<label for>` above, the two never actually associate (axe: label).
 <div class="w-full max-w-sm">
   <FieldGroup>
     <div class="has-[[data-slot=switch-label][data-state=checked]]:border-primary/30 has-[[data-slot=switch-label][data-state=checked]]:bg-primary/5 dark:has-[[data-slot=switch-label][data-state=checked]]:border-primary/20 dark:has-[[data-slot=switch-label][data-state=checked]]:bg-primary/10 flex w-full items-center justify-between gap-2 rounded-lg border p-2.5">
@@ -58,7 +64,7 @@ import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
           Focus is shared across devices, and turns off when you leave the app.
         </span>
       </label>
-      <Switch id="switch-share"/>
+      <Switch id="switch-share" ids={ hiddenInput: "switch-share" }/>
     </div>
     <div class="has-[[data-slot=switch-label][data-state=checked]]:border-primary/30 has-[[data-slot=switch-label][data-state=checked]]:bg-primary/5 dark:has-[[data-slot=switch-label][data-state=checked]]:border-primary/20 dark:has-[[data-slot=switch-label][data-state=checked]]:bg-primary/10 flex w-full items-center justify-between gap-2 rounded-lg border p-2.5">
       <label for="switch-notifications" class="flex flex-1 cursor-pointer flex-col gap-0.5 text-left leading-snug">
@@ -67,7 +73,7 @@ import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
           Receive notifications when focus mode is enabled or disabled.
         </span>
       </label>
-      <Switch id="switch-notifications" defaultChecked/>
+      <Switch id="switch-notifications" ids={ hiddenInput: "switch-notifications" } defaultChecked/>
     </div>
   </FieldGroup>
 </div>

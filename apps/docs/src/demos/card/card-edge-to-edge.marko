@@ -12,7 +12,15 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
     <CardDescription>Review the terms before accepting the agreement.</CardDescription>
   </CardHeader>
   <CardContent class="-mb-(--card-spacing)">
-    <div class="-mx-(--card-spacing) max-h-48 space-y-4 overflow-y-scroll border-t bg-muted/50 px-(--card-spacing) py-4 text-sm leading-relaxed">
+    // `tabindex="0"` makes this scrollable region keyboard-reachable: with
+    // `overflow-y-scroll` and content taller than `max-h-48`, a
+    // mouse/touch user can scroll it, but without a focusable ancestor a
+    // keyboard user has no way to reach or scroll it at all (axe:
+    // scrollable-region-focusable).
+    <div
+      tabindex="0"
+      class="-mx-(--card-spacing) max-h-48 space-y-4 overflow-y-scroll border-t bg-muted/50 px-(--card-spacing) py-4 text-sm leading-relaxed"
+    >
       <p>
         These terms govern your use of the workspace, including access to shared documents, project files, and
         collaboration tools.

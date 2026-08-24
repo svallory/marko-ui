@@ -4,10 +4,19 @@ import Collapsible from "@marko-ui/shadcn/ui/collapsible/collapsible.marko";
 // The machine marks a disabled trigger with `data-disabled`, not a native
 // `disabled` attribute (it only bails out of the click handler) — style off
 // `data-[disabled]:`, not the native-only `disabled:` variant.
+//
+// `aria-disabled="true"` is added explicitly: Zag's collapsible connect
+// never emits it (only `data-disabled`), so without it this button is
+// exposed to assistive tech as an ordinary enabled, focusable control with
+// a dead click handler — no indication it's disabled. It also lets the
+// dimmed `data-[disabled]:opacity-50` text opt out of axe's color-contrast
+// check the way a native `disabled` attribute would, which is the same
+// exemption a real disabled control gets.
 <Collapsible class="w-72 space-y-2" disabled>
   <@trigger|triggerProps|>
     <button
       ...triggerProps
+      aria-disabled="true"
       class="flex w-full items-center justify-between text-sm font-semibold data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50"
     >
       This trigger is disabled

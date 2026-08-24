@@ -1,3 +1,14 @@
 import Calendar from "@marko-ui/shadcn/ui/calendar/calendar.marko";
+import { CalendarDate } from "@internationalized/date";
 
-<Calendar captionLayout="dropdown"/>
+// `defaultFocusedValue` pins the initially-visible month/day. Without it the
+// Zag date-picker machine falls back to the browser's wall-clock "today"
+// (see @zag-js/date-picker's `getTodayDate` default), which makes this
+// hero demo's SSR markup diverge from its hydrated markup near midnight or
+// across timezones — this demo is the one rendered first on
+// /docs/components/calendar, the exact page the hydration-invariant suite
+// scans, so a wall-clock "today" here is a flaky test, not just cosmetic
+// drift. A fixed date keeps the demo deterministic.
+static const focusedValue = new CalendarDate(2026, 8, 15);
+
+<Calendar captionLayout="dropdown" defaultFocusedValue=focusedValue/>

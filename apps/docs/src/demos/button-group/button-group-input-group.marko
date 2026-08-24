@@ -9,9 +9,14 @@ import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
 
 <let/voiceEnabled=false/>
 
+// Both icon-only buttons below need `aria-label`: neither renders text
+// content, and (for the Tooltip-wrapped one) @zag-js/tooltip's
+// getTriggerProps() only sets `aria-describedby` while the tooltip is
+// actually open, so there's no accessible name in the default state
+// either (axe: button-name).
 <ButtonGroup class="[--radius:9999rem]">
   <ButtonGroup>
-    <Button variant="outline" size="icon">
+    <Button variant="outline" size="icon" aria-label="Add">
       <Icon name="PlusIcon"/>
     </Button>
   </ButtonGroup>
@@ -31,6 +36,7 @@ import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
               data-active=String(voiceEnabled)
               class="data-[active=true]:bg-orange-100 data-[active=true]:text-orange-700 dark:data-[active=true]:bg-orange-800 dark:data-[active=true]:text-orange-100"
               aria-pressed=voiceEnabled
+              aria-label="Voice Mode"
             >
               <Icon name="AudioLinesIcon"/>
             </InputGroupButton>

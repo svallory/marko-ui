@@ -165,10 +165,10 @@
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.54 0 0); /* darkened from shadcn 0.556 to clear WCAG AA 4.5:1 on --muted */
+  --muted-foreground: oklch(0.535 0 0); /* darkened from shadcn 0.556 (previously 0.54) to also clear 4.5:1 on the switch-choice-card's tinted card bg, which measured 4.48:1 at 0.54 */
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.558 0.238 27.325); /* darkened from shadcn 0.577 to clear 4.5:1 vs --destructive-foreground */
+  --destructive: oklch(0.47 0.238 27.325); /* darkened from shadcn 0.577 (previously 0.558) — the soft/tint destructive variants (button, badge, bubble, attachment: text-destructive[/80] on a light destructive-tinted bg) render this color as TEXT directly, not just as a solid-fill button background; 0.558 cleared 4.5:1 for the solid pairing but only reached ~4.3:1 for the tint pairing, so it's darkened further to clear both */
   --destructive-foreground: oklch(0.97 0.01 17);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);

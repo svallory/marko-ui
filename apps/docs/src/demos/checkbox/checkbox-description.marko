@@ -7,8 +7,13 @@ import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
 // See field/field-checkbox.marko: Checkbox owns its root <label>, so the
 // label text lives inside a <FieldLabel for> that targets the checkbox's
 // id rather than wrapping it, avoiding nested <label> elements.
+//
+// `ids={{ hiddenInput: "..." }}`: our Checkbox is Zag-backed, so its
+// native `id` input becomes a machine *scope* — the rendered hidden
+// <input> gets a derived id, not the literal string passed in. This pins
+// the literal DOM id so `FieldLabel for=` actually resolves (axe: label).
 <Field class="mx-auto w-72" orientation="horizontal">
-  <Checkbox id="checkbox-description-terms" defaultChecked/>
+  <Checkbox id="checkbox-description-terms" ids={ hiddenInput: "checkbox-description-terms" } defaultChecked/>
   <FieldContent>
     <FieldLabel for="checkbox-description-terms">Accept terms and conditions</FieldLabel>
     <FieldDescription>By clicking this checkbox, you agree to the terms and conditions.</FieldDescription>

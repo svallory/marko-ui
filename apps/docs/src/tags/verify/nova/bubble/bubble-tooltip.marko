@@ -13,9 +13,16 @@ import Tooltip from "@marko-ui/shadcn/ui/tooltip/tooltip.marko";
   <Bubble align="end">
     <BubbleContent>Yes, removed it from the registry.</BubbleContent>
     <BubbleReactions>
+      // `aria-label` is required on the trigger itself: @zag-js/tooltip's
+      // getTriggerProps() only sets `aria-describedby` while the tooltip is
+      // actually OPEN (it's `void 0` when closed, by design — the content
+      // shouldn't be announced until shown), so an icon-only button has no
+      // accessible name at all in its default/closed state (axe: button-name).
+      // `aria-describedby` also wouldn't be sufficient by itself even when
+      // present — it supplements an accessible name, it doesn't provide one.
       <Tooltip content="Read on Jan 5, 2026 at 4:32 PM">
         <@trigger|triggerProps|>
-          <Button ...triggerProps variant="ghost" size="icon-xs">
+          <Button ...triggerProps variant="ghost" size="icon-xs" aria-label="Read on Jan 5, 2026 at 4:32 PM">
             <Icon name="Check"/>
           </Button>
         </@trigger>

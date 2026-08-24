@@ -5,22 +5,26 @@
 // with Arabic copy, matching the source's default locale ("ar"). Field's
 // layout is Tailwind logical properties, so it already restyles correctly.
 // See field/field-checkbox.marko: Checkbox owns its root <label>, so plain
-// text/FieldLabel-for/FieldTitle each attach without a second wrapping
-// <label>.
+// text/FieldLabel-for each attach without a second wrapping <label>.
+//
+// `ids={{ hiddenInput: "..." }}` on the last two: our Checkbox is
+// Zag-backed, so its native `id` input becomes a machine *scope* — the
+// rendered hidden <input> gets a derived id, not the literal string
+// passed in. This pins the literal DOM id so an external `FieldLabel for=`
+// actually resolves (axe: label).
 import Checkbox from "@marko-ui/shadcn/ui/checkbox/checkbox.marko";
 import Field from "@marko-ui/shadcn/ui/field/field.marko";
 import FieldContent from "@marko-ui/shadcn/ui/field/field-content.marko";
 import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
 import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
 import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
-import FieldTitle from "@marko-ui/shadcn/ui/field/field-title.marko";
 
 <FieldGroup class="max-w-sm" dir="rtl">
   <Field orientation="horizontal">
     <Checkbox id="checkbox-rtl-terms">قبول الشروط والأحكام</Checkbox>
   </Field>
   <Field orientation="horizontal">
-    <Checkbox id="checkbox-rtl-terms-2" defaultChecked/>
+    <Checkbox id="checkbox-rtl-terms-2" ids={ hiddenInput: "checkbox-rtl-terms-2" } defaultChecked/>
     <FieldContent>
       <FieldLabel for="checkbox-rtl-terms-2">قبول الشروط والأحكام</FieldLabel>
       <FieldDescription>بالنقر على هذا المربع، فإنك توافق على الشروط.</FieldDescription>
@@ -30,9 +34,9 @@ import FieldTitle from "@marko-ui/shadcn/ui/field/field-title.marko";
     <Checkbox id="checkbox-rtl-toggle" disabled>تفعيل الإشعارات</Checkbox>
   </Field>
   <Field orientation="horizontal">
-    <Checkbox id="checkbox-rtl-toggle-2"/>
+    <Checkbox id="checkbox-rtl-toggle-2" ids={ hiddenInput: "checkbox-rtl-toggle-2" }/>
     <FieldContent>
-      <FieldTitle>تفعيل الإشعارات</FieldTitle>
+      <FieldLabel for="checkbox-rtl-toggle-2" class="mu-field-title">تفعيل الإشعارات</FieldLabel>
       <FieldDescription>يمكنك تفعيل أو إلغاء تفعيل الإشعارات في أي وقت.</FieldDescription>
     </FieldContent>
   </Field>

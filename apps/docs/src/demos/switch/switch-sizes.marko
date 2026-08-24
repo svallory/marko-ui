@@ -3,14 +3,18 @@ import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
 import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
 import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
 
+// `ids={{ hiddenInput: "..." }}`: our Switch is Zag-backed, so its native
+// `id` input becomes a machine scope -- the rendered hidden <input> gets
+// a derived id, not the literal string passed in. This pins the literal
+// DOM id so `FieldLabel for=` actually resolves (axe: label).
 <div class="w-full max-w-40">
   <FieldGroup>
     <Field orientation="horizontal">
-      <Switch id="switch-size-sm" size="sm"/>
+      <Switch id="switch-size-sm" ids={ hiddenInput: "switch-size-sm" } size="sm"/>
       <FieldLabel for="switch-size-sm">Small</FieldLabel>
     </Field>
     <Field orientation="horizontal">
-      <Switch id="switch-size-default" size="default"/>
+      <Switch id="switch-size-default" ids={ hiddenInput: "switch-size-default" } size="default"/>
       <FieldLabel for="switch-size-default">Default</FieldLabel>
     </Field>
   </FieldGroup>

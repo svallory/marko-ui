@@ -77,19 +77,21 @@ section
           path
 ---
 section
-  div data-slot="combobox"
-    span data-slot="combobox-value"
-    div data-slot="combobox-control" data-state="closed"
-      div data-slot="combobox-chips"
-        span data-slot="combobox-chip"
-          button data-slot="combobox-chip-remove"
-            svg
-              path
-              path
-        input data-slot="combobox-chip-input" role="combobox" data-state="closed" aria-autocomplete="list" aria-controls="<id>" aria-expanded="false"
-      button data-slot="combobox-trigger" data-state="closed" aria-haspopup="listbox" aria-label="Toggle suggestions" aria-expanded="false"
-        svg
-          path
+  div
+    label data-slot="field-label"
+    div data-slot="combobox"
+      span data-slot="combobox-value"
+      div data-slot="combobox-control" data-state="closed"
+        div data-slot="combobox-chips"
+          span data-slot="combobox-chip"
+            button data-slot="combobox-chip-remove" aria-label="Remove Next.js"
+              svg
+                path
+                path
+          input data-slot="combobox-chip-input" role="combobox" data-state="closed" aria-autocomplete="list" aria-controls="<id>" aria-expanded="false"
+        button data-slot="combobox-trigger" data-state="closed" aria-haspopup="listbox" aria-label="Toggle suggestions" aria-expanded="false"
+          svg
+            path
 ---
 section
   div data-slot="field" role="group"
@@ -99,7 +101,7 @@ section
       div data-slot="combobox-control" data-state="closed"
         div data-slot="combobox-chips"
           span data-slot="combobox-chip"
-            button data-slot="combobox-chip-remove"
+            button data-slot="combobox-chip-remove" aria-label="Remove التكنولوجيا"
               svg
                 path
                 path

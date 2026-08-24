@@ -51,7 +51,7 @@ section
         span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
           span data-slot="checkbox-indicator" data-state="unchecked"
       div data-slot="field-content"
-        div data-slot="field-label"
+        label data-slot="field-label"
         p data-slot="field-description"
 ---
 section
@@ -155,7 +155,7 @@ section
         span data-slot="checkbox" data-state="unchecked" aria-hidden="true"
           span data-slot="checkbox-indicator" data-state="unchecked"
       div data-slot="field-content"
-        div data-slot="field-label"
+        label data-slot="field-label"
         p data-slot="field-description"
 ---
 section

@@ -5,17 +5,26 @@ import FieldContent from "@marko-ui/shadcn/ui/field/field-content.marko";
 import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
 import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
 import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
-import FieldTitle from "@marko-ui/shadcn/ui/field/field-title.marko";
 
 // See field/field-checkbox.marko: Checkbox owns its root <label>, so plain
-// text/FieldLabel-for/FieldTitle each attach without a second wrapping
-// <label>, matching upstream's four Checkbox+Field pairings.
+// text/FieldLabel-for each attach without a second wrapping <label>,
+// matching upstream's four Checkbox+Field pairings.
+//
+// `ids={{ hiddenInput: "..." }}` on the last two: our Checkbox is
+// Zag-backed, so its native `id` input becomes a machine *scope* — the
+// rendered hidden <input> gets a derived id like
+// "checkbox:checkbox-demo-terms-2:input", not the literal string passed
+// in. Upstream's Radix Checkbox has no such scoping, so its demo can point
+// `htmlFor="terms-2"` straight at `id="terms-2"`. Zag's `ids.hiddenInput`
+// is the escape hatch that pins the literal DOM id so an external
+// `FieldLabel for=` actually resolves — without it the label and control
+// were unassociated (axe: label).
 <FieldGroup class="max-w-sm">
   <Field orientation="horizontal">
     <Checkbox id="checkbox-demo-terms">Accept terms and conditions</Checkbox>
   </Field>
   <Field orientation="horizontal">
-    <Checkbox id="checkbox-demo-terms-2" defaultChecked/>
+    <Checkbox id="checkbox-demo-terms-2" ids={ hiddenInput: "checkbox-demo-terms-2" } defaultChecked/>
     <FieldContent>
       <FieldLabel for="checkbox-demo-terms-2">Accept terms and conditions</FieldLabel>
       <FieldDescription>By clicking this checkbox, you agree to the terms.</FieldDescription>
@@ -25,9 +34,9 @@ import FieldTitle from "@marko-ui/shadcn/ui/field/field-title.marko";
     <Checkbox id="checkbox-demo-toggle" disabled>Enable notifications</Checkbox>
   </Field>
   <Field orientation="horizontal">
-    <Checkbox id="checkbox-demo-toggle-2"/>
+    <Checkbox id="checkbox-demo-toggle-2" ids={ hiddenInput: "checkbox-demo-toggle-2" }/>
     <FieldContent>
-      <FieldTitle>Enable notifications</FieldTitle>
+      <FieldLabel for="checkbox-demo-toggle-2" class="mu-field-title">Enable notifications</FieldLabel>
       <FieldDescription>You can enable or disable notifications at any time.</FieldDescription>
     </FieldContent>
   </Field>

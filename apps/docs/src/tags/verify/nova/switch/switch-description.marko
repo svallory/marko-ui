@@ -13,6 +13,11 @@ import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
 // and demos/field/field-radio.marko. We use FieldLabel/FieldDescription as
 // standalone text next to the switch, inside a <Field orientation="horizontal">
 // for layout only, and rely on `id`/`for` to pair them for the accessible name.
+//
+// `ids={{ hiddenInput: "..." }}`: our Switch is Zag-backed, so its native
+// `id` input becomes a machine scope -- the rendered hidden <input> gets
+// a derived id, not the literal string passed in. This pins the literal
+// DOM id so `FieldLabel for=` actually resolves (axe: label).
 <div class="w-full max-w-sm">
   <Field orientation="horizontal">
     <FieldContent>
@@ -21,6 +26,6 @@ import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
         Focus is shared across devices, and turns off when you leave the app.
       </FieldDescription>
     </FieldContent>
-    <Switch id="switch-focus-mode"/>
+    <Switch id="switch-focus-mode" ids={ hiddenInput: "switch-focus-mode" }/>
   </Field>
 </div>

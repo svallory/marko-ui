@@ -40,7 +40,7 @@ static const fruits = [
       <FieldLabel for="select-align-item-switch">Align Item</FieldLabel>
       <FieldDescription>Toggle to align the item with the trigger.</FieldDescription>
     </FieldContent>
-    <Switch id="select-align-item-switch" checked:=alignItemWithTrigger/>
+    <Switch id="select-align-item-switch" ids={ hiddenInput: "select-align-item-switch" } checked:=alignItemWithTrigger/>
   </Field>
   <Field>
     <Select

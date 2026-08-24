@@ -938,9 +938,14 @@
   }
 
   /* MARK: Progress */
-  .mu-progress {
-    @apply bg-muted h-1 rounded-md;
-  }
+  /* Root is the flex layout wrapper for the optional label/value row
+   * plus the track below it (progress.marko renders both as
+   * children when `label` is set) -- NOT the visible bar itself.
+   * bg/height/rounded belong on .mu-progress-track (the actual bar),
+   * which already carries the identical values below. Applying them
+   * here too forced the root to the bar's height regardless of
+   * content, clipping the label row and making it an unreachable
+   * scroll container (axe: scrollable-region-focusable). */
 
   .mu-progress-track {
     @apply bg-muted h-1 rounded-md;

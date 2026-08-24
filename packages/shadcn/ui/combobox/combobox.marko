@@ -121,6 +121,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
               data-slot="combobox-chip-remove"
               class="mu-combobox-chip-remove"
               disabled=input.disabled
+              aria-label=`Remove ${item.label}`
               on-click() { api().clearValue(item.value); }
             >
               <Icon name="X" class="mu-combobox-chip-indicator-icon pointer-events-none size-3"/>
