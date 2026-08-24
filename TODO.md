@@ -404,8 +404,12 @@ dropdown-menu submenu, menubar submenu, dropdown-menu <@item> path,
 date-picker Popover+Calendar composition (context-menu submenu latent).
 Full sourcemapped RCA in e2e/verify-matrix.spec.ts KNOWN_BROKEN comment
 (commit 87cc253a). Same class as notes/bug-marko-dynamic-tag-hydration-
-crash.md. → relay to the marko-zag session: fixable in portal impl, or
-minimal-repro upstream to Marko core?
+crash.md. → NOTE (framing corrected 2026-08-23): serializability across the
+boundary is OUR contract under Marko's resumability model — closure-
+wrapping is the correct design, not a workaround. A full boundary audit
+is in progress; only if every crossing value is demonstrably
+serializable and resume still corrupts does this go to marko-zag/Marko
+as a suspected platform issue.
 
 ## marko-zag relay additions (2026-08-23)
 
