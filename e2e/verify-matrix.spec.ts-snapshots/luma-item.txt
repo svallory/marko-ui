@@ -91,14 +91,38 @@ section
       button data-slot="button"
 ---
 section
-  div data-slot="item"
-    div data-slot="item-media"
-      img
-    div data-slot="item-content"
-      div data-slot="item-title"
-      p data-slot="item-description"
-    div data-slot="item-actions"
-      span data-slot="badge"
+  div
+    div data-slot="item-group"
+      a role="listitem"
+        div data-slot="item"
+          div data-slot="item-media"
+            img
+          div data-slot="item-content"
+            div data-slot="item-title"
+              span
+            p data-slot="item-description"
+          div data-slot="item-content"
+            p data-slot="item-description"
+      a role="listitem"
+        div data-slot="item"
+          div data-slot="item-media"
+            img
+          div data-slot="item-content"
+            div data-slot="item-title"
+              span
+            p data-slot="item-description"
+          div data-slot="item-content"
+            p data-slot="item-description"
+      a role="listitem"
+        div data-slot="item"
+          div data-slot="item-media"
+            img
+          div data-slot="item-content"
+            div data-slot="item-title"
+              span
+            p data-slot="item-description"
+          div data-slot="item-content"
+            p data-slot="item-description"
 ---
 section
   a

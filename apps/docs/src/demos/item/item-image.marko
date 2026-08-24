@@ -1,20 +1,55 @@
+// Mirrors shadcn's item-image.tsx: 3-song ItemGroup list with a grayscale
+// avatar-style image per row. Upstream wraps each <Item asChild> in an <a>
+// (Radix Slot merges them into one element); marko-ui has no Slot, so — like
+// this repo's existing item-link.marko pattern — the <a> wraps the Item as a
+// separate parent element instead of merging attrs onto one node.
 import Item from "@marko-ui/shadcn/ui/item/item.marko";
+import ItemGroup from "@marko-ui/shadcn/ui/item/group.marko";
 import ItemMedia from "@marko-ui/shadcn/ui/item/media.marko";
 import ItemContent from "@marko-ui/shadcn/ui/item/content.marko";
 import ItemTitle from "@marko-ui/shadcn/ui/item/title.marko";
 import ItemDescription from "@marko-ui/shadcn/ui/item/description.marko";
-import ItemActions from "@marko-ui/shadcn/ui/item/actions.marko";
-import Badge from "@marko-ui/shadcn/ui/badge/badge.marko";
 
-<Item variant="outline" style="width: 400px;">
-  <ItemMedia variant="image">
-    <img src="https://github.com/shadcn.png" alt="Avatar"/>
-  </ItemMedia>
-  <ItemContent>
-    <ItemTitle>shadcn</ItemTitle>
-    <ItemDescription>Pushed 3 commits to marko-ui/registry</ItemDescription>
-  </ItemContent>
-  <ItemActions>
-    <Badge variant="secondary">2h ago</Badge>
-  </ItemActions>
-</Item>
+static const music = [
+  {
+    title: "Midnight City Lights",
+    artist: "Neon Dreams",
+    album: "Electric Nights",
+    duration: "3:45",
+  },
+  {
+    title: "Coffee Shop Conversations",
+    artist: "The Morning Brew",
+    album: "Urban Stories",
+    duration: "4:05",
+  },
+  {
+    title: "Digital Rain",
+    artist: "Cyber Symphony",
+    album: "Binary Beats",
+    duration: "3:30",
+  },
+];
+
+<div class="flex w-full max-w-md flex-col gap-6">
+  <ItemGroup class="gap-4">
+    <for|song| of=music by=(song) => song.title>
+      <a href="#" style="text-decoration: none; display: block;" role="listitem">
+        <Item variant="outline">
+          <ItemMedia variant="image">
+            <img src=`https://avatar.vercel.sh/${song.title}` alt=song.title width="32" height="32" class="object-cover grayscale"/>
+          </ItemMedia>
+          <ItemContent>
+            <ItemTitle class="line-clamp-1">
+              ${song.title} - <span class="text-muted-foreground">${song.album}</span>
+            </ItemTitle>
+            <ItemDescription>${song.artist}</ItemDescription>
+          </ItemContent>
+          <ItemContent class="flex-none text-center">
+            <ItemDescription>${song.duration}</ItemDescription>
+          </ItemContent>
+        </Item>
+      </a>
+    </for>
+  </ItemGroup>
+</div>
