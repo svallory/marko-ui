@@ -34,7 +34,7 @@ static const music = [
 <div class="flex w-full max-w-md flex-col gap-6">
   <ItemGroup class="gap-4">
     <for|song| of=music by=(song) => song.title>
-      <a href="#" style="text-decoration: none; display: block;" role="listitem">
+      <a href="#" style="text-decoration: none; display: block;">
         <Item variant="outline">
           <ItemMedia variant="image">
             <img src=`https://avatar.vercel.sh/${song.title}` alt=song.title width="32" height="32" class="object-cover grayscale"/>
