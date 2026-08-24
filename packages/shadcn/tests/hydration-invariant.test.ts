@@ -245,35 +245,6 @@ const ALLOWED_DIFFERENCES: Partial<Record<string, AllowedDifference[]>> = {
         "next-trigger's disabled state is derived from pageSnapPoints.length, which is only an arithmetic estimate at SSR and is corrected by client-side measurement on machine start.",
     },
   ],
-  // calendar-hijri.marko (locale="fa-IR" + a non-Gregorian `createCalendar`)
-  // renders a different visible month client-side than server-side.
-  // Root cause, confirmed by direct SSR-vs-hydrated inspection (not
-  // guessed): @internationalized/date's Persian `Calendar` is a class
-  // instance with methods, and a `CalendarDate` built against it embeds
-  // that instance in its own `.calendar` field. Neither a bare
-  // `createCalendar` function reference nor a `CalendarDate`/`toCalendar()`
-  // result built from a non-Gregorian calendar survives Marko's
-  // SSR-to-hydration resume boundary — passing either (by reference, or
-  // freshly recomputed inline, both were tried) leaves the CLIENT machine
-  // silently falling back to its own default (Gregorian calendar,
-  // wall-clock "today" focus) after hydration, while SSR correctly
-  // rendered the pinned Persian date. This reproduces with plain Gregorian
-  // `CalendarDate`s (calendar-demo.marko, date-picker-demo.marko) working
-  // fine — only the custom-`Calendar`-instance case fails — so it is
-  // specifically a "class instance as prop value" resumability gap in
-  // marko-zag/Marko, not a wall-clock or demo bug. Fixing it needs a
-  // resumability fix in marko-zag itself (or component-level
-  // calendar-system-aware serialization in calendar.marko), both out of
-  // scope here; tracked as a known gap rather than papered over.
-  calendar: [
-    {
-      scope: "date-picker",
-      part: "*",
-      attributeName: "*",
-      reason:
-        "calendar-hijri.marko: a CalendarDate built against a non-Gregorian Calendar instance does not survive Marko's SSR-to-hydration resume, so the client re-derives its own default (Gregorian, wall-clock today) instead of the SSR-pinned Persian date — a marko-zag/Marko resumability gap for class-instance prop values, not a markup bug. See date-picker-demo.marko and calendar-demo.marko, which pin a plain Gregorian CalendarDate successfully, proving the divergence is specific to the custom-calendar case.",
-    },
-  ],
 };
 
 /**
@@ -296,25 +267,6 @@ const ALLOWED_ELEMENT_COUNT_CHANGES: Partial<Record<string, AllowedElementCountC
       // accurate one and SSR cannot reach it without layout.
       reason:
         "indicator count derives from measured scroll-snap positions; the SSR arithmetic estimate omits the trailing partial page.",
-    },
-  ],
-  // See ALLOWED_DIFFERENCES.calendar above for the full root-cause writeup:
-  // calendar-hijri's client-side machine falls back to a different
-  // (Gregorian, wall-clock "today") focused month than SSR's pinned
-  // Persian date, which shifts month boundaries and so changes the
-  // padding/day cell count too.
-  calendar: [
-    {
-      scope: "date-picker",
-      part: "table-cell",
-      reason:
-        "calendar-hijri.marko: client-side focused-month fallback (see ALLOWED_DIFFERENCES.calendar) shifts month boundaries, changing how many day cells render.",
-    },
-    {
-      scope: "date-picker",
-      part: "table-cell-trigger",
-      reason:
-        "calendar-hijri.marko: same cause as the table-cell entry above — each cell has a paired trigger.",
     },
   ],
 };

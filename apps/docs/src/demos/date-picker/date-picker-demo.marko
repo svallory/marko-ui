@@ -1,5 +1,4 @@
 import DatePicker from "@marko-ui/shadcn/ui/date-picker/date-picker.marko";
-import { CalendarDate } from "@internationalized/date";
 
 // `defaultFocusedValue` pins the initially-visible month/day. Without it
 // the Zag date-picker machine falls back to the browser's wall-clock
@@ -11,6 +10,13 @@ import { CalendarDate } from "@internationalized/date";
 // keeps the demo deterministic. See also calendar-demo.marko, which hits
 // the identical issue (Calendar is built on the same @zag-js/date-picker
 // machine).
-static const focusedValue = new CalendarDate(2026, 8, 15);
+//
+// Plain ISO date string, not a `CalendarDate` class instance:
+// date-picker.marko's `defaultFocusedValue` input is a serializable
+// primitive that it reconstructs into a real DateValue internally via
+// `parse()` — a live class instance here fails Marko's tag-input
+// serializer ("Unable to serialize ... input ... reading
+// defaultFocusedValue"), the same failure calendar-hijri.marko hit.
+static const focusedValue = "2026-08-15";
 
 <DatePicker defaultFocusedValue=focusedValue/>

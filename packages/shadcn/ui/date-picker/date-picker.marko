@@ -6,13 +6,31 @@ import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
 
-// `value`/`valueChange` use a plain ISO string instead of Zag's DateValue so
-// consumers don't need @internationalized/date.
-export type Input = Omit<MachineInput<"div", datePickerMachine.Props>, "value"> & {
+// `value`/`valueChange`/`focusedValue`/`defaultFocusedValue` use plain ISO
+// date strings instead of Zag's DateValue so consumers don't need
+// @internationalized/date, AND so no live DateValue class instance ever
+// crosses Marko's SSR->hydration resume boundary as a component Input
+// value — a `DateValue`'s own `.calendar` field is a class instance with
+// methods, which Marko's tag-input serializer rejects outright ("Unable to
+// serialize ... input ... reading defaultFocusedValue"). The real DateValue
+// is reconstructed via `parse()` inside machineProps's closure below,
+// independently on server and client, the same way `value` already is —
+// see calendar.marko's `PlainDate`/`toFocusedDateValue()` for the identical
+// pattern (calendar-hijri.marko).
+export type Input = Omit<MachineInput<"div", datePickerMachine.Props>, "value" | "focusedValue" | "defaultFocusedValue"> & {
   /** The selected date as an ISO date string (`YYYY-MM-DD`). */
   value?: string;
   /** Function called when the value changes. Receives the new ISO date string, or `undefined` when cleared. */
   valueChange?: (value: string | undefined) => void;
+  /** Controlled visible-month focus, as an ISO date string (`YYYY-MM-DD`). */
+  focusedValue?: string;
+  /**
+   * Initial visible-month focus, as an ISO date string (`YYYY-MM-DD`).
+   * Pins the SSR-rendered month instead of falling back to the browser's
+   * wall-clock "today" (`getTodayDate`), which would otherwise make SSR
+   * and hydrated markup diverge near midnight or across timezones.
+   */
+  defaultFocusedValue?: string;
 };
 
 <machine-props/pickedProps from=input pick=datePickerMachine.props
@@ -23,6 +41,8 @@ export type Input = Omit<MachineInput<"div", datePickerMachine.Props>, "value"> 
 <const/machineProps=() => ({
   ...pickedProps(),
   value: input.value ? [parse(input.value)] : undefined,
+  focusedValue: input.focusedValue ? parse(input.focusedValue) : undefined,
+  defaultFocusedValue: input.defaultFocusedValue ? parse(input.defaultFocusedValue) : undefined,
 })/>
 <service/service machine=() => datePickerMachine.machine props=machineProps/>
 <connect/api=(service, normalizeProps) =>
@@ -30,13 +50,14 @@ export type Input = Omit<MachineInput<"div", datePickerMachine.Props>, "value"> 
   service=service
 />
 
-// `value` is deliberately remapped to an ISO date string on this component's
-// public Input, so `input` does not satisfy `splitProps`'s
-// `Partial<DatePickerProps>` constraint. It is a machine-owned key that
-// `splitProps` would strip from the leftover anyway — drop it first and the
-// call type-checks on the keys it actually partitions.
+// `value`/`focusedValue`/`defaultFocusedValue` are deliberately remapped to
+// ISO date strings on this component's public Input, so `input` does not
+// satisfy `splitProps`'s `Partial<DatePickerProps>` constraint. All three
+// are machine-owned keys that `splitProps` would strip from the leftover
+// anyway — drop them first and the call type-checks on the keys it
+// actually partitions.
 <const/splitSource=() => {
-  const { value, ...rest } = input;
+  const { value, focusedValue, defaultFocusedValue, ...rest } = input;
   return rest;
 }/>
 <const/nativeAttrs=() =>
