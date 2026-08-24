@@ -406,3 +406,11 @@ Full sourcemapped RCA in e2e/verify-matrix.spec.ts KNOWN_BROKEN comment
 (commit 87cc253a). Same class as notes/bug-marko-dynamic-tag-hydration-
 crash.md. → relay to the marko-zag session: fixable in portal impl, or
 minimal-repro upstream to Marko core?
+
+## marko-zag relay additions (2026-08-23)
+
+- calendar-hijri: Marko resume cannot carry a `CalendarDate` built against a
+  non-Gregorian `Calendar` class instance across SSR→hydration (focused-month
+  drift; scoped ALLOWED_DIFFERENCES entry documents it in
+  hydration-invariant.test.ts). Second resumability gap to relay to marko-zag
+  alongside the nested-portal corruption above.
