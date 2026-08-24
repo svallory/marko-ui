@@ -34,6 +34,7 @@ import { mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { REPO_ROOT, runCheck } from "./fs-utils.ts"
 import { runCoverageDetector, normalizeName, loadIgnoreList, type CoverageReport } from "./parity/runner/coverage.ts"
+import { runStructureDetector, type StructureReport } from "./parity/runner/structure.ts"
 import { runVisualDetector, type VisualReport } from "./parity/runner/visual.ts"
 import { renderReport } from "./parity/runner/report.ts"
 
@@ -48,6 +49,8 @@ export interface ComponentSummary {
   unclassifiedCount: number
   maxDiffPct: number | null
   ignored: string[]
+  /** True if ANY paired demo for this component has structural differences (see structure.ts) — element/role counts, text content, or nesting depth. Flags regardless of pixel score, since a structural miss (missing icon, missing row) can score near-zero on a diluted or even correctly tight-boxed pixel diff if it happens to be visually subtle. */
+  structuralDrift: boolean
 }
 
 /**
@@ -57,7 +60,11 @@ export interface ComponentSummary {
  * the detectors' full internal shapes, kept for the HTML report and for
  * debugging, but not contractually stable.
  */
-function buildSummary(coverage: CoverageReport, visual: VisualReport | null): ComponentSummary[] {
+function buildSummary(
+  coverage: CoverageReport,
+  structure: StructureReport | null,
+  visual: VisualReport | null
+): ComponentSummary[] {
   const ignoreList = loadIgnoreList()
   return coverage.components.map((component) => {
     const ignoredNames = ignoreList
@@ -68,6 +75,9 @@ function buildSummary(coverage: CoverageReport, visual: VisualReport | null): Co
       .map((result) => result.mismatchRatio)
       .filter((ratio): ratio is number => ratio !== null)
     const maxDiffPct = diffRatios.length === 0 ? null : Math.max(...diffRatios) * 100
+
+    const structureResults = structure?.results.filter((result) => result.component === component.component) ?? []
+    const structuralDrift = structureResults.some((result) => result.flagged)
 
     // Unclassified sections are NEVER drift (a to-map queue, not a defect)
     // — see coverage.ts's classification pipeline and SCHEMA.md.
@@ -81,7 +91,7 @@ function buildSummary(coverage: CoverageReport, visual: VisualReport | null): Co
 
     return {
       component: component.component,
-      status: hasCoverageDrift || hasVisualDrift ? "drift" : "green",
+      status: hasCoverageDrift || structuralDrift || hasVisualDrift ? "drift" : "green",
       pairedDemos: component.ourDemos.filter((name) =>
         component.upstreamDemos.some((upstreamName) => normalizeName(upstreamName) === normalizeName(name))
       ),
@@ -91,6 +101,7 @@ function buildSummary(coverage: CoverageReport, visual: VisualReport | null): Co
       unclassifiedCount: component.unclassifiedCount,
       maxDiffPct,
       ignored: ignoredNames,
+      structuralDrift,
     }
   })
 }
@@ -154,8 +165,22 @@ async function main(): Promise<number> {
     `[check-parity] coverage: ${coverage.components.length} shared components analyzed in ${Date.now() - coverageStart}ms — ${coverage.unclassifiedTotal} unclassified section(s), see parity-report/unclassified.json`
   )
 
+  let structure: StructureReport | null = null
   let visual = null
   if (!options.staticOnly) {
+    // Structure runs BEFORE pixels — cheap (Playwright evaluate + plain
+    // diffing, no odiff round-trip) and catches anything expressible as
+    // element/role counts or text content, so visual only has to catch
+    // what's left: spacing, color, layout shape. See PROTOCOL.md's
+    // "Three-tier detection: coverage -> structure -> pixels".
+    console.log("[check-parity] running structural detector (Playwright, pre-pixel)…")
+    const structureStart = Date.now()
+    structure = await runStructureDetector(options.component ? { component: options.component } : {})
+    const structuralFlags = structure.results.filter((result) => result.flagged).length
+    console.log(
+      `[check-parity] structure: ${structure.results.length} demo comparisons in ${Date.now() - structureStart}ms — ${structuralFlags} flagged`
+    )
+
     console.log("[check-parity] running visual detector (Playwright)…")
     const visualStart = Date.now()
     visual = await runVisualDetector(options.component ? { component: options.component } : {})
@@ -163,13 +188,13 @@ async function main(): Promise<number> {
       `[check-parity] visual: ${visual.results.length} demo comparisons in ${Date.now() - visualStart}ms`
     )
   } else {
-    console.log("[check-parity] --static-only: skipping visual detector")
+    console.log("[check-parity] --static-only: skipping structural + visual detectors")
   }
 
-  const summary = buildSummary(coverage, visual)
+  const summary = buildSummary(coverage, structure, visual)
 
-  writeFileSync(join(outDir, "report.json"), JSON.stringify({ summary, coverage, visual }, null, 2))
-  renderReport(coverage, visual, join(outDir, "index.html"))
+  writeFileSync(join(outDir, "report.json"), JSON.stringify({ summary, coverage, structure, visual }, null, 2))
+  renderReport(coverage, structure, visual, join(outDir, "index.html"))
   console.log(`[check-parity] wrote ${join(outDir, "index.html")} and report.json`)
 
   const drifted = summary.filter((entry) => entry.status === "drift")

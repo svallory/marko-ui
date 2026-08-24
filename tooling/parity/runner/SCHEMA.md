@@ -69,9 +69,10 @@ bun tooling/check-parity.ts [--static-only] [--component <slug>] [--strict]
 
 ```ts
 interface Report {
-  summary: ComponentSummary[] // STABLE — read this for programmatic consumption
-  coverage: CoverageReport    // detector internals — see coverage.ts, not contractually stable
-  visual: VisualReport | null // detector internals — see visual.ts, not contractually stable; null when run with --static-only
+  summary: ComponentSummary[]     // STABLE — read this for programmatic consumption
+  coverage: CoverageReport        // detector internals — see coverage.ts, not contractually stable
+  structure: StructureReport | null // detector internals — see structure.ts, not contractually stable; null when run with --static-only
+  visual: VisualReport | null     // detector internals — see visual.ts, not contractually stable; null when run with --static-only
 }
 ```
 
@@ -98,6 +99,7 @@ interface ComponentSummary {
   unclassifiedCount: number       // count of this component's UNCLASSIFIED sections — NEVER contributes to `status`
   maxDiffPct: number | null       // highest visual mismatch % (0-100) across this component's paired demos; null if visual detector didn't run or found nothing to compare
   ignored: string[]               // names from parity-ignore.json that apply to this component (component-scoped entries + "*" wildcard entries), regardless of kind
+  structuralDrift: boolean        // true if ANY paired demo has a structural difference (structure.ts) — element/role counts, text content, or nesting depth. Flags REGARDLESS of pixel score — see "Three-tier detection" below.
 }
 ```
 
@@ -132,14 +134,50 @@ Field notes:
 - **`status`** is `"drift"` if the component has any non-empty
   `missingDemos`/`extraDemos`/`missingMappedTargets`, OR any of
   `coverage`'s fuller `missingApiProps`/`extraApiProps` (not summarized
-  above but still checked), OR any paired demo's visual mismatch exceeds
-  `visual.threshold` (default 15%, see `VisualReport` below).
+  above but still checked), OR `structuralDrift` is true, OR any paired
+  demo's visual mismatch exceeds `visual.threshold` (default 15%, see
+  `VisualReport` below).
   **Unclassified sections never factor into `status`, in `--strict` or
   not.** In other words: `status` reflects the FULL underlying
-  `coverage`/`visual` data, even though the `summary` row itself only
-  surfaces a subset of fields — don't reverse-engineer `status` from the
-  fields shown in the same row without also checking `coverage`/`visual`
-  if you need to know exactly why a component drifted.
+  `coverage`/`structure`/`visual` data, even though the `summary` row
+  itself only surfaces a subset of fields — don't reverse-engineer
+  `status` from the fields shown in the same row without also checking
+  `coverage`/`structure`/`visual` if you need to know exactly why a
+  component drifted.
+
+## Three-tier detection: coverage → structure → pixels
+
+Three detectors run in this order, cheapest and most-machine-checkable
+first:
+
+1. **Coverage** (`coverage.ts`) — static, presence-only. Reads both
+   harnesses' `parity-facts.json` (no browser, no server). Checks: does a
+   demo NAME exist on both sides, does a mapped SECTION exist. Cannot see
+   inside a demo's actual markup — two demos with the same name can have
+   arbitrarily different content and coverage sees no drift.
+2. **Structure** (`structure.ts`) — dynamic but cheap. One Playwright
+   `page.evaluate()` call per side per paired demo (no odiff round-trip,
+   no image I/O). Checks: element/role counts (buttons, svg icons, list
+   items, inputs, headings, avatars, badges, ...), normalized text
+   content, and a coarse nesting-depth signal. Catches anything a demo's
+   DOM shape can express — a missing icon, a missing list row, drifted
+   copy — cheaply and deterministically (no pixel-diff threshold tuning,
+   no anti-aliasing noise).
+3. **Visual** (`visual.ts`) — pixels, the most expensive and noisiest
+   tier. Screenshots + odiff. This is the detector of **last resort**:
+   **the rule is that anything expressible as structure must be caught by
+   structure, not left for pixels to (maybe, noisily, expensively) catch.**
+   Pixels exist to catch what structure genuinely cannot express — exact
+   spacing, color, alignment, and general layout shape — not to be the
+   sole safety net for a missing icon that a one-line structural count
+   check would have caught for free.
+
+`structuralDrift` in `ComponentSummary` is independent of `maxDiffPct`:
+a demo can be `structuralDrift: true` with a LOW `maxDiffPct` (e.g. a
+missing icon that happens to occupy few pixels, or — before the tight-box
+metric fix — any diff at all, since a viewport-filling wrapper dilutes
+every pixel difference). Always check both; a clean pixel score is not
+proof of a faithful port.
 
 ## `section-map.ts` — the map schema
 

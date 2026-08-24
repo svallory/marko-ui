@@ -7,6 +7,7 @@
 import { writeFileSync } from "node:fs"
 import { join, relative } from "node:path"
 import type { CoverageReport } from "./coverage.ts"
+import type { StructureReport, DemoStructureResult } from "./structure.ts"
 import type { VisualReport } from "./visual.ts"
 
 function escapeHtml(value: string): string {
@@ -80,7 +81,15 @@ function renderCoverageTable(coverage: CoverageReport): string {
     </table>`
 }
 
-function renderVisualGallery(visual: VisualReport, reportDir: string): string {
+function structureKey(component: string, demoName: string): string {
+  return `${component}::${demoName}`
+}
+
+function renderVisualGallery(
+  visual: VisualReport,
+  structureByDemo: Map<string, DemoStructureResult>,
+  reportDir: string
+): string {
   const sorted = [...visual.results]
     .filter((result) => result.mismatchRatio !== null)
     .sort((a, b) => (b.mismatchRatio ?? 0) - (a.mismatchRatio ?? 0))
@@ -91,13 +100,19 @@ function renderVisualGallery(visual: VisualReport, reportDir: string): string {
       const ourSrc = result.ourImagePath ? relative(reportDir, result.ourImagePath) : ""
       const diffSrc = result.diffImagePath ? relative(reportDir, result.diffImagePath) : ""
       const flaggedClass = result.flagged ? "flagged" : ""
+      const structural = structureByDemo.get(structureKey(result.component, result.demoName))
+      const structuralBadge = structural?.flagged
+        ? `<span class="badge structural-flag" title="${escapeHtml(structural.differences.map((d) => d.label).join("; "))}">structural drift (${structural.differences.length})</span>`
+        : '<span class="badge structural-ok">structure clean</span>'
       return `
       <div class="visual-card ${flaggedClass}">
         <div class="visual-card-header">
           <strong>${escapeHtml(result.component)}</strong> / ${escapeHtml(result.demoName)}
+          ${structuralBadge}
           <span class="mismatch ${result.flagged ? "flagged" : ""}">${pct(result.mismatchRatio)} mismatch</span>
           ${result.interacted ? '<span class="badge">interacted (see interactions.json)</span>' : '<span class="badge">resting state</span>'}
         </div>
+        ${structural?.flagged ? `<ul class="structural-diffs">${structural.differences.map((d) => `<li>${escapeHtml(d.label)}</li>`).join("")}</ul>` : ""}
         <div class="visual-card-images">
           <figure><figcaption>Upstream</figcaption>${upstreamSrc ? `<img src="${escapeHtml(upstreamSrc)}" alt="upstream ${escapeHtml(result.demoName)}"/>` : '<span class="muted">no image</span>'}</figure>
           <figure><figcaption>Ours</figcaption>${ourSrc ? `<img src="${escapeHtml(ourSrc)}" alt="ours ${escapeHtml(result.demoName)}"/>` : '<span class="muted">no image</span>'}</figure>
@@ -123,12 +138,50 @@ function renderVisualGallery(visual: VisualReport, reportDir: string): string {
     ${errorList}`
 }
 
+function renderStructureTable(structure: StructureReport): string {
+  const flagged = structure.results.filter((result) => result.flagged)
+  const errored = structure.results.filter((result) => result.error)
+
+  const rows = flagged
+    .map(
+      (result) => `
+      <tr>
+        <td class="component-name">${escapeHtml(result.component)}</td>
+        <td>${escapeHtml(result.demoName)}</td>
+        <td><ul class="missing">${result.differences.map((d) => `<li>${escapeHtml(d.label)}</li>`).join("")}</ul></td>
+      </tr>`
+    )
+    .join("")
+
+  const errorList =
+    errored.length > 0
+      ? `<h3>Errors (${errored.length})</h3><ul>${errored
+          .map((result) => `<li><strong>${escapeHtml(result.component)}/${escapeHtml(result.demoName)}</strong>: ${escapeHtml(result.error ?? "")}</li>`)
+          .join("")}</ul>`
+      : ""
+
+  return `
+    <p>${structure.results.length} paired demo(s) checked · ${flagged.length} flagged with structural drift.</p>
+    <table class="coverage-table">
+      <thead><tr><th>Component</th><th>Demo</th><th>Structural differences</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="3" class="muted">No structural drift detected.</td></tr>'}</tbody>
+    </table>
+    ${errorList}`
+}
+
 export function renderReport(
   coverage: CoverageReport,
+  structure: StructureReport | null,
   visual: VisualReport | null,
   outFile: string
 ): void {
   const reportDir = join(outFile, "..")
+  const structureByDemo = new Map<string, DemoStructureResult>()
+  if (structure) {
+    for (const result of structure.results) {
+      structureByDemo.set(structureKey(result.component, result.demoName), result)
+    }
+  }
 
   const html = `<!doctype html>
 <html lang="en">
@@ -166,6 +219,9 @@ export function renderReport(
   .mismatch { font-weight: 600; }
   .mismatch.flagged { color: var(--flagged); }
   .badge { font-size: 0.75rem; background: var(--border); border-radius: 4px; padding: 0.1rem 0.4rem; }
+  .badge.structural-flag { background: var(--flagged); color: #fff; cursor: help; }
+  .badge.structural-ok { color: var(--muted); }
+  ul.structural-diffs { margin: 0 0 0.75rem; padding-left: 1.1rem; font-size: 0.85rem; color: var(--flagged); }
   .visual-card-images { display: flex; gap: 1rem; flex-wrap: wrap; }
   .visual-card-images figure { margin: 0; flex: 1 1 300px; }
   .visual-card-images figcaption { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.25rem; }
@@ -176,6 +232,7 @@ export function renderReport(
   <h1>marko-ui ↔ shadcn parity report</h1>
   <div class="meta">
     Coverage generated: ${escapeHtml(coverage.generatedAt)}
+    ${structure ? ` · Structure generated: ${escapeHtml(structure.generatedAt)}` : " · Structural detector not run (--static-only)"}
     ${visual ? ` · Visual generated: ${escapeHtml(visual.generatedAt)}` : " · Visual detector not run (--static-only)"}
     · Ignored (parity-ignore.json) entries silenced: ${coverage.ignoredCount}
     · Unclassified sections (non-failing, see <a href="unclassified.json">unclassified.json</a>): ${coverage.unclassifiedTotal}
@@ -197,7 +254,9 @@ export function renderReport(
     </div>
   </div>
 
-  ${visual ? `<h2>Visual drift (worst first)</h2>${renderVisualGallery(visual, reportDir)}` : ""}
+  ${structure ? `<h2>Structural drift (middle tier — runs before pixels)</h2>${renderStructureTable(structure)}` : ""}
+
+  ${visual ? `<h2>Visual drift (worst first)</h2>${renderVisualGallery(visual, structureByDemo, reportDir)}` : ""}
 </body>
 </html>`
 

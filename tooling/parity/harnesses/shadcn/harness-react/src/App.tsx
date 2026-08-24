@@ -68,14 +68,21 @@ export default function App() {
   // cache for other names.
   const Demo = lazy(async () => ({ default: resolveDemoModule(await loader()) }))
 
+  // Fit-content, top-left wrapper — NOT viewport-filling and NOT centered.
+  // See PROTOCOL.md's "Tight content-box screenshot metric": both harnesses
+  // must render this wrapper identically (same display mode, same fixed
+  // padding, no min-height:100vh, no flex-centering) so the screenshot
+  // target is the demo's actual rendered footprint, not a mostly-empty
+  // viewport-sized canvas that dilutes real pixel differences to near
+  // zero. `display: inline-block` makes the wrapper shrink-wrap its
+  // content's width instead of stretching to the parent block's full
+  // width, matching the marko-ui harness's own wrapper (see
+  // tooling/parity/harnesses/marko-ui/src/routes/demo/$name/+page.marko).
   return (
     <div
       data-parity-demo={demoName}
       style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        display: "inline-block",
         padding: 32,
       }}
     >

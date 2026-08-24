@@ -42,9 +42,15 @@ static function resolveDemoId(demoName: string): string | null {
   </div>
 </if>
 <else>
+  // Fit-content, top-left wrapper — see PROTOCOL.md's "Tight content-box
+  // screenshot metric" and the identical comment in the shadcn harness's
+  // App.tsx. Both harnesses must render this wrapper identically (same
+  // display mode, same fixed padding, no min-height:100vh, no
+  // flex-centering) so the screenshot target is the demo's actual
+  // rendered footprint, not a mostly-empty viewport-sized canvas.
   <div
     data-parity-demo=demoName
-    style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px"
+    style="display:inline-block;padding:32px"
   >
     <demo-renderer demoId=demoId/>
   </div>

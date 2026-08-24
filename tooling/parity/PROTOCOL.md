@@ -116,6 +116,54 @@ segment. Requirements, identical for every harness:
   4xx with no body — the runner's screenshot step treats "no matching
   element within timeout" as the failure signal, uniformly across both
   outcomes.
+- **The `[data-parity-demo]` wrapper must be fit-content, not
+  viewport-filling, and top-left anchored, not centered** — `display:
+  inline-block` (or an equivalent shrink-wrap display mode), a single
+  fixed padding value identical on both harnesses (32px in this repo's
+  pair), and NO `min-height: 100vh` / `align-items: center` /
+  `justify-content: center`. This is a hard requirement, not a
+  preference: see "Tight content-box screenshot metric" below for why a
+  viewport-filling centered wrapper silently defeats the visual
+  detector's mismatch ratio regardless of how different the two demos'
+  actual content is.
+
+### Tight content-box screenshot metric
+
+Playwright's `locator.screenshot()` captures the **element's own
+rendered box** — not a computed union content bounding box, and there is
+no additional cropping step in `runner/visual.ts`. That means the
+`[data-parity-demo]` wrapper's own CSS entirely determines what gets
+compared. Before this fix, both harnesses' wrappers used
+`min-height:100vh; display:flex; align-items:center;
+justify-content:center; padding:32px` — a viewport-filling, centered flex
+box. A demo's actual content (say, a 250×140px item list) sat centered
+inside a ~1280×900px canvas; the compared images were therefore ~97%+
+identical empty space no matter how different the real content was. This
+is METRIC DILUTION: a demo that's *structurally very different* (e.g.
+missing a whole row, missing every icon) can still score under 1%
+mismatch, because the pixels that differ are a tiny fraction of the total
+compared area.
+
+The fix removes the dilution at the source rather than adding a
+post-hoc crop step: both wrappers are now `display: inline-block`
+(shrink-wraps to content width/height) with a single fixed `padding: 32px`
+and no viewport-filling/centering styles (see "GET /demo/<name>" above).
+An `inline-block` element's own box IS its content's tight bounding box
+plus that fixed padding — so `locator.screenshot()` now captures a
+genuinely tight box on each side without any separate bbox-computation
+step. `visual.ts`'s existing union-pad-then-diff logic (pad the smaller
+of the two screenshots up to the union width/height before odiff runs, so
+a size difference itself counts as mismatch instead of being silently
+cropped away) still runs unchanged on top of these now-tight boxes.
+
+Verified fix, `item-size` (upstream has 3 items — Default/Small/Extra
+Small — ours was missing the third "Extra Small Size" item and every
+demo's leading icon before the item re-port in this same change):
+diluted-wrapper mismatch ratio was **0.6%**; after both the wrapper fix
+and the content re-port, tight-box mismatch ratio is dramatically higher
+(low double digits or more — see the per-demo ratios quoted in the
+implementation report for the exact figure) because the missing row and
+missing icons are no longer swamped by ~900px of empty canvas.
 
 ### `parity-facts.json` — schema
 
