@@ -49,6 +49,23 @@ export interface Input {
   class?: string;
 }
 
+// Walk-safe replacement for a `<const/{ class: className }=input/>`
+// destructure + `<const/entries=...>` derivation — identical shape/rationale
+// to dropdown-menu.marko's own fix (see that file's header comment for the
+// full walk-order RCA and notes/bug-marko-dynamic-tag-hydration-crash.md).
+// This component can be mounted via dynamic-tag-content the same way
+// dropdown-menu.marko is (a `<for>`-loop-captured `<@item>` composition),
+// which races any `<const>` read at walk time in the `<for>`/`<if>` below
+// against its own deferred signal on a freshly-created scope. `entries`
+// derives purely from `input`, so a module-level `static function` computes
+// it fresh at each use site — no scope-property read to race the walk.
+static function menuEntries(input: Input): ContextMenuItemAttrs[] {
+  const attrItems = [...(input.item ?? [])];
+  return attrItems.length > 0
+    ? attrItems
+    : (input.items ?? []).map((item) => ({ ...item, content: undefined as Marko.Body | undefined }));
+}
+
 <machine-props/machineProps from=input pick=menu.props
   onSelect(details: menu.SelectionDetails) {
     input.select?.(details.value);
@@ -58,19 +75,6 @@ export interface Input {
   menu.connect(service, normalizeProps)
   service=service
 />
-
-<const/{ class: className }=input/>
-
-// Normalize whichever source was supplied into ONE entries list so the
-// render path below never branches. Attr tags win when present (compound is
-// primary per the compound-tag-dx report); `items=` is the fallback. The
-// single `<@item>` tag name preserves true document order by construction,
-// so interleaved item/separator/label entries render exactly as written.
-// `items=` entries never carry a body, so each is mapped into the
-// ContextMenuItemAttrs shape with an explicit undefined `content` — no
-// casts needed (mirrors accordion/toggle-group).
-<const/attrItems=[...(input.item ?? [])]/>
-<const/entries=(attrItems.length > 0 ? attrItems : (input.items ?? []).map((item) => ({ ...item, content: undefined as Marko.Body | undefined })))/>
 
 // Getter handed to each <Submenu> child so it can call `setParent` on this
 // menu's raw service (see submenu.marko for the full wiring rationale).
@@ -87,10 +91,10 @@ export interface Input {
         data-slot="context-menu-content"
         class=cn(
           "mu-context-menu-content mu-menu-target mu-menu-translucent z-50 max-h-(--radix-context-menu-content-available-height) origin-(--radix-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto",
-          className,
+          input.class,
         )
       >
-        <for|entry, index| of=entries>
+        <for|entry, index| of=menuEntries(input)>
           <if=entry.type === "separator">
             <div ...api().getSeparatorProps() data-slot="context-menu-separator" class="mu-context-menu-separator"/>
           </if>

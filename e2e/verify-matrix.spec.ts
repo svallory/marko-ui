@@ -71,20 +71,41 @@ const INTERACTIVE_SELECTOR = "button:not([disabled]), [role=button]:not([aria-di
 // context-menu) and calendar.marko — each verified fixed 3x in production
 // preview with zero console errors.
 //
+// A second variant of the SAME walk-order defect class was found and fixed
+// (2026-08-24) in dropdown-menu.marko, menubar/menu.marko, and
+// context-menu.marko themselves: each had its own top-level
+// `<const/{ class, trigger }=input/>` + `<const/entries=...>` derivation
+// read at walk time by the `<for>`/`<if>` below it — same race as the
+// let-mirror's `api()` case, but racing the component's OWN `entries`
+// const instead of the Zag `api()`. Since `entries` derives purely from
+// `input`, the fix is a module-level `static function menuEntries(input)`
+// called directly at each use site instead of a `<const>` — no
+// scope-property read left to race the walk. Verified (typecheck, full
+// 9-style matrix, 40/40 behavior+hydration tests, manual interaction incl.
+// submenus) with zero console errors. Full account in
+// notes/bug-marko-dynamic-tag-hydration-crash.md.
+//
 // `item` stays broken — its crash ("Cannot read properties of undefined
 // (reading '3')", item-dropdown.marko demo) is a DIFFERENT, unrelated
-// Marko-core defect from the walk-order/`<const>` race the let-mirror
-// fixes: isolated empirically (removing every Zag-connected component from
-// the repro still crashes) to ANY component using plain `<${content}/>`
+// Marko-core defect from BOTH walk-order/`<const>` race variants above:
+// isolated empirically (removing every Zag-connected component from the
+// repro still crashes) to ANY component using plain `<${content}/>`
 // body-forwarding (no Zag, no `<const>`, no `<portal>` involved at all —
 // e.g. `Item`'s own `<div><${content}/></div>`) when nested inside a
 // `<for>`-loop-captured attr-tag body (`<@item>`) that is itself mounted
-// via dynamic-tag-content. The let-mirror pattern has no `<const>` read to
-// bypass here, so it does not apply. Minimal repro: `<for|x| of=list>
+// via dynamic-tag-content. Neither the let-mirror nor the `menuEntries`
+// static-function fix has a `<const>`/`<let>` read to bypass here, so
+// neither applies — reproduced unchanged after both fixes were applied
+// (dropdown-menu.marko has no remaining walk-time const in its own render
+// path). Minimal repro: `<for|x| of=list>
 // <@item><SomeComponentWithContentForwarding><div>${x}</div>
 // </SomeComponentWithContentForwarding></@item></for>` crashes;
 // the same loop with a plain `<div>${x}</div>` (no wrapping
-// content-forwarding component) does not. Fix requires either restructuring
+// content-forwarding component) does not. Independently confirmed via a
+// source-mapped stack trace against a clean production build: the crash
+// maps to `marko@6.3.34/dist/dom-6hBvZW7X.mjs:81:357`, inside Marko's own
+// compiled `_content_closures`/`_dynamic_tag_content` closures-fanout code
+// — not application code. Fix requires either restructuring
 // item-dropdown.marko to avoid nesting a content-forwarding component
 // inside the loop-captured `<@item>` body, or a Marko-core fix — flagged
 // as a separate, still-open item in TODO.md §BLOCKER; not fixed in this

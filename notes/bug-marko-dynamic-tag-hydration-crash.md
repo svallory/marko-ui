@@ -176,7 +176,55 @@ Applied and verified 3x each (zero console errors, full interaction) to:
 §BLOCKER. Upstream issue not yet filed — draft at
 `../../scratch/nested-portal-repro/UPSTREAM-ISSUE-DRAFT.md`.
 
-### A DIFFERENT, unrelated defect this pattern does NOT fix
+### Same defect class, a second variant: a plain data `<const>`, not `api()` (2026-08-24)
+
+The let-mirror pattern above exists because the raced const happened to be
+`api()` (a live Zag connect() result). The SAME walk-order race — a
+`<const>` read at walk time on a scope whose deferred signal hasn't
+computed yet, because the owning component was mounted via
+dynamic-tag-content nested in an ancestor's portal — also hit a
+completely different kind of const in `dropdown-menu.marko`,
+`menubar/menu.marko`, and `context-menu.marko`: their own top-level
+`<const/{ class: className, trigger }=input/>` destructure and
+`<const/entries=...>` derivation (normalizing `input.item`/`input.items`
+into one render-order-preserving list), read by the `<for|entry| of=
+entries>` loop and its `<if=entry.content>` branches.
+
+**Trap worth naming:** the FIRST instinct chasing this crash is to inspect
+the component that's visibly on screen when it throws (here, `Item`,
+`ItemContent`, `Avatar` — none of which have a `<const>` at all) and
+declare "no const here, must be a different bug." That was wrong for THIS
+variant, right for the one below it. The const that matters is whichever
+component's OWN scope is being walked at the moment of the crash — trace
+the crash to the OWNING component (the one whose `<for>`/`<if>` selector
+is what's actually executing), not to whichever component's markup
+happens to be visually nearest the error, and not to whichever
+Zag-connected component is closest in the call stack. Co-located consts in
+sibling/child files can mislead: `dropdown-menu.marko`'s own `entries`
+const was the actual defect even though `submenu.marko` (a different file
+in the same directory) had already been fixed for its OWN unrelated
+`api()` race.
+
+Because `entries` derives purely from `input` — no service/api dependency
+at all — the fix is simpler than the `<let>`-mirror: a module-level
+`static function menuEntries(input)` (declared before the
+`<machine-props>`/`<service>`/`<connect>` block, matching
+`calendar.marko`'s `connectFresh`/`toDateValue` static-function placement
+convention) computes the list fresh from `input` at each use site
+(`menuEntries(input)` called directly as the `<for>`'s `of=` expression),
+so there is no scope-property read left to race the walk at all. `input.
+trigger` and `input.class` are read directly too, replacing the
+destructure — same reasoning: a `<const>` over a pure-`input` read buys
+nothing but a walk-order hazard.
+
+Applied and verified (typecheck green; full 9-style verify-matrix green;
+40/40 behavior+hydration tests green; manual interaction incl. opening a
+submenu, zero console errors) to:
+`packages/shadcn/ui/dropdown-menu/dropdown-menu.marko`,
+`packages/shadcn/ui/menubar/menu.marko`,
+`packages/shadcn/ui/context-menu/context-menu.marko`.
+
+### A DIFFERENT, unrelated defect neither fix above resolves
 
 The dropdown-menu `<@item>` attr-tag path (item-dropdown.marko:
 `<for|person| of=PEOPLE><@item>...</@item></for>`) throws a different
@@ -186,8 +234,19 @@ from the repro and finding it still crashes. The minimal reproducer is
 ANY component using plain `<${content}/>` body-forwarding (no Zag, no
 `<const>`, no `<portal>` involved at all) nested inside a `<for>`-loop-
 captured attr-tag body that is itself mounted via dynamic-tag-content.
-There is no `<const>` read here for the let-mirror to bypass — this looks
-like a separate defect in Marko-core's `_content_closures`/
-`_dynamic_tag_content` closures-map wiring across nested dynamic-tag-
-content layers combined with loop-scope capture. Left broken; see TODO.md
-§BLOCKER for the full isolation notes and next steps.
+There is no `<const>` read anywhere in this path — not in `Item`, not in
+`DropdownMenu` (confirmed by re-testing after the `menuEntries` fix above
+removed dropdown-menu.marko's last walk-time const, with the crash
+unchanged) — for a let-mirror or a static function to bypass.
+
+Independently confirmed (2026-08-24) via source-mapped stack trace against
+a clean production build with both fixes applied: the crash's minified
+frame maps to `marko@6.3.34/dist/dom-6hBvZW7X.mjs:81:357`, landing exactly
+on `renderer.g[accessor](scope[childScopeAccessor], renderer.h[accessor])`
+— the child-scope closures-fanout call inside Marko's own compiled DOM
+runtime, not application code. This is Marko-core's `_content_closures`/
+`_dynamic_tag_content` closures-map wiring breaking across nested
+dynamic-tag-content layers combined with loop-scope capture, exactly as
+previously isolated by hand. Left broken; see TODO.md §BLOCKER for the
+full isolation notes and next steps. `item` stays in
+`KNOWN_BROKEN_COMPONENTS` in `e2e/verify-matrix.spec.ts`.

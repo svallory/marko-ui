@@ -428,27 +428,65 @@ KNOWN_BROKEN_COMPONENTS in e2e/verify-matrix.spec.ts now reads
 `["item"]` — dropdown-menu, menubar, date-picker removed, verified
 passing.
 
-**`item` remains broken — separate, unrelated defect, NOT fixed by the
-let-mirror.** item-dropdown.marko's `<DropdownMenu>` with `<for|person|
-of=PEOPLE><@item>...</@item></for>`-captured content throws "Cannot read
-properties of undefined (reading '3')" on open. Isolated empirically
-(2026-08-24): removing every Zag-connected component from the repro
-still crashes — the minimal reproducer is ANY component using plain
+**Second fix, same defect CLASS, different const (2026-08-24):**
+dropdown-menu.marko, menubar/menu.marko, and context-menu.marko each had
+their OWN top-level `<const/{ class: className, trigger }=input/>` +
+`<const/attrItems=[...(input.item ?? [])]/>` + `<const/entries=...>`
+(entries derived from attrItems) read at walk time by the `<for|entry| of
+=entries>` loop and its `<if=entry.content>` branches. When one of these
+three components is itself mounted via dynamic-tag-content, those walk-time
+reads race the same way `<const/api>` did in the let-mirror case above —
+except the raced const here is the component's OWN `entries`/`className`
+derivation, not the Zag `api()`. Since `entries` derives purely from
+`input` (no service/api dependency), the fix is simpler than the
+`<let>`-mirror: a module-level `static function menuEntries(input)`
+computes it fresh from `input` at each use site (`menuEntries(input)`
+called directly in the `<for>`), so there is no scope-property read left to
+race the walk at all — same idea as calendar.marko's `connectFresh`,
+applied to a plain data derivation instead of a live connect() call.
+Fixed and verified (typecheck green, full 9-style verify-matrix green,
+40/40 behavior+hydration tests green, manual interaction incl. submenu
+zero console errors) in:
+- packages/shadcn/ui/dropdown-menu/dropdown-menu.marko
+- packages/shadcn/ui/menubar/menu.marko
+- packages/shadcn/ui/context-menu/context-menu.marko
+
+**`item` remains broken — confirmed separate, unrelated Marko-core
+defect, NOT fixed by either the let-mirror or the `menuEntries` fix
+above.** item-dropdown.marko's `<DropdownMenu>` with `<for|person| of=
+PEOPLE><@item>...</@item></for>`-captured content still throws "Cannot
+read properties of undefined (reading '3')" on open, reproduced fresh
+against a clean production build with BOTH fixes applied (dropdown-menu.
+marko has no remaining walk-time `<const>`/`<let>` read in its own render
+path after the `menuEntries` fix, and the crash is unchanged). Isolated
+empirically (2026-08-24): removing every Zag-connected component from the
+repro still crashes — the minimal reproducer is ANY component using plain
 `<${content}/>` body-forwarding (no Zag, no `<const>`, no `<portal>` at
 all — e.g. `Item`'s own `<div><${content}/></div>`) nested inside a
 `<for>`-loop-captured attr-tag body (`<@item>`) that is itself mounted
-via dynamic-tag-content. There is no `<const>` read for the let-mirror to
-bypass here — this is Marko-core's `_content_closures`/
-`_dynamic_tag_content` closures-map wiring breaking across nested
-dynamic-tag-content layers when combined with loop-scope capture. Needs
-either a Marko-core fix, or restructuring item-dropdown.marko to avoid
-nesting a content-forwarding component inside the loop-captured `<@item>`
-body (not attempted — would change the demo's composition, needs
-sign-off). Full isolation notes in the verify-matrix KNOWN_BROKEN
-comment.
+via dynamic-tag-content. Independently confirmed via source-mapped stack
+trace against the production chunk (`_CIBnu5TE.js:1:2061` in this build,
+hash changes per build): maps to `marko@6.3.34/dist/dom-6hBvZW7X.mjs:81:
+357`, landing exactly on `renderer.g[accessor](scope[childScopeAccessor],
+renderer.h[accessor])` — the child-scope closures-fanout call inside
+Marko's own compiled DOM runtime, not application code. Confirms this is
+Marko-core's `_content_closures`/`_dynamic_tag_content` closures-map
+wiring breaking across nested dynamic-tag-content layers combined with
+loop-scope capture, exactly as previously isolated. There is no
+`<const>`/`<let>` read anywhere in the path for a mirror or static
+function to bypass. Needs either a Marko-core fix, or restructuring
+item-dropdown.marko to avoid nesting a content-forwarding component
+inside the loop-captured `<@item>` body (not attempted — would change the
+demo's composition, needs sign-off, and apps/docs/src/demos/item/* was
+being actively edited by another agent during this pass — read-only).
+KNOWN_BROKEN_COMPONENTS in e2e/verify-matrix.spec.ts stays `["item"]`.
+Full isolation notes in the verify-matrix KNOWN_BROKEN comment and
+notes/bug-marko-dynamic-tag-hydration-crash.md.
 
 Upstream issue for the let-mirror-fixed defect still pending — draft at
 ../../scratch/nested-portal-repro/UPSTREAM-ISSUE-DRAFT.md, not yet filed.
+The `item`/`_content_closures` defect above is a separate, still-unfiled
+upstream candidate.
 
 ## marko-zag relay additions (2026-08-23)
 

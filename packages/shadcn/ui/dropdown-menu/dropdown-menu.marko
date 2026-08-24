@@ -49,6 +49,31 @@ export interface Input {
   class?: string;
 }
 
+// Walk-safe replacement for a `<const/{ class: className, trigger }=input/>`
+// destructure + `<const/entries=...>` derivation. This component itself is
+// mounted via dynamic-tag-content (item-dropdown.marko's
+// `<for|person| of=PEOPLE><@item>...` composition, mounted through marko-zag's
+// portal/dynamic-tag mechanism) so its OWN walk-time reads — the `<for>`
+// selector and `<if=entry.content>` branches below — fire during the
+// client's first mount walk, before ANY `<const>`'s deferred/resume signal
+// on this scope has ever computed a value. Same defect class as the
+// nested-portal `<const/api>` race documented in
+// notes/bug-marko-dynamic-tag-hydration-crash.md, but the raced const here
+// is dropdown-menu.marko's OWN `entries`/`className`/`trigger`, not `api()`
+// — the crash traced to THIS component's slot, not the Zag connect(). Since
+// `entries` derives purely from `input` (no service/api dependency), the
+// fix is simpler than the `<let>`-mirror pattern used for `api()` races: a
+// module-level `static function` computes it fresh from `input` at each use
+// site, so there is no scope-property read to race the walk at all — same
+// idea as calendar.marko's `connectFresh`, applied to a plain data
+// derivation instead of a live connect() call.
+static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
+  const attrItems = [...(input.item ?? [])];
+  return attrItems.length > 0
+    ? attrItems
+    : (input.items ?? []).map((item) => ({ ...item, content: undefined as Marko.Body | undefined }));
+}
+
 <machine-props/machineProps from=input pick=menu.props
   onSelect(details: menu.SelectionDetails) {
     input.select?.(details.value);
@@ -59,21 +84,11 @@ export interface Input {
   service=service
 />
 
-<const/{ class: className, trigger }=input/>
-// Normalize whichever source was supplied into ONE entries list so the
-// render path below never branches. Attr tags win when present (compound is
-// primary per the compound-tag-dx report); `items=` is the fallback.
-// `items=` entries never carry a body, so each is mapped into the
-// DropdownMenuItemAttrs shape with an explicit undefined `content` — no
-// casts needed (mirrors accordion/toggle-group).
-<const/attrItems=[...(input.item ?? [])]/>
-<const/entries=(attrItems.length > 0 ? attrItems : (input.items ?? []).map((item) => ({ ...item, content: undefined as Marko.Body | undefined })))/>
-
 // Getter handed to each <Submenu> child so it can call `setParent` on this
 // menu's raw service (see submenu.marko for the full wiring rationale).
 <const/getOwnService=() => service.service/>
 
-<${trigger}({ ...api().getTriggerProps(), "data-slot": "dropdown-menu-trigger" })/>
+<${input.trigger}({ ...api().getTriggerProps(), "data-slot": "dropdown-menu-trigger" })/>
 <portal>
   <if=api().open>
     <div ...api().getPositionerProps() style=positionerStyle data-slot="dropdown-menu-positioner">
@@ -82,10 +97,10 @@ export interface Input {
         data-slot="dropdown-menu-content"
         class=cn(
           "mu-dropdown-menu-content mu-menu-target mu-menu-translucent z-50 max-h-(--radix-dropdown-menu-content-available-height) w-(--radix-dropdown-menu-trigger-width) origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto data-closed:overflow-hidden",
-          className,
+          input.class,
         )
       >
-        <for|entry, index| of=entries>
+        <for|entry, index| of=menuEntries(input)>
           <if=entry.type === "separator">
             <div ...api().getSeparatorProps() data-slot="dropdown-menu-separator" class="mu-dropdown-menu-separator"/>
           </if>
