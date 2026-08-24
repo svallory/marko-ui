@@ -71,3 +71,16 @@ component-docs page — there is no dynamic-tag alternative that survives
 Marko 6.3.34's hydration path, and the generator keeps the chain
 mechanically in sync with `src/demos/` so the cost doesn't grow with
 hand-maintenance risk.
+
+## Framing correction (2026-08-23)
+
+Serializability of every value that crosses the SSR→hydration boundary is a
+REQUIREMENT of Marko's resumability model — our contract to satisfy, not a
+platform defect when violated. The closure-wrap pattern documented above
+(pass `() => Thing`, resolve inside the resumed closure; serialize only
+primitives) is the CORRECT design under that model, not a "workaround".
+When a crash of this class appears, the default conclusion is "an
+unserializable crossing remains unfound — keep auditing the boundary".
+Only a case where every crossing value is demonstrably serializable and
+resume still corrupts may be treated as a suspected Marko/marko-zag issue,
+with that enumeration as the evidence.

@@ -75,7 +75,7 @@ There are two shipping paths, not one: **copy** (`marko-ui add` copies per-style
 ## Where knowledge lives
 
 - `TODO.md` — decision log and work queue (decisions marked `(decision — made)` are settled; don't relitigate).
-- `notes/` — durable engineering knowledge: `css-architecture.md`, `style-ports.md`, `bug-marko-dynamic-tag-hydration-crash.md` (known Marko 6.3.34 dynamic-tag hydration bug + workaround).
+- `notes/` — durable engineering knowledge: `css-architecture.md`, `style-ports.md`, `bug-marko-dynamic-tag-hydration-crash.md` (SSR→hydration boundary serializability contract: closure-wrap crossings, `() => Thing` — the correct design under resumability, not a workaround; includes the Marko 6.3.34 dynamic-tag crash case).
 - `agent/reports/` — implementation reports (e.g. chart evaluation, compound-tag DX research).
 
 ## Repo Context
