@@ -4,30 +4,46 @@
 // examples/base/drawer-demo.tsx was rewritten after our earlier port was
 // authored; see tooling/parity's drawer-demo visual finding).
 //
-// DEVIATION (documented, not a missing-primitive skip): upstream composes
-// each radio row as <FieldLabel><Field orientation="horizontal"><FieldContent>
-// title+description</FieldContent><RadioGroupItem/></Field></FieldLabel> —
-// RadioGroupItem (the visual radio control) is a sibling placed AFTER
-// FieldContent. Our <RadioGroup> is a monolithic component: each <@item>'s
-// `content` slot fills a <span data-slot=radio-group-item-text> that comes
-// AFTER RadioGroup's own radio-control <span>, with no exposed
-// RadioGroupItem sub-component to place freely. Nesting <Field
-// orientation="horizontal"><FieldContent>...</FieldContent></Field> inside
-// each item's content slot reproduces the title/badge/description layout
-// exactly; only the radio control's position (before vs. after the text
-// content) differs from upstream, a structural consequence of RadioGroup's
-// current API shape, not a content gap.
+// DEVIATION #1 (documented, not a missing-primitive skip): upstream
+// composes each radio row as <FieldLabel><Field orientation="horizontal">
+// <FieldContent>title+description</FieldContent><RadioGroupItem/></Field>
+// </FieldLabel> — RadioGroupItem (the visual radio control) is a sibling
+// placed AFTER FieldContent. Our <RadioGroup> is a monolithic component:
+// each <@item>'s `content` slot fills a <span
+// data-slot=radio-group-item-text> that comes AFTER RadioGroup's own
+// radio-control <span>, with no exposed RadioGroupItem sub-component to
+// place freely. Nesting <Field orientation="horizontal"><FieldContent>
+// ...</FieldContent></Field>-equivalent markup inside each item's content
+// slot reproduces the title/badge/description layout exactly; only the
+// radio control's position (before vs. after the text content) differs
+// from upstream, a structural consequence of RadioGroup's current API
+// shape, not a content gap.
+//
+// DEVIATION #2 (Marko-core defect workaround, not a design choice): each
+// radio row's Field/FieldContent/FieldTitle/FieldDescription/Badge markup
+// below is inlined by hand (their own rendered data-slot attributes and
+// classes, copied from each component's source) instead of nesting those
+// components — the SAME content-closures defect documented for
+// item-dropdown.marko (see apps/docs/src/demos/item/item-dropdown.marko's
+// own header and notes/bug-marko-dynamic-tag-hydration-crash.md): any
+// component that unconditionally forwards its `content` input via
+// `<${content}/>` (Field, FieldContent, FieldTitle, FieldDescription,
+// Badge — all of them, here), nested ANYWHERE inside a `<for>`-loop-
+// captured `<@item>` attr-tag body that RadioGroup itself mounts via
+// dynamic-tag-content, throws "Cannot read properties of undefined
+// (reading 'N')" on drawer open — inside Marko's own compiled
+// `_content_closures`/`_dynamic_tag_content` closures-fanout code (source-
+// mapped stack trace confirms `dom-*.mjs`, not application code), and here
+// the RadioGroup itself is ALSO mounted via Drawer's own dynamic-tag
+// `@content`, matching the exact nested-dynamic-tag-content shape the bug
+// note isolates. Markup below is visually and semantically identical to
+// the componentized version.
 //
 // Upstream's `useIsMobile` hook has no equivalent in this codebase; ported
 // with the same matchMedia + lifecycle pattern drawer-dialog.marko already
 // uses for its own desktop/mobile split.
 import Drawer from "@marko-ui/shadcn/ui/drawer/drawer.marko";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
-import Badge from "@marko-ui/shadcn/ui/badge/badge.marko";
-import Field from "@marko-ui/shadcn/ui/field/field.marko";
-import FieldContent from "@marko-ui/shadcn/ui/field/field-content.marko";
-import FieldTitle from "@marko-ui/shadcn/ui/field/field-title.marko";
-import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
 import RadioGroup from "@marko-ui/shadcn/ui/radio-group/radio-group.marko";
 import Toaster from "@marko-ui/shadcn/ui/toast/toast.marko";
 import { toast } from "@marko-ui/shadcn/ui/toast/store.ts";
@@ -103,17 +119,17 @@ static const deliveryTimes = [
       <RadioGroup value:=deliveryTime class="gap-2">
         <for|time| of=deliveryTimes>
           <@item value=time.value>
-            <Field orientation="horizontal">
-              <FieldContent>
-                <FieldTitle class="flex items-center gap-2">
+            <div role="group" data-slot="field" data-orientation="horizontal" class="mu-field group/field flex w-full mu-field-orientation-horizontal flex-row items-center has-[>[data-slot=field-content]]:items-start *:data-[slot=field-label]:flex-auto has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px">
+              <div data-slot="field-content" class="mu-field-content group/field-content flex flex-1 flex-col leading-snug">
+                <div data-slot="field-label" class="mu-field-title flex w-fit items-center gap-2">
                   ${time.label}
                   <if=time.badge>
-                    <Badge variant="secondary">${time.badge}</Badge>
+                    <span data-slot="badge" data-variant="secondary" class="mu-badge group/badge inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none mu-badge-variant-secondary">${time.badge}</span>
                   </if>
-                </FieldTitle>
-                <FieldDescription>${time.description}</FieldDescription>
-              </FieldContent>
-            </Field>
+                </div>
+                <p data-slot="field-description" class="mu-field-description leading-normal font-normal group-has-[[data-orientation=horizontal]]/field:text-balance last:mt-0 nth-last-2:-mt-1 [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary">${time.description}</p>
+              </div>
+            </div>
           </@item>
         </for>
       </RadioGroup>
