@@ -109,7 +109,8 @@ Child passes data back into the parent's content block.
 /* parent */       <child|{ number }|>${number}</child>
 /* args form */    <${input.content}(1, 2, 3)/>  →  <my-tag|a, b, c|>  or  <my-tag|...all|>
 ```
-- Attributes OR arguments, not both: `<x a=1/>` ≡ `<x({ a: 1 })/>`.
+- Attributes OR arguments, not both — the compiler enforces it: `Tag does not support arguments when attributes or body present.` Same channel, two spellings: attributes are collected into ONE object passed as the FIRST param — `<x a=1 b=2/>` ≡ `<x({ a: 1, b: 2 })/>` → `|obj|` receives `{ a: 1, b: 2 }`.
+- Params not supplied by the child's call are simply `undefined` — params never leak between nesting levels (each body's params come only from its own invoker's call).
 - Params scoped to the content body only.
 - Type: `content: Marko.Body<[number, number]>`.
 
