@@ -59,6 +59,7 @@ Component *architecture* for this repo (Zag wiring, attr-tag APIs): `skills/port
 - Line break between two inline tags = **no space**. Put the space on the same line.
 - `<if>`/`<else if=…>`/`<else>` are direct siblings. Docs write `<else if=cond>`; `<else-if=cond>` also compiles on 6.3.34 (verified).
 - `<${input.content}/>` forwards content; native tags also accept `content=input.content` or just `<div ...input/>`. Literal body (even a comment) overrides `content=`.
+- A component's `content` attr must be the **entirety** of its default body — Marko sets `input.content` from a tag's non-attr-tag children automatically. Callers never write `<@content>` for it; the body goes in directly (params too: `<Tag|params|>body</Tag>`, not `<@content|params|>`). If a component needs two-or-more peer body-shaped slots, name them (e.g. `main`), never `content` — `content` implies "the rest of the body" and a second same-shaped slot breaks that.
 - Repeated `<@item>` → `input.item` is first + iterable: `<for|it| of=input.item>` or `[...input.item || []]`. Type `Marko.AttrTag<{...}>`.
 - Tag params: `<child|{ n }|>`; args form `<${input.content}(1,2)/>` → `|a, b|`. Attrs or args, not both. Attr tags can't read params.
 - Closing tag name optional (`</>`); dynamic tags close with `</>`.

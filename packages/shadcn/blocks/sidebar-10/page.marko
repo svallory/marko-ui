@@ -11,7 +11,7 @@ import NavActions from "./nav-actions.marko";
   <@sidebar|{ open }|>
     <AppSidebar open=open/>
   </@sidebar>
-  <@content|{ open, toggle }|>
+  <@main|{ open, toggle }|>
     <div class="flex min-w-0 flex-1 flex-col">
       <header class="flex h-14 shrink-0 items-center gap-2">
         <div class="flex flex-1 items-center gap-2 px-3">
@@ -32,5 +32,5 @@ import NavActions from "./nav-actions.marko";
         <div class="mx-auto h-full w-full max-w-3xl rounded-xl bg-muted/50"></div>
       </div>
     </div>
-  </@content>
+  </@main>
 </SidebarProvider>

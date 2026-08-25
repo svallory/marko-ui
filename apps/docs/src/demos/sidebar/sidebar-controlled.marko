@@ -22,27 +22,25 @@ import SidebarTrigger from "@marko-ui/shadcn/ui/sidebar/trigger.marko";
   >
     <@sidebar|{ open }|>
       <Sidebar open=open>
-        <@content>
-          <SidebarHeader>
-            <div class="px-2 text-sm font-semibold">Controlled</div>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel>Menu</SidebarGroupLabel>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton href="#" active>Home</SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton href="#">Profile</SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-          </SidebarContent>
-        </@content>
+        <SidebarHeader>
+          <div class="px-2 text-sm font-semibold">Controlled</div>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Menu</SidebarGroupLabel>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton href="#" active>Home</SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton href="#">Profile</SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        </SidebarContent>
       </Sidebar>
     </@sidebar>
-    <@content|{ open, toggle }|>
+    <@main|{ open, toggle }|>
       <div class="flex min-w-0 flex-1 flex-col">
         <header class="flex h-12 items-center gap-2 border-b px-3">
           <SidebarTrigger open=open toggle=toggle/>
@@ -51,7 +49,7 @@ import SidebarTrigger from "@marko-ui/shadcn/ui/sidebar/trigger.marko";
           This sidebar's open state is owned by the demo page.
         </main>
       </div>
-    </@content>
+    </@main>
   </SidebarProvider>
 </div>
 

@@ -14,14 +14,14 @@ import SidebarRight from "./sidebar-right.marko";
 //
 // The right sidebar is `collapsible="none"` in the source (always
 // visible on desktop, independent of the provider's open/toggle state),
-// so it is rendered as a sibling inside `@content` rather than through
+// so it is rendered as a sibling inside `@main` rather than through
 // the provider's single `@sidebar` slot, which only supports one panel.
 
 <SidebarProvider width="16rem">
   <@sidebar|{ open }|>
     <SidebarLeft open=open/>
   </@sidebar>
-  <@content|{ open, toggle }|>
+  <@main|{ open, toggle }|>
     <div class="flex min-w-0 flex-1">
       <div class="flex min-w-0 flex-1 flex-col">
         <header class="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
@@ -42,5 +42,5 @@ import SidebarRight from "./sidebar-right.marko";
       </div>
       <SidebarRight/>
     </div>
-  </@content>
+  </@main>
 </SidebarProvider>

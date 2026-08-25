@@ -30,7 +30,7 @@ import DocumentsTable from "./documents-table.marko";
     <@sidebar|{ open }|>
       <AppSidebar open=open/>
     </@sidebar>
-    <@content|{ open, toggle }|>
+    <@main|{ open, toggle }|>
       <div data-slot="sidebar-inset" class="relative flex w-full flex-1 flex-col bg-background md:m-2 md:ml-0 md:rounded-xl md:shadow-sm">
         <SiteHeader open=open toggle=toggle/>
         <div class="flex flex-1 flex-col">
@@ -45,6 +45,6 @@ import DocumentsTable from "./documents-table.marko";
           </div>
         </div>
       </div>
-    </@content>
+    </@main>
   </SidebarProvider>
 </div>

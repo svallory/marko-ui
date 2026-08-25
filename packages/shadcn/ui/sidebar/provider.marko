@@ -1,6 +1,6 @@
 import { cn } from "#lib/utils.ts";
 
-export interface Input extends Omit<Marko.Input<"div">, "content"> {
+export interface Input extends Marko.Input<"div"> {
   /** Controlled open state. Uncontrolled default: true. */
   open?: boolean;
   openChange?: (open: boolean) => void;
@@ -11,7 +11,7 @@ export interface Input extends Omit<Marko.Input<"div">, "content"> {
   /** Sidebar panel content (header/content/footer parts). */
   sidebar?: Marko.Body<[{ open: boolean; toggle: () => void }]>;
   /** Main content area, rendered next to the sidebar. */
-  content?: Marko.Body<[{ open: boolean; toggle: () => void }]>;
+  main?: Marko.Body<[{ open: boolean; toggle: () => void }]>;
 }
 
 <let/open=input.open ?? true/>
@@ -25,7 +25,7 @@ export interface Input extends Omit<Marko.Input<"div">, "content"> {
   widthIcon,
   sidebar,
   class: className,
-  content,
+  main,
   ...rest
 }=input/>
 
@@ -46,7 +46,7 @@ export interface Input extends Omit<Marko.Input<"div">, "content"> {
   <if=sidebar>
     <${sidebar}({ open, toggle })/>
   </if>
-  <if=content>
-    <${content}({ open, toggle })/>
+  <if=main>
+    <${main}({ open, toggle })/>
   </if>
 </div>

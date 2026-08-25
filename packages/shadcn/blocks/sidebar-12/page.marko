@@ -12,7 +12,7 @@ static const PLACEHOLDER_TILES = Array.from({ length: 20 });
   <@sidebar|{ open, toggle }|>
     <AppSidebar open=open toggle=toggle/>
   </@sidebar>
-  <@content|{ open, toggle }|>
+  <@main|{ open, toggle }|>
     <div class="flex min-w-0 flex-1 flex-col">
       <header class="sticky top-0 flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
         <SidebarTrigger open=open toggle=toggle class="-ml-1"/>
@@ -31,5 +31,5 @@ static const PLACEHOLDER_TILES = Array.from({ length: 20 });
         </div>
       </div>
     </div>
-  </@content>
+  </@main>
 </SidebarProvider>

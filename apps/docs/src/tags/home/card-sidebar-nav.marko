@@ -152,7 +152,7 @@ static const SECTIONS = [
   <for|section| of=SECTIONS by=(section) => section.label>
     <Card class=`w-full min-w-0 overflow-hidden rounded-3xl py-0 ${section.gridClass}`>
       <SidebarProvider class="min-h-0">
-        <@content>
+        <@main>
           <Sidebar collapsible="none" class="w-full bg-transparent">
             <SidebarContent class="gap-0 overflow-hidden">
               <SidebarGroup>
@@ -182,7 +182,7 @@ static const SECTIONS = [
               </SidebarGroup>
             </SidebarContent>
           </Sidebar>
-        </@content>
+        </@main>
       </SidebarProvider>
     </Card>
   </for>

@@ -31,31 +31,29 @@ static const NAV_ITEMS = [
   <SidebarProvider width="14rem" class="min-h-0 h-full">
     <@sidebar|{ open, toggle }|>
       <Sidebar open=open>
-        <@content>
-          <SidebarHeader>
-            <div class="flex items-center gap-2 px-2 text-sm font-semibold">شركة أكمي</div>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel>المنصة</SidebarGroupLabel>
-              <SidebarMenu>
-                <for|item| of=NAV_ITEMS>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton href=item.href active=item.active>
-                      ${item.title}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </for>
-              </SidebarMenu>
-            </SidebarGroup>
-          </SidebarContent>
-          <SidebarFooter>
-            <div class="px-2 text-xs text-sidebar-foreground/70">v1.0.0</div>
-          </SidebarFooter>
-        </@content>
+        <SidebarHeader>
+          <div class="flex items-center gap-2 px-2 text-sm font-semibold">شركة أكمي</div>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>المنصة</SidebarGroupLabel>
+            <SidebarMenu>
+              <for|item| of=NAV_ITEMS>
+                <SidebarMenuItem>
+                  <SidebarMenuButton href=item.href active=item.active>
+                    ${item.title}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </for>
+            </SidebarMenu>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <div class="px-2 text-xs text-sidebar-foreground/70">v1.0.0</div>
+        </SidebarFooter>
       </Sidebar>
     </@sidebar>
-    <@content|{ open, toggle }|>
+    <@main|{ open, toggle }|>
       <div class="flex min-w-0 flex-1 flex-col">
         <header class="flex h-12 items-center gap-2 border-b px-3">
           <SidebarTrigger open=open toggle=toggle/>
@@ -67,6 +65,6 @@ static const NAV_ITEMS = [
           منطقة المحتوى الرئيسية. انقر على الزر لطي الشريط الجانبي.
         </main>
       </div>
-    </@content>
+    </@main>
   </SidebarProvider>
 </div>

@@ -18,7 +18,7 @@ import AppSidebar from "./app-sidebar.marko";
   <@sidebar|{ open }|>
     <AppSidebar open=open/>
   </@sidebar>
-  <@content|{ open, toggle }|>
+  <@main|{ open, toggle }|>
     <div class="relative flex min-w-0 flex-1 flex-col bg-background md:m-2 md:ml-0 md:rounded-xl md:shadow-sm md:peer-data-[state=collapsed]:ml-2">
       <header class="flex h-16 shrink-0 items-center gap-2">
         <div class="flex items-center gap-2 px-4">
@@ -44,5 +44,5 @@ import AppSidebar from "./app-sidebar.marko";
         <div class="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min"></div>
       </div>
     </div>
-  </@content>
+  </@main>
 </SidebarProvider>

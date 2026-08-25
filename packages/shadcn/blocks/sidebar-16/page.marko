@@ -7,7 +7,7 @@ import SiteHeader from "./site-header.marko";
 //     > SiteHeader (full-width bar, sibling BEFORE the sidebar/inset row)
 //     > div.flex.flex-1 > [AppSidebar, SidebarInset]
 // Our SidebarProvider's root div is hardcoded to `flex` (row) and only
-// exposes `@sidebar`/`@content` slots inside that row, so it cannot host a
+// exposes `@sidebar`/`@main` slots inside that row, so it cannot host a
 // full-width sibling above the row. To reproduce the source's visual
 // structure exactly, SiteHeader is rendered as a sibling BEFORE
 // SidebarProvider (not inside it), with the outer wrapper switched to
@@ -18,7 +18,7 @@ import SiteHeader from "./site-header.marko";
 // `top-(--header-height)` offset (see app-sidebar.marko) then docks it
 // visually under the header.
 //
-// `toggle` is only exposed inside the provider's `@sidebar`/`@content`
+// `toggle` is only exposed inside the provider's `@sidebar`/`@main`
 // render-prop scopes, so it is captured into a page-level variable via the
 // `@sidebar` slot and reused by the SiteHeader rendered outside the
 // provider. There is no SidebarInset sub-part, so the inset panel is
@@ -36,7 +36,7 @@ import SiteHeader from "./site-header.marko";
       </script>
       <AppSidebar open=open/>
     </@sidebar>
-    <@content|{ }|>
+    <@main|{ }|>
       <div class="flex min-w-0 flex-1 flex-col">
         <div class="flex flex-1 flex-col gap-4 p-4">
           <div class="grid auto-rows-min gap-4 md:grid-cols-3">
@@ -47,6 +47,6 @@ import SiteHeader from "./site-header.marko";
           <div class="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min"></div>
         </div>
       </div>
-    </@content>
+    </@main>
   </SidebarProvider>
 </div>

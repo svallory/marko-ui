@@ -14,7 +14,7 @@ static const PLACEHOLDER_ROWS = Array.from({ length: 24 });
   <@sidebar|{ open }|>
     <AppSidebar open=open/>
   </@sidebar>
-  <@content|{ open, toggle }|>
+  <@main|{ open, toggle }|>
     <div class="flex min-w-0 flex-1 flex-col">
       <header class="sticky top-0 flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
         <SidebarTrigger open=open toggle=toggle class="-ml-1"/>
@@ -35,5 +35,5 @@ static const PLACEHOLDER_ROWS = Array.from({ length: 24 });
         </for>
       </div>
     </div>
-  </@content>
+  </@main>
 </SidebarProvider>

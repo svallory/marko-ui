@@ -17,9 +17,9 @@ import Sidebar from "@/components/ui/sidebar/sidebar.marko";`,
   <@sidebar|{ open, toggle }|>
     <Sidebar open=open>...</Sidebar>
   </@sidebar>
-  <@content|{ open, toggle }|>
+  <@main|{ open, toggle }|>
     <SidebarTrigger open=open toggle=toggle/>
-  </@content>
+  </@main>
 </SidebarProvider>`,
   // BLOCKED (parity — missingMappedTargets: "Theming", "Styling"): upstream
   // ("Width", "Theming", "Styling" headings, base/sidebar.mdx) documents the
@@ -80,7 +80,7 @@ import Sidebar from "@/components/ui/sidebar/sidebar.marko";`,
   // ("cmd+b"/"ctrl+b") wired up in SidebarProvider. Documented as a real
   // deviation rather than silently ported as true.
   accessibilityNotes: [
-    "Unlike upstream shadcn/ui, this port does not wire up a `cmd+b` / `ctrl+b` keyboard shortcut to toggle the sidebar — call `toggle()` (from the provider's `@sidebar`/`@content` body arguments) from your own key handler if you need one.",
+    "Unlike upstream shadcn/ui, this port does not wire up a `cmd+b` / `ctrl+b` keyboard shortcut to toggle the sidebar — call `toggle()` (from the provider's `@sidebar`/`@main` body arguments) from your own key handler if you need one.",
     "`SidebarTrigger` renders a real `<button>` with an `sr-only` \"Toggle Sidebar\" label, so it's reachable and named for screen readers without extra props.",
     "`SidebarRail` is `tabindex=\"-1\"` and carries `aria-label=\"Toggle Sidebar\"` — it's a pointer-only resize/toggle affordance, not part of the tab order; keyboard users should use `SidebarTrigger` instead.",
     "Layout mirrors automatically in RTL: `Sidebar`, `SidebarTrigger`, and `SidebarRail` use logical positioning and `rtl:`-variant classes, so no `dir` prop or separate RTL variant is needed.",
