@@ -15,13 +15,11 @@ static const LOGOS = ["Acme", "Globex", "Initech", "Umbrella", "Soylent", "Stark
 >
   Toggle pause
 </button>
-<Marquee
+<Marquee|logo|
   items=LOGOS
   paused=paused
   pausedChange(next) { paused = next; }
   class="w-full max-w-lg mx-auto"
 >
-  <@content|logo|>
-    <span class="px-6 text-lg font-semibold text-muted-foreground">${logo}</span>
-  </@content>
+  <span class="px-6 text-lg font-semibold text-muted-foreground">${logo}</span>
 </Marquee>

@@ -120,45 +120,43 @@ static const PROJECTS: ProjectItem[] = [
 ];
 
 <Sidebar open=input.open class="top-(--header-height) h-[calc(100svh-var(--header-height))]!">
-  <@content>
-    <SidebarHeader>
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton href="#" size="lg">
-            <div
-              class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
+  <SidebarHeader>
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton href="#" size="lg">
+          <div
+            class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="size-4"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="size-4"
-              >
-                <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/>
-                <path d="M12 18h.01"/>
-              </svg>
-            </div>
-            <div class="grid flex-1 text-left text-sm leading-tight">
-              <span class="truncate font-medium">Acme Inc</span>
-              <span class="truncate text-xs">Enterprise</span>
-            </div>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    </SidebarHeader>
-    <SidebarContent>
-      <NavMain items=NAV_MAIN/>
-      <NavProjects projects=PROJECTS/>
-      <NavSecondary items=NAV_SECONDARY class="mt-auto"/>
-    </SidebarContent>
-    <SidebarFooter>
-      <NavUser user=USER/>
-    </SidebarFooter>
-  </@content>
+              <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/>
+              <path d="M12 18h.01"/>
+            </svg>
+          </div>
+          <div class="grid flex-1 text-left text-sm leading-tight">
+            <span class="truncate font-medium">Acme Inc</span>
+            <span class="truncate text-xs">Enterprise</span>
+          </div>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  </SidebarHeader>
+  <SidebarContent>
+    <NavMain items=NAV_MAIN/>
+    <NavProjects projects=PROJECTS/>
+    <NavSecondary items=NAV_SECONDARY class="mt-auto"/>
+  </SidebarContent>
+  <SidebarFooter>
+    <NavUser user=USER/>
+  </SidebarFooter>
 </Sidebar>

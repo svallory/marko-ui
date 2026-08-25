@@ -25,10 +25,8 @@ static const LOGOS = [
     </CardDescription>
   </CardHeader>
   <CardContent>
-    <Marquee items=LOGOS pauseOnInteraction class="w-full">
-      <@content|logo|>
-        <span class="px-6 text-lg font-semibold text-muted-foreground">${logo}</span>
-      </@content>
+    <Marquee|logo| items=LOGOS pauseOnInteraction class="w-full">
+      <span class="px-6 text-lg font-semibold text-muted-foreground">${logo}</span>
     </Marquee>
   </CardContent>
 </Card>

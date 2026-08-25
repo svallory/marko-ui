@@ -219,10 +219,8 @@ static const CROP_SOURCE =
           title="Marquee"
           description="Looping ticker that pauses on hover."
         >
-          <Marquee items=MARQUEE_ITEMS class="w-full">
-            <@content|item|>
-              <Badge variant="secondary" class="mx-1">${item}</Badge>
-            </@content>
+          <Marquee|item| items=MARQUEE_ITEMS class="w-full">
+            <Badge variant="secondary" class="mx-1">${item}</Badge>
           </Marquee>
         </BeyondCard>
       </div>
@@ -301,12 +299,10 @@ static const CROP_SOURCE =
           title="Steps"
           description="A guided, navigable multi-step flow."
         >
-          <Steps items=STEP_ITEMS class="w-full">
-            <@content|index|>
-              <p class="text-muted-foreground text-sm">
-                Step ${index + 1} of ${STEP_ITEMS.length}.
-              </p>
-            </@content>
+          <Steps|index| items=STEP_ITEMS class="w-full">
+            <p class="text-muted-foreground text-sm">
+              Step ${index + 1} of ${STEP_ITEMS.length}.
+            </p>
             <@completedContent>
               <p class="text-muted-foreground text-sm">All done.</p>
             </@completedContent>

@@ -105,35 +105,33 @@ static function paragraphs(text: string) {
       </CardAction>
     </CardHeader>
     <CardContent class="flex-1 overflow-hidden p-0">
-      <MessageScrollerProvider>
-        <@content|controller|>
-          <MessageScroller controller=controller>
-            <MessageScrollerViewport controller=controller>
-              <MessageScrollerContent controller=controller class="p-(--card-spacing)">
-                <for|message| of=TRANSCRIPT by=(message) => message.id>
-                  <MessageScrollerItem
-                    controller=controller
-                    messageId=message.id
-                    scrollAnchor=(message.role === "user")
-                  >
-                    <Message align=(message.role === "user" ? "end" : "start")>
-                      <MessageContent>
-                        <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
-                          <BubbleContent class="space-y-2">
-                            <for|paragraph, index| of=paragraphs(message.text)>
-                              <p class="whitespace-pre-wrap">${paragraph}</p>
-                            </for>
-                          </BubbleContent>
-                        </Bubble>
-                      </MessageContent>
-                    </Message>
-                  </MessageScrollerItem>
-                </for>
-              </MessageScrollerContent>
-            </MessageScrollerViewport>
-            <MessageScrollerButton controller=controller/>
-          </MessageScroller>
-        </@content>
+      <MessageScrollerProvider|controller|>
+        <MessageScroller controller=controller>
+          <MessageScrollerViewport controller=controller>
+            <MessageScrollerContent controller=controller class="p-(--card-spacing)">
+              <for|message| of=TRANSCRIPT by=(message) => message.id>
+                <MessageScrollerItem
+                  controller=controller
+                  messageId=message.id
+                  scrollAnchor=(message.role === "user")
+                >
+                  <Message align=(message.role === "user" ? "end" : "start")>
+                    <MessageContent>
+                      <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
+                        <BubbleContent class="space-y-2">
+                          <for|paragraph, index| of=paragraphs(message.text)>
+                            <p class="whitespace-pre-wrap">${paragraph}</p>
+                          </for>
+                        </BubbleContent>
+                      </Bubble>
+                    </MessageContent>
+                  </Message>
+                </MessageScrollerItem>
+              </for>
+            </MessageScrollerContent>
+          </MessageScrollerViewport>
+          <MessageScrollerButton controller=controller/>
+        </MessageScroller>
       </MessageScrollerProvider>
     </CardContent>
     <CardFooter class="flex-col gap-2">

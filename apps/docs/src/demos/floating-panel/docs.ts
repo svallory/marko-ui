@@ -17,7 +17,7 @@ export const docs: ComponentDocs = {
     <Button ...props>Open panel</Button>
   </@trigger>
   <@title>Layers</@title>
-  <@content>Panel content</@content>
+  Panel content
 </FloatingPanel>`,
   examples: [
     {

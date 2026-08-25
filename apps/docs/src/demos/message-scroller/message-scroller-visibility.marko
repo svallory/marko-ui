@@ -60,70 +60,66 @@ static function trimmed(text: string) {
   controller().scrollToMessage(messageId, { align: "start", behavior: "smooth" });
 }/>
 
-<MessageScrollerProvider scrollMargin=12>
-  <@content|controller|>
-    <lifecycle onMount() { return subscribeVisibility(controller); } onDestroy() { this.unsubscribe?.(); }/>
-    <div class="relative flex flex-col gap-4">
-      <div class="relative mx-auto w-full max-w-sm">
-        <Card class="h-140 w-full gap-0">
-          <CardHeader class="gap-1 border-b">
-            <CardTitle>Transcript Outline</CardTitle>
-            <CardDescription>Track the current anchored turn.</CardDescription>
-          </CardHeader>
-          <CardContent class="flex-1 overflow-hidden p-0">
-            <MessageScroller controller=controller>
-              <MessageScrollerViewport controller=controller>
-                <MessageScrollerContent controller=controller class="p-4">
-                  <for|message| of=MESSAGES by=(message) => message.id>
-                    <MessageScrollerItem controller=controller messageId=message.id scrollAnchor=(message.role === "user")>
-                      <Message align=(message.role === "user" ? "end" : "start")>
-                        <MessageContent>
-                          <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
-                            <BubbleContent class="space-y-2">
-                              <for|paragraph| of=message.text.split(/\n\s*\n/)>
-                                <p class="whitespace-pre-wrap">${paragraph}</p>
-                              </for>
-                            </BubbleContent>
-                          </Bubble>
-                        </MessageContent>
-                      </Message>
-                    </MessageScrollerItem>
-                  </for>
-                </MessageScrollerContent>
-              </MessageScrollerViewport>
-              <MessageScrollerButton controller=controller/>
-            </MessageScroller>
-          </CardContent>
-        </Card>
-        <div class="absolute top-1/2 -right-12 -translate-y-1/2">
-          <HoverCard>
-            <@trigger|props|>
-              <button ...props type="button" aria-label="Open transcript outline" class="flex h-9 w-9 flex-col items-center justify-center gap-1 rounded-md transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
-                <for|message| of=USER_MESSAGES by=(message) => message.id>
-                  <span data-current=String(message.id === currentAnchorId) class="h-0.5 w-4 rounded-full bg-muted-foreground/40 data-[current=true]:bg-foreground"/>
+<MessageScrollerProvider|controller| scrollMargin=12>
+  <lifecycle onMount() { return subscribeVisibility(controller); } onDestroy() { this.unsubscribe?.(); }/>
+  <div class="relative flex flex-col gap-4">
+    <div class="relative mx-auto w-full max-w-sm">
+      <Card class="h-140 w-full gap-0">
+        <CardHeader class="gap-1 border-b">
+          <CardTitle>Transcript Outline</CardTitle>
+          <CardDescription>Track the current anchored turn.</CardDescription>
+        </CardHeader>
+        <CardContent class="flex-1 overflow-hidden p-0">
+          <MessageScroller controller=controller>
+            <MessageScrollerViewport controller=controller>
+              <MessageScrollerContent controller=controller class="p-4">
+                <for|message| of=MESSAGES by=(message) => message.id>
+                  <MessageScrollerItem controller=controller messageId=message.id scrollAnchor=(message.role === "user")>
+                    <Message align=(message.role === "user" ? "end" : "start")>
+                      <MessageContent>
+                        <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
+                          <BubbleContent class="space-y-2">
+                            <for|paragraph| of=message.text.split(/\n\s*\n/)>
+                              <p class="whitespace-pre-wrap">${paragraph}</p>
+                            </for>
+                          </BubbleContent>
+                        </Bubble>
+                      </MessageContent>
+                    </Message>
+                  </MessageScrollerItem>
                 </for>
+              </MessageScrollerContent>
+            </MessageScrollerViewport>
+            <MessageScrollerButton controller=controller/>
+          </MessageScroller>
+        </CardContent>
+      </Card>
+      <div class="absolute top-1/2 -right-12 -translate-y-1/2">
+        <HoverCard>
+          <@trigger|props|>
+            <button ...props type="button" aria-label="Open transcript outline" class="flex h-9 w-9 flex-col items-center justify-center gap-1 rounded-md transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+              <for|message| of=USER_MESSAGES by=(message) => message.id>
+                <span data-current=String(message.id === currentAnchorId) class="h-0.5 w-4 rounded-full bg-muted-foreground/40 data-[current=true]:bg-foreground"/>
+              </for>
+            </button>
+          </@trigger>
+          <div class="flex w-64 flex-col gap-1 rounded-2xl p-1">
+            <for|message| of=USER_MESSAGES by=(message) => message.id>
+              <button
+                type="button"
+                aria-current=(currentAnchorId === message.id ? "location" : undefined)
+                class="flex min-h-7 items-center rounded-xl px-2 py-1.5 text-left text-sm transition-colors outline-none hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground aria-current:bg-accent aria-current:text-accent-foreground"
+                onClick() { jumpTo(controller, message.id); }
+              >
+                <span class="line-clamp-1 min-w-0">${trimmed(message.text)}</span>
               </button>
-            </@trigger>
-            <@content>
-              <div class="flex w-64 flex-col gap-1 rounded-2xl p-1">
-                <for|message| of=USER_MESSAGES by=(message) => message.id>
-                  <button
-                    type="button"
-                    aria-current=(currentAnchorId === message.id ? "location" : undefined)
-                    class="flex min-h-7 items-center rounded-xl px-2 py-1.5 text-left text-sm transition-colors outline-none hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground aria-current:bg-accent aria-current:text-accent-foreground"
-                    onClick() { jumpTo(controller, message.id); }
-                  >
-                    <span class="line-clamp-1 min-w-0">${trimmed(message.text)}</span>
-                  </button>
-                </for>
-              </div>
-            </@content>
-          </HoverCard>
-        </div>
-      </div>
-      <div class="mx-auto max-w-sm px-0.5 text-center text-xs text-muted-foreground">
-        Open the outline to jump between anchored turns as you read.
+            </for>
+          </div>
+        </HoverCard>
       </div>
     </div>
-  </@content>
+    <div class="mx-auto max-w-sm px-0.5 text-center text-xs text-muted-foreground">
+      Open the outline to jump between anchored turns as you read.
+    </div>
+  </div>
 </MessageScrollerProvider>

@@ -56,71 +56,69 @@ static const ROCKY_MESSAGE: GroupChatItem = { id: "group-5", type: "message", se
 <const/reset=() => { rockyTurn = "idle"; }/>
 <const/advance=() => { rockyTurn = rockyTurn === "idle" ? "marker" : "message"; }/>
 
-<MessageScrollerProvider>
-  <@content|controller|>
-    <div class="relative flex flex-col gap-4">
-      <Card class="mx-auto h-140 w-full max-w-sm gap-0">
-        <CardHeader class="gap-1 border-b">
-          <CardTitle>Group Chat</CardTitle>
-          <CardDescription>
-            A group chat with several participants and an assistant. The Marker is marked as a turn.
-          </CardDescription>
-          <CardAction>
-            <Tooltip>
-              <@trigger|props|>
-                <Button ...props type="button" variant="outline" size="icon" aria-label="Reset conversation" disabled=(rockyTurn === "idle") onClick=reset>
-                  <Icon name="RotateCwIcon"/>
-                </Button>
-              </@trigger>
-              <@content>Reset</@content>
-            </Tooltip>
-          </CardAction>
-        </CardHeader>
-        <CardContent class="min-h-0 flex-1 p-0">
-          <MessageScroller controller=controller>
-            <MessageScrollerViewport controller=controller>
-              <MessageScrollerContent controller=controller class="p-4">
-                <for|item| of=items by=(item) => item.id>
-                  <if=(item.type === "message")>
-                    <MessageScrollerItem controller=controller messageId=item.id scrollAnchor=item.scrollAnchor>
-                      <Message align=(item.sender === CURRENT_USER ? "end" : "start")>
-                        <MessageContent>
-                          <if=(item.sender !== CURRENT_USER)>
-                            <MessageHeader>${item.sender}</MessageHeader>
-                          </if>
-                          <Bubble variant=(item.sender === CURRENT_USER ? "muted" : item.role === "assistant" ? "ghost" : "tinted")>
-                            <BubbleContent>${item.text}</BubbleContent>
-                          </Bubble>
-                        </MessageContent>
-                      </Message>
-                    </MessageScrollerItem>
-                  </if>
-                  <else>
-                    <MessageScrollerItem controller=controller scrollAnchor=(item.scrollAnchor ?? false)>
-                      <Marker variant="separator">
-                        <MarkerContent>${item.text}</MarkerContent>
-                      </Marker>
-                    </MessageScrollerItem>
-                  </else>
-                </for>
-              </MessageScrollerContent>
-            </MessageScrollerViewport>
-            <MessageScrollerButton controller=controller/>
-          </MessageScroller>
-        </CardContent>
-        <CardFooter class="flex flex-col items-center gap-2 border-t">
-          <Button type="button" disabled=isComplete onClick=advance class="w-full" variant="secondary">
-            ${buttonLabel}
-          </Button>
-          <p class="text-xs text-muted-foreground">
-            <if=(rockyTurn === "idle")>This will create a marker and make it the anchor</if>
-            <else>Now send Rocky's reply into the conversation</else>
-          </p>
-        </CardFooter>
-      </Card>
-      <div class="mx-auto max-w-sm px-0.5 text-center text-xs text-balance text-muted-foreground">
-        When a user joins, a marker is created. scrollAnchor on the marker marks it as the next turn
-      </div>
+<MessageScrollerProvider|controller|>
+  <div class="relative flex flex-col gap-4">
+    <Card class="mx-auto h-140 w-full max-w-sm gap-0">
+      <CardHeader class="gap-1 border-b">
+        <CardTitle>Group Chat</CardTitle>
+        <CardDescription>
+          A group chat with several participants and an assistant. The Marker is marked as a turn.
+        </CardDescription>
+        <CardAction>
+          <Tooltip>
+            <@trigger|props|>
+              <Button ...props type="button" variant="outline" size="icon" aria-label="Reset conversation" disabled=(rockyTurn === "idle") onClick=reset>
+                <Icon name="RotateCwIcon"/>
+              </Button>
+            </@trigger>
+            Reset
+          </Tooltip>
+        </CardAction>
+      </CardHeader>
+      <CardContent class="min-h-0 flex-1 p-0">
+        <MessageScroller controller=controller>
+          <MessageScrollerViewport controller=controller>
+            <MessageScrollerContent controller=controller class="p-4">
+              <for|item| of=items by=(item) => item.id>
+                <if=(item.type === "message")>
+                  <MessageScrollerItem controller=controller messageId=item.id scrollAnchor=item.scrollAnchor>
+                    <Message align=(item.sender === CURRENT_USER ? "end" : "start")>
+                      <MessageContent>
+                        <if=(item.sender !== CURRENT_USER)>
+                          <MessageHeader>${item.sender}</MessageHeader>
+                        </if>
+                        <Bubble variant=(item.sender === CURRENT_USER ? "muted" : item.role === "assistant" ? "ghost" : "tinted")>
+                          <BubbleContent>${item.text}</BubbleContent>
+                        </Bubble>
+                      </MessageContent>
+                    </Message>
+                  </MessageScrollerItem>
+                </if>
+                <else>
+                  <MessageScrollerItem controller=controller scrollAnchor=(item.scrollAnchor ?? false)>
+                    <Marker variant="separator">
+                      <MarkerContent>${item.text}</MarkerContent>
+                    </Marker>
+                  </MessageScrollerItem>
+                </else>
+              </for>
+            </MessageScrollerContent>
+          </MessageScrollerViewport>
+          <MessageScrollerButton controller=controller/>
+        </MessageScroller>
+      </CardContent>
+      <CardFooter class="flex flex-col items-center gap-2 border-t">
+        <Button type="button" disabled=isComplete onClick=advance class="w-full" variant="secondary">
+          ${buttonLabel}
+        </Button>
+        <p class="text-xs text-muted-foreground">
+          <if=(rockyTurn === "idle")>This will create a marker and make it the anchor</if>
+          <else>Now send Rocky's reply into the conversation</else>
+        </p>
+      </CardFooter>
+    </Card>
+    <div class="mx-auto max-w-sm px-0.5 text-center text-xs text-balance text-muted-foreground">
+      When a user joins, a marker is created. scrollAnchor on the marker marks it as the next turn
     </div>
-  </@content>
+  </div>
 </MessageScrollerProvider>

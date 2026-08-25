@@ -64,31 +64,29 @@ static const fileTree: FileTreeItem[] = [
 ];
 
 <Card class="mx-auto w-full max-w-[16rem] gap-2" size="sm">
-  <@content>
-    <CardHeader>
-      // Each <@trigger> needs a matching <@panel>: Zag's tabs machine
-      // always emits `aria-controls` on the trigger pointing at the
-      // content id for its value, whether or not a panel with that value
-      // is actually rendered. This Tabs is purely a visual toggle (the
-      // real content below is the file tree, not a tab panel), so the
-      // panels are left empty rather than duplicating content — they just
-      // give `aria-controls` a real target (axe: aria-valid-attr-value).
-      // The non-selected panel is hidden automatically by Zag's own
-      // getContentProps() (`hidden` attribute), same as any other Tabs
-      // usage, so no extra styling is needed here.
-      <Tabs class="w-full">
-        <@trigger value="explorer">Explorer</@trigger>
-        <@trigger value="settings">Outline</@trigger>
-        <@panel value="explorer"/>
-        <@panel value="settings"/>
-      </Tabs>
-    </CardHeader>
-    <CardContent>
-      <div class="flex flex-col gap-1">
-        <for|item| of=fileTree>
-          <CollapsibleFileTreeItem item=item/>
-        </for>
-      </div>
-    </CardContent>
-  </@content>
+  <CardHeader>
+    // Each <@trigger> needs a matching <@panel>: Zag's tabs machine
+    // always emits `aria-controls` on the trigger pointing at the
+    // content id for its value, whether or not a panel with that value
+    // is actually rendered. This Tabs is purely a visual toggle (the
+    // real content below is the file tree, not a tab panel), so the
+    // panels are left empty rather than duplicating content — they just
+    // give `aria-controls` a real target (axe: aria-valid-attr-value).
+    // The non-selected panel is hidden automatically by Zag's own
+    // getContentProps() (`hidden` attribute), same as any other Tabs
+    // usage, so no extra styling is needed here.
+    <Tabs class="w-full">
+      <@trigger value="explorer">Explorer</@trigger>
+      <@trigger value="settings">Outline</@trigger>
+      <@panel value="explorer"/>
+      <@panel value="settings"/>
+    </Tabs>
+  </CardHeader>
+  <CardContent>
+    <div class="flex flex-col gap-1">
+      <for|item| of=fileTree>
+        <CollapsibleFileTreeItem item=item/>
+      </for>
+    </div>
+  </CardContent>
 </Card>

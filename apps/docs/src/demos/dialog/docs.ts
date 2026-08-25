@@ -31,7 +31,7 @@ export const docs: ComponentDocs = {
   // docs template falls back to for that case (see
   // apps/docs/src/routes/docs/components/$name/+page.marko).
   composition:
-    "`<Dialog>` is one file exposing upstream's tree as slots: `@trigger` (render-prop, receives the trigger props to spread onto your own element — never nest a `<button>` inside it), `@title`, `@description`, `@content` (the body between the header and footer), and `@footer` (actions row). `@title`/`@description` are optional but recommended: omitting both drops the generated `dialog-header` wrapper entirely, and either one alone renders without the other. `showCloseButton` (default `true`) controls the generated top-right close button.",
+    "`<Dialog>` is one file exposing upstream's tree as slots: `@trigger` (render-prop, receives the trigger props to spread onto your own element — never nest a `<button>` inside it), `@title`, `@description`, the tag's own body (the content between the header and footer), and `@footer` (actions row). `@title`/`@description` are optional but recommended: omitting both drops the generated `dialog-header` wrapper entirely, and either one alone renders without the other. `showCloseButton` (default `true`) controls the generated top-right close button.",
   examples: [
     {
       name: "dialog-demo",

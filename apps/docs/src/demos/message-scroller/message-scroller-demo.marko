@@ -101,87 +101,85 @@ static const SCRIPT: ChatMessage[] = [
   busy = false;
 }/>
 
-<MessageScrollerProvider autoScroll>
-  <@content|controller|>
-    <div class="relative flex flex-col gap-4">
-      <Card class="mx-auto h-140 w-full max-w-sm gap-0">
-        <CardHeader class="gap-1 border-b">
-          <CardTitle>New Chat</CardTitle>
-          <CardDescription>How can I help you today?</CardDescription>
-          <CardAction>
-            <Tooltip>
-              <@trigger|props|>
-                <Button ...props variant="outline" size="icon" aria-label="Reset conversation" disabled=busy onClick=reset>
-                  <Icon name="RotateCwIcon"/>
-                </Button>
-              </@trigger>
-              <@content>Reset</@content>
-            </Tooltip>
-          </CardAction>
-        </CardHeader>
-        <CardContent class="flex-1 overflow-hidden p-0">
-          <if=(messages.length === 0)>
-            <Empty class="h-full">
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <Icon name="MessageCircleIcon"/>
-                </EmptyMedia>
-                <EmptyTitle>Morning, shadcn!</EmptyTitle>
-                <EmptyDescription>
-                  What are we working on today? Press send to start a new conversation
-                </EmptyDescription>
-              </EmptyHeader>
-            </Empty>
+<MessageScrollerProvider|controller| autoScroll>
+  <div class="relative flex flex-col gap-4">
+    <Card class="mx-auto h-140 w-full max-w-sm gap-0">
+      <CardHeader class="gap-1 border-b">
+        <CardTitle>New Chat</CardTitle>
+        <CardDescription>How can I help you today?</CardDescription>
+        <CardAction>
+          <Tooltip>
+            <@trigger|props|>
+              <Button ...props variant="outline" size="icon" aria-label="Reset conversation" disabled=busy onClick=reset>
+                <Icon name="RotateCwIcon"/>
+              </Button>
+            </@trigger>
+            Reset
+          </Tooltip>
+        </CardAction>
+      </CardHeader>
+      <CardContent class="flex-1 overflow-hidden p-0">
+        <if=(messages.length === 0)>
+          <Empty class="h-full">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Icon name="MessageCircleIcon"/>
+              </EmptyMedia>
+              <EmptyTitle>Morning, shadcn!</EmptyTitle>
+              <EmptyDescription>
+                What are we working on today? Press send to start a new conversation
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </if>
+        <else>
+          <MessageScroller controller=controller>
+            <MessageScrollerViewport controller=controller>
+              <MessageScrollerContent controller=controller aria-busy=busy class="p-4">
+                <for|message| of=messages by=(message) => message.id>
+                  <MessageScrollerItem controller=controller messageId=message.id scrollAnchor=(message.role === "user")>
+                    <Message align=(message.role === "user" ? "end" : "start")>
+                      <MessageContent>
+                        <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
+                          <BubbleContent class="space-y-2">
+                            <for|paragraph| of=message.text.split(/\n\s*\n/)>
+                              <p class="whitespace-pre-wrap">${paragraph}</p>
+                            </for>
+                          </BubbleContent>
+                        </Bubble>
+                      </MessageContent>
+                    </Message>
+                  </MessageScrollerItem>
+                </for>
+              </MessageScrollerContent>
+            </MessageScrollerViewport>
+            <MessageScrollerButton controller=controller/>
+          </MessageScroller>
+        </else>
+      </CardContent>
+      <CardFooter class="flex-col gap-2">
+        <div class="flex h-14 w-full items-center rounded-md border border-input px-3 py-2.5 text-sm">
+          <if=nextMessage>
+            <span class=("line-clamp-2 " + (busy ? "opacity-60" : ""))>${nextMessage.text}</span>
           </if>
           <else>
-            <MessageScroller controller=controller>
-              <MessageScrollerViewport controller=controller>
-                <MessageScrollerContent controller=controller aria-busy=busy class="p-4">
-                  <for|message| of=messages by=(message) => message.id>
-                    <MessageScrollerItem controller=controller messageId=message.id scrollAnchor=(message.role === "user")>
-                      <Message align=(message.role === "user" ? "end" : "start")>
-                        <MessageContent>
-                          <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
-                            <BubbleContent class="space-y-2">
-                              <for|paragraph| of=message.text.split(/\n\s*\n/)>
-                                <p class="whitespace-pre-wrap">${paragraph}</p>
-                              </for>
-                            </BubbleContent>
-                          </Bubble>
-                        </MessageContent>
-                      </Message>
-                    </MessageScrollerItem>
-                  </for>
-                </MessageScrollerContent>
-              </MessageScrollerViewport>
-              <MessageScrollerButton controller=controller/>
-            </MessageScroller>
+            <span class="text-muted-foreground">No messages queued. Reset the conversation.</span>
           </else>
-        </CardContent>
-        <CardFooter class="flex-col gap-2">
-          <div class="flex h-14 w-full items-center rounded-md border border-input px-3 py-2.5 text-sm">
-            <if=nextMessage>
-              <span class=("line-clamp-2 " + (busy ? "opacity-60" : ""))>${nextMessage.text}</span>
-            </if>
-            <else>
-              <span class="text-muted-foreground">No messages queued. Reset the conversation.</span>
-            </else>
-            <Button
-              type="button"
-              size="icon-sm"
-              class="ml-auto shrink-0"
-              disabled=(!nextMessage || busy)
-              onClick=send
-            >
-              <Icon name="ArrowUpIcon"/>
-              <span class="sr-only">Send</span>
-            </Button>
-          </div>
-        </CardFooter>
-      </Card>
-      <div class="px-0.5 text-center text-xs text-muted-foreground">
-        Demo is read only. Press send to send messages.
-      </div>
+          <Button
+            type="button"
+            size="icon-sm"
+            class="ml-auto shrink-0"
+            disabled=(!nextMessage || busy)
+            onClick=send
+          >
+            <Icon name="ArrowUpIcon"/>
+            <span class="sr-only">Send</span>
+          </Button>
+        </div>
+      </CardFooter>
+    </Card>
+    <div class="px-0.5 text-center text-xs text-muted-foreground">
+      Demo is read only. Press send to send messages.
     </div>
-  </@content>
+  </div>
 </MessageScrollerProvider>

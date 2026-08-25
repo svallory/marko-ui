@@ -25,7 +25,7 @@ export const docs: ComponentDocs = {
     "  <@trigger|props|><Button ...props>Open</Button></@trigger>\n" +
     '  <@title class="sr-only">Command Palette</@title>\n' +
     '  <@description class="sr-only">Search for a command to run...</@description>\n' +
-    "  <@content><Command groups=groups placeholder=\"Type a command or search...\"/></@content>\n" +
+    "  <Command groups=groups placeholder=\"Type a command or search...\"/>\n" +
     "</Dialog>\n" +
     "```",
   examples: [

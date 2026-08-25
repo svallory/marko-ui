@@ -88,20 +88,18 @@ static const ACTION_GROUPS: ActionItem[][] = [
         </svg>
       </Button>
     </@trigger>
-    <@content>
-      <div class="flex flex-col bg-transparent">
-        <for|group, groupIndex| of=ACTION_GROUPS by=(group, groupIndex) => groupIndex>
-          <SidebarGroup class="border-b p-0 py-2 last:border-none">
-            <SidebarMenu>
-              <for|item| of=group by=(item) => item.id>
-                <SidebarMenuItem>
-                  <SidebarMenuButton>${item.label}</SidebarMenuButton>
-                </SidebarMenuItem>
-              </for>
-            </SidebarMenu>
-          </SidebarGroup>
-        </for>
-      </div>
-    </@content>
+    <div class="flex flex-col bg-transparent">
+      <for|group, groupIndex| of=ACTION_GROUPS by=(group, groupIndex) => groupIndex>
+        <SidebarGroup class="border-b p-0 py-2 last:border-none">
+          <SidebarMenu>
+            <for|item| of=group by=(item) => item.id>
+              <SidebarMenuItem>
+                <SidebarMenuButton>${item.label}</SidebarMenuButton>
+              </SidebarMenuItem>
+            </for>
+          </SidebarMenu>
+        </SidebarGroup>
+      </for>
+    </div>
   </Popover>
 </div>

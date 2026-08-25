@@ -12,8 +12,8 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Steps>`,
   importSnippet: `import Steps from "@/components/ui/steps/steps.marko";`,
-  usageSnippet: `<Steps items=steps>
-  <@content|index|>Content for step ${"${index + 1}"}</@content>
+  usageSnippet: `<Steps|index| items=steps>
+  Content for step ${"${index + 1}"}
   <@completedContent>All steps complete.</@completedContent>
 </Steps>`,
   examples: [

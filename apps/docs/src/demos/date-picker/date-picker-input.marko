@@ -62,16 +62,14 @@ static function parseInput(text: string) {
             <span class="sr-only">Select date</span>
           </InputGroupButton>
         </@trigger>
-        <@content>
-          <Calendar
-            value=value
-            valueChange=(next) => {
-              value = next;
-              text = formatDate(next[0]);
-              open = false;
-            }
-          />
-        </@content>
+        <Calendar
+          value=value
+          valueChange=(next) => {
+            value = next;
+            text = formatDate(next[0]);
+            open = false;
+          }
+        />
       </Popover>
     </InputGroupAddon>
   </InputGroup>

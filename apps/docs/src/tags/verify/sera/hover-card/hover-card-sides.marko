@@ -6,26 +6,20 @@ import HoverCard from "@marko-ui/shadcn/ui/hover-card/hover-card.marko";
     <@trigger|props|>
       <a ...props href="#" class="text-sm font-medium underline underline-offset-4">Top</a>
     </@trigger>
-    <@content>
-      <p class="text-sm">Positioned above the trigger.</p>
-    </@content>
+    <p class="text-sm">Positioned above the trigger.</p>
   </HoverCard>
 
   <HoverCard positioning={ placement: "right" }>
     <@trigger|props|>
       <a ...props href="#" class="text-sm font-medium underline underline-offset-4">Right</a>
     </@trigger>
-    <@content>
-      <p class="text-sm">Positioned to the right of the trigger.</p>
-    </@content>
+    <p class="text-sm">Positioned to the right of the trigger.</p>
   </HoverCard>
 
   <HoverCard positioning={ placement: "bottom" }>
     <@trigger|props|>
       <a ...props href="#" class="text-sm font-medium underline underline-offset-4">Bottom</a>
     </@trigger>
-    <@content>
-      <p class="text-sm">Positioned below the trigger.</p>
-    </@content>
+    <p class="text-sm">Positioned below the trigger.</p>
   </HoverCard>
 </div>

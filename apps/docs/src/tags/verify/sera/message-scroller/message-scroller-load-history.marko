@@ -81,43 +81,41 @@ static const INITIAL_VISIBLE_COUNT = 5;
               <Icon name="RotateCwIcon"/>
             </Button>
           </@trigger>
-          <@content>Reset</@content>
+          Reset
         </Tooltip>
       </CardAction>
     </CardHeader>
     <CardContent class="flex-1 overflow-hidden p-0">
-      <MessageScrollerProvider>
-        <@content|controller|>
-          <for|generation| of=[demoKey] by=(value) => value>
-            <MessageScroller controller=controller>
-              <MessageScrollerViewport controller=controller>
-                <MessageScrollerContent controller=controller class="p-4">
-                  <for|message| of=visibleMessages by=(message) => message.id>
-                    <MessageScrollerItem controller=controller messageId=message.id>
-                      <Message align=(message.role === "user" ? "end" : "start")>
-                        <MessageContent>
-                          <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
-                            <BubbleContent class="space-y-2">
-                              <for|paragraph| of=message.text.split(/\n\s*\n/)>
-                                <p class="whitespace-pre-wrap">${paragraph}</p>
-                              </for>
-                            </BubbleContent>
-                          </Bubble>
-                        </MessageContent>
-                      </Message>
-                    </MessageScrollerItem>
-                  </for>
-                  <MessageScrollerItem controller=controller scrollAnchor=false>
-                    <Marker variant="separator">
-                      <MarkerContent>End of Conversation</MarkerContent>
-                    </Marker>
+      <MessageScrollerProvider|controller|>
+        <for|generation| of=[demoKey] by=(value) => value>
+          <MessageScroller controller=controller>
+            <MessageScrollerViewport controller=controller>
+              <MessageScrollerContent controller=controller class="p-4">
+                <for|message| of=visibleMessages by=(message) => message.id>
+                  <MessageScrollerItem controller=controller messageId=message.id>
+                    <Message align=(message.role === "user" ? "end" : "start")>
+                      <MessageContent>
+                        <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
+                          <BubbleContent class="space-y-2">
+                            <for|paragraph| of=message.text.split(/\n\s*\n/)>
+                              <p class="whitespace-pre-wrap">${paragraph}</p>
+                            </for>
+                          </BubbleContent>
+                        </Bubble>
+                      </MessageContent>
+                    </Message>
                   </MessageScrollerItem>
-                </MessageScrollerContent>
-              </MessageScrollerViewport>
-              <MessageScrollerButton controller=controller/>
-            </MessageScroller>
-          </for>
-        </@content>
+                </for>
+                <MessageScrollerItem controller=controller scrollAnchor=false>
+                  <Marker variant="separator">
+                    <MarkerContent>End of Conversation</MarkerContent>
+                  </Marker>
+                </MessageScrollerItem>
+              </MessageScrollerContent>
+            </MessageScrollerViewport>
+            <MessageScrollerButton controller=controller/>
+          </MessageScroller>
+        </for>
       </MessageScrollerProvider>
     </CardContent>
     <CardFooter class="flex flex-col items-center gap-2 border-t">

@@ -12,10 +12,8 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Marquee>`,
   importSnippet: `import Marquee from "@/components/ui/marquee/marquee.marko";`,
-  usageSnippet: `<Marquee items=logos>
-  <@content|logo|>
-    <span>\${logo}</span>
-  </@content>
+  usageSnippet: `<Marquee|logo| items=logos>
+  <span>\${logo}</span>
 </Marquee>`,
   examples: [
     {

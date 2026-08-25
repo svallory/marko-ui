@@ -103,37 +103,35 @@ static const NAV_MAIN: NavItem[] = [
 ];
 
 <Sidebar open=input.open class="border-r-0 border-l data-[state=closed]:border-r-0 data-[state=closed]:border-l-0">
-  <@content>
-    <SidebarContent>
-      <SidebarGroup>
-        <SidebarGroupLabel>Table of Contents</SidebarGroupLabel>
-        <SidebarMenu>
-          <for|item| of=NAV_MAIN by=(item) => item.id>
-            <SidebarMenuItem>
-              <SidebarMenuButton href=item.url class="font-medium">
-                <span>${item.title}</span>
-              </SidebarMenuButton>
-              <if=((item.items ?? []).length !== 0)>
-                <ul
-                  class="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5"
-                >
-                  <for|leaf| of=item.items by=(leaf) => leaf.id>
-                    <li class="group/menu-sub-item relative">
-                      <a
-                        href=leaf.url
-                        data-active=String(!!leaf.isActive)
-                        class="flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 text-sm text-sidebar-foreground outline-none ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground"
-                      >
-                        <span>${leaf.title}</span>
-                      </a>
-                    </li>
-                  </for>
-                </ul>
-              </if>
-            </SidebarMenuItem>
-          </for>
-        </SidebarMenu>
-      </SidebarGroup>
-    </SidebarContent>
-  </@content>
+  <SidebarContent>
+    <SidebarGroup>
+      <SidebarGroupLabel>Table of Contents</SidebarGroupLabel>
+      <SidebarMenu>
+        <for|item| of=NAV_MAIN by=(item) => item.id>
+          <SidebarMenuItem>
+            <SidebarMenuButton href=item.url class="font-medium">
+              <span>${item.title}</span>
+            </SidebarMenuButton>
+            <if=((item.items ?? []).length !== 0)>
+              <ul
+                class="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5"
+              >
+                <for|leaf| of=item.items by=(leaf) => leaf.id>
+                  <li class="group/menu-sub-item relative">
+                    <a
+                      href=leaf.url
+                      data-active=String(!!leaf.isActive)
+                      class="flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 text-sm text-sidebar-foreground outline-none ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground"
+                    >
+                      <span>${leaf.title}</span>
+                    </a>
+                  </li>
+                </for>
+              </ul>
+            </if>
+          </SidebarMenuItem>
+        </for>
+      </SidebarMenu>
+    </SidebarGroup>
+  </SidebarContent>
 </Sidebar>

@@ -10,22 +10,18 @@ import KbdGroup from "@marko-ui/shadcn/ui/kbd/group.marko";
       <@trigger|props|>
         <Button ...props size="sm" variant="outline">Save</Button>
       </@trigger>
-      <@content>
-        Save Changes
-        <Kbd>S</Kbd>
-      </@content>
+      Save Changes
+      <Kbd>S</Kbd>
     </Tooltip>
     <Tooltip>
       <@trigger|props|>
         <Button ...props size="sm" variant="outline">Print</Button>
       </@trigger>
-      <@content>
-        Print Document
-        <KbdGroup>
-          <Kbd>Ctrl</Kbd>
-          <Kbd>P</Kbd>
-        </KbdGroup>
-      </@content>
+      Print Document
+      <KbdGroup>
+        <Kbd>Ctrl</Kbd>
+        <Kbd>P</Kbd>
+      </KbdGroup>
     </Tooltip>
   </ButtonGroup>
 </div>

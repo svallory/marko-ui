@@ -9,39 +9,37 @@ import MenubarMenu from "@marko-ui/shadcn/ui/menubar/menu.marko";
 <let/superscript=false/>
 
 <Menubar class="w-72">
-  <@content>
-    <MenubarMenu
-      checkedChange(value, checked) {
-        if (value === "bookmarks-bar") showBookmarksBar = checked;
-        else if (value === "full-urls") showFullUrls = checked;
-      }
-    >
-      <@trigger|triggerProps|>
-        <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
-          View
-        </button>
-      </@trigger>
-      <@item type="checkbox" value="bookmarks-bar" checked=showBookmarksBar>Always Show Bookmarks Bar</@item>
-      <@item type="checkbox" value="full-urls" checked=showFullUrls>Always Show Full URLs</@item>
-      <@item type="separator"/>
-      <@item value="reload" shortcut="⌘R" inset>Reload</@item>
-      <@item value="force-reload" shortcut="⇧⌘R" inset disabled>Force Reload</@item>
-    </MenubarMenu>
-    <MenubarMenu
-      checkedChange(value, checked) {
-        if (value === "strikethrough") strikethrough = checked;
-        else if (value === "code") code = checked;
-        else if (value === "superscript") superscript = checked;
-      }
-    >
-      <@trigger|triggerProps|>
-        <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
-          Format
-        </button>
-      </@trigger>
-      <@item type="checkbox" value="strikethrough" checked=strikethrough>Strikethrough</@item>
-      <@item type="checkbox" value="code" checked=code>Code</@item>
-      <@item type="checkbox" value="superscript" checked=superscript>Superscript</@item>
-    </MenubarMenu>
-  </@content>
+  <MenubarMenu
+    checkedChange(value, checked) {
+      if (value === "bookmarks-bar") showBookmarksBar = checked;
+      else if (value === "full-urls") showFullUrls = checked;
+    }
+  >
+    <@trigger|triggerProps|>
+      <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+        View
+      </button>
+    </@trigger>
+    <@item type="checkbox" value="bookmarks-bar" checked=showBookmarksBar>Always Show Bookmarks Bar</@item>
+    <@item type="checkbox" value="full-urls" checked=showFullUrls>Always Show Full URLs</@item>
+    <@item type="separator"/>
+    <@item value="reload" shortcut="⌘R" inset>Reload</@item>
+    <@item value="force-reload" shortcut="⇧⌘R" inset disabled>Force Reload</@item>
+  </MenubarMenu>
+  <MenubarMenu
+    checkedChange(value, checked) {
+      if (value === "strikethrough") strikethrough = checked;
+      else if (value === "code") code = checked;
+      else if (value === "superscript") superscript = checked;
+    }
+  >
+    <@trigger|triggerProps|>
+      <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+        Format
+      </button>
+    </@trigger>
+    <@item type="checkbox" value="strikethrough" checked=strikethrough>Strikethrough</@item>
+    <@item type="checkbox" value="code" checked=code>Code</@item>
+    <@item type="checkbox" value="superscript" checked=superscript>Superscript</@item>
+  </MenubarMenu>
 </Menubar>

@@ -29,8 +29,8 @@ export const docs: ComponentDocs = {
     "`Tooltip` / `TooltipTrigger` / `TooltipContent`, this port folds " +
     "trigger and content into `Tooltip` itself: the `@trigger` render-prop " +
     "receives the machine's trigger attributes to spread onto whatever " +
-    "element the tooltip describes, and `content` (a string or a `@content` " +
-    "body) supplies what's shown when open. There is no separate " +
+    "element the tooltip describes, and `content` (a string prop, or the " +
+    "tag's own body) supplies what's shown when open. There is no separate " +
     "`TooltipTrigger` or `TooltipContent` tag to import.",
   examples: [
     {
@@ -52,7 +52,7 @@ export const docs: ComponentDocs = {
     {
       name: "tooltip-keyboard",
       title: "With Keyboard Shortcut",
-      description: "Compose `Kbd` inside `@content` to show a keyboard shortcut alongside the tooltip text.",
+      description: "Compose `Kbd` inside the tooltip's body to show a keyboard shortcut alongside the tooltip text.",
     },
     {
       name: "tooltip-disabled",

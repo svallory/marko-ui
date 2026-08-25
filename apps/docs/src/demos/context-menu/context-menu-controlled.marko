@@ -11,11 +11,9 @@ static const ITEMS = [
 
 <div class="flex items-center gap-4">
   <ContextMenu items=ITEMS select(value) { selected = value; }>
-    <@content>
-      <div class="flex h-[100px] w-[200px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
-        Right click here
-      </div>
-    </@content>
+    <div class="flex h-[100px] w-[200px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+      Right click here
+    </div>
   </ContextMenu>
   <span class="text-muted-foreground text-sm">selected: ${selected || "none"}</span>
 </div>

@@ -7,12 +7,10 @@ static const SHIPPING_STEPS = [
   { title: "Confirm" },
 ];
 
-<Steps items=SHIPPING_STEPS orientation="vertical" class="w-[560px]">
-  <@content|index|>
-    <p class="text-muted-foreground text-sm">
-      ${SHIPPING_STEPS[index].title} step content.
-    </p>
-  </@content>
+<Steps|index| items=SHIPPING_STEPS orientation="vertical" class="w-[560px]">
+  <p class="text-muted-foreground text-sm">
+    ${SHIPPING_STEPS[index].title} step content.
+  </p>
   <@completedContent>
     <p class="text-muted-foreground text-sm">Order complete.</p>
   </@completedContent>

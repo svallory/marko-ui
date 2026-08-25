@@ -62,24 +62,22 @@ static const icons: Record<string, string> = {
 ]/>
 
 <Sidebar open=input.open>
-  <@content>
-    <SidebarHeader>
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton href="#" class="p-1.5!">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-5!">$!{icons.innerShadowTop}</svg>
-            <span class="text-base font-semibold">Acme Inc.</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    </SidebarHeader>
-    <SidebarContent>
-      <NavMain items=navMain/>
-      <NavDocuments items=documents/>
-      <NavSecondary items=navSecondary class="mt-auto"/>
-    </SidebarContent>
-    <SidebarFooter>
-      <NavUser user=user/>
-    </SidebarFooter>
-  </@content>
+  <SidebarHeader>
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton href="#" class="p-1.5!">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-5!">$!{icons.innerShadowTop}</svg>
+          <span class="text-base font-semibold">Acme Inc.</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  </SidebarHeader>
+  <SidebarContent>
+    <NavMain items=navMain/>
+    <NavDocuments items=documents/>
+    <NavSecondary items=navSecondary class="mt-auto"/>
+  </SidebarContent>
+  <SidebarFooter>
+    <NavUser user=user/>
+  </SidebarFooter>
 </Sidebar>

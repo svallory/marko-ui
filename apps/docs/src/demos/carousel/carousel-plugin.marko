@@ -27,17 +27,15 @@ static const SLIDES = [1, 2, 3, 4, 5];
   onMouseEnter() { paused = true; }
   onMouseLeave() { paused = false; }
 >
-  <Carousel
+  <Carousel|item|
     items=SLIDES
     autoplay=(paused ? false : { delay: 2000 })
     class="w-full"
   >
-    <@content|item|>
-      <div class="p-1">
-        <div class="flex aspect-square items-center justify-center rounded-lg border bg-card">
-          <span class="text-4xl font-semibold">${item}</span>
-        </div>
+    <div class="p-1">
+      <div class="flex aspect-square items-center justify-center rounded-lg border bg-card">
+        <span class="text-4xl font-semibold">${item}</span>
       </div>
-    </@content>
+    </div>
   </Carousel>
 </div>

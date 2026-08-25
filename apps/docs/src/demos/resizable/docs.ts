@@ -11,10 +11,8 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Resizable>`,
   importSnippet: `import Resizable from "@/components/ui/resizable/resizable.marko";`,
-  usageSnippet: `<Resizable panels=[{ id: "one", defaultSize: 50 }, { id: "two", defaultSize: 50 }]>
-  <@content|panel|>
-    ${"${panel.id}"}
-  </@content>
+  usageSnippet: `<Resizable|panel| panels=[{ id: "one", defaultSize: 50 }, { id: "two", defaultSize: 50 }]>
+  ${"${panel.id}"}
 </Resizable>`,
   // Upstream composes ResizablePanelGroup / ResizablePanel / ResizableHandle
   // as three separate components (built on react-resizable-panels). Our
@@ -32,15 +30,16 @@ export const docs: ComponentDocs = {
     "all three into one `Resizable` tag:\n\n" +
     "```text\n" +
     "Resizable\n" +
-    "├── (panel — one per entry in the `panels` prop, rendered via `@content`)\n" +
+    "├── (panel — one per entry in the `panels` prop, rendered via the tag's own body)\n" +
     "└── (resize handle — generated automatically between each adjacent pair of panels)\n" +
     "```\n\n" +
     "There is no separate `ResizablePanel` or `ResizableHandle` tag to " +
     "import: pass an ordered `panels` array (`{ id, defaultSize?, minSize?, " +
-    "maxSize? }`) and render each panel's content through the `@content` " +
-    "render-prop, which receives the panel data and its index. A resize " +
-    "handle is inserted between every pair of adjacent panels for you — " +
-    "there is no `withHandle` toggle; the drag-handle icon is always shown.",
+    "maxSize? }`) and render each panel's content through the tag's own " +
+    "body, taking the panel data and its index as default-body tag " +
+    "parameters (`<Resizable|panel, index|>`). A resize handle is inserted " +
+    "between every pair of adjacent panels for you — there is no " +
+    "`withHandle` toggle; the drag-handle icon is always shown.",
   examples: [
     {
       name: "resizable-demo",

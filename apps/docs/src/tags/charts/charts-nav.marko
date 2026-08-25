@@ -11,20 +11,18 @@ export interface Input {
 
 <div class="relative overflow-hidden">
   <ScrollArea vertical=false horizontal class="max-w-[600px] lg:max-w-none">
-    <@content>
-      <div class="flex items-center">
-        <for|type| of=CHART_TYPES by=(type) => type.slug>
-          <a
-            href=`/charts/${type.slug}#charts`
-            // String, not boolean: Marko renders `true` as a bare `data-active`
-            // attribute, which the `data-[active=true]:` Tailwind variant misses.
-            data-active=String(type.slug === input.activeSlug)
-            class="flex h-7 shrink-0 items-center justify-center px-4 text-center text-base font-medium text-muted-foreground transition-colors hover:text-primary data-[active=true]:text-primary"
-          >
-            ${type.label}
-          </a>
-        </for>
-      </div>
-    </@content>
+    <div class="flex items-center">
+      <for|type| of=CHART_TYPES by=(type) => type.slug>
+        <a
+          href=`/charts/${type.slug}#charts`
+          // String, not boolean: Marko renders `true` as a bare `data-active`
+          // attribute, which the `data-[active=true]:` Tailwind variant misses.
+          data-active=String(type.slug === input.activeSlug)
+          class="flex h-7 shrink-0 items-center justify-center px-4 text-center text-base font-medium text-muted-foreground transition-colors hover:text-primary data-[active=true]:text-primary"
+        >
+          ${type.label}
+        </a>
+      </for>
+    </div>
   </ScrollArea>
 </div>

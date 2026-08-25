@@ -123,53 +123,49 @@ static const FILE_TREE: TreeNode[] = [
             ${name}
           </SidebarMenuButton>
         </@trigger>
-        <@content>
-          <ul class="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5">
-            <for|childNode| of=children by=(_child, index) => index>
-              <li class="group/menu-sub-item relative">
-                <Tree node=childNode/>
-              </li>
-            </for>
-          </ul>
-        </@content>
+        <ul class="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5">
+          <for|childNode| of=children by=(_child, index) => index>
+            <li class="group/menu-sub-item relative">
+              <Tree node=childNode/>
+            </li>
+          </for>
+        </ul>
       </Collapsible>
     </SidebarMenuItem>
   </else>
 </define>
 
 <Sidebar open=input.open>
-  <@content>
-    <SidebarContent>
-      <SidebarGroup>
-        <SidebarGroupLabel>Changes</SidebarGroupLabel>
-        <div>
-          <SidebarMenu>
-            <for|item| of=CHANGES by=(entry) => entry.file>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <FileIcon/>
-                  ${item.file}
-                </SidebarMenuButton>
-                // No SidebarMenuBadge equivalent yet — composed inline,
-                // matching menu-button's own layout conventions.
-                <div class="pointer-events-none absolute top-1.5 right-1 flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-xs font-medium tabular-nums text-sidebar-foreground select-none">
-                  ${item.state}
-                </div>
-              </SidebarMenuItem>
-            </for>
-          </SidebarMenu>
-        </div>
-      </SidebarGroup>
-      <SidebarGroup>
-        <SidebarGroupLabel>Files</SidebarGroupLabel>
-        <div>
-          <SidebarMenu>
-            <for|node| of=FILE_TREE by=(_node, treeIndex) => treeIndex>
-              <Tree node=node/>
-            </for>
-          </SidebarMenu>
-        </div>
-      </SidebarGroup>
-    </SidebarContent>
-  </@content>
+  <SidebarContent>
+    <SidebarGroup>
+      <SidebarGroupLabel>Changes</SidebarGroupLabel>
+      <div>
+        <SidebarMenu>
+          <for|item| of=CHANGES by=(entry) => entry.file>
+            <SidebarMenuItem>
+              <SidebarMenuButton>
+                <FileIcon/>
+                ${item.file}
+              </SidebarMenuButton>
+              // No SidebarMenuBadge equivalent yet — composed inline,
+              // matching menu-button's own layout conventions.
+              <div class="pointer-events-none absolute top-1.5 right-1 flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-xs font-medium tabular-nums text-sidebar-foreground select-none">
+                ${item.state}
+              </div>
+            </SidebarMenuItem>
+          </for>
+        </SidebarMenu>
+      </div>
+    </SidebarGroup>
+    <SidebarGroup>
+      <SidebarGroupLabel>Files</SidebarGroupLabel>
+      <div>
+        <SidebarMenu>
+          <for|node| of=FILE_TREE by=(_node, treeIndex) => treeIndex>
+            <Tree node=node/>
+          </for>
+        </SidebarMenu>
+      </div>
+    </SidebarGroup>
+  </SidebarContent>
 </Sidebar>

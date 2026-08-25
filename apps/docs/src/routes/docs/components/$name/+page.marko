@@ -138,10 +138,11 @@ import { getComponentPageData } from "../../../../lib/component-page-data.ts";
               </section>
             </if>
             <!-- Single-file components whose anatomy is expressed through
-                 slots/render-props (e.g. tooltip's @trigger/@content) have
-                 nothing for composition-tree to enumerate — api-reference.json
-                 sees one part, so isCompound is false. docs.composition is
-                 the prose fallback for those. -->
+                 slots/render-props (e.g. tooltip's @trigger plus its own
+                 default body) have nothing for composition-tree to
+                 enumerate — api-reference.json sees one part, so isCompound
+                 is false. docs.composition is the prose fallback for
+                 those. -->
             <else-if=page.docs.composition>
               <section>
                 <h2 id="composition" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">

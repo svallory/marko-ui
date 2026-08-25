@@ -39,16 +39,14 @@ static function formatDate(date?: { year: number; month: number; day: number }) 
           <Icon name="ChevronDown" data-icon="inline-end"/>
         </Button>
       </@trigger>
-      <@content>
-        <Calendar
-          captionLayout="dropdown"
-          value=value
-          valueChange=(next) => {
-            value = next;
-            open = false;
-          }
-        />
-      </@content>
+      <Calendar
+        captionLayout="dropdown"
+        value=value
+        valueChange=(next) => {
+          value = next;
+          open = false;
+        }
+      />
     </Popover>
   </Field>
   <Field class="w-32">

@@ -30,7 +30,7 @@ export const docs: ComponentDocs = {
   // no multi-part tree for the auto-generated composition-tree to draw
   // (api-reference.json sees one part → `isCompound` is false).
   composition:
-    "`<Drawer>` is a single component, not a composed tree — `@trigger` is a render-prop slot (spread the given props onto your own trigger element), and `@title`/`@description`/`@content`/`@footer` are body slots that render into the drawer's header, body, and footer regions. Omit any slot you don't need; `@title`/`@description` render nothing without a wrapping header until at least one is supplied, and `@footer` is fully optional (see the “Without footer” example below).",
+    "`<Drawer>` is a single component, not a composed tree — `@trigger` is a render-prop slot (spread the given props onto your own trigger element), and `@title`/`@description`/`@footer` are named body slots plus the tag's own default body that render into the drawer's header, body, and footer regions. Omit any slot you don't need; `@title`/`@description` render nothing without a wrapping header until at least one is supplied, and `@footer` is fully optional (see the “Without footer” example below).",
   // BLOCKED (parity — missingMappedTargets: "Styling"): upstream's "Styling"
   // section documents `--drawer-inset`, `--drawer-bleed-background`,
   // `--drawer-overlay-min-opacity` CSS variables and `data-swipe-direction`/

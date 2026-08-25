@@ -7,19 +7,17 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
   </@trigger>
   <@title>Snap points</@title>
   <@description>Drag the handle to snap between 40%, 70% and full height.</@description>
-  <@content>
-    // Snap points are clamped to min(contentSize, viewportSize), so the
-    // content has to be tall enough for the points to differ.
-    <div class="h-[85vh] space-y-3">
-      <p class="text-muted-foreground text-sm">
-        The drawer resolves each snap point against the viewport and settles
-        on the nearest one when you release the drag.
-      </p>
-      <for|index| from=1 to=12>
-        <div class="bg-muted/50 rounded-md px-3 py-2 text-sm">
-          Row ${index}
-        </div>
-      </for>
-    </div>
-  </@content>
+  // Snap points are clamped to min(contentSize, viewportSize), so the
+  // content has to be tall enough for the points to differ.
+  <div class="h-[85vh] space-y-3">
+    <p class="text-muted-foreground text-sm">
+      The drawer resolves each snap point against the viewport and settles
+      on the nearest one when you release the drag.
+    </p>
+    <for|index| from=1 to=12>
+      <div class="bg-muted/50 rounded-md px-3 py-2 text-sm">
+        Row ${index}
+      </div>
+    </for>
+  </div>
 </Drawer>

@@ -63,20 +63,18 @@ static const STORAGE_KEY = "marko-ui-create-welcome-dialog";
   backdropClass="bg-black/10 supports-backdrop-filter:backdrop-blur-xs"
   class="dialog-ring max-w-92 min-w-0 gap-0 overflow-hidden rounded-xl border-none bg-clip-padding p-0 shadow-2xl ring-4 ring-neutral-200/80 sm:max-w-sm dark:bg-neutral-900 dark:ring-neutral-800"
 >
-  <@content>
-    <div class="flex aspect-2/1.2 w-full items-center justify-center rounded-t-xl bg-neutral-950 text-center text-neutral-100 sm:aspect-2/1">
-      <div class="font-mono text-2xl font-bold tracking-tight">marko-ui</div>
-    </div>
-    <div class="flex flex-col gap-1 p-4">
-      <h2 class="text-left text-base font-semibold">Build your own marko-ui</h2>
-      <p class="text-left leading-relaxed text-foreground">
-        Customize everything from the ground up. Pick your component library, font, color scheme, and more.
-      </p>
-      <p class="mt-2 text-left leading-relaxed font-medium text-foreground">
-        This is a port of <a href="https://ui.shadcn.com/create" target="_blank" rel="noreferrer" class="underline underline-offset-4 hover:text-foreground">shadcn/create</a> rendering marko-ui components instead of React components.
-      </p>
-    </div>
-  </@content>
+  <div class="flex aspect-2/1.2 w-full items-center justify-center rounded-t-xl bg-neutral-950 text-center text-neutral-100 sm:aspect-2/1">
+    <div class="font-mono text-2xl font-bold tracking-tight">marko-ui</div>
+  </div>
+  <div class="flex flex-col gap-1 p-4">
+    <h2 class="text-left text-base font-semibold">Build your own marko-ui</h2>
+    <p class="text-left leading-relaxed text-foreground">
+      Customize everything from the ground up. Pick your component library, font, color scheme, and more.
+    </p>
+    <p class="mt-2 text-left leading-relaxed font-medium text-foreground">
+      This is a port of <a href="https://ui.shadcn.com/create" target="_blank" rel="noreferrer" class="underline underline-offset-4 hover:text-foreground">shadcn/create</a> rendering marko-ui components instead of React components.
+    </p>
+  </div>
   <@footer>
     <Button class="w-full" on-click() { handleOpenChange(false); }>Get Started</Button>
   </@footer>

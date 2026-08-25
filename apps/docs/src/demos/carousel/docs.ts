@@ -12,18 +12,17 @@ export const docs: ComponentDocs = {
   usageTags: `<Carousel>`,
   importSnippet: `import Carousel from "@/components/ui/carousel/carousel.marko";`,
   usageSnippet:
-    "<Carousel items=slides>\n" +
-    "  <@content|item|>\n" +
-    "    <div>${item}</div>\n" +
-    "  </@content>\n" +
+    "<Carousel|item| items=slides>\n" +
+    "  <div>${item}</div>\n" +
     "</Carousel>",
   composition:
     "`Carousel` is a single component, not four. Where upstream composes " +
     "`Carousel` / `CarouselContent` / `CarouselItem` / `CarouselPrevious` / " +
     "`CarouselNext`, this port folds the item group, previous/next " +
     "triggers, and a page-indicator group into `Carousel` itself: pass " +
-    "`items=` with a `@content` render prop (or `@slide` attr tags for " +
-    "static markup) and the component renders the scroll container, " +
+    "`items=` and render each one through the tag's own body, taking the " +
+    "item as a default-body tag parameter (or use `@slide` attr tags for " +
+    "static markup), and the component renders the scroll container, " +
     "buttons, and indicators for you. There is no separate " +
     "`CarouselContent`, `CarouselItem`, `CarouselPrevious`, or " +
     "`CarouselNext` tag to import.",
@@ -32,7 +31,7 @@ export const docs: ComponentDocs = {
       name: "carousel-demo",
       title: "Basic",
       description:
-        "Pass `items` and render each one with the `@content` body parameter. Use the previous/next triggers to move between pages.",
+        "Pass `items` and render each one through the tag's own body, taking the item as a default-body tag parameter. Use the previous/next triggers to move between pages.",
     },
     {
       name: "carousel-size",

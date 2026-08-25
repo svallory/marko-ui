@@ -3,8 +3,6 @@ import Marquee from "@marko-ui/shadcn/ui/marquee/marquee.marko";
 
 static const LOGOS = ["Acme", "Globex", "Initech", "Umbrella", "Soylent", "Stark", "Wayne", "Wonka"];
 
-<Marquee items=LOGOS reverse pauseOnInteraction class="w-full max-w-lg mx-auto">
-  <@content|logo|>
-    <span class="px-6 text-lg font-semibold text-muted-foreground">${logo}</span>
-  </@content>
+<Marquee|logo| items=LOGOS reverse pauseOnInteraction class="w-full max-w-lg mx-auto">
+  <span class="px-6 text-lg font-semibold text-muted-foreground">${logo}</span>
 </Marquee>

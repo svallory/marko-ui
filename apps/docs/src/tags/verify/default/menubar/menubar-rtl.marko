@@ -86,44 +86,42 @@ import MenubarMenu from "@marko-ui/shadcn/ui/menubar/menu.marko";
 
 <div dir="rtl">
   <Menubar class="w-72">
-    <@content>
-      <MenubarMenu items=fileItems>
-        <@trigger|triggerProps|>
-          <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
-            ملف
-          </button>
-        </@trigger>
-      </MenubarMenu>
-      <MenubarMenu items=editItems>
-        <@trigger|triggerProps|>
-          <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
-            تعديل
-          </button>
-        </@trigger>
-      </MenubarMenu>
-      <MenubarMenu
-        items=viewItems
-        checkedChange(value, checked) {
-          if (value === "bookmarks-bar") showBookmarksBar = checked;
-          else if (value === "full-urls") showFullUrls = checked;
-        }
-      >
-        <@trigger|triggerProps|>
-          <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
-            عرض
-          </button>
-        </@trigger>
-      </MenubarMenu>
-      <MenubarMenu
-        items=profileItems
-        radioChange(group, value) { if (group === "profile") profile = value; }
-      >
-        <@trigger|triggerProps|>
-          <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
-            الملفات الشخصية
-          </button>
-        </@trigger>
-      </MenubarMenu>
-    </@content>
+    <MenubarMenu items=fileItems>
+      <@trigger|triggerProps|>
+        <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+          ملف
+        </button>
+      </@trigger>
+    </MenubarMenu>
+    <MenubarMenu items=editItems>
+      <@trigger|triggerProps|>
+        <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+          تعديل
+        </button>
+      </@trigger>
+    </MenubarMenu>
+    <MenubarMenu
+      items=viewItems
+      checkedChange(value, checked) {
+        if (value === "bookmarks-bar") showBookmarksBar = checked;
+        else if (value === "full-urls") showFullUrls = checked;
+      }
+    >
+      <@trigger|triggerProps|>
+        <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+          عرض
+        </button>
+      </@trigger>
+    </MenubarMenu>
+    <MenubarMenu
+      items=profileItems
+      radioChange(group, value) { if (group === "profile") profile = value; }
+    >
+      <@trigger|triggerProps|>
+        <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+          الملفات الشخصية
+        </button>
+      </@trigger>
+    </MenubarMenu>
   </Menubar>
 </div>

@@ -15,9 +15,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
   </@trigger>
   <@title>Down drawer</@title>
   <@description>Open another drawer from the same direction.</@description>
-  <@content>
-    <div class="h-80 w-full bg-muted"/>
-  </@content>
+  <div class="h-80 w-full bg-muted"/>
   <@footer>
     <Drawer swipeDirection="down">
       <@trigger|props|>
@@ -25,9 +23,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
       </@trigger>
       <@title>Nested drawer</@title>
       <@description>The parent drawer stays mounted behind this one.</@description>
-      <@content>
-        <div class="h-80 w-full bg-muted"/>
-      </@content>
+      <div class="h-80 w-full bg-muted"/>
     </Drawer>
   </@footer>
 </Drawer>

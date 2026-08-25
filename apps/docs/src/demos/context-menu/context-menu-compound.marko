@@ -1,11 +1,9 @@
 import ContextMenu from "@marko-ui/shadcn/ui/context-menu/context-menu.marko";
 
 <ContextMenu>
-  <@content>
-    <div class="flex h-[100px] w-[200px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
-      Right click here
-    </div>
-  </@content>
+  <div class="flex h-[100px] w-[200px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+    Right click here
+  </div>
   <@item type="label" label="Actions"/>
   <@item value="copy" label="Copy" shortcut="⌘C"/>
   <@item value="paste" label="Paste" shortcut="⌘V"/>

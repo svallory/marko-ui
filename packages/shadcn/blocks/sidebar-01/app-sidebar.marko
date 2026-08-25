@@ -75,24 +75,22 @@ static const NAV_MAIN: NavGroup[] = [
 ];
 
 <Sidebar open=input.open>
-  <@content>
-    <SidebarHeader>
-      <VersionSwitcher versions=VERSIONS defaultVersion=VERSIONS[0]/>
-      <SearchForm/>
-    </SidebarHeader>
-    <SidebarContent>
-      <for|group| of=NAV_MAIN by=(group) => group.title>
-        <SidebarGroup>
-          <SidebarGroupLabel>${group.title}</SidebarGroupLabel>
-          <SidebarMenu>
-            <for|item| of=group.items by=(item) => item.title>
-              <SidebarMenuItem>
-                <SidebarMenuButton href=item.url active=item.active>${item.title}</SidebarMenuButton>
-              </SidebarMenuItem>
-            </for>
-          </SidebarMenu>
-        </SidebarGroup>
-      </for>
-    </SidebarContent>
-  </@content>
+  <SidebarHeader>
+    <VersionSwitcher versions=VERSIONS defaultVersion=VERSIONS[0]/>
+    <SearchForm/>
+  </SidebarHeader>
+  <SidebarContent>
+    <for|group| of=NAV_MAIN by=(group) => group.title>
+      <SidebarGroup>
+        <SidebarGroupLabel>${group.title}</SidebarGroupLabel>
+        <SidebarMenu>
+          <for|item| of=group.items by=(item) => item.title>
+            <SidebarMenuItem>
+              <SidebarMenuButton href=item.url active=item.active>${item.title}</SidebarMenuButton>
+            </SidebarMenuItem>
+          </for>
+        </SidebarMenu>
+      </SidebarGroup>
+    </for>
+  </SidebarContent>
 </Sidebar>

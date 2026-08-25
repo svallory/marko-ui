@@ -20,26 +20,25 @@ export const docs: ComponentDocs = {
   <@description>
     Make changes to your profile here. Click save when you're done.
   </@description>
-  <@content>
-    ...
-  </@content>
+  ...
 </Sheet>`,
   // Sheet is single-file (parts.length === 1 → isCompound is false), so the
   // auto-generated <composition-tree> never renders. Upstream documents a
   // Composition tree of separate Sheet/SheetTrigger/SheetContent/
   // SheetHeader/SheetTitle/SheetDescription/SheetFooter components — our
   // port collapses that anatomy into named attr-tags (`@trigger`, `@title`,
-  // `@description`, `@content`, `@footer`) on a single `<Sheet>` tag, so the
-  // tree below documents the real (attr-tag) anatomy rather than restating
-  // upstream's separate-component shape, which doesn't exist in this port.
-  composition: `\`Sheet\` composes its anatomy from attr-tags instead of separate components:
+  // `@description`, `@footer`) plus the tag's own default body on a single
+  // `<Sheet>` tag, so the tree below documents the real anatomy rather than
+  // restating upstream's separate-component shape, which doesn't exist in
+  // this port.
+  composition: `\`Sheet\` composes its anatomy from attr-tags (plus its own default body) instead of separate components:
 
 \`\`\`text
 Sheet
 ├── @trigger   — render prop; spread the given props onto your own trigger element
 ├── @title     — heading text, wired to the dialog's aria-labelledby
 ├── @description — supporting text, wired to the dialog's aria-describedby
-├── @content   — the scrollable body
+├── (body)     — the scrollable content
 └── @footer    — optional actions row, e.g. Save / Close buttons
 \`\`\`
 

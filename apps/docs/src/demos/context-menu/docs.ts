@@ -13,7 +13,7 @@ export const docs: ComponentDocs = {
   usageTags: `<ContextMenu>`,
   importSnippet: `import ContextMenu from "@/components/ui/context-menu/context-menu.marko";`,
   usageSnippet: `<ContextMenu items=[{ value: "copy", label: "Copy" }]>
-  <@content>Right click here</@content>
+  Right click here
 </ContextMenu>`,
   examples: [
     {

@@ -102,29 +102,27 @@ static const ROLES: { value: AnchorRole; label: string }[] = [
         </Empty>
       </if>
       <else>
-        <MessageScrollerProvider>
-          <@content|controller|>
-            <MessageScroller controller=controller>
-              <MessageScrollerViewport controller=controller>
-                <MessageScrollerContent controller=controller class="p-4">
-                  <for|message| of=messages by=(message) => message.id>
-                    <MessageScrollerItem controller=controller messageId=message.id scrollAnchor=(message.role === anchorRole)>
-                      <Message align=(message.role === "user" ? "end" : "start")>
-                        <MessageContent>
-                          <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
-                            <BubbleContent class="space-y-2">
-                              <p class="whitespace-pre-wrap">${message.text}</p>
-                            </BubbleContent>
-                          </Bubble>
-                        </MessageContent>
-                      </Message>
-                    </MessageScrollerItem>
-                  </for>
-                </MessageScrollerContent>
-              </MessageScrollerViewport>
-              <MessageScrollerButton controller=controller/>
-            </MessageScroller>
-          </@content>
+        <MessageScrollerProvider|controller|>
+          <MessageScroller controller=controller>
+            <MessageScrollerViewport controller=controller>
+              <MessageScrollerContent controller=controller class="p-4">
+                <for|message| of=messages by=(message) => message.id>
+                  <MessageScrollerItem controller=controller messageId=message.id scrollAnchor=(message.role === anchorRole)>
+                    <Message align=(message.role === "user" ? "end" : "start")>
+                      <MessageContent>
+                        <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
+                          <BubbleContent class="space-y-2">
+                            <p class="whitespace-pre-wrap">${message.text}</p>
+                          </BubbleContent>
+                        </Bubble>
+                      </MessageContent>
+                    </Message>
+                  </MessageScrollerItem>
+                </for>
+              </MessageScrollerContent>
+            </MessageScrollerViewport>
+            <MessageScrollerButton controller=controller/>
+          </MessageScroller>
         </MessageScrollerProvider>
       </else>
     </CardContent>

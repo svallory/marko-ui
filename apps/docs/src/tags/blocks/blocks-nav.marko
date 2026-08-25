@@ -11,20 +11,18 @@ export interface Input {
 
 <div class="relative overflow-hidden">
   <ScrollArea vertical=false horizontal class="max-w-none">
-    <@content>
-      <div class="flex items-center">
-        <for|category| of=BLOCK_CATEGORIES.filter((c) => !c.hidden) by=(category) => category.slug>
-          <a
-            href=(category.slug === "" ? "/blocks" : `/blocks/${category.slug}`)
-            // String, not boolean: Marko renders `true` as a bare `data-active`
-            // attribute, which the `data-[active=true]:` Tailwind variant misses.
-            data-active=String(category.slug === input.activeSlug)
-            class="flex h-7 shrink-0 items-center justify-center px-4 text-center text-base font-medium text-muted-foreground transition-colors hover:text-primary data-[active=true]:text-primary"
-          >
-            ${category.name}
-          </a>
-        </for>
-      </div>
-    </@content>
+    <div class="flex items-center">
+      <for|category| of=BLOCK_CATEGORIES.filter((c) => !c.hidden) by=(category) => category.slug>
+        <a
+          href=(category.slug === "" ? "/blocks" : `/blocks/${category.slug}`)
+          // String, not boolean: Marko renders `true` as a bare `data-active`
+          // attribute, which the `data-[active=true]:` Tailwind variant misses.
+          data-active=String(category.slug === input.activeSlug)
+          class="flex h-7 shrink-0 items-center justify-center px-4 text-center text-base font-medium text-muted-foreground transition-colors hover:text-primary data-[active=true]:text-primary"
+        >
+          ${category.name}
+        </a>
+      </for>
+    </div>
   </ScrollArea>
 </div>

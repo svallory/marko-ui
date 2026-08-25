@@ -15,22 +15,20 @@ export const docs: ComponentDocs = {
   <@trigger|props|>
     <button ...props>Open</button>
   </@trigger>
-  <@content>
-    <p>Place any content here.</p>
-  </@content>
+  <p>Place any content here.</p>
 </Popover>`,
   // Upstream (both radix and base variants) documents a Composition tree
   // of separate Popover / PopoverTrigger / PopoverContent components.
   // Ours is single-file — the trigger is a render-prop (`@trigger`) and
-  // the content is a body slot (`@content`) on one `Popover` tag, so
+  // the content is the tag's own default body on one `Popover` tag, so
   // api-reference.json sees one part and `isCompound` is false. Documented
   // here as prose instead of the auto-generated compound tree.
   composition: `\`Popover\` is a single-file component. Its two upstream parts map onto slots on one tag:
 
 - \`<@trigger|props|>\` — render-prop slot; spread \`props\` onto your own trigger element (a \`Button\`, typically). Replaces upstream's separate \`PopoverTrigger\`.
-- \`<@content>\` — body slot rendered inside the floating panel when open. Replaces upstream's separate \`PopoverContent\`.
+- the tag's own body — rendered inside the floating panel when open. Replaces upstream's separate \`PopoverContent\`.
 
-Upstream's \`PopoverHeader\`, \`PopoverTitle\`, and \`PopoverDescription\` have no dedicated parts in our port — they're plain markup (an \`h4\`/\`p\` pair) composed directly inside \`@content\`, as shown in the examples below.`,
+Upstream's \`PopoverHeader\`, \`PopoverTitle\`, and \`PopoverDescription\` have no dedicated parts in our port — they're plain markup (an \`h4\`/\`p\` pair) composed directly inside the body, as shown in the examples below.`,
   examples: [
     {
       name: "popover-demo",

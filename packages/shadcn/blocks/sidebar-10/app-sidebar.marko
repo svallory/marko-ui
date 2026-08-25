@@ -105,15 +105,13 @@ static const WORKSPACES = [
 ];
 
 <Sidebar open=input.open class="border-r-0">
-  <@content>
-    <SidebarHeader>
-      <TeamSwitcher teams=TEAMS/>
-      <NavMain items=NAV_MAIN/>
-    </SidebarHeader>
-    <SidebarContent>
-      <NavFavorites favorites=FAVORITES/>
-      <NavWorkspaces workspaces=WORKSPACES/>
-      <NavSecondary items=NAV_SECONDARY class="mt-auto"/>
-    </SidebarContent>
-  </@content>
+  <SidebarHeader>
+    <TeamSwitcher teams=TEAMS/>
+    <NavMain items=NAV_MAIN/>
+  </SidebarHeader>
+  <SidebarContent>
+    <NavFavorites favorites=FAVORITES/>
+    <NavWorkspaces workspaces=WORKSPACES/>
+    <NavSecondary items=NAV_SECONDARY class="mt-auto"/>
+  </SidebarContent>
 </Sidebar>

@@ -49,25 +49,23 @@ import MessageScrollerViewport from "@/components/ui/message-scroller/viewport.m
 import MessageScrollerContent from "@/components/ui/message-scroller/content.marko";
 import MessageScrollerItem from "@/components/ui/message-scroller/item.marko";
 import MessageScrollerButton from "@/components/ui/message-scroller/button.marko";`,
-  usageSnippet: `<MessageScrollerProvider>
-  <@content|controller|>
-    <MessageScroller controller=controller>
-      <MessageScrollerViewport controller=controller>
-        <MessageScrollerContent controller=controller>
-          <for|message| of=messages by=(message) => message.id>
-            <MessageScrollerItem
-              controller=controller
-              messageId=message.id
-              scrollAnchor=(message.role === "user")
-            >
-              <!-- your message row -->
-            </MessageScrollerItem>
-          </for>
-        </MessageScrollerContent>
-      </MessageScrollerViewport>
-      <MessageScrollerButton controller=controller/>
-    </MessageScroller>
-  </@content>
+  usageSnippet: `<MessageScrollerProvider|controller|>
+  <MessageScroller controller=controller>
+    <MessageScrollerViewport controller=controller>
+      <MessageScrollerContent controller=controller>
+        <for|message| of=messages by=(message) => message.id>
+          <MessageScrollerItem
+            controller=controller
+            messageId=message.id
+            scrollAnchor=(message.role === "user")
+          >
+            <!-- your message row -->
+          </MessageScrollerItem>
+        </for>
+      </MessageScrollerContent>
+    </MessageScrollerViewport>
+    <MessageScrollerButton controller=controller/>
+  </MessageScroller>
 </MessageScrollerProvider>`,
   concepts:
     "MessageScroller is built around a few ideas: an anchor is the row (marked with scrollAnchor) that a new turn should settle near the top under, independent of message role. autoScroll follows the live edge only while the reader is already there — any scroll away is a deliberate opt-out, and MessageScrollerButton offers a way back. defaultScrollPosition controls where a saved thread opens (\"start\", \"end\", or \"last-anchor\" — the last anchored turn, the best default for reopening a conversation). preserveScrollOnPrepend keeps the reader's row in place when older history loads above them. All of this is tracked imperatively — scroll position, anchoring, and follow-output never trigger row rerenders — so MessageScroller stays fast in long transcripts.",

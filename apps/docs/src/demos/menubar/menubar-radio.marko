@@ -5,29 +5,27 @@ import MenubarMenu from "@marko-ui/shadcn/ui/menubar/menu.marko";
 <let/theme="system"/>
 
 <Menubar class="w-72">
-  <@content>
-    <MenubarMenu radioChange(group, value) { if (group === "user") user = value; }>
-      <@trigger|triggerProps|>
-        <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
-          Profiles
-        </button>
-      </@trigger>
-      <@item type="radio" value="andy" radioGroup="user" checked=(user === "andy")>Andy</@item>
-      <@item type="radio" value="benoit" radioGroup="user" checked=(user === "benoit")>Benoit</@item>
-      <@item type="radio" value="luis" radioGroup="user" checked=(user === "luis")>Luis</@item>
-      <@item type="separator"/>
-      <@item value="edit" inset>Edit...</@item>
-      <@item value="add-profile" inset>Add Profile...</@item>
-    </MenubarMenu>
-    <MenubarMenu radioChange(group, value) { if (group === "theme") theme = value; }>
-      <@trigger|triggerProps|>
-        <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
-          Theme
-        </button>
-      </@trigger>
-      <@item type="radio" value="light" radioGroup="theme" checked=(theme === "light")>Light</@item>
-      <@item type="radio" value="dark" radioGroup="theme" checked=(theme === "dark")>Dark</@item>
-      <@item type="radio" value="system" radioGroup="theme" checked=(theme === "system")>System</@item>
-    </MenubarMenu>
-  </@content>
+  <MenubarMenu radioChange(group, value) { if (group === "user") user = value; }>
+    <@trigger|triggerProps|>
+      <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+        Profiles
+      </button>
+    </@trigger>
+    <@item type="radio" value="andy" radioGroup="user" checked=(user === "andy")>Andy</@item>
+    <@item type="radio" value="benoit" radioGroup="user" checked=(user === "benoit")>Benoit</@item>
+    <@item type="radio" value="luis" radioGroup="user" checked=(user === "luis")>Luis</@item>
+    <@item type="separator"/>
+    <@item value="edit" inset>Edit...</@item>
+    <@item value="add-profile" inset>Add Profile...</@item>
+  </MenubarMenu>
+  <MenubarMenu radioChange(group, value) { if (group === "theme") theme = value; }>
+    <@trigger|triggerProps|>
+      <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+        Theme
+      </button>
+    </@trigger>
+    <@item type="radio" value="light" radioGroup="theme" checked=(theme === "light")>Light</@item>
+    <@item type="radio" value="dark" radioGroup="theme" checked=(theme === "dark")>Dark</@item>
+    <@item type="radio" value="system" radioGroup="theme" checked=(theme === "system")>System</@item>
+  </MenubarMenu>
 </Menubar>

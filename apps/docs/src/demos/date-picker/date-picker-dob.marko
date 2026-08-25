@@ -25,15 +25,13 @@ import Calendar from "@marko-ui/shadcn/ui/calendar/calendar.marko";
         </else>
       </Button>
     </@trigger>
-    <@content>
-      <Calendar
-        captionLayout="dropdown"
-        value=value
-        valueChange=(next) => {
-          value = next;
-          open = false;
-        }
-      />
-    </@content>
+    <Calendar
+      captionLayout="dropdown"
+      value=value
+      valueChange=(next) => {
+        value = next;
+        open = false;
+      }
+    />
   </Popover>
 </Field>

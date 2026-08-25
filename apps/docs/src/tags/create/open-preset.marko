@@ -48,41 +48,39 @@ static const PRESET_DESCRIPTION =
 <Dialog open=input.open openChange=handleOpenChange class="dark sm:max-w-md">
   <@title>${PRESET_TITLE}</@title>
   <@description>${PRESET_DESCRIPTION}</@description>
-  <@content>
-    <form on-submit=handleSubmit data-slot="open-preset-form">
-      <div class="py-4">
-        <label for="preset-code" class="sr-only">Preset code</label>
-        <input
-          id="preset-code"
-          type="text"
-          value=inputValue
-          on-input(event: Event) {
-            inputValue = (event.target as HTMLInputElement).value;
-          }
-          placeholder=`${PRESET_EXAMPLE} or --preset ${PRESET_EXAMPLE}`
-          autocapitalize="none"
-          autocorrect="off"
-          spellcheck="false"
-          aria-invalid=String(isInvalid)
-          class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring aria-[invalid=true]:border-destructive md:h-8"
-        />
-      </div>
-      <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <button
-          type="button"
-          class="inline-flex items-center justify-center rounded-md border border-input bg-transparent px-4 py-2 text-sm font-medium shadow-xs hover:bg-muted"
-          on-click() { handleOpenChange(false); }
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled=!nextPreset
-          class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-xs hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
-        >
-          Open
-        </button>
-      </div>
-    </form>
-  </@content>
+  <form on-submit=handleSubmit data-slot="open-preset-form">
+    <div class="py-4">
+      <label for="preset-code" class="sr-only">Preset code</label>
+      <input
+        id="preset-code"
+        type="text"
+        value=inputValue
+        on-input(event: Event) {
+          inputValue = (event.target as HTMLInputElement).value;
+        }
+        placeholder=`${PRESET_EXAMPLE} or --preset ${PRESET_EXAMPLE}`
+        autocapitalize="none"
+        autocorrect="off"
+        spellcheck="false"
+        aria-invalid=String(isInvalid)
+        class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring aria-[invalid=true]:border-destructive md:h-8"
+      />
+    </div>
+    <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      <button
+        type="button"
+        class="inline-flex items-center justify-center rounded-md border border-input bg-transparent px-4 py-2 text-sm font-medium shadow-xs hover:bg-muted"
+        on-click() { handleOpenChange(false); }
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        disabled=!nextPreset
+        class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-xs hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+      >
+        Open
+      </button>
+    </div>
+  </form>
 </Dialog>

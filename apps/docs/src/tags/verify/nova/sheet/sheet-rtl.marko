@@ -21,18 +21,16 @@ import Label from "@marko-ui/shadcn/ui/label/label.marko";
     </@trigger>
     <@title>تعديل الملف الشخصي</@title>
     <@description>قم بإجراء تغييرات على ملفك الشخصي هنا. انقر حفظ عند الانتهاء.</@description>
-    <@content>
-      <div class="grid gap-4 px-4">
-        <div class="grid gap-2">
-          <Label for="sheet-rtl-name">الاسم</Label>
-          <Input id="sheet-rtl-name" name="name" value="Pedro Duarte"/>
-        </div>
-        <div class="grid gap-2">
-          <Label for="sheet-rtl-username">اسم المستخدم</Label>
-          <Input id="sheet-rtl-username" name="username" value="peduarte"/>
-        </div>
+    <div class="grid gap-4 px-4">
+      <div class="grid gap-2">
+        <Label for="sheet-rtl-name">الاسم</Label>
+        <Input id="sheet-rtl-name" name="name" value="Pedro Duarte"/>
       </div>
-    </@content>
+      <div class="grid gap-2">
+        <Label for="sheet-rtl-username">اسم المستخدم</Label>
+        <Input id="sheet-rtl-username" name="username" value="peduarte"/>
+      </div>
+    </div>
     <@footer>
       <Button type="submit">حفظ التغييرات</Button>
       <Button variant="outline">إغلاق</Button>

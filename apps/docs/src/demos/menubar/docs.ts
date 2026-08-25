@@ -14,13 +14,11 @@ export const docs: ComponentDocs = {
   importSnippet: `import Menubar from "@/components/ui/menubar/menubar.marko";
 import MenubarMenu from "@/components/ui/menubar/menu.marko";`,
   usageSnippet: `<Menubar>
-  <@content>
-    <MenubarMenu items=fileItems select(value) { /* ... */ }>
-      <@trigger|triggerProps|>
-        <button ...triggerProps>File</button>
-      </@trigger>
-    </MenubarMenu>
-  </@content>
+  <MenubarMenu items=fileItems select(value) { /* ... */ }>
+    <@trigger|triggerProps|>
+      <button ...triggerProps>File</button>
+    </@trigger>
+  </MenubarMenu>
 </Menubar>`,
   examples: [
     {

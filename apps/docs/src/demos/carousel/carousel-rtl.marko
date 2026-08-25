@@ -25,12 +25,10 @@ static function toArabicNumerals(num: number): string {
 
 static const SLIDES = [1, 2, 3, 4, 5];
 
-<Carousel items=SLIDES dir="rtl" class="w-full max-w-[12rem] sm:max-w-xs">
-  <@content|item|>
-    <div class="p-1">
-      <div class="flex aspect-square items-center justify-center rounded-lg border bg-card">
-        <span class="text-4xl font-semibold">${toArabicNumerals(item)}</span>
-      </div>
+<Carousel|item| items=SLIDES dir="rtl" class="w-full max-w-[12rem] sm:max-w-xs">
+  <div class="p-1">
+    <div class="flex aspect-square items-center justify-center rounded-lg border bg-card">
+      <span class="text-4xl font-semibold">${toArabicNumerals(item)}</span>
     </div>
-  </@content>
+  </div>
 </Carousel>

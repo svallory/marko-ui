@@ -11,9 +11,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
     <@trigger|props|>
       <Button ...props variant="outline">${open ? "Close" : "Open"}</Button>
     </@trigger>
-    <@content>
-      <p class="text-sm">Controlled popover content.</p>
-    </@content>
+    <p class="text-sm">Controlled popover content.</p>
   </Popover>
   <span class="text-sm text-muted-foreground">open: ${String(open)}</span>
 </div>

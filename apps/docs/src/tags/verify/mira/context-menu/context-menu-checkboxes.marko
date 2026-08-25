@@ -19,9 +19,7 @@ import ContextMenu from "@marko-ui/shadcn/ui/context-menu/context-menu.marko";
     else if (value === "developer-tools") showDeveloperTools = !showDeveloperTools;
   }
 >
-  <@content>
-    <div class="flex h-[100px] w-[250px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
-      Right click here
-    </div>
-  </@content>
+  <div class="flex h-[100px] w-[250px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+    Right click here
+  </div>
 </ContextMenu>

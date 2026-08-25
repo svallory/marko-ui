@@ -299,69 +299,67 @@ static const drawerChartConfig = {
                       </@trigger>
                       <@title>${row.header}</@title>
                       <@description>Showing total visitors for the last 6 months</@description>
-                      <@content>
-                        <div class="flex flex-col gap-4 text-sm">
-                          <Chart config=drawerChartConfig>
-                            <AreaChart
-                              data=chartData
-                              config=drawerChartConfig
-                              xKey="month"
-                              margin={ left: 0, right: 10 }
-                              indicator="dot"
-                              cursor=false
-                            >
-                              <@series dataKey="mobile" type="natural" stackId="a" fillOpacity=0.6/>
-                              <@series dataKey="desktop" type="natural" stackId="a" fillOpacity=0.4/>
-                            </AreaChart>
-                          </Chart>
-                          <Separator/>
-                          <div class="grid gap-2">
-                            <div class="flex gap-2 leading-none font-medium">
-                              Trending up by 5.2% this month
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
-                                <path d="M16 7h6v6"/>
-                                <path d="m22 7-8.5 8.5-5-5L2 17"/>
-                              </svg>
+                      <div class="flex flex-col gap-4 text-sm">
+                        <Chart config=drawerChartConfig>
+                          <AreaChart
+                            data=chartData
+                            config=drawerChartConfig
+                            xKey="month"
+                            margin={ left: 0, right: 10 }
+                            indicator="dot"
+                            cursor=false
+                          >
+                            <@series dataKey="mobile" type="natural" stackId="a" fillOpacity=0.6/>
+                            <@series dataKey="desktop" type="natural" stackId="a" fillOpacity=0.4/>
+                          </AreaChart>
+                        </Chart>
+                        <Separator/>
+                        <div class="grid gap-2">
+                          <div class="flex gap-2 leading-none font-medium">
+                            Trending up by 5.2% this month
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+                              <path d="M16 7h6v6"/>
+                              <path d="m22 7-8.5 8.5-5-5L2 17"/>
+                            </svg>
+                          </div>
+                          <div class="text-muted-foreground">
+                            Showing total visitors for the last 6 months. This is just
+                            some random text to test the layout. It spans multiple lines
+                            and should wrap around.
+                          </div>
+                        </div>
+                        <Separator/>
+                        <form class="flex flex-col gap-4">
+                          <div class="flex flex-col gap-3">
+                            <Label for=`${row.id}-header`>Header</Label>
+                            <Input id=`${row.id}-header` value=row.header/>
+                          </div>
+                          <div class="grid grid-cols-2 gap-4">
+                            <div class="flex flex-col gap-3">
+                              <Label for=`${row.id}-type`>Type</Label>
+                              <Select items=typeItems value=[row.type] placeholder="Select a type" class="w-full"/>
                             </div>
-                            <div class="text-muted-foreground">
-                              Showing total visitors for the last 6 months. This is just
-                              some random text to test the layout. It spans multiple lines
-                              and should wrap around.
+                            <div class="flex flex-col gap-3">
+                              <Label for=`${row.id}-status`>Status</Label>
+                              <Select items=statusItems value=[row.status] placeholder="Select a status" class="w-full"/>
                             </div>
                           </div>
-                          <Separator/>
-                          <form class="flex flex-col gap-4">
+                          <div class="grid grid-cols-2 gap-4">
                             <div class="flex flex-col gap-3">
-                              <Label for=`${row.id}-header`>Header</Label>
-                              <Input id=`${row.id}-header` value=row.header/>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                              <div class="flex flex-col gap-3">
-                                <Label for=`${row.id}-type`>Type</Label>
-                                <Select items=typeItems value=[row.type] placeholder="Select a type" class="w-full"/>
-                              </div>
-                              <div class="flex flex-col gap-3">
-                                <Label for=`${row.id}-status`>Status</Label>
-                                <Select items=statusItems value=[row.status] placeholder="Select a status" class="w-full"/>
-                              </div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                              <div class="flex flex-col gap-3">
-                                <Label for=`${row.id}-target`>Target</Label>
-                                <Input id=`${row.id}-target` value=row.target/>
-                              </div>
-                              <div class="flex flex-col gap-3">
-                                <Label for=`${row.id}-limit`>Limit</Label>
-                                <Input id=`${row.id}-limit` value=row.limit/>
-                              </div>
+                              <Label for=`${row.id}-target`>Target</Label>
+                              <Input id=`${row.id}-target` value=row.target/>
                             </div>
                             <div class="flex flex-col gap-3">
-                              <Label for=`${row.id}-reviewer`>Reviewer</Label>
-                              <Select items=reviewerItems value=[row.reviewer] placeholder="Select a reviewer" class="w-full"/>
+                              <Label for=`${row.id}-limit`>Limit</Label>
+                              <Input id=`${row.id}-limit` value=row.limit/>
                             </div>
-                          </form>
-                        </div>
-                      </@content>
+                          </div>
+                          <div class="flex flex-col gap-3">
+                            <Label for=`${row.id}-reviewer`>Reviewer</Label>
+                            <Select items=reviewerItems value=[row.reviewer] placeholder="Select a reviewer" class="w-full"/>
+                          </div>
+                        </form>
+                      </div>
                       <@footer>
                         <button type="submit" data-slot="button" class=buttonVariants({})>Submit</button>
                         <button type="button" data-slot="button" class=buttonVariants({ variant: "outline" })>Done</button>

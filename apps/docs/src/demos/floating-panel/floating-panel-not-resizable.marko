@@ -10,16 +10,14 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
     <Button ...props variant="outline">Open inspector</Button>
   </@trigger>
   <@title>Inspector</@title>
-  <@content>
-    <div class="grid gap-2">
-      <div class="flex items-center justify-between">
-        <span class="text-muted-foreground">Width</span>
-        <span class="font-medium">320px</span>
-      </div>
-      <div class="flex items-center justify-between">
-        <span class="text-muted-foreground">Resizable</span>
-        <span class="font-medium">No</span>
-      </div>
+  <div class="grid gap-2">
+    <div class="flex items-center justify-between">
+      <span class="text-muted-foreground">Width</span>
+      <span class="font-medium">320px</span>
     </div>
-  </@content>
+    <div class="flex items-center justify-between">
+      <span class="text-muted-foreground">Resizable</span>
+      <span class="font-medium">No</span>
+    </div>
+  </div>
 </FloatingPanel>

@@ -15,9 +15,7 @@ export const docs: ComponentDocs = {
   <@trigger|props|>
     <a ...props href="#">@marko-ui</a>
   </@trigger>
-  <@content>
-    The component registry for Marko 6.
-  </@content>
+  The component registry for Marko 6.
 </HoverCard>`,
   // Upstream's hover-card.mdx documents HoverCard/HoverCardTrigger/
   // HoverCardContent as three separate composed components. Our port is
@@ -32,8 +30,8 @@ export const docs: ComponentDocs = {
     "composes `HoverCard` / `HoverCardTrigger` / `HoverCardContent`, this " +
     "port folds trigger and content into `HoverCard` itself: the " +
     "`@trigger` render-prop receives the machine's trigger attributes to " +
-    "spread onto whatever element opens the card, and `@content` supplies " +
-    "what's shown once the pointer lingers. There is no separate " +
+    "spread onto whatever element opens the card, and the tag's own body " +
+    "supplies what's shown once the pointer lingers. There is no separate " +
     "`HoverCardTrigger` or `HoverCardContent` tag to import.",
   examples: [
     {

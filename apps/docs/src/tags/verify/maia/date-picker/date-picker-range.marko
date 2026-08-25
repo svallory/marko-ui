@@ -47,13 +47,11 @@ static function formatDate(date: { year: number; month: number; day: number }) {
         </else>
       </Button>
     </@trigger>
-    <@content>
-      <Calendar
-        selectionMode="range"
-        numOfMonths=2
-        value=value
-        valueChange=(next) => { value = next; }
-      />
-    </@content>
+    <Calendar
+      selectionMode="range"
+      numOfMonths=2
+      value=value
+      valueChange=(next) => { value = next; }
+    />
   </Popover>
 </Field>

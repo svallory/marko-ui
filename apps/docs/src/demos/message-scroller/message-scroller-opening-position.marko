@@ -82,34 +82,32 @@ static const POSITION_TABS = [
       <CardDescription>Choose where a saved transcript opens.</CardDescription>
     </CardHeader>
     <CardContent class="flex-1 overflow-hidden p-0">
-      <MessageScrollerProvider>
-        <@content|controller|>
-          <for|generation| of=[positionKey] by=(value) => value>
-            <MessageScroller controller=controller>
-              <MessageScrollerViewport controller=controller>
-                <MessageScrollerContent controller=controller class="p-4">
-                  <for|message| of=MESSAGES by=(message) => message.id>
-                    <MessageScrollerItem controller=controller messageId=message.id scrollAnchor=(message.role === "user")>
-                      <Message align=(message.role === "user" ? "end" : "start")>
-                        <MessageContent>
-                          <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
-                            <BubbleContent class="space-y-2">
-                              <for|paragraph| of=message.text.split(/\n\s*\n/)>
-                                <p class="whitespace-pre-wrap">${paragraph}</p>
-                              </for>
-                            </BubbleContent>
-                          </Bubble>
-                        </MessageContent>
-                      </Message>
-                    </MessageScrollerItem>
-                  </for>
-                </MessageScrollerContent>
-              </MessageScrollerViewport>
-              <MessageScrollerButton controller=controller/>
-            </MessageScroller>
-            <lifecycle onMount() { return runOpeningScroll(controller); }/>
-          </for>
-        </@content>
+      <MessageScrollerProvider|controller|>
+        <for|generation| of=[positionKey] by=(value) => value>
+          <MessageScroller controller=controller>
+            <MessageScrollerViewport controller=controller>
+              <MessageScrollerContent controller=controller class="p-4">
+                <for|message| of=MESSAGES by=(message) => message.id>
+                  <MessageScrollerItem controller=controller messageId=message.id scrollAnchor=(message.role === "user")>
+                    <Message align=(message.role === "user" ? "end" : "start")>
+                      <MessageContent>
+                        <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
+                          <BubbleContent class="space-y-2">
+                            <for|paragraph| of=message.text.split(/\n\s*\n/)>
+                              <p class="whitespace-pre-wrap">${paragraph}</p>
+                            </for>
+                          </BubbleContent>
+                        </Bubble>
+                      </MessageContent>
+                    </Message>
+                  </MessageScrollerItem>
+                </for>
+              </MessageScrollerContent>
+            </MessageScrollerViewport>
+            <MessageScrollerButton controller=controller/>
+          </MessageScroller>
+          <lifecycle onMount() { return runOpeningScroll(controller); }/>
+        </for>
       </MessageScrollerProvider>
     </CardContent>
     <CardFooter class="flex items-center justify-center border-t">

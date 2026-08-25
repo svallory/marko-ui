@@ -7,12 +7,10 @@ static const WIZARD_STEPS = [
   { title: "Review", description: "Confirm and finish" },
 ];
 
-<Steps items=WIZARD_STEPS class="w-[560px]">
-  <@content|index|>
-    <p class="text-muted-foreground text-sm">
-      Step ${index + 1}: ${WIZARD_STEPS[index].title} content goes here.
-    </p>
-  </@content>
+<Steps|index| items=WIZARD_STEPS class="w-[560px]">
+  <p class="text-muted-foreground text-sm">
+    Step ${index + 1}: ${WIZARD_STEPS[index].title} content goes here.
+  </p>
   <@completedContent>
     <p class="text-muted-foreground text-sm">All steps complete — thanks!</p>
   </@completedContent>

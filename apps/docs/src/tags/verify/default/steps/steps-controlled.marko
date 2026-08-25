@@ -11,17 +11,15 @@ static const SHIPPING_STEPS = [
 <let/step=0/>
 
 <p class="mb-4 text-sm text-muted-foreground">Current step: ${step + 1}</p>
-<Steps
+<Steps|index|
   items=SHIPPING_STEPS
   step=step
   stepChange(next) { step = next; }
   class="w-[560px]"
 >
-  <@content|index|>
-    <p class="text-muted-foreground text-sm">
-      ${SHIPPING_STEPS[index].title} step content.
-    </p>
-  </@content>
+  <p class="text-muted-foreground text-sm">
+    ${SHIPPING_STEPS[index].title} step content.
+  </p>
   <@completedContent>
     <p class="text-muted-foreground text-sm">Order complete.</p>
   </@completedContent>

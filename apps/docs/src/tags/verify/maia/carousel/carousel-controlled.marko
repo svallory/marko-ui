@@ -7,16 +7,14 @@ static const SLIDES = [1, 2, 3, 4, 5];
 
 <div>
   <p class="mb-4 text-sm text-muted-foreground">Page: ${page}</p>
-  <Carousel
+  <Carousel|item|
     items=SLIDES
     page=page
     pageChange(next) { page = next; }
     class="w-full max-w-xs"
   >
-    <@content|item|>
-      <div class="flex aspect-square items-center justify-center rounded-lg border bg-card">
-        <span class="text-4xl font-semibold">${item}</span>
-      </div>
-    </@content>
+    <div class="flex aspect-square items-center justify-center rounded-lg border bg-card">
+      <span class="text-4xl font-semibold">${item}</span>
+    </div>
   </Carousel>
 </div>

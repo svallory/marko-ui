@@ -7,8 +7,9 @@
 // than compound Select* parts, so the trigger/value/content markup lives
 // inside it (same data-slots emitted); the trigger is widened to w-full via a
 // class on the root (same pattern as report-bug). The Dialog is likewise a
-// single tag with @trigger/@title/@description/@content/@footer attr tags
-// emitting the same dialog-* data-slots; Cancel closes via controlled open
+// single tag with @trigger/@title/@description/@footer attr tags (body
+// content is the tag's own default body) emitting the same dialog-*
+// data-slots; Cancel closes via controlled open
 // state (DialogClose equivalent).
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
 import Card from "@marko-ui/shadcn/ui/card/card.marko";
@@ -85,41 +86,39 @@ static const CATEGORIES = [
       <@description>
         Let us know how we can improve your experience.
       </@description>
-      <@content>
-        <FieldGroup>
-          <div class="grid grid-cols-2 gap-3">
-            <Field>
-              <FieldLabel for="feedback-name">Name</FieldLabel>
-              <Input id="feedback-name" placeholder="Your name"/>
-            </Field>
-            <Field>
-              <FieldLabel for="feedback-email">Email</FieldLabel>
-              <Input
-                id="feedback-email"
-                type="email"
-                placeholder="you@example.com"
-              />
-            </Field>
-          </div>
+      <FieldGroup>
+        <div class="grid grid-cols-2 gap-3">
           <Field>
-            <FieldLabel for="feedback-category">Category</FieldLabel>
-            <Select
-              ids={ trigger: "feedback-category" }
-              items=CATEGORIES
-              defaultValue=["general"]
-              class="w-full [&_[data-slot=select-trigger]]:w-full"
-            />
+            <FieldLabel for="feedback-name">Name</FieldLabel>
+            <Input id="feedback-name" placeholder="Your name"/>
           </Field>
           <Field>
-            <FieldLabel for="feedback-message">Message</FieldLabel>
-            <Textarea
-              id="feedback-message"
-              placeholder="Tell us what's on your mind..."
-              class="min-h-24 resize-none"
+            <FieldLabel for="feedback-email">Email</FieldLabel>
+            <Input
+              id="feedback-email"
+              type="email"
+              placeholder="you@example.com"
             />
           </Field>
-        </FieldGroup>
-      </@content>
+        </div>
+        <Field>
+          <FieldLabel for="feedback-category">Category</FieldLabel>
+          <Select
+            ids={ trigger: "feedback-category" }
+            items=CATEGORIES
+            defaultValue=["general"]
+            class="w-full [&_[data-slot=select-trigger]]:w-full"
+          />
+        </Field>
+        <Field>
+          <FieldLabel for="feedback-message">Message</FieldLabel>
+          <Textarea
+            id="feedback-message"
+            placeholder="Tell us what's on your mind..."
+            class="min-h-24 resize-none"
+          />
+        </Field>
+      </FieldGroup>
       <@footer>
         <Button variant="outline" onClick() { feedbackOpen = false; }>
           Cancel

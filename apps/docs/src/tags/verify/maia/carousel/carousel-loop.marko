@@ -3,10 +3,8 @@ import Carousel from "@marko-ui/shadcn/ui/carousel/carousel.marko";
 
 static const SLIDES = [1, 2, 3, 4, 5];
 
-<Carousel items=SLIDES loop class="w-full max-w-xs">
-  <@content|item|>
-    <div class="flex aspect-square items-center justify-center rounded-lg border bg-card">
-      <span class="text-4xl font-semibold">${item}</span>
-    </div>
-  </@content>
+<Carousel|item| items=SLIDES loop class="w-full max-w-xs">
+  <div class="flex aspect-square items-center justify-center rounded-lg border bg-card">
+    <span class="text-4xl font-semibold">${item}</span>
+  </div>
 </Carousel>

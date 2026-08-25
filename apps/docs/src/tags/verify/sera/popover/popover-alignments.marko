@@ -13,24 +13,18 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
     <@trigger|props|>
       <Button ...props variant="outline" size="sm">Start</Button>
     </@trigger>
-    <@content>
-      <p class="text-sm">Aligned to start</p>
-    </@content>
+    <p class="text-sm">Aligned to start</p>
   </Popover>
   <Popover positioning={ placement: "bottom" } class="w-40">
     <@trigger|props|>
       <Button ...props variant="outline" size="sm">Center</Button>
     </@trigger>
-    <@content>
-      <p class="text-sm">Aligned to center</p>
-    </@content>
+    <p class="text-sm">Aligned to center</p>
   </Popover>
   <Popover positioning={ placement: "bottom-end" } class="w-40">
     <@trigger|props|>
       <Button ...props variant="outline" size="sm">End</Button>
     </@trigger>
-    <@content>
-      <p class="text-sm">Aligned to end</p>
-    </@content>
+    <p class="text-sm">Aligned to end</p>
   </Popover>
 </div>

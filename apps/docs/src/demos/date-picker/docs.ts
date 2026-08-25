@@ -39,13 +39,14 @@ export const docs: ComponentDocs = {
     "```text\n" +
     "Popover\n" +
     "├── @trigger (render-prop)\n" +
-    "└── @content\n" +
+    "└── (body)\n" +
     "    └── Calendar\n" +
     "```\n\n" +
     "`Popover`'s `@trigger` receives the machine's trigger props to spread " +
-    "onto any element (a `Button`, an `InputGroupButton`…), and `@content` " +
-    "holds whatever should render inside the positioned panel — typically " +
-    "a `Calendar`. See the Popover and Calendar pages for their full APIs.",
+    "onto any element (a `Button`, an `InputGroupButton`…), and the tag's " +
+    "own body holds whatever should render inside the positioned panel — " +
+    "typically a `Calendar`. See the Popover and Calendar pages for their " +
+    "full APIs.",
   examples: [
     {
       name: "date-picker-demo",

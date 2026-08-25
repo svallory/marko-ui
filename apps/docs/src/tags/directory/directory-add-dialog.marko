@@ -64,60 +64,58 @@ static function commandFor(manager: string, registryName: string) {
   <@description>
     Run this command to add ${input.registryName} to your project.
   </@description>
-  <@content>
-    <if=input.registryName>
-      <div class="gap-0 overflow-hidden rounded-xl border">
-        <div class="flex items-center gap-2 border-b p-1.5">
-          <div role="tablist" aria-label="Package manager" class="flex items-center">
-            <for|m| of=MANAGERS by=(m) => m>
-              <button
-                type="button"
-                role="tab"
-                data-slot="tabs-trigger"
-                aria-selected=String(m === manager)
-                class="rounded-md px-3 py-1 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground aria-selected:bg-muted aria-selected:text-foreground"
-                onClick() {
-                  manager = m;
-                  try {
-                    localStorage.setItem(STORAGE_KEY, m);
-                  } catch {
-                    // Private-mode / blocked storage: the choice just does not persist.
-                  }
+  <if=input.registryName>
+    <div class="gap-0 overflow-hidden rounded-xl border">
+      <div class="flex items-center gap-2 border-b p-1.5">
+        <div role="tablist" aria-label="Package manager" class="flex items-center">
+          <for|m| of=MANAGERS by=(m) => m>
+            <button
+              type="button"
+              role="tab"
+              data-slot="tabs-trigger"
+              aria-selected=String(m === manager)
+              class="rounded-md px-3 py-1 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground aria-selected:bg-muted aria-selected:text-foreground"
+              onClick() {
+                manager = m;
+                try {
+                  localStorage.setItem(STORAGE_KEY, m);
+                } catch {
+                  // Private-mode / blocked storage: the choice just does not persist.
                 }
-              >
-                ${m}
-              </button>
-            </for>
-          </div>
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            class="ml-auto"
-            onClick() {
-              navigator.clipboard
-                .writeText(commandFor(manager, input.registryName ?? ""))
-                .catch(() => {
-                  // Clipboard denied (permissions/insecure context): the
-                  // copied indicator still confirms the intent; nothing to do.
-                });
-              hasCopied = true;
-              if (copyTimer) clearTimeout(copyTimer);
-              copyTimer = setTimeout(() => { hasCopied = false; }, 2000);
-            }
-          >
-            <if=hasCopied><Icon name="CheckIcon"/></if>
-            <else><Icon name="CopyIcon"/></else>
-            <span class="sr-only">Copy command</span>
-          </Button>
+              }
+            >
+              ${m}
+            </button>
+          </for>
         </div>
-        <div class="bg-surface px-3 py-3 text-surface-foreground">
-          <div class="no-scrollbar overflow-x-auto">
-            <code class="font-mono text-sm whitespace-nowrap">${commandFor(manager, input.registryName)}</code>
-          </div>
+        <Button
+          size="icon-sm"
+          variant="ghost"
+          class="ml-auto"
+          onClick() {
+            navigator.clipboard
+              .writeText(commandFor(manager, input.registryName ?? ""))
+              .catch(() => {
+                // Clipboard denied (permissions/insecure context): the
+                // copied indicator still confirms the intent; nothing to do.
+              });
+            hasCopied = true;
+            if (copyTimer) clearTimeout(copyTimer);
+            copyTimer = setTimeout(() => { hasCopied = false; }, 2000);
+          }
+        >
+          <if=hasCopied><Icon name="CheckIcon"/></if>
+          <else><Icon name="CopyIcon"/></else>
+          <span class="sr-only">Copy command</span>
+        </Button>
+      </div>
+      <div class="bg-surface px-3 py-3 text-surface-foreground">
+        <div class="no-scrollbar overflow-x-auto">
+          <code class="font-mono text-sm whitespace-nowrap">${commandFor(manager, input.registryName)}</code>
         </div>
       </div>
-    </if>
-  </@content>
+    </div>
+  </if>
   <@footer>
     <Button size="sm" variant="outline" onClick() { input.close(); }>Done</Button>
   </@footer>

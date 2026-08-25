@@ -59,49 +59,47 @@ static const MENU_ITEMS = USER_MESSAGES.map((message) => ({
   controller().scrollToMessage(messageId, { align: "start", behavior: "smooth" });
 }/>
 
-<MessageScrollerProvider defaultScrollPosition="end">
-  <@content|controller|>
-    <div class="relative flex flex-col gap-4">
-      <Card class="mx-auto h-140 w-full max-w-sm gap-0">
-        <CardHeader class="gap-1 border-b">
-          <CardTitle>Commands</CardTitle>
-          <CardDescription>Drive the transcript from outside.</CardDescription>
-          <CardAction>
-            <DropdownMenu items=MENU_ITEMS select=(value) => jumpTo(controller, value)>
-              <@trigger|props|>
-                <Button ...props type="button" variant="secondary">Jump to...</Button>
-              </@trigger>
-            </DropdownMenu>
-          </CardAction>
-        </CardHeader>
-        <CardContent class="flex-1 overflow-hidden p-0">
-          <MessageScroller controller=controller>
-            <MessageScrollerViewport controller=controller>
-              <MessageScrollerContent controller=controller class="p-4">
-                <for|message| of=MESSAGES by=(message) => message.id>
-                  <MessageScrollerItem controller=controller messageId=message.id scrollAnchor=(message.role === "user")>
-                    <Message align=(message.role === "user" ? "end" : "start")>
-                      <MessageContent>
-                        <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
-                          <BubbleContent class="space-y-2">
-                            <for|paragraph| of=message.text.split(/\n\s*\n/)>
-                              <p class="whitespace-pre-wrap">${paragraph}</p>
-                            </for>
-                          </BubbleContent>
-                        </Bubble>
-                      </MessageContent>
-                    </Message>
-                  </MessageScrollerItem>
-                </for>
-              </MessageScrollerContent>
-            </MessageScrollerViewport>
-            <MessageScrollerButton controller=controller/>
-          </MessageScroller>
-        </CardContent>
-      </Card>
-      <div class="mx-auto max-w-sm px-0.5 text-center text-xs text-balance text-muted-foreground">
-        Use the controls to jump to any message in the conversation.
-      </div>
+<MessageScrollerProvider|controller| defaultScrollPosition="end">
+  <div class="relative flex flex-col gap-4">
+    <Card class="mx-auto h-140 w-full max-w-sm gap-0">
+      <CardHeader class="gap-1 border-b">
+        <CardTitle>Commands</CardTitle>
+        <CardDescription>Drive the transcript from outside.</CardDescription>
+        <CardAction>
+          <DropdownMenu items=MENU_ITEMS select=(value) => jumpTo(controller, value)>
+            <@trigger|props|>
+              <Button ...props type="button" variant="secondary">Jump to...</Button>
+            </@trigger>
+          </DropdownMenu>
+        </CardAction>
+      </CardHeader>
+      <CardContent class="flex-1 overflow-hidden p-0">
+        <MessageScroller controller=controller>
+          <MessageScrollerViewport controller=controller>
+            <MessageScrollerContent controller=controller class="p-4">
+              <for|message| of=MESSAGES by=(message) => message.id>
+                <MessageScrollerItem controller=controller messageId=message.id scrollAnchor=(message.role === "user")>
+                  <Message align=(message.role === "user" ? "end" : "start")>
+                    <MessageContent>
+                      <Bubble variant=(message.role === "user" ? "muted" : "ghost")>
+                        <BubbleContent class="space-y-2">
+                          <for|paragraph| of=message.text.split(/\n\s*\n/)>
+                            <p class="whitespace-pre-wrap">${paragraph}</p>
+                          </for>
+                        </BubbleContent>
+                      </Bubble>
+                    </MessageContent>
+                  </Message>
+                </MessageScrollerItem>
+              </for>
+            </MessageScrollerContent>
+          </MessageScrollerViewport>
+          <MessageScrollerButton controller=controller/>
+        </MessageScroller>
+      </CardContent>
+    </Card>
+    <div class="mx-auto max-w-sm px-0.5 text-center text-xs text-balance text-muted-foreground">
+      Use the controls to jump to any message in the conversation.
     </div>
-  </@content>
+  </div>
 </MessageScrollerProvider>

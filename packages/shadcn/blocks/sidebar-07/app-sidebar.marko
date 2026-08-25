@@ -119,16 +119,14 @@ static const PROJECTS: ProjectItem[] = [
 ];
 
 <Sidebar open=input.open>
-  <@content>
-    <SidebarHeader>
-      <TeamSwitcher teams=TEAMS/>
-    </SidebarHeader>
-    <SidebarContent>
-      <NavMain items=NAV_MAIN/>
-      <NavProjects projects=PROJECTS/>
-    </SidebarContent>
-    <SidebarFooter>
-      <NavUser user=USER/>
-    </SidebarFooter>
-  </@content>
+  <SidebarHeader>
+    <TeamSwitcher teams=TEAMS/>
+  </SidebarHeader>
+  <SidebarContent>
+    <NavMain items=NAV_MAIN/>
+    <NavProjects projects=PROJECTS/>
+  </SidebarContent>
+  <SidebarFooter>
+    <NavUser user=USER/>
+  </SidebarFooter>
 </Sidebar>

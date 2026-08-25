@@ -18,12 +18,10 @@ static const SLIDES = [1, 2, 3, 4, 5];
 <let/page=0/>
 
 <div class="mx-auto max-w-[10rem] sm:max-w-xs">
-  <Carousel items=SLIDES class="w-full max-w-xs" pageChange(newPage) { page = newPage; }>
-    <@content|item|>
-      <div class="flex aspect-square items-center justify-center rounded-lg border bg-card m-px">
-        <span class="text-4xl font-semibold">${item}</span>
-      </div>
-    </@content>
+  <Carousel|item| items=SLIDES class="w-full max-w-xs" pageChange(newPage) { page = newPage; }>
+    <div class="flex aspect-square items-center justify-center rounded-lg border bg-card m-px">
+      <span class="text-4xl font-semibold">${item}</span>
+    </div>
   </Carousel>
   <div class="py-2 text-center text-sm text-muted-foreground">
     Slide ${page + 1} of ${SLIDES.length}

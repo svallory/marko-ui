@@ -288,3 +288,30 @@ entirely), not a fix to Marko. Any future component that nests a
 content-forwarding component inside a `<for>`-loop-captured attr-tag body
 mounted via dynamic-tag-content will hit the same crash and need the same
 kind of restructuring (or a Marko-core fix, if one lands upstream first).
+
+## Reproduced WITHOUT marko-zag (2026-08-24)
+
+The defect is reachable from plain Marko — no marko-zag, no @zag-js packages.
+Repro: `scratch/nested-portal-repro/src/pure-marko-v2/` (route `/pure-v2`),
+verified first-hand on marko 6.3.34 AND 6.3.45 (production builds, Playwright
+click → `TypeError: t._.n is not a function` at the `<if=api().open>` line).
+
+Decisive ingredient (what earlier pure-Marko negative controls missed): a
+`<const>` whose value is a multi-dependency comma-expression where one
+dependency is a tag-return handle from ANOTHER custom tag (service → connect
+→ consumer, crossing `<return>` twice), read at walk time inside an `<if>` in
+a component first-mounted via dynamic-tag content nested in an ancestor's
+portal mount — AND the underlying state being a mutable non-reactive JS
+object (mutated directly, reactivity only via a serialized `rev` bump),
+exactly marko-zag's machine shape. State held inside Marko's reactive graph
+does not trigger it.
+
+Secondary footgun found while isolating: if the service factory closure reads
+a `<let>` directly, there is NO crash — instead a silent render starvation
+(compiles to an `_or` join whose pending counter never reaches zero; no
+error, no re-render). Documented as Appendix B of the issue draft.
+
+`UPSTREAM-ISSUE-DRAFT.md` in the repro folder is rewritten around the
+zag-free variant (marko-zag origin demoted to corroborating appendix). The
+earlier marko-js/run#266 filing predates this — the new draft targets Marko
+core and supersedes that framing. Filing awaits the user's go.

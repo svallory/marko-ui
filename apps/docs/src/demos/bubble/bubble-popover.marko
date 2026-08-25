@@ -27,14 +27,12 @@ import PopoverDescription from "@marko-ui/shadcn/ui/popover/description.marko";
             <Icon name="InfoIcon"/>
           </Button>
         </@trigger>
-        <@content>
-          <PopoverHeader>
-            <PopoverTitle class="text-sm">Command failed with exit code 1</PopoverTitle>
-            <PopoverDescription class="text-sm">
-              ENOENT: no such file or directory, open pnpm-lock.yaml
-            </PopoverDescription>
-          </PopoverHeader>
-        </@content>
+        <PopoverHeader>
+          <PopoverTitle class="text-sm">Command failed with exit code 1</PopoverTitle>
+          <PopoverDescription class="text-sm">
+            ENOENT: no such file or directory, open pnpm-lock.yaml
+          </PopoverDescription>
+        </PopoverHeader>
       </Popover>
     </BubbleReactions>
   </Bubble>

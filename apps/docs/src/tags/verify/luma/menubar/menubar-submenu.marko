@@ -36,20 +36,18 @@ static const EDIT_ITEMS = [
 ];
 
 <Menubar class="w-72">
-  <@content>
-    <MenubarMenu items=FILE_ITEMS>
-      <@trigger|triggerProps|>
-        <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
-          File
-        </button>
-      </@trigger>
-    </MenubarMenu>
-    <MenubarMenu items=EDIT_ITEMS>
-      <@trigger|triggerProps|>
-        <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
-          Edit
-        </button>
-      </@trigger>
-    </MenubarMenu>
-  </@content>
+  <MenubarMenu items=FILE_ITEMS>
+    <@trigger|triggerProps|>
+      <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+        File
+      </button>
+    </@trigger>
+  </MenubarMenu>
+  <MenubarMenu items=EDIT_ITEMS>
+    <@trigger|triggerProps|>
+      <button ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+        Edit
+      </button>
+    </@trigger>
+  </MenubarMenu>
 </Menubar>
