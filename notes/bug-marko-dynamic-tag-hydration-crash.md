@@ -315,3 +315,44 @@ error, no re-render). Documented as Appendix B of the issue draft.
 zag-free variant (marko-zag origin demoted to corroborating appendix). The
 earlier marko-js/run#266 filing predates this — the new draft targets Marko
 core and supersedes that framing. Filing awaits the user's go.
+
+## Defect 2 reproduced in the official playground (2026-08-24)
+
+The content-closures defect (`<for>`-looped `<@item>` + client-only `<if>`
+flip + firing `<${input.content}/>` forwarder) reproduces in the Marko
+playground on v6.3.45, default SSR+hydration mode, one Toggle click:
+`TypeError: Cannot read properties of undefined (reading '2')`. Share link
+recorded in scratch/content-closures-repro/UPSTREAM-ISSUE-DRAFT.md
+("One-click playground reproduction"). Strongest possible repro for the
+filing: zero setup.
+
+## Repro-helper correction (2026-08-24, later)
+
+The repro's `menuEntries` had OUR bug: `Array.isArray(input.item) ?
+input.item : [input.item]` — the repeated-attr-tag object is not an array,
+so the helper wrapped the FIRST-item view and discarded the iterator.
+That produced a false "SSR renders only one item" symptom (serialized
+payload always carried all items — Marko was fine). Correct form, as in
+production dropdown-menu: `[...(input.item ?? [])]` (direct spread uses
+Symbol.iterator). Fixed in scratch/content-closures-repro/src/tags/menu.marko
+and in the playground link. THE CRASH IS UNAFFECTED — re-verified on both
+the standalone repro (Toggle → `reading '2'`) and the playground with the
+honest helper. Lesson for the skill: `JSON.stringify(input.item)` also
+shows only the first item by design — count via `[...input.item].length`.
+
+## Defect 2 WORKAROUND found: tag parameters instead of closure capture (2026-08-24)
+
+User's insight, verified in playground (v6.3.45) and recorded in the issue
+draft as a discriminating pair. `<@item>` bodies that read the enclosing
+`<for>` loop variable via closure crash on client-only first mount (debug
+runtime names it: `reading 'person'` — the closure-captured loop binding's
+scope is never hydrated). Passing the value back through TAG PARAMETERS
+works completely: component renders `<${entry.content}(entry.value)/>`,
+caller declares `<@item|name| value=person>` and reads `${name}` — all
+items render, no crash.
+
+Implication: the item-dropdown demo inlining (395c1c5c) and similar
+avoidances can potentially be reverted to composed form using tag params.
+Component guidance: menu-like components should pass entry data to item
+content via args (`<${entry.content}(entry.value)/>`) so callers can use
+params instead of closures. Candidate rule for skills/marko6 hazard list.
