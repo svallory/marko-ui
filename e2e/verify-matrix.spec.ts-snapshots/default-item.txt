@@ -67,7 +67,7 @@ section
         div data-slot="item-title"
         p data-slot="item-description"
       div data-slot="item-actions"
-        button data-slot="button"
+        button data-slot="button" aria-label="Invite shadcn"
           svg
             path
             path
@@ -80,7 +80,7 @@ section
         div data-slot="item-title"
         p data-slot="item-description"
       div data-slot="item-actions"
-        button data-slot="button"
+        button data-slot="button" aria-label="Invite maxleiter"
           svg
             path
             path
@@ -93,7 +93,7 @@ section
         div data-slot="item-title"
         p data-slot="item-description"
       div data-slot="item-actions"
-        button data-slot="button"
+        button data-slot="button" aria-label="Invite evilrabbit"
           svg
             path
             path
