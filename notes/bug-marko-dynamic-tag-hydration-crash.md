@@ -356,3 +356,15 @@ avoidances can potentially be reverted to composed form using tag params.
 Component guidance: menu-like components should pass entry data to item
 content via args (`<${entry.content}(entry.value)/>`) so callers can use
 params instead of closures. Candidate rule for skills/marko6 hazard list.
+
+## Issue moved to Marko core (2026-08-25)
+
+marko-js/run#266 closed in favor of https://github.com/marko-js/marko/issues/4059
+after minimization proved: dynamic tag NOT required (static `<Demo/>` of a
+component re-exported from a .ts module suffices), and plain @marko/vite
+crashes identically (core ownership). Final shape — two scenarios: alone =
+no error but silently dead (marko-run emits no client bundle); with any
+sibling event handler (inert onBlur works) = `effects[(i++)] is not a
+function` at runEffects→runResumeEffects→init→initEmbedded. Workaround:
+import the component directly. Repro repo (pushed, minimal):
+github.com/svallory/marko-run-dynamic-tag-repro.
