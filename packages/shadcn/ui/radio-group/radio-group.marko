@@ -1,6 +1,6 @@
 import * as radioGroupMachine from "@zag-js/radio-group";
 import type { MachineInput } from "marko-zag";
-import { normalizeProps, ssrService } from "marko-zag";
+import { normalizeProps } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
 
@@ -60,20 +60,6 @@ export type Input = Omit<MachineInput<"div", radioGroupMachine.Props>, "value"> 
   service=service
 />
 
-// Stateless helper — takes the `<service>` handle and returns a FRESH
-// connected api every call, exactly like `<connect>`'s own SSR-fallback
-// body. Declared `static` (module-level, no per-instance closure capture)
-// so it's a plain helper function rather than a Marko custom tag; see the
-// long comment at its call site below for why this exists instead of a
-// `<const>`/`<let>`-based mirror.
-static function connectFresh(handle: {
-  service: Parameters<typeof radioGroupMachine.connect>[0] | null;
-  machine: () => radioGroupMachine.Machine;
-  props: () => Partial<radioGroupMachine.Props>;
-}) {
-  return radioGroupMachine.connect(handle.service ?? ssrService(handle.machine(), handle.props), normalizeProps);
-}
-
 // Whatever is neither machine-owned (splitProps) nor component-owned
 // (class, items, valueChange) passes through to the root div.
 <const/nativeAttrs=() =>
@@ -86,35 +72,19 @@ static function connectFresh(handle: {
   )
 >
 
-// `connectFresh(service)` (declared above, module-level) is called
-// everywhere in this component's render tree below in place of `api()`.
-// Works around a Marko-core walk-order defect: when this component is
-// mounted via dynamic-tag-content (e.g. Drawer's `<${input.content}/>`)
-// nested inside that ancestor's own `<portal><if=api().open>`, THIS
-// component's walk-time reads of its own `api()` (a `<const>`) fire
-// before `<const/api>`'s own deferred signal has ever computed on this
-// freshly-created scope — throwing `TypeError: $scope._.<api> is not a
-// function` merely from opening the composing Drawer/Dialog/Sheet/
-// Popover. Full account, including the several mirror shapes that were
-// tried and still crashed, in
-// notes/bug-marko-dynamic-tag-hydration-crash.md and this same pattern's
-// original application in calendar.marko. The mirror rule: no
-// `<const>`/`<let>` — direct or indirect — anywhere near the connected
-// api in a component mounted via dynamic-tag-content nested in an
-// ancestor's own portal; call `machine.connect()` fresh instead.
-<div ...nativeAttrs() ...connectFresh(service).getRootProps() data-slot="radio-group" class=cn("mu-radio-group w-full", input.class)>
+<div ...nativeAttrs() ...api().getRootProps() data-slot="radio-group" class=cn("mu-radio-group w-full", input.class)>
   <for|item| of=normalizedItems by=(item) => item.value>
     <label
-      ...connectFresh(service).getItemProps({ value: item.value, disabled: item.disabled })
+      ...api().getItemProps({ value: item.value, disabled: item.disabled })
       data-slot="radio-group-item-wrapper"
       class="flex items-center gap-2"
     >
       <span
-        ...connectFresh(service).getItemControlProps({ value: item.value, disabled: item.disabled })
+        ...api().getItemControlProps({ value: item.value, disabled: item.disabled })
         data-slot="radio-group-item"
         class="mu-radio-group-item group/radio-group-item peer relative aspect-square shrink-0 border outline-none after:absolute after:-inset-x-3 after:-inset-y-2 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50"
       >
-        <if=connectFresh(service).getItemState({ value: item.value, disabled: item.disabled }).checked>
+        <if=api().getItemState({ value: item.value, disabled: item.disabled }).checked>
           <span
             data-slot="radio-group-indicator"
             class="mu-radio-group-indicator"
@@ -123,9 +93,9 @@ static function connectFresh(handle: {
           </span>
         </if>
       </span>
-      <input ...connectFresh(service).getItemHiddenInputProps({ value: item.value, disabled: item.disabled })>
+      <input ...api().getItemHiddenInputProps({ value: item.value, disabled: item.disabled })>
       <span
-        ...connectFresh(service).getItemTextProps({ value: item.value, disabled: item.disabled })
+        ...api().getItemTextProps({ value: item.value, disabled: item.disabled })
         data-slot="radio-group-item-text"
         class="text-sm leading-none font-medium select-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
       >
@@ -141,8 +111,5 @@ static function connectFresh(handle: {
 </div>
 
 // Parents can receive the api getter: <RadioGroup/radioGroupApi/> then
-// `radioGroupApi().value` — it stays live across machine updates. This
-// stays the `<connect>`-provided `api` getter (not `connectFresh`): it's
-// read post-mount by the parent's own event handlers/lifecycle, never at
-// walk time within THIS component, so it isn't subject to the race above.
+// `radioGroupApi().value` — it stays live across machine updates.
 <return=api>
