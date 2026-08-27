@@ -155,29 +155,15 @@ Verified against real components in `packages/shadcn/ui/` and `notes/bug-marko-d
   />
   ```
 
-- **Walk-order `<const>` hazard — no `<const>`-backed reads in walk-time positions inside dynamic-tag-mounted components.** When a component is mounted through dynamic-tag-content (`<${input.content}/>`) nested inside an ancestor's own portal/dynamic-tag mount, that component's OWN walk-time reads of its OWN `<const>`-derived value — in `<if>`/`<for>` branch selectors, attribute spreads, anywhere evaluated during the first mount walk — can fire **before** the `<const>`'s lazy/signal-deferred value has ever computed on that fresh scope, throwing `TypeError: ... is not a function`. A `<let>` does not have this hazard (eagerly available from scope creation); a `<let>` *initialized from* a `<const>` call still inherits the hazard (the compiler fuses it into the const's deferred chain). Verified fix: don't mirror through any Marko reactive primitive at all — use direct `input`/`service` access, or a module-level `static function` that recomputes the connected value fresh on every call (no signal identity, nothing to compute lazily, nothing to serialize).
+- **Walk-order `<const>` hazard — fixed upstream in marko 6.3.46, no workaround needed.** When a component was mounted through dynamic-tag-content (`<${input.content}/>`) nested inside an ancestor's own portal/dynamic-tag mount, that component's OWN walk-time reads of its OWN `<const>`-derived value — in `<if>`/`<for>` branch selectors, attribute spreads, anywhere evaluated during the first mount walk — could fire **before** the `<const>`'s lazy/signal-deferred value had ever computed on that fresh scope, throwing `TypeError: ... is not a function`. This was a genuine defect in `@marko/runtime-tags`, fixed by [marko-js/marko#4062](https://github.com/marko-js/marko/pull/4062), shipped in `@marko/runtime-tags@6.3.46`. Plain `<connect/api=...>` + `api()` at every call site — the ordinary pattern — is correct; do not reintroduce a `connectFresh`-style static-function mirror.
   ```marko
-  <!-- wrong: api() is a <const> read at walk time inside dynamic-tag-mounted content — crashes -->
+  <!-- correct, at marko >=6.3.46: plain api() getter, no mirror needed -->
   <connect/api=(service, normalizeProps) => machine.connect(service, normalizeProps) service=service/>
   <span ...api().getRootProps()>
     <if=api().open>...</if>
   </span>
-
-  <!-- right: static function, no reactive identity, safe at any walk time -->
-  import { normalizeProps, ssrService } from "marko-zag";
-  static function connectFresh(handle: {
-    service: Parameters<typeof machine.connect>[0] | null;
-    machine: () => machine.Machine;
-    props: () => Partial<machine.Props>;
-  }) {
-    return machine.connect(handle.service ?? ssrService(handle.machine(), handle.props), normalizeProps);
-  }
-  <service/service machine=() => machine.machine props=machineProps/>
-  <span ...connectFresh(service).getRootProps()>
-    <if=connectFresh(service).open>...</if>
-  </span>
   ```
-  Real example: `packages/shadcn/ui/avatar/avatar.marko` (`connectFresh`, module-level `static function`) — the file's own header comment documents that a `<let>` mirror broke SSR outright (`Unable to serialize "uiValue"`) before landing on the static-function fix. Full incident writeup: `notes/bug-marko-dynamic-tag-hydration-crash.md`.
+  Historical note: before the fix landed, `calendar.marko`/`avatar.marko`/`radio-group.marko` each carried a module-level `static function connectFresh(...)` that called `machine.connect()` directly against the raw service, bypassing the `<const>` entirely, as a workaround. All three were reverted to plain `api()` once the workspace's `marko` pin moved to 6.3.46 (2026-08-26). Full incident writeup, including the mirror shapes that were tried and still crashed: `notes/bug-marko-dynamic-tag-hydration-crash.md`.
 
 - **Dead-scope closure hazard: content unrendered at SSR time loses its captured variables — pass entry data via tag parameters, not closures.** Closure capture itself WORKS: an `<@item>` body inside `<for|person|>` reading `${person}` renders correctly on the server and through the ordinary hydration walk (always-open control proves it). The hazard is resumability-specific: each content body is serialized as a reference to its OWNER SCOPE (the per-iteration `<for>` scope holding the loop binding); a body that never rendered during SSR (e.g. behind a closed `<if>`) gets no serialized owner scope, so when it first fires on a CLIENT-ONLY mount, ANY read through the closure — `${person}` placeholder or a `value=person` attribute expression alike — hits an undefined scope and throws `TypeError: Cannot read properties of undefined (reading 'person')` (minified: `(reading '2')` / `'N'`). Tag parameters dodge this structurally: the data travels inside the render invocation at fire time (`<${entry.content}(entry.value)/>` + `<@item|name| value=person>` reading `${name}`), not through a serialized scope reference. Menu-like components should therefore always pass entry data to item content via args. Verified as a discriminating pair in the Marko playground (v6.3.45, SSR+hydration). Writeup + playground links: `notes/bug-marko-dynamic-tag-hydration-crash.md`; minimal repro: `scratch/content-closures-repro/`.
 - **`JSON.stringify(input.item)` shows only the first attr tag by design** — the repeated-attr-tag object is "first item + iterable"; stringify serializes own enumerable props only. Count with `[...input.item].length`, and never branch on `Array.isArray(input.item)` (it is never an array — `Array.isArray(x) ? x : [x]` silently discards all but the first tag; spread directly: `[...(input.item ?? [])]`).

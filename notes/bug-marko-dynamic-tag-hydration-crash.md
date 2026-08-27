@@ -85,7 +85,14 @@ Only a case where every crossing value is demonstrably serializable and
 resume still corrupts may be treated as a suspected Marko/marko-zag issue,
 with that enumeration as the evidence.
 
-## Nested-portal walk-order defect + verified let-mirror workaround (2026-08-24)
+## Nested-portal walk-order defect (2026-08-24) — HISTORICAL, fixed upstream in marko 6.3.46
+
+Fixed by [marko-js/marko#4062](https://github.com/marko-js/marko/pull/4062), shipped in
+`@marko/runtime-tags@6.3.46` (workspace bumped to this version 2026-08-26). The
+`connectFresh` workaround described below has been removed from every component
+that carried it (`calendar.marko`, `avatar.marko`, `radio-group.marko`) — plain
+`api()` from `<connect>` is now correct everywhere. The rest of this section is
+kept as a historical incident record.
 
 A second, related-but-distinct bug class, found while chasing the RCA in
 `e2e/verify-matrix.spec.ts` KNOWN_BROKEN comment (full serializability
