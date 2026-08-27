@@ -174,14 +174,20 @@ inside `<lifecycle>` blocks, event handlers, and anything that only runs
 post-mount are unaffected and keep calling `api()` normally — the race is
 walk-time only.
 
-Applied and verified 3x each (zero console errors, full interaction) to:
+HISTORICAL — fixed upstream in marko 6.3.46. Applied and verified 3x each
+(zero console errors, full interaction) at the time to:
 `packages/shadcn/ui/dropdown-menu/submenu.marko`,
 `packages/shadcn/ui/menubar/submenu.marko`,
 `packages/shadcn/ui/context-menu/submenu.marko`,
 `packages/shadcn/ui/calendar/calendar.marko`,
-`packages/shadcn/ui/avatar/avatar.marko`. Full status in TODO.md
-§BLOCKER. Upstream issue not yet filed — draft at
-`../../scratch/nested-portal-repro/UPSTREAM-ISSUE-DRAFT.md`.
+`packages/shadcn/ui/avatar/avatar.marko`. The underlying walk-order defect
+was fixed by [marko-js/marko#4062](https://github.com/marko-js/marko/pull/4062),
+shipped in `@marko/runtime-tags@6.3.46` (workspace bumped to this version
+2026-08-26). Every one of the five files above has had its let-mirror or
+`connectFresh` workaround reverted to plain `api()`/`<connect>` — verified
+in a production build (0 console errors, submenu open + keyboard
+navigation + item selection on all three menu families) and against the
+`hydration-invariant` suite (33/33). Do not reintroduce these workarounds.
 
 ### Same defect class, a second variant: a plain data `<const>`, not `api()` (2026-08-24)
 
