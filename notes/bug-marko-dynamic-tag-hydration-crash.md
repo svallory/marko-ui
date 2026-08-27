@@ -209,8 +209,12 @@ Because `entries` derives purely from `input` — no service/api dependency
 at all — the fix is simpler than the `<let>`-mirror: a module-level
 `static function menuEntries(input)` (declared before the
 `<machine-props>`/`<service>`/`<connect>` block, matching
-`calendar.marko`'s `connectFresh`/`toDateValue` static-function placement
-convention) computes the list fresh from `input` at each use site
+`calendar.marko`'s former `connectFresh`/`toDateValue` static-function
+placement convention — `connectFresh` itself was removed from
+`calendar.marko` after marko-js/marko#4062 fixed the underlying walk-order
+defect in `@marko/runtime-tags@6.3.46`; `avatar.marko` and
+`radio-group.marko` still carry their own `connectFresh` copies) computes
+the list fresh from `input` at each use site
 (`menuEntries(input)` called directly as the `<for>`'s `of=` expression),
 so there is no scope-property read left to race the walk at all. `input.
 trigger` and `input.class` are read directly too, replacing the
