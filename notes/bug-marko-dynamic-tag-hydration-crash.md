@@ -85,7 +85,14 @@ Only a case where every crossing value is demonstrably serializable and
 resume still corrupts may be treated as a suspected Marko/marko-zag issue,
 with that enumeration as the evidence.
 
-## Nested-portal walk-order defect + verified let-mirror workaround (2026-08-24)
+## Nested-portal walk-order defect (2026-08-24) — HISTORICAL, fixed upstream in marko 6.3.46
+
+Fixed by [marko-js/marko#4062](https://github.com/marko-js/marko/pull/4062), shipped in
+`@marko/runtime-tags@6.3.46` (workspace bumped to this version 2026-08-26). The
+`connectFresh` workaround described below has been removed from every component
+that carried it (`calendar.marko`, `avatar.marko`, `radio-group.marko`) — plain
+`api()` from `<connect>` is now correct everywhere. The rest of this section is
+kept as a historical incident record.
 
 A second, related-but-distinct bug class, found while chasing the RCA in
 `e2e/verify-matrix.spec.ts` KNOWN_BROKEN comment (full serializability
@@ -167,14 +174,20 @@ inside `<lifecycle>` blocks, event handlers, and anything that only runs
 post-mount are unaffected and keep calling `api()` normally — the race is
 walk-time only.
 
-Applied and verified 3x each (zero console errors, full interaction) to:
+HISTORICAL — fixed upstream in marko 6.3.46. Applied and verified 3x each
+(zero console errors, full interaction) at the time to:
 `packages/shadcn/ui/dropdown-menu/submenu.marko`,
 `packages/shadcn/ui/menubar/submenu.marko`,
 `packages/shadcn/ui/context-menu/submenu.marko`,
 `packages/shadcn/ui/calendar/calendar.marko`,
-`packages/shadcn/ui/avatar/avatar.marko`. Full status in TODO.md
-§BLOCKER. Upstream issue not yet filed — draft at
-`../../scratch/nested-portal-repro/UPSTREAM-ISSUE-DRAFT.md`.
+`packages/shadcn/ui/avatar/avatar.marko`. The underlying walk-order defect
+was fixed by [marko-js/marko#4062](https://github.com/marko-js/marko/pull/4062),
+shipped in `@marko/runtime-tags@6.3.46` (workspace bumped to this version
+2026-08-26). Every one of the five files above has had its let-mirror or
+`connectFresh` workaround reverted to plain `api()`/`<connect>` — verified
+in a production build (0 console errors, submenu open + keyboard
+navigation + item selection on all three menu families) and against the
+`hydration-invariant` suite (33/33). Do not reintroduce these workarounds.
 
 ### Same defect class, a second variant: a plain data `<const>`, not `api()` (2026-08-24)
 
@@ -209,8 +222,12 @@ Because `entries` derives purely from `input` — no service/api dependency
 at all — the fix is simpler than the `<let>`-mirror: a module-level
 `static function menuEntries(input)` (declared before the
 `<machine-props>`/`<service>`/`<connect>` block, matching
-`calendar.marko`'s `connectFresh`/`toDateValue` static-function placement
-convention) computes the list fresh from `input` at each use site
+`calendar.marko`'s former `connectFresh`/`toDateValue` static-function
+placement convention — `connectFresh` itself was removed from
+`calendar.marko`, `avatar.marko`, and `radio-group.marko` after
+marko-js/marko#4062 fixed the underlying walk-order defect in
+`@marko/runtime-tags@6.3.46`) computes the list fresh from `input` at
+each use site
 (`menuEntries(input)` called directly as the `<for>`'s `of=` expression),
 so there is no scope-property read left to race the walk at all. `input.
 trigger` and `input.class` are read directly too, replacing the
