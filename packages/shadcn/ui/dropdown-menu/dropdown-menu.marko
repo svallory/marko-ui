@@ -65,8 +65,10 @@ export interface Input {
 // fix is simpler than the `<let>`-mirror pattern used for `api()` races: a
 // module-level `static function` computes it fresh from `input` at each use
 // site, so there is no scope-property read to race the walk at all — same
-// idea as calendar.marko's `connectFresh`, applied to a plain data
-// derivation instead of a live connect() call.
+// idea as the `connectFresh` static-function pattern once used for `api()`
+// races (removed after marko-js/marko#4062 fixed the underlying walk-order
+// defect), applied here to a plain data derivation instead of a live
+// connect() call.
 static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
   const attrItems = [...(input.item ?? [])];
   return attrItems.length > 0
