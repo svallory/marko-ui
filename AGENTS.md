@@ -37,7 +37,17 @@ NODE_OPTIONS="--max-old-space-size=8192" marko-type-check -p . -d condensed
 
 The `NODE_OPTIONS` heap bump is **required** — at the default heap size `marko-type-check` OOMs on this repo with a V8 stack dump. It is baked into each package script, so `bun run check` works without extra setup; keep it there if you edit those scripts. `tooling/` stays on plain `tsc` because it is pure `.ts` (no `.marko` files), where `marko-type-check` would add nothing.
 
-Behavior tests (`packages/shadcn/tests/behavior/`) drive real Playwright against a **running docs dev server** — start `apps/docs` first, and pass `DOCS_BASE_URL` if it isn't on port 3000. Playwright is resolved from the global homebrew install, not the workspace. SSR/unit tests (`packages/marko-ui/tests/`, `packages/shadcn/tests/hydration-invariant.test.ts`) need no server.
+Behavior tests (`packages/shadcn/tests/behavior/`) drive real Playwright against a **running docs dev server** — start `apps/docs` first, and pass `DOCS_BASE_URL` if it isn't on port 3000.
+
+**Always start the dev server on an explicit port and pass `DOCS_BASE_URL`.** Port 3000 on the maintainer's machine is held by an unrelated app that answers HTTP 200 on every path with zero `section[data-demo]` elements; both the behavior tests and `e2e/verify-matrix.spec.ts` default to `http://localhost:3000`, so a stale listener there produces mass failures that look like component regressions but are not. Verify with `curl -s localhost:3000 | grep -o '<title>[^<]*'` before trusting any run.
+
+The first request to a `/verify/*` route pays a **multi-minute cold Vite compile of all 765 generated routes** (the router imports every one). Warm it with a long-timeout `curl` before pointing Playwright at it, or `page.goto` times out; a request that fails during that window poisons Vite's module cache, and only a dev-server restart clears it. Behavior tests additionally use `waitUntil: "networkidle"`, which the dev server's open HMR websocket can keep from ever settling — those timeouts reproduce on `main` and are not caused by component changes. Playwright is resolved from the global homebrew install, not the workspace. SSR/unit tests (`packages/marko-ui/tests/`, `packages/shadcn/tests/hydration-invariant.test.ts`) need no server.
+
+## The verify matrix: never update snapshots
+
+`e2e/verify-matrix.spec.ts` captures DOM-structure text snapshots (`data-slot`/`role`/`data-state`/`aria-*`) of the post-hydration initial state for 9 styles x ~40 components. **Never run it with `--update-snapshots`, and treat every snapshot diff as a regression until proven otherwise.** A pure API migration must leave them byte-identical. On 2026-08-27 a blind `--update-snapshots` run rewrote 360 of them and nearly shipped two "regressions" that did not exist in the code — both were artifacts of pointing the run at a mis-configured server (see the dev-server note above). When a snapshot genuinely should change, change the source that changes it and say why in the PR, rather than regenerating the file to make the run green.
+
+Note that portal-using components (`<zag-portal>`) render their `<div style="display:contents" data-portal>` host **inline in the SSR HTML, right after the trigger**, and reparent it to `<body>` in `onMount`. It is therefore absent from a correctly hydrated snapshot and present in one captured before hydration — a stray bare `div` after a trigger means the page was serialized too early, not that a component changed.
 
 ## Hard constraints
 
@@ -49,15 +59,15 @@ Behavior tests (`packages/shadcn/tests/behavior/`) drive real Playwright against
 
 ## Architecture: the SSR-safe Zag pattern
 
-Marko 6 is resumable: the server serializes reactive state and the client never re-runs render. Zag services and `connect()` APIs contain functions and are **unserializable**, so they must never be reactive state. Every interactive component follows the same shape (see `packages/marko-ui/README.md` for the full example):
+Marko 6 is resumable: the server serializes reactive state and the client never re-runs render. Zag services and `connect()` APIs contain functions and are **unserializable**, so they must never be reactive state or cross a tag boundary as raw values — only template-written **closures** (getters) are serializable currency. Every interactive component follows the same shape (see `packages/marko-ui/README.md` for the full example):
 
-1. Server renders full aria/data attributes from a never-started machine (`ssrService`).
-2. Client builds its own service in `onMount` and bumps a serializable `rev` counter on machine notify.
-3. The `connect()` api lives inside a template closure (`computeUi`); `<const/ui=(rev, computeUi())/>` makes `rev` the recompute trigger, keeping only the plain attrs snapshot reactive.
+1. Server renders full aria/data attributes from a never-started machine (a throwaway instance `<zag>` reads before mount).
+2. Client builds its own service in `onMount`; `<zag>` returns the **api getter**, whose identity changes on every machine notify and on every tracked props change — no hand-written `rev` counter or dependency list.
+3. Call the getter at every use site (`api().getRootProps()`); `<const>` recomputes automatically because the getter it reads is `!==` the previous one.
 
-Registry components express this via the three-tag pattern from `marko-ui`: `<machine-props>` (typed input), `<service>` (lifecycle), `<connect>` (api snapshot). Controlled props re-notify via `svc?.propsChanged()`.
+Registry components express this via marko-zag's `<zag>` tag (`packages/shadcn`'s single authored source, one line: `<zag/api=() => mod from=input/>`), which picks the machine's props out of `input`, generates an `id`, applies a default `on<X>Change` → Marko `xChange` sugar rule, creates and connects the service, and returns the api getter — collapsing the old three-tag `<machine-props>`/`<service>`/`<connect>` wiring (and the `rev`/`ServiceHandle` plumbing it needed) into one line. A component that needs the running service itself (to thread into a child, or connect a second module against it — see `toast/toast.marko`, `menubar/menu.marko`) uses `<zag-machine>` plus a plain `connect()` call instead; `<zag-machine>` returns a **service getter** (`service()`), never the raw service. Controlled props re-notify automatically: `<zag>`/`<zag-machine>` track whatever the `props=` closure reads.
 
-`normalizeProps` is Marko-specific: `class`/`for` renames, style-object hyphenation, `event.currentTarget` shadowing (Marko delegates events), SSR handler stripping.
+`normalizeProps` is Marko-specific: `class`/`for` renames, style-object hyphenation, `event.currentTarget` shadowing (Marko delegates events), SSR handler stripping. `<zag>`/`connect()` apply it by default, so most components never import it.
 
 ## Registry structure rules
 
