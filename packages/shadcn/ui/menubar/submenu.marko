@@ -17,7 +17,7 @@
 // nesting (a submenu's own items are flat — item/separator/label only); a
 // `type: "sub"` entry inside a submenu's `subEntries` is not wired.
 import * as menu from "@zag-js/menu";
-import { positionerStyle } from "marko-zag";
+import { positionerStyle, connect } from "marko-zag";
 import type { MenubarItemAttrs } from "./menu.marko";
 
 export interface Input {
@@ -45,24 +45,20 @@ export interface Input {
   trigger: Marko.AttrTag<{ content: Marko.Body<[() => menu.Api]> }>;
 }
 
-<machine-props/machineProps from=input pick=menu.props/>
-<service/service machine=() => menu.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  menu.connect(service, normalizeProps)
-  service=service
-/>
+<zag-machine/service=() => menu from=input/>
+<const/api=() => connect(menu, service())/>
 
 // Link this submenu to its parent as soon as both raw services exist.
 // `setParent`/`setChild` both take the raw MarkoService (see menu.connect's
-// `parent.prop("id")` / `child.prop("id")` calls) — `<service>`'s onMount has
-// already run for every ancestor by the time any descendant mounts (Marko
-// mounts render bottom-up after the full tree commits), so `input.parent()`
-// and `service.service` are both live here.
+// `parent.prop("id")` / `child.prop("id")` calls) — every ancestor's
+// `<zag-machine>` has already mounted by the time any descendant mounts
+// (Marko mounts render bottom-up after the full tree commits), so
+// `input.parent()` and `service()` are both live here.
 <lifecycle
   onMount() {
     const parentService = input.parent();
-    const ownService = service.service;
-    if (!parentService || !ownService) return;
+    const ownService = service();
+    if (!parentService) return;
     api().setParent(parentService);
     input.onChildReady?.(ownService);
   }
@@ -79,7 +75,7 @@ export interface Input {
 // live api.
 <${input.trigger.content}(() => api())/>
 
-<portal>
+<zag-portal>
   <if=api().open>
     <div ...api().getPositionerProps() style=positionerStyle data-slot="menubar-sub-content-positioner">
       <div
@@ -115,4 +111,4 @@ export interface Input {
       </div>
     </div>
   </if>
-</portal>
+</zag-portal>

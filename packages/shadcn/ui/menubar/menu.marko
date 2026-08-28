@@ -1,5 +1,5 @@
 import * as menu from "@zag-js/menu";
-import { positionerStyle } from "marko-zag";
+import { positionerStyle, connect } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import type { DropdownMenuItem } from "../dropdown-menu/dropdown-menu.marko";
@@ -63,19 +63,16 @@ static function menuEntries(input: Input): MenubarItemAttrs[] {
     : (input.items ?? []).map((item) => ({ ...item, content: undefined as Marko.Body | undefined }));
 }
 
-<machine-props/machineProps from=input pick=menu.props
+<zag-machine/service=() => menu from=input
   onSelect(details: menu.SelectionDetails) {
     input.select?.(details.value);
-  }/>
-<service/service machine=() => menu.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  menu.connect(service, normalizeProps)
-  service=service
+  }
 />
+<const/api=() => connect(menu, service())/>
 
-// Getter handed to each <Submenu> child so it can call `setParent` on this
-// menu's raw service (see submenu.marko for the full wiring rationale).
-<const/getOwnService=() => service.service/>
+// The service getter handed to each <Submenu> child so it can call
+// `setParent` on this menu's raw service (see submenu.marko for the full
+// wiring rationale).
 
 // Trigger is a render-prop (the caller owns the `<button>` markup), so the
 // anchor class is offered through the props object like upstream's own
@@ -85,7 +82,7 @@ static function menuEntries(input: Input): MenubarItemAttrs[] {
 // this registry (popover, hover-card) hands back props without dictating
 // element ownership.
 <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "menubar-trigger", class: "mu-menubar-trigger flex items-center outline-hidden select-none" })/>
-<portal>
+<zag-portal>
   <if=api().open>
     <div ...api().getPositionerProps() style=positionerStyle data-slot="menubar-positioner">
       <div
@@ -179,7 +176,7 @@ static function menuEntries(input: Input): MenubarItemAttrs[] {
               label=entry.label
               disabled=entry.disabled
               inset=entry.inset
-              parent=getOwnService
+              parent=service
               onChildReady=(childService) => api().setChild(childService)
             >
               <@trigger|childApi|>
@@ -218,6 +215,6 @@ static function menuEntries(input: Input): MenubarItemAttrs[] {
       </div>
     </div>
   </if>
-</portal>
+</zag-portal>
 
 <return=api>
