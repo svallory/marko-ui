@@ -63,6 +63,7 @@ section
         p
         h2
         p
+          code
         h3
         p
         h3
