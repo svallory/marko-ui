@@ -74,7 +74,12 @@ export type Input = Omit<MachineInput<"div", listboxMachine.Props<ListboxItem>>,
 // `collection` is derived state (rebuilt whenever `items` changes), not a
 // plain input field — it holds methods and cannot cross the tag-input
 // boundary. Layer it on in `props=`, which receives the picked props.
-<zag/api=() => listboxMachine from=input props=(picked) => ({ ...picked, collection: buildCollection(items) })/>
+<zag/api=() => listboxMachine from=input props=(picked) => ({ ...picked, collection: buildCollection(items) })
+  onHighlightChange(details: listboxMachine.HighlightChangeDetails<ListboxItem>) {
+    input.onHighlightChange?.(details);
+    input.highlightedValueChange?.(details.highlightedValue);
+  }
+/>
 
 // `collection` is Omit-ted from this component's public Input (it is derived
 // from `items`), but `splitProps` is constrained on the full `ListboxProps`,

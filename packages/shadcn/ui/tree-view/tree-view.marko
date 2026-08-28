@@ -16,7 +16,9 @@ export interface TreeViewItem {
 // omitted here. `expandedValueChange`/`selectedValueChange` are additive
 // sugar enabling Marko's two-way bind shorthand; Zag's own
 // `onExpandedChange`/`onSelectionChange` also work and receive the details
-// object.
+// object. Both are wired by explicit overrides on <zag>: the default rule
+// would derive `expandedChange`/`selectionChange` from those callback
+// names, which is not what this component exposes, so it emits nothing.
 export type Input = Omit<MachineInput<"div", treeView.Props>, "collection"> & {
   items: TreeViewItem[];
   expandedValueChange?: (value: string[]) => void;
@@ -38,6 +40,14 @@ export type Input = Omit<MachineInput<"div", treeView.Props>, "collection"> & {
 // functions and is not serializable as a bare tag-input value.
 <zag/api=() => treeView from=input props=(picked) => ({ ...picked, collection: buildCollection(input.items) })
   id=uid
+  onExpandedChange(details: treeView.ExpandedChangeDetails) {
+    input.onExpandedChange?.(details);
+    input.expandedValueChange?.(details.expandedValue);
+  }
+  onSelectionChange(details: treeView.SelectionChangeDetails) {
+    input.onSelectionChange?.(details);
+    input.selectedValueChange?.(details.selectedValue);
+  }
 />
 
 // Whatever is neither machine-owned (splitProps) nor component-owned

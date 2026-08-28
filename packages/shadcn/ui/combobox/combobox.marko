@@ -70,6 +70,10 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
     input.valueChange?.(details.value);
     filtered = items;
   }
+  onHighlightChange(details: combobox.HighlightChangeDetails) {
+    input.onHighlightChange?.(details);
+    input.highlightChange?.(details.highlightedValue);
+  }
 />
 
 <const/nativeAttrs=() =>

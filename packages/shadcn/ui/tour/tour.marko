@@ -58,7 +58,12 @@ static function resolveSteps(
 <zag/api=() => tourMachine from=input props=(picked) => ({
   ...picked,
   steps: resolveSteps(input.items),
-})/>
+})
+  onStepChange(details: tourMachine.StepChangeDetails) {
+    input.onStepChange?.(details);
+    input.stepIdChange?.(details.stepId);
+  }
+/>
 
 // Whatever is neither machine-owned (splitProps) nor component-owned
 // (class, sugar callbacks, trigger) passes through to the content element.
