@@ -43,7 +43,7 @@ Work component by component, simplest first (build confidence in the pattern wit
 **The parity bar**: same DOM structure as the source library, same class strings, same data attributes, same keyboard/pointer behavior. Internals differ (Zag instead of the source's JS) only where invisible to users and themes.
 
 - Static components: single root element, `data-slot` marker, `cn()` class merge, `...rest` native-attr spread. See the template's `example-badge` for the exact shape.
-- Interactive components: the `<machine-props>` + `<service>` + `<connect>` pattern from the `marko-zag` package — full shape, serialization rules, and every known landmine are in `references/marko-gotchas.md`. The reference implementations are the official registry's components: fetch any of them with `bunx marko-ui add <name>` into a scratch project, or read them at `https://github.com/svallory/marko-ui/tree/main/packages/shadcn/ui`.
+- Interactive components: the `<zag>` tag from the `marko-zag` package — full shape, serialization rules, and every known landmine are in `references/marko-gotchas.md`. The reference implementations are the official registry's components: fetch any of them with `bunx marko-ui add <name>` into a scratch project, or read them at `https://github.com/svallory/marko-ui/tree/main/packages/shadcn/ui`.
 - One component = one directory (`src/ui/<name>/`), one file per part, plus `variants.ts` when the source has variants.
 - Register each finished component in `registry.json` (community path) or `registry.meta.json` (official path).
 

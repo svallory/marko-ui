@@ -66,7 +66,7 @@ export const docs: ComponentDocs = {
     // @zag-js/menu machine's positioning options are never reachable from
     // the component's public API. This needs a component-source change
     // (adding a `positioning`/`side` input and threading it into
-    // `machine-props`), which is out of scope for this docs repair (file
+    // `<zag>`), which is out of scope for this docs repair (file
     // territory) — reported as blocked-needs-component-change.
     {
       name: "context-menu-demo",

@@ -20,7 +20,7 @@ Every rule here broke a real component during the marko-ui port (60+ components,
 
 Marko 6 is **resumable**: the server serializes reactive state and the client never re-runs render. Zag services and `connect()` APIs contain functions and are **unserializable** — they must never live in reactive state or cross a tag boundary through input.
 
-Use the three tags from the `marko-zag` package (dependency: `marko-zag`; all `@zag-js/*` packages on ONE exact version):
+Use the `<zag>` tag from the `marko-zag` package (dependency: `marko-zag`; all `@zag-js/*` packages on ONE exact version):
 
 ```marko
 import * as switchMachine from "@zag-js/switch";
@@ -30,13 +30,7 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
   checkedChange?: (checked: boolean) => void;
 };
 
-<machine-props/machineProps from=input pick=switchMachine.props
-  onCheckedChange(details: switchMachine.CheckedChangeDetails) {
-    input.onCheckedChange?.(details);
-    input.checkedChange?.(details.checked);
-  }/>
-<service/service machine=() => switchMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) => switchMachine.connect(service, normalizeProps) service=service/>
+<zag/api=() => switchMachine from=input/>
 
 <label ...api().getRootProps()>
   <input ...api().getHiddenInputProps() class="sr-only">
@@ -47,16 +41,18 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
 
 Rules:
 
-1. `machine=` and the `<connect>` value MUST be closures written in the template — passing a raw machine or `switchMachine.connect` through input throws `Unable to serialize "input"`.
+1. The `<zag>` value MUST be a module getter closure written in the template (`() => switchMachine`) — passing a raw module through input throws `Unable to serialize "input"`.
 2. `api` is a getter you CALL at use sites: `api().getRootProps()`.
 3. Never put `api()`, the service, or a machine in `<let>`/`<const>` reactive state, and never pass machines through tag input. Machines are imported at module scope in the file that uses them.
-4. `pick=machineModule.props` — the exported prop-name ARRAY, never a split function (functions in tag input are unserializable).
-5. Keep zag's `onXxxChange(details)` as real API AND add `xxxChange(value)` sugar (chain both in the adaptation) so Marko's two-way bind works: `<Switch checked:=myState/>`.
+4. `from=input` picks by the exported prop-name ARRAY (`mod.props`) internally — you never write `pick=` yourself; a split function in tag input would be unserializable anyway.
+5. **The `onXxxChange`/`xxxChange` sugar pairing is now the DEFAULT — do not hand-write it.** A picked prop named `on<X>Change` is wrapped automatically: it forwards the details object to your `onXxxChange` (if supplied), then — only when the detail object actually has an `x` key matching the callback name — calls your `xxxChange(value)` sugar too, so `<Switch checked:=myState/>` works with zero callback code. Write an explicit callback attribute on `<zag>` only when: (a) you need extra side effects beyond forwarding, (b) the detail key does not match the callback name (e.g. `onFocusChange` carries `details.focused`, not `details.focus`), or (c) the callback isn't `on<X>Change`-shaped at all (`onSelect`, `onValueCommit`, `onResizeStart`, …), which is never wrapped and passes straight to the machine. An attribute written on `<zag>` REPLACES the generated wrapper outright — it does not also forward Zag's own callback, so re-add `input.onXxxChange?.(details)` yourself inside the override if you still want that.
 6. Native pass-through: spread `machineModule.splitProps(input)[1]` minus `class`, every `xxxChange` sugar prop, AND every component-owned prop (`items`, `content`, `trigger`, `label`…). Leaked props stringify onto the DOM (`items="[object Object]"`) — this was the single most common porting bug.
-7. Overlay content (dialog/popover/menu): `<portal><if=api().open>` — portal OUTSIDE, condition INSIDE.
+7. Overlay content (dialog/popover/menu): `<zag-portal><if=api().open>` — portal OUTSIDE, condition INSIDE.
 8. **Trigger render-prop — never nest buttons.** Don't wrap caller content in your own `<button>` (callers pass `<Button>`, the HTML parser un-nests `<button><button>`, and Marko's hydration walk corrupts). Instead: `trigger: Marko.Body<[Record<string, unknown>]>` rendered as `<${input.trigger}({ ...api().getTriggerProps() })/>`; callers spread the props onto their own element.
 9. **Floating positioners** (popper machines: popover/tooltip/menu/select/combobox/hover-card/date-picker): spread `...api().getPositionerProps()` then a STATIC `style=positionerStyle` (import from marko-zag) — Zag positions via imperative `--x/--y` CSS vars; a reactive style attr wipes them on every recompute. Dialog/sheet positioners are layout-only (plain classes). Drawer carries its vars inside `getContentProps()` — add NO style of your own.
 10. No abbreviated identifiers (`svc`, `np`, `s`) — full words.
+11. **Need the running service itself** (to thread it into a child, or connect a second module against it — e.g. a menu wiring `setParent`/`setChild`, or a toast group/item pair)? Use `<zag-machine>` + a plain `connect()` call instead of `<zag>`: `<zag-machine/service=() => mod from=input/>` then `<const/api=() => connect(mod, service())/>`. `<zag-machine>` returns a **service getter**, never the raw service — `service()` is a never-started throwaway on the server/before mount, the real running instance after.
+12. `service.rev`, `service.service`, `service.machine`, `service.props`, and `<connect>`/`<machine-props>`/`<service>` are all **gone** (marko-zag 2.0). A bare `service;` read inside a `<script>` is a valid dependency — the getter's identity now changes on every notify. Threading a child's invalidation across two services means passing the parent's `service` GETTER itself as a prop, not a counter.
 
 ## Named landmines (each cost real debugging time)
 

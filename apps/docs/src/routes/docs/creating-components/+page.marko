@@ -7,16 +7,10 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
   checkedChange?: (checked: boolean) => void;
 };`;
 
-static const EXAMPLE_2 = `<machine-props/machineProps from=input pick=switchMachine.props
-  onCheckedChange(details: switchMachine.CheckedChangeDetails) {
-    input.onCheckedChange?.(details);
-    input.checkedChange?.(details.checked);
-  }/>
-<service/service machine=() => switchMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  switchMachine.connect(service, normalizeProps)
-  service=service
-/>`;
+static const EXAMPLE_2 = `<zag/api=() => switchMachine from=input/>`;
+
+static const EXAMPLE_2B = `<zag-machine/service=() => toast props=() => ({ ...input.options(), parent: input.parent() })/>
+<const/api=() => connect(toast, service())/>`;
 
 static const EXAMPLE_3 = `<label ...api().getRootProps() data-slot="switch-label" class="...">
   <span ...api().getControlProps() data-slot="switch" class=cn("...", input.class)>
@@ -82,37 +76,47 @@ export type Input = MachineInput<"div", tabsMachine.Props> & {
   </section>
 
   <section class="space-y-3">
-    <h2 class="text-lg font-semibold">3. Wire the machine — three tags</h2>
+    <h2 class="text-lg font-semibold">3. Wire the machine — one tag</h2>
     <code-block language="marko" code=EXAMPLE_2/>
-    <ul class="list-disc space-y-2 pl-6 text-sm">
-      <li>
-        <strong><code>&lt;machine-props&gt;</code></strong> builds the machine's props closure:
-        picks machine-owned props out of <code>input</code> by name
-        (<code>pick=switchMachine.props</code> — the machine's exported name array; a split
-        <em>function</em> would be unserializable tag input), injects a generated stable
-        <code>id</code>, and merges every attribute you write on the tag. Callback adaptations go
-        here, visibly — they are the component's public contract. Type the
-        <code>details</code> params with the machine's exported types.
-      </li>
-      <li>
-        <strong><code>&lt;service&gt;</code></strong> creates and owns the running machine on the
-        client; during SSR it stays unstarted and connect reads a throwaway instance — which is how
-        correct <code>aria-*</code>/<code>data-*</code> attributes appear in server HTML before any
-        JS runs. Controlled props re-notify automatically: the tag tracks whatever your
-        <code>machineProps</code> closure reads.
-      </li>
-      <li>
-        <strong><code>&lt;connect&gt;</code></strong> returns <code>api</code> as a
-        <strong>getter</strong>. Call it at every use site: <code>api().getRootProps()</code>. The
-        getter has fresh identity per machine update, so every spread that reads it recomputes.
-      </li>
-    </ul>
-    <p class="text-sm">
-      Both <code>machine=</code> and the <code>&lt;connect&gt;</code> value <em>must</em> be
-      closures written in your template. Passing <code>switchMachine.machine</code> or
-      <code>switchMachine.connect</code> directly throws
-      <code>Unable to serialize "input"</code>.
+    <p>
+      <strong><code>&lt;zag&gt;</code></strong> does the whole job: picks machine-owned props out of
+      <code>input</code> by name (using the module's exported <code>props</code> array — a split
+      <em>function</em> would be unserializable tag input), injects a generated stable
+      <code>id</code>, creates and owns the running machine, connects it, and returns
+      <code>api</code> as a <strong>getter</strong>. Call it at every use site:
+      <code>api().getRootProps()</code>. The getter has fresh identity per machine update and per
+      tracked props change, so every spread that reads it recomputes with no hand-written dependency
+      list. During SSR the machine stays unstarted and connect reads a throwaway instance — which is
+      how correct <code>aria-*</code>/<code>data-*</code> attributes appear in server HTML before any
+      JS runs.
     </p>
+    <p>
+      A picked prop matching <code>onXxxChange</code> is wrapped automatically when the component
+      supplies either Zag's own callback or Marko's bind-shorthand (<code>xxxChange</code>): the
+      wrapper forwards the details object, then calls the sugar with the matching detail key. That
+      is the whole reason <code>checkedChange</code> on the <code>Input</code> type above already
+      supports <code>&lt;Switch checked:=state/&gt;</code> with no callback code in this component.
+      Write an explicit callback attribute on <code>&lt;zag&gt;</code> only when you need to do
+      something extra, or when the payload's key does not match the callback's name (an override
+      replaces the generated wrapper outright — it does not forward implicitly, so re-add
+      <code>input.onXxxChange?.(details)</code> yourself if you still want Zag's own callback to
+      fire).
+    </p>
+    <p class="text-sm">
+      The module getter (<code>() =&gt; switchMachine</code>) <em>must</em> be a closure written in
+      your template. Passing the module directly throws <code>Unable to serialize "input"</code>.
+    </p>
+    <p>
+      <strong>When you need the service.</strong> Reach for <code>&lt;zag-machine&gt;</code> plus a
+      plain <code>connect()</code> call instead of <code>&lt;zag&gt;</code> when a component has to
+      thread the running service itself into a child, or connect a second module against it — the
+      toast toaster/toast-item pair and the menu/submenu components in this registry are the
+      examples. <code>&lt;zag-machine&gt;</code> takes the same input as <code>&lt;zag&gt;</code>
+      and returns a <strong>service getter</strong> instead of the api; call
+      <code>connect(mod, service())</code> yourself wherever you'd otherwise call
+      <code>api()</code>:
+    </p>
+    <code-block language="marko" code=EXAMPLE_2B/>
   </section>
 
   <section class="space-y-3">
