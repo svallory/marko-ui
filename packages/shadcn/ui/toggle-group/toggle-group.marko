@@ -39,16 +39,7 @@ export type Input = MachineInput<"div", toggleGroupMachine.Props> &
 <const/itemTags=[...(input.item ?? [])].map((item) => ({ value: item.value, disabled: item.disabled, label: undefined as string | undefined, content: item.content }))/>
 <const/items=(itemTags.length > 0 ? itemTags : (input.items ?? []).map((item) => ({ value: item.value, disabled: item.disabled, label: item.label as string | undefined, content: undefined as Marko.Body | undefined })))/>
 
-<machine-props/machineProps from=input pick=toggleGroupMachine.props
-  onValueChange(details: toggleGroupMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }/>
-<service/service machine=() => toggleGroupMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  toggleGroupMachine.connect(service, normalizeProps)
-  service=service
-/>
+<zag/api=() => toggleGroupMachine from=input/>
 
 <const/nativeAttrs=() =>
   stripOwnProps(

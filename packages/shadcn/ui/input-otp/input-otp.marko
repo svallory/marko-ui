@@ -17,20 +17,12 @@ export type Input = MachineInput<"div", pinInputMachine.Props> & {
   length?: number;
 };
 
-<machine-props/machineProps from=input pick=pinInputMachine.props
+<zag/api=() => pinInputMachine from=input
   count=input.count ?? input.length
-  onValueChange(details: pinInputMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }
   onValueComplete(details: pinInputMachine.ValueChangeDetails) {
     input.onValueComplete?.(details);
     input.valueCompleteChange?.(details.value);
-  }/>
-<service/service machine=() => pinInputMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  pinInputMachine.connect(service, normalizeProps)
-  service=service
+  }
 />
 
 // Whatever is neither machine-owned (splitProps) nor component-owned

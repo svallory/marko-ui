@@ -34,16 +34,7 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
 <const/itemTags=[...(input.item ?? [])].map((item) => ({ value: item.value, title: item.title, body: item.content, text: undefined as string | undefined, source: { value: item.value, title: item.title } }))/>
 <const/normalizedItems=(itemTags.length > 0 ? itemTags : (input.items ?? []).map((item) => ({ value: item.value, title: item.title, body: undefined as Marko.Body | undefined, text: item.content, source: item })))/>
 
-<machine-props/machineProps from=input pick=accordionMachine.props
-  onValueChange(details: accordionMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }/>
-<service/service machine=() => accordionMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  accordionMachine.connect(service, normalizeProps)
-  service=service
-/>
+<zag/api=() => accordionMachine from=input/>
 
 <const/nativeAttrs=() =>
   stripOwnProps(

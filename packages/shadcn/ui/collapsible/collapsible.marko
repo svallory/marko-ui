@@ -9,16 +9,7 @@ export type Input = MachineInput<"div", collapsibleMachine.Props> & {
   content: Marko.Body;
 };
 
-<machine-props/machineProps from=input pick=collapsibleMachine.props
-  onOpenChange(details: collapsibleMachine.OpenChangeDetails) {
-    input.onOpenChange?.(details);
-    input.openChange?.(details.open);
-  }/>
-<service/service machine=() => collapsibleMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  collapsibleMachine.connect(service, normalizeProps)
-  service=service
-/>
+<zag/api=() => collapsibleMachine from=input/>
 
 <const/nativeAttrs=() =>
   stripOwnProps(

@@ -8,16 +8,7 @@ export type Input = MachineInput<"div", progressMachine.Props> & {
   label?: string;
 };
 
-<machine-props/machineProps from=input pick=progressMachine.props
-  onValueChange(details: progressMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }/>
-<service/service machine=() => progressMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  progressMachine.connect(service, normalizeProps)
-  service=service
-/>
+<zag/api=() => progressMachine from=input/>
 
 <const/nativeAttrs=() =>
   stripOwnProps(

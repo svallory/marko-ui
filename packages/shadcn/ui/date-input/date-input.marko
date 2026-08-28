@@ -20,16 +20,13 @@ export type Input = Omit<
   focusChange?: (focused: boolean) => void;
 };
 
-// The three-tag wiring (see /docs/creating-components):
-// 1. <machine-props> picks the machine's props out of `input` by name and
-//    merges the attributes written on it — callback adaptations live HERE,
-//    visibly, because they are this component's public contract.
-// 2. <service> creates and owns the running machine (client-only; SSR
-//    renders from a throwaway never-started instance).
-// 3. <connect> returns `api` as a GETTER — call it at every use site.
-//    Getters are the serializable currency of Marko's resumability: the
-//    api object itself must never become reactive state.
-<machine-props/pickedProps from=input pick=dateInputMachine.props
+<zag/api=() => dateInputMachine from=input props=(picked) => ({
+  ...picked,
+  value: input.value ? parse(input.value) : undefined,
+  defaultValue: input.defaultValue ? parse(input.defaultValue) : undefined,
+  placeholderValue: input.placeholderValue ? parse(input.placeholderValue) : undefined,
+  defaultPlaceholderValue: input.defaultPlaceholderValue ? parse(input.defaultPlaceholderValue) : undefined,
+})
   onValueChange(details: dateInputMachine.ValueChangeDetails) {
     input.onValueChange?.(details);
     input.valueChange?.(details.value.map((date) => date.toString()));
@@ -41,18 +38,7 @@ export type Input = Omit<
   onFocusChange(details: dateInputMachine.FocusChangeDetails) {
     input.onFocusChange?.(details);
     input.focusChange?.(details.focused);
-  }/>
-<const/machineProps=() => ({
-  ...pickedProps(),
-  value: input.value ? parse(input.value) : undefined,
-  defaultValue: input.defaultValue ? parse(input.defaultValue) : undefined,
-  placeholderValue: input.placeholderValue ? parse(input.placeholderValue) : undefined,
-  defaultPlaceholderValue: input.defaultPlaceholderValue ? parse(input.defaultPlaceholderValue) : undefined,
-})/>
-<service/service machine=() => dateInputMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  dateInputMachine.connect(service, normalizeProps)
-  service=service
+  }
 />
 
 // Number of date groups: 2 for range selection, 1 otherwise.

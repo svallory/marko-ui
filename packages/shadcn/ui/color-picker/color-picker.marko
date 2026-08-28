@@ -45,7 +45,22 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
   hsba: ["hue", "saturation", "brightness", "alpha"],
 };
 
-<machine-props/machineProps from=input pick=colorPickerMachine.props
+// `value`/`defaultValue` are widened to accept CSS color strings, but the
+// machine only understands `Color` objects — and a `Color` may never cross tag
+// input (it is not Marko-serializable). Parsing therefore happens INSIDE this
+// props closure, which <zag> calls rather than serializes.
+// The keys must be OMITTED rather than set to undefined when unset: the
+// machine spreads the caller's props over its own defaults, so an explicit
+// `defaultValue: undefined` would clobber Zag's DEFAULT_COLOR and crash.
+<zag/api=() => colorPickerMachine from=input props=(picked) => {
+  const resolved: Record<string, unknown> = { ...picked };
+  for (const key of ["value", "defaultValue"]) {
+    const raw = resolved[key];
+    if (raw === undefined) delete resolved[key];
+    else if (typeof raw === "string") resolved[key] = colorPickerMachine.parse(raw);
+  }
+  return resolved;
+}
   onValueChange(details: colorPickerMachine.ValueChangeDetails) {
     input.onValueChange?.(details);
     input.valueChange?.(details.valueAsString);
@@ -54,34 +69,6 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
     input.onValueChangeEnd?.(details);
     input.valueChangeEnd?.(details.valueAsString);
   }
-  onOpenChange(details: colorPickerMachine.OpenChangeDetails) {
-    input.onOpenChange?.(details);
-    input.openChange?.(details.open);
-  }
-  onFormatChange(details: colorPickerMachine.FormatChangeDetails) {
-    input.onFormatChange?.(details);
-    input.formatChange?.(details.format);
-  }/>
-// `value`/`defaultValue` are widened to accept CSS color strings, but the
-// machine only understands `Color` objects — and a `Color` may never cross tag
-// input (it is not Marko-serializable). Parsing therefore happens INSIDE this
-// props closure, which <service> calls rather than serializes.
-// The keys must be OMITTED rather than set to undefined when unset: the
-// machine spreads the caller's props over its own defaults, so an explicit
-// `defaultValue: undefined` would clobber Zag's DEFAULT_COLOR and crash.
-<const/colorProps=() => {
-  const resolved: Record<string, unknown> = { ...machineProps() };
-  for (const key of ["value", "defaultValue"]) {
-    const raw = resolved[key];
-    if (raw === undefined) delete resolved[key];
-    else if (typeof raw === "string") resolved[key] = colorPickerMachine.parse(raw);
-  }
-  return resolved;
-}>
-<service/service machine=() => colorPickerMachine.machine props=colorProps/>
-<connect/api=(service, normalizeProps) =>
-  colorPickerMachine.connect(service, normalizeProps)
-  service=service
 />
 
 // Whatever is neither machine-owned (splitProps) nor component-owned passes
@@ -159,7 +146,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
 
   <input ...api().getHiddenInputProps()>
 
-  <portal>
+  <zag-portal>
     <if=api().open>
       <div ...api().getPositionerProps() style=positionerStyle data-slot="color-picker-positioner">
         <div
@@ -322,7 +309,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
         </div>
       </div>
     </if>
-  </portal>
+  </zag-portal>
 </div>
 
 <return=api>

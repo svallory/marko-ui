@@ -13,15 +13,7 @@ export type Input = MachineInput<"input", editableMachine.Props> & {
   trigger?: Marko.Body<[Record<string, unknown>]>;
 };
 
-<machine-props/machineProps from=input pick=editableMachine.props
-  onValueChange(details: editableMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }
-  onEditChange(details: editableMachine.EditChangeDetails) {
-    input.onEditChange?.(details);
-    input.editChange?.(details.edit);
-  }
+<zag/api=() => editableMachine from=input
   onValueCommit(details: editableMachine.ValueChangeDetails) {
     input.onValueCommit?.(details);
     input.valueCommit?.(details.value);
@@ -29,11 +21,7 @@ export type Input = MachineInput<"input", editableMachine.Props> & {
   onValueRevert(details: editableMachine.ValueChangeDetails) {
     input.onValueRevert?.(details);
     input.valueRevert?.(details.value);
-  }/>
-<service/service machine=() => editableMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  editableMachine.connect(service, normalizeProps)
-  service=service
+  }
 />
 
 <const/nativeAttrs=() =>

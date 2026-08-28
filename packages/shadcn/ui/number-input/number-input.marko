@@ -8,16 +8,7 @@ export type Input = MachineInput<"input", numberInputMachine.Props> & {
   valueChange?: (value: string) => void;
 };
 
-<machine-props/machineProps from=input pick=numberInputMachine.props
-  onValueChange(details: numberInputMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }/>
-<service/service machine=() => numberInputMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  numberInputMachine.connect(service, normalizeProps)
-  service=service
-/>
+<zag/api=() => numberInputMachine from=input/>
 
 <const/nativeAttrs=() =>
   stripOwnProps(

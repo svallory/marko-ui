@@ -17,16 +17,12 @@ export type Input = MachineInput<"nav", tocMachine.Props> & {
   title?: string;
 };
 
-<machine-props/machineProps from=input pick=tocMachine.props
+<zag/api=() => tocMachine from=input
   onActiveChange(details: tocMachine.ActiveChangeDetails) {
     input.onActiveChange?.(details);
     input.activeIdsChange?.(details.activeIds);
     input.activeItemsChange?.(details.activeItems as TocItem[]);
-  }/>
-<service/service machine=() => tocMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  tocMachine.connect(service, normalizeProps)
-  service=service
+  }
 />
 
 <const/tocItems=() => api().items as TocItem[]>

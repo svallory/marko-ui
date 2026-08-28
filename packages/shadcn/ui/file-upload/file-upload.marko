@@ -14,7 +14,7 @@ export type Input = MachineInput<"input", fileUploadMachine.Props> & {
   filesChange?: (files: FileUploadFileInfo[]) => void;
 };
 
-<machine-props/machineProps from=input pick=fileUploadMachine.props
+<zag/api=() => fileUploadMachine from=input
   onFileChange(details: fileUploadMachine.FileChangeDetails) {
     input.onFileChange?.(details);
     input.filesChange?.(
@@ -24,11 +24,7 @@ export type Input = MachineInput<"input", fileUploadMachine.Props> & {
         type: file.type,
       })),
     );
-  }/>
-<service/service machine=() => fileUploadMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  fileUploadMachine.connect(service, normalizeProps)
-  service=service
+  }
 />
 
 <const/nativeAttrs=() =>

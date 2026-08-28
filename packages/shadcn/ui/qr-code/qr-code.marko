@@ -16,25 +16,12 @@ export type Input = MachineInput<"div", qrCodeMachine.Props> &
     valueChange?: (value: string) => void;
   };
 
-// The three-tag wiring (see /docs/creating-components):
-// 1. <machine-props> picks the machine's props out of `input` by name and
-//    merges the attributes written on it — callback adaptations live HERE,
-//    visibly, because they are this component's public contract.
-// 2. <service> creates and owns the running machine (client-only; SSR
-//    renders from a throwaway never-started instance).
-// 3. <connect> returns `api` as a GETTER — call it at every use site.
-//    Getters are the serializable currency of Marko's resumability: the
-//    api object itself must never become reactive state.
-<machine-props/machineProps from=input pick=qrCodeMachine.props
+// <zag> wires the machine in one tag and returns `api` as a GETTER —
+// call it at every use site. Getters are the serializable currency of
+// Marko's resumability: the api object itself must never become reactive
+// state. See /docs/creating-components.
+<zag/api=() => qrCodeMachine from=input
   pixelSize=input.pixelSize ?? qrCodePixelSizeBySize[input.size ?? "default"]
-  onValueChange(details: qrCodeMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }/>
-<service/service machine=() => qrCodeMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  qrCodeMachine.connect(service, normalizeProps)
-  service=service
 />
 
 // Whatever is neither machine-owned (splitProps) nor component-owned

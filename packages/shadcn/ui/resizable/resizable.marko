@@ -33,7 +33,7 @@ export interface Input
 // onto the machine's Props shape, so nothing is picked from `input` by name
 // — every machine prop is supplied as an override attribute, computed here,
 // visibly, exactly like a callback adaptation would be.
-<machine-props/machineProps from=input pick=[]
+<zag/api=() => splitterMachine from=input
   orientation=input.orientation ?? "horizontal"
   panels=input.panels.map((panel) => ({
     id: panel.id,
@@ -41,16 +41,8 @@ export interface Input
     maxSize: panel.maxSize,
   }))
   defaultSize=input.panels.map((panel) => panel.defaultSize ?? 100 / input.panels.length)
-  onResize(details: splitterMachine.ResizeDetails) {
-    input.onResize?.(details);
-    input.resizeChange?.(details.size);
-  }
   onResizeStart() {
     input.onResizeStart?.();
-  }
-  onResizeEnd(details: splitterMachine.ResizeEndDetails) {
-    input.onResizeEnd?.(details);
-    input.resizeEndChange?.(details.size);
   }
   onCollapse(details: splitterMachine.ExpandCollapseDetails) {
     input.onCollapse?.(details);
@@ -60,11 +52,6 @@ export interface Input
     input.onExpand?.(details);
     input.expandChange?.(details.panelId, details.size);
   }
-/>
-<service/service machine=() => splitterMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  splitterMachine.connect(service, normalizeProps)
-  service=service
 />
 
 // NOTE (intentional deviation from the standard

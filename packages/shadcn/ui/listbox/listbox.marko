@@ -71,32 +71,17 @@ export type Input = Omit<MachineInput<"div", listboxMachine.Props<ListboxItem>>,
   return built;
 }/>
 
-<machine-props/machineProps from=input pick=listboxMachine.props
-  onValueChange(details: listboxMachine.ValueChangeDetails<ListboxItem>) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }
-  onHighlightChange(details: listboxMachine.HighlightChangeDetails<ListboxItem>) {
-    input.onHighlightChange?.(details);
-    input.highlightedValueChange?.(details.highlightedValue);
-  }/>
 // `collection` is derived state (rebuilt whenever `items` changes), not a
-// plain input field, so it cannot be picked/overridden inside <machine-props>
-// (that tag's overrides are evaluated eagerly at the tag-input boundary).
-// Wrap machineProps in a closure that layers it in for <service>.
-<const/serviceProps=() => ({ ...machineProps(), collection: buildCollection(items) })/>
-<service/service machine=() => listboxMachine.machine props=serviceProps/>
-<connect/api=(service, normalizeProps) =>
-  listboxMachine.connect(service, normalizeProps)
-  service=service
-/>
+// plain input field — it holds methods and cannot cross the tag-input
+// boundary. Layer it on in `props=`, which receives the picked props.
+<zag/api=() => listboxMachine from=input props=(picked) => ({ ...picked, collection: buildCollection(items) })/>
 
 // `collection` is Omit-ted from this component's public Input (it is derived
 // from `items`), but `splitProps` is constrained on the full `ListboxProps`,
 // which requires it. Hand it the collection this component actually builds:
 // `splitProps` only partitions keys by name, and `collection` is machine-owned
 // so it is stripped from the leftover either way. `id` gets the same
-// treatment: `MachineInput` makes it optional (<machine-props> generates one)
+// treatment: `MachineInput` makes it optional (<zag>'s `from=` generates one)
 // while `ListboxProps` requires it, and splitProps never reads its value.
 <const/nativeAttrs=() =>
   stripOwnProps(

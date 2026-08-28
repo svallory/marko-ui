@@ -43,16 +43,8 @@ export type Input<T = unknown> = Omit<
 // `<${input.content}(slide.item, index)>` call below a type error.
 <const/slides=(slideTags.length > 0 ? slideTags.map((slide) => ({ content: slide.content, item: undefined as T | undefined })) : (input.items ?? []).map((item) => ({ content: undefined as Marko.Body | undefined, item: item as T | undefined })))/>
 
-<machine-props/machineProps from=input pick=carouselMachine.props
+<zag/api=() => carouselMachine from=input
   slideCount=slides.length
-  onPageChange(details: carouselMachine.PageChangeDetails) {
-    input.onPageChange?.(details);
-    input.pageChange?.(details.page);
-  }/>
-<service/service machine=() => carouselMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  carouselMachine.connect(service, normalizeProps)
-  service=service
 />
 
 <const/nativeAttrs=() =>

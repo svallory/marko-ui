@@ -18,15 +18,11 @@ export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
   pausedChange?: (paused: boolean) => void;
 };
 
-<machine-props/machineProps from=input pick=marqueeMachine.props
+<zag/api=() => marqueeMachine from=input
   onPauseChange(details: marqueeMachine.PauseStatusDetails) {
     input.onPauseChange?.(details);
     input.pausedChange?.(details.paused);
-  }/>
-<service/service machine=() => marqueeMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  marqueeMachine.connect(service, normalizeProps)
-  service=service
+  }
 />
 
 <const/nativeAttrs=() =>

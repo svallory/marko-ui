@@ -62,11 +62,17 @@ static function filterGroups(groups: CommandGroup[], query: string): CommandGrou
 <const/allItems=filteredGroups.flatMap((group) => group.items)/>
 
 // `collection` is machine-owned but derived from `groups`/`query`, not a
-// pass-through of `input`, so it is built here and merged into the props
-// closure below rather than passed through <machine-props>'s override
-// mechanism — overrides are copied as plain tag input, and a Zag collection
+// pass-through of `input`, so it is built here and merged in via `props=`
+// rather than passed as a plain tag-input override — a Zag collection
 // carries methods that would fail serialization if it crossed that boundary.
-<machine-props/machineProps from=input pick=commandMachine.props
+<zag/api=() => commandMachine from=input props=(picked) => ({
+  ...picked,
+  collection: commandMachine.collection({
+    items: allItems,
+    itemToValue: (item: CommandItem) => item.value,
+    itemToString: (item: CommandItem) => item.label,
+  }),
+})
   open=true
   inputBehavior="autohighlight"
   selectionBehavior="clear"
@@ -79,19 +85,7 @@ static function filterGroups(groups: CommandGroup[], query: string): CommandGrou
     if (details.value[0] != null) {
       input.valueChange?.(details.value[0]);
     }
-  }/>
-<const/serviceProps=() => ({
-  ...machineProps(),
-  collection: commandMachine.collection({
-    items: allItems,
-    itemToValue: (item: CommandItem) => item.value,
-    itemToString: (item: CommandItem) => item.label,
-  }),
-})/>
-<service/service machine=() => commandMachine.machine props=serviceProps/>
-<connect/api=(service, normalizeProps) =>
-  commandMachine.connect(service, normalizeProps)
-  service=service
+  }
 />
 
 <const/nativeAttrs=() =>

@@ -19,26 +19,17 @@ export type Input = MachineInput<"span", hoverCardMachine.Props> & {
   openChange?: (open: boolean) => void;
 };
 
-<machine-props/machineProps from=input pick=hoverCardMachine.props
-  onOpenChange(details: hoverCardMachine.OpenChangeDetails) {
-    input.onOpenChange?.(details);
-    input.openChange?.(details.open);
-  }/>
-<service/service machine=() => hoverCardMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  hoverCardMachine.connect(service, normalizeProps)
-  service=service
-/>
+<zag/api=() => hoverCardMachine from=input/>
 
 <span data-slot="hover-card">
   <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "hover-card-trigger" })/>
   // NOTE: upstream shadcn sets data-slot="hover-card-portal" on Radix's Portal,
-  // which renders a real element. marko-zag's <portal> renders a
+  // which renders a real element. marko-zag's <zag-portal> renders a
   // `display:contents` host and does not forward attributes, so the
   // marker never reached the DOM — it was inert, and nothing in this
   // repo's CSS, tests or tooling reads it. Dropped rather than left as
-  // dead markup; restore it if <portal> gains attribute forwarding.
-  <portal>
+  // dead markup; restore it if <zag-portal> gains attribute forwarding.
+  <zag-portal>
     <if=api().open>
       <div ...api().getPositionerProps() style=positionerStyle data-slot="hover-card-positioner">
         <div
@@ -53,7 +44,7 @@ export type Input = MachineInput<"span", hoverCardMachine.Props> & {
         </div>
       </div>
     </if>
-  </portal>
+  </zag-portal>
 </span>
 
 <return=api>

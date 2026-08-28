@@ -20,14 +20,8 @@ export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
   vertical?: boolean;
 };
 
-// scroll-area has no onXxxChange callbacks in its Props — nothing to adapt,
-// <machine-props> just picks the machine's own props off input.
-<machine-props/machineProps from=input pick=scrollAreaMachine.props/>
-<service/service machine=() => scrollAreaMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  scrollAreaMachine.connect(service, normalizeProps)
-  service=service
-/>
+// scroll-area has no onXxxChange callbacks in its Props — nothing to adapt.
+<zag/api=() => scrollAreaMachine from=input/>
 
 // Everything that is neither machine-owned (splitProps) nor component-owned
 // (class, content, horizontal) passes through to the root wrapper.

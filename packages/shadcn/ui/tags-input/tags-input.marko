@@ -13,23 +13,11 @@ export type Input = MachineInput<"div", tagsInputMachine.Props> & {
   placeholder?: string;
 };
 
-<machine-props/machineProps from=input pick=tagsInputMachine.props
-  onValueChange(details: tagsInputMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }
-  onInputValueChange(details: tagsInputMachine.InputValueChangeDetails) {
-    input.onInputValueChange?.(details);
-    input.inputValueChange?.(details.inputValue);
-  }
+<zag/api=() => tagsInputMachine from=input
   onHighlightChange(details: tagsInputMachine.HighlightChangeDetails) {
     input.onHighlightChange?.(details);
     input.highlightedValueChange?.(details.highlightedValue);
-  }/>
-<service/service machine=() => tagsInputMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  tagsInputMachine.connect(service, normalizeProps)
-  service=service
+  }
 />
 
 // `placeholder` belongs on the entry <input>, not the root div. It is a

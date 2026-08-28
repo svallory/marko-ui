@@ -40,25 +40,11 @@ export type Input = Omit<MachineInput<"div", radioGroupMachine.Props>, "value"> 
 <const/itemTags=[...(input.item ?? [])].map((item) => ({ value: item.value, disabled: item.disabled, label: undefined as string | undefined, content: item.content }))/>
 <const/normalizedItems=(itemTags.length > 0 ? itemTags : (items ?? []).map((item) => ({ value: item.value, disabled: item.disabled, label: item.label as string | undefined, content: undefined as Marko.Body | undefined })))/>
 
-// The three-tag wiring (see /docs/creating-components):
-// 1. <machine-props> picks the machine's props out of `input` by name and
-//    merges the attributes written on it — callback adaptations live HERE,
-//    visibly, because they are this component's public contract.
-// 2. <service> creates and owns the running machine (client-only; SSR
-//    renders from a throwaway never-started instance).
-// 3. <connect> returns `api` as a GETTER — call it at every use site.
-//    Getters are the serializable currency of Marko's resumability: the
-//    api object itself must never become reactive state.
-<machine-props/machineProps from=input pick=radioGroupMachine.props
-  onValueChange(details: radioGroupMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }/>
-<service/service machine=() => radioGroupMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  radioGroupMachine.connect(service, normalizeProps)
-  service=service
-/>
+// <zag> wires the machine in one tag and returns `api` as a GETTER —
+// call it at every use site. Getters are the serializable currency of
+// Marko's resumability: the api object itself must never become reactive
+// state. See /docs/creating-components.
+<zag/api=() => radioGroupMachine from=input/>
 
 // Whatever is neither machine-owned (splitProps) nor component-owned
 // (class, items, valueChange) passes through to the root div.
