@@ -33,7 +33,17 @@ cd apps/docs && bun run dev    # docs site, default port 3000
 NODE_OPTIONS="--max-old-space-size=8192" marko-type-check -p . -d condensed
 ```
 
-**The gate now covers components.** `packages/shadcn/tsconfig.json`'s `include` carries `"ui/**/*.marko"` permanently (landed 2026-08-19), so `bun run check` typechecks every component — and it is **green: 0 errors** as of marko-zag `^1.2.0` (whose `PropTypes` maps all of Marko's native tags; earlier adapter versions collapsed prop getters to `any`, which is why components were never meaningfully checked before). Keep it green: fix type errors properly rather than casting, widening, or `@ts-ignore`-ing them, and treat a new error as a defect in the change that introduced it. A type error at a spread site usually means a real element mismatch — that class of check caught label props on a `<div>` and div-declared components rendering `<span>`/`<a>` the day the gate landed.
+**The gate now covers components.** `packages/shadcn/tsconfig.json`'s `include` carries `"ui/**/*.marko"` permanently (landed 2026-08-19), so the type gate covers every component — and the **`packages/shadcn` project is green: 0 errors** as of marko-zag `^1.2.0` (whose `PropTypes` maps all of Marko's native tags; earlier adapter versions collapsed prop getters to `any`, which is why components were never meaningfully checked before). Keep it green: fix type errors properly rather than casting, widening, or `@ts-ignore`-ing them, and treat a new error as a defect in the change that introduced it. A type error at a spread site usually means a real element mismatch — that class of check caught label props on a `<div>` and div-declared components rendering `<span>`/`<a>` the day the gate landed.
+
+**"0 errors" is the `packages/shadcn` project, not the root command.** Scope matters when you compare runs, because `bun run check` fans out over every package and the three numbers differ:
+
+| Command | Scope | Count on `main` (2026-08-28) |
+|---|---|---|
+| `NODE_OPTIONS="--max-old-space-size=8192" bunx marko-type-check -p packages/shadcn -d condensed` | the registry components | **0** |
+| `cd apps/docs && NODE_OPTIONS="--max-old-space-size=8192" bunx marko-type-check -p ./tsconfig.json -d condensed` | the docs site | **15242** — overwhelmingly pre-existing, in `src/_blocks/` |
+| `bun run check` | both of the above plus `check:tooling` | fails; its total also re-reports the shadcn errors through the docs project |
+
+So "the gate is green" is a claim about `packages/shadcn` alone. When judging whether a change regressed types, compare the **same scope** before and after against `main` — a raw root-command total is dominated by the pre-existing `_blocks/` errors and will hide a one-error regression.
 
 The `NODE_OPTIONS` heap bump is **required** — at the default heap size `marko-type-check` OOMs on this repo with a V8 stack dump. It is baked into each package script, so `bun run check` works without extra setup; keep it there if you edit those scripts. `tooling/` stays on plain `tsc` because it is pure `.ts` (no `.marko` files), where `marko-type-check` would add nothing.
 
