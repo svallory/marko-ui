@@ -38,7 +38,8 @@ export interface Input {
   }
 />
 
-<machine-props/machineProps from=input pick=menu.props
+<zag/api=() => menu from=input
+  positioning={ placement: "right-start", gutter: 20, shift: -8 }
   onSelect(details: menu.SelectionDetails) {
     switch (details.value) {
       case "open-preset":
@@ -61,12 +62,6 @@ export interface Input {
         break;
     }
   }
-  positioning={ placement: "right-start", gutter: 20, shift: -8 }
-/>
-<service/service machine=() => menu.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  menu.connect(service, normalizeProps)
-  service=service
 />
 
 <const/canGoBack=input.canGoBack/>
@@ -88,7 +83,7 @@ export interface Input {
       <line x1="4" x2="20" y1="18" y2="18"/>
     </svg>
   </button>
-  <portal>
+  <zag-portal>
     <if=api().open>
       <div ...api().getPositionerProps() style=positionerStyle data-slot="picker-positioner">
         <div
@@ -156,5 +151,5 @@ export interface Input {
         </div>
       </div>
     </if>
-  </portal>
+  </zag-portal>
 </div>

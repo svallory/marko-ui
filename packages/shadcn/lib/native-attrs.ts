@@ -3,8 +3,8 @@
  * Zag's `splitProps`/`contextProps` returns, leaving only the native element
  * attributes to spread onto the rendered element.
  *
- * This is the fourth step of the three-tag Zag contract (`<machine-props>` ->
- * `<service>` -> `<connect>` -> nativeAttrs). `splitProps(input)[1]` is
+ * This is the step after `<zag>` in the component contract (`<zag>` ->
+ * nativeAttrs). `splitProps(input)[1]` is
  * everything the machine did NOT claim, which still includes this component's
  * own additive props — `class` (applied separately through `cn()`, so leaving
  * it here would emit the class twice), the sugar callbacks that back Marko's

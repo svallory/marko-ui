@@ -103,7 +103,11 @@ export interface Input {
   });
 }/>
 
-<machine-props/machineProps from=input pick=menu.props
+<zag/api=() => menu from=input
+  positioning={
+    placement: `${input.isMobile ? "top" : "right"}-start`,
+    gutter: 20,
+  }
   onSelect(details: menu.SelectionDetails) {
     if (details.value === "default" || details.value === "inverted") {
       setColor(details.value as ColorChoice);
@@ -126,15 +130,6 @@ export interface Input {
   onOpenChange(details: menu.OpenChangeDetails) {
     if (!details.open) input.onItemPreview?.(null);
   }
-  positioning={
-    placement: `${input.isMobile ? "top" : "right"}-start`,
-    gutter: 20,
-  }
-/>
-<service/service machine=() => menu.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  menu.connect(service, normalizeProps)
-  service=service
 />
 
 <div class="group/picker relative">
@@ -154,7 +149,7 @@ export interface Input {
       </svg>
     </div>
   </button>
-  <portal>
+  <zag-portal>
     <if=api().open>
       <div ...api().getPositionerProps() style=positionerStyle data-slot="picker-positioner">
         <div
@@ -208,7 +203,7 @@ export interface Input {
         </div>
       </div>
     </if>
-  </portal>
+  </zag-portal>
   <LockButton
     locked=input.locked
     onToggle=input.onToggleLock

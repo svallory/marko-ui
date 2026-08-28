@@ -12,16 +12,7 @@ export type Input = MachineInput<"div", tabsMachine.Props> & {
   valueChange?: (value: string) => void;
 };
 
-<machine-props/machineProps from=input pick=tabsMachine.props
-  onValueChange(details: tabsMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }/>
-<service/service machine=() => tabsMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  tabsMachine.connect(service, normalizeProps)
-  service=service
-/>
+<zag/api=() => tabsMachine from=input/>
 
 // The "provide" step: stash the getter on the request-scoped global.
 <const/provided=(($global as any).__tabsApi = api)/>
