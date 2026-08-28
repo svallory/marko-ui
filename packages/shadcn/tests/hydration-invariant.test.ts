@@ -21,9 +21,10 @@ import {
 /**
  * The 33 Zag-machine-backed components currently covered by this suite.
  *
- * NOT the full set. packages/shadcn/ui/ holds 54 Zag-backed components (53
- * use <zag>; `toast` is the lone exception, a client-only group store that
- * is Zag-backed by <zag-machine> + connect() alone).
+ * NOT the full set. packages/shadcn/ui/ holds 58 Zag-backed component files:
+ * 50 use <zag>, and 8 use <zag-machine> + connect() because they need the
+ * running service itself (the toast pair, and the menu/submenu pair of
+ * dropdown-menu, context-menu and menubar).
  * All 54 have demo directories under apps/docs/src/demos/.
  *
  * 33 are listed below, so 21 are uncovered — a real coverage gap in

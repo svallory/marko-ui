@@ -37,7 +37,7 @@ export interface Input {
    * Fires once this submenu's own raw service exists (on mount), so the
    * parent can complete the link with `parentApi().setChild(childService)` —
    * `setChild` needs the RAW service (see menu.connect's `child.prop("id")`),
-   * which only exists after this component's own `<service>` has mounted.
+   * which only exists after this component's own `<zag-machine>` has mounted.
    */
   onChildReady?: (childService: menu.Service) => void;
   /**

@@ -7,7 +7,7 @@
 //   <Toaster>       one group <zag-machine>/connect() whose only machine prop is
 //                   { id, store }. The store reaches it through a template
 //                   closure (`groupProps`), not through tag input.
-//   <toast-item>    one child <service> per visible toast, spawned by <for>.
+//   <toast-item>    one child <zag-machine> per visible toast, spawned by <for>.
 //                   Marko gives each <for> iteration its own component
 //                   instance and therefore its own <lifecycle>, which is
 //                   exactly the per-toast machine lifetime Zag wants.

@@ -73,9 +73,9 @@ static function menuEntries(input: Input): ContextMenuItemAttrs[] {
 />
 <const/api=() => connect(menu, service())/>
 
-// The service getter handed to each <Submenu> child so it can call
-// `setParent` on this menu's raw service (see submenu.marko for the full
-// wiring rationale).
+// <zag-machine> returns the service GETTER itself, which is what each
+// <Submenu> child receives so it can call `setParent` on this menu's
+// service (see submenu.marko for the full wiring rationale).
 
 <div ...api().getContextTriggerProps() data-slot="context-menu-trigger" class="mu-context-menu-trigger select-none">
   <${input.content}/>
