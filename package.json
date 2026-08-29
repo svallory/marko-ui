@@ -26,37 +26,37 @@
     "format": "prettier --write ."
   },
   "devDependencies": {
-    "@hugeicons/core-free-icons": "^4.2.3",
+    "@hugeicons/core-free-icons": "^4.3.0",
     "@marko/compiler": "5.42.3",
     "@marko/type-check": "^3.2.0",
-    "@marko/vite": "^6.1.9",
+    "@marko/vite": "^6.1.11",
     "@phosphor-icons/core": "^2.1.1",
     "@playwright/test": "1.62.1",
     "@tabler/icons": "^3.46.0",
-    "@types/node": "^26.2.0",
+    "@types/node": "^26.4.0",
     "@types/pixelmatch": "^5.2.6",
     "@types/pngjs": "^6.0.5",
-    "@zag-js/tabs": "1.43.0",
+    "@zag-js/tabs": "1.43.3",
     "axe-core": "^4.13.0",
-    "lucide-static": "^1.31.0",
+    "lucide-static": "^1.35.0",
     "marko": "6.3.46",
     "odiff-bin": "^4.5.0",
     "pixelmatch": "^7.2.0",
     "playwright": "1.62.1",
     "pngjs": "^7.0.0",
-    "postcss": "^8.5.6",
-    "postcss-selector-parser": "^7.1.0",
+    "postcss": "^8.5.26",
+    "postcss-selector-parser": "^7.1.5",
     "prettier": "^3.9.6",
     "prettier-plugin-marko": "^4.1.0",
     "remixicon": "^4.9.1",
     "tailwind-merge": "^3.6.0",
     "ts-morph": "^28.0.0",
-    "typescript": "^5.9.3",
-    "vitest": "^4.1.10"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
   },
   "dependencies": {
-    "@zag-js/core": "^1.43.0",
-    "@zag-js/types": "^1.43.0"
+    "@zag-js/core": "^1.43.3",
+    "@zag-js/types": "^1.43.3"
   },
   "overrides": {
     "@marko/compiler": "5.42.3"
