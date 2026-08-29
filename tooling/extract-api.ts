@@ -6,15 +6,13 @@
  *
  * How it works
  * ------------
- * `.marko` files cannot be fed to `tsc`. But every component in this registry
- * keeps its entire TypeScript region — imports, helper interfaces, and the
- * `export type Input` / `export interface Input` declaration — above the first
- * line-initial `<` tag. That leading slice IS valid standalone TypeScript, so
- * the script carves it out into a *virtual* `.ts` file sitting at the
+ * `.marko` files cannot be fed to the compiler. But every component in this
+ * registry keeps its entire TypeScript region — imports, helper interfaces, and
+ * the `export type Input` / `export interface Input` declaration — above the
+ * first line-initial `<` tag. That leading slice IS valid standalone
+ * TypeScript, so the script carves it out into a `.ts` twin sitting at the
  * component's own path (so relative imports like `./variants.ts` and the
- * `#lib/*` subpath still resolve) and hands the whole set to one
- * `ts.createProgram` backed by a compiler host that serves those virtual
- * files from memory.
+ * `#lib/*` subpath still resolve) and loads the whole set as one project.
  *
  * With a real checker in hand, `MachineInput<Tag, Props>` resolves for free:
  * it is `Marko.Input<Tag> & Omit<Props, "id"> & { id?: string }`, so the
@@ -35,16 +33,72 @@
  *
  * The ~370 native attributes are deliberately NOT enumerated; they are reduced
  * to a single `nativeAttributes` note naming the tag they come from.
+ *
+ * TypeScript 7
+ * ------------
+ * typescript@7 (the native `tsgo` compiler) ships no in-process JS compiler
+ * API: there is no `ts.createProgram`, no `ts.CompilerHost`, and no synchronous
+ * `ts.*` namespace to import. What it does ship is `typescript/unstable/sync`,
+ * a client for an out-of-process compiler that exposes the same checker
+ * vocabulary (`getPropertiesOfType`, `typeToString`, `getExportsOfModule`, …)
+ * over an RPC channel. Two consequences shape this file:
+ *
+ *  - That compiler reads the REAL file system; a virtual `CompilerHost` has no
+ *    equivalent. The `.ts` twins are therefore written to disk next to their
+ *    `.marko` source for the duration of the run and removed in a `finally`.
+ *    They are named `__api__<part>.ts` and are git-ignored.
+ *  - The RPC channel needs Node's `stdout._handle.fd`, which Bun does not
+ *    expose (`TypeError: undefined is not an object (evaluating
+ *    'stdout._handle.fd')`). `bun tooling/extract-api.ts` therefore re-executes
+ *    itself under `node` — see `main()`.
+ *
+ * A few names moved between TS 5 and TS 7 and are called out at their use
+ * sites: `questionToken` is now `postfixToken`, `isPropertySignature` is now
+ * `isPropertySignatureDeclaration`, and `TypeFormatFlags` folded into
+ * `NodeBuilderFlags` (the two flags used here keep their numeric values).
  */
-import ts from "typescript";
-import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
+import { API, SymbolFlags, NodeBuilderFlags } from "typescript/unstable/sync";
+import type { Checker, Project, Symbol as TsSymbol } from "typescript/unstable/sync";
+import type { Node, SourceFile } from "typescript/unstable/ast";
+import {
+  isPropertySignatureDeclaration,
+  isPropertyAssignment,
+  isIdentifier,
+  isStringLiteral,
+  isObjectLiteralExpression,
+  isCallExpression,
+} from "typescript/unstable/ast/is";
+import { readdir, readFile, writeFile, mkdir, rm } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, dirname, basename, relative } from "node:path";
 
 const ROOT = new URL("../packages/shadcn/", import.meta.url).pathname;
 const REGISTRY_DIR = ROOT;
 const UI_DIR = join(ROOT, "ui");
-const OUT_FILE = join(ROOT, "../../apps/docs/src/lib/api-reference.json");
+const OUT_FILE = process.env.API_REFERENCE_OUT
+  ? process.env.API_REFERENCE_OUT
+  : join(ROOT, "../../apps/docs/src/lib/api-reference.json");
+
+/** The generated project the twins are loaded through; removed after the run. */
+const PROJECT_FILE = join(REGISTRY_DIR, "tsconfig.api-extract.json");
+
+/**
+ * The compiler options the extraction runs under. These are the options the
+ * pre-TS-7 implementation passed to `ts.createProgram` directly; TS 7 only
+ * loads options from a config file, so they are written to `PROJECT_FILE`.
+ */
+const COMPILER_OPTIONS = {
+  target: "ES2022",
+  module: "ESNext",
+  moduleResolution: "bundler",
+  strict: true,
+  skipLibCheck: true,
+  types: ["marko", "node"],
+  allowImportingTsExtensions: true,
+  noEmit: true,
+  baseUrl: ".",
+  paths: { "#lib/*": ["./lib/*"] },
+};
 
 /** A prop's origin, which is also how the docs group it. */
 type PropertyKind = "machine" | "variant" | "own" | "native";
@@ -93,44 +147,9 @@ function extractTypeScriptRegion(markoSource: string): string {
   return region.join("\n");
 }
 
-/** Where the virtual `.ts` twin of a `.marko` file lives (same directory). */
+/** Where the `.ts` twin of a `.marko` file lives (same directory). */
 function virtualPathFor(markoPath: string): string {
   return join(dirname(markoPath), `__api__${basename(markoPath, ".marko")}.ts`);
-}
-
-const COMPILER_OPTIONS: ts.CompilerOptions = {
-  target: ts.ScriptTarget.ES2022,
-  module: ts.ModuleKind.ESNext,
-  moduleResolution: ts.ModuleResolutionKind.Bundler,
-  strict: true,
-  skipLibCheck: true,
-  types: ["marko", "node"],
-  allowImportingTsExtensions: true,
-  noEmit: true,
-  baseUrl: REGISTRY_DIR,
-  paths: { "#lib/*": ["./lib/*"] },
-};
-
-/**
- * A normal compiler host with the virtual `.ts` files layered on top, so the
- * program sees them as if they existed on disk next to their `.marko` source.
- */
-function createVirtualHost(virtualFiles: Map<string, string>): ts.CompilerHost {
-  const host = ts.createCompilerHost(COMPILER_OPTIONS, true);
-  const readRealFile = host.readFile.bind(host);
-  const realFileExists = host.fileExists.bind(host);
-  const getRealSourceFile = host.getSourceFile.bind(host);
-
-  host.readFile = (fileName) => virtualFiles.get(fileName) ?? readRealFile(fileName);
-  host.fileExists = (fileName) => virtualFiles.has(fileName) || realFileExists(fileName);
-  host.getSourceFile = (fileName, languageVersion, onError, shouldCreate) => {
-    const virtual = virtualFiles.get(fileName);
-    if (virtual === undefined) {
-      return getRealSourceFile(fileName, languageVersion, onError, shouldCreate);
-    }
-    return ts.createSourceFile(fileName, virtual, languageVersion, true, ts.ScriptKind.TS);
-  };
-  return host;
 }
 
 /** The `Tag` of a `Marko.Input<Tag>` / `MachineInput<Tag, …>` written in the source text. */
@@ -148,52 +167,57 @@ function findMachineModule(typeScriptRegion: string): string | undefined {
 }
 
 /**
- * Resolves the `Input` export to a concrete type. Generic `Input<T = …>`
- * declarations (carousel, data-table, marquee, listbox…) are instantiated with
- * each parameter's own default so the property list is the one a caller sees
- * when writing the tag without explicit type arguments.
+ * The type-display flags the docs artifact is written with. In TS 5 these were
+ * `ts.TypeFormatFlags.NoTruncation | UseSingleQuotesForStringLiteralType`; TS 7
+ * folded both into `NodeBuilderFlags` with the same numeric values, so the
+ * rendered strings are unchanged.
  */
-function resolveInputType(
-  checker: ts.TypeChecker,
-  sourceFile: ts.SourceFile,
-): ts.Type | undefined {
+const TYPE_FORMAT_FLAGS =
+  NodeBuilderFlags.NoTruncation | NodeBuilderFlags.UseSingleQuotesForStringLiteralType;
+
+/**
+ * Resolves the `Input` export to a concrete type.
+ *
+ * The pre-TS-7 implementation additionally re-instantiated generic
+ * `Input<T = …>` declarations with each parameter's default, because an
+ * uninstantiated generic reported no properties. The TS 7 checker already
+ * resolves the declared type of a generic alias against its defaults, so
+ * `getDeclaredTypeOfSymbol` alone reproduces the old output; the manual
+ * instantiation (which relied on `getTypeAliasInstantiation` /
+ * `createTypeReference`, neither of which TS 7 exposes) is no longer needed.
+ */
+function resolveInputType(checker: Checker, sourceFile: SourceFile) {
   const moduleSymbol = checker.getSymbolAtLocation(sourceFile);
   if (!moduleSymbol) return undefined;
   const inputSymbol = checker
     .getExportsOfModule(moduleSymbol)
-    .find((exported) => exported.getName() === "Input");
+    .find((exported) => exported.name === "Input");
   if (!inputSymbol) return undefined;
+  return checker.getDeclaredTypeOfSymbol(inputSymbol);
+}
 
-  const declaredType = checker.getDeclaredTypeOfSymbol(inputSymbol);
-  const typeParameters = (declaredType as ts.InterfaceType).typeParameters;
-  if (!typeParameters?.length) return declaredType;
+/**
+ * Declaration paths as TS 7 reports them are canonicalized — on this
+ * case-insensitive file system that means lower-cased, so a path built with
+ * `join()` (which preserves the real casing of `/Users/...`) never compares
+ * equal to one read off a declaration. Every path comparison in this file goes
+ * through this normalization.
+ */
+function canonicalPath(fileName: string): string {
+  return fileName.toLowerCase();
+}
 
-  // Instantiate with defaults where declared, `unknown` otherwise. Without
-  // this, an uninstantiated generic reports no properties at all.
-  const typeArguments = typeParameters.map(
-    (parameter) => checker.getDefaultFromTypeParameter(parameter) ?? checker.getAnyType(),
-  );
-  const declaration = inputSymbol.declarations?.[0];
-  if (declaration && ts.isTypeAliasDeclaration(declaration)) {
-    const instantiated = (checker as unknown as {
-      getTypeAliasInstantiation?: (symbol: ts.Symbol, args: readonly ts.Type[]) => ts.Type;
-    }).getTypeAliasInstantiation?.(inputSymbol, typeArguments);
-    if (instantiated) return instantiated;
-  }
-  const reference = (checker as unknown as {
-    createTypeReference?: (target: ts.GenericType, args: readonly ts.Type[]) => ts.Type;
-  }).createTypeReference?.(declaredType as ts.GenericType, typeArguments);
-  return reference ?? declaredType;
+/** The file each of a symbol's declarations lives in, canonicalized. */
+function declarationFilesOf(property: TsSymbol): string[] {
+  return property.declarations.map((declaration) => canonicalPath(declaration.path as string));
 }
 
 function classifyProperty(
-  property: ts.Symbol,
+  property: TsSymbol,
   ownFileName: string,
   variantsFileName: string,
 ): PropertyKind {
-  const declarationFiles = (property.declarations ?? []).map((declaration) =>
-    declaration.getSourceFile().fileName,
-  );
+  const declarationFiles = declarationFilesOf(property);
   // Machine first: `checked`, `disabled`, `name`, … are declared by BOTH the
   // native tag typing and the Zag machine, and the machine's is the real one.
   if (declarationFiles.some((file) => file.includes("@zag-js/"))) return "machine";
@@ -208,34 +232,53 @@ function classifyProperty(
  * every declaration that happens to share the name.
  */
 function authoritativeDeclaration(
-  property: ts.Symbol,
+  property: TsSymbol,
   kind: PropertyKind,
   ownFileName: string,
   variantsFileName: string,
-): ts.Declaration | undefined {
+  project: Project,
+): Node | undefined {
   const matches = (test: (fileName: string) => boolean) =>
-    property.declarations?.find((declaration) => test(declaration.getSourceFile().fileName));
-  switch (kind) {
-    case "machine":
-      return matches((fileName) => fileName.includes("@zag-js/"));
-    case "variant":
-      return matches((fileName) => fileName === variantsFileName);
-    case "own":
-      return matches((fileName) => fileName === ownFileName);
-    case "native":
-      return undefined;
-  }
+    property.declarations.find((declaration) => test(canonicalPath(declaration.path as string)));
+  const handle = (() => {
+    switch (kind) {
+      case "machine":
+        return matches((fileName) => fileName.includes("@zag-js/"));
+      case "variant":
+        return matches((fileName) => fileName === variantsFileName);
+      case "own":
+        return matches((fileName) => fileName === ownFileName);
+      case "native":
+        return undefined;
+    }
+  })();
+  return handle?.resolve(project);
 }
 
-/** The plain-text JSDoc body attached directly to one declaration. */
-function declarationDocumentation(declaration: ts.Declaration): string {
-  const comments = ts
-    .getJSDocCommentsAndTags(declaration)
-    .flatMap((node) => {
-      const comment = (node as ts.JSDoc).comment;
-      return typeof comment === "string" ? [comment] : [];
-    });
-  return comments.join("\n").trim();
+/**
+ * The plain-text JSDoc body attached directly to ONE declaration.
+ *
+ * `Checker.getDocumentationCommentOfSymbol` is symbol-wide: for a prop declared
+ * by both the native tag typing and a machine it concatenates both comments.
+ * The docs want the comment of the declaration that decided the prop's kind, so
+ * this reads the `jsDoc` nodes hanging off that declaration alone. In TS 7 a
+ * `JSDoc` node's `comment` is a node array rather than a string, so the text is
+ * assembled from the comment parts.
+ */
+function declarationDocumentation(declaration: Node): string {
+  const jsDocNodes = (declaration as { jsDoc?: readonly unknown[] }).jsDoc ?? [];
+  const commentText = (comment: unknown): string => {
+    if (typeof comment === "string") return comment;
+    if (Array.isArray(comment)) {
+      return comment.map((part) => (part as { text?: string }).text ?? "").join("");
+    }
+    return "";
+  };
+  return jsDocNodes
+    .map((node) => commentText((node as { comment?: unknown }).comment))
+    .filter((text) => text.length > 0)
+    .join("\n")
+    .trim();
 }
 
 /**
@@ -243,30 +286,25 @@ function declarationDocumentation(declaration: ts.Declaration): string {
  * docs can list a variant's actual options and its `defaultVariants` value —
  * neither of which is recoverable from `VariantProps`, whose type is just a
  * union of string literals with no notion of which one is the default.
+ *
+ * This walks the parsed source file the project already holds, so the cva
+ * config is read from the same AST the checker sees.
  */
-async function readVariantMetadata(
+function readVariantMetadata(
   variantsFileName: string,
-): Promise<Map<string, { options: string[]; default?: string }>> {
+  project: Project,
+): Map<string, { options: string[]; default?: string }> {
   const metadata = new Map<string, { options: string[]; default?: string }>();
   if (!existsSync(variantsFileName)) return metadata;
+  const source = project.program.getSourceFile(variantsFileName);
+  if (!source) return metadata;
 
-  const source = ts.createSourceFile(
-    variantsFileName,
-    await readFile(variantsFileName, "utf8"),
-    ts.ScriptTarget.ES2022,
-    true,
-    ts.ScriptKind.TS,
-  );
-
-  const objectLiteralProperty = (
-    object: ts.ObjectLiteralExpression,
-    name: string,
-  ): ts.Expression | undefined => {
+  const objectLiteralProperty = (object: any, name: string): any => {
     for (const member of object.properties) {
-      if (!ts.isPropertyAssignment(member)) continue;
-      const memberName = ts.isIdentifier(member.name)
+      if (!isPropertyAssignment(member)) continue;
+      const memberName = isIdentifier(member.name)
         ? member.name.text
-        : ts.isStringLiteral(member.name)
+        : isStringLiteral(member.name)
           ? member.name.text
           : undefined;
       if (memberName === name) return member.initializer;
@@ -274,59 +312,54 @@ async function readVariantMetadata(
     return undefined;
   };
 
-  const visit = (node: ts.Node): void => {
-    if (
-      ts.isCallExpression(node) &&
-      ts.isIdentifier(node.expression) &&
-      node.expression.text === "cva"
-    ) {
+  const visit = (node: any): void => {
+    if (isCallExpression(node) && isIdentifier(node.expression) && node.expression.text === "cva") {
       const config = node.arguments[1];
-      if (config && ts.isObjectLiteralExpression(config)) {
+      if (config && isObjectLiteralExpression(config)) {
         const variants = objectLiteralProperty(config, "variants");
         const defaults = objectLiteralProperty(config, "defaultVariants");
-        if (variants && ts.isObjectLiteralExpression(variants)) {
+        if (variants && isObjectLiteralExpression(variants)) {
           for (const group of variants.properties) {
-            if (!ts.isPropertyAssignment(group)) continue;
-            const groupName = ts.isIdentifier(group.name)
+            if (!isPropertyAssignment(group)) continue;
+            const groupName = isIdentifier(group.name)
               ? group.name.text
-              : ts.isStringLiteral(group.name)
+              : isStringLiteral(group.name)
                 ? group.name.text
                 : undefined;
-            if (!groupName || !ts.isObjectLiteralExpression(group.initializer)) continue;
-            const options = group.initializer.properties.flatMap((option) => {
-              if (!ts.isPropertyAssignment(option)) return [];
-              if (ts.isIdentifier(option.name) || ts.isStringLiteral(option.name)) {
+            if (!groupName || !isObjectLiteralExpression(group.initializer)) continue;
+            const options = group.initializer.properties.flatMap((option: any) => {
+              if (!isPropertyAssignment(option)) return [];
+              if (isIdentifier(option.name) || isStringLiteral(option.name)) {
                 return [option.name.text];
               }
               return [];
             });
             let defaultOption: string | undefined;
-            if (defaults && ts.isObjectLiteralExpression(defaults)) {
+            if (defaults && isObjectLiteralExpression(defaults)) {
               const value = objectLiteralProperty(defaults, groupName);
-              if (value && ts.isStringLiteral(value)) defaultOption = value.text;
+              if (value && isStringLiteral(value)) defaultOption = value.text;
             }
             metadata.set(groupName, { options, default: defaultOption });
           }
         }
       }
     }
-    ts.forEachChild(node, visit);
+    node.forEachChild?.(visit);
   };
   visit(source);
   return metadata;
 }
 
-async function main() {
+async function extract(): Promise<void> {
   const componentNames = (await readdir(UI_DIR, { withFileTypes: true }))
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort();
 
-  // Pass 1 — carve every .marko file's TypeScript region into a virtual .ts
-  // twin, and build ONE program over all of them. One program means the
-  // checker resolves cross-component and node_modules types once instead of
-  // 139 times; a per-file program takes minutes, this takes seconds.
-  const virtualFiles = new Map<string, string>();
+  // Pass 1 — carve every .marko file's TypeScript region into a .ts twin on
+  // disk, and load them all as ONE project. One project means the checker
+  // resolves cross-component and node_modules types once instead of 139 times.
+  const twinFiles = new Map<string, string>();
   const sourceRegions = new Map<string, string>();
   const componentFiles = new Map<string, string[]>();
 
@@ -340,119 +373,150 @@ async function main() {
     for (const fileName of entries) {
       const markoPath = join(componentDir, fileName);
       const region = extractTypeScriptRegion(await readFile(markoPath, "utf8"));
-      const virtualPath = virtualPathFor(markoPath);
-      virtualFiles.set(virtualPath, region);
-      sourceRegions.set(virtualPath, region);
+      const twinPath = virtualPathFor(markoPath);
+      twinFiles.set(twinPath, region);
+      sourceRegions.set(twinPath, region);
     }
   }
 
-  const host = createVirtualHost(virtualFiles);
-  const program = ts.createProgram([...virtualFiles.keys()], COMPILER_OPTIONS, host);
-  const checker = program.getTypeChecker();
-
-  // Pass 2 — read each Input off the checker.
   const components: ComponentEntry[] = [];
   const missingInput: string[] = [];
 
-  for (const componentName of componentNames) {
-    const componentDir = join(UI_DIR, componentName);
-    const variantsFileName = join(componentDir, "variants.ts");
-    const variantMetadata = await readVariantMetadata(variantsFileName);
-    const parts: PartEntry[] = [];
+  // The twins and the generated project file only exist while the compiler is
+  // reading them; `finally` removes them even when extraction throws.
+  await Promise.all([...twinFiles].map(([path, contents]) => writeFile(path, contents)));
+  await writeFile(
+    PROJECT_FILE,
+    JSON.stringify(
+      {
+        compilerOptions: COMPILER_OPTIONS,
+        include: ["ui/**/*.ts", "lib/**/*.ts"],
+      },
+      null,
+      2,
+    ) + "\n",
+  );
 
-    for (const fileName of componentFiles.get(componentName) ?? []) {
-      const virtualPath = virtualPathFor(join(componentDir, fileName));
-      const sourceFile = program.getSourceFile(virtualPath);
-      const region = sourceRegions.get(virtualPath) ?? "";
-      if (!sourceFile) continue;
+  const api = new API({ cwd: REGISTRY_DIR });
+  try {
+    const snapshot = api.updateSnapshot({ openProjects: [PROJECT_FILE] });
+    const project = snapshot.getProjects()[0];
+    if (!project) throw new Error(`no project loaded from ${PROJECT_FILE}`);
+    const checker = project.checker;
 
-      const inputType = resolveInputType(checker, sourceFile);
-      if (!inputType) {
-        missingInput.push(`${componentName}/${fileName}`);
-        continue;
-      }
+    // Pass 2 — read each Input off the checker.
+    for (const componentName of componentNames) {
+      const componentDir = join(UI_DIR, componentName);
+      const variantsFileName = join(componentDir, "variants.ts");
+      const variantsKey = canonicalPath(variantsFileName);
+      const variantMetadata = readVariantMetadata(variantsFileName, project);
+      const parts: PartEntry[] = [];
 
-      const properties: PropertyEntry[] = [];
-      let acceptsNativeAttributes = false;
+      for (const fileName of componentFiles.get(componentName) ?? []) {
+        const twinPath = virtualPathFor(join(componentDir, fileName));
+        const twinKey = canonicalPath(twinPath);
+        const sourceFile = project.program.getSourceFile(twinPath);
+        const region = sourceRegions.get(twinPath) ?? "";
+        if (!sourceFile) continue;
 
-      for (const property of checker.getPropertiesOfType(inputType)) {
-        const kind = classifyProperty(property, virtualPath, variantsFileName);
-        if (kind === "native") {
-          acceptsNativeAttributes = true;
-          continue; // ~370 per tag; summarized as `nativeAttributes` instead.
+        const inputType = resolveInputType(checker, sourceFile);
+        if (!inputType) {
+          missingInput.push(`${componentName}/${fileName}`);
+          continue;
         }
-        // A prop declared in BOTH the classifying source and the native tag
-        // typing (`checkedChange` on a component, `onSelect`/`placeholder`/
-        // `accept` on a machine) reads back through the checker as the
-        // *intersection* of the two — an unreadable `(false & ((details: …)))`
-        // soup carrying the native attribute's doc comment. The declaration
-        // that decided the prop's kind is the authoritative one, so read type,
-        // docs and optionality off that declaration alone.
-        const authoritative = authoritativeDeclaration(property, kind, virtualPath, variantsFileName);
-        const declaration = authoritative ?? property.declarations?.[0] ?? sourceFile;
-        const propertyType =
-          authoritative && ts.isPropertySignature(authoritative) && authoritative.type
-            ? checker.getTypeFromTypeNode(authoritative.type)
-            : checker.getTypeOfSymbolAtLocation(property, declaration);
-        const documentation = authoritative
-          ? declarationDocumentation(authoritative)
-          : ts.displayPartsToString(property.getDocumentationComment(checker));
-        const entry: PropertyEntry = {
-          name: property.getName(),
-          type: checker.typeToString(
-            propertyType,
-            declaration,
-            ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseSingleQuotesForStringLiteralType,
-          ),
-          required:
-            authoritative && ts.isPropertySignature(authoritative)
-              ? authoritative.questionToken === undefined
-              : !(property.flags & ts.SymbolFlags.Optional),
-          kind,
+
+        const properties: PropertyEntry[] = [];
+        let acceptsNativeAttributes = false;
+
+        for (const property of checker.getPropertiesOfType(inputType)) {
+          const kind = classifyProperty(property, twinKey, variantsKey);
+          if (kind === "native") {
+            acceptsNativeAttributes = true;
+            continue; // ~370 per tag; summarized as `nativeAttributes` instead.
+          }
+          // A prop declared in BOTH the classifying source and the native tag
+          // typing (`checkedChange` on a component, `onSelect`/`placeholder`/
+          // `accept` on a machine) reads back through the checker as the
+          // *intersection* of the two — an unreadable `(false & ((details: …)))`
+          // soup carrying the native attribute's doc comment. The declaration
+          // that decided the prop's kind is the authoritative one, so read type,
+          // docs and optionality off that declaration alone.
+          const authoritative = authoritativeDeclaration(
+            property,
+            kind,
+            twinKey,
+            variantsKey,
+            project,
+          );
+          const declaration =
+            authoritative ?? property.declarations[0]?.resolve(project) ?? sourceFile;
+          const authoritativeSignature =
+            authoritative && isPropertySignatureDeclaration(authoritative)
+              ? (authoritative as any)
+              : undefined;
+          const propertyType =
+            authoritativeSignature?.type
+              ? checker.getTypeFromTypeNode(authoritativeSignature.type)
+              : checker.getTypeOfSymbolAtLocation(property, declaration);
+          const documentation = authoritative
+            ? declarationDocumentation(authoritative)
+            : checker.getDocumentationCommentOfSymbol(property);
+          const entry: PropertyEntry = {
+            name: property.name,
+            type: propertyType
+              ? checker.typeToString(propertyType, declaration, TYPE_FORMAT_FLAGS)
+              : "unknown",
+            // TS 7 renamed a property signature's `questionToken` to
+            // `postfixToken`; the meaning is unchanged.
+            required: authoritativeSignature
+              ? authoritativeSignature.postfixToken === undefined
+              : !(property.flags & SymbolFlags.Optional),
+            kind,
+          };
+          if (documentation) entry.description = documentation;
+          const variant = variantMetadata.get(property.name);
+          if (kind === "variant" && variant) {
+            entry.options = variant.options;
+            if (variant.default !== undefined) entry.default = variant.default;
+          }
+          properties.push(entry);
+        }
+
+        properties.sort((a, b) => {
+          if (a.required !== b.required) return a.required ? -1 : 1;
+          return a.name.localeCompare(b.name);
+        });
+
+        const part: PartEntry = {
+          file: fileName,
+          name: basename(fileName, ".marko"),
+          properties,
         };
-        if (documentation) entry.description = documentation;
-        const variant = variantMetadata.get(property.getName());
-        if (kind === "variant" && variant) {
-          entry.options = variant.options;
-          if (variant.default !== undefined) entry.default = variant.default;
+        if (acceptsNativeAttributes) {
+          part.nativeAttributes = findNativeTag(region) ?? "div";
         }
-        properties.push(entry);
+        const machineModule = findMachineModule(region);
+        if (machineModule) part.machineModule = machineModule;
+        parts.push(part);
       }
 
-      properties.sort((a, b) => {
-        if (a.required !== b.required) return a.required ? -1 : 1;
-        return a.name.localeCompare(b.name);
-      });
-
-      const part: PartEntry = {
-        file: fileName,
-        name: basename(fileName, ".marko"),
-        properties,
-      };
-      if (acceptsNativeAttributes) {
-        part.nativeAttributes = findNativeTag(region) ?? "div";
-      }
-      const machineModule = findMachineModule(region);
-      if (machineModule) part.machineModule = machineModule;
-      parts.push(part);
+      // The root part is the file named after the component; its machine is the
+      // component's machine.
+      const rootPart = parts.find((part) => part.name === componentName) ?? parts[0];
+      const entry: ComponentEntry = { name: componentName, parts };
+      if (rootPart?.machineModule) entry.machineModule = rootPart.machineModule;
+      components.push(entry);
     }
-
-    // The root part is the file named after the component; its machine is the
-    // component's machine.
-    const rootPart = parts.find((part) => part.name === componentName) ?? parts[0];
-    const entry: ComponentEntry = { name: componentName, parts };
-    if (rootPart?.machineModule) entry.machineModule = rootPart.machineModule;
-    components.push(entry);
+  } finally {
+    api.close();
+    await Promise.all([...twinFiles.keys()].map((path) => rm(path, { force: true })));
+    await rm(PROJECT_FILE, { force: true });
   }
 
   await mkdir(dirname(OUT_FILE), { recursive: true });
   await writeFile(
     OUT_FILE,
-    JSON.stringify(
-      { generatedBy: "tooling/extract-api.ts", components },
-      null,
-      2,
-    ) + "\n",
+    JSON.stringify({ generatedBy: "tooling/extract-api.ts", components }, null, 2) + "\n",
   );
 
   const partCount = components.reduce((total, component) => total + component.parts.length, 0);
@@ -464,6 +528,26 @@ async function main() {
     console.warn(`no exported Input in ${missingInput.length} file(s):`);
     for (const file of missingInput) console.warn(`  ${file}`);
   }
+}
+
+/**
+ * typescript@7's synchronous API talks to the compiler over a channel built on
+ * Node's `stdout._handle.fd`, which Bun does not expose. The repo runs its
+ * tooling with `bun`, so under Bun this re-executes the same file under `node`
+ * and forwards the exit code; under Node it runs the extraction directly.
+ */
+async function main(): Promise<void> {
+  const isBun = Boolean((globalThis as { Bun?: unknown }).Bun);
+  if (!isBun) return extract();
+
+  const { spawnSync } = await import("node:child_process");
+  const result = spawnSync(
+    "node",
+    ["--experimental-strip-types", new URL(import.meta.url).pathname],
+    { stdio: "inherit", env: process.env },
+  );
+  if (result.error) throw result.error;
+  process.exit(result.status ?? 1);
 }
 
 await main();
