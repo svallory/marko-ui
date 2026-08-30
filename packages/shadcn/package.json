@@ -2,7 +2,7 @@
   "name": "@marko-ui/shadcn",
   "version": "0.1.0",
   "type": "module",
-  "description": "shadcn/ui ported to Marko 6 — hook-class component source and the 8 style layers, for the import distribution path",
+  "description": "shadcn/ui ported to Marko 6 \u2014 hook-class component source and the 8 style layers, for the import distribution path",
   "license": "MIT",
   "author": {
     "name": "Saulo Vallory",
@@ -104,7 +104,7 @@
     "d3-scale": "^4.0.2",
     "d3-shape": "^3.2.0",
     "lucide-static": "^1.37.0",
-    "marko-zag": "2.0.0-rc.2",
+    "marko-zag": "2.0.0-rc.3",
     "remixicon": "^4.9.1",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",
