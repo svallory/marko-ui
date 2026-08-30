@@ -14,9 +14,10 @@
  *     "Unable to access Marko File outside of a compilation".
  *
  *  2. **Exact-pin enforcement** — packages in `NEEDS_EXACT` must be declared
- *     as a bare version, never a range, wherever they are *installed*. A
- *     `^` on these is what lets a routine `bun update` walk the tree off the
- *     version the repo is verified against.
+ *     as a bare version wherever they are *installed*: the specifier has to
+ *     match `EXACT_VERSION`, not merely avoid looking like a range. A `^`, a
+ *     dist-tag (`latest`, `next`) or a wildcard on these is what lets a routine
+ *     `bun update` walk the tree off the version the repo is verified against.
  *
  * Intentional divergences live in `ALLOWED_DIVERGENCES` below, each with the
  * reason it exists and what would let it be removed. Nothing else is exempt:
@@ -47,6 +48,18 @@ const NEEDS_EXACT: Record<string, string> = {
 
 /** Every `@zag-js/*` package is exact-pinned too; they must share one version. */
 const ZAG_SCOPE = "@zag-js/";
+
+/**
+ * What an exact pin is allowed to look like: a bare `major.minor.patch`, with an
+ * optional prerelease suffix so `2.0.0-rc.3` qualifies.
+ *
+ * This is deliberately an allowlist rather than a blacklist of range operators.
+ * Blacklisting `^~><=*` lets npm dist-tags and junk through — `latest`, `next`,
+ * `x`, `""` are all "not a range" while being exactly the floating specifiers
+ * this check exists to prevent, since they re-resolve on every install and are
+ * how a routine `bun update` walks the tree off the verified version.
+ */
+const EXACT_VERSION = /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/;
 
 /**
  * Divergences that are intentional. Each entry must say why, and what would
@@ -136,10 +149,10 @@ async function main(): Promise<void> {
     const isZag = dependency.startsWith(ZAG_SCOPE);
     const why = NEEDS_EXACT[dependency] ?? (isZag ? "all @zag-js/* share one exact version" : undefined);
     if (!why) continue;
-    const ranged = list.filter((entry) => /^[\^~><=*]|\s-\s|\|\|/.test(entry.version));
+    const ranged = list.filter((entry) => !EXACT_VERSION.test(entry.version));
     if (ranged.length === 0) continue;
     failures.push(
-      `${dependency} must be pinned exactly (${why}), but is a range in:\n` +
+      `${dependency} must be pinned exactly (${why}), but is not in:\n` +
         ranged
           .map((entry) => `      ${entry.package} (${entry.field}): ${entry.version}`)
           .sort()
