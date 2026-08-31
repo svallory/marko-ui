@@ -26,9 +26,9 @@ export interface Input extends Marko.Input<"div"> {
     <if=content>
       <${content}/>
     </if>
-    <else-if=messages.length === 1>
+    <else if=messages.length === 1>
       ${messages[0]}
-    </else-if>
+    </else>
     <else>
       <ul class="ml-4 flex list-disc flex-col gap-1">
         <for|message| of=messages>

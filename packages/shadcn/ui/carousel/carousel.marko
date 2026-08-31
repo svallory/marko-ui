@@ -80,9 +80,9 @@ export type Input<T = unknown> = Omit<
         // when the caller also passed a `content` render prop it is invoked
         // with `undefined` here — intentional and safe: the render prop owns
         // placeholder slides, and the `${slide.item}` fallback renders nothing.
-        <else-if=input.content>
+        <else if=input.content>
           <${input.content}(slide.item, index)/>
-        </else-if>
+        </else>
         <else>
           ${slide.item}
         </else>

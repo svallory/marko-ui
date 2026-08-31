@@ -72,9 +72,9 @@ export type Input = MachineInput<"input", checkboxMachine.Props> & {
       <if=api().indeterminate>
         <Icon name="Minus" class="size-3.5 [stroke-width:3]"/>
       </if>
-      <else-if=api().checked>
+      <else if=api().checked>
         <Icon name="Check" class="size-3.5 [stroke-width:3]"/>
-      </else-if>
+      </else>
     </span>
   </span>
   <${input.content}/>

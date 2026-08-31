@@ -30,9 +30,9 @@ static const TOC = [
       <if=(component.documented && !BEYOND_SET.has(component.name))>
         <a href=`/docs/components/${component.name}` class="inline-flex items-center gap-2 text-lg font-medium underline-offset-4 hover:underline md:text-base">${component.title}</a>
       </if>
-      <else-if=!component.documented>
+      <else if=!component.documented>
         <span class="inline-flex items-center gap-2 text-lg font-medium text-muted-foreground/50 md:text-base" title="Documentation in progress">${component.title}</span>
-      </else-if>
+      </else>
     </for>
   </div>
 

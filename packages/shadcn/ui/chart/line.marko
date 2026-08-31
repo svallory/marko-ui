@@ -297,7 +297,7 @@ static function buildTooltipRows(
             </for>
           </g>
         </if>
-        <else-if=series.dot>
+        <else if=series.dot>
           <g class="recharts-layer recharts-line-dots">
             <for|point| of=series.points>
               <circle
@@ -311,7 +311,7 @@ static function buildTooltipRows(
               />
             </for>
           </g>
-        </else-if>
+        </else>
         <if=series.labels>
           <g class="recharts-layer recharts-label-list">
             <for|point| of=series.points>

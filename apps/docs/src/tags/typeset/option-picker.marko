@@ -68,7 +68,7 @@ export interface Input {
               <path d="M3 12H21"/>
             </svg>
           </if>
-          <else-if=(input.icon === "size")>
+          <else if=(input.icon === "size")>
             // hugeicons TextSmallcapsIcon
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4.5">
               <path d="M2 5H12"/>
@@ -76,8 +76,8 @@ export interface Input {
               <path d="M14 11H22"/>
               <path d="M18 11V19"/>
             </svg>
-          </else-if>
-          <else-if=(input.icon === "flow")>
+          </else>
+          <else if=(input.icon === "flow")>
             // hugeicons ParagraphSpacingIcon
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4.5">
               <path d="M3 3H21"/>
@@ -85,7 +85,7 @@ export interface Input {
               <path d="M3 9H21"/>
               <path d="M3 15H21"/>
             </svg>
-          </else-if>
+          </else>
           <else>
             // LineHeightIcon, defined inline in customizer.tsx — paths copied
             // verbatim (stroke-width 1.5 there, unlike the hugeicons above).

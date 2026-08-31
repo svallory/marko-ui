@@ -122,34 +122,34 @@ export interface Input {
       <path d="m9 11 3 3L22 4"/>
     </svg>
   </if>
-  <else-if=(api().type === "error")>
+  <else if=(api().type === "error")>
     <Icon
       name="CircleAlertIcon"
       data-slot="toast-icon"
       class="mt-0.5 size-4 shrink-0 relative z-[1] text-destructive"
     />
-  </else-if>
-  <else-if=(api().type === "warning")>
+  </else>
+  <else if=(api().type === "warning")>
     <Icon
       name="TriangleAlertIcon"
       data-slot="toast-icon"
       class="mt-0.5 size-4 shrink-0 relative z-[1] text-amber-500"
     />
-  </else-if>
-  <else-if=(api().type === "info")>
+  </else>
+  <else if=(api().type === "info")>
     <Icon
       name="InfoIcon"
       data-slot="toast-icon"
       class="mt-0.5 size-4 shrink-0 relative z-[1] text-blue-500"
     />
-  </else-if>
-  <else-if=(api().type === "loading")>
+  </else>
+  <else if=(api().type === "loading")>
     <Icon
       name="Loader2"
       data-slot="toast-icon"
       class="mt-0.5 size-4 shrink-0 relative z-[1] animate-spin text-muted-foreground"
     />
-  </else-if>
+  </else>
 
   <div class="relative z-[1] flex min-w-0 flex-1 flex-col gap-1">
     <if=api().title>

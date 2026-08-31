@@ -266,9 +266,9 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
           <if=menuContent>
             <${menuContent}/>
           </if>
-          <else-if=input.content>
+          <else if=input.content>
             <${input.content}(contentContext(item.value))/>
-          </else-if>
+          </else>
         </div>
       </for>
     </div>

@@ -244,9 +244,9 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
           <if=item.body>
             <${item.body}/>
           </if>
-          <else-if=input.content>
+          <else if=input.content>
             <${input.content}(item.source)/>
-          </else-if>
+          </else>
           <else>${item.text}</else>
         </div>
       </div>

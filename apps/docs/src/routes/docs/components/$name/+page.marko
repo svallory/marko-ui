@@ -143,14 +143,14 @@ import { getComponentPageData } from "../../../../lib/component-page-data.ts";
                  enumerate — api-reference.json sees one part, so isCompound
                  is false. docs.composition is the prose fallback for
                  those. -->
-            <else-if=page.docs.composition>
+            <else if=page.docs.composition>
               <section>
                 <h2 id="composition" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
                   Composition
                 </h2>
                 <p class="mt-4 text-sm leading-7 text-muted-foreground">${page.docs.composition}</p>
               </section>
-            </else-if>
+            </else>
 
             <if=page.examples.length !== 0>
               <section>

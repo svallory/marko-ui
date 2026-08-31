@@ -28,11 +28,11 @@ import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
             <img src=item.src alt=item.name/>
           </AttachmentMedia>
         </if>
-        <else-if=item.icon>
+        <else if=item.icon>
           <AttachmentMedia>
             <Icon name=item.icon/>
           </AttachmentMedia>
-        </else-if>
+        </else>
         <AttachmentContent>
           <AttachmentTitle>${item.name}</AttachmentTitle>
           <AttachmentDescription>${item.meta}</AttachmentDescription>
