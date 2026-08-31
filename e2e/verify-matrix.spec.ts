@@ -57,6 +57,46 @@ function attachErrorCollectors(page: Page): CollectedErrors {
 /** First enabled, clickable-looking control inside a demo section. */
 const INTERACTIVE_SELECTOR = "button:not([disabled]), [role=button]:not([aria-disabled=true]), input[type=checkbox]:not([disabled]), input[type=radio]:not([disabled])";
 
+// Per-component interaction override. A component absent from this map gets
+// the default click-and-Escape pass below — unchanged for the ~80 components
+// whose trigger is already a real <button> (or a demo-wrapped <Button>).
+// This map exists ONLY for components whose real activation event/target
+// isn't "click the first button": context-menu opens on `contextmenu`
+// against a plain <div> with no role (the exact gap that hid the
+// `e._.k is not a function` crash — see AGENTS.md/TODO.md §BLOCKER and commit
+// 59e2e3e8); hover-card's trigger is a bare <a> (never matches
+// INTERACTIVE_SELECTOR at all); tooltip's trigger IS a real <button> but
+// clicking it never opens the tooltip, so the click pass silently exercised
+// nothing. dropdown-menu/menubar additionally get a submenu follow-up click
+// — the root trigger is already a real <button> (covered), but the crash
+// class fixed in 59e2e3e8 only reproduces once a *submenu* mounts, and
+// submenu items are `<div data-slot="*-sub-trigger">` (zag sets
+// role="menuitem", not role="button"), so opening the root menu alone never
+// exercised the code path that broke in production.
+type InteractionKind = "click" | "contextmenu" | "hover";
+interface InteractionOverride {
+  kind: InteractionKind;
+  /** Selector for the primary interaction target, in place of INTERACTIVE_SELECTOR. */
+  selector: string;
+  /** Optional follow-up: click this selector after the primary interaction opens something. */
+  followUpSelector?: string;
+}
+const INTERACTION_OVERRIDES: Record<string, InteractionOverride> = {
+  "context-menu": { kind: "contextmenu", selector: "[data-slot='context-menu-trigger']" },
+  "hover-card": { kind: "hover", selector: "[data-slot='hover-card-trigger']" },
+  tooltip: { kind: "hover", selector: "[data-slot='tooltip-trigger']" },
+  "dropdown-menu": {
+    kind: "click",
+    selector: INTERACTIVE_SELECTOR,
+    followUpSelector: "[data-slot='dropdown-menu-sub-trigger']",
+  },
+  menubar: {
+    kind: "click",
+    selector: INTERACTIVE_SELECTOR,
+    followUpSelector: "[data-slot='menubar-sub-trigger']",
+  },
+};
+
 // Known-broken components: populate this set if a component is confirmed
 // broken for reasons a test change can't fix. Entries run via test.fail()
 // (not test.skip()) so they still RUN every push: a component silently
@@ -194,18 +234,39 @@ for (const entry of manifest.entries) {
     // section, if any, then close any overlay it may have opened (portals
     // for dialog/popover/menu can cover later elements) before moving on.
     const interactionFindings: string[] = [];
+    const override = INTERACTION_OVERRIDES[entry.component];
     for (const demoName of entry.demos) {
       const section = page.locator(`section[data-demo="${demoName}"]`);
-      const control = section.locator(INTERACTIVE_SELECTOR).first();
+      const control = section.locator(override?.selector ?? INTERACTIVE_SELECTOR).first();
       if ((await control.count()) === 0) continue;
 
       const sectionSelector = `section[data-demo="${demoName}"]`;
       try {
-        await control.click({ timeout: 5_000, force: false });
-        // Give the click's own effect (opening an overlay, toggling state) a
-        // moment to actually apply before dismissing — pressing Escape in
-        // the same tick can race the machine's open transition.
+        if (override?.kind === "contextmenu") {
+          await control.dispatchEvent("contextmenu");
+        } else if (override?.kind === "hover") {
+          await control.hover({ timeout: 5_000 });
+        } else {
+          await control.click({ timeout: 5_000, force: false });
+        }
+        // Give the interaction's own effect (opening an overlay, toggling
+        // state) a moment to actually apply before dismissing — pressing
+        // Escape in the same tick can race the machine's open transition.
         await page.waitForTimeout(100);
+
+        // Submenu follow-up (dropdown-menu, menubar): the root trigger is
+        // already a real <button> the default click pass covers on its own,
+        // but the crash class fixed in 59e2e3e8 only reproduces once a
+        // SUBMENU mounts. Click the first sub-trigger item, if this demo has
+        // one, before dismissing — the point of this whole pass.
+        if (override?.followUpSelector) {
+          const subTrigger = section.locator(override.followUpSelector).first();
+          if ((await subTrigger.count()) > 0) {
+            await subTrigger.click({ timeout: 5_000, force: false });
+            await page.waitForTimeout(100);
+          }
+        }
+
         await page.keyboard.press("Escape");
         // Wait for the ACTUAL data-state attribute to leave "open" — most
         // overlays (dialog/drawer/sheet/navigation-menu) stay mounted and
