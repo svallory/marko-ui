@@ -177,11 +177,12 @@ static function menuEntries(input: Input): MenubarItemAttrs[] {
               disabled=entry.disabled
               inset=entry.inset
               parent=service
+              parentApi=() => api()
               onChildReady=(childService) => api().setChild(childService)
             >
-              <@trigger|childApi|>
+              <@trigger|triggerProps|>
                 <div
-                  ...api().getTriggerItemProps(childApi())
+                  ...triggerProps
                   data-slot="menubar-sub-trigger"
                   data-inset=entry.inset || undefined
                   class="mu-menubar-sub-trigger flex cursor-default items-center outline-none select-none"

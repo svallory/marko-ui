@@ -11,11 +11,13 @@
 // same mechanical pattern, just context-menu's own item shape and class
 // strings.
 //
-// The trigger row lives in the PARENT menu's item list (it needs the
-// parent's `getTriggerItemProps(childApi)`, which only the parent's api
-// exposes), so this component renders only the sub-trigger's own subtree:
-// the trigger row itself (via `<@trigger>`, receiving this submenu's api so
-// the caller can call `getTriggerItemProps`) plus the popped-out content.
+// The trigger row lives in the PARENT menu's item list, so this component
+// renders only the sub-trigger's own subtree: the trigger row itself (via
+// `<@trigger>`) plus the popped-out content. The row's props need the
+// parent's `getTriggerItemProps(ownApi)`, so the parent hands its api down
+// as the `parentApi` getter and this component merges the props itself —
+// see the `triggerProps` const below for why that merge cannot live in the
+// caller's `<@trigger>` body.
 // Rendered by `context-menu.marko` for `type: "sub"` entries. Supports one
 // level of nesting (a submenu's own items are flat — item/separator/label
 // only); a `type: "sub"` entry inside a submenu's `subEntries` is not wired.
@@ -41,11 +43,18 @@ export interface Input {
    */
   onChildReady?: (childService: menu.Service) => void;
   /**
-   * Trigger render-prop: receives this submenu's connected api so the caller
-   * (the parent menu's item loop) can build the row with
-   * `parentApi().getTriggerItemProps(childApi)`.
+   * Getter for the PARENT menu's connected api. The sub-trigger row's props
+   * come from `parentApi().getTriggerItemProps(ownApi)`, and this submenu
+   * builds them itself (see the `triggerProps` const below) rather than
+   * letting the caller's `<@trigger>` body reach for its own `api()`.
    */
-  trigger: Marko.AttrTag<{ content: Marko.Body<[menu.Api]> }>;
+  parentApi: () => menu.Api;
+  /**
+   * Trigger render-prop: receives the FINISHED sub-trigger props object
+   * (already merged from the parent's `getTriggerItemProps` and this
+   * submenu's own api), so the caller only spreads it onto its element.
+   */
+  trigger: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
 }
 
 <zag-machine/service=() => menu from=input/>
@@ -67,7 +76,29 @@ export interface Input {
   }
 />
 
-<${input.trigger.content}(api())/>
+// The sub-trigger's props are built HERE, not in the caller's `<@trigger>`
+// body, and that placement is load-bearing.
+//
+// The `<@trigger>` body is an attr-tag body owned by the PARENT menu's
+// template, so a `parentApi()` call written inside it compiles to a raw
+// scope walk (`$scope._._._._._.<apiSlot>()`) plus a `subscribeToScopeSet`
+// on the parent's api signal. When this submenu mounts, that notify makes
+// Marko's `_closure` re-queue the subscribed child scopes — and the portal
+// body's scope has not had the parent's `<const/api>` slot assigned on that
+// pass, so the walk lands on an empty slot and dies with
+// `TypeError: $scope._.<slot> is not a function`. The parent's
+// `<const/api=() => connect(...)>` is assigned only on the resume segment,
+// while a menu opened after hydration renders its portal body client-side
+// only — so on that path the slot is never populated at all.
+//
+// Routing the parent api through tag INPUT (`parentApi`, a
+// template-written closure — serializable currency per the SSR-safe Zag
+// pattern) removes the cross-scope subscription entirely: this component
+// calls it inside its own `<const>`, and the caller's body only spreads a
+// finished plain object. Same reason the api is handed over as a closure
+// rather than a live object.
+<const/triggerProps=() => input.parentApi().getTriggerItemProps(api())/>
+<${input.trigger.content}(triggerProps())/>
 
 <zag-portal>
   <if=api().open>

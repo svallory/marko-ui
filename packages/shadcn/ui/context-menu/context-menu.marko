@@ -158,11 +158,12 @@ static function menuEntries(input: Input): ContextMenuItemAttrs[] {
               disabled=entry.disabled
               inset=entry.inset
               parent=service
+              parentApi=() => api()
               onChildReady=(childService) => api().setChild(childService)
             >
-              <@trigger|childApi|>
+              <@trigger|triggerProps|>
                 <div
-                  ...api().getTriggerItemProps(childApi)
+                  ...triggerProps
                   data-slot="context-menu-sub-trigger"
                   data-inset=entry.inset || undefined
                   class="mu-context-menu-sub-trigger flex cursor-default items-center outline-hidden select-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
