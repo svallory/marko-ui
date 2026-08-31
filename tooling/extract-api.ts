@@ -383,22 +383,26 @@ async function extract(): Promise<void> {
   const missingInput: string[] = [];
 
   // The twins and the generated project file only exist while the compiler is
-  // reading them; `finally` removes them even when extraction throws.
-  await Promise.all([...twinFiles].map(([path, contents]) => writeFile(path, contents)));
-  await writeFile(
-    PROJECT_FILE,
-    JSON.stringify(
-      {
-        compilerOptions: COMPILER_OPTIONS,
-        include: ["ui/**/*.ts", "lib/**/*.ts"],
-      },
-      null,
-      2,
-    ) + "\n",
-  );
-
-  const api = new API({ cwd: REGISTRY_DIR });
+  // reading them. Everything that creates them — the writes themselves, and the
+  // API client that holds them open — lives inside the `try`, so a failure
+  // part-way through the writes or in the client's own construction still hits
+  // the `finally` and leaves no droppings behind.
+  let api: API | undefined;
   try {
+    await Promise.all([...twinFiles].map(([path, contents]) => writeFile(path, contents)));
+    await writeFile(
+      PROJECT_FILE,
+      JSON.stringify(
+        {
+          compilerOptions: COMPILER_OPTIONS,
+          include: ["ui/**/*.ts", "lib/**/*.ts"],
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+
+    api = new API({ cwd: REGISTRY_DIR });
     const snapshot = api.updateSnapshot({ openProjects: [PROJECT_FILE] });
     const project = snapshot.getProjects()[0];
     if (!project) throw new Error(`no project loaded from ${PROJECT_FILE}`);
@@ -508,7 +512,7 @@ async function extract(): Promise<void> {
       components.push(entry);
     }
   } finally {
-    api.close();
+    api?.close();
     await Promise.all([...twinFiles.keys()].map((path) => rm(path, { force: true })));
     await rm(PROJECT_FILE, { force: true });
   }
