@@ -3,7 +3,7 @@
 // app/(app)/(create)/components/picker.tsx (Base UI `Menu` primitive), but
 // built directly on @zag-js/menu instead of Base UI — this repo's component
 // library (packages/registry/default/ui/dropdown-menu/dropdown-menu.marko)
-// already establishes the zag-js/menu + <service>/<connect>/<portal> pattern
+// already establishes the zag-js/menu + <zag>/<zag-portal> pattern
 // for menu-shaped widgets, so extending that same primitive (rather than
 // pulling in Base UI as a new dependency) is the natural fit here. This
 // stays docs-site-local (apps/docs/src/tags/create/) rather than living in
@@ -65,7 +65,12 @@ export interface Input {
   contentClass?: string;
 }
 
-<machine-props/machineProps from=input pick=menu.props
+<zag/api=() => menu from=input
+  positioning={
+    placement: `${input.side ?? "bottom"}${input.align && input.align !== "center" ? `-${input.align}` : ""}`,
+    gutter: input.sideOffset ?? 20,
+    shift: input.alignOffset ?? 0,
+  }
   onSelect(details: menu.SelectionDetails) {
     input.onValueChange(details.value);
   }
@@ -75,16 +80,6 @@ export interface Input {
   onOpenChange(details: menu.OpenChangeDetails) {
     if (!details.open) input.onItemPreview?.(null);
   }
-  positioning={
-    placement: `${input.side ?? "bottom"}${input.align && input.align !== "center" ? `-${input.align}` : ""}`,
-    gutter: input.sideOffset ?? 20,
-    shift: input.alignOffset ?? 0,
-  }
-/>
-<service/service machine=() => menu.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  menu.connect(service, normalizeProps)
-  service=service
 />
 
 <const/{ class: className, contentClass, trigger, sections, value, closeOnClick }=input/>
@@ -101,7 +96,7 @@ export interface Input {
   >
     <${trigger}/>
   </button>
-  <portal>
+  <zag-portal>
     <if=api().open>
       <div ...api().getPositionerProps() style=positionerStyle data-slot="picker-positioner">
         <div
@@ -156,5 +151,5 @@ export interface Input {
         </div>
       </div>
     </if>
-  </portal>
+  </zag-portal>
 </div>

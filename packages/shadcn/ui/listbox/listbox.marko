@@ -18,7 +18,7 @@ export interface ListboxOptionAttrs {
 // Module-scope cache for built collections, keyed by the `items` array
 // reference. `serviceProps` (below) is a closure re-invoked on every
 // reactive recompute; rebuilding the Zag collection fresh each time hands
-// <service> a new collection identity on every read, which thrashes Zag's
+// <zag> a new collection identity on every read, which thrashes Zag's
 // props diffing and made selection updates lag or silently fail to land
 // (verified 2026-08-11). A WeakMap keyed by the `items` reference is safe to
 // share at module scope: distinct <Listbox> instances always pass distinct
@@ -71,24 +71,14 @@ export type Input = Omit<MachineInput<"div", listboxMachine.Props<ListboxItem>>,
   return built;
 }/>
 
-<machine-props/machineProps from=input pick=listboxMachine.props
-  onValueChange(details: listboxMachine.ValueChangeDetails<ListboxItem>) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }
+// `collection` is derived state (rebuilt whenever `items` changes), not a
+// plain input field — it holds methods and cannot cross the tag-input
+// boundary. Layer it on in `props=`, which receives the picked props.
+<zag/api=() => listboxMachine from=input props=(picked) => ({ ...picked, collection: buildCollection(items) })
   onHighlightChange(details: listboxMachine.HighlightChangeDetails<ListboxItem>) {
     input.onHighlightChange?.(details);
     input.highlightedValueChange?.(details.highlightedValue);
-  }/>
-// `collection` is derived state (rebuilt whenever `items` changes), not a
-// plain input field, so it cannot be picked/overridden inside <machine-props>
-// (that tag's overrides are evaluated eagerly at the tag-input boundary).
-// Wrap machineProps in a closure that layers it in for <service>.
-<const/serviceProps=() => ({ ...machineProps(), collection: buildCollection(items) })/>
-<service/service machine=() => listboxMachine.machine props=serviceProps/>
-<connect/api=(service, normalizeProps) =>
-  listboxMachine.connect(service, normalizeProps)
-  service=service
+  }
 />
 
 // `collection` is Omit-ted from this component's public Input (it is derived
@@ -96,7 +86,7 @@ export type Input = Omit<MachineInput<"div", listboxMachine.Props<ListboxItem>>,
 // which requires it. Hand it the collection this component actually builds:
 // `splitProps` only partitions keys by name, and `collection` is machine-owned
 // so it is stripped from the leftover either way. `id` gets the same
-// treatment: `MachineInput` makes it optional (<machine-props> generates one)
+// treatment: `MachineInput` makes it optional (<zag>'s `from=` generates one)
 // while `ListboxProps` requires it, and splitProps never reads its value.
 <const/nativeAttrs=() =>
   stripOwnProps(

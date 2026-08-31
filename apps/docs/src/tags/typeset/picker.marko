@@ -87,7 +87,13 @@ export interface Input {
   contentClass?: string;
 }
 
-<machine-props/machineProps from=input pick=menu.props
+<zag/api=() => menu from=input
+  positioning={
+    placement: `${input.side ?? "bottom"}${input.align && input.align !== "center" ? `-${input.align}` : ""}`,
+    gutter: 20,
+    offset: input.alignOffset ? { crossAxis: input.alignOffset } : undefined,
+    getAnchorElement: input.anchorEl ? () => input.anchorEl!() : undefined,
+  }
   onSelect(details: menu.SelectionDetails) {
     if (input.actions?.some((action) => action.value === details.value)) {
       input.onActionSelect?.(details.value);
@@ -101,17 +107,6 @@ export interface Input {
   onOpenChange(details: menu.OpenChangeDetails) {
     if (!details.open) input.onItemPreview?.(null);
   }
-  positioning={
-    placement: `${input.side ?? "bottom"}${input.align && input.align !== "center" ? `-${input.align}` : ""}`,
-    gutter: 20,
-    offset: input.alignOffset ? { crossAxis: input.alignOffset } : undefined,
-    getAnchorElement: input.anchorEl ? () => input.anchorEl!() : undefined,
-  }
-/>
-<service/service machine=() => menu.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  menu.connect(service, normalizeProps)
-  service=service
 />
 
 <const/{ class: className, contentClass, trigger, value, closeOnClick }=input/>
@@ -138,7 +133,7 @@ export interface Input {
 >
   <${trigger}/>
 </button>
-<portal>
+<zag-portal>
   <if=api().open>
     <div ...api().getPositionerProps() style=positionerStyle class="isolate z-50 outline-none">
       <div
@@ -241,4 +236,4 @@ export interface Input {
       on-click() { api().setOpen(false); }
     />
   </if>
-</portal>
+</zag-portal>

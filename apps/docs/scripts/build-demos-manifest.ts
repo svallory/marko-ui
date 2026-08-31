@@ -11,7 +11,7 @@
  * notes/bug-marko-dynamic-tag-hydration-crash.md — dev server and SSR are
  * both fine, only the browser's hydration/resume walk throws `effects[i++]
  * is not a function` deep in Marko's compiled runtime). The workaround is a
- * static `<if>/<else-if>` chain over statically-imported components, keyed
+ * static `<if>/<else if>` chain over statically-imported components, keyed
  * by a plain string id — so demos-manifest.ts now carries each demo's `id`
  * instead of its live `Marko.Template` reference, and demo-renderer.marko
  * (also generated here) is the only place that imports the actual demo
@@ -156,7 +156,7 @@ async function main() {
   const importLines: string[] = [];
   const entryLines: string[] = [];
   // Mirrors importLines/entryLines but for demo-renderer.marko: one static
-  // `<Identifier/>` import per demo and one `<if>`/`<else-if>` branch
+  // `<Identifier/>` import per demo and one `<if>`/`<else if>` branch
   // matching its id. See the file header for why this exists.
   const rendererImportLines: string[] = [];
   const rendererBranchLines: string[] = [];
@@ -197,8 +197,15 @@ async function main() {
       exampleEntries.push(
         `      ${JSON.stringify(exampleName)}: { demoId: ${JSON.stringify(demoId)}, source: ${JSON.stringify(toDisplaySource(source))} },`,
       );
+      // `<else if=…>` — NOT `<else-if=…>`, which Marko parses as an unknown
+      // custom tag rather than a conditional branch, so the branch renders
+      // unconditionally.
+      const isFirstBranch = rendererBranchLines.length === 0;
+      const openTag = isFirstBranch
+        ? `<if=(input.demoId === ${JSON.stringify(demoId)})>`
+        : `<else if=(input.demoId === ${JSON.stringify(demoId)})>`;
       rendererBranchLines.push(
-        `<${rendererBranchLines.length === 0 ? "if" : "else-if"}=(input.demoId === ${JSON.stringify(demoId)})><${identifier}/></${rendererBranchLines.length === 0 ? "if" : "else-if"}>`,
+        `${openTag}<${identifier}/></${isFirstBranch ? "if" : "else"}>`,
       );
     }
 
@@ -272,7 +279,7 @@ export const DOCUMENTED_COMPONENTS: string[] = Object.keys(DEMOS);
 //   bun apps/docs/scripts/build-demos-manifest.ts
 //
 // Static-dispatch companion to demos-manifest.ts. Renders one demo, chosen by
-// DemoEntry.demoId, via a static <if>/<else-if> chain instead of a dynamic
+// DemoEntry.demoId, via a static <if>/<else if> chain instead of a dynamic
 // tag (<\${...}/>) — Marko 6.3.34 crashes client hydration in production
 // builds when a dynamic tag is resolved from a runtime lookup. See
 // notes/bug-marko-dynamic-tag-hydration-crash.md and this generator's header

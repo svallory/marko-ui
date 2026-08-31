@@ -18,16 +18,8 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
   showCloseButton?: boolean;
 };
 
-<machine-props/machineProps from=input pick=dialogMachine.props
+<zag/api=() => dialogMachine from=input
   role="dialog"
-  onOpenChange(details: dialogMachine.OpenChangeDetails) {
-    input.onOpenChange?.(details);
-    input.openChange?.(details.open);
-  }/>
-<service/service machine=() => dialogMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  dialogMachine.connect(service, normalizeProps)
-  service=service
 />
 
 <const/nativeAttrs=() =>
@@ -49,12 +41,12 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
   <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "dialog-trigger" })/>
 </if>
 // NOTE: upstream shadcn sets data-slot="dialog-portal" on Radix's Portal,
-// which renders a real element. marko-zag's <portal> renders a
+// which renders a real element. marko-zag's <zag-portal> renders a
 // `display:contents` host and does not forward attributes, so the
 // marker never reached the DOM — it was inert, and nothing in this
 // repo's CSS, tests or tooling reads it. Dropped rather than left as
-// dead markup; restore it if <portal> gains attribute forwarding.
-<portal>
+// dead markup; restore it if <zag-portal> gains attribute forwarding.
+<zag-portal>
   <if=api().open>
     <div
       ...api().getBackdropProps()
@@ -108,6 +100,6 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
       </div>
     </div>
   </if>
-</portal>
+</zag-portal>
 
 <return=api>

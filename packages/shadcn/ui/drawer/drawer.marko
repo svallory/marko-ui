@@ -31,23 +31,11 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
   hideCloseTrigger?: boolean;
 };
 
-<machine-props/machineProps from=input pick=drawerMachine.props
-  onOpenChange(details: drawerMachine.OpenChangeDetails) {
-    input.onOpenChange?.(details);
-    input.openChange?.(details.open);
-  }
-  onSnapPointChange(details: drawerMachine.SnapPointChangeDetails) {
-    input.onSnapPointChange?.(details);
-    input.snapPointChange?.(details.snapPoint);
-  }
+<zag/api=() => drawerMachine from=input
   onTriggerValueChange(details: drawerMachine.TriggerValueChangeDetails) {
     input.onTriggerValueChange?.(details);
     input.triggerValueChange?.(details.value);
-  }/>
-<service/service machine=() => drawerMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  drawerMachine.connect(service, normalizeProps)
-  service=service
+  }
 />
 
 // Everything that is neither machine-owned (splitProps) nor component-owned
@@ -92,12 +80,12 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
   </if>
 
   // NOTE: upstream shadcn sets data-slot="drawer-portal" on Radix's Portal,
-  // which renders a real element. marko-zag's <portal> renders a
+  // which renders a real element. marko-zag's <zag-portal> renders a
   // `display:contents` host and does not forward attributes, so the
   // marker never reached the DOM — it was inert, and nothing in this
   // repo's CSS, tests or tooling reads it. Dropped rather than left as
-  // dead markup; restore it if <portal> gains attribute forwarding.
-  <portal>
+  // dead markup; restore it if <zag-portal> gains attribute forwarding.
+  <zag-portal>
     <if=api().open>
       <div
         ...api().getBackdropProps()
@@ -197,7 +185,7 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
         </div>
       </div>
     </if>
-  </portal>
+  </zag-portal>
 </div>
 
 <return=api>

@@ -31,19 +31,25 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
 // and needs no casts: `body` carries the attr-tag markup body, `text` the
 // items= string content, and `source` the plain-data item handed to the
 // `content` render prop. Attr tags win if both are present.
-<const/itemTags=[...(input.item ?? [])].map((item) => ({ value: item.value, title: item.title, body: item.content, text: undefined as string | undefined, source: { value: item.value, title: item.title } }))/>
-<const/normalizedItems=(itemTags.length > 0 ? itemTags : (input.items ?? []).map((item) => ({ value: item.value, title: item.title, body: undefined as Marko.Body | undefined, text: item.content, source: item })))/>
+<const/itemTags=[...(input.item ?? [])].map((item) => ({
+  value: item.value,
+  title: item.title,
+  body: item.content,
+  text: undefined as string | undefined,
+  source: {
+    value: item.value,
+    title: item.title
+  }
+}))/>
+<const/normalizedItems=(itemTags.length > 0 ? itemTags : (input.items ?? []).map((item) => ({
+  value: item.value,
+  title: item.title,
+  body: undefined as Marko.Body | undefined,
+  text: item.content,
+  source: item
+})))/>
 
-<machine-props/machineProps from=input pick=accordionMachine.props
-  onValueChange(details: accordionMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }/>
-<service/service machine=() => accordionMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  accordionMachine.connect(service, normalizeProps)
-  service=service
-/>
+<zag/api=() => accordionMachine from=input/>
 
 <const/nativeAttrs=() =>
   stripOwnProps(
@@ -238,9 +244,9 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
           <if=item.body>
             <${item.body}/>
           </if>
-          <else-if=input.content>
+          <else if=input.content>
             <${input.content}(item.source)/>
-          </else-if>
+          </else>
           <else>${item.text}</else>
         </div>
       </div>

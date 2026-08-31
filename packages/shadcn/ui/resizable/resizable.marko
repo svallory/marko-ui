@@ -30,10 +30,17 @@ export interface Input
 }
 
 // This component's public API (`panels`, `orientation`) does not map 1:1
-// onto the machine's Props shape, so nothing is picked from `input` by name
-// — every machine prop is supplied as an override attribute, computed here,
-// visibly, exactly like a callback adaptation would be.
-<machine-props/machineProps from=input pick=[]
+// onto the machine's Props shape, so every machine prop it exposes is
+// supplied as an override attribute below, computed here and visibly —
+// each one replaces whatever `from=input` would otherwise pick by name.
+//
+// The callbacks are overrides for a second reason: <zag>'s default rule
+// derives the sugar name from the callback name (`on<X>Change` -> `xChange`)
+// and only fires it when the details object carries key `x`. `onResize`/
+// `onResizeEnd` are not `on<X>Change` at all, and their details key is
+// `size`, so the default rule emits nothing — the sugar calls have to be
+// written out.
+<zag/api=() => splitterMachine from=input
   orientation=input.orientation ?? "horizontal"
   panels=input.panels.map((panel) => ({
     id: panel.id,
@@ -60,11 +67,6 @@ export interface Input
     input.onExpand?.(details);
     input.expandChange?.(details.panelId, details.size);
   }
-/>
-<service/service machine=() => splitterMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  splitterMachine.connect(service, normalizeProps)
-  service=service
 />
 
 // NOTE (intentional deviation from the standard

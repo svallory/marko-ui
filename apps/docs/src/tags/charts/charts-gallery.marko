@@ -137,7 +137,7 @@ static const FULL_WIDTH_CLASS = "md:col-span-2 lg:col-span-3";
               <div class=EMPTY_SLOT_CLASS></div>
             </for>
           </if>
-          <else-if=(typeEntry.slug === "bar")>
+          <else if=(typeEntry.slug === "bar")>
             <div class=FULL_WIDTH_CLASS><ChartBarInteractive/></div>
             <ChartBarDefault/>
             <ChartBarHorizontal/>
@@ -151,8 +151,8 @@ static const FULL_WIDTH_CLASS = "md:col-span-2 lg:col-span-3";
             <for|index| of=Array.from({ length: TOTAL_SLOTS - 10 })>
               <div class=EMPTY_SLOT_CLASS></div>
             </for>
-          </else-if>
-          <else-if=(typeEntry.slug === "line")>
+          </else>
+          <else if=(typeEntry.slug === "line")>
             <div class=FULL_WIDTH_CLASS><ChartLineInteractive/></div>
             <ChartLineDefault/>
             <ChartLineLinear/>
@@ -166,7 +166,7 @@ static const FULL_WIDTH_CLASS = "md:col-span-2 lg:col-span-3";
             <for|index| of=Array.from({ length: TOTAL_SLOTS - 10 })>
               <div class=EMPTY_SLOT_CLASS></div>
             </for>
-          </else-if>
+          </else>
           <else>
             <ChartPieSimple/>
             <ChartPieSeparatorNone/>

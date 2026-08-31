@@ -1,7 +1,6 @@
 import * as datePickerMachine from "@zag-js/date-picker";
 import { CalendarDate, createCalendar, toCalendar, type CalendarIdentifier, type DateValue } from "@internationalized/date";
 import type { MachineInput } from "marko-zag";
-import { normalizeProps } from "marko-zag";
 import { buttonVariants } from "../button/variants.ts";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
@@ -81,26 +80,21 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
   return calendar ? toCalendar(gregorian, calendar) : gregorian;
 }
 
-<machine-props/pickedProps from=input pick=datePickerMachine.props
+<zag/api=() => datePickerMachine from=input props=(picked) => ({
+  ...picked,
+  value: input.value?.map(toDateValue),
+  min: input.min ? toDateValue(input.min) : undefined,
+  max: input.max ? toDateValue(input.max) : undefined,
+  focusedValue: input.focusedValue ? toFocusedDateValue(input.focusedValue) : undefined,
+  defaultFocusedValue: input.defaultFocusedValue ? toFocusedDateValue(input.defaultFocusedValue) : undefined,
+})
   open=true
   inline=true
   closeOnSelect=false
   onValueChange(details: datePickerMachine.ValueChangeDetails) {
     input.onValueChange?.(details);
     input.valueChange?.(details.value.map(toPlain));
-  }/>
-<const/machineProps=() => ({
-  ...pickedProps(),
-  value: input.value?.map(toDateValue),
-  min: input.min ? toDateValue(input.min) : undefined,
-  max: input.max ? toDateValue(input.max) : undefined,
-  focusedValue: input.focusedValue ? toFocusedDateValue(input.focusedValue) : undefined,
-  defaultFocusedValue: input.defaultFocusedValue ? toFocusedDateValue(input.defaultFocusedValue) : undefined,
-})/>
-<service/service machine=() => datePickerMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  datePickerMachine.connect(service, normalizeProps)
-  service=service
+  }
 />
 
 // `value`/`min`/`max`/`focusedValue`/`defaultFocusedValue` are deliberately

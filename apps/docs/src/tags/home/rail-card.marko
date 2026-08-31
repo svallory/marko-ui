@@ -38,7 +38,7 @@ export interface Input {
       <Skeleton class="h-9 w-full rounded-lg"/>
     </CardFooter>
   </if>
-  <else-if=variant === "chart">
+  <else if=variant === "chart">
     <CardHeader class="gap-2">
       <Skeleton class="h-5 w-44"/>
       <Skeleton class="h-4 w-52"/>
@@ -50,8 +50,8 @@ export interface Input {
         </for>
       </div>
     </CardContent>
-  </else-if>
-  <else-if=variant === "list">
+  </else>
+  <else if=variant === "list">
     <CardHeader class="gap-2">
       <Skeleton class="h-4 w-20"/>
     </CardHeader>
@@ -68,8 +68,8 @@ export interface Input {
         </for>
       </div>
     </CardContent>
-  </else-if>
-  <else-if=variant === "qr">
+  </else>
+  <else if=variant === "qr">
     <CardContent class="flex justify-center pt-6">
       <Skeleton class="size-32 rounded-xl"/>
     </CardContent>
@@ -77,8 +77,8 @@ export interface Input {
       <Skeleton class="h-5 w-40"/>
       <Skeleton class="h-4 w-48"/>
     </CardHeader>
-  </else-if>
-  <else-if=variant === "tiles">
+  </else>
+  <else if=variant === "tiles">
     <CardContent class="flex flex-col gap-4">
       <Skeleton class="h-8 w-full rounded-2xl"/>
       <div class="flex flex-wrap gap-2">
@@ -88,7 +88,7 @@ export interface Input {
       </div>
       <Skeleton class="h-20 w-full rounded-lg"/>
     </CardContent>
-  </else-if>
+  </else>
   <else>
     <CardHeader class="gap-2">
       <Skeleton class="h-5 w-36"/>

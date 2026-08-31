@@ -10,24 +10,16 @@ export type Input = MachineInput<"input", clipboardMachine.Props> & {
   label?: string;
 };
 
-<machine-props/machineProps from=input pick=clipboardMachine.props
-  onValueChange(details: clipboardMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }
+<zag/api=() => clipboardMachine from=input
   onStatusChange(details: clipboardMachine.CopyStatusDetails) {
     input.onStatusChange?.(details);
     input.statusChange?.(details.copied);
-  }/>
-<service/service machine=() => clipboardMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  clipboardMachine.connect(service, normalizeProps)
-  service=service
+  }
 />
 
 // `contextProps` is constrained `Props extends ClipboardProps`, where `id` is
 // REQUIRED — but `MachineInput` deliberately makes `id` optional (the
-// <machine-props> tag generates one). The call only partitions keys by name
+// <zag> tag generates one). The call only partitions keys by name
 // and never reads the id's value, so pass a definite one to satisfy the
 // constraint. The value is inert here: `getInputProps()` below sets the real
 // id on the element after this spread.

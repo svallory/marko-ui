@@ -14,7 +14,7 @@ export type Input = MachineInput<"div", timerMachine.Props> & {
 
 static const defaultParts: timerMachine.TimePart[] = ["hours", "minutes", "seconds"];
 
-<machine-props/machineProps from=input pick=timerMachine.props
+<zag/api=() => timerMachine from=input
   onTick(details: timerMachine.TickDetails) {
     input.onTick?.(details);
     input.tickChange?.(details);
@@ -22,11 +22,7 @@ static const defaultParts: timerMachine.TimePart[] = ["hours", "minutes", "secon
   onComplete() {
     input.onComplete?.();
     input.complete?.();
-  }/>
-<service/service machine=() => timerMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  timerMachine.connect(service, normalizeProps)
-  service=service
+  }
 />
 
 <const/nativeAttrs=() =>

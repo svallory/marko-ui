@@ -7,16 +7,7 @@ export type Input = MachineInput<"div", angleSliderMachine.Props> & {
   valueChange?: (value: number) => void;
 };
 
-<machine-props/machineProps from=input pick=angleSliderMachine.props
-  onValueChange(details: angleSliderMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }/>
-<service/service machine=() => angleSliderMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  angleSliderMachine.connect(service, normalizeProps)
-  service=service
-/>
+<zag/api=() => angleSliderMachine from=input/>
 
 <const/nativeAttrs=() =>
   stripOwnProps(angleSliderMachine.splitProps(input)[1], "class", "valueChange")

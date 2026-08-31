@@ -15,25 +15,11 @@ export type Input = MachineInput<"div", ratingGroupMachine.Props> & {
   valueChange?: (value: number) => void;
 };
 
-// The three-tag wiring (see /docs/creating-components):
-// 1. <machine-props> picks the machine's props out of `input` by name and
-//    merges the attributes written on it — callback adaptations live HERE,
-//    visibly, because they are this component's public contract.
-// 2. <service> creates and owns the running machine (client-only; SSR
-//    renders from a throwaway never-started instance).
-// 3. <connect> returns `api` as a GETTER — call it at every use site.
-//    Getters are the serializable currency of Marko's resumability: the
-//    api object itself must never become reactive state.
-<machine-props/machineProps from=input pick=ratingGroupMachine.props
-  onValueChange(details: ratingGroupMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }/>
-<service/service machine=() => ratingGroupMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  ratingGroupMachine.connect(service, normalizeProps)
-  service=service
-/>
+// <zag> wires the machine in one tag and returns `api` as a GETTER —
+// call it at every use site. Getters are the serializable currency of
+// Marko's resumability: the api object itself must never become reactive
+// state. See /docs/creating-components.
+<zag/api=() => ratingGroupMachine from=input/>
 
 // Whatever is neither machine-owned (splitProps) nor component-owned
 // (class, valueChange) passes through to the root div.

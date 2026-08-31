@@ -51,28 +51,18 @@ static function resolveSteps(
   }));
 }
 
-// `steps` is layered on OUTSIDE <machine-props> on purpose: the resolved
-// steps carry target getter functions, and anything written as a tag
-// attribute becomes serialized input. A template closure is the serializable
-// currency here — the getters are created when the closure runs, never
-// stored in input.
-<machine-props/baseProps from=input pick=tourMachine.props
+// `steps` is layered on in `props=` on purpose: the resolved steps carry
+// target getter functions, and anything written as a tag attribute becomes
+// serialized input. A template closure is the serializable currency here —
+// the getters are created when the closure runs, never stored in input.
+<zag/api=() => tourMachine from=input props=(picked) => ({
+  ...picked,
+  steps: resolveSteps(input.items),
+})
   onStepChange(details: tourMachine.StepChangeDetails) {
     input.onStepChange?.(details);
     input.stepIdChange?.(details.stepId);
   }
-  onStatusChange(details: tourMachine.StatusChangeDetails) {
-    input.onStatusChange?.(details);
-    input.statusChange?.(details.status);
-  }/>
-<const/machineProps=() => ({
-  ...baseProps(),
-  steps: resolveSteps(input.items),
-})/>
-<service/service machine=() => tourMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  tourMachine.connect(service, normalizeProps)
-  service=service
 />
 
 // Whatever is neither machine-owned (splitProps) nor component-owned
@@ -98,7 +88,7 @@ static function resolveSteps(
 // The tour machine carries its own position/size CSS vars inside each part's
 // props style object (backdrop clip-path, spotlight rect, positioner
 // transform) — so NO style attribute of our own goes on those parts.
-<portal>
+<zag-portal>
   <if=api().open>
     <div
       ...api().getBackdropProps()
@@ -213,7 +203,7 @@ static function resolveSteps(
       </div>
     </div>
   </if>
-</portal>
+</zag-portal>
 
 // Parents can receive the api getter: <Tour/tourApi/> then
 // `tourApi().start()` — it stays live across machine updates.

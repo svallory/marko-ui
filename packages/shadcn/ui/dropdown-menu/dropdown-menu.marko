@@ -1,5 +1,5 @@
 import * as menu from "@zag-js/menu";
-import { positionerStyle } from "marko-zag";
+import { positionerStyle, connect } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import Icon from "../icon/icon.marko";
 import Submenu from "./submenu.marko";
@@ -76,22 +76,19 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
     : (input.items ?? []).map((item) => ({ ...item, content: undefined as Marko.Body | undefined }));
 }
 
-<machine-props/machineProps from=input pick=menu.props
+<zag-machine/service=() => menu from=input
   onSelect(details: menu.SelectionDetails) {
     input.select?.(details.value);
-  }/>
-<service/service machine=() => menu.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  menu.connect(service, normalizeProps)
-  service=service
+  }
 />
+<const/api=() => connect(menu, service())/>
 
-// Getter handed to each <Submenu> child so it can call `setParent` on this
-// menu's raw service (see submenu.marko for the full wiring rationale).
-<const/getOwnService=() => service.service/>
+// <zag-machine> returns the service GETTER itself, which is what each
+// <Submenu> child receives so it can call `setParent` on this menu's
+// service (see submenu.marko for the full wiring rationale).
 
 <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "dropdown-menu-trigger" })/>
-<portal>
+<zag-portal>
   <if=api().open>
     <div ...api().getPositionerProps() style=positionerStyle data-slot="dropdown-menu-positioner">
       <div
@@ -168,12 +165,13 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
               label=entry.label
               disabled=entry.disabled
               inset=entry.inset
-              parent=getOwnService
+              parent=() => service()
+              parentApi=() => api()
               onChildReady=(childService) => api().setChild(childService)
             >
-              <@trigger|childApi|>
+              <@trigger|triggerProps|>
                 <div
-                  ...api().getTriggerItemProps(childApi())
+                  ...triggerProps
                   data-slot="dropdown-menu-sub-trigger"
                   data-inset=entry.inset || undefined
                   class="mu-dropdown-menu-sub-trigger flex cursor-default items-center outline-hidden select-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
@@ -207,6 +205,6 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
       </div>
     </div>
   </if>
-</portal>
+</zag-portal>
 
 <return=api>

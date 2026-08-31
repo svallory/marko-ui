@@ -4,10 +4,10 @@
 //
 //   store.ts        module-level createStore() — the trigger API, never
 //                   reactive state, never tag input, so never serialized.
-//   <Toaster>       one group <service>/<connect> whose only machine prop is
+//   <Toaster>       one group <zag-machine>/connect() whose only machine prop is
 //                   { id, store }. The store reaches it through a template
 //                   closure (`groupProps`), not through tag input.
-//   <toast-item>    one child <service> per visible toast, spawned by <for>.
+//   <toast-item>    one child <zag-machine> per visible toast, spawned by <for>.
 //                   Marko gives each <for> iteration its own component
 //                   instance and therefore its own <lifecycle>, which is
 //                   exactly the per-toast machine lifetime Zag wants.
@@ -16,6 +16,7 @@
 // toast-item and no Zag service ever exists on the server. Hydration resumes an
 // empty region; the group service starts on mount and subscribes to the store.
 import * as toastMachine from "@zag-js/toast";
+import { connect, type ZagModule } from "marko-zag";
 import { toaster } from "./store.ts";
 import { cn } from "#lib/utils.ts";
 import ToastItem from "./toast-item.marko";
@@ -49,30 +50,23 @@ export interface Input extends Marko.Input<"div"> {
 // Zag's group machine takes `"ltr" | "rtl"` only, so `"auto"` (and the absent
 // values HTML allows) fall back to undefined and let the machine default.
 <const/machineDir=(dir === "ltr" || dir === "rtl" ? dir : undefined)/>
+// `toastMachine.group` has no runtime `props` export (unlike every other zag
+// module) — its GroupProps is a TS-only type, so it doesn't structurally
+// satisfy `ZagModule` even though `<zag-machine>`'s `props=` verbatim mode
+// (no `from=`) never actually reads `.props`. Widen the getter's return type
+// to bridge that gap; `props` is never read here.
+<const/groupModule=() => toastMachine.group as unknown as typeof toastMachine.group & ZagModule/>
 <const/groupProps=() => ({ id: regionId, store: toaster, dir: machineDir })/>
-<service/service machine=() => toastMachine.group.machine props=groupProps/>
-<connect/api=(service, normalizeProps) =>
-  toastMachine.group.connect(service, normalizeProps)
-  service=service
-/>
+<zag-machine/service=groupModule props=groupProps/>
+<const/api=() => connect(groupModule(), service())/>
 
 // The group service must be handed to each child machine as `parent`. It is
 // passed as a GETTER closure created here in the template: the closure is
 // serializable, the running service it returns never is tag input itself.
-//
-// `service.service` is null only during SSR, and SSR renders zero toasts (the
-// <for> below iterates an empty list), so no <toast-item> can ever call this
-// getter while it is null. Assert that invariant rather than widening the
-// child's `parent` input to allow null, which the Zag machine does not accept.
-<const/getParentService=() => {
-  const groupService = service.service;
-  if (!groupService) {
-    throw new Error(
-      "[toast] group service is not running — <toast-item> was rendered before <Toaster> mounted.",
-    );
-  }
-  return groupService;
-}/>
+// `service()` always returns a real MarkoService — a never-started throwaway
+// on the server and before mount, the running instance after — so no null
+// guard is needed here.
+<const/getParentService=service/>
 
 <div
   ...rest
@@ -89,7 +83,7 @@ export interface Input extends Marko.Input<"div"> {
       options=() => toastOptions
       parent=getParentService
       index=index
-      groupRevision=service.rev
+      group=service
       toastClass=toastClass
     />
   </for>

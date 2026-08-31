@@ -9,6 +9,7 @@
 // (the running group service, the Zag option object) never appear as tag input
 // themselves.
 import * as toastMachine from "@zag-js/toast";
+import { connect, type ZagModule } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 
@@ -20,15 +21,16 @@ export interface Input {
   /** This toast's position in the group, front-most first. */
   index: number;
   /**
-   * The group service's update counter.
+   * The group service getter.
    *
    * Half of this machine's rendered geometry comes from the PARENT's context —
    * `computed("height")`, `heightIndex`, `heightBefore` and `zIndex` all read
    * `prop("parent").context`. A group update therefore has to invalidate this
-   * child's connected api, and reading the counter inside `machineProps` is
-   * what makes `<service>`'s tracking script call `propsChanged()` here.
+   * child's connected api, and reading the getter inside `props=` is what
+   * makes the parent's notify invalidate this child too — its identity
+   * changes on every group update.
    */
-  groupRevision: number;
+  group: () => unknown;
   /**
    * Extra class(es) applied to this toast's root, merged after the built-in
    * ones. Threaded down from `<Toaster>`'s `toastClass` input — the zag-native
@@ -37,17 +39,26 @@ export interface Input {
   toastClass?: string;
 }
 
-<const/machineProps=() => ({
-  ...input.options(),
-  index: input.index,
-  parent: input.parent(),
-  groupRevision: input.groupRevision,
-})/>
-<service/service machine=() => toastMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  toastMachine.connect(service, normalizeProps)
-  service=service
-/>
+// `@zag-js/toast` has no runtime `props` export (unlike every other zag
+// module) — its Props/GroupProps are TS-only types, so the module doesn't
+// structurally satisfy `ZagModule` even though `<zag-machine>`'s `props=`
+// verbatim mode (no `from=`) never actually reads `.props`. Widen the
+// getter's return type to bridge that gap; `props` is never read here.
+<const/toastModule=() => toastMachine as unknown as typeof toastMachine & ZagModule/>
+
+// Built from closures (`input.options()`, `input.parent()`), not `input`
+// itself, so `props=` is used verbatim (no `from=`). Reading `input.group()`
+// here — even though its value is discarded — is what threads the parent's
+// notify into this child's own reactive dependency list.
+<zag-machine/service=toastModule props=() => {
+  input.group();
+  return {
+    ...input.options(),
+    index: input.index,
+    parent: input.parent(),
+  };
+}/>
+<const/api=() => connect(toastModule(), service())/>
 
 // The machine measures this toast in a microtask fired by its entry action —
 // which in Marko lands before the browser has laid the new element out, so the
@@ -56,7 +67,7 @@ export interface Input {
 <lifecycle
   onMount() {
     const frame = requestAnimationFrame(() => {
-      requestAnimationFrame(() => service.service?.send({ type: "MEASURE" }));
+      requestAnimationFrame(() => service().send({ type: "MEASURE" }));
     });
     return { cleanup: () => cancelAnimationFrame(frame) };
   }
@@ -111,34 +122,34 @@ export interface Input {
       <path d="m9 11 3 3L22 4"/>
     </svg>
   </if>
-  <else-if=(api().type === "error")>
+  <else if=(api().type === "error")>
     <Icon
       name="CircleAlertIcon"
       data-slot="toast-icon"
       class="mt-0.5 size-4 shrink-0 relative z-[1] text-destructive"
     />
-  </else-if>
-  <else-if=(api().type === "warning")>
+  </else>
+  <else if=(api().type === "warning")>
     <Icon
       name="TriangleAlertIcon"
       data-slot="toast-icon"
       class="mt-0.5 size-4 shrink-0 relative z-[1] text-amber-500"
     />
-  </else-if>
-  <else-if=(api().type === "info")>
+  </else>
+  <else if=(api().type === "info")>
     <Icon
       name="InfoIcon"
       data-slot="toast-icon"
       class="mt-0.5 size-4 shrink-0 relative z-[1] text-blue-500"
     />
-  </else-if>
-  <else-if=(api().type === "loading")>
+  </else>
+  <else if=(api().type === "loading")>
     <Icon
       name="Loader2"
       data-slot="toast-icon"
       class="mt-0.5 size-4 shrink-0 relative z-[1] animate-spin text-muted-foreground"
     />
-  </else-if>
+  </else>
 
   <div class="relative z-[1] flex min-w-0 flex-1 flex-col gap-1">
     <if=api().title>

@@ -101,16 +101,7 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
   entry?: Marko.AttrTag<NavigationMenuEntryAttrs>;
 };
 
-<machine-props/machineProps from=input pick=navigationMenu.props
-  onValueChange(details: navigationMenu.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }/>
-<service/service machine=() => navigationMenu.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  navigationMenu.connect(service, normalizeProps)
-  service=service
-/>
+<zag/api=() => navigationMenu from=input/>
 
 // Machine-owned props go to the machine; component-owned props are stripped so
 // they never stringify onto the <nav>.
@@ -275,9 +266,9 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
           <if=menuContent>
             <${menuContent}/>
           </if>
-          <else-if=input.content>
+          <else if=input.content>
             <${input.content}(contentContext(item.value))/>
-          </else-if>
+          </else>
         </div>
       </for>
     </div>

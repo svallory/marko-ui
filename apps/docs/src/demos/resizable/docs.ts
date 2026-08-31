@@ -80,7 +80,7 @@ export const docs: ComponentDocs = {
   // (same precedent as demos/calendar/docs.ts's Changelog omission).
   accessibilityNotes: [
     "Each resize handle is a focusable, keyboard-operable separator (`role=\"separator\"`) — no pointer is required to resize panels.",
-    "Real deviation from upstream: `@zag-js/splitter` accepts a `dir` prop that flips arrow-key semantics for RTL, but this component's `machine-props` doesn't forward it (only `orientation`, `panels`, and callback props are wired to the machine). A `dir=\"rtl\"` attribute on `Resizable` still mirrors the layout visually (it lands on the root `<div>` as a plain HTML attribute), but arrow-key direction is not RTL-aware.",
+    "Real deviation from upstream: `@zag-js/splitter` accepts a `dir` prop that flips arrow-key semantics for RTL, but this component's `<zag>` doesn't forward it (only `orientation`, `panels`, and callback props are wired to the machine). A `dir=\"rtl\"` attribute on `Resizable` still mirrors the layout visually (it lands on the root `<div>` as a plain HTML attribute), but arrow-key direction is not RTL-aware.",
   ],
   accessibilityKeyboard: [
     { keys: "Tab / Shift+Tab", description: "Moves focus to the next or previous resize handle." },

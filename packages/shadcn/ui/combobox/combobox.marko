@@ -45,7 +45,12 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
   })
 />
 
-<machine-props/machineProps from=input pick=combobox.props
+// `collection` is derived state (rebuilt whenever `filtered` changes), not a
+// plain input field — it holds methods and cannot cross the tag-input
+// boundary. Layer it on in `props=`, which receives the picked props.
+// `onInputValueChange`/`onValueChange` are overridden (not left to the
+// default sugar rule) because they also drive the local `filtered` list.
+<zag/api=() => combobox from=input props=(picked) => ({ ...picked, collection: buildCollection(filtered) })
   onInputValueChange(details: combobox.InputValueChangeDetails) {
     input.onInputValueChange?.(details);
     input.inputValueChange?.(details.inputValue);
@@ -68,16 +73,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
   onHighlightChange(details: combobox.HighlightChangeDetails) {
     input.onHighlightChange?.(details);
     input.highlightChange?.(details.highlightedValue);
-  }/>
-// `collection` is derived state (rebuilt whenever `filtered` changes), not a
-// plain input field, so it cannot be picked/overridden inside <machine-props>
-// (that tag's overrides are evaluated eagerly at the tag-input boundary).
-// Wrap machineProps in a closure that layers it in for <service>.
-<const/serviceProps=() => ({ ...machineProps(), collection: buildCollection(filtered) })/>
-<service/service machine=() => combobox.machine props=serviceProps/>
-<connect/api=(service, normalizeProps) =>
-  combobox.connect(service, normalizeProps)
-  service=service
+  }
 />
 
 <const/nativeAttrs=() =>
@@ -113,7 +109,11 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
   >
     <if=(input.multiple && api().hasSelectedItems)>
       <div data-slot="combobox-chips" class="mu-combobox-chips flex flex-wrap items-center gap-1 p-1">
-        <for|item| of=api().selectedItems>
+        // `V` in `combobox.Api<T, V>` has no default and can't be inferred
+        // through `<zag>`'s api getter (same in the old three-tag wiring,
+        // since nothing there passed an explicit type argument either) — cast
+        // rather than widen `<zag>`'s api getter itself.
+        <for|item: ComboboxItem| of=(api().selectedItems as ComboboxItem[])>
           <span data-slot="combobox-chip" class="mu-combobox-chip has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50">
             ${item.label}
             <button
@@ -159,7 +159,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
       <Icon name="ChevronDown" class="mu-combobox-trigger-icon pointer-events-none size-4 opacity-50"/>
     </button>
   </div>
-  <portal>
+  <zag-portal>
     <if=api().open>
       <div ...api().getPositionerProps() style=positionerStyle data-slot="combobox-positioner" class="isolate z-50">
         <div
@@ -215,7 +215,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
         </div>
       </div>
     </if>
-  </portal>
+  </zag-portal>
 </div>
 
 <return=api>

@@ -6,7 +6,7 @@
 // syntax-free source inline and stays expanded (shadcn has no re-collapse).
 //
 // The demo itself renders through <demo-renderer demoId=.../> — a generated
-// static <if>/<else-if> chain, not a dynamic tag (<${...}/>). Marko 6.3.34
+// static <if>/<else if> chain, not a dynamic tag (<${...}/>). Marko 6.3.34
 // crashes client hydration in production when a dynamic tag is resolved from
 // a runtime lookup; see notes/bug-marko-dynamic-tag-hydration-crash.md and
 // scripts/build-demos-manifest.ts's header comment.

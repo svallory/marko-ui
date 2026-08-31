@@ -9,12 +9,12 @@ import Accordion from "@marko-ui/shadcn/ui/accordion/accordion.marko";
 // accordion with Arabic copy. `dir` IS a real zag AccordionProps field
 // (inherited via DirectionProperty in @zag-js/types, and present in the
 // runtime `accordionMachine.props` list — see
-// accordion.props.mjs/accordion.connect.mjs), so it is picked up by our
-// `machine-props` (which selects by `accordionMachine.props`) and wired
-// into the machine; `getRootProps()` then re-emits it as the root's `dir`
-// attribute and `prop("dir")` correctly flips ArrowLeft/ArrowRight for
+// accordion.props.mjs/accordion.connect.mjs), so it is picked up by
+// `<zag>`'s `from=input` (which selects by `accordionMachine.props`) and
+// wired into the machine; `getRootProps()` then re-emits it as the root's
+// `dir` attribute and `prop("dir")` correctly flips ArrowLeft/ArrowRight for
 // keyboard nav. No component change is needed, but the reason is that
-// `dir` already flows through the existing machine-props pick — not that
+// `dir` already flows through the existing `<zag>` pick — not that
 // it bypasses the machine as a plain native attribute.
 static const items = [
   {

@@ -59,7 +59,7 @@ static function formatValue(value: number | string): string {
         <if=row.icon>
           <${row.icon}/>
         </if>
-        <else-if=(!hideIndicator)>
+        <else if=(!hideIndicator)>
           <div
             class=cn(
               "shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)",
@@ -71,7 +71,7 @@ static function formatValue(value: number | string): string {
             )
             style=`--color-bg: ${row.color}; --color-border: ${row.color};`
           ></div>
-        </else-if>
+        </else>
         <div
           class=cn(
             "flex flex-1 justify-between leading-none",

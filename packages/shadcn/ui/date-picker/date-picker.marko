@@ -33,21 +33,16 @@ export type Input = Omit<MachineInput<"div", datePickerMachine.Props>, "value" |
   defaultFocusedValue?: string;
 };
 
-<machine-props/pickedProps from=input pick=datePickerMachine.props
-  onValueChange(details: datePickerMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value[0]?.toString());
-  }/>
-<const/machineProps=() => ({
-  ...pickedProps(),
+<zag/api=() => datePickerMachine from=input props=(picked) => ({
+  ...picked,
   value: input.value ? [parse(input.value)] : undefined,
   focusedValue: input.focusedValue ? parse(input.focusedValue) : undefined,
   defaultFocusedValue: input.defaultFocusedValue ? parse(input.defaultFocusedValue) : undefined,
-})/>
-<service/service machine=() => datePickerMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  datePickerMachine.connect(service, normalizeProps)
-  service=service
+})
+  onValueChange(details: datePickerMachine.ValueChangeDetails) {
+    input.onValueChange?.(details);
+    input.valueChange?.(details.value[0]?.toString());
+  }
 />
 
 // `value`/`focusedValue`/`defaultFocusedValue` are deliberately remapped to
@@ -102,7 +97,7 @@ export type Input = Omit<MachineInput<"div", datePickerMachine.Props>, "value" |
       <span class="sr-only">Open calendar</span>
     </button>
   </div>
-  <portal>
+  <zag-portal>
     <if=api().open>
       <div ...api().getPositionerProps() style=positionerStyle data-slot="date-picker-positioner" class="z-50">
         <div
@@ -176,7 +171,7 @@ export type Input = Omit<MachineInput<"div", datePickerMachine.Props>, "value" |
         </div>
       </div>
     </if>
-  </portal>
+  </zag-portal>
 </div>
 
 <return=api>

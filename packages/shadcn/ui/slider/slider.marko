@@ -7,16 +7,7 @@ export type Input = MachineInput<"div", sliderMachine.Props> & {
   valueChange?: (value: number[]) => void;
 };
 
-<machine-props/machineProps from=input pick=sliderMachine.props
-  onValueChange(details: sliderMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }/>
-<service/service machine=() => sliderMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  sliderMachine.connect(service, normalizeProps)
-  service=service
-/>
+<zag/api=() => sliderMachine from=input/>
 
 <const/nativeAttrs=() =>
   stripOwnProps(sliderMachine.splitProps(input)[1], "class", "valueChange")

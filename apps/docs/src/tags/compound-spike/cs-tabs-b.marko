@@ -23,16 +23,7 @@ export type Input = MachineInput<"div", tabsMachine.Props> & {
   valueChange?: (value: string) => void;
 };
 
-<machine-props/machineProps from=input pick=tabsMachine.props
-  onValueChange(details: tabsMachine.ValueChangeDetails) {
-    input.onValueChange?.(details);
-    input.valueChange?.(details.value);
-  }/>
-<service/service machine=() => tabsMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  tabsMachine.connect(service, normalizeProps)
-  service=service
-/>
+<zag/api=() => tabsMachine from=input/>
 
 <div ...api().getRootProps() data-slot="tabs" data-variant="b" class="flex flex-col gap-2">
   <${input.content}(api)/>

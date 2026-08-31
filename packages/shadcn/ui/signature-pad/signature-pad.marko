@@ -9,7 +9,7 @@ export type Input = MachineInput<"input", signaturePadMachine.Props> & {
   drawEndChange?: (paths: string[]) => void;
 };
 
-<machine-props/machineProps from=input pick=signaturePadMachine.props
+<zag/api=() => signaturePadMachine from=input
   onDraw(details: signaturePadMachine.DrawDetails) {
     input.onDraw?.(details);
     input.drawChange?.(details.paths);
@@ -17,11 +17,7 @@ export type Input = MachineInput<"input", signaturePadMachine.Props> & {
   onDrawEnd(details: signaturePadMachine.DrawEndDetails) {
     input.onDrawEnd?.(details);
     input.drawEndChange?.(details.paths);
-  }/>
-<service/service machine=() => signaturePadMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  signaturePadMachine.connect(service, normalizeProps)
-  service=service
+  }
 />
 
 <const/nativeAttrs=() =>

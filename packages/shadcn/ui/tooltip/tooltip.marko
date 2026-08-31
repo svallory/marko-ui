@@ -17,25 +17,11 @@ export type Input = MachineInput<"span", tooltipMachine.Props> & {
   openChange?: (open: boolean) => void;
 };
 
-// The three-tag wiring (see /docs/creating-components):
-// 1. <machine-props> picks the machine's props out of `input` by name and
-//    merges the attributes written on it — callback adaptations live HERE,
-//    visibly, because they are this component's public contract.
-// 2. <service> creates and owns the running machine (client-only; SSR
-//    renders from a throwaway never-started instance).
-// 3. <connect> returns `api` as a GETTER — call it at every use site.
-//    Getters are the serializable currency of Marko's resumability: the
-//    api object itself must never become reactive state.
-<machine-props/machineProps from=input pick=tooltipMachine.props
-  onOpenChange(details: tooltipMachine.OpenChangeDetails) {
-    input.onOpenChange?.(details);
-    input.openChange?.(details.open);
-  }/>
-<service/service machine=() => tooltipMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  tooltipMachine.connect(service, normalizeProps)
-  service=service
-/>
+// <zag> wires the machine in one tag and returns `api` as a GETTER —
+// call it at every use site. Getters are the serializable currency of
+// Marko's resumability: the api object itself must never become reactive
+// state. See /docs/creating-components.
+<zag/api=() => tooltipMachine from=input/>
 
 // Whatever is neither machine-owned (splitProps) nor component-owned
 // (class, openChange, trigger, content) passes through to the root span:
@@ -47,7 +33,7 @@ export type Input = MachineInput<"span", tooltipMachine.Props> & {
 
 <span ...nativeAttrs() data-slot="tooltip">
   <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "tooltip-trigger" })/>
-  <portal>
+  <zag-portal>
     <if=api().open>
       <div ...api().getPositionerProps() style=positionerStyle data-slot="tooltip-positioner">
         <div
@@ -70,7 +56,7 @@ export type Input = MachineInput<"span", tooltipMachine.Props> & {
         </div>
       </div>
     </if>
-  </portal>
+  </zag-portal>
 </span>
 
 // Parents can receive the api getter: <Tooltip/tooltipApi/> then

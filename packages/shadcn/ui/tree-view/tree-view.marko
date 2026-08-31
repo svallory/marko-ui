@@ -16,7 +16,9 @@ export interface TreeViewItem {
 // omitted here. `expandedValueChange`/`selectedValueChange` are additive
 // sugar enabling Marko's two-way bind shorthand; Zag's own
 // `onExpandedChange`/`onSelectionChange` also work and receive the details
-// object.
+// object. Both are wired by explicit overrides on <zag>: the default rule
+// would derive `expandedChange`/`selectionChange` from those callback
+// names, which is not what this component exposes, so it emits nothing.
 export type Input = Omit<MachineInput<"div", treeView.Props>, "collection"> & {
   items: TreeViewItem[];
   expandedValueChange?: (value: string[]) => void;
@@ -33,16 +35,10 @@ export type Input = Omit<MachineInput<"div", treeView.Props>, "collection"> & {
   isNodeDisabled: (node: TreeViewItem) => !!node.disabled,
 })/>
 
-// The three-tag wiring (see /docs/creating-components):
-// 1. <machine-props> picks the machine's props out of `input` by name and
-//    merges the attributes written on it — callback adaptations live HERE,
-//    visibly, because they are this component's public contract.
-// 2. <service> creates and owns the running machine (client-only; SSR
-//    renders from a throwaway never-started instance).
-// 3. <connect> returns `api` as a GETTER — call it at every use site.
-//    Getters are the serializable currency of Marko's resumability: the
-//    api object itself must never become reactive state.
-<machine-props/pickedProps from=input pick=treeView.props
+// `collection` is derived from `items` on every read (rather than picked
+// off `input`) and must stay inside `props=`: the built TreeCollection holds
+// functions and is not serializable as a bare tag-input value.
+<zag/api=() => treeView from=input props=(picked) => ({ ...picked, collection: buildCollection(input.items) })
   id=uid
   onExpandedChange(details: treeView.ExpandedChangeDetails) {
     input.onExpandedChange?.(details);
@@ -51,16 +47,7 @@ export type Input = Omit<MachineInput<"div", treeView.Props>, "collection"> & {
   onSelectionChange(details: treeView.SelectionChangeDetails) {
     input.onSelectionChange?.(details);
     input.selectedValueChange?.(details.selectedValue);
-  }/>
-// `collection` is derived from `items` on every read (rather than picked
-// off `input`) and must stay inside a closure like the rest of
-// machineProps: the built TreeCollection holds functions and is not
-// serializable as a bare tag-input value.
-<const/machineProps=() => ({ ...pickedProps(), collection: buildCollection(input.items) })/>
-<service/service machine=() => treeView.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  treeView.connect(service, normalizeProps)
-  service=service
+  }
 />
 
 // Whatever is neither machine-owned (splitProps) nor component-owned

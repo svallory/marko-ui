@@ -144,21 +144,18 @@ Verified against real components in `packages/shadcn/ui/` and `notes/bug-marko-d
   </li>
   ```
 
-- **SSR→hydration boundary serializability contract (closure-wrap rule).** Every value that crosses from server-rendered `<let>`/reactive state into the client must be plain, serializable data — never a live object with methods (a Zag service, a `connect()` result, any class instance holding closures). This is a REQUIREMENT of Marko's resumability model, not a bug to work around: if resume corrupts, the default read is "an unserializable value is still crossing the boundary somewhere," not "Marko is broken." The fix is to serialize only primitives and re-derive anything stateful inside a template-written closure (`machine=() => ...`, `<connect/api=(service, normalizeProps) => ...`) that runs fresh on each side, never a raw value passed through `input`.
+- **SSR→hydration boundary serializability contract (closure-wrap rule).** Every value that crosses from server-rendered `<let>`/reactive state into the client must be plain, serializable data — never a live object with methods (a Zag service, a `connect()` result, any class instance holding closures). This is a REQUIREMENT of Marko's resumability model, not a bug to work around: if resume corrupts, the default read is "an unserializable value is still crossing the boundary somewhere," not "Marko is broken." The fix is to serialize only primitives and re-derive anything stateful inside a template-written closure (the module getter on `<zag/api=() => mod .../>`, or `props=` on `<zag>`/`<zag-machine>`) that runs fresh on each side, never a raw value passed through `input`.
   ```marko
   <!-- wrong: service/api is a live object with methods — throws "Unable to serialize" -->
   <let/api=switchMachine.connect(service, normalizeProps)>
-  <!-- right: closure re-evaluated on each side, nothing serialized but primitives -->
-  <connect/api=(service, normalizeProps) =>
-    switchMachine.connect(service, normalizeProps)
-    service=service
-  />
+  <!-- right: <zag> wires the machine and returns a getter, re-evaluated on each side -->
+  <zag/api=() => switchMachine from=input/>
   ```
 
-- **Walk-order `<const>` hazard — fixed upstream in marko 6.3.46, no workaround needed.** When a component was mounted through dynamic-tag-content (`<${input.content}/>`) nested inside an ancestor's own portal/dynamic-tag mount, that component's OWN walk-time reads of its OWN `<const>`-derived value — in `<if>`/`<for>` branch selectors, attribute spreads, anywhere evaluated during the first mount walk — could fire **before** the `<const>`'s lazy/signal-deferred value had ever computed on that fresh scope, throwing `TypeError: ... is not a function`. This was a genuine defect in `@marko/runtime-tags`, fixed by [marko-js/marko#4062](https://github.com/marko-js/marko/pull/4062), shipped in `@marko/runtime-tags@6.3.46`. Plain `<connect/api=...>` + `api()` at every call site — the ordinary pattern — is correct; do not reintroduce a `connectFresh`-style static-function mirror.
+- **Walk-order `<const>` hazard — fixed upstream in marko 6.3.46, no workaround needed.** When a component was mounted through dynamic-tag-content (`<${input.content}/>`) nested inside an ancestor's own portal/dynamic-tag mount, that component's OWN walk-time reads of its OWN `<const>`-derived value — in `<if>`/`<for>` branch selectors, attribute spreads, anywhere evaluated during the first mount walk — could fire **before** the `<const>`'s lazy/signal-deferred value had ever computed on that fresh scope, throwing `TypeError: ... is not a function`. This was a genuine defect in `@marko/runtime-tags`, fixed by [marko-js/marko#4062](https://github.com/marko-js/marko/pull/4062), shipped in `@marko/runtime-tags@6.3.46`. Plain `<zag/api=...>` + `api()` at every call site — the ordinary pattern — is correct; do not reintroduce a `connectFresh`-style static-function mirror.
   ```marko
   <!-- correct, at marko >=6.3.46: plain api() getter, no mirror needed -->
-  <connect/api=(service, normalizeProps) => machine.connect(service, normalizeProps) service=service/>
+  <zag/api=() => machine from=input/>
   <span ...api().getRootProps()>
     <if=api().open>...</if>
   </span>

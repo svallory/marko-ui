@@ -21,26 +21,17 @@ export type Input = MachineInput<"div", popoverMachine.Props> & {
   openChange?: (open: boolean) => void;
 };
 
-<machine-props/machineProps from=input pick=popoverMachine.props
-  onOpenChange(details: popoverMachine.OpenChangeDetails) {
-    input.onOpenChange?.(details);
-    input.openChange?.(details.open);
-  }/>
-<service/service machine=() => popoverMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  popoverMachine.connect(service, normalizeProps)
-  service=service
-/>
+<zag/api=() => popoverMachine from=input/>
 
 <div data-slot="popover">
   <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "popover-trigger" })/>
   // NOTE: upstream shadcn sets data-slot="popover-portal" on Radix's Portal,
-  // which renders a real element. marko-zag's <portal> renders a
+  // which renders a real element. marko-zag's <zag-portal> renders a
   // `display:contents` host and does not forward attributes, so the
   // marker never reached the DOM — it was inert, and nothing in this
   // repo's CSS, tests or tooling reads it. Dropped rather than left as
-  // dead markup; restore it if <portal> gains attribute forwarding.
-  <portal>
+  // dead markup; restore it if <zag-portal> gains attribute forwarding.
+  <zag-portal>
     <if=api().open>
       <div ...api().getPositionerProps() style=positionerStyle data-slot="popover-positioner">
         <div
@@ -55,7 +46,7 @@ export type Input = MachineInput<"div", popoverMachine.Props> & {
         </div>
       </div>
     </if>
-  </portal>
+  </zag-portal>
 </div>
 
 <return=api>

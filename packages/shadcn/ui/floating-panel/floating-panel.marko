@@ -38,35 +38,15 @@ export type Input = Omit<
   hideCloseTrigger?: boolean;
 };
 
-<machine-props/machineProps from=input pick=floatingPanelMachine.props
-  onOpenChange(details: floatingPanelMachine.OpenChangeDetails) {
-    input.onOpenChange?.(details);
-    input.openChange?.(details.open);
-  }
-  onPositionChange(details: floatingPanelMachine.PositionChangeDetails) {
-    input.onPositionChange?.(details);
-    input.positionChange?.(details.position);
-  }
+<zag/api=() => floatingPanelMachine from=input
   onPositionChangeEnd(details: floatingPanelMachine.PositionChangeDetails) {
     input.onPositionChangeEnd?.(details);
     input.positionEndChange?.(details.position);
-  }
-  onSizeChange(details: floatingPanelMachine.SizeChangeDetails) {
-    input.onSizeChange?.(details);
-    input.sizeChange?.(details.size);
   }
   onSizeChangeEnd(details: floatingPanelMachine.SizeChangeDetails) {
     input.onSizeChangeEnd?.(details);
     input.sizeEndChange?.(details.size);
   }
-  onStageChange(details: floatingPanelMachine.StageChangeDetails) {
-    input.onStageChange?.(details);
-    input.stageChange?.(details.stage);
-  }/>
-<service/service machine=() => floatingPanelMachine.machine props=machineProps/>
-<connect/api=(service, normalizeProps) =>
-  floatingPanelMachine.connect(service, normalizeProps)
-  service=service
 />
 
 // Everything that is neither machine-owned (splitProps) nor component-owned
@@ -104,7 +84,7 @@ export type Input = Omit<
     "data-slot": "floating-panel-trigger",
   })/>
 </if>
-<portal>
+<zag-portal>
   <if=api().open>
     // The positioner owns --x/--y/--width/--height plus `position` in its own
     // reactive style object; the content owns width/height/overflow. Adding a
@@ -216,6 +196,6 @@ export type Input = Omit<
       </div>
     </div>
   </if>
-</portal>
+</zag-portal>
 
 <return=api>

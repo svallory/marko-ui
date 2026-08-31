@@ -21,10 +21,10 @@ import {
 /**
  * The 33 Zag-machine-backed components currently covered by this suite.
  *
- * NOT the full set. packages/shadcn/ui/ holds 54 Zag-backed components (54
- * component directories contain both a <service> and a <connect> tag; 53 of
- * those also carry <machine-props> — `toast` is the lone exception, a
- * client-only group store that is Zag-backed by <service>/<connect> alone).
+ * NOT the full set. packages/shadcn/ui/ holds 58 Zag-backed component files:
+ * 50 use <zag>, and 8 use <zag-machine> + connect() because they need the
+ * running service itself (the toast pair, and the menu/submenu pair of
+ * dropdown-menu, context-menu and menubar).
  * All 54 have demo directories under apps/docs/src/demos/.
  *
  * 33 are listed below, so 21 are uncovered — a real coverage gap in
@@ -175,7 +175,7 @@ const ALLOWED_DIFFERENCES: Partial<Record<string, AllowedDifference[]>> = {
       // since SSR renders each route in isolation with no shared runtime.
       //
       // The command demo route hardcodes `open=true` on all 4 Command demos
-      // (default.marko's `open=true` on <machine-props>, so the palette is
+      // (default.marko's `open=true` on <zag>, so the palette is
       // always visible for documentation purposes) instead of gating on real
       // user interaction, so all 4 combobox content layers mount simultaneously
       // and the layer stack detects nesting on the first one client-side. A

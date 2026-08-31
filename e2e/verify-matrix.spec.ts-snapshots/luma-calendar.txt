@@ -6,7 +6,7 @@ section
           svg
             path
           span
-        button data-slot="calendar-view-trigger" aria-label="Switch to year view"
+        button data-slot="calendar-view-trigger" aria-label="Switch to month view"
         button data-slot="calendar-next-trigger" aria-label="Switch to next month"
           svg
             path
@@ -130,7 +130,7 @@ section
               svg
                 path
               span
-            button data-slot="calendar-view-trigger" aria-label="Switch to year view"
+            button data-slot="calendar-view-trigger" aria-label="Switch to month view"
             button data-slot="calendar-next-trigger" aria-label="Switch to next month"
               svg
                 path
@@ -597,7 +597,7 @@ section
             svg
               path
             span
-          button data-slot="calendar-view-trigger" aria-label="Switch to year view"
+          button data-slot="calendar-view-trigger" aria-label="Switch to month view"
           button data-slot="calendar-next-trigger" aria-label="Switch to next month"
             svg
               path
@@ -988,24 +988,24 @@ section
                 td data-slot="calendar-cell" role="gridcell" aria-selected="true"
                   button data-slot="calendar-day" role="button" aria-label="Starting range from Monday, June 8, 2026"
                 td data-slot="calendar-cell" role="gridcell" aria-selected="true"
-                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, June 9, 2026"
+                  button data-slot="calendar-day" role="button" aria-label="In range. Tuesday, June 9, 2026"
                 td data-slot="calendar-cell" role="gridcell" aria-selected="true"
-                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, June 10, 2026"
+                  button data-slot="calendar-day" role="button" aria-label="In range. Wednesday, June 10, 2026"
                 td data-slot="calendar-cell" role="gridcell" aria-selected="true"
-                  button data-slot="calendar-day" role="button" aria-label="Choose Thursday, June 11, 2026"
+                  button data-slot="calendar-day" role="button" aria-label="In range. Thursday, June 11, 2026"
                 td data-slot="calendar-cell" role="gridcell" aria-selected="true"
-                  button data-slot="calendar-day" role="button" aria-label="Choose Friday, June 12, 2026"
+                  button data-slot="calendar-day" role="button" aria-label="In range. Friday, June 12, 2026"
                 td data-slot="calendar-cell" role="gridcell" aria-selected="true"
-                  button data-slot="calendar-day" role="button" aria-label="Choose Saturday, June 13, 2026"
+                  button data-slot="calendar-day" role="button" aria-label="In range. Saturday, June 13, 2026"
               tr
                 td data-slot="calendar-cell" role="gridcell" aria-selected="true"
-                  button data-slot="calendar-day" role="button" aria-label="Choose Sunday, June 14, 2026"
+                  button data-slot="calendar-day" role="button" aria-label="In range. Sunday, June 14, 2026"
                 td data-slot="calendar-cell" role="gridcell" aria-selected="true"
-                  button data-slot="calendar-day" role="button" aria-label="Choose Monday, June 15, 2026"
+                  button data-slot="calendar-day" role="button" aria-label="In range. Monday, June 15, 2026"
                 td data-slot="calendar-cell" role="gridcell" aria-selected="true"
-                  button data-slot="calendar-day" role="button" aria-label="Choose Tuesday, June 16, 2026"
+                  button data-slot="calendar-day" role="button" aria-label="In range. Tuesday, June 16, 2026"
                 td data-slot="calendar-cell" role="gridcell" aria-selected="true"
-                  button data-slot="calendar-day" role="button" aria-label="Choose Wednesday, June 17, 2026"
+                  button data-slot="calendar-day" role="button" aria-label="In range. Wednesday, June 17, 2026"
                 td data-slot="calendar-cell" role="gridcell" aria-selected="true"
                   button data-slot="calendar-day" role="button" aria-label="Range ending at Thursday, June 18, 2026"
                 td data-slot="calendar-cell" role="gridcell" aria-selected="false"
@@ -1395,7 +1395,7 @@ section
           svg
             path
           span
-        button data-slot="calendar-view-trigger" aria-label="Switch to year view"
+        button data-slot="calendar-view-trigger" aria-label="Switch to month view"
         button data-slot="calendar-next-trigger" aria-label="Switch to next month"
           svg
             path
@@ -1517,7 +1517,7 @@ section
           svg
             path
           span
-        button data-slot="calendar-view-trigger" aria-label="Switch to year view"
+        button data-slot="calendar-view-trigger" aria-label="Switch to month view"
         button data-slot="calendar-next-trigger" aria-label="Switch to next month"
           svg
             path
@@ -1639,7 +1639,7 @@ section
           svg
             path
           span
-        button data-slot="calendar-view-trigger" aria-label="Switch to year view"
+        button data-slot="calendar-view-trigger" aria-label="Switch to month view"
         button data-slot="calendar-next-trigger" aria-label="Switch to next month"
           svg
             path
@@ -1761,7 +1761,7 @@ section
           svg
             path
           span
-        button data-slot="calendar-view-trigger" aria-label="Switch to year view"
+        button data-slot="calendar-view-trigger" aria-label="Switch to month view"
         button data-slot="calendar-next-trigger" aria-label="Switch to next month"
           svg
             path
@@ -1885,7 +1885,7 @@ section
               svg
                 path
               span
-            button data-slot="calendar-view-trigger" aria-label="Switch to year view"
+            button data-slot="calendar-view-trigger" aria-label="Switch to month view"
             button data-slot="calendar-next-trigger" aria-label="Switch to next month"
               svg
                 path
@@ -1998,7 +1998,7 @@ section
           svg
             path
           span
-        button data-slot="calendar-view-trigger" aria-label="Switch to year view"
+        button data-slot="calendar-view-trigger" aria-label="Switch to month view"
         button data-slot="calendar-next-trigger" aria-label="Switch to next month"
           svg
             path
@@ -2467,7 +2467,7 @@ section
               svg
                 path
               span
-            button data-slot="calendar-view-trigger" aria-label="Switch to year view"
+            button data-slot="calendar-view-trigger" aria-label="Switch to month view"
             button data-slot="calendar-next-trigger" aria-label="Switch to next month"
               svg
                 path

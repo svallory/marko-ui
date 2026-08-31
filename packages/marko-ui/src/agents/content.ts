@@ -120,9 +120,9 @@ list before finishing.
 
 ## Component anatomy
 
-Zag-backed components follow the three-tag pattern: \`<machine-props>\`
-(typed input), \`<service>\` (machine lifecycle), \`<connect>\` (API → DOM
-props). Sub-parts live one directory per component
+Zag-backed components follow the one-tag \`<zag>\` pattern: it picks the
+machine's typed props out of \`input\`, creates and connects the service, and
+returns the API getter. Sub-parts live one directory per component
 (\`ui/<name>/<part>.marko\`). Styling comes from \`variants.ts\`
 (class-variance-authority) + Tailwind v4 CSS variables in globals.css.
 

@@ -12,3 +12,7 @@ packages/shadcn/styles-gen/
 parity-report/
 tooling/parity/harnesses/*/parity-facts.json
 tooling/parity/harnesses/marko-ui/src/tags/demo-renderer.marko
+
+# transient artifacts of `bun tooling/extract-api.ts` (removed on a clean run)
+packages/shadcn/ui/**/__api__*.ts
+packages/shadcn/tsconfig.api-extract.json

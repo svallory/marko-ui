@@ -14,9 +14,7 @@ import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
   <section class="space-y-2" data-test="uncontrolled">
     <h2 class="font-semibold">Uncontrolled switch</h2>
     <id/uid1/>
-    <const/props1=() => ({ id: uid1 })/>
-    <service/service1 machine=() => switchMachine.machine props=props1/>
-    <connect/api1=(service, normalizeProps) => switchMachine.connect(service, normalizeProps) service=service1/>
+    <zag/api1=() => switchMachine props=() => ({ id: uid1 })/>
     <label ...api1().getRootProps()>
       <input ...api1().getHiddenInputProps() class="sr-only">
       <span ...api1().getControlProps() class="inline-flex h-5 w-9 items-center rounded-full bg-input p-0.5 transition-colors data-[state=checked]:bg-primary">
@@ -36,15 +34,13 @@ import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
       Toggle from parent
     </button>
     <id/uid2/>
-    <const/props2=() => ({
+    <zag/api2=() => switchMachine props=() => ({
       id: uid2,
       checked: parentChecked,
       onCheckedChange(details: { checked: boolean }) {
         parentChecked = details.checked;
       },
     })/>
-    <service/service2 machine=() => switchMachine.machine props=props2/>
-    <connect/api2=(service, normalizeProps) => switchMachine.connect(service, normalizeProps) service=service2/>
     <label ...api2().getRootProps()>
       <input ...api2().getHiddenInputProps() class="sr-only">
       <span ...api2().getControlProps() class="inline-flex h-5 w-9 items-center rounded-full bg-input p-0.5 transition-colors data-[state=checked]:bg-primary">

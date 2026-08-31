@@ -22,7 +22,7 @@
 // - No generateStaticParams/dynamicParams=false. marko-run has no such
 //   mechanism; an unknown $name renders the same 404-ish empty state the
 //   Next notFound() produces, via the <else> branch below.
-// - The fixture pick is a static <if>/<else-if> chain over static imports.
+// - The fixture pick is a static <if>/<else if> chain over static imports.
 //   Dynamic tags in ROUTE files crash production hydration
 //   (notes/bug-marko-dynamic-tag-hydration-crash.md); a FIXTURES[name] index
 //   is fine here because the values are plain HTML strings, not components,
@@ -198,14 +198,14 @@ static function applyPreviewParams(params: TypesetSearchParams) {
       // leaking a fixture.
       <div class="typeset w-full"/>
     </if>
-    <else-if=(name === "chat")>
+    <else if=(name === "chat")>
       // [name]/page.tsx special-cases chat: a fake user question bubble is
       // page chrome, rendered OUTSIDE the typeset container.
       <div class="flex w-full flex-col gap-10">
         <div class="ml-auto w-fit max-w-[65%] rounded-3xl bg-muted px-4 py-2.5">${CHAT_QUESTION}</div>
         <div class="typeset w-full">$!{fixtureHtml}</div>
       </div>
-    </else-if>
+    </else>
     <else>
       <div class="typeset w-full">$!{fixtureHtml}</div>
     </else>

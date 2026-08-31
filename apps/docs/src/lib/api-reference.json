@@ -51,7 +51,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; item: (value: string) => string; itemContent: (value: string) => string; itemTrigger: (value: string) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the accordion. Useful for composition."
@@ -178,7 +178,7 @@
             },
             {
               "name": "actionVariant",
-              "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
+              "type": "'default' | 'destructive' | 'ghost' | 'link' | 'outline' | 'secondary' | null | undefined",
               "required": false,
               "kind": "own"
             },
@@ -197,7 +197,7 @@
             },
             {
               "name": "cancelVariant",
-              "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
+              "type": "'default' | 'destructive' | 'ghost' | 'link' | 'outline' | 'secondary' | null | undefined",
               "required": false,
               "kind": "own"
             },
@@ -258,7 +258,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ trigger: string | ((value?: string) => string); positioner: string; backdrop: string; content: string; closeTrigger: string; title: string; description: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the dialog. Useful for composition."
@@ -368,7 +368,7 @@
             },
             {
               "name": "role",
-              "type": "'dialog' | 'alertdialog' | undefined",
+              "type": "'alertdialog' | 'dialog' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The dialog's role"
@@ -464,7 +464,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; thumb: string; hiddenInput: string; control: string; valueText: string; label: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the machine.\nUseful for composition."
@@ -592,7 +592,7 @@
             },
             {
               "name": "state",
-              "type": "'idle' | 'uploading' | 'processing' | 'error' | 'done'",
+              "type": "'done' | 'error' | 'idle' | 'processing' | 'uploading'",
               "required": false,
               "kind": "own"
             }
@@ -623,7 +623,7 @@
           "properties": [
             {
               "name": "variant",
-              "type": "'image' | 'icon' | null | undefined",
+              "type": "'icon' | 'image' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -670,6 +670,13 @@
               "kind": "own"
             },
             {
+              "name": "badge",
+              "type": "Marko.Body<[], void>",
+              "required": false,
+              "kind": "own",
+              "description": "Renders an `AvatarBadge` (or any markup) as a root-level sibling of the image/fallback, per upstream's Composition tree — never inside the fallback span."
+            },
+            {
               "name": "content",
               "type": "Marko.Body<[], void>",
               "required": false,
@@ -697,7 +704,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; image: string; fallback: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the avatar. Useful for composition."
@@ -711,7 +718,7 @@
             },
             {
               "name": "size",
-              "type": "'default' | 'sm' | 'lg'",
+              "type": "'default' | 'lg' | 'sm'",
               "required": false,
               "kind": "own",
               "description": "Size variant — also exposed as `data-size` for group/badge styling."
@@ -762,7 +769,7 @@
           "properties": [
             {
               "name": "variant",
-              "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
+              "type": "'default' | 'destructive' | 'ghost' | 'link' | 'outline' | 'secondary' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -842,13 +849,13 @@
           "properties": [
             {
               "name": "align",
-              "type": "'start' | 'end'",
+              "type": "'end' | 'start'",
               "required": false,
               "kind": "own"
             },
             {
               "name": "side",
-              "type": "'top' | 'bottom'",
+              "type": "'bottom' | 'top'",
               "required": false,
               "kind": "own"
             }
@@ -861,13 +868,13 @@
           "properties": [
             {
               "name": "align",
-              "type": "'start' | 'end'",
+              "type": "'end' | 'start'",
               "required": false,
               "kind": "own"
             },
             {
               "name": "variant",
-              "type": "'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'muted' | 'tinted' | null | undefined",
+              "type": "'default' | 'destructive' | 'ghost' | 'muted' | 'outline' | 'secondary' | 'tinted' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -895,7 +902,7 @@
           "properties": [
             {
               "name": "size",
-              "type": "'default' | 'sm' | 'xs' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg' | null | undefined",
+              "type": "'default' | 'icon' | 'icon-lg' | 'icon-sm' | 'icon-xs' | 'lg' | 'sm' | 'xs' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -912,7 +919,7 @@
             },
             {
               "name": "variant",
-              "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
+              "type": "'default' | 'destructive' | 'ghost' | 'link' | 'outline' | 'secondary' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -981,7 +988,7 @@
           "properties": [
             {
               "name": "captionLayout",
-              "type": "'label' | 'dropdown'",
+              "type": "'dropdown' | 'label'",
               "required": false,
               "kind": "own",
               "description": "Caption presentation. `\"label\"` (default) shows the visible range as a\nplain view-trigger button; `\"dropdown\"` swaps it for native month and year\n`<select>` controls. Component-owned — not forwarded to the machine."
@@ -995,10 +1002,10 @@
             },
             {
               "name": "defaultFocusedValue",
-              "type": "DateValue | undefined",
+              "type": "PlainDate",
               "required": false,
-              "kind": "machine",
-              "description": "The initial focused date when rendered.\nUse when you don't need to control the focused date of the date picker."
+              "kind": "own",
+              "description": "Initial visible-month focus, as a plain (optionally non-Gregorian)\ndate. Pins the SSR-rendered month instead of falling back to the\nbrowser's wall-clock \"today\" (`getTodayDate`), which would otherwise\nmake SSR and hydrated markup diverge near midnight or across\ntimezones."
             },
             {
               "name": "defaultOpen",
@@ -1044,10 +1051,10 @@
             },
             {
               "name": "focusedValue",
-              "type": "DateValue | undefined",
+              "type": "PlainDate",
               "required": false,
-              "kind": "machine",
-              "description": "The controlled focused date."
+              "kind": "own",
+              "description": "Controlled visible-month focus, as a plain (optionally non-Gregorian) date."
             },
             {
               "name": "format",
@@ -1065,7 +1072,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; label: (index: number) => string; table: (id: string) => string; tableHeader: (id: string) => string; tableBody: (id: string) => string; tableRow: (id: string) => string; content: string; cellTrigger: (id: string) => string; prevTrigger: (view: DateView) => string; nextTrigger: (view: DateView) => string; viewTrigger: (view: DateView) => string; clearTrigger: string; control: string; input: (index: number) => string; trigger: string; monthSelect: string; yearSelect: string; positioner: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the date picker. Useful for composition."
@@ -1399,7 +1406,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; item: (index: number) => string; itemGroup: string; nextTrigger: string; prevTrigger: string; indicatorGroup: string; indicator: (index: number) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the carousel. Useful for composition."
@@ -1494,7 +1501,7 @@
             },
             {
               "name": "snapType",
-              "type": "'proximity' | 'mandatory' | undefined",
+              "type": "'mandatory' | 'proximity' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The snap type of the item."
@@ -1613,7 +1620,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; label: string; control: string; trigger: string; indicator: string; clearTrigger: string; positioner: string; content: string; hiddenInput: string; list(valuePath: string): string; item(valuePath: string): string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the cascade-select elements. Useful for composition."
@@ -1828,13 +1835,13 @@
             },
             {
               "name": "indicator",
-              "type": "'line' | 'dot' | 'dashed'",
+              "type": "'dashed' | 'dot' | 'line'",
               "required": false,
               "kind": "own"
             },
             {
               "name": "legend",
-              "type": "boolean | 'top' | 'bottom'",
+              "type": "'bottom' | 'top' | boolean",
               "required": false,
               "kind": "own"
             },
@@ -1983,7 +1990,7 @@
             },
             {
               "name": "indicator",
-              "type": "'line' | 'dot' | 'dashed'",
+              "type": "'dashed' | 'dot' | 'line'",
               "required": false,
               "kind": "own"
             },
@@ -2003,7 +2010,7 @@
             },
             {
               "name": "legend",
-              "type": "boolean | 'top' | 'bottom'",
+              "type": "'bottom' | 'top' | boolean",
               "required": false,
               "kind": "own"
             },
@@ -2135,7 +2142,7 @@
             },
             {
               "name": "verticalAlign",
-              "type": "'top' | 'bottom'",
+              "type": "'bottom' | 'top'",
               "required": false,
               "kind": "own"
             }
@@ -2199,13 +2206,13 @@
             },
             {
               "name": "indicator",
-              "type": "'line' | 'dot' | 'dashed'",
+              "type": "'dashed' | 'dot' | 'line'",
               "required": false,
               "kind": "own"
             },
             {
               "name": "legend",
-              "type": "boolean | 'top' | 'bottom'",
+              "type": "'bottom' | 'top' | boolean",
               "required": false,
               "kind": "own"
             },
@@ -2328,7 +2335,7 @@
             },
             {
               "name": "indicator",
-              "type": "'line' | 'dot' | 'dashed'",
+              "type": "'dashed' | 'dot' | 'line'",
               "required": false,
               "kind": "own"
             },
@@ -2341,7 +2348,7 @@
             },
             {
               "name": "legend",
-              "type": "boolean | 'top' | 'bottom'",
+              "type": "'bottom' | 'top' | boolean",
               "required": false,
               "kind": "own"
             },
@@ -2426,7 +2433,7 @@
             },
             {
               "name": "indicator",
-              "type": "'line' | 'dot' | 'dashed'",
+              "type": "'dashed' | 'dot' | 'line'",
               "required": false,
               "kind": "own"
             },
@@ -2554,7 +2561,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; hiddenInput: string; control: string; label: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the checkbox. Useful for composition."
@@ -2631,7 +2638,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; input: string; label: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the clipboard. Useful for composition."
@@ -2753,7 +2760,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; content: string; trigger: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the collapsible. Useful for composition."
@@ -2884,7 +2891,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; control: string; trigger: string; label: string; input: string; hiddenInput: string; content: string; area: string; areaGradient: string; positioner: string; formatSelect: string; areaThumb: string; channelInput: (id: string) => string; channelSliderTrack: (id: ColorChannel) => string; channelSliderThumb: (id: ColorChannel) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the color picker. Useful for composition."
@@ -3182,14 +3189,14 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; label: string; control: string; input: string; content: string; trigger: string; clearTrigger: string; item: (id: string, index?: number) => string; positioner: string; itemGroup: (id: string | number) => string; itemGroupLabel: (id: string | number) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the combobox. Useful for composition."
             },
             {
               "name": "inputBehavior",
-              "type": "'none' | 'autohighlight' | 'autocomplete' | undefined",
+              "type": "'autocomplete' | 'autohighlight' | 'none' | undefined",
               "required": false,
               "kind": "machine",
               "description": "Defines the auto-completion behavior of the combobox.\n\n- `autohighlight`: The first focused item is highlighted as the user types\n- `autocomplete`: Navigating the listbox with the arrow keys selects the item and the input is updated"
@@ -3363,7 +3370,7 @@
             },
             {
               "name": "selectionBehavior",
-              "type": "'clear' | 'replace' | 'preserve' | undefined",
+              "type": "'clear' | 'preserve' | 'replace' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The behavior of the combobox input when an item is selected\n\n- `replace`: The selected item string is set as the input value\n- `clear`: The input value is cleared\n- `preserve`: The input value is preserved"
@@ -3522,14 +3529,14 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; label: string; control: string; input: string; content: string; trigger: string; clearTrigger: string; item: (id: string, index?: number) => string; positioner: string; itemGroup: (id: string | number) => string; itemGroupLabel: (id: string | number) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the combobox. Useful for composition."
             },
             {
               "name": "inputBehavior",
-              "type": "'none' | 'autohighlight' | 'autocomplete' | undefined",
+              "type": "'autocomplete' | 'autohighlight' | 'none' | undefined",
               "required": false,
               "kind": "machine",
               "description": "Defines the auto-completion behavior of the combobox.\n\n- `autohighlight`: The first focused item is highlighted as the user types\n- `autocomplete`: Navigating the listbox with the arrow keys selects the item and the input is updated"
@@ -3690,7 +3697,7 @@
             },
             {
               "name": "selectionBehavior",
-              "type": "'clear' | 'replace' | 'preserve' | undefined",
+              "type": "'clear' | 'preserve' | 'replace' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The behavior of the combobox input when an item is selected\n\n- `replace`: The selected item string is set as the input value\n- `clear`: The input value is cleared\n- `preserve`: The input value is preserved"
@@ -3804,7 +3811,7 @@
               "type": "(childService: menu.Service) => void",
               "required": false,
               "kind": "own",
-              "description": "Fires once this submenu's own raw service exists (on mount), so the\nparent can complete the link with `parentApi().setChild(childService)` —\n`setChild` needs the RAW service (see menu.connect's `child.prop(\"id\")`),\nwhich only exists after this component's own `<service>` has mounted."
+              "description": "Fires once this submenu's own raw service exists (on mount), so the\nparent can complete the link with `parentApi().setChild(childService)` —\n`setChild` needs the RAW service (see menu.connect's `child.prop(\"id\")`),\nwhich only exists after this component's own `<zag-machine>` has mounted."
             }
           ],
           "machineModule": "@zag-js/menu"
@@ -3851,7 +3858,7 @@
           "properties": [
             {
               "name": "allSegments",
-              "type": "Partial<{ year: boolean; month: boolean; day: boolean; hour: boolean; minute: boolean; second: boolean; dayPeriod: boolean; era: boolean; literal: boolean; timeZoneName: boolean; weekday: boolean; unknown: boolean; fractionalSecond: boolean; }> | undefined",
+              "type": "Segments | undefined",
               "required": false,
               "kind": "machine",
               "description": "The computed segments map for the formatter."
@@ -3946,7 +3953,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; label: (index: number) => string; control: string; segmentGroup: (index: number) => string; hiddenInput: (index: number) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the date input. Useful for composition."
@@ -4110,10 +4117,10 @@
             },
             {
               "name": "defaultFocusedValue",
-              "type": "DateValue | undefined",
+              "type": "string",
               "required": false,
-              "kind": "machine",
-              "description": "The initial focused date when rendered.\nUse when you don't need to control the focused date of the date picker."
+              "kind": "own",
+              "description": "Initial visible-month focus, as an ISO date string (`YYYY-MM-DD`).\nPins the SSR-rendered month instead of falling back to the browser's\nwall-clock \"today\" (`getTodayDate`), which would otherwise make SSR\nand hydrated markup diverge near midnight or across timezones."
             },
             {
               "name": "defaultOpen",
@@ -4159,10 +4166,10 @@
             },
             {
               "name": "focusedValue",
-              "type": "DateValue | undefined",
+              "type": "string",
               "required": false,
-              "kind": "machine",
-              "description": "The controlled focused date."
+              "kind": "own",
+              "description": "Controlled visible-month focus, as an ISO date string (`YYYY-MM-DD`)."
             },
             {
               "name": "format",
@@ -4180,7 +4187,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; label: (index: number) => string; table: (id: string) => string; tableHeader: (id: string) => string; tableBody: (id: string) => string; tableRow: (id: string) => string; content: string; cellTrigger: (id: string) => string; prevTrigger: (view: DateView) => string; nextTrigger: (view: DateView) => string; viewTrigger: (view: DateView) => string; clearTrigger: string; control: string; input: (index: number) => string; trigger: string; monthSelect: string; yearSelect: string; positioner: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the date picker. Useful for composition."
@@ -4499,7 +4506,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ trigger: string | ((value?: string) => string); positioner: string; backdrop: string; content: string; closeTrigger: string; title: string; description: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the dialog. Useful for composition."
@@ -4603,7 +4610,7 @@
             },
             {
               "name": "role",
-              "type": "'dialog' | 'alertdialog' | undefined",
+              "type": "'alertdialog' | 'dialog' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The dialog's role"
@@ -4785,7 +4792,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ backdrop: string; positioner: string; content: string; title: string; description: string; header: string; trigger: string | ((value?: string) => string); grabber: string; grabberIndicator: string; closeTrigger: string; swipeArea: string; }>",
+              "type": "ElementIds",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the drawer. Useful for composition."
@@ -4897,7 +4904,7 @@
             },
             {
               "name": "role",
-              "type": "'dialog' | 'alertdialog' | undefined",
+              "type": "'alertdialog' | 'dialog' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The sheet's role"
@@ -5059,10 +5066,10 @@
             },
             {
               "name": "trigger",
-              "type": "Marko.AttrTag<{ content: Marko.Body<[menu.Api]>; }>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[() => menu.Api]>; }>",
               "required": true,
               "kind": "own",
-              "description": "Trigger render-prop: receives this submenu's connected api so the caller\n(the parent menu's item loop) can build the row with\n`parentApi().getTriggerItemProps(childApi)`."
+              "description": "Trigger render-prop: receives a GETTER for this submenu's connected api\n(never the live api object itself — see the invocation site below for\nwhy) so the caller (the parent menu's item loop) can build the row with\n`parentApi().getTriggerItemProps(childApi())`."
             },
             {
               "name": "disabled",
@@ -5088,7 +5095,7 @@
               "type": "(childService: menu.Service) => void",
               "required": false,
               "kind": "own",
-              "description": "Fires once this submenu's own raw service exists (on mount), so the\nparent can complete the link with `parentApi().setChild(childService)` —\n`setChild` needs the RAW service (see menu.connect's `child.prop(\"id\")`),\nwhich only exists after this component's own `<service>` has mounted."
+              "description": "Fires once this submenu's own raw service exists (on mount), so the\nparent can complete the link with `parentApi().setChild(childService)` —\n`setChild` needs the RAW service (see menu.connect's `child.prop(\"id\")`),\nwhich only exists after this component's own `<zag-machine>` has mounted."
             }
           ],
           "machineModule": "@zag-js/menu"
@@ -5181,7 +5188,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; area: string; label: string; preview: string; input: string; control: string; submitTrigger: string; cancelTrigger: string; editTrigger: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the editable. Useful for composition."
@@ -5410,7 +5417,7 @@
           "properties": [
             {
               "name": "errors",
-              "type": "FieldErrorLike | readonly FieldErrorLike[]",
+              "type": "readonly FieldErrorLike[] | FieldErrorLike",
               "required": false,
               "kind": "own",
               "description": "One error, or a list of them. Each entry may be a plain message string or any\nobject carrying a `message` — the shape of a Standard Schema issue, so output\nfrom valibot, zod or arktype passes through unchanged. Duplicates are removed.\n\nIgnored when body content is provided."
@@ -5481,7 +5488,7 @@
             },
             {
               "name": "orientation",
-              "type": "'horizontal' | 'vertical' | 'responsive' | null | undefined",
+              "type": "'horizontal' | 'responsive' | 'vertical' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -5505,7 +5512,7 @@
           "properties": [
             {
               "name": "accept",
-              "type": "Record<string, string[]> | FileMimeType | FileMimeType[] | undefined",
+              "type": "FileMimeType[] | Record<string, string[]> | FileMimeType | undefined",
               "required": false,
               "kind": "machine",
               "description": "The accept file types"
@@ -5526,7 +5533,7 @@
             },
             {
               "name": "capture",
-              "type": "'user' | 'environment' | undefined",
+              "type": "'environment' | 'user' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The default camera to use when capturing media"
@@ -5574,7 +5581,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; dropzone: string; hiddenInput: string; trigger: string; label: string; item: (id: string) => string; itemName: (id: string) => string; itemSizeText: (id: string) => string; itemPreview: (id: string) => string; itemDeleteTrigger: (id: string) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements. Useful for composition."
@@ -5819,7 +5826,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ trigger: string; positioner: string; content: string; title: string; header: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the floating panel. Useful for composition."
@@ -6085,7 +6092,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ trigger: string | ((value?: string) => string); content: string; positioner: string; arrow: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the popover. Useful for composition."
@@ -6222,7 +6229,7 @@
             },
             {
               "name": "aspectRatio",
-              "type": "number",
+              "type": "number | undefined",
               "required": false,
               "kind": "machine",
               "description": "The aspect ratio to maintain for the crop area (width / height).\nFor example, an aspect ratio of 16 / 9 will maintain a width to height ratio of 16:9.\nIf not provided, the crop area can be freely resized."
@@ -6236,28 +6243,28 @@
             },
             {
               "name": "cropShape",
-              "type": "'circle' | 'rectangle'",
+              "type": "'circle' | 'rectangle' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The shape of the crop area."
             },
             {
               "name": "defaultFlip",
-              "type": "FlipState",
+              "type": "FlipState | undefined",
               "required": false,
               "kind": "machine",
               "description": "The initial flip state to apply to the image."
             },
             {
               "name": "defaultRotation",
-              "type": "number",
+              "type": "number | undefined",
               "required": false,
               "kind": "machine",
               "description": "The initial rotation to apply to the image in degrees."
             },
             {
               "name": "defaultZoom",
-              "type": "number",
+              "type": "number | undefined",
               "required": false,
               "kind": "machine",
               "description": "The initial zoom factor to apply to the image."
@@ -6271,14 +6278,14 @@
             },
             {
               "name": "fixedCropArea",
-              "type": "boolean",
+              "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
               "description": "Whether the crop area is fixed in size and position."
             },
             {
               "name": "flip",
-              "type": "FlipState",
+              "type": "FlipState | undefined",
               "required": false,
               "kind": "machine",
               "description": "The controlled flip state of the image."
@@ -6306,77 +6313,77 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; viewport: string; image: string; selection: string; handle: (position: string) => string; }>",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the image cropper elements"
             },
             {
               "name": "initialCrop",
-              "type": "Rect",
+              "type": "Rect | undefined",
               "required": false,
               "kind": "machine",
               "description": "The initial rectangle of the crop area.\nIf not provided, a smart default will be computed based on viewport size and aspect ratio."
             },
             {
               "name": "maxHeight",
-              "type": "number",
+              "type": "number | undefined",
               "required": false,
               "kind": "machine",
               "description": "The maximum height of the crop area"
             },
             {
               "name": "maxWidth",
-              "type": "number",
+              "type": "number | undefined",
               "required": false,
               "kind": "machine",
               "description": "The maximum width of the crop area"
             },
             {
               "name": "maxZoom",
-              "type": "number",
+              "type": "number | undefined",
               "required": false,
               "kind": "machine",
               "description": "The maximum zoom factor allowed."
             },
             {
               "name": "minHeight",
-              "type": "number",
+              "type": "number | undefined",
               "required": false,
               "kind": "machine",
               "description": "The minimum height of the crop area"
             },
             {
               "name": "minWidth",
-              "type": "number",
+              "type": "number | undefined",
               "required": false,
               "kind": "machine",
               "description": "The minimum width of the crop area"
             },
             {
               "name": "minZoom",
-              "type": "number",
+              "type": "number | undefined",
               "required": false,
               "kind": "machine",
               "description": "The minimum zoom factor allowed."
             },
             {
               "name": "nudgeStep",
-              "type": "number",
+              "type": "number | undefined",
               "required": false,
               "kind": "machine",
               "description": "The base nudge step for keyboard arrow keys (in pixels)."
             },
             {
               "name": "nudgeStepCtrl",
-              "type": "number",
+              "type": "number | undefined",
               "required": false,
               "kind": "machine",
               "description": "The nudge step when Ctrl/Cmd key is held (in pixels)."
             },
             {
               "name": "nudgeStepShift",
-              "type": "number",
+              "type": "number | undefined",
               "required": false,
               "kind": "machine",
               "description": "The nudge step when Shift key is held (in pixels)."
@@ -6411,7 +6418,7 @@
             },
             {
               "name": "rotation",
-              "type": "number",
+              "type": "number | undefined",
               "required": false,
               "kind": "machine",
               "description": "The controlled rotation of the image in degrees (0 - 360)."
@@ -6432,14 +6439,14 @@
             },
             {
               "name": "translations",
-              "type": "IntlTranslations",
+              "type": "IntlTranslations | undefined",
               "required": false,
               "kind": "machine",
               "description": "Specifies the localized strings that identify accessibility elements and their states."
             },
             {
               "name": "zoom",
-              "type": "number",
+              "type": "number | undefined",
               "required": false,
               "kind": "machine",
               "description": "The controlled zoom level of the image."
@@ -6453,14 +6460,14 @@
             },
             {
               "name": "zoomSensitivity",
-              "type": "number",
+              "type": "number | undefined",
               "required": false,
               "kind": "machine",
               "description": "Controls how responsive pinch-to-zoom is."
             },
             {
               "name": "zoomStep",
-              "type": "number",
+              "type": "number | undefined",
               "required": false,
               "kind": "machine",
               "description": "The amount of zoom applied per wheel step."
@@ -6492,7 +6499,7 @@
           "properties": [
             {
               "name": "align",
-              "type": "'inline-start' | 'inline-end' | 'block-start' | 'block-end' | null | undefined",
+              "type": "'block-end' | 'block-start' | 'inline-end' | 'inline-start' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -6512,7 +6519,7 @@
           "properties": [
             {
               "name": "size",
-              "type": "'sm' | 'xs' | 'icon-xs' | 'icon-sm' | null | undefined",
+              "type": "'icon-sm' | 'icon-xs' | 'sm' | 'xs' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -6638,7 +6645,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; hiddenInput: string; label: string; control: string; input: (id: string) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the pin input. Useful for composition."
@@ -6749,7 +6756,7 @@
             },
             {
               "name": "type",
-              "type": "'alphanumeric' | 'numeric' | 'alphabetic' | undefined",
+              "type": "'alphabetic' | 'alphanumeric' | 'numeric' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The type of value the pin-input should allow"
@@ -6837,7 +6844,7 @@
             },
             {
               "name": "variant",
-              "type": "'default' | 'outline' | 'muted' | null | undefined",
+              "type": "'default' | 'muted' | 'outline' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -6856,7 +6863,7 @@
           "properties": [
             {
               "name": "variant",
-              "type": "'image' | 'default' | 'icon' | null | undefined",
+              "type": "'default' | 'icon' | 'image' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -6982,7 +6989,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; content: string; label: string; item: (id: string | number) => string; itemGroup: (id: string | number) => string; itemGroupLabel: (id: string | number) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the listbox. Useful for composition."
@@ -7116,7 +7123,7 @@
             },
             {
               "name": "variant",
-              "type": "'default' | 'separator' | 'border' | null | undefined",
+              "type": "'border' | 'default' | 'separator' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -7181,7 +7188,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; viewport: string; content: (index: number) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the marquee. Useful for composition."
@@ -7375,10 +7382,10 @@
             },
             {
               "name": "trigger",
-              "type": "Marko.AttrTag<{ content: Marko.Body<[menu.Api]>; }>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[() => menu.Api]>; }>",
               "required": true,
               "kind": "own",
-              "description": "Trigger render-prop: receives this submenu's connected api so the caller\n(the parent menu's item loop) can build the row with\n`parentApi().getTriggerItemProps(childApi)`."
+              "description": "Trigger render-prop: receives a GETTER for this submenu's connected api\n(never the live api object itself — see the invocation site below for\nwhy) so the caller (the parent menu's item loop) can build the row with\n`parentApi().getTriggerItemProps(childApi())`."
             },
             {
               "name": "disabled",
@@ -7404,7 +7411,7 @@
               "type": "(childService: menu.Service) => void",
               "required": false,
               "kind": "own",
-              "description": "Fires once this submenu's own raw service exists (on mount), so the\nparent can complete the link with `parentApi().setChild(childService)` —\n`setChild` needs the RAW service (see menu.connect's `child.prop(\"id\")`),\nwhich only exists after this component's own `<service>` has mounted."
+              "description": "Fires once this submenu's own raw service exists (on mount), so the\nparent can complete the link with `parentApi().setChild(childService)` —\n`setChild` needs the RAW service (see menu.connect's `child.prop(\"id\")`),\nwhich only exists after this component's own `<zag-machine>` has mounted."
             }
           ],
           "machineModule": "@zag-js/menu"
@@ -7450,7 +7457,7 @@
           "properties": [
             {
               "name": "align",
-              "type": "'start' | 'end'",
+              "type": "'end' | 'start'",
               "required": false,
               "kind": "own"
             }
@@ -7482,7 +7489,7 @@
             },
             {
               "name": "direction",
-              "type": "'start' | 'end'",
+              "type": "'end' | 'start'",
               "required": false,
               "kind": "own",
               "description": "Transcript edge to scroll toward. Defaults to \"end\"."
@@ -7663,7 +7670,7 @@
           "properties": [
             {
               "name": "align",
-              "type": "'start' | 'end' | 'center'",
+              "type": "'center' | 'end' | 'start'",
               "required": false,
               "kind": "own",
               "description": "Alignment of the shared viewport relative to the active trigger."
@@ -7733,7 +7740,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; list: string; item: string; trigger: (value: string) => string; content: (value: string) => string; viewport: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the machine."
@@ -7871,7 +7878,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; label: string; input: string; incrementTrigger: string; decrementTrigger: string; scrubber: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the number input. Useful for composition."
@@ -8080,7 +8087,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; ellipsis: (index: number) => string; firstTrigger: string; prevTrigger: string; nextTrigger: string; lastTrigger: string; item: (page: number) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the accordion. Useful for composition."
@@ -8191,7 +8198,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ input: string; visibilityTrigger: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the password input parts"
@@ -8246,7 +8253,7 @@
             },
             {
               "name": "translations",
-              "type": "Partial<{ visibilityTrigger: ((visible: boolean) => string) | undefined; }> | undefined",
+              "type": "IntlTranslations | undefined",
               "required": false,
               "kind": "machine",
               "description": "The localized messages to use."
@@ -8369,7 +8376,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ anchor: string; trigger: string | ((value?: string) => string); content: string; title: string; description: string; closeTrigger: string; positioner: string; arrow: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the popover. Useful for composition."
@@ -8542,7 +8549,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; track: string; label: string; circle: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the progress bar. Useful for composition."
@@ -8652,7 +8659,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; frame: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The element ids."
@@ -8680,7 +8687,7 @@
             },
             {
               "name": "size",
-              "type": "'default' | 'sm' | 'lg' | null | undefined",
+              "type": "'default' | 'lg' | 'sm' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -8754,7 +8761,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; label: string; indicator: string; item: (value: string) => string; itemLabel: (value: string) => string; itemControl: (value: string) => string; itemHiddenInput: (value: string) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the radio. Useful for composition."
@@ -8897,7 +8904,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; label: string; hiddenInput: string; control: string; item: (id: string) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the rating. Useful for composition."
@@ -9098,7 +9105,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; viewport: string; content: string; scrollbar: string; thumb: string; }>",
+              "type": "ElementIds",
               "required": false,
               "kind": "machine",
               "description": "The ids of the scroll area elements"
@@ -9216,7 +9223,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; content: string; control: string; trigger: string; clearTrigger: string; label: string; hiddenSelect: string; positioner: string; item: (id: string | number) => string; itemGroup: (id: string | number) => string; itemGroupLabel: (id: string | number) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the select. Useful for composition."
@@ -9498,7 +9505,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ trigger: string | ((value?: string) => string); positioner: string; backdrop: string; content: string; closeTrigger: string; title: string; description: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the dialog. Useful for composition."
@@ -9602,7 +9609,7 @@
             },
             {
               "name": "role",
-              "type": "'dialog' | 'alertdialog' | undefined",
+              "type": "'alertdialog' | 'dialog' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The dialog's role"
@@ -9616,7 +9623,7 @@
             },
             {
               "name": "side",
-              "type": "'top' | 'bottom' | 'right' | 'left'",
+              "type": "'bottom' | 'left' | 'right' | 'top'",
               "required": false,
               "kind": "own",
               "description": "`\"top\" | \"right\" | \"bottom\" | \"left\"` — which edge the sheet slides in from."
@@ -9750,7 +9757,7 @@
             },
             {
               "name": "size",
-              "type": "'default' | 'sm' | 'lg' | null | undefined",
+              "type": "'default' | 'lg' | 'sm' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -9805,7 +9812,7 @@
             },
             {
               "name": "size",
-              "type": "'sm' | 'md'",
+              "type": "'md' | 'sm'",
               "required": false,
               "kind": "own"
             }
@@ -9835,7 +9842,7 @@
           "name": "provider",
           "properties": [
             {
-              "name": "content",
+              "name": "main",
               "type": "Marko.Body<[{ open: boolean; toggle: () => void; }], void>",
               "required": false,
               "kind": "own",
@@ -9917,7 +9924,7 @@
           "properties": [
             {
               "name": "collapsible",
-              "type": "'none' | 'icon' | 'offcanvas'",
+              "type": "'icon' | 'none' | 'offcanvas'",
               "required": false,
               "kind": "own"
             },
@@ -9936,13 +9943,13 @@
             },
             {
               "name": "side",
-              "type": "'right' | 'left'",
+              "type": "'left' | 'right'",
               "required": false,
               "kind": "own"
             },
             {
               "name": "variant",
-              "type": "'sidebar' | 'floating' | 'inset'",
+              "type": "'floating' | 'inset' | 'sidebar'",
               "required": false,
               "kind": "own"
             }
@@ -10026,7 +10033,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; control: string; hiddenInput: string; label: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the signature pad elements. Useful for composition."
@@ -10163,7 +10170,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; thumb: (index: number) => string; hiddenInput: (index: number) => string; control: string; track: string; range: string; label: string; valueText: string; marker: (index: number) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the slider. Useful for composition."
@@ -10240,7 +10247,7 @@
             },
             {
               "name": "origin",
-              "type": "'start' | 'end' | 'center' | undefined",
+              "type": "'center' | 'end' | 'start' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The origin of the slider range. The track is filled from the origin\nto the thumb for single values.\n- \"start\": Useful when the value represents an absolute value\n- \"center\": Useful when the value represents an offset (relative)\n- \"end\": Useful when the value represents an offset from the end"
@@ -10309,7 +10316,7 @@
           "properties": [
             {
               "name": "theme",
-              "type": "'light' | 'dark' | 'system'",
+              "type": "'dark' | 'light' | 'system'",
               "required": false,
               "kind": "own",
               "description": "Accepted for source-shape parity with sonner's `ToasterProps[\"theme\"]`.\nINERT: see file header. Threaded into `style` as `--sonner-theme` only."
@@ -10523,7 +10530,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; hiddenInput: string; control: string; label: string; thumb: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the switch. Useful for composition."
@@ -10709,7 +10716,7 @@
           "properties": [
             {
               "name": "activationMode",
-              "type": "'manual' | 'automatic' | undefined",
+              "type": "'automatic' | 'manual' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The activation mode of the tabs. Can be `manual` or `automatic`\n- `manual`: Tabs are activated when clicked or press `enter` key.\n- `automatic`: Tabs are activated when receiving focus"
@@ -10757,7 +10764,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; trigger: (value: string) => string; list: string; content: (value: string) => string; indicator: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the tabs. Useful for composition."
@@ -10837,7 +10844,7 @@
             },
             {
               "name": "variant",
-              "type": "'line' | 'default' | null | undefined",
+              "type": "'default' | 'line' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -10890,7 +10897,7 @@
             },
             {
               "name": "blurBehavior",
-              "type": "'clear' | 'add' | undefined",
+              "type": "'add' | 'clear' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The behavior of the tags input when the input is blurred\n- `\"add\"`: add the input value as a new tag\n- `\"clear\"`: clear the input value"
@@ -10959,7 +10966,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; input: string; hiddenInput: string; clearBtn: string; label: string; control: string; item: (opts: ItemProps) => string; itemDeleteTrigger: (opts: ItemProps) => string; itemInput: (opts: ItemProps) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the tags input. Useful for composition."
@@ -11169,7 +11176,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; area: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the timer parts"
@@ -11244,11 +11251,11 @@
           "name": "toast-item",
           "properties": [
             {
-              "name": "groupRevision",
-              "type": "number",
+              "name": "group",
+              "type": "() => unknown",
               "required": true,
               "kind": "own",
-              "description": "The group service's update counter.\n\nHalf of this machine's rendered geometry comes from the PARENT's context —\n`computed(\"height\")`, `heightIndex`, `heightBefore` and `zIndex` all read\n`prop(\"parent\").context`. A group update therefore has to invalidate this\nchild's connected api, and reading the counter inside `machineProps` is\nwhat makes `<service>`'s tracking script call `propsChanged()` here."
+              "description": "The group service getter.\n\nHalf of this machine's rendered geometry comes from the PARENT's context —\n`computed(\"height\")`, `heightIndex`, `heightBefore` and `zIndex` all read\n`prop(\"parent\").context`. A group update therefore has to invalidate this\nchild's connected api, and reading the getter inside `props=` is what\nmakes the parent's notify invalidate this child too — its identity\nchanges on every group update."
             },
             {
               "name": "index",
@@ -11287,7 +11294,7 @@
           "properties": [
             {
               "name": "dir",
-              "type": "import(\"/Users/svallory/work/marko-ui/worktrees/main/node_modules/.bun/marko@6.3.34/node_modules/marko/tags-html\").AttrMissing | 'ltr' | 'rtl' | 'auto'",
+              "type": "'auto' | 'ltr' | 'rtl' | import('marko/tags-html').AttrMissing",
               "required": false,
               "kind": "own",
               "description": "Text direction passed to the group machine.\n\nTyped as the full HTML `dir` surface, not just `\"ltr\" | \"rtl\"`: this Input\nextends `Marko.Input<\"div\">`, and re-declaring `dir` more narrowly than\nthe attribute it inherits makes every `...rest` spread from a div-shaped\nparent (e.g. `sonner.marko`) a type error. `\"auto\"` and the absent values\nare normalized away below, since Zag's group machine accepts only the two\nconcrete directions."
@@ -11376,7 +11383,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; title: string; list: string; item: (value: string) => string; link: (value: string) => string; indicator: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the TOC. Useful for composition."
@@ -11450,7 +11457,7 @@
             },
             {
               "name": "size",
-              "type": "'default' | 'sm' | 'lg' | null | undefined",
+              "type": "'default' | 'lg' | 'sm' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -11520,7 +11527,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; item: (value: string) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the toggle. Useful for composition."
@@ -11698,7 +11705,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ trigger: string | ((value?: string) => string); content: string; arrow: string; positioner: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the tooltip. Useful for composition."
@@ -11802,7 +11809,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ content: string; title: string; description: string; positioner: string; backdrop: string; arrow: string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the elements in the tour. Useful for composition."
@@ -12024,7 +12031,7 @@
             },
             {
               "name": "ids",
-              "type": "Partial<{ root: string; tree: string; label: string; node: (value: string) => string; }> | undefined",
+              "type": "ElementIds | undefined",
               "required": false,
               "kind": "machine",
               "description": "The ids of the tree elements. Useful for composition."
