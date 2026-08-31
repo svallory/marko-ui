@@ -48,10 +48,10 @@ NODE_OPTIONS="--max-old-space-size=8192" marko-type-check -p . -d condensed
 
 **"0 errors" is the `packages/shadcn` project, not the root command.** Scope matters when you compare runs, because `bun run check` fans out over every package and the three numbers differ:
 
-| Command | Scope | Count on `main` (2026-08-28) |
+| Command | Scope | Count on `main` (2026-08-31) |
 |---|---|---|
 | `NODE_OPTIONS="--max-old-space-size=8192" bunx marko-type-check -p packages/shadcn -d condensed` | the registry components | **0** |
-| `cd apps/docs && NODE_OPTIONS="--max-old-space-size=8192" bunx marko-type-check -p ./tsconfig.json -d condensed` | the docs site | **15242** — overwhelmingly pre-existing, in `src/_blocks/` |
+| `cd apps/docs && NODE_OPTIONS="--max-old-space-size=8192" bunx marko-type-check -p ./tsconfig.json -d condensed` | the docs site | **194** — 190 in `src/_blocks/`, pre-existing; the rest scattered singletons unrelated to shadcn |
 | `bun run check` | both of the above plus `check:tooling` | fails; its total also re-reports the shadcn errors through the docs project |
 
 So "the gate is green" is a claim about `packages/shadcn` alone. When judging whether a change regressed types, compare the **same scope** before and after against `main` — a raw root-command total is dominated by the pre-existing `_blocks/` errors and will hide a one-error regression.
