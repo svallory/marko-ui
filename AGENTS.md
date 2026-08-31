@@ -68,6 +68,22 @@ Behavior tests (`packages/shadcn/tests/behavior/`) drive real Playwright against
 
 **Always start the dev server on an explicit port and pass `DOCS_BASE_URL`.** Port 3000 on the maintainer's machine is held by an unrelated app that answers HTTP 200 on every path with zero `section[data-demo]` elements; both the behavior tests and `e2e/verify-matrix.spec.ts` default to `http://localhost:3000`, so a stale listener there produces mass failures that look like component regressions but are not. Verify with `curl -s localhost:3000 | grep -o '<title>[^<]*'` before trusting any run.
 
+**The verify matrix reproduces interaction bugs only against a PRODUCTION build.** The `e2e/verify-matrix.spec.ts` failures that CI's "Style-matrix e2e" job reports are minified-bundle failures; the dev server's unminified single-instance path can hide them. The recipe that reproduces CI locally, and the one to use for any interaction regression:
+
+```bash
+cd apps/docs && bun run build                       # prod bundle
+PORT=4400 node dist/index.mjs &                     # explicit port, never 3000
+DOCS_BASE_URL=http://localhost:4400 bunx playwright test -g "dropdown-menu|menubar"
+```
+
+A prod build serves instantly (no cold-compile wait) and needs no `--update-snapshots`. To map a minified frame such as `TypeError: e._.j is not a function` back to source, add `build: { minify: false }` to `apps/docs/vite.config.ts`, rebuild, and read the real identifiers (`$scope._.j`, `closureSignal`, `_closure_get`) — then **revert the config**; it is a diagnostic, not a committed setting.
+
+**Never read a parent component's `api()` from inside a child's attr-tag body.** An `<@trigger>`/attr-tag body is owned by the PARENT's template, so an `api()` written there compiles to a raw scope walk (`$scope._._._._._.<slot>()`) plus a `subscribeToScopeSet` on the parent's api signal. When the child mounts, that notify makes Marko's `_closure` re-queue the subscribed child scopes, and the parent's `<const/api=() => connect(...)>` slot is not assigned on that pass — the walk hits an empty slot and throws `TypeError: $scope._.<slot> is not a function` (a mangled `e._.j` / `e._.l` / `e._.k` in a minified build; the letter is just the parent's api slot). The parent's `<const/api>` is assigned only on the **resume** segment, and a popover/menu opened after hydration renders its portal body client-side only, so on that path the slot is never populated at all. This bit dropdown-menu, menubar and context-menu simultaneously (fixed 2026-08-30): the crash count matches the mounted-submenu count exactly, 1:1.
+
+The fix is to route the parent api through **tag input** as a closure (`parentApi=() => api()`) and let the child compute the merged props in its own `<const>`, handing the caller's body a finished plain object. Closures written in a template are the only serializable currency across a tag boundary — the same rule the SSR-safe Zag pattern already states for services.
+
+**A component whose trigger is not a `button`/`[role=button]` is NOT covered by the verify matrix's interaction pass.** `INTERACTIVE_SELECTOR` only clicks those, so context-menu (a plain `<div>` trigger opened by `contextmenu`) sat green in CI while carrying the identical crash — the bug was found only by dispatching `contextmenu` by hand. Green on the matrix means "no error on the paths it actually exercises"; verify a non-button trigger manually before calling it working.
+
 The first request to a `/verify/*` route pays a **multi-minute cold Vite compile of all 765 generated routes** (the router imports every one). Warm it with a long-timeout `curl` before pointing Playwright at it, or `page.goto` times out; a request that fails during that window poisons Vite's module cache, and only a dev-server restart clears it. Behavior tests additionally use `waitUntil: "networkidle"`, which the dev server's open HMR websocket can keep from ever settling — those timeouts reproduce on `main` and are not caused by component changes. Playwright is resolved from the global homebrew install, not the workspace. SSR/unit tests (`packages/marko-ui/tests/`, `packages/shadcn/tests/hydration-invariant.test.ts`) need no server.
 
 ## The verify matrix: never update snapshots
