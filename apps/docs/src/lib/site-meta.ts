@@ -17,7 +17,18 @@ import { CHART_TYPES } from "./charts-list.ts";
 
 export const SITE_NAME = "marko-ui";
 export const SITE_TAGLINE = "shadcn for Marko";
-export const SITE_URL = "https://marko-ui.saulo.tech";
+// VITE_-prefixed so Vite inlines it at build time for both server and
+// client bundles (see lib/component-page-data.ts for what breaks when a
+// module read this way is also imported by client-bundled code and uses
+// plain `process.env` instead — that throws "process is not defined" on
+// hydration). This module is imported by the client-bundled Get Code
+// drawer (tags/typeset/lib/docs-content.ts), so it needs the same care.
+// `ImportMeta.env` isn't ambient here (no `vite/client` types package in
+// this workspace), so read through `import.meta` cast to `Record<string,
+// string | undefined>` rather than adding a dependency for one property.
+export const SITE_URL =
+  (import.meta as unknown as { env: Record<string, string | undefined> }).env
+    .VITE_SITE_URL ?? "https://marko-ui.saulo.tech";
 export const SITE_LOCALE = "en_US";
 export const DEFAULT_DESCRIPTION =
   "Accessible, copy-paste components for Marko 6, styled with Tailwind v4 and driven by Zag.js state machines. Open Source. Open Code.";

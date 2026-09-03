@@ -12,7 +12,7 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<QrCode>`,
   importSnippet: `import QrCode from "@/components/ui/qr-code/qr-code.marko";`,
-  usageSnippet: `<QrCode value="https://marko-ui.dev"/>`,
+  usageSnippet: `<QrCode value="https://example.com"/>`,
   examples: [
     {
       name: "qr-code-demo",

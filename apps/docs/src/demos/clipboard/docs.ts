@@ -11,7 +11,7 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Clipboard>`,
   importSnippet: `import Clipboard from "@/components/ui/clipboard/clipboard.marko";`,
-  usageSnippet: `<Clipboard label="Link" value="https://marko-ui.dev"/>`,
+  usageSnippet: `<Clipboard label="Link" value="https://example.com"/>`,
   examples: [
     {
       name: "clipboard-demo",
