@@ -4,6 +4,7 @@
 // that has not actually landed in the registry.
 import BeyondCard from "./beyond-card.marko";
 import { BEYOND_SHADCN_AVAILABLE } from "../../lib/components-list.ts";
+import { SITE_URL } from "../../lib/site-meta.ts";
 
 import AngleSlider from "@marko-ui/shadcn/ui/angle-slider/angle-slider.marko";
 import CascadeSelect from "@marko-ui/shadcn/ui/cascade-select/cascade-select.marko";
@@ -162,7 +163,7 @@ static const CROP_SOURCE =
           title="QR Code"
           description="Real QR encoding, rendered as SVG."
         >
-          <QrCode defaultValue="https://marko-ui.saulo.tech" size="sm"/>
+          <QrCode defaultValue=SITE_URL size="sm"/>
         </BeyondCard>
 
         <BeyondCard

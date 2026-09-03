@@ -10,14 +10,12 @@
 // getCommandForPackageManager and toCamelCase.
 import { findFont, findFontDefinition } from "./fonts"
 import { TYPESET_MEASURES, type TypesetSearchParams } from "./search-params"
+import { SITE_URL } from "../../../lib/site-meta.ts"
 
 export const PACKAGE_MANAGERS = ["pnpm", "npm", "yarn", "bun"] as const
 export type PackageManager = (typeof PACKAGE_MANAGERS)[number]
 
 export type PickedFonts = NonNullable<ReturnType<typeof findFontDefinition>>[]
-
-// absoluteUrl() upstream; this site's canonical origin.
-const SITE_URL = "https://marko-ui.dev"
 
 // @marko/run treats a period as the flat-route separator, so the stylesheet
 // cannot be served at literally /typeset.css — see
