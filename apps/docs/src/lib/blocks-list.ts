@@ -2,7 +2,7 @@
  * The blocks catalog surfaced by /blocks.
  *
  * Blocks are whole-page compositions built from marko-ui registry components.
- * Their source lives at packages/registry/default/blocks/<name>/ and is
+ * Their source lives at packages/shadcn/blocks/<name>/ and is
  * emitted as a `registry:block` item by tooling/build-registry.ts.
  *
  * `previewHeight` is the intrinsic height (px) the gallery gives the block's

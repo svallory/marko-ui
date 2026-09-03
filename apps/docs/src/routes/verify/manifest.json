@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-31T02:14:34.382Z",
+  "generatedAt": "2026-09-03T20:29:51.563Z",
   "styles": [
     "default",
     "luma",
@@ -11335,47 +11335,47 @@
     {
       "style": "default",
       "component": "charts-gallery",
-      "reason": "style \"default\" has no packages/registry component directory for \"charts-gallery\""
+      "reason": "style \"default\" has no packages/shadcn component directory for \"charts-gallery\""
     },
     {
       "style": "luma",
       "component": "charts-gallery",
-      "reason": "style \"luma\" has no packages/registry component directory for \"charts-gallery\""
+      "reason": "style \"luma\" has no packages/shadcn component directory for \"charts-gallery\""
     },
     {
       "style": "lyra",
       "component": "charts-gallery",
-      "reason": "style \"lyra\" has no packages/registry component directory for \"charts-gallery\""
+      "reason": "style \"lyra\" has no packages/shadcn component directory for \"charts-gallery\""
     },
     {
       "style": "maia",
       "component": "charts-gallery",
-      "reason": "style \"maia\" has no packages/registry component directory for \"charts-gallery\""
+      "reason": "style \"maia\" has no packages/shadcn component directory for \"charts-gallery\""
     },
     {
       "style": "mira",
       "component": "charts-gallery",
-      "reason": "style \"mira\" has no packages/registry component directory for \"charts-gallery\""
+      "reason": "style \"mira\" has no packages/shadcn component directory for \"charts-gallery\""
     },
     {
       "style": "nova",
       "component": "charts-gallery",
-      "reason": "style \"nova\" has no packages/registry component directory for \"charts-gallery\""
+      "reason": "style \"nova\" has no packages/shadcn component directory for \"charts-gallery\""
     },
     {
       "style": "rhea",
       "component": "charts-gallery",
-      "reason": "style \"rhea\" has no packages/registry component directory for \"charts-gallery\""
+      "reason": "style \"rhea\" has no packages/shadcn component directory for \"charts-gallery\""
     },
     {
       "style": "sera",
       "component": "charts-gallery",
-      "reason": "style \"sera\" has no packages/registry component directory for \"charts-gallery\""
+      "reason": "style \"sera\" has no packages/shadcn component directory for \"charts-gallery\""
     },
     {
       "style": "vega",
       "component": "charts-gallery",
-      "reason": "style \"vega\" has no packages/registry component directory for \"charts-gallery\""
+      "reason": "style \"vega\" has no packages/shadcn component directory for \"charts-gallery\""
     }
   ]
 }

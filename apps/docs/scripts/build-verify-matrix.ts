@@ -34,7 +34,7 @@ import { join } from "node:path";
 // once, not lazily per request — one unparseable .ts anywhere in the tree
 // took down the entire dev server, including unrelated pre-existing routes
 // (verified empirically: a stray `*/` inside a JSDoc comment in
-// packages/registry/styles/maia/ui/drawer/variants.ts, a genuine registry
+// packages/shadcn/styles/maia/ui/drawer/variants.ts, a genuine registry
 // authoring bug that terminates the block comment early and leaves prose as
 // bare invalid TS). Since registry files are off-limits to fix, any
 // component whose .ts files don't parse is excluded from generation up
@@ -234,7 +234,7 @@ async function main() {
         skips.push({
           style,
           component: componentName,
-          reason: `style "${style}" has no packages/registry component directory for "${componentName}"`,
+          reason: `style "${style}" has no packages/shadcn component directory for "${componentName}"`,
         });
         continue;
       }

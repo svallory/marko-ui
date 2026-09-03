@@ -20,6 +20,15 @@ export interface ChangelogEntry {
 
 static const ENTRIES: ChangelogEntry[] = [
   {
+    date: "2026-09-01",
+    title: "marko-zag 2.0.0 stable",
+    summary:
+      "marko-zag reached stable 2.0.0 across packages/shadcn and apps/docs, identical to rc.3.",
+    changes: [
+      "marko-zag pinned to 2.0.0 (exact) across packages/shadcn and apps/docs.",
+    ],
+  },
+  {
     date: "2026-08-27",
     title: "Migrated to marko-zag 2.0 and the <zag> tag",
     summary:
@@ -143,7 +152,7 @@ static const ENTRIES: ChangelogEntry[] = [
   </ul>
 
   <p>
-    Before taking a component update, use <code>add --diff</code> to see exactly what would change.
+    Before taking a component update, use <code>diff</code> to see exactly what would change.
     See <a href="/docs/cli">CLI</a>.
   </p>
 </docs-article>
