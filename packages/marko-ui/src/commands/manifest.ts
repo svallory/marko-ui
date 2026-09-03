@@ -97,6 +97,12 @@ export function buildAgentWorkflow(program: Command) {
   }).map((step) => step.template)
 }
 
+const cwdAtStartup = process.cwd()
+
+function describeDefaultValue(defaultValue: unknown): unknown {
+  return defaultValue === cwdAtStartup ? "current working directory" : defaultValue
+}
+
 export function describeCommand(cmd: Command): Record<string, unknown> {
   return {
     name: cmd.name(),
@@ -111,7 +117,7 @@ export function describeCommand(cmd: Command): Record<string, unknown> {
     options: cmd.options.map((option) => ({
       flags: option.flags,
       description: option.description,
-      defaultValue: option.defaultValue,
+      defaultValue: describeDefaultValue(option.defaultValue),
     })),
     subcommands: cmd.commands.length
       ? cmd.commands.map((sub) => describeCommand(sub))

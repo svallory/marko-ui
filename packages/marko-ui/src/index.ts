@@ -24,7 +24,7 @@ export function buildProgram() {
     .name("marko-ui")
     .description("install and manage Marko UI components")
     .version(
-      packageJson.version || "0.1.0",
+      packageJson.version || "0.2.0",
       "-v, --version",
       "display the version number"
     )

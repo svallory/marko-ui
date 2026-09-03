@@ -1,6 +1,6 @@
 {
   "name": "marko-ui",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The marko-ui CLI \u2014 install and manage Marko UI components from shadcn-format registries.",
   "publishConfig": {
     "access": "public"
@@ -15,8 +15,14 @@
     "url": "https://github.com/svallory/marko-ui.git",
     "directory": "packages/marko-ui"
   },
+  "homepage": "https://marko-ui.saulo.tech",
+  "bugs": {
+    "url": "https://github.com/svallory/marko-ui/issues"
+  },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "keywords": [
     "components",

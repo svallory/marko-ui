@@ -1,6 +1,6 @@
 {
   "name": "@marko-ui/shadcn",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "shadcn/ui ported to Marko 6 \u2014 hook-class component source and the 8 style layers, for the import distribution path",
   "license": "MIT",
@@ -12,6 +12,13 @@
     "type": "git",
     "url": "https://github.com/svallory/marko-ui.git",
     "directory": "packages/shadcn"
+  },
+  "homepage": "https://marko-ui.saulo.tech",
+  "bugs": {
+    "url": "https://github.com/svallory/marko-ui/issues"
+  },
+  "engines": {
+    "node": ">=20.18.1"
   },
   "keywords": [
     "components",
@@ -33,6 +40,8 @@
     "ui",
     "lib",
     "styles",
+    "README.md",
+    "LICENSE",
     "!**/registry.meta.json"
   ],
   "exports": {

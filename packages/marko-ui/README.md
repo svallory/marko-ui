@@ -51,3 +51,8 @@ Run `marko-ui manifest` for the complete, always-current surface.
 - Forked from the MIT-licensed [shadcn CLI](https://github.com/shadcn-ui/ui)
   (registry mechanics) with an agent-first surface inspired by Meta's
   [Astryx CLI](https://github.com/facebook/astryx).
+
+## Docs
+
+Full command reference, component catalog, and architecture:
+https://marko-ui.saulo.tech
