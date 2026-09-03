@@ -10,9 +10,12 @@ import InputGroupInput from "@marko-ui/shadcn/ui/input-group/input.marko";
 import InputGroupAddon from "@marko-ui/shadcn/ui/input-group/addon.marko";
 import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
 
+// Pinned focus month (not wall-clock "today") — see calendar-basic.marko.
+static const focusedValue = { year: 2026, month: 8, day: 15 };
+
 <Card size="sm" class="mx-auto w-fit">
   <CardContent>
-    <Calendar class="p-0"/>
+    <Calendar class="p-0" defaultFocusedValue=focusedValue/>
   </CardContent>
   <CardFooter class="border-t bg-card">
     <FieldGroup>
