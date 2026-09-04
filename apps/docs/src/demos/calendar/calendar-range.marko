@@ -1,3 +1,6 @@
 import Calendar from "@marko-ui/shadcn/ui/calendar/calendar.marko";
 
-<Calendar selectionMode="range"/>
+// Pinned focus month (not wall-clock "today") — see calendar-basic.marko.
+static const focusedValue = { year: 2026, month: 8, day: 15 };
+
+<Calendar selectionMode="range" defaultFocusedValue=focusedValue/>

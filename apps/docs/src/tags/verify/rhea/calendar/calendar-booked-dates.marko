@@ -36,8 +36,17 @@ static function isBooked(candidate: { year: number; month: number; day: number }
   );
 }
 
+// `defaultFocusedValue` pins the initially-visible month to bookedStart's —
+// without it the grid focuses the browser's wall-clock "today" instead,
+// which both drifts the snapshot daily AND can scroll the booked range
+// entirely off the visible grid.
+static const focusedValue = toPlain(bookedStart);
+
 <Card class="mx-auto w-fit p-0">
   <CardContent class="p-0">
-    <Calendar isDateUnavailable=(date) => isBooked({ year: date.year, month: date.month, day: date.day })/>
+    <Calendar
+      isDateUnavailable=(date) => isBooked({ year: date.year, month: date.month, day: date.day })
+      defaultFocusedValue=focusedValue
+    />
   </CardContent>
 </Card>
