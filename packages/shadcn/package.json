@@ -130,7 +130,7 @@
     "postcss": "^8.5.26",
     "postcss-selector-parser": "^7.1.5",
     "ts-morph": "^28.0.0",
-    "typescript": "^7.0.2"
+    "typescript": "^6.0.3"
   },
   "scripts": {
     "check": "NODE_OPTIONS=\"--max-old-space-size=8192\" marko-type-check -p ./tsconfig.json -d condensed",
