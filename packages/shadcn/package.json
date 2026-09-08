@@ -1,6 +1,6 @@
 {
   "name": "@marko-ui/shadcn",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "shadcn/ui ported to Marko 6 \u2014 hook-class component source and the 8 style layers, for the import distribution path",
   "license": "MIT",
