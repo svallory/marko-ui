@@ -101,6 +101,13 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
     path aliases.
   </p>
 
+  <p>
+    <strong>Requires TypeScript 5 or 6.</strong> TypeScript 7 (the native <code>tsgo</code>
+    compiler) is not supported — it ships no in-process compiler API, which both marko-ui's own
+    tooling and the component build depend on. Keep your project on <code>typescript ^5</code> or
+    <code>^6</code> until marko-ui's TS 7 support lands.
+  </p>
+
   <h2 id="init">marko-ui init</h2>
 
   <p>
@@ -285,5 +292,12 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
     A Zag service or API object escaped into reactive state. This is a component-authoring mistake
     rather than an installation problem — see <a href="/docs/creating-components">Creating
     Components</a> for the rule and the fix.
+  </p>
+
+  <h3>Type errors mentioning tsgo, or "cannot read properties of undefined"</h3>
+  <p>
+    Your project is on TypeScript 7. marko-ui's tooling and build need the classic TypeScript
+    compiler API, which TS 7's native <code>tsgo</code> compiler doesn't ship. Downgrade to
+    <code>typescript ^5</code> or <code>^6</code> — run <code>marko-ui doctor</code> to confirm.
   </p>
 </docs-article>

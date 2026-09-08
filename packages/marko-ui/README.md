@@ -10,6 +10,9 @@ bunx marko-ui doctor        # health checks (exit 3 on failure — CI-friendly)
 bunx marko-ui manifest      # machine-readable description of the whole CLI
 ```
 
+**Requirements:** TypeScript ^5 or ^6. TypeScript 7 (`tsgo`) is not supported — it ships no
+in-process compiler API, which the component build depends on. `marko-ui doctor` checks this.
+
 ## Commands
 
 | Command | Description |

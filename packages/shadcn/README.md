@@ -13,6 +13,9 @@ compiling them with your own Tailwind build.
 bun add @marko-ui/shadcn marko-zag marko
 ```
 
+**Requirements:** TypeScript ^5 or ^6. TypeScript 7 (`tsgo`) is not supported — it ships no
+in-process compiler API, which the component build depends on.
+
 ## Usage
 
 ```marko

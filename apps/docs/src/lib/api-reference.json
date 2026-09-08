@@ -178,7 +178,7 @@
             },
             {
               "name": "actionVariant",
-              "type": "'default' | 'destructive' | 'ghost' | 'link' | 'outline' | 'secondary' | null | undefined",
+              "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
               "required": false,
               "kind": "own"
             },
@@ -197,7 +197,7 @@
             },
             {
               "name": "cancelVariant",
-              "type": "'default' | 'destructive' | 'ghost' | 'link' | 'outline' | 'secondary' | null | undefined",
+              "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
               "required": false,
               "kind": "own"
             },
@@ -368,7 +368,7 @@
             },
             {
               "name": "role",
-              "type": "'alertdialog' | 'dialog' | undefined",
+              "type": "'dialog' | 'alertdialog' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The dialog's role"
@@ -592,7 +592,7 @@
             },
             {
               "name": "state",
-              "type": "'done' | 'error' | 'idle' | 'processing' | 'uploading'",
+              "type": "'idle' | 'uploading' | 'processing' | 'error' | 'done'",
               "required": false,
               "kind": "own"
             }
@@ -623,7 +623,7 @@
           "properties": [
             {
               "name": "variant",
-              "type": "'icon' | 'image' | null | undefined",
+              "type": "'image' | 'icon' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -718,7 +718,7 @@
             },
             {
               "name": "size",
-              "type": "'default' | 'lg' | 'sm'",
+              "type": "'default' | 'sm' | 'lg'",
               "required": false,
               "kind": "own",
               "description": "Size variant — also exposed as `data-size` for group/badge styling."
@@ -769,7 +769,7 @@
           "properties": [
             {
               "name": "variant",
-              "type": "'default' | 'destructive' | 'ghost' | 'link' | 'outline' | 'secondary' | null | undefined",
+              "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -849,13 +849,13 @@
           "properties": [
             {
               "name": "align",
-              "type": "'end' | 'start'",
+              "type": "'start' | 'end'",
               "required": false,
               "kind": "own"
             },
             {
               "name": "side",
-              "type": "'bottom' | 'top'",
+              "type": "'top' | 'bottom'",
               "required": false,
               "kind": "own"
             }
@@ -868,13 +868,13 @@
           "properties": [
             {
               "name": "align",
-              "type": "'end' | 'start'",
+              "type": "'start' | 'end'",
               "required": false,
               "kind": "own"
             },
             {
               "name": "variant",
-              "type": "'default' | 'destructive' | 'ghost' | 'muted' | 'outline' | 'secondary' | 'tinted' | null | undefined",
+              "type": "'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'muted' | 'tinted' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -902,7 +902,7 @@
           "properties": [
             {
               "name": "size",
-              "type": "'default' | 'icon' | 'icon-lg' | 'icon-sm' | 'icon-xs' | 'lg' | 'sm' | 'xs' | null | undefined",
+              "type": "'default' | 'sm' | 'xs' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -919,7 +919,7 @@
             },
             {
               "name": "variant",
-              "type": "'default' | 'destructive' | 'ghost' | 'link' | 'outline' | 'secondary' | null | undefined",
+              "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -988,7 +988,7 @@
           "properties": [
             {
               "name": "captionLayout",
-              "type": "'dropdown' | 'label'",
+              "type": "'label' | 'dropdown'",
               "required": false,
               "kind": "own",
               "description": "Caption presentation. `\"label\"` (default) shows the visible range as a\nplain view-trigger button; `\"dropdown\"` swaps it for native month and year\n`<select>` controls. Component-owned — not forwarded to the machine."
@@ -1501,7 +1501,7 @@
             },
             {
               "name": "snapType",
-              "type": "'mandatory' | 'proximity' | undefined",
+              "type": "'proximity' | 'mandatory' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The snap type of the item."
@@ -1835,13 +1835,13 @@
             },
             {
               "name": "indicator",
-              "type": "'dashed' | 'dot' | 'line'",
+              "type": "'line' | 'dot' | 'dashed'",
               "required": false,
               "kind": "own"
             },
             {
               "name": "legend",
-              "type": "'bottom' | 'top' | boolean",
+              "type": "boolean | 'top' | 'bottom'",
               "required": false,
               "kind": "own"
             },
@@ -1990,7 +1990,7 @@
             },
             {
               "name": "indicator",
-              "type": "'dashed' | 'dot' | 'line'",
+              "type": "'line' | 'dot' | 'dashed'",
               "required": false,
               "kind": "own"
             },
@@ -2010,7 +2010,7 @@
             },
             {
               "name": "legend",
-              "type": "'bottom' | 'top' | boolean",
+              "type": "boolean | 'top' | 'bottom'",
               "required": false,
               "kind": "own"
             },
@@ -2142,7 +2142,7 @@
             },
             {
               "name": "verticalAlign",
-              "type": "'bottom' | 'top'",
+              "type": "'top' | 'bottom'",
               "required": false,
               "kind": "own"
             }
@@ -2206,13 +2206,13 @@
             },
             {
               "name": "indicator",
-              "type": "'dashed' | 'dot' | 'line'",
+              "type": "'line' | 'dot' | 'dashed'",
               "required": false,
               "kind": "own"
             },
             {
               "name": "legend",
-              "type": "'bottom' | 'top' | boolean",
+              "type": "boolean | 'top' | 'bottom'",
               "required": false,
               "kind": "own"
             },
@@ -2335,7 +2335,7 @@
             },
             {
               "name": "indicator",
-              "type": "'dashed' | 'dot' | 'line'",
+              "type": "'line' | 'dot' | 'dashed'",
               "required": false,
               "kind": "own"
             },
@@ -2348,7 +2348,7 @@
             },
             {
               "name": "legend",
-              "type": "'bottom' | 'top' | boolean",
+              "type": "boolean | 'top' | 'bottom'",
               "required": false,
               "kind": "own"
             },
@@ -2433,7 +2433,7 @@
             },
             {
               "name": "indicator",
-              "type": "'dashed' | 'dot' | 'line'",
+              "type": "'line' | 'dot' | 'dashed'",
               "required": false,
               "kind": "own"
             },
@@ -3196,7 +3196,7 @@
             },
             {
               "name": "inputBehavior",
-              "type": "'autocomplete' | 'autohighlight' | 'none' | undefined",
+              "type": "'none' | 'autohighlight' | 'autocomplete' | undefined",
               "required": false,
               "kind": "machine",
               "description": "Defines the auto-completion behavior of the combobox.\n\n- `autohighlight`: The first focused item is highlighted as the user types\n- `autocomplete`: Navigating the listbox with the arrow keys selects the item and the input is updated"
@@ -3370,7 +3370,7 @@
             },
             {
               "name": "selectionBehavior",
-              "type": "'clear' | 'preserve' | 'replace' | undefined",
+              "type": "'clear' | 'replace' | 'preserve' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The behavior of the combobox input when an item is selected\n\n- `replace`: The selected item string is set as the input value\n- `clear`: The input value is cleared\n- `preserve`: The input value is preserved"
@@ -3536,7 +3536,7 @@
             },
             {
               "name": "inputBehavior",
-              "type": "'autocomplete' | 'autohighlight' | 'none' | undefined",
+              "type": "'none' | 'autohighlight' | 'autocomplete' | undefined",
               "required": false,
               "kind": "machine",
               "description": "Defines the auto-completion behavior of the combobox.\n\n- `autohighlight`: The first focused item is highlighted as the user types\n- `autocomplete`: Navigating the listbox with the arrow keys selects the item and the input is updated"
@@ -3697,7 +3697,7 @@
             },
             {
               "name": "selectionBehavior",
-              "type": "'clear' | 'preserve' | 'replace' | undefined",
+              "type": "'clear' | 'replace' | 'preserve' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The behavior of the combobox input when an item is selected\n\n- `replace`: The selected item string is set as the input value\n- `clear`: The input value is cleared\n- `preserve`: The input value is preserved"
@@ -3781,11 +3781,18 @@
               "description": "Getter for the parent menu's raw service — this submenu registers onto it via `setParent`."
             },
             {
-              "name": "trigger",
-              "type": "Marko.AttrTag<{ content: Marko.Body<[menu.Api]>; }>",
+              "name": "parentApi",
+              "type": "() => menu.Api",
               "required": true,
               "kind": "own",
-              "description": "Trigger render-prop: receives this submenu's connected api so the caller\n(the parent menu's item loop) can build the row with\n`parentApi().getTriggerItemProps(childApi)`."
+              "description": "Getter for the PARENT menu's connected api. The sub-trigger row's props\ncome from `parentApi().getTriggerItemProps(ownApi)`, and this submenu\nbuilds them itself (see the `triggerProps` const below) rather than\nletting the caller's `<@trigger>` body reach for its own `api()`."
+            },
+            {
+              "name": "trigger",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>",
+              "required": true,
+              "kind": "own",
+              "description": "Trigger render-prop: receives the FINISHED sub-trigger props object\n(already merged from the parent's `getTriggerItemProps` and this\nsubmenu's own api), so the caller only spreads it onto its element."
             },
             {
               "name": "disabled",
@@ -4610,7 +4617,7 @@
             },
             {
               "name": "role",
-              "type": "'alertdialog' | 'dialog' | undefined",
+              "type": "'dialog' | 'alertdialog' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The dialog's role"
@@ -4904,7 +4911,7 @@
             },
             {
               "name": "role",
-              "type": "'alertdialog' | 'dialog' | undefined",
+              "type": "'dialog' | 'alertdialog' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The sheet's role"
@@ -5065,11 +5072,18 @@
               "description": "Getter for the parent menu's raw service — this submenu registers onto it via `setParent`."
             },
             {
-              "name": "trigger",
-              "type": "Marko.AttrTag<{ content: Marko.Body<[() => menu.Api]>; }>",
+              "name": "parentApi",
+              "type": "() => menu.Api",
               "required": true,
               "kind": "own",
-              "description": "Trigger render-prop: receives a GETTER for this submenu's connected api\n(never the live api object itself — see the invocation site below for\nwhy) so the caller (the parent menu's item loop) can build the row with\n`parentApi().getTriggerItemProps(childApi())`."
+              "description": "Getter for the PARENT menu's connected api. The sub-trigger row's props\ncome from `parentApi().getTriggerItemProps(ownApi)`, and this submenu\nbuilds them itself (see the `triggerProps` const below) rather than\nletting the caller's `<@trigger>` body reach for its own `api()`."
+            },
+            {
+              "name": "trigger",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>",
+              "required": true,
+              "kind": "own",
+              "description": "Trigger render-prop: receives the FINISHED sub-trigger props object\n(already merged from the parent's `getTriggerItemProps` and this\nsubmenu's own api), so the caller only spreads it onto its element."
             },
             {
               "name": "disabled",
@@ -5417,7 +5431,7 @@
           "properties": [
             {
               "name": "errors",
-              "type": "readonly FieldErrorLike[] | FieldErrorLike",
+              "type": "FieldErrorLike | readonly FieldErrorLike[]",
               "required": false,
               "kind": "own",
               "description": "One error, or a list of them. Each entry may be a plain message string or any\nobject carrying a `message` — the shape of a Standard Schema issue, so output\nfrom valibot, zod or arktype passes through unchanged. Duplicates are removed.\n\nIgnored when body content is provided."
@@ -5488,7 +5502,7 @@
             },
             {
               "name": "orientation",
-              "type": "'horizontal' | 'responsive' | 'vertical' | null | undefined",
+              "type": "'horizontal' | 'vertical' | 'responsive' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -5512,7 +5526,7 @@
           "properties": [
             {
               "name": "accept",
-              "type": "FileMimeType[] | Record<string, string[]> | FileMimeType | undefined",
+              "type": "Record<string, string[]> | FileMimeType | FileMimeType[] | undefined",
               "required": false,
               "kind": "machine",
               "description": "The accept file types"
@@ -5533,7 +5547,7 @@
             },
             {
               "name": "capture",
-              "type": "'environment' | 'user' | undefined",
+              "type": "'user' | 'environment' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The default camera to use when capturing media"
@@ -6499,7 +6513,7 @@
           "properties": [
             {
               "name": "align",
-              "type": "'block-end' | 'block-start' | 'inline-end' | 'inline-start' | null | undefined",
+              "type": "'inline-start' | 'inline-end' | 'block-start' | 'block-end' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -6519,7 +6533,7 @@
           "properties": [
             {
               "name": "size",
-              "type": "'icon-sm' | 'icon-xs' | 'sm' | 'xs' | null | undefined",
+              "type": "'sm' | 'xs' | 'icon-xs' | 'icon-sm' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -6756,7 +6770,7 @@
             },
             {
               "name": "type",
-              "type": "'alphabetic' | 'alphanumeric' | 'numeric' | undefined",
+              "type": "'alphanumeric' | 'numeric' | 'alphabetic' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The type of value the pin-input should allow"
@@ -6844,7 +6858,7 @@
             },
             {
               "name": "variant",
-              "type": "'default' | 'muted' | 'outline' | null | undefined",
+              "type": "'default' | 'outline' | 'muted' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -6863,7 +6877,7 @@
           "properties": [
             {
               "name": "variant",
-              "type": "'default' | 'icon' | 'image' | null | undefined",
+              "type": "'image' | 'default' | 'icon' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -7123,7 +7137,7 @@
             },
             {
               "name": "variant",
-              "type": "'border' | 'default' | 'separator' | null | undefined",
+              "type": "'default' | 'separator' | 'border' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -7381,11 +7395,18 @@
               "description": "Getter for the parent menu's raw service — this submenu registers onto it via `setParent`."
             },
             {
-              "name": "trigger",
-              "type": "Marko.AttrTag<{ content: Marko.Body<[() => menu.Api]>; }>",
+              "name": "parentApi",
+              "type": "() => menu.Api",
               "required": true,
               "kind": "own",
-              "description": "Trigger render-prop: receives a GETTER for this submenu's connected api\n(never the live api object itself — see the invocation site below for\nwhy) so the caller (the parent menu's item loop) can build the row with\n`parentApi().getTriggerItemProps(childApi())`."
+              "description": "Getter for the PARENT menu's connected api. The sub-trigger row's props\ncome from `parentApi().getTriggerItemProps(ownApi)`, and this submenu\nbuilds them itself (see the `triggerProps` const below) rather than\nletting the caller's `<@trigger>` body reach for its own `api()`."
+            },
+            {
+              "name": "trigger",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>",
+              "required": true,
+              "kind": "own",
+              "description": "Trigger render-prop: receives the FINISHED sub-trigger props object\n(already merged from the parent's `getTriggerItemProps` and this\nsubmenu's own api), so the caller only spreads it onto its element."
             },
             {
               "name": "disabled",
@@ -7457,7 +7478,7 @@
           "properties": [
             {
               "name": "align",
-              "type": "'end' | 'start'",
+              "type": "'start' | 'end'",
               "required": false,
               "kind": "own"
             }
@@ -7489,7 +7510,7 @@
             },
             {
               "name": "direction",
-              "type": "'end' | 'start'",
+              "type": "'start' | 'end'",
               "required": false,
               "kind": "own",
               "description": "Transcript edge to scroll toward. Defaults to \"end\"."
@@ -7670,7 +7691,7 @@
           "properties": [
             {
               "name": "align",
-              "type": "'center' | 'end' | 'start'",
+              "type": "'start' | 'end' | 'center'",
               "required": false,
               "kind": "own",
               "description": "Alignment of the shared viewport relative to the active trigger."
@@ -8687,7 +8708,7 @@
             },
             {
               "name": "size",
-              "type": "'default' | 'lg' | 'sm' | null | undefined",
+              "type": "'default' | 'sm' | 'lg' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -9609,7 +9630,7 @@
             },
             {
               "name": "role",
-              "type": "'alertdialog' | 'dialog' | undefined",
+              "type": "'dialog' | 'alertdialog' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The dialog's role"
@@ -9623,7 +9644,7 @@
             },
             {
               "name": "side",
-              "type": "'bottom' | 'left' | 'right' | 'top'",
+              "type": "'top' | 'bottom' | 'right' | 'left'",
               "required": false,
               "kind": "own",
               "description": "`\"top\" | \"right\" | \"bottom\" | \"left\"` — which edge the sheet slides in from."
@@ -9757,7 +9778,7 @@
             },
             {
               "name": "size",
-              "type": "'default' | 'lg' | 'sm' | null | undefined",
+              "type": "'default' | 'sm' | 'lg' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -9812,7 +9833,7 @@
             },
             {
               "name": "size",
-              "type": "'md' | 'sm'",
+              "type": "'sm' | 'md'",
               "required": false,
               "kind": "own"
             }
@@ -9924,7 +9945,7 @@
           "properties": [
             {
               "name": "collapsible",
-              "type": "'icon' | 'none' | 'offcanvas'",
+              "type": "'none' | 'icon' | 'offcanvas'",
               "required": false,
               "kind": "own"
             },
@@ -9943,13 +9964,13 @@
             },
             {
               "name": "side",
-              "type": "'left' | 'right'",
+              "type": "'right' | 'left'",
               "required": false,
               "kind": "own"
             },
             {
               "name": "variant",
-              "type": "'floating' | 'inset' | 'sidebar'",
+              "type": "'sidebar' | 'floating' | 'inset'",
               "required": false,
               "kind": "own"
             }
@@ -10247,7 +10268,7 @@
             },
             {
               "name": "origin",
-              "type": "'center' | 'end' | 'start' | undefined",
+              "type": "'start' | 'end' | 'center' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The origin of the slider range. The track is filled from the origin\nto the thumb for single values.\n- \"start\": Useful when the value represents an absolute value\n- \"center\": Useful when the value represents an offset (relative)\n- \"end\": Useful when the value represents an offset from the end"
@@ -10316,7 +10337,7 @@
           "properties": [
             {
               "name": "theme",
-              "type": "'dark' | 'light' | 'system'",
+              "type": "'light' | 'dark' | 'system'",
               "required": false,
               "kind": "own",
               "description": "Accepted for source-shape parity with sonner's `ToasterProps[\"theme\"]`.\nINERT: see file header. Threaded into `style` as `--sonner-theme` only."
@@ -10716,7 +10737,7 @@
           "properties": [
             {
               "name": "activationMode",
-              "type": "'automatic' | 'manual' | undefined",
+              "type": "'manual' | 'automatic' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The activation mode of the tabs. Can be `manual` or `automatic`\n- `manual`: Tabs are activated when clicked or press `enter` key.\n- `automatic`: Tabs are activated when receiving focus"
@@ -10844,7 +10865,7 @@
             },
             {
               "name": "variant",
-              "type": "'default' | 'line' | null | undefined",
+              "type": "'line' | 'default' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [
@@ -10897,7 +10918,7 @@
             },
             {
               "name": "blurBehavior",
-              "type": "'add' | 'clear' | undefined",
+              "type": "'clear' | 'add' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The behavior of the tags input when the input is blurred\n- `\"add\"`: add the input value as a new tag\n- `\"clear\"`: clear the input value"
@@ -11294,7 +11315,7 @@
           "properties": [
             {
               "name": "dir",
-              "type": "'auto' | 'ltr' | 'rtl' | import('marko/tags-html').AttrMissing",
+              "type": "import(\"marko/tags-html\").AttrMissing | 'ltr' | 'rtl' | 'auto'",
               "required": false,
               "kind": "own",
               "description": "Text direction passed to the group machine.\n\nTyped as the full HTML `dir` surface, not just `\"ltr\" | \"rtl\"`: this Input\nextends `Marko.Input<\"div\">`, and re-declaring `dir` more narrowly than\nthe attribute it inherits makes every `...rest` spread from a div-shaped\nparent (e.g. `sonner.marko`) a type error. `\"auto\"` and the absent values\nare normalized away below, since Zag's group machine accepts only the two\nconcrete directions."
@@ -11457,7 +11478,7 @@
             },
             {
               "name": "size",
-              "type": "'default' | 'lg' | 'sm' | null | undefined",
+              "type": "'default' | 'sm' | 'lg' | null | undefined",
               "required": false,
               "kind": "variant",
               "options": [

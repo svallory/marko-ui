@@ -64,19 +64,33 @@ const EXACT_VERSION = /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/;
 /**
  * Divergences that are intentional. Each entry must say why, and what would
  * let it go away — an entry without a live reason is a bug, not a waiver.
+ *
+ * `packages` scopes the waiver: only THOSE packages may declare a version
+ * that differs from what every other (non-listed) declaring package agrees
+ * on. A blanket by-dependency-name exemption would silently let ANY package
+ * drift — that's exactly how packages/shadcn ended up on typescript@7.0.2
+ * in this repo (2026-09-08): the exemption existed for packages/marko-ui
+ * only, but named just the dependency, so it covered every package.
  */
-const ALLOWED_DIVERGENCES: { dependency: string; reason: string }[] = [
+const ALLOWED_DIVERGENCES: { dependency: string; packages: string[]; reason: string }[] = [
   {
     dependency: "typescript",
-    // packages/marko-ui builds with tsup + `dts: true`, whose rollup-plugin-dts
-    // needs the classic TypeScript compiler API. typescript@7 (tsgo) ships none,
-    // so that build dies with
-    //   TypeError: Cannot read properties of undefined (reading 'useCaseSensitiveFileNames')
-    // Verified 2026-08-30 by bumping it to ^7.0.2 and running `bun run build`.
-    // Removable once rollup-plugin-dts (or tsup's dts step) supports TS 7, or
-    // the package stops emitting declarations from tsup.
+    packages: ["marko-ui"],
+    // packages/marko-ui builds with tsup + `dts: true`. tsup 8.5.1's bundled
+    // rollup-plugin-dts step builds its virtual compiler host with
+    // `baseUrl: compilerOptions.baseUrl || "."` (tsup/dist/rollup.js) — it
+    // injects a `baseUrl` even when our tsconfig sets none. Under typescript
+    // ^6.0.3 that hits the TS5101 hard error (not just a warning):
+    //   error TS5101: Option 'baseUrl' is deprecated and will stop
+    //   functioning in TypeScript 7.0.
+    // Verified 2026-09-08 by bumping it to ^6.0.3 and running `bun run build`
+    // (repro'd via `bun run build` after `bun install`, dts step fails).
+    // typescript@7 (tsgo) ships no classic compiler API at all, so it fails
+    // even harder there.
+    // Removable once tsup (or rollup-plugin-dts) stops injecting a bare
+    // `baseUrl`, or the package stops emitting declarations from tsup.
     reason:
-      "packages/marko-ui pins ^5.9.2: tsup's dts step needs the TS 5 compiler API, which typescript@7 does not ship",
+      "packages/marko-ui pins ^5.9.2: tsup 8.5.1's dts step injects a bare baseUrl into its virtual tsconfig, which typescript ^6.0.3 rejects as TS5101 (deprecated in 6, removed in 7)",
   },
 ];
 
@@ -127,17 +141,26 @@ async function main(): Promise<void> {
     }
   }
 
-  const allowed = new Set(ALLOWED_DIVERGENCES.map((entry) => entry.dependency));
+  const allowedPackages = new Map<string, Set<string>>(
+    ALLOWED_DIVERGENCES.map((entry) => [entry.dependency, new Set(entry.packages)]),
+  );
   const failures: string[] = [];
 
-  // 1. Cross-package agreement.
+  // 1. Cross-package agreement. A dependency with a scoped waiver only
+  // exempts declarations from the LISTED packages — every other declaring
+  // package must still agree with each other (not with the waived ones).
   for (const [dependency, list] of [...declarations].sort()) {
-    if (list.length < 2 || allowed.has(dependency)) continue;
-    const versions = new Set(list.map((entry) => entry.version));
+    if (list.length < 2) continue;
+    const waivedPackages = allowedPackages.get(dependency);
+    const unwaived = waivedPackages
+      ? list.filter((entry) => !waivedPackages.has(entry.package))
+      : list;
+    if (unwaived.length < 2) continue;
+    const versions = new Set(unwaived.map((entry) => entry.version));
     if (versions.size === 1) continue;
     failures.push(
       `${dependency} is declared with ${versions.size} different versions:\n` +
-        list
+        unwaived
           .map((entry) => `      ${entry.package} (${entry.field}): ${entry.version}`)
           .sort()
           .join("\n"),
