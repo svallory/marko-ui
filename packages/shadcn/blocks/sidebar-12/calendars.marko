@@ -45,7 +45,7 @@ export interface Input {
         </button>
       </@trigger>
       <SidebarMenu>
-        <for|item, itemIndex| of=calendar.items by=(_item, index) => index>
+        <for|item, itemIndex| of=calendar.items by=(_item, index) => String(index)>
           <SidebarMenuItem>
             <SidebarMenuButton>
               <div

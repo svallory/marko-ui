@@ -89,7 +89,7 @@ static const ACTION_GROUPS: ActionItem[][] = [
       </Button>
     </@trigger>
     <div class="flex flex-col bg-transparent">
-      <for|group, groupIndex| of=ACTION_GROUPS by=(group, groupIndex) => groupIndex>
+      <for|group, groupIndex| of=ACTION_GROUPS by=(group, groupIndex) => String(groupIndex)>
         <SidebarGroup class="border-b p-0 py-2 last:border-none">
           <SidebarMenu>
             <for|item| of=group by=(item) => item.id>

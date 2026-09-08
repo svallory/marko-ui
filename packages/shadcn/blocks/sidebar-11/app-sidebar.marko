@@ -124,7 +124,7 @@ static const FILE_TREE: TreeNode[] = [
           </SidebarMenuButton>
         </@trigger>
         <ul class="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5">
-          <for|childNode| of=children by=(_child, index) => index>
+          <for|childNode| of=children by=(_child, index) => String(index)>
             <li class="group/menu-sub-item relative">
               <Tree node=childNode/>
             </li>
@@ -161,7 +161,7 @@ static const FILE_TREE: TreeNode[] = [
       <SidebarGroupLabel>Files</SidebarGroupLabel>
       <div>
         <SidebarMenu>
-          <for|node| of=FILE_TREE by=(_node, treeIndex) => treeIndex>
+          <for|node| of=FILE_TREE by=(_node, treeIndex) => String(treeIndex)>
             <Tree node=node/>
           </for>
         </SidebarMenu>
