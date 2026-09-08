@@ -42,7 +42,7 @@ const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 const NEEDS_EXACT: Record<string, string> = {
   marko: "pinned to 6.3.46; bumping needs a regression sweep (see AGENTS.md)",
   "@marko/compiler": "must resolve to exactly one instance workspace-wide",
-  "marko-zag": "release-candidate; a silent bun update once downgraded it to 1.2.1",
+  "marko-zag": "stable 2.0.0; a silent bun update once downgraded it to 1.2.1",
   "@internationalized/date": "travels with the @zag-js date machines",
 };
 
