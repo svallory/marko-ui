@@ -257,7 +257,7 @@ static const drawerChartConfig = {
               </TableRow>
             </if>
             <else>
-              <for|row| of=pageRows by=(row) => row.id>
+              <for|row| of=pageRows by=(row) => String(row.id)>
                 <TableRow data-state=(rowSelection[String(row.id)] ? "selected" : undefined) class="relative z-0">
                   <TableCell>
                     <button

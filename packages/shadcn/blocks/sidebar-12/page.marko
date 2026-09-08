@@ -25,7 +25,7 @@ static const PLACEHOLDER_TILES = Array.from({ length: 20 });
       </header>
       <div class="flex flex-1 flex-col gap-4 p-4">
         <div class="grid auto-rows-min gap-4 md:grid-cols-5">
-          <for|_tile, index| of=PLACEHOLDER_TILES by=(_tile, tileIndex) => tileIndex>
+          <for|_tile, index| of=PLACEHOLDER_TILES by=(_tile, tileIndex) => String(tileIndex)>
             <div class="aspect-square rounded-xl bg-muted/50"/>
           </for>
         </div>

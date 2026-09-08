@@ -160,7 +160,7 @@ static const NAV_ITEMS: { name: string; icon: string }[] = [
             </div>
           </header>
           <div class="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pt-0">
-            <for|_tile, index| of=PLACEHOLDER_TILES by=(_tile, tileIndex) => tileIndex>
+            <for|_tile, index| of=PLACEHOLDER_TILES by=(_tile, tileIndex) => String(tileIndex)>
               <div class="aspect-video max-w-3xl rounded-xl bg-muted/50"></div>
             </for>
           </div>
