@@ -96,6 +96,55 @@ describe("runDoctorChecks", () => {
     expect(statusOf(checks).framework).toBe("fail")
   })
 
+  it("fails the typescript check when node_modules/typescript is major 7", async () => {
+    const dir = scaffoldMarkoApp()
+    mkdirSync(path.join(dir, "node_modules/typescript"), { recursive: true })
+    writeFileSync(
+      path.join(dir, "node_modules/typescript/package.json"),
+      JSON.stringify({ name: "typescript", version: "7.0.2" })
+    )
+
+    const checks = await runDoctorChecks(dir)
+    const typescript = checks.find((check) => check.id === "typescript")
+
+    expect(typescript?.status).toBe("fail")
+    expect(typescript?.message).toContain("tsgo")
+  })
+
+  it("passes the typescript check when node_modules/typescript is major 6", async () => {
+    const dir = scaffoldMarkoApp()
+    mkdirSync(path.join(dir, "node_modules/typescript"), { recursive: true })
+    writeFileSync(
+      path.join(dir, "node_modules/typescript/package.json"),
+      JSON.stringify({ name: "typescript", version: "6.0.3" })
+    )
+
+    const checks = await runDoctorChecks(dir)
+    const typescript = checks.find((check) => check.id === "typescript")
+
+    expect(typescript?.status).toBe("pass")
+  })
+
+  it("falls back to the declared package.json range when typescript isn't installed", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "marko-ui-doctor-"))
+    writeFileSync(
+      path.join(dir, "package.json"),
+      JSON.stringify({
+        name: "doctor-app",
+        dependencies: {
+          marko: "^6.3.34",
+          "@marko/run": "^0.7.0",
+        },
+        devDependencies: { typescript: "^7.0.2" },
+      })
+    )
+
+    const checks = await runDoctorChecks(dir)
+    const typescript = checks.find((check) => check.id === "typescript")
+
+    expect(typescript?.status).toBe("fail")
+  })
+
   it("reports the dependencies check as a warn-skip when the registry is unreachable", async () => {
     // Scaffolded apps have no reachable registry in unit tests, so the
     // registry-driven dependency check must degrade to an explicit skip

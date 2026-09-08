@@ -1,5 +1,6 @@
 import { existsSync, promises as fs } from "fs"
 import path from "path"
+import fsExtra from "fs-extra"
 import {
   getRegistries,
   getRegistriesConfig,
@@ -101,6 +102,23 @@ export const doctor = new Command()
     }
   })
 
+/** The version actually resolved in node_modules, i.e. what really runs. */
+function getResolvedTypescriptVersion(cwd: string): string | undefined {
+  const pkgPath = path.resolve(cwd, "node_modules/typescript/package.json")
+  if (!existsSync(pkgPath)) return undefined
+  const pkg = fsExtra.readJSONSync(pkgPath, { throws: false }) as {
+    version?: string
+  } | null
+  return pkg?.version
+}
+
+/** Pulls a concrete `major.minor.patch` out of a semver range like `^5.9.2`. */
+function parseLeadingMajorMinorPatch(range: string | undefined): string | undefined {
+  if (!range) return undefined
+  const match = /(\d+\.\d+\.\d+)/.exec(range)
+  return match?.[1]
+}
+
 export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
   const checks: DoctorCheck[] = []
 
@@ -137,6 +155,33 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
       ? undefined
       : "No marko/@marko/run dependency found. marko-ui components require a Marko project.",
   })
+
+  // 2b. TypeScript version. TS 7 (the native `tsgo` compiler) ships no
+  // in-process compiler API, which marko-ui's tooling and the component
+  // build both depend on — fail loudly instead of letting the project
+  // hit an opaque tsgo error later. Prefer the version actually resolved
+  // in node_modules (what really runs) over the declared package.json
+  // range, which can be satisfied by a major the range author never
+  // intended (e.g. `^5` resolving to a stray 7.x hoisted elsewhere).
+  const resolvedTypescriptVersion = getResolvedTypescriptVersion(cwd)
+  const declaredTypescriptRange =
+    typeof allDeps.typescript === "string" ? allDeps.typescript : undefined
+  const typescriptVersion =
+    resolvedTypescriptVersion ?? parseLeadingMajorMinorPatch(declaredTypescriptRange)
+  const typescriptMajor = typescriptVersion
+    ? Number.parseInt(typescriptVersion.split(".")[0] ?? "", 10)
+    : undefined
+  if (typescriptVersion) {
+    checks.push({
+      id: "typescript",
+      label: `TypeScript ${typescriptVersion}`,
+      status: typescriptMajor !== undefined && typescriptMajor >= 7 ? "fail" : "pass",
+      message:
+        typescriptMajor !== undefined && typescriptMajor >= 7
+          ? "TypeScript 7 (tsgo) is not supported — it ships no in-process compiler API. Downgrade to typescript ^5 or ^6."
+          : undefined,
+    })
+  }
 
   // 3. components.json.
   let config = null
