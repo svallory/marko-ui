@@ -21,6 +21,7 @@
     "test:e2e": "playwright test",
     "build:cli-manifest": "bun apps/docs/scripts/build-cli-manifest.ts",
     "check:parity": "bun tooling/check-parity.ts",
+    "test:acceptance": "vitest run --config e2e/acceptance/vitest.config.ts",
     "parity:extract:shadcn": "bun tooling/parity/harnesses/shadcn/extract/index.ts",
     "parity:extract:marko-ui": "bun tooling/parity/harnesses/marko-ui/extract/index.ts",
     "format": "prettier --write ."
