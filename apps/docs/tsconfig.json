@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.json",
   "include": [
     "src/**/*.ts",
-    "src/_blocks/**/*.marko",
+    "src/**/*.marko",
     ".marko-run/routes.d.ts",
     "../../packages/shadcn/ui/marko-attributes.d.ts"
   ]

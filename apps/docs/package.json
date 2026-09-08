@@ -6,7 +6,7 @@
     "dev": "marko-run",
     "build": "marko-run build",
     "preview": "marko-run preview",
-    "check": "NODE_OPTIONS=\"--max-old-space-size=8192\" marko-type-check -p ./tsconfig.json -d condensed",
+    "check": "bash scripts/check.sh",
     "registry": "bun ../../tooling/build-registry.ts",
     "predev": "bun ../../tooling/build-registry.ts",
     "prebuild": "bun ../../tooling/build-registry.ts",
