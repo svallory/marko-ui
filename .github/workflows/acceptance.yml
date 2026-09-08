@@ -1,0 +1,39 @@
+# Acceptance suite (e2e/acceptance) — exercises the PUBLISHED marko-ui/
+# @marko-ui/shadcn packages and the live registry deploy, not the workspace.
+# Deliberately NOT part of ci.yml: it depends on external services (npm,
+# the Coolify-deployed registry) that are outside this repo's control, so a
+# failure here means "something published/deployed is broken," not "this PR
+# broke something" — it shouldn't block or flake every PR's required checks.
+name: Acceptance
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly, well off :00/:30 to avoid the fleet-wide top-of-hour thundering
+    # herd. Catches a stale registry deploy or a broken publish within a
+    # week even with nobody watching.
+    - cron: "17 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    name: Published-package acceptance suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Run acceptance suite against live registry + npm
+        run: bun run test:acceptance
+        env:
+          ACCEPTANCE_REGISTRY_URL: ${{ vars.ACCEPTANCE_REGISTRY_URL }}
+          ACCEPTANCE_PKG_VERSION: ${{ vars.ACCEPTANCE_PKG_VERSION }}
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acceptance-results
+          path: e2e/acceptance/results.json
+          if-no-files-found: ignore

@@ -6,6 +6,11 @@ import { defineConfig, devices } from "@playwright/test";
 // webServer block here starts one; point DOCS_BASE_URL elsewhere if needed.
 export default defineConfig({
   testDir: "e2e",
+  // e2e/acceptance/*.test.ts is a separate vitest suite (published-package
+  // acceptance tests, see AGENTS.md "Acceptance suite") that happens to
+  // live under the same testDir — exclude it so Playwright doesn't try to
+  // collect it as a spec file.
+  testIgnore: "acceptance/**",
   // DOM-structure text snapshots are platform-independent; the default
   // {platform} suffix would make snapshots recorded on macOS invisible to
   // the Linux CI runners.
