@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { realpathSync } from "node:fs"
 import { pathToFileURL } from "node:url"
 import { add } from "@/src/commands/add"
 import { agents } from "@/src/commands/agents"
@@ -70,9 +71,24 @@ function applyUsageErrorExitCode(command: Command) {
 
 // Run only when executed as the CLI binary, not when imported as a
 // library (programmatic API, tests).
+//
+// import.meta.url is realpath-resolved by Node; argv[1] is not. On macOS
+// /var is a symlink to /private/var, so invoking the binary via an
+// unresolved path (e.g. through the OS temp dir) makes this comparison
+// fail silently and the process exits 0 with no output. Canonicalize
+// argv[1] before comparing.
+function resolvedArgv1() {
+  if (!process.argv[1]) return undefined
+  try {
+    return realpathSync(process.argv[1])
+  } catch {
+    return process.argv[1]
+  }
+}
+
 if (
   process.argv[1] &&
-  import.meta.url === pathToFileURL(process.argv[1]).href
+  import.meta.url === pathToFileURL(resolvedArgv1()!).href
 ) {
   main()
 }
