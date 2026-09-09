@@ -3,7 +3,7 @@ import Field from "@marko-ui/shadcn/ui/field/field.marko";
 import FieldContent from "@marko-ui/shadcn/ui/field/field-content.marko";
 import FieldTitle from "@marko-ui/shadcn/ui/field/field-title.marko";
 import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
-import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 
 <Field class="max-w-sm" orientation="horizontal">
   <FieldContent>
@@ -11,5 +11,5 @@ import Input from "@marko-ui/shadcn/ui/input/input.marko";
     <FieldDescription>Send an email when someone mentions you.</FieldDescription>
   </FieldContent>
   // size-6: WCAG 2.5.8 minimum 24px touch target (Lighthouse: target-size).
-  <Input id="field-horizontal-toggle" type="checkbox" aria-label="Email notifications" class="size-6 shrink-0"/>
+  <TextInput id="field-horizontal-toggle" type="checkbox" aria-label="Email notifications" class="size-6 shrink-0"/>
 </Field>

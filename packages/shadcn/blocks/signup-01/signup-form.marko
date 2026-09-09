@@ -8,7 +8,7 @@ import Field from "@marko-ui/shadcn/ui/field/field.marko";
 import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
 import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
 import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
-import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 
 export interface Input extends Marko.Input<"div"> {}
 
@@ -22,23 +22,23 @@ export interface Input extends Marko.Input<"div"> {}
       <FieldGroup>
         <Field>
           <FieldLabel for="signup-name">Full Name</FieldLabel>
-          <Input id="signup-name" name="name" type="text" placeholder="John Doe" required/>
+          <TextInput id="signup-name" name="name" type="text" placeholder="John Doe" required/>
         </Field>
         <Field>
           <FieldLabel for="signup-email">Email</FieldLabel>
-          <Input id="signup-email" name="email" type="email" placeholder="m@example.com" required/>
+          <TextInput id="signup-email" name="email" type="email" placeholder="m@example.com" required/>
           <FieldDescription>
             We'll use this to contact you. We will not share your email with anyone else.
           </FieldDescription>
         </Field>
         <Field>
           <FieldLabel for="signup-password">Password</FieldLabel>
-          <Input id="signup-password" name="password" type="password" required/>
+          <TextInput id="signup-password" name="password" type="password" required/>
           <FieldDescription>Must be at least 8 characters long.</FieldDescription>
         </Field>
         <Field>
           <FieldLabel for="signup-confirm-password">Confirm Password</FieldLabel>
-          <Input id="signup-confirm-password" name="confirm-password" type="password" required/>
+          <TextInput id="signup-confirm-password" name="confirm-password" type="password" required/>
           <FieldDescription>Please confirm your password.</FieldDescription>
         </Field>
         <FieldGroup>

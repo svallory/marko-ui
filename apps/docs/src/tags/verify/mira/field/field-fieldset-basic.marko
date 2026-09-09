@@ -6,7 +6,7 @@ import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
 import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
 import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
 import FieldSeparator from "@marko-ui/shadcn/ui/field/field-separator.marko";
-import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 
 <FieldSet class="max-w-sm">
   <FieldLegend>Profile</FieldLegend>
@@ -14,12 +14,12 @@ import Input from "@marko-ui/shadcn/ui/input/input.marko";
   <FieldGroup>
     <Field>
       <FieldLabel for="field-set-name">Display name</FieldLabel>
-      <Input id="field-set-name" placeholder="Ada Lovelace"/>
+      <TextInput id="field-set-name" placeholder="Ada Lovelace"/>
     </Field>
     <FieldSeparator>or</FieldSeparator>
     <Field>
       <FieldLabel for="field-set-handle">Handle</FieldLabel>
-      <Input id="field-set-handle" placeholder="@ada"/>
+      <TextInput id="field-set-handle" placeholder="@ada"/>
     </Field>
   </FieldGroup>
 </FieldSet>

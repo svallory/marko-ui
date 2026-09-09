@@ -32,7 +32,7 @@ import Tabs from "@marko-ui/shadcn/ui/tabs/tabs.marko";
 import Select from "@marko-ui/shadcn/ui/select/select.marko";
 import Badge from "@marko-ui/shadcn/ui/badge/badge.marko";
 import Checkbox from "@marko-ui/shadcn/ui/checkbox/checkbox.marko";
-import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 import Label from "@marko-ui/shadcn/ui/label/label.marko";
 import Separator from "@marko-ui/shadcn/ui/separator/separator.marko";
 import Table from "@marko-ui/shadcn/ui/table/table.marko";
@@ -332,7 +332,7 @@ static const drawerChartConfig = {
                         <form class="flex flex-col gap-4">
                           <div class="flex flex-col gap-3">
                             <Label for=`${row.id}-header`>Header</Label>
-                            <Input id=`${row.id}-header` value=row.header/>
+                            <TextInput id=`${row.id}-header` value=row.header/>
                           </div>
                           <div class="grid grid-cols-2 gap-4">
                             <div class="flex flex-col gap-3">
@@ -347,11 +347,11 @@ static const drawerChartConfig = {
                           <div class="grid grid-cols-2 gap-4">
                             <div class="flex flex-col gap-3">
                               <Label for=`${row.id}-target`>Target</Label>
-                              <Input id=`${row.id}-target` value=row.target/>
+                              <TextInput id=`${row.id}-target` value=row.target/>
                             </div>
                             <div class="flex flex-col gap-3">
                               <Label for=`${row.id}-limit`>Limit</Label>
-                              <Input id=`${row.id}-limit` value=row.limit/>
+                              <TextInput id=`${row.id}-limit` value=row.limit/>
                             </div>
                           </div>
                           <div class="flex flex-col gap-3">
@@ -395,7 +395,7 @@ static const drawerChartConfig = {
                     <TableCell>
                       <form class="flex justify-end">
                         <Label for=`${row.id}-target-cell` class="sr-only">Target</Label>
-                        <Input
+                        <TextInput
                           class="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30"
                           value=row.target
                           id=`${row.id}-target-cell`
@@ -407,7 +407,7 @@ static const drawerChartConfig = {
                     <TableCell>
                       <form class="flex justify-end">
                         <Label for=`${row.id}-limit-cell` class="sr-only">Limit</Label>
-                        <Input
+                        <TextInput
                           class="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30"
                           value=row.limit
                           id=`${row.id}-limit-cell`

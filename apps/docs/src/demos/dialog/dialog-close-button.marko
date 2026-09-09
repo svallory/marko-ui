@@ -1,6 +1,6 @@
 import Dialog from "@marko-ui/shadcn/ui/dialog/dialog.marko";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
-import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 import Label from "@marko-ui/shadcn/ui/label/label.marko";
 
 <Dialog>
@@ -12,7 +12,7 @@ import Label from "@marko-ui/shadcn/ui/label/label.marko";
   <div class="flex items-center gap-2">
     <div class="grid flex-1 gap-2">
       <Label for="link" class="sr-only">Link</Label>
-      <Input id="link" value="https://example.com/docs/installation" readonly/>
+      <TextInput id="link" value="https://example.com/docs/installation" readonly/>
     </div>
   </div>
   <@footer>

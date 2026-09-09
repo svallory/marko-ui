@@ -1,6 +1,6 @@
 import SidebarGroup from "@marko-ui/shadcn/ui/sidebar/group.marko";
 import Label from "@marko-ui/shadcn/ui/label/label.marko";
-import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 
 export interface Input extends Marko.Input<"form"> {}
 
@@ -10,7 +10,7 @@ export interface Input extends Marko.Input<"form"> {}
   <SidebarGroup class="py-0">
     <div class="relative" data-slot="sidebar-group-content">
       <Label for="search" class="sr-only">Search</Label>
-      <Input
+      <TextInput
         id="search"
         placeholder="Search the docs..."
         class="h-8 w-full bg-background pl-8 shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"

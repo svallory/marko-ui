@@ -3,7 +3,7 @@ import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
 import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
 import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
 import FieldSeparator from "@marko-ui/shadcn/ui/field/field-separator.marko";
-import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 import { cn } from "@marko-ui/shadcn/lib/utils.ts";
 
 export interface Input extends Marko.Input<"div"> {}
@@ -43,7 +43,7 @@ export interface Input extends Marko.Input<"div"> {}
       </div>
       <div data-slot="field">
         <FieldLabel for="login-05-email">Email</FieldLabel>
-        <Input id="login-05-email" name="email" type="email" placeholder="m@example.com" required/>
+        <TextInput id="login-05-email" name="email" type="email" placeholder="m@example.com" required/>
       </div>
       <div data-slot="field">
         <Button type="submit">Login</Button>

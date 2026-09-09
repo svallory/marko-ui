@@ -5,7 +5,7 @@ import Field from "@marko-ui/shadcn/ui/field/field.marko";
 import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
 import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
 import FieldError from "@marko-ui/shadcn/ui/field/field-error.marko";
-import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
 // Native ValidityState is the validation baseline: zero dependencies, and it
@@ -54,7 +54,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
     <FieldGroup>
       <Field invalid=!!errors.username>
         <FieldLabel for="signup-username">Username</FieldLabel>
-        <Input
+        <TextInput
           id="signup-username"
           name="username"
           required
@@ -74,7 +74,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
       <Field invalid=!!errors.email>
         <FieldLabel for="signup-email">Email</FieldLabel>
-        <Input
+        <TextInput
           id="signup-email"
           name="email"
           type="email"
@@ -89,7 +89,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
       <Field invalid=!!errors.password>
         <FieldLabel for="signup-password">Password</FieldLabel>
-        <Input
+        <TextInput
           id="signup-password"
           name="password"
           type="password"

@@ -1,5 +1,5 @@
 import Label from "@marko-ui/shadcn/ui/label/label.marko";
-import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 
 export interface Input extends Marko.Input<"form"> {}
 
@@ -12,7 +12,7 @@ export interface Input extends Marko.Input<"form"> {}
 <form ...rest class=className>
   <div class="relative">
     <Label for="search" class="sr-only">Search</Label>
-    <Input id="search" placeholder="Type to search..." class="h-8 pl-7"/>
+    <TextInput id="search" placeholder="Type to search..." class="h-8 pl-7"/>
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="24"

@@ -2,7 +2,7 @@
 import Dialog from "@marko-ui/shadcn/ui/dialog/dialog.marko";
 import Drawer from "@marko-ui/shadcn/ui/drawer/drawer.marko";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
-import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 import Label from "@marko-ui/shadcn/ui/label/label.marko";
 
 // Upstream: registry/new-york-v4/examples/drawer-dialog.tsx — renders a
@@ -36,11 +36,11 @@ import Label from "@marko-ui/shadcn/ui/label/label.marko";
     <form class="grid items-start gap-6">
       <div class="grid gap-3">
         <Label for="drawer-dialog-email">Email</Label>
-        <Input type="email" id="drawer-dialog-email" name="email" value="shadcn@example.com"/>
+        <TextInput type="email" id="drawer-dialog-email" name="email" value="shadcn@example.com"/>
       </div>
       <div class="grid gap-3">
         <Label for="drawer-dialog-username">Username</Label>
-        <Input id="drawer-dialog-username" name="username" value="@shadcn"/>
+        <TextInput id="drawer-dialog-username" name="username" value="@shadcn"/>
       </div>
       <Button type="submit">Save changes</Button>
     </form>
@@ -56,11 +56,11 @@ import Label from "@marko-ui/shadcn/ui/label/label.marko";
     <form class="grid items-start gap-6">
       <div class="grid gap-3">
         <Label for="drawer-dialog-email-mobile">Email</Label>
-        <Input type="email" id="drawer-dialog-email-mobile" name="email" value="shadcn@example.com"/>
+        <TextInput type="email" id="drawer-dialog-email-mobile" name="email" value="shadcn@example.com"/>
       </div>
       <div class="grid gap-3">
         <Label for="drawer-dialog-username-mobile">Username</Label>
-        <Input id="drawer-dialog-username-mobile" name="username" value="@shadcn"/>
+        <TextInput id="drawer-dialog-username-mobile" name="username" value="@shadcn"/>
       </div>
     </form>
     <@footer>
