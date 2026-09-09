@@ -395,7 +395,7 @@ static const drawerChartConfig = {
                     <TableCell>
                       <form class="flex justify-end">
                         <Label for=`${row.id}-target-cell` class="sr-only">Target</Label>
-                        <Input
+                        <TextInput
                           class="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30"
                           value=row.target
                           id=`${row.id}-target-cell`
@@ -407,7 +407,7 @@ static const drawerChartConfig = {
                     <TableCell>
                       <form class="flex justify-end">
                         <Label for=`${row.id}-limit-cell` class="sr-only">Limit</Label>
-                        <Input
+                        <TextInput
                           class="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30"
                           value=row.limit
                           id=`${row.id}-limit-cell`

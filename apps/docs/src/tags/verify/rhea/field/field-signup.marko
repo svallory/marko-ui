@@ -55,7 +55,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
     <FieldGroup>
       <Field invalid=!!errors.username>
         <FieldLabel for="signup-username">Username</FieldLabel>
-        <Input
+        <TextInput
           id="signup-username"
           name="username"
           required
@@ -75,7 +75,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
       <Field invalid=!!errors.email>
         <FieldLabel for="signup-email">Email</FieldLabel>
-        <Input
+        <TextInput
           id="signup-email"
           name="email"
           type="email"
@@ -90,7 +90,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
       <Field invalid=!!errors.password>
         <FieldLabel for="signup-password">Password</FieldLabel>
-        <Input
+        <TextInput
           id="signup-password"
           name="password"
           type="password"
