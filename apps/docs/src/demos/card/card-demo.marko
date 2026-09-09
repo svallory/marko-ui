@@ -6,7 +6,7 @@ import CardAction from "@marko-ui/shadcn/ui/card/action.marko";
 import CardContent from "@marko-ui/shadcn/ui/card/content.marko";
 import CardFooter from "@marko-ui/shadcn/ui/card/footer.marko";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
-import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 import Label from "@marko-ui/shadcn/ui/label/label.marko";
 
 <Card class="w-full max-w-sm">
@@ -21,7 +21,7 @@ import Label from "@marko-ui/shadcn/ui/label/label.marko";
     <div class="flex flex-col gap-6">
       <div class="grid gap-2">
         <Label for="card-demo-email">Email</Label>
-        <Input id="card-demo-email" type="email" placeholder="m@example.com" required/>
+        <TextInput id="card-demo-email" type="email" placeholder="m@example.com" required/>
       </div>
       <div class="grid gap-2">
         <div class="flex items-center">
@@ -30,7 +30,7 @@ import Label from "@marko-ui/shadcn/ui/label/label.marko";
             Forgot your password?
           </a>
         </div>
-        <Input id="card-demo-password" type="password" required/>
+        <TextInput id="card-demo-password" type="password" required/>
       </div>
     </div>
   </CardContent>

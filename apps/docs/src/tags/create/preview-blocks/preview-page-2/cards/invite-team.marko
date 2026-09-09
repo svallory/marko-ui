@@ -12,7 +12,7 @@ import CardHeader from "@marko-ui/shadcn/ui/card/header.marko";
 import CardTitle from "@marko-ui/shadcn/ui/card/title.marko";
 import Field from "@marko-ui/shadcn/ui/field/field.marko";
 import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
-import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 import InputGroup from "@marko-ui/shadcn/ui/input-group/input-group.marko";
 import InputGroupAddon from "@marko-ui/shadcn/ui/input-group/addon.marko";
 import InputGroupButton from "@marko-ui/shadcn/ui/input-group/button.marko";
@@ -41,7 +41,7 @@ static const ROLES = [
     <div class="flex flex-col gap-3">
       <for|invite| of=INVITES by=(invite) => invite.email>
         <div class="flex items-center gap-2">
-          <Input value=invite.email class="flex-1"/>
+          <TextInput value=invite.email class="flex-1"/>
           <Select
             items=ROLES
             defaultValue=[invite.role.toLowerCase()]

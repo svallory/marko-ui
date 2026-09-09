@@ -6,7 +6,7 @@ import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko"
 import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
 import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
 import FieldSeparator from "@marko-ui/shadcn/ui/field/field-separator.marko";
-import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 import { cn } from "@marko-ui/shadcn/lib/utils.ts";
 
 export interface Input extends Marko.Input<"div"> {}
@@ -26,7 +26,7 @@ export interface Input extends Marko.Input<"div"> {}
           </div>
           <Field>
             <FieldLabel for="signup-email">Email</FieldLabel>
-            <Input id="signup-email" name="email" type="email" placeholder="m@example.com" required/>
+            <TextInput id="signup-email" name="email" type="email" placeholder="m@example.com" required/>
             <FieldDescription>
               We'll use this to contact you. We will not share your email with anyone else.
             </FieldDescription>
@@ -35,11 +35,11 @@ export interface Input extends Marko.Input<"div"> {}
             <Field class="grid grid-cols-2 gap-4">
               <Field>
                 <FieldLabel for="signup-password">Password</FieldLabel>
-                <Input id="signup-password" name="password" type="password" required/>
+                <TextInput id="signup-password" name="password" type="password" required/>
               </Field>
               <Field>
                 <FieldLabel for="signup-confirm-password">Confirm Password</FieldLabel>
-                <Input id="signup-confirm-password" name="confirm-password" type="password" required/>
+                <TextInput id="signup-confirm-password" name="confirm-password" type="password" required/>
               </Field>
             </Field>
             <FieldDescription>

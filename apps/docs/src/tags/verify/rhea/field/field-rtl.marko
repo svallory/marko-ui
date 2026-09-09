@@ -13,7 +13,7 @@ import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
 import FieldLegend from "@marko-ui/shadcn/ui/field/field-legend.marko";
 import FieldSeparator from "@marko-ui/shadcn/ui/field/field-separator.marko";
 import FieldSet from "@marko-ui/shadcn/ui/field/field-set.marko";
-import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 import Checkbox from "@marko-ui/shadcn/ui/checkbox/checkbox.marko";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
@@ -26,11 +26,11 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
         <FieldGroup>
           <Field>
             <FieldLabel for="field-rtl-card-name">الاسم على البطاقة</FieldLabel>
-            <Input id="field-rtl-card-name" placeholder="Evil Rabbit" required dir="rtl"/>
+            <TextInput id="field-rtl-card-name" placeholder="Evil Rabbit" required dir="rtl"/>
           </Field>
           <Field>
             <FieldLabel for="field-rtl-card-number">رقم البطاقة</FieldLabel>
-            <Input id="field-rtl-card-number" placeholder="1234 5678 9012 3456" required dir="rtl"/>
+            <TextInput id="field-rtl-card-number" placeholder="1234 5678 9012 3456" required dir="rtl"/>
             <FieldDescription>أدخل رقم البطاقة المكون من 16 رقمًا</FieldDescription>
           </Field>
         </FieldGroup>

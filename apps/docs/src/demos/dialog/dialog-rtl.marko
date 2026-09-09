@@ -1,6 +1,6 @@
 import Dialog from "@marko-ui/shadcn/ui/dialog/dialog.marko";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
-import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 import Label from "@marko-ui/shadcn/ui/label/label.marko";
 
 // Upstream's dialog-rtl demo drives a live language switcher
@@ -22,11 +22,11 @@ import Label from "@marko-ui/shadcn/ui/label/label.marko";
     <div class="grid gap-4">
       <div class="grid gap-2">
         <Label for="name-rtl">الاسم</Label>
-        <Input id="name-rtl" name="name" value="Pedro Duarte"/>
+        <TextInput id="name-rtl" name="name" value="Pedro Duarte"/>
       </div>
       <div class="grid gap-2">
         <Label for="username-rtl">اسم المستخدم</Label>
-        <Input id="username-rtl" name="username" value="@peduarte"/>
+        <TextInput id="username-rtl" name="username" value="@peduarte"/>
       </div>
     </div>
     <@footer>

@@ -13,7 +13,7 @@ import Checkbox from "@marko-ui/shadcn/ui/checkbox/checkbox.marko";
 import Field from "@marko-ui/shadcn/ui/field/field.marko";
 import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
 import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
-import Input from "@marko-ui/shadcn/ui/input/input.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 import Select from "@marko-ui/shadcn/ui/select/select.marko";
 
 static const STATES = [
@@ -37,16 +37,16 @@ static const COUNTRIES = [
     <FieldGroup>
       <Field>
         <FieldLabel for="shipping-street">Street address</FieldLabel>
-        <Input id="shipping-street" placeholder="123 Main Street" />
+        <TextInput id="shipping-street" placeholder="123 Main Street" />
       </Field>
       <Field>
         <FieldLabel for="shipping-apt">Apt / Suite</FieldLabel>
-        <Input id="shipping-apt" placeholder="Apt 4B" />
+        <TextInput id="shipping-apt" placeholder="Apt 4B" />
       </Field>
       <FieldGroup class="grid grid-cols-2">
         <Field>
           <FieldLabel for="shipping-city">City</FieldLabel>
-          <Input id="shipping-city" placeholder="San Francisco" />
+          <TextInput id="shipping-city" placeholder="San Francisco" />
         </Field>
         <Field>
           <FieldLabel for="shipping-state">State</FieldLabel>
@@ -61,7 +61,7 @@ static const COUNTRIES = [
       <FieldGroup class="grid grid-cols-2">
         <Field>
           <FieldLabel for="shipping-zip">ZIP Code</FieldLabel>
-          <Input id="shipping-zip" placeholder="94102" />
+          <TextInput id="shipping-zip" placeholder="94102" />
         </Field>
         <Field>
           <FieldLabel for="shipping-country">Country</FieldLabel>
