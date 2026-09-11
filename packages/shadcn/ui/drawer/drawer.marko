@@ -16,7 +16,7 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
   /** Sugar for onTriggerValueChange — receives the plain trigger value. */
   triggerValueChange?: (value: string | null) => void;
   /** Render-prop trigger: `<@trigger|props|><Button ...props/></@trigger>`. */
-  trigger?: Marko.Body<[Record<string, unknown>]>;
+  trigger?: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
   title?: Marko.Body;
   description?: Marko.Body;
   content?: Marko.Body;
@@ -68,7 +68,7 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
 
 <div ...nativeAttrs() data-slot="drawer">
   <if=input.trigger>
-    <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "drawer-trigger" })/>
+    <${input.trigger.content}({ ...api().getTriggerProps(), "data-slot": "drawer-trigger" })/>
   </if>
 
   <if=input.swipeArea>

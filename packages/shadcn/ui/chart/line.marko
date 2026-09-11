@@ -44,7 +44,7 @@ export interface LineSeriesAttrs {
   /** Dot fill comes from each row's own `fill` field instead of the series color (chart-line-dots-colors). */
   dotColorByRow?: boolean;
   /** Replaces the default <circle> dot with custom content per point (chart-line-dots-custom). */
-  dotContent?: Marko.Body<[{ x: number; y: number; row: Row }]>;
+  dotContent?: Marko.AttrTag<{ content: Marko.Body<[{ x: number; y: number; row: Row }]> }>;
   /** LabelList-equivalent: value (or another field) rendered above each point. */
   labels?: LabelSpec[];
 }
@@ -129,7 +129,7 @@ export interface SeriesRender {
   strokeWidth: number;
   dot: boolean;
   dotColorByRow: boolean;
-  dotContent?: Marko.Body<[{ x: number; y: number; row: Row }]>;
+  dotContent?: Marko.AttrTag<{ content: Marko.Body<[{ x: number; y: number; row: Row }]> }>;
   labels?: LabelSpec[];
   path: string;
   points: { x: number; y: number; row: Row }[];
@@ -293,7 +293,7 @@ static function buildTooltipRows(
         <if=series.dotContent>
           <g class="recharts-layer recharts-line-dots">
             <for|point| of=series.points>
-              <${series.dotContent}({ x: point.x, y: point.y, row: point.row })/>
+              <${series.dotContent?.content}({ x: point.x, y: point.y, row: point.row })/>
             </for>
           </g>
         </if>

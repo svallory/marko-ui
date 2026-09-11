@@ -9,9 +9,9 @@ export interface Input extends Marko.Input<"div"> {
   /** CSS length for --sidebar-width-icon, default 3rem. */
   widthIcon?: string;
   /** Sidebar panel content (header/content/footer parts). */
-  sidebar?: Marko.Body<[{ open: boolean; toggle: () => void }]>;
+  sidebar?: Marko.AttrTag<{ content: Marko.Body<[{ open: boolean; toggle: () => void }]> }>;
   /** Main content area, rendered next to the sidebar. */
-  main?: Marko.Body<[{ open: boolean; toggle: () => void }]>;
+  main?: Marko.AttrTag<{ content: Marko.Body<[{ open: boolean; toggle: () => void }]> }>;
 }
 
 <let/open=input.open ?? true/>
@@ -44,9 +44,9 @@ export interface Input extends Marko.Input<"div"> {
   class=cn("group/sidebar-wrapper flex min-h-svh w-full has-data-[variant=inset]:bg-sidebar", className)
 >
   <if=sidebar>
-    <${sidebar}({ open, toggle })/>
+    <${sidebar.content}({ open, toggle })/>
   </if>
   <if=main>
-    <${main}({ open, toggle })/>
+    <${main.content}({ open, toggle })/>
   </if>
 </div>

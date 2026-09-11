@@ -46,11 +46,11 @@ export interface Input {
   indicator?: "line" | "dot" | "dashed";
   legend?: boolean | "top" | "bottom";
   /** Rendered inside the svg, receives the pie center — for donut text. */
-  centerLabel?: Marko.Body<[{ cx: number; cy: number }]>;
+  centerLabel?: Marko.AttrTag<{ content: Marko.Body<[{ cx: number; cy: number }]> }>;
   /** Plain numeric-value label with a leader line, positioned outside each slice (recharts' bare `label` prop). */
   outsideLabel?: boolean;
   /** Custom label rendered at each slice's centroid — e.g. value-in-foreground-color or category-name-in-background-color. */
-  sliceLabel?: Marko.Body<[{ x: number; y: number; row: Row; value: number; index: number }]>;
+  sliceLabel?: Marko.AttrTag<{ content: Marko.Body<[{ x: number; y: number; row: Row; value: number; index: number }]> }>;
   /** Highlights one sector at outerRadius + activeOuterRadiusDelta (default 10) — mirrors chart-pie-donut-active / chart-pie-interactive. */
   activeIndex?: number;
   activeOuterRadiusDelta?: number;
@@ -231,12 +231,12 @@ static function outsideLabelGeometry(
     <if=sliceLabel>
       <g class="recharts-layer recharts-label-list">
         <for|arcDatum| of=arcs>
-          <${sliceLabel}({ x: cx + arcDatum.centroid[0], y: cy + arcDatum.centroid[1], row: arcDatum.row, value: arcDatum.value, index: arcDatum.index })/>
+          <${sliceLabel.content}({ x: cx + arcDatum.centroid[0], y: cy + arcDatum.centroid[1], row: arcDatum.row, value: arcDatum.value, index: arcDatum.index })/>
         </for>
       </g>
     </if>
     <if=centerLabel>
-      <${centerLabel}({ cx, cy })/>
+      <${centerLabel.content}({ cx, cy })/>
     </if>
   </svg>
   <if=(legend === true || legend === "bottom")>

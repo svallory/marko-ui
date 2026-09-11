@@ -14,7 +14,7 @@ import { stripOwnProps } from "#lib/native-attrs.ts";
 // receives the details object.
 export type Input = MachineInput<"div", dialogMachine.Props> & {
   openChange?: (open: boolean) => void;
-  trigger?: Marko.Body<[Record<string, unknown>]>;
+  trigger?: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
   media?: Marko.Body;
   title?: Marko.Body;
   description?: Marko.Body;
@@ -61,7 +61,7 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
 <const/size=input.size ?? "default"/>
 
 <if=input.trigger>
-  <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "alert-dialog-trigger" })/>
+  <${input.trigger.content}({ ...api().getTriggerProps(), "data-slot": "alert-dialog-trigger" })/>
 </if>
 <zag-portal>
   <if=api().open>

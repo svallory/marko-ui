@@ -42,7 +42,7 @@ export interface DropdownMenuItemAttrs extends DropdownMenuItem {
 }
 
 export interface Input {
-  trigger: Marko.Body<[Record<string, unknown>]>;
+  trigger: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
   items?: DropdownMenuItem[];
   item?: Marko.AttrTag<DropdownMenuItemAttrs>;
   select?: (value: string) => void;
@@ -87,7 +87,7 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
 // <Submenu> child receives so it can call `setParent` on this menu's
 // service (see submenu.marko for the full wiring rationale).
 
-<${input.trigger}({ ...api().getTriggerProps(), "data-slot": "dropdown-menu-trigger" })/>
+<${input.trigger.content}({ ...api().getTriggerProps(), "data-slot": "dropdown-menu-trigger" })/>
 <zag-portal>
   <if=api().open>
     <div ...api().getPositionerProps() style=positionerStyle data-slot="dropdown-menu-positioner">

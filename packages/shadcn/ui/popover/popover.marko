@@ -13,7 +13,7 @@ import { cn } from "#lib/utils.ts";
 // `popoverMachine.props`.
 export type Input = MachineInput<"div", popoverMachine.Props> & {
   /** Trigger render-prop — the element that opens the popover. */
-  trigger: Marko.Body<[Record<string, unknown>]>;
+  trigger: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
   /** Popover content shown when open. */
   content: Marko.Body;
   /** Extra class for the content panel. */
@@ -24,7 +24,7 @@ export type Input = MachineInput<"div", popoverMachine.Props> & {
 <zag/api=() => popoverMachine from=input/>
 
 <div data-slot="popover">
-  <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "popover-trigger" })/>
+  <${input.trigger.content}({ ...api().getTriggerProps(), "data-slot": "popover-trigger" })/>
   // NOTE: upstream shadcn sets data-slot="popover-portal" on Radix's Portal,
   // which renders a real element. marko-zag's <zag-portal> renders a
   // `display:contents` host and does not forward attributes, so the
