@@ -10,7 +10,7 @@ export type Input = MachineInput<"input", editableMachine.Props> & {
   valueCommit?: (value: string) => void;
   valueRevert?: (value: string) => void;
   placeholder?: string | { edit: string; preview: string };
-  trigger?: Marko.Body<[Record<string, unknown>]>;
+  trigger?: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
 };
 
 <zag/api=() => editableMachine from=input
@@ -72,7 +72,7 @@ export type Input = MachineInput<"input", editableMachine.Props> & {
       <span class="sr-only">Cancel</span>
     </button>
     <if=input.trigger>
-      <${input.trigger}({ ...api().getEditTriggerProps(), "data-slot": "editable-trigger" })/>
+      <${input.trigger.content}({ ...api().getEditTriggerProps(), "data-slot": "editable-trigger" })/>
     </if>
     <else>
       <button

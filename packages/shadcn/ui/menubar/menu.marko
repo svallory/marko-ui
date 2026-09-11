@@ -35,7 +35,7 @@ export interface MenubarItemAttrs extends DropdownMenuItem {
 }
 
 export interface Input {
-  trigger: Marko.Body<[Record<string, unknown>]>;
+  trigger: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
   items?: DropdownMenuItem[];
   item?: Marko.AttrTag<MenubarItemAttrs>;
   select?: (value: string) => void;
@@ -81,7 +81,7 @@ static function menuEntries(input: Input): MenubarItemAttrs[] {
 // applied after the spread, matching how every other render-prop trigger in
 // this registry (popover, hover-card) hands back props without dictating
 // element ownership.
-<${input.trigger}({ ...api().getTriggerProps(), "data-slot": "menubar-trigger", class: "mu-menubar-trigger flex items-center outline-hidden select-none" })/>
+<${input.trigger.content}({ ...api().getTriggerProps(), "data-slot": "menubar-trigger", class: "mu-menubar-trigger flex items-center outline-hidden select-none" })/>
 <zag-portal>
   <if=api().open>
     <div ...api().getPositionerProps() style=positionerStyle data-slot="menubar-positioner">

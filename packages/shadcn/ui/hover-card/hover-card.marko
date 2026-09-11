@@ -10,7 +10,7 @@ import { cn } from "#lib/utils.ts";
 // receives the details object.
 export type Input = MachineInput<"span", hoverCardMachine.Props> & {
   /** Trigger render-prop — typically a link. */
-  trigger: Marko.Body<[Record<string, unknown>]>;
+  trigger: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
   /** Card content shown when open. */
   content: Marko.Body;
   /** Extra class for the content panel. */
@@ -22,7 +22,7 @@ export type Input = MachineInput<"span", hoverCardMachine.Props> & {
 <zag/api=() => hoverCardMachine from=input/>
 
 <span data-slot="hover-card">
-  <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "hover-card-trigger" })/>
+  <${input.trigger.content}({ ...api().getTriggerProps(), "data-slot": "hover-card-trigger" })/>
   // NOTE: upstream shadcn sets data-slot="hover-card-portal" on Radix's Portal,
   // which renders a real element. marko-zag's <zag-portal> renders a
   // `display:contents` host and does not forward attributes, so the

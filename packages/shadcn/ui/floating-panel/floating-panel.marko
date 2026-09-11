@@ -25,7 +25,7 @@ export type Input = Omit<
   /** Sugar for onStageChange — receives the plain stage. */
   stageChange?: (stage: floatingPanelMachine.Stage) => void;
   /** Render-prop trigger: `<@trigger|props|><Button ...props/></@trigger>`. */
-  trigger?: Marko.Body<[Record<string, unknown>]>;
+  trigger?: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
   /** Header title content. */
   title?: Marko.Body;
   /** Panel body content. */
@@ -79,7 +79,7 @@ export type Input = Omit<
     const { "aria-controls": ariaControls, ...rest } = api().getTriggerProps() as Record<string, unknown>;
     return api().open ? { ...rest, "aria-controls": ariaControls } : rest;
   })()>
-  <${input.trigger}({
+  <${input.trigger.content}({
     ...triggerProps,
     "data-slot": "floating-panel-trigger",
   })/>

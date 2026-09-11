@@ -11,7 +11,7 @@ import { stripOwnProps } from "#lib/native-attrs.ts";
 // receives the details object.
 export type Input = MachineInput<"span", tooltipMachine.Props> & {
   /** Trigger render-prop — typically the element the tooltip describes. */
-  trigger: Marko.Body<[Record<string, unknown>]>;
+  trigger: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
   /** Tooltip content shown when open. */
   content: string | Marko.Body;
   openChange?: (open: boolean) => void;
@@ -32,7 +32,7 @@ export type Input = MachineInput<"span", tooltipMachine.Props> & {
 >
 
 <span ...nativeAttrs() data-slot="tooltip">
-  <${input.trigger}({ ...api().getTriggerProps(), "data-slot": "tooltip-trigger" })/>
+  <${input.trigger.content}({ ...api().getTriggerProps(), "data-slot": "tooltip-trigger" })/>
   <zag-portal>
     <if=api().open>
       <div ...api().getPositionerProps() style=positionerStyle data-slot="tooltip-positioner">

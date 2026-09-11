@@ -33,7 +33,7 @@ export type Input = Omit<
   /** Sugar for onStatusChange — receives the plain status. */
   statusChange?: (status: tourMachine.StepStatus) => void;
   /** Render-prop for the tour trigger (usually a "Start tour" button). */
-  trigger?: Marko.Body<[Record<string, unknown>]>;
+  trigger?: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
 };
 
 static function resolveSteps(
@@ -79,7 +79,7 @@ static function resolveSteps(
 >
 
 <if=input.trigger>
-  <${input.trigger}({
+  <${input.trigger.content}({
     "data-slot": "tour-trigger",
     onClick: () => api().start(),
   })/>
