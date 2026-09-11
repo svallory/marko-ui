@@ -42,7 +42,12 @@ const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 const NEEDS_EXACT: Record<string, string> = {
   marko: "pinned to 6.3.46; bumping needs a regression sweep (see AGENTS.md)",
   "@marko/compiler": "must resolve to exactly one instance workspace-wide",
-  "marko-zag": "stable 2.0.0; a silent bun update once downgraded it to 1.2.1",
+  // marko-zag is deliberately NOT exact: @marko-ui/shadcn is published, and an
+  // exact pin there can never dedupe against the consumer's own marko-zag —
+  // a newer patch nests a second copy under the package and breaks the build
+  // (see AGENTS.md hard constraints, 2026-09-11). The caret's ^2 floor also
+  // makes the old bun-update-to-1.2.1 downgrade impossible. Version agreement
+  // across packages is still enforced by the general sync check below.
   "@internationalized/date": "travels with the @zag-js date machines",
 };
 
