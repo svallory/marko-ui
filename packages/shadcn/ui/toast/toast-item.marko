@@ -12,6 +12,7 @@ import * as toastMachine from "@zag-js/toast";
 import { connect, type ZagModule } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
+import { toastItem as styles } from "./classes.ts";
 
 export interface Input {
   /** Getter for this toast's options as held by the group machine. */
@@ -79,24 +80,7 @@ export interface Input {
 <div
   ...api().getRootProps()
   data-slot="toast"
-  class=cn(
-    input.toastClass,
-    // Zag drives placement/stacking through CSS custom properties on this
-    // element (--x/--y/--scale/--z-index/--height/--opacity). They must be
-    // consumed by the `translate`/`scale` PROPERTIES, not by Tailwind's
-    // `transform` utilities, which would overwrite them.
-    "group pointer-events-auto relative flex w-[356px] max-w-[calc(100vw-2rem)] items-start gap-3 rounded-lg border border-border bg-popover p-4 text-sm text-popover-foreground shadow-lg outline-none",
-    // `--scale` is only set for background toasts in overlap mode, so it needs
-    // an identity fallback. `--height` is deliberately NOT consumed: Zag
-    // measures each toast with `offsetHeight`, and binding the CSS `height` to
-    // the measurement it feeds produces a 0px fixed point on first paint.
-    // `min-h` keeps the stack offsets stable while the content sizes itself.
-    "min-h-14 [translate:var(--x)_var(--y)] [scale:var(--scale,1)] [z-index:var(--z-index)] opacity-[var(--opacity)]",
-    "[will-change:translate,opacity,scale] [transition:translate_400ms,scale_400ms,opacity_400ms] [transition-timing-function:cubic-bezier(0.21,1.02,0.73,1)]",
-    "data-[state=closed]:[transition:translate_400ms,scale_400ms,opacity_200ms]",
-    "focus-visible:ring-[3px] focus-visible:ring-ring/50",
-    "data-[type=error]:border-destructive/50 data-[type=error]:text-destructive",
-  )
+  class=cn(input.toastClass, styles.root)
 >
   // Ghost elements keep hover/pointer state stable across the gap between
   // toasts and during exit transitions. The "before" ghost is scaled to twice
@@ -117,7 +101,7 @@ export interface Input {
   // silently change the rendered mark. Left inline until the mapping gains the
   // name.
   <if=(api().type === "success")>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-slot="toast-icon" class="mt-0.5 size-4 shrink-0 relative z-[1] text-emerald-500">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-slot="toast-icon" class=styles.iconSuccess>
       <path d="M21.801 10A10 10 0 1 1 17 3.335"/>
       <path d="m9 11 3 3L22 4"/>
     </svg>
@@ -126,39 +110,39 @@ export interface Input {
     <Icon
       name="CircleAlertIcon"
       data-slot="toast-icon"
-      class="mt-0.5 size-4 shrink-0 relative z-[1] text-destructive"
+      class=styles.iconError
     />
   </else>
   <else if=(api().type === "warning")>
     <Icon
       name="TriangleAlertIcon"
       data-slot="toast-icon"
-      class="mt-0.5 size-4 shrink-0 relative z-[1] text-amber-500"
+      class=styles.iconWarning
     />
   </else>
   <else if=(api().type === "info")>
     <Icon
       name="InfoIcon"
       data-slot="toast-icon"
-      class="mt-0.5 size-4 shrink-0 relative z-[1] text-blue-500"
+      class=styles.iconInfo
     />
   </else>
   <else if=(api().type === "loading")>
     <Icon
       name="Loader2"
       data-slot="toast-icon"
-      class="mt-0.5 size-4 shrink-0 relative z-[1] animate-spin text-muted-foreground"
+      class=styles.iconLoading
     />
   </else>
 
-  <div class="relative z-[1] flex min-w-0 flex-1 flex-col gap-1">
+  <div class=styles.body>
     <if=api().title>
-      <div ...api().getTitleProps() data-slot="toast-title" class="font-medium leading-none">
+      <div ...api().getTitleProps() data-slot="toast-title" class=styles.title>
         ${api().title}
       </div>
     </if>
     <if=api().description>
-      <div ...api().getDescriptionProps() data-slot="toast-description" class="text-sm text-muted-foreground">
+      <div ...api().getDescriptionProps() data-slot="toast-description" class=styles.description>
         ${api().description}
       </div>
     </if>
@@ -168,7 +152,7 @@ export interface Input {
     <button
       ...api().getActionTriggerProps()
       data-slot="toast-action"
-      class="relative z-[1] inline-flex h-8 shrink-0 items-center rounded-md border border-border bg-transparent px-3 text-xs font-medium transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      class=styles.action
     >
       ${input.options().action?.label}
     </button>
@@ -179,9 +163,9 @@ export interface Input {
       ...api().getCloseTriggerProps()
       data-slot="toast-close"
       aria-label="Dismiss notification"
-      class="relative z-[1] shrink-0 rounded-xs text-muted-foreground opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      class=styles.close
     >
-      <Icon name="X" class="size-4"/>
+      <Icon name="X" class=styles.closeIcon/>
     </button>
   </if>
 
