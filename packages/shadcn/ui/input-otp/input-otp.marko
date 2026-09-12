@@ -3,6 +3,7 @@ import type { MachineInput } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { inputOtp as styles } from "./classes.ts";
 
 // MachineInput = native <div> attributes ∩ the machine's full Props, with
 // `id` made optional (generated below, overridable). `valueChange` and
@@ -43,10 +44,10 @@ export type Input = MachineInput<"div", pinInputMachine.Props> & {
   ...nativeAttrs()
   ...api().getRootProps()
   data-slot="input-otp"
-  class=cn("mu-input-otp flex items-center has-disabled:opacity-50", input.class)
+  class=cn(styles.root, input.class)
 >
   <input ...api().getHiddenInputProps()>
-  <div data-slot="input-otp-group" class="mu-input-otp-group flex items-center">
+  <div data-slot="input-otp-group" class=styles.group>
     <for|index| of=api().items>
       <if=(input.groupSize && index > 0 && index % input.groupSize === 0)>
         // No inline `[&_svg:not([class*='size-'])]:size-N` here: every style
@@ -57,7 +58,7 @@ export type Input = MachineInput<"div", pinInputMachine.Props> & {
         // `twMerge(mapped, original)` so an authored utility beats the
         // injected one. Upstream's InputOTPSeparator likewise carries no
         // classes; all sizing is the style layer's job.
-        <div data-slot="input-otp-separator" class="mu-input-otp-separator flex items-center">
+        <div data-slot="input-otp-separator" class=styles.separator>
           // `unsized`: the style layer sizes this icon through shadcn's
           // `[&_svg:not([class*='size-'])]` hatch, which only reaches an
           // <svg> that has NO size class. Icon's default `size-4` would
@@ -66,14 +67,14 @@ export type Input = MachineInput<"div", pinInputMachine.Props> & {
           <Icon name="Minus" unsized/>
         </div>
       </if>
-      <div data-slot="input-otp-slot" class="mu-input-otp-slot relative flex items-center justify-center has-focus:z-10">
+      <div data-slot="input-otp-slot" class=styles.slot>
         <input
           ...api().getInputProps({ index })
           data-slot="input-otp-input"
-          class="mu-input-otp-input peer border-input size-9 rounded-md border text-center text-sm shadow-xs outline-none focus:ring-[3px] focus:ring-ring/50 focus:border-ring disabled:cursor-not-allowed caret-transparent"
+          class=styles.input
         />
-        <div class="mu-input-otp-caret pointer-events-none absolute inset-0 hidden items-center justify-center peer-[:focus:not([data-filled])]:flex">
-          <div class="mu-input-otp-caret-line animate-caret-blink bg-foreground h-4 w-px duration-1000"></div>
+        <div class=styles.caret>
+          <div class=styles.caretLine></div>
         </div>
       </div>
     </for>

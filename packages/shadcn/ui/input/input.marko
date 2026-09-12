@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { input as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"input"> {}
 
@@ -7,9 +8,6 @@ export interface Input extends Marko.Input<"input"> {}
 <input
   type=type
   data-slot="input"
-  class=cn(
-    "mu-input w-full min-w-0 outline-none file:inline-flex file:border-0 file:bg-transparent file:text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
-    className,
-  )
+  class=cn(styles.root, className)
   ...rest
 />

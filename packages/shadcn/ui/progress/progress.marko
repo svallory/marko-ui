@@ -2,6 +2,7 @@ import * as progressMachine from "@zag-js/progress";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { progress as styles } from "./classes.ts";
 
 export type Input = MachineInput<"div", progressMachine.Props> & {
   valueChange?: (value: number | null) => void;
@@ -23,19 +24,19 @@ export type Input = MachineInput<"div", progressMachine.Props> & {
   ...nativeAttrs()
   ...api().getRootProps()
   data-slot="progress"
-  class=cn("mu-progress relative flex w-full items-center overflow-x-hidden flex-col gap-2", input.class)
+  class=cn(styles.root, input.class)
 >
   <if=input.label>
-    <div class="flex items-center justify-between text-sm">
-      <span ...api().getLabelProps() data-slot="progress-label" class="text-sm font-medium">${input.label}</span>
-      <span ...api().getValueTextProps() data-slot="progress-value" class="text-muted-foreground ml-auto text-sm tabular-nums">${api().valueAsString}</span>
+    <div class=styles.labelRow>
+      <span ...api().getLabelProps() data-slot="progress-label" class=styles.label>${input.label}</span>
+      <span ...api().getValueTextProps() data-slot="progress-value" class=styles.value>${api().valueAsString}</span>
     </div>
   </if>
-  <div ...api().getTrackProps() data-slot="progress-track" class="bg-muted relative h-2 w-full overflow-hidden rounded-full">
+  <div ...api().getTrackProps() data-slot="progress-track" class=styles.track>
     <div
       ...api().getRangeProps()
       data-slot="progress-indicator"
-      class="mu-progress-indicator size-full flex-1 transition-all"
+      class=styles.indicator
     />
   </div>
 </div>

@@ -2,6 +2,7 @@ import * as marqueeMachine from "@zag-js/marquee";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { marquee as styles } from "./classes.ts";
 
 export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
   items?: T[];
@@ -86,15 +87,15 @@ export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
   ...nativeAttrs()
   ...api().getRootProps()
   data-slot="marquee"
-  class=cn("relative overflow-hidden", input.class)
+  class=cn(styles.root, input.class)
 >
-  <div ...api().getEdgeProps({ side: "start" }) data-slot="marquee-edge-start" class="pointer-events-none absolute inset-y-0 start-0 z-10 w-12 bg-gradient-to-r from-background to-transparent"/>
-  <div ...api().getEdgeProps({ side: "end" }) data-slot="marquee-edge-end" class="pointer-events-none absolute inset-y-0 end-0 z-10 w-12 bg-gradient-to-l from-background to-transparent"/>
-  <div ...api().getViewportProps() data-slot="marquee-viewport" class="flex w-full">
+  <div ...api().getEdgeProps({ side: "start" }) data-slot="marquee-edge-start" class=styles.edgeStart/>
+  <div ...api().getEdgeProps({ side: "end" }) data-slot="marquee-edge-end" class=styles.edgeEnd/>
+  <div ...api().getViewportProps() data-slot="marquee-viewport" class=styles.viewport>
     <for|_, index| of=Array.from({ length: api().contentCount })>
-      <div ...api().getContentProps({ index }) data-slot="marquee-content" class="flex shrink-0 items-center">
+      <div ...api().getContentProps({ index }) data-slot="marquee-content" class=styles.content>
         <for|entry, itemIndex| of=entries>
-          <div ...api().getItemProps() data-slot="marquee-item" class="flex shrink-0 items-center">
+          <div ...api().getItemProps() data-slot="marquee-item" class=styles.item>
             <if=entry.body>
               <${entry.body}/>
             </if>

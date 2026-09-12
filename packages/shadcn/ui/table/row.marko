@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { row as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"tr"> {
   content?: Marko.Body;
@@ -9,7 +10,7 @@ export interface Input extends Marko.Input<"tr"> {
 <tr
   ...rest
   data-slot="table-row"
-  class=cn("mu-table-row has-aria-expanded:bg-muted/50", className)
+  class=cn(styles.root, className)
 >
   <${content}/>
 </tr>
