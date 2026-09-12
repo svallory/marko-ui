@@ -4,6 +4,7 @@ import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import type { DropdownMenuItem } from "../dropdown-menu/dropdown-menu.marko";
 import Submenu from "./submenu.marko";
+import { menu as styles } from "./classes.ts";
 
 // Attr-tag form of DropdownMenuItem. A SINGLE attr tag name (`item`) carries
 // all kinds (discriminated by `type`) rather than separate `item`/
@@ -81,25 +82,22 @@ static function menuEntries(input: Input): MenubarItemAttrs[] {
 // applied after the spread, matching how every other render-prop trigger in
 // this registry (popover, hover-card) hands back props without dictating
 // element ownership.
-<${input.trigger.content}({ ...api().getTriggerProps(), "data-slot": "menubar-trigger", class: "mu-menubar-trigger flex items-center outline-hidden select-none" })/>
+<${input.trigger.content}({ ...api().getTriggerProps(), "data-slot": "menubar-trigger", class: styles.trigger })/>
 <zag-portal>
   <if=api().open>
     <div ...api().getPositionerProps() style=positionerStyle data-slot="menubar-positioner">
       <div
         ...api().getContentProps()
         data-slot="menubar-content"
-        class=cn(
-          "mu-menubar-content mu-menu-target mu-menu-translucent z-50 origin-(--radix-menubar-content-transform-origin) overflow-hidden",
-          input.class,
-        )
+        class=cn(styles.content, input.class)
       >
         <for|entry, index| of=menuEntries(input)>
           <const/value=entry.value ?? `item-${index}`/>
           <if=entry.type === "separator">
-            <div ...api().getSeparatorProps() data-slot="menubar-separator" class="mu-menubar-separator -mx-1 my-1 h-px"/>
+            <div ...api().getSeparatorProps() data-slot="menubar-separator" class=styles.separator/>
           </if>
           <else if=entry.type === "label">
-            <div data-slot="menubar-label" data-inset=entry.inset || undefined class="mu-menubar-label">
+            <div data-slot="menubar-label" data-inset=entry.inset || undefined class=styles.label>
               <if=entry.content>
                 <${entry.content}/>
               </if>
@@ -119,12 +117,12 @@ static function menuEntries(input: Input): MenubarItemAttrs[] {
               })
               data-slot="menubar-checkbox-item"
               data-inset=entry.inset || undefined
-              class="mu-menubar-checkbox-item relative flex cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
+              class=styles.checkboxItem
             >
               <span
                 ...api().getItemIndicatorProps({ value, checked: entry.checked ?? false })
                 data-slot="menubar-checkbox-item-indicator"
-                class="mu-menubar-checkbox-item-indicator pointer-events-none absolute flex items-center justify-center"
+                class=styles.checkboxItemIndicator
               >
                 <Icon name="Check" aria-hidden="true"/>
               </span>
@@ -135,7 +133,7 @@ static function menuEntries(input: Input): MenubarItemAttrs[] {
                 ${entry.label}
               </else>
               <if=entry.shortcut>
-                <span data-slot="menubar-shortcut" class="mu-menubar-shortcut ml-auto">${entry.shortcut}</span>
+                <span data-slot="menubar-shortcut" class=styles.shortcut>${entry.shortcut}</span>
               </if>
             </div>
           </else>
@@ -150,12 +148,12 @@ static function menuEntries(input: Input): MenubarItemAttrs[] {
               })
               data-slot="menubar-radio-item"
               data-inset=entry.inset || undefined
-              class="mu-menubar-radio-item relative flex cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
+              class=styles.radioItem
             >
               <span
                 ...api().getItemIndicatorProps({ value: entry.radioValue ?? value, checked: entry.checked ?? false })
                 data-slot="menubar-radio-item-indicator"
-                class="mu-menubar-radio-item-indicator pointer-events-none absolute flex items-center justify-center"
+                class=styles.radioItemIndicator
               >
                 <Icon name="Check" aria-hidden="true"/>
               </span>
@@ -166,7 +164,7 @@ static function menuEntries(input: Input): MenubarItemAttrs[] {
                 ${entry.label}
               </else>
               <if=entry.shortcut>
-                <span data-slot="menubar-shortcut" class="mu-menubar-shortcut ml-auto">${entry.shortcut}</span>
+                <span data-slot="menubar-shortcut" class=styles.shortcut>${entry.shortcut}</span>
               </if>
             </div>
           </else>
@@ -185,10 +183,10 @@ static function menuEntries(input: Input): MenubarItemAttrs[] {
                   ...triggerProps
                   data-slot="menubar-sub-trigger"
                   data-inset=entry.inset || undefined
-                  class="mu-menubar-sub-trigger flex cursor-default items-center outline-none select-none"
+                  class=styles.subTrigger
                 >
                   ${entry.label}
-                  <Icon name="ChevronRight" class="mu-rtl-flip ml-auto size-4" aria-hidden="true"/>
+                  <Icon name="ChevronRight" class=styles.subTriggerIcon aria-hidden="true"/>
                 </div>
               </@trigger>
             </Submenu>
@@ -199,7 +197,7 @@ static function menuEntries(input: Input): MenubarItemAttrs[] {
               data-slot="menubar-item"
               data-inset=entry.inset || undefined
               data-variant=entry.variant ?? "default"
-              class="mu-menubar-item group/menubar-item relative flex cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
+              class=styles.item
             >
               <if=entry.content>
                 <${entry.content}/>
@@ -208,7 +206,7 @@ static function menuEntries(input: Input): MenubarItemAttrs[] {
                 ${entry.label}
               </else>
               <if=entry.shortcut>
-                <span data-slot="menubar-shortcut" class="mu-menubar-shortcut ml-auto">${entry.shortcut}</span>
+                <span data-slot="menubar-shortcut" class=styles.shortcut>${entry.shortcut}</span>
               </if>
             </div>
           </else>
