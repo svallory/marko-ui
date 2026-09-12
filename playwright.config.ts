@@ -1,9 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// Style-matrix verification suite against the generated /verify/<style>/<component>
-// routes (see apps/docs/scripts/build-verify-matrix.ts). The docs dev server is
-// expected to already be running (marko-run + vite, auto-recompiles) — no
-// webServer block here starts one; point DOCS_BASE_URL elsewhere if needed.
+// The docs dev server is expected to already be running (marko-run + vite,
+// auto-recompiles) — no webServer block here starts one; point
+// DOCS_BASE_URL elsewhere if needed.
 export default defineConfig({
   testDir: "e2e",
   // e2e/acceptance/*.test.ts is a separate vitest suite (published-package
