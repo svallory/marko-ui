@@ -1,5 +1,6 @@
 import { normalizeFieldErrors, type FieldErrorLike } from "./variants.ts";
 import { cn } from "#lib/utils.ts";
+import { fieldError as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {
   /**
@@ -20,7 +21,7 @@ export interface Input extends Marko.Input<"div"> {
     id=id
     role="alert"
     data-slot="field-error"
-    class=cn("mu-field-error font-normal", className)
+    class=cn(styles.root, className)
     ...rest
   >
     <if=content>
@@ -30,7 +31,7 @@ export interface Input extends Marko.Input<"div"> {
       ${messages[0]}
     </else>
     <else>
-      <ul class="ml-4 flex list-disc flex-col gap-1">
+      <ul class=styles.list>
         <for|message| of=messages>
           <li>${message}</li>
         </for>

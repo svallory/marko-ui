@@ -1,5 +1,6 @@
 import Label from "../label/label.marko";
 import { cn } from "#lib/utils.ts";
+import { fieldLabel as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"label"> {}
 
@@ -7,11 +8,7 @@ export interface Input extends Marko.Input<"label"> {}
 
 <Label
   data-slot="field-label"
-  class=cn(
-    "mu-field-label group/field-label peer/field-label flex w-fit",
-    "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
-    className,
-  )
+  class=cn(styles.root, styles.nested, className)
   ...rest
 >
   <${content}/>

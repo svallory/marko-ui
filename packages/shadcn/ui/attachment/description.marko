@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { description as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"span"> {}
 
@@ -6,11 +7,7 @@ export interface Input extends Marko.Input<"span"> {}
 
 <span
   data-slot="attachment-description"
-  class=cn(
-    "mu-attachment-description block min-w-0 truncate text-muted-foreground group-data-[state=error]/attachment:text-destructive/80",
-    "max-w-full",
-    className,
-  )
+  class=cn(styles.root, styles.maxWidth, className)
   ...rest
 >
   <${content}/>
