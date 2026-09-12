@@ -1,3 +1,4 @@
+// "switch" is a reserved word; the slug convention yields "switchStyles" for reserved-word slugs
 export const switchStyles = {
   label: "inline-flex items-center gap-2",
   control:
