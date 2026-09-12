@@ -3,6 +3,7 @@ import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
 import { buttonVariants } from "../button/variants.ts";
+import { signaturePad as styles } from "./classes.ts";
 
 export type Input = MachineInput<"input", signaturePadMachine.Props> & {
   drawChange?: (paths: string[]) => void;
@@ -28,20 +29,21 @@ export type Input = MachineInput<"input", signaturePadMachine.Props> & {
     "drawEndChange",
   )
 >
+<const/clearTriggerVariant=buttonVariants({ variant: "ghost", size: "icon" })/>
 
 <div
   ...api().getRootProps()
   data-slot="signature-pad"
-  class=cn("bg-card text-card-foreground flex w-full max-w-sm flex-col gap-2 rounded-xl border p-4 shadow-sm", input.class)
+  class=cn(styles.root, input.class)
 >
-  <label ...api().getLabelProps() data-slot="signature-pad-label" class="text-sm font-medium">
+  <label ...api().getLabelProps() data-slot="signature-pad-label" class=styles.label>
     Sign here
   </label>
 
   <div
     ...api().getControlProps()
     data-slot="signature-pad-control"
-    class="border-input bg-muted/30 relative h-32 w-full overflow-hidden rounded-md border"
+    class=styles.control
   >
     <svg ...api().getSegmentProps() data-slot="signature-pad-segment">
       <for|path| of=api().paths>
@@ -55,7 +57,7 @@ export type Input = MachineInput<"input", signaturePadMachine.Props> & {
     <button
       ...api().getClearTriggerProps()
       data-slot="signature-pad-clear-trigger"
-      class=cn(buttonVariants({ variant: "ghost", size: "icon" }), "absolute top-1 right-1 size-7")
+      class=cn(clearTriggerVariant, styles.clearTrigger)
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -67,15 +69,15 @@ export type Input = MachineInput<"input", signaturePadMachine.Props> & {
         stroke-width="2"
         stroke-linecap="round"
         stroke-linejoin="round"
-        class="size-4"
+        class=styles.clearIcon
       >
         <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
         <path d="M3 3v5h5"/>
       </svg>
-      <span class="sr-only">Clear signature</span>
+      <span class=styles.srOnly>Clear signature</span>
     </button>
 
-    <div ...api().getGuideProps() data-slot="signature-pad-guide" class="border-border pointer-events-none absolute right-4 bottom-6 left-4 border-b border-dashed"/>
+    <div ...api().getGuideProps() data-slot="signature-pad-guide" class=styles.guide/>
   </div>
 
   <input/hiddenInput
