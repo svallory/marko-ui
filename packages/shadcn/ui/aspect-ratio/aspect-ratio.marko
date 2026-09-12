@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { aspectRatio as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {
   /** Width-to-height ratio to constrain the content to, e.g. `16 / 9`. Defaults to `1`. */
@@ -7,8 +8,8 @@ export interface Input extends Marko.Input<"div"> {
 
 <const/{ ratio = 1, class: className, content, ...rest }=input/>
 
-<div ...rest data-slot="aspect-ratio" class=cn("relative w-full", className) style={ "aspect-ratio": String(ratio) }>
-  <div class="absolute inset-0">
+<div ...rest data-slot="aspect-ratio" class=cn(styles.root, className) style={ "aspect-ratio": String(ratio) }>
+  <div class=styles.inner>
     <${content}/>
   </div>
 </div>
