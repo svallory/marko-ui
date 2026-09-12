@@ -8,20 +8,27 @@
  *   - classes.ts is never present among the per-style files
  *   - the merged .marko file(s) actually compile with the real marko compiler
  *
- * The compile check swaps each part's transformed content into its REAL
- * location on disk for the duration of one compiler.compile() call, always
- * restoring the original content in a finally — see the comment at that test
- * for why (relative sibling imports and marko-zag's <zag> tag need real
- * node_modules/package.json resolution that an isolated scratch dir doesn't
- * have without reproducing the whole resolution graph by hand).
+ * The compile check compiles from a SCRATCH COPY under the OS temp dir, never
+ * from the real working tree — round-2 review flagged the prior approach
+ * (swap the real ui/<pilot>/*.marko on disk for the compile, restore in a
+ * `finally`) as unsafe: a SIGKILL/OOM mid-test (this machine does OOM-kill)
+ * would skip the `finally` and leave the working tree permanently corrupted.
  *
- * The unstyled (`ui/<name>.json`-equivalent) side of the contract — classes.ts
- * shipping verbatim — is exercised directly against the source tree in
- * merge-classes.test.ts / resolve-classes.test.ts and by build-registry.ts's
- * own fileEntries() (unchanged, untouched by this task).
+ * <zag>/marko-zag's tag discovery and #lib/* subpath-import resolution both
+ * need a real node_modules ancestor AND the scratch copy sitting at the exact
+ * same relative depth the real package does (<repo-root>/packages/shadcn) —
+ * @marko/compiler's tag/import resolution walks up from the compiled file
+ * looking for marko.json/package.json markers at each ancestor level, so a
+ * scratch dir at the wrong depth (e.g. ui/accordion/accordion.marko copied
+ * directly under $TMPDIR with no packages/shadcn ancestor) fails to resolve
+ * <zag> at all — verified directly: only `<scratch>/packages/shadcn/ui/...`
+ * plus a `<scratch>/node_modules` symlink to the real node_modules resolves;
+ * `<scratch>/shadcn/ui/...` (one level too shallow) does not. buildScratchTree
+ * below reproduces exactly that shape.
  */
-import { readFileSync, writeFileSync, existsSync } from "node:fs"
-import { join, basename } from "node:path"
+import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync, symlinkSync, cpSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join, basename, dirname } from "node:path"
 import { describe, expect, test } from "vitest"
 import compiler from "@marko/compiler"
 
@@ -31,6 +38,7 @@ import { createStyleMap } from "../../../tooling/style-map"
 const REGISTRY_DIR = join(import.meta.dirname, "..")
 const UI_DIR = join(REGISTRY_DIR, "ui")
 const STYLES_DIR = join(REGISTRY_DIR, "styles")
+const REPO_ROOT = join(REGISTRY_DIR, "..", "..")
 
 const PILOTS = ["button", "accordion", "sidebar"]
 const STYLES = ["vega", "nova"]
@@ -73,36 +81,48 @@ describe("build-registry per-style output for the 3 pilots", () => {
 
         test("every emitted .marko file compiles with the real marko compiler", async () => {
           const fileMap = await transformComponent(join(UI_DIR, pilot), styleMap)
-          const pilotDir = join(UI_DIR, pilot)
-
-          // Compile IN PLACE (temporarily swapping each .marko part's real
-          // content for its transformed one, then always restoring) rather
-          // than in an isolated scratch dir: <zag>/marko-zag and every
-          // sibling relative import (../icon/icon.marko, ../button/button.marko,
-          // #lib/utils.ts via the real package.json's `imports` map) resolve
-          // correctly here because this location has a real node_modules
-          // ancestor and a real package.json — a synthetic scratch tree does
-          // not, and reproducing that resolution graph by hand is exactly
-          // the "second copy of the same bug surface" trap check-identity.ts
-          // warns about for a different transform.
-          const swapped: Array<{ path: string; original: string }> = []
+          const scratchRoot = mkdtempSync(join(tmpdir(), "build-registry-classes-"))
           try {
+            const scratchShadcn = buildScratchTree(scratchRoot)
+            const scratchPilotDir = join(scratchShadcn, "ui", pilot)
             for (const [rel, content] of fileMap) {
               if (!rel.endsWith(".marko")) continue
-              const abs = join(pilotDir, rel)
-              if (!existsSync(abs)) continue // shouldn't happen for these pilots; skip defensively
-              swapped.push({ path: abs, original: readFileSync(abs, "utf8") })
+              const abs = join(scratchPilotDir, rel)
+              mkdirSync(dirname(abs), { recursive: true })
               writeFileSync(abs, content)
             }
-            for (const { path } of swapped) {
-              const src = readFileSync(path, "utf8")
-              await compiler.compile(src, path)
+            for (const [rel] of fileMap) {
+              if (!rel.endsWith(".marko")) continue
+              const abs = join(scratchPilotDir, rel)
+              const src = readFileSync(abs, "utf8")
+              await compiler.compile(src, abs)
             }
           } finally {
-            for (const { path, original } of swapped) writeFileSync(path, original)
+            rmSync(scratchRoot, { recursive: true, force: true })
           }
         })
       })
     }
   }
 })
+
+/**
+ * Builds a scratch tree at the exact relative depth @marko/compiler's tag
+ * and subpath-import resolution needs: `<scratchRoot>/packages/shadcn/`
+ * (the whole real packages/shadcn copied verbatim — cheap, ~4MB) plus a
+ * `<scratchRoot>/node_modules` SYMLINK to the real node_modules (never
+ * copied — a real copy would be enormous and node_modules is never mutated
+ * by this test). Returns the scratch shadcn package dir
+ * (`<scratchRoot>/packages/shadcn`) that callers write their transformed
+ * .marko files into before compiling. See this file's header comment for
+ * why the depth must match exactly (verified: one level too shallow and
+ * <zag> fails to resolve at all).
+ */
+function buildScratchTree(scratchRoot: string): string {
+  const scratchPackages = join(scratchRoot, "packages")
+  mkdirSync(scratchPackages, { recursive: true })
+  const scratchShadcn = join(scratchPackages, "shadcn")
+  cpSync(REGISTRY_DIR, scratchShadcn, { recursive: true })
+  symlinkSync(join(REPO_ROOT, "node_modules"), join(scratchRoot, "node_modules"), "dir")
+  return scratchShadcn
+}

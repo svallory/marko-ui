@@ -4,9 +4,17 @@
  * reproduces a verified miss from the original first-token-only detection:
  * brace form, non-first-position literals, ternaries, concatenation, and a
  * multi-line cn( call with the literal on a later line.
+ *
+ * Round-2-review coverage: checkComponentDir must scan EVERY .ts/.marko file
+ * under a migrated component directory, not just the part file and
+ * variants.ts — a lib/*.ts helper copied verbatim by transform-component.ts
+ * is in scope too.
  */
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { describe, expect, test } from "vitest"
-import { checkPartFile, type Violation } from "../../../tooling/check-classes"
+import { checkPartFile, checkComponentDir, type Violation } from "../../../tooling/check-classes"
 
 function violationsFor(source: string): Violation[] {
   const violations: Violation[] = []
@@ -101,5 +109,71 @@ describe("check-classes: class-string-literal detection", () => {
   test("class: destructuring rename (class: className) is never flagged — not a class value", () => {
     const src = "<const/{ class: className, ...rest }=input/>\n<div class=cn(styles.root, className)></div>\n"
     expect(violationsFor(src)).toHaveLength(0)
+  })
+})
+
+describe("check-classes: checkComponentDir scans every .ts/.marko file, not just the part + variants.ts", () => {
+  let dir: string
+
+  test("a stray mu- literal in lib/x.ts is caught", () => {
+    dir = mkdtempSync(join(tmpdir(), "check-classes-libscan-"))
+    writeFileSync(join(dir, "classes.ts"), 'export const widget = { root: "flex" } as const;\n')
+    writeFileSync(
+      join(dir, "widget.marko"),
+      'import { widget as styles } from "./classes.ts";\n\n<div class=styles.root/>\n',
+    )
+    mkdirSync(join(dir, "lib"), { recursive: true })
+    writeFileSync(join(dir, "lib", "x.ts"), 'export const LEFTOVER = "mu-widget-leftover";\n')
+
+    const violations: Violation[] = []
+    checkComponentDir("widget", dir, violations)
+    const muViolations = violations.filter((v) => v.kind === "mu-token-outside-classes-ts")
+    expect(muViolations).toHaveLength(1)
+    expect(muViolations[0]!.file).toBe(join("widget", "lib", "x.ts"))
+
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  test("classes.ts itself is never scanned by checkComponentDir (it owns the mu- tokens)", () => {
+    dir = mkdtempSync(join(tmpdir(), "check-classes-libscan-"))
+    writeFileSync(join(dir, "classes.ts"), 'export const widget = { root: "mu-widget flex" } as const;\n')
+
+    const violations: Violation[] = []
+    checkComponentDir("widget", dir, violations)
+    expect(violations).toHaveLength(0)
+
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  test("a *.d.ts file is never scanned", () => {
+    dir = mkdtempSync(join(tmpdir(), "check-classes-libscan-"))
+    writeFileSync(join(dir, "classes.ts"), 'export const widget = { root: "flex" } as const;\n')
+    writeFileSync(join(dir, "ambient.d.ts"), 'declare const x: "mu-widget";\n')
+
+    const violations: Violation[] = []
+    checkComponentDir("widget", dir, violations)
+    expect(violations).toHaveLength(0)
+
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  test("a lib/*.ts file with a class-context string literal (a `class:` object property) is also caught, not just mu- tokens", () => {
+    dir = mkdtempSync(join(tmpdir(), "check-classes-libscan-"))
+    writeFileSync(join(dir, "classes.ts"), 'export const widget = { root: "flex" } as const;\n')
+    mkdirSync(join(dir, "lib"), { recursive: true })
+    // A helper .ts file can build a props object carrying a `class:`
+    // property — the same class-context shape a .marko part's dynamic-tag
+    // render-prop call uses (see transform-marko.ts's own header comment on
+    // that convention) — still in scope for contract point 3.
+    writeFileSync(
+      join(dir, "lib", "helper.ts"),
+      'export function helperProps() {\n  return { class: "mu-helper extra" };\n}\n',
+    )
+
+    const violations: Violation[] = []
+    checkComponentDir("widget", dir, violations)
+    expect(violations.some((v) => v.kind === "class-string-literal")).toBe(true)
+
+    rmSync(dir, { recursive: true, force: true })
   })
 })
