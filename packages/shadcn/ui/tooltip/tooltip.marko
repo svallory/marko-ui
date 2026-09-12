@@ -3,6 +3,7 @@ import type { MachineInput } from "marko-zag";
 import { positionerStyle } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { tooltip as styles } from "./classes.ts";
 
 // MachineInput = native <div> attributes ∩ the machine's full Props, with
 // `id` made optional (generated below, overridable). `openChange` is
@@ -39,10 +40,7 @@ export type Input = MachineInput<"span", tooltipMachine.Props> & {
         <div
           ...api().getContentProps()
           data-slot="tooltip-content"
-          class=cn(
-            "mu-tooltip-content z-50 w-fit max-w-xs origin-(--radix-tooltip-content-transform-origin) bg-foreground text-background",
-            input.class,
-          )
+          class=cn(styles.content, input.class)
         >
           <if=(typeof input.content === "string")>
             ${input.content}
@@ -51,7 +49,7 @@ export type Input = MachineInput<"span", tooltipMachine.Props> & {
             <${input.content}/>
           </else>
           <div ...api().getArrowProps() data-slot="tooltip-arrow">
-            <div ...api().getArrowTipProps() data-slot="tooltip-arrow-tip" class="mu-tooltip-arrow bg-foreground fill-foreground"/>
+            <div ...api().getArrowTipProps() data-slot="tooltip-arrow-tip" class=styles.arrowTip/>
           </div>
         </div>
       </div>
