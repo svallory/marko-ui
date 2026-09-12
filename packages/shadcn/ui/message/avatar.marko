@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { avatar as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {}
 
@@ -6,10 +7,7 @@ export interface Input extends Marko.Input<"div"> {}
 
 <div
   data-slot="message-avatar"
-  class=cn(
-    "mu-message-avatar flex w-fit shrink-0 items-center justify-center self-end overflow-hidden rounded-full bg-muted",
-    className,
-  )
+  class=cn(styles.root, className)
   ...rest
 >
   <${content}/>

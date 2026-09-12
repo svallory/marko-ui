@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { description as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"p"> {}
 
@@ -7,10 +8,7 @@ export interface Input extends Marko.Input<"p"> {}
 <p
   data-slot="item-description"
   ...rest
-  class=cn(
-    "mu-item-description line-clamp-2 font-normal [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
-    className,
-  )
+  class=cn(styles.root, className)
 >
   <${content}/>
 </p>

@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { message as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {
   align?: "start" | "end";
@@ -9,10 +10,7 @@ export interface Input extends Marko.Input<"div"> {
 <div
   data-slot="message"
   data-align=align
-  class=cn(
-    "mu-message group/message relative flex w-full min-w-0 data-[align=end]:flex-row-reverse",
-    className,
-  )
+  class=cn(styles.root, className)
   ...rest
 >
   <${content}/>
