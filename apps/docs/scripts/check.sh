@@ -44,10 +44,36 @@ owned=1
 echo $$ > "$pid_file"
 
 rm -f tsconfig.tsbuildinfo
-raw="$(NODE_OPTIONS="--max-old-space-size=8192" marko-type-check -p ./tsconfig.json -d condensed || true)"
+set +e
+raw="$(NODE_OPTIONS="--max-old-space-size=8192" marko-type-check -p ./tsconfig.json -d condensed)"
+mtc_exit=$?
+set -e
 echo "$raw"
 
+# marko-type-check exits 0 (no errors) or 1 (has errors) when it actually
+# ran to completion — those are the only two exit codes it uses, and it
+# prints no "Found N errors" summary line to key off instead. Any other
+# code (137/139 killed, 124 timed out, etc.) means the process died before
+# finishing, and its (likely empty or truncated) stdout must never be
+# treated as "zero errors" or "baseline fully gone" — that would silently
+# blow away every known-error entry in the next `mtc:baseline` regen.
+if [ "$mtc_exit" -ne 0 ] && [ "$mtc_exit" -ne 1 ]; then
+  echo "" >&2
+  echo "docs mtc: marko-type-check did not complete (crash/OOM?) — no baseline comparison performed (exit $mtc_exit)." >&2
+  exit 1
+fi
+
 fingerprint="$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts)"
+
+# A second, independent guard: even with the correct exit code, an empty
+# fingerprint while the baseline is non-empty is exactly the "entire
+# baseline looks disappeared" shape a partial/truncated run would produce.
+# Treat it as a crash signal too, never as "everything got fixed."
+if [ -z "$fingerprint" ] && [ -s mtc-baseline.txt ] && [ -n "$(grep -v '^#' mtc-baseline.txt | sed '/^$/d')" ]; then
+  echo "" >&2
+  echo "docs mtc: marko-type-check produced no errors but the baseline is non-empty — this looks like a crashed/truncated run, not a clean fix. No baseline comparison performed." >&2
+  exit 1
+fi
 baseline="$(grep -v '^#' mtc-baseline.txt | sed '/^$/d')"
 
 new_lines="$(comm -13 <(echo "$baseline" | sort) <(echo "$fingerprint" | sort))"

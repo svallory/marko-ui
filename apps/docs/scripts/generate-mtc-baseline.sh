@@ -8,8 +8,30 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 rm -f tsconfig.tsbuildinfo
-raw="$(NODE_OPTIONS="--max-old-space-size=8192" marko-type-check -p ./tsconfig.json -d condensed || true)"
+set +e
+raw="$(NODE_OPTIONS="--max-old-space-size=8192" marko-type-check -p ./tsconfig.json -d condensed)"
+mtc_exit=$?
+set -e
+
+# marko-type-check only ever exits 0 (no errors) or 1 (has errors) when it
+# ran to completion; anything else (137/139 killed, 124 timed out, ...)
+# means it crashed before finishing. Refuse to write a baseline from that —
+# its (likely empty) stdout would otherwise be recorded as "zero known
+# errors", silently erasing the whole gate on the next check.sh run.
+if [ "$mtc_exit" -ne 0 ] && [ "$mtc_exit" -ne 1 ]; then
+  echo "marko-type-check did not complete (crash/OOM?) — refusing to write mtc-baseline.txt (exit $mtc_exit)." >&2
+  exit 1
+fi
+
 fingerprint="$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts)"
+
+# Same crash shape as check.sh: an existing non-trivial baseline going to
+# zero entries in one run is far more likely a truncated run than every
+# error having been fixed at once. Refuse rather than silently wiping it.
+if [ -z "$fingerprint" ] && [ -f mtc-baseline.txt ] && [ -n "$(grep -v '^#' mtc-baseline.txt | sed '/^$/d')" ]; then
+  echo "marko-type-check produced no errors but the existing baseline is non-empty — this looks like a crashed/truncated run, not a clean fix. Refusing to overwrite mtc-baseline.txt." >&2
+  exit 1
+fi
 
 {
   cat <<'HEADER'
