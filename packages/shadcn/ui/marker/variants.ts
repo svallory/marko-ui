@@ -1,16 +1,10 @@
 import { cva, type VariantProps } from "class-variance-authority";
+import { marker } from "./classes.ts";
 
-export const markerVariants = cva(
-  "mu-marker group/marker relative flex w-full items-center",
-  {
-    variants: {
-      variant: {
-        default: "mu-marker-variant-default",
-        separator: "mu-marker-variant-separator",
-        border: "mu-marker-variant-border",
-      },
-    },
+export const markerVariants = cva(marker.base, {
+  variants: {
+    variant: marker.variant,
   },
-);
+});
 
 export type MarkerVariants = VariantProps<typeof markerVariants>;

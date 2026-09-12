@@ -6,6 +6,7 @@ import type { MachineInput } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { steps as styles } from "./classes.ts";
 
 export interface StepItem {
   title: string;
@@ -52,9 +53,9 @@ export type Input = MachineInput<"div", stepsMachine.Props> & {
   ...nativeAttrs()
   ...api().getRootProps()
   data-slot="steps"
-  class=cn("flex flex-col gap-6 data-[orientation=horizontal]:w-full data-[orientation=vertical]:flex-row", input.class)
+  class=cn(styles.root, input.class)
 >
-  <div ...api().getListProps() data-slot="steps-list" class="flex data-[orientation=horizontal]:w-full data-[orientation=horizontal]:items-center data-[orientation=vertical]:shrink-0 data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-start data-[orientation=vertical]:gap-1 data-[orientation=vertical]:pr-8">
+  <div ...api().getListProps() data-slot="steps-list" class=styles.list>
     <for|item, index| of=items>
       <const/itemState=api().getItemState({ index })>
       // The item wrapper sits between the tablist and its tabs, which ARIA
@@ -69,17 +70,17 @@ export type Input = MachineInput<"div", stepsMachine.Props> & {
         const { "aria-current": ariaCurrent, ...rest } = api().getItemProps({ index });
         return { rest, ariaCurrent };
       })()>
-      <div ...itemProps.rest role="presentation" data-slot="steps-item" class="flex items-center data-[orientation=horizontal]:flex-1 data-[orientation=horizontal]:last:flex-none data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-start">
+      <div ...itemProps.rest role="presentation" data-slot="steps-item" class=styles.item>
         <button
           ...api().getTriggerProps({ index })
           aria-current=itemProps.ariaCurrent
           data-slot="steps-trigger"
-          class="flex items-center gap-2 rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
+          class=styles.trigger
         >
           <div
             ...api().getIndicatorProps({ index })
             data-slot="steps-indicator"
-            class="flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-medium data-complete:border-primary data-complete:bg-primary data-complete:text-primary-foreground data-current:border-primary data-current:text-primary data-incomplete:border-input data-incomplete:text-muted-foreground"
+            class=styles.indicator
           >
             <if=itemState.completed>
               // The shared <Icon> hardcodes the lucide wrapper's stroke-width
@@ -88,27 +89,27 @@ export type Input = MachineInput<"div", stepsMachine.Props> & {
               // (a `stroke-width=` attribute would be clobbered — icon.marko
               // spreads `...rest` BEFORE its own stroke-width attribute).
               // Same approach as checkbox.marko's indicator.
-              <Icon name="Check" class="[stroke-width:2.5]"/>
+              <Icon name="Check" class=styles.indicatorIcon/>
             </if>
             <else>
               ${index + 1}
             </else>
           </div>
-          <span class="flex flex-col items-start text-left">
-            <span class=cn("text-sm font-medium", itemState.incomplete && "text-muted-foreground")>
+          <span class=styles.labelWrapper>
+            <span class=cn(styles.title, itemState.incomplete && styles.titleIncomplete)>
               ${item.title}
             </span>
             <if=item.description>
-              <span class="text-xs text-muted-foreground">${item.description}</span>
+              <span class=styles.description>${item.description}</span>
             </if>
           </span>
         </button>
-        <div ...api().getSeparatorProps({ index }) data-slot="steps-separator" class="bg-border data-[orientation=horizontal]:mx-2 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:flex-1 data-[orientation=vertical]:ml-4 data-[orientation=vertical]:w-px data-[orientation=vertical]:flex-1 data-complete:bg-primary"/>
+        <div ...api().getSeparatorProps({ index }) data-slot="steps-separator" class=styles.separator/>
       </div>
     </for>
   </div>
 
-  <div class="flex-1">
+  <div class=styles.contentWrapper>
     <for|item, index| of=items>
       <div ...api().getContentProps({ index }) data-slot="steps-content">
         <${content}(index)/>
@@ -118,18 +119,18 @@ export type Input = MachineInput<"div", stepsMachine.Props> & {
       <${completedContent}/>
     </div>
 
-    <div data-slot="steps-actions" class="mt-6 flex items-center justify-between gap-2">
+    <div data-slot="steps-actions" class=styles.actions>
       <button
         ...api().getPrevTriggerProps()
         data-slot="steps-prev-trigger"
-        class="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
+        class=styles.prevTrigger
       >
         Previous
       </button>
       <button
         ...api().getNextTriggerProps()
         data-slot="steps-next-trigger"
-        class="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-xs transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+        class=styles.nextTrigger
       >
         Next
       </button>
