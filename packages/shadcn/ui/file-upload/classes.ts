@@ -1,0 +1,17 @@
+export const fileUpload = {
+  root: "flex w-full flex-col gap-4",
+  dropzone: "border-input hover:bg-accent/50 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-6 text-center transition-colors data-[dragging]:border-primary data-[dragging]:bg-accent/50",
+  dropzoneIcon: "text-muted-foreground size-8",
+  dropzoneText: "text-sm",
+  dropzoneTextEmphasis: "font-medium",
+  dropzoneHint: "text-muted-foreground text-xs",
+  trigger: "mt-2",
+  itemGroup: "flex flex-col gap-2",
+  item: "border-input bg-background flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm",
+  itemInfo: "flex min-w-0 flex-col",
+  itemName: "truncate font-medium",
+  itemSizeText: "text-muted-foreground text-xs",
+  itemDeleteTrigger: "size-7 shrink-0",
+  itemDeleteIcon: "size-4",
+  itemDeleteSrOnly: "sr-only",
+} as const;

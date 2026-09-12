@@ -3,6 +3,7 @@ import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
 import { buttonVariants } from "../button/variants.ts";
+import { fileUpload as styles } from "./classes.ts";
 
 export interface FileUploadFileInfo {
   name: string;
@@ -41,7 +42,10 @@ export type Input = MachineInput<"input", fileUploadMachine.Props> & {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }>
 
-<div ...api().getRootProps() data-slot="file-upload" class=cn("flex w-full flex-col gap-4", input.class)>
+<const/triggerVariant=buttonVariants({ variant: "outline", size: "sm" })/>
+<const/deleteVariant=buttonVariants({ variant: "ghost", size: "icon" })/>
+
+<div ...api().getRootProps() data-slot="file-upload" class=cn(styles.root, input.class)>
   // Zag makes the dropzone itself a focusable role="button", but ours
   // contains the "Browse files" trigger — an interactive control nested in
   // another (axe: nested-interactive). The trigger is the keyboard path, so
@@ -55,7 +59,7 @@ export type Input = MachineInput<"input", fileUploadMachine.Props> & {
   <div
     ...dropzoneProps
     data-slot="file-upload-dropzone"
-    class="border-input hover:bg-accent/50 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-6 text-center transition-colors data-[dragging]:border-primary data-[dragging]:bg-accent/50"
+    class=styles.dropzone
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -67,34 +71,34 @@ export type Input = MachineInput<"input", fileUploadMachine.Props> & {
       stroke-width="2"
       stroke-linecap="round"
       stroke-linejoin="round"
-      class="text-muted-foreground size-8"
+      class=styles.dropzoneIcon
     >
       <path d="M12 13v8"/>
       <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
       <path d="m8 17 4-4 4 4"/>
     </svg>
-    <div class="text-sm">
-      <span class="font-medium">Drag and drop files here</span>
+    <div class=styles.dropzoneText>
+      <span class=styles.dropzoneTextEmphasis>Drag and drop files here</span>
     </div>
-    <p class="text-muted-foreground text-xs">or click browse to choose files</p>
-    <button ...api().getTriggerProps() data-slot="file-upload-trigger" class=cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-2")>
+    <p class=styles.dropzoneHint>or click browse to choose files</p>
+    <button ...api().getTriggerProps() data-slot="file-upload-trigger" class=cn(triggerVariant, styles.trigger)>
       Browse files
     </button>
     <input ...nativeAttrs() ...api().getHiddenInputProps() data-slot="file-upload-hidden-input"/>
   </div>
 
   <if=api().acceptedFiles.length>
-    <ul ...api().getItemGroupProps() data-slot="file-upload-item-group" class="flex flex-col gap-2">
+    <ul ...api().getItemGroupProps() data-slot="file-upload-item-group" class=styles.itemGroup>
       <for|file| of=api().acceptedFiles>
-        <li ...api().getItemProps({ file }) data-slot="file-upload-item" class="border-input bg-background flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm">
-          <div class="flex min-w-0 flex-col">
-            <span ...api().getItemNameProps({ file }) data-slot="file-upload-item-name" class="truncate font-medium">${file.name}</span>
-            <span ...api().getItemSizeTextProps({ file }) data-slot="file-upload-item-size-text" class="text-muted-foreground text-xs">${formatSize(file.size)}</span>
+        <li ...api().getItemProps({ file }) data-slot="file-upload-item" class=styles.item>
+          <div class=styles.itemInfo>
+            <span ...api().getItemNameProps({ file }) data-slot="file-upload-item-name" class=styles.itemName>${file.name}</span>
+            <span ...api().getItemSizeTextProps({ file }) data-slot="file-upload-item-size-text" class=styles.itemSizeText>${formatSize(file.size)}</span>
           </div>
           <button
             ...api().getItemDeleteTriggerProps({ file })
             data-slot="file-upload-item-delete-trigger"
-            class=cn(buttonVariants({ variant: "ghost", size: "icon" }), "size-7 shrink-0")
+            class=cn(deleteVariant, styles.itemDeleteTrigger)
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -106,12 +110,12 @@ export type Input = MachineInput<"input", fileUploadMachine.Props> & {
               stroke-width="2"
               stroke-linecap="round"
               stroke-linejoin="round"
-              class="size-4"
+              class=styles.itemDeleteIcon
             >
               <path d="M18 6 6 18"/>
               <path d="m6 6 12 12"/>
             </svg>
-            <span class="sr-only">Remove ${file.name}</span>
+            <span class=styles.itemDeleteSrOnly>Remove ${file.name}</span>
           </button>
         </li>
       </for>
