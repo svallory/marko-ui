@@ -2,6 +2,7 @@ import * as listboxMachine from "@zag-js/listbox";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { listbox as styles } from "./classes.ts";
 
 export interface ListboxItem {
   value: string;
@@ -100,20 +101,20 @@ export type Input = Omit<MachineInput<"div", listboxMachine.Props<ListboxItem>>,
   )
 >
 
-<div ...nativeAttrs() ...api().getRootProps() data-slot="listbox" class=cn("flex flex-col gap-1.5", className)>
+<div ...nativeAttrs() ...api().getRootProps() data-slot="listbox" class=cn(styles.root, className)>
   <if=label>
-    <label ...api().getLabelProps() data-slot="listbox-label" class="text-sm font-medium">${label}</label>
+    <label ...api().getLabelProps() data-slot="listbox-label" class=styles.label>${label}</label>
   </if>
   <div
     ...api().getContentProps()
     data-slot="listbox-content"
-    class="bg-popover text-popover-foreground max-h-80 w-full min-w-[8rem] overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-xs"
+    class=styles.content
   >
     <for|entry| of=items>
       <div
         ...api().getItemProps({ item: entry })
         data-slot="listbox-item"
-        class="data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 relative flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        class=styles.item
       >
         <span data-slot="listbox-item-text">${entry.label}</span>
       </div>

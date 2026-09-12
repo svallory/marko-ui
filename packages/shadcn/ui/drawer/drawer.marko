@@ -7,6 +7,7 @@ import Button from "../button/button.marko";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { drawer as styles } from "./classes.ts";
 
 export type Input = MachineInput<"div", drawerMachine.Props> & {
   /** Sugar for onOpenChange — receives the plain boolean, enables `open:=state`. */
@@ -75,7 +76,7 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
     <div
       ...api().getSwipeAreaProps()
       data-slot="drawer-swipe-area"
-      class="fixed z-40 data-[swipe-direction=down]:inset-x-0 data-[swipe-direction=down]:bottom-0 data-[swipe-direction=down]:h-6 data-[swipe-direction=up]:inset-x-0 data-[swipe-direction=up]:top-0 data-[swipe-direction=up]:h-6 data-[swipe-direction=left]:inset-y-0 data-[swipe-direction=left]:left-0 data-[swipe-direction=left]:w-6 data-[swipe-direction=right]:inset-y-0 data-[swipe-direction=right]:right-0 data-[swipe-direction=right]:w-6"
+      class=styles.swipeArea
     />
   </if>
 
@@ -90,12 +91,12 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
       <div
         ...api().getBackdropProps()
         data-slot="drawer-overlay"
-        class="mu-drawer-overlay fixed inset-0 z-50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0"
+        class=styles.overlay
       />
       <div
         ...api().getPositionerProps()
         data-slot="drawer-positioner"
-        class="fixed inset-0 z-50"
+        class=styles.positioner
       >
         // No style= attribute on this element, ever: Zag owns its inline
         // transform and every --drawer-* custom property here.
@@ -103,11 +104,11 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
           ...contentProps()
           data-slot="drawer-content"
           class=cn(
-            "mu-drawer-content group/drawer-content fixed z-50 flex outline-none",
-            "data-[swipe-direction=down]:inset-x-0 data-[swipe-direction=down]:bottom-0 data-[swipe-direction=down]:mt-24 data-[swipe-direction=down]:max-h-[80vh] data-[swipe-direction=down]:flex-col data-[swipe-direction=down]:sm:mx-auto data-[swipe-direction=down]:sm:max-w-lg",
-            "data-[swipe-direction=up]:inset-x-0 data-[swipe-direction=up]:top-0 data-[swipe-direction=up]:mb-24 data-[swipe-direction=up]:max-h-[80vh] data-[swipe-direction=up]:flex-col-reverse data-[swipe-direction=up]:sm:mx-auto data-[swipe-direction=up]:sm:max-w-lg",
-            "data-[swipe-direction=left]:inset-y-0 data-[swipe-direction=left]:left-0 data-[swipe-direction=left]:w-3/4 data-[swipe-direction=left]:flex-row-reverse data-[swipe-direction=left]:sm:max-w-sm",
-            "data-[swipe-direction=right]:inset-y-0 data-[swipe-direction=right]:right-0 data-[swipe-direction=right]:w-3/4 data-[swipe-direction=right]:flex-row data-[swipe-direction=right]:sm:max-w-sm",
+            styles.content,
+            styles.contentSwipeDown,
+            styles.contentSwipeUp,
+            styles.contentSwipeLeft,
+            styles.contentSwipeRight,
             input.class,
           )
         >
@@ -115,29 +116,29 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
             <div
               ...api().getGrabberProps()
               data-slot="drawer-grabber"
-              class="group/grabber shrink-0 cursor-grab touch-none active:cursor-grabbing data-[swipe-direction=down]:flex data-[swipe-direction=down]:justify-center data-[swipe-direction=down]:pt-4 data-[swipe-direction=down]:pb-2 data-[swipe-direction=up]:flex data-[swipe-direction=up]:justify-center data-[swipe-direction=up]:pt-2 data-[swipe-direction=up]:pb-4 data-[swipe-direction=left]:flex data-[swipe-direction=left]:flex-col data-[swipe-direction=left]:justify-center data-[swipe-direction=left]:pr-2 data-[swipe-direction=left]:pl-4 data-[swipe-direction=right]:flex data-[swipe-direction=right]:flex-col data-[swipe-direction=right]:justify-center data-[swipe-direction=right]:pr-4 data-[swipe-direction=right]:pl-2"
+              class=styles.grabber
             >
               <div
                 ...api().getGrabberIndicatorProps()
                 data-slot="drawer-grabber-indicator"
-                class="mu-drawer-handle bg-muted rounded-full transition-colors group-active/grabber:bg-muted-foreground/40 data-[swipe-direction=down]:h-2 data-[swipe-direction=down]:w-[100px] data-[swipe-direction=up]:h-2 data-[swipe-direction=up]:w-[100px] data-[swipe-direction=left]:h-[100px] data-[swipe-direction=left]:w-2 data-[swipe-direction=right]:h-[100px] data-[swipe-direction=right]:w-2"
+                class=styles.grabberIndicator
               />
             </div>
           </if>
 
           // Inner column so header/body/footer stack the same way regardless of
           // which axis the outer content flexes along for the grabber.
-          <div class="flex min-h-0 min-w-0 flex-1 flex-col">
+          <div class=styles.inner>
             <if=input.title || input.description>
               <div
                 data-slot="drawer-header"
-                class="mu-drawer-header flex flex-col group-data-[swipe-direction=down]/drawer-content:text-center group-data-[swipe-direction=up]/drawer-content:text-center"
+                class=styles.header
               >
                 <if=input.title>
                   <h2
                     ...api().getTitleProps()
                     data-slot="drawer-title"
-                    class="mu-drawer-title mu-font-heading"
+                    class=styles.title
                   >
                     <${input.title}/>
                   </h2>
@@ -146,7 +147,7 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
                   <p
                     ...api().getDescriptionProps()
                     data-slot="drawer-description"
-                    class="mu-drawer-description"
+                    class=styles.description
                   >
                     <${input.description}/>
                   </p>
@@ -155,7 +156,7 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
             </if>
 
             <if=input.content>
-              <div data-slot="drawer-body" class="min-h-0 flex-1 overflow-auto px-4">
+              <div data-slot="drawer-body" class=styles.body>
                 <${input.content}/>
               </div>
             </if>
@@ -163,7 +164,7 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
             <if=input.footer>
               <div
                 data-slot="drawer-footer"
-                class="mu-drawer-footer mt-auto flex flex-col gap-2 p-4"
+                class=styles.footer
               >
                 <${input.footer}/>
               </div>
@@ -176,10 +177,10 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
               variant="ghost"
               size="icon-sm"
               data-slot="drawer-close"
-              class="absolute top-4 right-4"
+              class=styles.close
             >
               <Icon name="XIcon"/>
-              <span class="sr-only">Close</span>
+              <span class=styles.srOnly>Close</span>
             </Button>
           </if>
         </div>
