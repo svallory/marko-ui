@@ -77,6 +77,16 @@ export interface Input {
   }
 />
 
+// Zag drives placement/stacking through CSS custom properties on this
+// element (--x/--y/--scale/--z-index/--height/--opacity). They must be
+// consumed by the `translate`/`scale` PROPERTIES, not by Tailwind's
+// `transform` utilities, which would overwrite them.
+//
+// `--scale` is only set for background toasts in overlap mode, so it needs
+// an identity fallback. `--height` is deliberately NOT consumed: Zag
+// measures each toast with `offsetHeight`, and binding the CSS `height` to
+// the measurement it feeds produces a 0px fixed point on first paint.
+// `min-h` keeps the stack offsets stable while the content sizes itself.
 <div
   ...api().getRootProps()
   data-slot="toast"
