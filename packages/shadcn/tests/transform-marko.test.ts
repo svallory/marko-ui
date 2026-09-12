@@ -28,20 +28,28 @@ const novaMap = createStyleMap(
   readFileSync(join(STYLES_SRC_DIR, "style-nova.css"), "utf8")
 )
 
-describe("real-world: slider + sidebar x vega/nova style maps", () => {
+// NOTE: sidebar/sidebar.marko and sidebar/trigger.marko were the original
+// mu-sidebar-gap / mu-rtl-flip fixtures here, but sidebar is now migrated to
+// the class-as-data contract (classes.ts) — its .marko sources no longer
+// carry literal mu- tokens, so they no longer exercise this FALLBACK
+// transform meaningfully. breadcrumb/separator.marko (still unmigrated)
+// replaces it as the mu-rtl-flip fixture; sidebar/menu-button.marko stays as
+// the "no anchor tokens in class strings" passthrough fixture since that
+// property is unaffected by the sidebar migration (its own cn() call never
+// held a literal — variants.ts always owned those tokens, and still does).
+describe("real-world: slider + breadcrumb-separator x vega/nova style maps", () => {
   const files = {
     "slider/slider.marko": readComponent("slider/slider.marko"),
     "sidebar/menu-button.marko": readComponent("sidebar/menu-button.marko"),
-    "sidebar/sidebar.marko": readComponent("sidebar/sidebar.marko"),
-    "sidebar/trigger.marko": readComponent("sidebar/trigger.marko"),
+    "breadcrumb/separator.marko": readComponent("breadcrumb/separator.marko"),
   }
 
   test("sources actually contain mu- tokens (sanity)", () => {
     expect(muTokensIn(files["slider/slider.marko"])).toContain("mu-slider")
-    expect(muTokensIn(files["sidebar/sidebar.marko"])).toContain(
-      "mu-sidebar-gap"
+    expect(muTokensIn(files["breadcrumb/separator.marko"])).toContain(
+      "mu-breadcrumb-separator"
     )
-    expect(muTokensIn(files["sidebar/trigger.marko"])).toContain("mu-rtl-flip")
+    expect(muTokensIn(files["breadcrumb/separator.marko"])).toContain("mu-rtl-flip")
   })
 
   test("no mu- token survives except allowlisted ones", () => {
@@ -56,11 +64,11 @@ describe("real-world: slider + sidebar x vega/nova style maps", () => {
     }
   })
 
-  test("mu-rtl-flip (allowlisted) survives in sidebar/trigger.marko", () => {
-    const out = transformMarkoSource(files["sidebar/trigger.marko"], vegaMap)
+  test("mu-rtl-flip (allowlisted) survives in breadcrumb/separator.marko", () => {
+    const out = transformMarkoSource(files["breadcrumb/separator.marko"], vegaMap)
     expect(out).toContain("mu-rtl-flip")
     // ...but the non-allowlisted anchor on the same component is gone.
-    expect(out).not.toContain("mu-sidebar-trigger")
+    expect(out).not.toContain("mu-breadcrumb-separator")
   })
 
   test("slider gains the style's track classes; vega differs from nova", () => {
@@ -73,13 +81,11 @@ describe("real-world: slider + sidebar x vega/nova style maps", () => {
     expect(vegaOut).not.toBe(novaOut)
   })
 
-  test("sidebar gap/inner anchors are inlined from the map", () => {
-    const out = transformMarkoSource(files["sidebar/sidebar.marko"], vegaMap)
-    // style-vega.css .mu-sidebar-gap: transition-[width] duration-200 ease-linear.
-    expect(out).toContain("transition-[width]")
-    expect(out).toContain("ease-linear")
-    // Authored utilities in the same string survive (original wins on merge).
-    expect(out).toContain("w-(--sidebar-width) bg-transparent")
+  test("breadcrumb-separator anchor is inlined from the map", () => {
+    const vegaOut = transformMarkoSource(files["breadcrumb/separator.marko"], vegaMap)
+    const novaOut = transformMarkoSource(files["breadcrumb/separator.marko"], novaMap)
+    expect(vegaOut).not.toContain("mu-breadcrumb-separator")
+    expect(novaOut).not.toContain("mu-breadcrumb-separator")
   })
 
   test("non-class strings are byte-identical (data-slot, imports, comments)", () => {
@@ -222,8 +228,7 @@ describe("idempotency", () => {
   test("double-transform of real components is a no-op", () => {
     for (const rel of [
       "slider/slider.marko",
-      "sidebar/sidebar.marko",
-      "sidebar/trigger.marko",
+      "breadcrumb/separator.marko",
       "sidebar/menu-button.marko",
     ]) {
       const source = readComponent(rel)

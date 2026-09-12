@@ -28,12 +28,11 @@
  * Run: bun tooling/build-registry.ts
  */
 import { readdir, readFile, writeFile, mkdir, rm } from "node:fs/promises";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join, relative, basename } from "node:path";
 import { VISUAL_STYLES as VISUAL_STYLE_DEFINITIONS } from "../packages/marko-ui/src/registry/constants";
 import { createStyleMap, type StyleMap } from "./style-map";
-import { transformMarkoSource } from "./transform-marko";
-import { transformVariantsSource } from "./transform-variants";
+import { transformComponent } from "./transform-component";
 import type { RegistryItem } from "@/src/registry/schema";
 import directory from "../apps/docs/src/data/directory.json";
 
@@ -287,32 +286,6 @@ async function fileEntries(
   return fileEntriesFromMap(await readItemDir(dir), targetBase, registryBase);
 }
 
-// Applies a style's StyleMap to one authored component directory in memory
-// (.marko -> transformMarko, variants.ts -> transformVariants, everything
-// else verbatim). Recurses into
-// a lib/ subdir (keys become "lib/<file>"). Returns the transformed map.
-function transformComponent(dir: string, styleMap: StyleMap): Map<string, string> {
-  const out = new Map<string, string>();
-  const add = (rel: string, abs: string) => {
-    const src = readFileSync(abs, "utf8");
-    const b = basename(rel);
-    if (b.endsWith(".marko")) out.set(rel, transformMarkoSource(src, styleMap));
-    else if (b === "variants.ts") out.set(rel, transformVariantsSource(src, styleMap));
-    else out.set(rel, src);
-  };
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.isFile()) add(entry.name, join(dir, entry.name));
-    else if (entry.isDirectory() && entry.name === "lib") {
-      for (const libEntry of readdirSync(join(dir, "lib"), { withFileTypes: true })) {
-        if (libEntry.isFile()) add(`lib/${libEntry.name}`, join(dir, "lib", libEntry.name));
-      }
-    } else if (entry.isDirectory()) {
-      throw new Error(`registry item dirs must be flat (only lib/ allowed); found ${dir}/${entry.name}`);
-    }
-  }
-  return out;
-}
-
 async function readMeta(dir: string): Promise<Meta> {
   try {
     return JSON.parse(await readFile(join(dir, "registry.meta.json"), "utf8"));
@@ -452,7 +425,7 @@ async function emitPerStyleComponents(authoredComponents: string[]): Promise<Emi
     for (const name of authoredComponents) {
       const dir = join(UI_DIR, name);
       const meta = await readMeta(dir);
-      const fileMap = transformComponent(dir, styleMap);
+      const fileMap = await transformComponent(dir, styleMap);
       const files = fileEntriesFromMap(fileMap, `~/src/components/ui/${name}`, `ui/${name}`);
       emissions.push({
         item: {
@@ -637,4 +610,4 @@ async function main() {
   );
 }
 
-await main();
+if (import.meta.main) await main();

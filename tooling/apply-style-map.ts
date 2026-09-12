@@ -45,6 +45,60 @@ export const DEFAULT_ALLOWLIST: ReadonlySet<string> = new Set([
   "mu-font-heading",
 ])
 
+/**
+ * Blanks out `//` and `/* *\/` comment bodies (keeping line count and every
+ * non-comment character identical) so a post-blank regex pass over `source`
+ * never mistakes a prose mention inside a comment for a real occurrence.
+ * Shared by merge-classes.ts's post-merge `mu-*` survival guard and
+ * check-classes.ts's "no mu- outside classes.ts" check — both need the exact
+ * same comment-blindness rule transform-marko.ts's own class-string scanner
+ * already applies when REWRITING class-context text (see that file's header:
+ * "transform-marko.ts is comment-blind on purpose", and
+ * check-identity.ts's `KNOWN_UNSTRIPPED` set, which documents four real
+ * tokens — `mu-command-dialog`, `mu-navigation-menu-trigger`,
+ * `mu-select-label`, `mu-toast` — that are each mapped in every
+ * `style-*.css` (never genuinely unreserved/unmapped hooks) but are also
+ * mentioned in a source-code PROSE COMMENT explaining where the token comes
+ * from; a comment-blind scanner is what correctly ignores that mention
+ * instead of treating it as a leaked anchor.
+ */
+export function stripComments(source: string): string {
+  let out = ""
+  let i = 0
+  const n = source.length
+  while (i < n) {
+    const ch = source[i]
+    if (ch === "/" && source[i + 1] === "/") {
+      const nl = source.indexOf("\n", i)
+      const end = nl === -1 ? n : nl
+      out += " ".repeat(end - i)
+      i = end
+      continue
+    }
+    if (ch === "/" && source[i + 1] === "*") {
+      const close = source.indexOf("*/", i + 2)
+      const end = close === -1 ? n : close + 2
+      out += source.slice(i, end).replace(/[^\n]/g, " ")
+      i = end
+      continue
+    }
+    if (ch === "\"" || ch === "'" || ch === "`") {
+      const quote = ch
+      let j = i + 1
+      while (j < n && source[j] !== quote) {
+        if (source[j] === "\\") j++
+        j++
+      }
+      out += source.slice(i, j + 1)
+      i = j + 1
+      continue
+    }
+    out += ch
+    i++
+  }
+  return out
+}
+
 export interface ApplyStyleMapOptions {
   /** Anchor class prefix. Defaults to `mu-`. */
   prefix?: string

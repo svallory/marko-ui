@@ -17,9 +17,16 @@ function muTokensIn(source: string) {
   return Array.from(source.matchAll(MU_TOKEN), (m) => m[0])
 }
 
-describe("real-world: button variants.ts x vega/nova style maps", () => {
+// NOTE: button/variants.ts was the original fixture here, but button is now
+// migrated to the class-as-data contract (classes.ts) — its variants.ts no
+// longer carries literal mu- tokens (they live in classes.ts, which this
+// FALLBACK transform never touches), so it no longer exercises this path
+// meaningfully. toggle/variants.ts (still unmigrated) replaces it: same
+// base+variant+size cva() shape, and its vega/nova style rules differ
+// (rounded-md vs rounded-lg) just like button's used to.
+describe("real-world: toggle variants.ts x vega/nova style maps", () => {
   const variantsSource = readFileSync(
-    join(REGISTRY_DIR, "ui/button/variants.ts"),
+    join(REGISTRY_DIR, "ui/toggle/variants.ts"),
     "utf8"
   )
   const vegaMap = createStyleMap(
@@ -33,8 +40,8 @@ describe("real-world: button variants.ts x vega/nova style maps", () => {
   const novaOut = transformVariantsSource(variantsSource, novaMap)
 
   test("source actually contains mu- tokens (sanity)", () => {
-    expect(muTokensIn(variantsSource)).toContain("mu-button")
-    expect(muTokensIn(variantsSource)).toContain("mu-button-variant-default")
+    expect(muTokensIn(variantsSource)).toContain("mu-toggle")
+    expect(muTokensIn(variantsSource)).toContain("mu-toggle-variant-default")
   })
 
   test("no mu- token survives the transform", () => {
@@ -42,38 +49,29 @@ describe("real-world: button variants.ts x vega/nova style maps", () => {
     expect(muTokensIn(novaOut)).toEqual([])
   })
 
-  test("vega default variant carries the .mu-button-variant-default classes", () => {
-    // Verified by reading styles-src/style-vega.css:
-    //   .mu-button-variant-default {
-    //     @apply bg-primary text-primary-foreground hover:bg-primary/80;
-    //   }
-    expect(vegaMap["mu-button-variant-default"]).toBe(
-      "bg-primary text-primary-foreground hover:bg-primary/80"
-    )
-
+  test("vega default variant carries the .mu-toggle-variant-default classes", () => {
     const defaultVariant = vegaOut.match(/variant:\s*\{\s*default:\s*"([^"]*)"/)?.[1]
     if (defaultVariant === undefined) throw new Error("variant.default not found in vega output")
-    for (const cls of [
-      "bg-primary",
-      "text-primary-foreground",
-      "hover:bg-primary/80",
-    ]) {
+    expect(vegaMap["mu-toggle-variant-default"]).toBeDefined()
+    for (const cls of vegaMap["mu-toggle-variant-default"]!.split(" ")) {
       expect(defaultVariant.split(" ")).toContain(cls)
     }
   })
 
-  test("vega base string keeps the authored utilities and gains .mu-button classes", () => {
-    // From style-vega.css .mu-button (spot-check).
+  test("vega base string keeps the authored utilities and gains .mu-toggle classes", () => {
+    // From style-vega.css .mu-toggle (spot-check).
     expect(vegaOut).toContain("rounded-md")
     expect(vegaOut).toContain("focus-visible:border-ring")
     // Authored utilities from the source base string survive.
-    expect(vegaOut).toContain("group/button")
+    expect(vegaOut).toContain("group/toggle")
     expect(vegaOut).toContain("whitespace-nowrap")
   })
 
   test("nova output differs from vega output", () => {
-    // e.g. nova .mu-button applies rounded-lg where vega applies rounded-md.
+    // nova .mu-toggle applies rounded-lg where vega applies rounded-md.
     expect(novaOut).not.toBe(vegaOut)
+    expect(novaOut).toContain("rounded-lg")
+    expect(vegaOut).toContain("rounded-md")
   })
 
   test("only string literal values change — structure and formatting survive", () => {
@@ -82,7 +80,7 @@ describe("real-world: button variants.ts x vega/nova style maps", () => {
     )
     expect(vegaOut).toContain("defaultVariants")
     expect(vegaOut).toContain(
-      "export type ButtonVariants = VariantProps<typeof buttonVariants>;"
+      "export type ToggleVariants = VariantProps<typeof toggleVariants>;"
     )
   })
 })
@@ -183,7 +181,7 @@ describe("unit: token replacement", () => {
 describe("idempotency", () => {
   test("transforming already-transformed output is a no-op", () => {
     const variantsSource = readFileSync(
-      join(REGISTRY_DIR, "ui/button/variants.ts"),
+      join(REGISTRY_DIR, "ui/toggle/variants.ts"),
       "utf8"
     )
     const vegaMap = createStyleMap(

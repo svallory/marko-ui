@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { menuSub as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"ul"> {}
 
@@ -8,7 +9,7 @@ export interface Input extends Marko.Input<"ul"> {}
   ...rest
   data-slot="sidebar-menu-sub"
   data-sidebar="menu-sub"
-  class=cn("mu-sidebar-menu-sub flex min-w-0 flex-col", className)
+  class=cn(styles.root, className)
 >
   <${content}/>
 </ul>

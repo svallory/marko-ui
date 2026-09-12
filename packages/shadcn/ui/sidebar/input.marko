@@ -1,5 +1,6 @@
 import InputField from "../input/input.marko";
 import { cn } from "#lib/utils.ts";
+import { input as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"input"> {}
 
@@ -9,5 +10,5 @@ export interface Input extends Marko.Input<"input"> {}
   ...rest
   data-slot="sidebar-input"
   data-sidebar="input"
-  class=cn("mu-sidebar-input", className)
+  class=cn(styles.root, className)
 />

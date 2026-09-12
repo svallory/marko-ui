@@ -1,9 +1,10 @@
 import { cn } from "#lib/utils.ts";
+import { footer as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {}
 
 <const/{ class: className, content, ...rest }=input/>
 
-<div ...rest data-slot="sidebar-footer" data-sidebar="footer" class=cn("mu-sidebar-footer flex flex-col", className)>
+<div ...rest data-slot="sidebar-footer" data-sidebar="footer" class=cn(styles.root, className)>
   <${content}/>
 </div>

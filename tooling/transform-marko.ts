@@ -74,7 +74,7 @@ export { DEFAULT_ALLOWLIST }
 export interface TransformMarkoOptions extends ApplyStyleMapOptions {}
 
 /** A rewritable string span: `[start, end)` is the content between quotes (or a template chunk). */
-interface Span {
+export interface Span {
   start: number
   end: number
   kind: "string" | "template-chunk"
@@ -93,14 +93,19 @@ interface Span {
 const CLASS_ATTR_REGEX =
   /(?:^|[\s,])class=|(?:^|[\s,])class:\s*(?=["'`]|cn\()|(?:^|[\s,])[A-Za-z][\w]*Class=/g
 
-export function transformMarkoSource(
-  source: string,
-  styleMap: StyleMap,
-  opts: TransformMarkoOptions = {}
-): string {
-  const applier = createStyleApplier(styleMap, opts)
+/**
+ * Finds every class-context string/template-chunk span in `source` — the
+ * exact same scan `transformMarkoSource` uses internally (CLASS_ATTR_REGEX
+ * start matching + scanExpression's bracket/string/comment-aware walk) —
+ * without rewriting anything. Exported so other tooling (check-classes.ts)
+ * can ask "does this file have any string literal in a class position?"
+ * using the identical scanner, rather than maintaining an independent
+ * reimplementation that could silently drift from this one (see
+ * check-identity.ts's header comment on why a second copy of the same
+ * scanner is a bug-surface duplication risk, not independent verification).
+ */
+export function collectClassContextSpans(source: string): Span[] {
   const spans: Span[] = []
-
   CLASS_ATTR_REGEX.lastIndex = 0
   let match: RegExpExecArray | null
   while ((match = CLASS_ATTR_REGEX.exec(source)) !== null) {
@@ -109,6 +114,16 @@ export function transformMarkoSource(
     // Never rescan inside the value we just consumed.
     CLASS_ATTR_REGEX.lastIndex = valueEnd
   }
+  return spans
+}
+
+export function transformMarkoSource(
+  source: string,
+  styleMap: StyleMap,
+  opts: TransformMarkoOptions = {}
+): string {
+  const applier = createStyleApplier(styleMap, opts)
+  const spans = collectClassContextSpans(source)
 
   if (spans.length === 0) {
     return source

@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { sidebar as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {
   /** Expanded/collapsed state, provided by the provider's @sidebar body. Default: true. */
@@ -20,22 +21,20 @@ export interface Input extends Marko.Input<"div"> {
 }=input/>
 
 <const/state=((open ?? true) ? "expanded" : "collapsed")/>
+<const/isFloatingOrInset=(variant === "floating" || variant === "inset")/>
 
 <if=(collapsible === "none")>
   <div
     ...rest
     data-slot="sidebar"
-    class=cn(
-      "flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground",
-      className,
-    )
+    class=cn(styles.rootFixed, className)
   >
     <${content}/>
   </div>
 </if>
 <else>
   <div
-    class="group peer hidden text-sidebar-foreground md:block"
+    class=styles.wrapper
     data-state=state
     data-collapsible=(state === "collapsed" ? collapsible : "")
     data-variant=variant
@@ -46,12 +45,8 @@ export interface Input extends Marko.Input<"div"> {
     <div
       data-slot="sidebar-gap"
       class=cn(
-        "mu-sidebar-gap relative w-(--sidebar-width) bg-transparent",
-        "group-data-[collapsible=offcanvas]:w-0",
-        "group-data-[side=right]:rotate-180",
-        variant === "floating" || variant === "inset"
-          ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
-          : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)",
+        styles.gap,
+        isFloatingOrInset ? styles.gapFloatingIcon : styles.gapDefaultIcon,
       )
     />
     <div
@@ -59,18 +54,16 @@ export interface Input extends Marko.Input<"div"> {
       data-slot="sidebar-container"
       data-side=side
       class=cn(
-        "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear data-[side=left]:left-0 data-[side=left]:group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] data-[side=right]:right-0 data-[side=right]:group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)] md:flex",
+        styles.container,
         // Adjust the padding for floating and inset variants.
-        variant === "floating" || variant === "inset"
-          ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
-          : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
+        isFloatingOrInset ? styles.containerFloating : styles.containerDefault,
         className,
       )
     >
       <div
         data-sidebar="sidebar"
         data-slot="sidebar-inner"
-        class="mu-sidebar-inner flex size-full flex-col"
+        class=styles.inner
       >
         <${content}/>
       </div>

@@ -1,5 +1,6 @@
 import Button from "../button/button.marko";
 import { cn } from "#lib/utils.ts";
+import { trigger as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"button"> {
   open?: boolean;
@@ -15,7 +16,7 @@ export interface Input extends Marko.Input<"button"> {
   data-sidebar="trigger"
   variant="ghost"
   size="icon-sm"
-  class=cn("mu-sidebar-trigger", className)
+  class=cn(styles.root, className)
   onClick() {
     toggle?.();
   }
@@ -34,11 +35,11 @@ export interface Input extends Marko.Input<"button"> {
       stroke-width="2"
       stroke-linecap="round"
       stroke-linejoin="round"
-      class="mu-rtl-flip size-4"
+      class=styles.icon
     >
       <rect width="18" height="18" x="3" y="3" rx="2"/>
       <path d="M9 3v18"/>
     </svg>
-    <span class="sr-only">Toggle Sidebar</span>
+    <span class=styles.srOnly>Toggle Sidebar</span>
   </else>
 </Button>

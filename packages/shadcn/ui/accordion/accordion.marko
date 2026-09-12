@@ -3,6 +3,7 @@ import type { MachineInput } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { accordion as styles } from "./classes.ts";
 
 export interface AccordionItem {
   value: string;
@@ -203,7 +204,7 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
   }
 />
 
-<div ...nativeAttrs() ...api().getRootProps() data-slot="accordion" class=cn("mu-accordion flex w-full flex-col", input.class)>
+<div ...nativeAttrs() ...api().getRootProps() data-slot="accordion" class=cn(styles.root, input.class)>
   <for|item| of=normalizedItems>
     <const/expanded=api().getItemState({ value: item.value }).expanded/>
     <const/itemContentProps=api().getItemContentProps({ value: item.value })/>
@@ -211,24 +212,24 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
     <div
       ...api().getItemProps({ value: item.value })
       data-slot="accordion-item"
-      class="mu-accordion-item"
+      class=styles.item
     >
-      <h3 class="flex">
+      <h3 class=styles.header>
         <button
           ...api().getItemTriggerProps({ value: item.value })
           data-slot="accordion-trigger"
-          class="mu-accordion-trigger group/accordion-trigger relative flex flex-1 items-start justify-between border border-transparent transition-all outline-none disabled:pointer-events-none disabled:opacity-50"
+          class=styles.trigger
         >
           ${item.title}
           <Icon
             name="ChevronDown"
             data-slot="accordion-trigger-icon"
-            class="mu-accordion-trigger-icon pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:hidden"
+            class=styles.triggerIcon
           />
           <Icon
             name="ChevronUp"
             data-slot="accordion-trigger-icon"
-            class="mu-accordion-trigger-icon pointer-events-none hidden shrink-0 group-aria-expanded/accordion-trigger:inline"
+            class=styles.triggerIconActive
           />
         </button>
       </h3>
@@ -238,9 +239,9 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
         data-slot="accordion-content"
         data-value=item.value
         data-closing=(isClosing || undefined)
-        class="mu-accordion-content overflow-hidden"
+        class=styles.content
       >
-        <div class="mu-accordion-content-inner h-(--marko-accordion-content-height) [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-4">
+        <div class=styles.contentInner>
           <if=item.body>
             <${item.body}/>
           </if>

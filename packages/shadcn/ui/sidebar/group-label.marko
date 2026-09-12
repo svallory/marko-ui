@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { groupLabel as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {}
 
@@ -8,10 +9,7 @@ export interface Input extends Marko.Input<"div"> {}
   ...rest
   data-slot="sidebar-group-label"
   data-sidebar="group-label"
-  class=cn(
-    "mu-sidebar-group-label flex shrink-0 items-center outline-hidden [&>svg]:shrink-0",
-    className,
-  )
+  class=cn(styles.root, className)
 >
   <${content}/>
 </div>

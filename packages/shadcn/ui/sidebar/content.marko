@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { content as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {}
 
@@ -8,10 +9,7 @@ export interface Input extends Marko.Input<"div"> {}
   ...rest
   data-slot="sidebar-content"
   data-sidebar="content"
-  class=cn(
-    "mu-sidebar-content flex min-h-0 flex-1 flex-col overflow-auto group-data-[collapsible=icon]:overflow-hidden",
-    className,
-  )
+  class=cn(styles.root, className)
 >
   <${content}/>
 </div>

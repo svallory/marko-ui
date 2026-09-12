@@ -10,10 +10,16 @@
     "ui/**/*.marko",
     "lib/**/*.ts",
     "tests/**/*.ts",
+    "tests/**/*.marko",
     "../../tooling/style-map.ts",
     "../../tooling/apply-style-map.ts",
     "../../tooling/transform-marko.ts",
     "../../tooling/transform-variants.ts",
+    "../../tooling/resolve-classes.ts",
+    "../../tooling/merge-classes.ts",
+    "../../tooling/transform-component.ts",
+    "../../tooling/check-classes.ts",
+    "../../tooling/fs-utils.ts",
     "../../tooling/parity/harnesses/shadcn/upstream-shadcn.ts"
   ]
 }
