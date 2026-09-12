@@ -19,6 +19,7 @@ import {
 } from "./math.ts";
 import { configFor, seriesColor, type ChartConfig } from "./config.ts";
 import { cn } from "#lib/utils.ts";
+import { area as styles } from "./classes.ts";
 import ChartGrid from "./grid.marko";
 import ChartXAxis from "./x-axis.marko";
 import ChartYAxis from "./y-axis.marko";
@@ -244,7 +245,7 @@ static function pointerIndex(
 <const/activeItem=(showTooltip && activeIndex >= 0 ? tooltipItems[activeIndex] : undefined)/>
 
 <div
-  class=cn("recharts-wrapper", className)
+  class=cn(styles.wrapper, className)
   style={ position: "relative", width: "100%", height: "100%" }
   onPointerMove(event, el) {
     const bounds = el.getBoundingClientRect();
@@ -256,7 +257,7 @@ static function pointerIndex(
     <ChartLegend items=legendItemsFor(config, seriesList) verticalAlign="top"/>
   </if>
   <svg
-    class="recharts-surface"
+    class=styles.surface
     width="100%"
     height="100%"
     viewBox=`0 0 ${width} ${height}`
@@ -293,9 +294,9 @@ static function pointerIndex(
       <ChartYAxis ctx=ctx tickCount=yAxisTickCount/>
     </if>
     <if=(showTooltip && cursor !== false && activeIndex >= 0)>
-      <g class="recharts-layer">
+      <g class=styles.cursorLayer>
         <path
-          class="recharts-curve recharts-tooltip-cursor"
+          class=styles.cursorPath
           stroke="#ccc"
           fill="none"
           stroke-width="1"
@@ -304,16 +305,16 @@ static function pointerIndex(
       </g>
     </if>
     <for|geom| of=areas>
-      <g class="recharts-layer recharts-area">
+      <g class=styles.layer>
         <path
-          class="recharts-curve recharts-area-area"
+          class=styles.areaPath
           fill=(geom.gradient ? `url(#fill-${uid}-${geom.key})` : seriesColor(geom.key))
           fill-opacity=geom.fillOpacity
           stroke="none"
           d=geom.areaD
         />
         <path
-          class="recharts-curve recharts-area-curve"
+          class=styles.linePath
           stroke=seriesColor(geom.key)
           fill="none"
           stroke-width="2"

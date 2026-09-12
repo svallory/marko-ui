@@ -4,6 +4,7 @@
 // the label inside the row). No state: the owning chart tag positions it
 // and supplies resolved rows.
 import { cn } from "#lib/utils.ts";
+import { tooltip as styles } from "./classes.ts";
 
 export interface TooltipRow {
   key: string;
@@ -36,24 +37,24 @@ static function formatValue(value: number | string): string {
   ...rest
 }=input/>
 <const/showLabel=(!hideLabel && label != null && label !== "")/>
-<const/nestLabel=(rows.length === 1 && indicator !== "dot")/>
+<const/isDotIndicator=(indicator === "dot")/>
+<const/isLineIndicator=(indicator === "line")/>
+<const/isDashedIndicator=(indicator === "dashed")/>
+<const/nestLabel=(rows.length === 1 && !isDotIndicator)/>
 
 <div
   ...rest
-  class=cn(
-    "mu-chart-tooltip grid min-w-32 items-start",
-    className,
-  )
+  class=cn(styles.root, className)
 >
   <if=(showLabel && !nestLabel)>
-    <div class="font-medium">${label}</div>
+    <div class=styles.label>${label}</div>
   </if>
-  <div class="grid gap-1.5">
+  <div class=styles.rows>
     <for|row| of=rows>
       <div
         class=cn(
-          "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
-          indicator === "dot" && "items-center",
+          styles.row,
+          isDotIndicator && styles.rowItemsCenter,
         )
       >
         <if=row.icon>
@@ -62,30 +63,29 @@ static function formatValue(value: number | string): string {
         <else if=(!hideIndicator)>
           <div
             class=cn(
-              "shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)",
-              indicator === "dot" && "h-2.5 w-2.5",
-              indicator === "line" && "w-1",
-              indicator === "dashed" &&
-                "w-0 border-[1.5px] border-dashed bg-transparent",
-              nestLabel && indicator === "dashed" && "my-0.5",
+              styles.indicator,
+              isDotIndicator && styles.indicatorDot,
+              isLineIndicator && styles.indicatorLine,
+              isDashedIndicator && styles.indicatorDashed,
+              nestLabel && isDashedIndicator && styles.indicatorDashedNested,
             )
             style=`--color-bg: ${row.color}; --color-border: ${row.color};`
           ></div>
         </else>
         <div
           class=cn(
-            "flex flex-1 justify-between leading-none",
-            nestLabel ? "items-end" : "items-center",
+            styles.rowContent,
+            nestLabel ? styles.rowContentNested : styles.rowContentDefault,
           )
         >
-          <div class="grid gap-1.5">
+          <div class=styles.rowContentLabels>
             <if=(showLabel && nestLabel)>
-              <div class="font-medium">${label}</div>
+              <div class=styles.label>${label}</div>
             </if>
-            <span class="text-muted-foreground">${row.label}</span>
+            <span class=styles.rowLabel>${row.label}</span>
           </div>
           <if=(row.value != null)>
-            <span class="font-mono font-medium text-foreground tabular-nums">
+            <span class=styles.rowValue>
               ${formatValue(row.value)}
             </span>
           </if>

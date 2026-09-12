@@ -10,6 +10,7 @@
 import { pieArcs, type PieArc, type Row } from "./math.ts";
 import { configFor, type ChartConfig } from "./config.ts";
 import { cn } from "#lib/utils.ts";
+import { pie as styles } from "./classes.ts";
 import ChartTooltip from "./tooltip.marko";
 import ChartLegend from "./legend.marko";
 
@@ -164,7 +165,7 @@ static function outsideLabelGeometry(
 <const/activeArc=(showTooltip && activeIndex >= 0 ? arcs[activeIndex] : undefined)/>
 
 <div
-  class=cn("recharts-wrapper flex h-full w-full flex-col", className)
+  class=cn(styles.wrapper, className)
   style={ position: "relative" }
   onPointerLeave() { activeIndex = -1; }
 >
@@ -175,17 +176,17 @@ static function outsideLabelGeometry(
     />
   </if>
   <svg
-    class="recharts-surface"
+    class=styles.surface
     width="100%"
     height="100%"
     viewBox=`0 0 ${width} ${height}`
   >
-    <g class="recharts-layer recharts-pie" transform=`translate(${cx}, ${cy})`>
+    <g class=styles.pieLayer transform=`translate(${cx}, ${cy})`>
       <for|arcDatum| of=arcs>
         <const/isActive=(effectiveActive === arcDatum.index)/>
-        <g class="recharts-layer recharts-pie-sector">
+        <g class=styles.sectorLayer>
           <path
-            class="recharts-sector"
+            class=styles.sector
             stroke="#fff"
             stroke-width=strokeWidth
             fill=sliceColor(arcDatum.row, nameKey)
@@ -200,11 +201,11 @@ static function outsideLabelGeometry(
     <for|entry| of=ringArcs>
       <const/ringCx=cx/>
       <const/ringCy=cy/>
-      <g class="recharts-layer recharts-pie" transform=`translate(${ringCx}, ${ringCy})`>
+      <g class=styles.pieLayer transform=`translate(${ringCx}, ${ringCy})`>
         <for|arcDatum| of=entry.arcs>
-          <g class="recharts-layer recharts-pie-sector">
+          <g class=styles.sectorLayer>
             <path
-              class="recharts-sector"
+              class=styles.sector
               stroke="#fff"
               fill=sliceColor(arcDatum.row, entry.ring.nameKey ?? nameKey)
               d=arcDatum.path
@@ -214,12 +215,12 @@ static function outsideLabelGeometry(
       </g>
     </for>
     <if=outsideLabel>
-      <g class="recharts-layer">
+      <g class=styles.labelLineLayer>
         <for|arcDatum| of=arcs>
           <const/geom=outsideLabelGeometry(arcDatum, cx, cy, outer)/>
-          <path class="recharts-curve recharts-pie-label-line" stroke="#666" fill="none" d=geom.line/>
+          <path class=styles.labelLine stroke="#666" fill="none" d=geom.line/>
           <text
-            class="recharts-text recharts-pie-label-text"
+            class=styles.labelText
             x=geom.x
             y=geom.y
             text-anchor=geom.anchor
@@ -229,7 +230,7 @@ static function outsideLabelGeometry(
       </g>
     </if>
     <if=sliceLabel>
-      <g class="recharts-layer recharts-label-list">
+      <g class=styles.sliceLabelLayer>
         <for|arcDatum| of=arcs>
           <${sliceLabel.content}({ x: cx + arcDatum.centroid[0], y: cy + arcDatum.centroid[1], row: arcDatum.row, value: arcDatum.value, index: arcDatum.index })/>
         </for>

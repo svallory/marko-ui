@@ -22,6 +22,7 @@ import {
   type Row,
 } from "./math.ts";
 import { cn } from "#lib/utils.ts";
+import { line as styles } from "./classes.ts";
 import ChartGrid from "./grid.marko";
 import ChartXAxis from "./x-axis.marko";
 import ChartYAxis from "./y-axis.marko";
@@ -240,7 +241,7 @@ static function buildTooltipRows(
 <const/activeRows=(activeIndex >= 0 ? tooltipRows[activeIndex] : undefined)/>
 
 <div
-  class=cn("recharts-wrapper", className)
+  class=cn(styles.wrapper, className)
   style={ position: "relative", width: "100%", height: "100%" }
   onPointerMove(event: PointerEvent, el: HTMLDivElement) {
     if (showTooltip) {
@@ -258,7 +259,7 @@ static function buildTooltipRows(
     <ChartLegend items=legendItems verticalAlign="top"/>
   </if>
   <svg
-    class="recharts-surface"
+    class=styles.surface
     width="100%"
     height="100%"
     viewBox=`0 0 ${width} ${height}`
@@ -267,9 +268,9 @@ static function buildTooltipRows(
       <ChartGrid ctx=ctx/>
     </if>
     <if=(showTooltip && showCursor && activeIndex >= 0)>
-      <g class="recharts-layer">
+      <g class=styles.cursorLayer>
         <path
-          class="recharts-curve recharts-tooltip-cursor"
+          class=styles.cursorPath
           stroke="#ccc"
           pointer-events="none"
           fill="none"
@@ -282,26 +283,26 @@ static function buildTooltipRows(
       <ChartYAxis ctx=ctx/>
     </if>
     <for|series| of=renderSeries>
-      <g class="recharts-layer recharts-line">
+      <g class=styles.layer>
         <path
-          class="recharts-curve recharts-line-curve"
+          class=styles.linePath
           stroke=series.color
           fill="none"
           stroke-width=series.strokeWidth
           d=series.path
         />
         <if=series.dotContent>
-          <g class="recharts-layer recharts-line-dots">
+          <g class=styles.dotsLayer>
             <for|point| of=series.points>
               <${series.dotContent?.content}({ x: point.x, y: point.y, row: point.row })/>
             </for>
           </g>
         </if>
         <else if=series.dot>
-          <g class="recharts-layer recharts-line-dots">
+          <g class=styles.dotsLayer>
             <for|point| of=series.points>
               <circle
-                class="recharts-dot recharts-line-dot"
+                class=styles.dot
                 r="3"
                 stroke="#fff"
                 stroke-width="1"
@@ -313,7 +314,7 @@ static function buildTooltipRows(
           </g>
         </else>
         <if=series.labels>
-          <g class="recharts-layer recharts-label-list">
+          <g class=styles.labelListLayer>
             <for|point| of=series.points>
               <for|spec| of=series.labels>
                 <const/labelValue=(spec.dataKey ? String(point.row[spec.dataKey] ?? "") : String(point.row[series.dataKey] ?? ""))/>
@@ -324,7 +325,7 @@ static function buildTooltipRows(
                   text-anchor="middle"
                   fill=(spec.color ?? "var(--foreground)")
                   font-size="12"
-                  class="recharts-text"
+                  class=styles.labelText
                 >${labelText}</text>
               </for>
             </for>

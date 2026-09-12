@@ -5,6 +5,7 @@
 // <ChartStyle> inline <style> that scopes --color-<key> vars per THEMES.
 import { chartStyleCss, type ChartConfig } from "./config.ts";
 import { cn } from "#lib/utils.ts";
+import { chart as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {
   config: ChartConfig;
@@ -20,16 +21,13 @@ export interface Input extends Marko.Input<"div"> {
   ...rest
   data-slot="chart"
   data-chart=chartId
-  class=cn(
-    "mu-chart flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
-    className,
-  )
+  class=cn(styles.root, className)
 >
   <if=styleCss>
     <${"style"}>$!{styleCss}</>
   </if>
   <div
-    class="recharts-responsive-container"
+    class=styles.responsiveContainer
     style={ width: "100%", height: "100%" }
   >
     <${content}/>

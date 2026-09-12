@@ -5,6 +5,7 @@
 // axisLine={false}, so we simply never render them. Any tickFormatter is
 // applied by the CALLER before passing `ticks`.
 import { xTicks, type CartesianCtx, type XTick } from "./math.ts";
+import { xAxis as styles } from "./classes.ts";
 
 export interface Input {
   ctx: CartesianCtx;
@@ -16,14 +17,14 @@ export interface Input {
 <const/ticks=(input.ticks ?? xTicks(ctx))/>
 <const/tickY=(ctx.plot.y + ctx.plot.height + tickMargin)/>
 
-<g class="recharts-cartesian-axis recharts-xAxis xAxis">
-  <g class="recharts-cartesian-axis-ticks">
+<g class=styles.root>
+  <g class=styles.ticks>
     <for|tick| of=ticks>
-      <g class="recharts-layer recharts-cartesian-axis-tick">
+      <g class=styles.tick>
         <text
           stroke="none"
           fill="#666"
-          class="recharts-text recharts-cartesian-axis-tick-value"
+          class=styles.tickText
           x=tick.x
           y=tickY
           text-anchor="middle"
