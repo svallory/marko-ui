@@ -7,6 +7,7 @@ import type { MachineInput } from "marko-zag";
 import { positionerStyle } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { colorPicker as styles } from "./classes.ts";
 
 export type Input = Omit<
   MachineInput<"div", colorPickerMachine.Props>,
@@ -104,13 +105,13 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
   ...nativeAttrs()
   ...api().getRootProps()
   data-slot="color-picker"
-  class=cn("flex w-56 flex-col gap-2", input.class)
+  class=cn(styles.root, input.class)
 >
   <if=input.label>
     <label
       ...api().getLabelProps()
       data-slot="color-picker-label"
-      class="text-sm leading-none font-medium select-none data-[disabled]:opacity-50"
+      class=styles.label
     >
       <${input.label}/>
     </label>
@@ -119,26 +120,26 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
   <div
     ...api().getControlProps()
     data-slot="color-picker-control"
-    class="flex items-center gap-2"
+    class=styles.control
   >
     // Render-prop-free trigger: this button IS the swatch, so it owns no
     // caller content and cannot nest another button.
     <button
       ...api().getTriggerProps()
       data-slot="color-picker-trigger"
-      class="border-input focus-visible:border-ring focus-visible:ring-ring/50 relative size-9 shrink-0 overflow-hidden rounded-md border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+      class=styles.trigger
     >
       <div ...api().getTransparencyGridProps({ size: "8px" }) data-slot="color-picker-transparency-grid"/>
       <div
         ...api().getSwatchProps({ value: api().value })
         data-slot="color-picker-swatch"
-        class="absolute inset-0 size-full"
+        class=styles.triggerSwatch
       />
     </button>
     <span
       ...api().getValueTextProps()
       data-slot="color-picker-value-text"
-      class="text-foreground truncate font-mono text-sm tabular-nums"
+      class=styles.valueText
     >
       ${api().valueAsString}
     </span>
@@ -152,33 +153,33 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
         <div
           ...api().getContentProps()
           data-slot="color-picker-content"
-          class="bg-popover text-popover-foreground z-50 flex w-64 flex-col gap-3 rounded-md border p-3 shadow-md outline-hidden data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
+          class=styles.content
         >
           // Zag owns the gradient/position styles on the area parts — no style
           // attribute of our own may go on them.
           <div
             ...api().getAreaProps()
             data-slot="color-picker-area"
-            class="h-32 w-full overflow-hidden rounded-md"
+            class=styles.area
           >
             <div
               ...api().getAreaBackgroundProps()
               data-slot="color-picker-area-background"
-              class="size-full"
+              class=styles.areaBackground
             />
             <div
               ...api().getAreaThumbProps()
               data-slot="color-picker-area-thumb"
-              class="ring-ring/50 size-4 rounded-full border-2 border-white shadow-sm outline-none focus-visible:ring-[3px]"
+              class=styles.areaThumb
             />
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class=styles.row>
             <if=!input.hideEyeDropper>
               <button
                 ...api().getEyeDropperTriggerProps()
                 data-slot="color-picker-eye-dropper-trigger"
-                class="border-input hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-ring/50 inline-flex size-8 shrink-0 items-center justify-center rounded-md border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+                class=styles.eyeDropperTrigger
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -190,7 +191,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
                   stroke-width="2"
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  class="size-4"
+                  class=styles.eyeDropperIcon
                 >
                   <path d="m2 22 1-1h3l9-9"/>
                   <path d="M3 21v-3l9-9"/>
@@ -199,49 +200,49 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
               </button>
             </if>
 
-            <div class="flex min-w-0 flex-1 flex-col gap-2">
+            <div class=styles.channelSlidersWrapper>
               <div
                 ...api().getChannelSliderProps({ channel: "hue", format: "hsla" })
                 data-slot="color-picker-channel-slider"
-                class="h-3 w-full"
+                class=styles.channelSlider
               >
                 <div
                   ...api().getChannelSliderTrackProps({ channel: "hue", format: "hsla" })
                   data-slot="color-picker-channel-slider-track"
-                  class="h-3 w-full rounded-full"
+                  class=styles.channelSliderTrack
                 />
                 <div
                   ...api().getChannelSliderThumbProps({ channel: "hue", format: "hsla" })
                   data-slot="color-picker-channel-slider-thumb"
-                  class="ring-ring/50 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-sm outline-none focus-visible:ring-[3px]"
+                  class=styles.channelSliderThumb
                 />
               </div>
               <div
                 ...api().getChannelSliderProps({ channel: "alpha" })
                 data-slot="color-picker-channel-slider"
-                class="h-3 w-full"
+                class=styles.channelSlider
               >
-                <div ...api().getTransparencyGridProps({ size: "8px" }) data-slot="color-picker-transparency-grid" class="rounded-full"/>
+                <div ...api().getTransparencyGridProps({ size: "8px" }) data-slot="color-picker-transparency-grid" class=styles.transparencyGridRounded/>
                 <div
                   ...api().getChannelSliderTrackProps({ channel: "alpha" })
                   data-slot="color-picker-channel-slider-track"
-                  class="h-3 w-full rounded-full"
+                  class=styles.channelSliderTrack
                 />
                 <div
                   ...api().getChannelSliderThumbProps({ channel: "alpha" })
                   data-slot="color-picker-channel-slider-thumb"
-                  class="ring-ring/50 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-sm outline-none focus-visible:ring-[3px]"
+                  class=styles.channelSliderThumb
                 />
               </div>
             </div>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class=styles.row>
             <if=!input.hideFormatSelect>
               <select
                 ...api().getFormatSelectProps()
                 data-slot="color-picker-format-select"
-                class="border-input bg-transparent focus-visible:border-ring focus-visible:ring-ring/50 h-8 shrink-0 rounded-md border px-1.5 text-xs uppercase shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
+                class=styles.formatSelect
               >
                 <for|format| of=FORMATS>
                   <option value=format>${format.toUpperCase()}</option>
@@ -249,15 +250,15 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
               </select>
             </if>
             <for|channel| of=channels()>
-              <div class="flex min-w-0 flex-1 flex-col gap-1">
+              <div class=styles.channelInputWrapper>
                 <input
                   ...api().getChannelInputProps({
                     channel: channel as colorPickerMachine.ExtendedColorChannel,
                   })
                   data-slot="color-picker-channel-input"
-                  class="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-8 w-full min-w-0 rounded-md border bg-transparent px-2 text-center font-mono text-xs shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+                  class=styles.channelInput
                 >
-                <span class="text-muted-foreground text-center text-[10px] uppercase">
+                <span class=styles.channelInputLabel>
                   ${channel === "hex" ? "hex" : channel.slice(0, 1)}
                 </span>
               </div>
@@ -268,23 +269,23 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
             <div
               ...api().getSwatchGroupProps()
               data-slot="color-picker-swatch-group"
-              class="flex flex-wrap gap-1.5"
+              class=styles.swatchGroup
             >
               <for|swatchValue| of=input.swatches ?? []>
                 <button
                   ...api().getSwatchTriggerProps({ value: swatchValue })
                   data-slot="color-picker-swatch-trigger"
-                  class="border-input focus-visible:border-ring focus-visible:ring-ring/50 size-6 overflow-hidden rounded-md border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+                  class=styles.swatchTrigger
                 >
                   <div
                     ...api().getSwatchProps({ value: swatchValue })
                     data-slot="color-picker-swatch"
-                    class="size-full"
+                    class=styles.swatch
                   >
                     <div
                       ...api().getSwatchIndicatorProps({ value: swatchValue })
                       data-slot="color-picker-swatch-indicator"
-                      class="flex size-full items-center justify-center text-white mix-blend-difference"
+                      class=styles.swatchIndicator
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -296,7 +297,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
                         stroke-width="3"
                         stroke-linecap="round"
                         stroke-linejoin="round"
-                        class="size-3.5"
+                        class=styles.swatchIndicatorIcon
                       >
                         <path d="M20 6 9 17l-5-5"/>
                       </svg>

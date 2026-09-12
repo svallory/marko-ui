@@ -5,6 +5,7 @@ import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
 import { qrCodeVariants, qrCodePixelSizeBySize, type QrCodeVariants } from "./variants.ts";
+import { qrCode as styles } from "./classes.ts";
 
 // `size` is chrome-only sugar: it sets the box (variants.ts) AND feeds the
 // machine's own `pixelSize` prop (module size in px) unless the caller
@@ -45,14 +46,14 @@ export type Input = MachineInput<"div", qrCodeMachine.Props> &
   data-slot="qr-code"
   class=cn(qrCodeVariants({ size: input.size }), input.class)
 >
-  <svg ...api().getFrameProps() data-slot="qr-code-frame" class="h-full w-full">
-    <path ...api().getPatternProps() data-slot="qr-code-pattern" class="fill-foreground"/>
+  <svg ...api().getFrameProps() data-slot="qr-code-frame" class=styles.frame>
+    <path ...api().getPatternProps() data-slot="qr-code-pattern" class=styles.pattern/>
   </svg>
   <if=input.overlay>
     <div
       ...api().getOverlayProps()
       data-slot="qr-code-overlay"
-      class="flex items-center justify-center rounded-sm bg-background p-1 shadow-xs"
+      class=styles.overlay
     >
       <${input.overlay}/>
     </div>

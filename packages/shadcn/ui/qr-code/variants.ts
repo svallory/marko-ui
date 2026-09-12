@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
+import { qrCode } from "./classes.ts";
 
 /**
  * Sizing chrome only (see avatar/variants.ts for the analogous pattern) —
@@ -6,13 +7,9 @@ import { cva, type VariantProps } from "class-variance-authority";
  * `pixelSize` prop (set in qr-code.marko from the same `size` variant)
  * controls the actual SVG viewBox/path geometry.
  */
-export const qrCodeVariants = cva("relative inline-flex shrink-0 items-center justify-center", {
+export const qrCodeVariants = cva(qrCode.base, {
   variants: {
-    size: {
-      sm: "size-24",
-      default: "size-40",
-      lg: "size-56",
-    },
+    size: qrCode.size,
   },
   defaultVariants: {
     size: "default",
