@@ -32,24 +32,27 @@ const novaMap = createStyleMap(
 // mu-sidebar-gap / mu-rtl-flip fixtures here, but sidebar is now migrated to
 // the class-as-data contract (classes.ts) — its .marko sources no longer
 // carry literal mu- tokens, so they no longer exercise this FALLBACK
-// transform meaningfully. breadcrumb/separator.marko (still unmigrated)
-// replaces it as the mu-rtl-flip fixture; sidebar/menu-button.marko stays as
-// the "no anchor tokens in class strings" passthrough fixture since that
-// property is unaffected by the sidebar migration (its own cn() call never
-// held a literal — variants.ts always owned those tokens, and still does).
-describe("real-world: slider + breadcrumb-separator x vega/nova style maps", () => {
+// transform meaningfully. breadcrumb/separator.marko replaced it as the
+// mu-rtl-flip fixture, but cd-sweep-1 migrated breadcrumb too — swapped again
+// to pagination/pagination.marko (still unmigrated), which carries both
+// mu-rtl-flip and a plain anchor token (mu-pagination-content).
+// sidebar/menu-button.marko stays as the "no anchor tokens in class strings"
+// passthrough fixture since that property is unaffected by the sidebar
+// migration (its own cn() call never held a literal — variants.ts always
+// owned those tokens, and still does).
+describe("real-world: slider + pagination x vega/nova style maps", () => {
   const files = {
     "slider/slider.marko": readComponent("slider/slider.marko"),
     "sidebar/menu-button.marko": readComponent("sidebar/menu-button.marko"),
-    "breadcrumb/separator.marko": readComponent("breadcrumb/separator.marko"),
+    "pagination/pagination.marko": readComponent("pagination/pagination.marko"),
   }
 
   test("sources actually contain mu- tokens (sanity)", () => {
     expect(muTokensIn(files["slider/slider.marko"])).toContain("mu-slider")
-    expect(muTokensIn(files["breadcrumb/separator.marko"])).toContain(
-      "mu-breadcrumb-separator"
+    expect(muTokensIn(files["pagination/pagination.marko"])).toContain(
+      "mu-pagination-content"
     )
-    expect(muTokensIn(files["breadcrumb/separator.marko"])).toContain("mu-rtl-flip")
+    expect(muTokensIn(files["pagination/pagination.marko"])).toContain("mu-rtl-flip")
   })
 
   test("no mu- token survives except allowlisted ones", () => {
@@ -64,11 +67,11 @@ describe("real-world: slider + breadcrumb-separator x vega/nova style maps", () 
     }
   })
 
-  test("mu-rtl-flip (allowlisted) survives in breadcrumb/separator.marko", () => {
-    const out = transformMarkoSource(files["breadcrumb/separator.marko"], vegaMap)
+  test("mu-rtl-flip (allowlisted) survives in pagination/pagination.marko", () => {
+    const out = transformMarkoSource(files["pagination/pagination.marko"], vegaMap)
     expect(out).toContain("mu-rtl-flip")
     // ...but the non-allowlisted anchor on the same component is gone.
-    expect(out).not.toContain("mu-breadcrumb-separator")
+    expect(out).not.toContain("mu-pagination-content")
   })
 
   test("slider gains the style's track classes; vega differs from nova", () => {
@@ -81,11 +84,11 @@ describe("real-world: slider + breadcrumb-separator x vega/nova style maps", () 
     expect(vegaOut).not.toBe(novaOut)
   })
 
-  test("breadcrumb-separator anchor is inlined from the map", () => {
-    const vegaOut = transformMarkoSource(files["breadcrumb/separator.marko"], vegaMap)
-    const novaOut = transformMarkoSource(files["breadcrumb/separator.marko"], novaMap)
-    expect(vegaOut).not.toContain("mu-breadcrumb-separator")
-    expect(novaOut).not.toContain("mu-breadcrumb-separator")
+  test("pagination-content anchor is inlined from the map", () => {
+    const vegaOut = transformMarkoSource(files["pagination/pagination.marko"], vegaMap)
+    const novaOut = transformMarkoSource(files["pagination/pagination.marko"], novaMap)
+    expect(vegaOut).not.toContain("mu-pagination-content")
+    expect(novaOut).not.toContain("mu-pagination-content")
   })
 
   test("non-class strings are byte-identical (data-slot, imports, comments)", () => {
@@ -228,7 +231,7 @@ describe("idempotency", () => {
   test("double-transform of real components is a no-op", () => {
     for (const rel of [
       "slider/slider.marko",
-      "breadcrumb/separator.marko",
+      "pagination/pagination.marko",
       "sidebar/menu-button.marko",
     ]) {
       const source = readComponent(rel)

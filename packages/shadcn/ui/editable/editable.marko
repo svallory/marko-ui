@@ -3,6 +3,7 @@ import type { MachineInput } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { editable as styles } from "./classes.ts";
 
 export type Input = MachineInput<"input", editableMachine.Props> & {
   valueChange?: (value: string) => void;
@@ -36,40 +37,40 @@ export type Input = MachineInput<"input", editableMachine.Props> & {
   )
 >
 
-<div ...api().getRootProps() data-slot="editable-root" class=cn("flex items-center gap-1.5", input.class)>
-  <div ...api().getAreaProps() data-slot="editable-area" class="flex-1">
+<div ...api().getRootProps() data-slot="editable-root" class=cn(styles.root, input.class)>
+  <div ...api().getAreaProps() data-slot="editable-area" class=styles.area>
     <input
       ...nativeAttrs()
       ...api().getInputProps()
       data-slot="editable-input"
-      class="border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+      class=styles.input
     />
     <span
       ...api().getPreviewProps()
       data-slot="editable-preview"
-      class="flex h-9 w-full min-w-0 items-center rounded-md border border-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none hover:bg-accent/50 data-[disabled]:pointer-events-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-[placeholder-shown]:text-muted-foreground md:text-sm"
+      class=styles.preview
     >
       ${api().valueText}
     </span>
   </div>
-  <div ...api().getControlProps() data-slot="editable-control" class="flex items-center gap-1">
+  <div ...api().getControlProps() data-slot="editable-control" class=styles.control>
     <button
       ...api().getSubmitTriggerProps()
       data-slot="editable-submit-trigger"
       type="button"
-      class="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex size-8 shrink-0 items-center justify-center gap-2 rounded-md border shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-4"
+      class=styles.submitTrigger
     >
       <Icon name="Check"/>
-      <span class="sr-only">Submit</span>
+      <span class=styles.srOnly>Submit</span>
     </button>
     <button
       ...api().getCancelTriggerProps()
       data-slot="editable-cancel-trigger"
       type="button"
-      class="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex size-8 shrink-0 items-center justify-center gap-2 rounded-md border shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-4"
+      class=styles.cancelTrigger
     >
       <Icon name="X"/>
-      <span class="sr-only">Cancel</span>
+      <span class=styles.srOnly>Cancel</span>
     </button>
     <if=input.trigger>
       <${input.trigger.content}({ ...api().getEditTriggerProps(), "data-slot": "editable-trigger" })/>
@@ -79,10 +80,10 @@ export type Input = MachineInput<"input", editableMachine.Props> & {
         ...api().getEditTriggerProps()
         data-slot="editable-edit-trigger"
         type="button"
-        class="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex size-8 shrink-0 items-center justify-center gap-2 rounded-md border shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-4"
+        class=styles.editTrigger
       >
         <Icon name="PencilIcon"/>
-        <span class="sr-only">Edit</span>
+        <span class=styles.srOnly>Edit</span>
       </button>
     </else>
   </div>
