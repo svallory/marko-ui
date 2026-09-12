@@ -39,14 +39,14 @@ jobs:
         uses: treosh/lighthouse-ci-action@v12
         with:
           urls: |
-            http://localhost:3000/verify/default/accordion
-            http://localhost:3000/verify/default/carousel
-            http://localhost:3000/verify/default/dialog
-            http://localhost:3000/verify/default/field
-            http://localhost:3000/verify/default/select
-            http://localhost:3000/verify/default/slider
-            http://localhost:3000/verify/default/table
-            http://localhost:3000/verify/default/tree-view
+            http://localhost:3000/docs/components/accordion
+            http://localhost:3000/docs/components/carousel
+            http://localhost:3000/docs/components/dialog
+            http://localhost:3000/docs/components/field
+            http://localhost:3000/docs/components/select
+            http://localhost:3000/docs/components/slider
+            http://localhost:3000/docs/components/table
+            http://localhost:3000/docs/components/tree-view
           configPath: .github/lighthouse/lighthouserc-a11y.json
           runs: 1
           uploadArtifacts: true
