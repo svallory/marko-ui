@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { groupAction as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"button"> {}
 
@@ -9,10 +10,7 @@ export interface Input extends Marko.Input<"button"> {}
   type=input.type ?? "button"
   data-slot="sidebar-group-action"
   data-sidebar="group-action"
-  class=cn(
-    "mu-sidebar-group-action flex aspect-square items-center justify-center outline-hidden transition-transform group-data-[collapsible=icon]:hidden after:absolute after:-inset-2 md:after:hidden [&>svg]:shrink-0",
-    className,
-  )
+  class=cn(styles.root, className)
 >
   <${content}/>
 </button>

@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { provider as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {
   /** Controlled open state. Uncontrolled default: true. */
@@ -41,7 +42,7 @@ export interface Input extends Marko.Input<"div"> {
     "--sidebar-width": width ?? "16rem",
     "--sidebar-width-icon": widthIcon ?? "3rem",
   }
-  class=cn("group/sidebar-wrapper flex min-h-svh w-full has-data-[variant=inset]:bg-sidebar", className)
+  class=cn(styles.root, className)
 >
   <if=sidebar>
     <${sidebar.content}({ open, toggle })/>

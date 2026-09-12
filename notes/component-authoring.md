@@ -95,3 +95,51 @@ never mistake one for "the tag's default body":
   offending slot to something specific (e.g. `main`) in the component's interface, its own
   body-forwarding code, and every call site — `content` is freed up to mean only "the entire
   default body" everywhere in the codebase.
+
+## Class strings live in classes.ts
+
+A component directory that has been migrated to the class-as-data contract carries a sibling
+`classes.ts`: pure data, one named export per part (single-part component: the component slug
+camelCased, e.g. `button`), value a nested plain object of strings, `as const`. `classes.ts` has
+NO runtime imports (only `import type` allowed), no functions, no template literals, no computed
+keys — it must be safe to `await import()` and inspect at build time.
+
+```ts
+// ui/button/classes.ts
+export const button = {
+  base: "mu-button group/button inline-flex shrink-0 items-center …",
+  variant: { default: "mu-button-variant-default", outline: "mu-button-variant-outline" },
+  size: { default: "mu-button-size-default" },
+} as const;
+```
+
+`variants.ts` keeps `cva()` but reads every string from `classes.ts`:
+
+```ts
+import { cva, type VariantProps } from "class-variance-authority";
+import { button } from "./classes.ts";
+
+export const buttonVariants = cva(button.base, {
+  variants: { variant: button.variant, size: button.size },
+  defaultVariants: { variant: "default", size: "default" },
+});
+```
+
+Each part `.marko` imports exactly ONE named export from `./classes.ts`, bound as `styles`:
+
+```marko
+import { button as styles } from "./classes.ts";
+```
+
+Template usage: a static site uses `class=styles.item` directly; a merge site uses
+`class=cn(styles.item, className)`; a conditional becomes `cn(styles.x, cond && styles.xActive)`
+— every string branch of the original conditional becomes its own leaf in `classes.ts`, never a
+literal in the template. `<name>Class=` attrs (e.g. `toastClass=`) follow the same rule.
+
+After migration, a part `.marko` and its `variants.ts` contain NO string literal inside any
+`class=`/`*Class=` attribute or `cn(...)` call, and the token `mu-` appears nowhere under
+`ui/<comp>/` except inside `classes.ts` itself. Slot names are boring and derived from the
+element/part they style (`root`, `trigger`, `content`, `item`, `icon`, `label`, …) — no
+cleverness. `bun run check:tooling`'s `check-classes` step enforces all of this statically for
+every component that has a `classes.ts`; components without one still use the transform-based
+fallback (`tooling/transform-marko.ts` / `tooling/transform-variants.ts`).

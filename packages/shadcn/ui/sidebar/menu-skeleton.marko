@@ -1,5 +1,6 @@
 import Skeleton from "../skeleton/skeleton.marko";
 import { cn } from "#lib/utils.ts";
+import { menuSkeleton as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {
   showIcon?: boolean;
@@ -14,16 +15,16 @@ export interface Input extends Marko.Input<"div"> {
   ...rest
   data-slot="sidebar-menu-skeleton"
   data-sidebar="menu-skeleton"
-  class=cn("mu-sidebar-menu-skeleton flex items-center", className)
+  class=cn(styles.root, className)
 >
   <if=showIcon>
     <Skeleton
-      class="mu-sidebar-menu-skeleton-icon"
+      class=styles.icon
       data-sidebar="menu-skeleton-icon"
     />
   </if>
   <Skeleton
-    class="mu-sidebar-menu-skeleton-text max-w-(--skeleton-width) flex-1"
+    class=styles.text
     data-sidebar="menu-skeleton-text"
     style={ "--skeleton-width": width }
   />

@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { inset as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"main"> {}
 
@@ -7,7 +8,7 @@ export interface Input extends Marko.Input<"main"> {}
 <main
   ...rest
   data-slot="sidebar-inset"
-  class=cn("mu-sidebar-inset relative flex w-full flex-1 flex-col", className)
+  class=cn(styles.root, className)
 >
   <${content}/>
 </main>
