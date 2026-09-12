@@ -10,11 +10,14 @@
  *      allowed), no function declarations/expressions/arrow functions, no
  *      template literals, no computed object keys (`[expr]: ...`). Parsed
  *      with ts-morph so this is a real AST check, not regex-over-text.
- *   2. ONE IMPORT PER PART — every `.marko`/`variants.ts` file under the
- *      component directory that references `./classes.ts` does so via
- *      EXACTLY one `import { <name>[ as <alias>] } from "./classes.ts";`
- *      line (mirrors merge-classes.ts's exact-line contract, so a file that
- *      would fail to merge is caught here first with a clearer message).
+ *   2. ONE IMPORT PER PART — every `.ts`/`.marko` file under the component
+ *      directory (any file, not just the part file and variants.ts — a
+ *      lib/*.ts helper copied verbatim by transform-component.ts is in
+ *      scope too; classes.ts itself and *.d.ts are excluded) that
+ *      references `./classes.ts` does so via EXACTLY one
+ *      `import { <name>[ as <alias>] } from "./classes.ts";` line (mirrors
+ *      merge-classes.ts's exact-line contract, so a file that would fail to
+ *      merge is caught here first with a clearer message).
  *   3. NO STRING LITERALS IN CLASS POSITIONS — no `class=`/`<name>Class=`
  *      attribute value or `class:` object property (including any `cn(...)`
  *      call nested inside one, at any argument position, either side of a
@@ -28,12 +31,13 @@
  *      bug-surface duplication risk, not independent verification. ANY
  *      non-empty span is a violation: a migrated part's `styles` binding
  *      never has a class-context region for this scanner to find at all.
- *   4. NO mu- OUTSIDE classes.ts — no `.marko`/`variants.ts` file in the
- *      component directory contains an `mu-` token, honoring
- *      check-identity.ts's comment-inside-command.marko allowlist rule (a
- *      bare token inside a `//` or block comment, not a real class-context
- *      occurrence, is allowed — command.marko's own reservation comment is
- *      the precedent).
+ *   4. NO mu- OUTSIDE classes.ts — no `.ts`/`.marko` file in the component
+ *      directory (again, any file — a stray `mu-` in a lib/*.ts helper is
+ *      just as much a contract violation as one in the part file) contains
+ *      an `mu-` token, honoring check-identity.ts's
+ *      comment-inside-command.marko allowlist rule (a bare token inside a
+ *      `//` or block comment, not a real class-context occurrence, is
+ *      allowed — command.marko's own reservation comment is the precedent).
  *
  * Usage: bun tooling/check-classes.ts [--json]
  * Exit 1 on any violation, else 0. Reports `file:line` for every violation.
@@ -237,6 +241,30 @@ function stripComments(source: string): string {
   return out
 }
 
+/**
+ * Runs contract points 2-4 (import shape, class-literal detection, mu-
+ * outside classes.ts) over every eligible file under one component
+ * directory. Eligible = every `.ts`/`.marko` file, not just the part file
+ * and variants.ts — a lib/*.ts helper copied verbatim by
+ * transform-component.ts is in scope too; classes.ts itself (it OWNS the
+ * mu- tokens) and *.d.ts (never authored by hand here, no class-context
+ * syntax by construction) are excluded. `componentDir` is the path prefix
+ * used in reported violations (relative to whatever ui/ root the caller
+ * means); `dirAbs` is the real filesystem directory to walk. Exported so
+ * tests can point it at a scratch component directory without touching the
+ * real ui/ tree.
+ */
+export function checkComponentDir(componentDir: string, dirAbs: string, violations: Violation[]): void {
+  for (const fileRel of walkRelative(dirAbs)) {
+    const base = path.basename(fileRel)
+    if (base === "classes.ts" || base.endsWith(".d.ts")) continue
+    if (!base.endsWith(".ts") && !base.endsWith(".marko")) continue
+    const abs = path.join(dirAbs, fileRel)
+    const source = readFileSync(abs, "utf8")
+    checkPartFile(path.join(componentDir, fileRel), source, violations)
+  }
+}
+
 function main(): number {
   const json = process.argv.includes("--json")
   const violations: Violation[] = []
@@ -247,15 +275,7 @@ function main(): number {
 
   for (const componentDir of withClasses) {
     checkPurity(componentDir, violations)
-
-    const dirAbs = path.join(UI_DIR, componentDir)
-    for (const fileRel of walkRelative(dirAbs)) {
-      const base = path.basename(fileRel)
-      if (!base.endsWith(".marko") && base !== "variants.ts") continue
-      const abs = path.join(dirAbs, fileRel)
-      const source = readFileSync(abs, "utf8")
-      checkPartFile(path.join(componentDir, fileRel), source, violations)
-    }
+    checkComponentDir(componentDir, path.join(UI_DIR, componentDir), violations)
   }
 
   if (json) {
