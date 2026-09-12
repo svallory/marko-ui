@@ -5,6 +5,7 @@ import * as scrollAreaMachine from "@zag-js/scroll-area";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { scrollArea as styles } from "./classes.ts";
 
 export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
   content?: Marko.Body;
@@ -42,7 +43,7 @@ export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
   ...nativeAttrs()
   ...api().getRootProps()
   data-slot="scroll-area"
-  class=cn("mu-scroll-area relative", input.class)
+  class=cn(styles.root, input.class)
 >
   <div
     ...api().getViewportProps()
@@ -52,7 +53,7 @@ export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
     // scrollable-region-focusable). Matches shadcn's Viewport tabIndex={0} —
     // the focus-visible ring classes below assume it.
     tabindex="0"
-    class="mu-scroll-area-viewport size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1"
+    class=styles.viewport
   >
     <div ...api().getContentProps()>
       <${input.content}/>
@@ -63,12 +64,12 @@ export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
     <div
       ...api().getScrollbarProps({ orientation: "vertical" })
       data-slot="scroll-area-scrollbar"
-      class="mu-scroll-area-scrollbar flex touch-none p-px transition-colors select-none"
+      class=styles.scrollbar
     >
       <div
         ...api().getThumbProps({ orientation: "vertical" })
         data-slot="scroll-area-thumb"
-        class="mu-scroll-area-thumb relative flex-1 bg-border"
+        class=styles.thumb
       />
     </div>
   </if>
@@ -77,12 +78,12 @@ export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
     <div
       ...api().getScrollbarProps({ orientation: "horizontal" })
       data-slot="scroll-area-scrollbar"
-      class="mu-scroll-area-scrollbar flex touch-none p-px transition-colors select-none"
+      class=styles.scrollbar
     >
       <div
         ...api().getThumbProps({ orientation: "horizontal" })
         data-slot="scroll-area-thumb"
-        class="mu-scroll-area-thumb relative flex-1 bg-border"
+        class=styles.thumb
       />
     </div>
   </if>
