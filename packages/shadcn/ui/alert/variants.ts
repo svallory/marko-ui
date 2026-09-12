@@ -1,11 +1,9 @@
 import { cva, type VariantProps } from "class-variance-authority";
+import { alert } from "./classes.ts";
 
-export const alertVariants = cva("mu-alert group/alert relative w-full", {
+export const alertVariants = cva(alert.base, {
   variants: {
-    variant: {
-      default: "mu-alert-variant-default",
-      destructive: "mu-alert-variant-destructive",
-    },
+    variant: alert.variant,
   },
   defaultVariants: {
     variant: "default",

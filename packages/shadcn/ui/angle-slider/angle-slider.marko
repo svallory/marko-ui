@@ -2,6 +2,7 @@ import * as angleSliderMachine from "@zag-js/angle-slider";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { angleSlider as styles } from "./classes.ts";
 
 export type Input = MachineInput<"div", angleSliderMachine.Props> & {
   valueChange?: (value: number) => void;
@@ -17,29 +18,29 @@ export type Input = MachineInput<"div", angleSliderMachine.Props> & {
   ...nativeAttrs()
   ...api().getRootProps()
   data-slot="angle-slider"
-  class=cn("flex flex-col items-center gap-2", input.class)
+  class=cn(styles.root, input.class)
 >
-  <label ...api().getLabelProps() data-slot="angle-slider-label" class="sr-only">
+  <label ...api().getLabelProps() data-slot="angle-slider-label" class=styles.label>
     Angle
   </label>
   <div
     ...api().getControlProps()
     data-slot="angle-slider-control"
-    class="relative size-24 rounded-full border border-input bg-muted"
+    class=styles.control
   >
     <input ...api().getHiddenInputProps()>
     <div
       ...api().getThumbProps()
       data-slot="angle-slider-thumb"
-      class="absolute inset-y-0 left-1/2 flex w-0.5 -translate-x-1/2 flex-col items-center justify-start bg-transparent outline-none"
+      class=styles.thumb
     >
-      <span data-slot="angle-slider-thumb-knob" class="block size-3 -translate-y-1/2 rounded-full border border-primary bg-background shadow-sm ring-0 focus-visible:ring-[3px] focus-visible:ring-ring/50"></span>
+      <span data-slot="angle-slider-thumb-knob" class=styles.thumbKnob></span>
     </div>
   </div>
   <span
     ...api().getValueTextProps()
     data-slot="angle-slider-value-text"
-    class="text-sm text-muted-foreground tabular-nums"
+    class=styles.valueText
   >
     ${api().value}&deg;
   </span>

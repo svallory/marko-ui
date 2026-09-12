@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { content as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {}
 
@@ -6,10 +7,7 @@ export interface Input extends Marko.Input<"div"> {}
 
 <div
   data-slot="empty-content"
-  class=cn(
-    "mu-empty-content flex w-full max-w-sm min-w-0 flex-col items-center text-balance",
-    className,
-  )
+  class=cn(styles.root, className)
   ...rest
 >
   <${content}/>

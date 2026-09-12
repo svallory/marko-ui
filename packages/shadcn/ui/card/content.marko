@@ -1,9 +1,10 @@
 import { cn } from "#lib/utils.ts";
+import { content as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {}
 
 <const/{ class: className, content, ...rest }=input/>
 
-<div data-slot="card-content" class=cn("mu-card-content", className) ...rest>
+<div data-slot="card-content" class=cn(styles.root, className) ...rest>
   <${content}/>
 </div>
