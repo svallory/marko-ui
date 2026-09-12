@@ -1,9 +1,10 @@
 import { cn } from "#lib/utils.ts";
+import { item as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"li"> {}
 
 <const/{ class: className, content, ...rest }=input/>
 
-<li data-slot="breadcrumb-item" class=cn("mu-breadcrumb-item inline-flex items-center", className) ...rest>
+<li data-slot="breadcrumb-item" class=cn(styles.root, className) ...rest>
   <${content}/>
 </li>

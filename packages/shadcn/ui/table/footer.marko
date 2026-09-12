@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { footer as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"tfoot"> {
   content?: Marko.Body;
@@ -9,7 +10,7 @@ export interface Input extends Marko.Input<"tfoot"> {
 <tfoot
   ...rest
   data-slot="table-footer"
-  class=cn("mu-table-footer", className)
+  class=cn(styles.root, className)
 >
   <${content}/>
 </tfoot>
