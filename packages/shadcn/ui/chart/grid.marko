@@ -4,6 +4,7 @@
 // container selector [&_.recharts-cartesian-grid_line[stroke='#ccc']]
 // restyles them to stroke-border/50 — do not "fix" the hardcoded color.
 import { xTicks, yTicks, type CartesianCtx } from "./math.ts";
+import { grid as styles } from "./classes.ts";
 
 export interface Input {
   ctx: CartesianCtx;
@@ -14,9 +15,9 @@ export interface Input {
 
 <const/{ ctx, horizontal = true, vertical = false }=input/>
 
-<g class="recharts-cartesian-grid">
+<g class=styles.root>
   <if=horizontal>
-    <g class="recharts-cartesian-grid-horizontal">
+    <g class=styles.horizontal>
       <for|tick| of=yTicks(ctx)>
         <line
           stroke="#ccc"
@@ -30,7 +31,7 @@ export interface Input {
     </g>
   </if>
   <if=vertical>
-    <g class="recharts-cartesian-grid-vertical">
+    <g class=styles.vertical>
       <for|tick| of=xTicks(ctx)>
         <line
           stroke="#ccc"

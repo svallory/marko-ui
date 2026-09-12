@@ -3,6 +3,7 @@
 // matching the shadcn demos). Literal fill="#666" — restyled by the
 // container's fill-muted-foreground selector. No axis/tick lines.
 import { yTicks, type CartesianCtx, type YTick } from "./math.ts";
+import { yAxis as styles } from "./classes.ts";
 
 export interface Input {
   ctx: CartesianCtx;
@@ -16,14 +17,14 @@ export interface Input {
 <const/ticks=(input.ticks ?? yTicks(ctx, input.tickCount))/>
 <const/tickX=(ctx.plot.x - tickMargin)/>
 
-<g class="recharts-cartesian-axis recharts-yAxis yAxis">
-  <g class="recharts-cartesian-axis-ticks">
+<g class=styles.root>
+  <g class=styles.ticks>
     <for|tick| of=ticks>
-      <g class="recharts-layer recharts-cartesian-axis-tick">
+      <g class=styles.tick>
         <text
           stroke="none"
           fill="#666"
-          class="recharts-text recharts-cartesian-axis-tick-value"
+          class=styles.tickText
           x=tickX
           y=tick.y
           text-anchor="end"
