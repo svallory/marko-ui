@@ -21,7 +21,7 @@ Directory-entry PRs are reviewed for the contract only — we don't gate your co
 The `wanted` array in `apps/docs/src/data/directory.json` lists the libraries we accept into this repo and commit to maintaining. For those:
 
 - Fork **before** porting; work on a branch (the skill handles this).
-- Components go in `packages/shadcn/ui/<name>/` with a `registry.meta.json`; follow `notes/component-authoring.md` and the docs site's Creating Components guide. Demo pages are required (the e2e verify-matrix runs off them).
+- Components go in `packages/shadcn/ui/<name>/` with a `registry.meta.json`; follow `notes/component-authoring.md` and the docs site's Creating Components guide. Demo pages are required (behavior tests and the docs component pages run off them).
 - Pass the mechanical parity gate before requesting review:
   ```bash
   bun run check           # marko-type-check everywhere — never plain tsc

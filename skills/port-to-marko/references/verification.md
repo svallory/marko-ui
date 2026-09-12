@@ -48,7 +48,7 @@ bun run test            # vitest suites
 bun run build:registry  # registry build must exit 0
 ```
 
-plus the e2e verify-matrix where your components have demos, **plus the parity-drift toolkit**:
+plus the packages/shadcn behavior tests where your components have demos, **plus the parity-drift toolkit**:
 
 ```bash
 bun run check:parity    # exit 0 green, 3 drift (read parity-report/), 2 tooling crash

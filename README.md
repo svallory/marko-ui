@@ -69,9 +69,9 @@ The `default` style plus 8 more — every component re-styled, not re-skinned:
 source carries semantic `mu-*` hook classes; each style is a vendored CSS
 token layer combined with that source by a build step, so styling a component
 differently is a token/CSS change, not a separate hand-maintained tree.
-A generated Playwright matrix renders, hydrates, and interacts with every
-component in every style on every push — one check per entry in
-`apps/docs/src/routes/verify/manifest.json` (711 at the time of writing).
+Behavior tests (Playwright, against real hydrated components) and the
+hydration-invariant suite guard the shared source on every push; a
+gallery-screenshot guard covering every style is planned.
 
 ## Repository layout
 
