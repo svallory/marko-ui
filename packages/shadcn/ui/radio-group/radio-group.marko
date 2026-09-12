@@ -2,6 +2,7 @@ import * as radioGroupMachine from "@zag-js/radio-group";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { radioGroup as styles } from "./classes.ts";
 
 export interface RadioGroupItem {
   value: string;
@@ -57,24 +58,24 @@ export type Input = Omit<MachineInput<"div", radioGroupMachine.Props>, "value"> 
   )
 >
 
-<div ...nativeAttrs() ...api().getRootProps() data-slot="radio-group" class=cn("mu-radio-group w-full", input.class)>
+<div ...nativeAttrs() ...api().getRootProps() data-slot="radio-group" class=cn(styles.root, input.class)>
   <for|item| of=normalizedItems by=(item) => item.value>
     <label
       ...api().getItemProps({ value: item.value, disabled: item.disabled })
       data-slot="radio-group-item-wrapper"
-      class="flex items-center gap-2"
+      class=styles.itemWrapper
     >
       <span
         ...api().getItemControlProps({ value: item.value, disabled: item.disabled })
         data-slot="radio-group-item"
-        class="mu-radio-group-item group/radio-group-item peer relative aspect-square shrink-0 border outline-none after:absolute after:-inset-x-3 after:-inset-y-2 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50"
+        class=styles.item
       >
         <if=api().getItemState({ value: item.value, disabled: item.disabled }).checked>
           <span
             data-slot="radio-group-indicator"
-            class="mu-radio-group-indicator"
+            class=styles.indicator
           >
-            <span class="mu-radio-group-indicator-icon"/>
+            <span class=styles.indicatorIcon/>
           </span>
         </if>
       </span>
@@ -82,7 +83,7 @@ export type Input = Omit<MachineInput<"div", radioGroupMachine.Props>, "value"> 
       <span
         ...api().getItemTextProps({ value: item.value, disabled: item.disabled })
         data-slot="radio-group-item-text"
-        class="text-sm leading-none font-medium select-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+        class=styles.itemText
       >
         <if=item.content>
           <${item.content}/>

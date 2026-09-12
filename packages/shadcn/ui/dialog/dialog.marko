@@ -6,6 +6,7 @@ import Button from "../button/button.marko";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { dialog as styles } from "./classes.ts";
 
 export type Input = MachineInput<"div", dialogMachine.Props> & {
   openChange?: (open: boolean) => void;
@@ -51,27 +52,24 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
     <div
       ...api().getBackdropProps()
       data-slot="dialog-overlay"
-      class="mu-dialog-overlay fixed inset-0 z-50"
+      class=styles.overlay
     />
-    <div ...api().getPositionerProps() data-slot="dialog-positioner" class="fixed inset-0 z-50 flex items-center justify-center">
+    <div ...api().getPositionerProps() data-slot="dialog-positioner" class=styles.positioner>
       <div
         ...nativeAttrs()
         ...api().getContentProps()
         data-slot="dialog-content"
-        class=cn(
-          "mu-dialog-content fixed top-1/2 left-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2 outline-none",
-          input.class,
-        )
+        class=cn(styles.content, input.class)
       >
         <if=input.title || input.description>
-          <div data-slot="dialog-header" class="mu-dialog-header flex flex-col">
+          <div data-slot="dialog-header" class=styles.header>
             <if=input.title>
-              <h2 ...api().getTitleProps() data-slot="dialog-title" class="mu-dialog-title mu-font-heading">
+              <h2 ...api().getTitleProps() data-slot="dialog-title" class=styles.title>
                 <${input.title}/>
               </h2>
             </if>
             <if=input.description>
-              <p ...api().getDescriptionProps() data-slot="dialog-description" class="mu-dialog-description">
+              <p ...api().getDescriptionProps() data-slot="dialog-description" class=styles.description>
                 <${input.description}/>
               </p>
             </if>
@@ -81,7 +79,7 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
           <${input.content}/>
         </if>
         <if=input.footer>
-          <div data-slot="dialog-footer" class="mu-dialog-footer flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <div data-slot="dialog-footer" class=styles.footer>
             <${input.footer}/>
           </div>
         </if>
@@ -91,10 +89,10 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
             variant="ghost"
             size="icon-sm"
             data-slot="dialog-close"
-            class="mu-dialog-close"
+            class=styles.close
           >
             <Icon name="XIcon"/>
-            <span class="sr-only">Close</span>
+            <span class=styles.srOnly>Close</span>
           </Button>
         </if>
       </div>
