@@ -1,16 +1,17 @@
 /**
  * fs-utils.ts — shared filesystem/path/token helpers for the tooling scripts.
  *
- * Extracted from check-anchors.ts, check-consumption.ts and check-identity.ts,
- * which each hand-rolled a near-identical recursive readdirSync walker, two
- * independently-declared `mu-*` anchor regexes, and two different repo-root
- * resolution techniques. Behavior here is a faithful union of what those three
- * scripts did — these are CI gates, so the semantics are preserved exactly:
+ * Extracted from check-anchors.ts and check-consumption.ts (plus a since-
+ * retired third CI gate), which each hand-rolled a near-identical recursive
+ * readdirSync walker, independently-declared `mu-*` anchor regexes, and
+ * different repo-root resolution techniques. Behavior here is a faithful
+ * union of what those scripts did — these are CI gates, so the semantics are
+ * preserved exactly:
  *
  *   - `walkAbsolute` mirrors check-anchors.ts's `walkFiles`: absolute paths,
  *     filtered by extension, in raw readdirSync order (NOT sorted).
- *   - `walkRelative` mirrors check-consumption.ts's / check-identity.ts's
- *     `walk`: paths relative to the starting directory, every file, sorted.
+ *   - `walkRelative` mirrors check-consumption.ts's `walk`: paths relative
+ *     to the starting directory, every file, sorted.
  */
 import { readdirSync } from "node:fs"
 import path from "node:path"
@@ -20,7 +21,7 @@ import { fileURLToPath } from "node:url"
  * The repository root (the directory containing `tooling/`).
  *
  * check-anchors.ts derived this with `dirname(fileURLToPath(import.meta.url))`
- * plus a `..`, while check-consumption.ts / check-identity.ts used
+ * plus a `..`, while check-consumption.ts used
  * `new URL("../packages/shadcn/", import.meta.url).pathname`. The
  * `fileURLToPath` form is the correct one — `URL.pathname` is percent-encoded,
  * so a repo checked out under a path containing a space or any other reserved
@@ -37,11 +38,11 @@ export const REGISTRY_ROOT = path.join(REPO_ROOT, "packages", "shadcn")
 /**
  * Matches a whole `mu-<stem>` anchor token anywhere in a source file.
  *
- * Declared once here because check-consumption.ts and check-identity.ts each
- * declared their own copy and the two must agree: check-consumption decides
- * whether a StyleMap key is consumed by any component, check-identity decides
- * whether the empty-map transform stripped it. A divergence between the two
- * would make one gate contradict the other.
+ * Declared once here so every CI gate that scans for `mu-*` tokens agrees on
+ * the exact pattern — check-consumption.ts uses it to decide whether a
+ * StyleMap key is consumed by any component; check-classes.ts uses it (via
+ * `stripComments`) to decide whether a token has leaked outside classes.ts.
+ * A divergence between callers would make one gate contradict another.
  *
  * NOTE: this is a `g`-flagged regex, so it carries mutable `lastIndex` state.
  * Only ever use it with `String.prototype.matchAll` (which clones internally
@@ -56,7 +57,7 @@ export const ANCHOR_TOKEN_RE = /\bmu-[\w-]+\b/g
  * Runs a check script's `main()` and exits with its status code, turning any
  * uncaught exception into a labelled one-line failure (plus the stack, which
  * is still useful) instead of a bare stack trace with no indication of WHICH
- * of the three CI gates blew up.
+ * CI gate blew up.
  *
  * Exit codes: whatever `main()` returns on a clean run; 2 on a thrown error,
  * kept distinct from the 1 that means "the check found real problems".
@@ -99,7 +100,7 @@ export function walkAbsolute(dir: string, extensions: string[]): string[] {
  * Recursively collect every file under `dir` as a path RELATIVE to `base`
  * (which defaults to `dir`), sorted. Only regular files are returned;
  * symlinks and other non-file entries are skipped, matching the original
- * `entry.isFile()` guard in check-consumption.ts / check-identity.ts.
+ * `entry.isFile()` guard in check-consumption.ts.
  */
 export function walkRelative(dir: string, base = dir): string[] {
   const out: string[] = []

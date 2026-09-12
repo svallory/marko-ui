@@ -1,10 +1,12 @@
 /**
- * check-classes.ts — enforces the class-as-data contract (notes/component-authoring.md,
- * cd-tooling contract points 1-3) for every `ui/<comp>/` directory that HAS a
- * `classes.ts`. Directories without one are skipped and counted (they still
- * use the transformMarkoSource/transformVariantsSource fallback).
+ * check-classes.ts — enforces the class-as-data contract
+ * (notes/component-authoring.md) for EVERY `ui/<comp>/` directory. The
+ * transform-based fallback is gone (cd-final): a component either has a
+ * `classes.ts`, or it is literal-free (no class-context string literal and
+ * no bare `mu-` token anywhere under it) — both are checked, so there is no
+ * "skipped" bucket any more.
  *
- * Checked per component with a classes.ts:
+ * Checked per component WITH a classes.ts:
  *
  *   1. PURITY — classes.ts contains no runtime imports (only `import type`
  *      allowed), no function declarations/expressions/arrow functions, no
@@ -18,26 +20,28 @@
  *      `import { <name>[ as <alias>] } from "./classes.ts";` line (mirrors
  *      merge-classes.ts's exact-line contract, so a file that would fail to
  *      merge is caught here first with a clearer message).
+ *
+ * Checked for EVERY component (with or without classes.ts):
+ *
  *   3. NO STRING LITERALS IN CLASS POSITIONS — no `class=`/`<name>Class=`
  *      attribute value or `class:` object property (including any `cn(...)`
  *      call nested inside one, at any argument position, either side of a
  *      ternary or `+` concatenation, on any line) contains a literal string
- *      — every leaf must come from the `styles` binding. Reuses
- *      transform-marko.ts's `collectClassContextSpans` (the exact same
- *      bracket/string/comment-aware scanner `transformMarkoSource` itself
- *      rewrites) to find every class-context string/template-chunk span —
- *      not an independent reimplementation, since check-identity.ts's header
- *      comment already establishes that a second copy of this scanner is a
- *      bug-surface duplication risk, not independent verification. ANY
- *      non-empty span is a violation: a migrated part's `styles` binding
- *      never has a class-context region for this scanner to find at all.
+ *      — every leaf must come from the `styles` binding. Uses
+ *      `class-context-scan.ts`'s `collectClassContextSpans` (a pure
+ *      DETECTOR — a missed span is a missed violation, never a corrupted
+ *      file, since this scanner never rewrites anything) to find
+ *      every class-context string/template-chunk span. ANY non-empty span
+ *      is a violation: a migrated part's `styles` binding never has a
+ *      class-context region for this scanner to find at all, and a
+ *      literal-free component (no classes.ts) must have none either.
  *   4. NO mu- OUTSIDE classes.ts — no `.ts`/`.marko` file in the component
  *      directory (again, any file — a stray `mu-` in a lib/*.ts helper is
  *      just as much a contract violation as one in the part file) contains
- *      an `mu-` token, honoring check-identity.ts's
- *      comment-inside-command.marko allowlist rule (a bare token inside a
- *      `//` or block comment, not a real class-context occurrence, is
- *      allowed — command.marko's own reservation comment is the precedent).
+ *      an `mu-` token, honoring the comment-blind allowlist rule (a bare
+ *      token inside a `//` or block comment, not a real class-context
+ *      occurrence, is allowed — command.marko's own reservation comment is
+ *      the precedent).
  *
  * Usage: bun tooling/check-classes.ts [--json]
  * Exit 1 on any violation, else 0. Reports `file:line` for every violation.
@@ -47,7 +51,7 @@ import path from "node:path"
 import { Node, Project } from "ts-morph"
 
 import { REGISTRY_ROOT, runCheck, walkRelative } from "./fs-utils"
-import { collectClassContextSpans } from "./transform-marko"
+import { collectClassContextSpans } from "./class-context-scan"
 import { stripComments } from "./apply-style-map"
 
 const UI_DIR = path.join(REGISTRY_ROOT, "ui")
@@ -76,7 +80,11 @@ function discoverAllComponents(): string[] {
   const dirs = new Set<string>()
   for (const rel of walkRelative(UI_DIR)) {
     const dir = path.dirname(rel)
-    dirs.add(dir === "." ? "" : dir.split(path.sep)[0]!)
+    // A top-level file directly under UI_DIR (e.g. marko-attributes.d.ts)
+    // has dirname "." — it is not a component directory, so it must not be
+    // counted as one (it previously inflated "without classes.ts" by one).
+    if (dir === ".") continue
+    dirs.add(dir.split(path.sep)[0]!)
   }
   return [...dirs].sort()
 }
@@ -174,12 +182,11 @@ export function checkPartFile(rel: string, source: string, violations: Violation
   }
 
   // 3. No string literal in ANY class-context position. collectClassContextSpans
-  // is the exact same scanner transformMarkoSource itself rewrites: it finds
-  // the whole balanced class= / <name>Class= / class: expression (including
-  // any nested cn(...) call, ternary, concatenation, multi-line value) and
-  // returns every string/template-chunk span inside it — a migrated part's
-  // `styles`-only expressions never produce any span, so ANY span found here
-  // is a real violation.
+  // finds the whole balanced class= / <name>Class= / class: expression
+  // (including any nested cn(...) call, ternary, concatenation, multi-line
+  // value) and returns every string/template-chunk span inside it — a
+  // migrated part's `styles`-only expressions never produce any span, so ANY
+  // span found here is a real violation.
   for (const span of collectClassContextSpans(source)) {
     violations.push({
       file: rel,
@@ -190,8 +197,9 @@ export function checkPartFile(rel: string, source: string, violations: Violation
   }
 
   // 4. No mu- token outside classes.ts, honoring the comment-blind allowlist:
-  // a bare mention inside a // or /* */ comment is allowed (matches
-  // check-identity.ts's KNOWN_UNSTRIPPED precedent for command.marko).
+  // a bare mention inside a // or /* */ comment is allowed (command.marko's
+  // own reservation comment is the precedent — see apply-style-map.ts's
+  // stripComments header for the full rationale).
   const withoutComments = stripComments(source)
   for (const m of withoutComments.matchAll(/\bmu-[\w-]+\b/g)) {
     violations.push({
@@ -231,12 +239,13 @@ function main(): number {
   const json = process.argv.includes("--json")
   const violations: Violation[] = []
 
-  const withClasses = discoverComponentsWithClasses()
+  const withClasses = new Set(discoverComponentsWithClasses())
   const allComponents = discoverAllComponents()
-  const withoutClasses = allComponents.filter((c) => !withClasses.includes(c))
 
-  for (const componentDir of withClasses) {
-    checkPurity(componentDir, violations)
+  for (const componentDir of allComponents) {
+    if (withClasses.has(componentDir)) {
+      checkPurity(componentDir, violations)
+    }
     checkComponentDir(componentDir, path.join(UI_DIR, componentDir), violations)
   }
 
@@ -244,8 +253,9 @@ function main(): number {
     console.log(
       JSON.stringify(
         {
-          componentsWithClasses: withClasses.length,
-          componentsWithoutClasses: withoutClasses.length,
+          componentsChecked: allComponents.length,
+          componentsWithClasses: withClasses.size,
+          componentsWithoutClasses: allComponents.length - withClasses.size,
           violations,
           ok: violations.length === 0,
         },
@@ -260,9 +270,7 @@ function main(): number {
     console.log(`FAIL  ${v.file}:${v.line}  [${v.kind}]  ${v.detail}`)
   }
   console.log(
-    `\n${withClasses.length} component(s) with classes.ts checked, ` +
-      `${withoutClasses.length} without (skipped, using transform fallback); ` +
-      `${violations.length} violation(s).`,
+    `\n${allComponents.length} components checked; ${violations.length} violation(s).`,
   )
   return violations.length ? 1 : 0
 }

@@ -16,12 +16,12 @@
  *
  * "Consumed" here means "the token is present as text in a source file" —
  * a cheap, conservative superset check. It does NOT require the token to
- * sit in an actual class-context string (the tokenizer-level transforms in
- * transform-marko.ts / transform-variants.ts decide that at generation
- * time; check-identity.ts covers that layer). A token absent from every
- * source file entirely cannot possibly be consumed by any transform, which
- * is exactly the dead-CSS-rule case this check exists to catch — a
- * StyleMap key whose classes NO style will ever apply to ANY component.
+ * sit in an actual class-context string (check-classes.ts's
+ * class-context-scan.ts-backed detector covers that layer, per component).
+ * A token absent from every source file entirely cannot possibly be
+ * consumed anywhere, which is exactly the dead-CSS-rule case this check
+ * exists to catch — a StyleMap key whose classes NO style will ever apply
+ * to ANY component.
  *
  * Style-name independence: StyleMap keys are `mu-*` anchor names, which are
  * identical across all 8 style CSS files by construction (same component
