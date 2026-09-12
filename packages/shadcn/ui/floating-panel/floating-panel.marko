@@ -7,6 +7,7 @@ import type { MachineInput } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { floatingPanel as styles } from "./classes.ts";
 
 export type Input = Omit<
   MachineInput<"div", floatingPanelMachine.Props>,
@@ -89,33 +90,28 @@ export type Input = Omit<
     // The positioner owns --x/--y/--width/--height plus `position` in its own
     // reactive style object; the content owns width/height/overflow. Adding a
     // style attribute of our own on either part would wipe them.
-    <div ...api().getPositionerProps() data-slot="floating-panel-positioner" class="z-50">
+    <div ...api().getPositionerProps() data-slot="floating-panel-positioner" class=styles.positioner>
       <div
         ...nativeAttrs()
         ...api().getContentProps()
         data-slot="floating-panel"
-        class=cn(
-          "bg-card text-card-foreground relative flex flex-col overflow-hidden rounded-xl border shadow-lg outline-none",
-          "data-[dragging]:shadow-xl data-[behind]:opacity-95 data-[minimized]:h-auto!",
-          "focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-          input.class,
-        )
+        class=cn(styles.content, input.class)
       >
         <div
           ...api().getHeaderProps()
           data-slot="floating-panel-header"
-          class="bg-muted/40 flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2"
+          class=styles.header
         >
           // The drag trigger owns cursor/user-select/touch-action styles.
           <div
             ...api().getDragTriggerProps()
             data-slot="floating-panel-drag-trigger"
-            class="flex min-w-0 flex-1 items-center gap-2 data-[disabled]:cursor-default"
+            class=styles.dragTrigger
           >
             <h2
               ...api().getTitleProps()
               data-slot="floating-panel-title"
-              class="truncate text-sm leading-none font-semibold"
+              class=styles.title
             >
               <if=input.title>
                 <${input.title}/>
@@ -125,7 +121,7 @@ export type Input = Omit<
           <div
             ...api().getControlProps()
             data-slot="floating-panel-control"
-            class="flex shrink-0 items-center gap-0.5"
+            class=styles.control
           >
             <if=input.actions>
               <${input.actions}/>
@@ -134,14 +130,14 @@ export type Input = Omit<
               <button
                 ...api().getStageTriggerProps({ stage: "minimized" })
                 data-slot="floating-panel-stage-trigger"
-                class="text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring/50 inline-flex size-6 items-center justify-center rounded-sm transition-colors focus-visible:ring-[3px] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                class=styles.stageTrigger
               >
-                <Icon name="Minus" class="size-3.5" aria-hidden="true"/>
+                <Icon name="Minus" class=styles.stageIcon aria-hidden="true"/>
               </button>
               <button
                 ...api().getStageTriggerProps({ stage: "maximized" })
                 data-slot="floating-panel-stage-trigger"
-                class="text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring/50 inline-flex size-6 items-center justify-center rounded-sm transition-colors focus-visible:ring-[3px] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                class=styles.stageTrigger
               >
                 // Deliberately still hand-inlined, unlike every other icon in
                 // this file: this is a custom 16x16-at-(4,4) rounded square, the
@@ -151,26 +147,26 @@ export type Input = Omit<
                 // shape, not a square. Swapping in either would change what the
                 // button looks like, so it stays raw rather than being made
                 // icon-library-swappable with a different glyph.
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=styles.stageIcon aria-hidden="true">
                   <rect width="16" height="16" x="4" y="4" rx="2"/>
                 </svg>
               </button>
               <button
                 ...api().getStageTriggerProps({ stage: "default" })
                 data-slot="floating-panel-stage-trigger"
-                class="text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring/50 inline-flex size-6 items-center justify-center rounded-sm transition-colors focus-visible:ring-[3px] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                class=styles.stageTrigger
               >
-                <Icon name="MinimizeIcon" class="size-3.5" aria-hidden="true"/>
+                <Icon name="MinimizeIcon" class=styles.stageIcon aria-hidden="true"/>
               </button>
             </if>
             <if=!input.hideCloseTrigger>
               <button
                 ...api().getCloseTriggerProps()
                 data-slot="floating-panel-close-trigger"
-                class="text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring/50 inline-flex size-6 items-center justify-center rounded-sm transition-colors focus-visible:ring-[3px] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                class=styles.stageTrigger
               >
-                <Icon name="X" class="size-3.5" aria-hidden="true"/>
-                <span class="sr-only">Close</span>
+                <Icon name="X" class=styles.stageIcon aria-hidden="true"/>
+                <span class=styles.srOnly>Close</span>
               </button>
             </if>
           </div>
@@ -178,7 +174,7 @@ export type Input = Omit<
         <div
           ...api().getBodyProps()
           data-slot="floating-panel-body"
-          class="min-h-0 flex-1 overflow-auto p-4 text-sm"
+          class=styles.body
         >
           <if=input.content>
             <${input.content}/>
@@ -190,7 +186,7 @@ export type Input = Omit<
           <div
             ...api().getResizeTriggerProps({ axis })
             data-slot="floating-panel-resize-trigger"
-            class="z-10 data-[disabled]:pointer-events-none data-[axis=n]:h-1 data-[axis=s]:h-1 data-[axis=e]:w-1 data-[axis=w]:w-1 data-[axis=ne]:size-3 data-[axis=nw]:size-3 data-[axis=se]:size-3 data-[axis=sw]:size-3"
+            class=styles.resizeTrigger
           />
         </for>
       </div>

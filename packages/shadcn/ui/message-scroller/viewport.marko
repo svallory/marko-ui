@@ -14,6 +14,7 @@
 import { cn } from "#lib/utils.ts";
 import type { MessageScrollerControllerGetter } from "./lib/controller.ts";
 import { USER_SCROLL_KEYS } from "./lib/types.ts";
+import { viewport as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {
   /** Controller getter provided by the nearest `<message-scroller-provider>`. */
@@ -43,10 +44,7 @@ export interface Input extends Marko.Input<"div"> {
   aria-label=(ariaLabel ?? "Messages")
   tabindex=(tabindex ?? 0)
   data-slot="message-scroller-viewport"
-  class=cn(
-    "mu-message-scroller-viewport size-full min-h-0 min-w-0 scroll-fade-b scrollbar-thin scrollbar-gutter-stable overflow-y-auto overscroll-contain contain-content data-autoscrolling:scrollbar-thumb-transparent data-autoscrolling:scrollbar-track-transparent",
-    className,
-  )
+  class=cn(styles.root, className)
   onWheel() {
     controller().userScrollIntent();
   }

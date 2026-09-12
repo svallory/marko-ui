@@ -4,6 +4,7 @@ import { positionerStyle } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { combobox as styles } from "./classes.ts";
 
 export interface ComboboxItem {
   value: string;
@@ -101,37 +102,37 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
 }>
 
 <div ...nativeAttrs() ...api().getRootProps() data-slot="combobox" class=cn(className)>
-  <span data-slot="combobox-value" class="sr-only">${api().valueAsString}</span>
+  <span data-slot="combobox-value" class=styles.value>${api().valueAsString}</span>
   <div
     ...api().getControlProps()
     data-slot="combobox-control"
-    class="mu-combobox-input w-auto border-input relative flex items-center rounded-md border shadow-xs focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50"
+    class=styles.control
   >
     <if=(input.multiple && api().hasSelectedItems)>
-      <div data-slot="combobox-chips" class="mu-combobox-chips flex flex-wrap items-center gap-1 p-1">
+      <div data-slot="combobox-chips" class=styles.chips>
         // `V` in `combobox.Api<T, V>` has no default and can't be inferred
         // through `<zag>`'s api getter (same in the old three-tag wiring,
         // since nothing there passed an explicit type argument either) — cast
         // rather than widen `<zag>`'s api getter itself.
         <for|item: ComboboxItem| of=(api().selectedItems as ComboboxItem[])>
-          <span data-slot="combobox-chip" class="mu-combobox-chip has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50">
+          <span data-slot="combobox-chip" class=styles.chip>
             ${item.label}
             <button
               type="button"
               data-slot="combobox-chip-remove"
-              class="mu-combobox-chip-remove"
+              class=styles.chipRemove
               disabled=input.disabled
               aria-label=`Remove ${item.label}`
               on-click() { api().clearValue(item.value); }
             >
-              <Icon name="X" class="mu-combobox-chip-indicator-icon pointer-events-none size-3"/>
+              <Icon name="X" class=styles.chipRemoveIcon/>
             </button>
           </span>
         </for>
         <input
           ...api().getInputProps()
           data-slot="combobox-chip-input"
-          class="mu-combobox-chip-input min-w-16 flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          class=styles.chipInput
         />
       </div>
     </if>
@@ -139,56 +140,56 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
       <input
         ...api().getInputProps()
         data-slot="combobox-input"
-        class="h-9 flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+        class=styles.input
       />
     </else>
     <if=(showClear && api().hasSelectedItems)>
       <button
         ...api().getClearTriggerProps()
         data-slot="combobox-clear"
-        class="mu-combobox-clear group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent flex h-9 w-9 items-center justify-center text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+        class=styles.clear
       >
-        <Icon name="X" class="mu-combobox-clear-icon pointer-events-none size-4"/>
+        <Icon name="X" class=styles.clearIcon/>
       </button>
     </if>
     <button
       ...api().getTriggerProps()
       data-slot="combobox-trigger"
-      class="mu-combobox-trigger flex h-9 w-9 items-center justify-center text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+      class=styles.trigger
     >
-      <Icon name="ChevronDown" class="mu-combobox-trigger-icon pointer-events-none size-4 opacity-50"/>
+      <Icon name="ChevronDown" class=styles.triggerIcon/>
     </button>
   </div>
   <zag-portal>
     <if=api().open>
-      <div ...api().getPositionerProps() style=positionerStyle data-slot="combobox-positioner" class="isolate z-50">
+      <div ...api().getPositionerProps() style=positionerStyle data-slot="combobox-positioner" class=styles.positioner>
         <div
           ...api().getContentProps()
           data-slot="combobox-content"
-          class="mu-combobox-content mu-combobox-content-logical mu-menu-target mu-menu-translucent group/combobox-content relative max-h-(--available-height) w-(--reference-width) max-w-(--available-width) origin-(--transform-origin) overflow-x-hidden overflow-y-auto data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
+          class=styles.content
         >
-          <div ...api().getListProps() data-slot="combobox-list" class="mu-combobox-list overflow-y-auto overscroll-contain">
+          <div ...api().getListProps() data-slot="combobox-list" class=styles.list>
             <if=filteredGroups()>
               <for|group, groupIndex| of=filteredGroups()>
-                <div data-slot="combobox-group" class="mu-combobox-group">
-                  <div data-slot="combobox-label" class="mu-combobox-label">${group.label}</div>
+                <div data-slot="combobox-group" class=styles.group>
+                  <div data-slot="combobox-label" class=styles.label>${group.label}</div>
                   <div data-slot="combobox-collection">
                     <for|item| of=group.items>
                       <div
                         ...api().getItemProps({ item })
                         data-slot="combobox-item"
-                        class="mu-combobox-item relative flex w-full cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+                        class=styles.item
                       >
                         <span ...api().getItemTextProps({ item }) data-slot="combobox-item-text">${item.label}</span>
-                        <span ...api().getItemIndicatorProps({ item }) data-slot="combobox-item-indicator" class="mu-combobox-item-indicator">
-                          <Icon name="Check" class="mu-combobox-item-indicator-icon pointer-events-none size-4"/>
+                        <span ...api().getItemIndicatorProps({ item }) data-slot="combobox-item-indicator" class=styles.itemIndicator>
+                          <Icon name="Check" class=styles.itemIndicatorIcon/>
                         </span>
                       </div>
                     </for>
                   </div>
                 </div>
                 <if=(groupIndex < (filteredGroups()?.length ?? 0) - 1)>
-                  <div data-slot="combobox-separator" class="mu-combobox-separator"></div>
+                  <div data-slot="combobox-separator" class=styles.separator></div>
                 </if>
               </for>
             </if>
@@ -198,11 +199,11 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
                   <div
                     ...api().getItemProps({ item })
                     data-slot="combobox-item"
-                    class="mu-combobox-item relative flex w-full cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+                    class=styles.item
                   >
                     <span ...api().getItemTextProps({ item }) data-slot="combobox-item-text">${item.label}</span>
-                    <span ...api().getItemIndicatorProps({ item }) data-slot="combobox-item-indicator" class="mu-combobox-item-indicator">
-                      <Icon name="Check" class="mu-combobox-item-indicator-icon pointer-events-none size-4"/>
+                    <span ...api().getItemIndicatorProps({ item }) data-slot="combobox-item-indicator" class=styles.itemIndicator>
+                      <Icon name="Check" class=styles.itemIndicatorIcon/>
                     </span>
                   </div>
                 </for>
@@ -210,7 +211,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
             </else>
           </div>
           <if=(filtered.length === 0)>
-            <div data-slot="combobox-empty" class="mu-combobox-empty text-muted-foreground py-1.5 px-2 text-sm">No results found.</div>
+            <div data-slot="combobox-empty" class=styles.empty>No results found.</div>
           </if>
         </div>
       </div>

@@ -9,6 +9,7 @@
 // spacer's `aria-hidden` + `hidden` + `data-message-scroller-spacer` markup.
 import { cn } from "#lib/utils.ts";
 import type { MessageScrollerControllerGetter } from "./lib/controller.ts";
+import { content as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {
   /** Controller getter provided by the nearest `<message-scroller-provider>`. */
@@ -24,7 +25,7 @@ export interface Input extends Marko.Input<"div"> {
   role=(role ?? "log")
   aria-relevant=(ariaRelevant ?? "additions")
   data-slot="message-scroller-content"
-  class=cn("mu-message-scroller-content flex h-max min-h-full flex-col", className)
+  class=cn(styles.root, className)
 >
   <${content}/>
   <div/spacerEl aria-hidden="true" data-message-scroller-spacer hidden class=spacerClassName/>
