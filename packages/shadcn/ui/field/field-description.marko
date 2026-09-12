@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { fieldDescription as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"p"> {}
 
@@ -6,12 +7,7 @@ export interface Input extends Marko.Input<"p"> {}
 
 <p
   data-slot="field-description"
-  class=cn(
-    "mu-field-description leading-normal font-normal group-has-[[data-orientation=horizontal]]/field:text-balance",
-    "last:mt-0 nth-last-2:-mt-1",
-    "[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
-    className,
-  )
+  class=cn(styles.root, styles.spacing, styles.links, className)
   ...rest
 >
   <${content}/>

@@ -1,5 +1,6 @@
 import TextareaField from "../textarea/textarea.marko";
 import { cn } from "#lib/utils.ts";
+import { textarea as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"textarea"> {}
 
@@ -8,5 +9,5 @@ export interface Input extends Marko.Input<"textarea"> {}
 <TextareaField
   data-slot="input-group-control"
   ...rest
-  class=cn("mu-input-group-textarea flex-1 resize-none", className)
+  class=cn(styles.root, className)
 />

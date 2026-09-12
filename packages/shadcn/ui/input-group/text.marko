@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { text as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"span"> {}
 
@@ -6,10 +7,7 @@ export interface Input extends Marko.Input<"span"> {}
 
 <span
   ...rest
-  class=cn(
-    "mu-input-group-text flex items-center [&_svg]:pointer-events-none",
-    className,
-  )
+  class=cn(styles.root, className)
 >
   <${content}/>
 </span>

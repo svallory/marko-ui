@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { fieldGroup as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {}
 
@@ -6,7 +7,7 @@ export interface Input extends Marko.Input<"div"> {}
 
 <div
   data-slot="field-group"
-  class=cn("mu-field-group group/field-group @container/field-group flex w-full flex-col", className)
+  class=cn(styles.root, className)
   ...rest
 >
   <${content}/>

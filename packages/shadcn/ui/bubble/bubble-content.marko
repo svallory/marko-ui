@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { bubbleContent as styles } from "./classes.ts";
 
 /**
  * Deviation from source: the React version accepts `asChild` (via Radix
@@ -18,10 +19,7 @@ export interface Input extends Marko.Input<"div"> {}
 
 <div
   data-slot="bubble-content"
-  class=cn(
-    "mu-bubble-content w-fit max-w-full min-w-0 overflow-hidden wrap-break-word [button]:text-left [button,a]:transition-colors",
-    className,
-  )
+  class=cn(styles.root, className)
   ...rest
 >
   <${content}/>
