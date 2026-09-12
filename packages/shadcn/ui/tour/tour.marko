@@ -3,6 +3,7 @@ import type { MachineInput } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { tour as styles } from "./classes.ts";
 
 // A step whose target is a CSS SELECTOR instead of a live element getter.
 // Zag's own StepDetails.target is `() => HTMLElement | null`, and functions
@@ -93,27 +94,23 @@ static function resolveSteps(
     <div
       ...api().getBackdropProps()
       data-slot="tour-backdrop"
-      class="z-[calc(50+var(--tour-layer,0))] bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0"
+      class=styles.backdrop
     />
     <div
       ...api().getSpotlightProps()
       data-slot="tour-spotlight"
-      class="z-[calc(50+var(--tour-layer,0))] ring-2 ring-ring/40"
+      class=styles.spotlight
     />
     <div
       ...api().getPositionerProps()
       data-slot="tour-positioner"
-      class="[--tour-z-index:50] z-[calc(50+var(--tour-layer,0))] data-[type=dialog]:fixed data-[type=dialog]:inset-0 data-[type=dialog]:grid data-[type=dialog]:place-items-center data-[type=floating]:fixed data-[type=floating]:inset-0 data-[type=floating]:grid data-[type=floating]:place-items-center"
+      class=styles.positioner
     >
       <div
         ...nativeAttrs()
         ...api().getContentProps()
         data-slot="tour-content"
-        class=cn(
-          "group bg-popover text-popover-foreground relative flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-3 rounded-lg border p-4 shadow-lg outline-hidden",
-          "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
-          input.class,
-        )
+        class=cn(styles.content, styles.contentAnim, input.class)
       >
         <if=api().step?.arrow>
           // Zag sizes/paints the arrow from `--arrow-size` /
@@ -126,73 +123,74 @@ static function resolveSteps(
           <div
             ...api().getArrowProps()
             data-slot="tour-arrow"
-            class="[--arrow-background:var(--popover)] [--arrow-size:10px] group-data-[side=bottom]:top-[calc(var(--arrow-size)/-2)] group-data-[side=bottom]:left-[calc(50%-var(--arrow-size)/2)] group-data-[side=top]:bottom-[calc(var(--arrow-size)/-2)] group-data-[side=top]:left-[calc(50%-var(--arrow-size)/2)] group-data-[side=left]:right-[calc(var(--arrow-size)/-2)] group-data-[side=left]:top-[calc(50%-var(--arrow-size)/2)] group-data-[side=right]:left-[calc(var(--arrow-size)/-2)] group-data-[side=right]:top-[calc(50%-var(--arrow-size)/2)]"
+            class=styles.arrow
           >
             <div ...api().getArrowTipProps() data-slot="tour-arrow-tip"/>
           </div>
         </if>
 
-        <div class="flex items-start justify-between gap-2">
+        <div class=styles.headerRow>
           <p
             ...api().getTitleProps()
             data-slot="tour-title"
-            class="text-sm leading-none font-semibold"
+            class=styles.title
           >
             ${api().step?.title}
           </p>
           <button
             ...api().getCloseTriggerProps()
             data-slot="tour-close"
-            class="ring-offset-background focus-visible:ring-ring -mt-1 -mr-1 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+            class=styles.close
           >
-            <Icon name="X" class="size-4"/>
-            <span class="sr-only">Close tour</span>
+            <Icon name="X" class=styles.closeIcon/>
+            <span class=styles.srOnly>Close tour</span>
           </button>
         </div>
 
         <p
           ...api().getDescriptionProps()
           data-slot="tour-description"
-          class="text-muted-foreground text-sm"
+          class=styles.description
         >
           ${api().step?.description}
         </p>
 
-        <div class="flex items-center justify-between gap-3 pt-1">
-          <div data-slot="tour-progress" class="flex items-center gap-1.5">
+        <div class=styles.footerRow>
+          <div data-slot="tour-progress" class=styles.progress>
             <for|index| from=0 to=api().totalSteps - 1>
+              <const/isCurrent=index === api().stepIndex/>
               <span
                 data-slot="tour-progress-dot"
-                data-current=index === api().stepIndex ? "" : undefined
+                data-current=(isCurrent ? "" : undefined)
                 class=cn(
-                  "size-1.5 rounded-full transition-colors",
-                  index === api().stepIndex ? "bg-primary" : "bg-muted-foreground/30",
+                  styles.progressDot,
+                  isCurrent ? styles.progressDotCurrent : styles.progressDotInactive,
                 )
               />
             </for>
             <span
               ...api().getProgressTextProps()
               data-slot="tour-progress-text"
-              class="text-muted-foreground ml-1.5 text-xs tabular-nums"
+              class=styles.progressText
             >
               ${api().stepIndex + 1} / ${api().totalSteps}
             </span>
           </div>
 
-          <div data-slot="tour-actions" class="flex items-center gap-2">
+          <div data-slot="tour-actions" class=styles.actions>
             <for|action| of=api().step?.actions ?? []>
               <button
                 ...api().getActionTriggerProps({ action })
                 data-slot="tour-action-trigger"
                 class=cn(
-                  "inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50",
-                  "data-[type=next]:bg-primary data-[type=next]:text-primary-foreground data-[type=next]:hover:bg-primary/90",
-                  "data-[type=prev]:border data-[type=prev]:border-input data-[type=prev]:bg-background data-[type=prev]:hover:bg-accent data-[type=prev]:hover:text-accent-foreground",
-                  "data-[type=skip]:text-muted-foreground data-[type=skip]:hover:bg-accent data-[type=skip]:hover:text-accent-foreground",
+                  styles.actionTrigger,
+                  styles.actionTriggerNext,
+                  styles.actionTriggerPrev,
+                  styles.actionTriggerSkip,
                   // `dismiss` is how a tour finishes, so it reads as primary —
                   // the muted ✕ is a separate part (closeTrigger).
-                  "data-[type=close]:bg-primary data-[type=close]:text-primary-foreground data-[type=close]:hover:bg-primary/90",
-                  "data-[type=custom]:bg-primary data-[type=custom]:text-primary-foreground data-[type=custom]:hover:bg-primary/90",
+                  styles.actionTriggerClose,
+                  styles.actionTriggerCustom,
                 )
               >
                 ${action.label}

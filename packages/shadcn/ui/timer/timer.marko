@@ -4,6 +4,7 @@ import * as timerMachine from "@zag-js/timer";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { timer as styles } from "./classes.ts";
 
 export type Input = MachineInput<"div", timerMachine.Props> & {
   tickChange?: (details: timerMachine.TickDetails) => void;
@@ -41,38 +42,38 @@ static const defaultParts: timerMachine.TimePart[] = ["hours", "minutes", "secon
   ...nativeAttrs()
   ...api().getRootProps()
   data-slot="timer"
-  class=cn("flex flex-col items-center gap-4 rounded-xl border bg-card py-6 text-card-foreground shadow-sm", input.class)
+  class=cn(styles.root, input.class)
 >
-  <div ...api().getAreaProps() data-slot="timer-area" class="flex items-center gap-1">
+  <div ...api().getAreaProps() data-slot="timer-area" class=styles.area>
     <for|part, index| of=timeParts>
       <if=index>
-        <span ...api().getSeparatorProps() data-slot="timer-separator" class="pb-4 text-2xl font-semibold text-muted-foreground">:</span>
+        <span ...api().getSeparatorProps() data-slot="timer-separator" class=styles.separator>:</span>
       </if>
-      <div ...api().getItemProps({ type: part }) data-slot="timer-item" class="flex flex-col items-center gap-1">
+      <div ...api().getItemProps({ type: part }) data-slot="timer-item" class=styles.item>
         <span
           ...api().getItemValueProps({ type: part })
           data-slot="timer-item-value"
-          class="flex h-14 min-w-14 items-center justify-center rounded-md border bg-muted px-2 font-mono text-3xl font-semibold tabular-nums text-foreground"
+          class=styles.itemValue
         >
           ${api().formattedTime[part]}
         </span>
         <span
           ...api().getItemLabelProps({ type: part })
           data-slot="timer-item-label"
-          class="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+          class=styles.itemLabel
         >
           ${part}
         </span>
       </div>
     </for>
   </div>
-  <div ...api().getControlProps() data-slot="timer-control" class="flex items-center gap-2">
+  <div ...api().getControlProps() data-slot="timer-control" class=styles.control>
     <if=!api().running && !api().paused>
       <button
         ...api().getActionTriggerProps({ action: "start" })
         data-slot="timer-action"
         type="button"
-        class="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-xs transition-colors hover:bg-primary/90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
+        class=styles.actionPrimary
       >
         Start
       </button>
@@ -82,7 +83,7 @@ static const defaultParts: timerMachine.TimePart[] = ["hours", "minutes", "secon
         ...api().getActionTriggerProps({ action: "pause" })
         data-slot="timer-action"
         type="button"
-        class="inline-flex h-9 items-center justify-center rounded-md border bg-background px-4 text-sm font-medium shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
+        class=styles.actionSecondary
       >
         Pause
       </button>
@@ -92,7 +93,7 @@ static const defaultParts: timerMachine.TimePart[] = ["hours", "minutes", "secon
         ...api().getActionTriggerProps({ action: "resume" })
         data-slot="timer-action"
         type="button"
-        class="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-xs transition-colors hover:bg-primary/90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
+        class=styles.actionPrimary
       >
         Resume
       </button>
@@ -101,7 +102,7 @@ static const defaultParts: timerMachine.TimePart[] = ["hours", "minutes", "secon
       ...api().getActionTriggerProps({ action: "reset" })
       data-slot="timer-action"
       type="button"
-      class="inline-flex h-9 items-center justify-center rounded-md border bg-background px-4 text-sm font-medium shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
+      class=styles.actionSecondary
     >
       Reset
     </button>

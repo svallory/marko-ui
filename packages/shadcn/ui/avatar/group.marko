@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { group as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {}
 
@@ -6,10 +7,7 @@ export interface Input extends Marko.Input<"div"> {}
 
 <div
   data-slot="avatar-group"
-  class=cn(
-    "mu-avatar-group group/avatar-group flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-background",
-    className,
-  )
+  class=cn(styles.root, className)
   ...rest
 >
   <${content}/>

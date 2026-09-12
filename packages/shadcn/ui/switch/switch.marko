@@ -5,6 +5,7 @@ import * as switchMachine from "@zag-js/switch";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { switchStyles as styles } from "./classes.ts";
 
 // MachineInput = native <input> attributes ∩ the machine's full Props, with
 // `id` made optional (generated below, overridable). `checkedChange` is
@@ -55,28 +56,25 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
 <label
   ...api().getRootProps()
   data-slot="switch-label"
-  class="inline-flex items-center gap-2"
+  class=styles.label
 >
   <span
     ...api().getControlProps()
     data-slot="switch"
     data-size=(input.size ?? "default")
-    class=cn(
-      "mu-switch peer group/switch relative inline-flex items-center transition-all outline-none after:absolute after:-inset-x-3 after:-inset-y-2 data-disabled:cursor-not-allowed data-disabled:opacity-50",
-      input.class,
-    )
+    class=cn(styles.control, input.class)
   >
     <span
       ...api().getThumbProps()
       data-slot="switch-thumb"
-      class="mu-switch-thumb pointer-events-none block ring-0 transition-transform"
+      class=styles.thumb
     />
   </span>
   <if=input.content>
     <span
       ...api().getLabelProps()
       data-slot="switch-text"
-      class="text-sm leading-none font-medium select-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+      class=styles.text
     >
       <${input.content}/>
     </span>
