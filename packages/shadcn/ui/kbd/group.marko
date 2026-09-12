@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { group as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"kbd"> {}
 
@@ -6,7 +7,7 @@ export interface Input extends Marko.Input<"kbd"> {}
 
 <kbd
   data-slot="kbd-group"
-  class=cn("mu-kbd-group inline-flex items-center", className)
+  class=cn(styles.root, className)
   ...rest
 />
 <${input.content}/>
