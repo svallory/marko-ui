@@ -21,10 +21,27 @@
  * shape (contract point 3: a part imports exactly one named export — a
  * second line would otherwise be silently left dangling, unmerged, still
  * referencing a file that is never emitted per-style), or if the resulting
- * file still carries a non-allowlisted `mu-` token (the per-style
- * hollow-registry guard).
+ * file still carries a non-allowlisted `mu-` token OUTSIDE A COMMENT (the
+ * per-style hollow-registry guard).
+ *
+ * The survival scan is comment-blind — mirrors transform-marko.ts's own
+ * class-string scanner and check-identity.ts's `KNOWN_UNSTRIPPED` precedent.
+ * Four tokens (`mu-command-dialog`, `mu-navigation-menu-trigger`,
+ * `mu-select-label`, `mu-toast`) are each mapped in every `style-*.css` (real,
+ * actively-inlined anchors — not genuinely-unmapped runtime-selector hooks
+ * like `DEFAULT_ALLOWLIST`'s members) but are ALSO mentioned in a source-code
+ * PROSE COMMENT explaining where the token comes from (e.g.
+ * `toast/toast.marko`'s JSDoc on its `toastClass` field, which mentions
+ * `` `mu-toast` `` in prose — the literal itself lives only in
+ * `sonner/sonner.marko`'s `toastClass="mu-toast"`). A comment-blind survival
+ * scan is what correctly ignores that mention instead of treating an
+ * unrelated file's prose as a leaked anchor and refusing to build. This is
+ * NOT a case for `DEFAULT_ALLOWLIST` (verified: unlike its members,
+ * `mu-toast` and friends DO have `@apply` rules in every style CSS — putting
+ * them on that list would suppress a genuine leak of the SAME token
+ * elsewhere).
  */
-import { DEFAULT_ALLOWLIST } from "./apply-style-map"
+import { DEFAULT_ALLOWLIST, stripComments } from "./apply-style-map"
 
 const CLASSES_IMPORT_LINE_RE =
   /^import \{ (\w+)(?: as (\w+))? \} from "\.\/classes\.ts";$/m
@@ -82,11 +99,12 @@ export function mergeClasses(
   const content =
     source.slice(0, match.index) + replacement + source.slice(match.index + match[0].length)
 
-  for (const m of content.matchAll(/\bmu-[\w-]+\b/g)) {
+  for (const m of stripComments(content).matchAll(/\bmu-[\w-]+\b/g)) {
     if (DEFAULT_ALLOWLIST.has(m[0])) continue
     throw new Error(
-      `merge-classes: "${m[0]}" survives in the merged output — a per-style item must never ` +
-        `carry a non-allowlisted mu-* token. This means the StyleMap failed to map or strip it.`
+      `merge-classes: "${m[0]}" survives in the merged output (outside a comment) — a per-style ` +
+        `item must never carry a non-allowlisted mu-* token. This means the StyleMap failed to ` +
+        `map or strip it.`
     )
   }
 

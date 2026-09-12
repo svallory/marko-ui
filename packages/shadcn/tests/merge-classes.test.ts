@@ -89,6 +89,36 @@ describe("mergeClasses: mu- survival failure", () => {
     const { content } = mergeClasses(source, "marko", '{ a: "mu-rtl-flip size-4" } as const')
     expect(content).toContain("mu-rtl-flip")
   })
+
+  test("does NOT throw when a non-allowlisted mu- token appears ONLY inside a comment (root cause of the sweep-3 toast build failure)", () => {
+    // Reproduces toast.marko's real shape: a JSDoc comment mentioning
+    // `mu-toast` in prose, while the actual literal lives only in a
+    // different, unmigrated file (sonner.marko). mu-toast IS mapped in
+    // every style-*.css (verified: not a DEFAULT_ALLOWLIST candidate), so
+    // this must be handled by comment-blindness, not an allowlist entry.
+    const source = [
+      "import { x } from \"./classes.ts\";",
+      "/**",
+      " * passes the `mu-toast` style hook through here.",
+      " */",
+      "<div class=x.a/>",
+      "",
+    ].join("\n")
+    const { content } = mergeClasses(source, "marko", '{ a: "flex" } as const')
+    expect(content).toContain("mu-toast") // the comment text survives verbatim
+  })
+
+  test("still throws when the same non-allowlisted mu- token ALSO appears outside a comment", () => {
+    const source = [
+      "import { x } from \"./classes.ts\";",
+      "// mentions mu-toast here",
+      '<div class="mu-toast" data-x=x.a/>',
+      "",
+    ].join("\n")
+    expect(() => mergeClasses(source, "marko", '{ a: "flex" } as const')).toThrow(
+      /mu-toast.*survives.*outside a comment/s,
+    )
+  })
 })
 
 describe("extractLiteralForExport", () => {

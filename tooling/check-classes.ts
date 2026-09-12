@@ -48,6 +48,7 @@ import { Node, Project } from "ts-morph"
 
 import { REGISTRY_ROOT, runCheck, walkRelative } from "./fs-utils"
 import { collectClassContextSpans } from "./transform-marko"
+import { stripComments } from "./apply-style-map"
 
 const UI_DIR = path.join(REGISTRY_ROOT, "ui")
 
@@ -200,45 +201,6 @@ export function checkPartFile(rel: string, source: string, violations: Violation
       detail: `"${m[0]}" found outside classes.ts (not inside a comment).`,
     })
   }
-}
-
-/** Blanks out // and /* *\/ comment bodies (keeps line count identical) so a
- * post-blank regex pass's line numbers still map to the original source. */
-function stripComments(source: string): string {
-  let out = ""
-  let i = 0
-  const n = source.length
-  while (i < n) {
-    const ch = source[i]
-    if (ch === "/" && source[i + 1] === "/") {
-      const nl = source.indexOf("\n", i)
-      const end = nl === -1 ? n : nl
-      out += " ".repeat(end - i)
-      i = end
-      continue
-    }
-    if (ch === "/" && source[i + 1] === "*") {
-      const close = source.indexOf("*/", i + 2)
-      const end = close === -1 ? n : close + 2
-      out += source.slice(i, end).replace(/[^\n]/g, " ")
-      i = end
-      continue
-    }
-    if (ch === "\"" || ch === "'" || ch === "`") {
-      const quote = ch
-      let j = i + 1
-      while (j < n && source[j] !== quote) {
-        if (source[j] === "\\") j++
-        j++
-      }
-      out += source.slice(i, j + 1)
-      i = j + 1
-      continue
-    }
-    out += ch
-    i++
-  }
-  return out
 }
 
 /**
