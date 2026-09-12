@@ -199,21 +199,6 @@ export function resolveMeta(pathname: string): PageMeta {
   const isArticle = path.startsWith("/docs/");
 
   if (!entry) {
-    // /verify/<theme>/<component> is the generated theme-verification
-    // matrix (build-verify-matrix.ts) — hundreds of internal QA fixture
-    // pages, not public content worth hand-authoring per-route metadata
-    // for. Give them a generic title instead of misreporting "Page Not
-    // Found" (they're real, intentionally chrome-free pages).
-    if (path.startsWith("/verify/")) {
-      return {
-        title: `Theme Verification — ${SITE_NAME}`,
-        description:
-          "Internal theme-verification matrix: every component rendered under each shadcn style for visual QA. Not part of the public docs.",
-        canonical: `${SITE_URL}${path}`,
-        ogType: "website",
-      };
-    }
-
     return {
       title: `Page Not Found — ${SITE_NAME}`,
       description: DEFAULT_DESCRIPTION,

@@ -157,8 +157,8 @@ switch (kind) {
   // representative run per URL and report the MINIMUM across pages (the
   // honest number: every page scores at least this).
   //
-  // lighthouse-a11y: accessibility only, run against the bare component
-  // verify pages. NO performance/best-practices/seo badges — perf is a
+  // lighthouse-a11y: accessibility only, run against the docs component
+  // reference pages. NO performance/best-practices/seo badges — perf is a
   // whole-page metric (payload, LCP, TBT of a real route; a bare fixture
   // would score ~100 and prove nothing) and the others describe the docs
   // site, which library users don't care about.

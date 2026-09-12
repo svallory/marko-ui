@@ -53,6 +53,6 @@
 1. You already forked `svallory/marko-ui` at step 0 and worked on a branch.
 2. Components live in `packages/shadcn/ui/<name>/` with a `registry.meta.json` per component (`title`, `description`, `dependencies`, `registryDependencies`). The repo's registry build (`bun run build:registry`) picks them up — no registry.json editing.
 3. Follow the repo's own conventions over this skill wherever they differ: `CLAUDE.md`, `notes/component-authoring.md`, `/docs/creating-components`, `/docs/zag-adapter`.
-4. Demos: each component needs its demo page(s) so the verify-matrix covers it.
+4. Demos: each component needs its demo page(s) so behavior tests and the docs component page cover it.
 5. Pass the full gate (`references/verification.md` §Official-repo gate), then open the PR: conventional-commit title, verification evidence + deviation log in the description.
 6. Expect review on parity and maintenance cost — wanted-list ports become officially maintained code, which is exactly why the list is short.
