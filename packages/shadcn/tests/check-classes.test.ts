@@ -163,8 +163,8 @@ describe("check-classes: checkComponentDir scans every .ts/.marko file, not just
     mkdirSync(join(dir, "lib"), { recursive: true })
     // A helper .ts file can build a props object carrying a `class:`
     // property — the same class-context shape a .marko part's dynamic-tag
-    // render-prop call uses (see transform-marko.ts's own header comment on
-    // that convention) — still in scope for contract point 3.
+    // render-prop call uses (see class-context-scan.ts's own header comment
+    // on that convention) — still in scope for contract point 3.
     writeFileSync(
       join(dir, "lib", "helper.ts"),
       'export function helperProps() {\n  return { class: "mu-helper extra" };\n}\n',
