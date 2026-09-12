@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { nativeSelect as styles } from "./classes.ts";
 
 export interface Input extends Omit<Marko.Input<"select">, "size"> {
   size?: "sm" | "default";
@@ -6,12 +7,12 @@ export interface Input extends Omit<Marko.Input<"select">, "size"> {
 
 <const/{ size = "default", class: className, content, ...rest }=input/>
 
-<div class=cn("mu-native-select-wrapper group/native-select relative w-fit has-[select:disabled]:opacity-50", className) data-slot="native-select-wrapper" data-size=size>
+<div class=cn(styles.wrapper, className) data-slot="native-select-wrapper" data-size=size>
   <select
     ...rest
     data-slot="native-select"
     data-size=size
-    class="mu-native-select outline-none disabled:pointer-events-none disabled:cursor-not-allowed"
+    class=styles.select
   >
     <${content}/>
   </select>
@@ -25,7 +26,7 @@ export interface Input extends Omit<Marko.Input<"select">, "size"> {
     stroke-width="2"
     stroke-linecap="round"
     stroke-linejoin="round"
-    class="mu-native-select-icon pointer-events-none absolute select-none"
+    class=styles.icon
     aria-hidden="true"
     data-slot="native-select-icon"
   >
