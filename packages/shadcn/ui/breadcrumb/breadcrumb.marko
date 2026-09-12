@@ -1,11 +1,12 @@
 import { cn } from "#lib/utils.ts";
+import { breadcrumb as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"nav"> {}
 
 <const/{ class: className, content, ...rest }=input/>
 
-<nav data-slot="breadcrumb" aria-label="breadcrumb" class="mu-breadcrumb" ...rest>
-  <ol data-slot="breadcrumb-list" class=cn("mu-breadcrumb-list flex flex-wrap items-center wrap-break-word", className)>
+<nav data-slot="breadcrumb" aria-label="breadcrumb" class=styles.root ...rest>
+  <ol data-slot="breadcrumb-list" class=cn(styles.list, className)>
     <${content}/>
   </ol>
 </nav>

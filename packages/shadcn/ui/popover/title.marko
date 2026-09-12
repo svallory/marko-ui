@@ -1,9 +1,10 @@
 import { cn } from "#lib/utils.ts";
+import { title as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {}
 
 <const/{ class: className, content, ...rest }=input/>
 
-<div data-slot="popover-title" class=cn("mu-popover-title", className) ...rest>
+<div data-slot="popover-title" class=cn(styles.root, className) ...rest>
   <${content}/>
 </div>

@@ -5,6 +5,7 @@ import { buttonVariants } from "../button/variants.ts";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { calendar as styles } from "./classes.ts";
 
 /** Plain, serializable stand-in for a `DateValue` — the calendar-system id is a string, never the `Calendar` class instance itself. */
 export interface PlainDate {
@@ -135,39 +136,37 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
     })),
   )
 />
+<const/navTriggerVariant=buttonVariants({ variant: "ghost", size: "icon-sm" })/>
 
 <div
   ...nativeAttrs()
   ...api().getRootProps()
   data-slot="calendar"
-  class=cn(
-    "mu-calendar group/calendar bg-background in-data-[slot=card-content]:bg-transparent in-data-[slot=popover-content]:bg-transparent",
-    input.class,
-  )
+  class=cn(styles.root, input.class)
 >
-  <div ...api().getContentProps() data-slot="calendar-content" class="relative flex flex-col gap-4">
-    <div class="absolute inset-x-0 top-0 flex w-full items-center justify-between gap-1">
+  <div ...api().getContentProps() data-slot="calendar-content" class=styles.content>
+    <div class=styles.nav>
       <button
         ...api().getPrevTriggerProps()
         data-slot="calendar-prev-trigger"
-        class=cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "size-(--cell-size) p-0 select-none aria-disabled:opacity-50")
+        class=cn(navTriggerVariant, styles.navTrigger)
       >
-        <Icon name="ChevronLeft" class="mu-rtl-flip"/>
-        <span class="sr-only">Previous</span>
+        <Icon name="ChevronLeft" class=styles.rtlFlip/>
+        <span class=styles.srOnly>Previous</span>
       </button>
       <if=captionLayout === "dropdown">
         <div
           data-slot="calendar-dropdowns"
-          class="flex h-(--cell-size) w-full items-center justify-center gap-1.5 text-sm font-medium"
+          class=styles.dropdowns
         >
           <div
             data-slot="calendar-dropdown-root"
-            class="mu-calendar-dropdown-root relative rounded-(--cell-radius)"
+            class=styles.dropdownRoot
           >
             <select
               ...api().getMonthSelectProps()
               data-slot="calendar-month-select"
-              class="absolute inset-0 bg-popover opacity-0"
+              class=styles.monthSelect
             >
               <for|month| of=api().getMonths({ format: "short" })>
                 <option value=month.value disabled=month.disabled>${month.label}</option>
@@ -176,7 +175,7 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
             <span
               aria-hidden="true"
               data-slot="calendar-caption-label"
-              class="mu-calendar-caption-label flex items-center gap-1 rounded-(--cell-radius) text-sm font-medium select-none [&>svg]:size-3.5 [&>svg]:text-muted-foreground"
+              class=styles.captionLabel
             >
               ${monthLabel()}
               <Icon name="ChevronDown"/>
@@ -184,12 +183,12 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
           </div>
           <div
             data-slot="calendar-dropdown-root"
-            class="mu-calendar-dropdown-root relative rounded-(--cell-radius)"
+            class=styles.dropdownRoot
           >
             <select
               ...api().getYearSelectProps()
               data-slot="calendar-year-select"
-              class="absolute inset-0 bg-popover opacity-0"
+              class=styles.yearSelect
             >
               <for|year| of=api().getYears()>
                 <option value=year.value disabled=year.disabled>${year.label}</option>
@@ -198,7 +197,7 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
             <span
               aria-hidden="true"
               data-slot="calendar-caption-label"
-              class="mu-calendar-caption-label flex items-center gap-1 rounded-(--cell-radius) text-sm font-medium select-none [&>svg]:size-3.5 [&>svg]:text-muted-foreground"
+              class=styles.captionLabel
             >
               ${String(api().visibleRange.start.year)}
               <Icon name="ChevronDown"/>
@@ -210,7 +209,7 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
         <button
           ...api().getViewTriggerProps()
           data-slot="calendar-view-trigger"
-          class="mu-calendar-caption text-sm font-medium select-none"
+          class=styles.viewTrigger
         >
           ${api().visibleRangeText.formatted}
         </button>
@@ -218,36 +217,36 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
       <button
         ...api().getNextTriggerProps()
         data-slot="calendar-next-trigger"
-        class=cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "size-(--cell-size) p-0 select-none aria-disabled:opacity-50")
+        class=cn(navTriggerVariant, styles.navTrigger)
       >
-        <Icon name="ChevronRight" class="mu-rtl-flip"/>
-        <span class="sr-only">Next</span>
+        <Icon name="ChevronRight" class=styles.rtlFlip/>
+        <span class=styles.srOnly>Next</span>
       </button>
     </div>
-    <table ...api().getTableProps() data-slot="calendar-table" class="w-full border-collapse">
+    <table ...api().getTableProps() data-slot="calendar-table" class=styles.table>
       <thead ...api().getTableHeadProps() data-slot="calendar-table-head">
-        <tr class="flex">
+        <tr class=styles.headerRow>
           <for|weekDay| of=api().weekDays>
-            <th class="w-(--cell-size) flex-1 rounded-(--cell-radius) text-[0.8rem] font-normal text-muted-foreground select-none">
+            <th class=styles.headerCell>
               ${weekDay.narrow}
-              <span class="sr-only">${weekDay.long}</span>
+              <span class=styles.srOnly>${weekDay.long}</span>
             </th>
           </for>
         </tr>
       </thead>
       <tbody ...api().getTableBodyProps() data-slot="calendar-table-body">
         <for|week, i| of=weeks() by=(_, i) => `week:${i}`>
-          <tr class="mt-2 flex w-full">
+          <tr class=styles.weekRow>
             <for|day, j| of=week by=(_, j) => `day:${j}`>
               <td
                 ...day.cell
                 data-slot="calendar-cell"
-                class="group/day relative aspect-square h-full w-full rounded-(--cell-radius) p-0 text-center select-none [&:has([data-in-range])]:bg-muted first:[&:has([data-in-range])]:rounded-l-(--cell-radius) last:[&:has([data-in-range])]:rounded-r-(--cell-radius)"
+                class=styles.cell
               >
                 <button
                   ...day.trigger
                   data-slot="calendar-day"
-                  class="mu-calendar-day-button relative isolate z-10 flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 border-0 leading-none font-normal text-foreground data-[today]:bg-muted data-[outside-range]:text-muted-foreground data-[outside-range]:opacity-50 group-data-[focus]/day:relative group-data-[focus]/day:z-10 group-data-[focus]/day:border-ring group-data-[focus]/day:ring-[3px] group-data-[focus]/day:ring-ring/50 data-[range-end]:rounded-(--cell-radius) data-[range-end]:rounded-r-(--cell-radius) data-[range-end]:bg-primary data-[range-end]:text-primary-foreground data-[in-range]:rounded-none data-[in-range]:bg-muted data-[in-range]:text-foreground data-[range-start]:rounded-(--cell-radius) data-[range-start]:rounded-l-(--cell-radius) data-[range-start]:bg-primary data-[range-start]:text-primary-foreground data-selected:bg-primary data-selected:text-primary-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:hover:text-foreground"
+                  class=styles.dayButton
                 >
                   ${day.label}
                 </button>

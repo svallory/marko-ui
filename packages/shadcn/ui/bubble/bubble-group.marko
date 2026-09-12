@@ -1,9 +1,10 @@
 import { cn } from "#lib/utils.ts";
+import { bubbleGroup as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {}
 
 <const/{ class: className, content, ...rest }=input/>
 
-<div data-slot="bubble-group" class=cn("mu-bubble-group flex min-w-0 flex-col", className) ...rest>
+<div data-slot="bubble-group" class=cn(styles.root, className) ...rest>
   <${content}/>
 </div>

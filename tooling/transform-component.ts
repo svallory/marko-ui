@@ -5,25 +5,28 @@
  * be imported directly by tests under packages/shadcn/tsconfig.json without
  * pulling that whole transitive type graph into the shadcn typecheck project.
  *
- * Two dispatch paths:
- *   - HAS classes.ts (contract components, e.g. button/accordion/sidebar):
- *     data-swap + merge. The whole classes.ts module is loaded and resolved
- *     against the style ONCE per component per style; each .marko/variants.ts
- *     part that imports it gets its single import line replaced with the
- *     resolved literal via mergeClasses(). classes.ts itself is NEVER emitted
- *     into the per-style file map (contract point 6). Everything else in the
- *     dir is copied verbatim.
- *   - NO classes.ts (everything else, temporary fallback — a later task
- *     migrates and deletes this path): .marko -> transformMarkoSource,
- *     variants.ts -> transformVariantsSource, else verbatim.
- * Recurses into a lib/ subdir (keys become "lib/<file>") in both paths.
+ * Every component is now either:
+ *   - HAS classes.ts (the class-as-data contract, e.g. button/accordion/
+ *     sidebar): data-swap + merge. The whole classes.ts module is loaded and
+ *     resolved against the style ONCE per component per style; each
+ *     .marko/variants.ts part that imports it gets its single import line
+ *     replaced with the resolved literal via mergeClasses(). classes.ts
+ *     itself is NEVER emitted into the per-style file map (contract point 6).
+ *     Everything else in the dir is copied verbatim.
+ *   - NO classes.ts, literal-free (e.g. direction, collapsible): every file
+ *     is copied verbatim — there is nothing for a style to inline. The
+ *     `mu-` survival guard in merge-classes.ts's caller-adjacent checks
+ *     (check-classes.ts) still enforces that no such component ever grows a
+ *     class-context literal or a bare `mu-` token outside classes.ts.
+ * There is no text-rewriting dispatch any more — the temporary transform
+ * fallback this module used to have is retired now that every component is
+ * on the class-as-data contract. Recurses into a lib/ subdir (keys become
+ * "lib/<file>") in both paths.
  */
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, join } from "node:path";
 
 import type { StyleMap } from "./style-map";
-import { transformMarkoSource } from "./transform-marko";
-import { transformVariantsSource } from "./transform-variants";
 import { loadClassesModule, resolveClassesModule, printClassModule } from "./resolve-classes";
 import { mergeClasses, extractLiteralForExport } from "./merge-classes";
 
@@ -57,9 +60,7 @@ export async function transformComponent(dir: string, styleMap: StyleMap): Promi
       return;
     }
 
-    if (b.endsWith(".marko")) out.set(rel, transformMarkoSource(src, styleMap));
-    else if (b === "variants.ts") out.set(rel, transformVariantsSource(src, styleMap));
-    else out.set(rel, src);
+    out.set(rel, src);
   };
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.isFile()) add(entry.name, join(dir, entry.name));

@@ -2,6 +2,7 @@ import * as hoverCardMachine from "@zag-js/hover-card";
 import type { MachineInput } from "marko-zag";
 import { positionerStyle } from "marko-zag";
 import { cn } from "#lib/utils.ts";
+import { hoverCard as styles } from "./classes.ts";
 
 // MachineInput = native <span> attributes ∩ the machine's full Props, with
 // `id` made optional (generated below, overridable). `openChange` is
@@ -35,10 +36,7 @@ export type Input = MachineInput<"span", hoverCardMachine.Props> & {
         <div
           ...api().getContentProps()
           data-slot="hover-card-content"
-          class=cn(
-            "mu-hover-card-content z-50 origin-(--radix-hover-card-content-transform-origin) outline-hidden",
-            input.class,
-          )
+          class=cn(styles.content, input.class)
         >
           <${input.content}/>
         </div>

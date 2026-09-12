@@ -2,6 +2,7 @@ import * as treeView from "@zag-js/tree-view";
 import { mergeProps, type MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { treeView as styles } from "./classes.ts";
 
 export interface TreeViewItem {
   id: string;
@@ -74,7 +75,7 @@ export type Input = Omit<MachineInput<"div", treeView.Props>, "collection"> & {
     stroke-width="2"
     stroke-linecap="round"
     stroke-linejoin="round"
-    class="text-muted-foreground pointer-events-none size-4 shrink-0 transition-transform duration-200 [[data-state=open]>&]:rotate-90"
+    class=styles.chevron
   >
     <path d="m9 18 6-6-6-6"/>
   </svg>
@@ -88,7 +89,7 @@ export type Input = Omit<MachineInput<"div", treeView.Props>, "collection"> & {
       <div
         ...api().getBranchControlProps(nodeProps)
         data-slot="tree-view-branch-control"
-        class="focus-visible:ring-ring/50 flex items-center gap-1 rounded-md px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-[3px] data-[selected]:bg-accent data-[selected]:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        class=styles.branchControl
         style={ "padding-left": `calc(0.5rem + var(--depth) * 1rem)` }
       >
         // Indicator, not trigger: a nested role="button" inside the
@@ -98,13 +99,13 @@ export type Input = Omit<MachineInput<"div", treeView.Props>, "collection"> & {
         <span
           ...api().getBranchIndicatorProps(nodeProps)
           data-slot="tree-view-branch-indicator"
-          class="flex items-center justify-center"
+          class=styles.branchIndicator
         >
           <ChevronIcon/>
         </span>
-        <span data-slot="tree-view-branch-text" class="truncate">${node.label}</span>
+        <span data-slot="tree-view-branch-text" class=styles.branchText>${node.label}</span>
       </div>
-      <ul ...api().getBranchContentProps(nodeProps) data-slot="tree-view-branch-content" class="flex flex-col">
+      <ul ...api().getBranchContentProps(nodeProps) data-slot="tree-view-branch-content" class=styles.branchContent>
         <for|childNode, childIndex| of=node.children>
           <TreeNode node=childNode indexPath=[...indexPath, childIndex]/>
         </for>
@@ -117,15 +118,15 @@ export type Input = Omit<MachineInput<"div", treeView.Props>, "collection"> & {
         style: { "padding-left": `calc(0.5rem + var(--depth) * 1rem)` },
       })
       data-slot="tree-view-item"
-      class="focus-visible:ring-ring/50 flex cursor-pointer items-center gap-1 truncate rounded-md px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-[3px] data-[selected]:bg-accent data-[selected]:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+      class=styles.item
     >
-      <span data-slot="tree-view-item-text" class="truncate">${node.label}</span>
+      <span data-slot="tree-view-item-text" class=styles.itemText>${node.label}</span>
     </li>
   </else>
 </define>
 
-<div ...nativeAttrs() ...api().getRootProps() data-slot="tree-view" class=cn("w-full", input.class)>
-  <ul ...api().getTreeProps() data-slot="tree-view-tree" class="flex flex-col gap-0.5">
+<div ...nativeAttrs() ...api().getRootProps() data-slot="tree-view" class=cn(styles.root, input.class)>
+  <ul ...api().getTreeProps() data-slot="tree-view-tree" class=styles.tree>
     <for|node, index| of=input.items>
       <TreeNode node=node indexPath=[index]/>
     </for>

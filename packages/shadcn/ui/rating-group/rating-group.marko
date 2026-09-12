@@ -4,6 +4,7 @@ import * as ratingGroupMachine from "@zag-js/rating-group";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { ratingGroup as styles } from "./classes.ts";
 
 // MachineInput = native <div> attributes ∩ the machine's full Props, with
 // `id` made optional (generated below, overridable). `valueChange` is
@@ -32,22 +33,22 @@ export type Input = MachineInput<"div", ratingGroupMachine.Props> & {
   )
 >
 
-<div ...nativeAttrs() ...api().getRootProps() data-slot="rating-group" class=cn("flex flex-col gap-1.5", input.class)>
+<div ...nativeAttrs() ...api().getRootProps() data-slot="rating-group" class=cn(styles.root, input.class)>
   <if=input.label>
-    <label ...api().getLabelProps() data-slot="rating-group-label" class="text-sm leading-none font-medium select-none">
+    <label ...api().getLabelProps() data-slot="rating-group-label" class=styles.label>
       ${input.label}
     </label>
   </if>
-  <div ...api().getControlProps() data-slot="rating-group-control" class="inline-flex items-center gap-0.5">
+  <div ...api().getControlProps() data-slot="rating-group-control" class=styles.control>
     <for|index| of=api().items>
       <const/itemState=api().getItemState({ index })/>
       <span
         ...api().getItemProps({ index })
         data-slot="rating-group-item"
-        class="relative inline-flex text-muted-foreground [&_svg]:size-5 data-[disabled]:cursor-not-allowed data-[readonly]:cursor-default data-[state=unchecked]:opacity-60"
+        class=styles.item
       >
         <if=itemState.half>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="absolute inset-0 text-foreground">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class=styles.halfIcon>
             <defs>
               <clipPath id=`rating-half-${index}`>
                 <rect x="0" y="0" width="12" height="24"/>
@@ -56,7 +57,7 @@ export type Input = MachineInput<"div", ratingGroupMachine.Props> & {
             <path clip-path=`url(#rating-half-${index})` fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" d="M12 2.5 15.09 9 22 10l-5 5.14L18.18 22 12 18.5 5.82 22 7 15.14 2 10l6.91-1z"/>
           </svg>
         </if>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill=(itemState.highlighted && !itemState.half) ? "currentColor" : "none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" class=itemState.highlighted && "text-foreground">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill=(itemState.highlighted && !itemState.half) ? "currentColor" : "none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" class=itemState.highlighted && styles.iconHighlighted>
           <path d="M12 2.5 15.09 9 22 10l-5 5.14L18.18 22 12 18.5 5.82 22 7 15.14 2 10l6.91-1z"/>
         </svg>
       </span>

@@ -1,9 +1,10 @@
 import { cn } from "#lib/utils.ts";
+import { actions as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {}
 
 <const/{ class: className, content, ...rest }=input/>
 
-<div data-slot="item-actions" ...rest class=cn("mu-item-actions flex items-center", className)>
+<div data-slot="item-actions" ...rest class=cn(styles.root, className)>
   <${content}/>
 </div>

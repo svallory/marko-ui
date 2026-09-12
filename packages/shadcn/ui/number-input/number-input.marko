@@ -3,6 +3,7 @@ import type { MachineInput } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { numberInput as styles } from "./classes.ts";
 
 export type Input = MachineInput<"input", numberInputMachine.Props> & {
   valueChange?: (value: string) => void;
@@ -21,40 +22,34 @@ export type Input = MachineInput<"input", numberInputMachine.Props> & {
 <div
   ...api().getRootProps()
   data-slot="number-input"
-  class=cn(
-    "border-input dark:bg-input/30 flex h-9 w-fit items-stretch overflow-hidden rounded-md border shadow-xs transition-[color,box-shadow]",
-    "has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-ring/50 has-[input:focus-visible]:ring-[3px]",
-    "has-[input:disabled]:pointer-events-none has-[input:disabled]:opacity-50",
-    "has-[input[aria-invalid=true]]:ring-destructive/20 dark:has-[input[aria-invalid=true]]:ring-destructive/40 has-[input[aria-invalid=true]]:border-destructive",
-    input.class,
-  )
+  class=cn(styles.root, input.class)
 >
   <button
     ...api().getDecrementTriggerProps()
     data-slot="number-input-decrement"
-    class="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex w-8 shrink-0 items-center justify-center border-r border-input transition-colors disabled:pointer-events-none disabled:opacity-50"
+    class=styles.decrement
   >
-    <Icon name="Minus" class="size-4"/>
+    <Icon name="Minus" class=styles.icon/>
   </button>
-  <div ...api().getControlProps() data-slot="number-input-control" class="relative flex-1">
+  <div ...api().getControlProps() data-slot="number-input-control" class=styles.control>
     <input
       ...nativeAttrs()
       ...api().getInputProps()
       data-slot="number-input-field"
-      class="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground flex h-full w-full min-w-0 bg-transparent px-3 py-1 text-center text-base outline-none disabled:cursor-not-allowed md:text-sm"
+      class=styles.field
     />
     <div
       ...api().getScrubberProps()
       data-slot="number-input-scrubber"
-      class="absolute inset-x-0 bottom-0 z-10 h-1.5 data-[disabled]:hidden"
+      class=styles.scrubber
     />
   </div>
   <button
     ...api().getIncrementTriggerProps()
     data-slot="number-input-increment"
-    class="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex w-8 shrink-0 items-center justify-center border-l border-input transition-colors disabled:pointer-events-none disabled:opacity-50"
+    class=styles.increment
   >
-    <Icon name="Plus" class="size-4"/>
+    <Icon name="Plus" class=styles.icon/>
   </button>
 </div>
 

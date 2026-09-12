@@ -3,6 +3,7 @@ import type { MachineInput } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { clipboard as styles } from "./classes.ts";
 
 export type Input = MachineInput<"input", clipboardMachine.Props> & {
   valueChange?: (value: string) => void;
@@ -33,25 +34,25 @@ export type Input = MachineInput<"input", clipboardMachine.Props> & {
   )
 >
 
-<div ...api().getRootProps() data-slot="clipboard-root" class=cn("grid w-full gap-1.5", input.class)>
+<div ...api().getRootProps() data-slot="clipboard-root" class=cn(styles.root, input.class)>
   <if=input.label>
-    <label ...api().getLabelProps() data-slot="clipboard-label" class="text-sm leading-none font-medium select-none">
+    <label ...api().getLabelProps() data-slot="clipboard-label" class=styles.label>
       ${input.label}
     </label>
   </if>
-  <div ...api().getControlProps() data-slot="clipboard-control" class="flex items-center gap-2">
+  <div ...api().getControlProps() data-slot="clipboard-control" class=styles.control>
     <input
       ...nativeAttrs()
       ...api().getInputProps()
       data-slot="clipboard-input"
       readonly
-      class="file:text-foreground placeholder:text-muted-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+      class=styles.input
     />
     <button
       ...api().getTriggerProps()
       data-slot="clipboard-trigger"
       type="button"
-      class="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex size-9 shrink-0 items-center justify-center gap-2 rounded-md border shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-4"
+      class=styles.trigger
     >
       <span ...api().getIndicatorProps({ copied: api().copied }) data-slot="clipboard-indicator">
         <if=api().copied>
@@ -61,7 +62,7 @@ export type Input = MachineInput<"input", clipboardMachine.Props> & {
           <Icon name="Copy"/>
         </else>
       </span>
-      <span class="sr-only">Copy</span>
+      <span class=styles.srOnly>Copy</span>
     </button>
   </div>
 </div>

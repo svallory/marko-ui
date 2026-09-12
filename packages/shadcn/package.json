@@ -141,7 +141,6 @@
   "scripts": {
     "check": "NODE_OPTIONS=\"--max-old-space-size=8192\" marko-type-check -p ./tsconfig.json -d condensed",
     "check:anchors": "bun ../../tooling/check-anchors.ts",
-    "check:identity": "bun ../../tooling/check-identity.ts",
     "check:consumption": "bun ../../tooling/check-consumption.ts"
   }
 }

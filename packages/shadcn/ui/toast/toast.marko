@@ -20,6 +20,7 @@ import { connect, type ZagModule } from "marko-zag";
 import { toaster } from "./store.ts";
 import { cn } from "#lib/utils.ts";
 import ToastItem from "./toast-item.marko";
+import { toaster as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {
   /** Accessible label for the notification region. @default "Notifications" */
@@ -72,7 +73,7 @@ export interface Input extends Marko.Input<"div"> {
   ...rest
   ...api().getGroupProps({ label })
   data-slot="toaster"
-  class=cn("outline-none", className)
+  class=cn(styles.root, className)
 >
   // `ToastProps["id"]` is optional only as *creation input*: the store assigns
   // `data.id ?? uuid()` before a toast is ever stored, so every entry returned

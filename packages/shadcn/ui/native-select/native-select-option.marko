@@ -1,9 +1,10 @@
 import { cn } from "#lib/utils.ts";
+import { nativeSelectOption as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"option"> {}
 
 <const/{ class: className, content, ...rest }=input/>
 
-<option ...rest data-slot="native-select-option" class=cn("bg-[Canvas] text-[CanvasText]", className)>
+<option ...rest data-slot="native-select-option" class=cn(styles.root, className)>
   <${content}/>
 </option>

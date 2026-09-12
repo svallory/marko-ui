@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { footer as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {}
 
@@ -6,10 +7,7 @@ export interface Input extends Marko.Input<"div"> {}
 
 <div
   data-slot="message-footer"
-  class=cn(
-    "mu-message-footer flex max-w-full min-w-0 items-center group-data-[align=end]/message:justify-end",
-    className,
-  )
+  class=cn(styles.root, className)
   ...rest
 >
   <${content}/>

@@ -1,5 +1,6 @@
 import InputField from "../input/input.marko";
 import { cn } from "#lib/utils.ts";
+import { input as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"input"> {}
 
@@ -8,5 +9,5 @@ export interface Input extends Marko.Input<"input"> {}
 <InputField
   data-slot="input-group-control"
   ...rest
-  class=cn("mu-input-group-input flex-1", className)
+  class=cn(styles.root, className)
 />

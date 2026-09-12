@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { inputGroup as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {
   /**
@@ -20,10 +21,7 @@ export interface Input extends Marko.Input<"div"> {
   aria-disabled=(disabled ? "true" : undefined)
   data-disabled=(disabled ? "true" : undefined)
   ...rest
-  class=cn(
-    "group/input-group mu-input-group relative flex w-full min-w-0 items-center outline-none has-[>textarea]:h-auto",
-    className,
-  )
+  class=cn(styles.root, className)
 >
   <${content}/>
 </div>

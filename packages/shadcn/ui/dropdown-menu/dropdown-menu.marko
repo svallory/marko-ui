@@ -3,6 +3,7 @@ import { positionerStyle, connect } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import Icon from "../icon/icon.marko";
 import Submenu from "./submenu.marko";
+import { dropdownMenu as styles } from "./classes.ts";
 
 export interface DropdownMenuItem {
   type?: "item" | "separator" | "label" | "checkbox" | "radio" | "sub";
@@ -94,17 +95,14 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
       <div
         ...api().getContentProps()
         data-slot="dropdown-menu-content"
-        class=cn(
-          "mu-dropdown-menu-content mu-menu-target mu-menu-translucent z-50 max-h-(--radix-dropdown-menu-content-available-height) w-(--radix-dropdown-menu-trigger-width) origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto data-closed:overflow-hidden",
-          input.class,
-        )
+        class=cn(styles.content, input.class)
       >
         <for|entry, index| of=menuEntries(input)>
           <if=entry.type === "separator">
-            <div ...api().getSeparatorProps() data-slot="dropdown-menu-separator" class="mu-dropdown-menu-separator"/>
+            <div ...api().getSeparatorProps() data-slot="dropdown-menu-separator" class=styles.separator/>
           </if>
           <else if=entry.type === "label">
-            <div data-slot="dropdown-menu-label" data-inset=entry.inset || undefined class="mu-dropdown-menu-label">
+            <div data-slot="dropdown-menu-label" data-inset=entry.inset || undefined class=styles.label>
               <if=entry.content>
                 <${entry.content}/>
               </if>
@@ -118,9 +116,9 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
               ...api().getOptionItemProps({ type: "checkbox", value: entry.value ?? `item-${index}`, checked: entry.checked ?? false, disabled: entry.disabled })
               data-slot="dropdown-menu-checkbox-item"
               data-inset=entry.inset || undefined
-              class="mu-dropdown-menu-checkbox-item relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+              class=styles.checkboxItem
             >
-              <span ...api().getItemIndicatorProps({ value: entry.value ?? `item-${index}`, checked: entry.checked ?? false }) data-slot="dropdown-menu-checkbox-item-indicator" class="mu-dropdown-menu-item-indicator pointer-events-none">
+              <span ...api().getItemIndicatorProps({ value: entry.value ?? `item-${index}`, checked: entry.checked ?? false }) data-slot="dropdown-menu-checkbox-item-indicator" class=styles.itemIndicator>
                 <if=entry.checked>
                   <Icon name="Check"/>
                 </if>
@@ -132,7 +130,7 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
                 ${entry.label}
               </else>
               <if=entry.shortcut>
-                <span data-slot="dropdown-menu-shortcut" class="mu-dropdown-menu-shortcut">${entry.shortcut}</span>
+                <span data-slot="dropdown-menu-shortcut" class=styles.shortcut>${entry.shortcut}</span>
               </if>
             </div>
           </else>
@@ -141,9 +139,9 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
               ...api().getOptionItemProps({ type: "radio", value: entry.value ?? `item-${index}`, checked: entry.checked ?? false, disabled: entry.disabled })
               data-slot="dropdown-menu-radio-item"
               data-inset=entry.inset || undefined
-              class="mu-dropdown-menu-radio-item relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+              class=styles.radioItem
             >
-              <span ...api().getItemIndicatorProps({ value: entry.value ?? `item-${index}`, checked: entry.checked ?? false }) data-slot="dropdown-menu-radio-item-indicator" class="mu-dropdown-menu-item-indicator pointer-events-none">
+              <span ...api().getItemIndicatorProps({ value: entry.value ?? `item-${index}`, checked: entry.checked ?? false }) data-slot="dropdown-menu-radio-item-indicator" class=styles.itemIndicator>
                 <if=entry.checked>
                   <Icon name="Check"/>
                 </if>
@@ -155,7 +153,7 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
                 ${entry.label}
               </else>
               <if=entry.shortcut>
-                <span data-slot="dropdown-menu-shortcut" class="mu-dropdown-menu-shortcut">${entry.shortcut}</span>
+                <span data-slot="dropdown-menu-shortcut" class=styles.shortcut>${entry.shortcut}</span>
               </if>
             </div>
           </else>
@@ -174,10 +172,10 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
                   ...triggerProps
                   data-slot="dropdown-menu-sub-trigger"
                   data-inset=entry.inset || undefined
-                  class="mu-dropdown-menu-sub-trigger flex cursor-default items-center outline-hidden select-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
+                  class=styles.subTrigger
                 >
                   ${entry.label}
-                  <Icon name="ChevronRight" class="mu-rtl-flip ml-auto"/>
+                  <Icon name="ChevronRight" class=styles.subTriggerIcon/>
                 </div>
               </@trigger>
             </Submenu>
@@ -188,7 +186,7 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
               data-slot="dropdown-menu-item"
               data-inset=entry.inset || undefined
               data-variant=entry.variant ?? "default"
-              class="mu-dropdown-menu-item group/dropdown-menu-item relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+              class=styles.item
             >
               <if=entry.content>
                 <${entry.content}/>
@@ -197,7 +195,7 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
                 ${entry.label}
               </else>
               <if=entry.shortcut>
-                <span data-slot="dropdown-menu-shortcut" class="mu-dropdown-menu-shortcut">${entry.shortcut}</span>
+                <span data-slot="dropdown-menu-shortcut" class=styles.shortcut>${entry.shortcut}</span>
               </if>
             </div>
           </else>

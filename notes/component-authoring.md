@@ -141,5 +141,17 @@ After migration, a part `.marko` and its `variants.ts` contain NO string literal
 `ui/<comp>/` except inside `classes.ts` itself. Slot names are boring and derived from the
 element/part they style (`root`, `trigger`, `content`, `item`, `icon`, `label`, …) — no
 cleverness. `bun run check:tooling`'s `check-classes` step enforces all of this statically for
-every component that has a `classes.ts`; components without one still use the transform-based
-fallback (`tooling/transform-marko.ts` / `tooling/transform-variants.ts`).
+EVERY component: one with a `classes.ts` is checked for purity plus the rules above; one
+without a `classes.ts` must be genuinely literal-free (no class-context string literal, no bare
+`mu-` token) — there is no transform-based fallback any more, every `ui/<comp>/` directory is
+covered by the gate.
+
+A `classes.ts` export may carry **reserved leaves** for anchors that only the CSS layer or
+other consumers use, not any template in this component's own source — name them plainly and
+comment why (e.g. `command/classes.ts`'s `dialog` leaf exists for `check-anchors` + CSS parity
+with no template consumer; don't remove it).
+
+**Naming exception — reserved words.** When a component's slug is a JS reserved word (e.g.
+`switch`), its `classes.ts` export is named `<slug>Styles` instead of the bare slug (so
+`switch/classes.ts` exports `switchStyles`, not `switch`). `check-classes` does not enforce
+export-name-equals-slug, so this note is the only rule recording the convention.

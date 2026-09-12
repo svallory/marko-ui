@@ -86,7 +86,7 @@ Full-repo review across `packages/marko-ui`, `packages/shadcn` (ui/tests/blocks/
 - Zero TODO/FIXME/HACK markers anywhere in `packages/shadcn/ui/` — unusual and reflects real comment discipline.
 - `e2e/verify-matrix.spec.ts` is a legitimate Marko-aware test (checks Marko's own "Unable to serialize" SSR error, excludes Zag/Marko-specific DOM noise from snapshots) — not React/Next.js leftover cruft. One caveat: its interaction pass (lines 142-177) only ever soft-annotates failures via try/catch, never asserts — it is not itself the keyboard-contract enforcement the README's marketing claims describe.
 - `packages/shadcn/lib/utils.ts` (`cn()` helper) — clean, minimal, no issues.
-- `tooling/style-map.ts`, `transform-marko.ts`, `transform-variants.ts` — clean, well-scoped.
+- `tooling/style-map.ts` — clean, well-scoped. (`transform-marko.ts`/`transform-variants.ts`, audited here at the time, were retired 2026-09-12 by the class-as-data migration — see `notes/component-authoring.md`.)
 - Block `registry.meta.json` files — accurate, no orphaned blocks; block list matches `apps/docs/src/lib/blocks-list.ts` and `build-registry.ts`'s filesystem auto-discovery 1:1.
 - Dead-code risk in `packages/marko-ui/src` and `packages/shadcn/ui` is generally low outside the flagged items — registry-driven build enumeration means most things stay wired.
 

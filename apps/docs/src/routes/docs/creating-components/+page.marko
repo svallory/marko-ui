@@ -21,6 +21,22 @@ static const EXAMPLE_3 = `<label ...api().getRootProps() data-slot="switch-label
 
 <return=api>`;
 
+static const EXAMPLE_3B = `// ui/switch/classes.ts — pure data, one export per part
+export const switchStyles = {
+  label: "...",
+  control: "...",
+  thumb: "...",
+} as const;`;
+
+static const EXAMPLE_3C = `import { switchStyles as styles } from "./classes.ts";
+
+<label ...api().getRootProps() data-slot="switch-label" class=styles.label>
+  <span ...api().getControlProps() data-slot="switch" class=cn(styles.control, input.class)>
+    <span ...api().getThumbProps() data-slot="switch-thumb" class=styles.thumb/>
+  </span>
+  <input ...nativeAttrs() ...api().getHiddenInputProps()>
+</label>`;
+
 static const EXAMPLE_4 = `export interface TriggerAttrs { value: string; disabled?: boolean; content?: Marko.Body }
 
 export type Input = MachineInput<"div", tabsMachine.Props> & {
@@ -133,6 +149,27 @@ export type Input = MachineInput<"div", tabsMachine.Props> & {
       </li>
       <li><code>&lt;return=api&gt;</code> exposes the live api getter to parents.</li>
     </ul>
+  </section>
+
+  <section class="space-y-3">
+    <h2 class="text-lg font-semibold">Class strings</h2>
+    <p>
+      Class strings never live in the <code>.marko</code>/<code>variants.ts</code> shown above —
+      they live in a sibling <code>classes.ts</code>, pure data with one named export per part:
+    </p>
+    <code-block language="typescript" code=EXAMPLE_3B/>
+    <p>
+      Each part imports exactly ONE named export, bound as <code>styles</code>, and every
+      <code>class=</code>/<code>class:</code>/<code>&lt;name&gt;Class=</code> value reads from it —
+      never a string literal, even inside <code>cn(...)</code>:
+    </p>
+    <code-block language="marko" code=EXAMPLE_3C/>
+    <p class="text-sm">
+      <code>bun run check:tooling</code>'s <code>check-classes</code> step enforces this for every
+      component. See <code>notes/component-authoring.md</code> ("Class strings live in
+      classes.ts") for the full contract, including reserved leaves and the reserved-word naming
+      exception.
+    </p>
   </section>
 
   <section class="space-y-3">

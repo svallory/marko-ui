@@ -3,8 +3,8 @@
  * imports the pure-data module (via `await import()` — safe because
  * `classes.ts` is contractually pure data, see notes/component-authoring.md),
  * walks every string leaf of every named export, and applies
- * `createStyleApplier(styleMap)` (the same per-string swap
- * `transform-marko.ts`/`transform-variants.ts` use) to each leaf.
+ * `createStyleApplier(styleMap)` (the shared per-string swap, also used by
+ * `apply-style-map.ts`'s other callers) to each leaf.
  *
  * Output is a deterministic TS source string: one `export const <name> = {...}
  * as const;` per export, printed with stable key order (source order, i.e.

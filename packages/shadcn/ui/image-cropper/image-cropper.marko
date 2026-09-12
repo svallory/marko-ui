@@ -7,6 +7,7 @@ import * as imageCropperMachine from "@zag-js/image-cropper";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { imageCropper as styles } from "./classes.ts";
 
 export type Input = MachineInput<"div", imageCropperMachine.Props> & {
   /** Source of the image to crop. */
@@ -55,45 +56,42 @@ static const HANDLE_POSITIONS = imageCropperMachine.handles;
   ...nativeAttrs()
   ...api().getRootProps()
   data-slot="image-cropper"
-  class=cn(
-    "bg-muted relative w-full overflow-hidden rounded-lg border shadow-xs",
-    input.class,
-  )
+  class=cn(styles.root, input.class)
 >
   <div
     ...api().getViewportProps()
     data-slot="image-cropper-viewport"
-    class="relative size-full touch-none"
+    class=styles.viewport
   >
     <img
       ...api().getImageProps()
       src=input.src
       alt=input.alt
       data-slot="image-cropper-image"
-      class="absolute inset-0 m-auto max-h-full max-w-full select-none"
+      class=styles.image
     />
     <div
       ...api().getSelectionProps()
       data-slot="image-cropper-selection"
-      class="border-background border-2 shadow-[0_0_0_9999px_var(--color-black)]/50 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 data-[shape=circle]:rounded-full data-[disabled]:cursor-not-allowed"
+      class=styles.selection
     >
       <if=!input.hideGrid>
         <div
           ...api().getGridProps({ axis: "horizontal" })
           data-slot="image-cropper-grid"
-          class="border-background/60 border-y"
+          class=styles.gridHorizontal
         />
         <div
           ...api().getGridProps({ axis: "vertical" })
           data-slot="image-cropper-grid"
-          class="border-background/60 border-x"
+          class=styles.gridVertical
         />
       </if>
       <for|position| of=HANDLE_POSITIONS>
         <div
           ...api().getHandleProps({ position })
           data-slot="image-cropper-handle"
-          class="bg-background ring-foreground/20 size-3 rounded-full shadow-sm ring-1 data-[position=e]:h-auto data-[position=w]:h-auto data-[position=n]:w-auto data-[position=s]:w-auto data-[position=e]:w-1.5 data-[position=w]:w-1.5 data-[position=n]:h-1.5 data-[position=s]:h-1.5 data-[position=e]:rounded-full data-[position=w]:rounded-full data-[position=n]:rounded-full data-[position=s]:rounded-full data-[position=e]:bg-transparent data-[position=w]:bg-transparent data-[position=n]:bg-transparent data-[position=s]:bg-transparent data-[position=e]:ring-0 data-[position=w]:ring-0 data-[position=n]:ring-0 data-[position=s]:ring-0 data-[disabled]:opacity-40"
+          class=styles.handle
         />
       </for>
     </div>

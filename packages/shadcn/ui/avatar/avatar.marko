@@ -4,6 +4,7 @@ import * as avatarMachine from "@zag-js/avatar";
 import type { MachineInput } from "marko-zag";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { avatar as styles } from "./classes.ts";
 
 export type Input = MachineInput<"span", avatarMachine.Props> & {
   src?: string;
@@ -46,10 +47,7 @@ export type Input = MachineInput<"span", avatarMachine.Props> & {
   data-size=size
   ...nativeAttrs()
   ...api().getRootProps()
-  class=cn(
-    "mu-avatar group/avatar relative flex shrink-0 select-none after:absolute after:inset-0 after:border after:border-border after:mix-blend-darken dark:after:mix-blend-lighten",
-    input.class,
-  )
+  class=cn(styles.root, input.class)
 >
   <if=input.src>
     <img
@@ -57,13 +55,13 @@ export type Input = MachineInput<"span", avatarMachine.Props> & {
       src=input.src
       alt=input.alt
       data-slot="avatar-image"
-      class="mu-avatar-image aspect-square size-full object-cover"
+      class=styles.image
     />
   </if>
   <span
     ...api().getFallbackProps()
     data-slot="avatar-fallback"
-    class="mu-avatar-fallback flex size-full items-center justify-center group-data-[size=sm]/avatar:text-xs"
+    class=styles.fallback
   >
     <if=input.content>
       <${input.content}/>

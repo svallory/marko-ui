@@ -4,6 +4,7 @@ import { positionerStyle } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { select as styles } from "./classes.ts";
 
 export interface SelectItem {
   value: string;
@@ -86,24 +87,24 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
   // inside the content (see `<div data-slot="select-label">` further below,
   // under each group). This element is OUR field label above the trigger —
   // same concept shadcn's `Field`/`Label` primitives cover elsewhere, not
-  // the thing upstream's `mu-select-label` hook targets. It intentionally
-  // carries NO mu- anchor (an unstyled `select-field-label` slot) so it
+  // the thing upstream's select-label hook targets. It intentionally
+  // carries no anchor class (an unstyled `select-field-label` slot) so it
   // never collides with the group-label anchor reserved below.
   <if=label>
-    <label ...api().getLabelProps() data-slot="select-field-label" class="text-sm font-medium">${label}</label>
+    <label ...api().getLabelProps() data-slot="select-field-label" class=styles.fieldLabel>${label}</label>
   </if>
   <else>
-    <label ...api().getLabelProps() data-slot="select-field-label" class="sr-only">${placeholder || "Select an option"}</label>
+    <label ...api().getLabelProps() data-slot="select-field-label" class=styles.fieldLabelSrOnly>${placeholder || "Select an option"}</label>
   </else>
   <div ...api().getControlProps() data-slot="select-control">
     <button
       ...api().getTriggerProps()
       data-slot="select-trigger"
       data-size=(size ?? "default")
-      class="mu-select-trigger flex w-fit items-center justify-between whitespace-nowrap outline-none disabled:cursor-not-allowed disabled:opacity-50 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center [&_svg]:pointer-events-none [&_svg]:shrink-0"
+      class=styles.trigger
     >
       <span data-slot="select-value">${api().valueAsString || placeholder}</span>
-      <Icon ...api().getIndicatorProps() name="ChevronDown" class="mu-select-trigger-icon pointer-events-none"/>
+      <Icon ...api().getIndicatorProps() name="ChevronDown" class=styles.triggerIcon/>
     </button>
   </div>
   <select ...api().getHiddenSelectProps() data-slot="select-hidden-select">
@@ -117,31 +118,31 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
         <div
           ...api().getContentProps()
           data-slot="select-content"
-          class="mu-select-content mu-menu-target mu-menu-translucent relative z-50 max-h-(--available-height) overflow-x-hidden overflow-y-auto origin-(--transform-origin) data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1"
+          class=styles.content
         >
-          <button type="button" data-slot="select-scroll-up-button" class="mu-select-scroll-up-button" on-click(e: Event) { scrollViewport(e, -40); }>
-            <Icon name="ChevronUp" class="size-4"/>
+          <button type="button" data-slot="select-scroll-up-button" class=styles.scrollUpButton on-click(e: Event) { scrollViewport(e, -40); }>
+            <Icon name="ChevronUp" class=styles.scrollButtonIcon/>
           </button>
-          <div data-slot="select-viewport" class="mu-select-viewport">
+          <div data-slot="select-viewport" class=styles.viewport>
             <if=groups>
               <for|group, groupIndex| of=groups>
-                <div data-slot="select-group" class="mu-select-group">
-                  <div ...api().getItemGroupLabelProps({ htmlFor: `group-${groupIndex}` }) data-slot="select-label" class="mu-select-label">${group.label}</div>
+                <div data-slot="select-group" class=styles.group>
+                  <div ...api().getItemGroupLabelProps({ htmlFor: `group-${groupIndex}` }) data-slot="select-label" class=styles.groupLabel>${group.label}</div>
                   <for|entry| of=group.items>
                     <div
                       ...api().getItemProps({ item: entry })
                       data-slot="select-item"
-                      class="mu-select-item relative flex w-full cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+                      class=styles.item
                     >
-                      <span ...api().getItemIndicatorProps({ item: entry }) data-slot="select-item-indicator" class="mu-select-item-indicator">
-                        <Icon name="Check" class="mu-select-item-indicator-icon pointer-events-none"/>
+                      <span ...api().getItemIndicatorProps({ item: entry }) data-slot="select-item-indicator" class=styles.itemIndicator>
+                        <Icon name="Check" class=styles.itemIndicatorIcon/>
                       </span>
                       <span ...api().getItemTextProps({ item: entry }) data-slot="select-item-text">${entry.label}</span>
                     </div>
                   </for>
                 </div>
                 <if=(groupIndex < groups.length - 1)>
-                  <div data-slot="select-separator" class="mu-select-separator pointer-events-none"></div>
+                  <div data-slot="select-separator" class=styles.separator></div>
                 </if>
               </for>
             </if>
@@ -150,18 +151,18 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
                 <div
                   ...api().getItemProps({ item: entry })
                   data-slot="select-item"
-                  class="mu-select-item relative flex w-full cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+                  class=styles.item
                 >
-                  <span ...api().getItemIndicatorProps({ item: entry }) data-slot="select-item-indicator" class="mu-select-item-indicator">
-                    <Icon name="Check" class="mu-select-item-indicator-icon pointer-events-none"/>
+                  <span ...api().getItemIndicatorProps({ item: entry }) data-slot="select-item-indicator" class=styles.itemIndicator>
+                    <Icon name="Check" class=styles.itemIndicatorIcon/>
                   </span>
                   <span ...api().getItemTextProps({ item: entry }) data-slot="select-item-text">${entry.label}</span>
                 </div>
               </for>
             </else>
           </div>
-          <button type="button" data-slot="select-scroll-down-button" class="mu-select-scroll-down-button" on-click(e: Event) { scrollViewport(e, 40); }>
-            <Icon name="ChevronDown" class="size-4"/>
+          <button type="button" data-slot="select-scroll-down-button" class=styles.scrollDownButton on-click(e: Event) { scrollViewport(e, 40); }>
+            <Icon name="ChevronDown" class=styles.scrollButtonIcon/>
           </button>
         </div>
       </div>

@@ -27,6 +27,7 @@ import { cn } from "#lib/utils.ts";
 import { resolveIconInner } from "./resolve.ts";
 import { ICON_WRAPPER_ATTRS } from "./render.ts";
 import type { IconLibraryName, IconName } from "./icon-names.ts";
+import { icon as styles } from "./classes.ts";
 
 export interface Input extends Omit<Marko.HTMLAttributes<Element>, "lang"> {
   /** Abstract icon name, e.g. "SearchIcon" — shared across all 5 libraries. */
@@ -72,7 +73,7 @@ export interface Input extends Omit<Marko.HTMLAttributes<Element>, "lang"> {
   stroke-width=wrapperAttrs["stroke-width"]
   stroke-linecap=wrapperAttrs["stroke-linecap"]
   stroke-linejoin=wrapperAttrs["stroke-linejoin"]
-  class=cn(unsized ? undefined : "size-4", className) || undefined
+  class=cn(unsized ? undefined : styles.sized, className) || undefined
   data-icon-name=name
   data-icon-library=library
 >

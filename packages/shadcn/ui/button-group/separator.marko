@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { separator as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {
   orientation?: "horizontal" | "vertical";
@@ -11,10 +12,7 @@ export interface Input extends Marko.Input<"div"> {
   role="separator"
   data-orientation=orientation
   ...rest
-  class=cn(
-    "mu-button-group-separator relative self-stretch data-[orientation=horizontal]:mx-px data-[orientation=horizontal]:w-auto data-[orientation=vertical]:my-px data-[orientation=vertical]:h-auto",
-    className,
-  )
+  class=cn(styles.root, className)
 >
   <${content}/>
 </div>

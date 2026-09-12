@@ -54,6 +54,7 @@
 // `<ToastItem>` from `../toast/`, unchanged.
 import { cn } from "#lib/utils.ts";
 import Toaster from "../toast/toast.marko";
+import { sonner as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {
   /**
@@ -67,8 +68,8 @@ export interface Input extends Marko.Input<"div"> {
 
 <Toaster
   ...rest
-  toastClass="mu-toast"
-  class=cn("toaster group", className)
+  toastClass=styles.toast
+  class=cn(styles.root, className)
   // An ARRAY, not an object spread: Marko's `style` attribute accepts a
   // string, an object, or an array of those, and merges an array left to
   // right. `...style` assumed it was always an object, which is a type error

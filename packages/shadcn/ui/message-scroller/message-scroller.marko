@@ -6,6 +6,7 @@
 // callback) and otherwise renders byte-identical markup.
 import { cn } from "#lib/utils.ts";
 import type { MessageScrollerControllerGetter } from "./lib/controller.ts";
+import { messageScroller as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"div"> {
   /** Controller getter provided by the nearest `<message-scroller-provider>`. */
@@ -17,7 +18,7 @@ export interface Input extends Marko.Input<"div"> {
 <div/el
   ...rest
   data-slot="message-scroller"
-  class=cn("mu-message-scroller group/message-scroller relative flex size-full min-h-0 flex-col overflow-hidden", className)
+  class=cn(styles.root, className)
 >
   <${content}/>
 </div>

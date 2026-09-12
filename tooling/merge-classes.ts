@@ -24,8 +24,8 @@
  * file still carries a non-allowlisted `mu-` token OUTSIDE A COMMENT (the
  * per-style hollow-registry guard).
  *
- * The survival scan is comment-blind — mirrors transform-marko.ts's own
- * class-string scanner and check-identity.ts's `KNOWN_UNSTRIPPED` precedent.
+ * The survival scan is comment-blind — mirrors class-context-scan.ts's own
+ * class-string scanner (comment-blind by design; see that file's header).
  * Four tokens (`mu-command-dialog`, `mu-navigation-menu-trigger`,
  * `mu-select-label`, `mu-toast`) are each mapped in every `style-*.css` (real,
  * actively-inlined anchors — not genuinely-unmapped runtime-selector hooks

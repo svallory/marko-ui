@@ -3,6 +3,7 @@ import type { MachineInput } from "marko-zag";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { tagsInput as styles } from "./classes.ts";
 
 export type Input = MachineInput<"div", tagsInputMachine.Props> & {
   valueChange?: (value: string[]) => void;
@@ -37,41 +38,41 @@ export type Input = MachineInput<"div", tagsInputMachine.Props> & {
   )
 >
 
-<div ...nativeAttrs() ...api().getRootProps() data-slot="tags-input-root" class=cn("flex flex-col gap-1.5", input.class)>
+<div ...nativeAttrs() ...api().getRootProps() data-slot="tags-input-root" class=cn(styles.root, input.class)>
   <if=input.label>
-    <label ...api().getLabelProps() data-slot="tags-input-label" class="text-sm font-medium">${input.label}</label>
+    <label ...api().getLabelProps() data-slot="tags-input-label" class=styles.label>${input.label}</label>
   </if>
   <div
     ...api().getControlProps()
     data-slot="tags-input-control"
-    class="border-input flex min-h-9 w-full flex-wrap items-center gap-1.5 rounded-md border bg-transparent px-3 py-1.5 shadow-xs transition-[color,box-shadow] has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 has-[input:focus]:ring-[3px] data-[disabled]:pointer-events-none data-[disabled]:cursor-not-allowed data-[disabled]:bg-muted data-[invalid]:border-destructive data-[invalid]:ring-destructive/20 dark:data-[invalid]:ring-destructive/40"
+    class=styles.control
   >
     <for|value, index| of=api().value>
       <span
         ...api().getItemProps({ index, value })
         data-slot="tags-input-item"
-        class="inline-flex items-center rounded-md border border-transparent bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[disabled]:bg-muted data-[disabled]:text-muted-foreground"
+        class=styles.item
       >
         <span
           ...api().getItemPreviewProps({ index, value })
           data-slot="tags-input-item-preview"
-          class="inline-flex items-center gap-1"
+          class=styles.itemPreview
         >
           <span ...api().getItemTextProps({ index, value }) data-slot="tags-input-item-text">${value}</span>
           <button
             ...api().getItemDeleteTriggerProps({ index, value })
             data-slot="tags-input-item-delete-trigger"
             type="button"
-            class="inline-flex size-3.5 shrink-0 items-center justify-center rounded-sm outline-none hover:bg-secondary-foreground/20 focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            class=styles.itemDeleteTrigger
           >
-            <Icon name="X" class="size-3"/>
-            <span class="sr-only">Remove ${value}</span>
+            <Icon name="X" class=styles.itemDeleteIcon/>
+            <span class=styles.itemDeleteSrOnly>Remove ${value}</span>
           </button>
         </span>
         <input
           ...api().getItemInputProps({ index, value })
           data-slot="tags-input-item-input"
-          class="w-[--width] min-w-4 bg-transparent text-xs outline-none"
+          class=styles.itemInput
         />
       </span>
     </for>
@@ -79,7 +80,7 @@ export type Input = MachineInput<"div", tagsInputMachine.Props> & {
       ...api().getInputProps()
       placeholder=input.placeholder
       data-slot="tags-input-input"
-      class="h-6 min-w-20 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
+      class=styles.input
     />
   </div>
   <input ...api().getHiddenInputProps()>

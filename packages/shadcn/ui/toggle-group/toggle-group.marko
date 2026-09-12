@@ -3,6 +3,7 @@ import { mergeProps, type MachineInput } from "marko-zag";
 import { toggleVariants, type ToggleVariants } from "../toggle/variants.ts";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { toggleGroup as styles } from "./classes.ts";
 
 export interface ToggleGroupItem {
   value: string;
@@ -63,10 +64,7 @@ export type Input = MachineInput<"div", toggleGroupMachine.Props> &
   data-variant=(input.variant ?? "default")
   data-size=(input.size ?? "default")
   data-spacing=spacing
-  class=cn(
-    "mu-toggle-group group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] data-vertical:flex-col data-vertical:items-stretch",
-    input.class
-  )
+  class=cn(styles.root, input.class)
 >
   <for|item| of=items by=(item) => item.value>
     <button
@@ -75,10 +73,7 @@ export type Input = MachineInput<"div", toggleGroupMachine.Props> &
       data-variant=(input.variant ?? "default")
       data-size=(input.size ?? "default")
       data-spacing=spacing
-      class=cn(
-        "mu-toggle-group-item shrink-0 focus:z-10 focus-visible:z-10 group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-l-0 group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-l group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t",
-        toggleVariants({ variant: input.variant, size: input.size })
-      )
+      class=cn(styles.item, toggleVariants({ variant: input.variant, size: input.size }))
     >
       <if=item.content>
         <${item.content}/>

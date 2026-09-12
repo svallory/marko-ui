@@ -1,0 +1,15 @@
+export const datePicker = {
+  control: "flex gap-2",
+  input: "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-[240px] min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  trigger: "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 size-9",
+  srOnly: "sr-only",
+  positioner: "z-50",
+  content: "bg-popover text-popover-foreground rounded-md border p-3 shadow-md z-50",
+  viewControl: "flex items-center justify-between pb-2",
+  navTrigger: "inline-flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 hover:opacity-100 disabled:pointer-events-none disabled:opacity-30",
+  viewTrigger: "text-sm font-medium hover:underline",
+  table: "w-full border-collapse space-y-1",
+  tableHeadCell: "text-muted-foreground w-9 rounded-md text-[0.8rem] font-normal",
+  cell: "p-0 text-center text-sm relative",
+  day: "size-8 rounded-md p-0 text-sm font-normal transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 data-[selected]:bg-primary data-[selected]:text-primary-foreground data-[selected]:hover:bg-primary data-[selected]:hover:text-primary-foreground data-[today]:bg-accent data-[today]:text-accent-foreground data-[outside-range]:text-muted-foreground",
+} as const;

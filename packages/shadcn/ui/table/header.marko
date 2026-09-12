@@ -1,4 +1,5 @@
 import { cn } from "#lib/utils.ts";
+import { header as styles } from "./classes.ts";
 
 export interface Input extends Marko.Input<"thead"> {
   content?: Marko.Body;
@@ -6,6 +7,6 @@ export interface Input extends Marko.Input<"thead"> {
 
 <const/{ class: className, content, ...rest }=input/>
 
-<thead ...rest data-slot="table-header" class=cn("mu-table-header", className)>
+<thead ...rest data-slot="table-header" class=cn(styles.root, className)>
   <${content}/>
 </thead>

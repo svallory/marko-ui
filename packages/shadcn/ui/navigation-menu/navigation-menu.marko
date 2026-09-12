@@ -5,6 +5,7 @@ import type { MachineInput } from "marko-zag";
 import { navigationMenuTriggerStyle } from "./variants.ts";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { navigationMenu as styles } from "./classes.ts";
 
 // A link rendered directly in the menu bar, with no content panel.
 export interface NavigationMenuLinkItem {
@@ -144,16 +145,16 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
   ...nativeAttrs()
   ...api().getRootProps()
   data-slot="navigation-menu"
-  class=cn("mu-navigation-menu group/navigation-menu relative flex max-w-max flex-1 items-center justify-center", input.class)
+  class=cn(styles.base, input.class)
 >
-  <ul ...api().getListProps() data-slot="navigation-menu-list" class="mu-navigation-menu-list group flex flex-1 list-none items-center justify-center">
+  <ul ...api().getListProps() data-slot="navigation-menu-list" class=styles.list>
     <for|item| of=items>
-      <li ...api().getItemProps({ value: item.value, disabled: item.disabled }) data-slot="navigation-menu-item" class="mu-navigation-menu-item relative">
+      <li ...api().getItemProps({ value: item.value, disabled: item.disabled }) data-slot="navigation-menu-item" class=styles.item>
         <if=item.type === "menu">
           <button
             ...api().getTriggerProps({ value: item.value, disabled: item.disabled })
             data-slot="navigation-menu-trigger"
-            class=cn(navigationMenuTriggerStyle(), "group")
+            class=cn(navigationMenuTriggerStyle(), styles.triggerGroup)
           >
             ${item.label}
             {" "}
@@ -168,7 +169,7 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
               stroke-linecap="round"
               stroke-linejoin="round"
               data-slot="navigation-menu-trigger-icon"
-              class="mu-navigation-menu-trigger-icon"
+              class=styles.triggerIcon
               aria-hidden="true"
             >
               <path d="m6 9 6 6 6-6"/>
@@ -182,7 +183,7 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
             ...api().getLinkProps({ value: item.value, current: item.current })
             href=item.href
             data-slot="navigation-menu-link"
-            class="mu-navigation-menu-link"
+            class=styles.link
           >
             ${item.label}
           </a>
@@ -195,12 +196,12 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
     <div
       ...api().getIndicatorProps()
       data-slot="navigation-menu-indicator"
-      class="mu-navigation-menu-indicator top-full z-1 flex h-1.5 items-end justify-center overflow-hidden [width:var(--trigger-width)] [translate:var(--trigger-x)_0]"
+      class=styles.indicator
     >
       <div
         ...api().getArrowProps()
         data-slot="navigation-menu-indicator-arrow"
-        class="mu-navigation-menu-indicator-arrow relative top-[60%] size-2 rotate-45"
+        class=styles.indicatorArrow
       />
     </div>
   </ul>
@@ -215,47 +216,48 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
   <div
     ...api().getViewportPositionerProps({ align: input.align })
     data-slot="navigation-menu-viewport-positioner"
-    class="mu-navigation-menu-viewport-wrapper absolute top-full left-0 isolate z-50 flex justify-center"
+    class=styles.viewportPositioner
   >
     <div
       ...api().getViewportProps({ align: input.align })
       data-slot="navigation-menu-viewport"
-      class="mu-navigation-menu-viewport origin-top-center relative mt-1.5 h-[var(--viewport-height)] w-[var(--viewport-width)] overflow-hidden"
+      class=styles.viewport
     >
       <for|item| of=menuItems()>
         <const/menuContent=menuContentByValue.get(item.value)/>
         <div
           ...api().getContentProps({ value: item.value })
           data-slot="navigation-menu-content"
-          class="mu-navigation-menu-content top-0 left-0 w-full **:data-[slot=navigation-menu-link]:focus:ring-0 **:data-[slot=navigation-menu-link]:focus:outline-none md:absolute md:w-auto"
+          class=styles.content
         >
           <if=item.links?.length>
-            <div class=cn("grid gap-2", hasFeatured(item) ? "w-[500px] grid-cols-[.75fr_1fr]" : "w-[400px]")>
+            <const/isFeatured=hasFeatured(item)/>
+            <div class=cn(styles.linksGrid, isFeatured ? styles.linksGridFeatured : styles.linksGridPlain)>
               <for|link| of=featuredLinks(item)>
                 <a
                   ...api().getLinkProps({ value: item.value, current: link.current })
                   href=link.href
                   data-slot="navigation-menu-link"
-                  class="mu-navigation-menu-link"
+                  class=styles.link
                 >
-                  <div class="mt-4 mb-2 text-lg font-medium">${link.title}</div>
+                  <div class=styles.featuredTitle>${link.title}</div>
                   <if=link.description>
-                    <p class="text-muted-foreground text-sm leading-tight">${link.description}</p>
+                    <p class=styles.featuredDescription>${link.description}</p>
                   </if>
                 </a>
               </for>
-              <ul class=cn("grid gap-1", !hasFeatured(item) && "md:grid-cols-2")>
+              <ul class=cn(styles.plainList, !isFeatured && styles.plainListCols)>
                 <for|link| of=plainLinks(item)>
                   <li>
                     <a
                       ...api().getLinkProps({ value: item.value, current: link.current })
                       href=link.href
                       data-slot="navigation-menu-link"
-                      class="mu-navigation-menu-link"
+                      class=styles.link
                     >
-                      <div class="text-sm font-medium leading-none">${link.title}</div>
+                      <div class=styles.plainTitle>${link.title}</div>
                       <if=link.description>
-                        <p class="text-muted-foreground line-clamp-2 text-sm leading-snug">${link.description}</p>
+                        <p class=styles.plainDescription>${link.description}</p>
                       </if>
                     </a>
                   </li>

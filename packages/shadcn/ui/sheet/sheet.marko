@@ -6,6 +6,7 @@ import Button from "../button/button.marko";
 import Icon from "../icon/icon.marko";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { sheet as styles } from "./classes.ts";
 
 export type Input = MachineInput<"div", dialogMachine.Props> & {
   openChange?: (open: boolean) => void;
@@ -56,27 +57,24 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
       <div
         ...api().getBackdropProps()
         data-slot="sheet-overlay"
-        class="mu-sheet-overlay fixed inset-0 z-50 duration-100 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0"
+        class=styles.overlay
       />
-      <div ...api().getPositionerProps() data-slot="sheet-positioner" class="contents">
+      <div ...api().getPositionerProps() data-slot="sheet-positioner" class=styles.positioner>
         <div
           ...api().getContentProps()
           data-slot="sheet-content"
           data-side=side
-          class=cn(
-            "mu-sheet-content data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[side=bottom]:data-[state=open]:slide-in-from-bottom-10 data-[side=left]:data-[state=open]:slide-in-from-left-10 data-[side=right]:data-[state=open]:slide-in-from-right-10 data-[side=top]:data-[state=open]:slide-in-from-top-10 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[side=bottom]:data-[state=closed]:slide-out-to-bottom-10 data-[side=left]:data-[state=closed]:slide-out-to-left-10 data-[side=right]:data-[state=closed]:slide-out-to-right-10 data-[side=top]:data-[state=closed]:slide-out-to-top-10",
-            input.class,
-          )
+          class=cn(styles.content, input.class)
         >
           <if=input.title || input.description>
-            <div data-slot="sheet-header" class="mu-sheet-header flex flex-col">
+            <div data-slot="sheet-header" class=styles.header>
               <if=input.title>
-                <h2 ...api().getTitleProps() data-slot="sheet-title" class="mu-sheet-title mu-font-heading">
+                <h2 ...api().getTitleProps() data-slot="sheet-title" class=styles.title>
                   <${input.title}/>
                 </h2>
               </if>
               <if=input.description>
-                <p ...api().getDescriptionProps() data-slot="sheet-description" class="mu-sheet-description">
+                <p ...api().getDescriptionProps() data-slot="sheet-description" class=styles.description>
                   <${input.description}/>
                 </p>
               </if>
@@ -84,7 +82,7 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
           </if>
           <${input.content}/>
           <if=input.footer>
-            <div data-slot="sheet-footer" class="mu-sheet-footer mt-auto flex flex-col">
+            <div data-slot="sheet-footer" class=styles.footer>
               <${input.footer}/>
             </div>
           </if>
@@ -94,10 +92,10 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
               variant="ghost"
               size="icon-sm"
               data-slot="sheet-close"
-              class="mu-sheet-close"
+              class=styles.close
             >
               <Icon name="XIcon"/>
-              <span class="sr-only">Close</span>
+              <span class=styles.srOnly>Close</span>
             </Button>
           </if>
         </div>

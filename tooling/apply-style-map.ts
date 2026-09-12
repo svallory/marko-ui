@@ -1,7 +1,9 @@
 /**
- * Shared per-string StyleMap application logic, extracted from
- * `./transform-variants.ts` so the `variants.ts` transform (ts-morph) and the
- * `.marko` transform (`./transform-marko.ts`) stay byte-consistent.
+ * Shared per-string StyleMap application logic, used by `resolve-classes.ts`
+ * to inline each style's mapped classes into a component's `classes.ts`
+ * leaves (the class-as-data data-swap path; the text-rewriting transforms
+ * this module originally served are retired now that every component is on
+ * the class-as-data contract).
  *
  * Semantics are a string-level port of shadcn's `applyStyleToCvaString`
  * (`packages/shadcn/src/styles/transform-style-map.ts`) — both transforms MUST
@@ -51,16 +53,14 @@ export const DEFAULT_ALLOWLIST: ReadonlySet<string> = new Set([
  * never mistakes a prose mention inside a comment for a real occurrence.
  * Shared by merge-classes.ts's post-merge `mu-*` survival guard and
  * check-classes.ts's "no mu- outside classes.ts" check — both need the exact
- * same comment-blindness rule transform-marko.ts's own class-string scanner
- * already applies when REWRITING class-context text (see that file's header:
- * "transform-marko.ts is comment-blind on purpose", and
- * check-identity.ts's `KNOWN_UNSTRIPPED` set, which documents four real
- * tokens — `mu-command-dialog`, `mu-navigation-menu-trigger`,
- * `mu-select-label`, `mu-toast` — that are each mapped in every
- * `style-*.css` (never genuinely unreserved/unmapped hooks) but are also
- * mentioned in a source-code PROSE COMMENT explaining where the token comes
- * from; a comment-blind scanner is what correctly ignores that mention
- * instead of treating it as a leaked anchor.
+ * same comment-blindness rule class-context-scan.ts's own class-string
+ * scanner applies (comment-blind by design; see that file's header). Four
+ * real tokens — `mu-command-dialog`, `mu-navigation-menu-trigger`,
+ * `mu-select-label`, `mu-toast` — are each mapped in every `style-*.css`
+ * (never genuinely unreserved/unmapped hooks) but are also mentioned in a
+ * source-code PROSE COMMENT explaining where the token comes from; a
+ * comment-blind scanner is what correctly ignores that mention instead of
+ * treating it as a leaked anchor.
  */
 export function stripComments(source: string): string {
   let out = ""

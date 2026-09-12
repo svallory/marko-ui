@@ -6,6 +6,7 @@ import Button from "../button/button.marko";
 import type { ButtonVariants } from "../button/variants.ts";
 import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
+import { alertDialog as styles } from "./classes.ts";
 
 // MachineInput = native <div> attributes ∩ the machine's full Props, with
 // `id` made optional (generated below, overridable). `openChange` is
@@ -68,38 +69,35 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
     <div
       ...api().getBackdropProps()
       data-slot="alert-dialog-overlay"
-      class="mu-alert-dialog-overlay fixed inset-0 z-50"
+      class=styles.overlay
     />
-    <div ...api().getPositionerProps() data-slot="alert-dialog-positioner" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div ...api().getPositionerProps() data-slot="alert-dialog-positioner" class=styles.positioner>
       <div
         ...nativeAttrs()
         ...api().getContentProps()
         data-slot="alert-dialog-content"
         data-size=size
-        class=cn(
-          "mu-alert-dialog-content group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 outline-none",
-          input.class,
-        )
+        class=cn(styles.content, input.class)
       >
-        <div data-slot="alert-dialog-header" class="mu-alert-dialog-header">
+        <div data-slot="alert-dialog-header" class=styles.header>
           <if=input.media>
-            <div data-slot="alert-dialog-media" class="mu-alert-dialog-media">
+            <div data-slot="alert-dialog-media" class=styles.media>
               <${input.media}/>
             </div>
           </if>
-          <h2 ...api().getTitleProps() data-slot="alert-dialog-title" class="mu-alert-dialog-title mu-font-heading">
+          <h2 ...api().getTitleProps() data-slot="alert-dialog-title" class=styles.title>
             <${input.title}/>
           </h2>
-          <p ...api().getDescriptionProps() data-slot="alert-dialog-description" class="mu-alert-dialog-description">
+          <p ...api().getDescriptionProps() data-slot="alert-dialog-description" class=styles.description>
             <${input.description}/>
           </p>
         </div>
-        <div data-slot="alert-dialog-footer" class="mu-alert-dialog-footer flex flex-col-reverse gap-2 group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end">
+        <div data-slot="alert-dialog-footer" class=styles.footer>
           <Button
             ...api().getCloseTriggerProps()
             variant=(input.cancelVariant ?? "outline")
             data-slot="alert-dialog-cancel"
-            class="mu-alert-dialog-cancel"
+            class=styles.cancel
           >
             ${input.cancelText ?? "Cancel"}
           </Button>
@@ -107,7 +105,7 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
             ...api().getCloseTriggerProps()
             variant=(input.actionVariant ?? "default")
             data-slot="alert-dialog-action"
-            class="mu-alert-dialog-action"
+            class=styles.action
             // Unannotated: Marko infers the real <button> click signature
             // (PointerEvent + bound element). The previous `Event`/`Element`
             // annotations were wider than what Zag's own handler accepts.

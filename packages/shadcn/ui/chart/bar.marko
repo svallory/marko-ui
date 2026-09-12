@@ -33,6 +33,7 @@ import {
 } from "./math.ts";
 import { seriesColor, type ChartConfig } from "./config.ts";
 import { cn } from "#lib/utils.ts";
+import { bar as styles } from "./classes.ts";
 import ChartGrid from "./grid.marko";
 import ChartXAxis from "./x-axis.marko";
 import ChartYAxis from "./y-axis.marko";
@@ -406,7 +407,7 @@ static function hFormatTicks(
 <if=horizontal>
   // ---- Horizontal layout: category axis on Y, value axis on X ----
   <div
-    class=cn("recharts-wrapper", className)
+    class=cn(styles.wrapper, className)
     style={ position: "relative", width: "100%", height: "100%" }
     onPointerMove(event: PointerEvent, el: HTMLDivElement) {
       if (tooltipEnabled) {
@@ -421,37 +422,37 @@ static function hFormatTicks(
     }
   >
     <svg
-      class="recharts-surface"
+      class=styles.surface
       width="100%"
       height="100%"
       viewBox=`0 0 ${width} ${height}`
     >
       <if=(tooltipEnabled && cursorEnabled && hActiveIndex >= 0)>
-        <g class="recharts-layer">
+        <g class=styles.cursorLayer>
           <path
-            class="recharts-rectangle recharts-tooltip-cursor"
+            class=styles.cursorPath
             fill="#ccc"
             d=hCursorPaths[hActiveIndex]
           />
         </g>
       </if>
       <if=showYAxis>
-        <g class="recharts-cartesian-axis recharts-yAxis yAxis">
-          <g class="recharts-cartesian-axis-ticks">
+        <g class=styles.yAxisRoot>
+          <g class=styles.yAxisTicks>
             <for|tick| of=hTicks>
-              <g class="recharts-layer recharts-cartesian-axis-tick">
-                <text stroke="none" fill="#666" class="recharts-text recharts-cartesian-axis-tick-value" x=(hCtx.plot.x - tickMargin) y=tick.y text-anchor="end"><tspan x=(hCtx.plot.x - tickMargin) dy="0.355em">${tick.value}</tspan></text>
+              <g class=styles.yAxisTick>
+                <text stroke="none" fill="#666" class=styles.yAxisTickText x=(hCtx.plot.x - tickMargin) y=tick.y text-anchor="end"><tspan x=(hCtx.plot.x - tickMargin) dy="0.355em">${tick.value}</tspan></text>
               </g>
             </for>
           </g>
         </g>
       </if>
       <for|bar| of=hBars>
-        <g class="recharts-layer recharts-bar">
-          <g class="recharts-layer recharts-bar-rectangles">
-            <g class="recharts-layer recharts-bar-rectangle">
+        <g class=styles.layer>
+          <g class=styles.rectangles>
+            <g class=styles.rectangleLayer>
               <path
-                class="recharts-rectangle"
+                class=styles.rectangle
                 fill=barColor(bar.row, singleKey)
                 d=bar.path
               />
@@ -468,7 +469,7 @@ static function hFormatTicks(
                   ? bar.left + bar.width + 8
                   : bar.left + bar.width / 2)/>
               <const/labelAnchor=(labelPos === "insideLeft" || labelPos === "right" ? ("start" as const) : ("middle" as const))/>
-              <g class="recharts-layer recharts-label-list">
+              <g class=styles.labelListLayer>
                 <text
                   x=labelX
                   y=(bar.y + bar.height / 2)
@@ -476,7 +477,7 @@ static function hFormatTicks(
                   dominant-baseline="central"
                   fill=(spec.color ?? "var(--foreground)")
                   font-size="12"
-                  class="recharts-text"
+                  class=styles.labelText
                 >${labelText}</text>
               </g>
             </for>
@@ -509,7 +510,7 @@ static function hFormatTicks(
   // ctx and its whole const chain are hoisted above the <if=horizontal> —
   // see the LANDMINE note near the top of this file.
   <div
-    class=cn("recharts-wrapper", className)
+    class=cn(styles.wrapper, className)
     style={ position: "relative", width: "100%", height: "100%" }
     onPointerMove(event: PointerEvent, el: HTMLDivElement) {
       if (tooltipEnabled) {
@@ -527,7 +528,7 @@ static function hFormatTicks(
       <ChartLegend items=legendItemsFor(seriesList, config) verticalAlign="top"/>
     </if>
     <svg
-      class="recharts-surface"
+      class=styles.surface
       width="100%"
       height="100%"
       viewBox=`0 0 ${width} ${height}`
@@ -536,9 +537,9 @@ static function hFormatTicks(
         <ChartGrid ctx=ctx/>
       </if>
       <if=(tooltipEnabled && cursorEnabled && activeIndex >= 0)>
-        <g class="recharts-layer">
+        <g class=styles.cursorLayer>
           <path
-            class="recharts-rectangle recharts-tooltip-cursor"
+            class=styles.cursorPath
             fill="#ccc"
             d=cursorPaths[activeIndex]
           />
@@ -550,12 +551,12 @@ static function hFormatTicks(
       </if>
       <if=multiSeries>
         <for|series| of=bars>
-          <g class="recharts-layer recharts-bar">
-            <g class="recharts-layer recharts-bar-rectangles">
+          <g class=styles.layer>
+            <g class=styles.rectangles>
               <for|path| of=series.paths>
-                <g class="recharts-layer recharts-bar-rectangle">
+                <g class=styles.rectangleLayer>
                   <path
-                    class="recharts-rectangle"
+                    class=styles.rectangle
                     fill=`var(--color-${series.dataKey})`
                     d=path
                   />
@@ -566,13 +567,13 @@ static function hFormatTicks(
         </for>
       </if>
       <else>
-        <g class="recharts-layer recharts-bar">
-          <g class="recharts-layer recharts-bar-rectangles">
+        <g class=styles.layer>
+          <g class=styles.rectangles>
             <for|bar,index| of=singleBars>
               <const/isActive=(staticActiveIndex != null && staticActiveIndex === index)/>
-              <g class="recharts-layer recharts-bar-rectangle">
+              <g class=styles.rectangleLayer>
                 <path
-                  class="recharts-rectangle"
+                  class=styles.rectangle
                   fill=barColor(bar.row, singleKey)
                   fill-opacity=(isActive ? 0.8 : undefined)
                   stroke=(isActive ? barColor(bar.row, singleKey) : undefined)
@@ -586,14 +587,14 @@ static function hFormatTicks(
                   <const/labelText=(spec.formatter ? spec.formatter(labelValue) : labelValue)/>
                   <const/labelPos=(spec.position ?? "top")/>
                   <const/labelY=(labelPos === "top" ? bar.top - 12 : bar.top + bar.height / 2)/>
-                  <g class="recharts-layer recharts-label-list">
+                  <g class=styles.labelListLayer>
                     <text
                       x=(bar.x + bar.width / 2)
                       y=labelY
                       text-anchor="middle"
                       fill=(spec.color ?? "var(--foreground)")
                       font-size="12"
-                      class="recharts-text"
+                      class=styles.labelText
                     >${labelText}</text>
                   </g>
                 </for>
