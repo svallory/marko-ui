@@ -5,9 +5,12 @@
  * `createStyleMap`, the same parser `build-registry.ts` uses for the
  * in-memory per-style transform) must be either:
  *   (a) CONSUMED — the literal `mu-<key>` token appears somewhere under
- *       `ui/**` in a `.marko` or `variants.ts` file, so at least
- *       one of the 8 generated style trees actually inlines its Tailwind
- *       classes for some component, OR
+ *       `ui/**` in a `.marko`, `variants.ts`, or `classes.ts` file, so at
+ *       least one of the 8 generated style trees actually inlines its
+ *       Tailwind classes for some component (a component migrated to the
+ *       class-as-data contract, see notes/component-authoring.md, holds its
+ *       tokens in `classes.ts` — its `.marko`/`variants.ts` files reference
+ *       them only via the `styles` binding, never as literal text), OR
  *   (b) on the EXPLAINED-UNUSED allowlist (`./unused-anchors.json`), with a
  *       one-line reason.
  *
@@ -82,7 +85,12 @@ function main(): number {
 
   const sourceFiles = walkRelative(SOURCE_UI).filter((rel) => {
     const base = path.basename(rel)
-    return base.endsWith(".marko") || base === "variants.ts"
+    // classes.ts holds the anchor tokens for components migrated to the
+    // class-as-data contract (see notes/component-authoring.md) — their
+    // .marko/variants.ts files reference tokens only via the `styles`
+    // binding, never as literal text, so classes.ts must be scanned too or
+    // every migrated component's tokens would falsely report as unconsumed.
+    return base.endsWith(".marko") || base === "variants.ts" || base === "classes.ts"
   })
 
   // token -> list of relative files it appears in (for reporting which
