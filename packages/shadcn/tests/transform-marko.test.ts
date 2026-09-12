@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs"
-import { join } from "node:path"
 import { describe, expect, test } from "vitest"
 
 import { createStyleMap, type StyleMap } from "../../../tooling/style-map"
@@ -8,51 +6,56 @@ import {
   transformMarkoSource,
 } from "../../../tooling/transform-marko"
 
-const REGISTRY_DIR = join(import.meta.dirname, "..")
-const STYLES_SRC_DIR = join(REGISTRY_DIR, "styles")
-
 const MU_TOKEN = /\bmu-[\w-]+\b/g
 
 function muTokensIn(source: string) {
   return Array.from(source.matchAll(MU_TOKEN), (m) => m[0])
 }
 
-function readComponent(relPath: string) {
-  return readFileSync(join(REGISTRY_DIR, "ui", relPath), "utf8")
-}
+// SYNTHETIC FIXTURES ONLY, deliberately — no real `ui/**` component or real
+// `styles/*.css` file is read here. Every sweep that migrates a component to
+// the class-as-data contract (classes.ts) empties that component's .marko
+// source of literal mu- tokens, breaking any test that reads it as a live
+// "still on the FALLBACK transform" fixture: sidebar -> breadcrumb/separator
+// -> pagination/pagination, three swaps in three consecutive sweeps, was the
+// churn this replaced. A hand-written source string and a hand-written
+// StyleMap can never be migrated out from under this test, so this file has
+// no dependency on which components are or aren't migrated.
+const FIXTURE_A_SOURCE = [
+  `import { cn } from "#lib/utils.ts";`,
+  ``,
+  `<div data-slot="widget-root" class=cn("mu-widget-root flex", input.class)>`,
+  `  <span data-slot="widget-icon" class="mu-rtl-flip size-4"></span>`,
+  `</div>`,
+].join("\n")
 
-const vegaMap = createStyleMap(
-  readFileSync(join(STYLES_SRC_DIR, "style-vega.css"), "utf8")
-)
-const novaMap = createStyleMap(
-  readFileSync(join(STYLES_SRC_DIR, "style-nova.css"), "utf8")
-)
+// A second fixture with NO anchor tokens in its class strings at all — the
+// "passes through byte-identical" case (mirrors what sidebar/menu-button.marko
+// used to exercise: an authored cn() call whose only literal has nothing for
+// the transform to touch).
+const FIXTURE_B_SOURCE = [
+  `import { cn } from "#lib/utils.ts";`,
+  ``,
+  `<div data-slot="widget-plain" class=cn("flex items-center", input.class)></div>`,
+].join("\n")
 
-// NOTE: sidebar/sidebar.marko and sidebar/trigger.marko were the original
-// mu-sidebar-gap / mu-rtl-flip fixtures here, but sidebar is now migrated to
-// the class-as-data contract (classes.ts) — its .marko sources no longer
-// carry literal mu- tokens, so they no longer exercise this FALLBACK
-// transform meaningfully. breadcrumb/separator.marko replaced it as the
-// mu-rtl-flip fixture, but cd-sweep-1 migrated breadcrumb too — swapped again
-// to pagination/pagination.marko (still unmigrated), which carries both
-// mu-rtl-flip and a plain anchor token (mu-pagination-content).
-// sidebar/menu-button.marko stays as the "no anchor tokens in class strings"
-// passthrough fixture since that property is unaffected by the sidebar
-// migration (its own cn() call never held a literal — variants.ts always
-// owned those tokens, and still does).
-describe("real-world: slider + pagination x vega/nova style maps", () => {
+const vegaMap = createStyleMap(`
+  .mu-widget-root { @apply bg-muted rounded-full data-horizontal:h-1.5; }
+`)
+const novaMap = createStyleMap(`
+  .mu-widget-root { @apply bg-muted rounded-full data-horizontal:h-1; }
+`)
+
+describe("real-world-shaped: synthetic widget x vega/nova style maps", () => {
   const files = {
-    "slider/slider.marko": readComponent("slider/slider.marko"),
-    "sidebar/menu-button.marko": readComponent("sidebar/menu-button.marko"),
-    "pagination/pagination.marko": readComponent("pagination/pagination.marko"),
+    "fixture-a": FIXTURE_A_SOURCE,
+    "fixture-b": FIXTURE_B_SOURCE,
   }
 
   test("sources actually contain mu- tokens (sanity)", () => {
-    expect(muTokensIn(files["slider/slider.marko"])).toContain("mu-slider")
-    expect(muTokensIn(files["pagination/pagination.marko"])).toContain(
-      "mu-pagination-content"
-    )
-    expect(muTokensIn(files["pagination/pagination.marko"])).toContain("mu-rtl-flip")
+    expect(muTokensIn(FIXTURE_A_SOURCE)).toContain("mu-widget-root")
+    expect(muTokensIn(FIXTURE_A_SOURCE)).toContain("mu-rtl-flip")
+    expect(muTokensIn(FIXTURE_B_SOURCE)).toEqual([])
   })
 
   test("no mu- token survives except allowlisted ones", () => {
@@ -67,50 +70,42 @@ describe("real-world: slider + pagination x vega/nova style maps", () => {
     }
   })
 
-  test("mu-rtl-flip (allowlisted) survives in pagination/pagination.marko", () => {
-    const out = transformMarkoSource(files["pagination/pagination.marko"], vegaMap)
+  test("mu-rtl-flip (allowlisted) survives in fixture-a", () => {
+    const out = transformMarkoSource(FIXTURE_A_SOURCE, vegaMap)
     expect(out).toContain("mu-rtl-flip")
     // ...but the non-allowlisted anchor on the same component is gone.
-    expect(out).not.toContain("mu-pagination-content")
+    expect(out).not.toContain("mu-widget-root")
   })
 
-  test("slider gains the style's track classes; vega differs from nova", () => {
-    const vegaOut = transformMarkoSource(files["slider/slider.marko"], vegaMap)
-    const novaOut = transformMarkoSource(files["slider/slider.marko"], novaMap)
-    // style-vega.css .mu-slider-track: data-horizontal:h-1.5; nova: h-1.
+  test("fixture-a gains the style's classes; vega differs from nova", () => {
+    const vegaOut = transformMarkoSource(FIXTURE_A_SOURCE, vegaMap)
+    const novaOut = transformMarkoSource(FIXTURE_A_SOURCE, novaMap)
     expect(vegaOut).toContain("data-horizontal:h-1.5")
     expect(novaOut).toContain("data-horizontal:h-1 ")
     expect(novaOut).not.toContain("h-1.5")
     expect(vegaOut).not.toBe(novaOut)
   })
 
-  test("pagination-content anchor is inlined from the map", () => {
-    const vegaOut = transformMarkoSource(files["pagination/pagination.marko"], vegaMap)
-    const novaOut = transformMarkoSource(files["pagination/pagination.marko"], novaMap)
-    expect(vegaOut).not.toContain("mu-pagination-content")
-    expect(novaOut).not.toContain("mu-pagination-content")
+  test("mu-widget-root anchor is inlined from the map", () => {
+    const vegaOut = transformMarkoSource(FIXTURE_A_SOURCE, vegaMap)
+    const novaOut = transformMarkoSource(FIXTURE_A_SOURCE, novaMap)
+    expect(vegaOut).not.toContain("mu-widget-root")
+    expect(novaOut).not.toContain("mu-widget-root")
   })
 
-  test("non-class strings are byte-identical (data-slot, imports, comments)", () => {
-    const sliderOut = transformMarkoSource(files["slider/slider.marko"], vegaMap)
+  test("non-class strings are byte-identical (data-slot, imports)", () => {
+    const outA = transformMarkoSource(FIXTURE_A_SOURCE, vegaMap)
     for (const untouched of [
-      `import * as sliderMachine from "@zag-js/slider";`,
       `import { cn } from "#lib/utils.ts";`,
-      `data-slot="slider"`,
-      `data-slot="slider-track"`,
-      `data-slot="slider-thumb"`,
-      // zag control wrapper comment mentions "style CSS" — untouched.
-      "// zag-required control wrapper",
+      `data-slot="widget-root"`,
+      `data-slot="widget-icon"`,
     ]) {
-      expect(sliderOut).toContain(untouched)
+      expect(outA).toContain(untouched)
     }
-    const menuButtonOut = transformMarkoSource(
-      files["sidebar/menu-button.marko"],
-      vegaMap
-    )
-    // menu-button has no anchor tokens in class strings (variants.ts owns
-    // them) — the whole file passes through byte-identical.
-    expect(menuButtonOut).toBe(files["sidebar/menu-button.marko"])
+    // fixture-b has no anchor tokens in class strings — the whole file
+    // passes through byte-identical.
+    const outB = transformMarkoSource(FIXTURE_B_SOURCE, vegaMap)
+    expect(outB).toBe(FIXTURE_B_SOURCE)
   })
 })
 
@@ -228,16 +223,14 @@ describe("unit: class-context detection", () => {
 })
 
 describe("idempotency", () => {
-  test("double-transform of real components is a no-op", () => {
-    for (const rel of [
-      "slider/slider.marko",
-      "pagination/pagination.marko",
-      "sidebar/menu-button.marko",
-    ]) {
-      const source = readComponent(rel)
+  test("double-transform of real-world-shaped fixtures is a no-op", () => {
+    for (const [name, source] of Object.entries({
+      "fixture-a": FIXTURE_A_SOURCE,
+      "fixture-b": FIXTURE_B_SOURCE,
+    })) {
       const once = transformMarkoSource(source, vegaMap)
       const twice = transformMarkoSource(once, vegaMap)
-      expect(twice, rel).toBe(once)
+      expect(twice, name).toBe(once)
     }
   })
 
@@ -264,12 +257,11 @@ describe("empty StyleMap", () => {
     expect(out).toContain(`<div class="plain grid"></div>`)
   })
 
-  test("real component with empty map: only anchors removed from class strings", () => {
-    const source = readComponent("slider/slider.marko")
-    const out = transformMarkoSource(source, {})
-    expect(muTokensIn(out)).toEqual([])
+  test("real-world-shaped fixture with empty map: only anchors removed from class strings", () => {
+    const out = transformMarkoSource(FIXTURE_A_SOURCE, {})
+    expect(muTokensIn(out)).toEqual(["mu-rtl-flip"])
     // Authored utilities all survive.
-    expect(out).toContain("relative flex w-full touch-none items-center")
-    expect(out).toContain(`data-slot="slider-range"`)
+    expect(out).toContain("flex")
+    expect(out).toContain(`data-slot="widget-root"`)
   })
 })

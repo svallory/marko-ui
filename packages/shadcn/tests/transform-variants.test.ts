@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs"
-import { join } from "node:path"
 import { describe, expect, test } from "vitest"
 
 import { createStyleMap, type StyleMap } from "../../../tooling/style-map"
@@ -8,40 +6,52 @@ import {
   transformVariantsSource,
 } from "../../../tooling/transform-variants"
 
-const REGISTRY_DIR = join(import.meta.dirname, "..")
-const STYLES_SRC_DIR = join(REGISTRY_DIR, "styles")
-
 const MU_TOKEN = /\bmu-[\w-]+\b/g
 
 function muTokensIn(source: string) {
   return Array.from(source.matchAll(MU_TOKEN), (m) => m[0])
 }
 
-// NOTE: button/variants.ts was the original fixture here, but button is now
-// migrated to the class-as-data contract (classes.ts) — its variants.ts no
-// longer carries literal mu- tokens (they live in classes.ts, which this
-// FALLBACK transform never touches), so it no longer exercises this path
-// meaningfully. toggle/variants.ts (still unmigrated) replaces it: same
-// base+variant+size cva() shape, and its vega/nova style rules differ
-// (rounded-md vs rounded-lg) just like button's used to.
-describe("real-world: toggle variants.ts x vega/nova style maps", () => {
-  const variantsSource = readFileSync(
-    join(REGISTRY_DIR, "ui/toggle/variants.ts"),
-    "utf8"
-  )
-  const vegaMap = createStyleMap(
-    readFileSync(join(STYLES_SRC_DIR, "style-vega.css"), "utf8")
-  )
-  const novaMap = createStyleMap(
-    readFileSync(join(STYLES_SRC_DIR, "style-nova.css"), "utf8")
-  )
+// SYNTHETIC FIXTURE ONLY, deliberately — no real `ui/**/variants.ts` or real
+// `styles/*.css` file is read here. button/variants.ts (the original fixture)
+// was migrated to the class-as-data contract and stopped carrying literal
+// mu- tokens; its replacement, toggle/variants.ts, is exactly one class-data
+// sweep away from the same fate. A hand-written cva() source string and a
+// hand-written StyleMap can never be migrated out from under this test.
+const VARIANTS_SOURCE = [
+  `import { cva, type VariantProps } from "class-variance-authority";`,
+  ``,
+  `export const widgetVariants = cva("mu-widget group/widget whitespace-nowrap", {`,
+  `  variants: {`,
+  `    variant: {`,
+  `      default: "mu-widget-variant-default",`,
+  `      outline: "mu-widget-variant-outline",`,
+  `    },`,
+  `  },`,
+  `  defaultVariants: {`,
+  `    variant: "default",`,
+  `  },`,
+  `});`,
+  ``,
+  `export type WidgetVariants = VariantProps<typeof widgetVariants>;`,
+].join("\n")
 
-  const vegaOut = transformVariantsSource(variantsSource, vegaMap)
-  const novaOut = transformVariantsSource(variantsSource, novaMap)
+const vegaMap = createStyleMap(`
+  .mu-widget { @apply rounded-md focus-visible:border-ring; }
+  .mu-widget-variant-default { @apply bg-primary text-primary-foreground; }
+`)
+const novaMap = createStyleMap(`
+  .mu-widget { @apply rounded-lg focus-visible:border-ring; }
+  .mu-widget-variant-default { @apply bg-primary text-primary-foreground; }
+`)
+
+describe("real-world-shaped: synthetic widget variants.ts x vega/nova style maps", () => {
+  const vegaOut = transformVariantsSource(VARIANTS_SOURCE, vegaMap)
+  const novaOut = transformVariantsSource(VARIANTS_SOURCE, novaMap)
 
   test("source actually contains mu- tokens (sanity)", () => {
-    expect(muTokensIn(variantsSource)).toContain("mu-toggle")
-    expect(muTokensIn(variantsSource)).toContain("mu-toggle-variant-default")
+    expect(muTokensIn(VARIANTS_SOURCE)).toContain("mu-widget")
+    expect(muTokensIn(VARIANTS_SOURCE)).toContain("mu-widget-variant-default")
   })
 
   test("no mu- token survives the transform", () => {
@@ -49,26 +59,25 @@ describe("real-world: toggle variants.ts x vega/nova style maps", () => {
     expect(muTokensIn(novaOut)).toEqual([])
   })
 
-  test("vega default variant carries the .mu-toggle-variant-default classes", () => {
+  test("vega default variant carries the .mu-widget-variant-default classes", () => {
     const defaultVariant = vegaOut.match(/variant:\s*\{\s*default:\s*"([^"]*)"/)?.[1]
     if (defaultVariant === undefined) throw new Error("variant.default not found in vega output")
-    expect(vegaMap["mu-toggle-variant-default"]).toBeDefined()
-    for (const cls of vegaMap["mu-toggle-variant-default"]!.split(" ")) {
+    expect(vegaMap["mu-widget-variant-default"]).toBeDefined()
+    for (const cls of vegaMap["mu-widget-variant-default"]!.split(" ")) {
       expect(defaultVariant.split(" ")).toContain(cls)
     }
   })
 
-  test("vega base string keeps the authored utilities and gains .mu-toggle classes", () => {
-    // From style-vega.css .mu-toggle (spot-check).
+  test("vega base string keeps the authored utilities and gains .mu-widget classes", () => {
     expect(vegaOut).toContain("rounded-md")
     expect(vegaOut).toContain("focus-visible:border-ring")
     // Authored utilities from the source base string survive.
-    expect(vegaOut).toContain("group/toggle")
+    expect(vegaOut).toContain("group/widget")
     expect(vegaOut).toContain("whitespace-nowrap")
   })
 
   test("nova output differs from vega output", () => {
-    // nova .mu-toggle applies rounded-lg where vega applies rounded-md.
+    // nova .mu-widget applies rounded-lg where vega applies rounded-md.
     expect(novaOut).not.toBe(vegaOut)
     expect(novaOut).toContain("rounded-lg")
     expect(vegaOut).toContain("rounded-md")
@@ -80,7 +89,7 @@ describe("real-world: toggle variants.ts x vega/nova style maps", () => {
     )
     expect(vegaOut).toContain("defaultVariants")
     expect(vegaOut).toContain(
-      "export type ToggleVariants = VariantProps<typeof toggleVariants>;"
+      "export type WidgetVariants = VariantProps<typeof widgetVariants>;"
     )
   })
 })
@@ -180,14 +189,7 @@ describe("unit: token replacement", () => {
 
 describe("idempotency", () => {
   test("transforming already-transformed output is a no-op", () => {
-    const variantsSource = readFileSync(
-      join(REGISTRY_DIR, "ui/toggle/variants.ts"),
-      "utf8"
-    )
-    const vegaMap = createStyleMap(
-      readFileSync(join(STYLES_SRC_DIR, "style-vega.css"), "utf8")
-    )
-    const once = transformVariantsSource(variantsSource, vegaMap)
+    const once = transformVariantsSource(VARIANTS_SOURCE, vegaMap)
     const twice = transformVariantsSource(once, vegaMap)
     expect(twice).toBe(once)
   })
