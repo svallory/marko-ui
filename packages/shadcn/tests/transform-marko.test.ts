@@ -37,15 +37,19 @@ const novaMap = createStyleMap(
 // the "no anchor tokens in class strings" passthrough fixture since that
 // property is unaffected by the sidebar migration (its own cn() call never
 // held a literal — variants.ts always owned those tokens, and still does).
-describe("real-world: slider + breadcrumb-separator x vega/nova style maps", () => {
+// slider/slider.marko was the original mu-slider-track fixture, but slider is
+// now migrated too (cd-sweep-2) — replaced by tabs/tabs.marko, whose
+// mu-tabs-trigger literal still carries an anchor and whose style-vega.css /
+// style-nova.css rules diverge on padding (py-1/px-2 vs py-0.5/px-1).
+describe("real-world: tabs + breadcrumb-separator x vega/nova style maps", () => {
   const files = {
-    "slider/slider.marko": readComponent("slider/slider.marko"),
+    "tabs/tabs.marko": readComponent("tabs/tabs.marko"),
     "sidebar/menu-button.marko": readComponent("sidebar/menu-button.marko"),
     "breadcrumb/separator.marko": readComponent("breadcrumb/separator.marko"),
   }
 
   test("sources actually contain mu- tokens (sanity)", () => {
-    expect(muTokensIn(files["slider/slider.marko"])).toContain("mu-slider")
+    expect(muTokensIn(files["tabs/tabs.marko"])).toContain("mu-tabs-trigger")
     expect(muTokensIn(files["breadcrumb/separator.marko"])).toContain(
       "mu-breadcrumb-separator"
     )
@@ -71,13 +75,13 @@ describe("real-world: slider + breadcrumb-separator x vega/nova style maps", () 
     expect(out).not.toContain("mu-breadcrumb-separator")
   })
 
-  test("slider gains the style's track classes; vega differs from nova", () => {
-    const vegaOut = transformMarkoSource(files["slider/slider.marko"], vegaMap)
-    const novaOut = transformMarkoSource(files["slider/slider.marko"], novaMap)
-    // style-vega.css .mu-slider-track: data-horizontal:h-1.5; nova: h-1.
-    expect(vegaOut).toContain("data-horizontal:h-1.5")
-    expect(novaOut).toContain("data-horizontal:h-1 ")
-    expect(novaOut).not.toContain("h-1.5")
+  test("tabs gains the style's trigger classes; vega differs from nova", () => {
+    const vegaOut = transformMarkoSource(files["tabs/tabs.marko"], vegaMap)
+    const novaOut = transformMarkoSource(files["tabs/tabs.marko"], novaMap)
+    // style-vega.css .mu-tabs-trigger: px-2 py-1; nova: px-1.5 py-0.5.
+    expect(vegaOut).toContain("px-2 py-1 ")
+    expect(novaOut).toContain("px-1.5 py-0.5 ")
+    expect(novaOut).not.toContain("px-2 py-1 ")
     expect(vegaOut).not.toBe(novaOut)
   })
 
@@ -89,17 +93,15 @@ describe("real-world: slider + breadcrumb-separator x vega/nova style maps", () 
   })
 
   test("non-class strings are byte-identical (data-slot, imports, comments)", () => {
-    const sliderOut = transformMarkoSource(files["slider/slider.marko"], vegaMap)
+    const tabsOut = transformMarkoSource(files["tabs/tabs.marko"], vegaMap)
     for (const untouched of [
-      `import * as sliderMachine from "@zag-js/slider";`,
+      `import * as tabsMachine from "@zag-js/tabs";`,
       `import { cn } from "#lib/utils.ts";`,
-      `data-slot="slider"`,
-      `data-slot="slider-track"`,
-      `data-slot="slider-thumb"`,
-      // zag control wrapper comment mentions "style CSS" — untouched.
-      "// zag-required control wrapper",
+      `data-slot="tabs"`,
+      `data-slot="tabs-trigger"`,
+      `data-slot="tabs-content"`,
     ]) {
-      expect(sliderOut).toContain(untouched)
+      expect(tabsOut).toContain(untouched)
     }
     const menuButtonOut = transformMarkoSource(
       files["sidebar/menu-button.marko"],
@@ -227,7 +229,7 @@ describe("unit: class-context detection", () => {
 describe("idempotency", () => {
   test("double-transform of real components is a no-op", () => {
     for (const rel of [
-      "slider/slider.marko",
+      "tabs/tabs.marko",
       "breadcrumb/separator.marko",
       "sidebar/menu-button.marko",
     ]) {
@@ -262,11 +264,11 @@ describe("empty StyleMap", () => {
   })
 
   test("real component with empty map: only anchors removed from class strings", () => {
-    const source = readComponent("slider/slider.marko")
+    const source = readComponent("tabs/tabs.marko")
     const out = transformMarkoSource(source, {})
     expect(muTokensIn(out)).toEqual([])
     // Authored utilities all survive.
-    expect(out).toContain("relative flex w-full touch-none items-center")
-    expect(out).toContain(`data-slot="slider-range"`)
+    expect(out).toContain("relative inline-flex h-[calc(100%-1px)] flex-1")
+    expect(out).toContain(`data-slot="tabs-content"`)
   })
 })
