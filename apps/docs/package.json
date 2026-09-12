@@ -7,6 +7,7 @@
     "build": "marko-run build",
     "preview": "marko-run preview",
     "check": "bash scripts/check.sh",
+    "mtc:baseline": "bash scripts/generate-mtc-baseline.sh",
     "registry": "bun ../../tooling/build-registry.ts",
     "predev": "bun ../../tooling/build-registry.ts",
     "prebuild": "bun ../../tooling/build-registry.ts",

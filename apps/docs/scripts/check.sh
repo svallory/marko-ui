@@ -44,4 +44,35 @@ owned=1
 echo $$ > "$pid_file"
 
 rm -f tsconfig.tsbuildinfo
-NODE_OPTIONS="--max-old-space-size=8192" marko-type-check -p ./tsconfig.json -d condensed
+raw="$(NODE_OPTIONS="--max-old-space-size=8192" marko-type-check -p ./tsconfig.json -d condensed || true)"
+echo "$raw"
+
+fingerprint="$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts)"
+baseline="$(grep -v '^#' mtc-baseline.txt | sed '/^$/d')"
+
+new_lines="$(comm -13 <(echo "$baseline" | sort) <(echo "$fingerprint" | sort))"
+gone_lines="$(comm -23 <(echo "$baseline" | sort) <(echo "$fingerprint" | sort))"
+
+status=0
+
+if [ -n "$new_lines" ]; then
+  echo "" >&2
+  echo "docs mtc: NEW errors not in mtc-baseline.txt (this is the gate — fix them):" >&2
+  echo "$new_lines" | sed 's/^/  + /' >&2
+  status=1
+fi
+
+if [ -n "$gone_lines" ]; then
+  echo "" >&2
+  echo "docs mtc: baseline errors that no longer reproduce — regenerate the baseline so it doesn't rot:" >&2
+  echo "$gone_lines" | sed 's/^/  - /' >&2
+  echo "  Run: bun run mtc:baseline (from apps/docs)" >&2
+  status=1
+fi
+
+if [ "$status" -eq 0 ]; then
+  echo "" >&2
+  echo "docs mtc: no new errors, baseline unchanged ($(echo "$fingerprint" | grep -c . || true) known entries)." >&2
+fi
+
+exit "$status"
