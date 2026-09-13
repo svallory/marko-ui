@@ -13,7 +13,7 @@ import { qrCode as styles } from "./classes.ts";
 export type Input = MachineInput<"div", qrCodeMachine.Props> &
   QrCodeVariants & {
     /** Rendered centered over the code (logo overlay slot). */
-    overlay?: Marko.Body;
+    overlay?: Marko.AttrTag<{ content: Marko.Body }>;
     valueChange?: (value: string) => void;
   };
 
@@ -55,7 +55,7 @@ export type Input = MachineInput<"div", qrCodeMachine.Props> &
       data-slot="qr-code-overlay"
       class=styles.overlay
     >
-      <${input.overlay}/>
+      <${input.overlay.content}/>
     </div>
   </if>
 </div>

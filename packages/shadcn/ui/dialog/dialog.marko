@@ -11,10 +11,10 @@ import { dialog as styles } from "./classes.ts";
 export type Input = MachineInput<"div", dialogMachine.Props> & {
   openChange?: (open: boolean) => void;
   trigger?: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
-  title?: Marko.Body;
-  description?: Marko.Body;
+  title?: Marko.AttrTag<{ content: Marko.Body }>;
+  description?: Marko.AttrTag<{ content: Marko.Body }>;
   content?: Marko.Body;
-  footer?: Marko.Body;
+  footer?: Marko.AttrTag<{ content: Marko.Body }>;
   /** Show the top-right close button. Defaults to true. */
   showCloseButton?: boolean;
 };
@@ -65,12 +65,12 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
           <div data-slot="dialog-header" class=styles.header>
             <if=input.title>
               <h2 ...api().getTitleProps() data-slot="dialog-title" class=styles.title>
-                <${input.title}/>
+                <${input.title.content}/>
               </h2>
             </if>
             <if=input.description>
               <p ...api().getDescriptionProps() data-slot="dialog-description" class=styles.description>
-                <${input.description}/>
+                <${input.description.content}/>
               </p>
             </if>
           </div>
@@ -80,7 +80,7 @@ export type Input = MachineInput<"div", dialogMachine.Props> & {
         </if>
         <if=input.footer>
           <div data-slot="dialog-footer" class=styles.footer>
-            <${input.footer}/>
+            <${input.footer.content}/>
           </div>
         </if>
         <if=showCloseButton>

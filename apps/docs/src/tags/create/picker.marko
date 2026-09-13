@@ -39,7 +39,7 @@ export interface PickerRadioGroupSection {
 
 export interface Input {
   /** Trigger content — renders inside the styled trigger button. */
-  trigger: Marko.Body;
+  trigger: Marko.AttrTag<{ content: Marko.Body }>;
   /** Radio sections, rendered in order with a separator between each. */
   sections: PickerRadioGroupSection[];
   /** Currently committed value. */
@@ -94,7 +94,7 @@ export interface Input {
       className,
     )
   >
-    <${trigger}/>
+    <${trigger.content}/>
   </button>
   <zag-portal>
     <if=api().open>
