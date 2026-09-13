@@ -27,10 +27,9 @@
 # NOT part of the key — an unrelated edit that shifts existing errors up or
 # down a few lines must not look like new+removed errors here.
 #
-# Regenerated: 2026-09-13T03:32:05Z
+# Regenerated: 2026-09-13T07:46:20Z
 
 src/_blocks/dashboard-01/documents-table.marko|TS2307|Cannot find module '#lib/utils.ts' or its corresponding type declarations.
-src/_blocks/dashboard-01/documents-table.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
 src/_blocks/dashboard-01/documents-table.marko|TS2322|Type 'boolean | "indeterminate"' is not assignable to type 'boolean | undefined'
 src/_blocks/dashboard-01/documents-table.marko|TS7006|Parameter 'props' implicitly has an 'any' type.
 src/_blocks/dashboard-01/nav-documents.marko|TS2307|Cannot find module '#lib/utils.ts' or its corresponding type declarations.
@@ -38,16 +37,6 @@ src/_blocks/dashboard-01/nav-main.marko|TS2307|Cannot find module '#lib/utils.ts
 src/_blocks/dashboard-01/site-header.marko|TS2307|Cannot find module '#lib/utils.ts' or its corresponding type declarations.
 src/_blocks/sidebar-06/app-sidebar.marko|TS2353|Object literal may only specify known properties, and 'isActive' does not exist 
 src/_blocks/sidebar-09/app-sidebar.marko|TS18048|'activeItem' is possibly 'undefined'.
-src/_blocks/sidebar-13/settings-dialog.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/alert-dialog/alert-dialog-basic.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/alert-dialog/alert-dialog-controlled.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/alert-dialog/alert-dialog-demo.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/alert-dialog/alert-dialog-destructive.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/alert-dialog/alert-dialog-media.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/alert-dialog/alert-dialog-rtl.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ x2
-src/demos/alert-dialog/alert-dialog-small-media.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/alert-dialog/alert-dialog-small.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/attachment/attachment-trigger.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
 src/demos/button-group/button-group-dropdown.marko|TS2322|Type '({ value: string; label: string; type?: undefined; variant?: undefined; } 
 src/demos/button-group/button-group-input-group.marko|TS2322|Type 'boolean' is not assignable to type 'AttrTriState'.
 src/demos/button-group/button-group-rtl.marko|TS2322|Type '({ value: string; label: string; type?: undefined; subEntries?: undefined;
@@ -73,12 +62,6 @@ src/demos/charts-gallery/pie/chart-pie-interactive.marko|TS7053|Element implicit
 src/demos/charts-gallery/pie/chart-pie-label-list.marko|TS2538|Type 'unknown' cannot be used as an index type.
 src/demos/checkbox/checkbox-controlled.marko|TS2322|Type 'string | boolean' is not assignable to type 'boolean'. Type 'string' is no
 src/demos/checkbox/checkbox-indeterminate.marko|TS2322|Type 'string' is not assignable to type 'boolean | undefined'.
-src/demos/command/command-basic.marko|TS2322|Type '{ class: string; content: () => Void; [Symbol.iterator]: any; }' is not as
-src/demos/command/command-basic.marko|TS2353|Object literal may only specify known properties, and '"class"' does not exist i
-src/demos/command/command-groups.marko|TS2322|Type '{ class: string; content: () => Void; [Symbol.iterator]: any; }' is not as
-src/demos/command/command-groups.marko|TS2353|Object literal may only specify known properties, and '"class"' does not exist i
-src/demos/command/command-shortcuts.marko|TS2322|Type '{ class: string; content: () => Void; [Symbol.iterator]: any; }' is not as
-src/demos/command/command-shortcuts.marko|TS2353|Object literal may only specify known properties, and '"class"' does not exist i
 src/demos/context-menu/context-menu-checkboxes.marko|TS2322|Type '{ type: string; value: string; label: string; checked: boolean; }[]' is no
 src/demos/context-menu/context-menu-controlled.marko|TS2322|Type '({ value: string; label: string; type?: undefined; danger?: undefined; } |
 src/demos/context-menu/context-menu-demo.marko|TS2322|Type '({ value: string; label: string; shortcut: string; disabled?: undefined; t
@@ -93,24 +76,8 @@ src/demos/data-table/data-table-demo.marko|TS2322|Type '({ accessorKey: string; 
 src/demos/data-table/data-table-formatted-cells.marko|TS2322|Type '({ accessorKey: string; header: string; cell: (row: { id: string; amount: 
 src/demos/data-table/data-table-formatted-cells.marko|TS2532|Object is possibly 'undefined'.
 src/demos/data-table/data-table-rtl.marko|TS2322|Type '({ accessorKey: string; header: string; cell: (row: { id: string; amount: 
-src/demos/dialog/dialog-close-button.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/dialog/dialog-controlled.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/dialog/dialog-demo.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/dialog/dialog-no-close-button.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/dialog/dialog-no-footer.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/dialog/dialog-rtl.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/dialog/dialog-scrollable-content.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/dialog/dialog-sticky-footer.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
 src/demos/drawer/drawer-demo.marko|TS2322|Type '"right" | "down"' is not assignable to type 'SwipeDirection | undefined'. 
-src/demos/drawer/drawer-demo.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
 src/demos/drawer/drawer-demo.marko|TS2322|Type 'string | null' is not assignable to type 'string'. Type 'null' is not assi
-src/demos/drawer/drawer-dialog.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ x2
-src/demos/drawer/drawer-nested.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ x2
-src/demos/drawer/drawer-no-footer.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/drawer/drawer-non-modal.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/drawer/drawer-sides.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/drawer/drawer-snap-points.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/drawer/drawer-swipe-handle.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
 src/demos/dropdown-menu/dropdown-menu-basic.marko|TS2322|Type '({ type: string; label: string; value?: undefined; disabled?: undefined; }
 src/demos/dropdown-menu/dropdown-menu-checkboxes.marko|TS2322|Type '({ type: string; label: string; value?: undefined; checked?: undefined; di
 src/demos/dropdown-menu/dropdown-menu-complex.marko|TS2322|Type 'AttrTag<{ readonly type: "label"; readonly label: "File"; readonly [Symbol
@@ -167,11 +134,6 @@ src/demos/scroll-area/scroll-area-rtl.marko|TS2769|No overload matches this call
 src/demos/scroll-area/scroll-area-rtl.marko|TS7006|Parameter '_' implicitly has an 'any' type.
 src/demos/scroll-area/scroll-area-rtl.marko|TS7006|Parameter 'all' implicitly has an 'any' type.
 src/demos/scroll-area/scroll-area-rtl.marko|TS7006|Parameter 'index' implicitly has an 'any' type.
-src/demos/sheet/sheet-controlled.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/sheet/sheet-demo.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/sheet/sheet-no-close-button.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/sheet/sheet-rtl.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/demos/sheet/sheet-side.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ x4
 src/demos/slider/slider-controlled.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
 src/demos/slider/slider-demo.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
 src/demos/slider/slider-disabled.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
@@ -211,8 +173,6 @@ src/tags/blocks/block-viewer.marko|TS2339|Property 'hidden' does not exist on ty
 src/tags/charts/charts-gallery.marko|TS18048|'typeEntry' is possibly 'undefined'. x5
 src/tags/create/base-color-picker.marko|TS7053|Element implicitly has an 'any' type because expression of type '"muted-foregrou
 src/tags/create/chart-color-picker.marko|TS7053|Element implicitly has an 'any' type because expression of type '"muted-foregrou
-src/tags/create/design-system.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/tags/create/open-preset.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
 src/tags/create/open-preset.marko|TS2322|Type 'string' is not assignable to type 'AttrBooleanString | "grammar" | "spelli
 src/tags/create/preview-blocks/preview-page-1/cards/faq.marko|TS2322|Type '(value: string) => Void' is not assignable to type '((string | false | Bod
 src/tags/create/preview-blocks/preview-page-1/cards/notification-settings.marko|TS2322|Type 'boolean | "indeterminate"' is not assignable to type 'boolean | undefined'
@@ -224,13 +184,10 @@ src/tags/create/preview-blocks/preview-page-2/cards/codespaces-card.marko|TS2322
 src/tags/create/preview-blocks/preview-page-2/cards/codespaces-card.marko|TS2322|Type '(tab: string) => Void' is not assignable to type '((string | false | Body<
 src/tags/create/preview-blocks/preview-page-2/cards/live-waveform.marko|TS2532|Object is possibly 'undefined'. x3
 src/tags/create/preview-blocks/preview-page-2/cards/sleep-report.marko|TS2322|Type 'AttrTag<{ readonly dataKey: "deep"; readonly radius: 0; readonly [Symbol.i
-src/tags/create/preview-blocks/preview-page-2/cards/typography-specimen.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
-src/tags/create/preview-blocks/preview-page-2/cards/ui-elements.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
 src/tags/create/preview-blocks/preview-page-2/cards/ui-elements.marko|TS2322|Type 'string' is not assignable to type '(string & string[]) | (false & string[]
 src/tags/create/preview-blocks/preview-page-3/cards/bar-visualizer.marko|TS2353|Object literal may only specify known properties, and 'animationDuration' does n
 src/tags/create/preview-blocks/preview-page-3/cards/brand-marquee.marko|TS2322|Type '(logo: unknown) => Void' is not assignable to type '((string | false | Bod
 src/tags/create/theme-picker.marko|TS7053|Element implicitly has an 'any' type because expression of type '"muted-foregrou
-src/tags/directory/directory-add-dialog.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
 src/tags/directory/directory-add-dialog.marko|TS2322|Type 'string' is not assignable to type 'AttrBooleanString'.
 src/tags/directory/directory-list.marko|TS2322|Type 'true | undefined' is not assignable to type 'AttrBooleanString'. Type 'tru x2
 src/tags/docs/code-block.marko|TS2345|Argument of type 'string | null' is not assignable to parameter of type 'string'
@@ -269,9 +226,7 @@ src/tags/docs/package-manager-switcher.marko|TS7006|Parameter 'storageEvent' imp
 src/tags/home/card-dividend-income.marko|TS2322|Type '(point: number, index: number) => number' is not assignable to type 'strin
 src/tags/home/card-install.marko|TS2322|Type '(value: string) => Void' is not assignable to type '((string | false | Bod
 src/tags/home/card-sidebar-nav.marko|TS7053|Element implicitly has an 'any' type because expression of type 'string' can't b
-src/tags/home/card-ui-elements.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
 src/tags/home/home-beyond.marko|TS2322|Type '(index: number) => Void' is not assignable to type '((string | false | Bod
 src/tags/home/home-beyond.marko|TS2322|Type '(item: unknown) => Void' is not assignable to type '((string | false | Bod
 src/tags/typeset/customizer.marko|TS2349|This expression is not callable. Type 'never' has no call signatures.
 src/tags/typeset/get-code-drawer.marko|TS2322|Type '"right" | "down"' is not assignable to type 'SwipeDirection | undefined'. 
-src/tags/typeset/get-code-drawer.marko|TS2322|Type '{ content: () => Void; [Symbol.iterator]: any; }' is not assignable to typ
