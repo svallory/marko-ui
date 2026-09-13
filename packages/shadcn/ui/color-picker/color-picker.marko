@@ -26,7 +26,7 @@ export type Input = Omit<
   /** Sugar for onFormatChange — receives the plain format. */
   formatChange?: (format: colorPickerMachine.ColorFormat) => void;
   /** Visible label rendered above the control. */
-  label?: Marko.Body;
+  label?: Marko.AttrTag<{ content: Marko.Body }>;
   /** Preset swatch colors rendered under the channel inputs. */
   swatches?: string[];
   /** Hide the eyedropper button even where the browser supports it. */
@@ -113,7 +113,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
       data-slot="color-picker-label"
       class=styles.label
     >
-      <${input.label}/>
+      <${input.label.content}/>
     </label>
   </if>
 

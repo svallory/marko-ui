@@ -28,7 +28,7 @@ export type Input = Omit<
   /** Render-prop trigger: `<@trigger|props|><Button ...props/></@trigger>`. */
   trigger?: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
   /** Header title content. */
-  title?: Marko.Body;
+  title?: Marko.AttrTag<{ content: Marko.Body }>;
   /** Panel body content. */
   content?: Marko.Body;
   /** Extra controls rendered before the stage/close buttons in the header. */
@@ -114,7 +114,7 @@ export type Input = Omit<
               class=styles.title
             >
               <if=input.title>
-                <${input.title}/>
+                <${input.title.content}/>
               </if>
             </h2>
           </div>

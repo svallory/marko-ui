@@ -21,7 +21,7 @@ export interface StepItem {
 export type Input = MachineInput<"div", stepsMachine.Props> & {
   items: StepItem[];
   content?: Marko.Body<[number]>;
-  completedContent?: Marko.Body;
+  completedContent?: Marko.AttrTag<{ content: Marko.Body }>;
   stepChange?: (step: number) => void;
 };
 
@@ -116,7 +116,7 @@ export type Input = MachineInput<"div", stepsMachine.Props> & {
       </div>
     </for>
     <div ...api().getContentProps({ index: items.length }) data-slot="steps-completed-content">
-      <${completedContent}/>
+      <${completedContent?.content}/>
     </div>
 
     <div data-slot="steps-actions" class=styles.actions>

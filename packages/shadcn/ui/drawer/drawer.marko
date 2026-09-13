@@ -18,10 +18,10 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
   triggerValueChange?: (value: string | null) => void;
   /** Render-prop trigger: `<@trigger|props|><Button ...props/></@trigger>`. */
   trigger?: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
-  title?: Marko.Body;
-  description?: Marko.Body;
+  title?: Marko.AttrTag<{ content: Marko.Body }>;
+  description?: Marko.AttrTag<{ content: Marko.Body }>;
   content?: Marko.Body;
-  footer?: Marko.Body;
+  footer?: Marko.AttrTag<{ content: Marko.Body }>;
   /** Hide the vaul-style grab handle (dragging the content body still works). */
   hideGrabber?: boolean;
   /** Whether the content body itself is draggable, or only the grabber. */
@@ -140,7 +140,7 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
                     data-slot="drawer-title"
                     class=styles.title
                   >
-                    <${input.title}/>
+                    <${input.title.content}/>
                   </h2>
                 </if>
                 <if=input.description>
@@ -149,7 +149,7 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
                     data-slot="drawer-description"
                     class=styles.description
                   >
-                    <${input.description}/>
+                    <${input.description.content}/>
                   </p>
                 </if>
               </div>
@@ -166,7 +166,7 @@ export type Input = MachineInput<"div", drawerMachine.Props> & {
                 data-slot="drawer-footer"
                 class=styles.footer
               >
-                <${input.footer}/>
+                <${input.footer.content}/>
               </div>
             </if>
           </div>

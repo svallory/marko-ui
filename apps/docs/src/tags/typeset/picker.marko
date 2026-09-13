@@ -55,7 +55,7 @@ export interface PickerAction {
 
 export interface Input {
   /** Trigger content — renders inside the styled trigger button. */
-  trigger: Marko.Body;
+  trigger: Marko.AttrTag<{ content: Marko.Body }>;
   /** Radio sections; mutually exclusive with `actions` in practice. */
   sections?: PickerSection[];
   /** Plain action items (main-menu). */
@@ -131,7 +131,7 @@ export interface Input {
     className,
   )
 >
-  <${trigger}/>
+  <${trigger.content}/>
 </button>
 <zag-portal>
   <if=api().open>
