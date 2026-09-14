@@ -1,0 +1,129 @@
+# Publishes marko-ui + @marko-ui/shadcn to npm via OIDC trusted publishing
+# (npmjs.com Trusted Publisher configured for svallory/marko-ui + this exact
+# filename — do not rename this file). No npm token/secret: auth is the
+# workflow's OIDC id-token, provenance is attached automatically by npm CLI
+# >= 11.5.1. Manual trigger only — this is a release action, not CI.
+name: Release
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Publish npm packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      # workflow_dispatch can be run from any branch/tag; the narrowed test
+      # gate below assumes main (ci.yml already gated it there), so refuse
+      # anything else rather than silently under-testing a release.
+      - name: Require dispatch from main
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Release must be dispatched from main (got $GITHUB_REF)"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.11
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # OIDC trusted publishing needs npm CLI >= 11.5.1; actions/setup-node
+      # provides the OIDC-aware `npm publish`, bun's publish command doesn't
+      # support it.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Upgrade npm for OIDC trusted publishing
+        run: npm install -g npm@^11.5.1
+
+      - name: Verify npm CLI version
+        run: |
+          version=$(npm --version)
+          echo "npm version: $version"
+          node -e '
+            const [major, minor, patch] = process.argv[1].split(".").map(Number);
+            const ok = major > 11 || (major === 11 && minor > 5) || (major === 11 && minor === 5 && patch >= 1);
+            if (!ok) { console.error("npm >= 11.5.1 required for OIDC trusted publishing"); process.exit(1); }
+          ' "$version"
+
+      - name: Typecheck + workspace gates
+        run: bun run check
+
+      # Only the CLI unit suite — the full docs/behavior suite (Playwright
+      # against a live docs server) is already gated by ci.yml on every push
+      # to main, and releases dispatch from main, so this job re-gates only
+      # the packages being published rather than duplicating that server +
+      # browser setup here.
+      - name: Run CLI tests
+        run: bun run test:cli
+
+      - name: Build CLI package
+        run: bun run --filter marko-ui build
+
+      # A transient `npm view` network failure fails safe: the package is
+      # treated as not-yet-published and the publish step runs, which npm
+      # rejects with a 409 on a real duplicate version rather than silently
+      # skipping a release that should have gone out.
+      - name: Check publish status
+        id: status
+        run: |
+          cli_version=$(node -p "require('./packages/marko-ui/package.json').version")
+          shadcn_version=$(node -p "require('./packages/shadcn/package.json').version")
+
+          cli_published=false
+          shadcn_published=false
+
+          if npm view "marko-ui@${cli_version}" version >/dev/null 2>&1; then
+            cli_published=true
+          fi
+          if npm view "@marko-ui/shadcn@${shadcn_version}" version >/dev/null 2>&1; then
+            shadcn_published=true
+          fi
+
+          {
+            echo "cli_version=$cli_version"
+            echo "shadcn_version=$shadcn_version"
+            echo "cli_published=$cli_published"
+            echo "shadcn_published=$shadcn_published"
+          } >> "$GITHUB_OUTPUT"
+
+          if [ "$cli_published" = "true" ]; then
+            echo "::notice::marko-ui@${cli_version} is already published — skipping"
+          fi
+          if [ "$shadcn_published" = "true" ]; then
+            echo "::notice::@marko-ui/shadcn@${shadcn_version} is already published — skipping"
+          fi
+          if [ "$cli_published" = "true" ] && [ "$shadcn_published" = "true" ]; then
+            echo "::error::Both marko-ui@${cli_version} and @marko-ui/shadcn@${shadcn_version} are already published. Bump the version(s) before releasing."
+            exit 1
+          fi
+
+      - name: Publish marko-ui
+        if: steps.status.outputs.cli_published == 'false'
+        working-directory: packages/marko-ui
+        run: npm publish --access public
+
+      - name: Publish @marko-ui/shadcn
+        if: steps.status.outputs.shadcn_published == 'false'
+        working-directory: packages/shadcn
+        run: npm publish --access public
