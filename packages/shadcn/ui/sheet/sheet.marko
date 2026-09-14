@@ -8,12 +8,10 @@ import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
 import { sheet as styles } from "./classes.ts";
 
-// `Own` is omitted from the native attribute side before intersecting: a
-// declared member must SHADOW the native attribute of the same name, not
-// intersect with it. `title` on a div is `string | false | null`, so a plain
-// `&` turns our attr-tag `title` into an unsatisfiable type and every
-// `<@title>` consumer fails with TS2322. The omit is a no-op for any key we
-// do not declare, so native pass-through is unaffected.
+// `Own` members SHADOW native attributes of the same name (marko-zag's
+// MachineInput 3rd param) instead of intersecting with them: `title` on a
+// div is `string | false | null`, so a plain `&` would turn our attr-tag
+// `title` into an unsatisfiable type.
 export type Own = {
   openChange?: (open: boolean) => void;
   trigger?: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
@@ -27,7 +25,7 @@ export type Own = {
   showCloseButton?: boolean;
 };
 
-export type Input = Omit<MachineInput<"div", dialogMachine.Props>, keyof Own> & Own;
+export type Input = MachineInput<"div", dialogMachine.Props, Own>;
 
 <zag/api=() => dialogMachine from=input
   role="dialog"

@@ -18,12 +18,16 @@ export interface StepItem {
 // additive sugar enabling Marko's two-way bind shorthand
 // (<Steps step:=myState/>); Zag's own `onStepChange` also works and
 // receives the details object.
-export type Input = MachineInput<"div", stepsMachine.Props> & {
+// `content` SHADOWs the native `content` attribute (marko-zag's MachineInput
+// 3rd param) instead of intersecting with it.
+export type Own = {
   items: StepItem[];
   content?: Marko.Body<[number]>;
   completedContent?: Marko.AttrTag<{ content: Marko.Body }>;
   stepChange?: (step: number) => void;
 };
+
+export type Input = MachineInput<"div", stepsMachine.Props, Own>;
 
 <const/{ items, content, completedContent }=input/>
 

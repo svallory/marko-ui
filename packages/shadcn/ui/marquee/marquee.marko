@@ -4,7 +4,9 @@ import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
 import { marquee as styles } from "./classes.ts";
 
-export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
+// `content` SHADOWs the native `content` attribute (marko-zag's MachineInput
+// 3rd param) instead of intersecting with it.
+export type Own<T = unknown> = {
   items?: T[];
   /**
    * Render prop for `items=` entries.
@@ -18,6 +20,8 @@ export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props> & {
   item?: Marko.AttrTag<{ content?: Marko.Body }>;
   pausedChange?: (paused: boolean) => void;
 };
+
+export type Input<T = unknown> = MachineInput<"div", marqueeMachine.Props, Own<T>>;
 
 <zag/api=() => marqueeMachine from=input
   onPauseChange(details: marqueeMachine.PauseStatusDetails) {

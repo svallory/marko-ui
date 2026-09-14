@@ -13,10 +13,9 @@ export interface CarouselSlideAttrs {
 // Dual API: compound attr tags (`<@slide>`) are the primary, Marko-idiomatic
 // form for static/manual slide lists; `items=` + `content` remain as sugar
 // for the data-driven, generic-T case. If both are supplied, attr tags win.
-export type Input<T = unknown> = Omit<
-  MachineInput<"div", carouselMachine.Props>,
-  "slideCount"
-> & {
+// `content` SHADOWs the native `content` attribute (marko-zag's MachineInput
+// 3rd param) instead of intersecting with it.
+export type Own<T = unknown> = {
   items?: T[];
   /**
    * Render prop for `items=` entries.
@@ -31,6 +30,11 @@ export type Input<T = unknown> = Omit<
   slide?: Marko.AttrTag<CarouselSlideAttrs>;
   pageChange?: (page: number) => void;
 };
+
+export type Input<T = unknown> = Omit<
+  MachineInput<"div", carouselMachine.Props, Own<T>>,
+  "slideCount"
+>;
 
 // Normalize whichever source was supplied into one shape so the render path
 // below never branches: a list of `{ content, item }` entries, where `item`
