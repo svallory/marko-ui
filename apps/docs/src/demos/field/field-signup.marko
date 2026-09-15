@@ -10,25 +10,25 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
 // Native ValidityState is the validation baseline: zero dependencies, and it
 // already knows about `required`, `type=email`, `minlength` and `pattern`.
-<const/messageFor=(control) => (control.validity.valid ? undefined : control.validationMessage)/>
+<const/messageFor=(control: HTMLInputElement) => (control.validity.valid ? undefined : control.validationMessage)/>
 
-<let/errors={}/>
+<let/errors=({} as Record<string, string[] | undefined>)/>
 <let/submitted=false/>
 
 // Revalidates a single control on blur.
-<const/validateField=(control) => {
+<const/validateField=(control: HTMLInputElement) => {
   const message = messageFor(control);
   errors = { ...errors, [control.name]: message ? [message] : undefined };
 }/>
 
 // Revalidates every named control in one atomic state update. Doing this field by
 // field would make each update overwrite the previous one's result.
-<const/validateForm=(form) => {
-  const next = {};
+<const/validateForm=(form: HTMLFormElement) => {
+  const next: Record<string, string[] | undefined> = {};
   let valid = true;
 
   for (const control of form.elements) {
-    if (!control.name) continue;
+    if (!(control instanceof HTMLInputElement) || !control.name) continue;
     const message = messageFor(control);
     if (message) {
       next[control.name] = [message];
