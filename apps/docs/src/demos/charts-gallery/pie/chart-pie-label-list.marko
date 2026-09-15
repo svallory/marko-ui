@@ -35,7 +35,7 @@ static const chartConfig = {
     <Chart config=chartConfig class="mx-auto aspect-square max-h-[250px] [&_.recharts-text]:fill-background">
       <PieChart data=chartData config=chartConfig dataKey="visitors" nameKey="browser">
         <@sliceLabel|{ x, y, row }|>
-          <text x=x y=y text-anchor="middle" dominant-baseline="middle" fill="var(--background)" font-size="12">${chartConfig[row.browser]?.label ?? row.browser}</text>
+          <text x=x y=y text-anchor="middle" dominant-baseline="middle" fill="var(--background)" font-size="12">${chartConfig[row.browser as keyof typeof chartConfig]?.label ?? row.browser}</text>
         </@sliceLabel>
       </PieChart>
     </Chart>
