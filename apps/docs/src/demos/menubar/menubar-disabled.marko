@@ -1,12 +1,13 @@
 import Menubar from "@marko-ui/shadcn/ui/menubar/menubar.marko";
 import MenubarMenu from "@marko-ui/shadcn/ui/menubar/menu.marko";
+import type { DropdownMenuItem } from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
 
 static const VIEW_ITEMS = [
   { value: "reload", label: "Reload", shortcut: "⌘R" },
   { value: "force-reload", label: "Force Reload", disabled: true },
   { type: "separator" },
   { value: "fullscreen", label: "Toggle Fullscreen" },
-];
+] satisfies DropdownMenuItem[];
 
 <Menubar>
   <MenubarMenu items=VIEW_ITEMS>
