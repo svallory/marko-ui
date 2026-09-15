@@ -1,6 +1,7 @@
 import Timer from "@marko-ui/shadcn/ui/timer/timer.marko";
+import type * as timerMachine from "@zag-js/timer";
 
-<let/parts=["minutes", "seconds"]/>
+<let/parts=(["minutes", "seconds"] as timerMachine.TimePart[])/>
 
 <div class="flex flex-col items-center gap-3">
   <Timer parts=parts/>
