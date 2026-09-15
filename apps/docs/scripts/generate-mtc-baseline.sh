@@ -7,6 +7,7 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
+bash scripts/ensure-routes-dts.sh
 rm -f tsconfig.tsbuildinfo
 set +e
 raw="$(NODE_OPTIONS="--max-old-space-size=8192" marko-type-check -p ./tsconfig.json -d condensed)"

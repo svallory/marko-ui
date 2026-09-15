@@ -27,7 +27,7 @@
 # NOT part of the key — an unrelated edit that shifts existing errors up or
 # down a few lines must not look like new+removed errors here.
 #
-# Regenerated: 2026-09-15T17:52:41Z
+# Regenerated: 2026-09-15T18:46:20Z
 
 src/_blocks/dashboard-01/documents-table.marko|TS2307|Cannot find module '#lib/utils.ts' or its corresponding type declarations.
 src/_blocks/dashboard-01/documents-table.marko|TS7006|Parameter 'props' implicitly has an 'any' type.
@@ -125,15 +125,9 @@ src/demos/toc/toc-controlled.marko|TS2322|Type 'string[]' is not assignable to t
 src/demos/tour/tour-controlled.marko|TS2322|Type '{ id: string; title: string; description: string; target: string; placemen
 src/demos/tour/tour-demo.marko|TS2322|Type '({ id: string; title: string; description: string; type: string; actions: 
 src/demos/tour/tour-sides.marko|TS2322|Type '{ id: string; title: string; description: string; target: string; placemen
-src/routes/+layout.marko|TS2339|Property 'content' does not exist on type 'Input'.
 src/routes/+layout.marko|TS2882|Cannot find module or type declarations for side-effect import of '../app.css'.
-src/routes/blocks/$category/+page.marko|TS2339|Property 'category' does not exist on type '{}'.
-src/routes/charts/$type/+page.marko|TS2339|Property 'type' does not exist on type '{}'.
 src/routes/compound-spike/+page.marko|TS2322|Type '(tabs: TabsApi) => Void' is not assignable to type '((string | false | Bod
-src/routes/docs/+layout.marko|TS2339|Property 'content' does not exist on type 'Input'. x2
-src/routes/docs/components/$name/+page.marko|TS2339|Property 'name' does not exist on type '{}'. x2
 src/routes/typeset/css/+handler.ts|TS2307|Cannot find module '../../../tags/typeset/typeset.css?raw' or its corresponding 
-src/routes/typeset/preview/$name/+page.marko|TS2339|Property 'name' does not exist on type '{}'.
 src/tags/blocks/block-viewer.marko|TS2339|Property 'hidden' does not exist on type 'Element'.
 src/tags/charts/charts-gallery.marko|TS18048|'typeEntry' is possibly 'undefined'. x5
 src/tags/create/base-color-picker.marko|TS7053|Element implicitly has an 'any' type because expression of type '"muted-foregrou

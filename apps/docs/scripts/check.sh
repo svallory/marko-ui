@@ -43,6 +43,7 @@ done
 owned=1
 echo $$ > "$pid_file"
 
+bash scripts/ensure-routes-dts.sh
 rm -f tsconfig.tsbuildinfo
 set +e
 raw="$(NODE_OPTIONS="--max-old-space-size=8192" marko-type-check -p ./tsconfig.json -d condensed)"
