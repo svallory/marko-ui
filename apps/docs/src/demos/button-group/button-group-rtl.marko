@@ -1,6 +1,7 @@
 import ButtonGroup from "@marko-ui/shadcn/ui/button-group/button-group.marko";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
 import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import type { DropdownMenuItem } from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
 import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
 
 // Two technically-forced omissions (same pair as dropdown-menu-rtl.marko,
@@ -32,7 +33,7 @@ import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
   },
   { type: "separator" },
   { value: "trash", label: "سلة المهملات", variant: "destructive" },
-]/>
+] satisfies DropdownMenuItem[]/>
 
 <div dir="rtl" class="flex justify-center">
   <ButtonGroup>

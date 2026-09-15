@@ -35,7 +35,7 @@ import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
               size="icon-xs"
               data-active=String(voiceEnabled)
               class="data-[active=true]:bg-orange-100 data-[active=true]:text-orange-700 dark:data-[active=true]:bg-orange-800 dark:data-[active=true]:text-orange-100"
-              aria-pressed=voiceEnabled
+              aria-pressed=(voiceEnabled ? "true" : "false")
               aria-label="Voice Mode"
             >
               <Icon name="AudioLinesIcon"/>
