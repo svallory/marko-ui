@@ -45,8 +45,8 @@ export interface NormalizedPanel {
 // Dual API: compound attr tags (`<@trigger>`/`<@panel>`) are the primary,
 // Marko-idiomatic form; `items=` + `content` remain as sugar for the
 // data-driven case. If both are supplied, attr tags win.
-// `content` SHADOWs the native `content` attribute (marko-zag's MachineInput
-// 3rd param) instead of intersecting with it.
+// `content` SHADOWs the native `content` attribute (folded into
+// MachineInput's Props argument) instead of intersecting with it.
 export type Own = {
   items?: TabItem[];
   content?: Marko.Body<[string]>;
@@ -55,7 +55,7 @@ export type Own = {
   valueChange?: (value: string) => void;
 };
 
-export type Input = MachineInput<"div", tabsMachine.Props, Own> & TabsListVariants;
+export type Input = MachineInput<"div", tabsMachine.Props & Own> & TabsListVariants;
 
 <const/{ items, content }=input/>
 

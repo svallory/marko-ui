@@ -27,10 +27,9 @@
 # NOT part of the key — an unrelated edit that shifts existing errors up or
 # down a few lines must not look like new+removed errors here.
 #
-# Regenerated: 2026-09-14T03:48:26Z
+# Regenerated: 2026-09-15T17:52:41Z
 
 src/_blocks/dashboard-01/documents-table.marko|TS2307|Cannot find module '#lib/utils.ts' or its corresponding type declarations.
-src/_blocks/dashboard-01/documents-table.marko|TS2322|Type 'boolean | "indeterminate"' is not assignable to type 'boolean | undefined'
 src/_blocks/dashboard-01/documents-table.marko|TS7006|Parameter 'props' implicitly has an 'any' type.
 src/_blocks/dashboard-01/nav-documents.marko|TS2307|Cannot find module '#lib/utils.ts' or its corresponding type declarations.
 src/_blocks/dashboard-01/nav-main.marko|TS2307|Cannot find module '#lib/utils.ts' or its corresponding type declarations.
@@ -52,7 +51,6 @@ src/demos/charts-gallery/line/chart-line-label-custom.marko|TS7053|Element impli
 src/demos/charts-gallery/pie/chart-pie-interactive.marko|TS7053|Element implicitly has an 'any' type because expression of type 'string' can't b
 src/demos/charts-gallery/pie/chart-pie-label-list.marko|TS2538|Type 'unknown' cannot be used as an index type.
 src/demos/checkbox/checkbox-controlled.marko|TS2322|Type 'string | boolean' is not assignable to type 'boolean'. Type 'string' is no
-src/demos/checkbox/checkbox-indeterminate.marko|TS2322|Type 'string' is not assignable to type 'boolean | undefined'.
 src/demos/context-menu/context-menu-checkboxes.marko|TS2322|Type '{ type: string; value: string; label: string; checked: boolean; }[]' is no
 src/demos/context-menu/context-menu-controlled.marko|TS2322|Type '({ value: string; label: string; type?: undefined; danger?: undefined; } |
 src/demos/context-menu/context-menu-demo.marko|TS2322|Type '({ value: string; label: string; shortcut: string; disabled?: undefined; t
@@ -86,7 +84,6 @@ src/demos/field/field-signup.marko|TS2339|Property 'username' does not exist on 
 src/demos/field/field-signup.marko|TS7006|Parameter 'control' implicitly has an 'any' type. x2
 src/demos/field/field-signup.marko|TS7006|Parameter 'form' implicitly has an 'any' type.
 src/demos/field/field-signup.marko|TS7053|Element implicitly has an 'any' type because expression of type 'any' can't be u
-src/demos/field/field-slider.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
 src/demos/item/item-dropdown.marko|TS7006|Parameter 'triggerProps' implicitly has an 'any' type.
 src/demos/menubar/menubar-controlled.marko|TS2322|Type '({ value: string; label: string; shortcut: string; type?: undefined; } | { x2
 src/demos/menubar/menubar-danger.marko|TS2322|Type '({ type: string; label: string; value?: undefined; danger?: undefined; } |
@@ -106,7 +103,6 @@ src/demos/message-scroller/message-scroller-load-history.marko|TS2322|Type '(val
 src/demos/message-scroller/message-scroller-opening-position.marko|TS2322|Type '(value: number) => number' is not assignable to type 'string | ((item: num
 src/demos/message-scroller/message-scroller-previous-context.marko|TS2322|Type '(value: number) => number' is not assignable to type 'string | ((item: num
 src/demos/message-scroller/message-scroller-previous-context.marko|TS2322|Type 'boolean' is not assignable to type 'AttrBooleanString'.
-src/demos/message-scroller/message-scroller-previous-context.marko|TS2322|Type 'string' is not assignable to type '(string & string[]) | (false & string[]
 src/demos/message-scroller/message-scroller-streaming.marko|TS2322|Type 'boolean' is not assignable to type 'AttrBooleanString'.
 src/demos/navigation-menu/navigation-menu-panel.marko|TS2322|Type '(panel: NavigationMenuContentContext) => Void' is not assignable to type '
 src/demos/pagination/pagination-controlled.marko|TS2339|Property 'page' does not exist on type 'number'.
@@ -119,14 +115,6 @@ src/demos/scroll-area/scroll-area-rtl.marko|TS2769|No overload matches this call
 src/demos/scroll-area/scroll-area-rtl.marko|TS7006|Parameter '_' implicitly has an 'any' type.
 src/demos/scroll-area/scroll-area-rtl.marko|TS7006|Parameter 'all' implicitly has an 'any' type.
 src/demos/scroll-area/scroll-area-rtl.marko|TS7006|Parameter 'index' implicitly has an 'any' type.
-src/demos/slider/slider-controlled.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
-src/demos/slider/slider-demo.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
-src/demos/slider/slider-disabled.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
-src/demos/slider/slider-multiple.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
-src/demos/slider/slider-range.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
-src/demos/slider/slider-rtl.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
-src/demos/slider/slider-step.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
-src/demos/slider/slider-vertical.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string x2
 src/demos/steps/steps-controlled.marko|TS2532|Object is possibly 'undefined'.
 src/demos/steps/steps-horizontal.marko|TS2532|Object is possibly 'undefined'.
 src/demos/steps/steps-linear.marko|TS2532|Object is possibly 'undefined'.
@@ -151,14 +139,12 @@ src/tags/charts/charts-gallery.marko|TS18048|'typeEntry' is possibly 'undefined'
 src/tags/create/base-color-picker.marko|TS7053|Element implicitly has an 'any' type because expression of type '"muted-foregrou
 src/tags/create/chart-color-picker.marko|TS7053|Element implicitly has an 'any' type because expression of type '"muted-foregrou
 src/tags/create/open-preset.marko|TS2322|Type 'string' is not assignable to type 'AttrBooleanString | "grammar" | "spelli
-src/tags/create/preview-blocks/preview-page-1/cards/notification-settings.marko|TS2322|Type 'boolean | "indeterminate"' is not assignable to type 'boolean | undefined'
 src/tags/create/preview-blocks/preview-page-1/cards/payout-threshold.marko|TS2532|Object is possibly 'undefined'.
 src/tags/create/preview-blocks/preview-page-1/cards/receiving-method.marko|TS2322|Type 'string' is not assignable to type 'AttrTriState'. x2
 src/tags/create/preview-blocks/preview-page-1/cards/roller-shades.marko|TS2532|Object is possibly 'undefined'. x2
 src/tags/create/preview-blocks/preview-page-2/cards/bar-chart-card.marko|TS2322|Type 'AttrTag<{ readonly dataKey: "desktop"; readonly radius: 0 | number[]; read
 src/tags/create/preview-blocks/preview-page-2/cards/live-waveform.marko|TS2532|Object is possibly 'undefined'. x3
 src/tags/create/preview-blocks/preview-page-2/cards/sleep-report.marko|TS2322|Type 'AttrTag<{ readonly dataKey: "deep"; readonly radius: 0; readonly [Symbol.i
-src/tags/create/preview-blocks/preview-page-2/cards/ui-elements.marko|TS2322|Type 'string' is not assignable to type '(string & string[]) | (false & string[]
 src/tags/create/preview-blocks/preview-page-3/cards/bar-visualizer.marko|TS2353|Object literal may only specify known properties, and 'animationDuration' does n
 src/tags/create/theme-picker.marko|TS7053|Element implicitly has an 'any' type because expression of type '"muted-foregrou
 src/tags/directory/directory-add-dialog.marko|TS2322|Type 'string' is not assignable to type 'AttrBooleanString'.

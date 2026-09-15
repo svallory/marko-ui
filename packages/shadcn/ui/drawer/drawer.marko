@@ -9,10 +9,10 @@ import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
 import { drawer as styles } from "./classes.ts";
 
-// `Own` members SHADOW native attributes of the same name (marko-zag's
-// MachineInput 3rd param) instead of intersecting with them: `title` on a
-// div is `string | false | null`, so a plain `&` would turn our attr-tag
-// `title` into an unsatisfiable type.
+// `Own` members SHADOW native attributes of the same name (folded into
+// MachineInput's Props argument) instead of intersecting with them: `title`
+// on a div is `string | false | null`, so a plain `&` would turn our
+// attr-tag `title` into an unsatisfiable type.
 export type Own = {
   /** Sugar for onOpenChange — receives the plain boolean, enables `open:=state`. */
   openChange?: (open: boolean) => void;
@@ -36,7 +36,7 @@ export type Own = {
   hideCloseTrigger?: boolean;
 };
 
-export type Input = MachineInput<"div", drawerMachine.Props, Own>;
+export type Input = MachineInput<"div", drawerMachine.Props & Own>;
 
 <zag/api=() => drawerMachine from=input
   onTriggerValueChange(details: drawerMachine.TriggerValueChangeDetails) {

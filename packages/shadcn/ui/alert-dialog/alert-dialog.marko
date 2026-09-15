@@ -13,10 +13,10 @@ import { alertDialog as styles } from "./classes.ts";
 // additive sugar enabling Marko's two-way bind shorthand
 // (<AlertDialog open:=myState/>); Zag's own `onOpenChange` also works and
 // receives the details object.
-// `Own` members SHADOW native attributes of the same name (marko-zag's
-// MachineInput 3rd param) instead of intersecting with them: `title` on a
-// div is `string | false | null`, so a plain `&` would turn our attr-tag
-// `title` into an unsatisfiable type.
+// `Own` members SHADOW native attributes of the same name (folded into
+// MachineInput's Props argument) instead of intersecting with them: `title`
+// on a div is `string | false | null`, so a plain `&` would turn our
+// attr-tag `title` into an unsatisfiable type.
 export type Own = {
   openChange?: (open: boolean) => void;
   trigger?: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
@@ -32,7 +32,7 @@ export type Own = {
   actionVariant?: ButtonVariants["variant"];
 };
 
-export type Input = MachineInput<"div", dialogMachine.Props, Own>;
+export type Input = MachineInput<"div", dialogMachine.Props & Own>;
 
 // <zag> wires the machine in one tag and returns `api` as a GETTER —
 // call it at every use site. Getters are the serializable currency of

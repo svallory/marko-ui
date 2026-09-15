@@ -13,8 +13,8 @@ export interface CarouselSlideAttrs {
 // Dual API: compound attr tags (`<@slide>`) are the primary, Marko-idiomatic
 // form for static/manual slide lists; `items=` + `content` remain as sugar
 // for the data-driven, generic-T case. If both are supplied, attr tags win.
-// `content` SHADOWs the native `content` attribute (marko-zag's MachineInput
-// 3rd param) instead of intersecting with it.
+// `content` SHADOWs the native `content` attribute (folded into
+// MachineInput's Props argument) instead of intersecting with it.
 export type Own<T = unknown> = {
   items?: T[];
   /**
@@ -32,7 +32,7 @@ export type Own<T = unknown> = {
 };
 
 export type Input<T = unknown> = Omit<
-  MachineInput<"div", carouselMachine.Props, Own<T>>,
+  MachineInput<"div", carouselMachine.Props & Own<T>>,
   "slideCount"
 >;
 
