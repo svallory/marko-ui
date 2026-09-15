@@ -1,5 +1,6 @@
 import Menubar from "@marko-ui/shadcn/ui/menubar/menubar.marko";
 import MenubarMenu from "@marko-ui/shadcn/ui/menubar/menu.marko";
+import type { DropdownMenuItem } from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
 
 // Static RTL port: upstream's menubar-rtl demo drives a live docs-site
 // language switcher (useTranslation across en/ar/he) that has no
@@ -39,7 +40,7 @@ import MenubarMenu from "@marko-ui/shadcn/ui/menubar/menu.marko";
   },
   { type: "separator" },
   { value: "print", label: "طباعة...", shortcut: "⌘P" },
-]/>
+] satisfies DropdownMenuItem[]/>
 
 <const/editItems=[
   { value: "undo", label: "تراجع", shortcut: "⌘Z" },
@@ -59,7 +60,7 @@ import MenubarMenu from "@marko-ui/shadcn/ui/menubar/menu.marko";
   { value: "cut", label: "قص" },
   { value: "copy", label: "نسخ" },
   { value: "paste", label: "لصق" },
-]/>
+] satisfies DropdownMenuItem[]/>
 
 <const/viewItems=[
   { type: "checkbox", value: "bookmarks-bar", label: "شريط الإشارات المرجعية", checked: showBookmarksBar },
@@ -71,7 +72,7 @@ import MenubarMenu from "@marko-ui/shadcn/ui/menubar/menu.marko";
   { value: "fullscreen", label: "تبديل وضع ملء الشاشة", inset: true },
   { type: "separator" },
   { value: "hide-sidebar", label: "إخفاء الشريط الجانبي", inset: true },
-]/>
+] satisfies DropdownMenuItem[]/>
 
 <const/profileItems=[
   { type: "radio", value: "andy", label: "Andy", radioGroup: "profile", checked: profile === "andy" },
@@ -81,7 +82,7 @@ import MenubarMenu from "@marko-ui/shadcn/ui/menubar/menu.marko";
   { value: "edit-profile", label: "تعديل...", inset: true },
   { type: "separator" },
   { value: "add-profile", label: "إضافة ملف شخصي...", inset: true },
-]/>
+] satisfies DropdownMenuItem[]/>
 
 <div dir="rtl">
   <Menubar class="w-72">
