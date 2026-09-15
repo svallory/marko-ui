@@ -7,3 +7,8 @@ declare module "*?raw" {
   const content: string;
   export default content;
 }
+
+// Plain CSS side-effect imports (`import "./app.css"`) - Vite handles these
+// at build time, but marko-type-check has no ambient declaration for them
+// without this shim.
+declare module "*.css";
