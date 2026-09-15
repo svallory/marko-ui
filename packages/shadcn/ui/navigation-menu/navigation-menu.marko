@@ -79,7 +79,7 @@ export interface NavigationMenuMenuAttrs {
 
 export type NavigationMenuEntryAttrs = NavigationMenuLinkAttrs | NavigationMenuMenuAttrs;
 
-export type Input = MachineInput<"nav", navigationMenu.Props> & {
+export type Own = {
   items?: NavigationMenuItem[];
   /** Alignment of the shared viewport relative to the active trigger. */
   align?: "start" | "center" | "end";
@@ -101,6 +101,8 @@ export type Input = MachineInput<"nav", navigationMenu.Props> & {
    */
   entry?: Marko.AttrTag<NavigationMenuEntryAttrs>;
 };
+
+export type Input = MachineInput<"nav", navigationMenu.Props & Own>;
 
 <zag/api=() => navigationMenu from=input/>
 
