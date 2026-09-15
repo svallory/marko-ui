@@ -83,7 +83,7 @@ static const deliveryTimes = [
 ];
 
 <let/open=false>
-<let/deliveryTime="asap">
+<let/deliveryTime=("asap" as string | null)>
 <let/isMobile=false>
 
 <lifecycle
@@ -107,7 +107,7 @@ static const deliveryTimes = [
 <Drawer
   open:=open
   hideGrabber=!isMobile
-  swipeDirection=(isMobile ? "down" : "right")
+  swipeDirection=(isMobile ? "down" : "end")
 >
   <@trigger|props|>
     <Button ...props variant="secondary">Open Drawer</Button>
