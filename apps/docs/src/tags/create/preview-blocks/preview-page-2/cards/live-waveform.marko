@@ -216,7 +216,7 @@ static function startAnimationLoop(
             const dataIndex = Math.floor((i / halfCount) * relevantData.length);
             const value = Math.min(
               1,
-              (relevantData[dataIndex] / 255) * OPTS.sensitivity
+              ((relevantData[dataIndex] ?? 0) / 255) * OPTS.sensitivity
             );
             newBars.push(Math.max(0.05, value));
           }
@@ -224,7 +224,7 @@ static function startAnimationLoop(
             const dataIndex = Math.floor((i / halfCount) * relevantData.length);
             const value = Math.min(
               1,
-              (relevantData[dataIndex] / 255) * OPTS.sensitivity
+              ((relevantData[dataIndex] ?? 0) / 255) * OPTS.sensitivity
             );
             newBars.push(Math.max(0.05, value));
           }
@@ -236,7 +236,7 @@ static function startAnimationLoop(
           const endFreq = Math.floor(dataArray.length * 0.4);
           const relevantData = dataArray.slice(startFreq, endFreq);
           for (let i = 0; i < relevantData.length; i++) {
-            sum += relevantData[i];
+            sum += relevantData[i] ?? 0;
           }
           const average =
             (sum / relevantData.length / 255) * OPTS.sensitivity;
