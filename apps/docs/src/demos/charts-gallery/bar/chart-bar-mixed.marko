@@ -40,7 +40,7 @@ static const chartConfig = {
         xKey="browser"
         layout="horizontal"
         yAxis
-        categoryTickFormatter=(value) => chartConfig[value]?.label ?? value
+        categoryTickFormatter=(value) => chartConfig[value as keyof typeof chartConfig]?.label ?? value
         hideLabel
         cursor=false
         margin={ left: 0 }

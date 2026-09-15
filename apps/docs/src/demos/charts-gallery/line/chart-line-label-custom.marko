@@ -48,7 +48,7 @@ static const chartConfig = {
           type="natural"
           strokeWidth=2
           dot
-          labels=[{ dataKey: "browser", formatter: (value) => chartConfig[value]?.label ?? value }]
+          labels=[{ dataKey: "browser", formatter: (value) => chartConfig[value as keyof typeof chartConfig]?.label ?? value }]
         />
       </LineChart>
     </Chart>

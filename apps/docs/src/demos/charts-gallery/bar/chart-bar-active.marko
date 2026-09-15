@@ -40,7 +40,7 @@ static const ACTIVE_INDEX = 2;
         data=chartData
         config=chartConfig
         xKey="browser"
-        xTickFormatter=(value) => chartConfig[value]?.label ?? value
+        xTickFormatter=(value) => chartConfig[value as keyof typeof chartConfig]?.label ?? value
         tickMargin=10
         hideLabel
         cursor=false
