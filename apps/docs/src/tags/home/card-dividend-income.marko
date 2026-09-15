@@ -63,7 +63,7 @@ static const HOLDINGS = [
             role="img"
             aria-label=`${holding.name} quarterly dividends`
           >
-            <for|point, index| of=holding.data by=(point, index) => index>
+            <for|point, index| of=holding.data by=(point, index) => String(index)>
               <div
                 class="bg-chart-2 min-h-1 flex-1 rounded-t-sm"
                 style={ height: `${(point / peak) * 100}%` }
