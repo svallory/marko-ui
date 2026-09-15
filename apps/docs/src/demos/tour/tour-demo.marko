@@ -1,4 +1,5 @@
 import Tour from "@marko-ui/shadcn/ui/tour/tour.marko";
+import type { TourStep } from "@marko-ui/shadcn/ui/tour/tour.marko";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
 static const STEPS = [
@@ -49,7 +50,7 @@ static const STEPS = [
       { label: "Finish", action: "dismiss" },
     ],
   },
-];
+] satisfies TourStep[];
 
 <div class="flex w-full flex-col gap-4">
   <div class="flex items-center gap-3">
