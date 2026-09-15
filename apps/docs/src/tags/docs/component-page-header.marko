@@ -139,19 +139,20 @@ export interface Input {
   </if>
 </div>
 
-<let/onDocumentClick=null/>
-<let/copyRevertTimer=null/>
+<let/onDocumentClick=(null as ((documentEvent: MouseEvent) => void) | null)/>
+<let/copyRevertTimer=(null as ReturnType<typeof setTimeout> | null)/>
 
 <lifecycle
   onMount() {
     const root = headerEl();
     if (!root) return;
 
-    const menu = root.querySelector("[data-copy-menu]");
-    const trigger = root.querySelector("[data-copy-menu-trigger]");
-    const copyButton = root.querySelector("[data-copy-page]");
-    const copyIcon = root.querySelector("[data-copy-icon]");
-    const copyLabel = root.querySelector("[data-copy-label]");
+    const menu = root.querySelector<HTMLElement>("[data-copy-menu]");
+    const trigger = root.querySelector<HTMLElement>("[data-copy-menu-trigger]");
+    const copyButton = root.querySelector<HTMLElement>("[data-copy-page]");
+    const copyIcon = root.querySelector<HTMLElement>("[data-copy-icon]");
+    const copyLabel = root.querySelector<HTMLElement>("[data-copy-label]");
+    if (!menu || !trigger || !copyButton || !copyIcon || !copyLabel) return;
 
     const COPY_ICON_SVG = copyIcon.innerHTML;
     const CHECK_ICON_SVG =
@@ -160,11 +161,11 @@ export interface Input {
     // The .md endpoint is same-origin, so the raw markdown the AI links and
     // the clipboard both use comes from exactly one source of truth.
     const markdownUrl = new URL(
-      copyButton.getAttribute("data-markdown-href"),
+      copyButton.getAttribute("data-markdown-href") ?? "",
       window.location.href,
     ).href;
 
-    root.querySelectorAll("[data-ai-link]").forEach((link) => {
+    root.querySelectorAll<HTMLAnchorElement>("[data-ai-link]").forEach((link) => {
       const prompt =
         `I'm looking at this marko-ui documentation: ${markdownUrl}. ` +
         `Help me understand how to use this component.`;
@@ -201,10 +202,11 @@ export interface Input {
       }, 1500);
     });
 
-    onDocumentClick = (documentEvent) => {
-      if (!menu.hidden && !menu.contains(documentEvent.target)) closeMenu();
+    const handleDocumentClick = (documentEvent: MouseEvent) => {
+      if (!menu.hidden && !menu.contains(documentEvent.target as Node)) closeMenu();
     };
-    document.addEventListener("click", onDocumentClick);
+    onDocumentClick = handleDocumentClick;
+    document.addEventListener("click", handleDocumentClick);
     root.addEventListener("keydown", (keyEvent) => {
       if (keyEvent.key === "Escape") closeMenu();
     });
