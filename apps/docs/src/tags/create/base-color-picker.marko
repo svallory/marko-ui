@@ -4,7 +4,7 @@
 //
 // Deviation: LockButton restored in phase 3 (locked/onToggleLock attrs from the design-system container)
 // (no phase-2 lock/global-state container to bind to yet).
-import { BASE_COLORS, type BaseColorName } from "./lib/registry-config.ts";
+import { BASE_COLORS, type BaseColorName, type RegistryItemCssVars } from "./lib/registry-config.ts";
 import Picker from "./picker.marko";
 import LockButton from "./lock-button.marko";
 
@@ -18,7 +18,7 @@ export interface Input {
 }
 
 <const/currentBaseColor=BASE_COLORS.find((baseColor) => baseColor.name === input.value)/>
-<const/swatchColor=currentBaseColor?.cssVars?.dark?.["muted-foreground"]/>
+<const/swatchColor=(currentBaseColor?.cssVars as RegistryItemCssVars | undefined)?.dark?.["muted-foreground"]/>
 
 <div class="group/picker relative">
   <Picker
