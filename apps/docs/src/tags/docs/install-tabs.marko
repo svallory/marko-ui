@@ -102,10 +102,10 @@ export interface Input {
     if (!root) return;
 
     const STORAGE_KEY = "marko-ui.installationType";
-    const tabs = Array.from(root.querySelectorAll("[data-install-tab]"));
-    const panels = Array.from(root.querySelectorAll("[data-install-panel]"));
+    const tabs = Array.from(root.querySelectorAll<HTMLElement>("[data-install-tab]"));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>("[data-install-panel]"));
 
-    const select = (method) => {
+    const select = (method: string) => {
       if (!tabs.some((tab) => tab.getAttribute("data-method") === method)) return;
       tabs.forEach((tab) => {
         tab.setAttribute("aria-selected", String(tab.getAttribute("data-method") === method));
@@ -118,6 +118,7 @@ export interface Input {
     tabs.forEach((tab) => {
       tab.addEventListener("click", () => {
         const method = tab.getAttribute("data-method");
+        if (!method) return;
         select(method);
         try {
           localStorage.setItem(STORAGE_KEY, method);
