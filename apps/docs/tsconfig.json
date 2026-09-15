@@ -1,9 +1,15 @@
 {
   "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "#lib/*": ["../../packages/shadcn/lib/*"]
+    }
+  },
   "include": [
     "src/**/*.ts",
     "src/**/*.marko",
     ".marko-run/routes.d.ts",
-    "../../packages/shadcn/ui/marko-attributes.d.ts"
+    "../../packages/shadcn/ui/marko-attributes.d.ts",
+    "../../packages/shadcn/lib/**/*.ts"
   ]
 }
