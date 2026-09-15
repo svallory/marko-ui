@@ -62,7 +62,7 @@ static const PRESETS = [
 <let/busy=false/>
 <let/enteringId=(null as string | null)/>
 <const/nextMessage=SCRIPT[messages.length]/>
-<const/preset=(PRESETS.find((entry) => entry.value === presetId) ?? PRESETS[0])/>
+<const/preset=(PRESETS.find((entry) => entry.value === presetId) ?? PRESETS[0]!)/>
 
 <const/send=() => {
   if (!nextMessage || busy) return;
@@ -115,7 +115,7 @@ static const PRESETS = [
         <MessageScrollerProvider|controller|>
           <MessageScroller controller=controller>
             <MessageScrollerViewport controller=controller>
-              <MessageScrollerContent controller=controller aria-busy=busy class="p-4">
+              <MessageScrollerContent controller=controller aria-busy=(busy ? "true" : "false") class="p-4">
                 <for|message| of=messages by=(message) => message.id>
                   <MessageScrollerItem
                     controller=controller
