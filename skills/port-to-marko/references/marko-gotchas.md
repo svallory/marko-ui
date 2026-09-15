@@ -41,6 +41,7 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
 
 Rules:
 
+0. `MachineInput<Tag, Props>` shadows automatically: any member of `Props` that shares a name with a native attribute (`title`, `content`, `value`, `aria-label`…) wins over the native side, no extra step needed. If a component-owned member you're adding ALSO collides with a native attribute name, don't append it outside `MachineInput<...>` (`MachineInput<Tag, Props> & { title?: ... }` is unsafe for a colliding name) — fold it into the `Props` argument instead: `MachineInput<Tag, Props & { title?: Marko.AttrTag<{ content: Marko.Body }> }>`. A member that isn't a native attribute name (like `checkedChange` above) has nothing to collide with and can stay appended outside as usual.
 1. The `<zag>` value MUST be a module getter closure written in the template (`() => switchMachine`) — passing a raw module through input throws `Unable to serialize "input"`.
 2. `api` is a getter you CALL at use sites: `api().getRootProps()`.
 3. Never put `api()`, the service, or a machine in `<let>`/`<const>` reactive state, and never pass machines through tag input. Machines are imported at module scope in the file that uses them.

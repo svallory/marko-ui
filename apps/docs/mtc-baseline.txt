@@ -27,10 +27,9 @@
 # NOT part of the key — an unrelated edit that shifts existing errors up or
 # down a few lines must not look like new+removed errors here.
 #
-# Regenerated: 2026-09-13T07:46:20Z
+# Regenerated: 2026-09-15T17:52:41Z
 
 src/_blocks/dashboard-01/documents-table.marko|TS2307|Cannot find module '#lib/utils.ts' or its corresponding type declarations.
-src/_blocks/dashboard-01/documents-table.marko|TS2322|Type 'boolean | "indeterminate"' is not assignable to type 'boolean | undefined'
 src/_blocks/dashboard-01/documents-table.marko|TS7006|Parameter 'props' implicitly has an 'any' type.
 src/_blocks/dashboard-01/nav-documents.marko|TS2307|Cannot find module '#lib/utils.ts' or its corresponding type declarations.
 src/_blocks/dashboard-01/nav-main.marko|TS2307|Cannot find module '#lib/utils.ts' or its corresponding type declarations.
@@ -41,16 +40,7 @@ src/demos/button-group/button-group-dropdown.marko|TS2322|Type '({ value: string
 src/demos/button-group/button-group-input-group.marko|TS2322|Type 'boolean' is not assignable to type 'AttrTriState'.
 src/demos/button-group/button-group-rtl.marko|TS2322|Type '({ value: string; label: string; type?: undefined; subEntries?: undefined;
 src/demos/calendar/calendar-controlled.marko|TS2532|Object is possibly 'undefined'. x3
-src/demos/carousel/carousel-api.marko|TS2322|Type '(item: unknown) => Void' is not assignable to type '((string | false | Bod
-src/demos/carousel/carousel-controlled.marko|TS2322|Type '(item: unknown) => Void' is not assignable to type '((string | false | Bod
-src/demos/carousel/carousel-demo.marko|TS2322|Type '(item: unknown) => Void' is not assignable to type '((string | false | Bod
-src/demos/carousel/carousel-loop.marko|TS2322|Type '(item: unknown) => Void' is not assignable to type '((string | false | Bod
-src/demos/carousel/carousel-orientation.marko|TS2322|Type '(item: unknown) => Void' is not assignable to type '((string | false | Bod
-src/demos/carousel/carousel-plugin.marko|TS2322|Type '(item: unknown) => Void' is not assignable to type '((string | false | Bod
-src/demos/carousel/carousel-rtl.marko|TS2322|Type '(item: unknown) => Void' is not assignable to type '((string | false | Bod
 src/demos/carousel/carousel-rtl.marko|TS2345|Argument of type 'unknown' is not assignable to parameter of type 'number'.
-src/demos/carousel/carousel-size.marko|TS2322|Type '(item: unknown) => Void' is not assignable to type '((string | false | Bod
-src/demos/carousel/carousel-spacing.marko|TS2322|Type '(item: unknown) => Void' is not assignable to type '((string | false | Bod
 src/demos/chart/chart-demo.marko|TS7053|Element implicitly has an 'any' type because expression of type 'string' can't b x2
 src/demos/charts-gallery/bar/chart-bar-active.marko|TS7053|Element implicitly has an 'any' type because expression of type 'string' can't b
 src/demos/charts-gallery/bar/chart-bar-interactive.marko|TS7053|Element implicitly has an 'any' type because expression of type 'string' can't b x2
@@ -61,7 +51,6 @@ src/demos/charts-gallery/line/chart-line-label-custom.marko|TS7053|Element impli
 src/demos/charts-gallery/pie/chart-pie-interactive.marko|TS7053|Element implicitly has an 'any' type because expression of type 'string' can't b
 src/demos/charts-gallery/pie/chart-pie-label-list.marko|TS2538|Type 'unknown' cannot be used as an index type.
 src/demos/checkbox/checkbox-controlled.marko|TS2322|Type 'string | boolean' is not assignable to type 'boolean'. Type 'string' is no
-src/demos/checkbox/checkbox-indeterminate.marko|TS2322|Type 'string' is not assignable to type 'boolean | undefined'.
 src/demos/context-menu/context-menu-checkboxes.marko|TS2322|Type '{ type: string; value: string; label: string; checked: boolean; }[]' is no
 src/demos/context-menu/context-menu-controlled.marko|TS2322|Type '({ value: string; label: string; type?: undefined; danger?: undefined; } |
 src/demos/context-menu/context-menu-demo.marko|TS2322|Type '({ value: string; label: string; shortcut: string; disabled?: undefined; t
@@ -95,14 +84,7 @@ src/demos/field/field-signup.marko|TS2339|Property 'username' does not exist on 
 src/demos/field/field-signup.marko|TS7006|Parameter 'control' implicitly has an 'any' type. x2
 src/demos/field/field-signup.marko|TS7006|Parameter 'form' implicitly has an 'any' type.
 src/demos/field/field-signup.marko|TS7053|Element implicitly has an 'any' type because expression of type 'any' can't be u
-src/demos/field/field-slider.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
 src/demos/item/item-dropdown.marko|TS7006|Parameter 'triggerProps' implicitly has an 'any' type.
-src/demos/marquee/marquee-auto-fill.marko|TS2322|Type '(logo: unknown) => Void' is not assignable to type '((string | false | Bod
-src/demos/marquee/marquee-controlled.marko|TS2322|Type '(logo: unknown) => Void' is not assignable to type '((string | false | Bod
-src/demos/marquee/marquee-demo.marko|TS2322|Type '(logo: unknown) => Void' is not assignable to type '((string | false | Bod
-src/demos/marquee/marquee-reverse.marko|TS2322|Type '(logo: unknown) => Void' is not assignable to type '((string | false | Bod
-src/demos/marquee/marquee-speed.marko|TS2322|Type '(logo: unknown) => Void' is not assignable to type '((string | false | Bod
-src/demos/marquee/marquee-vertical.marko|TS2322|Type '(logo: unknown) => Void' is not assignable to type '((string | false | Bod
 src/demos/menubar/menubar-controlled.marko|TS2322|Type '({ value: string; label: string; shortcut: string; type?: undefined; } | { x2
 src/demos/menubar/menubar-danger.marko|TS2322|Type '({ type: string; label: string; value?: undefined; danger?: undefined; } |
 src/demos/menubar/menubar-demo.marko|TS2322|Type '({ value: string; label: string; shortcut: string; disabled?: undefined; t
@@ -121,7 +103,6 @@ src/demos/message-scroller/message-scroller-load-history.marko|TS2322|Type '(val
 src/demos/message-scroller/message-scroller-opening-position.marko|TS2322|Type '(value: number) => number' is not assignable to type 'string | ((item: num
 src/demos/message-scroller/message-scroller-previous-context.marko|TS2322|Type '(value: number) => number' is not assignable to type 'string | ((item: num
 src/demos/message-scroller/message-scroller-previous-context.marko|TS2322|Type 'boolean' is not assignable to type 'AttrBooleanString'.
-src/demos/message-scroller/message-scroller-previous-context.marko|TS2322|Type 'string' is not assignable to type '(string & string[]) | (false & string[]
 src/demos/message-scroller/message-scroller-streaming.marko|TS2322|Type 'boolean' is not assignable to type 'AttrBooleanString'.
 src/demos/navigation-menu/navigation-menu-panel.marko|TS2322|Type '(panel: NavigationMenuContentContext) => Void' is not assignable to type '
 src/demos/pagination/pagination-controlled.marko|TS2339|Property 'page' does not exist on type 'number'.
@@ -134,27 +115,11 @@ src/demos/scroll-area/scroll-area-rtl.marko|TS2769|No overload matches this call
 src/demos/scroll-area/scroll-area-rtl.marko|TS7006|Parameter '_' implicitly has an 'any' type.
 src/demos/scroll-area/scroll-area-rtl.marko|TS7006|Parameter 'all' implicitly has an 'any' type.
 src/demos/scroll-area/scroll-area-rtl.marko|TS7006|Parameter 'index' implicitly has an 'any' type.
-src/demos/slider/slider-controlled.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
-src/demos/slider/slider-demo.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
-src/demos/slider/slider-disabled.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
-src/demos/slider/slider-multiple.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
-src/demos/slider/slider-range.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
-src/demos/slider/slider-rtl.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
-src/demos/slider/slider-step.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string
-src/demos/slider/slider-vertical.marko|TS2322|Type 'string[]' is not assignable to type '(string & string[]) | (false & string x2
-src/demos/steps/steps-controlled.marko|TS2322|Type '(index: number) => Void' is not assignable to type '((string | false | Bod
 src/demos/steps/steps-controlled.marko|TS2532|Object is possibly 'undefined'.
-src/demos/steps/steps-horizontal.marko|TS2322|Type '(index: number) => Void' is not assignable to type '((string | false | Bod
 src/demos/steps/steps-horizontal.marko|TS2532|Object is possibly 'undefined'.
-src/demos/steps/steps-linear.marko|TS2322|Type '(index: number) => Void' is not assignable to type '((string | false | Bod
 src/demos/steps/steps-linear.marko|TS2532|Object is possibly 'undefined'.
-src/demos/steps/steps-vertical.marko|TS2322|Type '(index: number) => Void' is not assignable to type '((string | false | Bod
 src/demos/steps/steps-vertical.marko|TS2532|Object is possibly 'undefined'.
 src/demos/table/table-actions.marko|TS2322|Type '({ value: string; label: string; type?: undefined; variant?: undefined; } 
-src/demos/tabs/tabs-controlled.marko|TS2322|Type '(itemValue: string) => Void' is not assignable to type '((string | false |
-src/demos/tabs/tabs-demo.marko|TS2322|Type '(value: string) => Void' is not assignable to type '((string | false | Bod
-src/demos/tabs/tabs-disabled.marko|TS2322|Type '(value: string) => Void' is not assignable to type '((string | false | Bod
-src/demos/tabs/tabs-hybrid.marko|TS2322|Type '(value: string) => Void' is not assignable to type '((string | false | Bod
 src/demos/timer/timer-controlled.marko|TS2322|Type 'string[]' is not assignable to type '(keyof Time<number>)[]'. Type 'string
 src/demos/toc/toc-controlled.marko|TS2322|Type 'string[]' is not assignable to type 'never[]'. Type 'string' is not assign
 src/demos/tour/tour-controlled.marko|TS2322|Type '{ id: string; title: string; description: string; target: string; placemen
@@ -174,19 +139,13 @@ src/tags/charts/charts-gallery.marko|TS18048|'typeEntry' is possibly 'undefined'
 src/tags/create/base-color-picker.marko|TS7053|Element implicitly has an 'any' type because expression of type '"muted-foregrou
 src/tags/create/chart-color-picker.marko|TS7053|Element implicitly has an 'any' type because expression of type '"muted-foregrou
 src/tags/create/open-preset.marko|TS2322|Type 'string' is not assignable to type 'AttrBooleanString | "grammar" | "spelli
-src/tags/create/preview-blocks/preview-page-1/cards/faq.marko|TS2322|Type '(value: string) => Void' is not assignable to type '((string | false | Bod
-src/tags/create/preview-blocks/preview-page-1/cards/notification-settings.marko|TS2322|Type 'boolean | "indeterminate"' is not assignable to type 'boolean | undefined'
 src/tags/create/preview-blocks/preview-page-1/cards/payout-threshold.marko|TS2532|Object is possibly 'undefined'.
 src/tags/create/preview-blocks/preview-page-1/cards/receiving-method.marko|TS2322|Type 'string' is not assignable to type 'AttrTriState'. x2
 src/tags/create/preview-blocks/preview-page-1/cards/roller-shades.marko|TS2532|Object is possibly 'undefined'. x2
 src/tags/create/preview-blocks/preview-page-2/cards/bar-chart-card.marko|TS2322|Type 'AttrTag<{ readonly dataKey: "desktop"; readonly radius: 0 | number[]; read
-src/tags/create/preview-blocks/preview-page-2/cards/codespaces-card.marko|TS2322|Type '(cloneTab: string) => Void' is not assignable to type '((string | false | 
-src/tags/create/preview-blocks/preview-page-2/cards/codespaces-card.marko|TS2322|Type '(tab: string) => Void' is not assignable to type '((string | false | Body<
 src/tags/create/preview-blocks/preview-page-2/cards/live-waveform.marko|TS2532|Object is possibly 'undefined'. x3
 src/tags/create/preview-blocks/preview-page-2/cards/sleep-report.marko|TS2322|Type 'AttrTag<{ readonly dataKey: "deep"; readonly radius: 0; readonly [Symbol.i
-src/tags/create/preview-blocks/preview-page-2/cards/ui-elements.marko|TS2322|Type 'string' is not assignable to type '(string & string[]) | (false & string[]
 src/tags/create/preview-blocks/preview-page-3/cards/bar-visualizer.marko|TS2353|Object literal may only specify known properties, and 'animationDuration' does n
-src/tags/create/preview-blocks/preview-page-3/cards/brand-marquee.marko|TS2322|Type '(logo: unknown) => Void' is not assignable to type '((string | false | Bod
 src/tags/create/theme-picker.marko|TS7053|Element implicitly has an 'any' type because expression of type '"muted-foregrou
 src/tags/directory/directory-add-dialog.marko|TS2322|Type 'string' is not assignable to type 'AttrBooleanString'.
 src/tags/directory/directory-list.marko|TS2322|Type 'true | undefined' is not assignable to type 'AttrBooleanString'. Type 'tru x2
@@ -224,9 +183,6 @@ src/tags/docs/package-manager-switcher.marko|TS2769|No overload matches this cal
 src/tags/docs/package-manager-switcher.marko|TS7006|Parameter 'manager' implicitly has an 'any' type.
 src/tags/docs/package-manager-switcher.marko|TS7006|Parameter 'storageEvent' implicitly has an 'any' type.
 src/tags/home/card-dividend-income.marko|TS2322|Type '(point: number, index: number) => number' is not assignable to type 'strin
-src/tags/home/card-install.marko|TS2322|Type '(value: string) => Void' is not assignable to type '((string | false | Bod
 src/tags/home/card-sidebar-nav.marko|TS7053|Element implicitly has an 'any' type because expression of type 'string' can't b
-src/tags/home/home-beyond.marko|TS2322|Type '(index: number) => Void' is not assignable to type '((string | false | Bod
-src/tags/home/home-beyond.marko|TS2322|Type '(item: unknown) => Void' is not assignable to type '((string | false | Bod
 src/tags/typeset/customizer.marko|TS2349|This expression is not callable. Type 'never' has no call signatures.
 src/tags/typeset/get-code-drawer.marko|TS2322|Type '"right" | "down"' is not assignable to type 'SwipeDirection | undefined'. 
