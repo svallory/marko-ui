@@ -78,7 +78,7 @@ static const SCRIPT: ChatMessage[] = [
 // Marko has no per-tag remount primitive, so a single-item keyed `<for>` is
 // used to force the provider subtree to unmount/remount when `providerKey`
 // changes, the same way `key={demoKey}` does in the source.
-<for|generation| of=[providerKey] by=(value) => value>
+<for|generation| of=[providerKey] by=(value) => String(value)>
   <MessageScrollerProvider|controller| scrollMargin=24 scrollPreviousItemPeek=peek>
     <div class="relative flex flex-col gap-4">
       <Card class="mx-auto h-140 w-full max-w-sm gap-0">
@@ -99,7 +99,7 @@ static const SCRIPT: ChatMessage[] = [
         <CardContent class="flex-1 overflow-hidden p-0">
           <MessageScroller controller=controller>
             <MessageScrollerViewport controller=controller>
-              <MessageScrollerContent controller=controller aria-busy=busy class="p-4">
+              <MessageScrollerContent controller=controller aria-busy=(busy ? "true" : "false") class="p-4">
                 <for|message| of=messages by=(message) => message.id>
                   <MessageScrollerItem controller=controller messageId=message.id scrollAnchor=(message.role === "user")>
                     <Message align=(message.role === "user" ? "end" : "start")>
