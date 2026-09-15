@@ -226,7 +226,7 @@ static function getPageNumbers(current: number, total: number) {
           <a
             href=(page > 1 ? getPageHref(query, page - 1) : undefined)
             aria-label="Go to previous page"
-            aria-disabled=(page <= 1 || undefined)
+            aria-disabled=(page <= 1 ? "true" : undefined)
             tabindex=(page <= 1 ? -1 : undefined)
             data-slot="pagination-link"
             onClick(event: MouseEvent) { handlePageClick(event, page - 1, page <= 1); }
@@ -273,7 +273,7 @@ static function getPageNumbers(current: number, total: number) {
           <a
             href=(page < totalPages ? getPageHref(query, page + 1) : undefined)
             aria-label="Go to next page"
-            aria-disabled=(page >= totalPages || undefined)
+            aria-disabled=(page >= totalPages ? "true" : undefined)
             tabindex=(page >= totalPages ? -1 : undefined)
             data-slot="pagination-link"
             onClick(event: MouseEvent) { handlePageClick(event, page + 1, page >= totalPages); }

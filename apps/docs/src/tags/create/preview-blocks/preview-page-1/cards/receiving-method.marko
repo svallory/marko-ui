@@ -65,7 +65,7 @@ static const RADIO_ITEM_CLASS =
                 role="radio"
                 id="method-bank"
                 value="bank"
-                aria-checked=String(method === "bank")
+                aria-checked=(method === "bank" ? "true" : "false")
                 data-state=(method === "bank" ? "checked" : "unchecked")
                 data-slot="radio-group-item"
                 class=RADIO_ITEM_CLASS
@@ -91,7 +91,7 @@ static const RADIO_ITEM_CLASS =
                 role="radio"
                 id="method-paypal"
                 value="paypal"
-                aria-checked=String(method === "paypal")
+                aria-checked=(method === "paypal" ? "true" : "false")
                 data-state=(method === "paypal" ? "checked" : "unchecked")
                 data-slot="radio-group-item"
                 class=RADIO_ITEM_CLASS
