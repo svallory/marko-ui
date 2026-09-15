@@ -8,7 +8,7 @@ static const WIZARD_STEPS = [
 
 <Steps|index| items=WIZARD_STEPS class="w-[560px]">
   <p class="text-muted-foreground text-sm">
-    Step ${index + 1}: ${WIZARD_STEPS[index].title} content goes here.
+    Step ${index + 1}: ${WIZARD_STEPS[index]?.title} content goes here.
   </p>
   <@completedContent>
     <p class="text-muted-foreground text-sm">All steps complete — thanks!</p>
