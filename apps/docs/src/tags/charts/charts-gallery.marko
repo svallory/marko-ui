@@ -78,7 +78,7 @@ static const TOTAL_SLOTS = 12;
 static const EMPTY_SLOT_CLASS = "hidden aspect-square w-full rounded-lg border border-dashed xl:block";
 static const FULL_WIDTH_CLASS = "md:col-span-2 lg:col-span-3";
 
-<const/typeEntry=(CHART_TYPES.find((entry) => entry.slug === input.type) ?? CHART_TYPES[0])/>
+<const/typeEntry=(CHART_TYPES.find((entry) => entry.slug === input.type) ?? CHART_TYPES[0]!)/>
 <const/typeLabel=(typeEntry.label.replace(" Charts", ""))/>
 
 // ---- PageHeader (shadcn components/page-header.tsx, via charts/layout.tsx) ----
