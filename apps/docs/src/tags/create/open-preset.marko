@@ -60,9 +60,9 @@ static const PRESET_DESCRIPTION =
         }
         placeholder=`${PRESET_EXAMPLE} or --preset ${PRESET_EXAMPLE}`
         autocapitalize="none"
-        autocorrect="off"
+        ...({ autocorrect: "off" } as Record<string, string>)
         spellcheck="false"
-        aria-invalid=String(isInvalid)
+        aria-invalid=(isInvalid ? "true" : "false")
         class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring aria-[invalid=true]:border-destructive md:h-8"
       />
     </div>
