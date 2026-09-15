@@ -7,6 +7,16 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
   checkedChange?: (checked: boolean) => void;
 };`;
 
+static const EXAMPLE_1B = `import * as dialogMachine from "@zag-js/dialog";
+import type { MachineInput } from "marko-zag";
+
+// \`title\` collides with the native <div> attribute (string | false | null),
+// so fold it into the Props argument — Props always shadows a same-named
+// native attribute automatically.
+type Own = { title?: Marko.AttrTag<{ content: Marko.Body }> };
+
+export type Input = MachineInput<"div", dialogMachine.Props & Own>;`;
+
 static const EXAMPLE_2 = `<zag/api=() => switchMachine from=input/>`;
 
 static const EXAMPLE_2B = `<zag-machine/service=() => toast props=() => ({ ...input.options(), parent: input.parent() })/>
@@ -88,6 +98,24 @@ export type Input = MachineInput<"div", tabsMachine.Props> & {
       <code>xxxChange</code> prop per Zag <code>onXxxChange</code> callback — it enables Marko's
       two-way bind shorthand (<code>&lt;Switch checked:=state/&gt;</code>) and receives the plain
       value; Zag's original callback remains available and receives the details object.
+    </p>
+    <p>
+      <strong>Members of <code>Props</code> always shadow a same-named native attribute</strong> —
+      if the machine (or a member you add) declares a name that a native attribute also has,
+      <code>Props</code> wins, never the native side. This matters because a plain
+      <code>&amp;</code> intersection with the native attributes' type is <em>not</em> a safe way to
+      add an extra member with a colliding name: fold anything that collides into the
+      <code>Props</code> argument instead, via intersection, so <code>MachineInput</code> shadows
+      it for you:
+    </p>
+    <code-block language="typescript" code=EXAMPLE_1B/>
+    <p class="text-sm">
+      Without this, <code>title</code> on a <code>div</code> is
+      <code>string | false | null</code>; intersecting it with an attr-tag type produces an
+      unsatisfiable type that rejects every value a caller could pass. Never spread a shadowed
+      member onto the native element it shadows (via <code>stripOwnProps</code> or a raw spread) —
+      it's machine-owned state now, not a pass-through attribute; let the relevant
+      <code>api().get*Props()</code> call supply the native-facing value instead.
     </p>
   </section>
 

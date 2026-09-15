@@ -96,6 +96,53 @@ never mistake one for "the tag's default body":
   body-forwarding code, and every call site — `content` is freed up to mean only "the entire
   default body" everywhere in the codebase.
 
+## MachineInput forms, and when an extra member collides with a native attribute
+
+`MachineInput<Tag, Props>` (marko-zag `^3.0.0`) is the native tag's attributes intersected with
+the machine's full `Props`, with `Props` **shadowing** any native attribute of the same name —
+automatically, with no extra step. Most components need nothing beyond the plain form:
+
+```ts
+export type Input = MachineInput<"input", switchMachine.Props> & {
+  checkedChange?: (checked: boolean) => void;
+};
+```
+
+That `& { checkedChange?: ... }` is safe here because `checkedChange` isn't a native `<input>`
+attribute — there's nothing for it to collide with. A member that *is* a native attribute name
+(`title`, `content`, `value`, `aria-label`, …) must **not** be added this way: intersecting it
+outside `MachineInput` produces either an unsatisfiable type (the native side and your side can
+never both be satisfied — every value is rejected) or a lossy one (the two sides collapse to
+their common subtype, silently narrowing what callers can pass). Fold it into the `Props`
+argument instead, so `MachineInput` shadows it for you:
+
+```ts
+type Own = { title?: Marko.AttrTag<{ content: Marko.Body }> };
+export type Input = MachineInput<"div", dialogMachine.Props & Own>;
+```
+
+The local name (`Own`, `Extras`, anything) doesn't matter — what matters is that it's intersected
+into the *second* type argument, not appended outside `MachineInput<...>`. Two earlier forms of
+this exist in git history and are both retired: a hand-written
+`Omit<MachineInput<Tag, Props>, keyof Own> & Own`, and a 3rd type parameter,
+`MachineInput<Tag, Props, Own>` (marko-zag `2.1.0`–`2.1.x` only — removed in `3.0.0`, where
+passing it is a plain arity error). Don't write either in new components.
+
+**A shadowed member must never be spread onto the native element it shadows** — once it's in
+`Props`, it's machine-owned state, not a pass-through attribute. If your `stripOwnProps` key list
+or `splitProps` remainder still includes it when building native-facing props, add it to the
+strip list; the correct native-facing value comes from the relevant `api().get*Props()` call, not
+from re-forwarding the machine prop. Two real bugs of this shape, found when auditing every
+`MachineInput` component during the 3.0.0 migration: `checkbox.marko` was spreading
+`checked: boolean | "indeterminate"` into a return typed as the native `<input>`'s attributes
+(`checked: AttrBoolean`) — fixed by adding `"checked"` to its existing `stripOwnProps` call
+alongside `"indeterminate"`; and two demos passed `aria-label="…"` (a bare string) to `Slider`,
+whose Zag machine types `aria-label` as `string[]` (one label per thumb) — fixed by wrapping the
+literal in an array. Both had been silently wrong before shadowing was correct (a lossy collapse
+and an unsatisfiable-type false negative, respectively) — a real type error here is the shadowing
+working as designed, not a marko-zag defect; grep for the member elsewhere in the same component
+before assuming otherwise.
+
 ## Class strings live in classes.ts
 
 A component directory that has been migrated to the class-as-data contract carries a sibling
