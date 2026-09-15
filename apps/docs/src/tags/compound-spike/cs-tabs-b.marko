@@ -18,10 +18,12 @@ import type { MachineInput } from "marko-zag";
 
 export type TabsApi = () => tabsMachine.Api;
 
-export type Input = MachineInput<"div", tabsMachine.Props> & {
+export type Own = {
   content?: Marko.Body<[TabsApi]>;
   valueChange?: (value: string) => void;
 };
+
+export type Input = MachineInput<"div", tabsMachine.Props & Own>;
 
 <zag/api=() => tabsMachine from=input/>
 
