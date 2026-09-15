@@ -1,4 +1,5 @@
 import ContextMenu from "@marko-ui/shadcn/ui/context-menu/context-menu.marko";
+import type { ContextMenuItem } from "@marko-ui/shadcn/ui/context-menu/context-menu.marko";
 
 static const ITEMS = [
   { type: "label", label: "Actions" },
@@ -7,8 +8,8 @@ static const ITEMS = [
   { type: "separator" },
   { type: "label", label: "Danger Zone" },
   { value: "archive", label: "Archive" },
-  { value: "delete", label: "Delete", danger: true },
-];
+  { value: "delete", label: "Delete", variant: "destructive" },
+] satisfies ContextMenuItem[];
 
 <ContextMenu items=ITEMS>
   <div class="flex h-[100px] w-[250px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">

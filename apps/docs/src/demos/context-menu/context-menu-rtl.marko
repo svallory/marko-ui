@@ -1,4 +1,5 @@
 import ContextMenu from "@marko-ui/shadcn/ui/context-menu/context-menu.marko";
+import type { ContextMenuItem } from "@marko-ui/shadcn/ui/context-menu/context-menu.marko";
 
 // Technically-forced omission: `menu.props` (from @zag-js/menu) includes a
 // `dir` prop the machine would use to auto-flip floating-ui placement under
@@ -47,7 +48,7 @@ import ContextMenu from "@marko-ui/shadcn/ui/context-menu/context-menu.marko";
   { type: "label", label: "الأشخاص" },
   { type: "radio", value: "pedro", label: "Pedro Duarte", radioGroup: "people", checked: people === "pedro" },
   { type: "radio", value: "colm", label: "Colm Tuite", radioGroup: "people", checked: people === "colm" },
-]/>
+] satisfies ContextMenuItem[]/>
 
 <div dir="rtl" class="flex justify-center">
   <ContextMenu

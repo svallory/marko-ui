@@ -1,11 +1,12 @@
 import ContextMenu from "@marko-ui/shadcn/ui/context-menu/context-menu.marko";
+import type { ContextMenuItem } from "@marko-ui/shadcn/ui/context-menu/context-menu.marko";
 
 static const ITEMS = [
   { value: "copy", label: "Copy" },
   { value: "paste", label: "Paste", disabled: true },
   { type: "separator" },
-  { value: "delete", label: "Delete", disabled: true, danger: true },
-];
+  { value: "delete", label: "Delete", disabled: true, variant: "destructive" },
+] satisfies ContextMenuItem[];
 
 <ContextMenu items=ITEMS>
   <div class="flex h-[100px] w-[250px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
