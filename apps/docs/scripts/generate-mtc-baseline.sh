@@ -28,9 +28,11 @@ fingerprint="$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts)"
 
 # Same crash shape as check.sh: an existing non-trivial baseline going to
 # zero entries in one run is far more likely a truncated run than every
-# error having been fixed at once. Refuse rather than silently wiping it.
-if [ -z "$fingerprint" ] && [ -f mtc-baseline.txt ] && [ -n "$(grep -v '^#' mtc-baseline.txt | sed '/^$/d')" ]; then
-  echo "marko-type-check produced no errors but the existing baseline is non-empty — this looks like a crashed/truncated run, not a clean fix. Refusing to overwrite mtc-baseline.txt." >&2
+# error having been fixed at once. Refuse rather than silently wiping it,
+# unless the caller passes --force to confirm this really is "every known
+# error got fixed," not a crash.
+if [ -z "$fingerprint" ] && [ -f mtc-baseline.txt ] && [ -n "$(grep -v '^#' mtc-baseline.txt | sed '/^$/d')" ] && [ "${1:-}" != "--force" ]; then
+  echo "marko-type-check produced no errors but the existing baseline is non-empty — this looks like a crashed/truncated run, not a clean fix. Refusing to overwrite mtc-baseline.txt. If every known error genuinely got fixed, rerun with --force." >&2
   exit 1
 fi
 
