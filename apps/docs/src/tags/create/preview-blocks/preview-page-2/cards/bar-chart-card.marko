@@ -82,8 +82,8 @@ static const desktopDeltaPrefix = desktopDelta > 0 ? "+" : "";
         indicator="dashed"
         legend=true
       >
-        <@series dataKey="desktop" radius=(isRounded ? [6, 6, 0, 0] : 0)/>
-        <@series dataKey="mobile" radius=(isRounded ? [6, 6, 0, 0] : 0)/>
+        <@series dataKey="desktop" radius=(isRounded ? ([6, 6, 0, 0] as const) : 0)/>
+        <@series dataKey="mobile" radius=(isRounded ? ([6, 6, 0, 0] as const) : 0)/>
       </BarChart>
     </Chart>
     <div class="grid w-full grid-cols-3 divide-x divide-border/60">
