@@ -333,7 +333,7 @@ export interface Input {
 <script>
   const panel = codePanelEl();
   if (panel) {
-    for (const pre of panel.querySelectorAll("[data-file-target]")) {
+    for (const pre of panel.querySelectorAll<HTMLElement>("[data-file-target]")) {
       pre.hidden = pre.getAttribute("data-file-target") !== activeFile;
     }
   }
