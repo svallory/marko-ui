@@ -1,5 +1,5 @@
 // Ported from shadcn/ui app/(app)/(typeset)/components/get-code-drawer.tsx.
-// Title, description, the swipeDirection switch (down on mobile, right on
+// Title, description, the swipeDirection switch (down on mobile, end on
 // desktop), the data-mobile / max-h-[85svh] content class, and the "Done"
 // close button are verbatim. The body is ./docs-content.marko — the same tag
 // the docs panel renders, exactly as upstream shares TypesetDocsContent.
@@ -29,7 +29,7 @@ export interface Input {
 // there directly and the trigger's own class comes in via input.class above.
 <Drawer
   open:=open
-  swipeDirection=(input.isMobile ? "down" : "right")
+  swipeDirection=(input.isMobile ? "down" : "end")
   data-mobile=String(input.isMobile ?? false)
   class="data-[mobile=true]:max-h-[85svh]"
 >
