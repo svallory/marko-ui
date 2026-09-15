@@ -1,4 +1,5 @@
 import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import type { DropdownMenuItem } from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
 static const ITEMS = [
@@ -7,7 +8,7 @@ static const ITEMS = [
   { value: "archive", label: "Archive" },
   { type: "separator" },
   { value: "delete", label: "Delete", variant: "destructive" },
-];
+] satisfies DropdownMenuItem[];
 
 <let/selected=""/>
 

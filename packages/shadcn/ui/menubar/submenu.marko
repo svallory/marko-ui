@@ -25,7 +25,7 @@ import { submenu as styles } from "./classes.ts";
 
 export interface Input {
   /** This submenu's own item list — same entry shape as the top-level menu. */
-  entries: MenubarItemAttrs[];
+  entries: readonly MenubarItemAttrs[];
   /** Label rendered on the sub-trigger row. */
   label?: string;
   disabled?: boolean;

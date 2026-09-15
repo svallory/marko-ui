@@ -1,4 +1,5 @@
 import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import type { DropdownMenuItem } from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
 <let/showStatusBar=true/>
@@ -10,7 +11,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
   { type: "checkbox", value: "status-bar", label: "Status Bar", checked: showStatusBar },
   { type: "checkbox", value: "activity-bar", label: "Activity Bar", checked: showActivityBar, disabled: true },
   { type: "checkbox", value: "panel", label: "Panel", checked: showPanel },
-]/>
+] satisfies DropdownMenuItem[]/>
 
 <DropdownMenu
   items=items

@@ -32,7 +32,7 @@ export interface MenubarItemAttrs extends DropdownMenuItem {
   /** `type: "radio"` entries only — this entry's value within its `radioGroup`. */
   radioValue?: string;
   /** `type: "sub"` entries only — the nested submenu's own item list. */
-  subEntries?: MenubarItemAttrs[];
+  subEntries?: readonly MenubarItemAttrs[];
 }
 
 export interface Input {
