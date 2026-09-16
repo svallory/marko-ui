@@ -84,6 +84,9 @@ export interface Input {
 // getter for NATIVE tags, not custom-component tags that happen to render a
 // single root element, so the getter's return type is `never` and needs an
 // explicit cast to the type every anchorEl consumer actually declares.
+// TODO(marko): tag var on a single-native-root custom tag resolves to
+// `never` instead of a DOM-node getter -- an upstream Marko typing gap,
+// not fixable from this repo. Confirmed via isolated repro.
 <const/anchorEl=() => (cardEl as () => HTMLElement | null)()/>
 
 <Card/cardEl
