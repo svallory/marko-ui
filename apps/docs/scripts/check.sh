@@ -110,7 +110,12 @@ if [ "$raw_record_count" != "$accounted_record_count" ]; then
   exit 1
 fi
 
-baseline="$(grep -v '^#' mtc-baseline.txt | sed '/^$/d')"
+# `grep -v` exits 1 when nothing matches (e.g. a baseline file that is all
+# comments, which is the real state on main right now: 0 known errors) —
+# under `set -e` that silently kills the script before any baseline
+# comparison runs at all. `|| true` keeps the empty-baseline case a normal,
+# reportable "0 known entries" instead of a silent non-zero exit.
+baseline="$(grep -v '^#' mtc-baseline.txt | sed '/^$/d' || true)"
 
 new_lines="$(comm -13 <(echo "$baseline" | sort) <(echo "$fingerprint" | sort))"
 gone_lines="$(comm -23 <(echo "$baseline" | sort) <(echo "$fingerprint" | sort))"
