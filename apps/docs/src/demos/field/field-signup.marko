@@ -10,7 +10,17 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
 // Native ValidityState is the validation baseline: zero dependencies, and it
 // already knows about `required`, `type=email`, `minlength` and `pattern`.
-<const/messageFor=(control: HTMLInputElement) => (control.validity.valid ? undefined : control.validationMessage)/>
+// Typed as a structural check on `validity`/`validationMessage`/`name`
+// rather than HTMLInputElement specifically, so this keeps working if a
+// <select>/<textarea> field is ever added to this form -- every
+// ValidityState-bearing control shares that shape.
+export type ValidatableControl = { validity: ValidityState; validationMessage: string; name: string };
+
+static function isValidatable(control: Element): control is Element & ValidatableControl {
+  return "validity" in control && "validationMessage" in control && "name" in control;
+}
+
+<const/messageFor=(control: ValidatableControl) => (control.validity.valid ? undefined : control.validationMessage)/>
 
 <let/errors=({} as Record<string, string[] | undefined>)/>
 <let/submitted=false/>
@@ -28,7 +38,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
   let valid = true;
 
   for (const control of form.elements) {
-    if (!(control instanceof HTMLInputElement) || !control.name) continue;
+    if (!isValidatable(control) || !control.name) continue;
     const message = messageFor(control);
     if (message) {
       next[control.name] = [message];

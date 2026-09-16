@@ -10,5 +10,11 @@ declare module "*?raw" {
 
 // Plain CSS side-effect imports (`import "./app.css"`) - Vite handles these
 // at build time, but marko-type-check has no ambient declaration for them
-// without this shim.
+// without this shim. Fine today (one side-effect import, zero
+// `.module.css` in this app), but a bare `declare module "*.css"` gives
+// every match an implicit `any` default export - a future typed CSS-module
+// import (`import styles from "./x.module.css"`) would silently type-check
+// against `any` instead of the class-name-keyed object Vite actually
+// produces for it. Narrow this (e.g. a separate `*.module.css` pattern) if
+// that ever gets added.
 declare module "*.css";
