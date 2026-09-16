@@ -2,7 +2,7 @@ import ScrollArea from "@marko-ui/shadcn/ui/scroll-area/scroll-area.marko";
 
 static const tags = Array.from(
   { length: 50 },
-  (_, index, all) => `v1.2.0-beta.${50 - index}`,
+  (_, index) => `v1.2.0-beta.${50 - index}`,
 );
 
 <ScrollArea class="h-72 w-48 rounded-md border">

@@ -35,7 +35,7 @@ static const chartConfig = {
 
 static const monthItems = desktopData.map((item) => ({
   value: item.month,
-  label: chartConfig[item.month].label,
+  label: chartConfig[item.month as keyof typeof chartConfig].label,
 }));
 
 <let/activeMonth="january"/>

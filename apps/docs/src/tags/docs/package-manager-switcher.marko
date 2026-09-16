@@ -39,7 +39,7 @@ export interface Input {
           role="tab"
           data-manager-tab
           data-manager=entry.manager
-          aria-selected=String(entry.manager === defaultManager)
+          aria-selected=(entry.manager === defaultManager ? "true" : "false")
           aria-controls=`${switcherId}-${entry.manager}`
           class="border-b-2 border-transparent px-3 py-2 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground aria-selected:border-foreground aria-selected:text-foreground"
         >
@@ -71,7 +71,7 @@ export interface Input {
   </for>
 </div>
 
-<let/onStorage=null/>
+<let/onStorage=(null as ((storageEvent: StorageEvent) => void) | null)/>
 
 <lifecycle
   onMount() {
@@ -79,11 +79,11 @@ export interface Input {
     if (!root) return;
 
     const STORAGE_KEY = "marko-ui.packageManager";
-    const tabs = Array.from(root.querySelectorAll("[data-manager-tab]"));
-    const panels = Array.from(root.querySelectorAll("[data-manager-panel]"));
+    const tabs = Array.from(root.querySelectorAll<HTMLElement>("[data-manager-tab]"));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>("[data-manager-panel]"));
     const known = tabs.map((tab) => tab.getAttribute("data-manager"));
 
-    const select = (manager) => {
+    const select = (manager: string) => {
       if (!known.includes(manager)) return;
       tabs.forEach((tab) => {
         tab.setAttribute("aria-selected", String(tab.getAttribute("data-manager") === manager));
@@ -96,6 +96,7 @@ export interface Input {
     tabs.forEach((tab) => {
       tab.addEventListener("click", () => {
         const manager = tab.getAttribute("data-manager");
+        if (!manager) return;
         select(manager);
         try {
           localStorage.setItem(STORAGE_KEY, manager);
@@ -105,7 +106,7 @@ export interface Input {
       });
     });
 
-    const copyButton = root.querySelector("[data-manager-copy]");
+    const copyButton = root.querySelector<HTMLElement>("[data-manager-copy]");
     copyButton?.addEventListener("click", () => {
       const panel = panels.find((candidate) => !candidate.hidden);
       navigator.clipboard.writeText(panel?.textContent?.trim() ?? "").then(() => {
@@ -124,10 +125,11 @@ export interface Input {
     }
 
     // Keep every switcher on the page (and other tabs) in agreement.
-    onStorage = (storageEvent) => {
+    const handleStorage = (storageEvent: StorageEvent) => {
       if (storageEvent.key === STORAGE_KEY && storageEvent.newValue) select(storageEvent.newValue);
     };
-    window.addEventListener("storage", onStorage);
+    onStorage = handleStorage;
+    window.addEventListener("storage", handleStorage);
   }
   onDestroy() {
     if (onStorage) window.removeEventListener("storage", onStorage);

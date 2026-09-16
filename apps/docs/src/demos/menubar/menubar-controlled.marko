@@ -1,5 +1,6 @@
 import Menubar from "@marko-ui/shadcn/ui/menubar/menubar.marko";
 import MenubarMenu from "@marko-ui/shadcn/ui/menubar/menu.marko";
+import type { DropdownMenuItem } from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
 
 static const FILE_ITEMS = [
   { value: "new-tab", label: "New Tab", shortcut: "⌘T" },
@@ -8,7 +9,7 @@ static const FILE_ITEMS = [
   { value: "share", label: "Share" },
   { type: "separator" },
   { value: "print", label: "Print...", shortcut: "⌘P" },
-];
+] satisfies DropdownMenuItem[];
 
 static const EDIT_ITEMS = [
   { value: "undo", label: "Undo", shortcut: "⌘Z" },
@@ -17,7 +18,7 @@ static const EDIT_ITEMS = [
   { value: "cut", label: "Cut" },
   { value: "copy", label: "Copy" },
   { value: "paste", label: "Paste" },
-];
+] satisfies DropdownMenuItem[];
 
 <let/selected=""/>
 

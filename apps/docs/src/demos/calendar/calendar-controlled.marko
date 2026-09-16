@@ -8,6 +8,6 @@ import Calendar from "@marko-ui/shadcn/ui/calendar/calendar.marko";
     valueChange=(next) => { value = next; }
   />
   <span class="text-sm text-muted-foreground">
-    Selected: ${value.length !== 0 ? `${value[0].year}-${value[0].month}-${value[0].day}` : "none"}
+    Selected: ${value[0] ? `${value[0].year}-${value[0].month}-${value[0].day}` : "none"}
   </span>
 </div>

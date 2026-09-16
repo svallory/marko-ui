@@ -5,7 +5,7 @@
 // themes, dark primary otherwise (verbatim source logic).
 //
 // Deviation: LockButton restored in phase 3 (locked/onToggleLock attrs from the design-system container).
-import { BASE_COLORS, type Theme, type ThemeName } from "./lib/registry-config.ts";
+import { BASE_COLORS, type Theme, type ThemeName, type RegistryItemCssVars } from "./lib/registry-config.ts";
 import Picker from "./picker.marko";
 import LockButton from "./lock-button.marko";
 
@@ -21,7 +21,7 @@ export interface Input {
 
 <const/currentTheme=input.themes.find((theme) => theme.name === input.value)/>
 <const/currentThemeIsBaseColor=BASE_COLORS.find((baseColor) => baseColor.name === input.value)/>
-<const/swatchColor=currentTheme?.cssVars?.dark?.[currentThemeIsBaseColor ? "muted-foreground" : "primary"]/>
+<const/swatchColor=(currentTheme?.cssVars as RegistryItemCssVars | undefined)?.dark?.[currentThemeIsBaseColor ? "muted-foreground" : "primary"]/>
 
 <const/baseColorThemes=input.themes.filter(
   (theme) => BASE_COLORS.find((baseColor) => baseColor.name === theme.name),

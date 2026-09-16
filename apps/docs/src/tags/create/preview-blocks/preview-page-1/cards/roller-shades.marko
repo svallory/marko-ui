@@ -16,8 +16,9 @@ static const PRESETS = [
 
 <let/position=[50]/>
 
+<const/currentPosition=(position[0] ?? 0)/>
 <const/preset=(
-  position[0] <= 10 ? "open" : position[0] >= 90 ? "closed" : "half"
+  currentPosition <= 10 ? "open" : currentPosition >= 90 ? "closed" : "half"
 )/>
 
 <Card>

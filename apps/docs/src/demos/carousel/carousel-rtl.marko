@@ -28,7 +28,12 @@ static const SLIDES = [1, 2, 3, 4, 5];
 <Carousel|item| items=SLIDES dir="rtl" class="w-full max-w-[12rem] sm:max-w-xs">
   <div class="p-1">
     <div class="flex aspect-square items-center justify-center rounded-lg border bg-card">
-      <span class="text-4xl font-semibold">${toArabicNumerals(item)}</span>
+      <!-- Carousel's items= is generic (T[]) but its render-prop item comes
+           through as unknown - the tag call can't infer T here, same
+           limitation as DataTable's columns=/data= (see
+           data-table-demo.marko). SLIDES is number[], so item is really a
+           number at runtime. -->
+      <span class="text-4xl font-semibold">${toArabicNumerals(item as number)}</span>
     </div>
   </div>
 </Carousel>

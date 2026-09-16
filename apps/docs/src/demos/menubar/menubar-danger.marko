@@ -1,13 +1,14 @@
 import Menubar from "@marko-ui/shadcn/ui/menubar/menubar.marko";
 import MenubarMenu from "@marko-ui/shadcn/ui/menubar/menu.marko";
+import type { DropdownMenuItem } from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
 
 static const PROFILES_ITEMS = [
   { type: "label", label: "Profiles" },
   { type: "separator" },
   { value: "add", label: "Add Profile..." },
   { type: "separator" },
-  { value: "remove", label: "Remove Profile", danger: true },
-];
+  { value: "remove", label: "Remove Profile", variant: "destructive" },
+] satisfies DropdownMenuItem[];
 
 <Menubar>
   <MenubarMenu items=PROFILES_ITEMS>

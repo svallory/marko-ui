@@ -39,25 +39,28 @@ static function indentClass(level: number) {
     </for>
   </nav>
 
-  <let/observer=null/>
-  <let/onScroll=null/>
+  <let/observer=(null as IntersectionObserver | null)/>
+  <let/onScroll=(null as (() => void) | null)/>
   <lifecycle
     onMount() {
       const tocLinks = Array.from(tocEl()?.querySelectorAll("[data-toc-link]") ?? []);
       if (tocLinks.length === 0) return;
 
       const headings = tocLinks
-        .map((link) => document.getElementById(link.getAttribute("data-target")))
-        .filter(Boolean);
+        .map((link) => {
+          const targetId = link.getAttribute("data-target");
+          return targetId ? document.getElementById(targetId) : null;
+        })
+        .filter((heading): heading is HTMLElement => heading !== null);
 
-      const setActive = (id) => {
+      const setActive = (id: string) => {
         tocLinks.forEach((link) => {
           link.setAttribute("data-active", String(link.getAttribute("data-target") === id));
         });
       };
 
-      const visible = new Set();
-      observer = new IntersectionObserver(
+      const visible = new Set<string>();
+      const obs = new IntersectionObserver(
         (records) => {
           records.forEach((record) => {
             if (record.isIntersecting) visible.add(record.target.id);
@@ -68,9 +71,10 @@ static function indentClass(level: number) {
         },
         { rootMargin: "-80px 0px -70% 0px", threshold: 0 },
       );
+      observer = obs;
 
-      headings.forEach((heading) => observer.observe(heading));
-      setActive(headings[0]?.id);
+      headings.forEach((heading) => obs.observe(heading));
+      if (headings[0]) setActive(headings[0].id);
 
       // The observer's bottom rootMargin means the final short section can
       // never be pushed into the detection band — the page runs out of scroll
@@ -81,13 +85,14 @@ static function indentClass(level: number) {
         return remaining < 4;
       };
 
-      onScroll = () => {
+      const handleScroll = () => {
         if (atBottomOfPage()) {
-          const lastHeading = headings[headings.length - 1];
+          const lastHeading = headings.at(-1);
           if (lastHeading) setActive(lastHeading.id);
         }
       };
-      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll = handleScroll;
+      window.addEventListener("scroll", handleScroll, { passive: true });
     }
     onDestroy() {
       observer?.disconnect();

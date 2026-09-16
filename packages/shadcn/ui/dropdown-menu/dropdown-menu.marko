@@ -26,7 +26,7 @@ export interface DropdownMenuItem {
    * level deep: a `type: "sub"` entry inside a submenu's own `subEntries` is
    * not wired (same limit as menubar's submenu).
    */
-  subEntries?: DropdownMenuItem[];
+  subEntries?: readonly DropdownMenuItem[];
 }
 
 // Attr-tag form of DropdownMenuItem. A SINGLE attr tag name (`item`) carries

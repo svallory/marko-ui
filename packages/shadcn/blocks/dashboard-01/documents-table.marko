@@ -175,7 +175,7 @@ static const drawerChartConfig = {
     </div>
     <div class="flex items-center gap-2">
       <DropdownMenu class="w-56">
-        <@trigger|props|>
+        <@trigger|props: Record<string, unknown>|>
           <button
             ...props
             type="button"
@@ -452,7 +452,7 @@ static const drawerChartConfig = {
                       <@item type="item" value="copy" label="Make a copy"/>
                       <@item type="item" value="favorite" label="Favorite"/>
                       <@item type="separator"/>
-                      <@item type="item" value="delete" label="Delete" danger/>
+                      <@item type="item" value="delete" label="Delete" variant="destructive"/>
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>

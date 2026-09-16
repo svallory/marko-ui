@@ -12,7 +12,7 @@ import Separator from "@marko-ui/shadcn/ui/separator/separator.marko";
 // correctly under dir="rtl" with no component changes needed.
 static const tags = Array.from(
   { length: 50 },
-  (_, index, all) => `v1.2.0-beta.${50 - index}`,
+  (_, index) => `v1.2.0-beta.${50 - index}`,
 );
 
 <ScrollArea dir="rtl" class="h-72 w-48 rounded-md border">

@@ -10,6 +10,7 @@ import {
   getThemesForBaseColor,
   type BaseColorName,
   type ChartColorName,
+  type RegistryItemCssVars,
 } from "./lib/registry-config.ts";
 import Picker from "./picker.marko";
 import LockButton from "./lock-button.marko";
@@ -27,7 +28,7 @@ export interface Input {
 <const/availableChartColors=getThemesForBaseColor(input.baseColor)/>
 <const/currentChartColor=availableChartColors.find((theme) => theme.name === input.value)/>
 <const/currentChartColorIsBaseColor=BASE_COLORS.find((baseColor) => baseColor.name === input.value)/>
-<const/swatchColor=currentChartColor?.cssVars?.dark?.[currentChartColorIsBaseColor ? "muted-foreground" : "primary"]/>
+<const/swatchColor=(currentChartColor?.cssVars as RegistryItemCssVars | undefined)?.dark?.[currentChartColorIsBaseColor ? "muted-foreground" : "primary"]/>
 
 <const/baseColorThemes=availableChartColors.filter(
   (theme) => BASE_COLORS.find((baseColor) => baseColor.name === theme.name),

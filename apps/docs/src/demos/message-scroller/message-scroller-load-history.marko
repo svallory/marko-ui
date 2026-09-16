@@ -86,7 +86,7 @@ static const INITIAL_VISIBLE_COUNT = 5;
     </CardHeader>
     <CardContent class="flex-1 overflow-hidden p-0">
       <MessageScrollerProvider|controller|>
-        <for|generation| of=[demoKey] by=(value) => value>
+        <for|generation| of=[demoKey] by=(value) => String(value)>
           <MessageScroller controller=controller>
             <MessageScrollerViewport controller=controller>
               <MessageScrollerContent controller=controller class="p-4">

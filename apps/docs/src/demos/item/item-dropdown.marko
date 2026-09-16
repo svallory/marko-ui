@@ -33,7 +33,7 @@ static const PEOPLE = [
 ];
 
 <DropdownMenu class="w-48">
-  <@trigger|triggerProps|>
+  <@trigger|triggerProps: Record<string, unknown>|>
     <Button variant="outline" ...triggerProps>
       Select
       <Icon name="ChevronDown"/>

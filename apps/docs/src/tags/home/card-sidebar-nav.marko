@@ -170,7 +170,7 @@ static const SECTIONS = [
                           stroke-linejoin="round"
                           aria-hidden="true"
                         >
-                          <for|d| of=ICON_PATHS[entry.icon]>
+                          <for|d| of=ICON_PATHS[entry.icon as keyof typeof ICON_PATHS]>
                             <path d=d/>
                           </for>
                         </svg>

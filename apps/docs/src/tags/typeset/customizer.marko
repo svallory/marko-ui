@@ -80,8 +80,14 @@ export interface Input {
 // customizer.tsx's anchorRef: on mobile every field's picker popup anchors
 // to the Card itself instead of its own cramped trigger. Card is a plain
 // <div> under the hood (see registry/default/ui/card/card.marko), so its tag
-// var is the real DOM node.
-<const/anchorEl=() => cardEl()/>
+// var is the real DOM node - but Marko only types a tag var as a DOM-node
+// getter for NATIVE tags, not custom-component tags that happen to render a
+// single root element, so the getter's return type is `never` and needs an
+// explicit cast to the type every anchorEl consumer actually declares.
+// TODO(marko): tag var on a single-native-root custom tag resolves to
+// `never` instead of a DOM-node getter -- an upstream Marko typing gap,
+// not fixable from this repo. Confirmed via isolated repro.
+<const/anchorEl=() => (cardEl as () => HTMLElement | null)()/>
 
 <Card/cardEl
   class="dark isolate z-10 max-h-full min-h-0 w-full self-start rounded-2xl bg-card/90 py-3 gap-3 backdrop-blur-xl md:w-(--customizer-width)"

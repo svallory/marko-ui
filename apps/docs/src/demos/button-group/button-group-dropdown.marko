@@ -1,6 +1,7 @@
 import ButtonGroup from "@marko-ui/shadcn/ui/button-group/button-group.marko";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
 import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import type { DropdownMenuItem } from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
 import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
 
 static const ITEMS = [
@@ -12,7 +13,7 @@ static const ITEMS = [
   { value: "copy", label: "Copy Conversation" },
   { type: "separator" },
   { value: "delete", label: "Delete Conversation", variant: "destructive" },
-];
+] satisfies DropdownMenuItem[];
 
 <ButtonGroup>
   <Button variant="outline">Follow</Button>

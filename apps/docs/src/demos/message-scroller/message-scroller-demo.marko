@@ -135,7 +135,7 @@ static const SCRIPT: ChatMessage[] = [
         <else>
           <MessageScroller controller=controller>
             <MessageScrollerViewport controller=controller>
-              <MessageScrollerContent controller=controller aria-busy=busy class="p-4">
+              <MessageScrollerContent controller=controller aria-busy=(busy ? "true" : "false") class="p-4">
                 <for|message| of=messages by=(message) => message.id>
                   <MessageScrollerItem controller=controller messageId=message.id scrollAnchor=(message.role === "user")>
                     <Message align=(message.role === "user" ? "end" : "start")>

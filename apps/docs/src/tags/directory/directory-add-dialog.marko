@@ -73,7 +73,7 @@ static function commandFor(manager: string, registryName: string) {
               type="button"
               role="tab"
               data-slot="tabs-trigger"
-              aria-selected=String(m === manager)
+              aria-selected=(m === manager ? "true" : "false")
               class="rounded-md px-3 py-1 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground aria-selected:bg-muted aria-selected:text-foreground"
               onClick() {
                 manager = m;

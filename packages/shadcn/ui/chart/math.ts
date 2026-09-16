@@ -197,7 +197,7 @@ export function stackSeries(
   return generator(data);
 }
 
-export type CornerRadius = number | [number, number, number, number];
+export type CornerRadius = number | readonly [number, number, number, number];
 
 /**
  * Rounded-rect path with recharts Rectangle parity: a number radius rounds
@@ -214,7 +214,7 @@ export function roundedRectPath(
 ): string {
   const limit = Math.min(Math.abs(width) / 2, Math.abs(height) / 2);
   const clamp = (value: number) => Math.max(0, Math.min(limit, value));
-  const corners: [number, number, number, number] =
+  const corners: readonly [number, number, number, number] =
     typeof radius === "number" ? [radius, radius, radius, radius] : radius;
   const topLeft = clamp(corners[0]);
   const topRight = clamp(corners[1]);
