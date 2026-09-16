@@ -88,6 +88,19 @@ import { getComponentPageData } from "../../../../lib/component-page-data.ts";
 
             <!-- Hero preview: the first example, shown before any prose. -->
             <if=page.examples[0]>
+              <!--
+                Every other section on this page opens with a visible <h2>; the
+                hero is the only one without, which left a heading gap right
+                after the <h1>. A component that renders its own headings then
+                lands at the wrong depth — accordion's items are <h3> (matching
+                upstream shadcn's AccordionHeader), so the page read h1 -> h3.
+                Labelling the hero closes the gap at the page level, where the
+                defect is, instead of changing a registry component's heading
+                level to suit one docs page. sr-only because the stage is
+                self-evident on screen and the design has no visible heading
+                here.
+              -->
+              <h2 class="sr-only">Example</h2>
               <component-preview
                 demoId=page.examples[0].demoId
                 source=page.examples[0].source

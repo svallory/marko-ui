@@ -52,16 +52,6 @@ const PAGE_SCOPE_RULES = [
   "landmark-unique",
   "page-has-heading-one",
   "region",
-  // heading-order compares each heading against the previous heading in the
-  // DOCUMENT, not within the include scope. A demo card whose own heading is an
-  // <h4> is flagged only because the page's <h1>/<h2>/<h3> sit outside the
-  // scoped fragment — the demo markup is not at fault and there is no level the
-  // demo could use that is correct both standalone and nested under the docs
-  // page. Verified empirically: with the demo markup untouched, deleting the
-  // out-of-scope headings drops the violation from 1 to 0 on
-  // /docs/components/separator. Same page-level-context class as the landmark
-  // rules above.
-  "heading-order",
 ];
 
 /** Wait for Marko resumption + Zag machine start (same signal the test helpers use). */
