@@ -24,7 +24,12 @@ export interface Input {
     </div>
   </if>
   <await|highlighted|=highlightCode(input.code, input.language ?? "text")>
-    <pre class="overflow-x-auto p-4 text-[0.8125rem] leading-6"><code id=blockId class="font-mono">$!{highlighted}</code></pre>
+    // `tabindex="0"`: the block scrolls horizontally on long lines and has no
+    // focusable content, so a keyboard user could not otherwise reach the
+    // clipped source (axe `scrollable-region-focusable`). No role/label — a
+    // docs page renders many of these, and naming each one would bury the
+    // page's real landmarks in duplicates.
+    <pre tabindex="0" class="overflow-x-auto p-4 text-[0.8125rem] leading-6"><code id=blockId class="font-mono">$!{highlighted}</code></pre>
   </await>
   <button
     type="button"

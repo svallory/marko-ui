@@ -70,22 +70,22 @@ export interface Input {
     <ol class="mt-4 space-y-6 [counter-reset:step] [&>li]:relative [&>li]:pl-9">
       <if=dependencyCommands.length !== 0>
         <li class="before:absolute before:left-0 before:top-0 before:flex before:h-6 before:w-6 before:items-center before:justify-center before:rounded-full before:border before:border-border before:bg-muted before:text-xs before:font-medium before:[counter-increment:step] before:[content:counter(step)]">
-          <h4 class="text-sm font-semibold text-foreground">Install dependencies</h4>
+          <h3 class="text-sm font-semibold text-foreground">Install dependencies</h3>
           <package-manager-switcher commands=dependencyCommands/>
         </li>
       </if>
 
       <li class="before:absolute before:left-0 before:top-0 before:flex before:h-6 before:w-6 before:items-center before:justify-center before:rounded-full before:border before:border-border before:bg-muted before:text-xs before:font-medium before:[counter-increment:step] before:[content:counter(step)]">
-        <h4 class="text-sm font-semibold text-foreground">
+        <h3 class="text-sm font-semibold text-foreground">
           Copy and paste the following code into your project
-        </h4>
+        </h3>
         <for|file| of=input.files by=(file) => file.path>
           <expandable-code code=file.content filename=file.path/>
         </for>
       </li>
 
       <li class="before:absolute before:left-0 before:top-0 before:flex before:h-6 before:w-6 before:items-center before:justify-center before:rounded-full before:border before:border-border before:bg-muted before:text-xs before:font-medium before:[counter-increment:step] before:[content:counter(step)]">
-        <h4 class="text-sm font-semibold text-foreground">Update the import paths</h4>
+        <h3 class="text-sm font-semibold text-foreground">Update the import paths</h3>
         <p class="mt-2 text-sm text-muted-foreground">
           The snippets above use the paths the CLI would have written. Adjust them to match
           where your project keeps its components and its
