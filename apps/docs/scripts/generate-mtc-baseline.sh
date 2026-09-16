@@ -24,25 +24,16 @@ if [ "$mtc_exit" -ne 0 ] && [ "$mtc_exit" -ne 1 ]; then
   exit 1
 fi
 
-set +e
 fingerprint="$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts)"
-normalize_exit=$?
-set -e
 
-# normalize-mtc.ts exits nonzero when a raw diagnostic header didn't match
-# any of the 3 known shapes — refuse to write a baseline built from a
-# silently-incomplete fingerprint.
-if [ "$normalize_exit" -ne 0 ]; then
-  echo "normalize-mtc.ts failed to parse marko-type-check's output — see its stderr above. Refusing to write mtc-baseline.txt." >&2
-  exit 1
-fi
-
-# mtc_exit -eq 1 means marko-type-check reported errors; an empty
-# fingerprint from that run is a normalizer gap (every header failed to
-# match), not evidence everything got fixed. Independent of --force: force
-# is for "the baseline really is now empty," not "the normalizer is broken."
-if [ "$mtc_exit" -eq 1 ] && [ -z "$fingerprint" ]; then
-  echo "marko-type-check reported errors (exit 1) but no fingerprint was produced — normalizer gap, not a clean run. Refusing to write mtc-baseline.txt." >&2
+# normalize-mtc.ts classifies every blank-line-delimited record it sees —
+# as a fingerprinted error, or as a recognized-and-skipped non-error — and
+# never silently drops one. --count reports "<rawRecords> <accountedRecords>";
+# a mismatch means a future change to that file's classification logic
+# introduced a silent drop. Refuse to write a baseline built from that.
+read -r raw_record_count accounted_record_count <<< "$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts --count)"
+if [ "$raw_record_count" != "$accounted_record_count" ]; then
+  echo "normalize-mtc.ts saw $raw_record_count raw diagnostic record(s) but only accounted for $accounted_record_count — normalizer gap, not a clean run. Refusing to write mtc-baseline.txt." >&2
   exit 1
 fi
 

@@ -64,29 +64,22 @@ if [ "$mtc_exit" -ne 0 ] && [ "$mtc_exit" -ne 1 ]; then
   exit 1
 fi
 
-set +e
 fingerprint="$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts)"
-normalize_exit=$?
-set -e
 
-# normalize-mtc.ts exits nonzero when a raw diagnostic header didn't match
-# any of the 3 known shapes — never silently swallow that as "no errors".
-if [ "$normalize_exit" -ne 0 ]; then
+# normalize-mtc.ts classifies every blank-line-delimited record it sees —
+# as a fingerprinted error, or as a recognized-and-skipped non-error — and
+# never silently drops one. --count reports "<rawRecords> <accountedRecords>";
+# a mismatch means some future change to that file's classification logic
+# introduced a silent drop (the exact class of bug this whole guard exists
+# to catch — see normalize-mtc.ts's file header for the full history).
+# Independent of baseline size: a baseline at 0 entries must not disarm this.
+read -r raw_record_count accounted_record_count <<< "$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts --count)"
+if [ "$raw_record_count" != "$accounted_record_count" ]; then
   echo "" >&2
-  echo "docs mtc: normalize-mtc.ts failed to parse marko-type-check's output — see its stderr above. No baseline comparison performed." >&2
+  echo "docs mtc: normalize-mtc.ts saw $raw_record_count raw diagnostic record(s) but only accounted for $accounted_record_count — normalizer gap, not a clean run. No baseline comparison performed." >&2
   exit 1
 fi
 
-# mtc_exit -eq 1 means marko-type-check itself reported errors. If the
-# normalizer still produced an empty fingerprint, every header in its
-# output failed to match a known shape and got silently counted as 0 —
-# a normalizer gap, not a clean run. Independent of baseline size (a
-# baseline that has reached 0 entries must not disarm this).
-if [ "$mtc_exit" -eq 1 ] && [ -z "$fingerprint" ]; then
-  echo "" >&2
-  echo "docs mtc: marko-type-check reported errors (exit 1) but no fingerprint was produced — normalizer gap, not a clean run. No baseline comparison performed." >&2
-  exit 1
-fi
 baseline="$(grep -v '^#' mtc-baseline.txt | sed '/^$/d')"
 
 new_lines="$(comm -13 <(echo "$baseline" | sort) <(echo "$fingerprint" | sort))"
