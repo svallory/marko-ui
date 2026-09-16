@@ -20,10 +20,22 @@ static const columns: DataTableColumn<(typeof payments)[number]>[] = [
   },
 ];
 
-// DataTable's Input<TData> is generic, but a custom tag call can't jointly
-// infer TData across two sibling props (columns=/data=) the way a plain
-// TS function call would - each is checked independently against the
-// component's default TData = Record<string, unknown>. `columns` above is
-// already correctly typed against payments' real row shape, so this cast
-// only defeats that inference gap, not a real mismatch.
+// KNOWN UNSOUNDNESS, not just an inference-gap workaround: DataTable's
+// Input<TData> is generic, but a Marko tag call never infers TData from
+// the call site at all -- every <DataTable ...=.../> is checked against
+// TData's default (Record<string, unknown>), confirmed by an isolated
+// repro (removing this cast produces a genuine TS2322 even though
+// `columns` is correctly typed against payments' real row shape, and
+// there is no generic-tag-call syntax to instantiate TData explicitly).
+// This cast makes that TS2322 disappear by widening `columns`' element
+// type to DataTableColumn<Record<string, unknown>>, whose `cell` field
+// is `(row: Record<string, unknown>) => ...` -- a genuinely different,
+// wider function type than the real `(row: typeof payments[number]) =>
+// ...`. Any code that holds the widened-typed array could call `cell`
+// with an arbitrary Record<string, unknown> and the type system would
+// accept it, even though only the correctly-shaped row is ever passed
+// at DataTable's actual runtime call site. Tried and rejected: dropping
+// the cast (TS2322, above), and a single combined columns+data prop
+// (would change DataTable's public Input for every consumer, out of
+// scope for a demo-only fix).
 <DataTable columns=(columns as DataTableColumn<Record<string, unknown>>[]) data=payments/>

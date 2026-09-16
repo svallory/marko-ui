@@ -23,7 +23,7 @@ static const columns: DataTableColumn<(typeof payments)[number]>[] = [
   },
 ];
 
-// See data-table-demo.marko for why this cast is needed: DataTable's
-// generic TData can't be jointly inferred across columns=/data= at a
-// custom tag call site.
+// See data-table-demo.marko: this is a KNOWN UNSOUNDNESS (Marko tag
+// calls never infer a component's generic TData from the call site),
+// not just a harmless inference-gap workaround.
 <DataTable columns=(columns as DataTableColumn<Record<string, unknown>>[]) data=payments/>
