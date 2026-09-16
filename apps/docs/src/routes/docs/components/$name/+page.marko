@@ -99,12 +99,23 @@ import { getComponentPageData } from "../../../../lib/component-page-data.ts";
                 level to suit one docs page. sr-only because the stage is
                 self-evident on screen and the design has no visible heading
                 here.
+
+                The section wrapper is load-bearing, not decoration: the
+                behavior suite's demoByTitle() helper finds a demo by taking the
+                div whose DIRECT child is a heading, so an unwrapped heading
+                here would make the page's outer wrapper div match that shape
+                too and every demo lookup would resolve to ~29 elements
+                (Playwright strict-mode violation). Keeping the heading inside a
+                section — as Installation/Usage/Examples already do — keeps the
+                only heading-bearing divs the per-example ones.
               -->
-              <h2 class="sr-only">Example</h2>
-              <component-preview
-                demoId=page.examples[0].demoId
-                source=page.examples[0].source
-              />
+              <section>
+                <h2 class="sr-only">Example</h2>
+                <component-preview
+                  demoId=page.examples[0].demoId
+                  source=page.examples[0].source
+                />
+              </section>
             </if>
 
             <section>
