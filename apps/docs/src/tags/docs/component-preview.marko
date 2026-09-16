@@ -39,9 +39,18 @@ export interface Input {
   data-slot="component-preview"
   data-not-typeset
 >
+  // `tabindex="0"`: the stage is a fixed-height (h-72) scroll container, so a
+  // demo taller or wider than it clips. Some demos (table, chart, marquee)
+  // legitimately exceed it, and the stage itself holds no focusable content in
+  // those cases, leaving the overflow unreachable by keyboard (axe
+  // `scrollable-region-focusable`). Deliberately no role="region"/aria-label:
+  // every page renders ~6 of these, so naming them would add a screenful of
+  // identically-named landmarks for screen-reader users to wade through, and
+  // the bare tab stop already satisfies the rule.
   <div
     data-slot="preview"
     data-align=align
+    tabindex="0"
     class="flex h-72 w-full justify-center overflow-x-auto p-10 data-[align=center]:items-center data-[align=end]:items-start data-[align=start]:items-start sm:data-[align=end]:items-end"
   >
     <demo-renderer demoId=input.demoId/>
@@ -49,7 +58,12 @@ export interface Input {
 
   <div data-slot="code" data-expanded="false" class="relative overflow-hidden border-t border-border">
     <div/peekEl class="relative">
-      <pre class="overflow-x-auto bg-code p-4 text-[0.8125rem] leading-6 text-code-foreground"><code class="font-mono">${peekLines}</code></pre>
+      // `tabindex="0"`: the peek scrolls horizontally when a source line is
+      // wider than the stage, and it holds no focusable content of its own, so
+      // without this a keyboard user cannot reach the clipped source (axe
+      // `scrollable-region-focusable`). No role/label, for the same
+      // landmark-noise reason as the stage above.
+      <pre tabindex="0" class="overflow-x-auto bg-code p-4 text-[0.8125rem] leading-6 text-code-foreground"><code class="font-mono">${peekLines}</code></pre>
       <div class="pointer-events-none absolute inset-0 flex items-end justify-center pb-4" style="background: linear-gradient(to top, var(--color-code), color-mix(in oklab, var(--color-code) 60%, transparent), transparent)">
         <button
           type="button"

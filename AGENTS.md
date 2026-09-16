@@ -122,6 +122,21 @@ SSR/unit tests (`packages/marko-ui/tests/`, `packages/shadcn/tests/hydration-inv
 
 **Calendar demos must pin `defaultFocusedValue`, never rely on wall-clock "today".** `Calendar`'s Zag date-picker machine focuses the browser's real "today" whenever `defaultFocusedValue`/`focusedValue`/`value` is unset, so its rendered day grid (and every `aria-label="Choose <weekday>, <month> <day>, <year>"` on each day button) drifts by one day every day. The fix is a serializable `defaultFocusedValue={ year, month, day }` on the demo source itself under `apps/docs/src/demos/calendar/` (the pattern `calendar-demo.marko`/`calendar-presets.marko` already used), not a Playwright `page.clock` or server-side time freeze. `calendar-min-max.marko` needs no pin: the Zag machine clamps initial focus into the `min`/`max` range on its own. When adding a new Calendar demo (or any date-sensitive component demo), pin its initial date the same way — an unpinned wall-clock date is a regression waiting to happen, not just cosmetic drift.
 
+**The axe-core WCAG scan (CI job `axe`) runs against a PRODUCTION docs build, not the dev server.** Reproduce it locally exactly as CI does — never on port 3000, per the stale-listener trap above:
+
+```bash
+REGISTRY_BASE_URL="http://localhost:4400/r" bun tooling/build-registry.ts
+bun run --cwd apps/docs build
+(cd apps/docs && PORT=4400 NODE_ENV=production bun dist/index.mjs &)
+DOCS_BASE_URL=http://localhost:4400 bun scripts/ci/axe-scan.ts axe-results.json
+```
+
+It scans `/docs/components/<name>` for every `DOCUMENTED_COMPONENTS` entry, scoped to the hero `[data-slot="component-preview"]`, and exits non-zero on **any** violation — there is no baseline or threshold file, and none should be added: 0 means 0. Keep the full `axe-results.json`; its `perPage` map is what makes a failure diagnosable (aggregate it by rule, then by target, before touching any component).
+
+**The scoped include does NOT mean every violation belongs to the component.** `[data-slot="component-preview"]` wraps the docs stage *and* the collapsed source peek, so docs chrome is inside the scan scope: of the 166 violations fixed on 2026-09-16, 162 were `scrollable-region-focusable` on the docs code-peek `<pre>` (138) and the fixed-height `h-72` demo stage (24), zero on any `packages/shadcn` component. Those were real defects — genuinely overflowing, no `tabindex`, no focusable children, so keyboard users could not scroll to the clipped content — and are fixed honestly in `component-preview.marko`/`code-block.marko` with `tabindex="0"` + `role="region"` + `aria-label`, which adds a focus ring only on focus and changes nothing at rest. When a scrollable container legitimately clips content, make it keyboard-reachable; never silence the rule.
+
+**Some axe rules read page-wide context even under a scoped include** — those belong in the script's `PAGE_SCOPE_RULES`, each with a comment justifying it. `heading-order` was added there on 2026-09-16: it compares each heading against the previous heading in the *document*, so a demo card's own `<h4>` is flagged only because the page's `<h1>`/`<h2>` sit outside the scoped fragment. Verified empirically — with the demo markup untouched, deleting the out-of-scope headings drops the violation to 0. Before disabling any rule, prove it is page-level this way (run the scoped scan, then re-run it with out-of-scope context removed); never blanket-disable to get green, and never add `aria-hidden` to interactive elements or delete demo content to silence a rule.
+
 ## Hard constraints
 
 - **marko is pinned to 6.3.46** (bumped 2026-08-26 from 6.3.34 to pick up marko-js/marko#4062, which fixed a walk-order defect — see `connectFresh` history below). The 6.3.34→6.3.35 minification/reactivity regressions that originally motivated the 6.3.34 pin are gone by 6.3.46: a 10-page interactive-component regression sweep plus the full `hydration-invariant` suite (33/33) passed clean on a production build. Do not bump further without re-verifying those.
