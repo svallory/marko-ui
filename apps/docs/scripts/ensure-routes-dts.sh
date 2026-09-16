@@ -17,6 +17,11 @@
 # response, or lack of one, is irrelevant — the crash happens after
 # routes.d.ts is already written), waits for the file, then kills the
 # server.
+# Port is pinned explicitly, never 3000: vite.config.ts sets no
+# server.port/strictPort, so Vite auto-increments when 3000 is busy, and
+# on at least one maintainer machine port 3000 is permanently held by an
+# unrelated app that answers 200 on every path -- a hardcoded
+# localhost:3000 curl would silently hit that app instead of this server.
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -25,12 +30,13 @@ if [ -f .marko-run/routes.d.ts ]; then
   exit 0
 fi
 
-bunx marko-run dev > /dev/null 2>&1 &
+port=4417
+bunx marko-run dev --port "$port" > /dev/null 2>&1 &
 dev_pid=$!
 trap 'kill -9 "$dev_pid" 2>/dev/null; wait "$dev_pid" 2>/dev/null || true' EXIT
 
 sleep 2
-curl -s -m 25 -o /dev/null http://localhost:3000/ &
+curl -s -m 25 -o /dev/null "http://localhost:$port/" &
 curl_pid=$!
 
 for _ in $(seq 1 25); do
