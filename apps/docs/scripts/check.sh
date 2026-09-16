@@ -64,15 +64,27 @@ if [ "$mtc_exit" -ne 0 ] && [ "$mtc_exit" -ne 1 ]; then
   exit 1
 fi
 
+set +e
 fingerprint="$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts)"
+normalize_exit=$?
+set -e
 
-# A second, independent guard: even with the correct exit code, an empty
-# fingerprint while the baseline is non-empty is exactly the "entire
-# baseline looks disappeared" shape a partial/truncated run would produce.
-# Treat it as a crash signal too, never as "everything got fixed."
-if [ -z "$fingerprint" ] && [ -s mtc-baseline.txt ] && [ -n "$(grep -v '^#' mtc-baseline.txt | sed '/^$/d')" ]; then
+# normalize-mtc.ts exits nonzero when a raw diagnostic header didn't match
+# any of the 3 known shapes — never silently swallow that as "no errors".
+if [ "$normalize_exit" -ne 0 ]; then
   echo "" >&2
-  echo "docs mtc: marko-type-check produced no errors but the baseline is non-empty — this looks like a crashed/truncated run, not a clean fix. No baseline comparison performed." >&2
+  echo "docs mtc: normalize-mtc.ts failed to parse marko-type-check's output — see its stderr above. No baseline comparison performed." >&2
+  exit 1
+fi
+
+# mtc_exit -eq 1 means marko-type-check itself reported errors. If the
+# normalizer still produced an empty fingerprint, every header in its
+# output failed to match a known shape and got silently counted as 0 —
+# a normalizer gap, not a clean run. Independent of baseline size (a
+# baseline that has reached 0 entries must not disarm this).
+if [ "$mtc_exit" -eq 1 ] && [ -z "$fingerprint" ]; then
+  echo "" >&2
+  echo "docs mtc: marko-type-check reported errors (exit 1) but no fingerprint was produced — normalizer gap, not a clean run. No baseline comparison performed." >&2
   exit 1
 fi
 baseline="$(grep -v '^#' mtc-baseline.txt | sed '/^$/d')"
