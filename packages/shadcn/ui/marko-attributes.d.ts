@@ -40,3 +40,19 @@ declare namespace Marko {
     }
   }
 }
+
+// `autocorrect` on <input>.
+//
+// Marko's tags-html.d.ts declares `autocorrect` (Safari-only) only on
+// <textarea>, but Safari also honors it on <input> -- the same runtime
+// attribute the browser already supports, just not modeled on this
+// element in Marko's shipped types. `AttrOnOff` itself is a module-local
+// type in tags-html.d.ts (not exported), so this repeats its shape
+// (`undefined | null | false | "on" | "off"`) rather than naming it.
+declare namespace Marko {
+  namespace HTML {
+    interface Input {
+      autocorrect?: undefined | null | false | "on" | "off";
+    }
+  }
+}
