@@ -7,6 +7,9 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
+# Overridable for tests: see check.sh for why this exists.
+: "${NORMALIZE_MTC_CMD:=bun scripts/normalize-mtc.ts}"
+
 bash scripts/ensure-routes-dts.sh
 rm -f tsconfig.tsbuildinfo
 set +e
@@ -30,7 +33,7 @@ fi
 # check below would read `[ "" != "" ]` (false), and the script would
 # proceed as if 0 records existed. Capture every exit status explicitly.
 set +e
-fingerprint="$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts)"
+fingerprint="$(printf '%s' "$raw" | $NORMALIZE_MTC_CMD)"
 fingerprint_exit=$?
 set -e
 if [ "$fingerprint_exit" -ne 0 ]; then
@@ -44,7 +47,7 @@ fi
 # a mismatch means a future change to that file's classification logic
 # introduced a silent drop. Refuse to write a baseline built from that.
 set +e
-counts_out="$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts --count)"
+counts_out="$(printf '%s' "$raw" | $NORMALIZE_MTC_CMD --count)"
 count_exit=$?
 set -e
 if [ "$count_exit" -ne 0 ]; then

@@ -8,6 +8,11 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
+# Overridable for tests: default runs the real normalizer via bun; a test
+# can point this at a stub (e.g. a script that exits nonzero) to simulate
+# a crashing normalizer without needing a real mtc run.
+: "${NORMALIZE_MTC_CMD:=bun scripts/normalize-mtc.ts}"
+
 lock_dir="$(git rev-parse --git-common-dir)/docs-mtc.lock"
 pid_file="$lock_dir/pid"
 owned=0
@@ -73,7 +78,7 @@ fi
 # these are simple commands `set -e` reliably covers (command substitution
 # and `read` both swallow failure in different ways).
 set +e
-fingerprint="$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts)"
+fingerprint="$(printf '%s' "$raw" | $NORMALIZE_MTC_CMD)"
 fingerprint_exit=$?
 set -e
 if [ "$fingerprint_exit" -ne 0 ]; then
@@ -90,7 +95,7 @@ fi
 # to catch — see normalize-mtc.ts's file header for the full history).
 # Independent of baseline size: a baseline at 0 entries must not disarm this.
 set +e
-counts_out="$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts --count)"
+counts_out="$(printf '%s' "$raw" | $NORMALIZE_MTC_CMD --count)"
 count_exit=$?
 set -e
 if [ "$count_exit" -ne 0 ]; then
@@ -110,7 +115,12 @@ if [ "$raw_record_count" != "$accounted_record_count" ]; then
   exit 1
 fi
 
-baseline="$(grep -v '^#' mtc-baseline.txt | sed '/^$/d')"
+# `grep -v` exits 1 when nothing matches (e.g. a baseline file that is all
+# comments, which is the real state on main right now: 0 known errors) —
+# under `set -e` that silently kills the script before any baseline
+# comparison runs at all. `|| true` keeps the empty-baseline case a normal,
+# reportable "0 known entries" instead of a silent non-zero exit.
+baseline="$(grep -v '^#' mtc-baseline.txt | sed '/^$/d' || true)"
 
 new_lines="$(comm -13 <(echo "$baseline" | sort) <(echo "$fingerprint" | sort))"
 gone_lines="$(comm -23 <(echo "$baseline" | sort) <(echo "$fingerprint" | sort))"
