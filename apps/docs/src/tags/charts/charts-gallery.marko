@@ -20,6 +20,7 @@ import { buttonVariants } from "@marko-ui/shadcn/ui/button/variants.ts";
 import { badgeVariants } from "@marko-ui/shadcn/ui/badge/variants.ts";
 import { cn } from "@marko-ui/shadcn/lib/utils.ts";
 import { CHART_TYPES } from "../../lib/charts-list.ts";
+import type { ChartTypeEntry } from "../../lib/charts-list.ts";
 
 import ChartAreaInteractive from "../../demos/charts-gallery/area/chart-area-interactive.marko";
 import ChartAreaDefault from "../../demos/charts-gallery/area/chart-area-default.marko";
@@ -78,7 +79,13 @@ static const TOTAL_SLOTS = 12;
 static const EMPTY_SLOT_CLASS = "hidden aspect-square w-full rounded-lg border border-dashed xl:block";
 static const FULL_WIDTH_CLASS = "md:col-span-2 lg:col-span-3";
 
-<const/typeEntry=(CHART_TYPES.find((entry) => entry.slug === input.type) ?? CHART_TYPES[0]!)/>
+static const firstChartType: ChartTypeEntry = (() => {
+  const entry = CHART_TYPES[0];
+  if (!entry) throw new Error("CHART_TYPES must not be empty");
+  return entry;
+})();
+
+<const/typeEntry=(CHART_TYPES.find((entry) => entry.slug === input.type) ?? firstChartType)/>
 <const/typeLabel=(typeEntry.label.replace(" Charts", ""))/>
 
 // ---- PageHeader (shadcn components/page-header.tsx, via charts/layout.tsx) ----

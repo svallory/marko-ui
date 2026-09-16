@@ -61,8 +61,14 @@ static const PRESETS = [
 <let/messages=([] as ChatMessage[])/>
 <let/busy=false/>
 <let/enteringId=(null as string | null)/>
+static const firstPreset: (typeof PRESETS)[number] = (() => {
+  const entry = PRESETS[0];
+  if (!entry) throw new Error("PRESETS must not be empty");
+  return entry;
+})();
+
 <const/nextMessage=SCRIPT[messages.length]/>
-<const/preset=(PRESETS.find((entry) => entry.value === presetId) ?? PRESETS[0]!)/>
+<const/preset=(PRESETS.find((entry) => entry.value === presetId) ?? firstPreset)/>
 
 <const/send=() => {
   if (!nextMessage || busy) return;

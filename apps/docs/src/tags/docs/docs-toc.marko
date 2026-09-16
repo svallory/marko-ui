@@ -60,7 +60,7 @@ static function indentClass(level: number) {
       };
 
       const visible = new Set<string>();
-      observer = new IntersectionObserver(
+      const obs = new IntersectionObserver(
         (records) => {
           records.forEach((record) => {
             if (record.isIntersecting) visible.add(record.target.id);
@@ -71,8 +71,9 @@ static function indentClass(level: number) {
         },
         { rootMargin: "-80px 0px -70% 0px", threshold: 0 },
       );
+      observer = obs;
 
-      headings.forEach((heading) => observer!.observe(heading));
+      headings.forEach((heading) => obs.observe(heading));
       if (headings[0]) setActive(headings[0].id);
 
       // The observer's bottom rootMargin means the final short section can

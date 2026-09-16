@@ -160,7 +160,13 @@ static const MAILS: MailItem[] = [
   if (!input.open) input.toggle?.();
 }/>
 
-<const/activeItem=NAV_MAIN.find((item) => item.id === activeItemId) ?? NAV_MAIN[0]!/>
+static const firstNavItem: NavMainItem = (() => {
+  const item = NAV_MAIN[0];
+  if (!item) throw new Error("NAV_MAIN must not be empty");
+  return item;
+})();
+
+<const/activeItem=NAV_MAIN.find((item) => item.id === activeItemId) ?? firstNavItem/>
 
 <div class="flex h-full overflow-hidden *:data-[slot=sidebar]:flex-row">
   <!-- Icon rail: fixed-width, always visible (not affected by the outer open/close state). -->

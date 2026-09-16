@@ -49,10 +49,12 @@ export const DOCS_NAV: DocsNavSection[] = [
     title: "Components",
     items: [
       { href: "/docs/components", label: "All Components" },
-      ...COMPONENTS.filter((name) => name in DEMOS).map((name) => ({
-        href: `/docs/components/${name}`,
-        label: DEMOS[name]!.registry.title || titleize(name),
-      })),
+      ...COMPONENTS.flatMap((name) => {
+        const demo = DEMOS[name];
+        return demo
+          ? [{ href: `/docs/components/${name}`, label: demo.registry.title || titleize(name) }]
+          : [];
+      }),
     ],
   },
 ];
