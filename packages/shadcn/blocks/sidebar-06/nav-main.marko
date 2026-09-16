@@ -8,6 +8,12 @@ export interface NavMainLeafItem {
   id: string;
   title: string;
   url: string;
+  // Upstream shadcn renders isActive on SidebarMenuSubButton. Recorded on
+  // the data so a port from that source matches it field-for-field, but
+  // not yet wired — this component's DropdownMenu-based sub-item render
+  // (see the porting-deviation note below) has no per-item active-state
+  // slot yet.
+  isActive?: boolean;
 }
 
 export interface NavMainItem {
