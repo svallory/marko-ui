@@ -64,7 +64,23 @@ if [ "$mtc_exit" -ne 0 ] && [ "$mtc_exit" -ne 1 ]; then
   exit 1
 fi
 
+# `$(...)` inside `read <<<` discards the command's exit status, and `read`
+# at EOF returns 1 without tripping `set -e` — so a crashing normalize-mtc.ts
+# (syntax error, missing bun, OOM) would leave both vars empty, `[ "" != "" ]`
+# would be false, and the script would proceed as if 0 records existed. Every
+# exit-status-bearing step below is therefore captured explicitly under
+# `set +e`/`$?` rather than trusted to `set -e` to catch it, since none of
+# these are simple commands `set -e` reliably covers (command substitution
+# and `read` both swallow failure in different ways).
+set +e
 fingerprint="$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts)"
+fingerprint_exit=$?
+set -e
+if [ "$fingerprint_exit" -ne 0 ]; then
+  echo "" >&2
+  echo "docs mtc: normalize-mtc.ts failed (exit $fingerprint_exit) — normalizer broken, not a clean run. No baseline comparison performed." >&2
+  exit 1
+fi
 
 # normalize-mtc.ts classifies every blank-line-delimited record it sees —
 # as a fingerprinted error, or as a recognized-and-skipped non-error — and
@@ -73,7 +89,21 @@ fingerprint="$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts)"
 # introduced a silent drop (the exact class of bug this whole guard exists
 # to catch — see normalize-mtc.ts's file header for the full history).
 # Independent of baseline size: a baseline at 0 entries must not disarm this.
-read -r raw_record_count accounted_record_count <<< "$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts --count)"
+set +e
+counts_out="$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts --count)"
+count_exit=$?
+set -e
+if [ "$count_exit" -ne 0 ]; then
+  echo "" >&2
+  echo "docs mtc: normalize-mtc.ts --count failed (exit $count_exit) — normalizer broken, not a clean run. No baseline comparison performed." >&2
+  exit 1
+fi
+read -r raw_record_count accounted_record_count <<< "$counts_out"
+if ! [ "$raw_record_count" -ge 0 ] 2>/dev/null || ! [ "$accounted_record_count" -ge 0 ] 2>/dev/null; then
+  echo "" >&2
+  echo "docs mtc: normalize-mtc.ts --count produced malformed output: '$counts_out'" >&2
+  exit 1
+fi
 if [ "$raw_record_count" != "$accounted_record_count" ]; then
   echo "" >&2
   echo "docs mtc: normalize-mtc.ts saw $raw_record_count raw diagnostic record(s) but only accounted for $accounted_record_count — normalizer gap, not a clean run. No baseline comparison performed." >&2

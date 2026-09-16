@@ -24,14 +24,38 @@ if [ "$mtc_exit" -ne 0 ] && [ "$mtc_exit" -ne 1 ]; then
   exit 1
 fi
 
+# `$(...)` inside `read <<<` discards the command's exit status, and `read`
+# at EOF returns 1 without tripping `set -e` — so a crashing normalize-mtc.ts
+# (syntax error, missing bun, OOM) would leave both vars empty, the mismatch
+# check below would read `[ "" != "" ]` (false), and the script would
+# proceed as if 0 records existed. Capture every exit status explicitly.
+set +e
 fingerprint="$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts)"
+fingerprint_exit=$?
+set -e
+if [ "$fingerprint_exit" -ne 0 ]; then
+  echo "normalize-mtc.ts failed (exit $fingerprint_exit) — normalizer broken, not a clean run. Refusing to write mtc-baseline.txt." >&2
+  exit 1
+fi
 
 # normalize-mtc.ts classifies every blank-line-delimited record it sees —
 # as a fingerprinted error, or as a recognized-and-skipped non-error — and
 # never silently drops one. --count reports "<rawRecords> <accountedRecords>";
 # a mismatch means a future change to that file's classification logic
 # introduced a silent drop. Refuse to write a baseline built from that.
-read -r raw_record_count accounted_record_count <<< "$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts --count)"
+set +e
+counts_out="$(printf '%s' "$raw" | bun scripts/normalize-mtc.ts --count)"
+count_exit=$?
+set -e
+if [ "$count_exit" -ne 0 ]; then
+  echo "normalize-mtc.ts --count failed (exit $count_exit) — normalizer broken, not a clean run. Refusing to write mtc-baseline.txt." >&2
+  exit 1
+fi
+read -r raw_record_count accounted_record_count <<< "$counts_out"
+if ! [ "$raw_record_count" -ge 0 ] 2>/dev/null || ! [ "$accounted_record_count" -ge 0 ] 2>/dev/null; then
+  echo "normalize-mtc.ts --count produced malformed output: '$counts_out'" >&2
+  exit 1
+fi
 if [ "$raw_record_count" != "$accounted_record_count" ]; then
   echo "normalize-mtc.ts saw $raw_record_count raw diagnostic record(s) but only accounted for $accounted_record_count — normalizer gap, not a clean run. Refusing to write mtc-baseline.txt." >&2
   exit 1
