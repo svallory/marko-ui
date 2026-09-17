@@ -36,17 +36,35 @@ export default defineConfig({
 `
 }
 
+/** Escapes a literal string for embedding in a RegExp. */
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+
 /**
- * True when `source` already imports `cssImportPath` (or any stylesheet whose
- * basename matches), so re-running `init` does not stack duplicate imports.
+ * True when `source` already imports THIS stylesheet, so re-running `init`
+ * does not stack duplicate imports.
+ *
+ * Matched against the resolved specifier, not its basename. A basename match
+ * treats any same-named stylesheet as proof the entry point is wired — an
+ * unrelated `import "../vendor/globals.css"` would make `init` skip the import
+ * it needed to add, and the theme would silently never load. That is the same
+ * failure this whole updater exists to prevent.
+ *
+ * Both the specifier as written (`./styles/globals.css`) and its
+ * extension-equivalent without a leading `./` are accepted, since either is a
+ * legitimate way to have written the same import by hand.
  */
 export function hasCssImport(source: string, cssImportPath: string): boolean {
-  const base = path.basename(cssImportPath)
-  // Matches `import "./app.css"`, `import "../app.css"`, `import "#/app.css"`.
-  const pattern = new RegExp(
-    `import\\s+["'][^"']*${base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`
+  const withoutDotSlash = cssImportPath.replace(/^\.\//, "")
+  const alternatives = Array.from(
+    new Set([cssImportPath, withoutDotSlash, `./${withoutDotSlash}`])
   )
-  return pattern.test(source)
+
+  const pattern = new RegExp(
+    `import\\s+["'](?:${alternatives.map(escapeRegExp).join("|")})["']`
+  )
+  return pattern.test(stripComments(source))
 }
 
 /**
@@ -60,11 +78,33 @@ export function addCssImport(source: string, cssImportPath: string): string {
 }
 
 /**
+ * Blanks out `//` and block comment bodies, preserving every non-comment
+ * character so a post-strip regex sees the same offsets.
+ *
+ * Both checks in this file are comment-blind for the same reason: a
+ * commented-out import is the single likeliest thing to find in a config
+ * someone is mid-way through editing, and treating it as live makes `init`
+ * skip the wiring the project actually needs — silently, which is the failure
+ * mode this updater exists to prevent.
+ */
+function stripComments(source: string): string {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "))
+    .replace(/(^|[^:])\/\/[^\n]*/g, (m, p1) =>
+      p1 + m.slice(p1.length).replace(/./g, " ")
+    )
+}
+
+/**
  * True when the config already registers Tailwind's Vite plugin, under any
  * local binding name.
+ *
+ * Comment-blind: a commented-out `// import tailwindcss from
+ * "@tailwindcss/vite"` must NOT count as present, or `init` reports the config
+ * as already wired and Tailwind never runs.
  */
 export function hasTailwindPlugin(source: string): boolean {
-  return /["']@tailwindcss\/vite["']/.test(source)
+  return /["']@tailwindcss\/vite["']/.test(stripComments(source))
 }
 
 /**
