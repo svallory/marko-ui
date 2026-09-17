@@ -343,6 +343,8 @@ Env vars (all optional, sane defaults): `ACCEPTANCE_REGISTRY_URL` (default the l
 
 **A real, confirmed gap in the live registry deploy, found by this suite (2026-09-08):** every zag-machine component (`switch`, `checkbox`, `tabs`, `dropdown-menu`, etc.) served by `https://marko-ui.saulo.tech/r` still carries the retired `<machine-props>`/`<service>`/`<connect>` three-tag wiring, not the current single `<zag/api=... from=input/>` tag — even though `main` and the published `@marko-ui/shadcn@0.2.0` npm package both have the current source. The copy-path `marko-ui add switch` therefore fetches source that fails to build (`Unable to find entry point for <machine-props>`). The import path is unaffected (it resolves from npm, not the HTTP registry). This means the Coolify registry deploy is stale relative to `main`/npm — see `add-doctor-diff.test.ts` and `registry-health.test.ts` for the reproducing assertions, and `report-acceptance.md` for the full writeup.
 
+**That staleness should be gone once the Cloudflare cutover lands, and the reason is structural, not a one-off re-deploy.** The registry is now built and published by `.github/workflows/pages.yml` on every push to `main`, from `main`'s own source, so the served registry cannot drift from the branch the way a manually-triggered container deploy could. Re-run `bun run test:acceptance` against the live URL after the cutover to confirm, and only then treat this entry as historical — the assertions in `registry-health.test.ts` are what settle it, not the deploy log.
+
 ## Public numbers: where each one comes from
 
 Every number the project states publicly had drifted from reality at least
@@ -375,6 +377,31 @@ badges` failed on every push to main from 2026-09-12 to 2026-09-17 because
 `combine` still required the removed style-matrix job's artifact, so the
 badges on the README silently went stale while CI showed red. When removing a
 CI job, grep for every consumer of its artifacts.
+
+## Deploying (Cloudflare Worker with static assets)
+
+**`apps/docs` is a fully prerendered static site plus one small Worker, deployed to Cloudflare as a Worker with static assets — NOT classic Pages, and no longer the Coolify Node server.** The distinction matters for cost and for how you reason about a bug: asset requests are free and unlimited and never run any code, and the Worker is invoked only for the two paths in `assets.run_worker_first`. Config is `apps/docs/wrangler.jsonc` (project `marko-ui-docs`); `DEPLOY.md` has the full operational detail.
+
+```bash
+bun run --cwd apps/docs build     # dist/public (static) + dist/worker/index.js
+bun run --cwd apps/docs deploy    # wrangler deploy
+```
+
+CI does this on every push to `main` via `.github/workflows/pages.yml`, which builds the registry with the production `REGISTRY_BASE_URL`, builds the site, **asserts the output is complete** (a crawl that silently drops pages still exits 0 — the step checks for `404.html`, `_headers`, the prerendered handler outputs, the per-item preview documents, ≥120 registry JSONs and ≥165 HTML pages), then deploys with a SHA-pinned `cloudflare/wrangler-action`.
+
+**The build is a crawl, so a page only ships if something points at it.** `@marko/run-adapter-static` seeds only PARAMETERLESS routes and then follows anchor links; every dynamic route (`$name`, `$category`, `$type`, `$item`) is invisible to it unless listed in `staticUrls()` in `apps/docs/vite.config.ts`. That function derives its URLs from the same modules the pages read (`COMPONENTS`, `BLOCK_CATEGORIES`, `CHART_TYPES`, the typeset `FIXTURES`, `PREVIEW_ITEMS`), so adding a component prerenders it automatically — **keep it that way rather than hardcoding a list**, or a new component will 404 in production while every test passes. A healthy build logs `Crawled 345, success 336, failed 0`; the 9 "not found" are pre-existing dead links in docs content (`/docs/primitives/*`, `/docs/typeset`), not regressions.
+
+**The crawler silently drops a non-HTML response at an extensionless path.** Its `visit()` writes a non-HTML 200 only when the path matches `/\.\w+$/`; otherwise it aborts and writes nothing. `/docs/components/<name>.md` is therefore written directly, but `/typeset/css` and `/docs/components/<name>/md` are not — `apps/docs/scripts/prerender-handlers.ts` imports and calls those real handler modules (never a reimplementation) and writes each body to the literal extensionless path. That shape is forced: Cloudflare matches non-HTML assets by EXACT pathname, and its index resolution (`/folder` → `/folder/index.html`) is for `.html` only, so there is no `index.css`/`index.md` to lean on. Because those files have no extension, they get no inferred `Content-Type` — `public/_headers` declares it, and **deleting those two rules would serve the CSS and the markdown as unknown-type downloads.**
+
+**`/create/preview` cannot be a single static file, and this is the subtle one.** The page picks its entire body from `?item=` at RENDER time, and a static host cannot vary a file by query string (`_redirects` matches on path only — its `source` is a file path, verified against the Cloudflare docs). Left alone, all three items would collapse onto one document and **32 of the 48 gallery baselines would silently become screenshots of preview-page-1 while the guard still passed.** So each item is prerendered as its own document via `routes/create/preview/$item/+page.marko` (which imports the parent page rather than copying it, so the two can never drift), and the Worker rewrites `?item=` onto it — keeping the public URL the customizer iframe and `e2e/gallery-visual.spec.ts` both use. The parent page reads the item from the PATHNAME, not `$global.params`: it is typed against its own parameterless route, so `params` is `{}` there even when the request arrives through the `$item` route.
+
+**The Worker deliberately does not use `@marko/run/router`.** Re-exporting it (what the default server entry does) pulls in the whole route table, hence all 86 component pages and every Zag machine: measured 7.28 MB raw / 1.31 MB gzipped, over the Workers size limit, to serve one route. `apps/docs/worker/entry.ts` imports only `+layout.marko` and the single `+page.marko` and renders them with Marko's template API, giving 2.37 MB raw / **530 kB gzipped**. The POST response therefore comes from the genuine templates, not hand-written HTML that would drift from the page. Validation rules live in `src/lib/no-js-form-schema.ts` and are imported by BOTH the route handler and the Worker — there is one definition of the rules, which is what keeps the "forms validate without JavaScript" claim honest.
+
+**`scripts/ci/serve-docs.sh` runs `wrangler dev --local`, not a static file server.** The suites must run against what ships, and the pieces only the Worker provides are exactly the pieces they exercise: the `/no-js-form` POST (`packages/shadcn/tests/behavior/no-js-form.test.ts`) and the `/create/preview?item=` rewrite (the visual guard). A static-only server would 404 the POST and serve the wrong preview page.
+
+**Running the whole vitest suite in parallel against one local wrangler produces false failures.** 14 `waitUntil: "networkidle"` timeouts came out of a parallel run whose files are fine: a direct probe of the URL that timed out at 30 s settles networkidle in ~1.7 s, and `--no-file-parallelism` gives 274/274. Use `--no-file-parallelism` locally before believing a timeout is a regression.
+
+**A local `wrangler deploy` can fail with a bare `TypeError: fetch failed` that has nothing to do with Cloudflare.** If `HTTPS_PROXY`/`NODE_EXTRA_CA_CERTS` are set (a corporate or agent-sandbox proxy), wrangler's undici dispatcher does not pick up the proxy CA and every API call fails — including its own metrics post — while plain `curl` and plain Node `fetch` to the same host succeed. The tell is that the failure hits the FIRST request (`GET .../workers/services/<name>`), before any upload. Deploy with `env -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy wrangler deploy`. CI is unaffected.
 
 ## Where knowledge lives
 

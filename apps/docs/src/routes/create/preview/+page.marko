@@ -41,6 +41,7 @@ import {
   RADII,
 } from "../../../tags/create/lib/registry-config.ts";
 import { FONTS } from "../../../tags/create/lib/fonts.ts";
+import { resolvePreviewItem } from "../../../lib/preview-items.ts";
 import type { DesignSystemSearchParams } from "../../../tags/create/lib/search-params.ts";
 import { ICON_WRAPPER_ATTRS } from "@marko-ui/shadcn/ui/icon/render.ts";
 // client-swap.ts, not resolve.ts: resolve.ts statically imports all 5
@@ -313,10 +314,24 @@ static async function applyIconLibrary(iconLibrary: IconLibraryName) {
 // mirrors shadcn's parseAsString.withDefault("preview-02") — our
 // position-named equivalent is preview-page-1; unknown values fall back to
 // it exactly like an unmatched dynamic route would 404 to the default there.
-<const/rawItem=$global.url.searchParams.get("item")/>
-<const/item=(
-  rawItem === "preview-page-2" || rawItem === "preview-page-3" ? rawItem : "preview-page-1"
-)/>
+//
+// The item may also arrive as a PATH segment (/create/preview/<item>, served
+// by ../$item/+page.marko, which renders THIS page). That form exists purely
+// so the static build can emit one document per item: this page picks its
+// whole body at render time, and a static host cannot vary a file by query
+// string. The canonical public URL remains the `?item=` one — the Worker maps
+// it onto the path form — so both spellings must resolve identically here.
+//
+// Read from the pathname rather than `$global.params`: this template is typed
+// against its own parameterless `/create/preview` route, so `params` is `{}`
+// here even when the request came in through the `$item` route. The pathname
+// is the one source available under both, and `resolvePreviewItem` rejects
+// anything that is not a known item, so a stray trailing segment cannot
+// select a page that does not exist.
+// `|| ` rather than `?? `: a trailing slash makes the segment an empty string,
+// not undefined, and an empty segment must still fall through to the query.
+<const/pathItem=$global.url.pathname.split("/")[3]/>
+<const/item=resolvePreviewItem(pathItem || $global.url.searchParams.get("item"))/>
 
 // `base` (registry base name — "radix", "base", "aria", see
 // ../../../tags/create/lib/registry-config.ts's BASES) is read the same way

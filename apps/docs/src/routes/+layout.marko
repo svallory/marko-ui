@@ -47,6 +47,18 @@ import {
     <meta name="description" content=meta.description>
     <link rel="canonical" href=meta.canonical>
 
+    // Keep the iframe targets out of the index. Every `isBlockPreview` route
+    // is a chrome-free fragment meant to be embedded, not a page to land on,
+    // and none has a ROUTE_META entry — so resolveMeta gives each a
+    // SELF-referential canonical, which would invite indexing rather than
+    // prevent it. That matters most for /create/preview/<item>: those three
+    // documents exist only so the static build can emit one file per showcase
+    // item (the canonical URL is /create/preview?item=<item>), so indexing
+    // them would publish three duplicates of a page that already exists.
+    <if=isBlockPreview>
+      <meta name="robots" content="noindex">
+    </if>
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">

@@ -1,0 +1,19 @@
+// Path-addressed twin of ../+page.marko: /create/preview/<item>.
+//
+// This route exists ONLY so the static build can emit one document per
+// showcase item. The parent page selects its entire body from the `item`
+// value at RENDER time, and a static host cannot serve a different file per
+// query string — so `?item=preview-page-2` and `?item=preview-page-3` would
+// otherwise both collapse onto the single /create/preview document and
+// silently serve preview-page-1. That would break 32 of the 48 gallery
+// baselines while every test still "passed".
+//
+// The canonical public URL is still /create/preview?item=<item> (what the
+// customizer iframe and e2e/gallery-visual.spec.ts both request); the Worker
+// rewrites that onto this path. Rendering the parent page here — rather than
+// copying it — is what guarantees the two spellings can never drift apart:
+// ../+page.marko reads `$global.params.item` in preference to the query
+// string, so it renders the right body under either URL.
+import PreviewPage from "../+page.marko";
+
+<PreviewPage/>

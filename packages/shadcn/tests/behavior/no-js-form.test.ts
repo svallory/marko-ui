@@ -161,4 +161,30 @@ describe("no-JS form validation round-trip", () => {
     expect(markup).toContain("Account created. Welcome aboard!");
     expect(hasAttribute(markup, "data-slot", "field-error")).toBe(false);
   });
+
+  /**
+   * A body that is not a form must be a client error, never a crash.
+   *
+   * On the static deploy this POST is served by a Cloudflare Worker
+   * (apps/docs/worker/index.ts), where `request.formData()` THROWS for a JSON
+   * or text/plain body, a missing content-type, or a body too large to parse.
+   * Uncaught, that surfaced as a 500 (Cloudflare error 1101) — an unhandled
+   * server crash reported for input that is simply not a form submission.
+   * The Node server this replaced behaved no better on the same input.
+   *
+   * Only the status is asserted: the body is a plain-text hint with no
+   * contract behind it, and pinning its wording would make this test fail on
+   * a harmless rewording rather than on the behaviour that matters.
+   */
+  it.each([
+    ["a JSON body", "application/json", '{"username":"ab"}'],
+    ["a text/plain body", "text/plain", "username=ab"],
+  ])("rejects %s with 400 rather than crashing", async (_label, contentType, body) => {
+    const response = await fetch(FORM_URL, {
+      method: "POST",
+      headers: { "content-type": contentType },
+      body,
+    });
+    expect(response.status).toBe(400);
+  });
 });

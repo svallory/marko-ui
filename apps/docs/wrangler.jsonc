@@ -1,0 +1,49 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "marko-ui-docs",
+  "compatibility_date": "2026-09-17",
+  // The docs site is a fully prerendered static build; `main` exists only for
+  // the handful of paths under `run_worker_first` below. Everything else is an
+  // asset request, which is free and never invokes this script.
+  "main": "dist/worker/index.js",
+
+  "assets": {
+    "directory": "dist/public",
+    // The Worker rewrites /create/preview?item=... onto a prerendered
+    // document, which it needs this binding to fetch.
+    "binding": "ASSETS",
+
+    // `drop-trailing-slash`, not the "auto" default, because the static
+    // crawler writes `<path>.html` for every page (never `<path>/index.html`)
+    // — so /docs/components/button must resolve to
+    // /docs/components/button.html with NO trailing slash. Under
+    // `auto-trailing-slash` these same URLs still work, but this states the
+    // canonical form explicitly so a page can never be reachable at two URLs.
+    "html_handling": "drop-trailing-slash",
+
+    // The static build emits 404.html; serve it for anything unmatched.
+    "not_found_handling": "404-page",
+
+    // The ONLY paths that invoke the Worker. Everything else — all 2,201
+    // files, including the 124 registry JSONs the CLI installs from — is
+    // served straight from the asset store.
+    //
+    // Both entries are exact paths, not globs: /no-js-form is the one
+    // genuinely dynamic request on the site (the POST round-trip), and
+    // /create/preview needs a query-string-aware rewrite that static asset
+    // routing cannot express. Note a GET to either still reaches the script,
+    // so both fall through to the asset store in worker/index.ts.
+    "run_worker_first": ["/no-js-form", "/create/preview"]
+  },
+
+  // Cloudflare manages the DNS record for a custom_domain route itself.
+  "routes": [{ "pattern": "marko-ui.saulo.tech", "custom_domain": true }],
+
+  // The site must answer on exactly one origin. Left at its default (true),
+  // the *.workers.dev URL would be a fully functional second copy of the docs
+  // AND of the registry the CLI installs from — duplicate content competing
+  // for canonicalisation, and a second URL users could pin installs to.
+  "workers_dev": false,
+
+  "observability": { "enabled": true }
+}

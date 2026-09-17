@@ -61,7 +61,7 @@ describe("registry health", () => {
     expect(file, "switch.json has no switch.marko file entry").toBeTruthy()
     expect(
       file.content,
-      "live registry served the pre-<zag>-migration three-tag wiring (<machine-props>/<service>/<connect>) for switch.marko — this means the Coolify registry deploy is stale relative to the current main branch. See report-acceptance.md."
+      "live registry served the pre-<zag>-migration three-tag wiring (<machine-props>/<service>/<connect>) for switch.marko — this means the deployed registry is stale relative to the current main branch. See report-acceptance.md."
     ).toContain("<zag/api=")
   })
 })
