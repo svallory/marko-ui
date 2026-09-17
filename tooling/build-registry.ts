@@ -354,12 +354,16 @@ async function emitThemeVariants(): Promise<Emission[]> {
         title: name === "style" ? "Theme" : `Theme (${name.replace("style-", "")})`,
         description:
           "Tailwind v4 globals.css with shadcn-compatible CSS variables. Add `@source` directives for your .marko files.",
-        // The theme is CSS — it needs Tailwind and nothing else. `marko-zag`
-        // is a runtime dependency of the zag-machine COMPONENTS (each of which
-        // declares it in its own registry item), and `tw-animate-css` is only
-        // used by components that animate. Declaring them here made every
-        // `init` install both into a project with zero components.
-        dependencies: ["tailwindcss"],
+        // The theme is CSS, so its dependencies are the packages its CSS
+        // actually imports: Tailwind, and `tw-animate-css` (a hard
+        // `@import "tw-animate-css"` on line 2 of every globals-*.css — drop it
+        // and the Vite build fails with "Can't resolve 'tw-animate-css'").
+        //
+        // `marko-zag` is NOT one of them: it is a runtime dependency of the
+        // zag-machine COMPONENTS, each of which declares it in its own registry
+        // item. Declaring it here made every `init` install it into a project
+        // with zero components.
+        dependencies: ["tailwindcss", "tw-animate-css"],
         cssVars: parseCssVars(css),
         // Targeted at the project's CSS entry point, which the CLI rewrites to
         // the `tailwind.css` path recorded in components.json. It used to be

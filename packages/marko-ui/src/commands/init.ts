@@ -38,6 +38,10 @@ import { isInteractive } from "@/src/utils/interactive"
 import { spinner } from "@/src/utils/spinner"
 import { updateDependencies } from "@/src/utils/updaters/update-dependencies"
 import { updateTsConfig } from "@/src/utils/updaters/update-tsconfig"
+import {
+  ensureVitePlugin,
+  wireCssImport,
+} from "@/src/utils/updaters/update-css-entry-wiring"
 import { scaffoldImportDistributionCss } from "@/src/utils/updaters/update-css-import-distribution"
 import { Command } from "commander"
 import { z } from "zod"
@@ -224,6 +228,12 @@ export async function runInit(
   // default path.
   await ensureCssEntry(fullConfig, { silent: options.silent })
 
+  // Creating the stylesheet is not enough — it has to actually load. A
+  // `create-marko` scaffold imports no CSS anywhere (its layout uses an inline
+  // `<style>`) and has no Vite config, so without this the theme and every
+  // component utility are silently absent from the build output.
+  await wireCssEntry(fullConfig, { silent: options.silent })
+
   // Resolve any namespaced registries referenced by the requested components.
   if (options.components?.length) {
     const { config: configWithRegistries } = await ensureRegistriesInConfig(
@@ -320,6 +330,48 @@ async function ensureCssEntry(
   if (!options.silent) {
     const relative = path.relative(config.resolvedPaths.cwd, cssPath)
     logger.info(`Created ${highlighter.info(relative)} (CSS entry point).`)
+  }
+}
+
+/**
+ * Makes the CSS entry point live: imported by the layout, and processed by
+ * Tailwind's Vite plugin.
+ *
+ * Split from `ensureCssEntry` because creating the file and loading it are
+ * different failures. A project can legitimately already do either (its own
+ * import, its own Vite config), so each step is skipped independently and a
+ * step that cannot be done safely is reported as a manual one rather than
+ * guessed at.
+ */
+async function wireCssEntry(
+  config: Config,
+  options: { silent?: boolean } = {}
+) {
+  const imported = await wireCssImport(config, options)
+  const plugin = await ensureVitePlugin(config, options)
+
+  // The generated config imports @tailwindcss/vite, so it has to be installed
+  // or the next `bun run build` fails on an unresolved import.
+  if (plugin === "created") {
+    await updateDependencies([], ["@tailwindcss/vite"], config, {
+      silent: options.silent,
+    })
+  }
+
+  if (options.silent) {
+    return
+  }
+
+  if (imported === "no-layout") {
+    const cssPath = config.resolvedPaths.tailwindCss
+    const relative = cssPath
+      ? path.relative(config.resolvedPaths.cwd, cssPath)
+      : "your stylesheet"
+    logger.warn(
+      `Could not find src/routes/+layout.marko to import ${highlighter.info(
+        relative
+      )}. Import it from your root layout, or the theme and component styles will not load.`
+    )
   }
 }
 
