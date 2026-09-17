@@ -57,6 +57,55 @@ const LANG_ALIASES: Record<string, SupportedLang> = {
 
 const THEMES = { light: "github-light", dark: "github-dark" } as const;
 
+/**
+ * Light-theme token colors that fail WCAG 2.2 AA (4.5:1) against the docs
+ * code background, remapped to GitHub's own newer `github-light-default`
+ * values for the same token roles.
+ *
+ * Measured on the production build (Lighthouse run 35177842841): these three
+ * colors were the ENTIRE cause of the accessibility score sitting at 96/97
+ * instead of 100 — `color-contrast` was the only failing audit on all 8
+ * audited component pages, and every one of its 73 flagged nodes was a shiki
+ * token span carrying one of these three values on the `#fbfbfb` code
+ * background:
+ *
+ *   #22863a  4.47:1  strings / added      -> #116329  7.14:1
+ *   #d73a49  4.42:1  keywords / deleted   -> #cf222e  5.18:1
+ *   #e36209  3.37:1  constants / params   -> #953800  7.14:1
+ *
+ * Why remap rather than switch wholesale to `github-light-default`: that
+ * theme fixes these three but introduces its own sub-threshold comment gray
+ * (#6e7781, 4.39:1), trading three known failures for a new one. Remapping
+ * only the failing values keeps the rest of the familiar GitHub palette
+ * byte-identical.
+ *
+ * Dark mode is untouched: Lighthouse audits the light theme (every flagged
+ * node reported `background color: #fbfbfb`), and the dark palette is
+ * already comfortable against the dark code background.
+ */
+const LIGHT_CONTRAST_REMAP: Record<string, string> = {
+  "#22863a": "#116329",
+  "#d73a49": "#cf222e",
+  "#e36209": "#953800",
+};
+
+/**
+ * Rewrite the `--shiki-light` custom property in shiki's emitted token spans
+ * through LIGHT_CONTRAST_REMAP. shiki emits `--shiki-light:#RRGGBB` inline
+ * per token (see `defaultColor: false` below), so a scoped replace on that
+ * property is precise: `--shiki-dark` values are left alone, and no other
+ * hex in the markup can match the pattern.
+ */
+function applyContrastRemap(html: string): string {
+  return html.replace(
+    /--shiki-light:(#[0-9a-fA-F]{6})/g,
+    (whole, hex: string) => {
+      const mapped = LIGHT_CONTRAST_REMAP[hex.toLowerCase()];
+      return mapped ? `--shiki-light:${mapped}` : whole;
+    },
+  );
+}
+
 let highlighterPromise: Promise<Highlighter> | null = null;
 
 function getHighlighter(): Promise<Highlighter> {
@@ -154,7 +203,9 @@ export async function highlightCode(
   const codeStart = html.indexOf("<code");
   const codeOpenEnd = html.indexOf(">", codeStart) + 1;
   const codeEnd = html.lastIndexOf("</code>");
-  const inner = html.slice(codeOpenEnd, codeEnd);
+  // Remap before caching so the contrast fix is applied exactly once per
+  // snippet and every cache hit serves the corrected markup.
+  const inner = applyContrastRemap(html.slice(codeOpenEnd, codeEnd));
 
   if (cache.size >= CACHE_LIMIT) {
     const oldestKey = cache.keys().next().value;
