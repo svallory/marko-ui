@@ -37,6 +37,7 @@ import { confirm, select } from "@/src/utils/clack"
 import { isInteractive } from "@/src/utils/interactive"
 import { spinner } from "@/src/utils/spinner"
 import { updateDependencies } from "@/src/utils/updaters/update-dependencies"
+import { updateTsConfig } from "@/src/utils/updaters/update-tsconfig"
 import { scaffoldImportDistributionCss } from "@/src/utils/updaters/update-css-import-distribution"
 import { Command } from "commander"
 import { z } from "zod"
@@ -210,6 +211,12 @@ export async function runInit(
   componentSpinner.succeed()
 
   let fullConfig = await resolveConfigPaths(options.cwd, config)
+
+  // Registry components import siblings with explicit `.ts` extensions, which
+  // a stock `create-marko` tsconfig rejects (TS5097). `init` already writes
+  // components.json and patches CSS, so the compiler option belongs here too —
+  // otherwise scaffold -> init -> add lands on a project that cannot typecheck.
+  await updateTsConfig(fullConfig, { silent: options.silent })
 
   // The CSS entry point must exist before any theme or component tries to
   // patch it. A `create-marko` scaffold ships no stylesheet at all, which is
