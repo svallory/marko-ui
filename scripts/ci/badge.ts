@@ -2,16 +2,16 @@
  * Turn CI result files into shields.io endpoint JSON badges.
  *
  * Usage: bun scripts/ci/badge.ts <kind> <input-file> <out-dir>
- *   kind = vitest | e2e | axe | lighthouse-a11y | combine
- *   (for `combine`, <input-file> is the directory holding tests.json and
- *   style-matrix.json)
+ *   kind = vitest | axe | lighthouse-a11y | combine
+ *   (for `combine`, <input-file> is the directory holding the count-carrying
+ *   badge files listed in COMBINE_PARTS)
  *
  * Each badge file follows the shields endpoint schema
  * (https://shields.io/badges/endpoint-badge) and is published to the
  * `badges` branch by .github/workflows/ci.yml, then rendered via
  *   https://img.shields.io/endpoint?url=<raw.githubusercontent.com URL>
  */
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 interface Badge {
@@ -86,33 +86,46 @@ switch (kind) {
     break;
   }
 
-  case "e2e": {
-    // @playwright/test json reporter
-    const { expected = 0, unexpected = 0, flaky = 0 } = input.stats ?? {};
-    const total = expected + unexpected + flaky;
-    write("style-matrix", {
-      schemaVersion: 1,
-      label: "style matrix",
-      message: `${expected}/${total} passing`,
-      color: passFailColor(expected, total),
-      passed: expected,
-      total,
-    });
-    break;
-  }
-
   case "combine": {
-    // <input-file> is the DIRECTORY holding tests.json + style-matrix.json
-    // (the publish job's merged badge artifacts). Produces the single
-    // "checks" badge the home page shows: one number for the whole suite.
-    const parts = ["tests", "style-matrix"].map((name) => {
-      const badge = JSON.parse(readFileSync(join(inputFile, `${name}.json`), "utf8")) as Badge;
+    // <input-file> is the DIRECTORY holding the count-carrying badge files
+    // produced by the upstream jobs (the publish job's merged badge
+    // artifacts). Produces the single "checks" badge the home page shows:
+    // one number for the whole suite.
+    //
+    // COMBINE_PARTS is the full set of badges that may contribute a count.
+    // Each entry is looked up optionally: a badge whose producing job no
+    // longer exists is skipped rather than crashing the publish job. This
+    // is deliberate — the `style-matrix` badge used to be listed here
+    // unconditionally, and when CI's style-matrix job was removed
+    // (2026-09-12) nothing produced style-matrix.json any more, so every
+    // publish on main died with `ENOENT: ... 'badges/style-matrix.json'`
+    // while all four substantive jobs were green. Removing a job must not
+    // turn the badge publish red.
+    //
+    // The guard that keeps this honest is the empty check below: if NO part
+    // is found, the inputs really are broken and we fail loudly instead of
+    // publishing a silent "0/0 passing".
+    const COMBINE_PARTS = ["tests"];
+    const parts = COMBINE_PARTS.flatMap((name) => {
+      const path = join(inputFile, `${name}.json`);
+      if (!existsSync(path)) {
+        console.log(`${name}.json absent — skipping (no producing job)`);
+        return [];
+      }
+      const badge = JSON.parse(readFileSync(path, "utf8")) as Badge;
       if (badge.passed === undefined || badge.total === undefined) {
         console.error(`${name}.json carries no passed/total counts — regenerate it first`);
         process.exit(1);
       }
-      return badge;
+      return [badge];
     });
+    if (parts.length === 0) {
+      console.error(
+        `no count-carrying badges found in ${inputFile} (looked for: ${COMBINE_PARTS.join(", ")}) — ` +
+          `the upstream jobs produced no artifacts, refusing to publish an empty checks badge`,
+      );
+      process.exit(1);
+    }
     const passed = parts.reduce((sum, badge) => sum + (badge.passed ?? 0), 0);
     const total = parts.reduce((sum, badge) => sum + (badge.total ?? 0), 0);
     // Two renderings of the same number: checks.json for the README
