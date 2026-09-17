@@ -39,8 +39,8 @@ Ark UI — not hand-rolled event handlers.
 - **Accessibility is tested, not claimed.** 71 WAI-ARIA APG keyboard-contract
   tests run as Playwright tests in CI; every component demo page passes an
   axe-core WCAG 2.2 A/AA scan (CI fails on a single violation). The
-  Lighthouse accessibility score is published by CI to the badge above —
-  that badge, not a number written here, is the current value.
+  Lighthouse accessibility badge above is published by CI on every push —
+  that badge, not a number written here, is always the current value.
 - **Copy-paste philosophy, source-first.** Components ship as readable
   `.marko` source compiled by YOUR bundler — friendly to IDEs, code review,
   and AI agents. No opaque dist blobs.
@@ -53,8 +53,8 @@ marko-ui is distributed through shadcn's registry protocol:
 # scaffold components.json + base theme (interactive: pick distribution + style)
 bunx marko-ui init
 
-# or non-interactively
-bunx marko-ui init --distribution copy --visual-style vega
+# or non-interactively (every prompt answered by a flag)
+bunx marko-ui init --distribution copy --visual-style vega --base-color neutral
 
 # add components
 bunx marko-ui add button

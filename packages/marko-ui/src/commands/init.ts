@@ -78,7 +78,13 @@ export const init = new Command()
   )
   .option(
     "--visual-style <name>",
-    `the visual style to use with --distribution import (${VISUAL_STYLES.map((s) => s.name).join(", ")}). ignored for copy.`
+    // NOT "ignored for copy", as this said until now: the copy path fetches
+    // per-style registry items at styles/<visualStyle>/<item>.json (see
+    // registry/resolver.ts's fetchBareRegistryItem), so the style decides
+    // which generated source is copied in. init prompts for it under either
+    // distribution, and the old wording contradicted both that prompt and
+    // the resolver.
+    `the visual style to use (${VISUAL_STYLES.map((s) => s.name).join(", ")}). selects the generated source for copy, and the precompiled CSS layer for import.`
   )
   .action(async (components, opts) => {
     try {
