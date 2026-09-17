@@ -63,10 +63,64 @@ const HEADER_RE = /^(\S.*?)(?::(\d+):(\d+))? - (error|warning|message|suggestion
 const countMode = process.argv.includes("--count");
 
 const input = await Bun.stdin.text();
+
+/**
+ * Bun injects its own NDJSON control lines into a piped child's stdout when
+ * it detects an AI-agent environment, e.g.
+ *
+ *   {"type":"message","message":"Detected an AI agent environment, printing as NDJSON. ..."}
+ *
+ * That line is not a marko-type-check diagnostic, but it is not blank
+ * either, so it used to survive record splitting and get fingerprinted by
+ * the file-less fallback below as
+ * `(no file)|TS0000|{"type":"message",...}` — a phantom "new error" that
+ * fails the gate on a tree with zero real type errors, for every agent
+ * running `bun run check` with stdout piped.
+ *
+ * Filtering here, BEFORE record splitting, is deliberate: the alternative
+ * (unsetting whatever variable Bun keys on, inside check.sh) depends on an
+ * undocumented, version-specific env var — the banner does not reproduce on
+ * bun 1.3.14 locally, so there is nothing to verify such a fix against,
+ * whereas the malformed-input case is directly testable and stays correct
+ * whatever Bun does next.
+ *
+ * Scoped as tightly as possible so a real diagnostic can never be swallowed:
+ * the line must parse as JSON AND be an object AND carry `type: "message"`.
+ * marko-type-check messages are TypeScript diagnostic text, never a bare
+ * JSON object, so no real record can match.
+ */
+function isBunControlLine(line: string): boolean {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) return false;
+  try {
+    const parsed: unknown = JSON.parse(trimmed);
+    return (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      (parsed as { type?: unknown }).type === "message"
+    );
+  } catch {
+    return false;
+  }
+}
+
+// Stripped lines are counted so the --count parity guard in check.sh stays
+// honest: they are "accounted for" (recognized and deliberately skipped),
+// never silently dropped.
+let strippedControlLineCount = 0;
+const cleanedInput = input
+  .split("\n")
+  .filter((line) => {
+    if (!isBunControlLine(line)) return true;
+    strippedControlLineCount++;
+    return false;
+  })
+  .join("\n");
+
 // Records are separated by exactly one blank line (the double newline
 // `report.out.join` uses); a trailing blank line from the final message's
 // own newline must not be counted as an extra empty record.
-const records = input.split("\n\n").filter((r) => r !== "");
+const records = cleanedInput.split("\n\n").filter((r) => r !== "");
 
 // Non-error categories are recognized and intentionally excluded from
 // `counts` — they must still be tallied here so a record that is
@@ -120,7 +174,13 @@ if (countMode) {
     0,
   );
   const accountedRecords = fingerprintedWeight + recognizedNonErrorCount;
-  process.stdout.write(`${records.length} ${accountedRecords}\n`);
+  // rawRecords counts records AFTER Bun control lines are stripped, and the
+  // stripped lines are reported as accounted on both sides of the guard, so
+  // stripping can never by itself make the two numbers disagree — while a
+  // genuine classification gap still does.
+  process.stdout.write(
+    `${records.length + strippedControlLineCount} ${accountedRecords + strippedControlLineCount}\n`,
+  );
 } else {
   const fingerprint = [...counts.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
