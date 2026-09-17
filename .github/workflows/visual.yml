@@ -23,8 +23,15 @@ on:
         type: boolean
         default: false
 
+# The compare and update paths get SEPARATE concurrency groups on purpose.
+# They share a ref, and the updater pushes a baseline commit to that ref —
+# which starts a compare run. Under one shared group with
+# cancel-in-progress, that new compare run would cancel the updater that
+# spawned it, killing any step still to come after the push. Splitting the
+# group means a compare run can never cancel an update run (and vice versa),
+# while redundant runs of the *same* kind on the same ref still collapse.
 concurrency:
-  group: visual-${{ github.ref }}
+  group: visual-${{ github.ref }}-${{ (github.event_name == 'workflow_dispatch' && inputs.update_baselines) && 'update' || 'compare' }}
   cancel-in-progress: true
 
 permissions:
@@ -41,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: ./.github/actions/setup
 
       - name: Build and serve docs
@@ -53,13 +60,18 @@ jobs:
       # 0, which would make the guard look green while guarding nothing.
       - name: Check baselines exist
         run: |
+          set -euo pipefail
           dir="e2e/gallery-visual.spec.ts-snapshots/linux"
-          if [ ! -d "$dir" ] || [ -z "$(ls -A "$dir" 2>/dev/null)" ]; then
+          # `find`, not `ls` (SC2012): counts only real .png baselines, so a
+          # stray non-PNG in the directory can't make an empty baseline set
+          # look populated.
+          count=$(find "$dir" -type f -name '*.png' 2>/dev/null | wc -l | tr -d ' ')
+          if [ "$count" -eq 0 ]; then
             echo "::error::No linux baselines in $dir."
             echo "::error::Generate them on the runner: Actions > Visual > Run workflow > update baselines = true."
             exit 1
           fi
-          echo "$(ls -1 "$dir" | wc -l) baseline(s) present"
+          echo "$count baseline(s) present"
 
       - name: Run gallery visual guard
         env:
@@ -71,7 +83,7 @@ jobs:
       # intended restyle.
       - name: Upload diffs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: visual-diffs
           path: |
@@ -94,7 +106,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: ${{ github.ref_name }}
       - uses: ./.github/actions/setup
@@ -113,10 +125,16 @@ jobs:
 
       # Lossless only. `-o 4 --strip safe` re-encodes the pixel data more
       # compactly and drops non-essential metadata chunks; it never alters a
-      # pixel. Measured on the 48-shot set: 12.2 MB -> 9.5 MB (21%), every
-      # file byte-different but all 48 decoded-pixel-identical, and a full
-      # comparison run stayed 49/49 green afterwards — Playwright compares
-      # decoded pixels, not file bytes.
+      # pixel. Measured on the runner's 48-shot set (the `du -sk` figures this
+      # step prints): 11644KB -> 8600KB, a 26% reduction, with every file
+      # byte-different but all 48 decoded-pixel-identical and the comparison
+      # re-run below still 49/49 green — Playwright compares decoded pixels,
+      # not file bytes.
+      #
+      # The committed baselines are 8.7 MB (8,687,819 bytes across 48 files).
+      # Quote that one figure and no other; AGENTS.md repeats it, and earlier
+      # drafts of this PR cited three different numbers because some were MiB,
+      # some MB, and some pre-optimization.
       #
       # The binary comes from oxipng's own GitHub release, pinned to an exact
       # version AND verified against a recorded SHA-256 before it is allowed
