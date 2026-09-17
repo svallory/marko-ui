@@ -264,6 +264,52 @@ Registry/CLI install-command URLs (`https://marko-ui.saulo.tech/r/...` in `card-
 
 There are two shipping paths, not one: **copy** (`marko-ui add` copies per-style flat generated source, transformed in memory at build time — classes are baked flat, "the code is mine now") and **import** (the `@marko-ui/shadcn` package, which ships the `mu-*` hook-class components plus the 8 style layers **as source**, for the consumer's own Tailwind to compile). For the import path, `mu-*` hooks are a **public styling API**: consumers override or switch styles from their own stylesheet. Full mechanics — the `layer(components)` requirement and the `@custom-variant` shipping requirement — are documented in `notes/css-architecture.md`.
 
+## Testing the CLI against a real scaffold
+
+The CLI's vitest suite never runs `init`/`add` against a real project, so a
+whole class of first-run defect is invisible to it — the CLI's own tests all
+pass while `bunx marko-ui init` hangs, crashes, or writes the wrong files on a
+stock `create-marko` app. Every one of the 2026-09-17 first-run fixes
+(non-interactive prompting, the CSS entry point, `allowImportingTsExtensions`,
+the dependency list) was found this way and none was catchable in-repo.
+
+`scratch/team-lead/e2e-cli-dx.sh` is the harness. It scaffolds a throwaway
+`create-marko` app, runs the LOCAL CLI build against a LOCAL registry, and
+asserts the fixed behaviours. Run it after any change to `init`, `add`, the
+updaters, or `tooling/build-registry.ts`:
+
+```bash
+# 1. build the CLI — never test the npm-published version
+bun run --filter marko-ui build
+
+# 2. build + serve the registry locally: `build-registry.ts` changes (deps,
+#    file targets) only exist in local output, and the CLI otherwise fetches
+#    the live registry, which AGENTS.md documents as stale relative to main
+REGISTRY_BASE_URL="http://localhost:4455/r" bun tooling/build-registry.ts
+(cd apps/docs/public && python3 -m http.server 4455 &)
+
+# 3. run the harness against it
+REGISTRY_URL="http://localhost:4455/r" bash scratch/team-lead/e2e-cli-dx.sh
+```
+
+Traps, each of which cost a debugging cycle:
+
+- **Port 4455 collides with the CLI test suite.** `src/registry/resolver.test.ts`
+  binds it too, so a registry server left running makes `bun run --filter
+  marko-ui test` fail with `EADDRINUSE` in a file that has nothing to do with
+  the change. Kill the server (`lsof -ti:4455 | xargs kill -9`) before running
+  the unit tests.
+- **Run the CLI with stdin closed** (`< /dev/null`) and a timeout. That is the
+  configuration real agent/CI callers have, and it is what surfaces a prompt
+  that nothing can answer — the failure mode is a hang, so without a timeout
+  the harness hangs too.
+- **Assert on behaviour, not on flags.** Checking that `init` wrote
+  `allowImportingTsExtensions` is weaker than running `marko-type-check` on the
+  scaffold and asserting zero TS5097; the first passes while the second still
+  fails if the option lands in the wrong file.
+- **Idempotence needs a real second run.** Hash the project tree, run `init`
+  again, compare. Several of these defects only appear on the second invocation.
+
 ## Acceptance suite (published packages, live registry)
 
 `e2e/acceptance/` tests the **published** `marko-ui`/`@marko-ui/shadcn` npm packages and the **live** registry deploy (`https://marko-ui.saulo.tech/r`) — not the workspace. It exists to catch a broken publish or a stale registry deploy in CI before a user hits it. Run with `bun run test:acceptance` (own vitest config, not part of `bun run test`/`bun run check` — see `.github/workflows/acceptance.yml`, `workflow_dispatch` + weekly cron, deliberately not in `ci.yml` since it depends on external services).
