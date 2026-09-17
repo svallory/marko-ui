@@ -7,7 +7,7 @@
 [![Lighthouse accessibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges%2Flighthouse-accessibility.json)](https://github.com/svallory/marko-ui/actions/workflows/lighthouse.yml)
 [![Hydration invariance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges%2Fhydration.json)](https://github.com/svallory/marko-ui/tree/main/packages/shadcn/tests)
 
-86 accessible, themeable components for Marko 6, in 9 complete styles,
+87 accessible, themeable components for Marko 6, in 9 complete styles,
 installable with the marko-ui CLI. Interactive behavior comes from
 [Zag.js](https://zagjs.com) state machines — the same core behind Chakra's
 Ark UI — not hand-rolled event handlers.
@@ -82,7 +82,7 @@ packages/shadcn      @marko-ui/shadcn: authored component source (ui/),
                       tests/
 packages/marko-ui    the marko-ui CLI (init, add, diff, doctor, ...)
 tooling              registry build + style-transform scripts
-e2e                  style-matrix verification suite
+e2e/acceptance       published-package + live-registry acceptance suite
 scripts/ci           axe scan, badge generation, CI serving
 ```
 
