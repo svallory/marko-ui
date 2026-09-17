@@ -230,6 +230,21 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /*
+   * `mu-font-heading` is a styling hook emitted by the card, dialog, drawer,
+   * sheet, alert-dialog and empty titles in BOTH distributions. The import
+   * distribution gets a rule from its own style layer; the copy distribution
+   * had no rule for it anywhere, so titles silently fell back to the body
+   * face with no error. Defined here so copy output is self-sufficient.
+   *
+   * Defaults to the body font: a project that never sets a heading face sees
+   * exactly what it sees today, and one that sets `--font-heading` gets it
+   * applied to every component title without touching component source.
+   */
+  .mu-font-heading {
+    font-family: var(--font-heading, var(--font-sans, inherit));
+  }
 }
 
 /*
