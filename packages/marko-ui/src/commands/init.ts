@@ -109,6 +109,48 @@ export const init = new Command()
     }
   })
 
+/**
+ * Decide which stylesheet path `components.json` should record.
+ *
+ * Order: an explicitly configured path, then a detected one, then a
+ * framework-appropriate default, and only then shadcn's inherited Next.js
+ * default.
+ *
+ * The framework step exists because `getTailwindCssFile` only recognizes a
+ * stylesheet that ALREADY contains `@import "tailwindcss"` / `@tailwind
+ * base`. A freshly scaffolded app has no such file yet, so detection returns
+ * null and the final fallback decides — and DEFAULT_TAILWIND_CSS is Next.js's
+ * `app/globals.css`. In a Marko project that path does not exist and never
+ * will, so `init` wrote a components.json pointing at it and then died on a
+ * plain `bun create marko` app following the documented install commands:
+ *
+ *     - Updating app/globals.css
+ *     ENOENT: no such file or directory, open '<cwd>/app/globals.css'
+ *
+ * Note this is precisely the case detection CANNOT cover: the file init is
+ * about to create is the one whose absence makes detection fail.
+ */
+export function resolveTailwindCssPath({
+  configuredCss,
+  detectedCss,
+  frameworkName,
+  isSrcDir,
+}: {
+  configuredCss?: string | null
+  detectedCss?: string | null
+  frameworkName?: string | null
+  isSrcDir?: boolean
+}): string {
+  if (configuredCss) return configuredCss
+  if (detectedCss) return detectedCss
+
+  if (frameworkName === "marko-run" || frameworkName === "marko-vite") {
+    return isSrcDir ? "src/styles/globals.css" : "styles/globals.css"
+  }
+
+  return DEFAULT_TAILWIND_CSS
+}
+
 export async function runInit(
   options: z.infer<typeof initOptionsSchema>
 ): Promise<Config> {
@@ -327,10 +369,12 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
     detected?.aliases
   )
 
-  const tailwindCss =
-    detected?.tailwind?.css ??
-    projectInfo?.tailwindCssFile ??
-    DEFAULT_TAILWIND_CSS
+  const tailwindCss = resolveTailwindCssPath({
+    configuredCss: detected?.tailwind?.css,
+    detectedCss: projectInfo?.tailwindCssFile,
+    frameworkName: projectInfo?.framework?.name,
+    isSrcDir: projectInfo?.isSrcDir,
+  })
 
   const config = rawConfigSchema.parse({
     // components.json is wire-compatible with shadcn; its schema authority
