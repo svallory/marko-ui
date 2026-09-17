@@ -7,6 +7,10 @@
 // source's exact card-to-column assignment. All cards are static tag
 // references (no dynamic tags — see
 // notes/bug-marko-dynamic-tag-hydration-crash.md).
+//
+// ALSO A VISUAL-REGRESSION FIXTURE: e2e/gallery-visual.spec.ts screenshots this
+// page in all 8 styles x light/dark. Editing it moves committed baselines --
+// see AGENTS.md "Gallery visual guard" for how to regenerate them.
 import AccountAccess from "./cards/account-access.marko";
 import CardOverview from "./cards/card-overview.marko";
 import ClaimableBalance from "./cards/claimable-balance.marko";

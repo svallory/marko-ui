@@ -16,6 +16,10 @@
 // project-files (tree-view), bar-visualizer (hand-rolled div-bars + rAF —
 // direct port of shadcn's dead-upstream preview/cards/bar-visualizer.tsx,
 // which shadcn ships but never mounts; mounted here per TODO.md decision).
+//
+// ALSO A VISUAL-REGRESSION FIXTURE: e2e/gallery-visual.spec.ts screenshots this
+// page in all 8 styles x light/dark. Editing it moves committed baselines --
+// see AGENTS.md "Gallery visual guard" for how to regenerate them.
 import AccountPassword from "./cards/account-password.marko";
 import ApiKey from "./cards/api-key.marko";
 import BarVisualizer from "./cards/bar-visualizer.marko";

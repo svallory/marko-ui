@@ -1,0 +1,193 @@
+# Gallery visual-regression guard.
+#
+# Renders the component gallery in every visual style the registry ships
+# (8: rhea, nova, vega, lyra, maia, mira, luma, sera) × light/dark × the
+# three /create/preview showcase pages = 48 full-page screenshots, and fails
+# on any pixel change. See e2e/gallery-visual.spec.ts for how the gallery is
+# assembled and AGENTS.md "Gallery visual guard" for the workflow around it.
+#
+# Deliberately a separate file from ci.yml: baselines are PNGs that only
+# ever match when generated on the same OS that compares them, so this
+# workflow owns both halves — the `visual` job compares, and the
+# `update-baselines` job regenerates and commits them back to the PR branch.
+name: Visual
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      update_baselines:
+        description: "Regenerate baselines and commit them to the branch"
+        type: boolean
+        default: false
+
+# The compare and update paths get SEPARATE concurrency groups on purpose.
+# They share a ref, and the updater pushes a baseline commit to that ref —
+# which starts a compare run. Under one shared group with
+# cancel-in-progress, that new compare run would cancel the updater that
+# spawned it, killing any step still to come after the push. Splitting the
+# group means a compare run can never cancel an update run (and vice versa),
+# while redundant runs of the *same* kind on the same ref still collapse.
+concurrency:
+  group: visual-${{ github.ref }}-${{ (github.event_name == 'workflow_dispatch' && inputs.update_baselines) && 'update' || 'compare' }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Compare against the committed baselines. This is the actual guard.
+  visual:
+    name: Gallery screenshots
+    # Skipped when this run was dispatched to regenerate baselines — the
+    # update job below does the capturing in that case, and comparing
+    # against baselines that are about to be replaced is noise.
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.update_baselines) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: ./.github/actions/setup
+
+      - name: Build and serve docs
+        run: bash scripts/ci/serve-docs.sh
+
+      # Fails loudly rather than silently passing a PR that has no baselines
+      # at all (a first run on a new branch, or a bad merge that dropped
+      # them). Playwright itself would WRITE the missing baselines and exit
+      # 0, which would make the guard look green while guarding nothing.
+      - name: Check baselines exist
+        run: |
+          set -euo pipefail
+          dir="e2e/gallery-visual.spec.ts-snapshots/linux"
+          # `find`, not `ls` (SC2012): counts only real .png baselines, so a
+          # stray non-PNG in the directory can't make an empty baseline set
+          # look populated.
+          count=$(find "$dir" -type f -name '*.png' 2>/dev/null | wc -l | tr -d ' ')
+          if [ "$count" -eq 0 ]; then
+            echo "::error::No linux baselines in $dir."
+            echo "::error::Generate them on the runner: Actions > Visual > Run workflow > update baselines = true."
+            exit 1
+          fi
+          echo "$count baseline(s) present"
+
+      - name: Run gallery visual guard
+        env:
+          DOCS_BASE_URL: http://localhost:3000
+        run: bun run test:visual
+
+      # The diff/actual/expected triplet Playwright writes per failure — the
+      # only way to judge whether a red run is a real regression or an
+      # intended restyle.
+      - name: Upload diffs
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: visual-diffs
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # Regenerate baselines ON THE RUNNER and commit them back. This is the
+  # ONLY supported way to update them: a local `--update-snapshots` records
+  # macOS font rasterisation, which can never match a Linux run.
+  #
+  # Trigger: Actions > Visual > Run workflow, with "update baselines" checked
+  # and the PR's branch selected.
+  update-baselines:
+    name: Regenerate baselines
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.update_baselines }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: ./.github/actions/setup
+
+      - name: Build and serve docs
+        run: bash scripts/ci/serve-docs.sh
+
+      # Deleted first so a baseline whose test no longer exists does not
+      # survive forever as an orphan.
+      - name: Regenerate
+        env:
+          DOCS_BASE_URL: http://localhost:3000
+        run: |
+          rm -rf e2e/gallery-visual.spec.ts-snapshots/linux
+          bun run test:visual:update
+
+      # Lossless only. `-o 4 --strip safe` re-encodes the pixel data more
+      # compactly and drops non-essential metadata chunks; it never alters a
+      # pixel. Measured on the runner's 48-shot set (the `du -sk` figures this
+      # step prints): 11644KB -> 8600KB, a 26% reduction, with every file
+      # byte-different but all 48 decoded-pixel-identical and the comparison
+      # re-run below still 49/49 green — Playwright compares decoded pixels,
+      # not file bytes.
+      #
+      # The committed baselines are 8.7 MB (8,687,819 bytes across 48 files).
+      # Quote that one figure and no other; AGENTS.md repeats it, and earlier
+      # drafts of this PR cited three different numbers because some were MiB,
+      # some MB, and some pre-optimization.
+      #
+      # The binary comes from oxipng's own GitHub release, pinned to an exact
+      # version AND verified against a recorded SHA-256 before it is allowed
+      # to run — this job holds `contents: write`, so an unverified download
+      # is not acceptable. Two routes were tried and rejected: the `oxipng`
+      # npm package is an unofficial third-party repackage (mvasilkov/oxipng,
+      # stuck at 1.0.1, last published >1y ago), and apt has no `oxipng` on
+      # the ubuntu-24.04 runner at all ("E: Unable to locate package").
+      # NEVER swap in pngquant or any other lossy optimizer: it would alter
+      # pixels and silently rewrite what the guard asserts.
+      - name: Optimize baselines (lossless)
+        env:
+          OXIPNG_VERSION: 10.2.1
+          OXIPNG_SHA256: 1813750ef592c5350ca79c88f98b2c0876d05c826dc7156245256d4255c1ad17
+        run: |
+          set -euo pipefail
+          tarball="oxipng-${OXIPNG_VERSION}-x86_64-unknown-linux-musl.tar.gz"
+          curl -fsSL -o "$tarball" \
+            "https://github.com/oxipng/oxipng/releases/download/v${OXIPNG_VERSION}/${tarball}"
+          echo "${OXIPNG_SHA256}  ${tarball}" | sha256sum -c -
+          tar xzf "$tarball"
+          oxipng="$PWD/oxipng-${OXIPNG_VERSION}-x86_64-unknown-linux-musl/oxipng"
+          "$oxipng" --version
+
+          dir=e2e/gallery-visual.spec.ts-snapshots/linux
+          before=$(du -sk "$dir" | cut -f1)
+          "$oxipng" -o 4 --strip safe -q "$dir"/*.png
+          after=$(du -sk "$dir" | cut -f1)
+          echo "baselines: ${before}KB -> ${after}KB"
+
+          rm -rf "$tarball" "oxipng-${OXIPNG_VERSION}-x86_64-unknown-linux-musl"
+
+      # Optimizing must not have changed what the baselines assert. This
+      # re-runs the comparison against the just-optimized files; a failure
+      # here means the optimizer was not lossless and the commit is aborted.
+      - name: Verify optimized baselines still compare equal
+        env:
+          DOCS_BASE_URL: http://localhost:3000
+        run: bun run test:visual
+
+      # BRANCH goes through env, not `${{ }}` inside run: — a branch name is
+      # attacker-controllable text and would otherwise be interpolated
+      # straight into the shell.
+      - name: Commit baselines
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A e2e/gallery-visual.spec.ts-snapshots
+          if git diff --cached --quiet; then
+            echo "baselines unchanged"
+            exit 0
+          fi
+          git commit -m "test(visual): regenerate gallery baselines on CI runner"
+          git push origin "HEAD:refs/heads/$BRANCH"
