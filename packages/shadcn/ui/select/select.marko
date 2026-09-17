@@ -120,7 +120,7 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
           data-slot="select-content"
           class=styles.content
         >
-          <button type="button" data-slot="select-scroll-up-button" class=styles.scrollUpButton on-click(e: Event) { scrollViewport(e, -40); }>
+          <button type="button" aria-hidden="true" tabindex="-1" data-slot="select-scroll-up-button" class=styles.scrollUpButton on-click(e: Event) { scrollViewport(e, -40); }>
             <Icon name="ChevronUp" class=styles.scrollButtonIcon/>
           </button>
           <div data-slot="select-viewport" class=styles.viewport>
@@ -161,7 +161,7 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
               </for>
             </else>
           </div>
-          <button type="button" data-slot="select-scroll-down-button" class=styles.scrollDownButton on-click(e: Event) { scrollViewport(e, 40); }>
+          <button type="button" aria-hidden="true" tabindex="-1" data-slot="select-scroll-down-button" class=styles.scrollDownButton on-click(e: Event) { scrollViewport(e, 40); }>
             <Icon name="ChevronDown" class=styles.scrollButtonIcon/>
           </button>
         </div>

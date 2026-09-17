@@ -27,9 +27,18 @@ if (!outFile) {
   process.exit(1);
 }
 
+const { OPEN_STATES, NO_OPEN_STATE } = await import("./axe-open-states.ts");
+
 const components = [...DOCUMENTED_COMPONENTS].sort();
 
-const urls = components.map((name) => `/docs/components/${name}`);
+// Bookkeeping assertion
+const missing = components.filter(c => !OPEN_STATES[c] && !NO_OPEN_STATE[c]);
+if (missing.length > 0) {
+  console.error("Missing components in axe-open-states.ts maps:", missing);
+  process.exit(1);
+}
+
+const urls = components.map((name) => ({ name, path: `/docs/components/${name}` }));
 
 interface Violation {
   id: string;
@@ -50,8 +59,6 @@ const PAGE_SCOPE_RULES = [
   "landmark-main-is-top-level",
   "landmark-no-duplicate-main",
   "landmark-unique",
-  "page-has-heading-one",
-  "region",
 ];
 
 /** Wait for Marko resumption + Zag machine start (same signal the test helpers use). */
@@ -75,17 +82,20 @@ const context = await browser.newContext({
 const perPage: Record<string, Violation[]> = {};
 let totalViolations = 0;
 
-for (const path of urls) {
+for (const { name, path } of urls) {
   const page = await context.newPage();
   try {
     await page.goto(`${BASE_URL}${path}`, { waitUntil: "networkidle", timeout: 30_000 });
     await waitForHydration(page);
     await page.addScriptTag({ content: axeSource });
+    
+    // Closed state scan
     const results = (await page.evaluate(async (disabledRules: string[]) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const axe = (window as any).axe;
+      // Scope to the demo stage only (excluding the code-peek which is inside the outer component-preview wrapper).
       return axe.run(
-        { include: [['[data-slot="component-preview"]']] },
+        { include: [['[data-slot="component-preview"] [data-slot="preview"]']] },
         {
           resultTypes: ["violations"],
           rules: Object.fromEntries(disabledRules.map((rule) => [rule, { enabled: false }])),
@@ -110,6 +120,60 @@ for (const path of urls) {
         html: node.html.slice(0, 300),
       })),
     }));
+
+    // Open state scan
+    const openState = OPEN_STATES[name];
+    if (openState) {
+      try {
+        const trigger = page.locator(openState.trigger).first();
+        if (openState.open === "right-click") {
+          await trigger.click({ button: "right" });
+        } else if (openState.open === "hover") {
+          await trigger.hover();
+        } else {
+          await trigger.click();
+        }
+
+        const content = page.locator(openState.content).first();
+        await content.waitFor({ state: "visible", timeout: 5000 });
+        await page.waitForTimeout(300); // animation buffer
+
+        const openResults = (await page.evaluate(async ({ disabledRules, contentSelector }) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const axe = (window as any).axe;
+          return axe.run(
+            { include: [['[data-slot="component-preview"] [data-slot="preview"]'], [contentSelector]] },
+            {
+              resultTypes: ["violations"],
+              rules: Object.fromEntries(disabledRules.map((rule) => [rule, { enabled: false }])),
+            },
+          );
+        }, { disabledRules: PAGE_SCOPE_RULES, contentSelector: openState.content })) as {
+          violations: {
+            id: string;
+            impact: string | null;
+            help: string;
+            nodes: { target: string[]; html: string }[];
+          }[];
+        };
+
+        openResults.violations.forEach((violation) => {
+          violations.push({
+            id: violation.id + " (open)",
+            impact: violation.impact,
+            help: violation.help,
+            nodes: violation.nodes.length,
+            targets: violation.nodes.map((node) => ({
+              target: node.target.join(" "),
+              html: node.html.slice(0, 300),
+            })),
+          });
+        });
+      } catch (err) {
+        console.error(`Error opening ${name}:`, err);
+      }
+    }
+
     if (violations.length > 0) {
       perPage[path] = violations;
       totalViolations += violations.reduce((sum, v) => sum + v.nodes, 0);

@@ -136,16 +136,17 @@ SSR/unit tests (`packages/marko-ui/tests/`, `packages/shadcn/tests/hydration-inv
 
 **Calendar demos must pin `defaultFocusedValue`, never rely on wall-clock "today".** `Calendar`'s Zag date-picker machine focuses the browser's real "today" whenever `defaultFocusedValue`/`focusedValue`/`value` is unset, so its rendered day grid (and every `aria-label="Choose <weekday>, <month> <day>, <year>"` on each day button) drifts by one day every day. The fix is a serializable `defaultFocusedValue={ year, month, day }` on the demo source itself under `apps/docs/src/demos/calendar/` (the pattern `calendar-demo.marko`/`calendar-presets.marko` already used), not a Playwright `page.clock` or server-side time freeze. `calendar-min-max.marko` needs no pin: the Zag machine clamps initial focus into the `min`/`max` range on its own. When adding a new Calendar demo (or any date-sensitive component demo), pin its initial date the same way — an unpinned wall-clock date is a regression waiting to happen, not just cosmetic drift.
 
-**The axe-core WCAG scan (CI job `axe`) runs against a PRODUCTION docs build, not the dev server.** Reproduce it locally exactly as CI does — never on port 3000, per the stale-listener trap above:
+**The axe-core WCAG scan (CI job `axe`) runs against a PRODUCTION docs build, not the dev server.** Reproduce it locally using `scripts/ci/serve-docs.sh` (which handles the build and serves on port 3000), then run the scan. Wrap in `flock` to avoid heavy parallel jobs:
 
 ```bash
-REGISTRY_BASE_URL="http://localhost:4400/r" bun tooling/build-registry.ts
-bun run --cwd apps/docs build
-(cd apps/docs && PORT=4400 NODE_ENV=production bun dist/index.mjs &)
-DOCS_BASE_URL=http://localhost:4400 bun scripts/ci/axe-scan.ts axe-results.json
+flock /tmp/marko-ui-heavy.lock bash -c 'bash scripts/ci/serve-docs.sh && bun scripts/ci/axe-scan.ts axe-results.json; kill -9 $(lsof -t -i:3000) || true'
 ```
 
-It scans `/docs/components/<name>` for every `DOCUMENTED_COMPONENTS` entry, scoped to the hero `[data-slot="component-preview"]`, and exits non-zero on **any** violation — there is no baseline or threshold file, and none should be added: 0 means 0. Keep the full `axe-results.json`; its `perPage` map is what makes a failure diagnosable (aggregate it by rule, then by target, before touching any component).
+It scans `/docs/components/<name>` for every `DOCUMENTED_COMPONENTS` entry, scoped strictly to the hero `[data-slot="preview"]` stage (excluding the docs code-peek). It runs two passes: one in the default closed state, and one in an open state for components with overlays or expandable sections. The open state logic is driven by the map in `scripts/ci/axe-open-states.ts` (`OPEN_STATES` configures the trigger and content selectors; `NO_OPEN_STATE` lists components with no openable overlay).
+
+If you add a new component, you must add it to either `OPEN_STATES` or `NO_OPEN_STATE` in `scripts/ci/axe-open-states.ts`, or the scan will fail its completeness assertion.
+
+The scan exits non-zero on **any** violation — there is no baseline or threshold file, and none should be added: 0 means 0. Keep the full `axe-results.json`; its `perPage` map is what makes a failure diagnosable (aggregate it by rule, then by target, before touching any component).
 
 **Local counts run LOWER than CI's — the same violations, not a different set.** The 2026-09-16 fix measured 166 violations locally (162 `scrollable-region-focusable` + 4 `heading-order`, 39 pages) against CI's 241 (237 + 4, 52 pages) on the same 85 pages. CI is a strict superset: headless-Linux font metrics render text wider, so more containers overflow and trip the same rule at the same selectors. Never read a lower local number as "CI was exaggerating" — reproduce, fix by container/markup rather than by chasing a count, and confirm the fix holds at several viewport widths.
 
