@@ -34,6 +34,7 @@ import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
 import { confirm, select } from "@/src/utils/clack"
+import { isInteractive } from "@/src/utils/interactive"
 import { spinner } from "@/src/utils/spinner"
 import { updateDependencies } from "@/src/utils/updaters/update-dependencies"
 import { scaffoldImportDistributionCss } from "@/src/utils/updaters/update-css-import-distribution"
@@ -210,6 +211,7 @@ export async function runInit(
 
   let fullConfig = await resolveConfigPaths(options.cwd, config)
 
+
   // Resolve any namespaced registries referenced by the requested components.
   if (options.components?.length) {
     const { config: configWithRegistries } = await ensureRegistriesInConfig(
@@ -304,8 +306,23 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
   // Derived config from the project (aliases, css file) when available.
   const detected = projectConfig ?? existingConfig
 
+  // Whether this run may block on a TTY prompt at all. `--defaults`/`--yes`
+  // are explicit intent to skip prompting; a non-TTY stdin, CI, or an agent
+  // harness means nothing could answer one. Previously only the two flags
+  // were consulted, so an agent/piped invocation hung forever on the first
+  // prompt (the base-color select) instead of taking the documented default.
+  const mayPrompt =
+    !options.defaults &&
+    !options.yes &&
+    !options.silent &&
+    isInteractive()
+
+  // Defaults applied because prompting was skipped, reported in one line at
+  // the end so a non-interactive run still says what it chose.
+  const appliedDefaults: string[] = []
+
   let baseColor = options.baseColor
-  if (!baseColor && !options.defaults && !options.silent) {
+  if (!baseColor && mayPrompt) {
     baseColor = await select(
       `Which color would you like to use as the ${highlighter.info(
         "base color"
@@ -316,7 +333,10 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
       }))
     )
   }
-  baseColor = baseColor ?? "neutral"
+  if (!baseColor) {
+    baseColor = "neutral"
+    appliedDefaults.push(`base color ${highlighter.info(baseColor)}`)
+  }
 
   if (!BASE_COLORS.some((item) => item.name === baseColor)) {
     throw new CommandError(
@@ -327,7 +347,7 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
   }
 
   let distribution = options.distribution
-  if (!distribution && !options.defaults && !options.silent) {
+  if (!distribution && mayPrompt) {
     distribution = (await select(
       `Which ${highlighter.info(
         "distribution"
@@ -344,7 +364,10 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
       ]
     )) as "copy" | "import"
   }
-  distribution = distribution ?? "copy"
+  if (!distribution) {
+    distribution = "copy"
+    appliedDefaults.push(`distribution ${highlighter.info(distribution)}`)
+  }
 
   if (distribution !== "copy" && distribution !== "import") {
     throw new CommandError(
@@ -362,7 +385,7 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
   // only (the pre-dual-distribution-blocker-fix behavior) left "copy"
   // projects with no way to record which style `add` should keep fetching.
   let visualStyle = options.visualStyle
-  if (!visualStyle && !options.defaults && !options.silent) {
+  if (!visualStyle && mayPrompt) {
     visualStyle = await select(
       `Which ${highlighter.info("visual style")} would you like to use?`,
       VISUAL_STYLES.map((item) => ({
@@ -371,7 +394,10 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
       }))
     )
   }
-  visualStyle = visualStyle ?? DEFAULT_VISUAL_STYLE
+  if (!visualStyle) {
+    visualStyle = DEFAULT_VISUAL_STYLE
+    appliedDefaults.push(`visual style ${highlighter.info(visualStyle)}`)
+  }
 
   if (!VISUAL_STYLES.some((item) => item.name === visualStyle)) {
     throw new CommandError(
@@ -393,6 +419,14 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
     frameworkName: projectInfo?.framework?.name,
     isSrcDir: projectInfo?.isSrcDir,
   })
+
+  // A non-interactive run must still say what it decided on the user's
+  // behalf, so the result is reviewable without re-deriving the defaults.
+  if (appliedDefaults.length && !options.silent) {
+    logger.info(
+      `Non-interactive run — using ${appliedDefaults.join(", ")}.`
+    )
+  }
 
   const config = rawConfigSchema.parse({
     // components.json is wire-compatible with shadcn; its schema authority
