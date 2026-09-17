@@ -126,10 +126,13 @@ export const init = new Command()
  * relative to the project's source root (`src/` is prepended when the project
  * has one).
  *
- * Exported so tests assert against this rather than hardcoding the literal:
- * the value is expected to change (to `app.css`) with the in-flight CLI DX
- * work, and a test that repeats the string would have to be edited in
- * lockstep for no benefit.
+ * Exported so tests assert against this rather than hardcoding the literal.
+ *
+ * `styles/globals.css` is settled, not provisional: it is what the docs
+ * document (docs/components-json, docs/theming, docs/dark-mode) and what the
+ * registry's theme item targets. An earlier draft of the CLI DX work moved it
+ * to `app.css`; that was reversed precisely because nothing documented that
+ * path.
  */
 export const MARKO_DEFAULT_CSS = "styles/globals.css"
 

@@ -366,16 +366,16 @@ async function emitThemeVariants(): Promise<Emission[]> {
         dependencies: ["tailwindcss", "tw-animate-css"],
         cssVars: parseCssVars(css),
         // Targeted at the project's CSS entry point, which the CLI rewrites to
-        // the `tailwind.css` path recorded in components.json. It used to be
-        // hardcoded to `~/src/styles/globals.css`, which on a create-marko
-        // scaffold produced a second, complete, unreferenced theme alongside
-        // the patched entry point (duplicate `@import "tailwindcss"` and a
-        // duplicate token set).
+        // the `tailwind.css` path recorded in components.json. This matches
+        // `resolveTailwindCssPath()`'s Marko framework default, so on a stock
+        // scaffold the theme lands in the file the project actually uses
+        // instead of a second, complete, unreferenced copy beside it
+        // (duplicate `@import "tailwindcss"` and a duplicate token set).
         files: [
           {
             path: `styles/${file}`,
             type: "registry:file" as const,
-            target: "~/src/app.css",
+            target: "~/src/styles/globals.css",
             content: css,
           },
         ],
