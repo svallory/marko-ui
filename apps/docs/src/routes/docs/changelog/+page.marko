@@ -9,6 +9,7 @@ import { COMPONENTS } from "../../../lib/components-list.ts";
 
 static const TOC = [
   { id: "unreleased", label: "Unreleased" },
+  { id: "0.3.1", label: "0.3.1" },
   { id: "0.3.0", label: "0.3.0" },
   { id: "0.2.1", label: "0.2.1" },
   { id: "0.2.0", label: "0.2.0" },
@@ -24,6 +25,27 @@ export interface ChangelogEntry {
 }
 
 static const ENTRIES: ChangelogEntry[] = [
+  {
+    version: "0.3.1",
+    date: "2026-09-17",
+    title: "Honest numbers, a green pipeline, and the no-JS form claim proved",
+    summary:
+      "A correctness pass over everything the project claims publicly: each published number was re-derived from the repo and corrected where it had drifted, the CI pipeline was made genuinely green, and the headline \"forms validate without JavaScript\" claim became a test instead of an assertion.",
+    changes: [
+      "Fixed `marko-ui init` crashing on a freshly scaffolded Marko app: with no Tailwind stylesheet to detect yet, it fell back to shadcn's inherited Next.js `app/globals.css`, wrote that into components.json, and then died with ENOENT on the very path it had just failed to find. Marko projects now fall back to `src/styles/globals.css`.",
+      "`--visual-style`'s help text no longer claims it is \"ignored for copy\" — the copy path fetches per-style registry items, so the style selects which generated source is copied in.",
+      "The documented install commands now pass `--base-color`, so the \"non-interactive\" form really is non-interactive.",
+      "Fixed the `Publish badges` CI job, which had failed on every push to main since the style-matrix job was removed — it still required that job's artifact, so the run showed red while all four substantive jobs passed.",
+      "Raised syntax-highlighting contrast to WCAG AA. Three shiki token colors sat just under 4.5:1 on the code background, which was the sole cause of the Lighthouse accessibility score sitting at 96/97; it is 100 on all audited pages now.",
+      "Added a no-JS form route and a browserless test that POSTs to it and asserts the valibot messages are present in the returned HTML — the \"forms validate without JavaScript\" claim had no in-repo verification before this.",
+      "Corrected the public numbers: 8 visual styles (not 9 — \"default\" was a vestigial shadcn field), hydration coverage stated as 33 of 54 rather than implying all, and the real keyboard-contract test count (71) in place of an unreproducible one.",
+      "The docs type-check gate no longer fails on Bun's AI-agent NDJSON banner, which was being fingerprinted as a phantom type error.",
+      "Published releases now carry npm provenance attestations via the OIDC trusted-publishing workflow; 0.3.0 and earlier do not.",
+      "Breaking: adopted marko-zag 3.0.0's automatic `Props` shadowing — a component's declared member now always wins over a same-named native attribute, with no `Omit` or 3rd type-parameter gymnastics. Every component using the retired patterns was migrated.",
+      "The docs app's type-check baseline was cleared to 0 known errors and the gate scripts hardened with their own fixture tests.",
+      "Fixed the docs site's axe-core WCAG scan to 0 violations (keyboard-unreachable scroll containers, page heading order).",
+    ],
+  },
   {
     version: "0.3.0",
     date: "2026-09-13",
@@ -77,20 +99,9 @@ static const ENTRIES: ChangelogEntry[] = [
   <h2 id="unreleased">Unreleased</h2>
 
   <p>
-    Changes merged to <code>main</code> since the <code>0.3.0</code> release, not yet in a version
-    bump:
+    Nothing yet: everything merged to <code>main</code> since <code>0.3.0</code> is in the
+    <a href="#0.3.1"><code>0.3.1</code></a> entry below.
   </p>
-
-  <ul>
-    <li>An npm OIDC trusted-publishing workflow, for provenance-attested releases.</li>
-    <li>
-      Breaking: adopted marko-zag 3.0.0's automatic <code>Props</code> shadowing — a component's
-      declared member now always wins over a same-named native attribute with no <code>Omit</code> or
-      3rd type-parameter gymnastics required. Every component using the retired patterns was migrated.
-    </li>
-    <li>The docs app's type-check baseline was cleared to 0 known errors and the gate scripts hardened.</li>
-    <li>Fixed the docs site's axe-core WCAG scan to 0 violations (keyboard-unreachable scroll containers, page heading order).</li>
-  </ul>
 
   <p>Currently in the registry: ${COMPONENTS.length} components, plus the theme and utils items.</p>
 
