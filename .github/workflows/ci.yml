@@ -19,8 +19,100 @@ permissions:
   contents: read
 
 jobs:
+  # Path filters apply to `pull_request` runs ONLY. A `push` to `main` (and
+  # workflow_dispatch) must never be filtered — every job always runs there
+  # unconditionally, so main's badges/status stay trustworthy regardless of
+  # which paths a merge touched. Every downstream job's `if:` therefore reads
+  # `github.event_name != 'pull_request' || needs.changes.outputs.<x> == 'true'`
+  # rather than gating on the filter output alone.
+  changes:
+    name: Detect changed paths
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Always run so its outputs exist for the `if:` checks below, even
+    # though only pull_request runs actually consult them.
+    outputs:
+      cli: ${{ steps.filter.outputs.cli }}
+      docs: ${{ steps.filter.outputs.docs }}
+      registry: ${{ steps.filter.outputs.registry }}
+    steps:
+      - uses: actions/checkout@v4
+      # Root-level config files considered for these filters, and why each
+      # was included or excluded (re-derive this list, don't trust it blindly,
+      # whenever a job's commands or their config surface changes):
+      #   - vitest.config.ts (root) — decides `tests`' include/exclude and the
+      #     marko plugin config for `bunx vitest run`; added to `docs`.
+      #   - tsconfig.json (root) — extended by apps/docs/tsconfig.json,
+      #     tooling/tsconfig.json, and packages/shadcn/tsconfig.json (verified
+      #     via each file's `extends`); added to `docs` (apps/docs, tooling)
+      #     and `registry` (tooling). NOT added to `cli`:
+      #     packages/marko-ui/tsconfig.json does not extend it (standalone
+      #     compilerOptions) and cli-tests never runs a typecheck anyway
+      #     (`bun run --filter marko-ui test` is vitest-only). Kept in
+      #     `registry` only through `tooling`'s extends — packages/shadcn's
+      #     extends is irrelevant to `registry-drift`, which never
+      #     typechecks, but the file is already covered by `tooling`'s path
+      #     below so no separate entry is needed for that reason.
+      #   - biome.json / .eslintrc* / prettier config — none exist in this
+      #     repo (checked: no biome.json, no .eslintrc*, no committed
+      #     prettier.config; `prettier` is a devDependency with no CI script
+      #     invoking it). Nothing to add.
+      #   - playwright.config.ts — exists (repo root, testDir "e2e"), but no
+      #     job in this workflow runs `playwright test`; not added. If a
+      #     playwright job is ever added here, gate it on `docs` and add
+      #     playwright.config.ts + e2e/** to that filter.
+      #   - e2e/** — only consumed by `test:acceptance`
+      #     (e2e/acceptance/vitest.config.ts), which is its own workflow
+      #     (acceptance.yml) and not part of ci.yml. Not added.
+      #   - tooling/** — already listed explicitly in `docs` and `registry`
+      #     (the registry/style build scripts themselves); `cli` doesn't run
+      #     any tooling script, so it's correctly absent there.
+      # Pinned to the v4.0.3 tag's commit SHA (not a tag ref) per repo policy
+      # on third-party actions.
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        with:
+          filters: |
+            cli:
+              - 'packages/marko-ui/**'
+              - 'bun.lock'
+              - 'package.json'
+              - 'scripts/ci/**'
+              - '.github/workflows/ci.yml'
+              - '.github/actions/setup/**'
+            docs:
+              - 'packages/shadcn/**'
+              - 'apps/docs/**'
+              - 'packages/marko-ui/**'
+              - 'tooling/**'
+              - 'vitest.config.ts'
+              - 'tsconfig.json'
+              - 'bun.lock'
+              - 'package.json'
+              - 'scripts/ci/**'
+              - '.github/workflows/ci.yml'
+              - '.github/actions/setup/**'
+            registry:
+              - 'packages/shadcn/**'
+              - 'packages/marko-ui/src/registry/**'
+              - 'apps/docs/src/data/directory.json'
+              - 'tooling/**'
+              - 'tsconfig.json'
+              - 'bun.lock'
+              - 'package.json'
+              # scripts/ci/** deliberately NOT included here: registry-drift
+              # only runs `bun run build:registry` + `git diff`, neither of
+              # which touches scripts/ci/** (that dir feeds serve-docs.sh,
+              # axe-scan.ts, badge.ts — none used by this job). Unlike `cli`
+              # and `docs`, which both invoke scripts under scripts/ci/**
+              # directly, this job has no path to that directory at all.
+              - '.github/workflows/ci.yml'
+              - '.github/actions/setup/**'
+
   cli-tests:
     name: CLI unit tests
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.cli == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -34,6 +126,8 @@ jobs:
 
   registry-drift:
     name: Registry drift check
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.registry == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -50,6 +144,8 @@ jobs:
 
   tests:
     name: Behavior & hydration tests
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.docs == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -72,6 +168,8 @@ jobs:
 
   axe:
     name: axe-core WCAG scan
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.docs == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -95,6 +193,9 @@ jobs:
   publish-badges:
     name: Publish badges
     needs: [tests, axe]
+    # Only fires on push to main, where the `changes` filters are never
+    # consulted (see the note above) — tests/axe always ran, so this needs
+    # no additional gating.
     if: always() && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -117,3 +218,52 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/ci/publish-badges.sh badges
+
+  # Aggregate gate. Branch protection has no required checks configured
+  # today (verified via `gh api repos/svallory/marko-ui/branches/main/protection`
+  # -> 404 "Branch not protected"), so nothing currently depends on this job
+  # existing. It's added anyway, cheaply, as the one stable name a future
+  # required-check rule should point at: cli-tests/registry-drift/tests/axe
+  # can each report "skipped" on a PR that doesn't touch their paths, and a
+  # required check stuck on "skipped" forever is indistinguishable from one
+  # that's still queued in GitHub's UI — `ci-ok` always runs (`if: always()`)
+  # and gives one green/red signal that treats a legitimate skip as fine but
+  # still fails on a real failure or cancellation.
+  #
+  # `changes` is included here too, and treated as a required result (not a
+  # legitimate-skip candidate): it has no `if:` gating it, so anything other
+  # than `success` means the filter computation itself failed (bad checkout,
+  # action download failure, malformed filter syntax) — every other job's
+  # `if:` would then evaluate its `needs.changes.outputs.*` as empty/false
+  # and report `skipped`, which this job's loop treats as fine. Without
+  # `changes` in the loop, a broken `changes` job would produce an all-green
+  # `ci-ok` on a pipeline that never actually ran anything — a false green.
+  ci-ok:
+    name: CI ok
+    needs: [changes, cli-tests, registry-drift, tests, axe]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Check required job results
+        # Job results are passed through env, not interpolated with ${{ }}
+        # directly into the shell script body, to avoid the injection-prone
+        # pattern of substituting untrusted/expression values into a shell
+        # string before the shell ever sees them. `needs.*.result` values
+        # are controlled by GitHub Actions itself (one of a fixed enum:
+        # success/failure/cancelled/skipped), not attacker-controlled, but
+        # this keeps the pattern consistent and avoids the anti-pattern.
+        env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          CLI_TESTS_RESULT: ${{ needs.cli-tests.result }}
+          REGISTRY_DRIFT_RESULT: ${{ needs.registry-drift.result }}
+          TESTS_RESULT: ${{ needs.tests.result }}
+          AXE_RESULT: ${{ needs.axe.result }}
+        run: |
+          for r in "$CHANGES_RESULT" "$CLI_TESTS_RESULT" "$REGISTRY_DRIFT_RESULT" "$TESTS_RESULT" "$AXE_RESULT"; do
+            if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then
+              echo "a required job did not pass (result: $r)" >&2
+              exit 1
+            fi
+          done
+          echo "all required jobs passed or were legitimately skipped"
