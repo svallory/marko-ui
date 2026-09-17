@@ -1,0 +1,93 @@
+// The no-JavaScript half of the "forms validate without JS" claim.
+//
+// There is deliberately NO client-side validation here and no submit
+// handler: the <form> posts natively to its own URL, +handler.ts validates
+// the body with valibot (Standard Schema), and this template re-renders with
+// server-produced messages. Nothing on this page depends on hydration, which
+// is exactly what makes the claim testable — see
+// packages/shadcn/tests/behavior/no-js-form.test.ts, which POSTs with fetch
+// and never starts a browser.
+//
+// `novalidate` is set so the browser's own constraint UI cannot pre-empt the
+// server round-trip: without it, a browser would block submission client-side
+// and the server path this page exists to demonstrate would never run.
+import FieldSet from "@marko-ui/shadcn/ui/field/field-set.marko";
+import FieldLegend from "@marko-ui/shadcn/ui/field/field-legend.marko";
+import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
+import Field from "@marko-ui/shadcn/ui/field/field.marko";
+import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
+import FieldError from "@marko-ui/shadcn/ui/field/field-error.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import type { NoJsFormData } from "./+handler.ts";
+
+<const/data=(($global.data ?? {}) as NoJsFormData)/>
+<const/errors=(data.errors ?? {})/>
+<const/values=(data.values ?? {})/>
+
+<main class="mx-auto w-full max-w-sm p-8" data-slot="no-js-form">
+  <form method="post" novalidate>
+    <FieldSet>
+      <FieldLegend>Create an account</FieldLegend>
+      <FieldDescription>
+        Validated on the server. This page ships no validation JavaScript.
+      </FieldDescription>
+      <FieldGroup>
+        <Field invalid=!!errors.username>
+          <FieldLabel for="njs-username">Username</FieldLabel>
+          <TextInput
+            id="njs-username"
+            name="username"
+            value=values.username
+            autocomplete="username"
+            aria-invalid=(errors.username ? "true" : undefined)
+            aria-describedby=(errors.username ? "njs-username-error" : "njs-username-description")
+          />
+          <FieldDescription id="njs-username-description">
+            3-20 characters: letters, numbers and underscores.
+          </FieldDescription>
+          <FieldError id="njs-username-error" errors=errors.username/>
+        </Field>
+
+        <Field invalid=!!errors.email>
+          <FieldLabel for="njs-email">Email</FieldLabel>
+          <TextInput
+            id="njs-email"
+            name="email"
+            type="email"
+            value=values.email
+            autocomplete="email"
+            aria-invalid=(errors.email ? "true" : undefined)
+            aria-describedby=(errors.email ? "njs-email-error" : undefined)
+          />
+          <FieldError id="njs-email-error" errors=errors.email/>
+        </Field>
+
+        <Field invalid=!!errors.password>
+          <FieldLabel for="njs-password">Password</FieldLabel>
+          <TextInput
+            id="njs-password"
+            name="password"
+            type="password"
+            autocomplete="new-password"
+            aria-invalid=(errors.password ? "true" : undefined)
+            aria-describedby=(errors.password ? "njs-password-error" : "njs-password-description")
+          />
+          <FieldDescription id="njs-password-description">
+            At least 8 characters and one number.
+          </FieldDescription>
+          <FieldError id="njs-password-error" errors=errors.password/>
+        </Field>
+
+        <Button type="submit">Create account</Button>
+
+        <if=data.submitted>
+          <p data-slot="no-js-form-success" class="text-sm font-medium text-primary">
+            Account created. Welcome aboard!
+          </p>
+        </if>
+      </FieldGroup>
+    </FieldSet>
+  </form>
+</main>
