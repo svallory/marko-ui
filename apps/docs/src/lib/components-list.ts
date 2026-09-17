@@ -10,7 +10,7 @@ export const COMPONENTS = [
   "menubar", "native-select", "navigation-menu", "number-input", "pagination", "password-input", "popover",
   "progress", "qr-code", "radio-group", "rating-group", "resizable", "scroll-area",
   "select", "separator", "sheet", "sidebar", "signature-pad", "skeleton",
-  "slider", "spinner", "steps", "switch", "table", "tabs",
+  "slider", "sonner", "spinner", "steps", "switch", "table", "tabs",
   "tags-input", "textarea", "timer", "toast", "toc", "toggle",
   "toggle-group", "tooltip", "tour", "tree-view",
 ];
