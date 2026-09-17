@@ -19,6 +19,12 @@ import { z } from "zod"
 export const DEFAULT_STYLE = "default"
 export const DEFAULT_COMPONENTS = "@/components"
 export const DEFAULT_UTILS = "@/lib/utils"
+// shadcn's inherited Next.js default. Deliberately left as-is: it is the LAST
+// fallback in `resolveTailwindCssPath()` (configured > detected > framework
+// default > this), and a Marko project never reaches it — the framework step
+// returns `src/styles/globals.css`, the path the docs document. Changing this
+// constant would only alter behaviour for non-Marko frameworks, which is not
+// this CLI's call to make.
 export const DEFAULT_TAILWIND_CSS = "app/globals.css"
 export const DEFAULT_TAILWIND_CONFIG = "tailwind.config.js"
 export const DEFAULT_TAILWIND_BASE_COLOR = "slate"

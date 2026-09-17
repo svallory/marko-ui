@@ -1,16 +1,48 @@
 import { buttonVariants, type ButtonVariants } from "./variants.ts";
 import { cn } from "#lib/utils.ts";
 
-export interface Input extends Marko.Input<"button">, ButtonVariants {}
+// A button that is semantically a link is the commonest case in a static site,
+// and shadcn covers it with `asChild` — a React-only escape hatch. The Marko
+// equivalent is `href`: passing it renders an <a> with identical classes and
+// data attributes, so a link keeps real anchor behaviour (middle-click, copy
+// link address, keyboard activation) instead of a <button> with an onclick.
+//
+// Declared as a union rather than one widened interface so each branch gets
+// the right native attributes: `href`/`target`/`rel` only exist on the anchor
+// side, and `type`/`disabled` only on the button side.
+//
+// `rest` is destructured once at the top level, NOT once per branch: a
+// `<const>` as the first child of an `<if>`/`<else>` crashes the Marko 6.3.46
+// compiler outright ("Cannot read properties of null (reading
+// 'isExpressionStatement')"). Each branch casts it to its own element's
+// attribute type at the spread site instead.
+export type Input =
+  | (Marko.Input<"button"> & ButtonVariants & { href?: never })
+  | (Marko.Input<"a"> & ButtonVariants & { href: string });
 
 <const/{ variant, size, class: className, content, ...rest }=input/>
 
-<button
-  data-slot="button"
-  data-variant=(variant ?? "default")
-  data-size=(size ?? "default")
-  ...rest
-  class=cn(buttonVariants({ variant, size }), className)
->
-  <${content}/>
-</button>
+<const/classes=cn(buttonVariants({ variant, size }), className)/>
+
+<if=(input.href != null)>
+  <a
+    data-slot="button"
+    data-variant=(variant ?? "default")
+    data-size=(size ?? "default")
+    ...(rest as Marko.Input<"a">)
+    class=classes
+  >
+    <${content}/>
+  </a>
+</if>
+<else>
+  <button
+    data-slot="button"
+    data-variant=(variant ?? "default")
+    data-size=(size ?? "default")
+    ...(rest as Marko.Input<"button">)
+    class=classes
+  >
+    <${content}/>
+  </button>
+</else>

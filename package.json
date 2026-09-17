@@ -12,6 +12,7 @@
     "check:tooling": "tsc --noEmit -p tooling && bun tooling/check-conflict-markers.ts && bun tooling/check-dep-sync.ts && bun tooling/check-anchors.ts && bun tooling/check-consumption.ts && bun tooling/check-registry-deps.ts && bun tooling/check-classes.ts && bun tooling/check-html-comments.ts",
     "test": "bun run test:cli && bun run test:docs",
     "test:cli": "bun run --filter marko-ui test",
+    "test:cli:e2e": "bash e2e/cli/run.sh",
     "test:docs": "vitest run",
     "build:registry": "bun tooling/build-registry.ts",
     "extract:api": "bun tooling/extract-api.ts",

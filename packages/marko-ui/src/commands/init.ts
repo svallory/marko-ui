@@ -34,8 +34,14 @@ import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
 import { confirm, select } from "@/src/utils/clack"
+import { isInteractive } from "@/src/utils/interactive"
 import { spinner } from "@/src/utils/spinner"
 import { updateDependencies } from "@/src/utils/updaters/update-dependencies"
+import { updateTsConfig } from "@/src/utils/updaters/update-tsconfig"
+import {
+  ensureVitePlugin,
+  wireCssImport,
+} from "@/src/utils/updaters/update-css-entry-wiring"
 import { scaffoldImportDistributionCss } from "@/src/utils/updaters/update-css-import-distribution"
 import { Command } from "commander"
 import { z } from "zod"
@@ -120,10 +126,13 @@ export const init = new Command()
  * relative to the project's source root (`src/` is prepended when the project
  * has one).
  *
- * Exported so tests assert against this rather than hardcoding the literal:
- * the value is expected to change (to `app.css`) with the in-flight CLI DX
- * work, and a test that repeats the string would have to be edited in
- * lockstep for no benefit.
+ * Exported so tests assert against this rather than hardcoding the literal.
+ *
+ * `styles/globals.css` is settled, not provisional: it is what the docs
+ * document (docs/components-json, docs/theming, docs/dark-mode) and what the
+ * registry's theme item targets. An earlier draft of the CLI DX work moved it
+ * to `app.css`; that was reversed precisely because nothing documented that
+ * path.
  */
 export const MARKO_DEFAULT_CSS = "styles/globals.css"
 
@@ -210,6 +219,24 @@ export async function runInit(
 
   let fullConfig = await resolveConfigPaths(options.cwd, config)
 
+  // Registry components import siblings with explicit `.ts` extensions, which
+  // a stock `create-marko` tsconfig rejects (TS5097). `init` already writes
+  // components.json and patches CSS, so the compiler option belongs here too —
+  // otherwise scaffold -> init -> add lands on a project that cannot typecheck.
+  await updateTsConfig(fullConfig, { silent: options.silent })
+
+  // The CSS entry point must exist before any theme or component tries to
+  // patch it. A `create-marko` scaffold ships no stylesheet at all, which is
+  // what made `init` die with ENOENT on the (previously Next.js-shaped)
+  // default path.
+  await ensureCssEntry(fullConfig, { silent: options.silent })
+
+  // Creating the stylesheet is not enough — it has to actually load. A
+  // `create-marko` scaffold imports no CSS anywhere (its layout uses an inline
+  // `<style>`) and has no Vite config, so without this the theme and every
+  // component utility are silently absent from the build output.
+  await wireCssEntry(fullConfig, { silent: options.silent })
+
   // Resolve any namespaced registries referenced by the requested components.
   if (options.components?.length) {
     const { config: configWithRegistries } = await ensureRegistriesInConfig(
@@ -272,6 +299,85 @@ export async function runInit(
   return fullConfig
 }
 
+/**
+ * Creates the project's CSS entry point when it does not exist yet.
+ *
+ * `create-marko` scaffolds no stylesheet, so the file the theme is about to be
+ * merged into has to be brought into existence first — previously `init`
+ * assumed it was already there and crashed with ENOENT. Only the bare
+ * `@import "tailwindcss"` is written; the theme tokens arrive through the
+ * registry's style item, which is merged into this same file. Writing just the
+ * import (rather than a full theme) is what keeps a second `init` run a no-op
+ * instead of appending a duplicate token set.
+ */
+async function ensureCssEntry(
+  config: Config,
+  options: { silent?: boolean } = {}
+) {
+  const cssPath = config.resolvedPaths.tailwindCss
+  if (!cssPath) {
+    return
+  }
+
+  try {
+    await fs.access(cssPath)
+    // Already present — leave whatever the project has alone.
+    return
+  } catch {
+    // Falls through to creation.
+  }
+
+  await fs.mkdir(path.dirname(cssPath), { recursive: true })
+  await fs.writeFile(cssPath, `@import "tailwindcss";\n`, "utf8")
+
+  if (!options.silent) {
+    const relative = path.relative(config.resolvedPaths.cwd, cssPath)
+    logger.info(`Created ${highlighter.info(relative)} (CSS entry point).`)
+  }
+}
+
+/**
+ * Makes the CSS entry point live: imported by the layout, and processed by
+ * Tailwind's Vite plugin.
+ *
+ * Split from `ensureCssEntry` because creating the file and loading it are
+ * different failures. A project can legitimately already do either (its own
+ * import, its own Vite config), so each step is skipped independently and a
+ * step that cannot be done safely is reported as a manual one rather than
+ * guessed at.
+ */
+async function wireCssEntry(
+  config: Config,
+  options: { silent?: boolean } = {}
+) {
+  const imported = await wireCssImport(config, options)
+  const plugin = await ensureVitePlugin(config, options)
+
+  // The generated config imports @tailwindcss/vite, so it has to be installed
+  // or the next `bun run build` fails on an unresolved import.
+  if (plugin === "created") {
+    await updateDependencies([], ["@tailwindcss/vite"], config, {
+      silent: options.silent,
+    })
+  }
+
+  if (options.silent) {
+    return
+  }
+
+  if (imported === "no-layout") {
+    const cssPath = config.resolvedPaths.tailwindCss
+    const relative = cssPath
+      ? path.relative(config.resolvedPaths.cwd, cssPath)
+      : "your stylesheet"
+    logger.warn(
+      `Could not find src/routes/+layout.marko to import ${highlighter.info(
+        relative
+      )}. Import it from your root layout, or the theme and component styles will not load.`
+    )
+  }
+}
+
 // The built-in @marko-ui registry must never be written to components.json —
 // getConfig rejects configs that try to (re)define it.
 function filterBuiltinRegistries(
@@ -304,8 +410,23 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
   // Derived config from the project (aliases, css file) when available.
   const detected = projectConfig ?? existingConfig
 
+  // Whether this run may block on a TTY prompt at all. `--defaults`/`--yes`
+  // are explicit intent to skip prompting; a non-TTY stdin, CI, or an agent
+  // harness means nothing could answer one. Previously only the two flags
+  // were consulted, so an agent/piped invocation hung forever on the first
+  // prompt (the base-color select) instead of taking the documented default.
+  const mayPrompt =
+    !options.defaults &&
+    !options.yes &&
+    !options.silent &&
+    isInteractive()
+
+  // Defaults applied because prompting was skipped, reported in one line at
+  // the end so a non-interactive run still says what it chose.
+  const appliedDefaults: string[] = []
+
   let baseColor = options.baseColor
-  if (!baseColor && !options.defaults && !options.silent) {
+  if (!baseColor && mayPrompt) {
     baseColor = await select(
       `Which color would you like to use as the ${highlighter.info(
         "base color"
@@ -316,7 +437,10 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
       }))
     )
   }
-  baseColor = baseColor ?? "neutral"
+  if (!baseColor) {
+    baseColor = "neutral"
+    appliedDefaults.push(`base color ${highlighter.info(baseColor)}`)
+  }
 
   if (!BASE_COLORS.some((item) => item.name === baseColor)) {
     throw new CommandError(
@@ -327,7 +451,7 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
   }
 
   let distribution = options.distribution
-  if (!distribution && !options.defaults && !options.silent) {
+  if (!distribution && mayPrompt) {
     distribution = (await select(
       `Which ${highlighter.info(
         "distribution"
@@ -344,7 +468,10 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
       ]
     )) as "copy" | "import"
   }
-  distribution = distribution ?? "copy"
+  if (!distribution) {
+    distribution = "copy"
+    appliedDefaults.push(`distribution ${highlighter.info(distribution)}`)
+  }
 
   if (distribution !== "copy" && distribution !== "import") {
     throw new CommandError(
@@ -362,7 +489,7 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
   // only (the pre-dual-distribution-blocker-fix behavior) left "copy"
   // projects with no way to record which style `add` should keep fetching.
   let visualStyle = options.visualStyle
-  if (!visualStyle && !options.defaults && !options.silent) {
+  if (!visualStyle && mayPrompt) {
     visualStyle = await select(
       `Which ${highlighter.info("visual style")} would you like to use?`,
       VISUAL_STYLES.map((item) => ({
@@ -371,7 +498,10 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
       }))
     )
   }
-  visualStyle = visualStyle ?? DEFAULT_VISUAL_STYLE
+  if (!visualStyle) {
+    visualStyle = DEFAULT_VISUAL_STYLE
+    appliedDefaults.push(`visual style ${highlighter.info(visualStyle)}`)
+  }
 
   if (!VISUAL_STYLES.some((item) => item.name === visualStyle)) {
     throw new CommandError(
@@ -393,6 +523,14 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
     frameworkName: projectInfo?.framework?.name,
     isSrcDir: projectInfo?.isSrcDir,
   })
+
+  // A non-interactive run must still say what it decided on the user's
+  // behalf, so the result is reviewable without re-deriving the defaults.
+  if (appliedDefaults.length && !options.silent) {
+    logger.info(
+      `Non-interactive run — using ${appliedDefaults.join(", ")}.`
+    )
+  }
 
   const config = rawConfigSchema.parse({
     // components.json is wire-compatible with shadcn; its schema authority

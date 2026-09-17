@@ -36,9 +36,18 @@ export async function updateDependencies(
   assertSafeDependencies(dependencies)
   assertSafeDependencies(devDependencies)
 
-  const dependenciesSpinner = spinner(`Installing dependencies.`, {
-    silent: options.silent,
-  })?.start()
+  // Name the packages rather than just "Installing dependencies." — the diff a
+  // user has to review afterwards is otherwise unexplained, and an unexpected
+  // entry (a dependency over-declared by a registry item) is invisible.
+  const allDependencies = [...dependencies, ...devDependencies]
+  const dependenciesSpinner = spinner(
+    allDependencies.length
+      ? `Installing dependencies: ${allDependencies.join(", ")}.`
+      : `Installing dependencies.`,
+    {
+      silent: options.silent,
+    }
+  )?.start()
 
   // A failed install must not abort the whole add: component files are
   // still valuable (and `marko-ui` itself is not on npm yet — see the

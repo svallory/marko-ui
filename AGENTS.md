@@ -264,6 +264,53 @@ Registry/CLI install-command URLs (`https://marko-ui.saulo.tech/r/...` in `card-
 
 There are two shipping paths, not one: **copy** (`marko-ui add` copies per-style flat generated source, transformed in memory at build time — classes are baked flat, "the code is mine now") and **import** (the `@marko-ui/shadcn` package, which ships the `mu-*` hook-class components plus the 8 style layers **as source**, for the consumer's own Tailwind to compile). For the import path, `mu-*` hooks are a **public styling API**: consumers override or switch styles from their own stylesheet. Full mechanics — the `layer(components)` requirement and the `@custom-variant` shipping requirement — are documented in `notes/css-architecture.md`.
 
+## Testing the CLI against a real scaffold
+
+The CLI's vitest suite never runs `init`/`add` against a real project, so a
+whole class of first-run defect is invisible to it — the CLI's own tests all
+pass while `bunx marko-ui init` hangs, crashes, or leaves the user with a
+project whose CSS never loads. Every one of the 2026-09-17 first-run fixes was
+found this way and none was catchable in-repo.
+
+```bash
+bun run test:cli:e2e
+```
+
+That builds the CLI, builds and serves the registry locally, scaffolds a
+throwaway `create-marko` app, and drives `init` / `add` / `build` through it.
+`e2e/cli/first-run.sh` holds the assertions; `e2e/cli/run.sh` is the wrapper.
+It runs in CI as a step of the `cli-tests` job (gated on the `cli` path filter,
+~36s locally).
+
+**Assert on the build output, not on files and flags.** This is the trap that
+made the first version of this harness worthless: it checked that `init` wrote
+the stylesheet and set the tsconfig flag, all of which passed, while the built
+CSS was 776 bytes with no theme tokens and no component utilities in it. A
+`create-marko` scaffold imports no CSS anywhere (its layout uses an inline
+`<style>`) and has no Vite config, so writing a stylesheet does not make it
+load. The decisive assertions are that a component utility (`inline-flex`), a
+theme token, and the `mu-font-heading` hook rule all appear in `dist/**/*.css`,
+and that the emitted CSS asset is actually referenced by the built output.
+
+Other traps, each of which cost a debugging cycle:
+
+- **The registry must be built AND served locally.** `tooling/build-registry.ts`
+  changes (dependencies, file targets) only exist in local output, and the CLI
+  otherwise fetches the live registry, which this document notes is stale
+  relative to `main`. Registry items also embed absolute URLs, so the build
+  needs `REGISTRY_BASE_URL` pointing at the local server.
+- **Port 4455 is shared with the CLI test suite.** `src/registry/resolver.test.ts`
+  binds it too, so a registry server left running makes `bun run test:cli` fail
+  with `EADDRINUSE` in a file unrelated to the change. `run.sh` refuses to start
+  on a port already in use and always stops its own server; override with
+  `REGISTRY_PORT`.
+- **Run the CLI with stdin closed** (`< /dev/null`) and a timeout. That is what
+  a CI/agent caller looks like, and it is what surfaces a prompt nothing can
+  answer — the failure mode is a hang, so without a timeout the harness hangs
+  too.
+- **Idempotence needs a real second run.** Hash the project tree, run `init`
+  again, compare. Several first-run defects only appear on the second call.
+
 ## Acceptance suite (published packages, live registry)
 
 `e2e/acceptance/` tests the **published** `marko-ui`/`@marko-ui/shadcn` npm packages and the **live** registry deploy (`https://marko-ui.saulo.tech/r`) — not the workspace. It exists to catch a broken publish or a stale registry deploy in CI before a user hits it. Run with `bun run test:acceptance` (own vitest config, not part of `bun run test`/`bun run check` — see `.github/workflows/acceptance.yml`, `workflow_dispatch` + weekly cron, deliberately not in `ci.yml` since it depends on external services).

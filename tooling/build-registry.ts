@@ -354,10 +354,23 @@ async function emitThemeVariants(): Promise<Emission[]> {
         title: name === "style" ? "Theme" : `Theme (${name.replace("style-", "")})`,
         description:
           "Tailwind v4 globals.css with shadcn-compatible CSS variables. Add `@source` directives for your .marko files.",
-        dependencies: ["tailwindcss", "tw-animate-css", "marko-zag"],
+        // The theme is CSS, so its dependencies are the packages its CSS
+        // actually imports: Tailwind, and `tw-animate-css` (a hard
+        // `@import "tw-animate-css"` on line 2 of every globals-*.css — drop it
+        // and the Vite build fails with "Can't resolve 'tw-animate-css'").
+        //
+        // `marko-zag` is NOT one of them: it is a runtime dependency of the
+        // zag-machine COMPONENTS, each of which declares it in its own registry
+        // item. Declaring it here made every `init` install it into a project
+        // with zero components.
+        dependencies: ["tailwindcss", "tw-animate-css"],
         cssVars: parseCssVars(css),
-        // Ship only this variant's CSS, always targeted as globals.css so a
-        // consumer picking any base color gets a normal `~/src/styles/globals.css`.
+        // Targeted at the project's CSS entry point, which the CLI rewrites to
+        // the `tailwind.css` path recorded in components.json. This matches
+        // `resolveTailwindCssPath()`'s Marko framework default, so on a stock
+        // scaffold the theme lands in the file the project actually uses
+        // instead of a second, complete, unreferenced copy beside it
+        // (duplicate `@import "tailwindcss"` and a duplicate token set).
         files: [
           {
             path: `styles/${file}`,
