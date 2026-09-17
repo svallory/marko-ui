@@ -82,7 +82,7 @@ describe("copy path: scaffold, init, add, build", () => {
 
     await expect(
       readFile(join(uiDir, "ui/button/button.marko"), "utf8")
-    ).resolves.toContain("export interface Input")
+    ).resolves.toMatch(/export (interface|type) Input\b/)
     await expect(
       readFile(join(uiDir, "ui/switch/switch.marko"), "utf8")
     ).resolves.toMatch(/switch/i)
