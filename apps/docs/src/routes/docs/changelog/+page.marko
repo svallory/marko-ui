@@ -1,17 +1,22 @@
 // Changelog — structural counterpart to shadcn's content/docs/changelog/*.mdx
-// (dated entries, newest first). Entries are drawn from the project's own
-// TODO.md milestones; marko-ui is pre-release, so this is deliberately a stub
-// rather than a fabricated release history.
+// (dated entries, newest first). Entries are drawn from merged PR titles on
+// main (`gh pr list --state merged`) and the release commits that bumped
+// packages/marko-ui and packages/shadcn's package.json versions. No git tags
+// exist in this repo; version history is tracked only via those release
+// commits, so dates below are the release commit's merge date.
 import "../../../tags/docs/docs-article.marko";
 import { COMPONENTS } from "../../../lib/components-list.ts";
 
 static const TOC = [
   { id: "unreleased", label: "Unreleased" },
-  { id: "2026-08-11", label: "August 2026" },
+  { id: "0.3.0", label: "0.3.0" },
+  { id: "0.2.1", label: "0.2.1" },
+  { id: "0.2.0", label: "0.2.0" },
   { id: "versioning", label: "Versioning" },
 ];
 
 export interface ChangelogEntry {
+  version: string;
   date: string;
   title: string;
   summary: string;
@@ -20,70 +25,45 @@ export interface ChangelogEntry {
 
 static const ENTRIES: ChangelogEntry[] = [
   {
-    date: "2026-09-01",
-    title: "marko-zag 2.0.0 stable",
+    version: "0.3.0",
+    date: "2026-09-13",
+    title: "Class-as-data styling, Input→TextInput rename",
     summary:
-      "marko-zag reached stable 2.0.0 across packages/shadcn and apps/docs, identical to rc.3.",
+      "The per-style class-generation pipeline moved from a text transform to typed data, and a naming collision between a component and Marko's reserved props-type name was fixed across every consumer.",
     changes: [
-      "marko-zag pinned to 2.0.0 (exact) across packages/shadcn and apps/docs.",
+      "Breaking: every docs-app import of the text-input component's `Input` binding renamed to `TextInput` — importing it as `Input` shadowed Marko's reserved props-type name and collapsed prop getters to `any` in that file.",
+      "New class-as-data pipeline: each component's `classes.ts` (pure data, one export per part) is resolved against a style's CSS and merged into the copy-path file at build time, replacing the previous text-transform step. Piloted on button/accordion/sidebar, then rolled out and the old text transform retired.",
+      "Attr-tag typing fixes: parameterized and parameterless attr-tag fields declared as `Marko.AttrTag<{ content }>` instead of bare `Marko.Body`, fixing consumer-side TS2353 errors on 17 fields across alert-dialog/dialog/drawer/sheet/avatar/floating-panel/qr-code/color-picker/steps and two docs-app tags.",
+      "Native-attribute shadowing fixed on title-declaring components (alert-dialog, dialog, drawer, sheet) — a declared `title` member was being intersected with, not overriding, the native `title` attribute, producing an unsatisfiable type.",
+      "marko-zag caret range fix: pinned to `^2.0.1` instead of an exact version, so a consumer app with its own marko-zag dependency can dedupe instead of getting a second nested copy.",
+      "The old style-matrix e2e suite (`e2e/verify-matrix.spec.ts`, the generated verify route tree, and the `build:verify` CI job) was removed — its coverage was superseded by behavior tests, the hydration-invariant suite, and the docs pages themselves, and it duplicated the same bugs 9x across generated style copies.",
+      "A baseline-diff gate was added for the docs app's `@marko/type-check` run, replacing a raw error-count threshold that had proven unreliable across dependency bumps.",
     ],
   },
   {
-    date: "2026-08-27",
-    title: "Migrated to marko-zag 2.0 and the <zag> tag",
-    summary:
-      "Every Zag-backed component and docs page moved from the three-tag <machine-props>/<service>/<connect> wiring to marko-zag 2.0's single <zag> tag.",
+    version: "0.2.1",
+    date: "2026-09-08",
+    title: "CLI symlink fix, acceptance suite",
+    summary: "A real CLI bug fix, plus a new test suite that runs against the published npm packages instead of the workspace.",
     changes: [
-      "All 57 registry components (and every docs-app example that wires a machine) collapsed onto <zag/api=() => mod from=input/>, with a default onXxxChange -> xxxChange callback rule that replaces most hand-written adaptation code.",
-      "Components that need the running service itself — toast's group/item pair, and the menubar/dropdown-menu/context-menu menu + submenu wiring — moved to <zag-machine> plus a plain connect() call instead.",
-      "<store>/<portal> renamed to <zag-store>/<zag-portal> (pure rename, no behavior change).",
-      "service.rev, service.service, service.machine, service.props, and the ServiceHandle object are gone: the service/api getter's own identity is now the reactive dependency (a bare `service;` read is a valid <script> dependency).",
-      "marko-zag pinned to 2.0.0-rc.3 across packages/shadcn and apps/docs.",
+      "Fixed a CLI entrypoint bug: on macOS, invoking the CLI through a path containing a symlinked directory (e.g. `/var` → `/private/var`, which `os.tmpdir()` returns) made the entrypoint guard's comparison fail silently — the process exited 0 having done nothing, with no output and no error.",
+      "Added `e2e/acceptance/`: a suite that scaffolds real apps against the published `marko-ui`/`@marko-ui/shadcn` npm packages and the live registry deploy, covering the copy path, the import path, `doctor`/`diff`, and registry health.",
+      "TypeScript pinned to `^6.0` (downgraded from an attempted 7.x) — TS 7's `tsgo` ships no in-process compiler API, which both the docs type-check tooling and the marko-ui CLI's build depend on.",
+      "Calendar demos pinned to a fixed `defaultFocusedValue` instead of relying on the browser's real \"today\", stopping day-of-month snapshot drift.",
     ],
   },
   {
-    date: "2026-08-11",
-    title: "Attribute-tag composition and the three-tag pattern",
-    summary:
-      "Every Zag-backed component moved onto a single consistent authoring pattern, and multi-part components gained attribute-tag composition.",
+    version: "0.2.0",
+    date: "2026-09-03",
+    title: "First tagged release",
+    summary: "marko-ui and @marko-ui/shadcn published to npm for the first time, alongside the attr-tag compound API, full CSS architecture, and the migration to marko-zag's single `<zag>` tag.",
     changes: [
-      "All 31 Zag-backed components migrated to the <machine-props> / <service> / <connect> pattern with MachineInput typing and typed chained callbacks.",
-      "Attribute tags (<@trigger>, <@content>) adopted as the primary API for multi-part components; array-style items= remains as sugar where it reads better.",
-      "Drawer rebuilt on @zag-js/drawer with the full 10-part anatomy, snap points, and logical swipe directions.",
-      "Toast rebuilt on Zag's toast group store: module store, group service, and per-toast child services, with pause-on-hover and stacking.",
-      "Form grown into the full Field anatomy, validation-library-agnostic — errors accept plain strings or Standard Schema issues.",
-    ],
-  },
-  {
-    date: "2026-08-11",
-    title: "Theming and registry",
-    summary:
-      "The registry learned to ship theme tokens the shadcn CLI can merge, and picked up the four extra base colors.",
-    changes: [
-      "Registry items now carry cssVars, parsed directly out of globals.css (:root, .dark, and @theme inline).",
-      "Base color variants shipped: neutral (default), zinc, slate, stone, and gray.",
-      "No-flash dark mode: an <html-script> head script plus a theme toggle, verified across reloads.",
-      "Registry output moved to absolute self-referencing URLs so registryDependencies never resolve against shadcn's React registry.",
-    ],
-  },
-  {
-    date: "2026-08-11",
-    title: "Accessibility and correctness testing",
-    summary: "Behavioral and hydration test suites landed, and caught a real adapter bug.",
-    changes: [
-      "61 WAI-ARIA APG keyboard tests across tabs, dialog, accordion, switch, checkbox, radio-group, select, and slider.",
-      "Fixed a marko-ui adapter bug: normalize-props now maps Zag's React-style tabIndex to tabindex. The verbatim camelCase key caused a remove-then-add on every update, blurring focus and breaking keyboard navigation on every roving-focus widget.",
-      "Hydration-invariant helper comparing JS-off against JS-on markup across all [data-scope] elements; 33 of 33 components pass.",
-    ],
-  },
-  {
-    date: "2026-08-11",
-    title: "Renamed to marko-ui",
-    summary: "The project was renamed from shadcn-marko, and the registry got a permanent home.",
-    changes: [
-      "Renamed across the registry output, the docs, and the workspace package. \"shadcn for Marko\" stays as the tagline.",
-      "Registry domain fixed at marko-ui.saulo.tech; local dev keeps a localhost base URL for CLI smoke tests.",
-      "marko-ui ships Marko source rather than a dist build — it requires a Marko-aware bundler.",
+      "Breaking: migrated every Zag-backed component from the three-tag `<machine-props>`/`<service>`/`<connect>` wiring to marko-zag 2.0's single `<zag/api=() => mod from=input/>` tag.",
+      "Attribute-tag compound API shipped across the multi-part components that need it (dropdown-menu, menubar, context-menu submenus, and others).",
+      "Full shadcn CSS architecture ported, including all 8 style layers (rhea, nova, vega, lyra, maia, mira, luma, sera) as vendored token CSS.",
+      "Registry Directory and the port-to-marko contribution workflow shipped, giving external contributors a documented path to add a component.",
+      "marko bumped to 6.3.46; the `connectFresh` walk-order workarounds it had required were removed.",
+      "Site URL centralized into a `VITE_SITE_URL` env var read through `import.meta.env`, replacing a hardcoded domain.",
     ],
   },
 ];
@@ -97,26 +77,25 @@ static const ENTRIES: ChangelogEntry[] = [
   <h2 id="unreleased">Unreleased</h2>
 
   <p>
-    <strong>marko-ui has not had a tagged release yet.</strong> The registry at
-    <code>marko-ui.saulo.tech/r</code> tracks the main branch, and
-    <code>marko-ui</code> is not yet on npm. Until <code>0.1.0</code> ships, treat component APIs
-    as subject to change and pin your installed files by committing them — which, given that you own
-    them, you get for free.
+    Changes merged to <code>main</code> since the <code>0.3.0</code> release, not yet in a version
+    bump:
   </p>
+
+  <ul>
+    <li>An npm OIDC trusted-publishing workflow, for provenance-attested releases.</li>
+    <li>
+      Breaking: adopted marko-zag 3.0.0's automatic <code>Props</code> shadowing — a component's
+      declared member now always wins over a same-named native attribute with no <code>Omit</code> or
+      3rd type-parameter gymnastics required. Every component using the retired patterns was migrated.
+    </li>
+    <li>The docs app's type-check baseline was cleared to 0 known errors and the gate scripts hardened.</li>
+    <li>Fixed the docs site's axe-core WCAG scan to 0 violations (keyboard-unreachable scroll containers, page heading order).</li>
+  </ul>
 
   <p>Currently in the registry: ${COMPONENTS.length} components, plus the theme and utils items.</p>
 
-  <p>Known gaps on the way to a first release:</p>
-
-  <ul>
-    <li><strong>chart</strong> — evaluated and specified (d3 primitives with Marko emitting SVG), not yet built.</li>
-    <li><strong>navigation-menu</strong> — light-JS implementation; the animated viewport panels are not done.</li>
-    <li><strong>scroll-area</strong> — styled native scrollbars rather than a synthetic draggable thumb.</li>
-  </ul>
-
-  <h2 id="2026-08-11">August 2026</h2>
-
-  <for|entry| of=ENTRIES by=(entry)=>entry.title>
+  <for|entry| of=ENTRIES by=(entry)=>entry.version>
+    <h2 id=entry.version>${entry.version}</h2>
     <div class="mt-8 border-l-2 border-border pl-5">
       <div class="text-xs font-medium tracking-wide text-muted-foreground uppercase">
         ${entry.date}
