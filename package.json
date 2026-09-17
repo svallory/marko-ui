@@ -18,6 +18,8 @@
     "build:demos": "bun apps/docs/scripts/build-demos-manifest.ts",
     "build:blocks-manifest": "bun apps/docs/scripts/build-blocks-manifest.ts",
     "test:e2e": "playwright test",
+    "test:visual": "playwright test --project=visual",
+    "test:visual:update": "playwright test --project=visual --update-snapshots",
     "build:cli-manifest": "bun apps/docs/scripts/build-cli-manifest.ts",
     "check:parity": "bun tooling/check-parity.ts",
     "test:acceptance": "vitest run --config e2e/acceptance/vitest.config.ts",
