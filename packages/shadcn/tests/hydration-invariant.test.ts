@@ -18,64 +18,17 @@ import {
   type AllowedElementCountChange,
 } from "./helpers/hydration-invariant.ts";
 
-/**
- * The 33 Zag-machine-backed components currently covered by this suite.
- *
- * NOT the full set. packages/shadcn/ui/ holds 58 Zag-backed component files:
- * 50 use <zag>, and 8 use <zag-machine> + connect() because they need the
- * running service itself (the toast pair, and the menu/submenu pair of
- * dropdown-menu, context-menu and menubar).
- * All 54 have demo directories under apps/docs/src/demos/.
- *
- * 33 are listed below, so 21 are uncovered — a real coverage gap in
- * constraint C-4, not a deliberate exclusion:
- *
- *   angle-slider, cascade-select, color-picker, date-input, editable,
- *   floating-panel, image-cropper, listbox, marquee, navigation-menu,
- *   number-input, password-input, qr-code, rating-group, scroll-area,
- *   signature-pad, steps, tags-input, timer, toc, tour
- *
- * (54 Zag-backed − 33 covered = 21, matching that list exactly.)
- *
- * Add a component here once its route is verified; several of the above are
- * measurement-heavy (color-picker, image-cropper, signature-pad, floating-panel)
- * and will likely need ALLOWED_DIFFERENCES entries the way carousel does.
- */
-const INTERACTIVE_COMPONENTS = [
-  "accordion",
-  "alert-dialog",
-  "avatar",
-  "calendar",
-  "carousel",
-  "checkbox",
-  "clipboard",
-  "collapsible",
-  "combobox",
-  "command",
-  "context-menu",
-  "date-picker",
-  "dialog",
-  "drawer",
-  "dropdown-menu",
-  "file-upload",
-  "hover-card",
-  "input-otp",
-  "menubar",
-  "pagination",
-  "popover",
-  "progress",
-  "radio-group",
-  "resizable",
-  "select",
-  "sheet",
-  "slider",
-  "switch",
-  "tabs",
-  "toggle-group",
-  "tooltip",
-  "tree-view",
-  "toast",
-] as const;
+// Covered/uncovered component lists live in a plain module so the CI badge
+// script can import them; importing a .test.ts executes vitest's describe()
+// at module load and throws outside a runner. Re-exported here because this
+// file is where they are used and guarded.
+import {
+  INTERACTIVE_COMPONENTS,
+  UNCOVERED_ZAG_COMPONENTS,
+  ZAG_BACKED_COMPONENT_COUNT,
+} from "./hydration-coverage.ts";
+
+export { INTERACTIVE_COMPONENTS, UNCOVERED_ZAG_COMPONENTS, ZAG_BACKED_COMPONENT_COUNT };
 
 /**
  * Tolerated SSR/hydration divergences.
@@ -305,4 +258,31 @@ describe("hydration invariant (C-4): SSR attributes survive hydration", () => {
       },
     );
   }
+});
+
+/**
+ * Guards the coverage arithmetic the project states publicly ("33 of 54
+ * Zag-backed components").
+ *
+ * Without this, the covered and uncovered lists could drift apart silently —
+ * which is how "33/33 identical" ended up on a badge and in the README while
+ * 21 components were in fact uncovered.
+ */
+describe("hydration coverage bookkeeping", () => {
+  it("accounts for every Zag-backed component exactly once", () => {
+    expect(INTERACTIVE_COMPONENTS.length + UNCOVERED_ZAG_COMPONENTS.length).toBe(
+      ZAG_BACKED_COMPONENT_COUNT,
+    );
+  });
+
+  it("never lists a component as both covered and uncovered", () => {
+    const covered = new Set<string>(INTERACTIVE_COMPONENTS);
+    const overlap = UNCOVERED_ZAG_COMPONENTS.filter((name) => covered.has(name));
+    expect(overlap).toEqual([]);
+  });
+
+  it("has no duplicates in either list", () => {
+    expect(new Set(INTERACTIVE_COMPONENTS).size).toBe(INTERACTIVE_COMPONENTS.length);
+    expect(new Set(UNCOVERED_ZAG_COMPONENTS).size).toBe(UNCOVERED_ZAG_COMPONENTS.length);
+  });
 });

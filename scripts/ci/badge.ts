@@ -13,6 +13,10 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+// The suite owns this number and guards it with its own bookkeeping test, so
+// the badge derives coverage from the source of truth rather than restating
+// a figure that can drift.
+import { ZAG_BACKED_COMPONENT_COUNT } from "../../packages/shadcn/tests/hydration-coverage.ts";
 
 interface Badge {
   schemaVersion: 1;
@@ -77,11 +81,35 @@ switch (kind) {
     const hydrationPassed = hydrationResults.filter(
       (r: { status: string }) => r.status === "passed",
     ).length;
+    // The denominator is the number of Zag-backed COMPONENTS, not the number
+    // of hydration tests that ran.
+    //
+    // It used to be `hydrationResults.length`, which can only ever equal the
+    // number that passed on a green run — so the badge published
+    // "33/33 identical" and was read (in the README, and in launch copy) as
+    // full coverage, while 21 of the 54 Zag-backed components had no
+    // hydration test at all. A badge whose denominator is "the tests I chose
+    // to write" cannot report a coverage gap by construction.
+    //
+    // ZAG_BACKED_COMPONENT_COUNT is exported by the suite itself and kept
+    // honest there by a bookkeeping test that fails if the covered and
+    // uncovered lists stop accounting for every Zag-backed component.
+    const hydrationFailed = hydrationResults.length - hydrationPassed;
     write("hydration", {
       schemaVersion: 1,
       label: "hydration",
-      message: `${hydrationPassed}/${hydrationResults.length} identical`,
-      color: passFailColor(hydrationPassed, hydrationResults.length),
+      // A failure is the more urgent fact, so it wins the label; otherwise
+      // report coverage, which is the number people actually want.
+      message:
+        hydrationFailed > 0
+          ? `${hydrationPassed}/${hydrationResults.length} identical`
+          : `${hydrationPassed}/${ZAG_BACKED_COMPONENT_COUNT} components`,
+      color:
+        hydrationFailed > 0
+          ? "red"
+          : hydrationPassed >= ZAG_BACKED_COMPONENT_COUNT
+            ? "brightgreen"
+            : "yellow",
     });
     break;
   }
