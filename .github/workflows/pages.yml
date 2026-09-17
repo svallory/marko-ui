@@ -1,0 +1,85 @@
+# Deploy the docs site (and the registry the CLI installs from) to Cloudflare.
+#
+# The site is a Worker with static assets, NOT classic Pages: every page is
+# prerendered at build time and served from the asset store (free, unlimited,
+# never invokes the Worker), and the Worker itself handles only the two paths
+# in `assets.run_worker_first` — the /no-js-form POST and the
+# /create/preview?item= rewrite. See AGENTS.md "Deploying" for the mechanics.
+#
+# Deliberately its own workflow rather than a job in ci.yml: ci.yml gates on
+# path filters for PRs, and a deploy must be driven by the push to main (and
+# by manual dispatch), not by whether a filter matched.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One deploy at a time, and never cancel one midway: a half-uploaded asset
+# manifest is worse than a queued deploy.
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - uses: ./.github/actions/setup
+
+      - name: Build registry
+        # The registry items embed absolute URLs, so the base URL has to be
+        # the production one at BUILD time — it cannot be fixed up later.
+        env:
+          REGISTRY_BASE_URL: https://marko-ui.saulo.tech/r
+        run: bun tooling/build-registry.ts
+
+      - name: Build static site + Worker
+        # Emits dist/public (2,200+ prerendered files, incl. the 124 registry
+        # JSONs and _headers) and dist/worker/index.js.
+        run: bun run --cwd apps/docs build
+
+      - name: Verify the build is complete before deploying
+        # A crawl that silently drops pages still "succeeds", so assert the
+        # shape of the output rather than trusting the exit code. These are
+        # the artifacts most likely to go missing: the prerendered handler
+        # outputs have no extension and the per-item preview documents exist
+        # only because the crawler was told about them.
+        run: |
+          set -euo pipefail
+          cd apps/docs/dist/public
+          fail() { echo "::error::$1"; exit 1; }
+          [ -f index.html ] || fail "missing index.html"
+          [ -f 404.html ] || fail "missing 404.html"
+          [ -f _headers ] || fail "missing _headers"
+          [ -f robots.txt ] || fail "missing robots.txt"
+          [ -f og.png ] || fail "missing og.png"
+          [ -f typeset/css ] || fail "missing prerendered /typeset/css"
+          [ -f docs/components/button.md ] || fail "missing /docs/components/button.md"
+          [ -f docs/components/button/md ] || fail "missing /docs/components/button/md"
+          for item in preview-page-1 preview-page-2 preview-page-3; do
+            [ -f "create/preview/$item.html" ] || fail "missing preview doc $item"
+          done
+          registry=$(ls r/*.json | wc -l)
+          [ "$registry" -ge 120 ] || fail "only $registry registry JSONs (expected >= 120)"
+          pages=$(find . -name '*.html' | wc -l)
+          [ "$pages" -ge 165 ] || fail "only $pages HTML pages (expected >= 165)"
+          echo "verified: $pages HTML pages, $registry registry JSONs"
+
+      - name: Deploy
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/docs
+          # `deploy`, not `pages deploy`: this is a Worker with static assets.
+          command: deploy
