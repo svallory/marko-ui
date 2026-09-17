@@ -30,9 +30,23 @@ interface Env {
   ASSETS: { fetch(request: Request | URL | string): Promise<Response> };
 }
 
-/** Read a urlencoded or multipart form body into a plain object. */
-async function formEntries(request: Request): Promise<Record<string, unknown>> {
-  const form = await request.formData();
+/**
+ * Read a urlencoded or multipart form body into a plain object.
+ *
+ * Returns `null` when the body is not a form at all. `formData()` throws on a
+ * JSON or text/plain body, a missing content-type, or one too large to parse,
+ * and an uncaught throw here surfaces as a 500 (Cloudflare error 1101) — an
+ * unhandled crash reported for input that is simply not a form submission.
+ * The caller turns `null` into a 400 instead.
+ */
+async function formEntries(request: Request): Promise<Record<string, unknown> | null> {
+  let form: FormData;
+  try {
+    form = await request.formData();
+  } catch {
+    return null;
+  }
+
   const entries: Record<string, unknown> = {};
   for (const [key, value] of form.entries()) {
     // A File has no place in this form; coerce only real text fields.
@@ -48,7 +62,26 @@ export default {
     // --- the no-JS form round-trip -----------------------------------------
     if (url.pathname === "/no-js-form") {
       if (request.method === "POST") {
-        const data = validateSignup(await formEntries(request));
+        const entries = await formEntries(request);
+
+        if (entries === null) {
+          // Not a form submission. This route exists to prove the no-JS form
+          // round-trip, and a browser posting that form always sends
+          // urlencoded or multipart — so anything else is a client error, not
+          // a server one, and must not read as a crash.
+          return new Response(
+            "Expected a form body (application/x-www-form-urlencoded or multipart/form-data).\n",
+            {
+              status: 400,
+              headers: {
+                "content-type": "text/plain; charset=utf-8",
+                "cache-control": "no-store",
+              },
+            },
+          );
+        }
+
+        const data = validateSignup(entries);
 
         return new Response(renderNoJsForm(url, data), {
           // 200 even for a failed submission: the response IS the form,
@@ -70,8 +103,28 @@ export default {
 
     // --- /create/preview?item=... -> the prerendered document for that item -
     if (url.pathname === "/create/preview") {
+      // Only a document fetch belongs here; this branch serves a prerendered
+      // page and has nothing to do for any other method.
+      if (request.method !== "GET" && request.method !== "HEAD") {
+        return new Response("Method not allowed.\n", {
+          status: 405,
+          headers: {
+            "content-type": "text/plain; charset=utf-8",
+            allow: "GET, HEAD",
+          },
+        });
+      }
+
       const item = resolvePreviewItem(url.searchParams.get("item"));
       const target = new URL(`/create/preview/${item}`, url.origin);
+      // Carry the query across so the served document sees the same params it
+      // would have on the canonical URL — `base` in particular, which the page
+      // reads from the query string. It does not change the markup (that page
+      // documents why: this registry has one zag implementation behind every
+      // base, so the reloaded document is byte-identical either way), but
+      // forwarding costs nothing and keeps the two URLs genuinely equivalent
+      // rather than equivalent-by-coincidence.
+      target.search = url.search;
 
       // A rewrite, not a redirect: the customizer iframe and the visual guard
       // both request the `?item=` URL and must keep seeing it in the address

@@ -37,9 +37,13 @@
   },
 
   // Cloudflare manages the DNS record for a custom_domain route itself.
-  // Applied at cutover only — until then the site is reachable on
-  // marko-ui-docs.<subdomain>.workers.dev for verification.
   "routes": [{ "pattern": "marko-ui.saulo.tech", "custom_domain": true }],
+
+  // The site must answer on exactly one origin. Left at its default (true),
+  // the *.workers.dev URL would be a fully functional second copy of the docs
+  // AND of the registry the CLI installs from — duplicate content competing
+  // for canonicalisation, and a second URL users could pin installs to.
+  "workers_dev": false,
 
   "observability": { "enabled": true }
 }

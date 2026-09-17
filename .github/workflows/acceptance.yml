@@ -1,7 +1,7 @@
 # Acceptance suite (e2e/acceptance) — exercises the PUBLISHED marko-ui/
 # @marko-ui/shadcn packages and the live registry deploy, not the workspace.
 # Deliberately NOT part of ci.yml: it depends on external services (npm,
-# the Coolify-deployed registry) that are outside this repo's control, so a
+# the deployed registry) that are outside this repo's control, so a
 # failure here means "something published/deployed is broken," not "this PR
 # broke something" — it shouldn't block or flake every PR's required checks.
 name: Acceptance
