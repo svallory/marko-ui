@@ -107,16 +107,39 @@ async function freezeForScreenshot(page: Page): Promise<void> {
          packages/shadcn/styles/marko-accordion.css). The observer callback
          can land on either side of a capture, so the panel is caught
          mid-open: measured as a real 2,640-pixel diff between two runs of
-         the same commit, localised to the accordion card. Pinning the
-         animation to its final frame removes the race without hiding the
-         component — the accordion's open panel is still fully asserted. */
+         the same commit, localised to the accordion card. Killing the
+         animation lands the panel on its natural height without hiding the
+         component — the accordion's open panel is still fully asserted.
+
+         Do NOT add "height: var(--marko-accordion-content-height)" to the
+         open panel here. (No backticks anywhere in this comment: it lives
+         inside a JS template literal, and one would terminate it — which
+         is exactly how the first attempt at this note broke the spec.)
+         That pin looks like it makes the panel more deterministic and does
+         the opposite: the var is the ResizeObserver's OUTPUT (it measures
+         this panel), so feeding it back in as the panel's height freezes
+         whatever was measured first and stops the observer from ever seeing
+         a subsequent reflow. Because this spec loads the page under the
+         app's default style and only then swaps the style-* class, the value
+         measured first is the DEFAULT style's, and a style whose type
+         metrics differ (lyra is text-xs, 12px/16px, where the default is
+         text-sm, 14px/20px) would then be screenshotted at the wrong
+         height. That is exactly the bistable "preview-page-1 — lyra light"
+         failure in runs 35185048583 / 35186686206: 3,816 pixels, identical
+         in both, the FAQ accordion held at the default style's 90px instead
+         of lyra's correct 74px, shifting every item below it. Measured
+         after removing the pin: 20/20 byte-identical full-page captures,
+         published height 74px in all 20 (with the pin: 20/20 identical but
+         stuck at the wrong 90px). The same feedback loop existed in the
+         component and was removed alongside this — see
+         packages/shadcn/ui/accordion/classes.ts. */
       [data-slot="accordion-content"] {
         animation: none !important;
         transition: none !important;
       }
-      [data-slot="accordion-content"][data-state="open"] {
-        height: var(--marko-accordion-content-height, auto) !important;
-      }
+      /* Closed panels get the hidden attribute in this component, so this is
+         a backstop for the brief data-closing window a mid-close panel stays
+         visible for, not the main path. */
       [data-slot="accordion-content"][data-state="closed"] {
         height: 0 !important;
       }
