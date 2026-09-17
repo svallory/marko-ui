@@ -44,6 +44,7 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # No registry-url: setup-node would write an .npmrc with _authToken=${NODE_AUTH_TOKEN} (empty here), which makes npm send a bogus token instead of the OIDC exchange and the publish 404s. marko-zag's workflow has the same shape and publishes fine.
       # OIDC trusted publishing needs npm CLI >= 11.5.1; actions/setup-node
       # provides the OIDC-aware `npm publish`, bun's publish command doesn't
       # support it.
@@ -51,7 +52,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org
 
       - name: Upgrade npm for OIDC trusted publishing
         run: npm install -g npm@^11.5.1
