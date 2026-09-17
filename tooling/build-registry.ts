@@ -354,15 +354,24 @@ async function emitThemeVariants(): Promise<Emission[]> {
         title: name === "style" ? "Theme" : `Theme (${name.replace("style-", "")})`,
         description:
           "Tailwind v4 globals.css with shadcn-compatible CSS variables. Add `@source` directives for your .marko files.",
-        dependencies: ["tailwindcss", "tw-animate-css", "marko-zag"],
+        // The theme is CSS — it needs Tailwind and nothing else. `marko-zag`
+        // is a runtime dependency of the zag-machine COMPONENTS (each of which
+        // declares it in its own registry item), and `tw-animate-css` is only
+        // used by components that animate. Declaring them here made every
+        // `init` install both into a project with zero components.
+        dependencies: ["tailwindcss"],
         cssVars: parseCssVars(css),
-        // Ship only this variant's CSS, always targeted as globals.css so a
-        // consumer picking any base color gets a normal `~/src/styles/globals.css`.
+        // Targeted at the project's CSS entry point, which the CLI rewrites to
+        // the `tailwind.css` path recorded in components.json. It used to be
+        // hardcoded to `~/src/styles/globals.css`, which on a create-marko
+        // scaffold produced a second, complete, unreferenced theme alongside
+        // the patched entry point (duplicate `@import "tailwindcss"` and a
+        // duplicate token set).
         files: [
           {
             path: `styles/${file}`,
             type: "registry:file" as const,
-            target: "~/src/styles/globals.css",
+            target: "~/src/app.css",
             content: css,
           },
         ],

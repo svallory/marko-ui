@@ -211,6 +211,11 @@ export async function runInit(
 
   let fullConfig = await resolveConfigPaths(options.cwd, config)
 
+  // The CSS entry point must exist before any theme or component tries to
+  // patch it. A `create-marko` scaffold ships no stylesheet at all, which is
+  // what made `init` die with ENOENT on the (previously Next.js-shaped)
+  // default path.
+  await ensureCssEntry(fullConfig, { silent: options.silent })
 
   // Resolve any namespaced registries referenced by the requested components.
   if (options.components?.length) {
@@ -272,6 +277,43 @@ export async function runInit(
   }
 
   return fullConfig
+}
+
+/**
+ * Creates the project's CSS entry point when it does not exist yet.
+ *
+ * `create-marko` scaffolds no stylesheet, so the file the theme is about to be
+ * merged into has to be brought into existence first — previously `init`
+ * assumed it was already there and crashed with ENOENT. Only the bare
+ * `@import "tailwindcss"` is written; the theme tokens arrive through the
+ * registry's style item, which is merged into this same file. Writing just the
+ * import (rather than a full theme) is what keeps a second `init` run a no-op
+ * instead of appending a duplicate token set.
+ */
+async function ensureCssEntry(
+  config: Config,
+  options: { silent?: boolean } = {}
+) {
+  const cssPath = config.resolvedPaths.tailwindCss
+  if (!cssPath) {
+    return
+  }
+
+  try {
+    await fs.access(cssPath)
+    // Already present — leave whatever the project has alone.
+    return
+  } catch {
+    // Falls through to creation.
+  }
+
+  await fs.mkdir(path.dirname(cssPath), { recursive: true })
+  await fs.writeFile(cssPath, `@import "tailwindcss";\n`, "utf8")
+
+  if (!options.silent) {
+    const relative = path.relative(config.resolvedPaths.cwd, cssPath)
+    logger.info(`Created ${highlighter.info(relative)} (CSS entry point).`)
+  }
 }
 
 // The built-in @marko-ui registry must never be written to components.json —

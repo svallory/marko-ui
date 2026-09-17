@@ -19,7 +19,13 @@ import { z } from "zod"
 export const DEFAULT_STYLE = "default"
 export const DEFAULT_COMPONENTS = "@/components"
 export const DEFAULT_UTILS = "@/lib/utils"
-export const DEFAULT_TAILWIND_CSS = "app/globals.css"
+// Marko's convention, not Next.js's. This was `app/globals.css` (inherited
+// from shadcn, whose consumers are Next projects) — on a `create-marko`
+// scaffold, which ships no CSS file at all, detection found nothing, this
+// default was used, and `init` crashed with ENOENT trying to patch a path
+// that never existed. `src/app.css` is what the installation docs describe
+// and what the scaffold's layout imports.
+export const DEFAULT_TAILWIND_CSS = "src/app.css"
 export const DEFAULT_TAILWIND_CONFIG = "tailwind.config.js"
 export const DEFAULT_TAILWIND_BASE_COLOR = "slate"
 
