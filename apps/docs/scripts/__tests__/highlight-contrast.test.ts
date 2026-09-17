@@ -11,15 +11,26 @@
  * src/lib/highlight-code.ts remaps those three to GitHub's own newer
  * `github-light-default` values. This suite locks that in: it highlights real
  * snippets through the actual `highlightCode()` entry point and asserts that
- * NO emitted light-mode token color falls below 4.5:1 — so a future theme
- * bump, a new language, or a dropped remap fails here rather than silently
- * costing accessibility points in a Lighthouse run nobody reads.
+ * NO emitted token color falls below 4.5:1 — so a future theme bump, a new
+ * language, or a dropped remap fails here rather than silently costing
+ * accessibility points in a Lighthouse run nobody reads.
+ *
+ * Dark mode is covered too, and is NOT redundant: Lighthouse audits the
+ * default (light) theme only, so nothing else in CI would ever catch a dark
+ * regression. Measuring it found a real one the first version of this file
+ * had assumed away — comment gray #6a737d at 3.76:1 on the dark code
+ * background, now remapped to #7d8590 (4.85:1).
  */
 import { describe, expect, it } from "vitest";
 import { highlightCode } from "../../src/lib/highlight-code.ts";
 
 /** The docs code-block background, as reported by the Lighthouse audit. */
 const LIGHT_CODE_BG = "#fbfbfb";
+/**
+ * The dark code-block background: `--code: var(--surface)` =
+ * `oklch(0.2 0 0)` in apps/docs/src/app.css, converted to sRGB.
+ */
+const DARK_CODE_BG = "#161616";
 /** WCAG 2.2 AA minimum for normal-size text. */
 const AA_NORMAL_TEXT = 4.5;
 
@@ -74,49 +85,80 @@ const SNIPPETS: readonly { lang: string; code: string }[] = [
   { lang: "html", code: '<div class="x"><!-- c --><span>hi</span></div>' },
 ];
 
-/** Every distinct `--shiki-light` color in a highlighted snippet. */
-function lightTokenColors(html: string): string[] {
-  return [...html.matchAll(/--shiki-light:(#[0-9a-fA-F]{6})/g)].map((match) =>
-    match[1]!.toLowerCase(),
-  );
+/** Every distinct `--shiki-<theme>` color in a highlighted snippet. */
+function tokenColors(html: string, theme: "light" | "dark"): string[] {
+  const pattern = new RegExp(`--shiki-${theme}:(#[0-9a-fA-F]{6})`, "g");
+  return [...html.matchAll(pattern)].map((match) => match[1]!.toLowerCase());
 }
 
-describe("highlightCode light-mode contrast", () => {
-  it.each(SNIPPETS.map((snippet) => [snippet.lang, snippet.code] as const))(
-    "emits no sub-4.5:1 light token color for %s",
-    async (lang, code) => {
-      const html = await highlightCode(code, lang);
-      const colors = [...new Set(lightTokenColors(html))];
-      // A snippet that produced no themed token at all would make the
-      // assertion below vacuously true, so require real output first.
-      expect(colors.length).toBeGreaterThan(0);
+const lightTokenColors = (html: string) => tokenColors(html, "light");
 
-      const failing = colors
-        .map((color) => ({ color, ratio: contrastRatio(color, LIGHT_CODE_BG) }))
-        .filter((entry) => entry.ratio < AA_NORMAL_TEXT);
+const THEME_CASES = [
+  { theme: "light" as const, background: LIGHT_CODE_BG },
+  { theme: "dark" as const, background: DARK_CODE_BG },
+];
 
+describe("highlightCode token contrast", () => {
+  it.each(
+    THEME_CASES.flatMap(({ theme, background }) =>
+      SNIPPETS.map(
+        (snippet) => [theme, background, snippet.lang, snippet.code] as const,
+      ),
+    ),
+  )("emits no sub-4.5:1 %s token color for %s", async (theme, background, lang, code) => {
+    const html = await highlightCode(code, lang);
+    const colors = [...new Set(tokenColors(html, theme))];
+    // A snippet that produced no themed token at all would make the
+    // assertion below vacuously true, so require real output first.
+    expect(colors.length).toBeGreaterThan(0);
+
+    const failing = colors
+      .map((color) => ({ color, ratio: contrastRatio(color, background) }))
+      .filter((entry) => entry.ratio < AA_NORMAL_TEXT);
+
+    expect(
+      failing,
+      `sub-threshold ${theme} token colors on ${background}: ` +
+        failing.map((entry) => `${entry.color} ${entry.ratio.toFixed(2)}:1`).join(", "),
+    ).toEqual([]);
+  });
+
+  it("remaps every color measured below the threshold, per theme", async () => {
+    // The three that actually failed in the production Lighthouse run...
+    const flaggedLight = ["#22863a", "#d73a49", "#e36209"];
+    // ...and the one dark-mode failure, which Lighthouse never audits.
+    const flaggedDark = ["#6a737d"];
+
+    // Comments only appear in a snippet that has one, so use the TS sample
+    // rather than the marko one for the dark assertion to be meaningful.
+    const html = await highlightCode(SNIPPETS[1]!.code, "ts");
+
+    for (const color of flaggedLight) {
       expect(
-        failing,
-        `sub-threshold token colors on ${LIGHT_CODE_BG}: ` +
-          failing.map((entry) => `${entry.color} ${entry.ratio.toFixed(2)}:1`).join(", "),
-      ).toEqual([]);
-    },
-  );
-
-  it("remaps each color Lighthouse flagged, and leaves dark mode alone", async () => {
-    // The three colors that actually failed in the production Lighthouse run.
-    const flagged = ["#22863a", "#d73a49", "#e36209"];
-    const html = await highlightCode(SNIPPETS[0]!.code, "marko");
-    const lightColors = lightTokenColors(html);
-
-    for (const color of flagged) {
-      expect(lightColors, `${color} should have been remapped out of light mode`).not.toContain(
-        color,
-      );
+        tokenColors(html, "light"),
+        `${color} should have been remapped out of light mode`,
+      ).not.toContain(color);
+    }
+    for (const color of flaggedDark) {
+      expect(
+        tokenColors(html, "dark"),
+        `${color} should have been remapped out of dark mode`,
+      ).not.toContain(color);
     }
 
-    // The remap must be scoped to --shiki-light; dark values stay untouched,
-    // which is what keeps this a light-mode-only contrast fix.
+    // Both custom properties must survive: the remap rewrites values in
+    // place, it does not drop either theme's channel.
+    expect(html).toContain("--shiki-light:");
     expect(html).toContain("--shiki-dark:");
+  });
+
+  it("remaps each theme independently, never across them", async () => {
+    // #6a737d is a dark-theme comment color. It must be remapped in the dark
+    // channel and left alone in the light channel, where github-light uses a
+    // different comment gray that already passes. A naive global
+    // search-and-replace on the whole HTML would break this.
+    const html = await highlightCode(SNIPPETS[1]!.code, "ts");
+    expect(tokenColors(html, "dark")).toContain("#7d8590");
+    expect(tokenColors(html, "light")).not.toContain("#7d8590");
   });
 });

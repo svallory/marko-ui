@@ -79,9 +79,10 @@ const THEMES = { light: "github-light", dark: "github-dark" } as const;
  * only the failing values keeps the rest of the familiar GitHub palette
  * byte-identical.
  *
- * Dark mode is untouched: Lighthouse audits the light theme (every flagged
- * node reported `background color: #fbfbfb`), and the dark palette is
- * already comfortable against the dark code background.
+ * Lighthouse only ever flagged light mode (every flagged node reported
+ * `background color: #fbfbfb`), because it audits the default theme — but
+ * dark mode has the same class of defect, and it needed measuring rather
+ * than assuming. See DARK_CONTRAST_REMAP.
  */
 const LIGHT_CONTRAST_REMAP: Record<string, string> = {
   "#22863a": "#116329",
@@ -90,18 +91,44 @@ const LIGHT_CONTRAST_REMAP: Record<string, string> = {
 };
 
 /**
- * Rewrite the `--shiki-light` custom property in shiki's emitted token spans
- * through LIGHT_CONTRAST_REMAP. shiki emits `--shiki-light:#RRGGBB` inline
- * per token (see `defaultColor: false` below), so a scoped replace on that
- * property is precise: `--shiki-dark` values are left alone, and no other
- * hex in the markup can match the pattern.
+ * The same fix for dark mode, which Lighthouse never audits.
+ *
+ * The docs' dark code background is `--code: var(--surface)` =
+ * `oklch(0.2 0 0)` = `#161616` (app.css). Measured against it, 7 of the 8
+ * `github-dark` token colors pass comfortably (6.8:1 to 14.2:1) — but the
+ * comment gray does not:
+ *
+ *   #6a737d  3.76:1  comments  -> #7d8590  4.85:1
+ *
+ * `#7d8590` is GitHub's own newer dark comment color, chosen as the lightest
+ * gray that still reads as clearly secondary next to `#e1e4e8` body text
+ * (14.2:1) — comments should stay visually muted, just not below the
+ * threshold. A brighter gray would pass harder and flatten that hierarchy.
+ *
+ * (`#24292e` also measures 1.23:1 here, but it is github-dark's own
+ * background color, emitted for tokens that paint a background rather than
+ * text. It is never used as a foreground on the code surface, so it is not
+ * remapped — remapping it would corrupt the few tokens that do use it.)
+ */
+const DARK_CONTRAST_REMAP: Record<string, string> = {
+  "#6a737d": "#7d8590",
+};
+
+/**
+ * Rewrite shiki's per-token color custom properties through the two remaps.
+ *
+ * shiki emits `--shiki-light:#RRGGBB;--shiki-dark:#RRGGBB` inline per token
+ * (see `defaultColor: false` below), so keying on the property name is
+ * precise: each theme's values are remapped independently against its own
+ * background, and no other hex in the markup can match the pattern.
  */
 function applyContrastRemap(html: string): string {
   return html.replace(
-    /--shiki-light:(#[0-9a-fA-F]{6})/g,
-    (whole, hex: string) => {
-      const mapped = LIGHT_CONTRAST_REMAP[hex.toLowerCase()];
-      return mapped ? `--shiki-light:${mapped}` : whole;
+    /--shiki-(light|dark):(#[0-9a-fA-F]{6})/g,
+    (whole, theme: string, hex: string) => {
+      const remap = theme === "light" ? LIGHT_CONTRAST_REMAP : DARK_CONTRAST_REMAP;
+      const mapped = remap[hex.toLowerCase()];
+      return mapped ? `--shiki-${theme}:${mapped}` : whole;
     },
   );
 }
