@@ -88,7 +88,7 @@ export const docs: ComponentDocs = {
       name: "button-render",
       title: "As Link",
       description:
-        "Use the `buttonVariants` helper to make a link look like a button. Don't render `Button` itself as an `<a>` — it always applies `role=\"button\"`, overriding the semantic link role.",
+        "Pass `href` to render an `<a>` with the same styling — the Marko equivalent of shadcn's `asChild`. The element stays a real anchor (no `role=\"button\"` override), so middle-click, \"copy link address\" and keyboard activation all behave natively. `buttonVariants` is still available when you need the classes on markup you control yourself.",
     },
     {
       name: "button-disabled",
