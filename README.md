@@ -19,10 +19,11 @@ Ark UI — not hand-rolled event handlers.
 - **Every component works before JavaScript arrives.** Marko streams
   server-rendered HTML with the correct ARIA and state attributes already in
   place, then *resumes* — it never re-runs your components in the browser.
-  Verified by an automated hydration-invariance suite: 33 of the 54
-  Zag-backed components are covered today, and each covered component
+  Verified by an automated hydration-invariance suite: each covered component
   produces byte-identical accessibility/state attributes with JS disabled vs
-  after hydration. The 21 not yet covered are named in the test source.
+  after hydration. The hydration badge above reports current coverage as
+  `covered/total`; the components not yet covered are named in
+  `packages/shadcn/tests/hydration-coverage.ts`.
 - **Forms validate without JavaScript.** `@marko/run` natively consumes
   Standard Schema validators for form bodies, so a plain no-JS `POST`
   re-renders the page with real server-side field errors. The React original

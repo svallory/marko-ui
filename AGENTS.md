@@ -277,6 +277,39 @@ Env vars (all optional, sane defaults): `ACCEPTANCE_REGISTRY_URL` (default the l
 
 **A real, confirmed gap in the live registry deploy, found by this suite (2026-09-08):** every zag-machine component (`switch`, `checkbox`, `tabs`, `dropdown-menu`, etc.) served by `https://marko-ui.saulo.tech/r` still carries the retired `<machine-props>`/`<service>`/`<connect>` three-tag wiring, not the current single `<zag/api=... from=input/>` tag — even though `main` and the published `@marko-ui/shadcn@0.2.0` npm package both have the current source. The copy-path `marko-ui add switch` therefore fetches source that fails to build (`Unable to find entry point for <machine-props>`). The import path is unaffected (it resolves from npm, not the HTTP registry). This means the Coolify registry deploy is stale relative to `main`/npm — see `add-doctor-diff.test.ts` and `registry-health.test.ts` for the reproducing assertions, and `report-acceptance.md` for the full writeup.
 
+## Public numbers: where each one comes from
+
+Every number the project states publicly had drifted from reality at least
+once, because it was copied forward instead of re-measured. **Never restate a
+number from this file, the README, a note, or memory — re-derive it with the
+command below, or cite the badge.** If a number is worth publishing, it is
+worth deriving from the repo at the moment you publish it.
+
+| Claim | Source of truth | How to derive it |
+|---|---|---|
+| Components | `packages/shadcn/ui/` | `ls -d packages/shadcn/ui/*/ \| wc -l` → **86**. The docs site derives this itself (`COMPONENTS.length`), so site copy cannot drift. |
+| Visual styles | `VISUAL_STYLES` in `packages/marko-ui/src/registry/constants.ts` | **8** (rhea, nova, vega, lyra, maia, mira, luma, sera). There is no `style-default.css`. The `globals-{zinc,slate,stone,gray}.css` files are BASE COLORS — an orthogonal axis. Counting them into the style axis is what produced the wrong "9 styles". |
+| Zag machines wired | `packages/shadcn/package.json` | `jq -r '.dependencies\|keys[]' packages/shadcn/package.json \| grep -c '^@zag-js/'` → 49, minus `@zag-js/types` (not a machine) = **48**. "51" was never reproducible. |
+| Hydration coverage | `packages/shadcn/tests/hydration-coverage.ts` | Covered/uncovered are explicit lists; `ZAG_BACKED_COMPONENT_COUNT` is **54** (component dirs using `<zag>`/`<zag-machine>`). Currently 33 of 54. Three bookkeeping tests fail if the lists stop accounting for every component. Cite the badge, which now reads `covered/total`. |
+| Keyboard-contract tests | `packages/shadcn/tests/behavior/` | **71**, counted two agreeing ways: 78 `it(` total minus the 7 in `compound-order.test.ts` (the only file with no keyboard-contract `describe`); and summing `it(` inside each file's "keyboard contract (APG)" describe. "61" was not reproducible. |
+| Lighthouse accessibility | the published badge | `curl -s https://raw.githubusercontent.com/svallory/marko-ui/badges/lighthouse-accessibility.json`. Never hardcode it — the README said 100 while the badge said 96. Reproduce locally per the axe/Lighthouse recipe (production build, port ≠ 3000/4400). |
+| axe violations | the published badge (`badges/axe.json`) | 0 means 0; the scan has no baseline or threshold. |
+| Test totals | the published badge (`badges/checks.json`) | Produced by `combine` from the jobs that actually ran. |
+
+**Badge denominators must be able to express failure.** The hydration badge
+used to divide by "number of hydration tests that ran", which on a green run
+always equals the number that passed — so it published "33/33 identical" and
+was read as full coverage while 21 components had no test at all. A badge
+whose denominator is the work you chose to do cannot report a gap. Divide by
+the real population (`ZAG_BACKED_COMPONENT_COUNT`), and prefer yellow over
+green when coverage is partial.
+
+**A badge is only as trustworthy as the job that publishes it.** `Publish
+badges` failed on every push to main from 2026-09-12 to 2026-09-17 because
+`combine` still required the removed style-matrix job's artifact, so the
+badges on the README silently went stale while CI showed red. When removing a
+CI job, grep for every consumer of its artifacts.
+
 ## Where knowledge lives
 
 - `TODO.md` — decision log and work queue (decisions marked `(decision — made)` are settled; don't relitigate).
