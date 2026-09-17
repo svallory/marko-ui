@@ -70,8 +70,10 @@ source carries semantic `mu-*` hook classes; each style is a vendored CSS
 token layer combined with that source by a build step, so styling a component
 differently is a token/CSS change, not a separate hand-maintained tree.
 Behavior tests (Playwright, against real hydrated components) and the
-hydration-invariant suite guard the shared source on every push; a
-gallery-screenshot guard covering every style is planned.
+hydration-invariant suite guard the shared source on every push, and a
+[gallery-screenshot guard](.github/workflows/visual.yml) renders the
+component gallery in all 8 styles × light/dark and fails on any pixel
+change.
 
 ## Repository layout
 
