@@ -78,7 +78,13 @@ export const init = new Command()
   )
   .option(
     "--visual-style <name>",
-    `the visual style to use with --distribution import (${VISUAL_STYLES.map((s) => s.name).join(", ")}). ignored for copy.`
+    // NOT "ignored for copy", as this said until now: the copy path fetches
+    // per-style registry items at styles/<visualStyle>/<item>.json (see
+    // registry/resolver.ts's fetchBareRegistryItem), so the style decides
+    // which generated source is copied in. init prompts for it under either
+    // distribution, and the old wording contradicted both that prompt and
+    // the resolver.
+    `the visual style to use (${VISUAL_STYLES.map((s) => s.name).join(", ")}). selects the generated source for copy, and the precompiled CSS layer for import.`
   )
   .action(async (components, opts) => {
     try {
@@ -108,6 +114,60 @@ export const init = new Command()
       clearRegistryContext()
     }
   })
+
+/**
+ * The stylesheet a Marko project gets when nothing is configured or detected,
+ * relative to the project's source root (`src/` is prepended when the project
+ * has one).
+ *
+ * Exported so tests assert against this rather than hardcoding the literal:
+ * the value is expected to change (to `app.css`) with the in-flight CLI DX
+ * work, and a test that repeats the string would have to be edited in
+ * lockstep for no benefit.
+ */
+export const MARKO_DEFAULT_CSS = "styles/globals.css"
+
+/**
+ * Decide which stylesheet path `components.json` should record.
+ *
+ * Order: an explicitly configured path, then a detected one, then a
+ * framework-appropriate default, and only then shadcn's inherited Next.js
+ * default.
+ *
+ * The framework step exists because `getTailwindCssFile` only recognizes a
+ * stylesheet that ALREADY contains `@import "tailwindcss"` / `@tailwind
+ * base`. A freshly scaffolded app has no such file yet, so detection returns
+ * null and the final fallback decides — and DEFAULT_TAILWIND_CSS is Next.js's
+ * `app/globals.css`. In a Marko project that path does not exist and never
+ * will, so `init` wrote a components.json pointing at it and then died on a
+ * plain `bun create marko` app following the documented install commands:
+ *
+ *     - Updating app/globals.css
+ *     ENOENT: no such file or directory, open '<cwd>/app/globals.css'
+ *
+ * Note this is precisely the case detection CANNOT cover: the file init is
+ * about to create is the one whose absence makes detection fail.
+ */
+export function resolveTailwindCssPath({
+  configuredCss,
+  detectedCss,
+  frameworkName,
+  isSrcDir,
+}: {
+  configuredCss?: string | null
+  detectedCss?: string | null
+  frameworkName?: string | null
+  isSrcDir?: boolean
+}): string {
+  if (configuredCss) return configuredCss
+  if (detectedCss) return detectedCss
+
+  if (frameworkName === "marko-run" || frameworkName === "marko-vite") {
+    return isSrcDir ? `src/${MARKO_DEFAULT_CSS}` : MARKO_DEFAULT_CSS
+  }
+
+  return DEFAULT_TAILWIND_CSS
+}
 
 export async function runInit(
   options: z.infer<typeof initOptionsSchema>
@@ -327,10 +387,12 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
     detected?.aliases
   )
 
-  const tailwindCss =
-    detected?.tailwind?.css ??
-    projectInfo?.tailwindCssFile ??
-    DEFAULT_TAILWIND_CSS
+  const tailwindCss = resolveTailwindCssPath({
+    configuredCss: detected?.tailwind?.css,
+    detectedCss: projectInfo?.tailwindCssFile,
+    frameworkName: projectInfo?.framework?.name,
+    isSrcDir: projectInfo?.isSrcDir,
+  })
 
   const config = rawConfigSchema.parse({
     // components.json is wire-compatible with shadcn; its schema authority

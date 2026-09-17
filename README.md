@@ -7,7 +7,7 @@
 [![Lighthouse accessibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges%2Flighthouse-accessibility.json)](https://github.com/svallory/marko-ui/actions/workflows/lighthouse.yml)
 [![Hydration invariance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges%2Fhydration.json)](https://github.com/svallory/marko-ui/tree/main/packages/shadcn/tests)
 
-86 accessible, themeable components for Marko 6, in 9 complete styles,
+86 accessible, themeable components for Marko 6, in 8 complete styles,
 installable with the marko-ui CLI. Interactive behavior comes from
 [Zag.js](https://zagjs.com) state machines — the same core behind Chakra's
 Ark UI — not hand-rolled event handlers.
@@ -19,9 +19,11 @@ Ark UI — not hand-rolled event handlers.
 - **Every component works before JavaScript arrives.** Marko streams
   server-rendered HTML with the correct ARIA and state attributes already in
   place, then *resumes* — it never re-runs your components in the browser.
-  Verified by an automated hydration-invariance suite: interactive components
-  produce byte-identical accessibility/state attributes with JS disabled vs
-  after hydration.
+  Verified by an automated hydration-invariance suite: each covered component
+  produces byte-identical accessibility/state attributes with JS disabled vs
+  after hydration. The hydration badge above reports current coverage as
+  `covered/total`; the components not yet covered are named in
+  `packages/shadcn/tests/hydration-coverage.ts`.
 - **Forms validate without JavaScript.** `@marko/run` natively consumes
   Standard Schema validators for form bodies, so a plain no-JS `POST`
   re-renders the page with real server-side field errors. The React original
@@ -35,10 +37,11 @@ Ark UI — not hand-rolled event handlers.
   no vaul). Toast runs on Zag's group store (pause-on-hover, stacking,
   promise API — sonner-grade, no sonner). Data tables run on
   `@tanstack/table-core`, the framework-agnostic core.
-- **Accessibility is tested, not claimed.** WAI-ARIA APG keyboard contracts
-  run as Playwright tests in CI; every component demo page passes an
-  axe-core WCAG 2.2 A/AA scan (CI fails on a single violation) and scores
-  100 on Lighthouse accessibility.
+- **Accessibility is tested, not claimed.** 71 WAI-ARIA APG keyboard-contract
+  tests run as Playwright tests in CI; every component demo page passes an
+  axe-core WCAG 2.2 A/AA scan (CI fails on a single violation). The
+  Lighthouse accessibility badge above is published by CI on every push —
+  that badge, not a number written here, is always the current value.
 - **Copy-paste philosophy, source-first.** Components ship as readable
   `.marko` source compiled by YOUR bundler — friendly to IDEs, code review,
   and AI agents. No opaque dist blobs.
@@ -48,11 +51,15 @@ Ark UI — not hand-rolled event handlers.
 marko-ui is distributed through shadcn's registry protocol:
 
 ```sh
-# initialize a Marko project with a marko-ui style
-bunx marko-ui@latest init https://marko-ui.saulo.tech/r/style.json
+# scaffold components.json + base theme (interactive: pick distribution + style)
+bunx marko-ui init
+
+# or non-interactively (every prompt answered by a flag)
+bunx marko-ui init --distribution copy --visual-style vega --base-color neutral
 
 # add components
-bunx marko-ui@latest add https://marko-ui.saulo.tech/r/switch.json
+bunx marko-ui add button
+bunx marko-ui add dialog select toast
 ```
 
 Existing shadcn themes drop in unchanged — marko-ui uses the canonical CSS
@@ -64,8 +71,10 @@ for the full walkthrough.
 
 ## Styles
 
-The `default` style plus 8 more — every component re-styled, not re-skinned:
-`luma`, `lyra`, `maia`, `mira`, `nova`, `rhea`, `sera`, `vega`. One component
+8 styles — every component re-styled, not re-skinned:
+`luma`, `lyra`, `maia`, `mira`, `nova`, `rhea`, `sera`, `vega` (`vega` is the
+default). These are the shape/spacing/radius axis; the four shadcn base
+colors (zinc, slate, stone, gray) are a separate, orthogonal axis. One component
 source carries semantic `mu-*` hook classes; each style is a vendored CSS
 token layer combined with that source by a build step, so styling a component
 differently is a token/CSS change, not a separate hand-maintained tree.
@@ -94,7 +103,6 @@ scripts/ci           axe scan, badge generation, CI serving
 bun install
 bun run --cwd apps/docs dev     # docs site
 bunx vitest run                 # behavior + hydration suites (needs the docs server)
-bunx playwright test            # style matrix (needs the docs server)
 bun scripts/ci/axe-scan.ts out.json   # WCAG scan (needs the docs server)
 ```
 

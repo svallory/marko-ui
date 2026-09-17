@@ -57,6 +57,82 @@ const LANG_ALIASES: Record<string, SupportedLang> = {
 
 const THEMES = { light: "github-light", dark: "github-dark" } as const;
 
+/**
+ * Light-theme token colors that fail WCAG 2.2 AA (4.5:1) against the docs
+ * code background, remapped to GitHub's own newer `github-light-default`
+ * values for the same token roles.
+ *
+ * Measured on the production build (Lighthouse run 35177842841): these three
+ * colors were the ENTIRE cause of the accessibility score sitting at 96/97
+ * instead of 100 — `color-contrast` was the only failing audit on all 8
+ * audited component pages, and every one of its 73 flagged nodes was a shiki
+ * token span carrying one of these three values on the `#fbfbfb` code
+ * background:
+ *
+ *   #22863a  4.47:1  strings / added      -> #116329  7.14:1
+ *   #d73a49  4.42:1  keywords / deleted   -> #cf222e  5.18:1
+ *   #e36209  3.37:1  constants / params   -> #953800  7.14:1
+ *
+ * Why remap rather than switch wholesale to `github-light-default`: that
+ * theme fixes these three but introduces its own sub-threshold comment gray
+ * (#6e7781, 4.39:1), trading three known failures for a new one. Remapping
+ * only the failing values keeps the rest of the familiar GitHub palette
+ * byte-identical.
+ *
+ * Lighthouse only ever flagged light mode (every flagged node reported
+ * `background color: #fbfbfb`), because it audits the default theme — but
+ * dark mode has the same class of defect, and it needed measuring rather
+ * than assuming. See DARK_CONTRAST_REMAP.
+ */
+const LIGHT_CONTRAST_REMAP: Record<string, string> = {
+  "#22863a": "#116329",
+  "#d73a49": "#cf222e",
+  "#e36209": "#953800",
+};
+
+/**
+ * The same fix for dark mode, which Lighthouse never audits.
+ *
+ * The docs' dark code background is `--code: var(--surface)` =
+ * `oklch(0.2 0 0)` = `#161616` (app.css). Measured against it, 7 of the 8
+ * `github-dark` token colors pass comfortably (6.8:1 to 14.2:1) — but the
+ * comment gray does not:
+ *
+ *   #6a737d  3.76:1  comments  -> #7d8590  4.85:1
+ *
+ * `#7d8590` is GitHub's own newer dark comment color, chosen as the lightest
+ * gray that still reads as clearly secondary next to `#e1e4e8` body text
+ * (14.2:1) — comments should stay visually muted, just not below the
+ * threshold. A brighter gray would pass harder and flatten that hierarchy.
+ *
+ * (`#24292e` also measures 1.23:1 here, but it is github-dark's own
+ * background color, emitted for tokens that paint a background rather than
+ * text. It is never used as a foreground on the code surface, so it is not
+ * remapped — remapping it would corrupt the few tokens that do use it.)
+ */
+const DARK_CONTRAST_REMAP: Record<string, string> = {
+  "#6a737d": "#7d8590",
+};
+
+/**
+ * Rewrite shiki's per-token color custom properties through the two remaps.
+ *
+ * shiki emits `--shiki-light:#RRGGBB;--shiki-dark:#RRGGBB` inline per token
+ * (see `defaultColor: false` below), so keying on the property name is
+ * precise: each theme's values are remapped independently against its own
+ * background, and no other hex in the markup can match the pattern.
+ */
+function applyContrastRemap(html: string): string {
+  return html.replace(
+    /--shiki-(light|dark):(#[0-9a-fA-F]{6})/g,
+    (whole, theme: string, hex: string) => {
+      const remap = theme === "light" ? LIGHT_CONTRAST_REMAP : DARK_CONTRAST_REMAP;
+      const mapped = remap[hex.toLowerCase()];
+      return mapped ? `--shiki-${theme}:${mapped}` : whole;
+    },
+  );
+}
+
 let highlighterPromise: Promise<Highlighter> | null = null;
 
 function getHighlighter(): Promise<Highlighter> {
@@ -154,7 +230,9 @@ export async function highlightCode(
   const codeStart = html.indexOf("<code");
   const codeOpenEnd = html.indexOf(">", codeStart) + 1;
   const codeEnd = html.lastIndexOf("</code>");
-  const inner = html.slice(codeOpenEnd, codeEnd);
+  // Remap before caching so the contrast fix is applied exactly once per
+  // snippet and every cache hit serves the corrected markup.
+  const inner = applyContrastRemap(html.slice(codeOpenEnd, codeEnd));
 
   if (cache.size >= CACHE_LIMIT) {
     const oldestKey = cache.keys().next().value;

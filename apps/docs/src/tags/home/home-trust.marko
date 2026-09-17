@@ -48,7 +48,11 @@ static const BADGES = [
     href: `${REPO}/blob/main/scripts/ci/axe-scan.ts`,
   },
   {
-    alt: "Lighthouse accessibility 100 on component pages",
+    // No score in the alt text: the badge image itself is live (it reads the
+    // published endpoint), so a hardcoded number here would be read out by
+    // screen readers as the score regardless of what CI actually measured —
+    // it said "100" while the endpoint published 96.
+    alt: "Lighthouse accessibility score on component pages",
     title: "Minimum Lighthouse accessibility score across audited component pages",
     src: BADGE_ENDPOINT("lighthouse-accessibility"),
     href: `${REPO}/actions/workflows/lighthouse.yml`,
