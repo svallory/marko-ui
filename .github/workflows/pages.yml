@@ -45,7 +45,17 @@ jobs:
 
       - name: Build static site + Worker
         # Emits dist/public (2,200+ prerendered files, incl. the 124 registry
-        # JSONs and _headers) and dist/worker/index.js.
+        # JSONs and _headers) and dist/worker/index.js. apps/docs's own
+        # `prebuild` script re-runs tooling/build-registry.ts (it must also
+        # run standalone for `bun run build:registry` outside this workflow),
+        # so REGISTRY_BASE_URL has to be set here too — without it, this
+        # second, env-less run silently overwrites the correctly-built
+        # registry from the step above with items whose absolute URLs
+        # (registryDependencies, etc.) fall back to http://localhost:3000/r.
+        # This is exactly the bug that shipped a stale/broken registry to
+        # production (see report-acceptance.md).
+        env:
+          REGISTRY_BASE_URL: https://marko-ui.saulo.tech/r
         run: bun run --cwd apps/docs build
 
       - name: Verify the build is complete before deploying

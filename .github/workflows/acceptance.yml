@@ -8,6 +8,10 @@ name: Acceptance
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - "e2e/acceptance/**"
+      - ".github/workflows/acceptance.yml"
   schedule:
     # Weekly, well off :00/:30 to avoid the fleet-wide top-of-hour thundering
     # herd. Catches a stale registry deploy or a broken publish within a

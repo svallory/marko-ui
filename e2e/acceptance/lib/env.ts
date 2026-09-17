@@ -1,9 +1,12 @@
 // Everything a journey needs to target either the live registry/npm or a
 // staging registry/pre-release tag, per brief criterion 2.
+// `||`, not `??`: an unset GitHub Actions repo var interpolates to an empty
+// string in the workflow env, not an absent key — `??` would leave
+// REGISTRY_URL as "" and every fetch would throw "Failed to parse URL".
 export const REGISTRY_URL =
-  process.env.ACCEPTANCE_REGISTRY_URL ?? "https://marko-ui.saulo.tech/r"
+  process.env.ACCEPTANCE_REGISTRY_URL || "https://marko-ui.saulo.tech/r"
 
-export const PKG_VERSION = process.env.ACCEPTANCE_PKG_VERSION ?? "latest"
+export const PKG_VERSION = process.env.ACCEPTANCE_PKG_VERSION || "latest"
 
 export const CLI_SPEC = `marko-ui@${PKG_VERSION}`
 export const SHADCN_SPEC = `@marko-ui/shadcn@${PKG_VERSION}`

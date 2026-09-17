@@ -11,10 +11,14 @@ import { run } from "./proc"
  * an `@import "tailwindcss"` entry imported from the root layout).
  */
 export async function scaffoldMarkoApp(parentDir: string): Promise<string> {
-  const create = await run("bun", ["create", "marko", "my-app"], {
-    cwd: parentDir,
-    timeoutMs: 120_000,
-  })
+  const create = await run(
+    "bun",
+    ["create", "marko", "my-app", "--no-git"],
+    {
+      cwd: parentDir,
+      timeoutMs: 120_000,
+    }
+  )
   if (create.exitCode !== 0) {
     throw new Error(
       `bun create marko failed (exit ${create.exitCode})\n${create.stdout}\n${create.stderr}`
