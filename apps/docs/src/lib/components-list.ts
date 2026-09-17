@@ -1,16 +1,16 @@
 // Component index — regenerated centrally after each phase.
 export const COMPONENTS = [
   "accordion", "alert", "alert-dialog", "angle-slider", "aspect-ratio", "attachment", "avatar",
-  "badge", "breadcrumb", "button", "button-group", "calendar", "card",
+  "badge", "breadcrumb", "bubble", "button", "button-group", "calendar", "card",
   "carousel", "cascade-select", "chart", "checkbox", "clipboard", "collapsible", "color-picker",
   "combobox", "command", "context-menu", "data-table", "date-input", "date-picker",
-  "dialog", "drawer", "dropdown-menu", "editable", "empty", "field", "file-upload",
+  "dialog", "direction", "drawer", "dropdown-menu", "editable", "empty", "field", "file-upload",
   "floating-panel", "hover-card", "icon", "image-cropper", "input", "input-group",
-  "input-otp", "item", "kbd", "label", "listbox", "marquee",
-  "menubar", "native-select", "navigation-menu", "number-input", "pagination", "password-input", "popover",
+  "input-otp", "item", "kbd", "label", "listbox", "marker", "marquee",
+  "menubar", "message", "message-scroller", "native-select", "navigation-menu", "number-input", "pagination", "password-input", "popover",
   "progress", "qr-code", "radio-group", "rating-group", "resizable", "scroll-area",
   "select", "separator", "sheet", "sidebar", "signature-pad", "skeleton",
-  "slider", "spinner", "steps", "switch", "table", "tabs",
+  "slider", "sonner", "spinner", "steps", "switch", "table", "tabs",
   "tags-input", "textarea", "timer", "toast", "toc", "toggle",
   "toggle-group", "tooltip", "tour", "tree-view",
 ];

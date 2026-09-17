@@ -2,17 +2,20 @@
 // overlap:
 //   - RECEIPTS: identity facts about the library (component/style counts,
 //     no-JS rendering), maintained by hand next to their sources:
-//       COMPONENTS: dirs in packages/shadcn/ui
+//       COMPONENTS: derived from components-list.ts's COMPONENTS.length —
+//         never hardcode this; count drifts every time a component lands.
 //       STYLES:     default + style-*.css in packages/shadcn/styles
 //   - BADGES: live shields.io endpoint images fed by CI (the `badges` branch
 //     is rewritten on every green main build) — checks, WCAG scan, Lighthouse
 //     accessibility. Their numbers update themselves; never restate them as
 //     receipts.
+import { COMPONENTS } from "../../lib/components-list.ts";
+
 static const REPO = "https://github.com/svallory/marko-ui";
 
 static const RECEIPTS = [
   {
-    value: "86",
+    value: String(COMPONENTS.length),
     label: "components",
     title: "The full registry — every component in readable .marko source",
     href: `${REPO}/tree/main/packages/shadcn/ui`,
@@ -32,8 +35,8 @@ static const BADGE_ENDPOINT = (name: string) =>
 
 static const BADGES = [
   {
-    alt: "Tests passing (behavior, hydration, and style-matrix suites)",
-    title: "Behavior, hydration, and style-matrix suites — run on every push",
+    alt: "Tests passing (behavior and hydration suites)",
+    title: "Behavior and hydration suites — run on every push",
     src: BADGE_ENDPOINT("checks-count"),
     href: `${REPO}/actions/workflows/ci.yml`,
   },

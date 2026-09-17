@@ -6,8 +6,9 @@
 // with the sticky "On This Page" rail on the right.
 //
 // This page owns its own two-rail frame instead of the <docs-article> used by
-// the prose pages: the left rail lists all 77 registry components rather than
-// the DOCS_NAV tree, and the previews need the full content width.
+// the prose pages: the left rail lists all registry components (COMPONENTS,
+// components-list.ts) rather than the DOCS_NAV tree, and the previews need
+// the full content width.
 import "../../../../tags/docs/components-sidebar.marko";
 import "../../../../tags/docs/component-page-header.marko";
 import "../../../../tags/docs/component-preview.marko";
@@ -93,7 +94,7 @@ import { getComponentPageData } from "../../../../lib/component-page-data.ts";
                 hero is the only one without, which left a heading gap right
                 after the <h1>. A component that renders its own headings then
                 lands at the wrong depth — accordion's items are <h3> (matching
-                upstream shadcn's AccordionHeader), so the page read h1 -> h3.
+                upstream shadcn's AccordionHeader), so the page read h1 to h3.
                 Labelling the hero closes the gap at the page level, where the
                 defect is, instead of changing a registry component's heading
                 level to suit one docs page. sr-only because the stage is

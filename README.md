@@ -82,7 +82,7 @@ packages/shadcn      @marko-ui/shadcn: authored component source (ui/),
                       tests/
 packages/marko-ui    the marko-ui CLI (init, add, diff, doctor, ...)
 tooling              registry build + style-transform scripts
-e2e                  style-matrix verification suite
+e2e/acceptance       published-package + live-registry acceptance suite
 scripts/ci           axe scan, badge generation, CI serving
 ```
 
