@@ -178,6 +178,21 @@ describe("normalize-mtc.ts", () => {
       expect(run(`${notControl}\n`, ["--count"])).toBe("1 1\n");
     });
 
+    it("only strips the banner at the top, not a lookalike mid-stream", () => {
+      // Bun prints its banner before the child's output, so a control line can
+      // only legitimately appear at the very top. A banner-shaped string
+      // AFTER real output is diagnostic text (a tsconfig error quoting JSON,
+      // say) and must survive.
+      const input = `${BANNER}\nsrc/routes/foo.marko:1:1 - error TS2322\nbad type\n\n${BANNER}`;
+      const out = run(input);
+      expect(out).toContain("src/routes/foo.marko|TS2322|bad type");
+      // The trailing lookalike is fingerprinted as a file-less diagnostic
+      // rather than silently dropped.
+      expect(out).toContain("(no file)|TS0000|");
+      // 1 stripped + 2 records accounted for.
+      expect(run(input, ["--count"])).toBe("3 3\n");
+    });
+
     it("does not strip a diagnostic message containing a brace", () => {
       const out = run(
         "src/routes/foo.marko:1:1 - error TS2353\nObject literal may only specify known properties, and '{ x }' is not expected.\n",

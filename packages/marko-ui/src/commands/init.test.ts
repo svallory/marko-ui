@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { resolveTailwindCssPath } from "@/src/commands/init"
+import { MARKO_DEFAULT_CSS, resolveTailwindCssPath } from "@/src/commands/init"
 
 /**
  * Regression coverage for the components.json stylesheet path.
@@ -42,8 +42,11 @@ describe("resolveTailwindCssPath", () => {
   it.each(["marko-run", "marko-vite"])(
     "falls back to the Marko convention for %s when detection found nothing",
     (frameworkName) => {
+      // Asserted against the exported constant, not a repeated literal: the
+      // value is expected to change with the in-flight CLI DX work, and this
+      // test is about WHICH default is chosen, not what it spells.
       expect(resolveTailwindCssPath({ frameworkName, isSrcDir: true })).toBe(
-        "src/styles/globals.css"
+        `src/${MARKO_DEFAULT_CSS}`
       )
     }
   )
@@ -51,9 +54,12 @@ describe("resolveTailwindCssPath", () => {
   it("omits the src/ prefix for a Marko project without a src directory", () => {
     expect(
       resolveTailwindCssPath({ frameworkName: "marko-run", isSrcDir: false })
-    ).toBe("styles/globals.css")
+    ).toBe(MARKO_DEFAULT_CSS)
   })
 
+  // The Next.js literals below stay hardcoded deliberately: they are shadcn's
+  // inherited default, owned elsewhere, and the point of these assertions is
+  // that a Marko project never receives that specific path.
   it("never returns the Next.js default for a Marko project", () => {
     // The exact failure: a Marko app, nothing configured, nothing detected.
     for (const frameworkName of ["marko-run", "marko-vite"]) {

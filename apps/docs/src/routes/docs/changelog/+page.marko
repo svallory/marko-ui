@@ -40,7 +40,7 @@ static const ENTRIES: ChangelogEntry[] = [
       "Added a no-JS form route and a browserless test that POSTs to it and asserts the valibot messages are present in the returned HTML — the \"forms validate without JavaScript\" claim had no in-repo verification before this.",
       "Corrected the public numbers: 8 visual styles (not 9 — \"default\" was a vestigial shadcn field), hydration coverage stated as 33 of 54 rather than implying all, and the real keyboard-contract test count (71) in place of an unreproducible one.",
       "The docs type-check gate no longer fails on Bun's AI-agent NDJSON banner, which was being fingerprinted as a phantom type error.",
-      "Published releases now carry npm provenance attestations via the OIDC trusted-publishing workflow; 0.3.0 and earlier do not.",
+      "0.3.1 onward is published through the OIDC trusted-publishing workflow and carries npm provenance attestations; 0.3.0 and earlier do not.",
       "Breaking: adopted marko-zag 3.0.0's automatic `Props` shadowing — a component's declared member now always wins over a same-named native attribute, with no `Omit` or 3rd type-parameter gymnastics. Every component using the retired patterns was migrated.",
       "The docs app's type-check baseline was cleared to 0 known errors and the gate scripts hardened with their own fixture tests.",
       "Fixed the docs site's axe-core WCAG scan to 0 violations (keyboard-unreachable scroll containers, page heading order).",

@@ -107,15 +107,21 @@ function isBunControlLine(line: string): boolean {
 // Stripped lines are counted so the --count parity guard in check.sh stays
 // honest: they are "accounted for" (recognized and deliberately skipped),
 // never silently dropped.
+// Anchored to the LEADING lines only. Bun prints its banner before handing
+// the child's own output through, so a control line can only legitimately
+// appear at the very top; scanning the whole stream would also strip a
+// banner-shaped string occurring inside a real diagnostic message (a
+// tsconfig error quoting JSON, say). Once a line that is not a control line
+// is seen, everything after it is treated as diagnostic output verbatim.
 let strippedControlLineCount = 0;
-const cleanedInput = input
-  .split("\n")
-  .filter((line) => {
-    if (!isBunControlLine(line)) return true;
-    strippedControlLineCount++;
-    return false;
-  })
-  .join("\n");
+const inputLines = input.split("\n");
+while (
+  strippedControlLineCount < inputLines.length &&
+  isBunControlLine(inputLines[strippedControlLineCount]!)
+) {
+  strippedControlLineCount++;
+}
+const cleanedInput = inputLines.slice(strippedControlLineCount).join("\n");
 
 // Records are separated by exactly one blank line (the double newline
 // `report.out.join` uses); a trailing blank line from the final message's

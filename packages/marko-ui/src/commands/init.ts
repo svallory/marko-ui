@@ -116,6 +116,18 @@ export const init = new Command()
   })
 
 /**
+ * The stylesheet a Marko project gets when nothing is configured or detected,
+ * relative to the project's source root (`src/` is prepended when the project
+ * has one).
+ *
+ * Exported so tests assert against this rather than hardcoding the literal:
+ * the value is expected to change (to `app.css`) with the in-flight CLI DX
+ * work, and a test that repeats the string would have to be edited in
+ * lockstep for no benefit.
+ */
+export const MARKO_DEFAULT_CSS = "styles/globals.css"
+
+/**
  * Decide which stylesheet path `components.json` should record.
  *
  * Order: an explicitly configured path, then a detected one, then a
@@ -151,7 +163,7 @@ export function resolveTailwindCssPath({
   if (detectedCss) return detectedCss
 
   if (frameworkName === "marko-run" || frameworkName === "marko-vite") {
-    return isSrcDir ? "src/styles/globals.css" : "styles/globals.css"
+    return isSrcDir ? `src/${MARKO_DEFAULT_CSS}` : MARKO_DEFAULT_CSS
   }
 
   return DEFAULT_TAILWIND_CSS
