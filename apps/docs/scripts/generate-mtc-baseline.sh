@@ -7,8 +7,14 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-# Overridable for tests: see check.sh for why this exists.
-: "${NORMALIZE_MTC_CMD:=bun scripts/normalize-mtc.ts}"
+# Overridable for tests: see check.sh for why this exists, including why an
+# accidental leak of this override into a real run is a footgun worth
+# warning loudly about.
+_NORMALIZE_MTC_DEFAULT="bun scripts/normalize-mtc.ts"
+: "${NORMALIZE_MTC_CMD:=$_NORMALIZE_MTC_DEFAULT}"
+if [ "$NORMALIZE_MTC_CMD" != "$_NORMALIZE_MTC_DEFAULT" ]; then
+  echo "docs mtc: NORMALIZE_MTC_CMD overridden to '$NORMALIZE_MTC_CMD' — test mode" >&2
+fi
 
 bash scripts/ensure-routes-dts.sh
 rm -f tsconfig.tsbuildinfo

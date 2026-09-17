@@ -11,7 +11,18 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 # Overridable for tests: default runs the real normalizer via bun; a test
 # can point this at a stub (e.g. a script that exits nonzero) to simulate
 # a crashing normalizer without needing a real mtc run.
-: "${NORMALIZE_MTC_CMD:=bun scripts/normalize-mtc.ts}"
+#
+# This override is a footgun outside test fixtures: an accidental leak into
+# a real shell/CI environment (e.g. NORMALIZE_MTC_CMD=true) would silently
+# disarm the whole gate — `true` "normalizes" every run to zero fingerprints
+# and check.sh would report a clean pass no matter what marko-type-check
+# actually found. Warn loudly whenever the value differs from the default,
+# so that leak is visible instead of silent.
+_NORMALIZE_MTC_DEFAULT="bun scripts/normalize-mtc.ts"
+: "${NORMALIZE_MTC_CMD:=$_NORMALIZE_MTC_DEFAULT}"
+if [ "$NORMALIZE_MTC_CMD" != "$_NORMALIZE_MTC_DEFAULT" ]; then
+  echo "docs mtc: NORMALIZE_MTC_CMD overridden to '$NORMALIZE_MTC_CMD' — test mode" >&2
+fi
 
 lock_dir="$(git rev-parse --git-common-dir)/docs-mtc.lock"
 pid_file="$lock_dir/pid"
