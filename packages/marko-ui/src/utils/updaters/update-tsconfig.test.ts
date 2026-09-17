@@ -1,5 +1,59 @@
 import { describe, expect, test } from "vitest"
-import { addCompilerOptions } from "@/src/utils/updaters/update-tsconfig"
+import {
+  addCompilerOptions,
+  allowsTsExtensionImports,
+} from "@/src/utils/updaters/update-tsconfig"
+
+// TS5096: `allowImportingTsExtensions` is only legal when the project does not
+// emit. Inserting it on an emitting project replaces a TS5097 warning with a
+// hard TS5096 error — verified against real tsc 5.9.2 — so the updater must
+// refuse and name the manual step instead.
+describe("allowsTsExtensionImports", () => {
+  test.each(["noEmit", "emitDeclarationOnly", "rewriteRelativeImportExtensions"])(
+    "accepts a project with %s: true",
+    (option) => {
+      expect(
+        allowsTsExtensionImports(`{"compilerOptions":{"${option}": true}}`)
+      ).toBe(true)
+    }
+  )
+
+  test("rejects a project that emits", () => {
+    expect(
+      allowsTsExtensionImports(`{"compilerOptions":{"strict": true}}`)
+    ).toBe(false)
+  })
+
+  test("rejects an explicitly-false guard option", () => {
+    expect(
+      allowsTsExtensionImports(`{"compilerOptions":{"noEmit": false}}`)
+    ).toBe(false)
+  })
+
+  test("does not count a guard option mentioned only in a comment", () => {
+    expect(
+      allowsTsExtensionImports(`{
+  "compilerOptions": {
+    // "noEmit": true
+    "strict": true
+  }
+}`)
+    ).toBe(false)
+  })
+
+  test("accepts the stock create-marko scaffold, which sets noEmit", () => {
+    // The real scaffold shape — this is the path that must keep working.
+    expect(
+      allowsTsExtensionImports(`{
+  "include": ["src/**/*"],
+  "compilerOptions": {
+    "noEmit": true,
+    "strict": true
+  }
+}`)
+    ).toBe(true)
+  })
+})
 
 // Registry components import siblings with an explicit `.ts` extension, which
 // a stock create-marko tsconfig rejects (TS5097). These cover the edit that

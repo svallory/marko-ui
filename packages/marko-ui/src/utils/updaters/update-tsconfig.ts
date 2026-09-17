@@ -35,6 +35,36 @@ const REQUIRED_COMPILER_OPTIONS: Record<string, boolean> = {
  * Returns the new content, or null when nothing needed changing (which is what
  * makes a second `init` run a no-op).
  */
+/**
+ * Options that make `allowImportingTsExtensions` legal.
+ *
+ * TypeScript rejects it outright otherwise:
+ *
+ *   error TS5096: Option 'allowImportingTsExtensions' can only be used when
+ *   either 'noEmit' or 'emitDeclarationOnly' is set.
+ *
+ * So blindly inserting it turns a project that merely had TS5097 warnings into
+ * one that does not typecheck at all. `create-marko` sets `noEmit: true`, which
+ * is why the scaffold path is safe — but a project that emits is not, and the
+ * CLI must not break it.
+ *
+ * `rewriteRelativeImportExtensions` (TS 5.7+) is the third accepted answer: it
+ * lets an emitting project keep the `.ts` specifiers and rewrite them on emit.
+ */
+const EMIT_GUARD_OPTIONS = [
+  "noEmit",
+  "emitDeclarationOnly",
+  "rewriteRelativeImportExtensions",
+]
+
+/** True when the tsconfig sets an option that makes the insert legal. */
+export function allowsTsExtensionImports(content: string): boolean {
+  const uncommented = stripJsoncComments(content)
+  return EMIT_GUARD_OPTIONS.some((name) =>
+    new RegExp(`"${name}"\\s*:\\s*true`).test(uncommented)
+  )
+}
+
 export function addCompilerOptions(
   content: string,
   required: Record<string, boolean> = REQUIRED_COMPILER_OPTIONS
@@ -102,8 +132,42 @@ export async function updateTsConfig(
     return
   }
 
+  // Inserting the option on a project that emits would replace TS5097 with
+  // TS5096 and break typecheck outright. Name the manual step instead of
+  // silently making things worse, or silently doing nothing.
+  if (!allowsTsExtensionImports(content)) {
+    if (!options.silent) {
+      logger.warn(
+        `tsconfig.json emits output, so ${highlighter.info(
+          "allowImportingTsExtensions"
+        )} cannot be set (TS5096). Components import with explicit ${highlighter.info(
+          ".ts"
+        )} extensions, so add ${highlighter.info(
+          '"noEmit": true'
+        )} (apps), ${highlighter.info(
+          '"emitDeclarationOnly": true'
+        )}, or ${highlighter.info(
+          '"rewriteRelativeImportExtensions": true'
+        )} (TS 5.7+), then re-run ${highlighter.info("marko-ui init")}.`
+      )
+    }
+    return
+  }
+
   const result = addCompilerOptions(content)
   if (!result) {
+    // Either the option is already set (nothing to do, the idempotent path) or
+    // there is no compilerOptions block to extend — which needs saying, since
+    // the components will not typecheck without it.
+    if (!options.silent && !/"compilerOptions"\s*:\s*\{/.test(content)) {
+      logger.warn(
+        `tsconfig.json has no ${highlighter.info(
+          "compilerOptions"
+        )} block. Add ${highlighter.info(
+          '"allowImportingTsExtensions": true'
+        )} to it, or components will not typecheck.`
+      )
+    }
     return
   }
 
