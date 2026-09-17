@@ -23,7 +23,9 @@ import {
 // at module load and throws outside a runner. Re-exported here because this
 // file is where they are used and guarded.
 import {
+  findZagBackedComponents,
   INTERACTIVE_COMPONENTS,
+  UI_DIR,
   UNCOVERED_ZAG_COMPONENTS,
   ZAG_BACKED_COMPONENT_COUNT,
 } from "./hydration-coverage.ts";
@@ -269,10 +271,58 @@ describe("hydration invariant (C-4): SSR attributes survive hydration", () => {
  * 21 components were in fact uncovered.
  */
 describe("hydration coverage bookkeeping", () => {
-  it("accounts for every Zag-backed component exactly once", () => {
-    expect(INTERACTIVE_COMPONENTS.length + UNCOVERED_ZAG_COMPONENTS.length).toBe(
-      ZAG_BACKED_COMPONENT_COUNT,
+  // The population, read from disk on every run. Everything below compares
+  // the hand-maintained lists against THIS, not against each other — the
+  // previous version of these tests only asserted
+  // `covered.length + uncovered.length === 54`, an arithmetic identity among
+  // three hand-edited values that a newly added Zag-backed component in
+  // neither list would satisfy happily.
+  const onDisk = findZagBackedComponents(UI_DIR);
+
+  it("finds a non-trivial set of Zag-backed components on disk", () => {
+    // Guards the guard: a broken glob or a moved ui/ directory would return
+    // [] and make every comparison below vacuously satisfiable.
+    expect(onDisk.length).toBeGreaterThan(40);
+  });
+
+  it("classifies every Zag-backed component on disk as covered or uncovered", () => {
+    const classified = new Set<string>([
+      ...INTERACTIVE_COMPONENTS,
+      ...UNCOVERED_ZAG_COMPONENTS,
+    ]);
+    // A new Zag-backed component that nobody added to either list shows up
+    // here by name — this is the assertion the old arithmetic check missed.
+    const unclassified = onDisk.filter((name) => !classified.has(name));
+    expect(
+      unclassified,
+      `Zag-backed component(s) in packages/shadcn/ui/ missing from both lists in ` +
+        `hydration-coverage.ts: ${unclassified.join(", ")}`,
+    ).toEqual([]);
+  });
+
+  it("lists no component that is not actually Zag-backed on disk", () => {
+    const present = new Set(onDisk);
+    // The reverse drift: a component renamed, deleted, or migrated off Zag
+    // leaves a stale name behind and quietly inflates the denominator.
+    const stale = [...INTERACTIVE_COMPONENTS, ...UNCOVERED_ZAG_COMPONENTS].filter(
+      (name) => !present.has(name),
     );
+    expect(
+      stale,
+      `name(s) listed in hydration-coverage.ts with no Zag-backed component ` +
+        `directory in packages/shadcn/ui/: ${stale.join(", ")}`,
+    ).toEqual([]);
+  });
+
+  it("keeps the badge denominator in step with the filesystem", () => {
+    // ZAG_BACKED_COMPONENT_COUNT is a literal because scripts/ci/badge.ts is a
+    // plain script with no repo checkout to glob. This is what stops that
+    // literal going stale: the badge would otherwise keep publishing /54.
+    expect(
+      ZAG_BACKED_COMPONENT_COUNT,
+      "ZAG_BACKED_COMPONENT_COUNT in hydration-coverage.ts no longer matches the " +
+        "number of Zag-backed components on disk — update it (the CI badge divides by it)",
+    ).toBe(onDisk.length);
   });
 
   it("never lists a component as both covered and uncovered", () => {
