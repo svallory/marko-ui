@@ -26,3 +26,6 @@ packages/shadcn/tsconfig.api-extract.json
 
 # scratch screenshots/output from the Playwright MCP tool
 .playwright-mcp/
+
+# Cloudflare Workers local state (wrangler dev)
+apps/docs/.wrangler/
