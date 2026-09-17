@@ -124,6 +124,19 @@ jobs:
       - name: Run marko-ui CLI suite
         run: bun run --filter marko-ui test
 
+      # Scaffolds a real `create-marko` app and drives init/add/build through
+      # it, asserting the BUILD OUTPUT (theme tokens + component utilities in
+      # the emitted CSS). The unit suite above cannot catch this class: it
+      # never runs the CLI against a real project, so a first-run defect that
+      # leaves the user with an unstyled page passes it cleanly.
+      #
+      # Builds and serves the registry itself rather than reusing the `tests`
+      # job's serve-docs.sh, because that job is gated on the `docs` path
+      # filter while this one is gated on `cli` — a CLI-only change must still
+      # run this.
+      - name: Run CLI first-run e2e
+        run: bun run test:cli:e2e
+
   registry-drift:
     name: Registry drift check
     needs: changes
