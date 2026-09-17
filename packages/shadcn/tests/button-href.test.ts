@@ -27,8 +27,11 @@ describe("Button href escape hatch", () => {
 
   test("the anchor keeps link semantics — no role override", async () => {
     const out = await Button.render({ href: "/docs" }).toString();
+    // Both spellings: Marko emits unquoted values where it can, so asserting
+    // only the quoted form would pass vacuously.
     expect(out).not.toContain('role="button"');
     expect(out).not.toContain("role=button");
+    expect(out).not.toMatch(/\brole\s*=/);
   });
 
   test("both branches carry the same data-slot and variant attributes", async () => {
@@ -38,9 +41,12 @@ describe("Button href escape hatch", () => {
       variant: "secondary",
     }).toString();
 
+    // Marko emits attribute values unquoted when they need no quoting, so
+    // these are matched as rendered rather than as `data-slot="button"`.
     for (const out of [asButton, asLink]) {
-      expect(out).toContain("button");
-      expect(out).toContain("secondary");
+      expect(out).toContain("data-slot=button");
+      expect(out).toContain("data-variant=secondary");
+      expect(out).toContain("data-size=default");
     }
   });
 

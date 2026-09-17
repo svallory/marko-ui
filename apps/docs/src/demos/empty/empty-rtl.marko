@@ -9,10 +9,11 @@
 // EmptyContent already restyle correctly under dir="rtl" since their
 // layout is Tailwind flex/grid with no hard-coded physical margins.
 // Upstream's trailing "Learn More" link uses `LinkButton`
-// (aria)/`Button asChild` (radix)/`Button render={<a/>}` (base) — this
-// port's Button is a native <button> only (no polymorphic render prop),
-// so the link is a plain <a> styled with buttonVariants({ variant:
-// "link" }), matching the precedent in demos/button/button-render.marko.
+// (aria)/`Button asChild` (radix)/`Button render={<a/>}` (base). This port's
+// Button takes `href` for the same purpose, but the link here also needs a
+// trailing icon and extra classes on the anchor itself, so it stays a plain
+// <a> styled with buttonVariants({ variant: "link" }) — the documented use
+// for buttonVariants when the caller owns the markup.
 import Empty from "@marko-ui/shadcn/ui/empty/empty.marko";
 import EmptyHeader from "@marko-ui/shadcn/ui/empty/header.marko";
 import EmptyMedia from "@marko-ui/shadcn/ui/empty/media.marko";
