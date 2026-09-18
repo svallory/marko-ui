@@ -404,6 +404,8 @@ CI does this on every push to `main` via `.github/workflows/pages.yml`, which bu
 
 **A local `wrangler deploy` can fail with a bare `TypeError: fetch failed` that has nothing to do with Cloudflare.** If `HTTPS_PROXY`/`NODE_EXTRA_CA_CERTS` are set (a corporate or agent-sandbox proxy), wrangler's undici dispatcher does not pick up the proxy CA and every API call fails — including its own metrics post — while plain `curl` and plain Node `fetch` to the same host succeed. The tell is that the failure hits the FIRST request (`GET .../workers/services/<name>`), before any upload. Deploy with `env -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy wrangler deploy`. CI is unaffected.
 
+**Bare component pages (`/bare/<name>`) exist solely as Lighthouse targets.** The docs layout includes a 2MB site-wide CSS bundle and docs-specific chrome that invalidates component-level performance/SEO measurement. A separate Vite build step (`marko-run build -c vite.bare.config.ts`) emits chrome-free pages containing ONLY the component's default demo and its active style CSS, deployed alongside the main docs. They are the Lighthouse 100/100/100/100 target; the main docs pages (`/docs/components/*`) remain the axe and behavior-test targets. To test locally: build and serve with `bash scripts/ci/serve-docs.sh`, then run `bunx @lhci/cli autorun --collect.url="http://localhost:3000/bare/<name>"` (configure presets in `.github/lighthouse/lighthouserc-bare-*.json`).
+
 ## Where knowledge lives
 
 - `TODO.md` — decision log and work queue (decisions marked `(decision — made)` are settled; don't relitigate).
