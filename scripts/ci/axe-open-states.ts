@@ -2,14 +2,21 @@ export interface OpenStateConfig {
   trigger: string;
   content: string;
   open?: "click" | "hover" | "focus" | "right-click";
-  key?: string; // used to specify key to press if necessary
+  /**
+   * false when the component renders its content inline (no <zag-portal>):
+   * the open-state scan can then scope the content selector to the hero
+   * stage ancestor. Overlays portal their content to <body>, outside the
+   * stage, so those keep the global content selector — axe would otherwise
+   * never see the portal at all. Default true.
+   */
+  portal?: boolean;
 }
 
 export const OPEN_STATES: Record<string, OpenStateConfig> = {
-  "accordion": { trigger: '[data-slot="accordion-trigger"]', content: '[data-slot="accordion-content"]', open: "click" },
+  "accordion": { trigger: '[data-slot="accordion-trigger"]', content: '[data-slot="accordion-content"]', open: "click", portal: false },
   "alert-dialog": { trigger: '[data-slot="alert-dialog-trigger"]', content: '[data-slot="alert-dialog-content"]', open: "click" },
   "cascade-select": { trigger: '[data-slot="cascade-select-trigger"]', content: '[data-slot="cascade-select-content"]', open: "click" },
-  "collapsible": { trigger: '[data-slot="collapsible-trigger"]', content: '[data-slot="collapsible-content"]', open: "click" },
+  "collapsible": { trigger: '[data-slot="collapsible-trigger"]', content: '[data-slot="collapsible-content"]', open: "click", portal: false },
   "color-picker": { trigger: '[data-slot="color-picker-trigger"]', content: '[data-slot="color-picker-content"]', open: "click" },
   "combobox": { trigger: '[data-slot="combobox-trigger"]', content: '[data-slot="combobox-content"]', open: "click" },
   "context-menu": { trigger: '[data-slot="context-menu-trigger"]', content: '[data-slot="context-menu-content"]', open: "right-click" },
@@ -19,14 +26,14 @@ export const OPEN_STATES: Record<string, OpenStateConfig> = {
   "dropdown-menu": { trigger: '[data-slot="dropdown-menu-trigger"]', content: '[data-slot="dropdown-menu-content"]', open: "click" },
   "floating-panel": { trigger: '[data-slot="floating-panel-trigger"]', content: '[data-slot="floating-panel"]', open: "click" },
   "hover-card": { trigger: '[data-slot="hover-card-trigger"]', content: '[data-slot="hover-card-content"]', open: "hover" },
-  "menubar": { trigger: '[data-slot="menubar-trigger"]', content: '[data-slot="menubar-content"]', open: "click" },
-  "navigation-menu": { trigger: '[data-slot="navigation-menu-trigger"]', content: '[data-slot="navigation-menu-content"]', open: "click" },
+  "menubar": { trigger: '[data-slot="menubar-trigger"]', content: '[data-slot="menubar-content"]', open: "click", portal: false },
+  "navigation-menu": { trigger: '[data-slot="navigation-menu-trigger"]', content: '[data-slot="navigation-menu-content"]', open: "click", portal: false },
   "popover": { trigger: '[data-slot="popover-trigger"]', content: '[data-slot="popover-content"]', open: "click" },
   "select": { trigger: '[data-slot="select-trigger"]', content: '[data-slot="select-content"]', open: "click" },
   "sheet": { trigger: '[data-slot="sheet-trigger"]', content: '[data-slot="sheet-content"]', open: "click" },
   "tooltip": { trigger: '[data-slot="tooltip-trigger"]', content: '[data-slot="tooltip-content"]', open: "hover" },
   "tour": { trigger: '[data-slot="tour-trigger"]', content: '[data-slot="tour-content"]', open: "click" },
-  "tree-view": { trigger: '[data-slot="tree-view-branch-control"]', content: '[data-slot="tree-view-branch-content"]', open: "click" },
+  "tree-view": { trigger: '[data-slot="tree-view-branch-control"]', content: '[data-slot="tree-view-branch-content"]', open: "click", portal: false },
 };
 
 export const NO_OPEN_STATE: Record<string, string> = {

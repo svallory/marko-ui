@@ -29,6 +29,11 @@ if (!outFile) {
 
 const { OPEN_STATES, NO_OPEN_STATE } = await import("./axe-open-states.ts");
 
+// The demo stage only: the outer `[data-slot="component-preview"]` wrapper
+// also contains the docs code-peek (shiki <pre>), which is docs chrome, not
+// component — the scan must not see it.
+const STAGE_SELECTOR = '[data-slot="component-preview"] [data-slot="preview"]';
+
 const components = [...DOCUMENTED_COMPONENTS].sort();
 
 // Bookkeeping assertion
@@ -95,7 +100,7 @@ for (const { name, path } of urls) {
       const axe = (window as any).axe;
       // Scope to the demo stage only (excluding the code-peek which is inside the outer component-preview wrapper).
       return axe.run(
-        { include: [['[data-slot="component-preview"] [data-slot="preview"]']] },
+        { include: [[STAGE_SELECTOR]] },
         {
           resultTypes: ["violations"],
           rules: Object.fromEntries(disabledRules.map((rule) => [rule, { enabled: false }])),
@@ -138,17 +143,28 @@ for (const { name, path } of urls) {
         await content.waitFor({ state: "visible", timeout: 5000 });
         await page.waitForTimeout(300); // animation buffer
 
-        const openResults = (await page.evaluate(async ({ disabledRules, contentSelector }) => {
+        // Scope: inline (non-portaled) content is a descendant of the hero
+        // stage, so prefix the selector with the stage ancestor — the raw
+        // content selector would match every demo instance on the page.
+        // Portaled overlays render under <body>, outside the stage, so
+        // those keep the global content selector: without it axe would
+        // never see the portal at all (and hidden closed instances are
+        // excluded from the accessibility tree anyway).
+        const include = openState.portal === false
+          ? [[`${STAGE_SELECTOR} ${openState.content}`]]
+          : [[STAGE_SELECTOR], [openState.content]];
+
+        const openResults = (await page.evaluate(async ({ disabledRules, include }) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const axe = (window as any).axe;
           return axe.run(
-            { include: [['[data-slot="component-preview"] [data-slot="preview"]'], [contentSelector]] },
+            { include },
             {
               resultTypes: ["violations"],
               rules: Object.fromEntries(disabledRules.map((rule) => [rule, { enabled: false }])),
             },
           );
-        }, { disabledRules: PAGE_SCOPE_RULES, contentSelector: openState.content })) as {
+        }, { disabledRules: PAGE_SCOPE_RULES, include })) as {
           violations: {
             id: string;
             impact: string | null;
@@ -170,7 +186,18 @@ for (const { name, path } of urls) {
           });
         });
       } catch (err) {
-        console.error(`Error opening ${name}:`, err);
+        // A failed open must fail the run, not silently degrade to a
+        // closed-only scan: a rotted OPEN_STATES entry would otherwise
+        // stay green forever. Record a synthetic violation so the page
+        // reports the failure and the exit code goes non-zero.
+        console.error(`✗ ${path}: failed to open (${err})`);
+        violations.push({
+          id: "open-state-failed",
+          impact: "critical",
+          help: `Open-state interaction failed: ${String(err).slice(0, 200)}`,
+          nodes: 1,
+          targets: [{ target: openState.trigger, html: openState.content }],
+        });
       }
     }
 
