@@ -168,9 +168,14 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
           data-slot="combobox-content"
           class=styles.content
         >
+          // In composite mode Zag renders this list with NO role, and an
+          // aria-labelledby on a role-less div inside the content listbox
+          // reads as a disallowed named child (aria-required-children) —
+          // strip it there. In the default non-composite mode the list IS
+          // the listbox and Zag's aria-labelledby legitimately names it.
           <div
             ...api().getListProps()
-            aria-labelledby=undefined
+            aria-labelledby=(input.composite ? undefined : api().getListProps()["aria-labelledby"])
             data-slot="combobox-list"
             class=styles.list
           >
