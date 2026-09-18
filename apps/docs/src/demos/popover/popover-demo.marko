@@ -5,10 +5,12 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
   <@trigger|props|>
     <Button ...props variant="outline">Open popover</Button>
   </@trigger>
-  <div class="grid gap-2">
+  <@title>
     <h4 class="leading-none font-medium">Dimensions</h4>
+  </@title>
+  <@description>
     <p class="text-muted-foreground text-sm">
       Set the dimensions for the layer.
     </p>
-  </div>
+  </@description>
 </Popover>

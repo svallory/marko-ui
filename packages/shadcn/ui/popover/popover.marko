@@ -12,14 +12,27 @@ import { popover as styles } from "./classes.ts";
 // zag exposes them via `positioning.align` / `positioning.gutter`
 // (@zag-js/popper `PositioningOptions`), already forwarded through
 // `popoverMachine.props`.
-export type Input = MachineInput<"div", popoverMachine.Props> & {
+export type Input = MachineInput<"div", popoverMachine.Props & Own> & {
   /** Trigger render-prop — the element that opens the popover. */
   trigger: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
-  /** Popover content shown when open. */
-  content: Marko.Body;
+  /** Popover content shown when open. Optional — a title/description-only popover is legitimate. */
+  content?: Marko.Body;
   /** Extra class for the content panel. */
   class?: string;
   openChange?: (open: boolean) => void;
+};
+
+// Folded into the Props argument (not intersected after MachineInput) so
+// marko-zag 3.0.0's automatic native-attribute shadowing applies: title
+// collides with the native div title attribute and would otherwise become
+// an unsatisfiable AttrString-by-AttrTag intersection. aria-label needs no
+// declaration — it is a native div attribute and is forwarded below as
+// input["aria-label"].
+export type Own = {
+  /** Title of the popover, automatically wired to aria-labelledby. */
+  title?: Marko.AttrTag<{ content: Marko.Body }>;
+  /** Description of the popover. */
+  description?: Marko.AttrTag<{ content: Marko.Body }>;
 };
 
 <zag/api=() => popoverMachine from=input/>
@@ -37,10 +50,24 @@ export type Input = MachineInput<"div", popoverMachine.Props> & {
       <div ...api().getPositionerProps() style=positionerStyle data-slot="popover-positioner">
         <div
           ...api().getContentProps()
+          aria-labelledby=(input.title ? api().getTitleProps().id : undefined)
+          aria-label=input["aria-label"]
           data-slot="popover-content"
           class=cn(styles.content, input.class)
         >
-          <${input.content}/>
+          <if=input.title>
+            <div ...api().getTitleProps() data-slot="popover-title">
+              <${input.title.content}/>
+            </div>
+          </if>
+          <if=input.description>
+            <div ...api().getDescriptionProps() data-slot="popover-description">
+              <${input.description.content}/>
+            </div>
+          </if>
+          <if=input.content>
+            <${input.content}/>
+          </if>
         </div>
       </div>
     </if>

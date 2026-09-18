@@ -127,11 +127,19 @@ export type Input = Omit<MachineInput<"div", cascadeSelect.Props<CascadeSelectIt
   }
   return result;
 }>
+// Value paths ("/"-joined) of the child-lists actually rendered right now —
+// one per panel beyond the root, i.e. one per highlighted-chain node with
+// children. Zag's getItemProps emits aria-controls/aria-owns pointing at the
+// child list id whenever an item HAS children, but the component only mounts
+// that list while the item sits on the highlighted chain, so the idrefs
+// dangle (and fail aria-valid-attr-value) for every non-highlighted branch.
+// Items not in this set get their aria-controls/aria-owns dropped below.
+<const/renderedChildLists=() => new Set(panels().slice(1).map((p) => p.valuePath.join("/")))>
 
 <div ...nativeAttrs() ...api().getRootProps() data-slot="cascade-select" class=cn(className)>
   <label ...api().getLabelProps() data-slot="cascade-select-label" class=(label ? styles.label : styles.labelSrOnly)>${label || placeholder || "Select an option"}</label>
   <div ...api().getControlProps() data-slot="cascade-select-control">
-    <button ...api().getTriggerProps() data-slot="cascade-select-trigger" class=styles.trigger>
+    <button ...api().getTriggerProps() aria-haspopup="tree" data-slot="cascade-select-trigger" class=styles.trigger>
       <span data-slot="cascade-select-value">${triggerLabel() || placeholder}</span>
       <Icon ...api().getIndicatorProps() name="ChevronDown" class=styles.indicatorIcon/>
     </button>
@@ -142,19 +150,30 @@ export type Input = Omit<MachineInput<"div", cascadeSelect.Props<CascadeSelectIt
       <div ...api().getPositionerProps() data-slot="cascade-select-positioner" style=positionerStyle>
         <div
           ...api().getContentProps()
+          role="tree"
+          // The @zag-js machine seeds highlightedValue as [[]] on open, so
+          // connect emits aria-activedescendant pointing at a synthesized
+          // "item:" id that no element carries (aria-valid-attr-value).
+          // Only forward the idref when the highlight chain reaches an
+          // actual item.
+          aria-activedescendant=(api().highlightedValue?.flat().length ? api().getContentProps()["aria-activedescendant"] : undefined)
           data-slot="cascade-select-content"
           class=styles.content
         >
           <for|panel| of=panels()>
             <div
               ...api().getListProps({ item: { value: "", label: "", children: panel.children }, indexPath: panel.indexPath, value: panel.valuePath })
+              aria-level=undefined
               data-slot="cascade-select-list"
               class=styles.list
             >
               <for|entry, index| of=panel.children>
                 <const/itemProps={ item: entry, indexPath: [...panel.indexPath, index], value: [...panel.valuePath, entry.value] }/>
+                <const/hasRenderedChildList=renderedChildLists().has(itemProps.value.join("/"))/>
                 <div
                   ...api().getItemProps(itemProps)
+                  aria-controls=(hasRenderedChildList ? api().getItemProps(itemProps)["aria-controls"] : undefined)
+                  aria-owns=(hasRenderedChildList ? api().getItemProps(itemProps)["aria-owns"] : undefined)
                   data-slot="cascade-select-item"
                   class=styles.item
                 >

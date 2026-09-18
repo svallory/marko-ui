@@ -27,9 +27,23 @@ if (!outFile) {
   process.exit(1);
 }
 
+const { OPEN_STATES, NO_OPEN_STATE } = await import("./axe-open-states.ts");
+
+// The demo stage only: the outer `[data-slot="component-preview"]` wrapper
+// also contains the docs code-peek (shiki <pre>), which is docs chrome, not
+// component — the scan must not see it.
+const STAGE_SELECTOR = '[data-slot="component-preview"] [data-slot="preview"]';
+
 const components = [...DOCUMENTED_COMPONENTS].sort();
 
-const urls = components.map((name) => `/docs/components/${name}`);
+// Bookkeeping assertion
+const missing = components.filter(c => !OPEN_STATES[c] && !NO_OPEN_STATE[c]);
+if (missing.length > 0) {
+  console.error("Missing components in axe-open-states.ts maps:", missing);
+  process.exit(1);
+}
+
+const urls = components.map((name) => ({ name, path: `/docs/components/${name}` }));
 
 interface Violation {
   id: string;
@@ -50,8 +64,6 @@ const PAGE_SCOPE_RULES = [
   "landmark-main-is-top-level",
   "landmark-no-duplicate-main",
   "landmark-unique",
-  "page-has-heading-one",
-  "region",
 ];
 
 /** Wait for Marko resumption + Zag machine start (same signal the test helpers use). */
@@ -75,23 +87,26 @@ const context = await browser.newContext({
 const perPage: Record<string, Violation[]> = {};
 let totalViolations = 0;
 
-for (const path of urls) {
+for (const { name, path } of urls) {
   const page = await context.newPage();
   try {
     await page.goto(`${BASE_URL}${path}`, { waitUntil: "networkidle", timeout: 30_000 });
     await waitForHydration(page);
     await page.addScriptTag({ content: axeSource });
-    const results = (await page.evaluate(async (disabledRules: string[]) => {
+    
+    // Closed state scan
+    const results = (await page.evaluate(async ({ disabledRules, stage }) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const axe = (window as any).axe;
+      // Scope to the demo stage only (excluding the code-peek which is inside the outer component-preview wrapper).
       return axe.run(
-        { include: [['[data-slot="component-preview"]']] },
+        { include: [[stage]] },
         {
           resultTypes: ["violations"],
           rules: Object.fromEntries(disabledRules.map((rule) => [rule, { enabled: false }])),
         },
       );
-    }, PAGE_SCOPE_RULES)) as {
+    }, { disabledRules: PAGE_SCOPE_RULES, stage: STAGE_SELECTOR })) as {
       violations: {
         id: string;
         impact: string | null;
@@ -110,6 +125,82 @@ for (const path of urls) {
         html: node.html.slice(0, 300),
       })),
     }));
+
+    // Open state scan
+    const openState = OPEN_STATES[name];
+    if (openState) {
+      try {
+        const trigger = page.locator(openState.trigger).first();
+        if (openState.open === "right-click") {
+          await trigger.click({ button: "right" });
+        } else if (openState.open === "hover") {
+          await trigger.hover();
+        } else {
+          await trigger.click();
+        }
+
+        const content = page.locator(openState.content).first();
+        await content.waitFor({ state: "visible", timeout: 5000 });
+        await page.waitForTimeout(300); // animation buffer
+
+        // Scope: inline (non-portaled) content is a descendant of the hero
+        // stage, so prefix the selector with the stage ancestor — the raw
+        // content selector would match every demo instance on the page.
+        // Portaled overlays render under <body>, outside the stage, so
+        // those keep the global content selector: without it axe would
+        // never see the portal at all (and hidden closed instances are
+        // excluded from the accessibility tree anyway).
+        const include = openState.portal === false
+          ? [[`${STAGE_SELECTOR} ${openState.content}`]]
+          : [[STAGE_SELECTOR], [openState.content]];
+
+        const openResults = (await page.evaluate(async ({ disabledRules, include }) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const axe = (window as any).axe;
+          return axe.run(
+            { include },
+            {
+              resultTypes: ["violations"],
+              rules: Object.fromEntries(disabledRules.map((rule) => [rule, { enabled: false }])),
+            },
+          );
+        }, { disabledRules: PAGE_SCOPE_RULES, include })) as {
+          violations: {
+            id: string;
+            impact: string | null;
+            help: string;
+            nodes: { target: string[]; html: string }[];
+          }[];
+        };
+
+        openResults.violations.forEach((violation) => {
+          violations.push({
+            id: violation.id + " (open)",
+            impact: violation.impact,
+            help: violation.help,
+            nodes: violation.nodes.length,
+            targets: violation.nodes.map((node) => ({
+              target: node.target.join(" "),
+              html: node.html.slice(0, 300),
+            })),
+          });
+        });
+      } catch (err) {
+        // A failed open must fail the run, not silently degrade to a
+        // closed-only scan: a rotted OPEN_STATES entry would otherwise
+        // stay green forever. Record a synthetic violation so the page
+        // reports the failure and the exit code goes non-zero.
+        console.error(`✗ ${path}: failed to open (${err})`);
+        violations.push({
+          id: "open-state-failed",
+          impact: "critical",
+          help: `Open-state interaction failed: ${String(err).slice(0, 200)}`,
+          nodes: 1,
+          targets: [{ target: openState.trigger, html: openState.content }],
+        });
+      }
+    }
+
     if (violations.length > 0) {
       perPage[path] = violations;
       totalViolations += violations.reduce((sum, v) => sum + v.nodes, 0);

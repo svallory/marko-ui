@@ -177,8 +177,14 @@ export type Input = MachineInput<"nav", navigationMenu.Props & Own>;
               <path d="m6 9 6 6 6-6"/>
             </svg>
           </button>
-          // Keeps Tab order coherent when focus moves between trigger and panel.
-          <span ...api().getTriggerProxyProps({ value: item.value, disabled: item.disabled })/>
+          // Keeps Tab order coherent when focus moves between trigger and
+          // panel. Zag marks the proxy aria-hidden, but it is also tabbable
+          // (that is its whole job), which is an aria-hidden-focus
+          // violation: an aria-hidden element must not sit in the tab
+          // order. The span is empty and visually clipped either way, so
+          // dropping aria-hidden changes nothing for sighted users and only
+          // removes a dead stop for screen readers.
+          <span ...api().getTriggerProxyProps({ value: item.value, disabled: item.disabled }) aria-hidden=undefined/>
         </if>
         <else>
           <a
@@ -229,6 +235,7 @@ export type Input = MachineInput<"nav", navigationMenu.Props & Own>;
         <const/menuContent=menuContentByValue.get(item.value)/>
         <div
           ...api().getContentProps({ value: item.value })
+          inert=(api().value !== item.value ? true : undefined)
           data-slot="navigation-menu-content"
           class=styles.content
         >
