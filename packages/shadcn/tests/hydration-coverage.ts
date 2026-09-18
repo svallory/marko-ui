@@ -70,80 +70,75 @@ export function findZagBackedComponents(uiDir: string): string[] {
 export const UI_DIR = fileURLToPath(new URL("../ui", import.meta.url));
 
 /**
- * The Zag-backed components NOT yet covered by the suite.
- *
- * A real coverage gap in constraint C-4, not a deliberate exclusion. Several
- * are measurement-heavy (color-picker, image-cropper, signature-pad,
- * floating-panel) and will likely need ALLOWED_DIFFERENCES entries the way
- * carousel does.
- *
- * Kept as data rather than prose so the CI badge can report real coverage
- * instead of a self-fulfilling "N/N": the badge's denominator used to be the
- * number of tests that ran, which can only ever equal the number that
- * passed, so it published "33/33 identical" and read as full coverage.
+ * The Zag-backed components that are non-invariant by design.
+ * Each component must have a comment explaining why it is non-invariant.
  */
-export const UNCOVERED_ZAG_COMPONENTS = [
-  "angle-slider",
-  "cascade-select",
-  "color-picker",
-  "date-input",
-  "editable",
-  "floating-panel",
-  "image-cropper",
-  "listbox",
-  "marquee",
-  "navigation-menu",
-  "number-input",
-  "password-input",
-  "qr-code",
-  "rating-group",
-  "scroll-area",
-  "signature-pad",
-  "steps",
-  "tags-input",
-  "timer",
-  "toc",
+export const NON_INVARIANT_BY_DESIGN = [
+  // The tour renders ZERO machine parts during SSR: its entire anatomy
+  // (backdrop, spotlight, positioner, content) is gated on `api().open` and
+  // the machine only reaches the open state via `start()`, which requires a
+  // client-side event (the trigger button's click). There is no SSR surface
+  // for C-4 to compare — the invariant is vacuously satisfied — so the
+  // suite's vacuous-pass guard (correctly) rejects the route. Nothing to
+  // assert until the machine grows a declarative initial-open prop.
   "tour",
 ] as const;
 
 /**
  * The Zag-machine-backed components currently covered by the suite.
- *
- * Add a component here once its route is verified, and remove it from
- * UNCOVERED_ZAG_COMPONENTS — the bookkeeping test fails otherwise.
  */
 export const INTERACTIVE_COMPONENTS = [
   "accordion",
   "alert-dialog",
+  "angle-slider",
   "avatar",
   "calendar",
   "carousel",
+  "cascade-select",
   "checkbox",
   "clipboard",
   "collapsible",
+  "color-picker",
   "combobox",
   "command",
   "context-menu",
+  "date-input",
   "date-picker",
   "dialog",
   "drawer",
   "dropdown-menu",
+  "editable",
   "file-upload",
+  "floating-panel",
   "hover-card",
+  "image-cropper",
   "input-otp",
+  "listbox",
+  "marquee",
   "menubar",
+  "navigation-menu",
+  "number-input",
   "pagination",
+  "password-input",
   "popover",
   "progress",
+  "qr-code",
   "radio-group",
+  "rating-group",
   "resizable",
+  "scroll-area",
   "select",
   "sheet",
+  "signature-pad",
   "slider",
+  "steps",
   "switch",
   "tabs",
+  "tags-input",
+  "timer",
+  "toast",
+  "toc",
   "toggle-group",
   "tooltip",
   "tree-view",
-  "toast",
 ] as const;
