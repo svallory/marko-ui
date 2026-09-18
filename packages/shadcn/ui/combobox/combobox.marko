@@ -168,12 +168,17 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
           data-slot="combobox-content"
           class=styles.content
         >
-          <div ...api().getListProps() data-slot="combobox-list" class=styles.list>
+          <div
+            ...api().getListProps()
+            aria-labelledby=undefined
+            data-slot="combobox-list"
+            class=styles.list
+          >
             <if=filteredGroups()>
               <for|group, groupIndex| of=filteredGroups()>
-                <div data-slot="combobox-group" class=styles.group>
-                  <div data-slot="combobox-label" class=styles.label>${group.label}</div>
-                  <div data-slot="combobox-collection">
+                <div ...api().getItemGroupProps({ id: `group-${groupIndex}` }) data-slot="combobox-group" class=styles.group>
+                  <div ...api().getItemGroupLabelProps({ htmlFor: `group-${groupIndex}` }) data-slot="combobox-label" class=styles.label>${group.label}</div>
+                  <div role="presentation" data-slot="combobox-collection">
                     <for|item| of=group.items>
                       <div
                         ...api().getItemProps({ item })
@@ -194,7 +199,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
               </for>
             </if>
             <else>
-              <div data-slot="combobox-collection">
+              <div role="presentation" data-slot="combobox-collection">
                 <for|item| of=filtered>
                   <div
                     ...api().getItemProps({ item })
