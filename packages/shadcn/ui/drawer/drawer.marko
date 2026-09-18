@@ -108,6 +108,8 @@ export type Input = MachineInput<"div", drawerMachine.Props & Own>;
         // transform and every --drawer-* custom property here.
         <div
           ...contentProps()
+          aria-labelledby=(input.title ? api().getTitleProps().id : undefined)
+          aria-label=input["aria-label"]
           data-slot="drawer-content"
           class=cn(
             styles.content,
