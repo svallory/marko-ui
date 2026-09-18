@@ -86,6 +86,7 @@ export interface Input {
         <if=panel.id === "preview">
           <div class="relative aspect-[4/2.5] overflow-hidden rounded-lg border bg-background md:aspect-auto md:rounded-xl">
             <iframe/desktopFrameEl
+              title=`${block.title} preview`
               src=`/blocks/view/${block.name}`
               height=block.previewHeight
               loading="lazy"
