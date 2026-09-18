@@ -11,12 +11,12 @@ import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko"
 import Textarea from "@marko-ui/shadcn/ui/textarea/textarea.marko";
 
 <ButtonGroup>
-  <Button variant="outline">
+  <Button type="button" variant="outline">
     <Icon name="BotIcon"/> Copilot
   </Button>
   <Popover>
     <@trigger|triggerProps|>
-      <Button variant="outline" size="icon" ...triggerProps aria-label="Open Popover">
+      <Button type="button" variant="outline" size="icon" ...triggerProps aria-label="Open Popover">
         <Icon name="ChevronDownIcon"/>
       </Button>
     </@trigger>

@@ -90,7 +90,7 @@ export type Input = Omit<
           –
         </span>
       </if>
-      // Zag points the label's `for` at the hidden <input>, but a type=hidden
+      // Zag points the label's `for` at the hidden <input type="text">, but a type=hidden
       // input is not a labelable element (html-validate valid-for). The
       // visible control is the segment group, which ARIA names with
       // aria-labelledby instead — so the label drops `for` and the group
@@ -122,7 +122,7 @@ export type Input = Omit<
           </span>
         </for>
       </div>
-      <input ...api().getHiddenInputProps({ index: groupIndex })>
+      <input type="text" ...api().getHiddenInputProps({ index: groupIndex })>
     </for>
   </div>
 </div>

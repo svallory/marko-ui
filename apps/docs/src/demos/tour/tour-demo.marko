@@ -54,7 +54,7 @@ static const STEPS = [
 
 <div class="flex w-full flex-col gap-4">
   <div class="flex items-center gap-3">
-    <input
+    <input type="text"
       id="tour-search"
       class="border-input bg-background h-9 w-56 rounded-md border px-3 text-sm"
       placeholder="Search…"
@@ -79,7 +79,7 @@ static const STEPS = [
   <div>
     <Tour items=STEPS>
       <@trigger|props|>
-        <Button ...props id="start-tour" variant="outline">Start tour</Button>
+        <Button type="button" ...props id="start-tour" variant="outline">Start tour</Button>
       </@trigger>
     </Tour>
   </div>

@@ -59,10 +59,10 @@ static const CONVERSATION_MENU = [
   <CardContent class="flex flex-col gap-6">
     <div class="flex flex-col gap-4">
       <div class="flex flex-wrap gap-2">
-        <Button>Button</Button>
-        <Button variant="secondary">Secondary</Button>
-        <Button variant="outline">Outline</Button>
-        <Button variant="ghost">Ghost</Button>
+        <Button type="button">Button</Button>
+        <Button type="button" variant="secondary">Secondary</Button>
+        <Button type="button" variant="outline">Outline</Button>
+        <Button type="button" variant="ghost">Ghost</Button>
       </div>
       <Item variant="outline">
         <ItemContent>
@@ -72,7 +72,7 @@ static const CONVERSATION_MENU = [
           </ItemDescription>
         </ItemContent>
         <ItemActions class="hidden md:flex">
-          <Button size="sm" variant="secondary">
+          <Button type="button" size="sm" variant="secondary">
             Enable
           </Button>
         </ItemActions>
@@ -125,7 +125,7 @@ static const CONVERSATION_MENU = [
         actionText="Allow"
       >
         <@trigger|triggerProps|>
-          <Button ...triggerProps variant="outline">
+          <Button type="button" ...triggerProps variant="outline">
             <span class="hidden md:flex style-sera:md:hidden">
               Alert Dialog
             </span>
@@ -139,13 +139,13 @@ static const CONVERSATION_MENU = [
         </@description>
       </AlertDialog>
       <ButtonGroup>
-        <Button variant="outline">
+        <Button type="button" variant="outline">
           <span class="style-sera:hidden">Button Group</span>
           <span class="hidden style-sera:block">Group</span>
         </Button>
         <DropdownMenu items=CONVERSATION_MENU class="w-fit">
           <@trigger|triggerProps|>
-            <Button ...triggerProps variant="outline" size="icon">
+            <Button type="button" ...triggerProps variant="outline" size="icon">
               <Icon name="ChevronUpIcon"/>
             </Button>
           </@trigger>

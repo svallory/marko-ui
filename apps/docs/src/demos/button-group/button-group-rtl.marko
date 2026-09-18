@@ -38,16 +38,16 @@ import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
 <div dir="rtl" class="flex justify-center">
   <ButtonGroup>
     <ButtonGroup class="hidden sm:flex">
-      <Button variant="outline" size="icon" aria-label="Go Back">
+      <Button type="button" variant="outline" size="icon" aria-label="Go Back">
         <Icon name="ArrowLeftIcon" class="rtl:rotate-180"/>
       </Button>
     </ButtonGroup>
     <ButtonGroup>
-      <Button variant="outline">أرشفة</Button>
-      <Button variant="outline">تقرير</Button>
+      <Button type="button" variant="outline">أرشفة</Button>
+      <Button type="button" variant="outline">تقرير</Button>
     </ButtonGroup>
     <ButtonGroup>
-      <Button variant="outline">تأجيل</Button>
+      <Button type="button" variant="outline">تأجيل</Button>
       <DropdownMenu
         items=items
         class="w-40"
@@ -56,7 +56,7 @@ import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
         }
       >
         <@trigger|triggerProps|>
-          <Button variant="outline" size="icon" ...triggerProps aria-label="More Options">
+          <Button type="button" variant="outline" size="icon" ...triggerProps aria-label="More Options">
             <Icon name="MoreHorizontalIcon"/>
           </Button>
         </@trigger>

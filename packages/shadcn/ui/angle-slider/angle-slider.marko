@@ -14,7 +14,7 @@ export type Input = MachineInput<"div", angleSliderMachine.Props> & {
   stripOwnProps(angleSliderMachine.splitProps(input)[1], "class", "valueChange")
 >
 
-// Zag points the label's `for` at the hidden <input>, but a type=hidden
+// Zag points the label's `for` at the hidden <input type="text">, but a type=hidden
 // input is not a labelable element (html-validate valid-for). No replacement
 // is needed: the thumb already carries role=slider and Zag wires
 // aria-labelledby to this label's id there. Marko does not dedupe spread
@@ -38,7 +38,7 @@ export type Input = MachineInput<"div", angleSliderMachine.Props> & {
     data-slot="angle-slider-control"
     class=styles.control
   >
-    <input ...api().getHiddenInputProps()>
+    <input type="text" ...api().getHiddenInputProps()>
     <div
       ...api().getThumbProps()
       data-slot="angle-slider-thumb"

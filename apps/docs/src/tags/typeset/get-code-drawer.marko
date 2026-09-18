@@ -34,12 +34,12 @@ export interface Input {
   class="data-[mobile=true]:max-h-[85svh]"
 >
   <@trigger|triggerProps: Record<string, unknown>|>
-    <Button ...triggerProps variant="outline" class=input.class>Get Code</Button>
+    <Button type="button" ...triggerProps variant="outline" class=input.class>Get Code</Button>
   </@trigger>
   <@title>Get Code</@title>
   <@description>Install typeset with the values you picked.</@description>
   <DocsContent params=input.params/>
   <@footer>
-    <Button variant="outline" on-click() { open = false; }>Done</Button>
+    <Button type="button" variant="outline" on-click() { open = false; }>Done</Button>
   </@footer>
 </Drawer>

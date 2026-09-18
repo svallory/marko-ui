@@ -432,7 +432,7 @@ static function startAnimationLoop(
     </div>
   </CardContent>
   <CardFooter class="gap-2">
-    <Button
+    <Button type="button"
       size="sm"
       variant=(active ? "default" : "outline")
       onClick() {
@@ -445,7 +445,7 @@ static function startAnimationLoop(
     >
       ${active ? "Stop" : "Start"} Listening
     </Button>
-    <Button
+    <Button type="button"
       size="sm"
       variant=(processing ? "default" : "outline")
       onClick() {
@@ -458,7 +458,7 @@ static function startAnimationLoop(
     >
       ${processing ? "Stop" : "Start"} Processing
     </Button>
-    <Button
+    <Button type="button"
       size="sm"
       variant="outline"
       onClick() {

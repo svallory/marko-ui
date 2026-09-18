@@ -7,7 +7,7 @@ import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
 import { switchStyles as styles } from "./classes.ts";
 
-// MachineInput = native <input> attributes ∩ the machine's full Props, with
+// MachineInput = native <input type="text"> attributes ∩ the machine's full Props, with
 // `id` made optional (generated below, overridable). `checkedChange` is
 // additive sugar enabling Marko's two-way bind shorthand
 // (<Switch checked:=myState/>); Zag's own `onCheckedChange` also works and
@@ -88,7 +88,7 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
       <${input.content}/>
     </span>
   </if>
-  <input
+  <input type="text"
     ...nativeAttrs()
     ...hiddenInputProps()
     aria-labelledby=(input.content ? hiddenInputProps()["aria-labelledby"] : undefined)

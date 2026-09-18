@@ -10,19 +10,19 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 <div class="flex gap-6">
   <Popover positioning={ placement: "bottom-start" } class="w-40">
     <@trigger|props|>
-      <Button ...props variant="outline" size="sm">Start</Button>
+      <Button type="button" ...props variant="outline" size="sm">Start</Button>
     </@trigger>
     <p class="text-sm">Aligned to start</p>
   </Popover>
   <Popover positioning={ placement: "bottom" } class="w-40">
     <@trigger|props|>
-      <Button ...props variant="outline" size="sm">Center</Button>
+      <Button type="button" ...props variant="outline" size="sm">Center</Button>
     </@trigger>
     <p class="text-sm">Aligned to center</p>
   </Popover>
   <Popover positioning={ placement: "bottom-end" } class="w-40">
     <@trigger|props|>
-      <Button ...props variant="outline" size="sm">End</Button>
+      <Button type="button" ...props variant="outline" size="sm">End</Button>
     </@trigger>
     <p class="text-sm">Aligned to end</p>
   </Popover>

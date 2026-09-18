@@ -3,7 +3,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
 <Dialog>
   <@trigger|props|>
-    <Button ...props variant="outline">Sticky Footer</Button>
+    <Button type="button" ...props variant="outline">Sticky Footer</Button>
   </@trigger>
   <@title>Sticky Footer</@title>
   <@description>This dialog has a sticky footer that stays visible while the content scrolls.</@description>
@@ -21,6 +21,6 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
     </for>
   </div>
   <@footer>
-    <Button variant="outline">Close</Button>
+    <Button type="button" variant="outline">Close</Button>
   </@footer>
 </Dialog>

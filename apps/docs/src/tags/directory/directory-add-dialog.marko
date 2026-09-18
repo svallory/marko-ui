@@ -88,7 +88,7 @@ static function commandFor(manager: string, registryName: string) {
             </button>
           </for>
         </div>
-        <Button
+        <Button type="button"
           size="icon-sm"
           variant="ghost"
           class="ml-auto"
@@ -117,6 +117,6 @@ static function commandFor(manager: string, registryName: string) {
     </div>
   </if>
   <@footer>
-    <Button size="sm" variant="outline" onClick() { input.close(); }>Done</Button>
+    <Button type="button" size="sm" variant="outline" onClick() { input.close(); }>Done</Button>
   </@footer>
 </Dialog>

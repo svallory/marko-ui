@@ -129,7 +129,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
             </button>
           </span>
         </for>
-        <input
+        <input type="text"
           ...api().getInputProps()
           data-slot="combobox-chip-input"
           class=styles.chipInput
@@ -137,7 +137,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
       </div>
     </if>
     <else>
-      <input
+      <input type="text"
         ...api().getInputProps()
         data-slot="combobox-input"
         class=styles.input

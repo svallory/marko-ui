@@ -14,7 +14,7 @@ import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
 <div class="flex gap-4" dir="rtl">
   <AlertDialog dir="rtl" cancelText="إلغاء" actionText="متابعة">
     <@trigger|props|>
-      <Button ...props variant="outline">إظهار الحوار</Button>
+      <Button type="button" ...props variant="outline">إظهار الحوار</Button>
     </@trigger>
     <@title>هل أنت متأكد تمامًا؟</@title>
     <@description>
@@ -23,7 +23,7 @@ import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
   </AlertDialog>
   <AlertDialog dir="rtl" size="sm" cancelText="عدم السماح" actionText="السماح">
     <@trigger|props|>
-      <Button ...props variant="outline">إظهار الحوار (صغير)</Button>
+      <Button type="button" ...props variant="outline">إظهار الحوار (صغير)</Button>
     </@trigger>
     <@media>
       <Icon name="BluetoothIcon"/>

@@ -10,16 +10,16 @@ import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
 // static Arabic content upstream defaults to, wrapped in `dir="rtl"` — the
 // arrow icon flips via `rtl:rotate-180` exactly as upstream does.
 <div class="flex flex-wrap items-center gap-2 md:flex-row" dir="rtl">
-  <Button variant="outline">زر</Button>
-  <Button variant="destructive">حذف</Button>
-  <Button variant="outline">
+  <Button type="button" variant="outline">زر</Button>
+  <Button type="button" variant="destructive">حذف</Button>
+  <Button type="button" variant="outline">
     إرسال
     <Icon name="ArrowRight" class="rtl:rotate-180" data-icon="inline-end"/>
   </Button>
-  <Button variant="outline" size="icon" aria-label="Add">
+  <Button type="button" variant="outline" size="icon" aria-label="Add">
     <Icon name="Plus"/>
   </Button>
-  <Button variant="secondary" disabled>
+  <Button type="button" variant="secondary" disabled>
     <Spinner data-icon="inline-start"/> جاري التحميل
   </Button>
 </div>

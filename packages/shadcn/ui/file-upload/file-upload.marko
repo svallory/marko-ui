@@ -87,7 +87,7 @@ export type Input = MachineInput<"input", fileUploadMachine.Props> & {
     <button type="button" ...api().getTriggerProps() data-slot="file-upload-trigger" class=cn(triggerVariant, styles.trigger)>
       Browse files
     </button>
-    <input ...nativeAttrs() ...api().getHiddenInputProps() data-slot="file-upload-hidden-input"/>
+    <input type="text" ...nativeAttrs() ...api().getHiddenInputProps() data-slot="file-upload-hidden-input"/>
   </div>
 
   <if=api().acceptedFiles.length>

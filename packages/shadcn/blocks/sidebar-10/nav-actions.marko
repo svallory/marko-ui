@@ -44,7 +44,7 @@ static const ACTION_GROUPS: ActionItem[][] = [
 
 <div class="flex items-center gap-2 text-sm">
   <div class="hidden font-medium text-muted-foreground md:inline-block">Edit Oct 08</div>
-  <Button
+  <Button type="button"
     variant="ghost"
     size="icon"
     class="h-7 w-7"
@@ -70,7 +70,7 @@ static const ACTION_GROUPS: ActionItem[][] = [
   </Button>
   <Popover defaultOpen=true class="w-56 overflow-hidden rounded-lg p-0">
     <@trigger|attrs|>
-      <Button ...attrs variant="ghost" size="icon" class="h-7 w-7 data-[state=open]:bg-accent">
+      <Button type="button" ...attrs variant="ghost" size="icon" class="h-7 w-7 data-[state=open]:bg-accent">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"

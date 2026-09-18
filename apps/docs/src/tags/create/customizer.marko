@@ -211,14 +211,14 @@ export interface Input {
   </div>
   <div class="flex min-w-0 gap-2 border-t p-3 md:flex-col md:rounded-b-none md:**:[button,a]:w-full" data-slot="card-footer">
     <CopyPreset presetCode=input.presetCode class="min-w-0 flex-1 md:flex-none"/>
-    <Button
+    <Button type="button"
       variant="outline"
       class="h-8 max-w-20 min-w-0 flex-1 touch-manipulation bg-transparent! px-2! py-0! text-sm! shadow-xs! transition-none select-none hover:bg-muted! sm:max-w-none md:flex-none pointer-coarse:h-10"
       on-click=input.onOpenPreset
     >
       ${input.isMobile ? "Open" : "Open Preset"}
     </Button>
-    <Button
+    <Button type="button"
       variant="outline"
       class="h-8 max-w-20 min-w-0 flex-1 touch-manipulation bg-transparent! px-2! py-0! text-sm! transition-none select-none hover:bg-muted! sm:max-w-none md:flex-none pointer-coarse:h-10"
       on-click=input.onShuffle
@@ -245,6 +245,6 @@ export interface Input {
   <div class="hidden -mt-3 min-w-0 gap-2 p-3 md:flex md:flex-col md:**:[button,a]:w-full" data-slot="card-footer">
     // TODO: ProjectForm ("Get Code") — dialog that generates a downloadable
     // project/registry command (out of phase-3 scope).
-    <Button disabled aria-hidden="true" class="w-full">Get Code</Button>
+    <Button type="button" disabled aria-hidden="true" class="w-full">Get Code</Button>
   </div>
 </div>

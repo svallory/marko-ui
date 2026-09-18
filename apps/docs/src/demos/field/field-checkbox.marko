@@ -43,7 +43,7 @@ import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
     // <label>'s id, which has no accessible text when `content` is empty
     // (axe: "Form elements must have labels", verified via axe-core scan).
     // Tried overriding with `aria-label` on <Checkbox> first: it never
-    // reaches the rendered <input> at all (nativeAttrs()'s stripOwnProps
+    // reaches the rendered <input type="text"> at all (nativeAttrs()'s stripOwnProps
     // only forwards Marko-typed native attrs, and getHiddenInputProps()'s
     // own aria-labelledby spreads after nativeAttrs() regardless), so the
     // real fix is giving the checkbox actual `content` — visually hidden

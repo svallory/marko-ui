@@ -15,13 +15,13 @@ import MessageFooter from "@marko-ui/shadcn/ui/message/footer.marko";
         </BubbleContent>
       </Bubble>
       <MessageFooter>
-        <Button variant="ghost" size="icon" aria-label="Copy" title="Copy">
+        <Button type="button" variant="ghost" size="icon" aria-label="Copy" title="Copy">
           <Icon name="Copy"/>
         </Button>
-        <Button variant="ghost" size="icon" aria-label="Like" title="Like">
+        <Button type="button" variant="ghost" size="icon" aria-label="Like" title="Like">
           <Icon name="ThumbsUpIcon"/>
         </Button>
-        <Button
+        <Button type="button"
           variant="ghost"
           size="icon"
           aria-label="Dislike"
@@ -39,7 +39,7 @@ import MessageFooter from "@marko-ui/shadcn/ui/message/footer.marko";
       </Bubble>
       <MessageFooter class="gap-2">
         <span class="font-normal text-destructive">Failed to send</span>
-        <Button
+        <Button type="button"
           variant="ghost"
           size="icon-xs"
           title="Retry"

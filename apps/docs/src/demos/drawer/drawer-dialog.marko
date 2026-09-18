@@ -28,7 +28,7 @@ import Label from "@marko-ui/shadcn/ui/label/label.marko";
 <if=isDesktop>
   <Dialog>
     <@trigger|props|>
-      <Button ...props variant="outline">Edit Profile</Button>
+      <Button type="button" ...props variant="outline">Edit Profile</Button>
     </@trigger>
     <@title>Edit profile</@title>
     <@description>Make changes to your profile here. Click save when you're done.</@description>
@@ -48,7 +48,7 @@ import Label from "@marko-ui/shadcn/ui/label/label.marko";
 <else>
   <Drawer>
     <@trigger|props|>
-      <Button ...props variant="outline">Edit Profile</Button>
+      <Button type="button" ...props variant="outline">Edit Profile</Button>
     </@trigger>
     <@title>Edit profile</@title>
     <@description>Make changes to your profile here. Click save when you're done.</@description>

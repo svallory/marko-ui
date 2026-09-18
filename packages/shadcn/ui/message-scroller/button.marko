@@ -7,8 +7,8 @@
 // SIMPLIFICATION FROM SOURCE: `useRender`'s generic `render` prop (letting a
 // caller swap the rendered element/component entirely) has no established
 // idiom yet in this registry (grep across every existing port turns up no
-// `render=` usage) — this port always renders our `<Button>` component
-// directly, matching the SOURCE'S OWN DEFAULT (`render={render ?? <Button
+// `render=` usage) — this port always renders our `<Button type="button">` component
+// directly, matching the SOURCE'S OWN DEFAULT (`render={render ?? <Button type="button"
 // variant={variant} size={size} />}`) exactly. `type="button"`,
 // `inert`/`tabIndex` gating, and the click handler's active-guard +
 // `blur()` + direction dispatch are all preserved.

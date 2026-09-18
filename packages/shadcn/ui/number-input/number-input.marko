@@ -32,7 +32,7 @@ export type Input = MachineInput<"input", numberInputMachine.Props> & {
     <Icon name="Minus" class=styles.icon/>
   </button>
   <div ...api().getControlProps() data-slot="number-input-control" class=styles.control>
-    <input
+    <input type="text"
       ...nativeAttrs()
       ...api().getInputProps()
       data-slot="number-input-field"

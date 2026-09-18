@@ -16,7 +16,7 @@ static const frameworks = [
 // fix this: combobox.marko's `Input` type is `MachineInput<"div", ...>`,
 // so an unrecognized attribute like `aria-label` lands on the component's
 // ROOT <div data-slot="combobox"> via nativeAttrs(), not on the actual
-// `role="combobox"` <input> that axe/AT look at.
+// `role="combobox"` <input type="text"> that axe/AT look at.
 //
 // `ids={{ input: "..." }}` pins the literal DOM id of that input (Zag's
 // `getInputProps()` otherwise derives a scoped id like

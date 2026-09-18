@@ -15,7 +15,7 @@ static const ITEMS = [
 <div class="flex items-center gap-4">
   <DropdownMenu items=ITEMS select(value) { selected = value; }>
     <@trigger|triggerProps|>
-      <Button variant="outline" ...triggerProps>Open menu</Button>
+      <Button type="button" variant="outline" ...triggerProps>Open menu</Button>
     </@trigger>
   </DropdownMenu>
   <span class="text-sm text-muted-foreground">selected: ${selected || "none"}</span>

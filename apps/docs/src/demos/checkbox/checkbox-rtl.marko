@@ -9,7 +9,7 @@
 //
 // `ids={{ hiddenInput: "..." }}` on the last two: our Checkbox is
 // Zag-backed, so its native `id` input becomes a machine *scope* — the
-// rendered hidden <input> gets a derived id, not the literal string
+// rendered hidden <input type="text"> gets a derived id, not the literal string
 // passed in. This pins the literal DOM id so an external `FieldLabel for=`
 // actually resolves (axe: label).
 import Checkbox from "@marko-ui/shadcn/ui/checkbox/checkbox.marko";

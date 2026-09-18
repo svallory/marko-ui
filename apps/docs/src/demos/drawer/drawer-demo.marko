@@ -110,7 +110,7 @@ static const deliveryTimes = [
   swipeDirection=(isMobile ? "down" : "end")
 >
   <@trigger|props|>
-    <Button ...props variant="secondary">Open Drawer</Button>
+    <Button type="button" ...props variant="secondary">Open Drawer</Button>
   </@trigger>
   <@title>Pick a delivery time</@title>
   <@description>We'll prepare your order as soon as possible.</@description>
@@ -134,8 +134,8 @@ static const deliveryTimes = [
     </RadioGroup>
   </div>
   <@footer>
-    <Button onClick=handleConfirm class="h-[34px]">Confirm Delivery Time</Button>
-    <Button variant="outline" onClick=() => { open = false; }>Cancel</Button>
+    <Button type="button" onClick=handleConfirm class="h-[34px]">Confirm Delivery Time</Button>
+    <Button type="button" variant="outline" onClick=() => { open = false; }>Cancel</Button>
   </@footer>
 </Drawer>
 <Toaster/>

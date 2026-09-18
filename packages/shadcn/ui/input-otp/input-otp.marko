@@ -55,7 +55,7 @@ export type Input = MachineInput<"div", pinInputMachine.Props> & {
   data-slot="input-otp"
   class=cn(styles.root, input.class)
 >
-  <input ...api().getHiddenInputProps()>
+  <input type="text" ...api().getHiddenInputProps()>
   <div data-slot="input-otp-group" class=styles.group>
     <for|index| of=api().items>
       <if=(input.groupSize && index > 0 && index % input.groupSize === 0)>
@@ -81,7 +81,7 @@ export type Input = MachineInput<"div", pinInputMachine.Props> & {
         // which ship as literal inert attributes (autoCapitalize is also
         // disallowed on type=password, html-validate input-attributes).
         // Strip them; Marko does not dedupe spread attrs.
-        <input
+        <input type="text"
           ...slotInputProps(index)
           data-slot="input-otp-input"
           class=styles.input

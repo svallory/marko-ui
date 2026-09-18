@@ -106,7 +106,7 @@ static const features = tableFeatures({
         <for|header| of=ui.headers>
           <TableHead>
             <if=header.canSort>
-              <Button variant="ghost" size="sm" class=styles.sortButton onClick() { toggleSort(header.id); }>
+              <Button type="button" variant="ghost" size="sm" class=styles.sortButton onClick() { toggleSort(header.id); }>
                 ${header.label}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

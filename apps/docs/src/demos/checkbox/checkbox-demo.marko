@@ -11,7 +11,7 @@ import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
 //
 // `ids={{ hiddenInput: "..." }}` on the last two: our Checkbox is
 // Zag-backed, so its native `id` input becomes a machine *scope* — the
-// rendered hidden <input> gets a derived id like
+// rendered hidden <input type="text"> gets a derived id like
 // "checkbox:checkbox-demo-terms-2:input", not the literal string passed
 // in. Upstream's Radix Checkbox has no such scoping, so its demo can point
 // `htmlFor="terms-2"` straight at `id="terms-2"`. Zag's `ids.hiddenInput`

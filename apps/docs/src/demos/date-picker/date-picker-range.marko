@@ -31,7 +31,7 @@ static function formatDate(date: { year: number; month: number; day: number }) {
   <FieldLabel for="date-picker-range">Date Picker Range</FieldLabel>
   <Popover class="w-auto p-0">
     <@trigger|props|>
-      <Button ...props variant="outline" id="date-picker-range" class="justify-start px-2.5 font-normal">
+      <Button type="button" ...props variant="outline" id="date-picker-range" class="justify-start px-2.5 font-normal">
         <Icon name="Calendar" data-icon="inline-start"/>
         <if=value[0]>
           <if=value[1]>

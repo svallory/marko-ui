@@ -80,7 +80,7 @@ export type Input = MachineInput<"input", signaturePadMachine.Props> & {
     <div ...api().getGuideProps() data-slot="signature-pad-guide" class=styles.guide/>
   </div>
 
-  <input/hiddenInput
+  <input/hiddenInput type="text"
     ...nativeAttrs()
     ...api().getHiddenInputProps({ value: JSON.stringify(api().paths) })
     data-slot="signature-pad-hidden-input"

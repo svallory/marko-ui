@@ -41,7 +41,7 @@ export interface Input {
     <for|option, index| of=CONTENT_OPTIONS by=(option) => option.value>
       <Tooltip positioning={ placement: "top", offset: { mainAxis: 10 } } content=option.label>
         <@trigger|triggerProps: Record<string, unknown>|>
-          <Button
+          <Button type="button"
             ...triggerProps
             variant="ghost"
             size="sm"
@@ -60,7 +60,7 @@ export interface Input {
         <for|option, index| of=DEV_CONTENT_OPTIONS by=(option) => option.value>
           <Tooltip positioning={ placement: "top", offset: { mainAxis: 10 } } content=option.label>
             <@trigger|triggerProps: Record<string, unknown>|>
-              <Button
+              <Button type="button"
                 ...triggerProps
                 variant="ghost"
                 size="sm"
@@ -77,7 +77,7 @@ export interface Input {
     </if>
   </div>
   <div class="dark flex items-center gap-1 rounded-xl bg-card/90 p-1 shadow-xl backdrop-blur-xl">
-    // Upstream renders <Button asChild> wrapping an <a>; Marko has no asChild,
+    // Upstream renders <Button type="button" asChild> wrapping an <a>; Marko has no asChild,
     // so the anchor carries the button's resolved class string directly.
     <a
       href=href

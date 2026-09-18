@@ -145,7 +145,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
     </span>
   </div>
 
-  <input ...api().getHiddenInputProps()>
+  <input type="text" ...api().getHiddenInputProps()>
 
   <zag-portal>
     <if=api().open>
@@ -252,7 +252,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
             </if>
             <for|channel| of=channels()>
               <div class=styles.channelInputWrapper>
-                <input
+                <input type="text"
                   ...api().getChannelInputProps({
                     channel: channel as colorPickerMachine.ExtendedColorChannel,
                   })

@@ -94,7 +94,7 @@ export type Input<T = unknown> = Omit<
       </div>
     </for>
   </div>
-  <Button
+  <Button type="button"
     ...api().getPrevTriggerProps()
     data-slot="carousel-prev"
     variant="outline"
@@ -104,7 +104,7 @@ export type Input<T = unknown> = Omit<
     <Icon name="ChevronLeft" class=styles.prevIcon/>
     <span class=styles.srOnly>Previous slide</span>
   </Button>
-  <Button
+  <Button type="button"
     ...api().getNextTriggerProps()
     data-slot="carousel-next"
     variant="outline"

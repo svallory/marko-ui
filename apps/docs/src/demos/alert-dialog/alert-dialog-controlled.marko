@@ -6,7 +6,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 <div class="flex items-center gap-4">
   <AlertDialog open=open openChange=(o) => { open = o; }>
     <@trigger|props|>
-      <Button ...props variant="outline">${open ? "Close" : "Open"}</Button>
+      <Button type="button" ...props variant="outline">${open ? "Close" : "Open"}</Button>
     </@trigger>
     <@title>Controlled alert dialog</@title>
     <@description>The open state is controlled by the parent component.</@description>

@@ -3,7 +3,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
 <DropdownMenu>
   <@trigger|triggerProps|>
-    <Button variant="outline" ...triggerProps>Actions</Button>
+    <Button type="button" variant="outline" ...triggerProps>Actions</Button>
   </@trigger>
   <@item value="edit" shortcut="⌘E">Edit</@item>
   <@item value="duplicate" label="Duplicate"/>

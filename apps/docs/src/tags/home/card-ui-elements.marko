@@ -35,7 +35,7 @@ static const QUICK_ACTIONS = [
 <Card class="w-full min-w-0">
   <CardContent class="flex min-w-0 flex-col gap-6">
     <div class="flex flex-wrap gap-2">
-      <Button>
+      <Button type="button">
         Button
         <svg
           class="size-4"
@@ -51,8 +51,8 @@ static const QUICK_ACTIONS = [
           <path d="m12 5 7 7-7 7"/>
         </svg>
       </Button>
-      <Button variant="secondary">Secondary</Button>
-      <Button variant="outline">Outline</Button>
+      <Button type="button" variant="secondary">Secondary</Button>
+      <Button type="button" variant="outline">Outline</Button>
     </div>
 
     <FieldGroup>
@@ -104,7 +104,7 @@ static const QUICK_ACTIONS = [
     <div class="flex items-center gap-4">
       <AlertDialog cancelText="Don't allow" actionText="Allow">
         <@trigger|triggerProps|>
-          <Button ...triggerProps variant="outline">
+          <Button type="button" ...triggerProps variant="outline">
             <span class="hidden md:flex">Alert Dialog</span>
             <span class="flex md:hidden">Dialog</span>
           </Button>
@@ -117,10 +117,10 @@ static const QUICK_ACTIONS = [
       </AlertDialog>
 
       <ButtonGroup class="ml-auto">
-        <Button variant="outline">Button Group</Button>
+        <Button type="button" variant="outline">Button Group</Button>
         <DropdownMenu items=QUICK_ACTIONS>
           <@trigger|triggerProps|>
-            <Button
+            <Button type="button"
               ...triggerProps
               variant="outline"
               size="icon"

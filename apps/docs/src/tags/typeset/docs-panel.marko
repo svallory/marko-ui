@@ -15,7 +15,7 @@ export interface Input {
   <div class="isolate flex max-h-[calc(100vh-16rem)] w-full flex-col overflow-hidden rounded-2xl bg-background ring-1 ring-foreground/10">
     <DocsContent params=input.params/>
   </div>
-  // Upstream renders <Button variant="link" size="sm" render={<Link/>}>;
+  // Upstream renders <Button type="button" variant="link" size="sm" render={<Link/>}>;
   // Marko has no render-prop escape, so the anchor carries the resolved
   // link/sm class string directly.
   <a

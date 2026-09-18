@@ -90,7 +90,7 @@ export type Input = MachineInput<"div", dialogMachine.Props & Own>;
           </div>
         </if>
         <if=showCloseButton>
-          <Button
+          <Button type="button"
             ...api().getCloseTriggerProps()
             variant="ghost"
             size="icon-sm"

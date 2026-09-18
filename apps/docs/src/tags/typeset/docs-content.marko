@@ -167,7 +167,7 @@ static const FRAMEWORK_ITEMS = TEMPLATES.map((template) => ({
           <p class="text-sm leading-relaxed text-muted-foreground">
             Copy the stylesheet into a <code class="font-mono">typeset.css</code> file next to your main CSS file, then import it:
           </p>
-          <Button
+          <Button type="button"
             variant="outline"
             size="sm"
             class="w-fit"
@@ -255,7 +255,7 @@ static const FRAMEWORK_ITEMS = TEMPLATES.map((template) => ({
         <div class="relative rounded-lg bg-muted/60">
           <pre class="scrollbar-none overflow-x-auto p-3 font-mono text-sm leading-relaxed max-h-102 scroll-fade overflow-y-auto whitespace-pre-wrap">${docs.prompt}</pre>
         </div>
-        <Button variant="outline" size="sm" class="w-fit" on-click() { copyPrompt(); }>
+        <Button type="button" variant="outline" size="sm" class="w-fit" on-click() { copyPrompt(); }>
           <if=hasCopiedPrompt>
             <svg data-icon="inline-start" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
           </if>

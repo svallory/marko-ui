@@ -5,7 +5,7 @@ import Label from "@marko-ui/shadcn/ui/label/label.marko";
 
 <Sheet>
   <@trigger|props|>
-    <Button ...props variant="outline">Open</Button>
+    <Button type="button" ...props variant="outline">Open</Button>
   </@trigger>
   <@title>Edit profile</@title>
   <@description>Make changes to your profile here. Click save when you're done.</@description>
@@ -21,6 +21,6 @@ import Label from "@marko-ui/shadcn/ui/label/label.marko";
   </div>
   <@footer>
     <Button type="submit">Save changes</Button>
-    <Button variant="outline">Close</Button>
+    <Button type="button" variant="outline">Close</Button>
   </@footer>
 </Sheet>
