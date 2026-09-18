@@ -10,7 +10,7 @@ set -uo pipefail
 
 PORT="${PORT:-4412}"
 BASE="http://localhost:${PORT}"
-PAGES="accordion button carousel color-picker combobox data-table date-picker dialog select slider tabs tooltip"
+PAGES="${1:-accordion button carousel color-picker combobox data-table date-picker dialog select slider tabs tooltip}"
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
