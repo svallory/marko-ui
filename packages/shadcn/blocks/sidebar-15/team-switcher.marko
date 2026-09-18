@@ -44,7 +44,7 @@ export interface Input {
       >
         <@trigger|triggerProps|>
           <SidebarMenuButton ...triggerProps class="w-fit px-1.5">
-            <div
+            <span
               class="flex aspect-square size-5 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground"
             >
               <svg
@@ -61,7 +61,7 @@ export interface Input {
               >
                 <path d=activeTeam.logo/>
               </svg>
-            </div>
+            </span>
             <span class="truncate font-medium">${activeTeam.name}</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"

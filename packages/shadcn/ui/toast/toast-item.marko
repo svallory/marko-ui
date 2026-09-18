@@ -159,7 +159,7 @@ export interface Input {
   </div>
 
   <if=input.options().action>
-    <button
+    <button type="button"
       ...api().getActionTriggerProps()
       data-slot="toast-action"
       class=styles.action
@@ -169,7 +169,7 @@ export interface Input {
   </if>
 
   <if=api().closable>
-    <button
+    <button type="button"
       ...api().getCloseTriggerProps()
       data-slot="toast-close"
       aria-label="Dismiss notification"

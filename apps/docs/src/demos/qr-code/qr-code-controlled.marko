@@ -9,13 +9,13 @@ import QrCode from "@marko-ui/shadcn/ui/qr-code/qr-code.marko";
     valueChange(value) { lastValue = value; }
   />
   <div class="flex gap-2">
-    <button
+    <button type="button"
       class="rounded-md border border-input px-2 py-1 text-sm"
       onClick() { controlledValue = "https://example.com"; }
     >
       example.com
     </button>
-    <button
+    <button type="button"
       class="rounded-md border border-input px-2 py-1 text-sm"
       onClick() { controlledValue = "https://zagjs.com"; }
     >

@@ -10,10 +10,18 @@ function run() {
   
   // Pre-strip Marko's <!> and <!----> markers before validation
   // so html-validate's parser doesn't choke on them.
+  //
+  // Also strip <style> blocks: Marko inlines component <style> into the body,
+  // and html-validate's element-permitted-content flags <style> under <div>
+  // even though every browser applies body styles. This is framework output,
+  // not a component defect — removing it keeps the nesting rule ON for real
+  // markup. Regex: a <style> open tag through its matching close; style
+  // payloads never contain a literal "</style>".
   for (const file of files) {
     let content = readFileSync(file, "utf8");
     // Strip <!> and <!---->
     content = content.replace(/<!(?:----)?>/g, "");
+    content = content.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "");
     writeFileSync(file, content, "utf8");
   }
 

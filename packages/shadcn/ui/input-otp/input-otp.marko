@@ -40,6 +40,15 @@ export type Input = MachineInput<"div", pinInputMachine.Props> & {
   )
 >
 
+// Zag emits React-style camelCase `autoCapitalize`/`enterKeyHint` from
+// getInputProps, which ship as literal inert attributes (autoCapitalize is
+// also disallowed on type=password, html-validate input-attributes). Strip
+// them; Marko does not dedupe spread attrs.
+<const/slotInputProps=(index: number) => {
+  const { autoCapitalize, enterKeyHint, inputMode, ...rest } = api().getInputProps({ index }) as Record<string, unknown>;
+  return rest;
+}/>
+
 <div
   ...nativeAttrs()
   ...api().getRootProps()
@@ -68,8 +77,12 @@ export type Input = MachineInput<"div", pinInputMachine.Props> & {
         </div>
       </if>
       <div data-slot="input-otp-slot" class=styles.slot>
+        // Zag emits React-style camelCase `autoCapitalize`/`enterKeyHint`,
+        // which ship as literal inert attributes (autoCapitalize is also
+        // disallowed on type=password, html-validate input-attributes).
+        // Strip them; Marko does not dedupe spread attrs.
         <input
-          ...api().getInputProps({ index })
+          ...slotInputProps(index)
           data-slot="input-otp-input"
           class=styles.input
         />

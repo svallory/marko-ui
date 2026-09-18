@@ -144,7 +144,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
       />
     </else>
     <if=(showClear && api().hasSelectedItems)>
-      <button
+      <button type="button"
         ...api().getClearTriggerProps()
         data-slot="combobox-clear"
         class=styles.clear
@@ -152,7 +152,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
         <Icon name="X" class=styles.clearIcon/>
       </button>
     </if>
-    <button
+    <button type="button"
       ...api().getTriggerProps()
       data-slot="combobox-trigger"
       class=styles.trigger

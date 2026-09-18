@@ -124,13 +124,13 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
   >
     // Render-prop-free trigger: this button IS the swatch, so it owns no
     // caller content and cannot nest another button.
-    <button
+    <button type="button"
       ...api().getTriggerProps()
       data-slot="color-picker-trigger"
       class=styles.trigger
     >
-      <div ...api().getTransparencyGridProps({ size: "8px" }) data-slot="color-picker-transparency-grid"/>
-      <div
+      <span ...api().getTransparencyGridProps({ size: "8px" }) data-slot="color-picker-transparency-grid"/>
+      <span
         ...api().getSwatchProps({ value: api().value })
         data-slot="color-picker-swatch"
         class=styles.triggerSwatch
@@ -177,7 +177,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
 
           <div class=styles.row>
             <if=!input.hideEyeDropper>
-              <button
+              <button type="button"
                 ...api().getEyeDropperTriggerProps()
                 data-slot="color-picker-eye-dropper-trigger"
                 class=styles.eyeDropperTrigger
@@ -273,7 +273,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
               class=styles.swatchGroup
             >
               <for|swatchValue| of=input.swatches ?? []>
-                <button
+                <button type="button"
                   ...api().getSwatchTriggerProps({ value: swatchValue })
                   data-slot="color-picker-swatch-trigger"
                   class=styles.swatchTrigger

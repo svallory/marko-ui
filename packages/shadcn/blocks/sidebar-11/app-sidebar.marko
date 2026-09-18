@@ -108,10 +108,16 @@ static const FILE_TREE: TreeNode[] = [
   <const/children=parts.slice(1)/>
 
   <if=children.length === 0>
-    <SidebarMenuButton active=(name === "button.tsx") class="data-[active=true]:bg-transparent">
-      <FileIcon/>
-      ${name}
-    </SidebarMenuButton>
+    // The <li> must come from THIS component, not the caller's <for>: a leaf
+    // at the top level sits directly under <SidebarMenu> (a <ul>), while a
+    // leaf below a folder is already inside the parent's sub-list — owning
+    // the wrapper here keeps li nesting valid in both positions.
+    <li class="group/menu-sub-item relative">
+      <SidebarMenuButton active=(name === "button.tsx") class="data-[active=true]:bg-transparent">
+        <FileIcon/>
+        ${name}
+      </SidebarMenuButton>
+    </li>
   </if>
   <else>
     <SidebarMenuItem>
@@ -125,9 +131,7 @@ static const FILE_TREE: TreeNode[] = [
         </@trigger>
         <ul class="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5">
           <for|childNode| of=children by=(_child, index) => String(index)>
-            <li class="group/menu-sub-item relative">
-              <Tree node=childNode/>
-            </li>
+            <Tree node=childNode/>
           </for>
         </ul>
       </Collapsible>

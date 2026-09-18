@@ -118,7 +118,7 @@ export type Input<T = unknown> = Omit<
     <for|_, index| of=api().pageSnapPoints>
       // 24px hit box around an 8px visual dot — WCAG 2.5.8 minimum target
       // size (Lighthouse: target-size) without changing the look.
-      <button
+      <button type="button"
         ...api().getIndicatorProps({ index })
         data-slot="carousel-indicator"
         class=styles.indicator

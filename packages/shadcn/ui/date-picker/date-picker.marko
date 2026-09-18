@@ -86,10 +86,11 @@ export type Input = Omit<MachineInput<"div", datePickerMachine.Props>, "value" |
   <div ...api().getControlProps() data-slot="date-picker-control" class=styles.control>
     <input
       ...api().getInputProps()
+      type="text"
       data-slot="date-picker-input"
       class=styles.input
     />
-    <button
+    <button type="button"
       ...api().getTriggerProps()
       data-slot="date-picker-trigger"
       class=styles.trigger
@@ -107,7 +108,7 @@ export type Input = Omit<MachineInput<"div", datePickerMachine.Props>, "value" |
           class=styles.content
         >
           <div ...api().getViewControlProps() data-slot="date-picker-view-control" class=styles.viewControl>
-            <button
+            <button type="button"
               ...api().getPrevTriggerProps()
               data-slot="date-picker-prev-trigger"
               class=styles.navTrigger
@@ -115,14 +116,14 @@ export type Input = Omit<MachineInput<"div", datePickerMachine.Props>, "value" |
               <Icon name="ChevronLeft"/>
               <span class=styles.srOnly>Previous</span>
             </button>
-            <button
+            <button type="button"
               ...api().getViewTriggerProps()
               data-slot="date-picker-view-trigger"
               class=styles.viewTrigger
             >
               ${api().visibleRangeText.start}
             </button>
-            <button
+            <button type="button"
               ...api().getNextTriggerProps()
               data-slot="date-picker-next-trigger"
               class=styles.navTrigger
@@ -151,7 +152,7 @@ export type Input = Omit<MachineInput<"div", datePickerMachine.Props>, "value" |
                       data-slot="date-picker-cell"
                       class=styles.cell
                     >
-                      <button
+                      <button type="button"
                         ...day.trigger
                         data-slot="date-picker-day"
                         class=styles.day

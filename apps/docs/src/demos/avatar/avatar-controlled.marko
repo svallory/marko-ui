@@ -11,13 +11,13 @@ import Avatar from "@marko-ui/shadcn/ui/avatar/avatar.marko";
     statusChange(nextStatus) { status = nextStatus; }
   />
   <div class="flex gap-2">
-    <button
+    <button type="button"
       class="border-input rounded-md border px-2 py-1 text-sm"
       onClick() { src = "https://github.com/shadcn.png"; }
     >
       Valid src
     </button>
-    <button
+    <button type="button"
       class="border-input rounded-md border px-2 py-1 text-sm"
       onClick() { src = "https://broken-image-url.example/none.png"; }
     >

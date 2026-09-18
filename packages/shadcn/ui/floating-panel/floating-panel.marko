@@ -127,14 +127,14 @@ export type Input = Omit<
               <${input.actions}/>
             </if>
             <if=!input.hideStageTriggers>
-              <button
+              <button type="button"
                 ...api().getStageTriggerProps({ stage: "minimized" })
                 data-slot="floating-panel-stage-trigger"
                 class=styles.stageTrigger
               >
                 <Icon name="Minus" class=styles.stageIcon aria-hidden="true"/>
               </button>
-              <button
+              <button type="button"
                 ...api().getStageTriggerProps({ stage: "maximized" })
                 data-slot="floating-panel-stage-trigger"
                 class=styles.stageTrigger
@@ -151,7 +151,7 @@ export type Input = Omit<
                   <rect width="16" height="16" x="4" y="4" rx="2"/>
                 </svg>
               </button>
-              <button
+              <button type="button"
                 ...api().getStageTriggerProps({ stage: "default" })
                 data-slot="floating-panel-stage-trigger"
                 class=styles.stageTrigger
@@ -160,7 +160,7 @@ export type Input = Omit<
               </button>
             </if>
             <if=!input.hideCloseTrigger>
-              <button
+              <button type="button"
                 ...api().getCloseTriggerProps()
                 data-slot="floating-panel-close-trigger"
                 class=styles.stageTrigger

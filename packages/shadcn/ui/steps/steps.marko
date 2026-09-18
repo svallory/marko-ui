@@ -75,13 +75,13 @@ export type Input = MachineInput<"div", stepsMachine.Props & Own>;
         return { rest, ariaCurrent };
       })()>
       <div ...itemProps.rest role="presentation" data-slot="steps-item" class=styles.item>
-        <button
+        <button type="button"
           ...api().getTriggerProps({ index })
           aria-current=itemProps.ariaCurrent
           data-slot="steps-trigger"
           class=styles.trigger
         >
-          <div
+          <span
             ...api().getIndicatorProps({ index })
             data-slot="steps-indicator"
             class=styles.indicator
@@ -98,7 +98,7 @@ export type Input = MachineInput<"div", stepsMachine.Props & Own>;
             <else>
               ${index + 1}
             </else>
-          </div>
+          </span>
           <span class=styles.labelWrapper>
             <span class=cn(styles.title, itemState.incomplete && styles.titleIncomplete)>
               ${item.title}
@@ -124,14 +124,14 @@ export type Input = MachineInput<"div", stepsMachine.Props & Own>;
     </div>
 
     <div data-slot="steps-actions" class=styles.actions>
-      <button
+      <button type="button"
         ...api().getPrevTriggerProps()
         data-slot="steps-prev-trigger"
         class=styles.prevTrigger
       >
         Previous
       </button>
-      <button
+      <button type="button"
         ...api().getNextTriggerProps()
         data-slot="steps-next-trigger"
         class=styles.nextTrigger

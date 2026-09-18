@@ -2,16 +2,16 @@ import Checkbox from "@marko-ui/shadcn/ui/checkbox/checkbox.marko";
 import Field from "@marko-ui/shadcn/ui/field/field.marko";
 import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
 import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
-import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+import FieldLegend from "@marko-ui/shadcn/ui/field/field-legend.marko";
 import FieldSeparator from "@marko-ui/shadcn/ui/field/field-separator.marko";
 import FieldSet from "@marko-ui/shadcn/ui/field/field-set.marko";
 
 // See field-checkbox.marko for why the label text lives in Checkbox's own
-// `content` body instead of a separate <FieldLabel>.
+// `content` body instead of a separate <FieldLegend variant="label">.
 <div class="w-full max-w-md">
   <FieldGroup>
     <FieldSet>
-      <FieldLabel>Responses</FieldLabel>
+      <FieldLegend variant="label">Responses</FieldLegend>
       <FieldDescription>
         Get notified when the assistant responds to requests that take time, like research or image generation.
       </FieldDescription>
@@ -23,7 +23,7 @@ import FieldSet from "@marko-ui/shadcn/ui/field/field-set.marko";
     </FieldSet>
     <FieldSeparator/>
     <FieldSet>
-      <FieldLabel>Tasks</FieldLabel>
+      <FieldLegend variant="label">Tasks</FieldLegend>
       <FieldDescription>
         Get notified when tasks you've created have updates. <a href="#">Manage tasks</a>
       </FieldDescription>

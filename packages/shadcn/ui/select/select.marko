@@ -97,7 +97,7 @@ export type Input = Omit<MachineInput<"div", select.Props<SelectItem>>, "collect
     <label ...api().getLabelProps() data-slot="select-field-label" class=styles.fieldLabelSrOnly>${placeholder || "Select an option"}</label>
   </else>
   <div ...api().getControlProps() data-slot="select-control">
-    <button
+    <button type="button"
       ...api().getTriggerProps()
       data-slot="select-trigger"
       data-size=(size ?? "default")

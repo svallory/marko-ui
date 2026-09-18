@@ -69,9 +69,22 @@ export interface Input extends Marko.Input<"div"> {
 // guard is needed here.
 <const/getParentService=service/>
 
+// Zag derives the group DOM id from the placement alone (`toast-group:
+// bottom-end`), which collides when two Toaster instances share a page
+// (html-validate no-dup-id). The regionId generated above is unique per
+// instance and is already the id the group service itself runs under, so the
+// DOM id is forced to it — Zag's fixed id is dropped from the spread first,
+// explicit-vs-spread attributes are NOT deduped by Marko.
+<const/ownGroupProps=() => {
+  const props = api().getGroupProps({ label }) as Record<string, unknown>;
+  delete props.id;
+  return props;
+}/>
+
 <div
   ...rest
-  ...api().getGroupProps({ label })
+  ...ownGroupProps()
+  id=regionId
   data-slot="toaster"
   class=cn(styles.root, className)
 >

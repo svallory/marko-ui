@@ -133,15 +133,15 @@ static const NAV_MAIN: NavGroup[] = [
       <SidebarMenu>
         <for|group, index| of=NAV_MAIN by=(group) => group.id>
           <let/isOpen=index === 1/>
-          <Collapsible
-            open=isOpen
-            openChange(open) {
-              isOpen = open;
-            }
-            class="group/collapsible"
-          >
-            <@trigger|attrs|>
-              <SidebarMenuItem>
+          <SidebarMenuItem>
+            <Collapsible
+              open=isOpen
+              openChange(open) {
+                isOpen = open;
+              }
+              class="group/collapsible"
+            >
+              <@trigger|attrs|>
                 <SidebarMenuButton ...attrs>
                   ${group.title}
                   <svg
@@ -174,8 +174,7 @@ static const NAV_MAIN: NavGroup[] = [
                     <path d="M5 12h14"/>
                   </svg>
                 </SidebarMenuButton>
-              </SidebarMenuItem>
-            </@trigger>
+              </@trigger>
             <if=group.items.length !== 0>
               <ul
                 class="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5"
@@ -193,7 +192,8 @@ static const NAV_MAIN: NavGroup[] = [
                 </for>
               </ul>
             </if>
-          </Collapsible>
+            </Collapsible>
+          </SidebarMenuItem>
         </for>
       </SidebarMenu>
     </SidebarGroup>

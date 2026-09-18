@@ -77,16 +77,16 @@ export interface Input {
     sections=sections
   >
     <@trigger>
-      <div class="flex flex-col justify-start text-left">
-        <div class="text-xs text-muted-foreground">${input.label}</div>
-        <div class="line-clamp-1 max-w-[80%] truncate text-sm font-medium text-foreground">${displayFontName}</div>
-      </div>
-      <div
+      <span class="flex flex-col justify-start text-left">
+        <span class="text-xs text-muted-foreground">${input.label}</span>
+        <span class="line-clamp-1 max-w-[80%] truncate text-sm font-medium text-foreground">${displayFontName}</span>
+      </span>
+      <span
         class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-base text-foreground select-none md:right-2.5"
         style=`font-family: ${previewFontFamily}`
       >
         Aa
-      </div>
+      </span>
     </@trigger>
   </Picker>
   <LockButton

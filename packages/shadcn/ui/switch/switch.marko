@@ -53,8 +53,17 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
 // only when the label part actually exists.
 <const/hiddenInputProps=() => api().getHiddenInputProps()/>
 
+// The root <label> WRAPS the control, so Zag's `for` pointing at the hidden
+// input is redundant — drop it (html-validate no-redundant-for); the wrapping
+// association is the association.
+<const/rootProps=() => {
+  const props = api().getRootProps() as Record<string, unknown>;
+  delete props.for;
+  return props;
+}/>
+
 <label
-  ...api().getRootProps()
+  ...rootProps()
   data-slot="switch-label"
   class=styles.label
 >

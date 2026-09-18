@@ -58,10 +58,19 @@ export type Input = Omit<MachineInput<"div", radioGroupMachine.Props>, "value"> 
   )
 >
 
+// Each item <label> WRAPS its input, so Zag's per-item `for` is redundant —
+// drop it (html-validate no-redundant-for); the wrapping association is the
+// association.
+<const/itemRootProps=(value: string, disabled: boolean | undefined) => {
+  const props = api().getItemProps({ value, disabled }) as Record<string, unknown>;
+  delete props.for;
+  return props;
+}/>
+
 <div ...nativeAttrs() ...api().getRootProps() data-slot="radio-group" class=cn(styles.root, input.class)>
   <for|item| of=normalizedItems by=(item) => item.value>
     <label
-      ...api().getItemProps({ value: item.value, disabled: item.disabled })
+      ...itemRootProps(item.value, item.disabled)
       data-slot="radio-group-item-wrapper"
       class=styles.itemWrapper
     >

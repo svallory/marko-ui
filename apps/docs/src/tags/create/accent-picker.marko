@@ -42,11 +42,11 @@ export interface Input {
     }]
   >
     <@trigger>
-      <div class="flex flex-col justify-start text-left">
-        <div class="text-xs text-muted-foreground">Menu Accent</div>
-        <div class="text-sm font-medium text-foreground">${currentAccent?.label}</div>
-      </div>
-      <div class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-base text-foreground select-none md:right-2.5">
+      <span class="flex flex-col justify-start text-left">
+        <span class="text-xs text-muted-foreground">Menu Accent</span>
+        <span class="text-sm font-medium text-foreground">${currentAccent?.label}</span>
+      </span>
+      <span class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-base text-foreground select-none md:right-2.5">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="128"
@@ -74,7 +74,7 @@ export interface Input {
             class="fill-muted-foreground/30 data-[accent=bold]:fill-foreground"
           />
         </svg>
-      </div>
+      </span>
     </@trigger>
   </Picker>
   <LockButton

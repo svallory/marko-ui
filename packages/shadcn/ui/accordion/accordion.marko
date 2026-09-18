@@ -215,7 +215,7 @@ export type Input = MachineInput<"div", accordionMachine.Props> & {
       class=styles.item
     >
       <h3 class=styles.header>
-        <button
+        <button type="button"
           ...api().getItemTriggerProps({ value: item.value })
           data-slot="accordion-trigger"
           class=styles.trigger

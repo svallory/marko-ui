@@ -13,7 +13,7 @@ import Collapsible from "@marko-ui/shadcn/ui/collapsible/collapsible.marko";
 // exemption a real disabled control gets.
 <Collapsible class="w-72 space-y-2" disabled>
   <@trigger|triggerProps|>
-    <button
+    <button type="button"
       ...triggerProps
       aria-disabled="true"
       class="flex w-full items-center justify-between text-sm font-semibold data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50"

@@ -26,7 +26,7 @@ import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
 
   <section class="space-y-2" data-test="controlled">
     <h2 class="font-semibold">Controlled switch — parent: <span data-test="parent-state">${parentChecked}</span></h2>
-    <button
+    <button type="button"
       class="rounded bg-secondary px-2 py-1 text-sm"
       data-test="parent-toggle"
       onClick() { parentChecked = !parentChecked }

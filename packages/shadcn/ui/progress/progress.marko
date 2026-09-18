@@ -21,6 +21,7 @@ export type Input = MachineInput<"div", progressMachine.Props> & {
 >
 
 <div
+  role="progressbar"
   ...nativeAttrs()
   ...api().getRootProps()
   data-slot="progress"

@@ -54,7 +54,7 @@ export type Input = MachineInput<"input", signaturePadMachine.Props> & {
       </if>
     </svg>
 
-    <button
+    <button type="button"
       ...api().getClearTriggerProps()
       data-slot="signature-pad-clear-trigger"
       class=cn(clearTriggerVariant, styles.clearTrigger)

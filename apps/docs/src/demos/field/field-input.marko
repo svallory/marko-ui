@@ -1,7 +1,7 @@
 import FieldSet from "@marko-ui/shadcn/ui/field/field-set.marko";
 import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
 import Field from "@marko-ui/shadcn/ui/field/field.marko";
-import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+import FieldLegend from "@marko-ui/shadcn/ui/field/field-legend.marko";
 import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
 import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 
@@ -9,12 +9,12 @@ import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
   <FieldSet>
     <FieldGroup>
       <Field>
-        <FieldLabel for="field-input-username">Username</FieldLabel>
+        <FieldLegend variant="label">Username</FieldLegend>
         <TextInput id="field-input-username" type="text" placeholder="Max Leiter"/>
         <FieldDescription>Choose a unique username for your account.</FieldDescription>
       </Field>
       <Field>
-        <FieldLabel for="field-input-password">Password</FieldLabel>
+        <FieldLegend variant="label">Password</FieldLegend>
         <FieldDescription>Must be at least 8 characters long.</FieldDescription>
         <TextInput id="field-input-password" type="password" placeholder="••••••••"/>
       </Field>

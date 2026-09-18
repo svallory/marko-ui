@@ -78,6 +78,7 @@ export type Input = MachineInput<"div", tagsInputMachine.Props> & {
     </for>
     <input
       ...api().getInputProps()
+      type="text"
       placeholder=input.placeholder
       data-slot="tags-input-input"
       class=styles.input

@@ -51,8 +51,11 @@ export type Input = MachineInput<"input", fileUploadMachine.Props> & {
   // another (axe: nested-interactive). The trigger is the keyboard path, so
   // the dropzone drops out of the tab order and stays a plain click/drag
   // target for pointer users.
+  // `aria-label="dropzone"` from Zag is inert naming on a role-less div
+  // (html-validate aria-label-misuse); the dropzone's real name comes from
+  // its trigger content, so it is stripped alongside role/tabIndex.
   <const/dropzoneProps=(() => {
-    const { role, tabIndex, tabindex, ...rest } =
+    const { role, tabIndex, tabindex, "aria-label": ariaLabel, ...rest } =
       api().getDropzoneProps() as Record<string, unknown>;
     return rest;
   })()>
@@ -81,7 +84,7 @@ export type Input = MachineInput<"input", fileUploadMachine.Props> & {
       <span class=styles.dropzoneTextEmphasis>Drag and drop files here</span>
     </div>
     <p class=styles.dropzoneHint>or click browse to choose files</p>
-    <button ...api().getTriggerProps() data-slot="file-upload-trigger" class=cn(triggerVariant, styles.trigger)>
+    <button type="button" ...api().getTriggerProps() data-slot="file-upload-trigger" class=cn(triggerVariant, styles.trigger)>
       Browse files
     </button>
     <input ...nativeAttrs() ...api().getHiddenInputProps() data-slot="file-upload-hidden-input"/>
@@ -95,7 +98,7 @@ export type Input = MachineInput<"input", fileUploadMachine.Props> & {
             <span ...api().getItemNameProps({ file }) data-slot="file-upload-item-name" class=styles.itemName>${file.name}</span>
             <span ...api().getItemSizeTextProps({ file }) data-slot="file-upload-item-size-text" class=styles.itemSizeText>${formatSize(file.size)}</span>
           </div>
-          <button
+          <button type="button"
             ...api().getItemDeleteTriggerProps({ file })
             data-slot="file-upload-item-delete-trigger"
             class=cn(deleteVariant, styles.itemDeleteTrigger)

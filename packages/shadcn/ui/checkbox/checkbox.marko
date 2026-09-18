@@ -50,8 +50,17 @@ export type Input = MachineInput<"input", checkboxMachine.Props> & {
   ...api().getHiddenInputProps(),
 })>
 
+// The root <label> WRAPS the hidden input, so Zag's `for` (htmlFor) pointing
+// at it is redundant — html-validate flags label[for] whose target is already
+// a descendant. Drop it; the wrapping association is the association.
+<const/rootProps=() => {
+  const props = api().getRootProps() as Record<string, unknown>;
+  delete props.for;
+  return props;
+}/>
+
 <label
-  ...api().getRootProps()
+  ...rootProps()
   data-slot="checkbox-root"
   class=cn(
     styles.root,

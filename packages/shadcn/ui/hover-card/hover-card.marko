@@ -24,25 +24,28 @@ export type Input = MachineInput<"span", hoverCardMachine.Props> & {
 
 <span data-slot="hover-card">
   <${input.trigger.content}({ ...api().getTriggerProps(), "data-slot": "hover-card-trigger" })/>
-  // NOTE: upstream shadcn sets data-slot="hover-card-portal" on Radix's Portal,
-  // which renders a real element. marko-zag's <zag-portal> renders a
-  // `display:contents` host and does not forward attributes, so the
-  // marker never reached the DOM — it was inert, and nothing in this
-  // repo's CSS, tests or tooling reads it. Dropped rather than left as
-  // dead markup; restore it if <zag-portal> gains attribute forwarding.
-  <zag-portal>
-    <if=api().open>
-      <div ...api().getPositionerProps() style=positionerStyle data-slot="hover-card-positioner">
-        <div
-          ...api().getContentProps()
-          data-slot="hover-card-content"
-          class=cn(styles.content, input.class)
-        >
-          <${input.content}/>
-        </div>
-      </div>
-    </if>
-  </zag-portal>
 </span>
+// NOTE: upstream shadcn sets data-slot="hover-card-portal" on Radix's Portal,
+// which renders a real element. marko-zag's <zag-portal> renders a
+// `display:contents` host and does not forward attributes, so the
+// marker never reached the DOM — it was inert, and nothing in this
+// repo's CSS, tests or tooling reads it. Dropped rather than left as
+// dead markup; restore it if <zag-portal> gains attribute forwarding.
+// The portal lives OUTSIDE the span root: its host element is not valid
+// phrasing content inside <span> (html-validate element-permitted-content),
+// and the positioned content does not care about its DOM parent.
+<zag-portal>
+  <if=api().open>
+    <div ...api().getPositionerProps() style=positionerStyle data-slot="hover-card-positioner">
+      <div
+        ...api().getContentProps()
+        data-slot="hover-card-content"
+        class=cn(styles.content, input.class)
+      >
+        <${input.content}/>
+      </div>
+    </div>
+  </if>
+</zag-portal>
 
 <return=api>
