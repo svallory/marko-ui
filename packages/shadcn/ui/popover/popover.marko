@@ -15,8 +15,8 @@ import { popover as styles } from "./classes.ts";
 export type Input = MachineInput<"div", popoverMachine.Props & Own> & {
   /** Trigger render-prop — the element that opens the popover. */
   trigger: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
-  /** Popover content shown when open. */
-  content: Marko.Body;
+  /** Popover content shown when open. Optional — a title/description-only popover is legitimate. */
+  content?: Marko.Body;
   /** Extra class for the content panel. */
   class?: string;
   openChange?: (open: boolean) => void;
@@ -65,7 +65,9 @@ export type Own = {
               <${input.description.content}/>
             </div>
           </if>
-          <${input.content}/>
+          <if=input.content>
+            <${input.content}/>
+          </if>
         </div>
       </div>
     </if>
