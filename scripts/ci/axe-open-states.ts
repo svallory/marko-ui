@@ -26,7 +26,7 @@ export const OPEN_STATES: Record<string, OpenStateConfig> = {
   "dropdown-menu": { trigger: '[data-slot="dropdown-menu-trigger"]', content: '[data-slot="dropdown-menu-content"]', open: "click" },
   "floating-panel": { trigger: '[data-slot="floating-panel-trigger"]', content: '[data-slot="floating-panel"]', open: "click" },
   "hover-card": { trigger: '[data-slot="hover-card-trigger"]', content: '[data-slot="hover-card-content"]', open: "hover" },
-  "menubar": { trigger: '[data-slot="menubar-trigger"]', content: '[data-slot="menubar-content"]', open: "click", portal: false },
+  "menubar": { trigger: '[data-slot="menubar-trigger"]', content: '[data-slot="menubar-content"]', open: "click" },
   "navigation-menu": { trigger: '[data-slot="navigation-menu-trigger"]', content: '[data-slot="navigation-menu-content"]', open: "click", portal: false },
   "popover": { trigger: '[data-slot="popover-trigger"]', content: '[data-slot="popover-content"]', open: "click" },
   "select": { trigger: '[data-slot="select-trigger"]', content: '[data-slot="select-content"]', open: "click" },
