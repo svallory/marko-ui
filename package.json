@@ -8,7 +8,9 @@
     "tooling/parity/harnesses/marko-ui"
   ],
   "scripts": {
-    "check": "bun run --filter '*' check && bun run check:tooling",
+    "check:pkg": "bun tooling/check-pkg.ts",
+    "check": "bun check:tooling && bun check:pkg && bun run --filter '*' check",
+    "check:html": "bun tooling/check-html.ts",
     "check:tooling": "tsc --noEmit -p tooling && bun tooling/check-conflict-markers.ts && bun tooling/check-dep-sync.ts && bun tooling/check-anchors.ts && bun tooling/check-consumption.ts && bun tooling/check-registry-deps.ts && bun tooling/check-classes.ts && bun tooling/check-html-comments.ts",
     "test": "bun run test:cli && bun run test:docs",
     "test:cli": "bun run --filter marko-ui test",
@@ -29,6 +31,7 @@
     "format": "prettier --write ."
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@hugeicons/core-free-icons": "^4.3.0",
     "@marko/compiler": "5.42.3",
     "@marko/type-check": "^3.2.0",
@@ -36,6 +39,7 @@
     "@phosphor-icons/core": "^2.1.1",
     "@playwright/test": "1.62.1",
     "@tabler/icons": "^3.46.0",
+    "@types/bun": "^1.4.2",
     "@types/node": "^26.4.0",
     "@types/pixelmatch": "^5.2.6",
     "@types/pngjs": "^6.0.5",
@@ -51,6 +55,7 @@
     "postcss-selector-parser": "^7.1.5",
     "prettier": "^3.9.6",
     "prettier-plugin-marko": "^4.1.0",
+    "publint": "^0.3.24",
     "remixicon": "^4.9.1",
     "tailwind-merge": "^3.6.0",
     "ts-morph": "^28.0.0",
