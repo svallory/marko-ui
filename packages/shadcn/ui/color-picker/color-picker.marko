@@ -152,6 +152,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
       <div ...api().getPositionerProps() style=positionerStyle data-slot="color-picker-positioner">
         <div
           ...api().getContentProps()
+          aria-label=input["aria-label"]
           data-slot="color-picker-content"
           class=styles.content
         >
