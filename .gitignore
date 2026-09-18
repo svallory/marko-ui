@@ -30,3 +30,4 @@ packages/shadcn/tsconfig.api-extract.json
 # Cloudflare Workers local state (wrangler dev)
 apps/docs/.wrangler/
 *.tgz
+.lighthouseci
