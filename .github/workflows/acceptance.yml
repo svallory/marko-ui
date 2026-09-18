@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
       - uses: ./.github/actions/setup
       - name: Run acceptance suite against live registry + npm
         run: bun run test:acceptance
@@ -36,7 +36,7 @@ jobs:
           ACCEPTANCE_PKG_VERSION: ${{ vars.ACCEPTANCE_PKG_VERSION }}
       - name: Upload results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
         with:
           name: acceptance-results
           path: e2e/acceptance/results.json
