@@ -108,13 +108,19 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
   class=cn(styles.root, input.class)
 >
   <if=input.label>
-    <label
-      ...api().getLabelProps()
+    <const/labelProps=() => {
+      const props = api().getLabelProps() as Record<string, unknown>;
+      delete props["for"];
+      delete props["htmlFor"];
+      return props;
+    }/>
+    <span
+      ...labelProps()
       data-slot="color-picker-label"
       class=styles.label
     >
       <${input.label.content}/>
-    </label>
+    </span>
   </if>
 
   <div
@@ -126,6 +132,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
     // caller content and cannot nest another button.
     <button type="button"
       ...api().getTriggerProps()
+      aria-labelledby=(input.label ? (api().getLabelProps() as Record<string, unknown>).id : undefined)
       data-slot="color-picker-trigger"
       class=styles.trigger
     >
@@ -152,7 +159,6 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
       <div ...api().getPositionerProps() style=positionerStyle data-slot="color-picker-positioner">
         <div
           ...api().getContentProps()
-          aria-label=input["aria-label"]
           data-slot="color-picker-content"
           class=styles.content
         >
