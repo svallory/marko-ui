@@ -95,18 +95,18 @@ for (const { name, path } of urls) {
     await page.addScriptTag({ content: axeSource });
     
     // Closed state scan
-    const results = (await page.evaluate(async (disabledRules: string[]) => {
+    const results = (await page.evaluate(async ({ disabledRules, stage }) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const axe = (window as any).axe;
       // Scope to the demo stage only (excluding the code-peek which is inside the outer component-preview wrapper).
       return axe.run(
-        { include: [[STAGE_SELECTOR]] },
+        { include: [[stage]] },
         {
           resultTypes: ["violations"],
           rules: Object.fromEntries(disabledRules.map((rule) => [rule, { enabled: false }])),
         },
       );
-    }, PAGE_SCOPE_RULES)) as {
+    }, { disabledRules: PAGE_SCOPE_RULES, stage: STAGE_SELECTOR })) as {
       violations: {
         id: string;
         impact: string | null;
