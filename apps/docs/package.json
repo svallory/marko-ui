@@ -90,6 +90,7 @@
     "@marko/run": "0.11.9",
     "@marko/run-adapter-static": "2.0.10",
     "@tailwindcss/vite": "^4.3.3",
+    "html-validate": "^11.16.0",
     "tailwindcss": "^4.3.3",
     "vite": "^8.2.1",
     "wrangler": "4.133.0"

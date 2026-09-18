@@ -35,8 +35,9 @@ jobs:
       cli: ${{ steps.filter.outputs.cli }}
       docs: ${{ steps.filter.outputs.docs }}
       registry: ${{ steps.filter.outputs.registry }}
+      packages: ${{ steps.filter.outputs.packages }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
       # Root-level config files considered for these filters, and why each
       # was included or excluded (re-derive this list, don't trust it blindly,
       # whenever a job's commands or their config surface changes):
@@ -92,6 +93,13 @@ jobs:
               - 'scripts/ci/**'
               - '.github/workflows/ci.yml'
               - '.github/actions/setup/**'
+            packages:
+              - 'packages/**'
+              - 'bun.lock'
+              - 'package.json'
+              - 'tooling/check-pkg.ts'
+              - '.github/workflows/ci.yml'
+              - '.github/actions/setup/**'
             registry:
               - 'packages/shadcn/**'
               - 'packages/marko-ui/src/registry/**'
@@ -116,7 +124,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
       - uses: ./.github/actions/setup
       # packages/marko-ui is excluded from the root vitest config (it needs its
       # own @/ path alias + msw setup, see packages/marko-ui/vitest.config.ts),
@@ -144,7 +152,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
       - uses: ./.github/actions/setup
       # DEPLOY.md "CI check": keeps the registry output honest before every
       # deploy. apps/docs/public/r/ is gitignored and rebuilt here with the
@@ -162,7 +170,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
       - uses: ./.github/actions/setup
       - name: Build and serve docs
         run: bash scripts/ci/serve-docs.sh
@@ -170,10 +178,12 @@ jobs:
         env:
           DOCS_BASE_URL: http://localhost:3000
         run: bunx vitest run --reporter=default --reporter=json --outputFile.json=vitest-results.json
+      - name: Validate HTML
+        run: bun run check:html
       - name: Generate badges
         if: always()
         run: bun scripts/ci/badge.ts vitest vitest-results.json badge-out
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
         if: always()
         with:
           name: badges-tests
@@ -186,7 +196,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
       - uses: ./.github/actions/setup
       - name: Build and serve docs
         run: bash scripts/ci/serve-docs.sh
@@ -197,7 +207,7 @@ jobs:
       - name: Generate badges
         if: always()
         run: bun scripts/ci/badge.ts axe axe-results.json badge-out
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
         if: always()
         with:
           name: badges-axe
@@ -215,14 +225,14 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
+      - uses: actions/download-artifact@484a0b528fb4d7bd804637ccb632e47a0e638317 # v4
         with:
           pattern: badges-*
           path: badges
           merge-multiple: true
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.3.11
       - name: Combine test badges into checks.json
