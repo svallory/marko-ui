@@ -15,8 +15,8 @@ import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
     <h2 class="font-semibold">Uncontrolled switch</h2>
     <id/uid1/>
     <zag/api1=() => switchMachine props=() => ({ id: uid1 })/>
-    <!-- html-validate-disable-next no-redundant-for -- intentional test page -->
-    <label ...api1().getRootProps()>
+    <const/rootProps1=() => { const p = api1().getRootProps() as Record<string, unknown>; delete p["for"]; delete p["htmlFor"]; return p; }/>
+    <label ...rootProps1()>
       <input ...api1().getHiddenInputProps() class="sr-only">
       <span ...api1().getControlProps() class="inline-flex h-5 w-9 items-center rounded-full bg-input p-0.5 transition-colors data-[state=checked]:bg-primary">
         <span ...api1().getThumbProps() class="block size-4 rounded-full bg-background shadow transition-transform data-[state=checked]:translate-x-4"/>
@@ -42,8 +42,8 @@ import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
         parentChecked = details.checked;
       },
     })/>
-    <!-- html-validate-disable-next no-redundant-for -- intentional test page -->
-    <label ...api2().getRootProps()>
+    <const/rootProps2=() => { const p = api2().getRootProps() as Record<string, unknown>; delete p["for"]; delete p["htmlFor"]; return p; }/>
+    <label ...rootProps2()>
       <input ...api2().getHiddenInputProps() class="sr-only">
       <span ...api2().getControlProps() class="inline-flex h-5 w-9 items-center rounded-full bg-input p-0.5 transition-colors data-[state=checked]:bg-primary">
         <span ...api2().getThumbProps() class="block size-4 rounded-full bg-background shadow transition-transform data-[state=checked]:translate-x-4"/>
