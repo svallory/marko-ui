@@ -1,3 +1,6 @@
+export interface Input {
+  content: Marko.Body;
+}
 import "../bare.css"
 
 <!doctype html>
@@ -9,7 +12,8 @@ import "../bare.css"
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="data:,">
 </head>
-<body class="style-nova bg-background text-foreground antialiased min-h-screen p-8">
-  <${input.content} />
+<body class="bg-background text-foreground antialiased min-h-screen flex items-center justify-center p-8">
+  <div aria-hidden="true" style="position: absolute; z-index: -1; color: hsl(var(--background));">FCP</div>
+  <${input.content}/>
 </body>
 </html>
