@@ -37,7 +37,7 @@ export type Input =
 </if>
 <else>
   <button
-    type=((type ?? "button") as Marko.Input<"button">["type"])
+    type=(type as Marko.Input<"button">["type"])
     data-slot="button"
     data-variant=(variant ?? "default")
     data-size=(size ?? "default")
