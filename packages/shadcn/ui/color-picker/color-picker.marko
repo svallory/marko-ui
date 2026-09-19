@@ -132,7 +132,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
     // caller content and cannot nest another button.
     <button type="button"
       ...api().getTriggerProps()
-      aria-labelledby=(input.label ? (api().getLabelProps() as Record<string, unknown>).id : undefined)
+      aria-labelledby=(input.label ? (api().getLabelProps() as Record<string, unknown>).id as string : undefined)
       data-slot="color-picker-trigger"
       class=styles.trigger
     >
