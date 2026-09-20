@@ -1,3 +1,14 @@
+/* Chrome-free fixture stylesheet for the /bare/<component> Lighthouse pages.
+   Same import chain as the docs site's app.css, minus the site chrome
+   (fonts, typeset, docs utilities, all 8 style layers): tokens + one style
+   layer (nova, the site default) so components render exactly as the docs
+   hero renders them. */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "./shadcn-tailwind.css";
+@import "./site-tokens.css";
+/* Same accordion patch the site loads (Radix var -> Marko var). */
+@import "../../../packages/shadcn/styles/marko-accordion.css";
+/* The site default style layer; the bare layout carries `style-nova` on
+   <body> so these .mu-* rules match, as on every docs page. */
+@import "../../../packages/shadcn/styles/style-nova.css" layer(components);
