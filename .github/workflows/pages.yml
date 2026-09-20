@@ -36,9 +36,6 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      - name: Build docs site
-        run: bun run build
-
       - name: Build registry
         # The registry items embed absolute URLs, so the base URL has to be
         # the production one at BUILD time — it cannot be fixed up later.
@@ -62,6 +59,9 @@ jobs:
         run: bun run --cwd apps/docs build
 
       - name: Validate HTML
+        # check:html validates a stripped COPY under apps/docs/.htmlvalidate-tmp
+        # and deletes it — it never edits dist/ (see tooling/check-html.ts), so
+        # the artifact deployed below is byte-identical to the build output.
         run: bun run check:html
 
       - name: Verify the build is complete before deploying

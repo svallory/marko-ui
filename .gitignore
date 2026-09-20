@@ -31,3 +31,6 @@ packages/shadcn/tsconfig.api-extract.json
 apps/docs/.wrangler/
 *.tgz
 .lighthouseci
+
+# html-validate temp copies (transient; cleaned by tooling/check-html.ts)
+apps/docs/.htmlvalidate-tmp/
