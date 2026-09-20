@@ -73,7 +73,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
 />
 
 // Whatever is neither machine-owned (splitProps) nor component-owned passes
-// through to the hidden input: aria-*, data-*, form attributes... Leaking a
+// through to the root div: aria-*, data-*, form attributes... Leaking a
 // component-owned prop here would stringify it into a bogus DOM attribute.
 // `value`/`defaultValue` are deliberately widened to `string | Color` on this
 // component's public Input (callers may pass a CSS color string), so `input` does not

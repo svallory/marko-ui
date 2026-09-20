@@ -163,6 +163,24 @@ jobs:
       - name: Build registry and check for drift
         run: bun run build:registry && git diff --exit-code -- apps/docs/public/r/
 
+  pkg-checks:
+    name: Package integrity (publint + attw)
+    # The `packages` path-filter output exists for this job — it was added
+    # with the filter but had no consumer until now. Gated like the others:
+    # never filtered on push to main / workflow_dispatch.
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.packages == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
+      - uses: ./.github/actions/setup
+      # Publint + attw over the packed tarballs (ESM-only correctness).
+      # Same gate release.yml runs before publishing — a PR that breaks
+      # publish shape must fail here, not at release time.
+      - name: Run package checks
+        run: bun run check:pkg
+
   tests:
     name: Behavior & hydration tests
     needs: changes
@@ -263,7 +281,7 @@ jobs:
   # `ci-ok` on a pipeline that never actually ran anything — a false green.
   ci-ok:
     name: CI ok
-    needs: [changes, cli-tests, registry-drift, tests, axe]
+    needs: [changes, cli-tests, registry-drift, pkg-checks, tests, axe]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2
@@ -280,10 +298,11 @@ jobs:
           CHANGES_RESULT: ${{ needs.changes.result }}
           CLI_TESTS_RESULT: ${{ needs.cli-tests.result }}
           REGISTRY_DRIFT_RESULT: ${{ needs.registry-drift.result }}
+          PKG_CHECKS_RESULT: ${{ needs.pkg-checks.result }}
           TESTS_RESULT: ${{ needs.tests.result }}
           AXE_RESULT: ${{ needs.axe.result }}
         run: |
-          for r in "$CHANGES_RESULT" "$CLI_TESTS_RESULT" "$REGISTRY_DRIFT_RESULT" "$TESTS_RESULT" "$AXE_RESULT"; do
+          for r in "$CHANGES_RESULT" "$CLI_TESTS_RESULT" "$REGISTRY_DRIFT_RESULT" "$PKG_CHECKS_RESULT" "$TESTS_RESULT" "$AXE_RESULT"; do
             if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then
               echo "a required job did not pass (result: $r)" >&2
               exit 1
