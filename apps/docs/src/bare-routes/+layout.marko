@@ -1,0 +1,25 @@
+export interface Input {
+  content: Marko.Body;
+}
+import "../bare.css"
+
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <title>marko-ui component preview</title>
+  <meta name="description" content="Chrome-free marko-ui component preview used as a Lighthouse performance, accessibility, best-practices and SEO fixture.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+</head>
+<body class="bg-background text-foreground antialiased min-h-screen flex items-center justify-center p-8 style-nova">
+  // FCP bootstrap: a real (non-empty-size, non-display-none) text node forces
+  // first paint to include text so FCP/LCP measure the same thing on every
+  // page. Colored exactly like the page background (the site tokens are
+  // oklch, so this must be a bare var reference — hsl(var(...)) would be an
+  // invalid computed value and the text would render); aria-hidden keeps it
+  // out of the accessibility tree.
+  <div aria-hidden="true" style="position: absolute; z-index: -1; color: var(--background);">FCP</div>
+  <${input.content}/>
+</body>
+</html>

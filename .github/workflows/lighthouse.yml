@@ -1,13 +1,13 @@
-# Lighthouse accessibility over the production docs build's bare component
-# verify pages — the components ARE the claim; docs-site scores are noise to
-# library users. No performance/best-practices/seo badges: perf is a
-# whole-page metric (meaningless on bare fixtures) and the rest describe the
-# docs site, not the components. The badge reports the MINIMUM across pages.
+# Lighthouse accessibility over the production docs build's component pages,
+# plus bare component pages for 100/100/100/100 performance/a11y/best-practices/seo assertions.
+# The bare pages are the components' true metrics; docs-site scores are noise to
+# library users. The badge reports the MINIMUM across pages.
 name: Lighthouse
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 concurrency:
@@ -34,7 +34,7 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Build and serve docs
         run: bash scripts/ci/serve-docs.sh
-      - name: Lighthouse a11y on component verify pages
+      - name: Lighthouse a11y on component docs pages
         id: lhci_a11y
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
         with:
@@ -50,7 +50,51 @@ jobs:
           configPath: .github/lighthouse/lighthouserc-a11y.json
           runs: 1
           uploadArtifacts: true
-          artifactName: lighthouse-results-components
+          artifactName: lighthouse-results-a11y
+          temporaryPublicStorage: true
+      - name: Lighthouse 100 on bare component pages (Desktop)
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
+        with:
+          urls: |
+            http://localhost:3000/bare/accordion
+            http://localhost:3000/bare/button
+            http://localhost:3000/bare/carousel
+            http://localhost:3000/bare/color-picker
+            http://localhost:3000/bare/combobox
+            http://localhost:3000/bare/data-table
+            http://localhost:3000/bare/date-picker
+            http://localhost:3000/bare/dialog
+            http://localhost:3000/bare/select
+            http://localhost:3000/bare/slider
+            http://localhost:3000/bare/tabs
+            http://localhost:3000/bare/tooltip
+          configPath: .github/lighthouse/lighthouserc-bare-desktop.json
+          # Median of 3: single-run perf scores flake on shared runners
+          # (measured dips to 98 under load); the assert is per-median.
+          runs: 3
+          uploadArtifacts: true
+          artifactName: lighthouse-results-bare-desktop
+          temporaryPublicStorage: true
+      - name: Lighthouse 100 on bare component pages (Mobile)
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
+        with:
+          urls: |
+            http://localhost:3000/bare/accordion
+            http://localhost:3000/bare/button
+            http://localhost:3000/bare/carousel
+            http://localhost:3000/bare/color-picker
+            http://localhost:3000/bare/combobox
+            http://localhost:3000/bare/data-table
+            http://localhost:3000/bare/date-picker
+            http://localhost:3000/bare/dialog
+            http://localhost:3000/bare/select
+            http://localhost:3000/bare/slider
+            http://localhost:3000/bare/tabs
+            http://localhost:3000/bare/tooltip
+          configPath: .github/lighthouse/lighthouserc-bare-mobile.json
+          runs: 3
+          uploadArtifacts: true
+          artifactName: lighthouse-results-bare-mobile
           temporaryPublicStorage: true
       - name: Generate badges
         run: bun scripts/ci/badge.ts lighthouse-a11y "${{ steps.lhci_a11y.outputs.resultsPath }}/manifest.json" badge-out

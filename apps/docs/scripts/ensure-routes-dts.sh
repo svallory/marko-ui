@@ -26,9 +26,19 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-if [ -f .marko-run/routes.d.ts ]; then
+if [ -f .marko-run/routes.d.ts ] && grep -q "src/routes/" .marko-run/routes.d.ts; then
   exit 0
 fi
+
+# A present-but-stale routes.d.ts is worse than a missing one: the bare
+# build (vite.bare.config.ts, second stage of `bun run build`) writes the
+# BARE app's route table to the same .marko-run/routes.d.ts, so after any
+# full build mtc reads bare-route augmentation and every main-app route
+# param (`$name`, handler ctx) mis-types as NEW baseline errors. The grep
+# above anchors on the main app's routes dir (src/routes/ — which the bare
+# table's src/bare-routes/ entries never contain); anything else is
+# discarded and regenerated below.
+rm -f .marko-run/routes.d.ts
 
 port=4417
 bunx marko-run dev --port "$port" > /dev/null 2>&1 &
