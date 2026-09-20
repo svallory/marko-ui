@@ -11,14 +11,31 @@ export type Input = MachineInput<"div", progressMachine.Props> & {
 
 <zag/api=() => progressMachine from=input/>
 
+// Caller naming (aria-label/aria-labelledby/aria-valuetext) names the
+// PROGRESSBAR, not the root div — a plain div supports none of them
+// (html-validate aria-label-misuse) and axe wants the progressbar itself
+// named. The track carries role=progressbar (from getTrackProps). Zag's own
+// aria-label (the "66%" value text) must survive when the caller names the
+// control some other way — an `attr=undefined` after the spread would wipe
+// it, so the merge happens in a const.
 <const/nativeAttrs=() =>
   stripOwnProps(
     progressMachine.splitProps(input)[1],
     "class",
     "valueChange",
     "label",
+    "aria-label",
+    "aria-labelledby",
+    "aria-valuetext",
   )
 >
+<const/trackProps=() => {
+  const props = api().getTrackProps() as Record<string, unknown>;
+  if (input["aria-label"] !== undefined) props["aria-label"] = input["aria-label"];
+  if (input["aria-labelledby"] !== undefined) props["aria-labelledby"] = input["aria-labelledby"];
+  if (input["aria-valuetext"] !== undefined) props["aria-valuetext"] = input["aria-valuetext"];
+  return props;
+}/>
 
 <div
   ...nativeAttrs()
@@ -32,7 +49,11 @@ export type Input = MachineInput<"div", progressMachine.Props> & {
       <span ...api().getValueTextProps() data-slot="progress-value" class=styles.value>${api().valueAsString}</span>
     </div>
   </if>
-  <div ...api().getTrackProps() data-slot="progress-track" class=styles.track>
+  <div
+    ...trackProps()
+    data-slot="progress-track"
+    class=styles.track
+  >
     <div
       ...api().getRangeProps()
       data-slot="progress-indicator"

@@ -152,13 +152,24 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
     </span>
   </div>
 
-  <input type="text" ...api().getHiddenInputProps()>
+  // The hidden input is the form control: name it after the visible label so
+  // axe's label rule passes (the span label cannot carry `for` — html-validate
+  // valid-for — so the association is aria-labelledby instead).
+  <input
+    type="text"
+    ...api().getHiddenInputProps()
+    aria-labelledby=(input.label ? (api().getLabelProps() as Record<string, unknown>).id as string : undefined)
+  >
 
   <zag-portal>
     <if=api().open>
       <div ...api().getPositionerProps() style=positionerStyle data-slot="color-picker-positioner">
         <div
           ...api().getContentProps()
+          // The content is a dialog (role from getContentProps when not
+          // inline); axe aria-dialog-name requires it to be named. The label
+          // part owns the visible text, so reference it by id.
+          aria-labelledby=(!input.inline && input.label ? (api().getLabelProps() as Record<string, unknown>).id as string : undefined)
           data-slot="color-picker-content"
           class=styles.content
         >

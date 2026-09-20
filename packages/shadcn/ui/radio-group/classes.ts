@@ -7,5 +7,5 @@ export const radioGroup = {
   indicatorIcon: "mu-radio-group-indicator-icon",
   itemText:
     "text-sm leading-none font-medium select-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
-  itemHit: "mu-radio-group-item-hit absolute inset-0 cursor-pointer",
+  itemHit: "absolute inset-0 cursor-pointer",
 } as const;
