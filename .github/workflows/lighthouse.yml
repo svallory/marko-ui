@@ -7,6 +7,7 @@ name: Lighthouse
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 concurrency:
@@ -52,7 +53,7 @@ jobs:
           artifactName: lighthouse-results-a11y
           temporaryPublicStorage: true
       - name: Lighthouse 100 on bare component pages (Desktop)
-        uses: treosh/lighthouse-ci-action@v12
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
         with:
           urls: |
             http://localhost:3000/bare/accordion
@@ -68,12 +69,14 @@ jobs:
             http://localhost:3000/bare/tabs
             http://localhost:3000/bare/tooltip
           configPath: .github/lighthouse/lighthouserc-bare-desktop.json
-          runs: 1
+          # Median of 3: single-run perf scores flake on shared runners
+          # (measured dips to 98 under load); the assert is per-median.
+          runs: 3
           uploadArtifacts: true
           artifactName: lighthouse-results-bare-desktop
           temporaryPublicStorage: true
       - name: Lighthouse 100 on bare component pages (Mobile)
-        uses: treosh/lighthouse-ci-action@v12
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
         with:
           urls: |
             http://localhost:3000/bare/accordion
@@ -89,7 +92,7 @@ jobs:
             http://localhost:3000/bare/tabs
             http://localhost:3000/bare/tooltip
           configPath: .github/lighthouse/lighthouserc-bare-mobile.json
-          runs: 1
+          runs: 3
           uploadArtifacts: true
           artifactName: lighthouse-results-bare-mobile
           temporaryPublicStorage: true

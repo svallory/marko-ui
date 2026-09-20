@@ -22,16 +22,26 @@ done
 for preset in desktop mobile; do
   echo "== $preset =="
   rm -rf .lighthouseci ".lighthouseci-$preset"
-  if ! flock /tmp/marko-ui-heavy.lock bunx @lhci/cli collect "${urls[@]}" \
-      --config "../../.github/lighthouse/lighthouserc-bare-$preset.json"; then
-    echo "collect failed for $preset"
-    continue
+  flock /tmp/marko-ui-heavy.lock bunx @lhci/cli collect "${urls[@]}" \
+      --config "../../.github/lighthouse/lighthouserc-bare-$preset.json"
+  collect_exit=$?
+  if [ "$collect_exit" -ne 0 ]; then
+    echo "collect failed for $preset (exit $collect_exit)" >&2
+    exit 1
   fi
-  mv .lighthouseci ".lighthouseci-$preset"
+  # Assert BEFORE archiving the results dir: `lhci assert` reads the LHRs
+  # from .lighthouseci in the cwd — moving it first makes assert run against
+  # 0 URLs and pass vacuously (measured: "Checking assertions against 0
+  # URL(s)", exit 0).
   flock /tmp/marko-ui-heavy.lock bunx @lhci/cli assert \
-    --config "../../.github/lighthouse/lighthouserc-bare-$preset.json" \
-    && echo "ASSERT: all 4 categories = 100 on all 12 pages ($preset)" \
-    || echo "ASSERT: FAILURES on $preset (table below)"
+    --config "../../.github/lighthouse/lighthouserc-bare-$preset.json"
+  assert_exit=$?
+  mv .lighthouseci ".lighthouseci-$preset"
+  if [ "$assert_exit" -ne 0 ]; then
+    echo "ASSERT: FAILURES on $preset (results kept in .lighthouseci-$preset)" >&2
+    exit 1
+  fi
+  echo "ASSERT: all 4 categories = 100 on all 12 pages ($preset)"
 done
 
 # Score table from the collected Lighthouse results.

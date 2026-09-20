@@ -39,3 +39,12 @@ for (const page of pages) {
 }
 
 console.log(`inline-bare-css: inlined ${inlined} stylesheet link(s) across ${pages.length} bare pages`);
+
+// A fresh bare build always emits stylesheet links — zero inlines means the
+// adapter's markup drifted from the regex above (attribute order/quotes) and
+// the pages would silently lose the inlining this script exists for. Fail
+// loud. (A second run over an already-inlined dist is not a supported use.)
+if (inlined === 0) {
+  console.error("inline-bare-css: no stylesheet links found in any bare page — markup drift? nothing inlined.");
+  process.exit(1);
+}
