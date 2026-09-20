@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "marko-run",
-    "build": "marko-run build && bun scripts/build-bare-routes.ts && marko-run build -c vite.bare.config.ts && bun scripts/prerender-handlers.ts && bun run build:worker",
+    "build": "marko-run build && bun scripts/build-bare-routes.ts && marko-run build -c vite.bare.config.ts && bun scripts/inline-bare-css.ts && bun scripts/prerender-handlers.ts && bun run build:worker",
     "preview": "marko-run preview",
     "check": "bash scripts/check.sh",
     "mtc:baseline": "bash scripts/generate-mtc-baseline.sh",
