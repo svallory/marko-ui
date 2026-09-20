@@ -58,10 +58,29 @@ export type Input = Omit<MachineInput<"div", radioGroupMachine.Props>, "value"> 
   )
 >
 
+// Item anatomy: a <div> row carries Zag's item props (pointer handlers + data
+// attrs). Zag emits `for` from getItemProps because upstream wraps the item in
+// a <label>, but this wrapper is a div (item content can be block markup, which
+// is not permitted inside a label) — drop it. The association instead:
+//   - the hidden input is the labelable control and names itself via
+//     aria-labelledby -> the item text part id (getItemTextProps),
+//   - a stretched, aria-hidden <label for=hidden-input-id> spans the whole row
+//     so clicking anywhere (control, text, or card content) forwards to the
+//     input. html-validate: block content in a sibling div is permitted.
+<const/itemRootProps=(value: string, disabled: boolean | undefined) => {
+  const props = api().getItemProps({ value, disabled }) as Record<string, unknown>;
+  delete props.for;
+  return props;
+}/>
+<const/itemHitProps=(value: string, disabled: boolean | undefined) => {
+  const hidden = api().getItemHiddenInputProps({ value, disabled }) as Record<string, unknown>;
+  return { for: hidden.id as string };
+}/>
+
 <div ...nativeAttrs() ...api().getRootProps() data-slot="radio-group" class=cn(styles.root, input.class)>
   <for|item| of=normalizedItems by=(item) => item.value>
-    <label
-      ...api().getItemProps({ value: item.value, disabled: item.disabled })
+    <div
+      ...itemRootProps(item.value, item.disabled)
       data-slot="radio-group-item-wrapper"
       class=styles.itemWrapper
     >
@@ -79,20 +98,32 @@ export type Input = Omit<MachineInput<"div", radioGroupMachine.Props>, "value"> 
           </span>
         </if>
       </span>
-      <input ...api().getItemHiddenInputProps({ value: item.value, disabled: item.disabled })>
-      <span
-        ...api().getItemTextProps({ value: item.value, disabled: item.disabled })
-        data-slot="radio-group-item-text"
-        class=styles.itemText
-      >
-        <if=item.content>
+      <input type="text" ...api().getItemHiddenInputProps({ value: item.value, disabled: item.disabled })>
+      <if=item.content>
+        <div
+          ...api().getItemTextProps({ value: item.value, disabled: item.disabled })
+          data-slot="radio-group-item-text"
+          class=styles.itemText
+        >
           <${item.content}/>
-        </if>
-        <else>
+        </div>
+      </if>
+      <else>
+        <span
+          ...api().getItemTextProps({ value: item.value, disabled: item.disabled })
+          data-slot="radio-group-item-text"
+          class=styles.itemText
+        >
           ${item.label}
-        </else>
-      </span>
-    </label>
+        </span>
+      </else>
+      <label
+        ...itemHitProps(item.value, item.disabled)
+        data-slot="radio-group-item-hit"
+        class=styles.itemHit
+        aria-hidden="true"
+      />
+    </div>
   </for>
 </div>
 

@@ -44,8 +44,8 @@ export type Input = MachineInput<"input", clipboardMachine.Props> & {
     <input
       ...nativeAttrs()
       ...api().getInputProps()
+      type="text"
       data-slot="clipboard-input"
-      readonly
       class=styles.input
     />
     <button

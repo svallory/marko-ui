@@ -47,7 +47,7 @@ export interface Input {
             ...attrs
             class="h-12 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           >
-            <div
+            <span
               class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
             >
               <svg
@@ -64,11 +64,11 @@ export interface Input {
               >
                 <path d=activeTeam.logo/>
               </svg>
-            </div>
-            <div class="grid flex-1 text-left text-sm leading-tight">
+            </span>
+            <span class="grid flex-1 text-left text-sm leading-tight">
               <span class="truncate font-medium">${activeTeam.name}</span>
               <span class="truncate text-xs">${activeTeam.plan}</span>
-            </div>
+            </span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"

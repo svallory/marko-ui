@@ -50,7 +50,7 @@ import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
 // switch-description.marko, not from Switch's own `content` slot.
 //
 // `ids={{ hiddenInput: "..." }}`: our Switch is Zag-backed, so its native
-// `id` input becomes a machine *scope* — the rendered hidden <input> gets
+// `id` input becomes a machine *scope* — the rendered hidden <input type="text"> gets
 // a derived id like "switch:switch-share:input", not the literal string
 // passed in. Without pinning `ids.hiddenInput` to match the external
 // `<label for>` above, the two never actually associate (axe: label).

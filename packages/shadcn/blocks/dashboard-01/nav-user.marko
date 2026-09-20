@@ -31,10 +31,10 @@ export interface Input {
           class="h-12 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
         >
           <Avatar src=input.user.avatar alt=input.user.name fallback="CN" class="h-8 w-8 rounded-lg grayscale"/>
-          <div class="grid flex-1 text-left text-sm leading-tight">
+          <span class="grid flex-1 text-left text-sm leading-tight">
             <span class="truncate font-medium">${input.user.name}</span>
             <span class="truncate text-xs text-muted-foreground">${input.user.email}</span>
-          </div>
+          </span>
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-auto size-4">
             <circle cx="12" cy="12" r="1"/>
             <circle cx="12" cy="5" r="1"/>
@@ -45,10 +45,10 @@ export interface Input {
       <@item type="label" class="p-0 font-normal">
         <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
           <Avatar src=input.user.avatar alt=input.user.name fallback="CN" class="h-8 w-8 rounded-lg"/>
-          <div class="grid flex-1 text-left text-sm leading-tight">
+          <span class="grid flex-1 text-left text-sm leading-tight">
             <span class="truncate font-medium">${input.user.name}</span>
             <span class="truncate text-xs text-muted-foreground">${input.user.email}</span>
-          </div>
+          </span>
         </div>
       </@item>
       <@item type="separator"/>

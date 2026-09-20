@@ -35,7 +35,7 @@ static const CURRENCIES = [
       Set the minimum balance required before a payout is triggered.
     </CardDescription>
     <CardAction>
-      <Button variant="ghost" size="icon-sm" class="bg-muted">
+      <Button type="button" variant="ghost" size="icon-sm" class="bg-muted">
         <Icon name="XIcon"/>
       </Button>
     </CardAction>
@@ -43,7 +43,7 @@ static const CURRENCIES = [
   <CardContent>
     <FieldGroup>
       <Field>
-        <FieldLabel for="preferred-currency">
+        <FieldLabel>
           Preferred Currency
         </FieldLabel>
         <Select
@@ -55,7 +55,7 @@ static const CURRENCIES = [
       </Field>
       <Field>
         <div class="flex items-baseline justify-between">
-          <FieldLabel for="min-payout">
+          <FieldLabel>
             Minimum Payout Amount
           </FieldLabel>
           <span class="text-2xl font-semibold tabular-nums">
@@ -76,7 +76,7 @@ static const CURRENCIES = [
         </div>
       </Field>
       <Field>
-        <FieldLabel for="payout-notes">Notes</FieldLabel>
+        <FieldLabel>Notes</FieldLabel>
         <Textarea
           id="payout-notes"
           placeholder="Add any notes for this payout configuration..."
@@ -86,6 +86,6 @@ static const CURRENCIES = [
     </FieldGroup>
   </CardContent>
   <CardFooter>
-    <Button class="w-full">Save Threshold</Button>
+    <Button type="button" class="w-full">Save Threshold</Button>
   </CardFooter>
 </Card>

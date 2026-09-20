@@ -78,7 +78,7 @@ static const CATEGORIES = [
   <CardFooter>
     <Dialog open=feedbackOpen openChange=((open: boolean) => (feedbackOpen = open))>
       <@trigger|triggerProps|>
-        <Button ...triggerProps variant="outline" class="w-full">
+        <Button type="button" ...triggerProps variant="outline" class="w-full">
           Share Feedback
         </Button>
       </@trigger>
@@ -120,10 +120,10 @@ static const CATEGORIES = [
         </Field>
       </FieldGroup>
       <@footer>
-        <Button variant="outline" onClick() { feedbackOpen = false; }>
+        <Button type="button" variant="outline" onClick() { feedbackOpen = false; }>
           Cancel
         </Button>
-        <Button>Submit</Button>
+        <Button type="button">Submit</Button>
       </@footer>
     </Dialog>
   </CardFooter>

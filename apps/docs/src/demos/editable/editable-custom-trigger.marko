@@ -3,6 +3,6 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
 <Editable defaultValue="Edit via custom trigger" class="w-[280px]">
   <@trigger|props|>
-    <Button ...props variant="outline" size="sm">Edit</Button>
+    <Button type="button" ...props variant="outline" size="sm">Edit</Button>
   </@trigger>
 </Editable>

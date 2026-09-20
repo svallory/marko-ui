@@ -3,7 +3,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
 <AlertDialog size="sm" cancelText="Don't allow" actionText="Allow">
   <@trigger|props|>
-    <Button ...props variant="outline">Show Dialog</Button>
+    <Button type="button" ...props variant="outline">Show Dialog</Button>
   </@trigger>
   <@title>Allow accessory to connect?</@title>
   <@description>

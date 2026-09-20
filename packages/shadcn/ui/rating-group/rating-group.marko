@@ -63,7 +63,7 @@ export type Input = MachineInput<"div", ratingGroupMachine.Props> & {
       </span>
     </for>
   </div>
-  <input ...api().getHiddenInputProps()>
+  <input type="text" ...api().getHiddenInputProps()>
 </div>
 
 // Parents can receive the api getter: <RatingGroup/ratingApi/> then

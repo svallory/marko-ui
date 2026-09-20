@@ -24,7 +24,7 @@ export type Input = MachineInput<"input", numberInputMachine.Props> & {
   data-slot="number-input"
   class=cn(styles.root, input.class)
 >
-  <button
+  <button type="button"
     ...api().getDecrementTriggerProps()
     data-slot="number-input-decrement"
     class=styles.decrement
@@ -32,7 +32,7 @@ export type Input = MachineInput<"input", numberInputMachine.Props> & {
     <Icon name="Minus" class=styles.icon/>
   </button>
   <div ...api().getControlProps() data-slot="number-input-control" class=styles.control>
-    <input
+    <input type="text"
       ...nativeAttrs()
       ...api().getInputProps()
       data-slot="number-input-field"
@@ -44,7 +44,7 @@ export type Input = MachineInput<"input", numberInputMachine.Props> & {
       class=styles.scrubber
     />
   </div>
-  <button
+  <button type="button"
     ...api().getIncrementTriggerProps()
     data-slot="number-input-increment"
     class=styles.increment

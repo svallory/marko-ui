@@ -31,7 +31,7 @@ static const PREVIEW_ITEMS = [
 <if=isPreviewItem>
   <div class="dark absolute right-3 bottom-3 z-20 flex items-center gap-1 rounded-xl bg-card/90 p-1 shadow-xl backdrop-blur-xl" data-slot="preview-switcher">
     <for|item| of=PREVIEW_ITEMS by=(item) => item.value>
-      <Button
+      <Button type="button"
         variant="ghost"
         size="sm"
         data-active=String(input.item === item.value)

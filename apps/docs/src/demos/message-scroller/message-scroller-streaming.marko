@@ -80,7 +80,7 @@ static const SCRIPT: ChatMessage[] = [
         <CardAction>
           <Tooltip>
             <@trigger|props|>
-              <Button ...props variant="outline" size="icon" aria-label="Reset stream" onClick=reset disabled=(messages.length === 0 || busy)>
+              <Button type="button" ...props variant="outline" size="icon" aria-label="Reset stream" onClick=reset disabled=(messages.length === 0 || busy)>
                 <Icon name="RotateCwIcon"/>
               </Button>
             </@trigger>

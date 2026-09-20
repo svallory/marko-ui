@@ -23,22 +23,22 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 <div dir="rtl" class="flex flex-wrap justify-center gap-2">
   <Tooltip content="إضافة إلى المكتبة" dir="rtl" positioning={ placement: "left" }>
     <@trigger|props|>
-      <Button ...props variant="outline">يسار</Button>
+      <Button type="button" ...props variant="outline">يسار</Button>
     </@trigger>
   </Tooltip>
   <Tooltip content="إضافة إلى المكتبة" dir="rtl" positioning={ placement: "top" }>
     <@trigger|props|>
-      <Button ...props variant="outline">أعلى</Button>
+      <Button type="button" ...props variant="outline">أعلى</Button>
     </@trigger>
   </Tooltip>
   <Tooltip content="إضافة إلى المكتبة" dir="rtl" positioning={ placement: "bottom" }>
     <@trigger|props|>
-      <Button ...props variant="outline">أسفل</Button>
+      <Button type="button" ...props variant="outline">أسفل</Button>
     </@trigger>
   </Tooltip>
   <Tooltip content="إضافة إلى المكتبة" dir="rtl" positioning={ placement: "right" }>
     <@trigger|props|>
-      <Button ...props variant="outline">يمين</Button>
+      <Button type="button" ...props variant="outline">يمين</Button>
     </@trigger>
   </Tooltip>
 </div>

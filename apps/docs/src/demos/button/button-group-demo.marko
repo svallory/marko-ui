@@ -27,19 +27,19 @@ static const LABEL_ITEMS = [
 
 <ButtonGroup>
   <ButtonGroup class="hidden sm:flex">
-    <Button variant="outline" size="icon" aria-label="Go Back">
+    <Button type="button" variant="outline" size="icon" aria-label="Go Back">
       <Icon name="ArrowLeft"/>
     </Button>
   </ButtonGroup>
   <ButtonGroup>
-    <Button variant="outline">Archive</Button>
-    <Button variant="outline">Report</Button>
+    <Button type="button" variant="outline">Archive</Button>
+    <Button type="button" variant="outline">Report</Button>
   </ButtonGroup>
   <ButtonGroup>
-    <Button variant="outline">Snooze</Button>
+    <Button type="button" variant="outline">Snooze</Button>
     <DropdownMenu>
       <@trigger|triggerProps|>
-        <Button variant="outline" size="icon" aria-label="More Options" ...triggerProps>
+        <Button type="button" variant="outline" size="icon" aria-label="More Options" ...triggerProps>
           <Icon name="MoreHorizontal"/>
         </Button>
       </@trigger>

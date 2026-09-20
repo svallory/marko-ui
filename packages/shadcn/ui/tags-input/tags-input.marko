@@ -21,9 +21,9 @@ export type Input = MachineInput<"div", tagsInputMachine.Props> & {
   }
 />
 
-// `placeholder` belongs on the entry <input>, not the root div. It is a
+// `placeholder` belongs on the entry <input type="text">, not the root div. It is a
 // machine prop, so `splitProps` already removes it here; it is re-applied
-// from `input.placeholder` on that <input> below.
+// from `input.placeholder` on that <input type="text"> below.
 <const/nativeAttrs=() =>
   stripOwnProps(
     tagsInputMachine.splitProps(input)[1],
@@ -33,7 +33,7 @@ export type Input = MachineInput<"div", tagsInputMachine.Props> & {
     "highlightedValueChange",
     "label",
     // `placeholder` is a machine prop, so `splitProps` has already removed it
-    // from this leftover object. It is still applied to the entry <input>
+    // from this leftover object. It is still applied to the entry <input type="text">
     // below from `input.placeholder` (Zag's getInputProps does not emit one).
   )
 >
@@ -69,7 +69,7 @@ export type Input = MachineInput<"div", tagsInputMachine.Props> & {
             <span class=styles.itemDeleteSrOnly>Remove ${value}</span>
           </button>
         </span>
-        <input
+        <input type="text"
           ...api().getItemInputProps({ index, value })
           data-slot="tags-input-item-input"
           class=styles.itemInput
@@ -78,12 +78,13 @@ export type Input = MachineInput<"div", tagsInputMachine.Props> & {
     </for>
     <input
       ...api().getInputProps()
+      type="text"
       placeholder=input.placeholder
       data-slot="tags-input-input"
       class=styles.input
     />
   </div>
-  <input ...api().getHiddenInputProps()>
+  <input type="text" ...api().getHiddenInputProps()>
 </div>
 
 <return=api>

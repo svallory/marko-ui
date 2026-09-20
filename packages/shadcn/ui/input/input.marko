@@ -6,7 +6,7 @@ export interface Input extends Marko.Input<"input"> {}
 <const/{ type, class: className, ...rest }=input/>
 
 <input
-  type=type
+  type=(type ?? "text")
   data-slot="input"
   class=cn(styles.root, className)
   ...rest

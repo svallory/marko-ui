@@ -114,7 +114,7 @@ export type Input = MachineInput<"div", tabsMachine.Props & Own> & TabsListVaria
     class=tabsListVariants({ variant: input.variant })
   >
     <for|trigger| of=triggers>
-      <button
+      <button type="button"
         ...api().getTriggerProps({ value: trigger.value, disabled: trigger.disabled })
         data-slot="tabs-trigger"
         class=styles.trigger

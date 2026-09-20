@@ -136,15 +136,28 @@ export type Input = Omit<MachineInput<"div", cascadeSelect.Props<CascadeSelectIt
 // Items not in this set get their aria-controls/aria-owns dropped below.
 <const/renderedChildLists=() => new Set(panels().slice(1).map((p) => p.valuePath.join("/")))>
 
+<const/labelProps=() => {
+  const props = api().getLabelProps() as Record<string, unknown>;
+  delete props["for"];
+  delete props["htmlFor"];
+  return props;
+}/>
+
 <div ...nativeAttrs() ...api().getRootProps() data-slot="cascade-select" class=cn(className)>
-  <label ...api().getLabelProps() data-slot="cascade-select-label" class=(label ? styles.label : styles.labelSrOnly)>${label || placeholder || "Select an option"}</label>
+  <span ...labelProps() data-slot="cascade-select-label" class=(label ? styles.label : styles.labelSrOnly)>${label || placeholder || "Select an option"}</span>
   <div ...api().getControlProps() data-slot="cascade-select-control">
-    <button ...api().getTriggerProps() aria-haspopup="tree" data-slot="cascade-select-trigger" class=styles.trigger>
+    <button type="button" ...api().getTriggerProps() aria-haspopup="tree" aria-labelledby=(labelProps().id as string) data-slot="cascade-select-trigger" class=styles.trigger>
       <span data-slot="cascade-select-value">${triggerLabel() || placeholder}</span>
       <Icon ...api().getIndicatorProps() name="ChevronDown" class=styles.indicatorIcon/>
     </button>
   </div>
-  <input ...api().getHiddenInputProps() data-slot="cascade-select-hidden-input">
+  <const/hiddenInputProps=() => {
+    const props = api().getHiddenInputProps() as Record<string, unknown>;
+    delete props["aria-labelledby"];
+    delete props["ariaLabelledBy"];
+    return props;
+  }/>
+  <input type="hidden" ...hiddenInputProps() data-slot="cascade-select-hidden-input" hidden/>
   <zag-portal>
     <if=api().open>
       <div ...api().getPositionerProps() data-slot="cascade-select-positioner" style=positionerStyle>

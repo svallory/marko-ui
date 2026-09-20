@@ -16,7 +16,7 @@ import Calendar from "@marko-ui/shadcn/ui/calendar/calendar.marko";
   <FieldLabel for="date">Date of birth</FieldLabel>
   <Popover open=open openChange=(next) => { open = next; } class="w-auto overflow-hidden p-0">
     <@trigger|props|>
-      <Button ...props variant="outline" id="date" class="justify-start font-normal">
+      <Button type="button" ...props variant="outline" id="date" class="justify-start font-normal">
         <if=value[0]>
           ${new Date(value[0].year, value[0].month - 1, value[0].day).toLocaleDateString()}
         </if>

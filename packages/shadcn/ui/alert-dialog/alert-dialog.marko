@@ -99,7 +99,7 @@ export type Input = MachineInput<"div", dialogMachine.Props & Own>;
           </p>
         </div>
         <div data-slot="alert-dialog-footer" class=styles.footer>
-          <Button
+          <Button type="button"
             ...api().getCloseTriggerProps()
             variant=(input.cancelVariant ?? "outline")
             data-slot="alert-dialog-cancel"
@@ -107,7 +107,7 @@ export type Input = MachineInput<"div", dialogMachine.Props & Own>;
           >
             ${input.cancelText ?? "Cancel"}
           </Button>
-          <Button
+          <Button type="button"
             ...api().getCloseTriggerProps()
             variant=(input.actionVariant ?? "default")
             data-slot="alert-dialog-action"

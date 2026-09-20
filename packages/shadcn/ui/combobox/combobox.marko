@@ -129,7 +129,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
             </button>
           </span>
         </for>
-        <input
+        <input type="text"
           ...api().getInputProps()
           data-slot="combobox-chip-input"
           class=styles.chipInput
@@ -137,14 +137,14 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
       </div>
     </if>
     <else>
-      <input
+      <input type="text"
         ...api().getInputProps()
         data-slot="combobox-input"
         class=styles.input
       />
     </else>
     <if=(showClear && api().hasSelectedItems)>
-      <button
+      <button type="button"
         ...api().getClearTriggerProps()
         data-slot="combobox-clear"
         class=styles.clear
@@ -152,7 +152,7 @@ export type Input = Omit<MachineInput<"div", combobox.Props>, "collection"> & {
         <Icon name="X" class=styles.clearIcon/>
       </button>
     </if>
-    <button
+    <button type="button"
       ...api().getTriggerProps()
       data-slot="combobox-trigger"
       class=styles.trigger

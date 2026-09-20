@@ -9,7 +9,7 @@ import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
   class="min-w-56"
 >
   <@trigger|triggerProps|>
-    <Button variant="outline" ...triggerProps>Payment Method</Button>
+    <Button type="button" variant="outline" ...triggerProps>Payment Method</Button>
   </@trigger>
   <@item type="label" label="Select Payment Method"/>
   <@item type="radio" value="card" radioGroup="payment" checked=(paymentMethod === "card")>

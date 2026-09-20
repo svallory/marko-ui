@@ -7,7 +7,7 @@ import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
 // closest available icon, CirclePlusIcon.
 <AlertDialog cancelText="Cancel" actionText="Share">
   <@trigger|props|>
-    <Button ...props variant="outline">Share Project</Button>
+    <Button type="button" ...props variant="outline">Share Project</Button>
   </@trigger>
   <@media>
     <Icon name="CirclePlusIcon"/>

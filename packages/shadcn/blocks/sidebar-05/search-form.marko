@@ -32,4 +32,7 @@ export interface Input extends Marko.Input<"form"> {}
       </svg>
     </div>
   </SidebarGroup>
+  <!-- h32: a form needs a submit control; visually hidden, Enter keeps its
+  implicit-submission behavior. -->
+  <button type="submit" class="sr-only">Search</button>
 </form>

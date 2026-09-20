@@ -7,7 +7,7 @@ import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
 import { checkbox as styles } from "./classes.ts";
 
-// MachineInput = native <input> attributes ∩ the machine's full Props, with
+// MachineInput = native <input type="text"> attributes ∩ the machine's full Props, with
 // `id` made optional (generated below, overridable). `checkedChange` is
 // additive sugar enabling Marko's two-way bind shorthand
 // (<Checkbox checked:=myState/>); Zag's own `onCheckedChange` also works and
@@ -32,7 +32,7 @@ export type Input = MachineInput<"input", checkboxMachine.Props> & {
 // <zag>'s `from=` (picking checkboxMachine.props) never forwards it to the
 // machine, so a stray `indeterminate` attribute would otherwise fall
 // through splitProps into nativeAttrs and land as a bogus static HTML
-// attribute on the native <input>. Strip it defensively here; the supported
+// attribute on the native <input type="text">. Strip it defensively here; the supported
 // API for tri-state is `checked`.
 // The source is widened with an explicit optional `indeterminate` rather than
 // `as typeof input`: `Input` deliberately does NOT declare the prop (it is not
@@ -50,8 +50,17 @@ export type Input = MachineInput<"input", checkboxMachine.Props> & {
   ...api().getHiddenInputProps(),
 })>
 
+// The root <label> WRAPS the hidden input, so Zag's `for` (htmlFor) pointing
+// at it is redundant — html-validate flags label[for] whose target is already
+// a descendant. Drop it; the wrapping association is the association.
+<const/rootProps=() => {
+  const props = api().getRootProps() as Record<string, unknown>;
+  delete props.for;
+  return props;
+}/>
+
 <label
-  ...api().getRootProps()
+  ...rootProps()
   data-slot="checkbox-root"
   class=cn(
     styles.root,
@@ -59,7 +68,7 @@ export type Input = MachineInput<"input", checkboxMachine.Props> & {
     input.class,
   )
 >
-  <input ...hiddenInputProps()>
+  <input type="text" ...hiddenInputProps()>
   <span
     ...api().getControlProps()
     data-slot="checkbox"

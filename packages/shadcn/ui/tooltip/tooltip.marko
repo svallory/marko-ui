@@ -34,28 +34,32 @@ export type Input = MachineInput<"span", tooltipMachine.Props> & {
 
 <span ...nativeAttrs() data-slot="tooltip">
   <${input.trigger.content}({ ...api().getTriggerProps(), "data-slot": "tooltip-trigger" })/>
-  <zag-portal>
-    <if=api().open>
-      <div ...api().getPositionerProps() style=positionerStyle data-slot="tooltip-positioner">
-        <div
-          ...api().getContentProps()
-          data-slot="tooltip-content"
-          class=cn(styles.content, input.class)
-        >
-          <if=(typeof input.content === "string")>
-            ${input.content}
-          </if>
-          <else>
-            <${input.content}/>
-          </else>
-          <div ...api().getArrowProps() data-slot="tooltip-arrow">
-            <div ...api().getArrowTipProps() data-slot="tooltip-arrow-tip" class=styles.arrowTip/>
-          </div>
+</span>
+// The portal lives OUTSIDE the span root: <zag-portal> renders a real
+// element, and a <div> is not valid phrasing content inside <span>
+// (html-validate element-permitted-content). The portal's contents are
+// absolutely positioned regardless of DOM parent.
+<zag-portal>
+  <if=api().open>
+    <div ...api().getPositionerProps() style=positionerStyle data-slot="tooltip-positioner">
+      <div
+        ...api().getContentProps()
+        data-slot="tooltip-content"
+        class=cn(styles.content, input.class)
+      >
+        <if=(typeof input.content === "string")>
+          ${input.content}
+        </if>
+        <else>
+          <${input.content}/>
+        </else>
+        <div ...api().getArrowProps() data-slot="tooltip-arrow">
+          <div ...api().getArrowTipProps() data-slot="tooltip-arrow-tip" class=styles.arrowTip/>
         </div>
       </div>
-    </if>
-  </zag-portal>
-</span>
+    </div>
+  </if>
+</zag-portal>
 
 // Parents can receive the api getter: <Tooltip/tooltipApi/> then
 // `tooltipApi().open` — it stays live across machine updates.

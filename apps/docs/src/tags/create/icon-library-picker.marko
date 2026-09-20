@@ -50,13 +50,13 @@ export interface Input {
     }]
   >
     <@trigger>
-      <div class="flex flex-col justify-start text-left">
-        <div class="text-xs text-muted-foreground">Icon Library</div>
-        <div class="text-sm font-medium text-foreground">${currentIconLibrary?.title}</div>
-      </div>
-      <div class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-base text-foreground select-none md:right-2.5">
+      <span class="flex flex-col justify-start text-left">
+        <span class="text-xs text-muted-foreground">Icon Library</span>
+        <span class="text-sm font-medium text-foreground">${currentIconLibrary?.title}</span>
+      </span>
+      <span class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-base text-foreground select-none md:right-2.5">
         $!{logos[input.value] ?? ""}
-      </div>
+      </span>
     </@trigger>
   </Picker>
   <LockButton

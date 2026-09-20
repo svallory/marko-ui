@@ -16,7 +16,7 @@ import Switch from "@marko-ui/shadcn/ui/switch/switch.marko";
 // restyles correctly under dir="rtl" with no component changes.
 //
 // `ids={{ hiddenInput: "..." }}`: our Switch is Zag-backed, so its native
-// `id` input becomes a machine scope -- the rendered hidden <input> gets
+// `id` input becomes a machine scope -- the rendered hidden <input type="text"> gets
 // a derived id, not the literal string passed in. This pins the literal
 // DOM id so `FieldLabel for=` actually resolves (axe: label).
 <div dir="rtl" class="w-full max-w-sm">

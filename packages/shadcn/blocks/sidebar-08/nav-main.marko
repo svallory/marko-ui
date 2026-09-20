@@ -42,15 +42,15 @@ export interface Input {
       <const/hasSubItems=(item.items ?? []).length !== 0/>
       <let/isOpen=!!item.isActive/>
       <if=hasSubItems>
-        <Collapsible
+        <SidebarMenuItem>
+          <Collapsible
           open=isOpen
           openChange(open) {
             isOpen = open;
           }
           class="group/collapsible"
         >
-          <@trigger|attrs|>
-            <SidebarMenuItem>
+            <@trigger|attrs|>
               <SidebarMenuButton href=item.url>
                 <NavIcon name=item.icon/>
                 <span>${item.title}</span>
@@ -77,8 +77,7 @@ export interface Input {
                 </svg>
                 <span class="sr-only">Toggle</span>
               </button>
-            </SidebarMenuItem>
-          </@trigger>
+        </@trigger>
           <ul
             class="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5"
           >
@@ -93,7 +92,8 @@ export interface Input {
               </li>
             </for>
           </ul>
-        </Collapsible>
+          </Collapsible>
+          </SidebarMenuItem>
       </if>
       <else>
         <SidebarMenuItem>

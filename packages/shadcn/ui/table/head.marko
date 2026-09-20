@@ -5,10 +5,11 @@ export interface Input extends Marko.Input<"th"> {
   content?: Marko.Body;
 }
 
-<const/{ class: className, content, ...rest }=input/>
+<const/{ class: className, content, scope, ...rest }=input/>
 
 <th
   ...rest
+  scope=(scope ?? "col")
   data-slot="table-head"
   class=cn(styles.root, className)
 >

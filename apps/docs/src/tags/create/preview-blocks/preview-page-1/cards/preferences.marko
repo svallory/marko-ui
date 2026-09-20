@@ -34,7 +34,7 @@ static const CURRENCIES = [
       Manage your account settings and notifications.
     </CardDescription>
     <CardAction>
-      <Button variant="ghost" size="icon-sm" class="bg-muted">
+      <Button type="button" variant="ghost" size="icon-sm" class="bg-muted">
         <Icon name="XIcon"/>
       </Button>
     </CardAction>
@@ -42,7 +42,7 @@ static const CURRENCIES = [
   <CardContent>
     <FieldGroup>
       <Field>
-        <FieldLabel for="default-currency">Default Currency</FieldLabel>
+        <FieldLabel>Default Currency</FieldLabel>
         <Select
           ids={ trigger: "default-currency" }
           items=CURRENCIES
@@ -53,7 +53,7 @@ static const CURRENCIES = [
       <FieldSeparator class="-my-4 style-sera:hidden"/>
       <Field orientation="horizontal">
         <FieldContent>
-          <FieldLabel for="public-statistics">
+          <FieldLabel>
             Public Statistics
           </FieldLabel>
           <FieldDescription>
@@ -66,7 +66,7 @@ static const CURRENCIES = [
       <FieldSeparator class="-my-4 style-sera:hidden"/>
       <Field orientation="horizontal">
         <FieldContent>
-          <FieldLabel for="email-notifications">
+          <FieldLabel>
             Email Notifications
           </FieldLabel>
           <FieldDescription>
@@ -78,7 +78,7 @@ static const CURRENCIES = [
     </FieldGroup>
   </CardContent>
   <CardFooter>
-    <Button variant="outline">Reset</Button>
-    <Button class="ml-auto">Save Preferences</Button>
+    <Button type="button" variant="outline">Reset</Button>
+    <Button type="button" class="ml-auto">Save Preferences</Button>
   </CardFooter>
 </Card>

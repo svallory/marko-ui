@@ -2,18 +2,18 @@ import Field from "@marko-ui/shadcn/ui/field/field.marko";
 import FieldContent from "@marko-ui/shadcn/ui/field/field-content.marko";
 import FieldDescription from "@marko-ui/shadcn/ui/field/field-description.marko";
 import FieldGroup from "@marko-ui/shadcn/ui/field/field-group.marko";
-import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
+import FieldLegend from "@marko-ui/shadcn/ui/field/field-legend.marko";
 import FieldSet from "@marko-ui/shadcn/ui/field/field-set.marko";
 import FieldTitle from "@marko-ui/shadcn/ui/field/field-title.marko";
 import RadioGroup from "@marko-ui/shadcn/ui/radio-group/radio-group.marko";
 
 // Deviation from upstream: upstream wraps a bare <RadioGroupItem> in an
-// external <FieldLabel><Field orientation="horizontal"><FieldContent>...
+// external <FieldLegend variant="label"><Field orientation="horizontal"><FieldContent>...
 // with the indicator trailing the title/description text. Our
-// <RadioGroup> renders every item as ONE root <label> (indicator, then
-// hidden input, then item text, in that fixed order — see
-// packages/shadcn/ui/radio-group/radio-group.marko) via the `item`
-// attr-tag's `content` body, so a second wrapping <FieldLabel> would
+// <RadioGroup> renders every item as ONE root row (indicator, then
+// hidden input, then the item's text/content part, in that fixed order —
+// see packages/shadcn/ui/radio-group/radio-group.marko) via the `item`
+// attr-tag's `content` body, so a second wrapping <FieldLegend variant="label"> would
 // nest labels and the indicator cannot trail the text. We compose the
 // "choice card" look through the item's own `content` slot, which puts
 // the indicator first — a real, disclosed layout difference from
@@ -21,7 +21,7 @@ import RadioGroup from "@marko-ui/shadcn/ui/radio-group/radio-group.marko";
 <div class="w-full max-w-md">
   <FieldGroup>
     <FieldSet>
-      <FieldLabel>Compute Environment</FieldLabel>
+      <FieldLegend variant="label">Compute Environment</FieldLegend>
       <FieldDescription>Select the compute environment for your cluster.</FieldDescription>
       <RadioGroup defaultValue="kubernetes" class="gap-3">
         <@item value="kubernetes">

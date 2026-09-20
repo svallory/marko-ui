@@ -32,16 +32,16 @@ export interface Input {
     sections=[{ options: STYLES.map((style) => ({ value: style.name, label: style.title })) }]
   >
     <@trigger>
-      <div class="flex flex-col justify-start text-left">
-        <div class="text-xs text-muted-foreground">Style</div>
-        <div class="text-sm font-medium text-foreground">${currentStyle?.title}</div>
-      </div>
+      <span class="flex flex-col justify-start text-left">
+        <span class="text-xs text-muted-foreground">Style</span>
+        <span class="text-sm font-medium text-foreground">${currentStyle?.title}</span>
+      </span>
       <if=currentStyle?.icon>
-        <div class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center select-none md:right-2.5">
+        <span class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center select-none md:right-2.5">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" class="size-4">
             $!{currentStyle.icon}
           </svg>
-        </div>
+        </span>
       </if>
     </@trigger>
   </Picker>

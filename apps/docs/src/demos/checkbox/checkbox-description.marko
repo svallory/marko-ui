@@ -10,7 +10,7 @@ import FieldLabel from "@marko-ui/shadcn/ui/field/field-label.marko";
 //
 // `ids={{ hiddenInput: "..." }}`: our Checkbox is Zag-backed, so its
 // native `id` input becomes a machine *scope* — the rendered hidden
-// <input> gets a derived id, not the literal string passed in. This pins
+// <input type="text"> gets a derived id, not the literal string passed in. This pins
 // the literal DOM id so `FieldLabel for=` actually resolves (axe: label).
 <Field class="mx-auto w-72" orientation="horizontal">
   <Checkbox id="checkbox-description-terms" ids={ hiddenInput: "checkbox-description-terms" } defaultChecked/>

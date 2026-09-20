@@ -9,7 +9,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
     openChange=(next) => { open = next; }
   >
     <@trigger|props|>
-      <Button ...props variant="outline">Open controlled sheet</Button>
+      <Button type="button" ...props variant="outline">Open controlled sheet</Button>
     </@trigger>
     <@title>Controlled sheet</@title>
     <@description>This sheet's open state is held in the parent and can be toggled from outside too.</@description>

@@ -413,3 +413,6 @@ CI does this on every push to `main` via `.github/workflows/pages.yml`, which bu
 ## Repo Context
 
 This directory is the root of a hyper space. Before doing anything here, you must read `HYPER.md` — all the rules for working in this directory live there.
+
+**Package & HTML Validity Gates (2026-09-17)**
+New gates were added to ensure the credibility of the output. The package integrity gate (`bun run check:pkg`) runs `publint` and `attw` during CI (`pkg-checks` job) and before npm publishing. It ensures ESM-only correctness; if you see CJS-related warnings for the `marko-ui` CLI, they are explicitly ignored in `tooling/check-pkg.ts`. The HTML validity gate (`bun run check:html`) runs `html-validate` against the static docs site during the deployment pipeline (`pages.yml`). It enforces semantic HTML but intentionally ignores Zag.js adapter artifacts (e.g. `prefer-native-element`) and Marko's runtime quirks (`parser-error` for `<!>`). If `check:html` flags a real defect like a missing `title` on an `<iframe>` or missing `autocomplete` on a password input, fix the component. Do not loosen the rules in `.htmlvalidate.cjs` to hide valid accessibility or semantic bugs.

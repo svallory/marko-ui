@@ -85,7 +85,7 @@ export interface Input {
 <const/{ class: className, contentClass, trigger, sections, value, closeOnClick }=input/>
 
 <div class="group/picker relative">
-  <button
+  <button type="button"
     ...api().getTriggerProps()
     disabled=input.disabled
     data-slot="picker-trigger"

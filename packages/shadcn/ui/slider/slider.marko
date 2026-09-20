@@ -28,7 +28,7 @@ export type Input = MachineInput<"div", sliderMachine.Props> & {
       <div ...api().getRangeProps() data-slot="slider-range" class=styles.range></div>
     </div>
     <for|_, i| of=api().value>
-      <input ...api().getHiddenInputProps({ index: i })>
+      <input type="text" ...api().getHiddenInputProps({ index: i })>
       <div ...api().getThumbProps({ index: i }) data-slot="slider-thumb" class=styles.thumb></div>
     </for>
   </div>

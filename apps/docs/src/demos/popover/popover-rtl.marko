@@ -12,7 +12,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 <div dir="rtl" class="flex flex-wrap justify-center gap-2">
   <Popover dir="rtl" positioning={ placement: "left" }>
     <@trigger|props|>
-      <Button ...props variant="outline">يسار</Button>
+      <Button type="button" ...props variant="outline">يسار</Button>
     </@trigger>
     <div class="grid gap-2">
       <h4 class="leading-none font-medium">الأبعاد</h4>
@@ -21,7 +21,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
   </Popover>
   <Popover dir="rtl" positioning={ placement: "top" }>
     <@trigger|props|>
-      <Button ...props variant="outline">أعلى</Button>
+      <Button type="button" ...props variant="outline">أعلى</Button>
     </@trigger>
     <div class="grid gap-2">
       <h4 class="leading-none font-medium">الأبعاد</h4>
@@ -30,7 +30,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
   </Popover>
   <Popover dir="rtl" positioning={ placement: "bottom" }>
     <@trigger|props|>
-      <Button ...props variant="outline">أسفل</Button>
+      <Button type="button" ...props variant="outline">أسفل</Button>
     </@trigger>
     <div class="grid gap-2">
       <h4 class="leading-none font-medium">الأبعاد</h4>
@@ -39,7 +39,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
   </Popover>
   <Popover dir="rtl" positioning={ placement: "right" }>
     <@trigger|props|>
-      <Button ...props variant="outline">يمين</Button>
+      <Button type="button" ...props variant="outline">يمين</Button>
     </@trigger>
     <div class="grid gap-2">
       <h4 class="leading-none font-medium">الأبعاد</h4>

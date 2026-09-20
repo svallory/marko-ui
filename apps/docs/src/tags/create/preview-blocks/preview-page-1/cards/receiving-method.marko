@@ -35,7 +35,7 @@ static const RADIO_ITEM_CLASS =
     <CardDescription>Payout Preferences</CardDescription>
     <CardTitle>Receiving Method</CardTitle>
     <CardAction>
-      <Button variant="ghost" size="icon-sm" class="bg-muted">
+      <Button type="button" variant="ghost" size="icon-sm" class="bg-muted">
         <Icon name="XIcon"/>
       </Button>
     </CardAction>
@@ -43,7 +43,7 @@ static const RADIO_ITEM_CLASS =
   <CardContent>
     <FieldGroup>
       <Field>
-        <FieldLabel for="account-holder">
+        <FieldLabel>
           Account Holder Name
         </FieldLabel>
         <TextInput
@@ -58,13 +58,17 @@ static const RADIO_ITEM_CLASS =
           data-slot="radio-group"
           class="grid grid-cols-1 items-start gap-3 md:grid-cols-2 style-sera:grid-cols-1"
         >
-          <FieldLabel for="method-bank">
+          <div
+            class="mu-field-label group/field-label peer/field-label flex w-fit has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col"
+            onClick() { method = "bank"; }
+          >
             <Field orientation="horizontal" class="pb-2.5">
               <button
                 type="button"
                 role="radio"
                 id="method-bank"
                 value="bank"
+                aria-label="Bank Transfer"
                 aria-checked=(method === "bank" ? "true" : "false")
                 data-state=(method === "bank" ? "checked" : "unchecked")
                 data-slot="radio-group-item"
@@ -83,14 +87,18 @@ static const RADIO_ITEM_CLASS =
                 <FieldDescription>SWIFT / IBAN</FieldDescription>
               </FieldContent>
             </Field>
-          </FieldLabel>
-          <FieldLabel for="method-paypal">
+          </div>
+          <div
+            class="mu-field-label group/field-label peer/field-label flex w-fit has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col"
+            onClick() { method = "paypal"; }
+          >
             <Field orientation="horizontal" class="pb-2.5">
               <button
                 type="button"
                 role="radio"
                 id="method-paypal"
                 value="paypal"
+                aria-label="PayPal"
                 aria-checked=(method === "paypal" ? "true" : "false")
                 data-state=(method === "paypal" ? "checked" : "unchecked")
                 data-slot="radio-group-item"
@@ -111,17 +119,17 @@ static const RADIO_ITEM_CLASS =
                 </FieldDescription>
               </FieldContent>
             </Field>
-          </FieldLabel>
+          </div>
         </div>
       </FieldSet>
       <Field>
-        <FieldLabel for="iban">IBAN / Account Number</FieldLabel>
+        <FieldLabel>IBAN / Account Number</FieldLabel>
         <TextInput id="iban" placeholder="DE89 3704 0044 ...."/>
       </Field>
     </FieldGroup>
   </CardContent>
   <CardFooter>
-    <Button class="w-full" disabled>
+    <Button type="button" class="w-full" disabled>
       Save Payout Settings
     </Button>
   </CardFooter>

@@ -15,7 +15,7 @@ import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
   class="w-48"
 >
   <@trigger|triggerProps|>
-    <Button variant="outline" ...triggerProps>Notifications</Button>
+    <Button type="button" variant="outline" ...triggerProps>Notifications</Button>
   </@trigger>
   <@item type="label" label="Notification Preferences"/>
   <@item type="checkbox" value="email" checked=email>

@@ -69,7 +69,7 @@ static const NOTIFICATIONS = [
           }
         />
         <FieldContent>
-          <FieldLabel for="notify-all">Select all</FieldLabel>
+          <FieldLabel>Select all</FieldLabel>
         </FieldContent>
       </Field>
       <for|n| of=NOTIFICATIONS by=(n) => n.id>
@@ -90,6 +90,6 @@ static const NOTIFICATIONS = [
     </FieldGroup>
   </CardContent>
   <CardFooter>
-    <Button class="w-full">Save Preferences</Button>
+    <Button type="button" class="w-full">Save Preferences</Button>
   </CardFooter>
 </Card>

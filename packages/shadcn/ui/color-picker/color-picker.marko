@@ -73,7 +73,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
 />
 
 // Whatever is neither machine-owned (splitProps) nor component-owned passes
-// through to the hidden input: aria-*, data-*, form attributes... Leaking a
+// through to the root div: aria-*, data-*, form attributes... Leaking a
 // component-owned prop here would stringify it into a bogus DOM attribute.
 // `value`/`defaultValue` are deliberately widened to `string | Color` on this
 // component's public Input (callers may pass a CSS color string), so `input` does not
@@ -108,13 +108,19 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
   class=cn(styles.root, input.class)
 >
   <if=input.label>
-    <label
-      ...api().getLabelProps()
+    <const/labelProps=() => {
+      const props = api().getLabelProps() as Record<string, unknown>;
+      delete props["for"];
+      delete props["htmlFor"];
+      return props;
+    }/>
+    <span
+      ...labelProps()
       data-slot="color-picker-label"
       class=styles.label
     >
       <${input.label.content}/>
-    </label>
+    </span>
   </if>
 
   <div
@@ -124,13 +130,14 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
   >
     // Render-prop-free trigger: this button IS the swatch, so it owns no
     // caller content and cannot nest another button.
-    <button
+    <button type="button"
       ...api().getTriggerProps()
+      aria-labelledby=(input.label ? (api().getLabelProps() as Record<string, unknown>).id as string : undefined)
       data-slot="color-picker-trigger"
       class=styles.trigger
     >
-      <div ...api().getTransparencyGridProps({ size: "8px" }) data-slot="color-picker-transparency-grid"/>
-      <div
+      <span ...api().getTransparencyGridProps({ size: "8px" }) data-slot="color-picker-transparency-grid"/>
+      <span
         ...api().getSwatchProps({ value: api().value })
         data-slot="color-picker-swatch"
         class=styles.triggerSwatch
@@ -145,14 +152,24 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
     </span>
   </div>
 
-  <input ...api().getHiddenInputProps()>
+  // The hidden input is the form control: name it after the visible label so
+  // axe's label rule passes (the span label cannot carry `for` — html-validate
+  // valid-for — so the association is aria-labelledby instead).
+  <input
+    type="text"
+    ...api().getHiddenInputProps()
+    aria-labelledby=(input.label ? (api().getLabelProps() as Record<string, unknown>).id as string : undefined)
+  >
 
   <zag-portal>
     <if=api().open>
       <div ...api().getPositionerProps() style=positionerStyle data-slot="color-picker-positioner">
         <div
           ...api().getContentProps()
-          aria-label=input["aria-label"]
+          // The content is a dialog (role from getContentProps when not
+          // inline); axe aria-dialog-name requires it to be named. The label
+          // part owns the visible text, so reference it by id.
+          aria-labelledby=(!input.inline && input.label ? (api().getLabelProps() as Record<string, unknown>).id as string : undefined)
           data-slot="color-picker-content"
           class=styles.content
         >
@@ -177,7 +194,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
 
           <div class=styles.row>
             <if=!input.hideEyeDropper>
-              <button
+              <button type="button"
                 ...api().getEyeDropperTriggerProps()
                 data-slot="color-picker-eye-dropper-trigger"
                 class=styles.eyeDropperTrigger
@@ -252,7 +269,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
             </if>
             <for|channel| of=channels()>
               <div class=styles.channelInputWrapper>
-                <input
+                <input type="text"
                   ...api().getChannelInputProps({
                     channel: channel as colorPickerMachine.ExtendedColorChannel,
                   })
@@ -273,7 +290,7 @@ static const CHANNELS_BY_FORMAT: Record<string, string[]> = {
               class=styles.swatchGroup
             >
               <for|swatchValue| of=input.swatches ?? []>
-                <button
+                <button type="button"
                   ...api().getSwatchTriggerProps({ value: swatchValue })
                   data-slot="color-picker-swatch-trigger"
                   class=styles.swatchTrigger

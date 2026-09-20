@@ -146,7 +146,7 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
 >
   <div ...api().getContentProps() data-slot="calendar-content" class=styles.content>
     <div class=styles.nav>
-      <button
+      <button type="button"
         ...api().getPrevTriggerProps()
         data-slot="calendar-prev-trigger"
         class=cn(navTriggerVariant, styles.navTrigger)
@@ -206,7 +206,7 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
         </div>
       </if>
       <else>
-        <button
+        <button type="button"
           ...api().getViewTriggerProps()
           data-slot="calendar-view-trigger"
           class=styles.viewTrigger
@@ -214,7 +214,7 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
           ${api().visibleRangeText.formatted}
         </button>
       </else>
-      <button
+      <button type="button"
         ...api().getNextTriggerProps()
         data-slot="calendar-next-trigger"
         class=cn(navTriggerVariant, styles.navTrigger)
@@ -243,7 +243,7 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
                 data-slot="calendar-cell"
                 class=styles.cell
               >
-                <button
+                <button type="button"
                   ...day.trigger
                   data-slot="calendar-day"
                   class=styles.dayButton

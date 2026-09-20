@@ -20,7 +20,7 @@ export type Input =
   | (Marko.Input<"button"> & ButtonVariants & { href?: never })
   | (Marko.Input<"a"> & ButtonVariants & { href: string });
 
-<const/{ variant, size, class: className, content, ...rest }=input/>
+<const/{ variant, size, class: className, content, type, ...rest }=input/>
 
 <const/classes=cn(buttonVariants({ variant, size }), className)/>
 
@@ -37,6 +37,7 @@ export type Input =
 </if>
 <else>
   <button
+    type=(type as Marko.Input<"button">["type"])
     data-slot="button"
     data-variant=(variant ?? "default")
     data-size=(size ?? "default")

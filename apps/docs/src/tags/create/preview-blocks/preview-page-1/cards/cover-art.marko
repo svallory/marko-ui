@@ -15,14 +15,12 @@ import Icon from "../../lib/icon.marko";
 <Card>
   <CardContent class="flex flex-col gap-3">
     <Label
-      for="cover-art"
       class="text-center text-xs font-normal tracking-wider text-muted-foreground uppercase"
     >
       Cover Art
     </Label>
     <Item class="aspect-square" variant="outline">
       <label
-        for="cover-art"
         class="flex size-full cursor-pointer items-center justify-center"
       >
         <Icon name="ImageIcon" class="size-10 text-muted-foreground/50"/>
@@ -36,7 +34,7 @@ import Icon from "../../lib/icon.marko";
     />
   </CardContent>
   <CardFooter class="flex-col gap-2">
-    <Button variant="secondary" class="w-full">
+    <Button type="button" variant="secondary" class="w-full">
       Upload Artwork
     </Button>
     <CardDescription class="text-center text-xs">

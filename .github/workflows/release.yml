@@ -34,10 +34,10 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.3.11
 
@@ -49,7 +49,7 @@ jobs:
       # provides the OIDC-aware `npm publish`, bun's publish command doesn't
       # support it.
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@db0fb3a98ed314b69026b6e8c9be26a7e2fe65a8 # v4
         with:
           node-version: 24
 
@@ -79,6 +79,9 @@ jobs:
 
       - name: Build CLI package
         run: bun run --filter marko-ui build
+
+      - name: Run publint and attw
+        run: bun run check:pkg
 
       # A transient `npm view` network failure fails safe: the package is
       # treated as not-yet-published and the publish step runs, which npm

@@ -67,7 +67,7 @@ export type Input = MachineInput<"div", toggleGroupMachine.Props> &
   class=cn(styles.root, input.class)
 >
   <for|item| of=items by=(item) => item.value>
-    <button
+    <button type="button"
       ...api().getItemProps({ value: item.value, disabled: item.disabled })
       data-slot="toggle-group-item"
       data-variant=(input.variant ?? "default")

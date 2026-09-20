@@ -53,15 +53,15 @@ export interface Input {
     ]
   >
     <@trigger>
-      <div class="flex flex-col justify-start text-left">
-        <div class="text-xs text-muted-foreground">Radius</div>
-        <div class="text-sm font-medium text-foreground">${currentRadius?.label}</div>
-      </div>
-      <div class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 rotate-90 items-center justify-center text-base text-foreground select-none md:right-2.5">
+      <span class="flex flex-col justify-start text-left">
+        <span class="text-xs text-muted-foreground">Radius</span>
+        <span class="text-sm font-medium text-foreground">${currentRadius?.label}</span>
+      </span>
+      <span class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 rotate-90 items-center justify-center text-base text-foreground select-none md:right-2.5">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="text-foreground">
           <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 20v-5C4 8.925 8.925 4 15 4h5"/>
         </svg>
-      </div>
+      </span>
     </@trigger>
   </Picker>
   <LockButton

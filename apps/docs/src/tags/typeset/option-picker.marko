@@ -54,12 +54,12 @@ export interface Input {
     sections=sections
   >
     <@trigger>
-      <div class="flex min-w-0 flex-col justify-start pr-8 text-left">
-        <div class="text-xs text-muted-foreground">${input.label}</div>
-        <div class="line-clamp-1 text-sm font-medium text-foreground">${current?.label}</div>
-      </div>
+      <span class="flex min-w-0 flex-col justify-start pr-8 text-left">
+        <span class="text-xs text-muted-foreground">${input.label}</span>
+        <span class="line-clamp-1 text-sm font-medium text-foreground">${current?.label}</span>
+      </span>
       <if=input.icon>
-        <div class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-foreground select-none md:right-2.5">
+        <span class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-foreground select-none md:right-2.5">
           <if=(input.icon === "measure")>
             // hugeicons ArrowHorizontalIcon
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4.5">
@@ -96,7 +96,7 @@ export interface Input {
               <path d="M9.5 13H15.75" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"/>
             </svg>
           </else>
-        </div>
+        </span>
       </if>
     </@trigger>
   </Picker>

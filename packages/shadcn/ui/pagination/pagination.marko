@@ -27,7 +27,7 @@ export type Input = MachineInput<"nav", paginationMachine.Props> & {
 >
   <ul data-slot="pagination-content" class=styles.content>
     <li data-slot="pagination-item">
-      <button
+      <button type="button"
         ...api().getPrevTriggerProps()
         data-slot="pagination-link"
         aria-label="Go to previous page"
@@ -55,7 +55,7 @@ export type Input = MachineInput<"nav", paginationMachine.Props> & {
         <const/isActive=item.value === api().page>
         <const/pageVariant=buttonVariants({ variant: isActive ? "outline" : "ghost", size: "icon" })>
         <li data-slot="pagination-item">
-          <button
+          <button type="button"
             ...api().getItemProps({ type: "page", value: item.value })
             data-slot="pagination-link"
             aria-current=(isActive ? "page" : undefined)
@@ -81,7 +81,7 @@ export type Input = MachineInput<"nav", paginationMachine.Props> & {
       </else>
     </for>
     <li data-slot="pagination-item">
-      <button
+      <button type="button"
         ...api().getNextTriggerProps()
         data-slot="pagination-link"
         aria-label="Go to next page"

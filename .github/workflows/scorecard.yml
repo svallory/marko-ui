@@ -21,16 +21,16 @@ jobs:
       security-events: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
         with:
           persist-credentials: false
       - name: Run analysis
-        uses: ossf/scorecard-action@v2.4.1
+        uses: ossf/scorecard-action@e8e61e86ea0a152be84d03729c02a7300065c17d # v2.4.1
         with:
           results_file: results.sarif
           results_format: sarif
           publish_results: true
       - name: Upload SARIF to code scanning
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@a0cc01096a24026610f4adb239c336ec0a1e4bd2 # v3
         with:
           sarif_file: results.sarif

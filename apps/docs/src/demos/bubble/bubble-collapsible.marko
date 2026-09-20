@@ -28,7 +28,7 @@ static const previewLength = 180;
         <div>${open || !isLong ? text : preview}</div>
         <if=isLong>
           <@trigger|triggerProps|>
-            <Button ...triggerProps variant="link" class="gap-1 p-0 text-muted-foreground">
+            <Button type="button" ...triggerProps variant="link" class="gap-1 p-0 text-muted-foreground">
               ${open ? "Show less" : "Show more"}
               <Icon name="ChevronDown" class=`transition-transform ${open ? "rotate-180" : ""}`/>
             </Button>

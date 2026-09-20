@@ -33,9 +33,9 @@ export interface Input {
   <SidebarGroupLabel>Workspaces</SidebarGroupLabel>
   <SidebarMenu>
     <for|workspace| of=input.workspaces by=(workspace) => workspace.id>
-      <Collapsible class="group/workspace-collapsible">
-        <@trigger|attrs|>
-          <SidebarMenuItem class="group/workspace-item relative">
+      <SidebarMenuItem class="group/workspace-item relative">
+        <Collapsible class="group/workspace-collapsible">
+          <@trigger|attrs|>
             <SidebarMenuButton href="#" class="pr-14">
               <span>${workspace.emoji}</span>
               <span>${workspace.name}</span>
@@ -79,7 +79,6 @@ export interface Input {
               </svg>
               <span class="sr-only">Add page</span>
             </button>
-          </SidebarMenuItem>
         </@trigger>
         <if=workspace.pages.length !== 0>
           <ul class="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5">
@@ -97,6 +96,7 @@ export interface Input {
           </ul>
         </if>
       </Collapsible>
+      </SidebarMenuItem>
     </for>
     <SidebarMenuItem>
       <SidebarMenuButton class="text-sidebar-foreground/70">

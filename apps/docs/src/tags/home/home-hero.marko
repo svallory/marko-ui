@@ -48,6 +48,7 @@ static const DESCRIPTION =
           viewBox="0 62 1013 208"
           fill="none"
           class="h-[1em] w-auto"
+          role="img"
           aria-label="Marko"
         >
           <path
@@ -124,7 +125,6 @@ static const DESCRIPTION =
             fill="currentColor"
             class="size-3.5"
             aria-hidden="true"
-            aria-label="shadcn"
           >
             <path d="M22.219 11.784 11.784 22.219c-.407.407-.407 1.068 0 1.476.407.407 1.068.407 1.476 0L23.695 13.26c.407-.408.407-1.069 0-1.476-.408-.407-1.069-.407-1.476 0ZM20.132.305.305 20.132c-.407.407-.407 1.068 0 1.476.408.407 1.069.407 1.476 0L21.608 1.781c.407-.407.407-1.068 0-1.476-.408-.407-1.069-.407-1.476 0Z"/>
           </svg>
@@ -159,30 +159,26 @@ static const DESCRIPTION =
       </p>
 
       <div class="flex w-full items-center justify-center gap-2 pt-2">
-        <a href="/docs">
-          <Button class="rounded-lg">
-            Get Started
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="size-4"
-              aria-hidden="true"
-            >
-              <path d="M5 12h14"/>
-              <path d="m12 5 7 7-7 7"/>
-            </svg>
-          </Button>
-        </a>
-        <a href="#components">
-          <Button variant="outline" class="rounded-lg">
-            Browse Components
-          </Button>
-        </a>
+        <Button href="/docs" class="rounded-lg">
+          Get Started
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="size-4"
+            aria-hidden="true"
+          >
+            <path d="M5 12h14"/>
+            <path d="m12 5 7 7-7 7"/>
+          </svg>
+        </Button>
+        <Button href="#components" variant="outline" class="rounded-lg">
+          Browse Components
+        </Button>
       </div>
 
     </div>

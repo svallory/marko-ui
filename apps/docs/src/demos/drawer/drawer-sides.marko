@@ -3,7 +3,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
 <Drawer swipeDirection="end">
   <@trigger|props|>
-    <Button ...props variant="outline">Open from the right</Button>
+    <Button type="button" ...props variant="outline">Open from the right</Button>
   </@trigger>
   <@title>Side drawer</@title>
   <@description>Logical `end` resolves to right in LTR, left in RTL.</@description>

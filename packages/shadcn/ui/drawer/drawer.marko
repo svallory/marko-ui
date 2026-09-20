@@ -20,7 +20,7 @@ export type Own = {
   snapPointChange?: (snapPoint: drawerMachine.SnapPoint | null) => void;
   /** Sugar for onTriggerValueChange — receives the plain trigger value. */
   triggerValueChange?: (value: string | null) => void;
-  /** Render-prop trigger: `<@trigger|props|><Button ...props/></@trigger>`. */
+  /** Render-prop trigger: `<@trigger|props|><Button type="button" ...props/></@trigger>`. */
   trigger?: Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]> }>;
   title?: Marko.AttrTag<{ content: Marko.Body }>;
   description?: Marko.AttrTag<{ content: Marko.Body }>;
@@ -180,7 +180,7 @@ export type Input = MachineInput<"div", drawerMachine.Props & Own>;
           </div>
 
           <if=!input.hideCloseTrigger>
-            <Button
+            <Button type="button"
               ...api().getCloseTriggerProps()
               variant="ghost"
               size="icon-sm"

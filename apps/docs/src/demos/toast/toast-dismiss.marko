@@ -2,13 +2,13 @@ import Toaster from "@marko-ui/shadcn/ui/toast/toast.marko";
 import { toast } from "@marko-ui/shadcn/ui/toast/store.ts";
 
 <div class="flex flex-wrap gap-2">
-  <button
+  <button type="button"
     onClick() { toast.message({ title: "Event has been created" }); }
     class="border-input rounded-md border px-4 py-2 text-sm font-medium"
   >
     Show Toast
   </button>
-  <button
+  <button type="button"
     onClick() { toast.dismiss(); }
     class="border-input rounded-md border px-4 py-2 text-sm font-medium"
   >

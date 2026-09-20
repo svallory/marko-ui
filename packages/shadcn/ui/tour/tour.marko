@@ -137,7 +137,7 @@ static function resolveSteps(
           >
             ${api().step?.title}
           </p>
-          <button
+          <button type="button"
             ...api().getCloseTriggerProps()
             data-slot="tour-close"
             class=styles.close
@@ -179,7 +179,7 @@ static function resolveSteps(
 
           <div data-slot="tour-actions" class=styles.actions>
             <for|action| of=api().step?.actions ?? []>
-              <button
+              <button type="button"
                 ...api().getActionTriggerProps({ action })
                 data-slot="tour-action-trigger"
                 class=cn(

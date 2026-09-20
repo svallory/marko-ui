@@ -7,7 +7,7 @@ import { cn } from "#lib/utils.ts";
 import { stripOwnProps } from "#lib/native-attrs.ts";
 import { switchStyles as styles } from "./classes.ts";
 
-// MachineInput = native <input> attributes ∩ the machine's full Props, with
+// MachineInput = native <input type="text"> attributes ∩ the machine's full Props, with
 // `id` made optional (generated below, overridable). `checkedChange` is
 // additive sugar enabling Marko's two-way bind shorthand
 // (<Switch checked:=myState/>); Zag's own `onCheckedChange` also works and
@@ -53,8 +53,17 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
 // only when the label part actually exists.
 <const/hiddenInputProps=() => api().getHiddenInputProps()/>
 
+// The root <label> WRAPS the control, so Zag's `for` pointing at the hidden
+// input is redundant — drop it (html-validate no-redundant-for); the wrapping
+// association is the association.
+<const/rootProps=() => {
+  const props = api().getRootProps() as Record<string, unknown>;
+  delete props.for;
+  return props;
+}/>
+
 <label
-  ...api().getRootProps()
+  ...rootProps()
   data-slot="switch-label"
   class=styles.label
 >
@@ -79,7 +88,7 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
       <${input.content}/>
     </span>
   </if>
-  <input
+  <input type="text"
     ...nativeAttrs()
     ...hiddenInputProps()
     aria-labelledby=(input.content ? hiddenInputProps()["aria-labelledby"] : undefined)

@@ -35,7 +35,7 @@ import Toaster from "@marko-ui/shadcn/ui/toast/toast.marko";
   <Bubble variant="destructive">
     <BubbleContent>Are you sure I can run this command?</BubbleContent>
     <BubbleReactions>
-      <Button variant="ghost" size="xs" onClick() { toast.success("You clicked yes, running command..."); }>
+      <Button type="button" variant="ghost" size="xs" onClick() { toast.success("You clicked yes, running command..."); }>
         Yes, run it
       </Button>
     </BubbleReactions>

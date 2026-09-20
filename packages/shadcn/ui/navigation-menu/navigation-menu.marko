@@ -153,7 +153,7 @@ export type Input = MachineInput<"nav", navigationMenu.Props & Own>;
     <for|item| of=items>
       <li ...api().getItemProps({ value: item.value, disabled: item.disabled }) data-slot="navigation-menu-item" class=styles.item>
         <if=item.type === "menu">
-          <button
+          <button type="button"
             ...api().getTriggerProps({ value: item.value, disabled: item.disabled })
             data-slot="navigation-menu-trigger"
             class=cn(navigationMenuTriggerStyle(), styles.triggerGroup)
@@ -198,21 +198,24 @@ export type Input = MachineInput<"nav", navigationMenu.Props & Own>;
         </else>
       </li>
     </for>
-
-    // Caret that slides to sit under the active trigger. The machine positions it
-    // through --trigger-x/--trigger-width on the root, so those vars drive real UI.
-    <div
-      ...api().getIndicatorProps()
-      data-slot="navigation-menu-indicator"
-      class=styles.indicator
-    >
-      <div
-        ...api().getArrowProps()
-        data-slot="navigation-menu-indicator-arrow"
-        class=styles.indicatorArrow
-      />
-    </div>
   </ul>
+
+  // Caret that slides to sit under the active trigger. The machine positions it
+  // through --trigger-x/--trigger-width on the root, so those vars drive real UI.
+  // Lives OUTSIDE the <ul>: a bare <div> is not valid list content
+  // (html-validate element-permitted-content); absolutely positioned, so DOM
+  // order relative to the list is cosmetic.
+  <div
+    ...api().getIndicatorProps()
+    data-slot="navigation-menu-indicator"
+    class=styles.indicator
+  >
+    <div
+      ...api().getArrowProps()
+      data-slot="navigation-menu-indicator-arrow"
+      class=styles.indicatorArrow
+    />
+  </div>
 
   // Shared animated viewport: every panel renders inside it, and the machine
   // drives its size/position through CSS vars in its own style object — so this
@@ -221,6 +224,15 @@ export type Input = MachineInput<"nav", navigationMenu.Props & Own>;
   // viewport-wrapper` div (NavigationMenuViewport's own wrapping <div>, no
   // data-slot upstream either), so it carries that anchor verbatim rather than
   // going bare.
+// Zag's aria-labelledby on the content div points back at the trigger, but
+// the div carries no role, so the reference is inert (html-validate
+// aria-label-misuse). Strip it; Marko does not dedupe spread attrs.
+<const/contentProps=(value: string) => {
+  const props = api().getContentProps({ value }) as Record<string, unknown>;
+  delete props["aria-labelledby"];
+  return props;
+}/>
+
   <div
     ...api().getViewportPositionerProps({ align: input.align })
     data-slot="navigation-menu-viewport-positioner"
@@ -234,7 +246,7 @@ export type Input = MachineInput<"nav", navigationMenu.Props & Own>;
       <for|item| of=menuItems()>
         <const/menuContent=menuContentByValue.get(item.value)/>
         <div
-          ...api().getContentProps({ value: item.value })
+          ...contentProps(item.value)
           inert=(api().value !== item.value ? true : undefined)
           data-slot="navigation-menu-content"
           class=styles.content

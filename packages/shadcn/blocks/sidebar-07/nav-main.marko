@@ -38,9 +38,9 @@ export interface Input {
   <SidebarGroupLabel>Platform</SidebarGroupLabel>
   <SidebarMenu>
     <for|item| of=input.items by=(item) => item.id>
-      <Collapsible defaultOpen=(!!item.isActive) class="group/collapsible">
-        <@trigger|attrs|>
-          <SidebarMenuItem>
+      <SidebarMenuItem>
+        <Collapsible defaultOpen=(!!item.isActive) class="group/collapsible">
+          <@trigger|attrs|>
             <SidebarMenuButton ...attrs>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -71,8 +71,7 @@ export interface Input {
                 <path d="m9 18 6-6-6-6"/>
               </svg>
             </SidebarMenuButton>
-          </SidebarMenuItem>
-        </@trigger>
+          </@trigger>
         <ul
           class="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5"
         >
@@ -87,7 +86,8 @@ export interface Input {
             </li>
           </for>
         </ul>
-      </Collapsible>
+        </Collapsible>
+      </SidebarMenuItem>
     </for>
   </SidebarMenu>
 </SidebarGroup>

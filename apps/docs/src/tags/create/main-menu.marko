@@ -68,7 +68,7 @@ export interface Input {
 <const/canGoForward=input.canGoForward/>
 
 <div data-slot="main-menu">
-  <button
+  <button type="button"
     ...api().getTriggerProps()
     data-slot="picker-trigger"
     class=cn(

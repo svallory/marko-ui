@@ -35,7 +35,7 @@ static const TRANSACTIONS = [
     <CardTitle>Recent Transactions</CardTitle>
     <CardDescription>Your latest account activity.</CardDescription>
     <CardAction>
-      <Button variant="outline" size="sm">
+      <Button type="button" variant="outline" size="sm">
         View All
       </Button>
     </CardAction>
@@ -67,7 +67,7 @@ static const TRANSACTIONS = [
             <TableCell class="w-8">
               <DropdownMenu items=ROW_MENU>
                 <@trigger|triggerProps|>
-                  <Button ...triggerProps variant="ghost" size="icon-sm">
+                  <Button type="button" ...triggerProps variant="ghost" size="icon-sm">
                     <Icon name="MoreHorizontalIcon"/>
                   </Button>
                 </@trigger>

@@ -188,21 +188,21 @@ static function startBarAnimatorLoop(state: VisualizerState) {
     </div>
   </CardContent>
   <CardFooter class="gap-2">
-    <Button
+    <Button type="button"
       size="sm"
       variant=(state === "connecting" ? "default" : "outline")
       onClick() { state = "connecting"; }
     >
       Connecting
     </Button>
-    <Button
+    <Button type="button"
       size="sm"
       variant=(state === "listening" ? "default" : "outline")
       onClick() { state = "listening"; }
     >
       Listening
     </Button>
-    <Button
+    <Button type="button"
       size="sm"
       variant=(state === "speaking" ? "default" : "outline")
       onClick() { state = "speaking"; }

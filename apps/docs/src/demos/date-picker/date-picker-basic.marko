@@ -23,7 +23,7 @@ static function formatDate(date?: { year: number; month: number; day: number }) 
   <FieldLabel for="date-picker-simple">Date</FieldLabel>
   <Popover class="w-auto p-0">
     <@trigger|props|>
-      <Button ...props variant="outline" id="date-picker-simple" class="justify-start font-normal">
+      <Button type="button" ...props variant="outline" id="date-picker-simple" class="justify-start font-normal">
         <if=value[0]>
           ${formatDate(value[0])}
         </if>

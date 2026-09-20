@@ -37,16 +37,29 @@ export type Input = MachineInput<"input", editableMachine.Props> & {
   )
 >
 
+// Zag's aria-label="edit" on the preview span is inert naming on a role-less
+// element (html-validate aria-label-misuse) — the preview's own text is its
+// name. Strip it; Marko does not dedupe spread attrs.
+<const/previewProps=() => {
+  const props = api().getPreviewProps() as Record<string, unknown>;
+  delete props["aria-label"];
+  return props;
+}/>
+
 <div ...api().getRootProps() data-slot="editable-root" class=cn(styles.root, input.class)>
   <div ...api().getAreaProps() data-slot="editable-area" class=styles.area>
     <input
       ...nativeAttrs()
       ...api().getInputProps()
+      type="text"
       data-slot="editable-input"
       class=styles.input
     />
+    // Zag's aria-label="edit" on the preview span is inert naming on a
+    // role-less element (html-validate aria-label-misuse) — the preview's
+    // own text is its name. Strip it; Marko does not dedupe spread attrs.
     <span
-      ...api().getPreviewProps()
+      ...previewProps()
       data-slot="editable-preview"
       class=styles.preview
     >

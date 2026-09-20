@@ -151,7 +151,6 @@ static const firstPreset: (typeof PRESETS)[number] = (() => {
         items=PRESETS
         value=[presetId]
         placeholder="Animation preset"
-        aria-label="Animation preset"
         valueChange=(value: string[]) => { presetId = value[0] ?? "fade"; }
       />
       <Button type="button" size="icon" class="ml-auto" disabled=(!nextMessage || busy) onClick=send>

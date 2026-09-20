@@ -23,28 +23,28 @@ static const BUTTON_CLASS =
     initialCrop={ x: 60, y: 50, width: 220, height: 160 }
   />
   <div class="flex flex-wrap items-center gap-2">
-    <button
+    <button type="button"
       id="zoom-in"
       class=BUTTON_CLASS
       onClick() { zoom = Math.min(5, zoom + 0.25); }
     >
       Zoom in
     </button>
-    <button
+    <button type="button"
       id="zoom-out"
       class=BUTTON_CLASS
       onClick() { zoom = Math.max(1, zoom - 0.25); }
     >
       Zoom out
     </button>
-    <button
+    <button type="button"
       id="rotate"
       class=BUTTON_CLASS
       onClick() { rotation = (rotation + 90) % 360; }
     >
       Rotate 90°
     </button>
-    <button
+    <button type="button"
       id="reset-transform"
       class=BUTTON_CLASS
       onClick() { zoom = 1; rotation = 0; }

@@ -21,7 +21,7 @@ import Tooltip from "@marko-ui/shadcn/ui/tooltip/tooltip.marko";
       // present — it supplements an accessible name, it doesn't provide one.
       <Tooltip content="Read on Jan 5, 2026 at 4:32 PM">
         <@trigger|triggerProps|>
-          <Button ...triggerProps variant="ghost" size="icon-xs" aria-label="Read on Jan 5, 2026 at 4:32 PM">
+          <Button type="button" ...triggerProps variant="ghost" size="icon-xs" aria-label="Read on Jan 5, 2026 at 4:32 PM">
             <Icon name="Check"/>
           </Button>
         </@trigger>

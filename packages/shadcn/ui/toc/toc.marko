@@ -50,15 +50,17 @@ export type Input = MachineInput<"nav", tocMachine.Props> & {
   <if=input.title>
     <p ...api().getTitleProps() data-slot="toc-title" class=styles.title>${input.title}</p>
   </if>
+  // aria-hidden: the active-position indicator is decorative. It lives
+  // OUTSIDE the <ul> — a bare <span> is not valid content for a list
+  // (html-validate element-permitted-content, axe list only-listitems).
+  // Absolutely positioned, so DOM order relative to the list is cosmetic.
+  <span
+    ...api().getIndicatorProps()
+    data-slot="toc-indicator"
+    aria-hidden="true"
+    class=styles.indicator
+  />
   <ul ...api().getListProps() data-slot="toc-list" class=styles.list>
-    // aria-hidden: the active-position indicator is decorative, and a bare
-    // <span> is not valid content for a <ul> (axe: list only-listitems).
-    <span
-      ...api().getIndicatorProps()
-      data-slot="toc-indicator"
-      aria-hidden="true"
-      class=styles.indicator
-    />
     <for|item| of=tocItems()>
       <li
         ...api().getItemProps({ item })

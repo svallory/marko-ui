@@ -112,10 +112,18 @@ import { getComponentPageData } from "../../../../lib/component-page-data.ts";
               -->
               <section>
                 <h2 class="sr-only">Example</h2>
-                <component-preview
-                  demoId=page.examples[0].demoId
-                  source=page.examples[0].source
-                />
+                <!-- The demo's own title rides along sr-only: the behavior
+                     suite's demoByTitle() locates a demo by the heading that
+                     titles it, and this demo no longer appears under Examples
+                     (see below), so without this the tests' usual entry point
+                     would vanish. -->
+                <div>
+                  <h3 class="sr-only">${page.examples[0].title}</h3>
+                  <component-preview
+                    demoId=page.examples[0].demoId
+                    source=page.examples[0].source
+                  />
+                </div>
               </section>
             </if>
 
@@ -182,7 +190,13 @@ import { getComponentPageData } from "../../../../lib/component-page-data.ts";
                 <h2 id="examples" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
                   Examples
                 </h2>
-                <for|example| of=page.examples by=(example) => example.name>
+                <!-- The hero (examples[0]) is rendered in its own section above
+                     and is SKIPPED here: rendering it twice would duplicate every
+                     hardcoded id in the demo (html-validate no-dup-id) — Zag
+                     scopes machine ids, but demo-level ids like
+                     "checkbox-demo-terms" are literal. -->
+                <for|example, exampleIndex| of=page.examples by=(example) => example.name>
+                  <if=exampleIndex !== 0>
                   <div class="mt-8">
                     <h3 id=example.id class="scroll-mt-20 text-lg font-semibold tracking-tight">
                       ${example.title}
@@ -192,6 +206,7 @@ import { getComponentPageData } from "../../../../lib/component-page-data.ts";
                     </if>
                     <component-preview demoId=example.demoId source=example.source/>
                   </div>
+                  </if>
                 </for>
               </section>
             </if>

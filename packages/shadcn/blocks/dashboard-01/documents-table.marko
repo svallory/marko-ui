@@ -168,10 +168,10 @@ static const drawerChartConfig = {
       placeholder="Select a view"
     />
     <div class="hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:bg-muted-foreground/30 **:data-[slot=badge]:px-1 @4xl/main:flex" ...tabsApi().getListProps() data-slot="tabs-list">
-      <button ...tabsApi().getTriggerProps({ value: "outline" }) data-slot="tabs-trigger" class="data-[selected]:bg-background data-[selected]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 data-[selected]:shadow-sm">Outline</button>
-      <button ...tabsApi().getTriggerProps({ value: "past-performance" }) data-slot="tabs-trigger" class="data-[selected]:bg-background data-[selected]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 data-[selected]:shadow-sm">Past Performance <Badge variant="secondary">3</Badge></button>
-      <button ...tabsApi().getTriggerProps({ value: "key-personnel" }) data-slot="tabs-trigger" class="data-[selected]:bg-background data-[selected]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 data-[selected]:shadow-sm">Key Personnel <Badge variant="secondary">2</Badge></button>
-      <button ...tabsApi().getTriggerProps({ value: "focus-documents" }) data-slot="tabs-trigger" class="data-[selected]:bg-background data-[selected]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 data-[selected]:shadow-sm">Focus Documents</button>
+      <button type="button" ...tabsApi().getTriggerProps({ value: "outline" }) data-slot="tabs-trigger" class="data-[selected]:bg-background data-[selected]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 data-[selected]:shadow-sm">Outline</button>
+      <button type="button" ...tabsApi().getTriggerProps({ value: "past-performance" }) data-slot="tabs-trigger" class="data-[selected]:bg-background data-[selected]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 data-[selected]:shadow-sm">Past Performance <Badge variant="secondary">3</Badge></button>
+      <button type="button" ...tabsApi().getTriggerProps({ value: "key-personnel" }) data-slot="tabs-trigger" class="data-[selected]:bg-background data-[selected]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 data-[selected]:shadow-sm">Key Personnel <Badge variant="secondary">2</Badge></button>
+      <button type="button" ...tabsApi().getTriggerProps({ value: "focus-documents" }) data-slot="tabs-trigger" class="data-[selected]:bg-background data-[selected]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 data-[selected]:shadow-sm">Focus Documents</button>
     </div>
     <div class="flex items-center gap-2">
       <DropdownMenu class="w-56">
@@ -330,6 +330,7 @@ static const drawerChartConfig = {
                         </div>
                         <Separator/>
                         <form class="flex flex-col gap-4">
+                          <!-- html-validate-disable-next no-implicit-button-type, form-submit -- decorative demo form -->
                           <div class="flex flex-col gap-3">
                             <Label for=`${row.id}-header`>Header</Label>
                             <TextInput id=`${row.id}-header` value=row.header/>
@@ -393,26 +394,26 @@ static const drawerChartConfig = {
                   </if>
                   <if=isColumnVisible("target")>
                     <TableCell>
-                      <form class="flex justify-end">
+                      <div class="flex justify-end">
                         <Label for=`${row.id}-target-cell` class="sr-only">Target</Label>
                         <TextInput
                           class="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30"
                           value=row.target
                           id=`${row.id}-target-cell`
                         />
-                      </form>
+                      </div>
                     </TableCell>
                   </if>
                   <if=isColumnVisible("limit")>
                     <TableCell>
-                      <form class="flex justify-end">
+                      <div class="flex justify-end">
                         <Label for=`${row.id}-limit-cell` class="sr-only">Limit</Label>
                         <TextInput
                           class="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30"
                           value=row.limit
                           id=`${row.id}-limit-cell`
                         />
-                      </form>
+                      </div>
                     </TableCell>
                   </if>
                   <if=isColumnVisible("reviewer")>

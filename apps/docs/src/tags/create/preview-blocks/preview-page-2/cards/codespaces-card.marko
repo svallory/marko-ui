@@ -77,14 +77,14 @@ static const CODESPACES_MENU = [
               content="Create a codespace on main"
             >
               <@trigger|triggerProps|>
-                <Button ...triggerProps variant="ghost" size="icon-sm">
+                <Button type="button" ...triggerProps variant="ghost" size="icon-sm">
                   <Icon name="PlusIcon"/>
                 </Button>
               </@trigger>
             </Tooltip>
             <DropdownMenu items=CODESPACES_MENU class="w-56">
               <@trigger|triggerProps|>
-                <Button ...triggerProps variant="ghost" size="icon-sm">
+                <Button type="button" ...triggerProps variant="ghost" size="icon-sm">
                   <Icon name="MoreHorizontalIcon"/>
                 </Button>
               </@trigger>
@@ -104,7 +104,7 @@ static const CODESPACES_MENU = [
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button
+            <Button type="button"
               size="sm"
               disabled=isCreatingCodespace
               onClick() {
@@ -146,7 +146,7 @@ static const CODESPACES_MENU = [
               content="Which remote URL should I use?"
             >
               <@trigger|triggerProps|>
-                <Button ...triggerProps variant="ghost" size="icon">
+                <Button type="button" ...triggerProps variant="ghost" size="icon">
                   <Icon name="InfoIcon"/>
                 </Button>
               </@trigger>
@@ -229,7 +229,7 @@ static const CODESPACES_MENU = [
         </Tabs>
         <Separator class="-mx-2 my-2 w-auto!"/>
         <div class="flex flex-col">
-          <Button
+          <Button type="button"
             variant="ghost"
             size="sm"
             class="justify-start gap-1.5"
@@ -237,7 +237,7 @@ static const CODESPACES_MENU = [
             <Icon name="MonitorIcon" data-icon="inline-start"/>
             Open with GitHub Desktop
           </Button>
-          <Button
+          <Button type="button"
             variant="ghost"
             size="sm"
             class="justify-start gap-1.5"

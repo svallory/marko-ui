@@ -115,7 +115,7 @@ static function filterGroups(groups: CommandGroup[], query: string): CommandGrou
 <div ...nativeAttrs() ...api().getRootProps() data-slot="command" class=cn(styles.root, input.class)>
   <div data-slot="command-input-wrapper" class=styles.inputWrapper>
     <div ...api().getControlProps() data-slot="command-input-group" class=styles.inputGroup>
-      <input
+      <input type="text"
         ...api().getInputProps()
         data-slot="command-input"
         placeholder=input.placeholder

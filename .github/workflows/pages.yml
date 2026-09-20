@@ -36,6 +36,9 @@ jobs:
 
       - uses: ./.github/actions/setup
 
+      - name: Build docs site
+        run: bun run build
+
       - name: Build registry
         # The registry items embed absolute URLs, so the base URL has to be
         # the production one at BUILD time — it cannot be fixed up later.
@@ -57,6 +60,9 @@ jobs:
         env:
           REGISTRY_BASE_URL: https://marko-ui.saulo.tech/r
         run: bun run --cwd apps/docs build
+
+      - name: Validate HTML
+        run: bun run check:html
 
       - name: Verify the build is complete before deploying
         # A crawl that silently drops pages still "succeeds", so assert the

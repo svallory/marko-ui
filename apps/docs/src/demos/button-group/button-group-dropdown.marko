@@ -16,10 +16,10 @@ static const ITEMS = [
 ] satisfies DropdownMenuItem[];
 
 <ButtonGroup>
-  <Button variant="outline">Follow</Button>
+  <Button type="button" variant="outline">Follow</Button>
   <DropdownMenu items=ITEMS class="w-44">
     <@trigger|triggerProps|>
-      <Button variant="outline" ...triggerProps class="pl-2!" aria-label="More Options">
+      <Button type="button" variant="outline" ...triggerProps class="pl-2!" aria-label="More Options">
         <Icon name="ChevronDownIcon"/>
       </Button>
     </@trigger>
