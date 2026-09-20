@@ -12,10 +12,10 @@
   },
   "dependencies": {
     "@marko-ui/shadcn": "workspace:*",
-    "marko": "6.3.46"
+    "marko": "6.3.51"
   },
   "devDependencies": {
-    "@marko/run": "0.11.9",
+    "@marko/run": "0.11.12",
     "@marko/vite": "^6.1.11",
     "@tailwindcss/vite": "^4.3.3",
     "tailwindcss": "^4.3.3",
