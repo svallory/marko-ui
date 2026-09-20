@@ -3,6 +3,9 @@
 The marko-ui CLI — install and manage Marko UI components from
 shadcn-format registries.
 
+[![npm version](https://img.shields.io/npm/v/marko-ui)](https://www.npmjs.com/package/marko-ui)
+[![License: MIT](https://img.shields.io/npm/l/marko-ui)](https://github.com/svallory/marko-ui/blob/main/LICENSE)
+
 ```bash
 bunx marko-ui init          # scaffold components.json + base theme
 bunx marko-ui add button    # install a component (source, not a package)
