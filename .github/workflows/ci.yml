@@ -104,8 +104,10 @@ jobs:
               - 'packages/shadcn/**'
               - 'packages/marko-ui/src/registry/**'
               - 'apps/docs/src/data/directory.json'
-              # Demo sources feed build:demos (demos-manifest.ts +
-              # demo-renderer.marko) and blocks-list.ts feeds
+              # Demo sources feed build:demos (demos-manifest.ts, the
+              # per-component static routes under src/routes/docs/components/,
+              # and the renderer tags under src/tags/docs/demo-renderers/)
+              # and blocks-list.ts feeds
               # build:blocks-manifest — both gated by registry-drift, so a
               # change there must fire this job or the freshness gate never
               # runs on the PR that makes it stale.
@@ -175,8 +177,13 @@ jobs:
       #     the manifest is the checked-in proxy that makes output drift
       #     detectable — the old `git diff --exit-code -- apps/docs/public/r/`
       #     could never fail because gitignore hides that tree (issue #40).
-      #   - demos-manifest.ts + demo-renderer.marko (build:demos): fresh
-      #     against the registry output AND src/demos/**.
+      #   - demos-manifest.ts + the per-component static routes and renderer
+      #     tags (build:demos): fresh against the registry output AND
+      #     src/demos/**. The route/renderer trees are checked with BOTH
+      #     git diff (tracked files changed) and git status --porcelain
+      #     (generated files newly untracked or deleted) — plain git diff
+      #     alone misses untracked outputs, so a stale generated stub would
+      #     otherwise slip through.
       #   - blocks-manifest.ts (build:blocks-manifest): fresh against the
       #     registry output AND src/lib/blocks-list.ts.
       #   - api-reference.json (extract:api): fresh against the .marko
@@ -194,8 +201,24 @@ jobs:
       - name: Check generated committed artifacts are fresh
         run: |
           bun run build:demos
-          git diff --exit-code -- apps/docs/src/demos/demos-manifest.ts apps/docs/src/tags/docs/demo-renderer.marko || {
-            echo "::error::Generated demo artifacts are stale — run 'bun run build:demos' and commit the regenerated apps/docs/src/demos/demos-manifest.ts and apps/docs/src/tags/docs/demo-renderer.marko"
+          git diff --exit-code -- apps/docs/src/demos/demos-manifest.ts || {
+            echo "::error::Generated demos manifest is stale — run 'bun run build:demos' and commit the regenerated apps/docs/src/demos/demos-manifest.ts"
+            exit 1
+          }
+          # The static routes and renderer tags are whole generated trees:
+          # git diff catches edits to tracked files, git status --porcelain
+          # catches newly-untracked stale outputs (plain git diff misses
+          # untracked files). The hand-maintained '$name' fallback lives in
+          # the same directory and is never generated, so it can only show up
+          # here if a change actually touched it — which SHOULD fail the gate.
+          GENERATED_DEMO_TREES="apps/docs/src/routes/docs/components apps/docs/src/tags/docs/demo-renderers"
+          git diff --exit-code -- $GENERATED_DEMO_TREES || {
+            echo "::error::Generated component routes/renderers are stale — run 'bun run build:demos' and commit the regenerated apps/docs/src/routes/docs/components/<name>/ and apps/docs/src/tags/docs/demo-renderers/<name>.marko"
+            exit 1
+          }
+          test -z "$(git status --porcelain -- $GENERATED_DEMO_TREES)" || {
+            echo "::error::Generated component routes/renderers have untracked or deleted files — run 'bun run build:demos' and commit the result"
+            git status --porcelain -- $GENERATED_DEMO_TREES
             exit 1
           }
           bun run build:blocks-manifest
