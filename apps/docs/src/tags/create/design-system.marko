@@ -700,7 +700,7 @@ static function isSameOverride(
 </script>
 
 // Menu color inversion/translucency (provider's third useLayoutEffect):
-// toggles the `dark` class / translucent class on .cn-menu-target elements,
+// toggles the `dark` class / translucent class on .mu-menu-target elements,
 // watching the DOM for new menu elements. Source scopes this effect to
 // `[menuColor]` — mirrored here via the lastMenuColor guard so unrelated
 // `effective` changes (e.g. hover-preview on any other picker, which
@@ -719,7 +719,7 @@ static function isSameOverride(
 
       const updateMenuElements = () => {
         const allElements = document.querySelectorAll(
-          ".cn-menu-target, [data-menu-translucent]",
+          ".mu-menu-target, [data-menu-translucent]",
         ) as NodeListOf<HTMLElement>;
         if (allElements.length === 0) {
           return;
@@ -728,7 +728,7 @@ static function isSameOverride(
           element.style.transition = "none";
         });
         allElements.forEach((element) => {
-          if (element.classList.contains("cn-menu-target")) {
+          if (element.classList.contains("mu-menu-target")) {
             if (isInvertedMenu) {
               element.classList.add("dark");
             } else {
@@ -736,10 +736,10 @@ static function isSameOverride(
             }
           }
           if (isTranslucentMenu) {
-            element.classList.add("cn-menu-translucent");
+            element.classList.add("mu-menu-translucent");
             element.removeAttribute("data-menu-translucent");
-          } else if (element.classList.contains("cn-menu-translucent")) {
-            element.classList.remove("cn-menu-translucent");
+          } else if (element.classList.contains("mu-menu-translucent")) {
+            element.classList.remove("mu-menu-translucent");
             element.setAttribute("data-menu-translucent", "");
           }
         });
