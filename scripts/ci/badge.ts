@@ -7,8 +7,11 @@
  *   badge files listed in COMBINE_PARTS)
  *
  * Each badge file follows the shields endpoint schema
- * (https://shields.io/badges/endpoint-badge) and is published to the
- * `badges` branch by .github/workflows/ci.yml, then rendered via
+ * (https://shields.io/badges/endpoint-badge) and is published to an orphan
+ * badge branch by the workflows: `badges-main` (main's numbers, fed by
+ * ci.yml + lighthouse.yml on every push to main; the README reads it) and
+ * `badges` (release-pinned, rewritten by release.yml from the release tag;
+ * the site home reads it). Rendered via
  *   https://img.shields.io/endpoint?url=<raw.githubusercontent.com URL>
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -18,8 +21,18 @@ import { join } from "node:path";
 // than restating figures that can drift.
 import {
   INTERACTIVE_COMPONENTS,
+  NON_INVARIANT_BY_DESIGN,
   ZAG_BACKED_COMPONENT_COUNT,
 } from "../../packages/shadcn/tests/hydration-coverage.ts";
+
+// Components for which the invariant is not vacuous during SSR: the whole
+// Zag-backed population minus the ones that render zero interactive markup
+// server-side (NON_INVARIANT_BY_DESIGN, each with its reason documented in
+// hydration-coverage.ts — today just `tour`). The denominator is the
+// applicable set, not the raw population: "53/53" must mean "every
+// component that could demonstrate the invariant did", not "53 of 54, and
+// the 54th can't demonstrate it anyway".
+const APPLICABLE = ZAG_BACKED_COMPONENT_COUNT - NON_INVARIANT_BY_DESIGN.length;
 
 interface Badge {
   schemaVersion: 1;
@@ -97,7 +110,7 @@ switch (kind) {
     );
     const mainPassed = mainResults.filter((r) => r.status === "passed").length;
     const mainFailed = mainResults.length - mainPassed;
-    // Both numbers are the suite's covered/total component counts, kept
+    // Both numbers are the suite's covered/applicable component counts, kept
     // honest by the bookkeeping tests in hydration-invariant.test.ts (a new
     // Zag-backed component in neither list, a stale name, or a drifted
     // literal fails the suite).
@@ -117,6 +130,14 @@ switch (kind) {
     //   component over time — counting assertions produced "59/54
     //   components" on a fully green run.
     //
+    // The denominator is further the APPLICABLE population: components that
+    // render zero interactive markup during SSR (NON_INVARIANT_BY_DESIGN)
+    // have no SSR surface for the invariant to compare, so counting them
+    // would make a full run read "53/54" forever and train readers to
+    // expect a permanent gap. The label carries the claim ("components"
+    // under "hydration-invariant"), and yellow — not green — is reserved
+    // for a legitimately-applicable component that lost coverage.
+    //
     // The "components" claim additionally requires the C-4 suite to have
     // demonstrably run COMPLETE: exactly one passing assertion per covered
     // component. A partial run (bookkeeping only, or a -t filtered subset)
@@ -130,18 +151,21 @@ switch (kind) {
     const claimCoverage = fullRun;
     write("hydration", {
       schemaVersion: 1,
-      label: "hydration",
-      // A failure is the more urgent fact, so it wins the label; only a
+      // The label carries the claim: "hydration-invariant | 53/53
+      // components" — a bare "hydration · 53/54" was rightly called
+      // confusing, because nothing on the badge said what 54 was.
+      label: "hydration-invariant",
+      // A failure is the more urgent fact, so it wins the message; only a
       // demonstrably complete green run may claim coverage, which is the
       // number people actually want.
       message: !claimCoverage
         ? mainFailed > 0
           ? `${mainPassed}/${mainResults.length} identical`
           : `${hydrationPassed}/${hydrationResults.length} identical`
-        : `${INTERACTIVE_COMPONENTS.length}/${ZAG_BACKED_COMPONENT_COUNT} components`,
+        : `${INTERACTIVE_COMPONENTS.length}/${APPLICABLE} components`,
       color: !claimCoverage
         ? "red"
-        : INTERACTIVE_COMPONENTS.length >= ZAG_BACKED_COMPONENT_COUNT
+        : INTERACTIVE_COMPONENTS.length >= APPLICABLE
           ? "brightgreen"
           : "yellow",
     });
