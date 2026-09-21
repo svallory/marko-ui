@@ -473,7 +473,7 @@
     },
     {
       "path": "styles/luma/breadcrumb.json",
-      "sha256": "c97da2ee18ddcfd2d1c3655a589af62e0eefe788268b83b54a0eb46450cfe473"
+      "sha256": "4ad98fa0574bb81eb7c9227e642c21e1830ef529b8629651421121e2ffe055b8"
     },
     {
       "path": "styles/luma/bubble.json",
@@ -489,7 +489,7 @@
     },
     {
       "path": "styles/luma/calendar.json",
-      "sha256": "512203eb3c307bf44ef4038ef51c9f10ab2159de72c6558a61ed542d54e136e8"
+      "sha256": "1071b16f620833d299b7ff98a58741cf4631ae4e29efa4592bf054aa65d08cac"
     },
     {
       "path": "styles/luma/card.json",
@@ -497,7 +497,7 @@
     },
     {
       "path": "styles/luma/carousel.json",
-      "sha256": "06361b798f6e87743c191d421ba218630eb823ff6bab1673155bda0da8022768"
+      "sha256": "6135719f3372c68258f5cb3d83f4497341ea6dfea3a66d938a1e88dac25b29a5"
     },
     {
       "path": "styles/luma/cascade-select.json",
@@ -533,7 +533,7 @@
     },
     {
       "path": "styles/luma/context-menu.json",
-      "sha256": "797ce134b08fd89b2fda321edd33941a3d80b02f3674aaf485a676d06248b93e"
+      "sha256": "019d993b3c7d60e102b61252cac7016b605a2b0765b13601dd3f54271557664b"
     },
     {
       "path": "styles/luma/data-table.json",
@@ -561,7 +561,7 @@
     },
     {
       "path": "styles/luma/dropdown-menu.json",
-      "sha256": "115628b185c945ecb7747d4024c843d6ffb8fac5497cf6b4ebcb443f73592582"
+      "sha256": "d3c0eb2cf509b8d905d08cc52a5f81690c9360f89975855e60ca08df60fde56e"
     },
     {
       "path": "styles/luma/editable.json",
@@ -633,7 +633,7 @@
     },
     {
       "path": "styles/luma/menubar.json",
-      "sha256": "5fbc03d924abf755084b2a7b899e50c89c97e2ccbb6030427228949794349e48"
+      "sha256": "13fc4e2bbe0400eeefd6fb09344adb1bbef1ee83901dbbae196054a3445d86d8"
     },
     {
       "path": "styles/luma/message-scroller.json",
@@ -657,7 +657,7 @@
     },
     {
       "path": "styles/luma/pagination.json",
-      "sha256": "c8b23e102a3858f01a786c1492ef54a81e52b5bd43e98aed005b958e76f9de8b"
+      "sha256": "30b14bd94515c8150db0bb8cf761ed1c30a9af1b34b9176cf74203c9b70e5cd2"
     },
     {
       "path": "styles/luma/password-input.json",
@@ -705,7 +705,7 @@
     },
     {
       "path": "styles/luma/sidebar.json",
-      "sha256": "a92d71fed8a723a7c3b222caf99d705f50b3fce48d1ad46fe910caee090460e5"
+      "sha256": "435331da6e3858db2854affee1b641e987df301e222ab2ce6f5ae053738a2cb4"
     },
     {
       "path": "styles/luma/signature-pad.json",
@@ -817,7 +817,7 @@
     },
     {
       "path": "styles/lyra/breadcrumb.json",
-      "sha256": "f6f684c8eafeef737ecfe80ed43e598efcb08f42972d95b931a4687f0d4ad488"
+      "sha256": "15ad66a4e9ef09e657beeafb2210037e212243b9a3e5cb4d6682fee965488f8e"
     },
     {
       "path": "styles/lyra/bubble.json",
@@ -833,7 +833,7 @@
     },
     {
       "path": "styles/lyra/calendar.json",
-      "sha256": "599885bb3f27427d9a503684791a93a69233f228fa9cf8343a8ab20111fde255"
+      "sha256": "403e1c6ba21fcda634bef4621466ed4e4794489ac6aaadaffe1e005bc225a4eb"
     },
     {
       "path": "styles/lyra/card.json",
@@ -841,7 +841,7 @@
     },
     {
       "path": "styles/lyra/carousel.json",
-      "sha256": "f64a0db114fe13a415783ee3199a71d4c38399842a2c56e2d2144f06b6d7e319"
+      "sha256": "f3a52d5117d6a462c413ebc3d92008f57e257f2a14477f675e21b21b560140f3"
     },
     {
       "path": "styles/lyra/cascade-select.json",
@@ -877,7 +877,7 @@
     },
     {
       "path": "styles/lyra/context-menu.json",
-      "sha256": "8dd6a5d2dfb6e6eef11e758f0055134becd2f94120be62103635cda5732479c0"
+      "sha256": "ec5895d94b12d3853f8ee5f7523723751b887f8d9ae636e658ab31f65085001d"
     },
     {
       "path": "styles/lyra/data-table.json",
@@ -905,7 +905,7 @@
     },
     {
       "path": "styles/lyra/dropdown-menu.json",
-      "sha256": "f6913320c6a46b1bccd76c3ac5c82db2d85458cd6e8f3eff09a1f8e641398176"
+      "sha256": "3d32481a33f3e035ebd35c2ded06b02beae0325bce09b790e8db4802436c8cd8"
     },
     {
       "path": "styles/lyra/editable.json",
@@ -977,7 +977,7 @@
     },
     {
       "path": "styles/lyra/menubar.json",
-      "sha256": "d61927f5d650b70f9825d6ddb7879d4e4e913f29a9bc29d16e59b5729b6b6768"
+      "sha256": "e32043818466dee0bb728eee901e251f5f06215821c855f31ed80f64558b8d49"
     },
     {
       "path": "styles/lyra/message-scroller.json",
@@ -1001,7 +1001,7 @@
     },
     {
       "path": "styles/lyra/pagination.json",
-      "sha256": "3ef9f5d86ba613bf9b96a5c50109708c3a226f423a805a06b2ecb4f1ce2a806a"
+      "sha256": "3f7f0058e6f306b0609313a3bdc857642d6cc58517ed8004c6e4d8e8727c9f08"
     },
     {
       "path": "styles/lyra/password-input.json",
@@ -1049,7 +1049,7 @@
     },
     {
       "path": "styles/lyra/sidebar.json",
-      "sha256": "3248c9322fd1ae9b12973fad972d9f599accd7877abe34e01615bb28e774ac85"
+      "sha256": "2b3beee7fcc0acb663c58c988348c9adfa2fb743f8422acffcd16fb562592b05"
     },
     {
       "path": "styles/lyra/signature-pad.json",
@@ -1161,7 +1161,7 @@
     },
     {
       "path": "styles/maia/breadcrumb.json",
-      "sha256": "c97da2ee18ddcfd2d1c3655a589af62e0eefe788268b83b54a0eb46450cfe473"
+      "sha256": "4ad98fa0574bb81eb7c9227e642c21e1830ef529b8629651421121e2ffe055b8"
     },
     {
       "path": "styles/maia/bubble.json",
@@ -1177,7 +1177,7 @@
     },
     {
       "path": "styles/maia/calendar.json",
-      "sha256": "e6029e47d4985af93c998045996dbf7118df6cc7c3c66890e12730c38386cbbd"
+      "sha256": "31b163dfc58b7c78767e54bb46c51a421394b524447dc852bb7be86a83815854"
     },
     {
       "path": "styles/maia/card.json",
@@ -1185,7 +1185,7 @@
     },
     {
       "path": "styles/maia/carousel.json",
-      "sha256": "7686f0b8aa682cec9e6cf0da977c0795e9dce975e378b0b9d88d29459691afe9"
+      "sha256": "801c6cf5361beca44e5f84b1e95f06ddc59ef8fd5e92dd36ebb850e4eb047846"
     },
     {
       "path": "styles/maia/cascade-select.json",
@@ -1221,7 +1221,7 @@
     },
     {
       "path": "styles/maia/context-menu.json",
-      "sha256": "6441ccb920c353fcea48124a28008dfdc0f2f2a816596b88c1bfa8a0b5b4c6fa"
+      "sha256": "02e1aee1cf06bd0c2cadea840493704f257590c398ee8996abe421e47d791323"
     },
     {
       "path": "styles/maia/data-table.json",
@@ -1249,7 +1249,7 @@
     },
     {
       "path": "styles/maia/dropdown-menu.json",
-      "sha256": "075ecfa0e2c8cdef6d792cfabe57835fe476acfb24023d92e4a61a5a8cd9fe83"
+      "sha256": "582e06d9925e8920d284bdc6625aa2e8ed670ee3a4c19be097ab7550ed26683d"
     },
     {
       "path": "styles/maia/editable.json",
@@ -1321,7 +1321,7 @@
     },
     {
       "path": "styles/maia/menubar.json",
-      "sha256": "be878b8705a38c5d5db0efb7f3fe608c03c0219c8dbb8e87f7274bfc0eaa461b"
+      "sha256": "57a08b31f31d0a83aa908392adcf8c39d3a72af58feb8def1d9227d2b320684d"
     },
     {
       "path": "styles/maia/message-scroller.json",
@@ -1345,7 +1345,7 @@
     },
     {
       "path": "styles/maia/pagination.json",
-      "sha256": "3a5359c3941f49a6c4b8d5534c80a93f0b5d8b0cbbee91d9a691b4a63d4d0272"
+      "sha256": "97b4637066d23207ef28c3930229bbdc6d3f6f7cf1c65c3e63d518b100ab7370"
     },
     {
       "path": "styles/maia/password-input.json",
@@ -1393,7 +1393,7 @@
     },
     {
       "path": "styles/maia/sidebar.json",
-      "sha256": "4d31a08de62b0bc02291b7bd184066d4402e3c7ad871376675f6417ea1214c5d"
+      "sha256": "1f5c9b2858c03e83c28865a37e5d83b688847a670aa13a5826dbcbe2272b8d4e"
     },
     {
       "path": "styles/maia/signature-pad.json",
@@ -1505,7 +1505,7 @@
     },
     {
       "path": "styles/mira/breadcrumb.json",
-      "sha256": "f5e1a5580ca221658d01ec3413a7481b4ebe0f21f9c551b39a377584d0cb29a9"
+      "sha256": "25c20206f404b472311421a2834ba304ebb91d5bfc647389789a6a51eff696f5"
     },
     {
       "path": "styles/mira/bubble.json",
@@ -1521,7 +1521,7 @@
     },
     {
       "path": "styles/mira/calendar.json",
-      "sha256": "d7ddc8a6ebd205c9f5fe2cf660a0a7448827d7d2c6951a0ce4d6b791e023f4eb"
+      "sha256": "af977b5e105dae6f55edd6378bd2e2ec73a2f62ebf249e3ca0defce4bb32cd3f"
     },
     {
       "path": "styles/mira/card.json",
@@ -1529,7 +1529,7 @@
     },
     {
       "path": "styles/mira/carousel.json",
-      "sha256": "669bfd581979e354c96b5642701f250539b4d72190af7f7321faf23fd1a43012"
+      "sha256": "7089ec82844d363a0cce8563bca80f2fa0138d4618e1e432def8f820c00a08cc"
     },
     {
       "path": "styles/mira/cascade-select.json",
@@ -1565,7 +1565,7 @@
     },
     {
       "path": "styles/mira/context-menu.json",
-      "sha256": "5266110e00cb6b5e51dc94ac4ca670e7d254dabff683d75fadd3a7021097e62f"
+      "sha256": "28da7ce0ea026d76080579ff5bdc5e4ffe44bc69d1457c66c1ad590cee2c1e8c"
     },
     {
       "path": "styles/mira/data-table.json",
@@ -1593,7 +1593,7 @@
     },
     {
       "path": "styles/mira/dropdown-menu.json",
-      "sha256": "b57657f8751339f4807754ba9199e7739add5b90030cf56279d9e9f6ae35edc9"
+      "sha256": "84122b3bc19b42fcc859b7b32547ddd0adf00c498f2d1726734c3cd40b4c2e58"
     },
     {
       "path": "styles/mira/editable.json",
@@ -1665,7 +1665,7 @@
     },
     {
       "path": "styles/mira/menubar.json",
-      "sha256": "8be4c6aa01df07c79ede0e6a123d51aa50a5a31193a0e5e5c11bcce2cb1aa527"
+      "sha256": "aed6b3e38ffa4ee9b909305d95656e0891617f0d3ea15228c857b104cbbb626e"
     },
     {
       "path": "styles/mira/message-scroller.json",
@@ -1689,7 +1689,7 @@
     },
     {
       "path": "styles/mira/pagination.json",
-      "sha256": "0c5702e81981ced5a1edf08fbf98d2ece8186bff4fafbe9b8b6da29ffc37c747"
+      "sha256": "450c70cf2f3055619ecd9618d0383a20b03dba2b19527488f49679116a5e3dda"
     },
     {
       "path": "styles/mira/password-input.json",
@@ -1737,7 +1737,7 @@
     },
     {
       "path": "styles/mira/sidebar.json",
-      "sha256": "9e3042b37960f5b247235d36b1d2784bee8604e35f055a470f1fe2dc7a99a736"
+      "sha256": "ba45b70ed8dc905ed19593d9a993c1397399b9ed58e70db94798a270a09d5aab"
     },
     {
       "path": "styles/mira/signature-pad.json",
@@ -1849,7 +1849,7 @@
     },
     {
       "path": "styles/nova/breadcrumb.json",
-      "sha256": "387100bfc472c0bf8e4458729ba3a1ae49568cf5ce84d3031738ab59790c05dd"
+      "sha256": "d37549947f5f2022602cb1dda6459c77b16df28165e1475a556c72299cb5f77d"
     },
     {
       "path": "styles/nova/bubble.json",
@@ -1865,7 +1865,7 @@
     },
     {
       "path": "styles/nova/calendar.json",
-      "sha256": "0ddfe0791a5666b1773ac8314bf47b65cef934c35167be9e930d5daeb7ebb9aa"
+      "sha256": "f7288f3890ef9e7fe8622a57e17b97a89cdd613987ac29bd4af75a10b72e74e7"
     },
     {
       "path": "styles/nova/card.json",
@@ -1873,7 +1873,7 @@
     },
     {
       "path": "styles/nova/carousel.json",
-      "sha256": "801597a5d8e5599f7754ca72dc056dabb13872a61d3d9c5807095b4a76f4d015"
+      "sha256": "7e5df949ef83331a251cc096f99edd3764dc9ec0bcef3cd2ed2218cfe52f0de4"
     },
     {
       "path": "styles/nova/cascade-select.json",
@@ -1909,7 +1909,7 @@
     },
     {
       "path": "styles/nova/context-menu.json",
-      "sha256": "742268b6f0cec8796fb88b453f4daaa4744e029d64fe90e0d153a875baedb805"
+      "sha256": "94961c6833901533fa522ca3a0fc0da0b6909b24d6bfbbe3826aa6375d6b8d3a"
     },
     {
       "path": "styles/nova/data-table.json",
@@ -1937,7 +1937,7 @@
     },
     {
       "path": "styles/nova/dropdown-menu.json",
-      "sha256": "5d27a0b66f4beb37a9b42f5684868f24d11b0622f529ce968dcf8e214a52f0f5"
+      "sha256": "79d94473c918c5c4f4975a3b152353cee5aa05f7df41bd92b26e68f4391e255e"
     },
     {
       "path": "styles/nova/editable.json",
@@ -2009,7 +2009,7 @@
     },
     {
       "path": "styles/nova/menubar.json",
-      "sha256": "887ba112891553976c9ef25dcad4fad1cc8728d3760587effb2aca6e784bc492"
+      "sha256": "9d45346f64052d1c0998ca8e9f6a7dac3c52b4f3db5faaa28bb95dc7ff0e429c"
     },
     {
       "path": "styles/nova/message-scroller.json",
@@ -2033,7 +2033,7 @@
     },
     {
       "path": "styles/nova/pagination.json",
-      "sha256": "351dff626f8c5fe0395e7b36de3b70b1163818939618ea773661f0d1c35a50cb"
+      "sha256": "f97c1d49396f5ed64de89d53c1ff68963195d61bfdc540cf4b55dee0d8aee551"
     },
     {
       "path": "styles/nova/password-input.json",
@@ -2081,7 +2081,7 @@
     },
     {
       "path": "styles/nova/sidebar.json",
-      "sha256": "68d066566fe52f48d3046f4a671b9660332791ee839ea9abb70758eb3673194f"
+      "sha256": "0a5c62798c877af5127baba29e5e1859c653d7c41647b03dbc30b6ca7d4e3a45"
     },
     {
       "path": "styles/nova/signature-pad.json",
@@ -2193,7 +2193,7 @@
     },
     {
       "path": "styles/rhea/breadcrumb.json",
-      "sha256": "c97da2ee18ddcfd2d1c3655a589af62e0eefe788268b83b54a0eb46450cfe473"
+      "sha256": "4ad98fa0574bb81eb7c9227e642c21e1830ef529b8629651421121e2ffe055b8"
     },
     {
       "path": "styles/rhea/bubble.json",
@@ -2209,7 +2209,7 @@
     },
     {
       "path": "styles/rhea/calendar.json",
-      "sha256": "c8c993bf509d60d63286fd130e4517bf1716a751b1a22580a305de8801db543d"
+      "sha256": "951ed5e9609707789fb5e8bad17d7c4a8ff24fa8232783f9357c33fda0ffb4f5"
     },
     {
       "path": "styles/rhea/card.json",
@@ -2217,7 +2217,7 @@
     },
     {
       "path": "styles/rhea/carousel.json",
-      "sha256": "fcf96ec6aa4cbaa5cb85608e7b7262720e47b763c74045c7a4079cd9a23cae39"
+      "sha256": "b68988c8b054ddbef295d4c002b008dbdb25c9da46887292223879ef2acd50cd"
     },
     {
       "path": "styles/rhea/cascade-select.json",
@@ -2253,7 +2253,7 @@
     },
     {
       "path": "styles/rhea/context-menu.json",
-      "sha256": "d90a9075f4cd3d2d7f8053f352c6130aca870277d459d0217c0ae42750bd11dc"
+      "sha256": "86cfce5b36e2edaa3650eb4acb4fae87ae67b64e712fb5950b0abde9dd842f67"
     },
     {
       "path": "styles/rhea/data-table.json",
@@ -2281,7 +2281,7 @@
     },
     {
       "path": "styles/rhea/dropdown-menu.json",
-      "sha256": "d287969093d49eb4e7dfe4fdc5b246d71273cd62d558a0c64b04009e3da01d3f"
+      "sha256": "ebf06fc7a22238d2762eaf0e1920e248be66020180ac19b2663468479361612e"
     },
     {
       "path": "styles/rhea/editable.json",
@@ -2353,7 +2353,7 @@
     },
     {
       "path": "styles/rhea/menubar.json",
-      "sha256": "3eac93276b27d5f3b6a7b95fdcb5344702e5dc6a0257cf7cdfd9032cfb2bb51f"
+      "sha256": "1b632c45df9a580288478c1d240955db26c6feb4355cebde72fc1ec614c0fe97"
     },
     {
       "path": "styles/rhea/message-scroller.json",
@@ -2377,7 +2377,7 @@
     },
     {
       "path": "styles/rhea/pagination.json",
-      "sha256": "55bed42ed5a90f7d9f937faaa6d1b6896b14ccef45d75e4786b8e895ee077eab"
+      "sha256": "7b12f0da5b3f5744153cd35a69a6ee718d3cad091cb5d2d843d1d07fe3e83624"
     },
     {
       "path": "styles/rhea/password-input.json",
@@ -2425,7 +2425,7 @@
     },
     {
       "path": "styles/rhea/sidebar.json",
-      "sha256": "b2348635056d5466bec848669e25f4fdadc6ab77de1162bd8cf64356b055d45c"
+      "sha256": "82d058bb980a3be6948ed607594d57f2d4044ea6b19149ea026865a45d175b6c"
     },
     {
       "path": "styles/rhea/signature-pad.json",
@@ -2537,7 +2537,7 @@
     },
     {
       "path": "styles/sera/breadcrumb.json",
-      "sha256": "340afa2ea453f8d057fd0ee36d58e3a469e9ca0848e007d835bfb4debc961b7d"
+      "sha256": "dc5437ff5748dbe8fd408ed2b544f487705c3becaf52efc2c2a0472de31710fc"
     },
     {
       "path": "styles/sera/bubble.json",
@@ -2553,7 +2553,7 @@
     },
     {
       "path": "styles/sera/calendar.json",
-      "sha256": "b7391c50f424056b48d34c831b7cc4f06b5faa733c97a97f46dffb0eafe408fe"
+      "sha256": "fc0a4b16b3200eb616fc50ff6e464db698d09c30601634be28124dcb617af8e8"
     },
     {
       "path": "styles/sera/card.json",
@@ -2561,7 +2561,7 @@
     },
     {
       "path": "styles/sera/carousel.json",
-      "sha256": "b9e45cc9550db72f7b48df89f5df854422341704ed9f5ff9b26baacba2abfd1d"
+      "sha256": "957745374bcade80717004493b37219e62a657789f4b65d3280ae40617cae036"
     },
     {
       "path": "styles/sera/cascade-select.json",
@@ -2597,7 +2597,7 @@
     },
     {
       "path": "styles/sera/context-menu.json",
-      "sha256": "764b1d8d59233ec6e5edd0e3fd4ca1d75d774db48a71973ef3af3e9afa187efb"
+      "sha256": "ae3e68bf7274fe46acca41befbde1091f10503404aedcb4e16cade46e203e9fa"
     },
     {
       "path": "styles/sera/data-table.json",
@@ -2625,7 +2625,7 @@
     },
     {
       "path": "styles/sera/dropdown-menu.json",
-      "sha256": "a3f5a6dc11994627dd8239014db12984d2d5d184f4ab28e0146e7b67bdc085ce"
+      "sha256": "cc016ce47832cb15b0f5dc67d7b8a89edd3d3f5d9d010d62943e13576293f8b4"
     },
     {
       "path": "styles/sera/editable.json",
@@ -2697,7 +2697,7 @@
     },
     {
       "path": "styles/sera/menubar.json",
-      "sha256": "db9951b34cc86cc5333c999f73c7f5ebf604ef87a1659be409c167c74a3d2172"
+      "sha256": "1d9134713e7ee49e7ee1c33b1e500526be9163e8fabe933a54b90c525dbfca16"
     },
     {
       "path": "styles/sera/message-scroller.json",
@@ -2721,7 +2721,7 @@
     },
     {
       "path": "styles/sera/pagination.json",
-      "sha256": "4e87c3f070f35cc1f43d46ea3aea9c5eea46ac7f75fef742c759120c73415069"
+      "sha256": "4e70b0d6e40cc964699647cd4612f2532258f60923be91886c58556f2d250520"
     },
     {
       "path": "styles/sera/password-input.json",
@@ -2769,7 +2769,7 @@
     },
     {
       "path": "styles/sera/sidebar.json",
-      "sha256": "61dc4fc3c066cf8ec7803dd3806a1bfd087666db2d8ac88d196c9a4f2f79cb70"
+      "sha256": "116d3d54038c3d43902da5c6c50a6967d4dabf0578128e4d5d5b522c67bb9f14"
     },
     {
       "path": "styles/sera/signature-pad.json",
@@ -2881,7 +2881,7 @@
     },
     {
       "path": "styles/vega/breadcrumb.json",
-      "sha256": "c97da2ee18ddcfd2d1c3655a589af62e0eefe788268b83b54a0eb46450cfe473"
+      "sha256": "4ad98fa0574bb81eb7c9227e642c21e1830ef529b8629651421121e2ffe055b8"
     },
     {
       "path": "styles/vega/bubble.json",
@@ -2897,7 +2897,7 @@
     },
     {
       "path": "styles/vega/calendar.json",
-      "sha256": "607341f3a83a816dddb6912ab6befd9ee8b0e45688d5809cc515e5fa2445fccc"
+      "sha256": "ce324f35155fb2d65f9ff4666a7d3fad7bce78aec239703283883a496e914b2d"
     },
     {
       "path": "styles/vega/card.json",
@@ -2905,7 +2905,7 @@
     },
     {
       "path": "styles/vega/carousel.json",
-      "sha256": "c318d2d85aac7d4df386b5cd6cfc72f8ccc9ac3df1cfc22c32d48dd61a6afb18"
+      "sha256": "171e7bfa65644a8bceb7a0faa8b871f156b599b3cc7103cb093f265142fc8ce8"
     },
     {
       "path": "styles/vega/cascade-select.json",
@@ -2941,7 +2941,7 @@
     },
     {
       "path": "styles/vega/context-menu.json",
-      "sha256": "50fcc724a716a6462fb6bc082cb81eddd17c27227c2381afad327823d3eb74ac"
+      "sha256": "a3a11602aec39cf84cb55e57f0c39ed64996156095f3740fb6e696e36df1fe1f"
     },
     {
       "path": "styles/vega/data-table.json",
@@ -2969,7 +2969,7 @@
     },
     {
       "path": "styles/vega/dropdown-menu.json",
-      "sha256": "d4b04a4ea5ccfaacbc075978c5cf26929666997a27f53ff575235b9b173a3623"
+      "sha256": "4ea0e54c3f777c6f4bb47fc0ea665c1907974980ba8d5e25e317f1290780aba2"
     },
     {
       "path": "styles/vega/editable.json",
@@ -3041,7 +3041,7 @@
     },
     {
       "path": "styles/vega/menubar.json",
-      "sha256": "e9fce9ff0a6d823b849ee169901f2bb42724f32160dce1c812bf6aa3a5db0929"
+      "sha256": "74a038e56fdae24db84d2a5ef2efb8478fc06319a8501e2df3f956c70a35c0c1"
     },
     {
       "path": "styles/vega/message-scroller.json",
@@ -3065,7 +3065,7 @@
     },
     {
       "path": "styles/vega/pagination.json",
-      "sha256": "8dc0a2017afb02fed97d8c8698e34b3d3758117f3919e647f90da0c95a81d7cd"
+      "sha256": "ee7f76921c2248c0e2e9021dc6135a4142646da5115d92f7ab936744689c6965"
     },
     {
       "path": "styles/vega/password-input.json",
@@ -3113,7 +3113,7 @@
     },
     {
       "path": "styles/vega/sidebar.json",
-      "sha256": "b9920aece657092aaabf9b9458debce3e4fda516955d0029f66e3d7729880815"
+      "sha256": "996c5409059362675b2c5df70e31d416063e9a639bdc089afd0717639f8128e3"
     },
     {
       "path": "styles/vega/signature-pad.json",
