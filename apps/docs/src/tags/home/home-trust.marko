@@ -57,8 +57,34 @@ static const BADGES = [
     src: BADGE_ENDPOINT("lighthouse-accessibility"),
     href: `${REPO}/actions/workflows/lighthouse.yml`,
   },
+  {
+    // No ratio in the alt text: the image is live (same reason as the
+    // lighthouse-accessibility entry above).
+    alt: "Hydration invariance across server-rendered components",
+    title: "Hydration invariance suite — SSR markup must be identical after client hydration",
+    src: BADGE_ENDPOINT("hydration"),
+    href: `${REPO}/tree/main/packages/shadcn/tests`,
+  },
+  {
+    alt: "npm version (marko-ui)",
+    title: "marko-ui CLI on npm",
+    src: "https://img.shields.io/npm/v/marko-ui",
+    href: "https://www.npmjs.com/package/marko-ui",
+  },
+  {
+    alt: "npm version (@marko-ui/shadcn)",
+    title: "@marko-ui/shadcn component package on npm",
+    src: "https://img.shields.io/npm/v/@marko-ui/shadcn",
+    href: "https://www.npmjs.com/package/@marko-ui/shadcn",
+  },
+  {
+    alt: "License: MIT",
+    title: "MIT License",
+    src: "https://img.shields.io/npm/l/marko-ui",
+    href: `${REPO}/blob/main/LICENSE`,
+  },
   // OpenSSF Scorecard deliberately absent: the pipeline runs weekly, but at
-  // 3.8/10 (new repo — no branch protection, unpinned actions) the badge
+  // mid-range score (new repo — protection and pinning still maturing) the badge
   // reads as a warning, not a receipt. Add it back once the score is earned.
 ] as const;
 

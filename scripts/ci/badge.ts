@@ -13,10 +13,13 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-// The suite owns this number and guards it with its own bookkeeping test, so
-// the badge derives coverage from the source of truth rather than restating
-// a figure that can drift.
-import { ZAG_BACKED_COMPONENT_COUNT } from "../../packages/shadcn/tests/hydration-coverage.ts";
+// The suite owns both numbers and guards them with its own bookkeeping
+// tests, so the badge derives coverage from the source of truth rather
+// than restating figures that can drift.
+import {
+  INTERACTIVE_COMPONENTS,
+  ZAG_BACKED_COMPONENT_COUNT,
+} from "../../packages/shadcn/tests/hydration-coverage.ts";
 
 interface Badge {
   schemaVersion: 1;
@@ -75,41 +78,72 @@ switch (kind) {
     const hydrationFiles = (input.testResults ?? []).filter((file: { name?: string }) =>
       (file.name ?? "").includes("hydration-invariant"),
     );
+    interface AssertionResult {
+      status: string;
+      /** vitest fills this with the enclosing describe titles, outermost first. */
+      ancestorTitles?: string[];
+    }
     const hydrationResults = hydrationFiles.flatMap(
-      (file: { assertionResults?: { status: string }[] }) => file.assertionResults ?? [],
+      (file: { assertionResults?: AssertionResult[] }) => file.assertionResults ?? [],
     );
+    // The per-component invariance assertions live in the C-4 describe of
+    // hydration-invariant.test.ts; that file's other describe is bookkeeping
+    // (list integrity vs. the filesystem). Only the C-4 assertions prove a
+    // component was actually exercised, so they are the only ones eligible
+    // for a coverage claim.
+    const MAIN_SUITE_TITLE = "hydration invariant (C-4): SSR attributes survive hydration";
+    const mainResults = hydrationResults.filter((r) =>
+      (r.ancestorTitles ?? []).includes(MAIN_SUITE_TITLE),
+    );
+    const mainPassed = mainResults.filter((r) => r.status === "passed").length;
+    const mainFailed = mainResults.length - mainPassed;
+    // Both numbers are the suite's covered/total component counts, kept
+    // honest by the bookkeeping tests in hydration-invariant.test.ts (a new
+    // Zag-backed component in neither list, a stale name, or a drifted
+    // literal fails the suite).
+    //
+    // Two numerator/denominator traps are guarded here:
+    // - The denominator is the number of Zag-backed COMPONENTS, not the
+    //   number of hydration tests that ran. It used to be
+    //   `hydrationResults.length`, which can only ever equal the number that
+    //   passed on a green run — so the badge published "33/33 identical" and
+    //   was read (in the README, and in launch copy) as full coverage while
+    //   21 of the 54 Zag-backed components had no hydration test at all. A
+    //   badge whose denominator is "the tests I chose to write" cannot
+    //   report a coverage gap by construction.
+    // - The numerator is the number of distinct covered COMPONENTS, not the
+    //   number of assertions. hydrationResults also carries the bookkeeping
+    //   its (6 at last count), and the C-4 body can grow more assertions per
+    //   component over time — counting assertions produced "59/54
+    //   components" on a fully green run.
+    //
+    // The "components" claim additionally requires the C-4 suite to have
+    // demonstrably run COMPLETE: exactly one passing assertion per covered
+    // component. A partial run (bookkeeping only, or a -t filtered subset)
+    // must not paint a coverage claim green, so it falls back to the
+    // assertion-count form below, colored red like a failure.
+    const fullRun =
+      mainResults.length === INTERACTIVE_COMPONENTS.length && mainFailed === 0;
     const hydrationPassed = hydrationResults.filter(
-      (r: { status: string }) => r.status === "passed",
+      (r: AssertionResult) => r.status === "passed",
     ).length;
-    // The denominator is the number of Zag-backed COMPONENTS, not the number
-    // of hydration tests that ran.
-    //
-    // It used to be `hydrationResults.length`, which can only ever equal the
-    // number that passed on a green run — so the badge published
-    // "33/33 identical" and was read (in the README, and in launch copy) as
-    // full coverage, while 21 of the 54 Zag-backed components had no
-    // hydration test at all. A badge whose denominator is "the tests I chose
-    // to write" cannot report a coverage gap by construction.
-    //
-    // ZAG_BACKED_COMPONENT_COUNT is exported by the suite itself and kept
-    // honest there by a bookkeeping test that fails if the covered and
-    // uncovered lists stop accounting for every Zag-backed component.
-    const hydrationFailed = hydrationResults.length - hydrationPassed;
+    const claimCoverage = fullRun;
     write("hydration", {
       schemaVersion: 1,
       label: "hydration",
-      // A failure is the more urgent fact, so it wins the label; otherwise
-      // report coverage, which is the number people actually want.
-      message:
-        hydrationFailed > 0
-          ? `${hydrationPassed}/${hydrationResults.length} identical`
-          : `${hydrationPassed}/${ZAG_BACKED_COMPONENT_COUNT} components`,
-      color:
-        hydrationFailed > 0
-          ? "red"
-          : hydrationPassed >= ZAG_BACKED_COMPONENT_COUNT
-            ? "brightgreen"
-            : "yellow",
+      // A failure is the more urgent fact, so it wins the label; only a
+      // demonstrably complete green run may claim coverage, which is the
+      // number people actually want.
+      message: !claimCoverage
+        ? mainFailed > 0
+          ? `${mainPassed}/${mainResults.length} identical`
+          : `${hydrationPassed}/${hydrationResults.length} identical`
+        : `${INTERACTIVE_COMPONENTS.length}/${ZAG_BACKED_COMPONENT_COUNT} components`,
+      color: !claimCoverage
+        ? "red"
+        : INTERACTIVE_COMPONENTS.length >= ZAG_BACKED_COMPONENT_COUNT
+          ? "brightgreen"
+          : "yellow",
     });
     break;
   }
