@@ -56,7 +56,7 @@
     }
   },
   "bin": {
-    "marko-ui": "./dist/index.js"
+    "marko-ui": "dist/index.js"
   },
   "engines": {
     "node": ">=20.18.1"
