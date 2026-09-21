@@ -2,11 +2,18 @@
 # plus bare component pages for 100/100/100/100 performance/a11y/best-practices/seo assertions.
 # The bare pages are the components' true metrics; docs-site scores are noise to
 # library users. The badge reports the MINIMUM across pages.
+#
+# Runs on pushes to main AND on release tags. Branch runs publish
+# `lighthouse-accessibility.json` to `badges-main` (main's numbers, README);
+# tag runs publish it to `badges` (release-pinned, site home) — the two
+# branches never share a run, so each audience's badge is only ever written
+# from the ref it claims to describe.
 name: Lighthouse
 
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
   workflow_dispatch:
 
@@ -98,8 +105,16 @@ jobs:
           temporaryPublicStorage: true
       - name: Generate badges
         run: bun scripts/ci/badge.ts lighthouse-a11y "${{ steps.lhci_a11y.outputs.resultsPath }}/manifest.json" badge-out
-      - name: Push to badges branch
-        if: github.ref == 'refs/heads/main'
+      - name: Push to badge branch
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash scripts/ci/publish-badges.sh badge-out
+        run: |
+          # Main runs feed badges-main (README = team = main); tag runs feed
+          # badges (site home = consumers = last published release).
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            branch=badges-main
+          else
+            branch=badges
+          fi
+          bash scripts/ci/publish-badges.sh badge-out "$branch"

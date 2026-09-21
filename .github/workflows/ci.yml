@@ -1,8 +1,12 @@
 # CI + badge data. Every job runs its suite against the real production
 # build (scripts/ci/serve-docs.sh) and emits shields.io endpoint JSON; the
-# publish job pushes those to the `badges` branch on main. Render with:
-#   https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/svallory/marko-ui/badges/<name>.json
-# Badge files: tests.json, hydration.json, axe.json
+# publish job pushes those to the `badges-main` branch on main (main's
+# numbers — the README reads them). The site home reads the `badges`
+# branch, which is NOT written here: it is release-pinned, rewritten by
+# release.yml from the release tag after each publish. Render with:
+#   https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/svallory/marko-ui/badges-main/<name>.json
+# Badge files: checks.json + checks-count.json (combine of tests.json),
+# tests.json, hydration.json, axe.json
 name: CI
 
 on:
@@ -324,10 +328,10 @@ jobs:
           bun-version: 1.3.11
       - name: Combine test badges into checks.json
         run: bun scripts/ci/badge.ts combine badges badges
-      - name: Push to badges branch
+      - name: Push to badges-main branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash scripts/ci/publish-badges.sh badges
+        run: bash scripts/ci/publish-badges.sh badges badges-main
 
   # Aggregate gate. Branch protection has no required checks configured
   # today (verified via `gh api repos/svallory/marko-ui/branches/main/protection`

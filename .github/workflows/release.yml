@@ -3,6 +3,18 @@
 # filename — do not rename this file). No npm token/secret: auth is the
 # workflow's OIDC id-token, provenance is attached automatically by npm CLI
 # >= 11.5.1. Manual trigger only — this is a release action, not CI.
+#
+# After a successful publish this also: (1) creates+pushes the `v<version>`
+# git tag if absent (0.3.1 shipped to npm without one — the tag is what the
+# release-pinned badges and the lighthouse tag trigger key off), and
+# (2) rebuilds the full badge pipeline ON THE TAG (docs build + serve,
+# vitest JSON -> badge.ts vitest, axe scan -> badge.ts axe, combine) and
+# publishes the results to the `badges` branch — the release-pinned numbers
+# the SITE home reads. ci.yml/lighthouse.yml keep feeding `badges-main`
+# (main's numbers, README). This makes a release run noticeably heavier
+# (full docs build + suites, ~2-4 min extra) — accepted: the consumer-facing
+# badges must describe the artifact actually being installed, and only the
+# tagged tree can measure it.
 name: Release
 
 on:
@@ -20,9 +32,16 @@ jobs:
     name: Publish npm packages
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      # Consumed by release-badges to check out the exact tag it publishes
+      # from. The status step always runs before this job can succeed (it
+      # fails the job when both packages are already published), so the
+      # output is always set here.
+      version: ${{ steps.status.outputs.cli_version }}
     permissions:
       id-token: write
-      contents: read
+      # write (not read): the tag step below pushes the release tag.
+      contents: write
     steps:
       # workflow_dispatch can be run from any branch/tag; the narrowed test
       # gate below assumes main (ci.yml already gated it there), so refuse
@@ -130,3 +149,81 @@ jobs:
         if: steps.status.outputs.shadcn_published == 'false'
         working-directory: packages/shadcn
         run: npm publish --access public
+
+      # The packages release in lockstep (one version, one tag). If they
+      # ever diverge, refuse to guess which version the tag should carry.
+      - name: Create and push release tag
+        env:
+          CLI_VERSION: ${{ steps.status.outputs.cli_version }}
+          SHADCN_VERSION: ${{ steps.status.outputs.shadcn_version }}
+        run: |
+          if [ "$CLI_VERSION" != "$SHADCN_VERSION" ]; then
+            echo "::error::packages carry different versions (marko-ui $CLI_VERSION, @marko-ui/shadcn $SHADCN_VERSION) — refusing to pick a tag version"
+            exit 1
+          fi
+          tag="v$CLI_VERSION"
+          # Don't fail if the tag already exists (re-release / retry path):
+          # a missing tag is created and pushed, an existing one is a
+          # no-op notice.
+          if git fetch -q origin "refs/tags/$tag" 2>/dev/null; then
+            echo "::notice::tag $tag already exists — skipping tag creation"
+          else
+            git tag "$tag"
+            git push origin "$tag"
+            echo "tagged $tag"
+          fi
+
+  # Release-pinned badges: the SITE home is for consumers, so its numbers
+  # must describe the published artifact, not main. Rebuilds the same badge
+  # pipeline ci.yml runs, but checked out AT THE RELEASE TAG, and publishes
+  # to `badges` (publish-badges.sh's default branch). Steps deliberately
+  # mirror ci.yml's tests/axe/publish jobs rather than extracting a
+  # composite action: three call sites (ci tests, ci axe, here) share only
+  # serve-docs + two badge.ts invocations, and the release variant differs
+  # in checkout ref, reporter flags, and target branch — a composite would
+  # carry more conditionals than the duplication it saves.
+  release-badges:
+    name: Publish release-pinned badges
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      # Fresh checkout pinned to the tag just pushed — the badge numbers
+      # must come from the tree that shipped, not from main.
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1e8685f8e4a348a # v4
+        with:
+          ref: v${{ needs.release.outputs.version }}
+
+      - uses: ./.github/actions/setup
+
+      - name: Build and serve docs
+        run: bash scripts/ci/serve-docs.sh
+
+      - name: Run vitest suites
+        env:
+          DOCS_BASE_URL: http://localhost:3000
+        run: bunx vitest run --reporter=default --reporter=json --outputFile.json=vitest-results.json
+
+      - name: Generate test + hydration badges
+        if: always()
+        run: bun scripts/ci/badge.ts vitest vitest-results.json badge-out
+
+      - name: Run axe scan
+        env:
+          DOCS_BASE_URL: http://localhost:3000
+        run: bun scripts/ci/axe-scan.ts axe-results.json
+
+      - name: Generate axe badge
+        if: always()
+        run: bun scripts/ci/badge.ts axe axe-results.json badge-out
+
+      - name: Combine test badges into checks.json
+        run: bun scripts/ci/badge.ts combine badge-out badge-out
+
+      - name: Push release-pinned badges
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/ci/publish-badges.sh badge-out badges
