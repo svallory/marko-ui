@@ -90,7 +90,7 @@ import { docs as docs_tour } from "./tour/docs.ts";
 import { docs as docs_tree_view } from "./tree-view/docs.ts";
 
 export interface DemoEntry {
-  /** Stable key into demo-renderer.marko's static if-chain — see that file's header. */
+  /** Stable key matched by the component's generated renderer tag under src/tags/docs/demo-renderers/. */
   demoId: string;
   /** Raw .marko text, inlined at generation time for the code panels. */
   source: string;

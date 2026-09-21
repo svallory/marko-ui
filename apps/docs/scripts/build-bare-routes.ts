@@ -7,8 +7,10 @@
 // their client bundle must contain just the one demo. A dynamic route would
 // need either a dynamic tag (<${...}/>) — which crashes Marko 6.3.46 client
 // hydration in production builds (notes/bug-marko-dynamic-tag-hydration-crash.md)
-// — or the generated demo-renderer.marko, which statically imports all ~700
-// demos and would put every demo's JS in every bare page. One generated file
+// — or a renderer that statically imports all ~700 demos, which would put
+// every demo's JS in every bare page. (The docs component pages solve this
+// the same way — one generated static route per component, each wiring only
+// its own demos; see scripts/build-demos-manifest.ts.) One generated file
 // per component keeps each page's bundle to its own demo; the static adapter
 // seeds parameterless routes automatically, so no url list is needed.
 //

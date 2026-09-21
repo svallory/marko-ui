@@ -66,13 +66,14 @@ function staticUrls(): string[] {
 /**
  * Long-term-cache vendor chunks for the CLIENT bundle only.
  *
- * Every /docs/components/$name page statically imports all ~700 demo files
- * through tags/docs/demo-renderer.marko, so every page's client graph drags in
- * the same ~48 @zag-js machines, d3, shiki, @tanstack/table-core and the icon
- * packs. Without a policy, Rolldown's default shared-chunk names are content
- * hashes that change with any edit to any demo, so repeat visitors re-download
- * the whole vendor graph on every deploy. Pinning those modules to stable
- * chunk names lets them be cached long-term across deploys.
+ * Each /docs/components/<name> page is a generated static route whose client
+ * graph contains only that component's demos (plus shared chunks) — but every
+ * page still shares the same vendor graph: the ~48 @zag-js machines, d3,
+ * shiki, @tanstack/table-core and the icon packs all roll into common chunks
+ * reused across pages. Without a policy, Rolldown's default shared-chunk
+ * names are content hashes that change with any edit to any demo, so repeat
+ * visitors re-download the whole vendor graph on every deploy. Pinning those
+ * modules to stable chunk names lets them be cached long-term across deploys.
  *
  * Client-only: the SSR/prerender bundle must stay exactly as Rolldown lays it
  * out — forcing chunks there risks split-instance/circular-chunk hazards in
