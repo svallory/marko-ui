@@ -2,9 +2,8 @@
 // PageNav chrome) and page.tsx / [...categories]/page.tsx (the block list
 // itself), merged into one tag since our router calls this the same way for
 // both the featured "/blocks" route and "/blocks/$category". shadcn's
-// FEATURED_BLOCKS constant (dashboard-01, sidebar-07, sidebar-03, login-03,
-// login-04) is mirrored for the featured/"" slug; every other slug lists the
-// full category, matching [...categories]/page.tsx's getAllBlockIds.
+// featured selection is extended with our uncategorized calendar; every
+// other slug lists the full category.
 import "./blocks-nav.marko";
 import "./block-viewer.marko";
 import { buttonVariants } from "@marko-ui/shadcn/ui/button/variants.ts";
@@ -17,8 +16,8 @@ export interface Input {
   categorySlug: string;
 }
 
-// shadcn/app/(app)/blocks/page.tsx's FEATURED_BLOCKS, in that order.
-static const FEATURED_BLOCK_NAMES = ["dashboard-01", "sidebar-07", "sidebar-03", "login-03", "login-04"];
+// Include the uncategorized calendar so every block is discoverable.
+static const FEATURED_BLOCK_NAMES = ["dashboard-01", "sidebar-07", "sidebar-03", "login-03", "login-04", "calendar-01"];
 
 <const/isFeatured=input.categorySlug === ""/>
 <const/blocks=isFeatured
