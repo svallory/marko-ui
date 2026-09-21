@@ -17,13 +17,24 @@
  *      validates against the CLI's own registryItemSchema — the exact schema
  *      `marko-ui add` parses responses with, so a green run here means the
  *      CLI can install from this registry.
+ *   5. GET <REGISTRY_URL>/styles/<REGISTRY_STYLE>/<REGISTRY_SAMPLE_ITEM>.json
+ *      (default styles/nova/button.json) passes the same substring scan and
+ *      schema validation. Per-style items are the actual copy-path install
+ *      payload (`marko-ui add` fetches them per style) and are NOT in
+ *      index.json — a localhost URL hiding in one would otherwise pass green.
  *
- * Deliberately standalone and quick: e2e/acceptance/registry-health.test.ts
- * is the full weekly validation suite; this is the per-deploy tripwire.
+ * Note this asserts LIVE HEALTH, not freshness: the poll succeeds against
+ * whatever the edge currently serves, so a stale-but-healthy previous deploy
+ * can give a green first poll. Freshness relative to main is the weekly
+ * acceptance suite's job (e2e/acceptance/registry-health.test.ts).
+ *
+ * Deliberately standalone and quick: the acceptance suite is the full weekly
+ * validation; this is the per-deploy tripwire.
  *
  * Env overrides (for staging / negative testing):
- *   REGISTRY_URL        default https://marko-ui.saulo.tech/r
- *   REGISTRY_SAMPLE_ITEM  component item fetched for assertion 4, default "button"
+ *   REGISTRY_URL          default https://marko-ui.saulo.tech/r
+ *   REGISTRY_SAMPLE_ITEM  component item fetched for assertions 4+5, default "button"
+ *   REGISTRY_STYLE        visual style fetched for assertion 5, default "nova"
  *
  * Usage: bun scripts/ci/registry-smoke.ts
  */
@@ -31,9 +42,12 @@ import { registryItemSchema } from "../../packages/marko-ui/src/registry/schema.
 
 const BASE_URL = (process.env.REGISTRY_URL ?? "https://marko-ui.saulo.tech/r").replace(/\/$/, "");
 const SAMPLE_ITEM = process.env.REGISTRY_SAMPLE_ITEM ?? "button";
+const STYLE = process.env.REGISTRY_STYLE ?? "nova";
 
 // Overall retry budget ~5 min: deploy propagation can take a while, so the
-// first poll may legitimately 404 while the new asset manifest rolls out.
+// first poll may legitimately 404 while the new asset manifest rolls out,
+// and a transient Cloudflare 5xx (502/520) at poll time must not fail the
+// whole deploy pipeline.
 const DEADLINE_MS = 5 * 60 * 1000;
 const MAX_DELAY_MS = 30_000;
 const FETCH_TIMEOUT_MS = 15_000;
@@ -66,7 +80,11 @@ async function fetchWithRetry(url: string, label: string): Promise<Response> {
       continue;
     }
     if (res.ok) return res;
-    if (res.status === 404 && Date.now() - start + delay <= DEADLINE_MS) {
+    // 404 = asset manifest not rolled out yet; 5xx = transient edge error.
+    // Both retry under the same deadline; a 4xx other than 404 is a real
+    // defect and fails immediately.
+    const retryable = res.status === 404 || res.status >= 500;
+    if (retryable && Date.now() - start + delay <= DEADLINE_MS) {
       console.log(`attempt ${attempt}: HTTP ${res.status} — retrying in ${delay / 1000}s`);
       await Bun.sleep(delay);
       delay = Math.min(delay * 2, MAX_DELAY_MS);
@@ -86,6 +104,19 @@ async function fetchJson(url: string, label: string): Promise<unknown> {
     return JSON.parse(text);
   } catch (err) {
     throw new Error(`${label}: body is not valid JSON: ${String(err)}`);
+  }
+}
+
+/** Substring scan + schema validation for a single registry item payload. */
+function checkItem(label: string, item: unknown): void {
+  const serialized = JSON.stringify(item);
+  for (const needle of FORBIDDEN) {
+    check(!serialized.includes(needle), `${label} contains no "${needle}"`);
+  }
+  const parsed = registryItemSchema.safeParse(item);
+  check(parsed.success, `${label} validates against registryItemSchema`);
+  if (!parsed.success) {
+    console.error(JSON.stringify(parsed.error.issues.slice(0, 5), null, 2));
   }
 }
 
@@ -110,16 +141,17 @@ try {
   }
 
   for (const needle of FORBIDDEN) {
-    check(!serialized.includes(needle), `payload contains no "${needle}"`);
+    check(!serialized.includes(needle), `index payload contains no "${needle}"`);
   }
 
-  const itemUrl = `${BASE_URL}/${SAMPLE_ITEM}.json`;
-  const sample = await fetchJson(itemUrl, `${SAMPLE_ITEM}.json`);
-  const parsed = registryItemSchema.safeParse(sample);
-  check(parsed.success, `${SAMPLE_ITEM}.json validates against registryItemSchema`);
-  if (!parsed.success) {
-    console.error(JSON.stringify(parsed.error.issues.slice(0, 5), null, 2));
-  }
+  const sample = await fetchJson(`${BASE_URL}/${SAMPLE_ITEM}.json`, `${SAMPLE_ITEM}.json`);
+  checkItem(`${SAMPLE_ITEM}.json`, sample);
+
+  const perStyle = await fetchJson(
+    `${BASE_URL}/styles/${STYLE}/${SAMPLE_ITEM}.json`,
+    `styles/${STYLE}/${SAMPLE_ITEM}.json`,
+  );
+  checkItem(`styles/${STYLE}/${SAMPLE_ITEM}.json`, perStyle);
 } catch (err) {
   console.error(`registry smoke check FAILED: ${String(err)}`);
   process.exit(1);
