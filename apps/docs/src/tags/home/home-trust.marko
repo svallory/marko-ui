@@ -5,10 +5,13 @@
 //       COMPONENTS: derived from components-list.ts's COMPONENTS.length —
 //         never hardcode this; count drifts every time a component lands.
 //       STYLES:     default + style-*.css in packages/shadcn/styles
-//   - BADGES: live shields.io endpoint images fed by CI (the `badges` branch
-//     is rewritten on every green main build) — checks, WCAG scan, Lighthouse
-//     accessibility. Their numbers update themselves; never restate them as
-//     receipts.
+//   - BADGES: live shields.io endpoint images fed by CI. This is the SITE
+//     home — its audience is consumers — so every badge must describe the
+//     last PUBLISHED release (the `badges` branch, written by
+//     .github/workflows/release.yml from the release tag), not main. Team /
+//     main-branch numbers (npm, hydration suite mechanics, MIT) live on the
+//     README, which reads `badges-main`. Their numbers update themselves;
+//     never restate them as receipts.
 import { COMPONENTS } from "../../lib/components-list.ts";
 
 static const REPO = "https://github.com/svallory/marko-ui";
@@ -33,6 +36,10 @@ static const BADGE_ENDPOINT = (name: string) =>
     `https://raw.githubusercontent.com/svallory/marko-ui/badges/${name}.json`,
   )}`;
 
+// Exactly three badges, all fed by the `badges` branch (last published
+// release — see the file header). npm/MIT/hydration are README-only: they
+// describe the repo and the suite, not the artifact a consumer installs.
+// The 4th slot is reserved for the behavior-coverage badge (issue #72).
 static const BADGES = [
   {
     alt: "Tests passing (behavior and hydration suites)",
@@ -56,32 +63,6 @@ static const BADGES = [
     title: "Minimum Lighthouse accessibility score across audited component pages",
     src: BADGE_ENDPOINT("lighthouse-accessibility"),
     href: `${REPO}/actions/workflows/lighthouse.yml`,
-  },
-  {
-    // No ratio in the alt text: the image is live (same reason as the
-    // lighthouse-accessibility entry above).
-    alt: "Hydration invariance across server-rendered components",
-    title: "Hydration invariance suite — SSR markup must be identical after client hydration",
-    src: BADGE_ENDPOINT("hydration"),
-    href: `${REPO}/tree/main/packages/shadcn/tests`,
-  },
-  {
-    alt: "npm version (marko-ui)",
-    title: "marko-ui CLI on npm",
-    src: "https://img.shields.io/npm/v/marko-ui",
-    href: "https://www.npmjs.com/package/marko-ui",
-  },
-  {
-    alt: "npm version (@marko-ui/shadcn)",
-    title: "@marko-ui/shadcn component package on npm",
-    src: "https://img.shields.io/npm/v/@marko-ui/shadcn",
-    href: "https://www.npmjs.com/package/@marko-ui/shadcn",
-  },
-  {
-    alt: "License: MIT",
-    title: "MIT License",
-    src: "https://img.shields.io/npm/l/marko-ui",
-    href: `${REPO}/blob/main/LICENSE`,
   },
   // OpenSSF Scorecard deliberately absent: the pipeline runs weekly, but at
   // mid-range score (new repo — protection and pinning still maturing) the badge

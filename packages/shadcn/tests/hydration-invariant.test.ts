@@ -502,10 +502,10 @@ describe("hydration invariant (C-4): SSR attributes survive hydration", () => {
 });
 
 /**
- * Guards the coverage arithmetic the project states publicly ("33 of 54
- * Zag-backed components").
+ * Guards the coverage arithmetic the project states publicly ("53 of 53
+ * applicable Zag-backed components").
  *
- * Without this, the covered and uncovered lists could drift apart silently —
+ * Without this, the covered and excepted lists could drift apart silently —
  * which is how "33/33 identical" ended up on a badge and in the README while
  * 21 components were in fact uncovered.
  */
@@ -568,6 +568,33 @@ describe("hydration coverage bookkeeping", () => {
     const covered = new Set<string>(INTERACTIVE_COMPONENTS);
     const overlap = NON_INVARIANT_BY_DESIGN.filter((name) => covered.has(name));
     expect(overlap).toEqual([]);
+  });
+
+  it("places every Zag-backed component in exactly one of the two lists", () => {
+    // The assertion the badge's denominator depends on: 53 covered + 1
+    // excepted means the applicable set is 53 only if the two lists are
+    // disjoint AND jointly exhaustive. The two tests above each guard one
+    // direction; this one pins the combined "exactly one" invariant by name
+    // so a component landing in both lists (or neither) fails here by name.
+    const onDiskSet = new Set(onDisk);
+    const classified = new Set<string>([
+      ...INTERACTIVE_COMPONENTS,
+      ...NON_INVARIANT_BY_DESIGN,
+    ]);
+    const neither = onDisk.filter((name) => !classified.has(name));
+    const both = NON_INVARIANT_BY_DESIGN.filter((name) =>
+      new Set<string>(INTERACTIVE_COMPONENTS).has(name),
+    );
+    expect(
+      { neither, both },
+      "every Zag-backed component must appear in EXACTLY ONE of " +
+        "INTERACTIVE_COMPONENTS / NON_INVARIANT_BY_DESIGN — the badge " +
+        "divides covered by (population − excepted), which is only honest " +
+        "if the partition is exact",
+    ).toEqual({ neither: [], both: [] });
+    // And the partition must cover the whole on-disk population, not a
+    // subset of it.
+    expect(classified.size).toBe(onDiskSet.size);
   });
 
   it("has no duplicates in either list", () => {
