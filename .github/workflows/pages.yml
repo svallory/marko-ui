@@ -99,3 +99,24 @@ jobs:
           workingDirectory: apps/docs
           # `deploy`, not `pages deploy`: this is a Worker with static assets.
           command: deploy
+
+  # Post-deploy tripwire: verify the LIVE registry the CLI installs from is
+  # healthy. The 2026-09-17 incident served localhost:3000 registryDependency
+  # URLs from production for ~2h before anyone noticed — the build-time
+  # completeness check above cannot catch that, only a check against the
+  # deployed artifact can. See scripts/ci/registry-smoke.ts for the
+  # assertions. Fail-loud: any assertion failure fails this job and the
+  # workflow.
+  smoke:
+    name: Live registry smoke check
+    needs: deploy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - uses: ./.github/actions/setup
+
+      - name: Smoke check live registry
+        run: bun scripts/ci/registry-smoke.ts

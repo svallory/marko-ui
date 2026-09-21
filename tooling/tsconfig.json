@@ -6,7 +6,7 @@
       "@/*": ["../packages/marko-ui/*"]
     }
   },
-  "include": ["**/*.ts"],
+  "include": ["**/*.ts", "../scripts/ci/registry-smoke.ts"],
   "exclude": [
     "parity/harnesses/shadcn/harness-react/**",
     "parity/harnesses/marko-ui/src/**",
