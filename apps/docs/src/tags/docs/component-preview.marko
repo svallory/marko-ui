@@ -5,15 +5,23 @@
 // with a centered "View Code" button. Clicking it expands to the full
 // syntax-free source inline and stays expanded (shadcn has no re-collapse).
 //
-// The demo itself renders through <demo-renderer demoId=.../> — a generated
-// static <if>/<else if> chain, not a dynamic tag (<${...}/>). Marko 6.3.34
-// crashes client hydration in production when a dynamic tag is resolved from
-// a runtime lookup; see notes/bug-marko-dynamic-tag-hydration-crash.md and
-// scripts/build-demos-manifest.ts's header comment.
-import "./demo-renderer.marko";
+// The demo itself renders through the `demo` attr-tag forwarded by
+// <component-page>: the generated per-component static route declares
+// <@demo|demoId|> over that component's own renderer tag (a static
+// <if>/<else if> chain over statically-imported demos, built by
+// scripts/build-demos-manifest.ts), and the demoId travels across the tag
+// boundaries by TAG PARAMETERS — never a dynamic tag over a runtime component
+// lookup (Marko 6 crashes client hydration in production for those; see
+// notes/bug-marko-dynamic-tag-hydration-crash.md) and never closure capture
+// of the loop variable (the content-closures defect in the same note).
 import "./code-block.marko";
 
 export interface Input {
+  /**
+   * Demo dispatcher from <component-page>: `content` receives the demoId and
+   * renders that demo via the route's per-component renderer tag.
+   */
+  demo?: Marko.AttrTag<{ content: Marko.Body<[demoId: string]> }>;
   /** A DemoEntry.demoId from the generated demos manifest, e.g. "button/button-demo". */
   demoId: string;
   /** Raw .marko text of that demo. */
@@ -53,7 +61,9 @@ export interface Input {
     tabindex="0"
     class="flex h-72 w-full justify-center overflow-x-auto p-10 data-[align=center]:items-center data-[align=end]:items-start data-[align=start]:items-start sm:data-[align=end]:items-end"
   >
-    <demo-renderer demoId=input.demoId/>
+    <if=input.demo>
+      <${input.demo.content}(input.demoId)/>
+    </if>
   </div>
 
   <div data-slot="code" data-expanded="false" class="relative overflow-hidden border-t border-border">
