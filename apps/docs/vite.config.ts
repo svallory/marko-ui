@@ -63,11 +63,57 @@ function staticUrls(): string[] {
   return urls;
 }
 
-export default defineConfig({
+/**
+ * Long-term-cache vendor chunks for the CLIENT bundle only.
+ *
+ * Every /docs/components/$name page statically imports all ~700 demo files
+ * through tags/docs/demo-renderer.marko, so every page's client graph drags in
+ * the same ~48 @zag-js machines, d3, shiki, @tanstack/table-core and the icon
+ * packs. Without a policy, Rolldown's default shared-chunk names are content
+ * hashes that change with any edit to any demo, so repeat visitors re-download
+ * the whole vendor graph on every deploy. Pinning those modules to stable
+ * chunk names lets them be cached long-term across deploys.
+ *
+ * Client-only: the SSR/prerender bundle must stay exactly as Rolldown lays it
+ * out — forcing chunks there risks split-instance/circular-chunk hazards in
+ * the server graph for zero user benefit (the server bundle is never cached).
+ */
+const VENDOR_CHUNK_PATTERNS: ReadonlyArray<readonly [RegExp, string]> = [
+  // marko runtime first: it is the leaf-most dependency of every page.
+  [/node_modules[\\/]marko[\\/]/, "vendor-marko"],
+  // marko-zag's compiled tags sit next to the machines they wrap.
+  [/node_modules[\\/]marko-zag[\\/]/, "vendor-zag"],
+  [/node_modules[\\/]@zag-js[\\/]/, "vendor-zag"],
+  [/node_modules[\\/]d3(-[a-z0-9-]+)?[\\/]/, "vendor-d3"],
+  [/node_modules[\\/]shiki[\\/]/, "vendor-shiki"],
+  [/node_modules[\\/]@tanstack[\\/]table-core[\\/]/, "vendor-table-core"],
+  [/node_modules[\\/]@hugeicons[\\/]/, "vendor-icons"],
+];
+
+function vendorChunk(id: string): string | undefined {
+  for (const [pattern, name] of VENDOR_CHUNK_PATTERNS) {
+    if (pattern.test(id)) return name;
+  }
+  return undefined;
+}
+
+export default defineConfig(({ isSsrBuild }) => ({
   plugins: [
     tailwindcss(),
     marko({
       adapter: staticAdapter({ urls: staticUrls }),
     }),
   ],
-});
+  build: isSsrBuild
+    ? undefined
+    : {
+        // @marko/run's vite plugin merges `build.rolldownOptions.output` (the
+        // native Vite 8 option — `rollupOptions` is a deprecated alias it does
+        // not read), so the chunk policy must live here to survive the merge.
+        rolldownOptions: {
+          output: {
+            manualChunks: vendorChunk,
+          },
+        },
+      },
+}));
