@@ -78,7 +78,7 @@ export interface Input {
       >
         <if=panel.id === "preview">
           <div class="relative aspect-[4/2.5] overflow-hidden rounded-lg border bg-background md:aspect-auto md:rounded-xl">
-            <iframe/desktopFrameEl
+            <iframe
               title=`${block.title} preview`
               src=`/blocks/view/${block.name}`
               height=block.previewHeight
@@ -255,7 +255,7 @@ export interface Input {
       <p class="mt-1 min-w-0 line-clamp-1 text-sm text-muted-foreground">${block.description}</p>
     </div>
     <div class="overflow-hidden rounded-xl border">
-      <iframe/mobileFrameEl
+      <iframe
         src=`/blocks/view/${block.name}`
         height=block.previewHeight
         loading="lazy"
