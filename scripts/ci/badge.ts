@@ -126,7 +126,7 @@ switch (kind) {
     //   report a coverage gap by construction.
     // - The numerator is the number of distinct covered COMPONENTS, not the
     //   number of assertions. hydrationResults also carries the bookkeeping
-    //   its (6 at last count), and the C-4 body can grow more assertions per
+    //   its (7 at last count), and the C-4 body can grow more assertions per
     //   component over time — counting assertions produced "59/54
     //   components" on a fully green run.
     //

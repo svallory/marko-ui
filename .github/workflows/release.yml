@@ -182,6 +182,13 @@ jobs:
   # serve-docs + two badge.ts invocations, and the release variant differs
   # in checkout ref, reporter flags, and target branch — a composite would
   # carry more conditionals than the duplication it saves.
+  #
+  # Invariant: `badges` is only ever replaced by a COMPLETE set. The
+  # per-step generation steps keep `if: always()` so a failed suite still
+  # leaves badge JSON artifacts on the runner for debugging, but the final
+  # push has NO `if: always()` — it only runs when every pipeline step
+  # succeeded, so a broken pipeline leaves the branch at last-good instead
+  # of publishing a mixed release/pre-seed set the home page would render.
   release-badges:
     name: Publish release-pinned badges
     needs: release
@@ -223,7 +230,6 @@ jobs:
         run: bun scripts/ci/badge.ts combine badge-out badge-out
 
       - name: Push release-pinned badges
-        if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/ci/publish-badges.sh badge-out badges
