@@ -37,13 +37,16 @@ import { DEFAULT_PREFIX, type StyleMap } from "./style-map"
 /**
  * Tokens that must survive the transform untouched — they are runtime CSS
  * selectors, not style anchors. Port of upstream's ALLOWLIST with the `cn-`
- * prefix swapped for `mu-`.
+ * prefix swapped for `mu-`, minus `mu-rtl-flip`: upstream's install-time rtl
+ * transform maps that marker to `rtl:rotate-180` (transform-rtl.ts), and
+ * this generator is the equivalent of that install step — the token has a
+ * real rule in every style-*.css (`.mu-rtl-flip { @apply rtl:rotate-180 }`),
+ * so it resolves into the per-style output instead of being preserved.
  */
 export const DEFAULT_ALLOWLIST: ReadonlySet<string> = new Set([
   "mu-menu-target",
   "mu-menu-translucent",
   "mu-logical-sides",
-  "mu-rtl-flip",
   "mu-font-heading",
 ])
 

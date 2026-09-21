@@ -51,7 +51,6 @@ const ALLOWLIST = new Set([
   "mu-menu-target",
   "mu-menu-translucent",
   "mu-logical-sides",
-  "mu-rtl-flip",
   "mu-font-heading",
 ])
 

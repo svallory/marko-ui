@@ -65,9 +65,16 @@ describe("resolveClassesModule: leaf mapping", () => {
   })
 
   test("allowlisted tokens survive resolution", () => {
+    const mod = { trigger: { icon: "mu-menu-target size-4" } }
+    const out = resolveClassesModule(mod, vegaMap) as any
+    expect(out.trigger.icon).toContain("mu-menu-target")
+  })
+
+  test("mu-rtl-flip resolves to rtl:rotate-180 via its style-layer rule (not preserved)", () => {
     const mod = { trigger: { icon: "mu-rtl-flip size-4" } }
     const out = resolveClassesModule(mod, vegaMap) as any
-    expect(out.trigger.icon).toContain("mu-rtl-flip")
+    expect(out.trigger.icon).toContain("rtl:rotate-180")
+    expect(out.trigger.icon).not.toContain("mu-rtl-flip")
   })
 })
 

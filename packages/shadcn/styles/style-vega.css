@@ -1454,6 +1454,15 @@
     @apply **:data-[slot$=-item]:data-focused:bg-foreground/10;
   }
 
+  /* MARK: RTL — marko-ui addition, not vendored from upstream: upstream
+     inlines the `cn-rtl-flip` marker as `rtl:rotate-180` at install time
+     (packages/shadcn/src/utils/transformers/transform-rtl.ts); this
+     source-shipped distribution has no install-time step, so the hook
+     carries the rule instead. */
+  .mu-rtl-flip {
+    @apply rtl:rotate-180;
+  }
+
   /* MARK: Bubble */
   .mu-bubble {
     @apply gap-1 data-[align=end]:self-end max-w-[80%] data-[variant=ghost]:max-w-full group-data-[align=end]/message:self-end;

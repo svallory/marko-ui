@@ -86,8 +86,8 @@ describe("mergeClasses: mu- survival failure", () => {
 
   test("does NOT throw when only an allowlisted mu- token survives", () => {
     const source = 'import { x } from "./classes.ts";\n<div class=x.a/>\n'
-    const { content } = mergeClasses(source, "marko", '{ a: "mu-rtl-flip size-4" } as const')
-    expect(content).toContain("mu-rtl-flip")
+    const { content } = mergeClasses(source, "marko", '{ a: "mu-menu-target size-4" } as const')
+    expect(content).toContain("mu-menu-target")
   })
 
   test("does NOT throw when a non-allowlisted mu- token appears ONLY inside a comment (root cause of the sweep-3 toast build failure)", () => {
