@@ -3,6 +3,9 @@
 shadcn/ui ported to Marko 6 — component source and the 8 shadcn style
 layers, for the import distribution path.
 
+[![npm version](https://img.shields.io/npm/v/@marko-ui/shadcn)](https://www.npmjs.com/package/@marko-ui/shadcn)
+[![License: MIT](https://img.shields.io/npm/l/@marko-ui/shadcn)](https://github.com/svallory/marko-ui/blob/main/LICENSE)
+
 Most consumers don't install this package directly — `bunx marko-ui add
 <component>` copies the component source straight into your project (the
 **copy path**). Install `@marko-ui/shadcn` yourself only for the **import
