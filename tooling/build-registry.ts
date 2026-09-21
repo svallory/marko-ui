@@ -22,6 +22,12 @@
  * generated tree. This script fails loudly (not silently/emptily) if a
  * style's transform produces empty output; see the fail-loud guard below.
  *
+ * Also emits a committed drift manifest at apps/docs/registry-manifest.json
+ * (path + sha256 per emitted file, sorted, REGISTRY_BASE_URL-normalized) that
+ * CI's registry-drift job diffs after every rebuild — the output itself stays
+ * gitignored, so the manifest is the checked-in proxy that makes output drift
+ * detectable. See the MANIFEST_OUT block below.
+ *
  * Every file ships as `registry:file` with an explicit `target` — the
  * non-React path through the official shadcn CLI (no React transforms).
  *
@@ -29,7 +35,8 @@
  */
 import { readdir, readFile, writeFile, mkdir, rm } from "node:fs/promises";
 import { readFileSync } from "node:fs";
-import { join, relative, basename } from "node:path";
+import { createHash } from "node:crypto";
+import { dirname, join, relative, basename } from "node:path";
 import { VISUAL_STYLES as VISUAL_STYLE_DEFINITIONS } from "../packages/marko-ui/src/registry/constants";
 import { createStyleMap, type StyleMap } from "./style-map";
 import { transformComponent } from "./transform-component";
@@ -42,6 +49,22 @@ const LIB_DIR = join(ROOT, "lib");
 const STYLES_DIR = join(ROOT, "styles");
 const BLOCKS_DIR = join(ROOT, "blocks");
 const OUT_DIR = join(ROOT, "../../apps/docs/public/r");
+
+// The drift manifest: every emitted file's path + sha256, committed at
+// apps/docs/registry-manifest.json and compared by CI's registry-drift job
+// (`git diff --exit-code` after a rebuild). apps/docs/public/r/ itself stays
+// gitignored (it embeds REGISTRY_BASE_URL and is rebuilt by pages.yml for
+// deploys), so this manifest is the checked-in proxy that makes drift
+// detectable. It lives OUTSIDE OUT_DIR because main() wipes OUT_DIR.
+const MANIFEST_OUT = join(OUT_DIR, "../../registry-manifest.json");
+
+// Placeholder substituted for the effective REGISTRY_BASE_URL before hashing,
+// so the manifest is byte-identical whether the registry was built with the
+// localhost default, the production URL, or any other override — env can
+// never change the hash. The URL only appears in registryDependencies /
+// registries.json, never in file `content`, so normalizing it masks nothing
+// about the component sources the manifest exists to guard.
+const HASH_BASE_URL_PLACEHOLDER = "__REGISTRY_BASE_URL__";
 
 // The 8 shadcn-derived visual styles. SINGLE SOURCE OF TRUTH:
 // packages/marko-ui/src/registry/constants.ts. This list used to be
@@ -538,10 +561,23 @@ function toIndexEntry(item: EmittedItem): IndexEntry {
   };
 }
 
+// Every file written under OUT_DIR, as {path relative to OUT_DIR, content}.
+// writeOutput() collects these so main() can hash them into the committed
+// drift manifest after all writes complete.
+const writtenOutputs: Array<{ rel: string; content: string }> = [];
+
+async function writeOutput(rel: string, content: string): Promise<void> {
+  const outPath = join(OUT_DIR, rel);
+  await mkdir(dirname(outPath), { recursive: true });
+  await writeFile(outPath, content);
+  writtenOutputs.push({ rel, content });
+}
+
 async function writeItem(emission: Emission): Promise<void> {
-  const outPath = join(OUT_DIR, `${emission.outName ?? emission.item.name}.json`);
-  await mkdir(join(outPath, ".."), { recursive: true });
-  await writeFile(outPath, JSON.stringify(emission.item, null, 2));
+  await writeOutput(
+    `${emission.outName ?? emission.item.name}.json`,
+    JSON.stringify(emission.item, null, 2),
+  );
 }
 
 async function main() {
@@ -576,8 +612,8 @@ async function main() {
     .filter((emission) => emission.indexed !== false)
     .map((emission) => toIndexEntry(emission.item));
 
-  await writeFile(
-    join(OUT_DIR, "registry.json"),
+  await writeOutput(
+    "registry.json",
     JSON.stringify(
       {
         $schema: REGISTRY_SCHEMA,
@@ -592,7 +628,7 @@ async function main() {
 
   // index.json — the flat item index the marko-ui CLI reads for
   // `add` (interactive picker), `diff`, and installed-component listing.
-  await writeFile(join(OUT_DIR, "index.json"), JSON.stringify(index, null, 2));
+  await writeOutput("index.json", JSON.stringify(index, null, 2));
 
   // registries.json — OUR registry discovery index (same shape as
   // shadcn's, plus `target: "marko"` as the compatibility contract:
@@ -603,8 +639,8 @@ async function main() {
   // /docs/directory page). The official @marko-ui entry's url is rewritten
   // from REGISTRY_BASE_URL so localhost builds point at themselves; the
   // page-only `logo` field is stripped from the CLI-facing index.
-  await writeFile(
-    join(OUT_DIR, "registries.json"),
+  await writeOutput(
+    "registries.json",
     JSON.stringify(
       directory.registries.map(({ logo: _logo, ...entry }) =>
         entry.name === "@marko-ui"
@@ -614,6 +650,35 @@ async function main() {
       null,
       2,
     ),
+  );
+
+  // The committed drift manifest — path + sha256 per emitted file, sorted,
+  // with REGISTRY_BASE_URL normalized to a placeholder before hashing (see
+  // HASH_BASE_URL_PLACEHOLDER above). CI's registry-drift job rebuilds and
+  // diffs this file; a non-empty diff means a source or transform change
+  // altered the registry output without regenerating the manifest.
+  const manifestFiles = writtenOutputs
+    .map(({ rel, content }) => ({
+      path: rel,
+      sha256: createHash("sha256")
+        .update(content.split(BASE_URL).join(HASH_BASE_URL_PLACEHOLDER))
+        .digest("hex"),
+    }))
+    .sort((a, b) => a.path.localeCompare(b.path));
+  await mkdir(dirname(MANIFEST_OUT), { recursive: true });
+  await writeFile(
+    MANIFEST_OUT,
+    JSON.stringify(
+      {
+        generatedBy: "tooling/build-registry.ts",
+        // Paths are relative to apps/docs/public/r/ (the registry root).
+        normalization: `sha256 of file content with REGISTRY_BASE_URL occurrences replaced by ${HASH_BASE_URL_PLACEHOLDER}, so the manifest does not depend on the base URL used at build time`,
+        fileCount: manifestFiles.length,
+        files: manifestFiles,
+      },
+      null,
+      2,
+    ) + "\n",
   );
 
   const styledCount = VISUAL_STYLES.length * components.length;

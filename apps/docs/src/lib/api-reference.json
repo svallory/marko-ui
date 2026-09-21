@@ -133,12 +133,7 @@
               "name": "variant",
               "type": "'default' | 'destructive' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "default",
-                "destructive"
-              ],
-              "default": "default"
+              "kind": "variant"
             }
           ],
           "nativeAttributes": "div"
@@ -231,7 +226,7 @@
             },
             {
               "name": "description",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own"
             },
@@ -272,7 +267,7 @@
             },
             {
               "name": "media",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own"
             },
@@ -382,7 +377,7 @@
             },
             {
               "name": "title",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own"
             },
@@ -395,7 +390,7 @@
             },
             {
               "name": "trigger",
-              "type": "Marko.Body<[Record<string, unknown>], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>",
               "required": false,
               "kind": "own"
             },
@@ -573,22 +568,13 @@
               "name": "orientation",
               "type": "'horizontal' | 'vertical' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "horizontal",
-                "vertical"
-              ]
+              "kind": "variant"
             },
             {
               "name": "size",
               "type": "'default' | 'sm' | 'xs' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "default",
-                "sm",
-                "xs"
-              ]
+              "kind": "variant"
             },
             {
               "name": "state",
@@ -625,12 +611,7 @@
               "name": "variant",
               "type": "'image' | 'icon' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "icon",
-                "image"
-              ],
-              "default": "icon"
+              "kind": "variant"
             }
           ],
           "nativeAttributes": "div"
@@ -671,7 +652,7 @@
             },
             {
               "name": "badge",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own",
               "description": "Renders an `AvatarBadge` (or any markup) as a root-level sibling of the image/fallback, per upstream's Composition tree — never inside the fallback span."
@@ -771,16 +752,7 @@
               "name": "variant",
               "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "default",
-                "secondary",
-                "destructive",
-                "outline",
-                "ghost",
-                "link"
-              ],
-              "default": "default"
+              "kind": "variant"
             }
           ],
           "nativeAttributes": "span"
@@ -849,13 +821,13 @@
           "properties": [
             {
               "name": "align",
-              "type": "'start' | 'end'",
+              "type": "'end' | 'start'",
               "required": false,
               "kind": "own"
             },
             {
               "name": "side",
-              "type": "'top' | 'bottom'",
+              "type": "'bottom' | 'top'",
               "required": false,
               "kind": "own"
             }
@@ -868,7 +840,7 @@
           "properties": [
             {
               "name": "align",
-              "type": "'start' | 'end'",
+              "type": "'end' | 'start'",
               "required": false,
               "kind": "own"
             },
@@ -876,17 +848,7 @@
               "name": "variant",
               "type": "'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'muted' | 'tinted' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "default",
-                "secondary",
-                "muted",
-                "tinted",
-                "outline",
-                "ghost",
-                "destructive"
-              ],
-              "default": "default"
+              "kind": "variant"
             }
           ],
           "nativeAttributes": "div"
@@ -901,36 +863,22 @@
           "name": "button",
           "properties": [
             {
+              "name": "href",
+              "type": "never",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "size",
               "type": "'default' | 'sm' | 'xs' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "default",
-                "xs",
-                "sm",
-                "lg",
-                "icon",
-                "icon-xs",
-                "icon-sm",
-                "icon-lg"
-              ],
-              "default": "default"
+              "kind": "variant"
             },
             {
               "name": "variant",
               "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "default",
-                "outline",
-                "secondary",
-                "ghost",
-                "destructive",
-                "link"
-              ],
-              "default": "default"
+              "kind": "variant"
             }
           ],
           "nativeAttributes": "button"
@@ -948,12 +896,7 @@
               "name": "orientation",
               "type": "'horizontal' | 'vertical' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "horizontal",
-                "vertical"
-              ],
-              "default": "horizontal"
+              "kind": "variant"
             }
           ],
           "nativeAttributes": "div"
@@ -1841,7 +1784,7 @@
             },
             {
               "name": "legend",
-              "type": "boolean | 'top' | 'bottom'",
+              "type": "boolean | 'bottom' | 'top'",
               "required": false,
               "kind": "own"
             },
@@ -2010,7 +1953,7 @@
             },
             {
               "name": "legend",
-              "type": "boolean | 'top' | 'bottom'",
+              "type": "boolean | 'bottom' | 'top'",
               "required": false,
               "kind": "own"
             },
@@ -2142,7 +2085,7 @@
             },
             {
               "name": "verticalAlign",
-              "type": "'top' | 'bottom'",
+              "type": "'bottom' | 'top'",
               "required": false,
               "kind": "own"
             }
@@ -2212,7 +2155,7 @@
             },
             {
               "name": "legend",
-              "type": "boolean | 'top' | 'bottom'",
+              "type": "boolean | 'bottom' | 'top'",
               "required": false,
               "kind": "own"
             },
@@ -2316,7 +2259,7 @@
             },
             {
               "name": "centerLabel",
-              "type": "Marko.Body<[{ cx: number; cy: number; }], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[{ cx: number; cy: number; }]>; }>",
               "required": false,
               "kind": "own",
               "description": "Rendered inside the svg, receives the pie center — for donut text."
@@ -2348,7 +2291,7 @@
             },
             {
               "name": "legend",
-              "type": "boolean | 'top' | 'bottom'",
+              "type": "boolean | 'bottom' | 'top'",
               "required": false,
               "kind": "own"
             },
@@ -2382,7 +2325,7 @@
             },
             {
               "name": "sliceLabel",
-              "type": "Marko.Body<[{ x: number; y: number; row: Row; value: number; index: number; }], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[{ x: number; y: number; row: Row; value: number; index: number; }]>; }>",
               "required": false,
               "kind": "own",
               "description": "Custom label rendered at each slice's centroid — e.g. value-in-foreground-color or category-name-in-background-color."
@@ -2794,7 +2737,7 @@
             },
             {
               "name": "trigger",
-              "type": "Marko.Body<[Record<string, unknown>], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>",
               "required": false,
               "kind": "own"
             }
@@ -2919,7 +2862,7 @@
             },
             {
               "name": "label",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own",
               "description": "Visible label rendered above the control."
@@ -3196,7 +3139,7 @@
             },
             {
               "name": "inputBehavior",
-              "type": "'none' | 'autohighlight' | 'autocomplete' | undefined",
+              "type": "'none' | 'autocomplete' | 'autohighlight' | undefined",
               "required": false,
               "kind": "machine",
               "description": "Defines the auto-completion behavior of the combobox.\n\n- `autohighlight`: The first focused item is highlighted as the user types\n- `autocomplete`: Navigating the listbox with the arrow keys selects the item and the input is updated"
@@ -3536,7 +3479,7 @@
             },
             {
               "name": "inputBehavior",
-              "type": "'none' | 'autohighlight' | 'autocomplete' | undefined",
+              "type": "'none' | 'autocomplete' | 'autohighlight' | undefined",
               "required": false,
               "kind": "machine",
               "description": "Defines the auto-completion behavior of the combobox.\n\n- `autohighlight`: The first focused item is highlighted as the user types\n- `autocomplete`: Navigating the listbox with the arrow keys selects the item and the input is updated"
@@ -4480,7 +4423,7 @@
             },
             {
               "name": "description",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own"
             },
@@ -4500,7 +4443,7 @@
             },
             {
               "name": "footer",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own"
             },
@@ -4631,7 +4574,7 @@
             },
             {
               "name": "title",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own"
             },
@@ -4644,7 +4587,7 @@
             },
             {
               "name": "trigger",
-              "type": "Marko.Body<[Record<string, unknown>], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>",
               "required": false,
               "kind": "own"
             },
@@ -4745,7 +4688,7 @@
             },
             {
               "name": "description",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own"
             },
@@ -4772,7 +4715,7 @@
             },
             {
               "name": "footer",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own"
             },
@@ -4974,7 +4917,7 @@
             },
             {
               "name": "title",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own"
             },
@@ -4987,10 +4930,10 @@
             },
             {
               "name": "trigger",
-              "type": "Marko.Body<[Record<string, unknown>], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>",
               "required": false,
               "kind": "own",
-              "description": "Render-prop trigger: `<@trigger|props|><Button ...props/></@trigger>`."
+              "description": "Render-prop trigger: `<@trigger|props|><Button type=\"button\" ...props/></@trigger>`."
             },
             {
               "name": "triggerValue",
@@ -5022,7 +4965,7 @@
           "properties": [
             {
               "name": "trigger",
-              "type": "Marko.Body<[Record<string, unknown>], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>",
               "required": true,
               "kind": "own"
             },
@@ -5059,7 +5002,7 @@
           "properties": [
             {
               "name": "entries",
-              "type": "DropdownMenuItem[]",
+              "type": "readonly DropdownMenuItem[]",
               "required": true,
               "kind": "own",
               "description": "This submenu's own item list — same entry shape as the top-level menu."
@@ -5321,7 +5264,7 @@
             },
             {
               "name": "trigger",
-              "type": "Marko.Body<[Record<string, unknown>], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>",
               "required": false,
               "kind": "own"
             },
@@ -5392,12 +5335,7 @@
               "name": "variant",
               "type": "'default' | 'icon' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "default",
-                "icon"
-              ],
-              "default": "default"
+              "kind": "variant"
             }
           ],
           "nativeAttributes": "div"
@@ -5504,13 +5442,7 @@
               "name": "orientation",
               "type": "'horizontal' | 'vertical' | 'responsive' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "vertical",
-                "horizontal",
-                "responsive"
-              ],
-              "default": "vertical"
+              "kind": "variant"
             }
           ],
           "nativeAttributes": "div"
@@ -6008,7 +5940,7 @@
             },
             {
               "name": "title",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own",
               "description": "Header title content."
@@ -6022,10 +5954,10 @@
             },
             {
               "name": "trigger",
-              "type": "Marko.Body<[Record<string, unknown>], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>",
               "required": false,
               "kind": "own",
-              "description": "Render-prop trigger: `<@trigger|props|><Button ...props/></@trigger>`."
+              "description": "Render-prop trigger: `<@trigger|props|><Button type=\"button\" ...props/></@trigger>`."
             }
           ],
           "nativeAttributes": "div",
@@ -6050,7 +5982,7 @@
             },
             {
               "name": "trigger",
-              "type": "Marko.Body<[Record<string, unknown>], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>",
               "required": true,
               "kind": "own",
               "description": "Trigger render-prop — typically a link."
@@ -6515,14 +6447,7 @@
               "name": "align",
               "type": "'inline-start' | 'inline-end' | 'block-start' | 'block-end' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "inline-start",
-                "inline-end",
-                "block-start",
-                "block-end"
-              ],
-              "default": "inline-start"
+              "kind": "variant"
             }
           ],
           "nativeAttributes": "div"
@@ -6535,14 +6460,7 @@
               "name": "size",
               "type": "'sm' | 'xs' | 'icon-xs' | 'icon-sm' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "xs",
-                "sm",
-                "icon-xs",
-                "icon-sm"
-              ],
-              "default": "xs"
+              "kind": "variant"
             }
           ],
           "nativeAttributes": "button"
@@ -6770,7 +6688,7 @@
             },
             {
               "name": "type",
-              "type": "'alphanumeric' | 'numeric' | 'alphabetic' | undefined",
+              "type": "'numeric' | 'alphanumeric' | 'alphabetic' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The type of value the pin-input should allow"
@@ -6848,25 +6766,13 @@
               "name": "size",
               "type": "'default' | 'sm' | 'xs' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "default",
-                "sm",
-                "xs"
-              ],
-              "default": "default"
+              "kind": "variant"
             },
             {
               "name": "variant",
               "type": "'default' | 'outline' | 'muted' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "default",
-                "icon",
-                "image"
-              ],
-              "default": "default"
+              "kind": "variant"
             }
           ],
           "nativeAttributes": "div"
@@ -6879,13 +6785,7 @@
               "name": "variant",
               "type": "'image' | 'default' | 'icon' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "default",
-                "icon",
-                "image"
-              ],
-              "default": "default"
+              "kind": "variant"
             }
           ],
           "nativeAttributes": "div"
@@ -7139,12 +7039,7 @@
               "name": "variant",
               "type": "'default' | 'separator' | 'border' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "default",
-                "separator",
-                "border"
-              ]
+              "kind": "variant"
             }
           ],
           "nativeAttributes": "div"
@@ -7318,7 +7213,7 @@
           "properties": [
             {
               "name": "trigger",
-              "type": "Marko.Body<[Record<string, unknown>], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>",
               "required": true,
               "kind": "own"
             },
@@ -7382,7 +7277,7 @@
           "properties": [
             {
               "name": "entries",
-              "type": "MenubarItemAttrs[]",
+              "type": "readonly MenubarItemAttrs[]",
               "required": true,
               "kind": "own",
               "description": "This submenu's own item list — same entry shape as the top-level menu."
@@ -7478,7 +7373,7 @@
           "properties": [
             {
               "name": "align",
-              "type": "'start' | 'end'",
+              "type": "'end' | 'start'",
               "required": false,
               "kind": "own"
             }
@@ -7510,7 +7405,7 @@
             },
             {
               "name": "direction",
-              "type": "'start' | 'end'",
+              "type": "'end' | 'start'",
               "required": false,
               "kind": "own",
               "description": "Transcript edge to scroll toward. Defaults to \"end\"."
@@ -7691,7 +7586,7 @@
           "properties": [
             {
               "name": "align",
-              "type": "'start' | 'end' | 'center'",
+              "type": "'end' | 'start' | 'center'",
               "required": false,
               "kind": "own",
               "description": "Alignment of the shared viewport relative to the active trigger."
@@ -8319,15 +8214,8 @@
           "name": "popover",
           "properties": [
             {
-              "name": "content",
-              "type": "Marko.Body<[], void>",
-              "required": true,
-              "kind": "own",
-              "description": "Popover content shown when open."
-            },
-            {
               "name": "trigger",
-              "type": "Marko.Body<[Record<string, unknown>], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>",
               "required": true,
               "kind": "own",
               "description": "Trigger render-prop — the element that opens the popover."
@@ -8361,6 +8249,13 @@
               "description": "Whether to close the popover when the user clicks outside of the popover."
             },
             {
+              "name": "content",
+              "type": "Marko.Body<[], void>",
+              "required": false,
+              "kind": "own",
+              "description": "Popover content shown when open. Optional — a title/description-only popover is legitimate."
+            },
+            {
               "name": "defaultOpen",
               "type": "boolean | undefined",
               "required": false,
@@ -8373,6 +8268,13 @@
               "required": false,
               "kind": "machine",
               "description": "The initial trigger value when rendered.\nUse when you don't need to control the trigger value."
+            },
+            {
+              "name": "description",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
+              "required": false,
+              "kind": "own",
+              "description": "Description of the popover."
             },
             {
               "name": "dir",
@@ -8505,6 +8407,13 @@
               "required": false,
               "kind": "machine",
               "description": "Whether to restore focus to the element that had focus before the popover was opened."
+            },
+            {
+              "name": "title",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
+              "required": false,
+              "kind": "own",
+              "description": "Title of the popover, automatically wired to aria-labelledby."
             },
             {
               "name": "translations",
@@ -8694,7 +8603,7 @@
             },
             {
               "name": "overlay",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own",
               "description": "Rendered centered over the code (logo overlay slot)."
@@ -8710,13 +8619,7 @@
               "name": "size",
               "type": "'default' | 'sm' | 'lg' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "sm",
-                "default",
-                "lg"
-              ],
-              "default": "default"
+              "kind": "variant"
             },
             {
               "name": "value",
@@ -9493,7 +9396,7 @@
             },
             {
               "name": "description",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own"
             },
@@ -9513,7 +9416,7 @@
             },
             {
               "name": "footer",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own"
             },
@@ -9644,14 +9547,14 @@
             },
             {
               "name": "side",
-              "type": "'top' | 'bottom' | 'right' | 'left'",
+              "type": "'bottom' | 'top' | 'right' | 'left'",
               "required": false,
               "kind": "own",
               "description": "`\"top\" | \"right\" | \"bottom\" | \"left\"` — which edge the sheet slides in from."
             },
             {
               "name": "title",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own"
             },
@@ -9664,7 +9567,7 @@
             },
             {
               "name": "trigger",
-              "type": "Marko.Body<[Record<string, unknown>], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>",
               "required": false,
               "kind": "own"
             },
@@ -9780,24 +9683,13 @@
               "name": "size",
               "type": "'default' | 'sm' | 'lg' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "default",
-                "sm",
-                "lg"
-              ],
-              "default": "default"
+              "kind": "variant"
             },
             {
               "name": "variant",
               "type": "'default' | 'outline' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "default",
-                "outline"
-              ],
-              "default": "default"
+              "kind": "variant"
             }
           ],
           "nativeAttributes": "div"
@@ -9864,7 +9756,7 @@
           "properties": [
             {
               "name": "main",
-              "type": "Marko.Body<[{ open: boolean; toggle: () => void; }], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[{ open: boolean; toggle: () => void; }]>; }>",
               "required": false,
               "kind": "own",
               "description": "Main content area, rendered next to the sidebar."
@@ -9884,7 +9776,7 @@
             },
             {
               "name": "sidebar",
-              "type": "Marko.Body<[{ open: boolean; toggle: () => void; }], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[{ open: boolean; toggle: () => void; }]>; }>",
               "required": false,
               "kind": "own",
               "description": "Sidebar panel content (header/content/footer parts)."
@@ -9945,7 +9837,7 @@
           "properties": [
             {
               "name": "collapsible",
-              "type": "'none' | 'icon' | 'offcanvas'",
+              "type": "'icon' | 'none' | 'offcanvas'",
               "required": false,
               "kind": "own"
             },
@@ -10268,7 +10160,7 @@
             },
             {
               "name": "origin",
-              "type": "'start' | 'end' | 'center' | undefined",
+              "type": "'end' | 'start' | 'center' | undefined",
               "required": false,
               "kind": "machine",
               "description": "The origin of the slider range. The track is filled from the origin\nto the thumb for single values.\n- \"start\": Useful when the value represents an absolute value\n- \"center\": Useful when the value represents an offset (relative)\n- \"end\": Useful when the value represents an offset from the end"
@@ -10373,7 +10265,7 @@
             },
             {
               "name": "completedContent",
-              "type": "Marko.Body<[], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body; }>",
               "required": false,
               "kind": "own"
             },
@@ -10867,12 +10759,7 @@
               "name": "variant",
               "type": "'line' | 'default' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "default",
-                "line"
-              ],
-              "default": "default"
+              "kind": "variant"
             }
           ],
           "nativeAttributes": "div",
@@ -11480,24 +11367,13 @@
               "name": "size",
               "type": "'default' | 'sm' | 'lg' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "default",
-                "sm",
-                "lg"
-              ],
-              "default": "default"
+              "kind": "variant"
             },
             {
               "name": "variant",
               "type": "'default' | 'outline' | null | undefined",
               "required": false,
-              "kind": "variant",
-              "options": [
-                "default",
-                "outline"
-              ],
-              "default": "default"
+              "kind": "variant"
             }
           ],
           "nativeAttributes": "button"
@@ -11642,7 +11518,7 @@
             },
             {
               "name": "trigger",
-              "type": "Marko.Body<[Record<string, unknown>], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>",
               "required": true,
               "kind": "own",
               "description": "Trigger render-prop — typically the element the tooltip describes."
@@ -11942,7 +11818,7 @@
             },
             {
               "name": "trigger",
-              "type": "Marko.Body<[Record<string, unknown>], void>",
+              "type": "Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>",
               "required": false,
               "kind": "own",
               "description": "Render-prop for the tour trigger (usually a \"Start tour\" button)."

@@ -104,6 +104,13 @@ jobs:
               - 'packages/shadcn/**'
               - 'packages/marko-ui/src/registry/**'
               - 'apps/docs/src/data/directory.json'
+              # Demo sources feed build:demos (demos-manifest.ts +
+              # demo-renderer.marko) and blocks-list.ts feeds
+              # build:blocks-manifest — both gated by registry-drift, so a
+              # change there must fire this job or the freshness gate never
+              # runs on the PR that makes it stale.
+              - 'apps/docs/src/demos/**'
+              - 'apps/docs/src/lib/blocks-list.ts'
               - 'tooling/**'
               - 'tsconfig.json'
               - 'bun.lock'
@@ -154,14 +161,53 @@ jobs:
     steps:
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
       - uses: ./.github/actions/setup
-      # DEPLOY.md "CI check": keeps the registry output honest before every
-      # deploy. apps/docs/public/r/ is gitignored and rebuilt here with the
-      # localhost default (no REGISTRY_BASE_URL override), so a clean exit
-      # code means packages/shadcn/** and tooling/build-registry.ts still
-      # produce the same registry — a non-zero diff means either script
-      # changed behavior or the registry build itself failed.
-      - name: Build registry and check for drift
-        run: bun run build:registry && git diff --exit-code -- apps/docs/public/r/
+      # Rebuilds the registry and every committed generated artifact, then
+      # fails if any checked-in proxy of that output drifted. What each step
+      # does and does not guarantee, exactly:
+      #   - registry-manifest.json (emitted by build-registry.ts, COMMITTED):
+      #     sha256 of every apps/docs/public/r/** output file, sorted, with
+      #     REGISTRY_BASE_URL occurrences replaced by a placeholder before
+      #     hashing — so the base URL used at build time can never change the
+      #     manifest, and a diff means packages/shadcn/**, packages/marko-ui/
+      #     src/registry/**, directory.json, or tooling/** altered the
+      #     registry output without regenerating the manifest. The r/ output
+      #     itself stays gitignored (it embeds REGISTRY_BASE_URL for deploys);
+      #     the manifest is the checked-in proxy that makes output drift
+      #     detectable — the old `git diff --exit-code -- apps/docs/public/r/`
+      #     could never fail because gitignore hides that tree (issue #40).
+      #   - demos-manifest.ts + demo-renderer.marko (build:demos): fresh
+      #     against the registry output AND src/demos/**.
+      #   - blocks-manifest.ts (build:blocks-manifest): fresh against the
+      #     registry output AND src/lib/blocks-list.ts.
+      #   - api-reference.json (extract:api): fresh against the .marko
+      #     sources under packages/shadcn/ui/**.
+      # All four generators were verified deterministic (two consecutive runs
+      # produce byte-identical output on an untouched tree), so `git diff
+      # --exit-code` cannot flake on generator nondeterminism.
+      - name: Build registry and check manifest for drift
+        run: |
+          bun run build:registry
+          git diff --exit-code -- apps/docs/registry-manifest.json || {
+            echo "::error file=apps/docs/registry-manifest.json::Registry output drifted from the committed manifest — run 'bun run build:registry' and commit the regenerated apps/docs/registry-manifest.json"
+            exit 1
+          }
+      - name: Check generated committed artifacts are fresh
+        run: |
+          bun run build:demos
+          git diff --exit-code -- apps/docs/src/demos/demos-manifest.ts apps/docs/src/tags/docs/demo-renderer.marko || {
+            echo "::error::Generated demo artifacts are stale — run 'bun run build:demos' and commit the regenerated apps/docs/src/demos/demos-manifest.ts and apps/docs/src/tags/docs/demo-renderer.marko"
+            exit 1
+          }
+          bun run build:blocks-manifest
+          git diff --exit-code -- apps/docs/src/lib/blocks-manifest.ts || {
+            echo "::error::Generated blocks manifest is stale — run 'bun run build:blocks-manifest' and commit the regenerated apps/docs/src/lib/blocks-manifest.ts"
+            exit 1
+          }
+          bun run extract:api
+          git diff --exit-code -- apps/docs/src/lib/api-reference.json || {
+            echo "::error::Generated API reference is stale — run 'bun run extract:api' and commit the regenerated apps/docs/src/lib/api-reference.json"
+            exit 1
+          }
 
   pkg-checks:
     name: Package integrity (publint + attw)
