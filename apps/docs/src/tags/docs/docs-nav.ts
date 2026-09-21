@@ -28,6 +28,12 @@ export const DOCS_NAV: DocsNavSection[] = [
     ],
   },
   {
+    title: "AI Agents",
+    items: [
+      { href: "/docs/working-with-ai", label: "Working with AI" },
+    ],
+  },
+  {
     title: "Styling",
     items: [
       { href: "/docs/theming", label: "Theming" },
