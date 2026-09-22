@@ -2,12 +2,12 @@
 
 **shadcn for [Marko](https://markojs.com) — and beyond it.**
 
-[![Tests](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges%2Fchecks.json)](https://github.com/svallory/marko-ui/actions/workflows/ci.yml)
-[![WCAG 2.2 AA automated scan](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges%2Faxe.json)](https://github.com/svallory/marko-ui/blob/main/scripts/ci/axe-scan.ts)
-[![Lighthouse accessibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges%2Flighthouse-accessibility.json)](https://github.com/svallory/marko-ui/actions/workflows/lighthouse.yml)
-[![Hydration invariance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges%2Fhydration.json)](https://github.com/svallory/marko-ui/tree/main/packages/shadcn/tests)
-[![npm version (marko-ui)](https://img.shields.io/npm/v/marko-ui)](https://www.npmjs.com/package/marko-ui)
-[![npm version (@marko-ui/shadcn)](https://img.shields.io/npm/v/@marko-ui/shadcn)](https://www.npmjs.com/package/@marko-ui/shadcn)
+[![Tests](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges-main%2Fchecks.json)](https://github.com/svallory/marko-ui/actions/workflows/ci.yml)
+[![WCAG 2.2 AA automated scan](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges-main%2Faxe.json)](https://github.com/svallory/marko-ui/blob/main/scripts/ci/axe-scan.ts)
+[![Lighthouse accessibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges-main%2Flighthouse-accessibility.json)](https://github.com/svallory/marko-ui/actions/workflows/lighthouse.yml)
+[![Hydration invariance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges-main%2Fhydration.json)](https://github.com/svallory/marko-ui/tree/main/packages/shadcn/tests)
+[![npm version (marko-ui)](https://img.shields.io/npm/v/marko-ui?label=marko-ui)](https://www.npmjs.com/package/marko-ui)
+[![npm version (@marko-ui/shadcn)](https://img.shields.io/npm/v/@marko-ui/shadcn?label=%40marko-ui%2Fshadcn)](https://www.npmjs.com/package/@marko-ui/shadcn)
 [![License: MIT](https://img.shields.io/npm/l/marko-ui)](https://github.com/svallory/marko-ui/blob/main/LICENSE)
 [![CI status](https://github.com/svallory/marko-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/svallory/marko-ui/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/svallory/marko-ui/badge)](https://scorecard.dev/viewer/?uri=github.com/svallory/marko-ui)
@@ -24,11 +24,17 @@ Ark UI — not hand-rolled event handlers.
 - **Every component works before JavaScript arrives.** Marko streams
   server-rendered HTML with the correct ARIA and state attributes already in
   place, then *resumes* — it never re-runs your components in the browser.
-  Verified by an automated hydration-invariance suite: each covered component
-  produces byte-identical accessibility/state attributes with JS disabled vs
-  after hydration. The hydration badge above reports current coverage as
-  `covered/total`; the components not yet covered are named in
-  `packages/shadcn/tests/hydration-coverage.ts`.
+  Verified by an automated hydration-invariance suite: each applicable
+  component produces byte-identical accessibility/state attributes with JS
+  disabled vs after hydration. The `hydration-invariant` badge above reports
+  current coverage as `covered/applicable components` — today 53 of the 53
+  Zag-backed components to which the invariant applies. The one remaining
+  Zag-backed component, `tour`, renders zero machine parts during SSR (its
+  anatomy is gated on `start()`, a client-side event), so there is no SSR
+  surface to compare; it is a documented exception in
+  `packages/shadcn/tests/hydration-coverage.ts`, guarded by bookkeeping
+  tests that fail if any Zag-backed component lands in neither or both
+  lists.
 - **Forms validate without JavaScript.** `@marko/run` natively consumes
   Standard Schema validators for form bodies, so a plain no-JS `POST`
   re-renders the page with real server-side field errors. The React original
@@ -112,8 +118,10 @@ bun scripts/ci/axe-scan.ts out.json   # WCAG scan (needs the docs server)
 ```
 
 CI runs all of the above against a production build on every push and
-publishes the badge data on the [`badges`](https://github.com/svallory/marko-ui/tree/badges)
-branch.
+publishes the badge data on the
+[`badges-main`](https://github.com/svallory/marko-ui/tree/badges-main)
+branch (main's numbers; the site home reads `badges`, which is
+release-pinned by the release workflow).
 
 ## Acknowledgements
 
