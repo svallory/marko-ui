@@ -259,6 +259,18 @@ Registry components express this via marko-zag's `<zag>` tag (`packages/shadcn`'
 
 `normalizeProps` is Marko-specific: `class`/`for` renames, style-object hyphenation, `event.currentTarget` shadowing (Marko delegates events), SSR handler stripping. `<zag>`/`connect()` apply it by default, so most components never import it.
 
+## Agent-facing CLI documentation
+
+Verify JSON shape in the command implementation before documenting a shared envelope.
+`docs --list --json`, `doctor --json`, and `registry list --json` use
+`$type`/`version`/`ok`/`data`; `info --json` (alias of `status --json`) and
+`search --json` currently return plain result objects. `docs <component>`
+prints markdown, even with `--json`. The generated agent skill is curated in
+`packages/marko-ui/src/agents/content.ts`, not derived from the manifest;
+`agents sync --check` checks freshness, not correctness of every recipe.
+Use the live manifest for supported flags and the generated docs manifest
+for reference tables.
+
 ## Registry structure rules
 
 - One authored component source (`packages/shadcn/ui/`), not one full implementation per style. Components carry semantic `mu-*` hook classes; the 8 shadcn styles live as vendored CSS token layers in `packages/shadcn/styles/style-<name>.css`, shipped as SOURCE (not precompiled). Per-style flat components for the copy path are produced IN MEMORY by `tooling/build-registry.ts` via a data swap: each component's `classes.ts` (pure data, per notes/component-authoring.md) is resolved against a style's CSS by `tooling/resolve-classes.ts`, then `tooling/merge-classes.ts` injects the resolved literal (`static const styles = {...} as const;`) into the single copy-path file's part, replacing its `./classes.ts` import — there is no on-disk `styles-gen/`. Class strings never live in `.marko`/`variants.ts`; `tooling/check-classes.ts` enforces it. See `notes/style-ports.md` and `notes/plans/dual-distribution-plan.md` for the full architecture and its history.

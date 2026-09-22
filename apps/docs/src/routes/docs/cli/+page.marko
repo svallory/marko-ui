@@ -144,14 +144,10 @@ static function optionLines(cmd: CliCommand) {
   <h2 id="agents">For Agents</h2>
 
   <p>
-    Every discovery command takes <code>--json</code>. The recommended workflow for coding agents:
+    Use <code>marko-ui manifest</code> to discover commands and supported options.
+    For the recommended agent workflow, generated project context, JSON output shapes,
+    and setup verification, see <a href="/docs/working-with-ai">Working with AI</a>.
   </p>
-
-  <ol>
-    <for|step| of=CLI_MANIFEST.agentWorkflow>
-      <li><code>${step}</code></li>
-    </for>
-  </ol>
 
   <h2 id="shadcn-interop">shadcn CLI Interop</h2>
 

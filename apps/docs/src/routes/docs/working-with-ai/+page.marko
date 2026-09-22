@@ -1,0 +1,258 @@
+// Working with AI — the "AI Agents" group landing page.
+// Explains how the CLI generates machine-checked context for coding agents,
+// what gets written, how agents should use the CLI, and how to verify setup.
+import "../../../tags/docs/docs-article.marko";
+import "../../../tags/docs/code-block.marko";
+import { CLI_MANIFEST } from "../../../lib/cli-manifest";
+
+static const TOC = [
+  { id: "overview", label: "Overview" },
+  { id: "quick-start", label: "Quick Start" },
+  { id: "what-gets-generated", label: "What Gets Generated" },
+  { id: "cli-contract", label: "CLI Contract for Agents" },
+  { id: "skills", label: "Skills" },
+  { id: "markdown-endpoints", label: "Markdown Endpoints" },
+  { id: "check-your-setup", label: "Check Your Setup" },
+];
+
+static const QUICK_START_PROMPT = `You are helping me set up marko-ui for AI-assisted development.
+
+Please do the following:
+1. If marko-ui is not yet initialised, run: bunx marko-ui init --agents
+2. If it is already initialised, run: bunx marko-ui agents sync
+3. Then read the generated AGENTS.md and .claude/skills/marko-ui/SKILL.md
+   (if the skill file exists, even if you are not Claude) so you have the
+   project's component list and the recommended agent workflow.
+Use bunx marko-ui for subsequent commands if it is not installed locally.`;
+
+static const VERIFY_PROMPT = `Please verify my marko-ui AI setup by answering these three questions.
+If you can't answer one of them, run \`bunx marko-ui agents sync\` first and re-read
+AGENTS.md and .claude/skills/marko-ui/SKILL.md.
+
+1. What is the command to add the switch component to this project?
+2. How do you declare reactive state in Marko 6?
+3. Which command verifies that the marko-ui project health is good?`;
+
+static const JSON_ENVELOPE = `{
+  "$type": "marko-ui/docs.list",
+  "version": 1,
+  "ok": true,
+  "data": { "components": [] }
+}`;
+
+<docs-article
+  title="Working with AI"
+  description="The marko-ui CLI feeds structured, machine-checked context to your coding agent to guide component discovery, installation, and Marko 6 authoring."
+  href="/docs/working-with-ai"
+  toc=TOC
+>
+  <h2 id="overview">Overview</h2>
+
+  <p>
+    Without marko-ui-specific context, a coding model's defaults are React: it invents
+    <code>useState</code>, imports from <code>react</code>, and proposes props that don't
+    exist on Marko components. Marko 6 is a different paradigm — resumable, tag-based,
+    with a state model built around serialization — and off-the-shelf guidance for it is
+    scarce.
+  </p>
+
+  <p>
+    The <code>marko-ui agents sync</code> command solves this at the source: it writes
+    a curated skill and an <code>AGENTS.md</code> section that teach your agent the CLI
+    workflow, the Marko 6 authoring landmines, and which components are actually installed
+    in your project. The CLI provides structured, machine-checked context through its manifest
+    and a freshness check for generated docs. The skill contains curated guidance;
+    run sync again when your installed components or CLI version change. See <a href="/docs/cli">CLI</a> for the full command reference.
+  </p>
+
+  <h2 id="quick-start">Quick Start</h2>
+
+  <p>
+    Paste this prompt into your AI agent. It handles both new and existing projects:
+  </p>
+
+  <code-block language="text" code=QUICK_START_PROMPT/>
+
+  <p>
+    The agent will run one of two commands depending on your project's state:
+  </p>
+
+  <ul>
+    <li>
+      <code>bunx marko-ui init --agents</code> — first-time setup: initialises
+      <code>components.json</code>, installs the base theme, and writes the agent docs
+      in one step.
+    </li>
+    <li>
+      <code>marko-ui agents sync</code> — refresh the generated docs after adding or
+      removing components.
+    </li>
+  </ul>
+
+  <h2 id="what-gets-generated">What Gets Generated</h2>
+
+  <p>
+    <code>agents sync</code> writes two outputs to your project root:
+  </p>
+
+  <h3>The marko-ui Claude skill</h3>
+
+  <p>
+    <code>.claude/skills/marko-ui/SKILL.md</code> — a structured skill file
+    (Claude-specific path; other agents read <code>AGENTS.md</code> instead) that
+    teaches the search → show → add → doctor workflow. Use the manifest
+    for the live command sequence, including component documentation:
+  </p>
+
+  <ol>
+    <for|step| of=CLI_MANIFEST.agentWorkflow>
+      <li><code>${step}</code></li>
+    </for>
+  </ol>
+
+  <p>
+    The skill also includes a 9-item Marko 6 authoring-landmines catalog — common
+    mistakes agents make when they apply React or Vue mental models to Marko — and a
+    list of the project's actually-installed component names. The AGENTS.md
+    index also includes registry descriptions when available.
+  </p>
+
+  <h3>AGENTS.md</h3>
+
+  <p>
+    A marker-delimited section is inserted into (or appended to) <code>AGENTS.md</code>
+    in your project root. Everything outside the markers is preserved, so your own
+    agent instructions and notes survive each sync unchanged.
+  </p>
+
+  <h3>CI gate</h3>
+
+  <p>
+    <code>marko-ui agents sync --check</code> exits 3 when the generated docs are stale
+    relative to the installed components. Wire it into your CI pipeline to catch agents
+    working from outdated context.
+  </p>
+
+  <h2 id="cli-contract">CLI Contract for Agents</h2>
+
+  <p>
+    <code>marko-ui manifest</code> prints a self-describing JSON document of every
+    command, argument, and flag introspected from the live program, alongside
+    the exit-code and error-code contracts. An agent can call it once to learn the full
+    surface in a single step. The <a href="/docs/cli">CLI page</a> is generated from
+    this same manifest.
+  </p>
+
+  <h3>Exit codes</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <for|code| of=Object.keys(CLI_MANIFEST.exitCodes)>
+        <tr>
+          <td><code>${code}</code></td>
+          <td>${CLI_MANIFEST.exitCodes[code]}</td>
+        </tr>
+      </for>
+    </tbody>
+  </table>
+
+  <h3>JSON output envelopes</h3>
+
+  <p>
+    <code>docs --list --json</code>, <code>doctor --json</code>, and
+    <code>registry list --json</code> return typed success envelopes with
+    <code>$type</code>, <code>version</code>, <code>ok</code>, and
+    <code>data</code>. For example, an empty documentation list looks like:
+  </p>
+
+  <code-block language="json" code=JSON_ENVELOPE/>
+
+  <p>
+    <code>info --json</code> (alias of <code>status --json</code>) and
+    <code>search --json</code> also provide structured output, but currently return
+    plain result objects without this envelope. <code>docs &lt;component&gt;</code>
+    returns markdown; its JSON option applies to listing components.
+  </p>
+
+  <h3>Non-interactive flags</h3>
+
+  <p>
+    Use <code>-y / --yes</code> to skip confirmation prompts and
+    <code>--silent</code> to mute progress output where supported.
+    <code>add --dry-run</code> previews file changes; <code>init --force</code>
+    overwrites existing configuration when that is intended. These are command-specific
+    options: consult <code>marko-ui manifest</code> or the
+    <a href="/docs/cli#commands">generated command reference</a> before using them.
+  </p>
+
+  <h2 id="skills">Skills</h2>
+
+  <p>
+    Three additional agent skills are available through the
+    <a href="https://github.com/svallory/marko-ui" target="_blank" rel="noopener noreferrer external">marko-ui skills pack</a>:
+  </p>
+
+  <code-block language="bash" code="npx skills add svallory/marko-ui"/>
+
+  <h3>port-to-marko</h3>
+
+  <p>
+    A complete workflow for porting any React component library to Marko: inventory
+    upstream components, port them with the SSR-safe Zag.js pattern, run mechanical
+    parity verification (type check, hydration invariant, visual diff against the
+    upstream), and publish through the official contribution or community registry path. See
+    <a href="/docs/contributing-a-library#port-with-an-agent">Contributing a Library</a> for the full
+    porting flow and the wanted-library list.
+  </p>
+
+  <h3>marko6</h3>
+
+  <p>
+    A Marko 6 language skill containing an agent-error catalog verified
+    against the marko-ui codebase, plus language-level rules for reactive
+    state, serialization constraints, and attr-tag patterns.
+  </p>
+
+  <h3>marko-run</h3>
+
+  <p>
+    Routing, request handlers, middleware, and deployment targets for
+    <code>@marko/run</code>. Covers the adapter model, the route file conventions,
+    and Node, static, and Netlify deployment adapters.
+  </p>
+
+  <h2 id="markdown-endpoints">Markdown Endpoints</h2>
+
+  <p>
+    Every component page is available as markdown at
+    <code>/docs/components/&lt;name&gt;.md</code>. The CLI surfaces this directly:
+  </p>
+
+  <code-block language="bash" code="marko-ui docs button   # prints button's docs as markdown"/>
+
+  <p>
+    In an agent session, <code>marko-ui docs &lt;component&gt;</code> pulls the
+    documentation straight into the agent's context — usage, props, keyboard
+    contracts, and examples. The CLI fetches the markdown endpoint for the agent.
+  </p>
+
+  <h2 id="check-your-setup">Check Your Setup</h2>
+
+  <p>
+    Once you have run <code>agents sync</code>, paste this prompt to your agent to
+    verify that the context landed correctly:
+  </p>
+
+  <code-block language="text" code=VERIFY_PROMPT/>
+
+  <p>
+    A well-configured agent should answer all three using the generated files and the documentation they link to without performing a web search. If it can't, it should
+    run <code>marko-ui agents sync</code> first and re-read the files.
+  </p>
+</docs-article>
