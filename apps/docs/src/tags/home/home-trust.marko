@@ -1,10 +1,8 @@
 // Trust strip between the hero and the showcase. Two kinds of proof, no
 // overlap:
 //   - RECEIPTS: identity facts about the library (component/style counts,
-//     no-JS rendering), maintained by hand next to their sources:
-//       COMPONENTS: derived from components-list.ts's COMPONENTS.length —
-//         never hardcode this; count drifts every time a component lands.
-//       STYLES:     default + style-*.css in packages/shadcn/styles
+//     no-JS rendering, license), maintained by hand next to their sources —
+//     see the COMPONENTS import and the VISUAL_STYLES const below for each.
 //   - BADGES: live shields.io endpoint images fed by CI. This is the SITE
 //     home — its audience is consumers — so every badge must describe the
 //     last PUBLISHED release (the `badges` branch, written by
@@ -12,9 +10,38 @@
 //     main-branch numbers (npm, hydration suite mechanics, MIT) live on the
 //     README, which reads `badges-main`. Their numbers update themselves;
 //     never restate them as receipts.
+//
+// RECEIPTS rendered as hero-stat-size cards (text-4xl/5xl value, text-base
+// label) — 4 across on desktop, 2x2 on mobile. ALL FOUR use the real <Card>
+// component so they look identical in every registry style (radius/ring/bg
+// are per-style tokens baked into Card's own class list — a hand-rolled
+// `<a class="rounded-xl border ...">` drifts from Card the moment a style
+// changes those values, which is exactly what happened here before: the
+// linked two receipts (components, styles) were plain anchors with
+// hardcoded rounded-xl/border/bg-muted, while the other two used <Card> —
+// verified mismatched in lyra/sera (rounded-none) and luma (rounded-4xl)
+// via the /create style switcher). A linked receipt's <Card> contains a
+// stretched-link <a> (position: absolute, inset-0, z-10 — a real element,
+// not a ::before/::after pseudo, so its href/title/rel stay on a real
+// anchor) so the whole card is the click target while Card supplies all
+// visible chrome.
+import Card from "@marko-ui/shadcn/ui/card/card.marko";
 import { COMPONENTS } from "../../lib/components-list.ts";
 
 static const REPO = "https://github.com/svallory/marko-ui";
+
+// Mirrors VISUAL_STYLES in packages/marko-ui/src/registry/constants.ts (the
+// registry's actual source of truth) — apps/docs has no dependency on that
+// package (marko-ui/registry needs a built dist/), so this is maintained by
+// hand next to its source, same as COMPONENTS above. .length is DERIVED
+// from the array, never a hardcoded number, so a future style addition or
+// removal here can't silently desync the label from the list beside it —
+// which is exactly how this drifted to "9" before (there is no 9th/
+// "default" style; see that constants.ts file's own FALLBACK_STYLE comment
+// for why).
+static const VISUAL_STYLES = [
+  "rhea", "nova", "vega", "lyra", "maia", "mira", "luma", "sera",
+] as const;
 
 static const RECEIPTS = [
   {
@@ -24,10 +51,26 @@ static const RECEIPTS = [
     href: `${REPO}/tree/main/packages/shadcn/ui`,
   },
   {
-    value: "9",
+    // VISUAL_STYLES is the same source of truth the registry itself ships
+    // from (packages/marko-ui/src/registry/constants.ts) — never hardcode
+    // this count; it drifted to "9" once already (there is no 9th/"default"
+    // style — see that file's own header comment on FALLBACK_STYLE).
+    value: String(VISUAL_STYLES.length),
     label: "styles",
-    title: "The default style plus 8 complete ports",
+    title: "8 complete style ports — rhea, nova, vega, lyra, maia, mira, luma, sera",
     href: `${REPO}/tree/main/packages/shadcn/styles`,
+  },
+  {
+    value: "</>",
+    label: "renders without JavaScript",
+    title: undefined,
+    href: undefined,
+  },
+  {
+    value: "MIT License",
+    label: undefined,
+    title: undefined,
+    href: undefined,
   },
 ] as const;
 
@@ -73,29 +116,54 @@ static const BADGES = [
   aria-label="Project quality receipts"
   class="border-y border-border/60 bg-background"
 >
-  <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-center px-6 py-5">
-    <for|receipt, index| of=RECEIPTS>
-      <a
-        href=receipt.href
-        target="_blank"
-        rel="noreferrer"
-        title=receipt.title
-        class=`group flex min-w-32 flex-col items-center gap-0.5 px-6 py-1 text-center outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-ring ${index > 0 ? "border-s border-border/60" : ""}`
-      >
-        <span class="text-lg font-semibold tracking-tight text-primary tabular-nums">
-          ${receipt.value}
-        </span>
-        <span class="text-xs text-muted-foreground underline-offset-4 group-hover:underline">
-          ${receipt.label}
-        </span>
-      </a>
-    </for>
-    <p class="flex min-w-32 flex-col items-center justify-center gap-0.5 border-s border-border/60 px-6 py-1 text-center">
-      <span class="text-lg font-semibold tracking-tight text-primary" aria-hidden="true">
-        &lt;/&gt;
-      </span>
-      <span class="text-xs text-muted-foreground">renders without JavaScript</span>
-    </p>
+  <div class="mx-auto max-w-5xl px-6 py-8">
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      // Three branches: linked numeric receipt (href), unlinked numeric
+      // receipt (label, no href — the "no-JS" card), and text-only receipt
+      // (no label, no href — "MIT License"), sized to fit its card on one
+      // line at every breakpoint rather than reusing the numeric-value size.
+      // Every branch wraps in the real <Card> so all 4 share one chrome
+      // (border/radius/ring/bg) across every registry style; a linked
+      // receipt adds a stretched-link <a> (absolute inset-0, empty of
+      // visible content) so the whole card is clickable without duplicating
+      // Card's own class list onto a hand-rolled anchor.
+      <for|receipt| of=RECEIPTS>
+        <if=(receipt.href != null)>
+          <Card class="group relative flex flex-col items-center justify-center gap-1 px-4 py-6 text-center">
+            <a
+              href=receipt.href
+              target="_blank"
+              rel="noreferrer"
+              title=receipt.title
+              class="absolute inset-0 z-10 rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <span class="sr-only">${receipt.value} ${receipt.label}</span>
+            </a>
+            <span class="text-4xl font-bold tracking-tight text-primary tabular-nums sm:text-5xl">
+              ${receipt.value}
+            </span>
+            <span class="text-base text-muted-foreground underline-offset-4 group-hover:underline">
+              ${receipt.label}
+            </span>
+          </Card>
+        </if>
+        <else if=(receipt.label != null)>
+          <Card class="flex flex-col items-center justify-center gap-1 px-4 py-6 text-center">
+            <span class="text-4xl font-bold tracking-tight text-primary tabular-nums sm:text-5xl">
+              ${receipt.value}
+            </span>
+            <span class="text-base text-muted-foreground">${receipt.label}</span>
+          </Card>
+        </else>
+        <else>
+          <Card class="flex min-w-0 flex-col items-center justify-center px-4 py-6 text-center">
+            <span class="w-full truncate text-xl font-bold tracking-tight whitespace-nowrap text-primary sm:text-2xl">
+              ${receipt.value}
+            </span>
+          </Card>
+        </else>
+      </for>
+    </div>
   </div>
   <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-2 px-6 pb-5">
     <for|badge| of=BADGES>
