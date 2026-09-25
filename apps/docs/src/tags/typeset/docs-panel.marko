@@ -5,6 +5,7 @@
 // ./docs-content.marko, the same tag the Get Code drawer renders (upstream
 // shares TypesetDocsContent the same way).
 import DocsContent from "./docs-content.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
 import type { TypesetSearchParams } from "./lib/search-params.ts";
 
 export interface Input {
@@ -16,13 +17,14 @@ export interface Input {
     <DocsContent params=input.params/>
   </div>
   // Upstream renders <Button type="button" variant="link" size="sm" render={<Link/>}>;
-  // Marko has no render-prop escape, so the anchor carries the resolved
-  // link/sm class string directly.
-  <a
+  // the registry Button's `href` branch is the Marko equivalent (see
+  // button.marko).
+  <Button
     href="/docs/typeset"
-    data-slot="button"
-    class="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md px-3 h-8 text-sm font-medium whitespace-nowrap text-primary underline-offset-4 transition-all outline-none hover:underline text-muted-foreground"
+    variant="link"
+    size="sm"
+    class="text-muted-foreground"
   >
     Read the docs
-  </a>
+  </Button>
 </div>
