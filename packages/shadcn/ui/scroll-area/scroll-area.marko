@@ -60,7 +60,18 @@ export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
     </div>
   </div>
 
-  <if=input.vertical ?? true>
+  // Radix's ScrollAreaScrollbar renders nothing at all when its axis has no
+  // overflow (verified against registry/new-york-v4/ui/scroll-area.tsx — the
+  // upstream port target). @zag-js/scroll-area's getScrollbarProps() has no
+  // equivalent: it always returns real props, leaving the empty scrollbar
+  // track/thumb in the DOM with hiddenState carried only via `hidden` on
+  // getScrollbarState() and the `data-overflow-*` data attributes elsewhere.
+  // Without gating on it here, the empty thumb's `mu-scroll-area-thumb`
+  // `flex-1` still wins over its own inline `width: var(--thumb-width, 0px)`
+  // (flex-basis takes precedence over `width` on a flex item), so a
+  // full-track, zero-content thumb renders as a stray pill even with no
+  // overflow — reproduced on /blocks and /charts category nav.
+  <if=(input.vertical ?? true) && !api().getScrollbarState({ orientation: "vertical" }).hidden>
     <div
       ...api().getScrollbarProps({ orientation: "vertical" })
       data-slot="scroll-area-scrollbar"
@@ -74,7 +85,7 @@ export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
     </div>
   </if>
 
-  <if=input.horizontal>
+  <if=input.horizontal && !api().getScrollbarState({ orientation: "horizontal" }).hidden>
     <div
       ...api().getScrollbarProps({ orientation: "horizontal" })
       data-slot="scroll-area-scrollbar"
