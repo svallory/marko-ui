@@ -1,30 +1,38 @@
 // CartesianGrid — recharts-parity SVG partial. Internal: rendered only by
-// the per-chart tags, which thread the geometry ctx explicitly (Marko has
-// no context primitive). Lines carry LITERAL stroke="#ccc" so the shadcn
+// the per-chart tags, which thread PLAIN geometry explicitly (Marko has no
+// context primitive). Lines carry LITERAL stroke="#ccc" so the shadcn
 // container selector [&_.recharts-cartesian-grid_line[stroke='#ccc']]
 // restyles them to stroke-border/50 — do not "fix" the hardcoded color.
-import { xTicks, yTicks, type CartesianCtx } from "./math.ts";
+//
+// Takes a `PlotGeometry` (plain numbers) plus precomputed tick arrays,
+// never the live `CartesianCtx`/`HorizontalCtx` — those hold unserializable
+// d3 scale functions, and this partial is rendered from a parent scope that
+// resumes on the client (hover state), so anything reachable from that
+// scope must be plain data. See math.ts' `PlotGeometry` doc comment.
+import type { PlotGeometry, XTick, YTick } from "./math.ts";
 import { grid as styles } from "./classes.ts";
 
 export interface Input {
-  ctx: CartesianCtx;
+  plot: PlotGeometry;
   /** Horizontal grid lines (default on — recharts <CartesianGrid vertical={false}/>). */
   horizontal?: boolean;
   vertical?: boolean;
+  horizontalTicks?: YTick[];
+  verticalTicks?: XTick[];
 }
 
-<const/{ ctx, horizontal = true, vertical = false }=input/>
+<const/{ plot, horizontal = true, vertical = false, horizontalTicks = [], verticalTicks = [] }=input/>
 
 <g class=styles.root>
   <if=horizontal>
     <g class=styles.horizontal>
-      <for|tick| of=yTicks(ctx)>
+      <for|tick| of=horizontalTicks>
         <line
           stroke="#ccc"
           fill="none"
-          x1=ctx.plot.x
+          x1=plot.x
           y1=tick.y
-          x2=(ctx.plot.x + ctx.plot.width)
+          x2=(plot.x + plot.width)
           y2=tick.y
         />
       </for>
@@ -32,14 +40,14 @@ export interface Input {
   </if>
   <if=vertical>
     <g class=styles.vertical>
-      <for|tick| of=xTicks(ctx)>
+      <for|tick| of=verticalTicks>
         <line
           stroke="#ccc"
           fill="none"
           x1=tick.x
-          y1=ctx.plot.y
+          y1=plot.y
           x2=tick.x
-          y2=(ctx.plot.y + ctx.plot.height)
+          y2=(plot.y + plot.height)
         />
       </for>
     </g>

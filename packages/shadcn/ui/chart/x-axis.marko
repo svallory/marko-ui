@@ -1,21 +1,22 @@
-// XAxis ticks — recharts-parity SVG partial (internal; ctx threaded by the
-// chart tags). Tick <text> carries literal fill="#666" — the container's
+// XAxis ticks — recharts-parity SVG partial (internal; PLAIN geometry
+// threaded by the chart tags — see grid.marko's header note on why this
+// can never take the live CartesianCtx). Tick <text> carries literal
+// fill="#666" — the container's
 // [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground restyles it.
 // No axis line / tick lines: shadcn demos always pass tickLine={false}
 // axisLine={false}, so we simply never render them. Any tickFormatter is
 // applied by the CALLER before passing `ticks`.
-import { xTicks, type CartesianCtx, type XTick } from "./math.ts";
+import type { PlotGeometry, XTick } from "./math.ts";
 import { xAxis as styles } from "./classes.ts";
 
 export interface Input {
-  ctx: CartesianCtx;
-  ticks?: XTick[];
+  plot: PlotGeometry;
+  ticks: XTick[];
   tickMargin?: number;
 }
 
-<const/{ ctx, tickMargin = 8 }=input/>
-<const/ticks=(input.ticks ?? xTicks(ctx))/>
-<const/tickY=(ctx.plot.y + ctx.plot.height + tickMargin)/>
+<const/{ plot, ticks, tickMargin = 8 }=input/>
+<const/tickY=(plot.y + plot.height + tickMargin)/>
 
 <g class=styles.root>
   <g class=styles.ticks>

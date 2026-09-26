@@ -15,9 +15,11 @@ import {
   bandCenter,
   bandCursorPath,
   cartesianCtx,
+  plotGeometry,
   roundedRectPath,
   stackSeries,
   xTicks,
+  yTicks,
   thinTicksByGap,
   horizontalCtx,
   hBandTicks,
@@ -28,8 +30,10 @@ import {
   type CornerRadius,
   type HorizontalCtx,
   type Margin,
+  type PlotGeometry,
   type Row,
   type XTick,
+  type YTick,
 } from "./math.ts";
 import { seriesColor, type ChartConfig } from "./config.ts";
 import { cn } from "#lib/utils.ts";
@@ -304,6 +308,135 @@ static function hFormatTicks(
   return ticks.map((tick) => ({ value: formatter(tick.value), y: tick.y }));
 }
 
+export interface HorizontalBarGeometry {
+  hBars: { row: Row; y: number; left: number; width: number; height: number; path: string }[];
+  hTicks: { value: string; y: number }[];
+  hRowsByIndex: TooltipRow[][];
+  hLabels: string[];
+  hCursorPaths: string[];
+  hGeometry: HPointerGeometry;
+  hTops: string[];
+  hPlotX: number;
+}
+
+// One entry point for the whole horizontal-layout d3 geometry: `hCtx`
+// (holding live, unserializable d3 scale functions `yBand`/`x`) lives only
+// in this function's local scope and is never returned or assigned to a
+// Marko `<const>` — a `<const>` in a resumable component scope (this
+// component has hover `<let>` state) gets serialized in full whether or
+// not any markup/handler actually reads it downstream, so `hCtx` itself
+// must never become a template variable. Every field below is plain data.
+static function buildHorizontalBarGeometry(
+  data: Row[],
+  xKey: string,
+  seriesKeys: string[],
+  singleKey: string,
+  singleRadius: CornerRadius | undefined,
+  width: number,
+  height: number,
+  margin: Partial<Margin> | undefined,
+  showYAxis: boolean,
+  stacked: boolean,
+  config: ChartConfig,
+  categoryTickFormatter: ((value: string) => string) | undefined,
+): HorizontalBarGeometry {
+  const hCtx = horizontalCtx({
+    data,
+    yKey: xKey,
+    seriesKeys,
+    width,
+    height,
+    margin: { top: 5, right: 5, bottom: 5, left: 5, ...margin },
+    yAxisWidth: showYAxis ? 60 : 0,
+    stacked,
+  });
+  return {
+    hBars: hComputeBars(hCtx, singleKey, singleRadius),
+    hTicks: hFormatTicks(hCtx, categoryTickFormatter),
+    hRowsByIndex: data.map((row) => [
+      {
+        key: singleKey,
+        label: String(config[singleKey]?.label ?? singleKey),
+        value: Number(row[singleKey] ?? 0),
+        color: barColor(row, singleKey),
+      },
+    ]),
+    hLabels: data.map((row) => String(row[xKey])),
+    hCursorPaths: data.map((row, index) => hBandCursorPath(hCtx, index)),
+    hGeometry: hPointerGeometry(hCtx),
+    hTops: data.map((row, index) => {
+      const percent = Math.max(0, Math.min(78, (hBandCenter(hCtx, index) / hCtx.height) * 100));
+      return `${percent.toFixed(2)}%`;
+    }),
+    hPlotX: hCtx.plot.x,
+  };
+}
+
+export interface VerticalBarGeometry {
+  bars: { dataKey: string; paths: string[] }[];
+  singleBars: { row: Row; x: number; top: number; width: number; height: number; path: string }[];
+  ticks: XTick[];
+  rowsByIndex: TooltipRow[][];
+  labels: string[];
+  lefts: string[];
+  cursorPaths: string[];
+  geometry: PointerGeometry;
+  plot: PlotGeometry;
+  gridVerticalTicks: XTick[];
+  gridHorizontalTicks: YTick[];
+  yAxisTicks: YTick[];
+}
+
+// Vertical-layout twin of buildHorizontalBarGeometry — same reason `ctx`
+// (holding live d3 scale functions `xBand`/`y`) must never become a Marko
+// `<const>`. Every field below is plain data.
+static function buildVerticalBarGeometry(
+  data: Row[],
+  xKey: string,
+  seriesList: BarSeries[],
+  seriesKeys: string[],
+  singleKey: string,
+  singleRadius: CornerRadius | undefined,
+  multiSeries: boolean,
+  width: number,
+  height: number,
+  margin: Partial<Margin> | undefined,
+  stacked: boolean,
+  config: ChartConfig,
+  xTickFormatter: ((value: string) => string) | undefined,
+  xTickMinGap: number | undefined,
+  tooltipLabelFormatter: ((value: string) => string) | undefined,
+): VerticalBarGeometry {
+  const ctx = cartesianCtx({
+    data,
+    xKey,
+    seriesKeys,
+    width,
+    height,
+    margin: { top: 5, right: 5, bottom: 5, left: 5, ...margin },
+    xAxisHeight: 30,
+    stacked,
+  });
+  const allTicks = formatTicks(ctx, xTickFormatter);
+  const plot = plotGeometry(ctx);
+  return {
+    bars: multiSeries ? computeBars(ctx, seriesList, stacked) : [],
+    singleBars: multiSeries ? [] : computeSingleBars(ctx, singleKey, singleRadius),
+    ticks: xTickMinGap ? thinTicksByGap(allTicks, xTickMinGap) : allTicks,
+    rowsByIndex: tooltipRowsByIndex(ctx, seriesList, config),
+    labels: data.map((row) =>
+      tooltipLabelFormatter ? tooltipLabelFormatter(String(row[xKey])) : String(row[xKey]),
+    ),
+    lefts: tooltipLefts(ctx),
+    cursorPaths: data.map((row, index) => bandCursorPath(ctx, index)),
+    geometry: pointerGeometry(ctx),
+    plot,
+    gridVerticalTicks: xTicks(ctx),
+    gridHorizontalTicks: yTicks(ctx),
+    yAxisTicks: yTicks(ctx),
+  };
+}
+
 <const/{
   config,
   data,
@@ -331,8 +464,8 @@ static function hFormatTicks(
 <const/singleKey=(seriesKeys[0] ?? "")/>
 <const/singleRadius=(seriesList[0]?.radius)/>
 
-// Both layout branches' full const chains are computed UNCONDITIONALLY,
-// every render, rather than nested inside `<if=horizontal>`/`<else>`.
+// Both layout branches' full geometry is computed UNCONDITIONALLY, every
+// render, rather than nested inside `<if=horizontal>`/`<else>`.
 //
 // LANDMINE: a `<const>` chain nested inside an `<if>/<else>` branch does
 // not reliably survive Marko 6's fine-grained reactive updates when only a
@@ -345,54 +478,67 @@ static function hFormatTicks(
 // recomputed `cursorPaths` ran with `ctx` unresolved, crashing on
 // `ctx.xBand.domain()` inside `bandCursorPath`. line.marko/area.marko
 // never nest their core const chain in an `<if>` and never hit this.
-// Fix: compute both `ctx` and `hCtx` (and their downstream consts) at the
-// template's top level, unconditionally; branch ONLY in the markup below.
-<const/hCtx=horizontalCtx({
-  data,
-  yKey: xKey,
-  seriesKeys,
-  width,
-  height,
-  margin: { top: 5, right: 5, bottom: 5, left: 5, ...input.margin },
-  yAxisWidth: (showYAxis ? 60 : 0),
-  stacked,
-})/>
-<const/hBars=hComputeBars(hCtx, singleKey, singleRadius)/>
-<const/hTicks=hFormatTicks(hCtx, input.categoryTickFormatter)/>
-<const/hRowsByIndex=data.map((row) => [{
-  key: singleKey,
-  label: String(config[singleKey]?.label ?? singleKey),
-  value: Number(row[singleKey] ?? 0),
-  color: barColor(row, singleKey),
-}])/>
-<const/hLabels=data.map((row) => String(row[xKey]))/>
-<const/hCursorPaths=data.map((row, index) => hBandCursorPath(hCtx, index))/>
-<const/hGeometry=hPointerGeometry(hCtx)/>
-<const/hTops=data.map((row, index) => {
-  const percent = Math.max(0, Math.min(78, (hBandCenter(hCtx, index) / hCtx.height) * 100));
-  return `${percent.toFixed(2)}%`;
-})/>
-
-<const/ctx=cartesianCtx({
+// Fix: compute both layouts' geometry at the template's top level,
+// unconditionally; branch ONLY in the markup below.
+//
+// Each layout's own `ctx`/`hCtx` (live, unserializable d3 scale functions)
+// lives entirely inside its own static function and is never assigned to
+// a Marko `<const>` here — see buildHorizontalBarGeometry's/
+// buildVerticalBarGeometry's doc comments.
+<const/multiSeries=(seriesList.length > 1 || stacked)/>
+<const/{
+  hBars,
+  hTicks,
+  hRowsByIndex,
+  hLabels,
+  hCursorPaths,
+  hGeometry,
+  hTops,
+  hPlotX,
+}=buildHorizontalBarGeometry(
   data,
   xKey,
   seriesKeys,
+  singleKey,
+  singleRadius,
   width,
   height,
-  margin: { top: 5, right: 5, bottom: 5, left: 5, ...input.margin },
-  xAxisHeight: 30,
+  input.margin,
+  showYAxis,
   stacked,
-})/>
-<const/multiSeries=(seriesList.length > 1 || stacked)/>
-<const/bars=(multiSeries ? computeBars(ctx, seriesList, stacked) : [])/>
-<const/singleBars=(multiSeries ? [] : computeSingleBars(ctx, singleKey, singleRadius))/>
-<const/allTicks=formatTicks(ctx, input.xTickFormatter)/>
-<const/ticks=(input.xTickMinGap ? thinTicksByGap(allTicks, input.xTickMinGap) : allTicks)/>
-<const/rowsByIndex=tooltipRowsByIndex(ctx, seriesList, config)/>
-<const/labels=data.map((row) => (input.tooltipLabelFormatter ? input.tooltipLabelFormatter(String(row[xKey])) : String(row[xKey])))/>
-<const/lefts=tooltipLefts(ctx)/>
-<const/cursorPaths=data.map((row, index) => bandCursorPath(ctx, index))/>
-<const/geometry=pointerGeometry(ctx)/>
+  config,
+  input.categoryTickFormatter,
+)/>
+<const/{
+  bars,
+  singleBars,
+  ticks,
+  rowsByIndex,
+  labels,
+  lefts,
+  cursorPaths,
+  geometry,
+  plot,
+  gridVerticalTicks,
+  gridHorizontalTicks,
+  yAxisTicks,
+}=buildVerticalBarGeometry(
+  data,
+  xKey,
+  seriesList,
+  seriesKeys,
+  singleKey,
+  singleRadius,
+  multiSeries,
+  width,
+  height,
+  input.margin,
+  stacked,
+  config,
+  input.xTickFormatter,
+  input.xTickMinGap,
+  input.tooltipLabelFormatter,
+)/>
 <const/showLegend=(input.legend === true || input.legend === "top" || input.legend === "bottom")/>
 <const/legendAlign=(input.legend === "top" ? "top" : "bottom")/>
 
@@ -441,7 +587,7 @@ static function hFormatTicks(
           <g class=styles.yAxisTicks>
             <for|tick| of=hTicks>
               <g class=styles.yAxisTick>
-                <text stroke="none" fill="#666" class=styles.yAxisTickText x=(hCtx.plot.x - tickMargin) y=tick.y text-anchor="end"><tspan x=(hCtx.plot.x - tickMargin) dy="0.355em">${tick.value}</tspan></text>
+                <text stroke="none" fill="#666" class=styles.yAxisTickText x=(hPlotX - tickMargin) y=tick.y text-anchor="end"><tspan x=(hPlotX - tickMargin) dy="0.355em">${tick.value}</tspan></text>
               </g>
             </for>
           </g>
@@ -534,7 +680,7 @@ static function hFormatTicks(
       viewBox=`0 0 ${width} ${height}`
     >
       <if=showGrid>
-        <ChartGrid ctx=ctx/>
+        <ChartGrid plot=plot horizontalTicks=gridHorizontalTicks verticalTicks=gridVerticalTicks/>
       </if>
       <if=(tooltipEnabled && cursorEnabled && activeIndex >= 0)>
         <g class=styles.cursorLayer>
@@ -545,9 +691,9 @@ static function hFormatTicks(
           />
         </g>
       </if>
-      <ChartXAxis ctx=ctx ticks=ticks tickMargin=tickMargin/>
+      <ChartXAxis plot=plot ticks=ticks tickMargin=tickMargin/>
       <if=showYAxis>
-        <ChartYAxis ctx=ctx/>
+        <ChartYAxis plot=plot ticks=yAxisTicks/>
       </if>
       <if=multiSeries>
         <for|series| of=bars>

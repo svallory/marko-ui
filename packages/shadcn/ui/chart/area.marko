@@ -10,12 +10,18 @@
 import {
   areaPaths,
   cartesianCtx,
+  plotGeometry,
   stackSeries,
   thinTicksByGap,
+  xTicks,
+  yTicks,
   type CartesianCtx,
   type CurveType,
   type Margin,
+  type PlotGeometry,
   type Row,
+  type XTick,
+  type YTick,
 } from "./math.ts";
 import { configFor, seriesColor, type ChartConfig } from "./config.ts";
 import { cn } from "#lib/utils.ts";
@@ -183,6 +189,89 @@ static function pointerIndex(
   return Math.max(0, Math.min(geom.count - 1, index));
 }
 
+export interface AreaChartGeometry {
+  centers: number[];
+  areas: AreaGeom[];
+  ticks: { value: string; x: number }[];
+  gradients: AreaGeom[];
+  plot: PlotGeometry;
+  plotTop: number;
+  plotBottom: number;
+  gridVerticalTicks: XTick[];
+  gridHorizontalTicks: YTick[];
+  yAxisTicks: YTick[];
+  pointerGeom: { width: number; plotX: number; plotWidth: number; count: number };
+  tooltipItems: { label: string; rows: { key: string; label: string; value: number; color: string }[] }[];
+}
+
+// One entry point for the whole d3-backed layout: `cartesianCtx()`'s
+// `ctx` (holding live, unserializable d3 scale functions `xBand`/`y`) lives
+// only in this function's local scope and is never returned or assigned to
+// a Marko `<const>` — a `<const>` in a resumable component scope (this
+// component has hover `<let>` state) gets serialized in full whether or not
+// any markup/handler actually reads it downstream, so `ctx` itself must
+// never become a template variable. Every field below is plain data.
+static function buildAreaChartGeometry(
+  config: ChartConfig,
+  data: Row[],
+  xKey: string,
+  seriesList: AreaSeriesAttrs[],
+  seriesKeys: string[],
+  stacked: boolean,
+  width: number,
+  height: number,
+  margin: Partial<Margin> | undefined,
+  stackOffset: "expand" | undefined,
+  xTickFormatter: ((value: string) => string) | undefined,
+  xTickMinGap: number | undefined,
+  tooltipLabelFormatter: ((value: string) => string) | undefined,
+  yAxisTickCount: number | undefined,
+): AreaChartGeometry {
+  const ctx = cartesianCtx({
+    data,
+    xKey,
+    seriesKeys,
+    width,
+    height,
+    margin: { left: 12, right: 12, ...margin },
+    xAxisHeight: 30,
+    stacked,
+    stackOffset,
+    paddingInner: 0,
+    paddingOuter: 0,
+  });
+  const centers = pointPositions(ctx, data.length);
+  const areas = buildAreas(ctx, seriesList, centers, stackOffset);
+  const allTicks = data.map((row, index) => ({
+    value: xTickFormatter ? xTickFormatter(String(row[xKey])) : String(row[xKey]),
+    x: centers[index] ?? 0,
+  }));
+  const ticks = xTickMinGap ? thinTicksByGap(allTicks, xTickMinGap) : allTicks;
+  const plot = plotGeometry(ctx);
+  return {
+    centers,
+    areas,
+    ticks,
+    gradients: areas.filter((geom) => geom.gradient),
+    plot,
+    plotTop: plot.y,
+    plotBottom: plot.y + plot.height,
+    gridVerticalTicks: xTicks(ctx),
+    gridHorizontalTicks: yTicks(ctx),
+    yAxisTicks: yTicks(ctx, yAxisTickCount),
+    pointerGeom: {
+      width,
+      plotX: plot.x,
+      plotWidth: plot.width,
+      count: data.length,
+    },
+    tooltipItems: data.map((row) => ({
+      label: tooltipLabelFormatter ? tooltipLabelFormatter(String(row[xKey])) : String(row[xKey]),
+      rows: tooltipRowsFor(config, seriesList, row),
+    })),
+  };
+}
+
 <const/{
   config,
   data,
@@ -206,41 +295,37 @@ static function pointerIndex(
 <const/seriesList=[...(input.series ?? [])]/>
 <const/seriesKeys=seriesList.map((series) => series.dataKey)/>
 <const/stacked=seriesList.some((series) => series.stackId != null)/>
-<const/ctx=cartesianCtx({
+// The d3-backed geometry build lives entirely inside one static function —
+// see its doc comment for why `ctx` must never become a Marko `<const>`.
+<const/{
+  centers,
+  areas,
+  ticks,
+  gradients,
+  plot,
+  plotTop,
+  plotBottom,
+  gridVerticalTicks,
+  gridHorizontalTicks,
+  yAxisTicks,
+  pointerGeom,
+  tooltipItems,
+}=buildAreaChartGeometry(
+  config,
   data,
   xKey,
+  seriesList,
   seriesKeys,
+  stacked,
   width,
   height,
-  margin: { left: 12, right: 12, ...input.margin },
-  xAxisHeight: 30,
-  stacked,
+  input.margin,
   stackOffset,
-  paddingInner: 0,
-  paddingOuter: 0,
-})/>
-// Everything the client (hover state) touches must be plain data — the d3
-// scales inside ctx are not serializable, so precompute per-index geometry.
-<const/centers=pointPositions(ctx, data.length)/>
-<const/areas=buildAreas(ctx, seriesList, centers, stackOffset)/>
-<const/allTicks=data.map((row, index) => ({
-  value: (xTickFormatter ? xTickFormatter(String(row[xKey])) : String(row[xKey])),
-  x: centers[index] ?? 0,
-}))/>
-<const/ticks=(input.xTickMinGap ? thinTicksByGap(allTicks, input.xTickMinGap) : allTicks)/>
-<const/gradients=areas.filter((geom) => geom.gradient)/>
-<const/plotTop=ctx.plot.y/>
-<const/plotBottom=(ctx.plot.y + ctx.plot.height)/>
-<const/pointerGeom={
-  width,
-  plotX: ctx.plot.x,
-  plotWidth: ctx.plot.width,
-  count: data.length,
-}/>
-<const/tooltipItems=data.map((row) => ({
-  label: (tooltipLabelFormatter ? tooltipLabelFormatter(String(row[xKey])) : String(row[xKey])),
-  rows: tooltipRowsFor(config, seriesList, row),
-}))/>
+  xTickFormatter,
+  input.xTickMinGap,
+  tooltipLabelFormatter,
+  yAxisTickCount,
+)/>
 <let/activeIndex=(-1)/>
 <const/activeItem=(showTooltip && activeIndex >= 0 ? tooltipItems[activeIndex] : undefined)/>
 
@@ -287,11 +372,11 @@ static function pointerIndex(
       </defs>
     </if>
     <if=showGrid>
-      <ChartGrid ctx=ctx/>
+      <ChartGrid plot=plot horizontalTicks=gridHorizontalTicks verticalTicks=gridVerticalTicks/>
     </if>
-    <ChartXAxis ctx=ctx ticks=ticks/>
+    <ChartXAxis plot=plot ticks=ticks/>
     <if=showYAxis>
-      <ChartYAxis ctx=ctx tickCount=yAxisTickCount/>
+      <ChartYAxis plot=plot ticks=yAxisTicks/>
     </if>
     <if=(showTooltip && cursor !== false && activeIndex >= 0)>
       <g class=styles.cursorLayer>
