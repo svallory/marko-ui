@@ -2053,8 +2053,8 @@
           "name": "grid",
           "properties": [
             {
-              "name": "ctx",
-              "type": "CartesianCtx",
+              "name": "plot",
+              "type": "PlotGeometry",
               "required": true,
               "kind": "own"
             },
@@ -2066,8 +2066,20 @@
               "description": "Horizontal grid lines (default on — recharts <CartesianGrid vertical={false}/>)."
             },
             {
+              "name": "horizontalTicks",
+              "type": "YTick[]",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "vertical",
               "type": "boolean",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "verticalTicks",
+              "type": "XTick[]",
               "required": false,
               "kind": "own"
             }
@@ -2401,20 +2413,20 @@
           "name": "x-axis",
           "properties": [
             {
-              "name": "ctx",
-              "type": "CartesianCtx",
+              "name": "plot",
+              "type": "PlotGeometry",
+              "required": true,
+              "kind": "own"
+            },
+            {
+              "name": "ticks",
+              "type": "XTick[]",
               "required": true,
               "kind": "own"
             },
             {
               "name": "tickMargin",
               "type": "number",
-              "required": false,
-              "kind": "own"
-            },
-            {
-              "name": "ticks",
-              "type": "XTick[]",
               "required": false,
               "kind": "own"
             }
@@ -2425,27 +2437,20 @@
           "name": "y-axis",
           "properties": [
             {
-              "name": "ctx",
-              "type": "CartesianCtx",
+              "name": "plot",
+              "type": "PlotGeometry",
               "required": true,
-              "kind": "own"
-            },
-            {
-              "name": "tickCount",
-              "type": "number",
-              "required": false,
-              "kind": "own",
-              "description": "Approximate number of ticks (d3 `ticks()` count) — recharts' tickCount. Default 5."
-            },
-            {
-              "name": "tickMargin",
-              "type": "number",
-              "required": false,
               "kind": "own"
             },
             {
               "name": "ticks",
               "type": "YTick[]",
+              "required": true,
+              "kind": "own"
+            },
+            {
+              "name": "tickMargin",
+              "type": "number",
               "required": false,
               "kind": "own"
             }
