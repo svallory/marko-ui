@@ -26,20 +26,32 @@
   --card-foreground: oklch(0% 0 0);
   --popover-foreground: oklch(0% 0 0);
   --primary: oklch(0% 0 0);
-  /* data/shadcn-ui/apps/v4/app/globals.css:120-124: chart demos on
-     upstream's docs site use a blue ramp, not the shipped theme's grey
-     default — every card in upstream's own home-page masonry
-     (app/(app)/(root)/cards/*.tsx) imports from styles/base-rhea/ui, and
-     this is that same site-level theming, extended to chart colors. */
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
   /* data/shadcn-ui/apps/v4/app/globals.css:126: sidebar-foreground follows
      the same pure-black override as the foreground family above. */
   --sidebar-foreground: oklch(0% 0 0);
 }
+
+/* ROUND 3 CORRECTION: chart-1..5 do NOT belong in an unscoped :root/.dark
+   here — that was a real bug (scratch/team-lead/briefs/docs-shipped-css-
+   round3.md), not a valid site override. Verified against upstream:
+   data/shadcn-ui/apps/v4/app/(app)/charts/layout.tsx:69 and
+   app/(app)/examples/layout.tsx:72 both wrap ONLY their own chart-grid
+   section in a `theme-container` class — `/create/preview` is NOT in that
+   list, so it never gets the blue override and correctly shows the shipped
+   theme's plain grey chart-1..5 default. The scoping selector
+   `.theme-default .theme-container` (this app's legacy-themes.css:1-8,
+   ported from upstream's own legacy-themes.css) already carries the exact
+   blue values — it was simply never applied to any element in this repo's
+   markup (`theme-container` had zero real usages until this round). Putting
+   the same values in this file's bare :root instead made them leak into
+   EVERY page unconditionally, including /create/preview and — before the
+   home masonry's own .theme-neutral override, which sits at equal
+   specificity to :root but wins purely on where these two files load in the
+   import order — nearly the home page too. The fix is putting
+   `theme-container` on /charts' actual chart-grid wrapper (see
+   charts-gallery.marko), matching upstream's placement, and letting the
+   existing legacy-themes.css selector do the scoping — not duplicating the
+   values here. */
 
 .dark {
   /* data/shadcn-ui/apps/v4/app/globals.css:145,147,149,150,153 — foreground/
@@ -70,13 +82,6 @@
      lighter (0.371) than the shipped theme's (0.269, which matches
      --secondary/--muted instead of standing apart). */
   --accent: oklch(0.371 0 0);
-  /* data/shadcn-ui/apps/v4/app/globals.css:163-167: same blue chart ramp
-     as light mode above. */
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
   /* data/shadcn-ui/apps/v4/app/globals.css:175: upstream's dark
      sidebar-ring is a touch darker (0.439) than the shipped theme's (0.556). */
   --sidebar-ring: oklch(0.439 0 0);
