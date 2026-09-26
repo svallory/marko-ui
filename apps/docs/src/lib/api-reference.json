@@ -4976,8 +4976,21 @@
               "kind": "own"
             },
             {
+              "name": "checkedChange",
+              "type": "(value: string, checked: boolean) => void",
+              "required": false,
+              "kind": "own",
+              "description": "Fires when a checkbox item's checked state changes; receives its value and new checked state."
+            },
+            {
               "name": "class",
               "type": "string",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "closeOnSelect",
+              "type": "boolean | undefined",
               "required": false,
               "kind": "own"
             },
@@ -4992,6 +5005,32 @@
               "type": "DropdownMenuItem[]",
               "required": false,
               "kind": "own"
+            },
+            {
+              "name": "onHighlightChange",
+              "type": "((details: menu.HighlightChangeDetails) => void) | undefined",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "onOpenChange",
+              "type": "((details: menu.OpenChangeDetails) => void) | undefined",
+              "required": false,
+              "kind": "own"
+            },
+            {
+              "name": "positioning",
+              "type": "menu.PositioningOptions | undefined",
+              "required": false,
+              "kind": "own",
+              "description": "Machine pass-throughs, forwarded to `@zag-js/menu` by `<zag-machine ...\nfrom=input/>` regardless of whether they're declared here (see\n`buildMachineProps` in marko-zag) — declared for type safety and DX.\n`positioning`/`onHighlightChange` are what a caller needs to relocate the\npopup (side/align/gutter/mobile anchor override) and mirror the\nhighlighted item for a hover-preview, the two capabilities the typeset/\ncreate picker.marko files used to hand-roll a whole parallel menu for."
+            },
+            {
+              "name": "radioChange",
+              "type": "(group: string, value: string) => void",
+              "required": false,
+              "kind": "own",
+              "description": "Fires when a radio group's selected value changes; receives the group name and new value."
             },
             {
               "name": "select",
