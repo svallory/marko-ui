@@ -421,23 +421,23 @@
     },
     {
       "path": "style-gray.json",
-      "sha256": "3be91acf3b516ef6925917fc8ed56ab25bc2b5911a2d173a1adb5d41b22f8f56"
+      "sha256": "fb338d62303c8731e259f126106f2fbae0d79b3f2fa87768fb2831d2f55825cd"
     },
     {
       "path": "style-slate.json",
-      "sha256": "ca11a92d63652627f71895017cc5f2664bbf3d46db1a358cf16b865a972b8661"
+      "sha256": "2f8f7fd20292cbd3cf7a62d0e774efd0af844940ba712db6a22e7201a7e324b8"
     },
     {
       "path": "style-stone.json",
-      "sha256": "242f2cf60f4c9753ef7477c126c86f42b7b2c38af84d52f37cc0ba1719a32017"
+      "sha256": "6857eb0e5f5c99587f09514da3fa1ed202deb81aba5eb946219d8bfa2acec09e"
     },
     {
       "path": "style-zinc.json",
-      "sha256": "ad8bbcb9728cfcddd3905b78cead3d56fff07c599a29aec5a9c5743ae8d6ac83"
+      "sha256": "1ce71daf6c63794d0a7ab6c27b760e2adc342157b8af266d704c7544d4f46eb6"
     },
     {
       "path": "style.json",
-      "sha256": "73bec1571c54db3944b3b6a036518b132dbc8b69a7e417e2b26f869db4ce3c16"
+      "sha256": "269f132f3fe2ca4029134512b28495e614420b4c4cbdf60d490ba67138bed4c7"
     },
     {
       "path": "styles/luma/accordion.json",
