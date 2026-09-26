@@ -749,6 +749,12 @@
           "name": "badge",
           "properties": [
             {
+              "name": "href",
+              "type": "never",
+              "required": false,
+              "kind": "own"
+            },
+            {
               "name": "variant",
               "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
               "required": false,
