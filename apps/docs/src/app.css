@@ -129,6 +129,19 @@
     @apply overscroll-y-none;
   }
   body {
+    /* DEVIATION from shadcn's globals.css (which also omits this): nothing
+       anywhere in this cascade sets a root text color, so plain text and any
+       component relying on inherited `color` (e.g. Button's ghost/outline
+       variants, which only set `color` on hover) falls through to the
+       browser's UA-default black — invisible in light mode by coincidence
+       (--foreground is oklch(0% 0 0) there) but wrong in dark mode
+       (--foreground is near-white). Root-caused via notes/css-architecture.md
+       and this file's own `a { color: inherit }` preflight rule (confirmed
+       present, correctly layered `base`, and NOT the bug — the whole
+       ancestor chain up to <html> was black because nothing set a color to
+       inherit FROM). Fixing at the root, once, instead of adding a resting
+       color to every variant that happens to be missing one. */
+    @apply text-foreground;
     position: relative;
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
