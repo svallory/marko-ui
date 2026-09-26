@@ -58,24 +58,48 @@ describe("chart SSR + hydration (charts-ssr regression)", () => {
     });
   });
 
-  it("renders the bar chart's rectangles and survives a pointer hover after hydration", { timeout: 60_000 }, async () => {
-    await withChartPage(async (page) => {
-      const demo = demoByTitle(page, "Bar Chart");
+  it("renders the bar chart's rectangles and shows the hover cursor/tooltip after hydration", { timeout: 60_000 }, async () => {
+    const consoleErrors: string[] = [];
+    await withPage({}, async (page) => {
+      page.on("console", (msg) => {
+        if (msg.type() === "error") consoleErrors.push(msg.text());
+      });
+      page.on("pageerror", (err) => consoleErrors.push(err.message));
+
+      const response = await page.goto(componentRouteUrl("chart"), { waitUntil: "networkidle" });
+      expect(response?.status()).toBe(200);
+
+      // "Bar Chart - Interactive" (chart-demo.marko) passes cursor + the
+      // default tooltip, unlike the plainer "Bar Chart" demo (cursor=false) —
+      // needed so hovering actually has a visible effect to assert on.
+      const demo = demoByTitle(page, "Bar Chart - Interactive");
       const svg = demo.locator("svg").first();
       expect(await svg.isVisible()).toBe(true);
 
       const rects = svg.locator("path");
       expect(await rects.count()).toBeGreaterThan(0);
 
+      // Before any hover, the cursor rect/tooltip must not be rendered.
+      const cursor = svg.locator(".recharts-tooltip-cursor");
+      expect(await cursor.count()).toBe(0);
+      const tooltip = demo.locator("[class*='mu-chart-tooltip']").first();
+      expect(await tooltip.count()).toBe(0);
+
       // Hover to exercise the client-side pointer handler (activeIndex state)
-      // that only runs once hydration has actually completed — a crashed
-      // hydration would leave this a no-op or throw in the console.
+      // that only runs once hydration has actually completed — a crashed or
+      // stubbed-out hydration would leave this a no-op, and this assertion
+      // (not just "no crash") is what catches that: it fails if the pointer
+      // handler is broken, not only if the page 500s.
       const box = await svg.boundingBox();
       expect(box).not.toBeNull();
       if (box) {
         await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-        await page.waitForTimeout(200);
       }
+      await cursor.first().waitFor({ state: "visible", timeout: 5_000 });
+      expect(await cursor.count()).toBeGreaterThan(0);
+      expect(await tooltip.count()).toBeGreaterThan(0);
+
+      expect(consoleErrors).toEqual([]);
     });
   });
 
