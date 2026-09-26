@@ -52,6 +52,7 @@ static const STORAGE_KEY = "marko-ui.installationType";
 
 <div data-slot="install-tabs" class="my-4">
   <Tabs value=method
+    translations={ listLabel: "Installation method" }
     valueChange(value) {
       method = value;
       try {
