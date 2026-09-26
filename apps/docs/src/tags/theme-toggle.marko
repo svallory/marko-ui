@@ -15,6 +15,7 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
   onClick() {
     const nextIsDark = !document.documentElement.classList.contains("dark");
     document.documentElement.classList.toggle("dark", nextIsDark);
+    document.documentElement.style.colorScheme = nextIsDark ? "dark" : "light";
     try {
       localStorage.setItem("theme", nextIsDark ? "dark" : "light");
     } catch (error) {}

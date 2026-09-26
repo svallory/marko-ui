@@ -30,6 +30,7 @@ static const BLOCKING_SCRIPT = `<!doctype html>
         var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
         var isDark = storedTheme ? storedTheme === "dark" : prefersDark;
         document.documentElement.classList.toggle("dark", isDark);
+        document.documentElement.style.colorScheme = isDark ? "dark" : "light";
       })();
     </html-script>
   </head>
@@ -51,6 +52,7 @@ static const TOGGLE = `<let/isDark=false/>
   onClick() {
     const nextIsDark = !document.documentElement.classList.contains("dark");
     document.documentElement.classList.toggle("dark", nextIsDark);
+    document.documentElement.style.colorScheme = nextIsDark ? "dark" : "light";
     try {
       localStorage.setItem("theme", nextIsDark ? "dark" : "light");
     } catch (error) {}
@@ -107,12 +109,18 @@ static const SYSTEM_ONLY = `@custom-variant dark (&:where(.dark, .dark *), @medi
 
   <code-block language="marko" filename="src/routes/+layout.marko" code=BLOCKING_SCRIPT/>
 
-  <p>The script does three things, in this order:</p>
+  <p>The script does four things, in this order:</p>
 
   <ol>
     <li>Reads <code>localStorage.theme</code>, wrapped in a <code>try</code> because storage throws in private-mode and sandboxed contexts.</li>
     <li>Falls back to the OS preference via <code>prefers-color-scheme</code> when nothing is stored.</li>
     <li>Toggles <code>.dark</code> on <code>document.documentElement</code> synchronously, before the body renders.</li>
+    <li>
+      Sets <code>document.documentElement.style.colorScheme</code> to match. This is the CSS
+      <code>color-scheme</code> property, not the <code>prefers-color-scheme</code> media query above — without
+      it, native browser-drawn UI (checkboxes, <code>&lt;select&gt;</code> panels, date/color pickers, scrollbars)
+      keeps rendering in the OS's light theme even while every custom component is dark.
+    </li>
   </ol>
 
   <p>

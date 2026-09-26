@@ -89,6 +89,7 @@ import {
         var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
         var isDark = storedTheme ? storedTheme === "dark" : prefersDark;
         document.documentElement.classList.toggle("dark", isDark);
+        document.documentElement.style.colorScheme = isDark ? "dark" : "light";
 
         var storedPalette = null;
         try {
