@@ -7999,126 +7999,75 @@
       "name": "pagination",
       "parts": [
         {
-          "file": "pagination.marko",
-          "name": "pagination",
+          "file": "content.marko",
+          "name": "content",
+          "properties": [],
+          "nativeAttributes": "ul"
+        },
+        {
+          "file": "ellipsis.marko",
+          "name": "ellipsis",
+          "properties": [],
+          "nativeAttributes": "span"
+        },
+        {
+          "file": "item.marko",
+          "name": "item",
+          "properties": [],
+          "nativeAttributes": "li"
+        },
+        {
+          "file": "link.marko",
+          "name": "link",
           "properties": [
             {
-              "name": "boundaryCount",
-              "type": "number | undefined",
-              "required": false,
-              "kind": "machine",
-              "description": "Number of pages to show at the beginning and end"
-            },
-            {
-              "name": "count",
-              "type": "number | undefined",
-              "required": false,
-              "kind": "machine",
-              "description": "Total number of data items"
-            },
-            {
-              "name": "defaultPage",
-              "type": "number | undefined",
-              "required": false,
-              "kind": "machine",
-              "description": "The initial active page when rendered.\nUse when you don't need to control the active page of the pagination."
-            },
-            {
-              "name": "defaultPageSize",
-              "type": "number | undefined",
-              "required": false,
-              "kind": "machine",
-              "description": "The initial number of data items per page when rendered.\nUse when you don't need to control the page size of the pagination."
-            },
-            {
-              "name": "dir",
-              "type": "'ltr' | 'rtl' | undefined",
-              "required": false,
-              "kind": "machine",
-              "description": "The document's text/writing direction."
-            },
-            {
-              "name": "getPageUrl",
-              "type": "((details: PageUrlDetails) => string) | undefined",
-              "required": false,
-              "kind": "machine",
-              "description": "Function to generate href attributes for pagination links.\nOnly used when `type` is set to \"link\"."
-            },
-            {
-              "name": "getRootNode",
-              "type": "(() => ShadowRoot | Document | Node) | undefined",
-              "required": false,
-              "kind": "machine",
-              "description": "A root node to correctly resolve document in custom environments. E.x.: Iframes, Electron."
-            },
-            {
-              "name": "ids",
-              "type": "ElementIds | undefined",
-              "required": false,
-              "kind": "machine",
-              "description": "The ids of the elements in the accordion. Useful for composition."
-            },
-            {
-              "name": "onPageChange",
-              "type": "((details: PageChangeDetails) => void) | undefined",
-              "required": false,
-              "kind": "machine",
-              "description": "Called when the page number is changed"
-            },
-            {
-              "name": "onPageSizeChange",
-              "type": "((details: PageSizeChangeDetails) => void) | undefined",
-              "required": false,
-              "kind": "machine",
-              "description": "Called when the page size is changed"
-            },
-            {
-              "name": "page",
-              "type": "number | undefined",
-              "required": false,
-              "kind": "machine",
-              "description": "The controlled active page"
-            },
-            {
-              "name": "pageChange",
-              "type": "(page: number) => void",
+              "name": "isActive",
+              "type": "boolean",
               "required": false,
               "kind": "own"
             },
             {
-              "name": "pageSize",
-              "type": "number | undefined",
+              "name": "size",
+              "type": "'default' | 'sm' | 'xs' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg' | null | undefined",
               "required": false,
-              "kind": "machine",
-              "description": "The controlled number of data items per page"
-            },
-            {
-              "name": "siblingCount",
-              "type": "number | undefined",
-              "required": false,
-              "kind": "machine",
-              "description": "Number of pages to show beside active page"
-            },
-            {
-              "name": "translations",
-              "type": "IntlTranslations | undefined",
-              "required": false,
-              "kind": "machine",
-              "description": "Specifies the localized strings that identifies the accessibility elements and their states"
-            },
-            {
-              "name": "type",
-              "type": "'button' | 'link' | undefined",
-              "required": false,
-              "kind": "machine",
-              "description": "The type of the trigger element"
+              "kind": "own"
             }
           ],
-          "nativeAttributes": "nav",
-          "machineModule": "@zag-js/pagination"
+          "nativeAttributes": "a"
+        },
+        {
+          "file": "next.marko",
+          "name": "next",
+          "properties": [
+            {
+              "name": "text",
+              "type": "string",
+              "required": false,
+              "kind": "own"
+            }
+          ],
+          "nativeAttributes": "a"
+        },
+        {
+          "file": "pagination.marko",
+          "name": "pagination",
+          "properties": [],
+          "nativeAttributes": "nav"
+        },
+        {
+          "file": "previous.marko",
+          "name": "previous",
+          "properties": [
+            {
+              "name": "text",
+              "type": "string",
+              "required": false,
+              "kind": "own"
+            }
+          ],
+          "nativeAttributes": "a"
         }
-      ],
-      "machineModule": "@zag-js/pagination"
+      ]
     },
     {
       "name": "password-input",
