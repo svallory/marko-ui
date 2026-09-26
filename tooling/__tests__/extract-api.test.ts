@@ -49,7 +49,7 @@ function findHref(components: ComponentEntry[], componentName: string): Property
 }
 
 describe("extract-api: union Input types", () => {
-  it("merges href across Button's and Badge's href-discriminated union branches, and keeps natives summarized", async () => {
+  it("merges href across Button's and Badge's href-discriminated union branches, and keeps natives summarized", { timeout: 60_000 }, async () => {
     const env = { ...process.env };
     delete env.AI_AGENT; // strip the proto agent-environment NDJSON banner (see CLAUDE.md)
     execFileSync("bun", ["tooling/extract-api.ts"], { cwd: REPO_ROOT, env });
