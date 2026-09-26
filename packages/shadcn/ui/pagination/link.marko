@@ -14,7 +14,7 @@ export interface Input extends Marko.Input<"a"> {
 <a
   aria-current=(isActive ? "page" : undefined)
   data-slot="pagination-link"
-  data-active=(isActive ? "true" : undefined)
+  data-active=(isActive == null ? undefined : String(isActive))
   class=classes
   ...rest
 >
