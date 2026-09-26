@@ -423,3 +423,13 @@
 .dark [style*="--shiki-dark"] {
   color: var(--shiki-dark);
 }
+
+/* Always-dark code panels (home-agent.marko's React/Marko comparison):
+   the reference design keeps these two snippets on a dark panel in BOTH
+   site themes, unlike --color-code (which follows the theme — light in
+   light mode). `.force-dark-code` forces shiki's dark token colors
+   regardless of the `.dark` ancestor above, and pairs with a fixed dark
+   background applied via Tailwind utilities at the call site. */
+.force-dark-code [style*="--shiki-dark"] {
+  color: var(--shiki-dark) !important;
+}

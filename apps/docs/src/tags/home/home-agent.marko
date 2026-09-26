@@ -1,41 +1,71 @@
-// "Built for the Agent Era" — 3-column feature section between trust and
-// showcase. Highlights marko-ui's three agent-first differentiators:
-// CLI tooling, token savings via Marko's terse syntax, and the automated
-// port-a-library workflow. Every number below is verified in
-// notes/MARKETING.md (Counter: 16 lines/298 B React vs 3 lines/81 B Marko,
-// 3–5× terser across component-party examples) — never invent new figures.
+// "Built for the Agent Era" — agent-focused feature section between trust
+// and showcase. Two-column layout: a large token-savings card on the left
+// (2/3 width) and two stacked cards on the right ("Ready for Your Agent",
+// "Port a Library in One Prompt").
 //
 // Design matches home-hero / home-trust / home-beyond:
 //   - container-wrapper / container for max-width + horizontal padding
 //   - Tailwind v4, dark-mode-aware, no inline styles
+//   - Card/CardHeader/CardContent/Button from @marko-ui/shadcn where a
+//     library component exists, rather than hand-styled divs/anchors.
 // No border-t on the <section>: home-trust already closes with border-y, so
 // a second top border here would render as a 2px seam.
 import { highlightCode } from "../../lib/highlight-code.ts";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Card from "@marko-ui/shadcn/ui/card/card.marko";
+import CardHeader from "@marko-ui/shadcn/ui/card/header.marko";
+import CardDescription from "@marko-ui/shadcn/ui/card/description.marko";
+import CardContent from "@marko-ui/shadcn/ui/card/content.marko";
 
-// The Counter example from component-party.dev (verified figures):
-//   React  Counter.jsx   — 16 lines / 298 B
-//   Marko  Counter.marko — 3 lines / 81 B
+// The Counter example, byte-identical to component-party.dev's own source
+// (content/2-templating/4-event-click/{react/Counter.jsx,marko/Counter.marko}
+// on github.com/matschik/component-party.dev, main branch — fetched and
+// diffed 2026-09-25; both include their trailing newline, which is why each
+// literal ends with `\n` before the closing backtick). Line/byte counts
+// below are DERIVED from these literals at module scope, never hand-typed,
+// so the labels can never drift from what's actually shown.
 static const REACT_CODE = `import { useState } from "react";
 
 export default function Counter() {
   const [count, setCount] = useState(0);
 
-  function increment() {
-    setCount(count + 1);
+  function incrementCount() {
+    setCount((count) => count + 1);
   }
 
   return (
     <>
       <p>Counter: {count}</p>
-      <button onClick={increment}>+1</button>
+      <button onClick={incrementCount}>+1</button>
     </>
   );
-}`;
+}
+`;
 
-static const MARKO_CODE = `<let/count=0/>
+static const MARKO_CODE = `<let/count=0>
 <p>Counter: \${count}</p>
-<button onClick(){ count++ }>+1</button>`;
+<button onClick() { count++ }>+1</button>
+`;
+
+// Derived, not hand-typed: byteLength/lines always match what's rendered.
+// TextEncoder, not Buffer.byteLength — this module is imported at module
+// scope by a client-compiled tag path (same reasoning as highlight-code.ts's
+// own header comment on why it avoids node:crypto: Buffer is a Node global,
+// unavailable in the browser bundle, and would throw on first access there).
+// TextEncoder is a Web/Node-common API and gives the identical UTF-8 byte
+// count.
+static const REACT_BYTES = new TextEncoder().encode(REACT_CODE).length;
+static const REACT_LINES = REACT_CODE.split("\n").length - 1; // trailing \n
+static const MARKO_BYTES = new TextEncoder().encode(MARKO_CODE).length;
+static const MARKO_LINES = MARKO_CODE.split("\n").length - 1; // trailing \n
+static const SIZE_RATIO = (REACT_BYTES / MARKO_BYTES).toFixed(1);
+
+static const STEPS = [
+  { n: 1, label: "Inventory" },
+  { n: 2, label: "Port" },
+  { n: 3, label: "Verify" },
+  { n: 4, label: "Publish" },
+] as const;
 
 <section data-slot="home-agent" class="bg-background">
   <div class="container-wrapper">
@@ -55,147 +85,90 @@ static const MARKO_CODE = `<let/count=0/>
         </p>
       </div>
 
-      // lg (not md) for the 3-column split: at 768-1023 the columns get so
-      // narrow the inline code comparison becomes unreadable — stack there.
-      <div class="grid gap-8 lg:grid-cols-3">
+      <div class="grid gap-6 lg:grid-cols-3">
 
-        <div class="flex flex-col gap-4 rounded-xl border border-border bg-muted/30 p-6">
-          <div class="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            // Lucide Bot icon
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="size-5"
-              aria-hidden="true"
-            >
-              <path d="M12 8V4H8"/>
-              <rect width="16" height="12" x="4" y="8" rx="2"/>
-              <path d="M2 14h2"/>
-              <path d="M20 14h2"/>
-              <path d="M15 13v2"/>
-              <path d="M9 13v2"/>
-            </svg>
-          </div>
-
-          <div class="flex flex-col gap-2">
-            <h3 class="text-lg font-semibold text-foreground">
-              Ready for Your Agent
-            </h3>
-            <p class="text-sm text-muted-foreground text-balance">
-              <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">marko-ui agents sync</code>
-              installs a curated skill into your project: the CLI workflow
-              (<code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">search</code> →
-              <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">show</code> →
-              <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">add</code> →
-              <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">doctor</code>),
-              a 9-item Marko 6 landmines catalog, and a list of the components
-              your project actually has installed — plus a marker-delimited
-              AGENTS.md section.
-            </p>
-            <p class="text-sm text-muted-foreground text-balance">
-              The CLI is self-describing:
-              <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">marko-ui manifest</code>
-              emits JSON for every command, flag, and the exit-code contract
-              (0/1/2/3/4). Typed
-              <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">--json</code>
-              output and non-interactive flags
-              (<code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">-y</code>,
-              <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">--silent</code>,
-              <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">--dry-run</code>)
-              mean your agent is productive from the first command.
-            </p>
-          </div>
-
-          <div class="mt-auto pt-2">
-            <Button href="/docs/cli" variant="outline" size="sm" class="w-full justify-center sm:w-auto">
-              CLI reference
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="size-3.5"
-                aria-hidden="true"
-              >
-                <path d="M5 12h14"/>
-                <path d="m12 5 7 7-7 7"/>
-              </svg>
-            </Button>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-4 rounded-xl border border-border bg-muted/30 p-6">
-          <div class="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            // Lucide Zap icon
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="size-5"
-              aria-hidden="true"
-            >
-              <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>
-            </svg>
-          </div>
-
-          <div class="flex flex-col gap-2">
-            <h3 class="text-lg font-semibold text-foreground">
-              Save up on Tokens
-            </h3>
-            <p class="text-sm text-muted-foreground text-balance">
-              Marko source is dramatically terser than React — 3–5× across
-              component-party examples — so agents read and write less code on
-              every task, and you pay for fewer tokens.
-            </p>
-          </div>
-
-          // Inline side-by-side code comparison (the Counter example). Same
-          // SSR-time shiki path as docs/code-block.marko, compact chrome.
-          <div class="flex min-w-0 flex-col gap-2">
-            <div class="grid min-w-0 grid-cols-2 gap-2">
+        // Left: SAVE UP ON TOKENS — spans 2/3 on desktop.
+        <Card class="lg:col-span-2">
+          <CardHeader class="flex flex-col gap-3">
+            <div class="flex flex-row items-center gap-4">
+              <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                // Lucide Zap icon
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="size-5"
+                  aria-hidden="true"
+                >
+                  <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>
+                </svg>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <p class="text-xs font-semibold tracking-widest text-primary uppercase">
+                  Save up on Tokens
+                </p>
+                <h3 class="text-xl font-semibold text-foreground sm:text-2xl">
+                  Same component. ${SIZE_RATIO}x less code.
+                </h3>
+              </div>
+            </div>
+            <CardDescription class="text-balance">
+              Terser source means agents read and write less on every task —
+              and you pay for fewer tokens.
+            </CardDescription>
+          </CardHeader>
+          <CardContent class="flex flex-col gap-4">
+            // Inline side-by-side code comparison (the Counter example). Same
+            // SSR-time shiki path as docs/code-block.marko, compact chrome.
+            // Dark code panels in both themes (.force-dark-code, app.css) to
+            // match the reference design — --color-code follows the site
+            // theme (light in light mode), which isn't what's wanted here.
+            <div class="grid min-w-0 grid-cols-2 gap-3">
               <div class="flex min-w-0 flex-col gap-1">
-                <div class="flex items-center justify-between gap-1 px-1">
-                  <span class="text-xs font-medium whitespace-nowrap text-muted-foreground">React</span>
-                  <span class="text-xs whitespace-nowrap text-muted-foreground tabular-nums">16 lines · 298 B</span>
+                <div class="flex items-baseline justify-between gap-1">
+                  <span class="text-sm font-medium whitespace-nowrap text-foreground">React</span>
+                  <span class="text-xs whitespace-nowrap text-muted-foreground tabular-nums">${REACT_LINES} lines · ${REACT_BYTES} B</span>
                 </div>
-                <div class="overflow-hidden rounded-md border border-border bg-muted/40">
+                <div class="force-dark-code overflow-hidden rounded-md border border-border bg-neutral-900">
                   <await|reactHighlighted|=highlightCode(REACT_CODE, "tsx")>
                     <pre tabindex="0" class="overflow-x-auto p-3 text-[0.65rem] leading-5"><code class="font-mono">$!{reactHighlighted}</code></pre>
                   </await>
                 </div>
               </div>
               <div class="flex min-w-0 flex-col gap-1">
-                <div class="flex items-center justify-between gap-1 px-1">
-                  <span class="text-xs font-medium whitespace-nowrap text-muted-foreground">Marko</span>
-                  <span class="text-xs whitespace-nowrap text-muted-foreground tabular-nums">3 lines · 81 B</span>
+                <div class="flex items-baseline justify-between gap-1">
+                  <span class="text-sm font-medium whitespace-nowrap text-foreground">Marko</span>
+                  <span class="text-xs font-medium whitespace-nowrap text-primary tabular-nums">${MARKO_LINES} lines · ${MARKO_BYTES} B</span>
                 </div>
-                <div class="overflow-hidden rounded-md border border-border bg-muted/40">
+                <div class="force-dark-code overflow-hidden rounded-md border-2 border-primary bg-neutral-900">
                   <await|markoHighlighted|=highlightCode(MARKO_CODE, "marko")>
                     <pre tabindex="0" class="overflow-x-auto p-3 text-[0.65rem] leading-5"><code class="font-mono">$!{markoHighlighted}</code></pre>
                   </await>
                 </div>
+
+                // 3.7x sits in the Marko column, directly under its code
+                // block, filling the space beside the taller React block.
+                <div class="flex flex-col items-center gap-1 pt-4 text-center">
+                  <span class="text-5xl font-bold tracking-tight text-primary tabular-nums sm:text-6xl">
+                    ${SIZE_RATIO}x
+                  </span>
+                  <p class="text-sm text-balance text-muted-foreground">
+                    ${MARKO_BYTES} B vs. ${REACT_BYTES} B for the same counter — across
+                    component-party.dev examples
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="mt-auto pt-2">
             <a
               href="https://component-party.dev/?f=react-marko"
               target="_blank"
               rel="noreferrer"
-              class="inline-flex items-center gap-1 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              class="inline-flex items-center gap-1 self-start text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
             >
               See every comparison at component-party.dev
               <svg
@@ -214,55 +187,196 @@ static const MARKO_CODE = `<let/count=0/>
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
               </svg>
             </a>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div class="flex flex-col gap-4 rounded-xl border border-border bg-muted/30 p-6">
-          <div class="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            // Lucide Package icon
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="size-5"
-              aria-hidden="true"
-            >
-              <path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/>
-              <path d="M12 22V12"/>
-              <path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7"/>
-              <path d="m7.5 4.27 9 5.15"/>
-            </svg>
-          </div>
+        // Right column: two stacked cards.
+        <div class="flex flex-col gap-6">
 
-          <div class="flex flex-col gap-2">
-            <h3 class="text-lg font-semibold text-foreground">
-              Port a Library in One Prompt
-            </h3>
-            <p class="text-sm text-muted-foreground text-balance">
-              The <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">port-to-marko</code>
-              skill (installable via
-              <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">npx skills add svallory/marko-ui</code>)
-              drives the full porting workflow: inventory → port →
-              mechanical parity verification → publish.
-            </p>
-            <p class="text-sm text-muted-foreground text-balance">
-              Port any React component library with your agent, then contribute
-              it to the registry so every Marko user gets it.
-            </p>
-          </div>
+          <Card class="flex-1">
+            <CardHeader class="flex flex-row items-center gap-4">
+              <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                // Lucide Bot icon
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="size-5"
+                  aria-hidden="true"
+                >
+                  <path d="M12 8V4H8"/>
+                  <rect width="16" height="12" x="4" y="8" rx="2"/>
+                  <path d="M2 14h2"/>
+                  <path d="M20 14h2"/>
+                  <path d="M15 13v2"/>
+                  <path d="M9 13v2"/>
+                </svg>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <p class="text-xs font-semibold tracking-widest text-primary uppercase">
+                  Ready for Your Agent
+                </p>
+                <h3 class="text-lg font-semibold text-foreground">
+                  Productive from the first command
+                </h3>
+              </div>
+            </CardHeader>
+            <CardContent class="flex flex-col gap-4">
+              <ul class="flex flex-col gap-2.5">
+                <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="mt-0.5 size-5 shrink-0 text-primary"
+                    aria-hidden="true"
+                  >
+                    <path d="M20 6 9 17l-5-5"/>
+                  </svg>
+                  <span>
+                    <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">marko-ui agents sync</code>
+                    installs a curated project skill
+                  </span>
+                </li>
+                <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="mt-0.5 size-5 shrink-0 text-primary"
+                    aria-hidden="true"
+                  >
+                    <path d="M20 6 9 17l-5-5"/>
+                  </svg>
+                  <span>Self-describing CLI — JSON manifest per command</span>
+                </li>
+                <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="mt-0.5 size-5 shrink-0 text-primary"
+                    aria-hidden="true"
+                  >
+                    <path d="M20 6 9 17l-5-5"/>
+                  </svg>
+                  <span>
+                    Non-interactive flags:
+                    <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">-y</code>,
+                    <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">--silent</code>,
+                    <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">--dry-run</code>
+                  </span>
+                </li>
+              </ul>
 
-          <div class="mt-auto flex flex-col gap-2 pt-2 sm:flex-row sm:flex-wrap">
-            <Button href="/docs/directory" size="sm" class="justify-center">
-              Browse the directory
-            </Button>
-            <Button href="/docs/contributing-a-library" variant="outline" size="sm" class="justify-center">
-              Contribute a library
-            </Button>
-          </div>
+              <Button href="/docs/cli" variant="outline" size="sm" class="self-start">
+                CLI reference
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="size-3.5"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14"/>
+                  <path d="m12 5 7 7-7 7"/>
+                </svg>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card class="flex-1">
+            <CardHeader class="flex flex-row items-center gap-4">
+              <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                // Lucide Package icon
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="size-5"
+                  aria-hidden="true"
+                >
+                  <path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/>
+                  <path d="M12 22V12"/>
+                  <path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7"/>
+                  <path d="m7.5 4.27 9 5.15"/>
+                </svg>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <p class="text-xs font-semibold tracking-widest text-primary uppercase">
+                  Port a Library in One Prompt
+                </p>
+                <h3 class="text-lg font-semibold text-foreground">
+                  The port-to-marko workflow
+                </h3>
+              </div>
+            </CardHeader>
+            <CardContent class="flex flex-col gap-4">
+              // 4-step numbered stepper with connecting lines. <ol> for real
+              // list semantics — <ol> only permits <li> children, so the
+              // connector is a CSS ::before on each non-first <li> (an
+              // absolutely positioned line reaching back to the previous
+              // circle) rather than a DOM sibling, keeping the circle+label
+              // column's own flex layout undisturbed by the connector's
+              // width. The line's ::before is a later sibling of the
+              // PREVIOUS <li>'s circle in paint order (both z-index:auto,
+              // painted in DOM order), so without an explicit stacking
+              // order it draws on top of that circle instead of stopping at
+              // its edge — hence the circle needs `relative z-10` (not just
+              // `relative`) to guarantee it paints above every connector.
+              <ol class="flex items-start justify-between">
+                <for|step, index| of=STEPS>
+                  <li
+                    class=`relative flex flex-1 flex-col items-center gap-1.5 ${index > 0 ? "before:absolute before:right-1/2 before:top-3.5 before:h-px before:w-full before:-translate-x-3.5 before:bg-border" : ""}`
+                  >
+                    <span class="relative z-10 flex size-7 shrink-0 items-center justify-center rounded-full bg-foreground text-xs font-semibold text-background tabular-nums">
+                      ${step.n}
+                    </span>
+                    <span class="text-xs whitespace-nowrap text-muted-foreground">${step.label}</span>
+                  </li>
+                </for>
+              </ol>
+
+              <p class="text-sm text-muted-foreground text-balance">
+                Port any React library with your agent, then contribute it
+                back to the registry.
+              </p>
+
+              <div class="flex flex-col gap-2 sm:flex-row">
+                <Button href="/docs/directory" size="sm" class="justify-center">
+                  Browse the directory
+                </Button>
+                <Button href="/docs/contributing-a-library" variant="outline" size="sm" class="justify-center">
+                  Contribute a library
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
         </div>
 
       </div>
