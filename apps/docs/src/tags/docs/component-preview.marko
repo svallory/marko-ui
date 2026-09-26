@@ -15,6 +15,7 @@
 // notes/bug-marko-dynamic-tag-hydration-crash.md) and never closure capture
 // of the loop variable (the content-closures defect in the same note).
 import "./code-block.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
 export interface Input {
   /**
@@ -75,13 +76,15 @@ export interface Input {
       // landmark-noise reason as the stage above.
       <pre tabindex="0" class="overflow-x-auto bg-code p-4 text-[0.8125rem] leading-6 text-code-foreground"><code class="font-mono">${peekLines}</code></pre>
       <div class="pointer-events-none absolute inset-0 flex items-end justify-center pb-4" style="background: linear-gradient(to top, var(--color-code), color-mix(in oklab, var(--color-code) 60%, transparent), transparent)">
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           data-view-code
-          class="pointer-events-auto relative z-10 inline-flex h-8 items-center rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground shadow-none transition-colors hover:bg-muted"
+          class="pointer-events-auto relative z-10 rounded-lg bg-background text-foreground shadow-none"
         >
           View Code
-        </button>
+        </Button>
       </div>
     </div>
     <div/fullEl hidden>

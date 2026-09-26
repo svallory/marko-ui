@@ -5,6 +5,7 @@
 // `filename`'s extension when `language` isn't passed explicitly (every
 // current caller passes a registry source path, e.g. "button/button.marko").
 import { highlightCode, langFromFilename } from "../../lib/highlight-code.ts";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
 export interface Input {
   code: string;
@@ -34,14 +35,16 @@ export interface Input {
   <if=input.filename>
     <div class="flex items-center justify-between border-b border-border px-4 py-2 text-xs font-medium text-muted-foreground">
       <span class="truncate font-mono">${input.filename}</span>
-      <button
+      <Button
         type="button"
+        variant="outline"
+        size="xs"
         data-code-copy
         aria-label="Copy code"
-        class="ml-2 shrink-0 rounded-md border border-border bg-background px-2 py-0.5 transition-colors hover:text-foreground"
+        class="ml-2 shrink-0 bg-background"
       >
         Copy
-      </button>
+      </Button>
     </div>
   </if>
 
@@ -56,26 +59,29 @@ export interface Input {
 
   <if=isCollapsible>
     <div class="border-t border-border p-2 text-center">
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="xs"
         data-code-toggle
         aria-expanded="false"
         aria-controls=codeId
-        class="rounded-md px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
       >
         Expand
-      </button>
+      </Button>
     </div>
   </if>
   <else if=!input.filename>
-    <button
+    <Button
       type="button"
+      variant="outline"
+      size="xs"
       data-code-copy
       aria-label="Copy code"
-      class="absolute right-2 top-2 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-muted-foreground opacity-0 transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
+      class="absolute right-2 top-2 bg-background opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
     >
       Copy
-    </button>
+    </Button>
   </else>
 </div>
 
