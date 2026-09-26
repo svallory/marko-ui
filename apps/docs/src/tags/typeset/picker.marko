@@ -123,7 +123,7 @@ export interface Input {
     if (!details.open) input.onItemPreview?.(null);
   }
   class=cn(
-    "bg-neutral-950/80 text-neutral-100 ring-neutral-950/80 backdrop-blur-xl dark:bg-neutral-800/90 dark:ring-neutral-700/50 **:data-[slot=dropdown-menu-label]:text-neutral-400 **:data-[slot=dropdown-menu-separator]:bg-neutral-600 dark:**:data-[slot=dropdown-menu-separator]:bg-neutral-700 **:data-[slot=dropdown-menu-item]:text-neutral-100 **:data-[slot=dropdown-menu-item]:focus:bg-neutral-600 dark:**:data-[slot=dropdown-menu-item]:focus:bg-neutral-700/80 **:data-[slot=dropdown-menu-radio-item]:text-neutral-100 **:data-[slot=dropdown-menu-radio-item]:focus:bg-neutral-600 dark:**:data-[slot=dropdown-menu-radio-item]:focus:bg-neutral-700/80 **:data-[slot=dropdown-menu-shortcut]:text-neutral-400!",
+    "bg-neutral-950/80 text-neutral-100 ring-neutral-950/80 backdrop-blur-xl dark:bg-neutral-800/90 dark:ring-neutral-700/50 **:data-[slot=dropdown-menu-label]:text-neutral-400 **:data-[slot=dropdown-menu-separator]:bg-neutral-600 dark:**:data-[slot=dropdown-menu-separator]:bg-neutral-700 **:data-[slot=dropdown-menu-item]:text-neutral-100 **:data-[slot=dropdown-menu-item]:data-highlighted:bg-neutral-600 dark:**:data-[slot=dropdown-menu-item]:data-highlighted:bg-neutral-700/80 **:data-[slot=dropdown-menu-radio-item]:text-neutral-100 **:data-[slot=dropdown-menu-radio-item]:data-highlighted:bg-neutral-600 dark:**:data-[slot=dropdown-menu-radio-item]:data-highlighted:bg-neutral-700/80 **:data-[slot=dropdown-menu-shortcut]:text-neutral-400!",
     input.contentClass,
   )
   select(value: string) {

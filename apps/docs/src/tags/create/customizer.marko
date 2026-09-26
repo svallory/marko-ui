@@ -35,6 +35,20 @@
 // the whole subtree for both component names and the only matches are their
 // own definition files. They are not part of the real page and there is
 // nothing to port for them.
+//
+// The root div's explicit `text-foreground` (round 3 fix) is load-bearing,
+// not decorative: this panel stays dark even in light mode (`dark` class,
+// verbatim from upstream — its `--foreground` is correctly redefined to
+// near-white by `.dark { ... }` in site-tokens.css), but `body`'s own
+// `text-foreground` (app.css) already resolved `color` to LIGHT-mode
+// `--foreground` (near-black) at the body level. CSS custom properties
+// don't make `color` re-resolve on descendants automatically — only an
+// element that itself references `var(--foreground)` again recomputes
+// against whatever `.dark` redefined it to in its own scope. Every
+// Button/text node inside this panel that relies on inherited `color`
+// (e.g. `mu-button-variant-outline`, which sets no rest-state color of its
+// own) was rendering near-invisible dark-on-dark text until this root div
+// re-declared `text-foreground` itself.
 import type { DesignSystemSearchParams } from "./lib/search-params.ts";
 import type { LockableParam } from "./lib/design-system-state.ts";
 import type {
@@ -87,7 +101,7 @@ export interface Input {
 
 <const/setPreview=input.setPreview/>
 
-<div class="dark relative isolate z-10 flex max-h-full min-h-0 w-full flex-col self-start rounded-2xl bg-card/90 backdrop-blur-xl md:w-(--customizer-width,12rem)" data-slot="customizer">
+<div class="dark relative isolate z-10 flex max-h-full min-h-0 w-full flex-col self-start rounded-2xl bg-card/90 text-foreground backdrop-blur-xl md:w-(--customizer-width,12rem)" data-slot="customizer">
   <div class="hidden items-center justify-between gap-2 border-b p-3 md:flex" data-slot="card-header">
     <MainMenu
       canGoBack=input.canGoBack
