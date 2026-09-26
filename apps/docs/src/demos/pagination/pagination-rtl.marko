@@ -1,17 +1,44 @@
-import Pagination from "@marko-ui/shadcn/ui/pagination/pagination.marko";
-
 // Static RTL port: shadcn's source drives this demo through a client-side
 // language selector (useTranslation, cycling en/ar/he) that has no
 // equivalent in this docs app — see demos/input/input-rtl.marko and
 // demos/field/field-rtl.marko for the established precedent. This ports the
 // RTL VISUAL directly: `dir="rtl"` on the nav, matching the source's
-// default locale ("ar"). Pagination's icons already carry `mu-rtl-flip` so
-// the chevrons mirror correctly under RTL with no component changes.
-//
-// Deviation from upstream: shadcn's Previous/Next buttons take a `text`
-// prop so the RTL demo can swap in Arabic labels ("السابق"/"التالي"). Our
-// Pagination hard-codes the English "Previous"/"Next" strings (no `text`
-// prop) — labels stay in English here; only direction/layout mirror. Page
-// numbers are also always rendered in Latin digits (no Arabic-numeral
-// formatting prop), unlike upstream's `formatNumber` helper.
-<Pagination count=100 pageSize=10 page=2 dir="rtl"/>
+// default locale ("ar"), including its Arabic Previous/Next labels via the
+// `text` prop and Arabic-numeral page labels (upstream's `formatNumber`).
+// The chevron icons already carry `mu-rtl-flip` so they mirror correctly
+// with no component changes.
+import Pagination from "@marko-ui/shadcn/ui/pagination/pagination.marko";
+import PaginationContent from "@marko-ui/shadcn/ui/pagination/content.marko";
+import PaginationEllipsis from "@marko-ui/shadcn/ui/pagination/ellipsis.marko";
+import PaginationItem from "@marko-ui/shadcn/ui/pagination/item.marko";
+import PaginationLink from "@marko-ui/shadcn/ui/pagination/link.marko";
+import PaginationNext from "@marko-ui/shadcn/ui/pagination/next.marko";
+import PaginationPrevious from "@marko-ui/shadcn/ui/pagination/previous.marko";
+
+static const ARABIC_NUMERALS = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
+static function toArabicNumerals(num: number): string {
+  return num.toString().split("").map((digit) => ARABIC_NUMERALS[Number.parseInt(digit, 10)]).join("");
+}
+
+<Pagination dir="rtl">
+  <PaginationContent>
+    <PaginationItem>
+      <PaginationPrevious href="#" text="السابق"/>
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationLink href="#">${toArabicNumerals(1)}</PaginationLink>
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationLink href="#" isActive>${toArabicNumerals(2)}</PaginationLink>
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationLink href="#">${toArabicNumerals(3)}</PaginationLink>
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationEllipsis/>
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationNext href="#" text="التالي"/>
+    </PaginationItem>
+  </PaginationContent>
+</Pagination>

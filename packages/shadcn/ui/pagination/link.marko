@@ -1,0 +1,22 @@
+import { buttonVariants, type ButtonVariants } from "../button/variants.ts";
+import { cn } from "#lib/utils.ts";
+import { link as styles } from "./classes.ts";
+
+export interface Input extends Marko.Input<"a"> {
+  isActive?: boolean;
+  size?: ButtonVariants["size"];
+}
+
+<const/{ class: className, isActive, size = "icon", content, ...rest }=input/>
+<const/variant=(isActive ? ("outline" as const) : ("ghost" as const))/>
+<const/classes=cn(buttonVariants({ variant, size }), styles.root, className)/>
+
+<a
+  aria-current=(isActive ? "page" : undefined)
+  data-slot="pagination-link"
+  data-active=(isActive ? "true" : undefined)
+  class=classes
+  ...rest
+>
+  <${content}/>
+</a>

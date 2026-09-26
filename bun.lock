@@ -75,7 +75,6 @@
         "@zag-js/menu": "1.43.3",
         "@zag-js/navigation-menu": "1.43.3",
         "@zag-js/number-input": "1.43.3",
-        "@zag-js/pagination": "1.43.3",
         "@zag-js/password-input": "1.43.3",
         "@zag-js/pin-input": "1.43.3",
         "@zag-js/popover": "1.43.3",
@@ -193,7 +192,6 @@
         "@zag-js/menu": "1.43.3",
         "@zag-js/navigation-menu": "1.43.3",
         "@zag-js/number-input": "1.43.3",
-        "@zag-js/pagination": "1.43.3",
         "@zag-js/password-input": "1.43.3",
         "@zag-js/pin-input": "1.43.3",
         "@zag-js/popover": "1.43.3",
@@ -848,8 +846,6 @@
     "@zag-js/navigation-menu": ["@zag-js/navigation-menu@1.43.3", "", { "dependencies": { "@zag-js/anatomy": "1.43.3", "@zag-js/core": "1.43.3", "@zag-js/dismissable": "1.43.3", "@zag-js/dom-query": "1.43.3", "@zag-js/types": "1.43.3", "@zag-js/utils": "1.43.3" } }, "sha512-7pVwpWwe/CtfvPclwd9k6Ja89RSdnYYC/rAC5Oaj5BUCVwdjNxh0VuyLS/awozNQclPFA6ww22KQSaLf4lAnPQ=="],
 
     "@zag-js/number-input": ["@zag-js/number-input@1.43.3", "", { "dependencies": { "@internationalized/number": "3.6.7", "@zag-js/anatomy": "1.43.3", "@zag-js/core": "1.43.3", "@zag-js/dom-query": "1.43.3", "@zag-js/types": "1.43.3", "@zag-js/utils": "1.43.3" } }, "sha512-XBuky+uuFXnshBHbIFfpUCly5nKZi+hW0R6pvgmqirqVyc4K/lwg4nz88/Z6U/q4uRQarKRr22fOMLthc7q7Yw=="],
-
-    "@zag-js/pagination": ["@zag-js/pagination@1.43.3", "", { "dependencies": { "@zag-js/anatomy": "1.43.3", "@zag-js/core": "1.43.3", "@zag-js/dom-query": "1.43.3", "@zag-js/types": "1.43.3", "@zag-js/utils": "1.43.3" } }, "sha512-8shW+/WwkLNKh9nhVXQCi2mQ50un52obzgheIm/BwlUlHu+qY/dM2al3Kx9L4yK7YYTDaXFxKyvP1iaYUQd7ZA=="],
 
     "@zag-js/password-input": ["@zag-js/password-input@1.43.3", "", { "dependencies": { "@zag-js/anatomy": "1.43.3", "@zag-js/core": "1.43.3", "@zag-js/dom-query": "1.43.3", "@zag-js/types": "1.43.3", "@zag-js/utils": "1.43.3" } }, "sha512-r7RPikBcwN8zTpuah54Bo3jclkz+ze+wV6g5SC7Ox6yOWdbC6A6ORyvXc3yqw2YG4tvwOtrD4p9w21zCVzNaqQ=="],
 

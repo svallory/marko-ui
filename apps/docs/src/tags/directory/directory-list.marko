@@ -10,6 +10,13 @@
 import directory from "../../data/directory.json";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
 import { buttonVariants } from "@marko-ui/shadcn/ui/button/variants.ts";
+import Pagination from "@marko-ui/shadcn/ui/pagination/pagination.marko";
+import PaginationContent from "@marko-ui/shadcn/ui/pagination/content.marko";
+import PaginationEllipsis from "@marko-ui/shadcn/ui/pagination/ellipsis.marko";
+import PaginationItem from "@marko-ui/shadcn/ui/pagination/item.marko";
+import PaginationLink from "@marko-ui/shadcn/ui/pagination/link.marko";
+import PaginationNext from "@marko-ui/shadcn/ui/pagination/next.marko";
+import PaginationPrevious from "@marko-ui/shadcn/ui/pagination/previous.marko";
 import Item from "@marko-ui/shadcn/ui/item/item.marko";
 import ItemActions from "@marko-ui/shadcn/ui/item/actions.marko";
 import ItemContent from "@marko-ui/shadcn/ui/item/content.marko";
@@ -20,7 +27,6 @@ import ItemMedia from "@marko-ui/shadcn/ui/item/media.marko";
 import ItemSeparator from "@marko-ui/shadcn/ui/item/separator.marko";
 import ItemTitle from "@marko-ui/shadcn/ui/item/title.marko";
 import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
-import { cn } from "@marko-ui/shadcn/lib/utils.ts";
 import "./directory-search.marko";
 import "./directory-add-dialog.marko";
 
@@ -215,80 +221,45 @@ static function getPageNumbers(current: number, total: number) {
     </for>
   </ItemGroup>
   <if=(totalPages > 1)>
-    <nav
-      role="navigation"
-      aria-label="pagination"
-      data-slot="pagination"
-      class="mx-auto flex w-full justify-center"
-    >
-      <ul data-slot="pagination-content" class="flex flex-row items-center gap-1">
-        <li data-slot="pagination-item">
-          <a
+    <Pagination>
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious
             href=(page > 1 ? getPageHref(query, page - 1) : undefined)
-            aria-label="Go to previous page"
             aria-disabled=(page <= 1 ? "true" : undefined)
             tabindex=(page <= 1 ? -1 : undefined)
-            data-slot="pagination-link"
             onClick(event: MouseEvent) { handlePageClick(event, page - 1, page <= 1); }
-            class=cn(
-              buttonVariants({ variant: "ghost", size: "default" }),
-              "pl-1.5!",
-              page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer",
-            )
-          >
-            <Icon name="ChevronLeftIcon" class="mu-rtl-flip size-4"/>
-            <span class="hidden sm:block">Previous</span>
-          </a>
-        </li>
+            class=(page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer")
+          />
+        </PaginationItem>
         <for|p, i| of=getPageNumbers(page, totalPages) by=(p, i) => (p === "ellipsis" ? `ellipsis-${i}` : `page-${p}`)>
-          <li data-slot="pagination-item">
+          <PaginationItem>
             <if=p === "ellipsis">
-              <span
-                aria-hidden="true"
-                data-slot="pagination-ellipsis"
-                class="flex size-9 items-center justify-center"
-              >
-                &hellip;
-                <span class="sr-only">More pages</span>
-              </span>
+              <PaginationEllipsis/>
             </if>
             <else>
-              <a
+              <PaginationLink
                 href=getPageHref(query, p as number)
-                aria-current=(p === page ? "page" : undefined)
-                data-slot="pagination-link"
-                data-active=String(p === page)
+                isActive=(p === page)
                 onClick(event: MouseEvent) { handlePageClick(event, p as number); }
-                class=cn(
-                  buttonVariants({ variant: p === page ? "outline" : "ghost", size: "icon" }),
-                  "cursor-pointer",
-                )
+                class="cursor-pointer"
               >
                 ${p}
-              </a>
+              </PaginationLink>
             </else>
-          </li>
+          </PaginationItem>
         </for>
-        <li data-slot="pagination-item">
-          <a
+        <PaginationItem>
+          <PaginationNext
             href=(page < totalPages ? getPageHref(query, page + 1) : undefined)
-            aria-label="Go to next page"
             aria-disabled=(page >= totalPages ? "true" : undefined)
             tabindex=(page >= totalPages ? -1 : undefined)
-            data-slot="pagination-link"
             onClick(event: MouseEvent) { handlePageClick(event, page + 1, page >= totalPages); }
-            class=cn(
-              buttonVariants({ variant: "ghost", size: "default" }),
-              "pr-1.5!",
-              page >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer",
-            )
-          >
-            <span class="hidden sm:block">Next</span>
-            <Icon name="ChevronRightIcon" class="mu-rtl-flip size-4"/>
-          </a>
-        </li>
-      </ul>
-    </nav>
+            class=(page >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer")
+          />
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
   </if>
 </div>
 

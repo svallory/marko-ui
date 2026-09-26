@@ -10,85 +10,76 @@ export const docs: ComponentDocs = {
   // init`), so no import is required. The explicit-import form is
   // documented as the override/escape hatch.
   usageTags: `<Pagination>`,
-  importSnippet: `import Pagination from "@/components/ui/pagination/pagination.marko";`,
-  usageSnippet: `<Pagination count=100 pageSize=10 page=1/>`,
+  importSnippet: `import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";`,
+  usageSnippet: `<Pagination>
+  <PaginationContent>
+    <PaginationItem>
+      <PaginationPrevious href="#"/>
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationLink href="#">1</PaginationLink>
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationLink href="#" isActive>2</PaginationLink>
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationLink href="#">3</PaginationLink>
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationEllipsis/>
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationNext href="#"/>
+    </PaginationItem>
+  </PaginationContent>
+</Pagination>`,
   examples: [
     {
       name: "pagination-demo",
       title: "Default",
-      description: "Pass `count` and `pageSize` to derive the total number of pages, and `page` for the active page.",
+      description: "Compose `Pagination` from its parts: `PaginationContent`, `PaginationItem`, `PaginationLink`, `PaginationEllipsis`, `PaginationPrevious`/`PaginationNext`.",
     },
     {
       name: "pagination-simple",
-      title: "Few pages",
-      description: "When every page fits within the sibling range, no ellipsis is rendered.",
+      title: "Simple",
+      description: "A simple pagination with only page numbers.",
     },
     {
       name: "pagination-icons-only",
       title: "Icons only",
-      description:
-        "Paired with a rows-per-page `Select`. Our `Pagination` always renders its page-number list (see Composition below), so this ports the layout rather than a true icons-only mode.",
+      description: "Use just the previous and next buttons without page numbers. This is useful for data tables with a rows-per-page selector.",
     },
     {
       name: "pagination-rtl",
       title: "RTL",
-      description: "Pass `dir=\"rtl\"` — the previous/next chevrons carry `mu-rtl-flip` and mirror automatically.",
-    },
-    {
-      name: "pagination-sibling-count",
-      title: "Sibling count",
-      description:
-        "`siblingCount` controls how many pages are shown around the active page before an ellipsis appears.",
-    },
-    {
-      name: "pagination-controlled",
-      title: "Controlled",
-      description:
-        "Zag machines are controlled: a `page` prop without a change handler never moves. Pair it with `pageChange`.",
+      description: "Pass `dir=\"rtl\"` on `Pagination` — the previous/next chevrons carry `mu-rtl-flip` and mirror automatically. Pair with the `text` prop on `PaginationPrevious`/`PaginationNext` to translate the labels.",
     },
   ],
-  // Upstream composes Pagination from seven parts (Pagination,
-  // PaginationContent, PaginationItem, PaginationLink, PaginationEllipsis,
-  // PaginationPrevious, PaginationNext) that callers assemble by hand. Our
-  // port collapses all of that into ONE machine-driven component: `count`
-  // and `pageSize` derive the page count, `page`/`pageChange` control the
-  // active page, and the page-number list (with ellipsis) is generated
-  // internally from the `@zag-js/pagination` machine's `api().pages`. There
-  // is no `PaginationLink`/`PaginationItem` API to compose by hand, and no
-  // `isActive` prop — the active page is derived from `page` automatically.
-  //
-  // Real deviation from upstream: shadcn's `PaginationPrevious`/
-  // `PaginationNext` accept a `text` prop (added for RTL locales that need
-  // translated labels, e.g. "السابق"/"التالي" — see upstream's Changelog).
-  // Our component hard-codes the English "Previous"/"Next" strings; there
-  // is no `text` prop. `dir="rtl"` still mirrors the layout and flips the
-  // chevron icons via the `mu-rtl-flip` class, but the button labels always
-  // read in English.
-  //
-  // BLOCKED (parity — missingMappedTargets: "Changelog"): `ComponentDocs`
-  // (docs-types.ts) has no `changelog` field, and +page.marko has no
-  // Changelog section renderer. Same blocked-needs-template-change finding
-  // already recorded for card and toggle-group (see TODO.md "Component-
-  // source backlog from docs-parity repair" — "docs template: `changelog`
-  // field in docs-types.ts + render branch"). Recorded here for consistency
-  // rather than fabricating a Changelog section from this demo directory —
-  // the one real changelog item (the RTL `text` prop addition) is already
-  // documented above as a genuine deviation, and again in accessibilityNotes
-  // below.
-  composition: `Our \`Pagination\` is a single component, not a composition:
-
-\`\`\`text
+  composition: `\`\`\`text
 Pagination
-├── (prev trigger — \`api().getPrevTriggerProps()\`)
-├── (page items — generated from \`api().pages\`, ellipsis inserted automatically)
-└── (next trigger — \`api().getNextTriggerProps()\`)
-\`\`\`
-
-Configure it with \`count\`, \`pageSize\`, \`page\`/\`pageChange\`, and \`siblingCount\` instead of assembling \`PaginationItem\`/\`PaginationLink\`/\`PaginationEllipsis\` parts by hand.`,
+└── PaginationContent
+    ├── PaginationItem
+    │   └── PaginationPrevious
+    ├── PaginationItem
+    │   └── PaginationLink
+    ├── PaginationItem
+    │   └── PaginationEllipsis
+    └── PaginationItem
+        └── PaginationNext
+\`\`\``,
   accessibilityNotes: [
-    "The root renders `role=\"navigation\"` with `aria-label=\"pagination\"`.",
-    "The active page button gets `aria-current=\"page\"`; the ellipsis is `aria-hidden` with a visually-hidden \"More pages\" label for screen readers.",
-    "Previous/next triggers carry `aria-label=\"Go to previous page\"` / `\"Go to next page\"` and disable natively at the first/last page.",
-    "RTL: set `dir=\"rtl\"` on `Pagination` — the chevron icons carry `mu-rtl-flip` and mirror automatically; there is no `text` prop for translating the Previous/Next labels (see Composition above).",
+    "`Pagination` renders `role=\"navigation\"` with `aria-label=\"pagination\"`.",
+    "`PaginationLink` gets `aria-current=\"page\"` and `data-active` when `isActive` is set; `data-slot=\"pagination-link\"` on every link.",
+    "`PaginationEllipsis` is `aria-hidden` with a visually-hidden \"More pages\" label for screen readers.",
+    "`PaginationPrevious`/`PaginationNext` carry `aria-label=\"Go to previous page\"` / `\"Go to next page\"`; pass `disabled`/`aria-disabled` yourself when at the first/last page — this is a presentational kit, not a machine, so there is no built-in disabled-state derivation.",
+    "RTL: set `dir=\"rtl\"` on `Pagination` — the chevron icons carry `mu-rtl-flip` and mirror automatically. Pass a `text` prop to `PaginationPrevious`/`PaginationNext` to translate their labels (added for RTL locales, e.g. \"السابق\"/\"التالي\" — see upstream's Changelog).",
   ],
 };
