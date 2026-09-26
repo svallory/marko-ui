@@ -1,15 +1,20 @@
 /*
- * Faithful port of shadcn's apps/v4/app/globals.css. This file IS the site's
- * CSS architecture: same import chain, same token map, same layers/utilities,
- * so any shadcn theme's CSS variables restyle this site with zero changes.
- * The consumer registry theme (@marko-ui/shadcn/styles/globals.css) is NOT
- * imported here — shadcn's site doesn't import its registry theme either; the
- * site defines its own tokens below, exactly as shadcn's does.
+ * The docs site imports its theme through the SAME package export a real
+ * @marko-ui/shadcn consumer would (@marko-ui/shadcn/styles/globals.css, per
+ * /docs/installation's own IMPORT_CSS_ENTRY sample) — not a hand-copied
+ * fork of shadcn's site tokens. This is a deliberate architecture change
+ * (2026-09-26, scratch/team-lead/briefs/docs-shipped-css.md): docs and a
+ * real user's app must never be able to render differently because a token,
+ * @custom-variant, or dark-mode rule was defined twice and drifted. Anything
+ * below this file's own token import (site-tokens.css) must be STRICTLY
+ * ADDITIVE site chrome — it must never redefine a token, @custom-variant, or
+ * restyle an `mu-*`/`data-slot` component class the shipped theme already
+ * owns. See notes/css-architecture.md and
+ * scratch/team-lead/reports/audit-docs-consumption.md for the full history.
  *
- * Deviations from the source, each marked with "DEVIATION:" inline:
+ * Deviations from a plain consumer setup, each marked with "DEVIATION:" inline:
  *   - Geist fonts come from @fontsource-variable (next/font is Next-only)
  *   - @source globs point at our .marko sources (no styles/base-* trees)
- *   - marko-accordion.css patch (Radix var -> Marko var, see that file)
  *   - .theme-marko brand palette (sanctioned extra theme)
  *   - scrollbar-none alias utility (our call sites use it)
  *   - style-<name> precompiled layers imported below (shadcn's site has no
@@ -17,19 +22,18 @@
  */
 @import "tailwindcss";
 @import "tw-animate-css";
-/* Vendored copy of shadcn's packages/shadcn/dist/tailwind.css (the npm
-   package's `shadcn/tailwind.css` export, v4.18.0) — copied, not depended
-   on, since this project must not depend on the React shadcn package. */
-@import "./shadcn-tailwind.css";
-@import "./legacy-themes.css";
-/* The design-token map (theme color mappings + light values + dark-scheme
-   overrides) lives in site-tokens.css — extracted from this file so the
-   chrome-free /bare Lighthouse fixtures (bare.css) can import the SAME
-   tokens without the docs site's chrome. Keep at-rule-looking tokens out of
-   this comment: Tailwind's import flattener scans structure without skipping
-   comments. Imports must stay in this block, above every other at-rule
+/* The shipped consumer theme — same tokens, @custom-variant data-* block,
+   dark-mode class, and base layer (border-border/outline-ring, bg-background/
+   text-foreground, .mu-font-heading) a real `shadcn add`-style install gets.
+   Imports must stay in this block, above every other at-rule
    (@custom-variant/@theme): CSS requires @import to precede all rules but
    @charset/@layer, and the Tailwind parser enforces it. */
+@import "@marko-ui/shadcn/styles/globals.css";
+@import "./vendor-utilities.css";
+@import "./legacy-themes.css";
+/* Site-only ADDITIVE tokens (fonts, breakpoints, docs-chrome surface/code/
+   selection) — never a token globals.css above already defines. See that
+   file's own header comment for the boundary rule. */
 @import "./site-tokens.css";
 /* DEVIATION: shadcn loads Geist/Geist Mono via next/font (lib/fonts.ts) and
    wires them to --font-sans/--font-heading/--font-mono html classes; we load
@@ -38,8 +42,12 @@
    [data-lang] rules below keep the var hooks and fall back to system fonts. */
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
-/* DEVIATION: measured-height accordion animation for accordion.marko. */
-@import "../../../packages/shadcn/styles/marko-accordion.css";
+/* Measured-height accordion animation is already in globals.css above (its
+   own header comment: "shared by the consumer theme and the docs site's
+   app.css — both must import it after tw-animate-css"). No separate import
+   needed here since globals.css is now imported directly; bare.css (which
+   doesn't import globals.css) still imports the standalone
+   packages/shadcn/styles/marko-accordion.css file. */
 @import "./tags/typeset/typeset.css";
 /* DEVIATION: the 8 precompiled `@marko-ui/shadcn` style layers (see
    the source style layers), one per shadcn style. Each
@@ -95,11 +103,11 @@
 @custom-variant style-sera (&:where(.style-sera *));
 @custom-variant style-rhea (&:where(.style-rhea *));
 
-@custom-variant dark (&:is(.dark *));
+/* @custom-variant dark comes from globals.css above — not redeclared here. */
 @custom-variant fixed (&:is(.layout-fixed *));
 
-/* The design-token map lives in site-tokens.css (imported in the @import
-   block above; @import must precede all other rules). */
+/* The site-only additive token map lives in site-tokens.css (imported in the
+   @import block above; @import must precede all other rules). */
 
 /* DEVIATION: Marko-brand color theme, toggled by the header palette switch.
    Recolored to the four accent hues from Marko's logomark
@@ -119,9 +127,14 @@
     scroll-padding-top: var(--header-height);
   }
 
-  * {
-    @apply border-border outline-ring/50;
-  }
+  /* `* { border-border outline-ring/50 }` and `body { bg-background
+     text-foreground }` come from globals.css's own @layer base above — not
+     redeclared here. That used to be a docs-only `text-foreground` patch on
+     `body` (nothing else in the cascade set a root text color, so plain text
+     fell through to the browser's UA-default black — invisible in light mode
+     by coincidence, wrong in dark mode). The shipped globals.css's `body {
+     @apply bg-background text-foreground }` already covers this for every
+     consumer, docs included, so the separate patch is gone. */
   ::selection {
     @apply bg-selection text-selection-foreground;
   }
@@ -129,26 +142,15 @@
     @apply overscroll-y-none;
   }
   body {
-    /* DEVIATION from shadcn's globals.css (which also omits this): nothing
-       anywhere in this cascade sets a root text color, so plain text and any
-       component relying on inherited `color` (e.g. Button's ghost/outline
-       variants, which only set `color` on hover) falls through to the
-       browser's UA-default black — invisible in light mode by coincidence
-       (--foreground is oklch(0% 0 0) there) but wrong in dark mode
-       (--foreground is near-white). Root-caused via notes/css-architecture.md
-       and this file's own `a { color: inherit }` preflight rule (confirmed
-       present, correctly layered `base`, and NOT the bug — the whole
-       ancestor chain up to <html> was black because nothing set a color to
-       inherit FROM). Fixing at the root, once, instead of adding a resting
-       color to every variant that happens to be missing one. */
-    @apply text-foreground;
     position: relative;
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
   }
-  .mu-font-heading {
-    @apply font-heading;
-  }
+  /* .mu-font-heading comes from globals.css's @layer components above — not
+     redeclared here. It used to be a docs-only @layer base rule, which is
+     exactly the bug globals.css's own comment documents: a base-layer rule
+     loses to any Tailwind font-* utility on the same element, silently
+     dropping the heading font. */
 
   [data-slot="layout"] {
     @apply overscroll-none;
