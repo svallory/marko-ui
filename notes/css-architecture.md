@@ -1,43 +1,73 @@
-# Docs-app CSS architecture (parity with shadcn.com)
+# Docs-app CSS architecture (parity with shadcn.com AND with a real consumer)
 
-Written 2026-08-14. `apps/docs/src/app.css` is a faithful port of shadcn's
-`apps/v4/app/globals.css` — same import chain, token map, layers, utilities —
-so any shadcn theme's CSS variables restyle the site with zero changes.
+Written 2026-08-14; superseded 2026-09-26 by
+`scratch/team-lead/briefs/docs-shipped-css.md` (the operator's explicit
+requirement: docs must consume `@marko-ui/shadcn` exactly like a real user's
+app does, so docs and a user's app can never render differently).
+`apps/docs/src/app.css` now imports the shipped theme via
+`@import "@marko-ui/shadcn/styles/globals.css"` — the same package export
+`/docs/installation` tells a real consumer to use — instead of hand-copying
+shadcn's site tokens into a parallel, independently-drifting file. Everything
+below `app.css`'s own theme import must be STRICTLY ADDITIVE site chrome: it
+must never redefine a token, `@custom-variant`, or restyle an `mu-*`/
+`data-slot` component class the shipped theme already owns. See
+`scratch/team-lead/reports/audit-docs-consumption.md` for the drift this
+caught (radius formula, `data-selected` variant, `.mu-font-heading` layer,
+chart palette, stale hover tokens on hand-rolled nav/sidebar links) and
+`report-docs-shipped-css.md` for the fix.
 
 ## The import chain
 
 ```
-tailwindcss → tw-animate-css → ./shadcn-tailwind.css (vendored)
-→ ./legacy-themes.css (copied verbatim) → @fontsource-variable/geist{,-mono}
-→ marko-accordion.css → typeset.css
+tailwindcss → tw-animate-css → @marko-ui/shadcn/styles/globals.css (shipped
+theme: tokens, @custom-variant data-*/dark, base layer, .mu-font-heading,
+accordion keyframes) → ./vendor-utilities.css (scroll-fade/shimmer, vendored
+generic Tailwind utilities with no token overlap) → ./legacy-themes.css
+(customizer theme swatches, scoped under .theme-<name>) → ./site-tokens.css
+(SITE-ONLY additive tokens: fonts, breakpoints, surface/code/selection)
+→ @fontsource-variable/geist{,-mono} → typeset.css
 ```
 
-- `shadcn-tailwind.css` is a byte-copy of the npm `shadcn` package's
-  `tailwind.css` export (v4.18.0): data-* custom variants, scroll-fade,
-  shimmer, accordion keyframes. We vendor it — this project must never depend
-  on the React shadcn package.
+- `vendor-utilities.css` (formerly `shadcn-tailwind.css`) keeps only the
+  generic utilities (scroll-fade, shimmer) upstream's npm `tailwind.css`
+  ships that have no shipped-theme equivalent. The token/@custom-variant
+  boilerplate it used to carry is gone — it duplicated `globals.css`
+  byte-for-byte except for one real bug (a narrower, un-widened
+  `data-selected` variant that could never match zag-js's `data-selected=""`).
 - Fonts: shadcn uses next/font (Geist / Geist Mono); we load the same faces
   from @fontsource-variable and define `--font-sans/--font-heading/--font-mono`
-  in `:root`. Noto Arabic/Hebrew are not loaded; the `[data-lang]` hooks remain.
+  in `:root` (now in `site-tokens.css`, a genuinely site-only token).
 
-## Two-layer split
+## The theme is shipped, not forked
 
 - `packages/shadcn/styles/globals.css` = the CONSUMER theme (what
-  `shadcn add` users get; additive radius scale, standard values).
-- `apps/docs/src/app.css` = the SITE css (shadcn's site tokens: pure-black
-  foreground/primary, blue-300..800 charts, MULTIPLICATIVE radius scale
-  sm→4xl = `--radius × 0.6…2.6`, surface/code/selection tokens, 3xl/4xl
-  breakpoints, `fixed` variant). The docs app does NOT import the consumer
-  theme — exactly like shadcn's site.
-- `marko-accordion.css` (measured-height accordion keyframes) is shared by
-  both via import; see its header for the Lightning-CSS keyframes-dedup trap.
+  `shadcn add` users get) — now ALSO what the docs site itself imports.
+  Radius scale is multiplicative (`--radius × 0.6…2.6`, sm through 4xl),
+  matching upstream's current CLI output (verified against
+  `data/shadcn-ui/packages/shadcn/src/utils/updaters/update-css-vars.ts` and
+  `data/shadcn-ui/apps/v4/app/globals.css`) — NOT the additive `-4px/+4px`
+  scale an earlier version of this file described; that scale only appears
+  in upstream's CLI test fixture for preserving a pre-existing user file, not
+  what a fresh init writes.
+- `site-tokens.css` = strictly ADDITIVE site-only tokens with no shipped
+  equivalent: fonts, `3xl`/`4xl` breakpoints, `surface`/`code*`/`selection*`
+  (docs-chrome syntax highlighting and prose selection). It must never
+  redeclare a token `globals.css` already owns.
+- `marko-accordion.css` (measured-height accordion keyframes) is inlined into
+  `globals.css` itself now, so `apps/docs/src/app.css` no longer imports it
+  separately; `bare.css` (which also now imports `globals.css` directly) gets
+  it the same way. The standalone file remains published for a consumer who
+  does NOT install the shipped theme at all.
 
 ## Non-obvious mechanics
 
-- Homepage charts are GRAY although `:root` chart vars are blue: the masonry
-  wrapper carries `theme-neutral`, and legacy-themes.css remaps `--chart-*`
-  inside it. Body carries `theme-default` (shadcn sets it via
-  ActiveThemeProvider; we set it statically).
+- `:root` chart vars are now GREY (the shipped theme's default, matching
+  upstream), not the blue site-only override an earlier version of this file
+  described — that blue `:root` copy in the old `site-tokens.css` was itself
+  one of the drift bugs this architecture change fixed (docs-shipped-css
+  audit finding 1.3). The masonry wrapper still carries `theme-neutral`
+  (legacy-themes.css remaps `--chart-*` inside it) and body still carries
+  `theme-default` — both unrelated customizer-preset mechanisms, unchanged.
 - `@source` globs MUST include `packages/shadcn` — a style-only utility that
   no scanned file uses is silently absent from the build (this bit us: cards
   rendered square/unpadded because the style layers weren't scanned). The
