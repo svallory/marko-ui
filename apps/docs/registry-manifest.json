@@ -253,7 +253,7 @@
     },
     {
       "path": "pagination.json",
-      "sha256": "4e0aacbbc183034cc04a8cac12dd1d64e3a66381098f490efced1c01af8898b4"
+      "sha256": "c21738e2d33dbb403b9db73fab00455c5b8cd82ebf44befd183db1ee9c4c82f7"
     },
     {
       "path": "password-input.json",
@@ -657,7 +657,7 @@
     },
     {
       "path": "styles/luma/pagination.json",
-      "sha256": "434abe02def773cc29d772b13b73bc5c4018f6702a933514dad01c2bdadcfa8b"
+      "sha256": "8d03feaecaeec8b0969789a592cdaed3b5bb41023d3b190f9f2c407f63c74e95"
     },
     {
       "path": "styles/luma/password-input.json",
@@ -1001,7 +1001,7 @@
     },
     {
       "path": "styles/lyra/pagination.json",
-      "sha256": "3413b70abb777809e85fcfab09ab9f1cb84341d8a9715a019580a0bc77f42dbe"
+      "sha256": "4af3b26d3d4efe328a0ec50716cdd0f79deb7b5abd8a3a633b8acff83e41d27a"
     },
     {
       "path": "styles/lyra/password-input.json",
@@ -1345,7 +1345,7 @@
     },
     {
       "path": "styles/maia/pagination.json",
-      "sha256": "21bee5a3dca36f20575cc8011366e6099ca28b0bd86865fbcc07682bd1257e07"
+      "sha256": "c3b47ba05ff8f47f5d0819dbbcd3032054f54d8d44cf533c3f55218924ec22c0"
     },
     {
       "path": "styles/maia/password-input.json",
@@ -1689,7 +1689,7 @@
     },
     {
       "path": "styles/mira/pagination.json",
-      "sha256": "a6e544dbd11592f8f617453393cc147dc7bfdd7f1e66e3a4fb5a877ed43b6603"
+      "sha256": "84f8b5dec12cac6112eea0b7965b42ccc0ea779a2ddcfbe3544f0e0108d883e7"
     },
     {
       "path": "styles/mira/password-input.json",
@@ -2033,7 +2033,7 @@
     },
     {
       "path": "styles/nova/pagination.json",
-      "sha256": "7fb3501999d343c62ef87d30f8d40dc7f967b222ed6b9755386ab411a3a540ec"
+      "sha256": "1f246b03127bd667601a605f9c695167724e58c1ff26d70c4b7bd8a164f72ee6"
     },
     {
       "path": "styles/nova/password-input.json",
@@ -2377,7 +2377,7 @@
     },
     {
       "path": "styles/rhea/pagination.json",
-      "sha256": "3e980ade4bdec8fc31d6283015120258bbf49069b96180bf3159cc3e1724c20c"
+      "sha256": "e4ac604b720b4fb94df0db6f3f244d536bd608199d1f904fbe0c0cb20856b349"
     },
     {
       "path": "styles/rhea/password-input.json",
@@ -2721,7 +2721,7 @@
     },
     {
       "path": "styles/sera/pagination.json",
-      "sha256": "5b9659a3dc53272d90d0fc34dd62db6c7fa090dc3d66ce3d365627c9ee0229b1"
+      "sha256": "9308a6f03037266302fc47de096efa6a9d992ab008c1ccd5104e1ef175409cd7"
     },
     {
       "path": "styles/sera/password-input.json",
@@ -3065,7 +3065,7 @@
     },
     {
       "path": "styles/vega/pagination.json",
-      "sha256": "d0e2d2dc7a220e3b1079c5e54f4b86724f8004e9680845b4a5cfe7a5396feb33"
+      "sha256": "b76c64c532d210ef2ae03478c31b23b226c9a866e3c9cd8d62cddac473b339d6"
     },
     {
       "path": "styles/vega/password-input.json",
