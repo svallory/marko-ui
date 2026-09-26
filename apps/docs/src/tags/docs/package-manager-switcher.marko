@@ -25,6 +25,12 @@ export interface Input {
 }
 
 static const STORAGE_KEY = "marko-ui.packageManager";
+// `storage` only fires in OTHER documents (tabs/windows), never in the one
+// that called setItem — same-page sync (multiple switchers on one page,
+// e.g. /docs/components/button's CLI panel + dependency-install panel)
+// needs a same-document signal too. A CustomEvent on `window` carrying the
+// new manager covers that; `storage` stays for cross-tab.
+static const SYNC_EVENT = "marko-ui:package-manager-change";
 
 // Server render shows the first entry; a client effect swaps in the stored
 // choice after resumption.
@@ -42,17 +48,23 @@ static const STORAGE_KEY = "marko-ui.packageManager";
   }
 
   // Keep every switcher on the page (and other tabs) in agreement.
-  const handleStorage = (storageEvent: StorageEvent) => {
-    if (
-      storageEvent.key === STORAGE_KEY &&
-      storageEvent.newValue &&
-      input.commands.some((entry) => entry.manager === storageEvent.newValue)
-    ) {
-      manager = storageEvent.newValue;
+  const applyManager = (candidate: string | null | undefined) => {
+    if (candidate && input.commands.some((entry) => entry.manager === candidate)) {
+      manager = candidate;
     }
   };
+  const handleStorage = (storageEvent: StorageEvent) => {
+    if (storageEvent.key === STORAGE_KEY) applyManager(storageEvent.newValue);
+  };
+  const handleSync = (syncEvent: Event) => {
+    applyManager((syncEvent as CustomEvent<string>).detail);
+  };
   window.addEventListener("storage", handleStorage);
-  $signal.onabort = () => window.removeEventListener("storage", handleStorage);
+  window.addEventListener(SYNC_EVENT, handleSync);
+  $signal.onabort = () => {
+    window.removeEventListener("storage", handleStorage);
+    window.removeEventListener(SYNC_EVENT, handleSync);
+  };
 </script>
 
 <div
@@ -71,6 +83,7 @@ static const STORAGE_KEY = "marko-ui.packageManager";
         } catch {
           // Private-mode / blocked storage: the choice just does not persist.
         }
+        window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: next }));
       }
       class="overflow-x-auto"
     >

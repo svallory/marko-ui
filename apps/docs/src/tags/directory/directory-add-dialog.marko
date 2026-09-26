@@ -23,6 +23,11 @@ export interface Input {
 
 static const MANAGERS = ["bun", "pnpm", "npm", "yarn"] as const;
 static const STORAGE_KEY = "marko-ui.packageManager";
+// Same key <package-manager-switcher> uses; dispatch its same-document sync
+// event too so a switcher already on the page (unlikely to coexist with this
+// dialog today, but the two share storage and should share the signal) picks
+// up the change immediately instead of waiting for a reload.
+static const SYNC_EVENT = "marko-ui:package-manager-change";
 
 static function commandFor(manager: string, registryName: string) {
   switch (manager) {
@@ -84,6 +89,7 @@ static function commandFor(manager: string, registryName: string) {
                 } catch {
                   // Private-mode / blocked storage: the choice just does not persist.
                 }
+                window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: m }));
               }
             >
               ${m}
