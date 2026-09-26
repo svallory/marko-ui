@@ -2,14 +2,17 @@
 // in localStorage so it survives navigation between component pages — the
 // behaviour of shadcn's `useConfig().packageManager`.
 //
-// Deliberately NOT the <Tabs> component: this needs to render every command
-// server-side and pick one in the browser, so an SSR-inert Zag machine would
-// mean the wrong manager flashes before hydration. Plain buttons + [hidden]
-// keep the correct choice a one-frame DOM toggle.
+// The pill row is <ToggleGroup> (a Zag machine, single-select/non-deselectable
+// radiogroup semantics); the panels stay a plain reactive [hidden] swap, not
+// <Tabs>: every command panel has its own SSR-time shiki <await>, and all of
+// them render server-side regardless of which manager is selected — there is
+// nothing here for a second machine to own.
 //
 // Commands are shell one-liners, highlighted as bash via SSR-time shiki
 // (src/lib/highlight-code.ts).
 import { highlightCode } from "../../lib/highlight-code.ts";
+import ToggleGroup from "@marko-ui/shadcn/ui/toggle-group/toggle-group.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
 
 export interface PackageManagerCommand {
   manager: string;
@@ -21,117 +24,102 @@ export interface Input {
   class?: string;
 }
 
-// Server render shows the first entry; onMount swaps in the stored choice.
+static const STORAGE_KEY = "marko-ui.packageManager";
+// `storage` only fires in OTHER documents (tabs/windows), never in the one
+// that called setItem — same-page sync (multiple switchers on one page,
+// e.g. /docs/components/button's CLI panel + dependency-install panel)
+// needs a same-document signal too. A CustomEvent on `window` carrying the
+// new manager covers that; `storage` stays for cross-tab.
+static const SYNC_EVENT = "marko-ui:package-manager-change";
+
+// Server render shows the first entry; a client effect swaps in the stored
+// choice after resumption.
 <const/defaultManager=input.commands[0]?.manager ?? ""/>
+<let/manager=defaultManager/>
+<let/hasCopied=false/>
+<let/copyTimer=(null as ReturnType<typeof setTimeout> | null)/>
 
-<id/switcherId/>
+<script>
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored && input.commands.some((entry) => entry.manager === stored)) manager = stored;
+  } catch {
+    // Blocked storage: keep the server-rendered default.
+  }
 
-<div/switcherEl
+  // Keep every switcher on the page (and other tabs) in agreement.
+  const applyManager = (candidate: string | null | undefined) => {
+    if (candidate && input.commands.some((entry) => entry.manager === candidate)) {
+      manager = candidate;
+    }
+  };
+  const handleStorage = (storageEvent: StorageEvent) => {
+    if (storageEvent.key === STORAGE_KEY) applyManager(storageEvent.newValue);
+  };
+  const handleSync = (syncEvent: Event) => {
+    applyManager((syncEvent as CustomEvent<string>).detail);
+  };
+  window.addEventListener("storage", handleStorage);
+  window.addEventListener(SYNC_EVENT, handleSync);
+  $signal.onabort = () => {
+    window.removeEventListener("storage", handleStorage);
+    window.removeEventListener(SYNC_EVENT, handleSync);
+  };
+</script>
+
+<div
   class=`group relative my-4 overflow-hidden rounded-lg border border-border bg-muted/40 ${input.class ?? ""}`
   data-slot="package-manager-switcher"
   data-default-manager=defaultManager
 >
   <div class="flex items-center justify-between gap-2 border-b border-border pr-2">
-    <div class="flex items-center overflow-x-auto" role="tablist" aria-label="Package manager">
-      <for|entry| of=input.commands by=(entry) => entry.manager>
-        <button
-          type="button"
-          role="tab"
-          data-manager-tab
-          data-manager=entry.manager
-          aria-selected=(entry.manager === defaultManager ? "true" : "false")
-          aria-controls=`${switcherId}-${entry.manager}`
-          class="border-b-2 border-transparent px-3 py-2 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground aria-selected:border-foreground aria-selected:text-foreground"
-        >
-          ${entry.manager}
-        </button>
+    <ToggleGroup value=[manager] deselectable=false
+      valueChange(value) {
+        const next = value[0];
+        if (!next) return;
+        manager = next;
+        try {
+          localStorage.setItem(STORAGE_KEY, next);
+        } catch {
+          // Private-mode / blocked storage: the choice just does not persist.
+        }
+        window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: next }));
+      }
+      class="overflow-x-auto"
+    >
+      <for|entry| of=input.commands>
+        <@item value=entry.manager>${entry.manager}</@item>
       </for>
-    </div>
-    <button
+    </ToggleGroup>
+    <Button
       type="button"
+      variant="outline"
+      size="xs"
       data-manager-copy
       aria-label="Copy command"
-      class="shrink-0 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+      class="shrink-0 bg-background"
+      onClick() {
+        const entry = input.commands.find((candidate) => candidate.manager === manager);
+        navigator.clipboard.writeText(entry?.command ?? "").then(() => {
+          hasCopied = true;
+          if (copyTimer) clearTimeout(copyTimer);
+          copyTimer = setTimeout(() => { hasCopied = false; }, 1500);
+        });
+      }
     >
-      Copy
-    </button>
+      <if=hasCopied>Copied</if>
+      <else>Copy</else>
+    </Button>
   </div>
 
   <for|entry| of=input.commands by=(entry) => entry.manager>
     <await|highlighted|=highlightCode(entry.command, "bash")>
       <pre
-        id=`${switcherId}-${entry.manager}`
-        role="tabpanel"
         data-manager-panel
         data-manager=entry.manager
-        hidden=entry.manager !== defaultManager
+        hidden=entry.manager !== manager
         class="overflow-x-auto p-4 text-[0.8125rem] leading-6"
       ><code class="font-mono whitespace-pre">$!{highlighted}</code></pre>
     </await>
   </for>
 </div>
-
-<let/onStorage=(null as ((storageEvent: StorageEvent) => void) | null)/>
-
-<lifecycle
-  onMount() {
-    const root = switcherEl();
-    if (!root) return;
-
-    const STORAGE_KEY = "marko-ui.packageManager";
-    const tabs = Array.from(root.querySelectorAll<HTMLElement>("[data-manager-tab]"));
-    const panels = Array.from(root.querySelectorAll<HTMLElement>("[data-manager-panel]"));
-    const known = tabs.map((tab) => tab.getAttribute("data-manager"));
-
-    const select = (manager: string) => {
-      if (!known.includes(manager)) return;
-      tabs.forEach((tab) => {
-        tab.setAttribute("aria-selected", String(tab.getAttribute("data-manager") === manager));
-      });
-      panels.forEach((panel) => {
-        panel.hidden = panel.getAttribute("data-manager") !== manager;
-      });
-    };
-
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        const manager = tab.getAttribute("data-manager");
-        if (!manager) return;
-        select(manager);
-        try {
-          localStorage.setItem(STORAGE_KEY, manager);
-        } catch {
-          // Private-mode / blocked storage: the choice just does not persist.
-        }
-      });
-    });
-
-    const copyButton = root.querySelector<HTMLElement>("[data-manager-copy]");
-    copyButton?.addEventListener("click", () => {
-      const panel = panels.find((candidate) => !candidate.hidden);
-      navigator.clipboard.writeText(panel?.textContent?.trim() ?? "").then(() => {
-        copyButton.textContent = "Copied";
-        setTimeout(() => {
-          copyButton.textContent = "Copy";
-        }, 1500);
-      });
-    });
-
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) select(stored);
-    } catch {
-      // Ignore: fall back to the server-rendered default.
-    }
-
-    // Keep every switcher on the page (and other tabs) in agreement.
-    const handleStorage = (storageEvent: StorageEvent) => {
-      if (storageEvent.key === STORAGE_KEY && storageEvent.newValue) select(storageEvent.newValue);
-    };
-    onStorage = handleStorage;
-    window.addEventListener("storage", handleStorage);
-  }
-  onDestroy() {
-    if (onStorage) window.removeEventListener("storage", onStorage);
-  }
-/>

@@ -2,10 +2,15 @@
 // shadcn CLI invocation per package manager; Manual shows numbered steps with
 // every source file the CLI would have written.
 //
-// Like <package-manager-switcher>, the tab choice is a persisted DOM toggle
-// rather than a Zag machine, so both panels are server-rendered and indexable.
+// Unlike <package-manager-switcher>, this one's panels are static markup
+// (no SSR-time <await>), so the <Tabs> library component's Zag machine can
+// own the tab state directly — every panel still server-renders (Zag hides
+// the inactive one via `hidden`, not by omitting it), and the choice is
+// persisted to localStorage via a client effect that seeds `value` from the
+// stored method after resumption.
 import "./package-manager-switcher.marko";
 import "./expandable-code.marko";
+import Tabs from "@marko-ui/shadcn/ui/tabs/tabs.marko";
 import type { RegistrySourceFile } from "../../demos/demos-manifest.ts";
 import type { PackageManagerCommand } from "./package-manager-switcher.marko";
 
@@ -32,107 +37,66 @@ export interface Input {
   { manager: "yarn", command: `yarn add ${input.dependencies.join(" ")}` },
 ] as PackageManagerCommand[]/>
 
-<id/cliPanelId/>
-<id/manualPanelId/>
+<let/method="cli"/>
 
-<div/installEl data-slot="install-tabs" class="my-4">
-  <div class="flex items-center gap-1 border-b border-border" role="tablist" aria-label="Installation method">
-    <button
-      type="button"
-      role="tab"
-      data-install-tab
-      data-method="cli"
-      aria-selected="true"
-      aria-controls=cliPanelId
-      class="border-b-2 border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground aria-selected:border-foreground aria-selected:text-foreground"
-    >
-      Command
-    </button>
-    <button
-      type="button"
-      role="tab"
-      data-install-tab
-      data-method="manual"
-      aria-selected="false"
-      aria-controls=manualPanelId
-      class="border-b-2 border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground aria-selected:border-foreground aria-selected:text-foreground"
-    >
-      Manual
-    </button>
-  </div>
+static const STORAGE_KEY = "marko-ui.installationType";
 
-  <div id=cliPanelId role="tabpanel" data-install-panel data-method="cli">
-    <package-manager-switcher commands=commands/>
-  </div>
-
-  <div id=manualPanelId role="tabpanel" data-install-panel data-method="manual" hidden>
-    <!-- Numbered steps, counter-driven so inserting a step needs no renumbering. -->
-    <ol class="mt-4 space-y-6 [counter-reset:step] [&>li]:relative [&>li]:pl-9">
-      <if=dependencyCommands.length !== 0>
-        <li class="before:absolute before:left-0 before:top-0 before:flex before:h-6 before:w-6 before:items-center before:justify-center before:rounded-full before:border before:border-border before:bg-muted before:text-xs before:font-medium before:[counter-increment:step] before:[content:counter(step)]">
-          <h3 class="text-sm font-semibold text-foreground">Install dependencies</h3>
-          <package-manager-switcher commands=dependencyCommands/>
-        </li>
-      </if>
-
-      <li class="before:absolute before:left-0 before:top-0 before:flex before:h-6 before:w-6 before:items-center before:justify-center before:rounded-full before:border before:border-border before:bg-muted before:text-xs before:font-medium before:[counter-increment:step] before:[content:counter(step)]">
-        <h3 class="text-sm font-semibold text-foreground">
-          Copy and paste the following code into your project
-        </h3>
-        <for|file| of=input.files by=(file) => file.path>
-          <expandable-code code=file.content filename=file.path/>
-        </for>
-      </li>
-
-      <li class="before:absolute before:left-0 before:top-0 before:flex before:h-6 before:w-6 before:items-center before:justify-center before:rounded-full before:border before:border-border before:bg-muted before:text-xs before:font-medium before:[counter-increment:step] before:[content:counter(step)]">
-        <h3 class="text-sm font-semibold text-foreground">Update the import paths</h3>
-        <p class="mt-2 text-sm text-muted-foreground">
-          The snippets above use the paths the CLI would have written. Adjust them to match
-          where your project keeps its components and its
-          <code class="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">lib/utils.ts</code>.
-        </p>
-      </li>
-    </ol>
-  </div>
-</div>
-
-<lifecycle
-  onMount() {
-    const root = installEl();
-    if (!root) return;
-
-    const STORAGE_KEY = "marko-ui.installationType";
-    const tabs = Array.from(root.querySelectorAll<HTMLElement>("[data-install-tab]"));
-    const panels = Array.from(root.querySelectorAll<HTMLElement>("[data-install-panel]"));
-
-    const select = (method: string) => {
-      if (!tabs.some((tab) => tab.getAttribute("data-method") === method)) return;
-      tabs.forEach((tab) => {
-        tab.setAttribute("aria-selected", String(tab.getAttribute("data-method") === method));
-      });
-      panels.forEach((panel) => {
-        panel.hidden = panel.getAttribute("data-method") !== method;
-      });
-    };
-
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        const method = tab.getAttribute("data-method");
-        if (!method) return;
-        select(method);
-        try {
-          localStorage.setItem(STORAGE_KEY, method);
-        } catch {
-          // Blocked storage: the choice simply does not persist.
-        }
-      });
-    });
-
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) select(stored);
-    } catch {
-      // Ignore: keep the server-rendered default.
-    }
+<script>
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === "cli" || stored === "manual") method = stored;
+  } catch {
+    // Blocked storage: keep the server-rendered default.
   }
-/>
+</script>
+
+<div data-slot="install-tabs" class="my-4">
+  <Tabs value=method
+    translations={ listLabel: "Installation method" }
+    valueChange(value) {
+      method = value;
+      try {
+        localStorage.setItem(STORAGE_KEY, value);
+      } catch {
+        // Blocked storage: the choice simply does not persist.
+      }
+    }
+  >
+    <@trigger value="cli">Command</@trigger>
+    <@trigger value="manual">Manual</@trigger>
+
+    <@panel value="cli">
+      <package-manager-switcher commands=commands/>
+    </@panel>
+
+    <@panel value="manual">
+      <!-- Numbered steps, counter-driven so inserting a step needs no renumbering. -->
+      <ol class="mt-4 space-y-6 [counter-reset:step] [&>li]:relative [&>li]:pl-9">
+        <if=dependencyCommands.length !== 0>
+          <li class="before:absolute before:left-0 before:top-0 before:flex before:h-6 before:w-6 before:items-center before:justify-center before:rounded-full before:border before:border-border before:bg-muted before:text-xs before:font-medium before:[counter-increment:step] before:[content:counter(step)]">
+            <h3 class="text-sm font-semibold text-foreground">Install dependencies</h3>
+            <package-manager-switcher commands=dependencyCommands/>
+          </li>
+        </if>
+
+        <li class="before:absolute before:left-0 before:top-0 before:flex before:h-6 before:w-6 before:items-center before:justify-center before:rounded-full before:border before:border-border before:bg-muted before:text-xs before:font-medium before:[counter-increment:step] before:[content:counter(step)]">
+          <h3 class="text-sm font-semibold text-foreground">
+            Copy and paste the following code into your project
+          </h3>
+          <for|file| of=input.files by=(file) => file.path>
+            <expandable-code code=file.content filename=file.path/>
+          </for>
+        </li>
+
+        <li class="before:absolute before:left-0 before:top-0 before:flex before:h-6 before:w-6 before:items-center before:justify-center before:rounded-full before:border before:border-border before:bg-muted before:text-xs before:font-medium before:[counter-increment:step] before:[content:counter(step)]">
+          <h3 class="text-sm font-semibold text-foreground">Update the import paths</h3>
+          <p class="mt-2 text-sm text-muted-foreground">
+            The snippets above use the paths the CLI would have written. Adjust them to match
+            where your project keeps its components and its
+            <code class="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">lib/utils.ts</code>.
+          </p>
+        </li>
+      </ol>
+    </@panel>
+  </Tabs>
+</div>

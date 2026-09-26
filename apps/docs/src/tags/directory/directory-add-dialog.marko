@@ -23,6 +23,11 @@ export interface Input {
 
 static const MANAGERS = ["bun", "pnpm", "npm", "yarn"] as const;
 static const STORAGE_KEY = "marko-ui.packageManager";
+// Same key <package-manager-switcher> uses; dispatch its same-document sync
+// event too so a switcher already on the page (unlikely to coexist with this
+// dialog today, but the two share storage and should share the signal) picks
+// up the change immediately instead of waiting for a reload.
+static const SYNC_EVENT = "marko-ui:package-manager-change";
 
 static function commandFor(manager: string, registryName: string) {
   switch (manager) {
@@ -69,12 +74,14 @@ static function commandFor(manager: string, registryName: string) {
       <div class="flex items-center gap-2 border-b p-1.5">
         <div role="tablist" aria-label="Package manager" class="flex items-center">
           <for|m| of=MANAGERS by=(m) => m>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="xs"
               role="tab"
               data-slot="tabs-trigger"
               aria-selected=(m === manager ? "true" : "false")
-              class="rounded-md px-3 py-1 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground aria-selected:bg-muted aria-selected:text-foreground"
+              class="font-mono aria-selected:bg-muted aria-selected:text-foreground"
               onClick() {
                 manager = m;
                 try {
@@ -82,10 +89,11 @@ static function commandFor(manager: string, registryName: string) {
                 } catch {
                   // Private-mode / blocked storage: the choice just does not persist.
                 }
+                window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: m }));
               }
             >
               ${m}
-            </button>
+            </Button>
           </for>
         </div>
         <Button type="button"

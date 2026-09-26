@@ -1,14 +1,17 @@
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+
 <let/isDark=false/>
 
 <script>
   isDark = document.documentElement.classList.contains("dark");
 </script>
 
-<button
+<Button
   type="button"
+  variant="ghost"
+  size="icon"
   data-slot="theme-toggle"
   aria-label="Toggle theme"
-  class="inline-flex size-8 items-center justify-center rounded-md text-foreground outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
   onClick() {
     const nextIsDark = !document.documentElement.classList.contains("dark");
     document.documentElement.classList.toggle("dark", nextIsDark);
@@ -59,4 +62,4 @@
     </svg>
   </else>
   <span class="sr-only">Toggle theme</span>
-</button>
+</Button>
