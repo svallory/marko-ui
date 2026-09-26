@@ -293,7 +293,7 @@
     },
     {
       "path": "scroll-area.json",
-      "sha256": "1746a4347ec79a55eff8d158019d653e63411f91aeaddb33332f3bce36d4a9de"
+      "sha256": "cbacf04a9b993cd45f63d54d4999a759dd79141c64440284a8150ed6b117dbf9"
     },
     {
       "path": "select.json",
@@ -689,7 +689,7 @@
     },
     {
       "path": "styles/luma/scroll-area.json",
-      "sha256": "68a06135e8840377cc998d3854d20231bd3562aa51fce989b00942c8850b6030"
+      "sha256": "5a64a5cfe859da7f223feba73b69b834fe3a80df703b40f063263a964cc0e454"
     },
     {
       "path": "styles/luma/select.json",
@@ -1033,7 +1033,7 @@
     },
     {
       "path": "styles/lyra/scroll-area.json",
-      "sha256": "0090568dd50b06e86c2b065a9e95947e496a3f6897e27491b6e911d281904293"
+      "sha256": "e0b6c44e6b331c5ac6c69f7d161a67508b0996edf9b16e5d7421aede9926468a"
     },
     {
       "path": "styles/lyra/select.json",
@@ -1377,7 +1377,7 @@
     },
     {
       "path": "styles/maia/scroll-area.json",
-      "sha256": "68a06135e8840377cc998d3854d20231bd3562aa51fce989b00942c8850b6030"
+      "sha256": "5a64a5cfe859da7f223feba73b69b834fe3a80df703b40f063263a964cc0e454"
     },
     {
       "path": "styles/maia/select.json",
@@ -1721,7 +1721,7 @@
     },
     {
       "path": "styles/mira/scroll-area.json",
-      "sha256": "68a06135e8840377cc998d3854d20231bd3562aa51fce989b00942c8850b6030"
+      "sha256": "5a64a5cfe859da7f223feba73b69b834fe3a80df703b40f063263a964cc0e454"
     },
     {
       "path": "styles/mira/select.json",
@@ -2065,7 +2065,7 @@
     },
     {
       "path": "styles/nova/scroll-area.json",
-      "sha256": "68a06135e8840377cc998d3854d20231bd3562aa51fce989b00942c8850b6030"
+      "sha256": "5a64a5cfe859da7f223feba73b69b834fe3a80df703b40f063263a964cc0e454"
     },
     {
       "path": "styles/nova/select.json",
@@ -2409,7 +2409,7 @@
     },
     {
       "path": "styles/rhea/scroll-area.json",
-      "sha256": "68a06135e8840377cc998d3854d20231bd3562aa51fce989b00942c8850b6030"
+      "sha256": "5a64a5cfe859da7f223feba73b69b834fe3a80df703b40f063263a964cc0e454"
     },
     {
       "path": "styles/rhea/select.json",
@@ -2753,7 +2753,7 @@
     },
     {
       "path": "styles/sera/scroll-area.json",
-      "sha256": "0090568dd50b06e86c2b065a9e95947e496a3f6897e27491b6e911d281904293"
+      "sha256": "e0b6c44e6b331c5ac6c69f7d161a67508b0996edf9b16e5d7421aede9926468a"
     },
     {
       "path": "styles/sera/select.json",
@@ -3097,7 +3097,7 @@
     },
     {
       "path": "styles/vega/scroll-area.json",
-      "sha256": "68a06135e8840377cc998d3854d20231bd3562aa51fce989b00942c8850b6030"
+      "sha256": "5a64a5cfe859da7f223feba73b69b834fe3a80df703b40f063263a964cc0e454"
     },
     {
       "path": "styles/vega/select.json",

@@ -63,15 +63,33 @@ export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
   // Radix's ScrollAreaScrollbar renders nothing at all when its axis has no
   // overflow (verified against registry/new-york-v4/ui/scroll-area.tsx — the
   // upstream port target). @zag-js/scroll-area's getScrollbarProps() has no
-  // equivalent: it always returns real props, leaving the empty scrollbar
-  // track/thumb in the DOM with hiddenState carried only via `hidden` on
-  // getScrollbarState() and the `data-overflow-*` data attributes elsewhere.
-  // Without gating on it here, the empty thumb's `mu-scroll-area-thumb`
-  // `flex-1` still wins over its own inline `width: var(--thumb-width, 0px)`
-  // (flex-basis takes precedence over `width` on a flex item), so a
-  // full-track, zero-content thumb renders as a stray pill even with no
-  // overflow — reproduced on /blocks and /charts category nav.
-  <if=(input.vertical ?? true) && !api().getScrollbarState({ orientation: "vertical" }).hidden>
+  // equivalent: it always returns real props, and hiddenState is exposed
+  // only through JS state (getScrollbarState().hidden) and the
+  // `data-overflow-x`/`data-overflow-y` data attributes it puts on the
+  // scrollbar/thumb/viewport/content/corner elements — never as a DOM-gate
+  // signal. Gating the scrollbar/thumb's presence in the template on that
+  // JS state (as this file used to) makes SSR and hydration render a
+  // DIFFERENT PART COUNT: hiddenState starts as "not hidden" until the
+  // machine's first (always-async — see scroll-area.machine's
+  // ResizeObserver + setTimeout) measurement runs, so a never-overflowing
+  // rail renders its scrollbar+thumb during SSR (where the measurement
+  // never runs at all) and again briefly on first client render, then
+  // removes them once the real measurement lands — a genuine SSR/hydration
+  // DOM mismatch, not just a visual flash (broke
+  // packages/shadcn/tests/hydration-invariant.test.ts's scroll-area case).
+  //
+  // Fixed by keeping the DOM identical between SSR and every client
+  // render — scrollbar/thumb are ALWAYS mounted per axis flag — and hiding
+  // the no-overflow case purely via CSS, keyed off the same
+  // `data-overflow-x`/`data-overflow-y` attributes getScrollbarProps()
+  // already emits (present when that axis overflows, absent otherwise —
+  // see mu-scroll-area-scrollbar's `not-data-[overflow-y]:hidden` /
+  // `not-data-[overflow-x]:hidden` per style layer). The thumb's own
+  // flex-none sizing (see classes.ts) still matters independently: it's
+  // what keeps an unmeasured/zero-size thumb from visually filling the
+  // track for the one frame between mount and the first real measurement,
+  // on an axis that WILL end up overflowing.
+  <if=input.vertical ?? true>
     <div
       ...api().getScrollbarProps({ orientation: "vertical" })
       data-slot="scroll-area-scrollbar"
@@ -85,7 +103,7 @@ export type Input = MachineInput<"div", scrollAreaMachine.Props> & {
     </div>
   </if>
 
-  <if=input.horizontal && !api().getScrollbarState({ orientation: "horizontal" }).hidden>
+  <if=input.horizontal>
     <div
       ...api().getScrollbarProps({ orientation: "horizontal" })
       data-slot="scroll-area-scrollbar"
