@@ -15,11 +15,17 @@ import { configFor, seriesColor, type ChartConfig } from "./config.ts";
 import {
   cartesianCtx,
   linePath,
+  plotGeometry,
   thinTicksByGap,
+  xTicks,
+  yTicks,
   type CartesianCtx,
   type CurveType,
   type Margin,
+  type PlotGeometry,
   type Row,
+  type XTick,
+  type YTick,
 } from "./math.ts";
 import { cn } from "#lib/utils.ts";
 import { line as styles } from "./classes.ts";
@@ -195,6 +201,84 @@ static function buildTooltipRows(
   );
 }
 
+export interface LineChartGeometry {
+  centers: number[];
+  renderSeries: SeriesRender[];
+  ticks: { value: string; x: number }[];
+  legendItems: { key: string; label: string; color: string }[];
+  plot: PlotGeometry;
+  cursorPaths: string[];
+  leftPcts: number[];
+  tooltipRows: TooltipRowData[][];
+  xLabels: string[];
+  geo: PointerGeo;
+  gridVerticalTicks: XTick[];
+  gridHorizontalTicks: YTick[];
+  yAxisTicks: YTick[];
+}
+
+// One entry point for the whole d3-backed layout: `cartesianCtx()`'s `ctx`
+// (holding live, unserializable d3 scale functions `xBand`/`y`) lives only
+// in this function's local scope and is never returned or assigned to a
+// Marko `<const>` — a `<const>` in a resumable component scope (this
+// component has hover `<let>` state) gets serialized in full whether or
+// not any markup/handler actually reads it downstream, so `ctx` itself
+// must never become a template variable. Every field below is plain data.
+static function buildLineChartGeometry(
+  config: ChartConfig,
+  data: Row[],
+  xKey: string,
+  seriesList: LineSeriesAttrs[],
+  seriesKeys: string[],
+  width: number,
+  height: number,
+  margin: Margin,
+  formatter: ((value: string) => string) | undefined,
+  xTickMinGap: number | undefined,
+  tooltipLabelFormatter: ((value: string) => string) | undefined,
+): LineChartGeometry {
+  const ctx = cartesianCtx({
+    data,
+    xKey,
+    seriesKeys,
+    width,
+    height,
+    margin,
+    xAxisHeight: X_AXIS_HEIGHT,
+    paddingInner: 0,
+    paddingOuter: 0,
+  });
+  const centers = pointPositions(ctx, data.length);
+  const renderSeries = buildSeries(seriesList, data, centers, ctx.y);
+  const allTicks = data.map((row, index) => ({
+    value: formatter ? formatter(String(row[xKey])) : String(row[xKey]),
+    x: centers[index] ?? 0,
+  }));
+  const ticks = xTickMinGap ? thinTicksByGap(allTicks, xTickMinGap) : allTicks;
+  const plot = plotGeometry(ctx);
+  return {
+    centers,
+    renderSeries,
+    ticks,
+    legendItems: seriesList.map((series) => ({
+      key: series.dataKey,
+      label: labelOf(config, series.dataKey),
+      color: seriesColor(series.dataKey),
+    })),
+    plot,
+    cursorPaths: centers.map((x) => `M ${x},${plot.y} L ${x},${plot.y + plot.height}`),
+    leftPcts: centers.map((x) => Math.min(88, Math.max(12, (x / width) * 100))),
+    tooltipRows: buildTooltipRows(seriesList, data, config),
+    xLabels: data.map((row) =>
+      tooltipLabelFormatter ? tooltipLabelFormatter(String(row[xKey])) : String(row[xKey]),
+    ),
+    geo: { width, plotX: plot.x, plotWidth: plot.width, count: data.length },
+    gridVerticalTicks: xTicks(ctx),
+    gridHorizontalTicks: yTicks(ctx),
+    yAxisTicks: yTicks(ctx),
+  };
+}
+
 <const/{ config, data, xKey, class: className }=input/>
 <const/seriesList=[...(input.series ?? [])]/>
 <const/seriesKeys=seriesList.map((series) => series.dataKey)/>
@@ -210,29 +294,35 @@ static function buildTooltipRows(
 <const/hideLabel=input.hideLabel/>
 <const/formatter=input.xTickFormatter/>
 
-<const/ctx=cartesianCtx({
+// The d3-backed geometry build lives entirely inside one static function —
+// see its doc comment for why `ctx` must never become a Marko `<const>`.
+<const/{
+  centers,
+  renderSeries,
+  ticks,
+  legendItems,
+  plot,
+  cursorPaths,
+  leftPcts,
+  tooltipRows,
+  xLabels,
+  geo,
+  gridVerticalTicks,
+  gridHorizontalTicks,
+  yAxisTicks,
+}=buildLineChartGeometry(
+  config,
   data,
   xKey,
+  seriesList,
   seriesKeys,
   width,
   height,
   margin,
-  xAxisHeight: X_AXIS_HEIGHT,
-  paddingInner: 0,
-  paddingOuter: 0,
-})/>
-<const/centers=pointPositions(ctx, data.length)/>
-<const/renderSeries=buildSeries(seriesList, data, centers, ctx.y)/>
-<const/allTicks=data.map((row, index) => ({ value: (formatter ? formatter(String(row[xKey])) : String(row[xKey])), x: centers[index] ?? 0 }))/>
-<const/ticks=(input.xTickMinGap ? thinTicksByGap(allTicks, input.xTickMinGap) : allTicks)/>
-<const/legendItems=seriesList.map((series) => ({ key: series.dataKey, label: labelOf(config, series.dataKey), color: seriesColor(series.dataKey) }))/>
-
-// Plain serializable arrays for the client-reactive region (see header note).
-<const/cursorPaths=centers.map((x) => (`M ${x},${ctx.plot.y} L ${x},${ctx.plot.y + ctx.plot.height}`))/>
-<const/leftPcts=centers.map((x) => Math.min(88, Math.max(12, (x / width) * 100)))/>
-<const/tooltipRows=buildTooltipRows(seriesList, data, config)/>
-<const/xLabels=data.map((row) => (input.tooltipLabelFormatter ? input.tooltipLabelFormatter(String(row[xKey])) : String(row[xKey])))/>
-<const/geo={ width, plotX: ctx.plot.x, plotWidth: ctx.plot.width, count: data.length }/>
+  formatter,
+  input.xTickMinGap,
+  input.tooltipLabelFormatter,
+)/>
 
 <let/activeIndex=(-1)/>
 // Bind the active row rather than indexing in the template: `activeIndex >= 0`
@@ -265,7 +355,7 @@ static function buildTooltipRows(
     viewBox=`0 0 ${width} ${height}`
   >
     <if=showGrid>
-      <ChartGrid ctx=ctx/>
+      <ChartGrid plot=plot horizontalTicks=gridHorizontalTicks verticalTicks=gridVerticalTicks/>
     </if>
     <if=(showTooltip && showCursor && activeIndex >= 0)>
       <g class=styles.cursorLayer>
@@ -278,9 +368,9 @@ static function buildTooltipRows(
         />
       </g>
     </if>
-    <ChartXAxis ctx=ctx ticks=ticks/>
+    <ChartXAxis plot=plot ticks=ticks/>
     <if=input.yAxis>
-      <ChartYAxis ctx=ctx/>
+      <ChartYAxis plot=plot ticks=yAxisTicks/>
     </if>
     <for|series| of=renderSeries>
       <g class=styles.layer>

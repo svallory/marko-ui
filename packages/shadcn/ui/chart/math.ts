@@ -335,6 +335,33 @@ export function yTicks(ctx: CartesianCtx, count = 5): YTick[] {
   return ctx.y.ticks(count).map((value) => ({ value, y: ctx.y(value) }));
 }
 
+// ---------------------------------------------------------------------------
+// Plain-data plot geometry: grid.marko/x-axis.marko/y-axis.marko are SVG
+// partials that render across a component-tag boundary. `CartesianCtx`
+// carries live d3 scale functions (`xBand`, `y`) that are NOT serializable,
+// so a `<const>` holding the full ctx can never be handed to a child
+// component from a parent scope that also resumes on the client (any chart
+// with hover state) — Marko has to serialize everything reachable from a
+// resumable scope, not just the values a client handler actually reads, and
+// fails with "Unable to serialize ... (reading xBand)". `PlotGeometry` is
+// the plain-data projection of a `CartesianCtx` that those three partials
+// actually need (the plot rectangle), computed once here so every chart
+// tag derives it the same way instead of re-deriving `plot.x` alone in the
+// wrapper's serializable geo object. bar.marko's horizontal layout (a
+// distinct `HorizontalCtx`) reads its own `hCtx.plot.x` inline in its
+// wrapper markup rather than through ChartGrid/ChartXAxis/ChartYAxis, so it
+// needs no twin of this helper.
+export interface PlotGeometry {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export function plotGeometry(ctx: CartesianCtx): PlotGeometry {
+  return { ...ctx.plot };
+}
+
 /** Center x of a band by data index — line/area point positions. */
 export function bandCenter(ctx: CartesianCtx, index: number): number {
   const value = ctx.xBand.domain()[index];

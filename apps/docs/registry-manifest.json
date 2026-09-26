@@ -73,7 +73,7 @@
     },
     {
       "path": "chart.json",
-      "sha256": "f1455a9ba58d0c088cfb8c04b5ab8fa31fde70cc5d1fa2b09a22b98c3b018e65"
+      "sha256": "07f45f67ccc022d7278cefe7d7f96d28384a519869347bdadb4ed8fe83d90117"
     },
     {
       "path": "checkbox.json",
@@ -505,7 +505,7 @@
     },
     {
       "path": "styles/luma/chart.json",
-      "sha256": "13772bb7174a15a476340146e57eccb0f40400368332f0c8306b401b014334d6"
+      "sha256": "4201fb05c2dd0c67faf5af34a3fbd4aabc311bd54f197a8aa4bf4f3ac165c865"
     },
     {
       "path": "styles/luma/checkbox.json",
@@ -849,7 +849,7 @@
     },
     {
       "path": "styles/lyra/chart.json",
-      "sha256": "0f37fcf5465e7440d5943e3615e60792dc65885a67411da49d37060953ba1758"
+      "sha256": "13b89d082e270a4b4fd5487544b3bc1b9213b0085615d55fa4e4240f374363e0"
     },
     {
       "path": "styles/lyra/checkbox.json",
@@ -1193,7 +1193,7 @@
     },
     {
       "path": "styles/maia/chart.json",
-      "sha256": "06592f515716bbffb18e9084c79b8bd6a69b2cee81d3e1793f3b4d9d889a9520"
+      "sha256": "68290844d3ca6a8b9fff672ccf2b78afc0c450ecf659657689d2cd86a3949655"
     },
     {
       "path": "styles/maia/checkbox.json",
@@ -1537,7 +1537,7 @@
     },
     {
       "path": "styles/mira/chart.json",
-      "sha256": "0453bfe4ca7ee114a6f6aeb132c4802868df4f632874a2bbc827fbb3684aeb59"
+      "sha256": "78795e9121f5dfcf5b913c2c3f86572324aca4acde05da0deacef11fa02e7fd8"
     },
     {
       "path": "styles/mira/checkbox.json",
@@ -1881,7 +1881,7 @@
     },
     {
       "path": "styles/nova/chart.json",
-      "sha256": "06592f515716bbffb18e9084c79b8bd6a69b2cee81d3e1793f3b4d9d889a9520"
+      "sha256": "68290844d3ca6a8b9fff672ccf2b78afc0c450ecf659657689d2cd86a3949655"
     },
     {
       "path": "styles/nova/checkbox.json",
@@ -2225,7 +2225,7 @@
     },
     {
       "path": "styles/rhea/chart.json",
-      "sha256": "13772bb7174a15a476340146e57eccb0f40400368332f0c8306b401b014334d6"
+      "sha256": "4201fb05c2dd0c67faf5af34a3fbd4aabc311bd54f197a8aa4bf4f3ac165c865"
     },
     {
       "path": "styles/rhea/checkbox.json",
@@ -2569,7 +2569,7 @@
     },
     {
       "path": "styles/sera/chart.json",
-      "sha256": "faeab51f111fc3beacb4b610c493ff450e87dad72cb81e41c26c21cb0c35ae7e"
+      "sha256": "2658b2fa621cd73fdaf037f8490de2b6d9dd0c0fc2745a9d9647fb0e4c7b7272"
     },
     {
       "path": "styles/sera/checkbox.json",
@@ -2913,7 +2913,7 @@
     },
     {
       "path": "styles/vega/chart.json",
-      "sha256": "06592f515716bbffb18e9084c79b8bd6a69b2cee81d3e1793f3b4d9d889a9520"
+      "sha256": "68290844d3ca6a8b9fff672ccf2b78afc0c450ecf659657689d2cd86a3949655"
     },
     {
       "path": "styles/vega/checkbox.json",
