@@ -750,7 +750,7 @@
           "properties": [
             {
               "name": "href",
-              "type": "never",
+              "type": "string",
               "required": false,
               "kind": "own"
             },
@@ -870,7 +870,7 @@
           "properties": [
             {
               "name": "href",
-              "type": "never",
+              "type": "string",
               "required": false,
               "kind": "own"
             },

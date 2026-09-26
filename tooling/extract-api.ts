@@ -206,6 +206,18 @@ function classifyProperty(
  * The declaration that decided a prop's `kind` — the one whose type and doc
  * comment the docs should show, rather than the checker's intersection of
  * every declaration that happens to share the name.
+ *
+ * A `union` Input (Button/Badge's `href`-discriminated shape) puts more than
+ * one matching declaration on the same property — one per branch, e.g.
+ * `href?: never` on the button branch and `href: string` on the anchor
+ * branch. Those aren't a same-file-collision to disambiguate (the case this
+ * function exists for); they're the SAME logical prop declared once per
+ * branch, and the checker's synthesized property type is already the right
+ * merge (`string | undefined`, `never` dropped) — see the module comment's
+ * "union Input types" note. So when more than one declaration matches,
+ * return `undefined` and let the caller fall back to the checker's type
+ * instead of arbitrarily narrowing to whichever branch's declaration sorts
+ * first.
  */
 function authoritativeDeclaration(
   property: ts.Symbol,
@@ -213,8 +225,12 @@ function authoritativeDeclaration(
   ownFileName: string,
   variantsFileName: string,
 ): ts.Declaration | undefined {
-  const matches = (test: (fileName: string) => boolean) =>
-    property.declarations?.find((declaration) => test(declaration.getSourceFile().fileName));
+  const matches = (test: (fileName: string) => boolean) => {
+    const found = (property.declarations ?? []).filter((declaration) =>
+      test(declaration.getSourceFile().fileName),
+    );
+    return found.length === 1 ? found[0] : undefined;
+  };
   switch (kind) {
     case "machine":
       return matches((fileName) => fileName.includes("@zag-js/"));
@@ -225,6 +241,31 @@ function authoritativeDeclaration(
     case "native":
       return undefined;
   }
+}
+
+/**
+ * Every declaration of a property that classifies as `kind`, regardless of
+ * count. Used for the union-branch case above, where `authoritativeDeclaration`
+ * declines to pick one: the doc comment should still come from the
+ * classifying source(s), not from `property.getDocumentationComment`'s blend
+ * across every declaration (which can silently surface a native tag's doc,
+ * e.g. `<a>`'s native `href`, ahead of the component's own).
+ */
+function classifyingDeclarations(
+  property: ts.Symbol,
+  kind: PropertyKind,
+  ownFileName: string,
+  variantsFileName: string,
+): ts.Declaration[] {
+  const test =
+    kind === "machine"
+      ? (fileName: string) => fileName.includes("@zag-js/")
+      : kind === "variant"
+        ? (fileName: string) => fileName === variantsFileName
+        : kind === "own"
+          ? (fileName: string) => fileName === ownFileName
+          : () => false;
+  return (property.declarations ?? []).filter((declaration) => test(declaration.getSourceFile().fileName));
 }
 
 /** The plain-text JSDoc body attached directly to one declaration. */
@@ -394,20 +435,34 @@ async function main() {
           authoritative && ts.isPropertySignature(authoritative) && authoritative.type
             ? checker.getTypeFromTypeNode(authoritative.type)
             : checker.getTypeOfSymbolAtLocation(property, declaration);
+        const required =
+          authoritative && ts.isPropertySignature(authoritative)
+            ? authoritative.questionToken === undefined
+            : !(property.flags & ts.SymbolFlags.Optional);
+        const classifying = classifyingDeclarations(property, kind, virtualPath, variantsFileName);
+        // A property present in only some branches of a union Input (e.g.
+        // Button/Badge's `href`) has more than one declaration classifying
+        // to this kind (one per branch). The checker's synthesized type for
+        // it already unions in `undefined` from the branches that don't
+        // declare it (`never` itself is dropped by TS's own union
+        // simplification), so the trailing `| undefined` is redundant with
+        // `required: false` — strip it. A single-declaration property (the
+        // overwhelming majority) keeps its type exactly as printed; this
+        // must not touch those, or every already-correct `T | undefined`
+        // optional prop in the registry would lose real information.
+        const isUnionMerge = !authoritative && classifying.length > 1;
+        const typeString = checker.typeToString(
+          propertyType,
+          declaration,
+          ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseSingleQuotesForStringLiteralType,
+        );
         const documentation = authoritative
           ? declarationDocumentation(authoritative)
-          : ts.displayPartsToString(property.getDocumentationComment(checker));
+          : (classifying.map(declarationDocumentation).find((doc) => doc.length > 0) ?? "");
         const entry: PropertyEntry = {
           name: property.getName(),
-          type: checker.typeToString(
-            propertyType,
-            declaration,
-            ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseSingleQuotesForStringLiteralType,
-          ),
-          required:
-            authoritative && ts.isPropertySignature(authoritative)
-              ? authoritative.questionToken === undefined
-              : !(property.flags & ts.SymbolFlags.Optional),
+          type: isUnionMerge ? typeString.replace(/\s*\|\s*undefined\b/g, "") : typeString,
+          required,
           kind,
         };
         if (documentation) entry.description = documentation;
