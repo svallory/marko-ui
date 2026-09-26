@@ -135,14 +135,14 @@ static const FRAMEWORK_ITEMS = TEMPLATES.map((template) => ({
 // descendant selector, since Tabs exposes no listClass prop.
 <div class="relative flex min-h-0 flex-1 flex-col gap-0">
   <div class="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-end gap-2 px-4 py-3">
-    <span class="pointer-events-auto">
+    <div class="pointer-events-auto">
       <Select
         items=FRAMEWORK_ITEMS
         value=[framework]
         valueChange=(value: string[]) => { framework = value[0] ?? "next"; }
         positioning={ placement: "bottom-end" }
       />
-    </span>
+    </div>
   </div>
   <Tabs value:=tab class="flex min-h-0 flex-1 flex-col gap-0 [&_[data-slot=tabs-list]]:mx-4 [&_[data-slot=tabs-list]]:my-3">
     <@trigger value="docs">Docs</@trigger>
