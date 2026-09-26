@@ -8,6 +8,7 @@ import ButtonGroup from "@marko-ui/shadcn/ui/button-group/button-group.marko";
 import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
 import type { DropdownMenuItem } from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
 import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";
+import { buttonVariants } from "@marko-ui/shadcn/ui/button/variants.ts";
 
 export interface ComponentNeighbour {
   name: string;
@@ -146,7 +147,7 @@ export interface Input {
             href=`/docs/components/${input.previous.name}`
             aria-label=`Previous: ${input.previous.title}`
             title=input.previous.title
-            class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            class=buttonVariants({ variant: "outline", size: "icon" })
           >
             <span aria-hidden="true">←</span>
           </a>
@@ -156,7 +157,7 @@ export interface Input {
             href=`/docs/components/${input.next.name}`
             aria-label=`Next: ${input.next.title}`
             title=input.next.title
-            class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            class=buttonVariants({ variant: "outline", size: "icon" })
           >
             <span aria-hidden="true">→</span>
           </a>

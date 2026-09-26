@@ -48,7 +48,7 @@ static const TOGGLE = `<let/isDark=false/>
 <button
   type="button"
   aria-label="Toggle theme"
-  class="inline-flex size-8 items-center justify-center rounded-md text-foreground hover:bg-accent hover:text-accent-foreground"
+  class="inline-flex size-8 items-center justify-center rounded-md text-foreground hover:bg-muted hover:text-foreground"
   onClick() {
     const nextIsDark = !document.documentElement.classList.contains("dark");
     document.documentElement.classList.toggle("dark", nextIsDark);

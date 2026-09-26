@@ -33,7 +33,12 @@ static const HIGHLIGHTED = [
   <CardContent class="flex flex-wrap gap-2">
     <for|name| of=HIGHLIGHTED by=(name) => name>
       <a href=`/docs/components/${name}` class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
-        <Badge variant="secondary" class="hover:bg-accent">${name}</Badge>
+        <!-- No hover override: .mu-badge-variant-secondary already ships
+             [a]:hover:bg-secondary/80 for exactly this "Badge wrapped in a
+             link" pattern (packages/shadcn/styles/style-nova.css) — the
+             prior hover:bg-accent here fought the real component's own
+             hover instead of using it. -->
+        <Badge variant="secondary">${name}</Badge>
       </a>
     </for>
   </CardContent>
