@@ -5,6 +5,15 @@
 // the design-system container instead. Icon states (SquareLock01 locked /
 // SquareUnlock01 unlocked from hugeicons) are reproduced as inline SVGs, and
 // the title/aria-label/visibility classNames are verbatim from source.
+//
+// Round 2: uses the registry Button (variant="ghost" size="icon-xs") as its
+// base instead of a raw <button> — upstream itself is a raw <button> too
+// (no shadcn Button wrapper), but this control is a real icon-toggle button
+// the way `ui/toggle` is shaped for, and Button's ghost/icon-xs variant is
+// close enough to this control's near-invisible-until-hover look that the
+// override surface stays small (same pattern customizer.marko's own footer
+// buttons already use for a registry-gap variant).
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
 import { cn } from "@marko-ui/shadcn/lib/utils.ts";
 
 export interface Input {
@@ -13,14 +22,16 @@ export interface Input {
   class?: string;
 }
 
-<button
+<Button
   type="button"
+  variant="ghost"
+  size="icon-xs"
   title=(input.locked ? "Unlock" : "Lock")
   aria-label=(input.locked ? "Unlock" : "Lock")
   data-locked=String(input.locked)
   data-slot="lock-button"
   class=cn(
-    "flex size-4 cursor-pointer items-center justify-center rounded opacity-0 ring-foreground/60 transition-opacity outline-none group-focus-within/picker:opacity-100 group-hover/picker:opacity-100 focus:opacity-100 focus-visible:ring-1 data-[locked=true]:opacity-100 pointer-coarse:hidden",
+    "size-4! cursor-pointer rounded opacity-0 ring-foreground/60 transition-opacity outline-none group-focus-within/picker:opacity-100 group-hover/picker:opacity-100 hover:bg-transparent! focus:opacity-100 focus-visible:ring-1 data-[locked=true]:opacity-100 pointer-coarse:hidden",
     input.class,
   )
   on-click() { input.onToggle(); }
@@ -41,4 +52,4 @@ export interface Input {
       <path d="M12 15v2"/>
     </svg>
   </else>
-</button>
+</Button>

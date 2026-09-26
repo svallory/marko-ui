@@ -11,6 +11,11 @@
 // context, so `locked` + `onToggle` arrive as attrs from the typeset-app
 // state container. The hugeicons SquareLock01/SquareUnlock01 glyphs are
 // reproduced as inline SVGs (same shape as create's port uses).
+//
+// Round 2: uses the registry Button (variant="ghost" size="icon-xs") as its
+// base instead of a raw <button> — see create/lock-button.marko's header
+// comment for the rationale (same file, same reasoning).
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
 import { cn } from "@marko-ui/shadcn/lib/utils.ts";
 
 export interface Input {
@@ -19,14 +24,16 @@ export interface Input {
   class?: string;
 }
 
-<button
+<Button
   type="button"
+  variant="ghost"
+  size="icon-xs"
   title=(input.locked ? "Unlock" : "Lock")
   aria-label=(input.locked ? "Unlock" : "Lock")
   data-locked=String(input.locked)
   data-slot="lock-button"
   class=cn(
-    "flex size-4 cursor-pointer items-center justify-center rounded opacity-0 ring-foreground/60 transition-opacity outline-none group-focus-within/picker:opacity-100 group-hover/picker:opacity-100 focus:opacity-100 focus-visible:ring-1 data-[locked=true]:opacity-100 max-md:hidden pointer-coarse:hidden",
+    "size-4! cursor-pointer rounded opacity-0 ring-foreground/60 transition-opacity outline-none group-focus-within/picker:opacity-100 group-hover/picker:opacity-100 hover:bg-transparent! focus:opacity-100 focus-visible:ring-1 data-[locked=true]:opacity-100 max-md:hidden pointer-coarse:hidden",
     input.class,
   )
   on-click() { input.onToggle(); }
@@ -47,4 +54,4 @@ export interface Input {
       <path d="M12 15v2"/>
     </svg>
   </else>
-</button>
+</Button>

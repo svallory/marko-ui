@@ -1,27 +1,20 @@
 // Reusable popover/radio-picker primitive for the /create theme builder
 // sidebar. Ported behaviorally from shadcn's
-// app/(app)/(create)/components/picker.tsx (Base UI `Menu` primitive), but
-// built directly on @zag-js/menu instead of Base UI — this repo's component
-// library (packages/shadcn/ui/dropdown-menu/dropdown-menu.marko)
-// already establishes the zag-js/menu + <zag>/<zag-portal> pattern
-// for menu-shaped widgets, so extending that same primitive (rather than
-// pulling in Base UI as a new dependency) is the natural fit here. This
-// stays docs-site-local (apps/docs/src/tags/create/) rather than living in
-// the shared component registry because its markup/behavior — swatch/preview
-// slots on the trigger, hover-preview radio items, the dark floating-panel
-// styling — is specific to the /create page and not a general-purpose menu.
+// app/(app)/(create)/components/picker.tsx (Base UI `Menu` primitive).
 //
-// @zag-js/menu's option items (`getOptionItemProps({ type: "radio", ... })`)
-// give us the single-select radio-group semantics the original's
-// `PickerRadioGroup`/`PickerRadioItem` provide. Hover-preview (shadcn's
-// `onItemPreview`, fired from a debounced onMouseMove/onFocus pair in
-// PickerRadioItem) is implemented here via zag's built-in
-// `onHighlightChange` — zag already computes the highlighted item from
-// pointer + keyboard navigation, so no separate mousemove/focus wiring or
-// debounce timer is needed; the parent's `onItemPreview` fires whenever the
-// highlighted value changes.
-import * as menu from "@zag-js/menu";
-import { positionerStyle } from "marko-zag";
+// Round 2: rebuilt on the registry DropdownMenu (packages/shadcn/ui/
+// dropdown-menu) instead of a hand-rolled @zag-js/menu popup — a single
+// radio section list with hover-preview and a mobile anchor override needed
+// no new registry capability beyond the positioning/onHighlightChange
+// pass-throughs added to dropdown-menu.marko for this task. Hover-preview
+// (shadcn's `onItemPreview`) still comes from zag's own `onHighlightChange`,
+// unchanged behaviorally from the hand-rolled version. The dark
+// floating-panel look (bg-neutral-950/80) is shadcn's own verbatim upstream
+// class for this popup, kept as a `class` override on the registry
+// component rather than the registry default.
+import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import type { DropdownMenuItem } from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import type * as menu from "@zag-js/menu";
 import { cn } from "@marko-ui/shadcn/lib/utils.ts";
 
 export interface PickerRadioOption {
@@ -65,14 +58,27 @@ export interface Input {
   contentClass?: string;
 }
 
-<zag/api=() => menu from=input
+<const/items=input.sections.flatMap((section, sectionIndex): DropdownMenuItem[] => [
+  ...(sectionIndex > 0 ? [{ type: "separator" as const }] : []),
+  ...(section.label ? [{ type: "label" as const, label: section.label }] : []),
+  ...section.options.map((option): DropdownMenuItem => ({
+    type: "radio",
+    value: option.value,
+    label: option.label,
+    disabled: option.disabled,
+    checked: option.value === input.value,
+    radioGroup: "picker",
+  })),
+]) satisfies DropdownMenuItem[]/>
+
+<DropdownMenu
+  items=items
+  disabled=input.disabled
+  closeOnSelect=input.closeOnClick
   positioning={
-    placement: `${input.side ?? "bottom"}${input.align && input.align !== "center" ? `-${input.align}` : ""}`,
+    placement: `${input.side ?? "bottom"}${input.align && input.align !== "center" ? `-${input.align}` : ""}` as NonNullable<menu.Props["positioning"]>["placement"],
     gutter: input.sideOffset ?? 20,
     shift: input.alignOffset ?? 0,
-  }
-  onSelect(details: menu.SelectionDetails) {
-    input.onValueChange(details.value);
   }
   onHighlightChange(details: menu.HighlightChangeDetails) {
     input.onItemPreview?.(details.highlightedValue);
@@ -80,76 +86,24 @@ export interface Input {
   onOpenChange(details: menu.OpenChangeDetails) {
     if (!details.open) input.onItemPreview?.(null);
   }
-/>
-
-<const/{ class: className, contentClass, trigger, sections, value, closeOnClick }=input/>
-
-<div class="group/picker relative">
-  <button type="button"
-    ...api().getTriggerProps()
-    disabled=input.disabled
-    data-slot="picker-trigger"
-    class=cn(
-      "relative w-36 shrink-0 touch-manipulation rounded-xl p-3 ring-1 ring-foreground/10 select-none hover:bg-muted focus-visible:ring-foreground/50 focus-visible:outline-none disabled:opacity-50 data-[state=open]:bg-muted md:w-full md:rounded-lg md:px-2.5 md:py-2",
-      className,
-    )
-  >
-    <${trigger.content}/>
-  </button>
-  <zag-portal>
-    <if=api().open>
-      <div ...api().getPositionerProps() style=positionerStyle data-slot="picker-positioner">
-        <div
-          ...api().getContentProps()
-          data-slot="picker-content"
-          class=cn(
-            "no-scrollbar z-50 max-h-[24rem] w-[calc(var(--available-width,16rem)-1.5rem)] min-w-32 overflow-x-hidden overflow-y-auto rounded-xl border-0 bg-neutral-950/80 p-1.5 text-neutral-100 ring-1 ring-neutral-950/80 backdrop-blur-xl outline-none md:w-52 dark:bg-neutral-800/90 dark:ring-neutral-700/50",
-            contentClass,
-          )
-        >
-          <for|section, sectionIndex| of=sections>
-            <if=(sectionIndex > 0)>
-              <div data-slot="picker-separator" class="-mx-1.5 my-1.5 h-px bg-neutral-600 dark:bg-neutral-700"/>
-            </if>
-            <div ...api().getItemGroupProps({ id: `picker-group-${sectionIndex}` }) data-slot="picker-group">
-              <if=section.label>
-                <div
-                  ...api().getItemGroupLabelProps({ htmlFor: `picker-group-${sectionIndex}` })
-                  data-slot="picker-label"
-                  class="px-2 py-1.5 text-xs font-medium text-neutral-400"
-                >
-                  ${section.label}
-                </div>
-              </if>
-              <for|option| of=section.options by=(option) => option.value>
-                <div
-                  ...api().getOptionItemProps({
-                    type: "radio",
-                    value: option.value,
-                    checked: option.value === value,
-                    disabled: option.disabled,
-                    closeOnSelect: closeOnClick,
-                  })
-                  data-slot="picker-radio-item"
-                  class="relative flex cursor-default items-center gap-2 rounded-lg py-1.5 pr-8 pl-2 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                >
-                  <span
-                    class="pointer-events-none absolute right-2 flex items-center justify-center"
-                    data-slot="picker-radio-item-indicator"
-                  >
-                    <if=option.value === value>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 pointer-coarse:size-5">
-                        <path d="M20 6 9 17l-5-5"/>
-                      </svg>
-                    </if>
-                  </span>
-                  ${option.label}
-                </div>
-              </for>
-            </div>
-          </for>
-        </div>
-      </div>
-    </if>
-  </zag-portal>
-</div>
+  class=cn(
+    "bg-neutral-950/80 text-neutral-100 ring-neutral-950/80 backdrop-blur-xl dark:bg-neutral-800/90 dark:ring-neutral-700/50 **:data-[slot=dropdown-menu-label]:text-neutral-400 **:data-[slot=dropdown-menu-separator]:bg-neutral-600 dark:**:data-[slot=dropdown-menu-separator]:bg-neutral-700 **:data-[slot=dropdown-menu-radio-item]:text-neutral-100 **:data-[slot=dropdown-menu-radio-item]:focus:bg-neutral-600 dark:**:data-[slot=dropdown-menu-radio-item]:focus:bg-neutral-700/80",
+    input.contentClass,
+  )
+  radioChange(_group, value) {
+    input.onValueChange(value);
+  }
+>
+  <@trigger|triggerProps|>
+    <button type="button"
+      ...triggerProps
+      disabled=input.disabled
+      class=cn(
+        "relative w-36 shrink-0 touch-manipulation rounded-xl p-3 ring-1 ring-foreground/10 select-none hover:bg-muted focus-visible:ring-foreground/50 focus-visible:outline-none disabled:opacity-50 data-[state=open]:bg-muted md:w-full md:rounded-lg md:px-2.5 md:py-2",
+        input.class,
+      )
+    >
+      <${input.trigger.content}/>
+    </button>
+  </@trigger>
+</DropdownMenu>

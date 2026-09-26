@@ -2,25 +2,30 @@
 // (exported there as MenuColorPicker). Two independent radio groups —
 // "Color" (default/inverted) and "Appearance" (solid/translucent) — combine
 // into a single MenuColorValue via getMenuColorValue, matching source
-// exactly. Because both groups live in one popover, this picker does NOT
-// reuse the generic <picker> primitive (which renders exactly one radio
-// group across its sections) — it opens its own zag-js menu machine with two
-// independent option-item groups instead, mirroring how the source nests two
-// PickerRadioGroups inside one PickerContent.
+// exactly.
 //
-// Phase 3 restorations:
+// Round 2: rebuilt on the registry DropdownMenu instead of a hand-rolled
+// @zag-js/menu popup with two independent option-item groups. DropdownMenu
+// did NOT support two radio groups in one menu before this task —
+// `radioGroup`/`radioValue` were declared on `DropdownMenuItem` but never
+// wired into the render (menubar's own menu.marko had the working pattern;
+// dropdown-menu.marko's copy was dead). Fixed in dropdown-menu.marko itself
+// (this task, smallest-scope: mirrors menubar's existing wiring exactly) so
+// this file can use two `radioGroup`-tagged sections instead of hand-rolling
+// its own second machine.
+//
+// Phase 3 restorations (unchanged from the prior port):
 // - LockButton restored (locked/onToggleLock attrs from the design-system
 //   container, param="menuColor" in the source).
 // - The source's `isDark` (next-themes resolvedTheme) disabling "Inverted"
 //   when already in dark mode is restored: the container passes its isDark
 //   state down (tracked from the site's dark class on <html>).
-// Remaining notes:
 // - `lastSolidMenuAccentRef` (remembering the pre-translucent menuAccent so
 //   toggling translucency off restores it) is reproduced with local <let>
 //   state scoped to this component, same behavior as the source's ref.
-import * as menu from "@zag-js/menu";
-import { positionerStyle } from "marko-zag";
-import { cn } from "@marko-ui/shadcn/lib/utils.ts";
+import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import type { DropdownMenuItem } from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import type * as menu from "@zag-js/menu";
 import { isTranslucentMenuColor } from "./lib/search-params.ts";
 import type { MenuAccentValue, MenuColorValue } from "./lib/registry-config.ts";
 import LockButton from "./lock-button.marko";
@@ -103,107 +108,60 @@ export interface Input {
   });
 }/>
 
-<zag/api=() => menu from=input
-  positioning={
-    placement: `${input.isMobile ? "top" : "right"}-start`,
-    gutter: 20,
-  }
-  onSelect(details: menu.SelectionDetails) {
-    if (details.value === "default" || details.value === "inverted") {
-      setColor(details.value as ColorChoice);
-    } else {
-      setSurface(details.value as SurfaceChoice);
-    }
-  }
-  onHighlightChange(details: menu.HighlightChangeDetails) {
-    const value = details.highlightedValue;
-    if (!value) {
-      input.onItemPreview?.(null);
-      return;
-    }
-    if (value === "default" || value === "inverted") {
-      previewColor(value as ColorChoice);
-    } else {
-      previewSurface(value as SurfaceChoice);
-    }
-  }
-  onOpenChange(details: menu.OpenChangeDetails) {
-    if (!details.open) input.onItemPreview?.(null);
-  }
-/>
+<const/items=[
+  { type: "label", label: "Color" },
+  { type: "radio", radioGroup: "color", radioValue: "default", value: "default", label: "Default", checked: colorChoice === "default" },
+  { type: "radio", radioGroup: "color", radioValue: "inverted", value: "inverted", label: "Inverted", checked: colorChoice === "inverted", disabled: Boolean(input.isDark) },
+  { type: "separator" },
+  { type: "label", label: "Appearance" },
+  { type: "radio", radioGroup: "surface", radioValue: "solid", value: "solid", label: "Solid", checked: surfaceChoice === "solid" },
+  { type: "radio", radioGroup: "surface", radioValue: "translucent", value: "translucent", label: "Translucent", checked: surfaceChoice === "translucent" },
+] satisfies DropdownMenuItem[]/>
 
 <div class="group/picker relative">
-  <button type="button"
-    ...api().getTriggerProps()
-    data-slot="picker-trigger"
-    class="relative w-36 shrink-0 touch-manipulation rounded-xl p-3 ring-1 ring-foreground/10 select-none hover:bg-muted focus-visible:ring-foreground/50 focus-visible:outline-none disabled:opacity-50 data-[state=open]:bg-muted md:w-full md:rounded-lg md:px-2.5 md:py-2"
+  <DropdownMenu
+    items=items
+    closeOnSelect=input.isMobile
+    positioning={ placement: `${input.isMobile ? "top" : "right"}-start`, gutter: 20 }
+    onHighlightChange(details: menu.HighlightChangeDetails) {
+      const value = details.highlightedValue;
+      if (!value) {
+        input.onItemPreview?.(null);
+        return;
+      }
+      if (value === "default" || value === "inverted") {
+        previewColor(value as ColorChoice);
+      } else {
+        previewSurface(value as SurfaceChoice);
+      }
+    }
+    onOpenChange(details: menu.OpenChangeDetails) {
+      if (!details.open) input.onItemPreview?.(null);
+    }
+    class="bg-neutral-950/80 text-neutral-100 ring-neutral-950/80 backdrop-blur-xl dark:bg-neutral-800/90 dark:ring-neutral-700/50 **:data-[slot=dropdown-menu-label]:text-neutral-400 **:data-[slot=dropdown-menu-separator]:bg-neutral-600 dark:**:data-[slot=dropdown-menu-separator]:bg-neutral-700 **:data-[slot=dropdown-menu-radio-item]:text-neutral-100 **:data-[slot=dropdown-menu-radio-item]:focus:bg-neutral-600 dark:**:data-[slot=dropdown-menu-radio-item]:focus:bg-neutral-700/80"
+    radioChange(group, value) {
+      if (group === "color") setColor(value as ColorChoice);
+      else if (group === "surface") setSurface(value as SurfaceChoice);
+    }
   >
-    <span class="flex flex-col justify-start text-left">
-      <span class="text-xs text-muted-foreground">Menu</span>
-      <span class="line-clamp-1 max-w-[80%] truncate text-sm font-medium text-foreground">${currentMenu?.label}</span>
-    </span>
-    <span class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-base text-foreground select-none md:right-2.5">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" class="size-4">
-        <rect x="3" y="4" width="18" height="16" rx="2"/>
-        <path d="M3 9h18"/>
-      </svg>
-    </span>
-  </button>
-  <zag-portal>
-    <if=api().open>
-      <span ...api().getPositionerProps() style=positionerStyle data-slot="picker-positioner">
-        <span
-          ...api().getContentProps()
-          data-slot="picker-content"
-          class="no-scrollbar z-50 max-h-[24rem] w-[calc(var(--available-width,16rem)-1.5rem)] min-w-32 overflow-x-hidden overflow-y-auto rounded-xl border-0 bg-neutral-950/80 p-1.5 text-neutral-100 ring-1 ring-neutral-950/80 backdrop-blur-xl outline-none md:w-52 dark:bg-neutral-800/90 dark:ring-neutral-700/50"
-        >
-          <span ...api().getItemGroupProps({ id: "menu-picker-color" }) data-slot="picker-group">
-            <span ...api().getItemGroupLabelProps({ htmlFor: "menu-picker-color" }) data-slot="picker-label" class="px-2 py-1.5 text-xs font-medium text-neutral-400">
-              Color
-            </span>
-            <for|option| of=[{ value: "default", label: "Default" }, { value: "inverted", label: "Inverted" }]>
-              <span
-                ...api().getOptionItemProps({ type: "radio", value: option.value, checked: option.value === colorChoice, closeOnSelect: input.isMobile, disabled: option.value === "inverted" && Boolean(input.isDark) })
-                data-slot="picker-radio-item"
-                class="relative flex cursor-default items-center gap-2 rounded-lg py-1.5 pr-8 pl-2 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-              >
-                <span class="pointer-events-none absolute right-2 flex items-center justify-center" data-slot="picker-radio-item-indicator">
-                  <if=option.value === colorChoice>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 pointer-coarse:size-5">
-                      <path d="M20 6 9 17l-5-5"/>
-                    </svg>
-                  </if>
-                </span>
-                ${option.label}
-              </span>
-            </for>
-          </span>
-          <span data-slot="picker-separator" class="-mx-1.5 my-1.5 h-px bg-neutral-600 dark:bg-neutral-700"/>
-          <span ...api().getItemGroupProps({ id: "menu-picker-surface" }) data-slot="picker-group">
-            <span ...api().getItemGroupLabelProps({ htmlFor: "menu-picker-surface" }) data-slot="picker-label" class="px-2 py-1.5 text-xs font-medium text-neutral-400">
-              Appearance
-            </span>
-            <for|option| of=[{ value: "solid", label: "Solid" }, { value: "translucent", label: "Translucent" }]>
-              <span
-                ...api().getOptionItemProps({ type: "radio", value: option.value, checked: option.value === surfaceChoice, closeOnSelect: input.isMobile })
-                data-slot="picker-radio-item"
-                class="relative flex cursor-default items-center gap-2 rounded-lg py-1.5 pr-8 pl-2 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-              >
-                <span class="pointer-events-none absolute right-2 flex items-center justify-center" data-slot="picker-radio-item-indicator">
-                  <if=option.value === surfaceChoice>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 pointer-coarse:size-5">
-                      <path d="M20 6 9 17l-5-5"/>
-                    </svg>
-                  </if>
-                </span>
-                ${option.label}
-              </span>
-            </for>
-          </span>
+    <@trigger|triggerProps|>
+      <button type="button"
+        ...triggerProps
+        class="relative w-36 shrink-0 touch-manipulation rounded-xl p-3 ring-1 ring-foreground/10 select-none hover:bg-muted focus-visible:ring-foreground/50 focus-visible:outline-none disabled:opacity-50 data-[state=open]:bg-muted md:w-full md:rounded-lg md:px-2.5 md:py-2"
+      >
+        <span class="flex flex-col justify-start text-left">
+          <span class="text-xs text-muted-foreground">Menu</span>
+          <span class="line-clamp-1 max-w-[80%] truncate text-sm font-medium text-foreground">${currentMenu?.label}</span>
         </span>
-      </span>
-    </if>
-  </zag-portal>
+        <span class="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-base text-foreground select-none md:right-2.5">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" class="size-4">
+            <rect x="3" y="4" width="18" height="16" rx="2"/>
+            <path d="M3 9h18"/>
+          </svg>
+        </span>
+      </button>
+    </@trigger>
+  </DropdownMenu>
   <LockButton
     locked=input.locked
     onToggle=input.onToggleLock

@@ -47,6 +47,23 @@ export interface Input {
   items?: DropdownMenuItem[];
   item?: Marko.AttrTag<DropdownMenuItemAttrs>;
   select?: (value: string) => void;
+  /** Fires when a checkbox item's checked state changes; receives its value and new checked state. */
+  checkedChange?: (value: string, checked: boolean) => void;
+  /** Fires when a radio group's selected value changes; receives the group name and new value. */
+  radioChange?: (group: string, value: string) => void;
+  /**
+   * Machine pass-throughs, forwarded to `@zag-js/menu` by `<zag-machine ...
+   * from=input/>` regardless of whether they're declared here (see
+   * `buildMachineProps` in marko-zag) — declared for type safety and DX.
+   * `positioning`/`onHighlightChange` are what a caller needs to relocate the
+   * popup (side/align/gutter/mobile anchor override) and mirror the
+   * highlighted item for a hover-preview, the two capabilities the typeset/
+   * create picker.marko files used to hand-roll a whole parallel menu for.
+   */
+  positioning?: menu.Props["positioning"];
+  onHighlightChange?: menu.Props["onHighlightChange"];
+  onOpenChange?: menu.Props["onOpenChange"];
+  closeOnSelect?: menu.Props["closeOnSelect"];
   class?: string;
 }
 
@@ -98,6 +115,7 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
         class=cn(styles.content, input.class)
       >
         <for|entry, index| of=menuEntries(input)>
+          <const/value=entry.value ?? `item-${index}`/>
           <if=entry.type === "separator">
             <div ...api().getSeparatorProps() data-slot="dropdown-menu-separator" class=styles.separator/>
           </if>
@@ -113,12 +131,18 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
           </else>
           <else if=entry.type === "checkbox">
             <div
-              ...api().getOptionItemProps({ type: "checkbox", value: entry.value ?? `item-${index}`, checked: entry.checked ?? false, disabled: entry.disabled })
+              ...api().getOptionItemProps({
+                type: "checkbox",
+                value,
+                checked: entry.checked ?? false,
+                disabled: entry.disabled,
+                onCheckedChange: (checked) => input.checkedChange?.(value, checked),
+              })
               data-slot="dropdown-menu-checkbox-item"
               data-inset=entry.inset || undefined
               class=styles.checkboxItem
             >
-              <span ...api().getItemIndicatorProps({ value: entry.value ?? `item-${index}`, checked: entry.checked ?? false }) data-slot="dropdown-menu-checkbox-item-indicator" class=styles.itemIndicator>
+              <span ...api().getItemIndicatorProps({ value, checked: entry.checked ?? false }) data-slot="dropdown-menu-checkbox-item-indicator" class=styles.itemIndicator>
                 <if=entry.checked>
                   <Icon name="Check"/>
                 </if>
@@ -136,12 +160,18 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
           </else>
           <else if=entry.type === "radio">
             <div
-              ...api().getOptionItemProps({ type: "radio", value: entry.value ?? `item-${index}`, checked: entry.checked ?? false, disabled: entry.disabled })
+              ...api().getOptionItemProps({
+                type: "radio",
+                value: entry.radioValue ?? value,
+                checked: entry.checked ?? false,
+                disabled: entry.disabled,
+                onCheckedChange: () => input.radioChange?.(entry.radioGroup ?? "", entry.radioValue ?? value),
+              })
               data-slot="dropdown-menu-radio-item"
               data-inset=entry.inset || undefined
               class=styles.radioItem
             >
-              <span ...api().getItemIndicatorProps({ value: entry.value ?? `item-${index}`, checked: entry.checked ?? false }) data-slot="dropdown-menu-radio-item-indicator" class=styles.itemIndicator>
+              <span ...api().getItemIndicatorProps({ value: entry.radioValue ?? value, checked: entry.checked ?? false }) data-slot="dropdown-menu-radio-item-indicator" class=styles.itemIndicator>
                 <if=entry.checked>
                   <Icon name="Check"/>
                 </if>
@@ -182,7 +212,7 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
           </else>
           <else>
             <div
-              ...api().getItemProps({ value: entry.value ?? `item-${index}`, disabled: entry.disabled })
+              ...api().getItemProps({ value, disabled: entry.disabled })
               data-slot="dropdown-menu-item"
               data-inset=entry.inset || undefined
               data-variant=entry.variant ?? "default"
