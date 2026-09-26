@@ -26,6 +26,8 @@ import "./api-table.marko";
 import "./code-block.marko";
 import "./docs-toc.marko";
 import { getComponentPageData } from "../../lib/component-page-data.ts";
+import { buttonVariants } from "@marko-ui/shadcn/ui/button/variants.ts";
+import { cn } from "@marko-ui/shadcn/lib/utils.ts";
 
 export interface Input {
   /** Component name from the URL, e.g. "button". */
@@ -53,7 +55,7 @@ export interface Input {
     </p>
     <a
       href="/docs"
-      class="mt-6 inline-flex h-9 items-center rounded-md border border-border px-4 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+      class=cn(buttonVariants({ variant: "outline" }), "mt-6")
     >
       Back to docs
     </a>
@@ -293,7 +295,7 @@ export interface Input {
                 <if=page.previous>
                   <a
                     href=`/docs/components/${page.previous.name}`
-                    class="inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                    class=buttonVariants({ variant: "outline", size: "sm" })
                   >
                     ← ${page.previous.title}
                   </a>
@@ -301,7 +303,7 @@ export interface Input {
                 <if=page.next>
                   <a
                     href=`/docs/components/${page.next.name}`
-                    class="ml-auto inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                    class=cn(buttonVariants({ variant: "outline", size: "sm" }), "ml-auto")
                   >
                     ${page.next.title} →
                   </a>
