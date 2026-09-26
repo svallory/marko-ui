@@ -3,6 +3,7 @@
 // copies it to the clipboard on click, flipping to "Copied" for 2s. The
 // source's copyToClipboardWithMeta analytics wrapper is replaced with plain
 // navigator.clipboard (no analytics pipeline in this app).
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
 import { cn } from "@marko-ui/shadcn/lib/utils.ts";
 
 export interface Input {
@@ -31,15 +32,16 @@ export interface Input {
   }
 />
 
-<button
+<Button
   type="button"
+  variant="outline"
   title=label
   data-slot="copy-preset"
   on-click=handleCopy
   class=cn(
-    "inline-flex h-8 touch-manipulation items-center justify-center rounded-md border border-input bg-transparent px-2 py-0 text-sm font-medium shadow-xs transition-none select-none hover:bg-muted pointer-coarse:h-10",
+    "h-8 touch-manipulation bg-transparent! px-2! py-0! text-sm! shadow-xs! transition-none select-none hover:bg-muted! pointer-coarse:h-10",
     input.class,
   )
 >
   <span class="block min-w-0 truncate">${label}</span>
-</button>
+</Button>

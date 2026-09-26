@@ -13,7 +13,15 @@
 // which owns the single document keydown listener for every shortcut (R, ⇧R,
 // D, ⌘Z, ⇧⌘Z) — same consolidation /create's port made, and the same reason:
 // Marko has no context to hang per-hook listeners off.
-import Picker from "./picker.marko";
+//
+// Round 2: rebuilt on the registry DropdownMenu instead of a hand-rolled
+// @zag-js/menu popup — this file has only plain action items (no radio
+// groups), so it needed no new DropdownMenu capability, just its `items=`
+// array. The dark floating-panel look (bg-neutral-950/80) is shadcn's own
+// verbatim upstream class for this popup (see picker.tsx), kept as a
+// `contentClass` override rather than the registry default.
+import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import type { DropdownMenuItem } from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
 import { cn } from "@marko-ui/shadcn/lib/utils.ts";
 
 export interface Input {
@@ -28,35 +36,33 @@ export interface Input {
   class?: string;
 }
 
-<const/actions=[
-  { value: "shuffle", label: "Shuffle", shortcut: "R" },
-  { value: "toggle-theme", label: "Light/Dark", shortcut: "D" },
+<const/items=[
+  { type: "item", value: "shuffle", label: "Shuffle", shortcut: "R" },
+  { type: "item", value: "toggle-theme", label: "Light/Dark", shortcut: "D" },
+  { type: "separator" },
   {
+    type: "item",
     value: "undo",
     label: "Undo",
     shortcut: (input.isMac ? "⌘Z" : "Ctrl+Z"),
     disabled: !input.canGoBack,
-    startsGroup: true,
   },
   {
+    type: "item",
     value: "redo",
     label: "Redo",
     shortcut: (input.isMac ? "⇧⌘Z" : "Ctrl+Shift+Z"),
     disabled: !input.canGoForward,
   },
-  { value: "reset", label: "Reset", shortcut: "⇧R", startsGroup: true },
-]/>
+  { type: "separator" },
+  { type: "item", value: "reset", label: "Reset", shortcut: "⇧R" },
+] satisfies DropdownMenuItem[]/>
 
-<Picker
-  side="right"
-  align="start"
-  alignOffset=-8
-  actions=actions
-  class=cn(
-    "flex items-center justify-between gap-2 rounded-lg px-1.75 ring-1 ring-foreground/10 focus-visible:ring-1",
-    input.class,
-  )
-  onActionSelect(value: string) {
+<DropdownMenu
+  items=items
+  positioning={ placement: "right-start", gutter: 20 }
+  class="bg-neutral-950/80 text-neutral-100 ring-neutral-950/80 backdrop-blur-xl dark:bg-neutral-800/90 dark:ring-neutral-700/50 **:data-[slot=dropdown-menu-label]:text-neutral-400 **:data-[slot=dropdown-menu-separator]:bg-neutral-600 dark:**:data-[slot=dropdown-menu-separator]:bg-neutral-700 **:data-[slot=dropdown-menu-item]:text-neutral-100 **:data-[slot=dropdown-menu-item]:data-highlighted:bg-neutral-600 dark:**:data-[slot=dropdown-menu-item]:data-highlighted:bg-neutral-700/80 **:data-[slot=dropdown-menu-shortcut]:text-neutral-400!"
+  select(value: string) {
     if (value === "shuffle") input.onShuffle();
     else if (value === "toggle-theme") input.onToggleTheme();
     else if (value === "undo") input.onUndo();
@@ -64,13 +70,21 @@ export interface Input {
     else if (value === "reset") input.onReset();
   }
 >
-  <@trigger>
-    <span class="font-medium">Menu</span>
-    // hugeicons Menu09Icon
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-5">
-      <path d="M4 5H20"/>
-      <path d="M4 12H20"/>
-      <path d="M4 19H20"/>
-    </svg>
+  <@trigger|triggerProps|>
+    <button type="button"
+      ...triggerProps
+      class=cn(
+        "flex items-center justify-between gap-2 rounded-lg px-1.75 ring-1 ring-foreground/10 focus-visible:ring-1",
+        input.class,
+      )
+    >
+      <span class="font-medium">Menu</span>
+      // hugeicons Menu09Icon
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-5">
+        <path d="M4 5H20"/>
+        <path d="M4 12H20"/>
+        <path d="M4 19H20"/>
+      </svg>
+    </button>
   </@trigger>
-</Picker>
+</DropdownMenu>

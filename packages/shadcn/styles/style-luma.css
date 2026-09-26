@@ -1209,11 +1209,11 @@
 
   /* MARK: Scroll Area */
   .mu-scroll-area-scrollbar {
-    @apply data-horizontal:h-2.5 data-horizontal:flex-col data-horizontal:border-t data-horizontal:border-t-transparent data-vertical:h-full data-vertical:w-2.5 data-vertical:border-l data-vertical:border-l-transparent;
+    @apply data-horizontal:h-2.5 data-horizontal:flex-col data-horizontal:border-t data-horizontal:border-t-transparent data-vertical:h-full data-vertical:w-2.5 data-vertical:border-l data-vertical:border-l-transparent data-vertical:not-data-[overflow-y]:hidden! data-horizontal:not-data-[overflow-x]:hidden!;
   }
 
   .mu-scroll-area-thumb {
-    @apply rounded-full;
+    @apply rounded-full data-horizontal:h-full data-vertical:w-full;
   }
 
   /* MARK: Separator */

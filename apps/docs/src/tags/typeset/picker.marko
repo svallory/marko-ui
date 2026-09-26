@@ -2,32 +2,25 @@
 //
 // Upstream that file is itself "a copy of create's picker with lucide icons
 // instead of IconPlaceholder" — and our /create port already has the same
-// primitive at ../create/picker.marko, built on @zag-js/menu instead of Base
-// UI. This file is the TYPESET variant of it rather than a reuse, because
-// typeset's picker.tsx exposes two parts create's does not use and which
-// typeset's main-menu.tsx depends on: PickerItem (a plain action item, not a
-// radio item) and PickerShortcut (the right-aligned ⌘Z/R hint). Supporting
-// both action items and radio sections in one tag needs a different input
-// shape than create's `sections`-only API, so extending create's file in
-// place would have changed a primitive /create depends on.
+// primitive at ../create/picker.marko. This file is the TYPESET variant of
+// it rather than a reuse, because typeset's picker.tsx exposes two parts
+// create's does not use and which typeset's main-menu.tsx depends on:
+// PickerItem (a plain action item) and PickerShortcut (the right-aligned
+// ⌘Z/R hint) mixed in the same popup as radio sections.
 //
-// Class strings, data-slot names and structure are shadcn's, verbatim, from
-// picker.tsx: PickerTrigger, PickerContent (popup), PickerGroup, PickerLabel,
-// PickerItem, PickerRadioItem (with its absolutely-positioned check
-// indicator), PickerSeparator, PickerShortcut.
-//
-// Behavioral notes:
-// - Hover-preview: upstream PickerRadioItem fires onItemPreview from
-//   onMouseMove + onFocus (Base UI moves DOM focus to the highlighted item).
-//   zag's `onHighlightChange` already derives the highlighted value from both
-//   pointer and keyboard navigation, so it maps 1:1 and needs no separate
-//   mousemove/focus wiring. Same as ../create/picker.marko.
-// - The upstream PickerContent renders an extra transparent `left-54` shield
-//   div inside the portal to catch outside-clicks that land over the preview
-//   iframe (clicks inside an iframe never reach this document). Ported below
-//   — the same hazard exists here, our preview is an iframe too.
-import * as menu from "@zag-js/menu";
-import { positionerStyle } from "marko-zag";
+// Round 2: rebuilt on the registry DropdownMenu (packages/shadcn/ui/
+// dropdown-menu) instead of a hand-rolled @zag-js/menu popup. DropdownMenu's
+// `items=` array already supports mixed action + radio entries in one list
+// (type discriminant per entry) plus separators between groups, so no new
+// registry capability was needed beyond the positioning/onHighlightChange
+// pass-throughs added to dropdown-menu.marko for this task (mobile anchor
+// override + hover-preview, which this file used to hand-roll a whole
+// parallel menu for). The dark floating-panel look (bg-neutral-950/80) is
+// shadcn's own verbatim upstream class for this popup, kept as a `class`
+// override on the registry component rather than the registry default.
+import DropdownMenu from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import type { DropdownMenuItem } from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import type * as menu from "@zag-js/menu";
 import { cn } from "@marko-ui/shadcn/lib/utils.ts";
 
 export interface PickerRadioOption {
@@ -87,19 +80,41 @@ export interface Input {
   contentClass?: string;
 }
 
-<zag/api=() => menu from=input
+<const/actions=(input.actions ?? [])/>
+<const/sections=(input.sections ?? [])/>
+// main-menu.tsx wraps each run of actions in its own <PickerGroup>: a new
+// group starts at index 0 and at every action with startsGroup — expressed
+// here as a leading separator before each new group (DropdownMenu's own
+// separator entry), same visible effect as a distinct group wrapper.
+<const/items=[
+  ...actions.flatMap((action, index): DropdownMenuItem[] => [
+    ...(index > 0 && action.startsGroup ? [{ type: "separator" as const }] : []),
+    { type: "item", value: action.value, label: action.label, shortcut: action.shortcut, disabled: action.disabled },
+  ]),
+  ...(actions.length > 0 && sections.length > 0 ? [{ type: "separator" as const }] : []),
+  ...sections.flatMap((section, sectionIndex): DropdownMenuItem[] => [
+    ...(sectionIndex > 0 ? [{ type: "separator" as const }] : []),
+    ...(section.label ? [{ type: "label" as const, label: section.label }] : []),
+    ...section.options.map((option): DropdownMenuItem => ({
+      type: "radio",
+      value: option.value,
+      label: option.label,
+      disabled: option.disabled,
+      checked: option.value === input.value,
+      radioGroup: "picker",
+    })),
+  ]),
+] satisfies DropdownMenuItem[]/>
+
+<DropdownMenu/menuApi
+  items=items
+  disabled=input.disabled
+  closeOnSelect=(actions.length > 0 ? undefined : input.closeOnClick)
   positioning={
-    placement: `${input.side ?? "bottom"}${input.align && input.align !== "center" ? `-${input.align}` : ""}`,
+    placement: `${input.side ?? "bottom"}${input.align && input.align !== "center" ? `-${input.align}` : ""}` as NonNullable<menu.Props["positioning"]>["placement"],
     gutter: 20,
     offset: input.alignOffset ? { crossAxis: input.alignOffset } : undefined,
     getAnchorElement: input.anchorEl ? () => input.anchorEl!() : undefined,
-  }
-  onSelect(details: menu.SelectionDetails) {
-    if (input.actions?.some((action) => action.value === details.value)) {
-      input.onActionSelect?.(details.value);
-      return;
-    }
-    input.onValueChange?.(details.value);
   }
   onHighlightChange(details: menu.HighlightChangeDetails) {
     input.onItemPreview?.(details.highlightedValue);
@@ -107,133 +122,47 @@ export interface Input {
   onOpenChange(details: menu.OpenChangeDetails) {
     if (!details.open) input.onItemPreview?.(null);
   }
-/>
-
-<const/{ class: className, contentClass, trigger, value, closeOnClick }=input/>
-<const/sections=(input.sections ?? [])/>
-<const/actions=(input.actions ?? [])/>
-// main-menu.tsx wraps each run of actions in its own <PickerGroup>
-// (data-slot="dropdown-menu-group"): a new group starts at index 0 and at
-// every action with startsGroup. Precomputed here since Marko's <for> can't
-// interleave open/close tags across iterations.
-<const/actionGroups=actions.reduce((groups: PickerAction[][], action, index) => {
-  if (index === 0 || action.startsGroup) groups.push([]);
-  groups[groups.length - 1]!.push(action);
-  return groups;
-}, [])/>
-
-<button type="button"
-  ...api().getTriggerProps()
-  disabled=input.disabled
-  data-slot="dropdown-menu-trigger"
   class=cn(
-    "relative w-36 shrink-0 touch-manipulation rounded-xl p-3 ring-1 ring-foreground/10 select-none hover:bg-muted focus-visible:ring-foreground/50 focus-visible:outline-none disabled:opacity-50 data-[state=open]:bg-muted md:w-full md:rounded-lg md:px-2.5 md:py-2",
-    className,
+    "bg-neutral-950/80 text-neutral-100 ring-neutral-950/80 backdrop-blur-xl dark:bg-neutral-800/90 dark:ring-neutral-700/50 **:data-[slot=dropdown-menu-label]:text-neutral-400 **:data-[slot=dropdown-menu-separator]:bg-neutral-600 dark:**:data-[slot=dropdown-menu-separator]:bg-neutral-700 **:data-[slot=dropdown-menu-item]:text-neutral-100 **:data-[slot=dropdown-menu-item]:data-highlighted:bg-neutral-600 dark:**:data-[slot=dropdown-menu-item]:data-highlighted:bg-neutral-700/80 **:data-[slot=dropdown-menu-radio-item]:text-neutral-100 **:data-[slot=dropdown-menu-radio-item]:data-highlighted:bg-neutral-600 dark:**:data-[slot=dropdown-menu-radio-item]:data-highlighted:bg-neutral-700/80 **:data-[slot=dropdown-menu-shortcut]:text-neutral-400!",
+    input.contentClass,
   )
+  select(value: string) {
+    if (actions.some((action) => action.value === value)) {
+      input.onActionSelect?.(value);
+    }
+  }
+  radioChange(_group, value) {
+    input.onValueChange?.(value);
+  }
 >
-  <${trigger.content}/>
-</button>
-<zag-portal>
-  <if=api().open>
-    <div ...api().getPositionerProps() style=positionerStyle class="isolate z-50 outline-none">
-      <div
-        ...api().getContentProps()
-        data-slot="dropdown-menu-content"
-        class=cn(
-          "cn-menu-target z-50 no-scrollbar max-h-(--available-height,24rem) w-[calc(var(--available-width,16rem)-1.5rem)] min-w-32 overflow-x-hidden overflow-y-auto rounded-xl border-0 bg-neutral-950/80 p-1.5 text-neutral-100 ring-1 ring-neutral-950/80 backdrop-blur-xl outline-none md:w-52 dark:bg-neutral-800/90 dark:ring-neutral-700/50",
-          contentClass,
-        )
-      >
-        <for|group, groupIndex| of=actionGroups>
-          <if=(groupIndex > 0)>
-            <div data-slot="dropdown-menu-separator" class="-mx-1.5 my-1.5 h-px bg-neutral-600 dark:bg-neutral-700"/>
-          </if>
-          <div data-slot="dropdown-menu-group">
-            <for|action| of=group by=(action) => action.value>
-              <div
-                ...api().getItemProps({ value: action.value, disabled: action.disabled })
-                data-slot="dropdown-menu-item"
-                data-variant="default"
-                class="group/dropdown-menu-item relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-              >
-                ${action.label}
-                <if=action.shortcut>
-                  <span
-                    data-slot="dropdown-menu-shortcut"
-                    class="ml-auto text-xs tracking-widest text-neutral-400! group-focus/dropdown-menu-item:text-neutral-100"
-                  >
-                    ${action.shortcut}
-                  </span>
-                </if>
-              </div>
-            </for>
-          </div>
-        </for>
-        // option-picker/font-picker each wrap their (single) section list in
-        // one flat PickerRadioGroup (data-slot="dropdown-menu-radio-group")
-        // around the whole loop, never per-section.
-        <if=(sections.length > 0)>
-          <div data-slot="dropdown-menu-radio-group">
-            <for|section, sectionIndex| of=sections>
-              <if=(sectionIndex > 0)>
-                <div data-slot="dropdown-menu-separator" class="-mx-1.5 my-1.5 h-px bg-neutral-600 dark:bg-neutral-700"/>
-              </if>
-              <div ...api().getItemGroupProps({ id: `picker-group-${sectionIndex}` }) data-slot="dropdown-menu-group">
-                <if=section.label>
-                  <div
-                    ...api().getItemGroupLabelProps({ htmlFor: `picker-group-${sectionIndex}` })
-                    data-slot="dropdown-menu-label"
-                    class="px-2 py-1.5 text-xs font-medium text-neutral-400"
-                  >
-                    ${section.label}
-                  </div>
-                </if>
-                <for|option| of=section.options by=(option) => option.value>
-                  <div
-                    ...api().getOptionItemProps({
-                      type: "radio",
-                      value: option.value,
-                      checked: option.value === value,
-                      disabled: option.disabled,
-                      closeOnSelect: closeOnClick,
-                    })
-                    data-slot="dropdown-menu-radio-item"
-                    class="relative flex cursor-default items-center gap-2 rounded-lg py-1.5 pr-8 pl-2 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-                  >
-                    <span
-                      class="pointer-events-none absolute right-2 flex items-center justify-center"
-                      data-slot="dropdown-menu-radio-item-indicator"
-                    >
-                      <if=(option.value === value)>
-                        // lucide CheckIcon
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 pointer-coarse:size-5">
-                          <path d="M20 6 9 17l-5-5"/>
-                        </svg>
-                      </if>
-                    </span>
-                    ${option.label}
-                  </div>
-                </for>
-              </div>
-            </for>
-          </div>
-        </if>
-      </div>
-    </div>
-    // Clicks inside the preview iframe never reach this document, so this
-    // shield catches outside-clicks over it. left-54 clears the card.
-    //
-    // Upstream this div sits inside Base UI's <Menu.Portal>, which owns
-    // outside-press dismissal, so the div itself needs no handler. Our zag
-    // portal does not treat it as part of the menu, so without an explicit
-    // close it becomes a full-viewport click sink that swallows every
-    // subsequent click on the page (found in browser verification: the
-    // shield measured 1376x916 and the docs-panel tabs, Shuffle and the
-    // toolbar all stopped responding once any picker had been opened).
-    // api().setOpen(false) restores the upstream behavior.
-    <div
-      class="absolute inset-y-0 right-0 left-54 z-40 bg-transparent"
-      on-click() { api().setOpen(false); }
-    />
-  </if>
-</zag-portal>
+  <@trigger|triggerProps|>
+    <button type="button"
+      ...triggerProps
+      disabled=input.disabled
+      class=cn(
+        "relative w-36 shrink-0 touch-manipulation rounded-xl p-3 ring-1 ring-foreground/10 select-none hover:bg-muted focus-visible:ring-foreground/50 focus-visible:outline-none disabled:opacity-50 data-[state=open]:bg-muted md:w-full md:rounded-lg md:px-2.5 md:py-2",
+        input.class,
+      )
+    >
+      <${input.trigger.content}/>
+    </button>
+  </@trigger>
+</DropdownMenu>
+// Clicks inside the preview iframe never reach this document, so this
+// shield catches outside-clicks over it while the menu is open. left-54
+// clears the customizer card. `position: fixed` (viewport-relative) rather
+// than the original hand-rolled menu's `absolute`-inside-its-own-portal,
+// since this div is NOT inside DropdownMenu's own zag-portal.
+//
+// Without an explicit close, this becomes a full-viewport click sink that
+// swallows every subsequent click on the page (found in browser
+// verification during the initial port: the shield measured 1376x916 and
+// the docs-panel tabs, Shuffle and the toolbar all stopped responding once
+// any picker had been opened). `menuApi().setOpen(false)` restores the
+// upstream behavior.
+<if=menuApi().open>
+  <div
+    class="fixed inset-y-0 right-0 left-54 z-40 bg-transparent"
+    on-click() { menuApi().setOpen(false); }
+  />
+</if>

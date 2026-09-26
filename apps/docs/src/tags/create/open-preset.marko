@@ -10,8 +10,20 @@
 // parsePresetInput: accepts a bare code ("b2D0wqNxT") or a
 // "--preset b2D0wqNxT" CLI flag, marks the field invalid otherwise, and
 // disables Open until the input parses.
+//
+// The Dialog's `text-foreground` (round 5 fix) is load-bearing, same as the
+// customizer roots (apps/docs/src/tags/{create,typeset}/customizer.marko):
+// this dialog is its own `dark` island regardless of site theme, and
+// without re-declaring `color` here, the title/description/outline Cancel
+// button inherit the LIGHT-mode `--foreground` (near-black) from `body`'s
+// own `text-foreground` instead of the dark-scoped one, rendering
+// near-invisible dark-on-dark text in light mode. See that file's header
+// comment for the full CSS-custom-property inheritance RCA.
 import { parsePresetInput } from "./lib/parse-preset-input.ts";
 import Dialog from "@marko-ui/shadcn/ui/dialog/dialog.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
+import Label from "@marko-ui/shadcn/ui/label/label.marko";
 
 export interface Input {
   open: boolean;
@@ -45,15 +57,14 @@ static const PRESET_DESCRIPTION =
   handleOpenChange(false);
 }/>
 
-<Dialog open=input.open openChange=handleOpenChange class="dark sm:max-w-md">
+<Dialog open=input.open openChange=handleOpenChange class="dark text-foreground sm:max-w-md">
   <@title>${PRESET_TITLE}</@title>
   <@description>${PRESET_DESCRIPTION}</@description>
   <form on-submit=handleSubmit data-slot="open-preset-form">
     <div class="py-4">
-      <label for="preset-code" class="sr-only">Preset code</label>
-      <input
+      <Label for="preset-code" class="sr-only">Preset code</Label>
+      <TextInput
         id="preset-code"
-        type="text"
         value=inputValue
         on-input(event: Event) {
           inputValue = (event.target as HTMLInputElement).value;
@@ -63,24 +74,23 @@ static const PRESET_DESCRIPTION =
         autocorrect="off"
         spellcheck="false"
         aria-invalid=(isInvalid ? "true" : "false")
-        class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring aria-[invalid=true]:border-destructive md:h-8"
+        class="md:h-8"
       />
     </div>
     <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-      <button
+      <Button
         type="button"
-        class="inline-flex items-center justify-center rounded-md border border-input bg-transparent px-4 py-2 text-sm font-medium shadow-xs hover:bg-muted"
+        variant="outline"
         on-click() { handleOpenChange(false); }
       >
         Cancel
-      </button>
-      <button
+      </Button>
+      <Button
         type="submit"
         disabled=!nextPreset
-        class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-xs hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
       >
         Open
-      </button>
+      </Button>
     </div>
   </form>
 </Dialog>
