@@ -8,7 +8,15 @@ import "../../tags/theme-toggle.marko";
      also ships with no bottom border, so this both matches the source and
      satisfies the user's explicit "remove the line under the header" ask
      even if it hadn't. -->
-<header class="sticky top-0 z-50 w-full bg-background text-foreground" data-slot="site-header">
+<!-- style-vega: upstream's site chrome (header/nav/sidebars/footer) is built
+     from registry/new-york-v4/ui, whose .mu-button base uses rounded-md —
+     matching style-vega, not the site-wide default style-nova (rounded-lg).
+     Verified: packages/shadcn/styles/style-vega.css's .mu-button vs
+     style-nova.css's, against data/shadcn-ui/apps/v4/registry/new-york-v4/ui/
+     button.tsx. Component previews stay nova (component-preview.tsx's own
+     default) — only chrome opts into vega, nested inside the nova body per
+     app.css's "nova imports first" cascade rule. -->
+<header class="style-vega sticky top-0 z-50 w-full bg-background text-foreground" data-slot="site-header">
   <div class="container-wrapper px-6">
     <div class="flex h-14 items-center gap-4">
       <mobile-nav class="flex lg:hidden"/>
