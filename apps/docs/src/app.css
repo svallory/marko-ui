@@ -29,6 +29,12 @@
    (@custom-variant/@theme): CSS requires @import to precede all rules but
    @charset/@layer, and the Tailwind parser enforces it. */
 @import "@marko-ui/shadcn/styles/globals.css";
+/* Site-level theme OVERRIDES — upstream's own docs site imports shadcn's
+   theme and then re-themes its own token values on top (foreground family,
+   chart colors, etc.) — see site-theme.css's own header for the full
+   rationale and per-token upstream citations. Right after the theme it
+   overrides, before any other CSS. */
+@import "./site-theme.css";
 @import "./vendor-utilities.css";
 @import "./legacy-themes.css";
 /* Site-only ADDITIVE tokens (fonts, breakpoints, docs-chrome surface/code/

@@ -1,0 +1,83 @@
+/* Site-level THEME OVERRIDES — upstream's own docs site imports shadcn's
+   theme and then sets its own token values on top of it
+   (data/shadcn-ui/apps/v4/app/globals.css:99-184), exactly the way any real
+   consumer themes their app: import, then override variables. This file
+   does the same thing here, imported AFTER the shipped
+   @marko-ui/shadcn/styles/globals.css (see app.css's import order).
+
+   Scope: ONLY the :root/.dark token VALUES that differ between upstream's
+   site and the shipped neutral theme (packages/shadcn/styles/globals.css).
+   Every value below is copied verbatim from upstream, with its source line
+   cited. No component/slot rules, no token this site's own a11y-driven
+   DIVERGENCE values already cover (muted-foreground, destructive,
+   destructive-foreground — see globals.css's own DIVERGENCE comments and
+   scratch/team-lead/reports/report-docs-shipped-css.md's "Round 2" section
+   for the contrast numbers behind those; this file must not re-fight that
+   decision by re-overriding the same tokens back to upstream's values). */
+
+:root {
+  /* data/shadcn-ui/apps/v4/app/globals.css:102 (--foreground),
+     :104 (--card-foreground), :106 (--popover-foreground), :107 (--primary):
+     upstream's site uses pure black for its whole near-black family;
+     the shipped neutral theme uses oklch(0.145 0 0) (near-black, not pure)
+     for foreground/card-foreground/popover-foreground, and a separate
+     0.205 for primary. */
+  --foreground: oklch(0% 0 0);
+  --card-foreground: oklch(0% 0 0);
+  --popover-foreground: oklch(0% 0 0);
+  --primary: oklch(0% 0 0);
+  /* data/shadcn-ui/apps/v4/app/globals.css:120-124: chart demos on
+     upstream's docs site use a blue ramp, not the shipped theme's grey
+     default — every card in upstream's own home-page masonry
+     (app/(app)/(root)/cards/*.tsx) imports from styles/base-rhea/ui, and
+     this is that same site-level theming, extended to chart colors. */
+  --chart-1: var(--color-blue-300);
+  --chart-2: var(--color-blue-500);
+  --chart-3: var(--color-blue-600);
+  --chart-4: var(--color-blue-700);
+  --chart-5: var(--color-blue-800);
+  /* data/shadcn-ui/apps/v4/app/globals.css:126: sidebar-foreground follows
+     the same pure-black override as the foreground family above. */
+  --sidebar-foreground: oklch(0% 0 0);
+}
+
+.dark {
+  /* data/shadcn-ui/apps/v4/app/globals.css:145,147,149,150,153 — foreground/
+     card-foreground/popover-foreground/primary/sidebar-foreground, ALL
+     restated here even where the value equals the shipped theme's own dark
+     value (foreground/card-foreground/popover-foreground/sidebar-foreground
+     are all oklch(0.985 0 0) either way; primary is 0.922 either way).
+
+     This restatement is load-bearing, not cosmetic: `:root` and `.dark`
+     match the SAME <html> element at once in dark mode (dark mode is a
+     class on the element `:root` also matches, not a separate selector
+     scope) and have EQUAL specificity, so without an explicit `.dark`
+     override the cascade falls back to source order — this file's `:root`
+     block (imported after globals.css) would win EVEN IN DARK MODE,
+     silently overriding the shipped theme's correct dark values with this
+     file's light-mode ones. Caught for real by
+     e2e/dark-mode-parity.spec.ts (the hero button rendered pure black text
+     in dark mode) before any of these five lines existed. Upstream's own
+     globals.css restates every one of these five tokens in its own `.dark`
+     block for the exact same reason — compare :root:102/104/106/107/126
+     against .dark:145/147/149/150/153. */
+  --foreground: oklch(0.985 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  /* data/shadcn-ui/apps/v4/app/globals.css:156: upstream's dark accent is
+     lighter (0.371) than the shipped theme's (0.269, which matches
+     --secondary/--muted instead of standing apart). */
+  --accent: oklch(0.371 0 0);
+  /* data/shadcn-ui/apps/v4/app/globals.css:163-167: same blue chart ramp
+     as light mode above. */
+  --chart-1: var(--color-blue-300);
+  --chart-2: var(--color-blue-500);
+  --chart-3: var(--color-blue-600);
+  --chart-4: var(--color-blue-700);
+  --chart-5: var(--color-blue-800);
+  /* data/shadcn-ui/apps/v4/app/globals.css:175: upstream's dark
+     sidebar-ring is a touch darker (0.439) than the shipped theme's (0.556). */
+  --sidebar-ring: oklch(0.439 0 0);
+}

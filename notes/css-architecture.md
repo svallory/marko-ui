@@ -61,13 +61,16 @@ generic Tailwind utilities with no token overlap) → ./legacy-themes.css
 
 ## Non-obvious mechanics
 
-- `:root` chart vars are now GREY (the shipped theme's default, matching
-  upstream), not the blue site-only override an earlier version of this file
-  described — that blue `:root` copy in the old `site-tokens.css` was itself
-  one of the drift bugs this architecture change fixed (docs-shipped-css
-  audit finding 1.3). The masonry wrapper still carries `theme-neutral`
-  (legacy-themes.css remaps `--chart-*` inside it) and body still carries
-  `theme-default` — both unrelated customizer-preset mechanisms, unchanged.
+- `:root` chart vars are BLUE again (Round 2, `site-theme.css`), matching
+  upstream's own docs site (`data/shadcn-ui/apps/v4/app/globals.css:120-124`)
+  — but now as a clearly-labeled site-level THEME OVERRIDE layered on top of
+  the shipped theme's grey default, not an uncommented duplicate `:root`
+  block silently forking it (that was the Round 1 bug, audit finding 1.3;
+  the fix there was deleting the fork, the fix here is re-adding the same
+  values as a legitimate, cited override — see `site-theme.css`'s header).
+  The masonry wrapper still carries `theme-neutral` (legacy-themes.css remaps
+  `--chart-*` inside it) and body still carries `theme-default` — both
+  unrelated customizer-preset mechanisms, unchanged.
 - `@source` globs MUST include `packages/shadcn` — a style-only utility that
   no scanned file uses is silently absent from the build (this bit us: cards
   rendered square/unpadded because the style layers weren't scanned). The

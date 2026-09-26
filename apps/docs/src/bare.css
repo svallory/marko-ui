@@ -7,6 +7,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "@marko-ui/shadcn/styles/globals.css";
+@import "./site-theme.css";
 @import "./site-tokens.css";
 /* The site default style layer; the bare layout carries `style-nova` on
    <body> so these .mu-* rules match, as on every docs page. */
