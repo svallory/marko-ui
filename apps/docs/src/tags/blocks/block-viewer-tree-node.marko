@@ -29,7 +29,7 @@ export interface Input {
   <button
     type="button"
     data-active=String(node.path === input.activeFile)
-    class="rounded-none pl-(--index) whitespace-nowrap flex w-full items-center gap-2 py-1.5 pr-2 text-left text-sm text-code-foreground hover:bg-muted-foreground/15 focus:bg-muted-foreground/15 focus-visible:bg-muted-foreground/15 active:bg-muted-foreground/15 data-[active=true]:bg-muted-foreground/15"
+    class="rounded-none pl-(--index) whitespace-nowrap flex w-full items-center gap-2 py-1.5 pr-2 text-left text-sm text-code-foreground outline-none hover:bg-muted-foreground/15 focus:bg-muted-foreground/15 focus-visible:bg-muted-foreground/15 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:bg-muted-foreground/15 data-[active=true]:bg-muted-foreground/15"
     style={ "--index": leafIndex }
     onClick() { if (node.path) input.onSelect(node.path); }
   >
@@ -44,7 +44,7 @@ export interface Input {
       <button
         ...props
         type="button"
-        class="rounded-none pl-(--index) whitespace-nowrap flex w-full items-center gap-2 py-1.5 pr-2 text-left text-sm text-code-foreground hover:bg-muted-foreground/15 focus:bg-muted-foreground/15 focus-visible:bg-muted-foreground/15 active:bg-muted-foreground/15"
+        class="rounded-none pl-(--index) whitespace-nowrap flex w-full items-center gap-2 py-1.5 pr-2 text-left text-sm text-code-foreground outline-none hover:bg-muted-foreground/15 focus:bg-muted-foreground/15 focus-visible:bg-muted-foreground/15 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:bg-muted-foreground/15"
         style={ "--index": folderIndex }
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 shrink-0 opacity-70 transition-transform group-data-[state=open]/collapsible:rotate-90"><path d="m9 18 6-6-6-6"/></svg>

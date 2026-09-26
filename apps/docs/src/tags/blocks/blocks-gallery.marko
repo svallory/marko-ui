@@ -6,9 +6,8 @@
 // other slug lists the full category.
 import "./blocks-nav.marko";
 import "./block-viewer.marko";
-import { buttonVariants } from "@marko-ui/shadcn/ui/button/variants.ts";
-import { badgeVariants } from "@marko-ui/shadcn/ui/badge/variants.ts";
-import { cn } from "@marko-ui/shadcn/lib/utils.ts";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Badge from "@marko-ui/shadcn/ui/badge/badge.marko";
 import { blocksInCategory, findBlock, BLOCK_CATEGORIES } from "../../lib/blocks-list.ts";
 
 export interface Input {
@@ -28,10 +27,10 @@ static const FEATURED_BLOCK_NAMES = ["dashboard-01", "sidebar-07", "sidebar-03",
 <section class="border-grid">
   <div class="container-wrapper">
     <div class="container flex flex-col items-center gap-2 px-6 py-8 text-center md:py-16 lg:py-20 xl:gap-4">
-      <a href="/docs" data-slot="badge" class=cn(badgeVariants({ variant: "secondary" }), "bg-muted")>
+      <Badge href="/docs" variant="secondary" class="bg-muted">
         Built on the marko-ui registry
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-      </a>
+      </Badge>
       <h1 class="leading-tighter max-w-3xl text-3xl font-semibold tracking-tight text-balance text-primary lg:leading-[1.1] lg:font-semibold xl:text-5xl xl:tracking-tighter">
         Building Blocks for the Web
       </h1>
@@ -39,8 +38,8 @@ static const FEATURED_BLOCK_NAMES = ["dashboard-01", "sidebar-07", "sidebar-03",
         Clean, modern building blocks. Copy and paste into your apps. Works with all Marko frameworks. Open Source. Free forever.
       </p>
       <div class="flex w-full items-center justify-center gap-2 pt-2 **:data-[slot=button]:shadow-none">
-        <a href="#blocks" data-slot="button" class=buttonVariants({ size: "sm" })>Browse Blocks</a>
-        <a href="/docs/components" data-slot="button" class=buttonVariants({ variant: "ghost", size: "sm" })>View Components</a>
+        <Button href="#blocks" size="sm">Browse Blocks</Button>
+        <Button href="/docs/components" variant="ghost" size="sm">View Components</Button>
       </div>
     </div>
   </div>
@@ -50,13 +49,14 @@ static const FEATURED_BLOCK_NAMES = ["dashboard-01", "sidebar-07", "sidebar-03",
 <div id="blocks" class="container-wrapper scroll-mt-24">
   <div class="container flex items-center justify-between gap-4 py-4">
     <blocks-nav activeSlug=input.categorySlug/>
-    <a
+    <Button
       href="/blocks/sidebar"
-      data-slot="button"
-      class=cn(buttonVariants({ variant: "secondary", size: "sm" }), "mr-7 hidden shadow-none lg:flex")
+      variant="secondary"
+      size="sm"
+      class="mr-7 hidden shadow-none lg:flex"
     >
       Browse all blocks
-    </a>
+    </Button>
   </div>
 </div>
 
@@ -76,9 +76,9 @@ static const FEATURED_BLOCK_NAMES = ["dashboard-01", "sidebar-07", "sidebar-03",
     <if=isFeatured>
       <div class="container-wrapper">
         <div class="container flex justify-center py-6">
-          <a href="/blocks/sidebar" data-slot="button" class=buttonVariants({ variant: "outline" })>
+          <Button href="/blocks/sidebar" variant="outline">
             Browse more blocks
-          </a>
+          </Button>
         </div>
       </div>
     </if>

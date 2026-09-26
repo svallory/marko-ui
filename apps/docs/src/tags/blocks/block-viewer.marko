@@ -219,7 +219,9 @@ export interface Input {
             <div class="ml-auto flex items-center gap-2">
               <button
                 type="button"
-                class="inline-flex size-7 items-center justify-center rounded-md text-code-foreground/70 transition-colors hover:bg-white/10 hover:text-code-foreground"
+                title="Copy code"
+                aria-label="Copy code"
+                class="inline-flex size-7 items-center justify-center rounded-md text-code-foreground/70 transition-colors outline-none hover:bg-white/10 hover:text-code-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-code"
                 onClick() {
                   navigator.clipboard?.writeText(activeManifestFile?.content ?? "");
                   copiedFile = true;

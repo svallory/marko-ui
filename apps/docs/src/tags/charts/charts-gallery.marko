@@ -16,9 +16,8 @@
 // port-shadcn-resource skill's Marko 6 gotchas). Each type's fixed demo list
 // is statically imported and rendered.
 import "./charts-nav.marko";
-import { buttonVariants } from "@marko-ui/shadcn/ui/button/variants.ts";
-import { badgeVariants } from "@marko-ui/shadcn/ui/badge/variants.ts";
-import { cn } from "@marko-ui/shadcn/lib/utils.ts";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import Badge from "@marko-ui/shadcn/ui/badge/badge.marko";
 import { CHART_TYPES } from "../../lib/charts-list.ts";
 import type { ChartTypeEntry } from "../../lib/charts-list.ts";
 
@@ -92,15 +91,13 @@ static const firstChartType: ChartTypeEntry = (() => {
 <section class="border-grid">
   <div class="container-wrapper">
     <div class="container flex flex-col items-center gap-2 px-6 py-8 text-center md:py-16 lg:py-20 xl:gap-4">
-      <a href="/docs/changelog" class="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
-        <span data-slot="badge" class=cn(badgeVariants({ variant: "secondary" }), "bg-muted gap-1")>
-          New Questionnaire component
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3" aria-hidden="true">
-            <path d="M5 12h14"/>
-            <path d="m12 5 7 7-7 7"/>
-          </svg>
-        </span>
-      </a>
+      <Badge href="/docs/changelog" variant="secondary" class="bg-muted gap-1">
+        New Questionnaire component
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3" aria-hidden="true">
+          <path d="M5 12h14"/>
+          <path d="m12 5 7 7-7 7"/>
+        </svg>
+      </Badge>
       <h1 class="leading-tighter max-w-3xl text-3xl font-semibold tracking-tight text-balance text-primary lg:leading-[1.1] lg:font-semibold xl:text-5xl xl:tracking-tighter">
         Beautiful Charts &amp; Graphs
       </h1>
@@ -108,8 +105,8 @@ static const firstChartType: ChartTypeEntry = (() => {
         A collection of ready-to-use chart components built with d3. From basic charts to rich data displays, copy and paste into your apps.
       </p>
       <div class="flex w-full items-center justify-center gap-2 pt-2 **:data-[slot=button]:shadow-none">
-        <a href="#charts" data-slot="button" class=buttonVariants({ size: "sm" })>Browse Charts</a>
-        <a href="/docs/components/chart" data-slot="button" class=buttonVariants({ variant: "ghost", size: "sm" })>Documentation</a>
+        <Button href="#charts" size="sm">Browse Charts</Button>
+        <Button href="/docs/components/chart" variant="ghost" size="sm">Documentation</Button>
       </div>
     </div>
   </div>
