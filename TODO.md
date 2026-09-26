@@ -135,7 +135,7 @@ Skips / deviations (rule 5 — no approximations, log instead):
 - **Mobile add-flow uses the same Dialog** — shadcn swaps in a Drawer under `useIsMobile`; we render the Dialog at every width (`components/directory-add-button.tsx` Drawer branch not ported).
 - **Add-dialog tabs are page-local reactive state**, not shadcn's Tabs+Tooltip composition and not our shared `<package-manager-switcher>` — the switcher binds panels imperatively in onMount and its shiki `<await>` panels don't exist yet when mounted inside a client-opened dialog (tabs update, panels never swap; hit 2026-08-20). Same `marko-ui.packageManager` localStorage key, so the choice stays synced site-wide.
 - **Icons are lucide via our Icon component** (ArrowUpRight, Plus, ChevronLeft/Right, Check, Copy) where shadcn's page uses @tabler — repo-wide icon strategy decision (option a), glyphs near-identical.
-- **Pagination is anchors ported verbatim from directory-list.tsx** (getPageNumbers logic included) but with only 1 registry listed the `totalPages > 1` branch is unexercised in the live page — re-verify when the directory grows past 10 entries.
+- **Pagination now composes the shared `packages/shadcn/ui/pagination` parts** (ported to upstream parity 2026-09-26, replacing the earlier Zag-machine component; `getPageNumbers`/`handlePageClick`/`getPageHref` logic stays local to directory-list.tsx's own state model) but with only 1 registry listed the `totalPages > 1` branch is unexercised in the live page — re-verify when the directory grows past 10 entries.
 - **Documentation LinkedCards** point at `/docs/cli` and `/docs/contributing-a-library` (2 cards, not shadcn's 6 registry-docs cards — those pages don't exist here).
 
 ## OSS readiness (before going public)

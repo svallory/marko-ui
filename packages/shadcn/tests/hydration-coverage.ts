@@ -32,7 +32,7 @@ import { fileURLToPath } from "node:url";
  * per component route. Those two figures coexisting unexplained is what made
  * the public "33 of 54" claim look like an arithmetic error.
  */
-export const ZAG_BACKED_COMPONENT_COUNT = 54;
+export const ZAG_BACKED_COMPONENT_COUNT = 53;
 
 /**
  * The Zag-backed components actually present on disk, read fresh.
@@ -118,7 +118,6 @@ export const INTERACTIVE_COMPONENTS = [
   "menubar",
   "navigation-menu",
   "number-input",
-  "pagination",
   "password-input",
   "popover",
   "progress",

@@ -1,0 +1,7 @@
+export interface Input extends Marko.Input<"li"> {}
+
+<const/{ content, ...rest }=input/>
+
+<li data-slot="pagination-item" ...rest>
+  <${content}/>
+</li>

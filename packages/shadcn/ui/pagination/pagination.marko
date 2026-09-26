@@ -1,110 +1,16 @@
-import * as paginationMachine from "@zag-js/pagination";
-import type { MachineInput } from "marko-zag";
-import { buttonVariants } from "../button/variants.ts";
 import { cn } from "#lib/utils.ts";
-import { stripOwnProps } from "#lib/native-attrs.ts";
 import { pagination as styles } from "./classes.ts";
 
-export type Input = MachineInput<"nav", paginationMachine.Props> & {
-  pageChange?: (page: number) => void;
-};
+export interface Input extends Marko.Input<"nav"> {}
 
-<zag/api=() => paginationMachine from=input/>
-
-<const/nativeAttrs=() =>
-  stripOwnProps(paginationMachine.splitProps(input)[1], "class", "pageChange")
->
-
-<const/prevNextVariant=buttonVariants({ variant: "ghost", size: "default" })/>
+<const/{ class: className, content, ...rest }=input/>
 
 <nav
-  ...nativeAttrs()
-  ...api().getRootProps()
   role="navigation"
   aria-label="pagination"
   data-slot="pagination"
-  class=cn(styles.root, input.class)
+  class=cn(styles.root, className)
+  ...rest
 >
-  <ul data-slot="pagination-content" class=styles.content>
-    <li data-slot="pagination-item">
-      <button type="button"
-        ...api().getPrevTriggerProps()
-        data-slot="pagination-link"
-        aria-label="Go to previous page"
-        class=cn(prevNextVariant, styles.link, styles.previous)
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class=styles.icon
-        >
-          <path d="m15 18-6-6 6-6"/>
-        </svg>
-        <span class=styles.previousText>Previous</span>
-      </button>
-    </li>
-    <for|item, index| of=api().pages by=(item, index) => item.type === "page" ? `page-${item.value}` : `ellipsis-${index}`>
-      <if=item.type === "page">
-        <const/isActive=item.value === api().page>
-        <const/pageVariant=buttonVariants({ variant: isActive ? "outline" : "ghost", size: "icon" })>
-        <li data-slot="pagination-item">
-          <button type="button"
-            ...api().getItemProps({ type: "page", value: item.value })
-            data-slot="pagination-link"
-            aria-current=(isActive ? "page" : undefined)
-            data-active=(isActive ? "true" : undefined)
-            class=cn(pageVariant, styles.link)
-          >
-            ${item.value}
-          </button>
-        </li>
-      </if>
-      <else>
-        <li data-slot="pagination-item">
-          <span
-            ...api().getEllipsisProps({ index })
-            aria-hidden="true"
-            data-slot="pagination-ellipsis"
-            class=styles.ellipsis
-          >
-            &hellip;
-            <span class=styles.srOnly>More pages</span>
-          </span>
-        </li>
-      </else>
-    </for>
-    <li data-slot="pagination-item">
-      <button type="button"
-        ...api().getNextTriggerProps()
-        data-slot="pagination-link"
-        aria-label="Go to next page"
-        class=cn(prevNextVariant, styles.link, styles.next)
-      >
-        <span class=styles.nextText>Next</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class=styles.icon
-        >
-          <path d="m9 18 6-6-6-6"/>
-        </svg>
-      </button>
-    </li>
-  </ul>
+  <${content}/>
 </nav>
-
-<return=api>
