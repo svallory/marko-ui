@@ -1,7 +1,8 @@
 // Theming — adapted from shadcn's content/docs/(root)/theming.mdx. The token
 // table and the base-color list are read off our own
-// packages/shadcn/styles/*.css, so the values here are ours, not
-// shadcn's (notably: our radius scale uses +/- px offsets, not multipliers).
+// packages/shadcn/styles/*.css, so the values here are ours, not shadcn's —
+// though the radius scale below is now identical to upstream's current CLI
+// output (multiplicative, 7-step sm..4xl).
 import "../../../tags/docs/docs-article.marko";
 import "../../../tags/docs/code-block.marko";
 import Table from "@marko-ui/shadcn/ui/table/table.marko";
@@ -35,10 +36,13 @@ static const RADIUS_SCALE = `:root {
 }
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }`;
 
 static const OVERRIDE = `@import "@marko-ui/shadcn/styles/globals.css";
@@ -297,16 +301,16 @@ static const SWATCHES = [
 
   <p>
     <code>--radius</code> is the single source of truth for corner rounding. The scale is derived
-    from it with fixed pixel offsets, so changing one value re-rounds the whole UI.
+    from it as multiples, from <code>--radius-sm</code> (0.6&times;) up to <code>--radius-4xl</code>
+    (2.6&times;), so changing one value scales the whole UI proportionally.
   </p>
 
   <code-block language="css" filename="src/styles/globals.css" code=RADIUS_SCALE/>
 
   <p>
     Set <code>--radius: 0</code> for square corners, or push it up to <code>1rem</code> for a
-    softer look. Because the small sizes subtract a fixed amount rather than scaling
-    proportionally, very small <code>--radius</code> values clamp to square rather than going
-    negative.
+    softer look. Because every step scales proportionally, the ratios between sizes stay the
+    same at any <code>--radius</code> value.
   </p>
 
   <h2 id="customizing">Customizing</h2>
