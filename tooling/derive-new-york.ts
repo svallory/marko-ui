@@ -204,6 +204,11 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     extra: ["[&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-md!"],
     reason: "same mechanism difference as the horizontal orientation entry above, mirrored for the vertical axis.",
   },
+  "marker:marker": {
+    missing: ["group/marker"],
+    reason:
+      "TOOL LIMITATION (same class as switch:switch's group/switch entry): isStructuralOnlyToken() strips every `group/*` token from OUR side unconditionally, but new-york-v4's own Marker root ALSO writes a real `group/marker` (its content reads group-data-[variant=separator]/marker: off it) — our classes.ts (marker/classes.ts's `base` field) already carries `group/marker` verbatim.",
+  },
   "empty:empty": {
     extra: ["w-full"],
     reason:

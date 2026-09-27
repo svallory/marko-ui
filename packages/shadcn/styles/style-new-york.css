@@ -1643,6 +1643,8 @@
   }
 
   /* MARK: Marker */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/marker.tsx) — no change
+     from vega; new-york-v4's classes already equal vega's rule verbatim. */
   .mu-marker {
     @apply gap-2 text-sm text-muted-foreground [a]:hover:text-foreground [a]:underline-offset-3 [a]:underline [&_svg:not([class*='size-'])]:size-4 min-h-4 text-left;
   }
