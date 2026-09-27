@@ -1821,7 +1821,7 @@
     },
     {
       "path": "styles/new-york/alert-dialog.json",
-      "sha256": "b76038772ea8b3feb1df35cd4992909722aad43c7d44c993a871cb24691926e8"
+      "sha256": "5b1be728b607597486e6412c0dfdbfcb336ad357bbc0cc1dee106e0b3d82f5f6"
     },
     {
       "path": "styles/new-york/alert.json",
@@ -1849,7 +1849,7 @@
     },
     {
       "path": "styles/new-york/breadcrumb.json",
-      "sha256": "4ad98fa0574bb81eb7c9227e642c21e1830ef529b8629651421121e2ffe055b8"
+      "sha256": "774cd85b2d4632f6734d45c8b79bb39485dfa073f38c61a35e623d8b45e490b2"
     },
     {
       "path": "styles/new-york/bubble.json",
@@ -1905,7 +1905,7 @@
     },
     {
       "path": "styles/new-york/command.json",
-      "sha256": "53cb73b2f0505de156f616c50c19a59463c1220f1acb7ceebac6141293cb20c6"
+      "sha256": "8eeec825f178c5fdf3f1a434481eb366b3aa85b5a5525672a8be5468e1d7d48a"
     },
     {
       "path": "styles/new-york/context-menu.json",
@@ -1933,7 +1933,7 @@
     },
     {
       "path": "styles/new-york/drawer.json",
-      "sha256": "c89755257d3036e3ee1a236587a107a535a08cc91ea1b0574b640847c5d3cc6c"
+      "sha256": "5846eea65ef0c6a16b10836e15d7027fa44770d547493975bb9d05148ce46270"
     },
     {
       "path": "styles/new-york/dropdown-menu.json",
@@ -1961,7 +1961,7 @@
     },
     {
       "path": "styles/new-york/hover-card.json",
-      "sha256": "2624a1605389452bc711f39661f555e98b6974f5f8fd71707c1261ee57df5353"
+      "sha256": "2577356fcaea6fce66b088e2308535392025da7cd16560479f00d42355230cbf"
     },
     {
       "path": "styles/new-york/icon.json",
@@ -1977,7 +1977,7 @@
     },
     {
       "path": "styles/new-york/input-otp.json",
-      "sha256": "c609dd87410fdcde630756990c10ca061ce53d4ceac45f6aedc8940df77c262b"
+      "sha256": "7f54bbdf7265892f001202e7dde3ca254583970e81641ed6ac6e72502c2623b2"
     },
     {
       "path": "styles/new-york/input.json",
@@ -2009,11 +2009,11 @@
     },
     {
       "path": "styles/new-york/menubar.json",
-      "sha256": "a0460b63a27b4e02c1efe632af5fdec94773397d4935659ba978facf928c6344"
+      "sha256": "4c84527343b04ee1cbb85616515f62b1428810ec6cd2fbc14e197c22b9418aac"
     },
     {
       "path": "styles/new-york/message-scroller.json",
-      "sha256": "0536c3f825581946b1508a10935b2d0fed952506b0db2b944be79513e6aed249"
+      "sha256": "1b432692f8d02c3b8a448a3be0e7071f0a3ae4cda533b371319c3106f681eef2"
     },
     {
       "path": "styles/new-york/message.json",
@@ -2061,7 +2061,7 @@
     },
     {
       "path": "styles/new-york/resizable.json",
-      "sha256": "931deddc4c328ccbf8fbc18562f601a4da82d5f8c68550a029da57c6ffed3dc1"
+      "sha256": "8c450c53a6b4d033eaefae6ae34e64c279bf22e6c7b1451678a6ba8bf4259188"
     },
     {
       "path": "styles/new-york/scroll-area.json",
@@ -2069,7 +2069,7 @@
     },
     {
       "path": "styles/new-york/select.json",
-      "sha256": "c311f977e00c4313c8e110840868fc73ab60792396404cf192b1a5d0168ad30e"
+      "sha256": "4e2e34125333c60613838327d9e466c927b84a7e6c307fd3da5ab1dd83f78824"
     },
     {
       "path": "styles/new-york/separator.json",
@@ -2089,7 +2089,7 @@
     },
     {
       "path": "styles/new-york/skeleton.json",
-      "sha256": "9dff060b5902b215777ab17406e224aeaf09b49387a6f0baab80b83f02a9a806"
+      "sha256": "2ec6ee41813d0020145ed3de1a7204dc17ad21e279ca3ef23e25e50d6f70a331"
     },
     {
       "path": "styles/new-york/slider.json",
@@ -2113,7 +2113,7 @@
     },
     {
       "path": "styles/new-york/table.json",
-      "sha256": "2b8ff40425c7b7f17236dd22a0e102d1985568cfc7b1d314a893694bf7d6cdca"
+      "sha256": "efd849d87c1954a2fecc55b2324bfe820180cb70ebe2d22661d560265c870afd"
     },
     {
       "path": "styles/new-york/tabs.json",
@@ -2141,7 +2141,7 @@
     },
     {
       "path": "styles/new-york/toggle-group.json",
-      "sha256": "5bea7bc9aacb227192f9d2338aa9888da3f89ba1cbef81a3b55e5ad8ba37b756"
+      "sha256": "98bdf04deb374bcb268e8ad07be7d5916f2340519222869d5d1bedd22cd89bbb"
     },
     {
       "path": "styles/new-york/toggle.json",
@@ -2149,7 +2149,7 @@
     },
     {
       "path": "styles/new-york/tooltip.json",
-      "sha256": "86d438640d9985f43329d43537876b7c7908a3db582bbc7c93634daea46e93dc"
+      "sha256": "daa58cfdcedf3bb2b7da255e3e6933eb36b5e31ed61c40283ad29c6fb399b22d"
     },
     {
       "path": "styles/new-york/tour.json",
