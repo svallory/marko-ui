@@ -69,6 +69,7 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   // Radix boolean-attribute selectors -> our components' equivalent plain data attributes.
   { from: "data-[disabled]:", to: "data-disabled:" },
   { from: "data-[inset]:", to: "data-inset:" },
+  { from: "data-[placeholder]:", to: "data-placeholder:" },
   // Arbitrary-value spacing that equals a token already in Tailwind's default scale (8rem = 32 * 0.25rem).
   { from: "min-w-[8rem]", to: "min-w-32" },
   // batch A: same-meaning Tailwind utility rename — our classes.ts (Tailwind v4) writes wrap-break-word,
@@ -243,6 +244,21 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     extra: ["data-autoscrolling:scrollbar-thumb-transparent", "data-autoscrolling:scrollbar-track-transparent"],
     reason:
       "pre-existing structural choice (in classes.ts before this port): our component hides the scrollbar during autoscroll by making its thumb/track transparent (two utilities from a scrollbar plugin), while new-york-v4 uses that same plugin's blunter data-autoscrolling:scrollbar-none. Same visual outcome (scrollbar invisible while autoscrolling), different utility — a structural implementation choice, not a style-layer concern, out of scope for a style-only port.",
+  },
+  "select:select-content": {
+    missing: [
+      "max-h-(--radix-select-content-available-height)",
+      "origin-(--radix-select-content-transform-origin)",
+      "popper",
+    ],
+    extra: ["max-h-(--available-height)", "origin-(--transform-origin)"],
+    reason:
+      "positioning vars are structural (already in classes.ts under our own shorter --available-height/--transform-origin CSS var names, same class as the dropdown-menu --radix-*-content-available-height divergence already documented above) — not a style-layer concern. \"popper\" is a tool extraction artifact, not a real class: upstream's SelectContent conditionally appends a string only `position === \"popper\" && \"...\"`, and extractParts()'s naive string-literal grab picks up the bare \"popper\" comparison literal alongside the real class string that follows it.",
+  },
+  "select:select-item": {
+    extra: ["not-data-[variant=destructive]:focus:**:text-accent-foreground"],
+    reason:
+      "ours-only: our select item supports a destructive variant (grep confirms data-[variant=destructive] usage) with no upstream equivalent — new-york-v4's SelectItem has no variant prop at all, only the plain focus:bg-accent focus:text-accent-foreground pairing.",
   },
 }
 
