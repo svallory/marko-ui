@@ -11,12 +11,19 @@
  *
  * PILOT SCOPE (2026-09-27): only button, card, input, badge, dropdown-menu
  * (+ its dropdown-menu-sub-* parts) are ported from new-york-v4 below, each
- * marked `/* new-york: ported from new-york-v4 */`. Every other rule in this
- * file is UNCHANGED from style-vega.css (marked `/* new-york: no upstream
- * new-york-v4 source; vega rules */` at each MARK section) — vega is the
- * closest style for the 25 Zag-only components with no new-york-v4
+ * marked "new-york: ported from new-york-v4" in its own comment. Every other
+ * rule in this file is UNCHANGED from style-vega.css (marked "new-york: no
+ * upstream new-york-v4 source; vega rules" at each MARK section) — vega is
+ * the closest style for the 25 Zag-only components with no new-york-v4
  * counterpart, and is a deliberate placeholder for the 57 components not yet
  * ported by the pilot. Do not treat an unmarked block as verified parity.
+ *
+ * NOTE: no CSS comment below may contain a literal asterisk-slash sequence
+ * inside its text (e.g. quoting another comment's closer) — it terminates
+ * the comment early and corrupts everything after it into the next
+ * selector, exactly like the ASCII-arrow HTML-comment trap documented in
+ * this repo's CLAUDE.md. Quote comment markers without their closing slash,
+ * as done here.
  */
 
 .style-new-york {
