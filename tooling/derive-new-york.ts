@@ -78,6 +78,11 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   { from: "disabled:", to: "data-disabled:" },
   // Arbitrary-value spacing that equals a token already in Tailwind's default scale (8rem = 32 * 0.25rem).
   { from: "min-w-[8rem]", to: "min-w-32" },
+  // upstream's arbitrary-selector "ancestor has this data-slot" pattern -> Tailwind v4's in-* variant shorthand for the same descendant-context selector.
+  { from: "[[data-slot=tooltip-content]_&]:", to: "in-data-[slot=tooltip-content]:" },
+  // Radix data-[orientation=*] selectors -> our custom variants (globals.css @custom-variant list).
+  { from: "data-[orientation=horizontal]:", to: "data-horizontal:" },
+  { from: "data-[orientation=vertical]:", to: "data-vertical:" },
 ]
 
 /**
@@ -166,6 +171,34 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     extra: ["object-cover", "rounded-full"],
     reason:
       "our own object-fit/radius on the image element; upstream relies solely on the avatar root's overflow-hidden+rounded-full to clip — pre-existing across every base style.",
+  },
+  "radio-group:radio-group": {
+    extra: ["w-full"],
+    reason: "structural (classes.ts root string), pre-existing across every base style — not introduced by this port.",
+  },
+  "radio-group:radio-group-item": {
+    missing: ["text-primary"],
+    extra: [
+      "peer",
+      "relative",
+      "after:absolute",
+      "after:-inset-x-3",
+      "after:-inset-y-2",
+      "flex",
+      "data-checked:bg-primary",
+      "data-checked:text-primary-foreground",
+      "dark:data-checked:bg-primary",
+      "data-checked:border-primary",
+      "aria-invalid:aria-checked:border-primary",
+      "dark:aria-invalid:border-destructive/50",
+    ],
+    reason:
+      "our radio uses a fundamentally different indicator design than upstream: a filled bg-primary item background + a small bg-primary-foreground dot span, vs. upstream's unfilled bordered circle with a fill-primary CircleIcon dot. text-primary (upstream, colors its icon via currentColor) has no purpose in our design and is correctly omitted; the checked-state background/border classes and the touch hit-area (peer/relative/after:*) are our own pre-existing structural approach, present in every base style, out of scope for a style-only port. flex is carried forward unchanged from vega (kept for parity with the existing indicator-centering approach, not upstream-driven).",
+  },
+  "separator:separator": {
+    missing: ["data-horizontal:h-px", "data-horizontal:w-full", "data-vertical:h-full", "data-vertical:w-px"],
+    reason:
+      "tool limitation, not a real gap: separator's classes.ts literal has no mu-* hook prefix (its cn() call is styles.root with no mu-separator token at all), so readStructuralTokens never finds it and none of its tokens are visible to --check. The real literal already carries data-horizontal:h-px/w-full and data-vertical:w-px (matching upstream) plus data-vertical:self-stretch instead of upstream's data-vertical:h-full — a pre-existing bases/base structural choice (stretch to fill cross-axis vs. explicit h-full), not introduced by this port.",
   },
   "checkbox:checkbox": {
     extra: ["relative", "after:absolute", "after:-inset-x-3", "after:-inset-y-2", "group-has-disabled/field:opacity-50"],
