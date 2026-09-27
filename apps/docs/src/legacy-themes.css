@@ -507,7 +507,7 @@
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  --muted-foreground: oklch(0.535 0 0); /* DIVERGENCE: darkened from shadcn 0.556 to clear 4.5:1 (bubble collapsible trigger on a muted tint); same value and reason as packages/shadcn/styles/globals.css */
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.47 0.238 27.325); /* DIVERGENCE: darkened from shadcn 0.577 to clear 4.5:1 where text-destructive renders on a destructive tint (bubble, attachment); same value and reason as packages/shadcn/styles/globals.css */
@@ -576,7 +576,7 @@
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  --muted-foreground: oklch(0.535 0 0); /* DIVERGENCE: darkened from shadcn 0.556 to clear 4.5:1 (bubble collapsible trigger on a muted tint); same value and reason as packages/shadcn/styles/globals.css */
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.47 0.238 27.325); /* DIVERGENCE: darkened from shadcn 0.577 to clear 4.5:1 where text-destructive renders on a destructive tint (bubble, attachment); same value and reason as packages/shadcn/styles/globals.css */
