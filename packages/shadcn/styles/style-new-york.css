@@ -929,7 +929,7 @@
   }
 
   .mu-navigation-menu-viewport {
-    @apply origin-top-center bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:zoom-out-95 data-open:zoom-in-90 rounded-md border shadow;
+    @apply bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:zoom-out-95 data-open:zoom-in-90 rounded-md border shadow;
   }
 
   .mu-navigation-menu-indicator {
