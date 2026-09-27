@@ -66,9 +66,24 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   // Radix data-[state=*] selectors -> our Zag custom variants (globals.css @custom-variant list).
   { from: "data-[state=open]:", to: "data-open:" },
   { from: "data-[state=closed]:", to: "data-closed:" },
+  { from: "data-[state=checked]:", to: "data-checked:" },
+  { from: "data-[state=unchecked]:", to: "data-unchecked:" },
+  // Same pair, stacked after a leading dark: variant (normalizeToken only matches a `from` at the
+  // START of a token, so `dark:data-[state=unchecked]:x` needs its own entry rather than reusing
+  // the bare prefix form above).
+  { from: "dark:data-[state=checked]:", to: "dark:data-checked:" },
+  { from: "dark:data-[state=unchecked]:", to: "dark:data-unchecked:" },
   // Radix boolean-attribute selectors -> our components' equivalent plain data attributes.
   { from: "data-[disabled]:", to: "data-disabled:" },
   { from: "data-[inset]:", to: "data-inset:" },
+  // Arbitrary-value sizes that equal a rem-based Tailwind default-scale token at 16px root
+  // (1.15rem = 18.4px, 2rem = 32px, 0.875rem = 14px, 1.5rem = 24px) — same computed value,
+  // switch's data-[size=*] tokens spelled with px instead of the upstream rem literal. Each needs
+  // its own compounded form since it's always written as `data-[size=X]:<size>`, never bare.
+  { from: "data-[size=default]:h-[1.15rem]", to: "data-[size=default]:h-[18.4px]" },
+  { from: "data-[size=default]:w-8", to: "data-[size=default]:w-[32px]" },
+  { from: "data-[size=sm]:h-3.5", to: "data-[size=sm]:h-[14px]" },
+  { from: "data-[size=sm]:w-6", to: "data-[size=sm]:w-[24px]" },
   // Arbitrary-value spacing that equals a token already in Tailwind's default scale (8rem = 32 * 0.25rem).
   { from: "min-w-[8rem]", to: "min-w-32" },
   // This repo spells the 3px focus ring width as the bare utility `ring-3` (Tailwind v4's default
@@ -79,6 +94,9 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   // whole token or a PREFIX, never a suffix.
   { from: "ring-[3px]", to: "ring-3" },
   { from: "focus-visible:ring-[3px]", to: "focus-visible:ring-3" },
+  // Radix data-[orientation=*] selectors -> our Zag custom variants (globals.css @custom-variant list).
+  { from: "data-[orientation=horizontal]:", to: "data-horizontal:" },
+  { from: "data-[orientation=vertical]:", to: "data-vertical:" },
 ]
 
 /**
@@ -135,6 +153,35 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     reason:
       "two independent divergences on this slot. (1) missing: new-york-v4 rotates a single chevron SVG on open via this selector; our accordion.marko (accordion.marko:224-233) swaps between two separate icons (ChevronDown/ChevronUp via triggerIcon/triggerIconActive classes.ts fields) instead of rotating one — a pre-existing icon-mechanism divergence from bases/base, not a style-layer concern. (2) extra: `relative border border-transparent` is inherited from bases/base's accordion.tsx trigger (classes.ts), which new-york-v4's own Radix trigger doesn't carry (its focus ring comes from focus-visible:border-ring alone, no base border) — a real base-implementation difference between Base UI and Radix, same class as the pilot's button:button `select-none` entry; the `**:data-[slot=accordion-trigger-icon]:*` rules position/color our two-icon swap from (1) — not a new-york-v4 concept since it renders one rotating SVG, not two.",
   },
+  "scroll-area:scroll-area-scrollbar": {
+    missing: ["vertical", "h-full", "w-2.5", "border-l", "border-l-transparent", "horizontal", "h-2.5", "flex-col", "border-t", "border-t-transparent"],
+    extra: ["data-horizontal:h-2.5", "data-horizontal:flex-col", "data-horizontal:border-t", "data-horizontal:border-t-transparent", "data-vertical:h-full", "data-vertical:w-2.5", "data-vertical:border-l", "data-vertical:border-l-transparent", "data-vertical:not-data-[overflow-y]:hidden!", "data-horizontal:not-data-[overflow-x]:hidden!"],
+    reason:
+      "tokenizer artifact + real equivalence, not a genuine mismatch. Upstream new-york-v4/scroll-area.tsx (apps/v4/registry/new-york-v4/ui/scroll-area.tsx:36-46) picks the scrollbar's classes with a JS ternary on the `orientation` PROP (`orientation === \"vertical\" && \"h-full w-2.5 border-l border-l-transparent\"`), not a Tailwind data-attribute selector — this tool's extractParts() doesn't parse that shape (documented tooling gap: cva()-only recognition), so the literal words \"vertical\"/\"horizontal\" leak into the extracted token list instead of a real class. Semantically this IS our data-vertical:/data-horizontal: pair (our Zag scroll-area always renders one element with a live data-orientation attribute rather than switching component per orientation prop, per this file's SSR-safe Zag pattern) — verified by reading the raw upstream source; not expressible as an EQUIVALENCES entry since the source shape has no real token to rewrite. not-data-[overflow-y]:hidden!/not-data-[overflow-x]:hidden! are Zag-only visibility gating (hide an axis with no overflow) with no Radix/new-york-v4 equivalent, since Radix conditionally MOUNTS the scrollbar instead — same class as the pilot's dropdown-menu positioning-var entries.",
+  },
+
+  "native-select:native-select-wrapper": {
+    missing: ["h-9", "w-full", "min-w-0", "appearance-none", "rounded-md", "border", "border-input", "bg-transparent", "px-3", "py-2", "pr-9", "text-sm", "shadow-xs", "transition-[color,box-shadow]", "outline-none", "selection:bg-primary", "selection:text-primary-foreground", "placeholder:text-muted-foreground", "disabled:pointer-events-none", "disabled:cursor-not-allowed", "data-[size=sm]:h-8", "data-[size=sm]:py-1", "dark:bg-input/30", "dark:hover:bg-input/50", "focus-visible:border-ring", "focus-visible:ring-3", "focus-visible:ring-ring/50", "aria-invalid:border-destructive", "aria-invalid:ring-destructive/20", "dark:aria-invalid:ring-destructive/40"],
+    extra: ["relative", "w-fit", "has-[select:disabled]:opacity-50"],
+    reason:
+      "TOOL BUG, not a real mismatch: new-york-v4's NativeSelect fn body (apps/v4/registry/new-york-v4/ui/native-select.tsx) has TWO data-slot attributes — native-select-wrapper on the outer div, native-select on the inner <select> — and extractParts()'s slotMatch regex only takes the FIRST one it finds in the function body, so the fn's real className/cn() call (which belongs to the <select>, not the wrapper div) gets attributed to the wrapper's slot name instead. Verified by reading the raw source directly: the wrapper div's actual className is a bare string literal (`\"group/native-select relative w-fit has-[select:disabled]:opacity-50\"`, no cn()), which is exactly our `mu-native-select-wrapper`'s structural classes.ts value — genuinely nothing to port there. The real target (everything listed as \"missing\" above) was hand-derived from the select element's real class string and ported onto `.mu-native-select` instead (see its own MARK: Native Select comment) — verify that rule directly rather than trusting this slot's --check result.",
+  },
+  "native-select:native-select-option": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason:
+      "tool limitation: classes.ts's nativeSelectOption/nativeSelectOptgroup both carry `bg-[Canvas] text-[CanvasText]` with no mu-* hook class at all (same pre-existing pattern as progress's `track` field — see progress:progress divergence above), so readStructuralTokens()'s literal-must-start-with-muClass search finds nothing and --check can't evaluate this slot at all. Verified these are upstream's own values already (new-york-v4/native-select.tsx: NativeSelectOption/NativeSelectOptGroup both render bg-[Canvas] text-[CanvasText] verbatim, byte-identical to bases/base and to our classes.ts) — genuinely nothing to port, out of scope to add a hook class here.",
+  },
+  "native-select:native-select-optgroup": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same as native-select:native-select-option.",
+  },
+  "switch:switch": {
+    missing: ["group/switch", "disabled:cursor-not-allowed", "disabled:opacity-50"],
+    extra: ["relative", "after:absolute", "after:-inset-x-3", "after:-inset-y-2", "data-disabled:cursor-not-allowed", "data-disabled:opacity-50", "aria-invalid:ring-destructive/20", "dark:aria-invalid:ring-destructive/40", "aria-invalid:border-destructive", "dark:aria-invalid:border-destructive/50", "aria-invalid:ring-3"],
+    reason:
+      "two independent causes. `group/switch` is a TOOL LIMITATION, not a real mismatch: isStructuralOnlyToken() strips every `group/*`/`peer/*` token from OUR side unconditionally (treating them as always-structural hook classes with no upstream concept), but new-york-v4's own switch.tsx ALSO writes a real `group/switch` (its Thumb reads group-data-[size=*]/switch: off it) — our classes.ts (switch/classes.ts:5) already carries `group/switch` verbatim, verified by inspection; this tool's blanket strip just can't see that it matches here. `disabled:cursor-not-allowed disabled:opacity-50` (native HTML disabled selector) vs our `data-disabled:cursor-not-allowed data-disabled:opacity-50`: our Zag switch signals disabled state via a data attribute rather than the native disabled attribute Radix's SwitchPrimitive.Root relies on — pre-existing structural difference, not a style-layer concern. `relative after:*` (focus-target hit-area extension) and the `aria-invalid:*` validation-state ring are our own additions with no upstream equivalent at all (new-york-v4's Switch has no aria-invalid handling).",
+  },
+
   "progress:progress": {
     missing: ["h-2", "overflow-hidden", "rounded-full", "bg-primary/20"],
     extra: ["flex", "items-center", "overflow-x-hidden", "flex-col", "gap-2"],
@@ -403,7 +450,18 @@ function runCheck(component: string): boolean {
     const style = readStyleTokens(muClass)
 
     if (style === undefined && structural.size === 0) {
-      results.push({ part: part.slot, muClass, ok: false, missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"], extra: [], allowlistedMissing: [], allowlistedExtra: [] })
+      const noHookMsg = "(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"
+      const divergence = DIVERGENCES[`${component}:${part.slot}`]
+      const allowlisted = divergence?.missing?.includes(noHookMsg) ?? false
+      results.push({
+        part: part.slot,
+        muClass,
+        ok: allowlisted,
+        missing: allowlisted ? [] : [noHookMsg],
+        extra: [],
+        allowlistedMissing: allowlisted ? [noHookMsg] : [],
+        allowlistedExtra: [],
+      })
       continue
     }
 
