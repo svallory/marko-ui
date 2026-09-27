@@ -1,7 +1,13 @@
 /**
- * Pilot tool for the new-york style port (see scratch/team-lead/briefs/style-new-york-pilot.md).
+ * Tool for the new-york style port (see scratch/team-lead/briefs/style-new-york-playbook.md).
  *
- * For a given component, extracts per-part class strings from:
+ * Two modes:
+ *
+ *   bun tooling/derive-new-york.ts <component>            — DRAFT mode (original pilot tool)
+ *   bun tooling/derive-new-york.ts --check <component>     — CHECK mode (round 2, mandatory per
+ *                                                             component before it's considered done)
+ *
+ * DRAFT mode extracts per-part class strings from:
  *   1. upstream new-york-v4 (apps/v4/registry/new-york-v4/ui/<component>.tsx) — the target style
  *   2. upstream bases/base (apps/v4/registry/bases/base/ui/<component>.tsx) — the structural rename source
  *      our components are ported from (its cn-* classes correspond 1:1 to our mu-* classes)
@@ -17,7 +23,24 @@
  * classes present in new-york-v4 but not clearly attributable (conflicts/unmatched) for human
  * review — always hand-verify before committing.
  *
- * Usage: bun tooling/derive-new-york.ts <component>
+ * CHECK mode is the mechanical verification port-to-marko's parity-checklist.md requires (class 5,
+ * "Class string per part: sorted-set diff against upstream's source for that style, with an empty
+ * result attached"). Per part/variant it asserts:
+ *
+ *   tokens(our classes.ts structural classes for that mu-* slot)
+ *     ∪ tokens(.style-new-york's @apply rule for that mu-* slot)
+ *   ==  (modulo EQUIVALENCES below)
+ *   tokens(new-york-v4's final class string for the same part)
+ *
+ * Reads our ACTUAL shipped source (packages/shadcn/ui/<c>/classes.ts and
+ * packages/shadcn/styles/style-new-york.css), not bases/base — bases/base is only the derivation
+ * aid for draft mode; classes.ts is the ground truth for what our component really emits. Prints a
+ * missing/extra token table per part and exits non-zero on any unlisted mismatch. Real,
+ * intentional divergences go in DIVERGENCES below with a reason, never silently absorbed into
+ * EQUIVALENCES (which is only for same-meaning spelling differences, e.g. a Radix selector mapped
+ * to our Zag custom variant, or an arbitrary-value class vs. its equivalent scale token).
+ *
+ * Usage: bun tooling/derive-new-york.ts [--check] <component>
  */
 import { readFileSync, existsSync } from "node:fs"
 import { join } from "node:path"
@@ -27,6 +50,70 @@ const SHADCN_UI_DIR =
 
 const NEW_YORK_DIR = join(SHADCN_UI_DIR, "apps/v4/registry/new-york-v4/ui")
 const BASE_DIR = join(SHADCN_UI_DIR, "apps/v4/registry/bases/base/ui")
+
+const REPO_ROOT = join(import.meta.dirname, "..")
+const UI_DIR = join(REPO_ROOT, "packages/shadcn/ui")
+const STYLE_NEW_YORK_CSS = join(REPO_ROOT, "packages/shadcn/styles/style-new-york.css")
+
+/**
+ * Same-meaning spelling differences between new-york-v4's raw class string and what our component
+ * actually emits. Each is a PREFIX/whole-token replacement applied to every token (not just exact
+ * whole-class matches) because Tailwind variants compound onto a token
+ * (`data-[state=open]:animate-in`, not a standalone `data-[state=open]` class) — never used to
+ * paper over a genuine visual/behavioral difference (that's DIVERGENCES below).
+ */
+const EQUIVALENCES: Array<{ from: string; to: string }> = [
+  // Radix data-[state=*] selectors -> our Zag custom variants (globals.css @custom-variant list).
+  { from: "data-[state=open]:", to: "data-open:" },
+  { from: "data-[state=closed]:", to: "data-closed:" },
+  // Radix boolean-attribute selectors -> our components' equivalent plain data attributes.
+  { from: "data-[disabled]:", to: "data-disabled:" },
+  { from: "data-[inset]:", to: "data-inset:" },
+  // Arbitrary-value spacing that equals a token already in Tailwind's default scale (8rem = 32 * 0.25rem).
+  { from: "min-w-[8rem]", to: "min-w-32" },
+]
+
+/**
+ * mu-* hook classes (the component's own semantic class, always the first token of its
+ * classes.ts string) and other always-present structural markers that new-york-v4 has no concept
+ * of at all (it's plain Tailwind utilities, no hook-class convention) — excluded from comparison
+ * entirely rather than diffed, since they're never going to appear on the upstream side.
+ */
+function isStructuralOnlyToken(token: string): boolean {
+  return token.startsWith("mu-") || token.startsWith("group/") || token.startsWith("peer/")
+}
+
+/**
+ * Per-component, per-part documented divergences: a token new-york-v4 has that we deliberately
+ * don't emit (or vice versa), with a reason. Anything landing here must be a real, reviewed
+ * decision — not a shortcut to make --check pass. Keys are "<component>:<slot>".
+ */
+const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason: string }> = {
+  "button:button": {
+    extra: ["select-none"],
+    reason:
+      "structural, inherited from bases/base's button.tsx (cn-button base string), which new-york-v4's own button.tsx doesn't carry. A real base-implementation difference between the Base UI and Radix component sources, not a style-layer choice — out of scope for a style-only port; classes.ts is not touched here.",
+  },
+  "card:card-header": {
+    missing: ["grid-rows-[auto_auto]"],
+    extra: ["has-data-[slot=card-description]:grid-rows-[auto_auto]"],
+    reason:
+      "structural: new-york-v4's card-header.tsx sets grid-rows-[auto_auto] unconditionally; our classes.ts (from bases/base's card.tsx) only sets it when a card-description part is present. Pre-existing bases/base behavior, not introduced by the style port — out of scope here.",
+  },
+  "dropdown-menu:dropdown-menu-content": {
+    missing: [
+      "max-h-(--radix-dropdown-menu-content-available-height)",
+      "origin-(--radix-dropdown-menu-content-transform-origin)",
+    ],
+    extra: ["w-(--radix-dropdown-menu-trigger-width)", "data-closed:overflow-hidden"],
+    reason:
+      "positioning vars (max-h-/origin-/w-) are structural — already in classes.ts verbatim under their historical --radix-* names for our Zag component's own CSS-var wiring, not a style-layer concern. data-closed:overflow-hidden is a bases/base-only structural addition (Base UI needs it; new-york-v4's Radix implementation doesn't carry it) — pre-existing, out of scope for a style-only port.",
+  },
+  "dropdown-menu:dropdown-menu-sub-content": {
+    missing: ["origin-(--radix-dropdown-menu-content-transform-origin)"],
+    reason: "same as dropdown-menu-content: positioning var lives in classes.ts, not the style layer.",
+  },
+}
 
 interface Part {
   slot: string
@@ -129,13 +216,7 @@ function diffTokens(target: Set<string>, structural: Set<string>): { keep: strin
   return { keep, removed }
 }
 
-function main() {
-  const component = process.argv[2]
-  if (!component) {
-    console.error("Usage: bun tooling/derive-new-york.ts <component>")
-    process.exit(1)
-  }
-
+function runDraft(component: string) {
   const nyPath = join(NEW_YORK_DIR, `${component}.tsx`)
   const basePath = join(BASE_DIR, `${component}.tsx`)
 
@@ -183,6 +264,188 @@ function main() {
     console.log(`# ${unmatchedSlots.size} slot(s) had no bases/base match — manual review required:`)
     for (const s of unmatchedSlots) console.log(`#  - ${s}`)
   }
+}
+
+/** The mu-* class name a new-york-v4 part maps to, per this repo's own naming convention. */
+function muClassName(slot: string): string {
+  const segments = slot.split(":") // "button:variant:outline" -> mu-button-variant-outline
+  return `mu-${segments.join("-")}`
+}
+
+/** Applies every EQUIVALENCES replacement to a raw token (prefix or whole-token match). */
+function normalizeToken(token: string): string {
+  let out = token
+  for (const { from, to } of EQUIVALENCES) {
+    if (out === from) { out = to; break }
+    if (out.startsWith(from)) { out = to + out.slice(from.length); break }
+  }
+  return out
+}
+
+/** Normalizes every token and drops our own hook classes (mu-*, group/*, peer/*) — see isStructuralOnlyToken. */
+function normalizeOurTokens(tokens: Iterable<string>): Set<string> {
+  const out = new Set<string>()
+  for (const t of tokens) {
+    if (isStructuralOnlyToken(t)) continue
+    out.add(normalizeToken(t))
+  }
+  return out
+}
+
+/** Normalizes every token of new-york-v4's raw target string (no hook classes to strip there). */
+function normalizeTargetTokens(tokens: Iterable<string>): Set<string> {
+  const out = new Set<string>()
+  for (const t of tokens) out.add(normalizeToken(t))
+  return out
+}
+
+/**
+ * Reads packages/shadcn/ui/<component>/classes.ts and returns, for a given mu-* class name, the
+ * full token set of the string literal that class name appears as the FIRST token of (our
+ * convention: every classes.ts string starts with its own mu-<slot> hook). Returns undefined if no
+ * such literal is found — that mu-* class isn't a real part of this component's classes.ts.
+ */
+function readStructuralTokens(component: string, muClass: string): Set<string> | undefined {
+  const classesPath = join(UI_DIR, component, "classes.ts")
+  if (!existsSync(classesPath)) return undefined
+  const src = readFileSync(classesPath, "utf8")
+  // Match every top-level string literal (single/double/template) in the file, in source order.
+  const litRe = /"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'|`([^`]*)`/g
+  let m: RegExpExecArray | null
+  while ((m = litRe.exec(src))) {
+    const literal = m[1] ?? m[2] ?? m[3] ?? ""
+    const tokens = literal.split(/\s+/).filter(Boolean)
+    if (tokens[0] === muClass) return new Set(tokens)
+  }
+  return undefined
+}
+
+/**
+ * Reads packages/shadcn/styles/style-new-york.css and returns the @apply token set for a given
+ * mu-* class's `.mu-<name> { @apply ...; }` rule. Returns undefined if no such rule exists.
+ */
+function readStyleTokens(muClass: string): Set<string> | undefined {
+  const css = readFileSync(STYLE_NEW_YORK_CSS, "utf8")
+  const escaped = muClass.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  const ruleRe = new RegExp(`\\.${escaped}\\s*\\{\\s*@apply\\s+([^;]*);`, "m")
+  const m = ruleRe.exec(css)
+  if (!m) return undefined
+  return new Set(m[1]!.trim().split(/\s+/).filter(Boolean))
+}
+
+interface CheckResult {
+  part: string
+  muClass: string
+  ok: boolean
+  missing: string[]
+  extra: string[]
+  allowlistedMissing: string[]
+  allowlistedExtra: string[]
+}
+
+function runCheck(component: string): boolean {
+  const nyPath = join(NEW_YORK_DIR, `${component}.tsx`)
+  if (!existsSync(nyPath)) {
+    console.log(`NO_UPSTREAM_NEW_YORK: ${component} has no new-york-v4 source — nothing to check (vega rules apply, by design).`)
+    return true
+  }
+  if (!existsSync(join(STYLE_NEW_YORK_CSS))) {
+    console.error(`Missing ${STYLE_NEW_YORK_CSS}`)
+    return false
+  }
+
+  const nySrc = readFileSync(nyPath, "utf8")
+  const nyParts = extractParts(nySrc)
+
+  console.log(`# --check ${component}`)
+  console.log(`# upstream new-york-v4: ${nyPath}\n`)
+
+  const results: CheckResult[] = []
+
+  for (const part of nyParts) {
+    const muClass = muClassName(part.slot)
+    const structural = readStructuralTokens(component, muClass) ?? new Set<string>()
+    const style = readStyleTokens(muClass)
+
+    if (style === undefined && structural.size === 0) {
+      results.push({ part: part.slot, muClass, ok: false, missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"], extra: [], allowlistedMissing: [], allowlistedExtra: [] })
+      continue
+    }
+
+    const ours = normalizeOurTokens(new Set([...structural, ...(style ?? [])]))
+    const target = normalizeTargetTokens(tokenize(part.classes.join(" ")))
+
+    const divergence = DIVERGENCES[`${component}:${part.slot}`]
+    const allowedMissing = new Set(divergence?.missing ?? [])
+    const allowedExtra = new Set(divergence?.extra ?? [])
+
+    const missing: string[] = []
+    const allowlistedMissing: string[] = []
+    for (const t of target) {
+      if (ours.has(t)) continue
+      if (allowedMissing.has(t)) allowlistedMissing.push(t)
+      else missing.push(t)
+    }
+
+    const extra: string[] = []
+    const allowlistedExtra: string[] = []
+    for (const t of ours) {
+      if (target.has(t)) continue
+      if (allowedExtra.has(t)) allowlistedExtra.push(t)
+      else extra.push(t)
+    }
+
+    results.push({
+      part: part.slot,
+      muClass,
+      ok: missing.length === 0 && extra.length === 0,
+      missing,
+      extra,
+      allowlistedMissing,
+      allowlistedExtra,
+    })
+  }
+
+  let allOk = true
+  for (const r of results) {
+    const status = r.ok ? "OK  " : "FAIL"
+    console.log(`[${status}] ${r.part}  (${r.muClass})`)
+    if (r.missing.length) {
+      allOk = false
+      console.log(`         missing: ${r.missing.join(" ")}`)
+    }
+    if (r.extra.length) {
+      allOk = false
+      console.log(`         extra:   ${r.extra.join(" ")}`)
+    }
+    if (r.allowlistedMissing.length) console.log(`         missing (allowlisted): ${r.allowlistedMissing.join(" ")} — ${DIVERGENCES[`${component}:${r.part}`]?.reason}`)
+    if (r.allowlistedExtra.length) console.log(`         extra (allowlisted):   ${r.allowlistedExtra.join(" ")} — ${DIVERGENCES[`${component}:${r.part}`]?.reason}`)
+  }
+
+  console.log()
+  console.log(`# ${results.filter((r) => r.ok).length}/${results.length} parts OK for ${component}`)
+  return allOk
+}
+
+function main() {
+  const args = process.argv.slice(2)
+  const checkIdx = args.indexOf("--check")
+  if (checkIdx !== -1) {
+    const component = args[checkIdx + 1]
+    if (!component) {
+      console.error("Usage: bun tooling/derive-new-york.ts --check <component>")
+      process.exit(1)
+    }
+    const ok = runCheck(component)
+    process.exit(ok ? 0 : 1)
+  }
+
+  const component = args[0]
+  if (!component) {
+    console.error("Usage: bun tooling/derive-new-york.ts [--check] <component>")
+    process.exit(1)
+  }
+  runDraft(component)
 }
 
 main()
