@@ -174,6 +174,34 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     reason:
       "our own object-fit/radius on the image element; upstream relies solely on the avatar root's overflow-hidden+rounded-full to clip — pre-existing across every base style.",
   },
+  "pagination:pagination-link": {
+    missing: ["outline", "ghost"],
+    reason:
+      "tool parsing artifact, not a real gap: upstream's PaginationLink doesn't build its className from a cn() string literal at all — it calls buttonVariants({ variant: isActive ? \"outline\" : \"ghost\", size }), so extractParts's bareMatch fallback picks up the literal variant-name strings from that ternary as if they were classes. Our link.marko already calls the SAME buttonVariants (../button/variants.ts) with the same variant/size logic, so parity is inherited automatically from the already-ported button styles, not something to add here.",
+  },
+  "pagination:pagination-ellipsis": {
+    extra: ["[&_svg:not([class*='size-'])]:size-4"],
+    reason:
+      "our own icon-sizing hook for any icon dropped into the ellipsis slot; upstream instead sizes its MoreHorizontalIcon directly via className=\"size-4\" on the icon itself, with no descendant selector needed. Pre-existing across every base style.",
+  },
+  "toggle:toggle": {
+    missing: ["data-[state=on]:bg-accent", "data-[state=on]:text-accent-foreground"],
+    extra: ["aria-pressed:bg-accent", "aria-pressed:text-accent-foreground"],
+    reason:
+      "our toggle uses an aria-pressed selector for the pressed-state color instead of upstream's data-[state=on] — same semantic state (both true only when pressed), a pre-existing selector-strategy choice across every base style, not introduced by this port.",
+  },
+  "toggle:toggle:size:default": {
+    extra: ["has-data-[icon=inline-end]:pr-2", "has-data-[icon=inline-start]:pl-2"],
+    reason: "our own icon-slot padding adjustment with no upstream equivalent (upstream has no icon-inset concept for Toggle), pre-existing across every base style.",
+  },
+  "toggle:toggle:size:sm": {
+    extra: ["has-data-[icon=inline-end]:pr-1.5", "has-data-[icon=inline-start]:pl-1.5"],
+    reason: "same as toggle:toggle:size:default, at the sm size's own spacing scale.",
+  },
+  "toggle:toggle:size:lg": {
+    extra: ["has-data-[icon=inline-end]:pr-2", "has-data-[icon=inline-start]:pl-2"],
+    reason: "same as toggle:toggle:size:default, at the lg size (shares default's 2/2 padding).",
+  },
   "textarea:textarea": {
     extra: ["aria-invalid:ring-3", "dark:aria-invalid:border-destructive/50"],
     reason:

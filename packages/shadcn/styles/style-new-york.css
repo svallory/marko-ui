@@ -943,8 +943,9 @@
   }
 
   /* MARK: Pagination */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/pagination.tsx) */
   .mu-pagination-content {
-    @apply gap-1;
+    @apply flex-row gap-1;
   }
 
   .mu-pagination-ellipsis {
@@ -1383,12 +1384,13 @@
   }
 
   /* MARK: Toggle */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/toggle.tsx) */
   .mu-toggle {
-    @apply hover:text-foreground aria-pressed:bg-muted focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive gap-1 rounded-md text-sm font-medium transition-[color,box-shadow] [&_svg:not([class*='size-'])]:size-4;
+    @apply gap-2 rounded-md text-sm font-medium transition-[color,box-shadow] hover:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 aria-pressed:bg-accent aria-pressed:text-accent-foreground dark:aria-invalid:ring-destructive/40 [&_svg:not([class*='size-'])]:size-4;
   }
 
   .mu-toggle-aria {
-    @apply data-selected:bg-muted;
+    @apply data-selected:bg-accent data-selected:text-accent-foreground;
   }
 
   .mu-toggle-variant-default {
@@ -1396,15 +1398,15 @@
   }
 
   .mu-toggle-variant-outline {
-    @apply border-input hover:bg-muted border bg-transparent shadow-xs;
+    @apply border border-input bg-transparent shadow-xs hover:bg-accent hover:text-accent-foreground;
   }
 
   .mu-toggle-size-default {
-    @apply h-9 min-w-9 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2;
+    @apply h-9 min-w-9 px-2 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2;
   }
 
   .mu-toggle-size-sm {
-    @apply h-8 min-w-8 px-2.5 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5;
+    @apply h-8 min-w-8 px-1.5 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5;
   }
 
   .mu-toggle-size-lg {
