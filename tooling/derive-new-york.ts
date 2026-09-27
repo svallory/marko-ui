@@ -260,6 +260,29 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     reason:
       "ours-only: our select item supports a destructive variant (grep confirms data-[variant=destructive] usage) with no upstream equivalent — new-york-v4's SelectItem has no variant prop at all, only the plain focus:bg-accent focus:text-accent-foreground pairing.",
   },
+  "menubar:menubar-item": {
+    extra: ["not-data-[variant=destructive]:focus:**:text-accent-foreground"],
+    reason: "same as select:select-item above: our menubar item supports a destructive variant with no upstream equivalent.",
+  },
+  "menubar:menubar-checkbox-item": {
+    extra: ["focus:**:text-accent-foreground", "data-inset:pl-8"],
+    reason:
+      "both ours-only: focus:**:text-accent-foreground is our nested-icon-color convention (upstream's icons have no separate focus color rule); data-inset:pl-8 supports an inset variant new-york-v4's MenubarCheckboxItem doesn't accept at all (verified: no inset prop, no data-inset/data-[inset] selector anywhere in its source — only MenubarItem and MenubarSubTrigger support inset upstream).",
+  },
+  "menubar:menubar-radio-item": {
+    extra: ["focus:**:text-accent-foreground", "data-inset:pl-8"],
+    reason: "same as menubar:menubar-checkbox-item above — MenubarRadioItem has no inset support upstream either.",
+  },
+  "menubar:menubar-shortcut": {
+    extra: ["group-focus/menubar-item:text-accent-foreground"],
+    reason:
+      "ours-only: a group-based highlight so the shortcut text picks up the parent item's focus color — upstream's MenubarShortcut is a plain span with a fixed text-muted-foreground, no group-focus rule.",
+  },
+  "menubar:menubar-sub-trigger": {
+    extra: ["gap-2", "[&_svg:not([class*='size-'])]:size-4"],
+    reason:
+      "ours-only: our sub-trigger renders a trailing chevron icon needing gap/sizing rules — new-york-v4's MenubarSubTrigger className has no gap or svg-sizing rule at all (its ChevronRightIcon has no explicit classes in the raw source).",
+  },
 }
 
 interface Part {
