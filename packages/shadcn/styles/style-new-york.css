@@ -72,8 +72,9 @@
   }
 
   /* MARK: Alert */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/alert.tsx) */
   .mu-alert {
-    @apply grid gap-0.5 rounded-lg border px-4 py-3 text-left text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2.5 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4;
+    @apply grid grid-cols-[0_1fr] items-start gap-y-0.5 rounded-lg border px-4 py-3 text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr] has-[>svg]:gap-x-3 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4;
   }
 
   .mu-alert-variant-default {
@@ -85,11 +86,11 @@
   }
 
   .mu-alert-title {
-    @apply font-medium group-has-[>svg]/alert:col-start-2;
+    @apply col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight;
   }
 
   .mu-alert-description {
-    @apply text-muted-foreground text-sm text-balance md:text-pretty [&_p:not(:last-child)]:mb-4;
+    @apply col-start-2 grid justify-items-start gap-1 text-sm text-muted-foreground [&_p]:leading-relaxed;
   }
 
   .mu-alert-action {
@@ -97,12 +98,13 @@
   }
 
   /* MARK: Avatar */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/avatar.tsx) */
   .mu-avatar {
-    @apply size-8 rounded-full after:rounded-full data-[size=lg]:size-10 data-[size=sm]:size-6;
+    @apply size-8 overflow-hidden rounded-full after:rounded-full data-[size=lg]:size-10 data-[size=sm]:size-6;
   }
 
   .mu-avatar-fallback {
-    @apply bg-muted text-muted-foreground rounded-full;
+    @apply bg-muted text-muted-foreground rounded-full text-sm;
   }
 
   .mu-avatar-image {
@@ -300,6 +302,7 @@
   }
 
   /* MARK: Carousel */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/carousel.tsx) */
   .mu-carousel-previous {
     @apply rounded-full;
   }
@@ -317,8 +320,9 @@
   }
 
   /* MARK: Checkbox */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/checkbox.tsx) */
   .mu-checkbox {
-    @apply border-input dark:bg-input/30 data-checked:bg-primary data-checked:text-primary-foreground dark:data-checked:bg-primary data-checked:border-primary aria-invalid:aria-checked:border-primary aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 flex size-4 items-center justify-center rounded-[4px] border shadow-xs transition-shadow group-has-disabled/field:opacity-50 focus-visible:ring-3 aria-invalid:ring-3;
+    @apply size-4 rounded-[4px] border border-input shadow-xs transition-shadow focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground dark:bg-input/30 dark:aria-invalid:ring-destructive/40 dark:data-checked:bg-primary group-has-disabled/field:opacity-50;
   }
 
   .mu-checkbox-aria {
@@ -330,8 +334,9 @@
   }
 
   /* MARK: Combobox */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/combobox.tsx) */
   .mu-combobox-content {
-    @apply bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 *:data-[slot=input-group]:bg-input/30 *:data-[slot=input-group]:border-input/30 max-h-72 min-w-36 overflow-hidden rounded-md shadow-md ring-1 duration-100 *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none;
+    @apply bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 *:data-[slot=input-group]:bg-input/30 *:data-[slot=input-group]:border-input/30 max-h-96 min-w-36 overflow-hidden rounded-md shadow-md ring-1 duration-100 *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none;
   }
 
   .mu-combobox-content-logical {
@@ -339,7 +344,7 @@
   }
 
   .mu-combobox-label {
-    @apply text-muted-foreground px-2 py-1.5 text-xs;
+    @apply text-muted-foreground px-2 py-1.5 text-xs pointer-coarse:px-3 pointer-coarse:py-2 pointer-coarse:text-sm;
   }
 
   .mu-combobox-item {
@@ -359,7 +364,7 @@
   }
 
   .mu-combobox-list {
-    @apply no-scrollbar max-h-[min(calc(--spacing(72)---spacing(9)),calc(var(--available-height)---spacing(9)))] scroll-py-1 overflow-y-auto p-1 data-empty:p-0;
+    @apply no-scrollbar max-h-[min(calc(--spacing(96)---spacing(9)),calc(var(--available-height)---spacing(9)))] scroll-py-1 overflow-y-auto p-1 data-empty:p-0;
   }
 
   .mu-combobox-item-text {
@@ -494,12 +499,13 @@
   }
 
   /* MARK: Dialog */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/dialog.tsx) */
   .mu-dialog-overlay {
-    @apply data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs;
+    @apply bg-black/50 data-closed:animate-out data-closed:fade-out-0 data-open:animate-in data-open:fade-in-0;
   }
 
   .mu-dialog-content {
-    @apply bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 ring-foreground/10 grid max-w-[calc(100%-2rem)] gap-6 rounded-xl p-6 text-sm ring-1 duration-100 sm:max-w-md;
+    @apply grid max-w-[calc(100%-2rem)] gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 sm:max-w-lg;
   }
 
   .mu-dialog-close {
@@ -507,7 +513,7 @@
   }
 
   .mu-dialog-header {
-    @apply gap-2;
+    @apply gap-2 text-center sm:text-left;
   }
 
   .mu-dialog-footer {
@@ -515,7 +521,7 @@
   }
 
   .mu-dialog-title {
-    @apply leading-none font-medium;
+    @apply text-lg leading-none font-semibold;
   }
 
   .mu-dialog-description {
@@ -672,11 +678,11 @@
   }
 
   .mu-field-content {
-    @apply gap-1;
+    @apply gap-1.5;
   }
 
   .mu-field-label {
-    @apply has-data-checked:bg-primary/5 has-data-checked:border-primary/30 dark:has-data-checked:border-primary/20 dark:has-data-checked:bg-primary/10 gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-3;
+    @apply has-data-checked:bg-primary/5 has-data-checked:border-primary/30 dark:has-data-checked:border-primary/20 dark:has-data-checked:bg-primary/10 gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-4;
   }
 
   .mu-field-label-aria {
@@ -740,8 +746,9 @@
   }
 
   /* MARK: Item */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/item.tsx) */
   .mu-item {
-    @apply [a]:hover:bg-muted rounded-md border text-sm;
+    @apply [a]:hover:bg-accent/50 rounded-md border text-sm;
   }
 
   .mu-item-variant-default {
@@ -757,11 +764,11 @@
   }
 
   .mu-item-size-default {
-    @apply gap-3.5 px-4 py-3.5;
+    @apply gap-4 p-4;
   }
 
   .mu-item-size-sm {
-    @apply gap-2.5 px-3 py-2.5;
+    @apply gap-2.5 px-4 py-3;
   }
 
   .mu-item-size-xs {
@@ -777,7 +784,7 @@
   }
 
   .mu-item-media-variant-icon {
-    @apply [&_svg:not([class*='size-'])]:size-4;
+    @apply size-8 rounded-sm border bg-muted [&_svg:not([class*='size-'])]:size-4;
   }
 
   .mu-item-media-variant-image {
@@ -793,7 +800,7 @@
   }
 
   .mu-item-description {
-    @apply text-muted-foreground text-left text-sm leading-normal group-data-[size=xs]/item:text-xs;
+    @apply text-muted-foreground text-left text-sm leading-normal text-balance group-data-[size=xs]/item:text-xs;
   }
 
   .mu-item-actions {
@@ -813,10 +820,11 @@
   }
 
   .mu-item-separator {
-    @apply my-2;
+    @apply my-0;
   }
 
   /* MARK: Kbd */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/kbd.tsx) */
   .mu-kbd {
     @apply bg-muted text-muted-foreground in-data-[slot=tooltip-content]:bg-background/20 in-data-[slot=tooltip-content]:text-background dark:in-data-[slot=tooltip-content]:bg-background/10 h-5 w-fit min-w-5 gap-1 rounded-sm px-1 font-sans text-xs font-medium [&_svg:not([class*='size-'])]:size-3;
   }
@@ -966,8 +974,9 @@
   }
 
   /* MARK: Pagination */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/pagination.tsx) */
   .mu-pagination-content {
-    @apply gap-1;
+    @apply flex-row gap-1;
   }
 
   .mu-pagination-ellipsis {
@@ -983,8 +992,9 @@
   }
 
   /* MARK: Popover */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/popover.tsx) */
   .mu-popover-content {
-    @apply bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 flex flex-col gap-4 rounded-md p-4 text-sm shadow-md ring-1 duration-100;
+    @apply rounded-md border bg-popover p-4 text-popover-foreground shadow-md data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 flex flex-col gap-4 text-sm ring-1 duration-100;
   }
 
   .mu-popover-content-logical {
@@ -1031,12 +1041,13 @@
   }
 
   /* MARK: Radio Group */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/radio-group.tsx) */
   .mu-radio-group {
     @apply grid gap-3;
   }
 
   .mu-radio-group-item {
-    @apply border-input dark:bg-input/30 data-checked:bg-primary data-checked:text-primary-foreground dark:data-checked:bg-primary data-checked:border-primary aria-invalid:aria-checked:border-primary aria-invalid:border-destructive focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 dark:aria-invalid:border-destructive/50 flex size-4 rounded-full focus-visible:ring-3 aria-invalid:ring-3;
+    @apply rounded-full border-input shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30 dark:aria-invalid:ring-destructive/40 flex size-4 data-checked:bg-primary data-checked:text-primary-foreground dark:data-checked:bg-primary data-checked:border-primary aria-invalid:aria-checked:border-primary dark:aria-invalid:border-destructive/50;
   }
 
   .mu-radio-group-item-aria {
@@ -1182,6 +1193,11 @@
   }
 
   /* MARK: Sidebar */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/sidebar.tsx) */
+  .mu-sidebar-trigger {
+    @apply size-7;
+  }
+
   .mu-sidebar-gap {
     @apply transition-[width] duration-200 ease-linear;
   }
@@ -1267,7 +1283,7 @@
   }
 
   .mu-sidebar-menu-action {
-    @apply text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground peer-hover/menu-button:text-sidebar-accent-foreground absolute top-1.5 right-1 aspect-square w-5 rounded-md p-0 peer-data-[size=default]/menu-button:top-1.5 peer-data-[size=lg]/menu-button:top-2.5 peer-data-[size=sm]/menu-button:top-1 focus-visible:ring-2 [&>svg]:size-4;
+    @apply text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground peer-hover/menu-button:text-sidebar-accent-foreground peer-data-active/menu-button:text-sidebar-accent-foreground absolute top-1.5 right-1 aspect-square w-5 rounded-md p-0 peer-data-[size=default]/menu-button:top-1.5 peer-data-[size=lg]/menu-button:top-2.5 peer-data-[size=sm]/menu-button:top-1 focus-visible:ring-2 [&>svg]:size-4 group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-open:opacity-100 md:opacity-0;
   }
 
   .mu-sidebar-menu-badge {
@@ -1413,17 +1429,19 @@
      (classes.ts) — nothing to port. */
 
   /* MARK: Textarea */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/textarea.tsx) */
   .mu-textarea {
-    @apply border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 rounded-md border bg-transparent px-2.5 py-2 text-base shadow-xs transition-[color,box-shadow] focus-visible:ring-3 aria-invalid:ring-3 md:text-sm;
+    @apply rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:aria-invalid:ring-destructive/40 dark:aria-invalid:border-destructive/50;
   }
 
   /* MARK: Toggle */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/toggle.tsx) */
   .mu-toggle {
-    @apply hover:text-foreground aria-pressed:bg-muted focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive gap-1 rounded-md text-sm font-medium transition-[color,box-shadow] [&_svg:not([class*='size-'])]:size-4;
+    @apply gap-2 rounded-md text-sm font-medium transition-[color,box-shadow] hover:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 aria-pressed:bg-accent aria-pressed:text-accent-foreground dark:aria-invalid:ring-destructive/40 [&_svg:not([class*='size-'])]:size-4;
   }
 
   .mu-toggle-aria {
-    @apply data-selected:bg-muted;
+    @apply data-selected:bg-accent data-selected:text-accent-foreground;
   }
 
   .mu-toggle-variant-default {
@@ -1431,15 +1449,15 @@
   }
 
   .mu-toggle-variant-outline {
-    @apply border-input hover:bg-muted border bg-transparent shadow-xs;
+    @apply border border-input bg-transparent shadow-xs hover:bg-accent hover:text-accent-foreground;
   }
 
   .mu-toggle-size-default {
-    @apply h-9 min-w-9 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2;
+    @apply h-9 min-w-9 px-2 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2;
   }
 
   .mu-toggle-size-sm {
-    @apply h-8 min-w-8 px-2.5 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5;
+    @apply h-8 min-w-8 px-1.5 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5;
   }
 
   .mu-toggle-size-lg {

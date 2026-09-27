@@ -102,6 +102,22 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   // Radix boolean-attribute selectors -> our components' equivalent plain data attributes.
   { from: "data-[disabled]:", to: "data-disabled:" },
   { from: "data-[inset]:", to: "data-inset:" },
+  // Radix data-[state=checked/unchecked] -> our Zag custom variants (globals.css @custom-variant list).
+  { from: "data-[state=checked]:", to: "data-checked:" },
+  { from: "data-[state=unchecked]:", to: "data-unchecked:" },
+  { from: "has-data-[state=checked]:", to: "has-data-checked:" },
+  // Sidebar's own data-[active=true] selector -> our data-active custom variant (same boolean-ish attribute).
+  { from: "data-[active=true]:", to: "data-active:" },
+  { from: "peer-data-[active=true]/", to: "peer-data-active/" },
+  // upstream's [&>[data-slot=x]]: / [&>*]:data-[slot=x]: direct-child arbitrary selectors -> Tailwind v4's *:data-[slot=x]: shorthand for the same direct-child selector.
+  { from: "[&>[data-slot=field-group]]:", to: "*:data-[slot=field-group]:" },
+  { from: "[&>*]:data-[slot=field]:", to: "*:data-[slot=field]:" },
+  // upstream's group-has-[[data-slot=x]]/y: arbitrary-selector pattern -> Tailwind v4's group-has-data-[slot=x]/y: shorthand for the same has() selector.
+  { from: "group-has-[[data-slot=item-description]]/item:", to: "group-has-data-[slot=item-description]/item:" },
+  // upstream's native disabled: pseudo-class -> our Zag components' data-disabled attribute
+  // (many of our controls render a non-form element, e.g. checkbox's <span> control, so the
+  // machine emits a data-disabled attribute rather than relying on a native disabled attribute).
+  { from: "disabled:", to: "data-disabled:" },
   // Arbitrary-value sizes that equal a rem-based Tailwind default-scale token at 16px root
   // (1.15rem = 18.4px, 2rem = 32px, 0.875rem = 14px, 1.5rem = 24px) — same computed value,
   // switch's data-[size=*] tokens spelled with px instead of the upstream rem literal. Each needs
@@ -114,13 +130,21 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   { from: "min-w-[8rem]", to: "min-w-32" },
   // This repo spells the 3px focus ring width as the bare utility `ring-3` (Tailwind v4's default
   // ring width scale), not new-york-v4's `ring-[3px]` arbitrary value — same computed value,
-  // repo-wide convention (19 pre-existing uses in style-new-york.css alone). Whole-token form
-  // handles it bare; the compounded form (`focus-visible:ring-[3px]`, by far the most common
-  // shape in new-york-v4) needs its own entry since normalizeToken only matches a `from` as a
-  // whole token or a PREFIX, never a suffix.
+  // repo-wide convention (19 pre-existing uses in style-new-york.css alone). normalizeToken's
+  // cut-point matching (see below) tries the bare `ring-[3px]` -> `ring-3` entry at every variant
+  // prefix, so the two more specific compounded entries kept here (focus-visible:/has-[...]:) are
+  // redundant with it but harmless — left in place rather than removed mid-integration.
   { from: "ring-[3px]", to: "ring-3" },
   { from: "focus-visible:ring-[3px]", to: "focus-visible:ring-3" },
   { from: "has-[[data-slot=input-group-control]:focus-visible]:ring-[3px]", to: "has-[[data-slot=input-group-control]:focus-visible]:ring-3" },
+  // top-[50%]/left-[50%] (upstream's arbitrary %) === top-1/2/left-1/2 (Tailwind's default fraction scale, same 50%).
+  { from: "top-[50%]", to: "top-1/2" },
+  { from: "left-[50%]", to: "left-1/2" },
+  // translate-x-[-50%]/-y-[-50%] (upstream's arbitrary negative %) === -translate-x-1/2/-y-1/2 (same -50%, Tailwind's negative-utility spelling).
+  { from: "translate-x-[-50%]", to: "-translate-x-1/2" },
+  { from: "translate-y-[-50%]", to: "-translate-y-1/2" },
+  // upstream's arbitrary-selector "ancestor has this data-slot" pattern -> Tailwind v4's in-* variant shorthand for the same descendant-context selector.
+  { from: "[[data-slot=tooltip-content]_&]:", to: "in-data-[slot=tooltip-content]:" },
   // Radix data-[orientation=*] selectors -> our Zag custom variants (globals.css @custom-variant list).
   { from: "data-[orientation=horizontal]:", to: "data-horizontal:" },
   { from: "data-[orientation=vertical]:", to: "data-vertical:" },
@@ -352,6 +376,297 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     reason:
       "missing: new-york-v4's AccordionContent is a single element carrying both the collapse wrapper and pt-0/pb-4 padding. Our accordion.marko splits this into content (the ResizeObserver-measured collapse wrapper, classes.ts's `content`) and contentInner (classes.ts's `contentInner`, already `pt-0 pb-4` — a pre-existing bases/base-derived split, not a style-layer choice); the tool only checks the `content` slot, contentInner already carries this value verbatim. extra: `overflow-hidden` is structural (classes.ts); `data-open:.../data-closed:...` drive our height-measured collapse animation (marko-accordion-down/-up keyframes, see accordion/classes.ts's height comment) which has no class-level equivalent in new-york-v4 — Radix's own collapse animation there is driven by its own CSS vars, not a Tailwind class in this slot's string.",
   },
+
+  // batch C
+  "alert:alert": {
+    missing: ["[&>svg]:size-4", "[&>svg]:translate-y-0.5", "[&>svg]:text-current"],
+    extra: [
+      "has-data-[slot=alert-action]:relative",
+      "has-data-[slot=alert-action]:pr-18",
+      "*:[svg]:row-span-2",
+      "*:[svg]:translate-y-0.5",
+      "*:[svg]:text-current",
+      "*:[svg:not([class*='size-'])]:size-4",
+    ],
+    reason:
+      "our alert layout uses a descendant `*:[svg]` selector (not upstream's direct-child `[&>svg]`) plus row-span-2, pre-existing across every base style (vega carries the identical rule) — needed because our alert-action slot (an upstream-absent addition) can co-occur with a 2-row title+description grid, unlike new-york-v4's simpler layout with no action slot at all. Style-only port scope doesn't touch this structural extra.",
+  },
+  "alert:alert:variant:destructive": {
+    missing: ["[&>svg]:text-current"],
+    extra: ["*:[svg]:text-current"],
+    reason: "same selector-shape divergence as alert:alert — *:[svg] vs [&>svg], pre-existing across all base styles.",
+  },
+  "alert:alert-title": {
+    extra: ["[&_a]:underline", "[&_a]:underline-offset-3", "[&_a]:hover:text-foreground"],
+    reason:
+      "our own link-hover styling for alert-title/-description with no upstream equivalent (new-york-v4's AlertTitle/AlertDescription carry no [&_a] rule at all) — pre-existing across every base style, not introduced by this port.",
+  },
+  "alert:alert-description": {
+    extra: ["[&_a]:underline", "[&_a]:underline-offset-3", "[&_a]:hover:text-foreground"],
+    reason: "same as alert-title: our own link-hover extra, pre-existing across all base styles.",
+  },
+  "avatar:avatar": {
+    extra: [
+      "after:absolute",
+      "after:inset-0",
+      "after:border",
+      "after:border-border",
+      "after:mix-blend-darken",
+      "dark:after:mix-blend-lighten",
+      "after:rounded-full",
+    ],
+    reason:
+      "our own after:* pseudo-ring decoration with no upstream equivalent (new-york-v4's Avatar has no ::after rule at all) — pre-existing across every base style, not introduced by this port.",
+  },
+  "avatar:avatar-image": {
+    extra: ["object-cover", "rounded-full"],
+    reason:
+      "our own object-fit/radius on the image element; upstream relies solely on the avatar root's overflow-hidden+rounded-full to clip — pre-existing across every base style.",
+  },
+  "combobox:combobox-trigger": {
+    extra: ["flex", "h-9", "w-9", "items-center", "justify-center", "text-muted-foreground", "data-disabled:cursor-not-allowed", "data-disabled:opacity-50"],
+    reason:
+      "our combobox uses a completely different trigger architecture than upstream: a plain in-flow icon button (flex/h-9/w-9) inside our own input-group control, vs. upstream's InputGroupButton+ComboboxTrigger composition with no classes of its own on the trigger element itself (all its sizing comes from InputGroupButton's own size=\"icon-xs\" variant, not visible in this file). Pre-existing across every base style, out of scope for a style-only port.",
+  },
+  "combobox:combobox-content": {
+    missing: ["w-(--anchor-width)", "min-w-[calc(var(--anchor-width)+--spacing(7))]", "data-[chips=true]:min-w-(--anchor-width)"],
+    extra: ["max-h-(--available-height)", "w-(--reference-width)", "overflow-x-hidden", "overflow-y-auto", "min-w-36"],
+    reason:
+      "structural (classes.ts's content literal) — our Zag combobox positions/sizes its content via its own --available-height/--reference-width CSS vars (Zag's anchor-positioning API), a different mechanism than upstream's Base UI --anchor-width/--available-width vars. Pre-existing across every base style, out of scope for a style-only port.",
+  },
+  "combobox:combobox-list": {
+    extra: ["overscroll-contain", "no-scrollbar"],
+    reason: "our own scroll-behavior extras with no upstream equivalent, pre-existing across every base style.",
+  },
+  "combobox:combobox-item": {
+    extra: ["not-data-[variant=destructive]:data-highlighted:**:text-accent-foreground"],
+    reason:
+      "our own descendant-text-color extra for a destructive-variant item (upstream's ComboboxItem has no variant concept at all), pre-existing across every base style.",
+  },
+  "combobox:combobox-empty": {
+    extra: ["py-1.5", "px-2"],
+    reason: "our own padding, pre-existing across every base style (upstream's ComboboxEmpty uses py-2 text-center instead of py-1.5 px-2 — a different empty-state layout choice, not introduced by this port).",
+  },
+  "combobox:combobox-chips": {
+    extra: ["gap-1", "p-1"],
+    reason: "structural (classes.ts's chips literal) — our own internal padding/gap for the chips container, pre-existing across every base style.",
+  },
+  "combobox:combobox-chip-input": {
+    extra: ["bg-transparent", "px-1", "text-sm", "placeholder:text-muted-foreground", "data-disabled:cursor-not-allowed", "data-disabled:opacity-50"],
+    reason: "structural (classes.ts's chipInput literal) — our own input styling with no upstream equivalent (upstream's ComboboxChipsInput carries no classes of its own at all), pre-existing across every base style.",
+  },
+  "field:field-label": {
+    missing: [
+      "has-[>[data-slot=field]]:w-full",
+      "has-[>[data-slot=field]]:flex-col",
+      "has-data-checked:border-primary",
+      "items-center",
+      "text-sm",
+      "font-medium",
+    ],
+    extra: [
+      "has-data-checked:border-primary/30",
+      "dark:has-data-checked:border-primary/20",
+      "has-data-checked:bg-primary/5",
+      "dark:has-data-checked:bg-primary/10",
+      "has-[>[data-slot=field]]:rounded-md",
+      "has-[>[data-slot=field]]:border",
+      "*:data-[slot=field]:p-4",
+    ],
+    reason:
+      "TWO distinct sources of divergence collide on this one key because upstream literally reuses data-slot=\"field-label\" for BOTH its FieldLabel and FieldTitle functions (verified in the raw .tsx — not a tool bug), so both parts hash to the same mu-field-label lookup even though our own component gives FieldTitle its own separate mu-field-title class with different CSS. (1) FieldLabel's own real gaps: has-[>[data-slot=field]]:w-full/flex-col live in classes.ts's nested literal, invisible to the tool (same class of gap as avatar-badge); border-primary/30 + a dark /20 variant is our own softer-emphasis choice vs. upstream's plain border-primary, pre-existing across every base style. (2) FieldTitle's expected tokens (items-center/text-sm/font-medium) are compared against mu-field-label's CSS instead of mu-field-title's (which already carries them correctly, verified separately) purely because of the shared-slot-name collision above — not a real gap in either class.",
+  },
+  "sidebar:sidebar-menu-button": {
+    missing: ["[&>svg]:size-4", "[&>svg]:shrink-0"],
+    extra: ["[&_svg]:size-4", "[&_svg]:shrink-0"],
+    reason: "our own descendant `[&_svg]` selector (not upstream's direct-child `[&>svg]`), pre-existing across every base style.",
+  },
+  "sidebar:sidebar-wrapper": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "tool limitation, not a real gap: sidebar-wrapper's classes.ts literal has no mu-* hook prefix, tool-invisible — every upstream token for this slot is already in the structural literal verbatim.",
+  },
+  "sidebar:sidebar": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same as sidebar:sidebar-wrapper — no mu-* hook prefix on this slot's literal, tool-invisible, nothing to add.",
+  },
+  "sidebar:sidebar-menu-item": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same as sidebar:sidebar-wrapper — no mu-* hook prefix on this slot's literal, tool-invisible, nothing to add.",
+  },
+  "sidebar:sidebar-menu-sub-item": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same as sidebar:sidebar-wrapper — no mu-* hook prefix on this slot's literal, tool-invisible, nothing to add.",
+  },
+  "sidebar:sidebar-rail": {
+    missing: ["-translate-x-1/2", "after:left-1/2"],
+    extra: ["after:start-1/2", "ltr:-translate-x-1/2", "rtl:-translate-x-1/2"],
+    reason:
+      "our rail is RTL-aware where upstream is LTR-only: after:start-1/2 (logical property) instead of after:left-1/2, and an explicit ltr:/rtl: split instead of one unconditional -translate-x-1/2. Pre-existing across every base style, an improvement over upstream not a regression, out of scope for a style-only port.",
+  },
+  "sidebar:sidebar-content": {
+    extra: ["no-scrollbar"],
+    reason: "our own scroll-behavior extra with no upstream equivalent, pre-existing across every base style.",
+  },
+  "sidebar:sidebar-menu-sub-button": {
+    missing: ["sm", "text-xs", "md", "text-sm"],
+    extra: ["data-[size=md]:text-sm", "data-[size=sm]:text-xs"],
+    reason:
+      "tool parsing artifact, not a real gap: upstream's SidebarMenuSubButton doesn't express its size classes as string literals in the cn() call at all — it uses JS conditionals (size === \"sm\" && \"text-xs\", size === \"md\" && \"text-sm\"), so the tokenizer captures the bare identifiers \"sm\"/\"md\" from those expressions as if they were classes. Our data-[size=md]:text-sm/data-[size=sm]:text-xs are the correct data-attribute-selector equivalent of the same size-conditional logic, already present.",
+  },
+  "item:item": {
+    missing: ["border-transparent"],
+    extra: ["w-full"],
+    reason:
+      "border-transparent is unconditional on upstream's base itemVariants string but organized per-variant in ours (item:variant:default/muted both apply it, item:variant:outline applies border-border instead) — same net visual result, an organizational difference not a real gap. w-full is structural (classes.ts base literal), pre-existing across every base style.",
+  },
+  "item:item:variant:default": {
+    missing: ["bg-transparent"],
+    extra: ["border-transparent"],
+    reason: "same organizational difference as item:item — border-transparent lives here instead of on the base rule; bg-transparent is genuinely present via classes.ts's own base structural string (not missing in practice, only from this slot's own CSS rule).",
+  },
+  "item:item:variant:muted": {
+    extra: ["border-transparent"],
+    reason: "same organizational difference as item:item.",
+  },
+  "item:item-media:variant:image": {
+    extra: ["group-data-[size=sm]/item:size-8", "group-data-[size=xs]/item:size-6"],
+    reason: "our own responsive media sizing across our extra xs size tier (upstream has no xs size and a fixed size-10 media), pre-existing across every base style.",
+  },
+  "item:item-group": {
+    extra: ["w-full", "gap-4", "has-data-[size=sm]:gap-2.5", "has-data-[size=xs]:gap-2"],
+    reason: "structural (classes.ts base literal) plus our own size-aware gap extras; upstream's ItemGroup carries no classes at all beyond structural. Pre-existing across every base style.",
+  },
+  "item:item-content": {
+    extra: ["group-data-[size=xs]/item:gap-0"],
+    reason: "our own xs-size gap override (upstream has no xs size tier), pre-existing across every base style.",
+  },
+  "item:item-title": {
+    extra: ["line-clamp-1", "underline-offset-4"],
+    reason: "structural (classes.ts base literal, line-clamp-1) plus our own underline-offset-4 extra with no upstream equivalent, pre-existing across every base style.",
+  },
+  "item:item-description": {
+    extra: ["text-left", "group-data-[size=xs]/item:text-xs"],
+    reason: "our own explicit alignment plus xs-size text scaling (upstream has no xs size tier), pre-existing across every base style.",
+  },
+  "field:field-description": {
+    missing: ["last:mt-0", "nth-last-2:-mt-1", "[&>a]:underline", "[&>a]:underline-offset-4", "[&>a:hover]:text-primary"],
+    extra: ["text-left"],
+    reason:
+      "tool limitation: the missing tokens live in classes.ts's spacing/links sub-exports (fieldDescription.spacing/.links), multi-literal exports the tool can't see (same class as avatar-badge's sizeSm/sizeDefault/sizeLg) — field.marko already concatenates root+spacing+links via cn(), so these ARE emitted. text-left is our own explicit alignment, pre-existing across every base style.",
+  },
+  "popover:popover-content": {
+    extra: ["ring-foreground/10", "flex", "flex-col", "gap-4", "text-sm", "ring-1", "duration-100"],
+    reason:
+      "our own extras with no upstream equivalent: a ring-1 accent ring (ring-foreground/10) and a flex/flex-col/gap-4/text-sm layout duplicating popover-header's own flex/gap-1/text-sm — pre-existing across every base style, not introduced by this port.",
+  },
+  "dialog:dialog-description": {
+    extra: ["*:[a]:hover:text-foreground", "*:[a]:underline", "*:[a]:underline-offset-3"],
+    reason:
+      "our own link-hover styling with no upstream equivalent (new-york-v4's DialogDescription carries no [a] rule at all) — pre-existing across every base style, not introduced by this port.",
+  },
+  "carousel:carousel": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason:
+      "tool limitation, not a real gap: carousel/carousel-content/carousel-item's classes.ts literals ('relative', 'overflow-hidden outline-none...', 'min-w-0 shrink-0 grow-0 basis-full') have no mu-* hook prefix at all, so readStructuralTokens finds nothing and there's no style-new-york.css rule to read either (none needed — every upstream token for these 3 slots is already covered by the existing structural literal verbatim).",
+  },
+  "carousel:carousel-content": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same as carousel:carousel — no mu-* hook prefix on this slot's literal, tool-invisible, nothing to add.",
+  },
+  "carousel:carousel-item": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same as carousel:carousel — no mu-* hook prefix on this slot's literal, tool-invisible, nothing to add.",
+  },
+  "carousel:carousel-previous": {
+    missing: ["size-8", "horizontal", "-left-12", "-top-12", "left-1/2", "-translate-x-1/2", "rotate-90"],
+    extra: ["left-2", "touch-manipulation"],
+    reason:
+      "our carousel has no vertical-orientation support at all (grep confirms no orientation/horizontal/vertical logic anywhere in carousel.marko) — a pre-existing feature gap, out of scope for a style-only port, so upstream's horizontal:/vertical-only positioning tokens don't apply. size-8 is inherited automatically from Button's already-ported size=\"icon-sm\" variant (mu-button-size-icon-sm resolves to size-8, matching upstream exactly) rather than set directly here. left-2/touch-manipulation are our own pre-existing positioning/touch-handling choices.",
+  },
+  "carousel:carousel-next": {
+    missing: ["size-8", "horizontal", "-right-12", "-bottom-12", "left-1/2", "-translate-x-1/2", "rotate-90"],
+    extra: ["right-2", "touch-manipulation"],
+    reason: "same as carousel:carousel-previous.",
+  },
+  "pagination:pagination-link": {
+    missing: ["outline", "ghost"],
+    reason:
+      "tool parsing artifact, not a real gap: upstream's PaginationLink doesn't build its className from a cn() string literal at all — it calls buttonVariants({ variant: isActive ? \"outline\" : \"ghost\", size }), so extractParts's bareMatch fallback picks up the literal variant-name strings from that ternary as if they were classes. Our link.marko already calls the SAME buttonVariants (../button/variants.ts) with the same variant/size logic, so parity is inherited automatically from the already-ported button styles, not something to add here.",
+  },
+  "pagination:pagination-ellipsis": {
+    extra: ["[&_svg:not([class*='size-'])]:size-4"],
+    reason:
+      "our own icon-sizing hook for any icon dropped into the ellipsis slot; upstream instead sizes its MoreHorizontalIcon directly via className=\"size-4\" on the icon itself, with no descendant selector needed. Pre-existing across every base style.",
+  },
+  "toggle:toggle": {
+    missing: ["data-[state=on]:bg-accent", "data-[state=on]:text-accent-foreground"],
+    extra: ["aria-pressed:bg-accent", "aria-pressed:text-accent-foreground"],
+    reason:
+      "our toggle uses an aria-pressed selector for the pressed-state color instead of upstream's data-[state=on] — same semantic state (both true only when pressed), a pre-existing selector-strategy choice across every base style, not introduced by this port.",
+  },
+  "toggle:toggle:size:default": {
+    extra: ["has-data-[icon=inline-end]:pr-2", "has-data-[icon=inline-start]:pl-2"],
+    reason: "our own icon-slot padding adjustment with no upstream equivalent (upstream has no icon-inset concept for Toggle), pre-existing across every base style.",
+  },
+  "toggle:toggle:size:sm": {
+    extra: ["has-data-[icon=inline-end]:pr-1.5", "has-data-[icon=inline-start]:pl-1.5"],
+    reason: "same as toggle:toggle:size:default, at the sm size's own spacing scale.",
+  },
+  "toggle:toggle:size:lg": {
+    extra: ["has-data-[icon=inline-end]:pr-2", "has-data-[icon=inline-start]:pl-2"],
+    reason: "same as toggle:toggle:size:default, at the lg size (shares default's 2/2 padding).",
+  },
+  "textarea:textarea": {
+    extra: ["aria-invalid:ring-3", "dark:aria-invalid:border-destructive/50"],
+    reason:
+      "our own extras with no upstream equivalent: aria-invalid:ring-3 keeps the error-state ring the same width as the focus ring (upstream only sets the error ring's color/opacity, relying on the browser default width), dark:aria-invalid:border-destructive/50 is a dark-mode border-color adjustment upstream doesn't carry. Pre-existing across every base style.",
+  },
+  "radio-group:radio-group": {
+    extra: ["w-full"],
+    reason: "structural (classes.ts root string), pre-existing across every base style — not introduced by this port.",
+  },
+  "radio-group:radio-group-item": {
+    missing: ["text-primary"],
+    extra: [
+      "peer",
+      "relative",
+      "after:absolute",
+      "after:-inset-x-3",
+      "after:-inset-y-2",
+      "flex",
+      "data-checked:bg-primary",
+      "data-checked:text-primary-foreground",
+      "dark:data-checked:bg-primary",
+      "data-checked:border-primary",
+      "aria-invalid:aria-checked:border-primary",
+      "dark:aria-invalid:border-destructive/50",
+    ],
+    reason:
+      "our radio uses a fundamentally different indicator design than upstream: a filled bg-primary item background + a small bg-primary-foreground dot span, vs. upstream's unfilled bordered circle with a fill-primary CircleIcon dot. text-primary (upstream, colors its icon via currentColor) has no purpose in our design and is correctly omitted; the checked-state background/border classes and the touch hit-area (peer/relative/after:*) are our own pre-existing structural approach, present in every base style, out of scope for a style-only port. flex is carried forward unchanged from vega (kept for parity with the existing indicator-centering approach, not upstream-driven).",
+  },
+  "separator:separator": {
+    missing: ["data-horizontal:h-px", "data-horizontal:w-full", "data-vertical:h-full", "data-vertical:w-px"],
+    reason:
+      "tool limitation, not a real gap: separator's classes.ts literal has no mu-* hook prefix (its cn() call is styles.root with no mu-separator token at all), so readStructuralTokens never finds it and none of its tokens are visible to --check. The real literal already carries data-horizontal:h-px/w-full and data-vertical:w-px (matching upstream) plus data-vertical:self-stretch instead of upstream's data-vertical:h-full — a pre-existing bases/base structural choice (stretch to fill cross-axis vs. explicit h-full), not introduced by this port.",
+  },
+  "checkbox:checkbox": {
+    extra: ["relative", "after:absolute", "after:-inset-x-3", "after:-inset-y-2", "group-has-disabled/field:opacity-50"],
+    reason:
+      "our own extended touch hit-area (after:* pseudo, no upstream equivalent) and field-integration disabled cascade (group-has-disabled/field:), pre-existing across every base style — out of scope for a style-only port.",
+  },
+  "avatar:avatar-badge": {
+    missing: [
+      "group-data-[size=sm]/avatar:size-2",
+      "group-data-[size=sm]/avatar:[&>svg]:hidden",
+      "group-data-[size=default]/avatar:size-2.5",
+      "group-data-[size=default]/avatar:[&>svg]:size-2",
+      "group-data-[size=lg]/avatar:size-3",
+      "group-data-[size=lg]/avatar:[&>svg]:size-2",
+    ],
+    extra: ["bg-blend-color"],
+    reason:
+      "tool limitation, not a real gap: the group-data-[size=*] tokens live in classes.ts's sizeSm/sizeDefault/sizeLg literals, which don't start with the mu-avatar-badge hook (readStructuralTokens only captures the first literal per mu-class) — badge.marko already concatenates root+sizeSm+sizeDefault+sizeLg via cn(), so these ARE emitted, just invisible to --check. bg-blend-color is a real, pre-existing extra (upstream is plain bg-primary) carried across every base style.",
+  },
 }
 
 interface Part {
@@ -406,12 +721,27 @@ function extractParts(src: string): Part[] {
   while ((m = fnRe.exec(src))) {
     const fnName = m[1]!
     const body = m[2]!
-    const slotMatch = /data-slot=["'{]([\w"'-]+)/.exec(body)
-    if (!slotMatch) continue
-    const slot = slotMatch[1]!.replace(/["']/g, "")
     const classNames: string[] = []
     // Grab every top-level string literal argument inside a cn(...) call in this function
     const cnCallMatch = /className=\{cn\(([\s\S]*?)\)\}/.exec(body)
+    // A function can render more than one JSX element with its own data-slot before reaching
+    // the element that actually carries className (e.g. DialogContent wraps its classed
+    // Content in a data-slot="dialog-portal" wrapper first) — the FIRST data-slot in the body
+    // is not necessarily the one this className belongs to. Take the data-slot nearest to (at
+    // or before) the className match itself; fall back to the first in the body if none
+    // precedes it (covers the simple one-element-per-function case unchanged).
+    const classNameAttrIdx = cnCallMatch ? cnCallMatch.index! : /className=/.exec(body)?.index
+    if (classNameAttrIdx === undefined) continue
+    const before = body.slice(0, classNameAttrIdx)
+    const slotMatches = [...before.matchAll(/data-slot=["'{]([\w"'-]+)/g)]
+    // Only a data-slot genuinely preceding this className is trustworthy — a JSX element with
+    // no data-slot of its own (e.g. combobox.tsx's plain <InputGroup className="w-auto">) has
+    // no reliable attribution, and grabbing some LATER data-slot from elsewhere in the function
+    // body (the previous fallback here) can misattribute classes to the wrong slot entirely, as
+    // it did for combobox-input's classes landing on "input-group-button" instead. Skip rather
+    // than guess wrong.
+    if (!slotMatches.length) continue
+    const slot = slotMatches[slotMatches.length - 1]![1]!.replace(/["']/g, "")
     if (cnCallMatch) {
       const inner = cnCallMatch[1]!
       let sm: RegExpExecArray | null
@@ -513,12 +843,21 @@ function muClassName(slot: string): string {
 
 /** Applies every EQUIVALENCES replacement to a raw token (prefix or whole-token match). */
 function normalizeToken(token: string): string {
-  let out = token
-  for (const { from, to } of EQUIVALENCES) {
-    if (out === from) { out = to; break }
-    if (out.startsWith(from)) { out = to + out.slice(from.length); break }
+  // A Tailwind token is a chain of variant prefixes ending in the base utility
+  // (dark:focus-visible:ring-[3px]) — an EQUIVALENCES pair can be about any link in that chain
+  // (a state selector, or the base utility itself), so try the match at every "cut point": the
+  // token's own start, and right after each variant's trailing ":".
+  const cutPoints: number[] = [0]
+  for (let i = 0; i < token.length; i++) if (token[i] === ":") cutPoints.push(i + 1)
+  for (const at of cutPoints) {
+    const prefix = token.slice(0, at)
+    const rest = token.slice(at)
+    for (const { from, to } of EQUIVALENCES) {
+      if (rest === from) return prefix + to
+      if (rest.startsWith(from)) return prefix + to + rest.slice(from.length)
+    }
   }
-  return out
+  return token
 }
 
 /** Normalizes every token and drops our own hook classes (mu-*, group/*, peer/*) — see isStructuralOnlyToken. */
@@ -531,10 +870,19 @@ function normalizeOurTokens(tokens: Iterable<string>): Set<string> {
   return out
 }
 
-/** Normalizes every token of new-york-v4's raw target string (no hook classes to strip there). */
+/**
+ * Normalizes every token of new-york-v4's raw target string. Drops group/*|peer/* markers too —
+ * upstream defines its OWN named groups (e.g. avatar.tsx's `group/avatar`), not just our hook
+ * classes, and a named-group token always matches structurally regardless of name (both sides
+ * declare the group on the same element), so comparing group NAMES would flag a false mismatch
+ * whenever our name differs from upstream's own (batch C, avatar).
+ */
 function normalizeTargetTokens(tokens: Iterable<string>): Set<string> {
   const out = new Set<string>()
-  for (const t of tokens) out.add(normalizeToken(t))
+  for (const t of tokens) {
+    if (t.startsWith("group/") || t.startsWith("peer/")) continue
+    out.add(normalizeToken(t))
+  }
   return out
 }
 
@@ -607,6 +955,11 @@ function runCheck(component: string): boolean {
     const style = readStyleTokens(muClass)
 
     if (style === undefined && structural.size === 0) {
+      // Some slots have no mu-* hook prefix at all on their classes.ts literal (e.g. carousel's
+      // root/content/item), so neither structural nor style tokens are ever visible to this
+      // tool — a documented tool limitation, not necessarily a real gap. Still allow a
+      // DIVERGENCES entry to explain and allowlist this case, same as any other mismatch,
+      // instead of always hard-failing before the allowlist is even consulted.
       const noHookMsg = "(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"
       const divergence = DIVERGENCES[`${component}:${part.slot}`]
       const allowlisted = divergence?.missing?.includes(noHookMsg) ?? false
