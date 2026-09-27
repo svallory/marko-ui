@@ -187,6 +187,16 @@ test.describe("cross-tab theme sync (next-themes parity)", () => {
       .poll(() => pageB.evaluate(() => document.documentElement.style.colorScheme))
       .toBe("dark");
 
+    // The <html> class is only half the claim — theme-toggle.marko's own
+    // `isDark` component state (which drives its icon, via the SAME storage
+    // listener but a SEPARATE code path than the boot script's) must also
+    // have flipped in tab B, or the toggle button would show the wrong icon
+    // (moon, "switch to dark") while <html> already reads dark.
+    const toggleB = pageB.getByRole("button", { name: "Toggle theme" });
+    await expect
+      .poll(() => toggleB.evaluate((el) => el.innerHTML.includes('<circle cx="12" cy="12" r="4"')))
+      .toBe(true);
+
     await pageA.close();
     await pageB.close();
   });

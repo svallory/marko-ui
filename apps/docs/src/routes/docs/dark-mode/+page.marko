@@ -61,6 +61,26 @@ static const TOGGLE = `<let/isDark=false/>
   isDark = document.documentElement.classList.contains("dark");
 </script>
 
+<lifecycle
+  onMount() {
+    // Cross-tab sync: keeps this button's own icon in sync when another
+    // tab changes the theme (the boot script's storage listener only
+    // toggles the <html> class, not this component's isDark state).
+    const onStorage = (event) => {
+      if (event.key !== "theme" && event.key !== null) return;
+      let stored = null;
+      try {
+        stored = localStorage.getItem("theme");
+      } catch (error) {}
+      isDark = stored
+        ? stored === "dark"
+        : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }
+/>
+
 <button
   type="button"
   aria-label="Toggle theme"
