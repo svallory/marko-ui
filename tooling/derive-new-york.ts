@@ -75,6 +75,13 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   // upstream new-york-v4's breadcrumb.tsx still writes the legacy break-words alias; both compile to
   // overflow-wrap: break-word.
   { from: "break-words", to: "wrap-break-word" },
+  // batch A: resizable.tsx uses react-resizable-panels, which sets an ARIA orientation attribute;
+  // our resizable.marko is Zag-based (splitter machine) and emits data-orientation instead (verified
+  // in packages/shadcn/ui/resizable/resizable.marko via api().getRootProps()) — same meaning, different
+  // underlying primitive library, same class of divergence as the dropdown-menu Base-UI-vs-Radix case.
+  { from: "aria-[orientation=vertical]:", to: "data-[orientation=vertical]:" },
+  { from: "aria-[orientation=horizontal]:", to: "data-[orientation=horizontal]:" },
+  { from: "[&[aria-orientation=horizontal]>div]:", to: "[&[data-orientation=horizontal]>div]:" },
 ]
 
 /**
@@ -147,6 +154,37 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     ],
     reason:
       "new-york-v4's toggle-group has no vertical-orientation support at all (verified: no data-vertical/aria-orientation handling anywhere in its source), so its first:rounded-l-md/last:rounded-r-md/first:border-l/border-l-0 selectors are unconditional (horizontal-only, no group-data qualifier). Our component is Zag-driven and supports both orientations (ported from bases/base's orientation-aware ToggleGroup, whose classes.ts already carried this same group-data-horizontal/vertical split verbatim before this port), so it needs the qualifier to also cover the vertical case new-york-v4 doesn't have — out of scope for a style-only port.",
+  },
+  "resizable:resizable-handle": {
+    missing: [
+      "data-[orientation=horizontal]:h-px",
+      "data-[orientation=horizontal]:w-full",
+      "data-[orientation=horizontal]:after:left-0",
+      "data-[orientation=horizontal]:after:h-1",
+      "data-[orientation=horizontal]:after:w-full",
+      "data-[orientation=horizontal]:after:translate-x-0",
+      "data-[orientation=horizontal]:after:-translate-y-1/2",
+      "[&[data-orientation=horizontal]>div]:rotate-90",
+    ],
+    extra: [
+      "ring-offset-background",
+      "data-[orientation=vertical]:h-px",
+      "data-[orientation=vertical]:w-full",
+      "data-[orientation=vertical]:after:left-0",
+      "data-[orientation=vertical]:after:h-1",
+      "data-[orientation=vertical]:after:w-full",
+      "data-[orientation=vertical]:after:translate-x-0",
+      "data-[orientation=vertical]:after:-translate-y-1/2",
+      "[&[data-orientation=vertical]>div]:rotate-90",
+    ],
+    reason:
+      "opposite default-orientation convention, not a visual difference: upstream defaults to a vertical panel split (side-by-side panels, vertical divider) and its base string already assumes that layout, applying horizontal-specific overrides only when explicitly switched. Our resizable.marko defaults orientation to \"horizontal\" (see the `orientation=input.orientation ?? \"horizontal\"` line), so our base string assumes the opposite default and applies vertical-specific overrides instead — the two rules are structurally mirror images of each other, verified against the raw new-york-v4 source; ring-offset-background is a pre-existing structural addition (in classes.ts before this port) with no upstream equivalent (new-york-v4 doesn't set a ring offset color, only focus-visible:ring-offset-1 for the width, ported above).",
+  },
+  "table:table-container": {
+    missing: ["caption-bottom", "text-sm"],
+    extra: ["relative", "overflow-x-auto"],
+    reason:
+      "tool limitation, not a real gap: new-york-v4's Table() function renders TWO nested elements each with their own data-slot (an outer div data-slot=\"table-container\" with fixed classes relative w-full overflow-x-auto, and an inner table data-slot=\"table\" carrying the cn()-merged w-full caption-bottom text-sm) — extractParts()'s function-body regex only captures the FIRST data-slot match per function, so it reports the table-container slot name paired with the inner table's cn() classes. Verified our own components split correctly: mu-table-container is relative w-full overflow-x-auto and mu-table is w-full caption-bottom text-sm, an exact match for upstream's two elements respectively.",
   },
 }
 

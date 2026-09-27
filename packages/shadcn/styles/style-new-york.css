@@ -1026,8 +1026,13 @@
   }
 
   /* MARK: Resizable */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/resizable.tsx) */
+  .mu-resizable-handle {
+    @apply focus-visible:ring-offset-1;
+  }
+
   .mu-resizable-handle-icon {
-    @apply bg-border h-6 w-1 rounded-lg;
+    @apply bg-border h-4 w-3 items-center justify-center rounded-xs border;
   }
 
   /* MARK: Scroll Area */
@@ -1305,6 +1310,7 @@
   }
 
   /* MARK: Table */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/table.tsx) */
   .mu-table-container {
     @apply relative w-full overflow-x-auto;
   }
@@ -1334,7 +1340,7 @@
   }
 
   .mu-table-head {
-    @apply text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0;
+    @apply text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px];
   }
 
   .mu-table-head-aria {
@@ -1342,7 +1348,7 @@
   }
 
   .mu-table-cell {
-    @apply p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0;
+    @apply p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px];
   }
 
   .mu-table-cell-aria {
