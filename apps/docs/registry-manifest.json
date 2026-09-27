@@ -1825,7 +1825,7 @@
     },
     {
       "path": "styles/new-york/alert.json",
-      "sha256": "07fe60f109efe2019c07d0d0af03623e7f99a95d38216e59c556c360c513617b"
+      "sha256": "c4e31ac404a0cbd618d650925e2a3ce909468414cb01b11eaa1ce12bf9e0c466"
     },
     {
       "path": "styles/new-york/angle-slider.json",
@@ -1841,7 +1841,7 @@
     },
     {
       "path": "styles/new-york/avatar.json",
-      "sha256": "600aace9f71558ee9b295373ddd8b09742c4514b7408b7bf0e3c84ab944a5407"
+      "sha256": "8935bb7a6f81f4df734585ca91e93c3d90ddc405de49f9da8423cd712747004c"
     },
     {
       "path": "styles/new-york/badge.json",
@@ -1885,7 +1885,7 @@
     },
     {
       "path": "styles/new-york/checkbox.json",
-      "sha256": "908115d5c86f047de45df0520bb91b681dffb1cde64d856a2d9a709d6a0c329c"
+      "sha256": "8891099e7e4c4c1d0f919d22af1d91bb03234fcd7f1e4614f836aad8bf887116"
     },
     {
       "path": "styles/new-york/clipboard.json",
@@ -1901,7 +1901,7 @@
     },
     {
       "path": "styles/new-york/combobox.json",
-      "sha256": "2af681c3a84054edf24dfcc37e7b42ed9842fa6fded53b4d6f280b3781ff1e9b"
+      "sha256": "1451bb01a2def528f7d15c9f306db1e9eca34da855b60409cc931f2e54524be0"
     },
     {
       "path": "styles/new-york/command.json",
@@ -1925,7 +1925,7 @@
     },
     {
       "path": "styles/new-york/dialog.json",
-      "sha256": "9e7a1d39541462c91edba474719d023690df0f4215758007286e186772c40ea8"
+      "sha256": "ca7f1253627f5f3c272f9f13858f23ae3f501c2da63ac6add73fb9c7ebbbbcb2"
     },
     {
       "path": "styles/new-york/direction.json",
@@ -1949,7 +1949,7 @@
     },
     {
       "path": "styles/new-york/field.json",
-      "sha256": "564cba5cccdf55dc160f52ee411701c6e6b006a60feb288f35a01bd08fafa347"
+      "sha256": "83430d8196c267ab7f76d4c2b7b9a98db3875f346ef4e9f2b6e7829140b5ebca"
     },
     {
       "path": "styles/new-york/file-upload.json",
@@ -1985,7 +1985,7 @@
     },
     {
       "path": "styles/new-york/item.json",
-      "sha256": "3853cf31100075b16a502d89a126176c8d2bbee59bceba49305187fed44fd66b"
+      "sha256": "1f265a6a028541919e7fc31e58abe525dcb0a6642af18c97f82ad38e74361260"
     },
     {
       "path": "styles/new-york/kbd.json",
@@ -2033,7 +2033,7 @@
     },
     {
       "path": "styles/new-york/pagination.json",
-      "sha256": "aded4794f0560e777402247d94c6557e9d5129c9a61b054ebefdd9c97353c870"
+      "sha256": "1786f358b511feac46aae6eb0075c6ad264cf857e4f69a057a1ab026aeed3add"
     },
     {
       "path": "styles/new-york/password-input.json",
@@ -2041,7 +2041,7 @@
     },
     {
       "path": "styles/new-york/popover.json",
-      "sha256": "df755836c7ae20f303d40a621ac11b83cf233b9f6a0bd317c9ad1e0f932fa384"
+      "sha256": "12dede43fc83674a65186ee720b919f3c84ebae01dd83698b6a7373c3a1f65c2"
     },
     {
       "path": "styles/new-york/progress.json",
@@ -2053,7 +2053,7 @@
     },
     {
       "path": "styles/new-york/radio-group.json",
-      "sha256": "2297220be9c3b81c7c7bf754342714557557ddb7341cee9ac83de042df1edea6"
+      "sha256": "45ccf8c6334718cd0768f317bafb82abb8852e23bb88fb797639352cb1e94972"
     },
     {
       "path": "styles/new-york/rating-group.json",
@@ -2081,7 +2081,7 @@
     },
     {
       "path": "styles/new-york/sidebar.json",
-      "sha256": "0d552ca9615545c80fe885ad92212317c2a52f901433b0b067dcf9b91fbaa961"
+      "sha256": "f2a3d8db13e46967b03f57f6656350c1f27c073ac7708cc652a7d4c46c988ac4"
     },
     {
       "path": "styles/new-york/signature-pad.json",
@@ -2125,7 +2125,7 @@
     },
     {
       "path": "styles/new-york/textarea.json",
-      "sha256": "246d30ddbbb4bc8af6ef8292de7828684bb3d84373a03f301a8322875b8f8230"
+      "sha256": "d046c912fe152a4f2c6ca2cb113e1c07f2174bd1d0d4fbcad7caae496dacfd1b"
     },
     {
       "path": "styles/new-york/timer.json",
@@ -2145,7 +2145,7 @@
     },
     {
       "path": "styles/new-york/toggle.json",
-      "sha256": "66c6dd1663727d84b635b4a90e2a7ab06e59a055c9b061e90fc800e08675f4ed"
+      "sha256": "564d08e014b90fec56f1d633ef86d68e4180fd7405ad31f4cc2ccf418b7fdabc"
     },
     {
       "path": "styles/new-york/tooltip.json",
