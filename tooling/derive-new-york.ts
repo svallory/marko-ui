@@ -113,6 +113,66 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     missing: ["origin-(--radix-dropdown-menu-content-transform-origin)"],
     reason: "same as dropdown-menu-content: positioning var lives in classes.ts, not the style layer.",
   },
+
+  // batch C
+  "alert:alert": {
+    missing: ["[&>svg]:size-4", "[&>svg]:translate-y-0.5", "[&>svg]:text-current"],
+    extra: [
+      "has-data-[slot=alert-action]:relative",
+      "has-data-[slot=alert-action]:pr-18",
+      "*:[svg]:row-span-2",
+      "*:[svg]:translate-y-0.5",
+      "*:[svg]:text-current",
+      "*:[svg:not([class*='size-'])]:size-4",
+    ],
+    reason:
+      "our alert layout uses a descendant `*:[svg]` selector (not upstream's direct-child `[&>svg]`) plus row-span-2, pre-existing across every base style (vega carries the identical rule) — needed because our alert-action slot (an upstream-absent addition) can co-occur with a 2-row title+description grid, unlike new-york-v4's simpler layout with no action slot at all. Style-only port scope doesn't touch this structural extra.",
+  },
+  "alert:alert:variant:destructive": {
+    missing: ["[&>svg]:text-current"],
+    extra: ["*:[svg]:text-current"],
+    reason: "same selector-shape divergence as alert:alert — *:[svg] vs [&>svg], pre-existing across all base styles.",
+  },
+  "alert:alert-title": {
+    extra: ["[&_a]:underline", "[&_a]:underline-offset-3", "[&_a]:hover:text-foreground"],
+    reason:
+      "our own link-hover styling for alert-title/-description with no upstream equivalent (new-york-v4's AlertTitle/AlertDescription carry no [&_a] rule at all) — pre-existing across every base style, not introduced by this port.",
+  },
+  "alert:alert-description": {
+    extra: ["[&_a]:underline", "[&_a]:underline-offset-3", "[&_a]:hover:text-foreground"],
+    reason: "same as alert-title: our own link-hover extra, pre-existing across all base styles.",
+  },
+  "avatar:avatar": {
+    extra: [
+      "after:absolute",
+      "after:inset-0",
+      "after:border",
+      "after:border-border",
+      "after:mix-blend-darken",
+      "dark:after:mix-blend-lighten",
+      "after:rounded-full",
+    ],
+    reason:
+      "our own after:* pseudo-ring decoration with no upstream equivalent (new-york-v4's Avatar has no ::after rule at all) — pre-existing across every base style, not introduced by this port.",
+  },
+  "avatar:avatar-image": {
+    extra: ["object-cover", "rounded-full"],
+    reason:
+      "our own object-fit/radius on the image element; upstream relies solely on the avatar root's overflow-hidden+rounded-full to clip — pre-existing across every base style.",
+  },
+  "avatar:avatar-badge": {
+    missing: [
+      "group-data-[size=sm]/avatar:size-2",
+      "group-data-[size=sm]/avatar:[&>svg]:hidden",
+      "group-data-[size=default]/avatar:size-2.5",
+      "group-data-[size=default]/avatar:[&>svg]:size-2",
+      "group-data-[size=lg]/avatar:size-3",
+      "group-data-[size=lg]/avatar:[&>svg]:size-2",
+    ],
+    extra: ["bg-blend-color"],
+    reason:
+      "tool limitation, not a real gap: the group-data-[size=*] tokens live in classes.ts's sizeSm/sizeDefault/sizeLg literals, which don't start with the mu-avatar-badge hook (readStructuralTokens only captures the first literal per mu-class) — badge.marko already concatenates root+sizeSm+sizeDefault+sizeLg via cn(), so these ARE emitted, just invisible to --check. bg-blend-color is a real, pre-existing extra (upstream is plain bg-primary) carried across every base style.",
+  },
 }
 
 interface Part {
@@ -292,10 +352,19 @@ function normalizeOurTokens(tokens: Iterable<string>): Set<string> {
   return out
 }
 
-/** Normalizes every token of new-york-v4's raw target string (no hook classes to strip there). */
+/**
+ * Normalizes every token of new-york-v4's raw target string. Drops group/*|peer/* markers too —
+ * upstream defines its OWN named groups (e.g. avatar.tsx's `group/avatar`), not just our hook
+ * classes, and a named-group token always matches structurally regardless of name (both sides
+ * declare the group on the same element), so comparing group NAMES would flag a false mismatch
+ * whenever our name differs from upstream's own (batch C, avatar).
+ */
 function normalizeTargetTokens(tokens: Iterable<string>): Set<string> {
   const out = new Set<string>()
-  for (const t of tokens) out.add(normalizeToken(t))
+  for (const t of tokens) {
+    if (t.startsWith("group/") || t.startsWith("peer/")) continue
+    out.add(normalizeToken(t))
+  }
   return out
 }
 
