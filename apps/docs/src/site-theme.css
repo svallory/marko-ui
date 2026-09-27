@@ -9,8 +9,8 @@
    site and the shipped neutral theme (packages/shadcn/styles/globals.css).
    Every value below is copied verbatim from upstream, with its source line
    cited. No component/slot rules, no token this site's own a11y-driven
-   DIVERGENCE values already cover (muted-foreground, destructive,
-   destructive-foreground — see globals.css's own DIVERGENCE comments and
+   DIVERGENCE values already cover (muted-foreground, destructive —
+   see globals.css's own DIVERGENCE comments and
    scratch/team-lead/reports/report-docs-shipped-css.md's "Round 2" section
    for the contrast numbers behind those; this file must not re-fight that
    decision by re-overriding the same tokens back to upstream's values). */
