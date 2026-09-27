@@ -235,6 +235,7 @@
   }
 
   /* MARK: Button Group */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/button-group.tsx) */
   .mu-button-group {
     @apply has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-md;
   }
@@ -252,7 +253,7 @@
   }
 
   .mu-button-group-separator {
-    @apply bg-input;
+    @apply bg-input m-0! data-horizontal:mx-px data-horizontal:w-auto data-vertical:my-px;
   }
 
   /* MARK: Calendar */

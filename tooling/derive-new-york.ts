@@ -90,6 +90,9 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   // above — Tailwind variant composition means the compound needs its own equivalence entry).
   { from: "group-data-[orientation=horizontal]/tabs:", to: "group-data-horizontal/tabs:" },
   { from: "group-data-[orientation=vertical]/tabs:", to: "group-data-vertical/tabs:" },
+  // Tailwind v4's `*:` direct-child variant shorthand for the older `[&>*]:` arbitrary form.
+  { from: "[&>*]:focus-visible:relative", to: "*:focus-visible:relative" },
+  { from: "[&>*]:focus-visible:z-10", to: "*:focus-visible:z-10" },
   // Radix boolean-attribute selectors -> our components' equivalent plain data attributes.
   { from: "data-[disabled]:", to: "data-disabled:" },
   { from: "data-[inset]:", to: "data-inset:" },
@@ -191,6 +194,20 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
   "native-select:native-select-optgroup": {
     missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
     reason: "same as native-select:native-select-option.",
+  },
+  "button-group:button-group:orientation:horizontal": {
+    extra: ["[&>[data-slot]:not(:has(~[data-slot]))]:rounded-r-md!"],
+    reason:
+      "structural, pre-existing (already in vega, not introduced by this port): our selector strategy for \"round the last visible item's outer corner\" is a last-data-slot-child selector (`[&>[data-slot]:not(:has(~[data-slot]))]`), while upstream uses per-side sibling selectors (`[&>*:not(:first-child)]:rounded-l-none [&>*:not(:first-child)]:border-l-0 [&>*:not(:last-child)]:rounded-r-none`) applied to every child instead of only the edges. Both achieve the same visual result (only the first/last visible child keeps its outer rounded corner) but via a different CSS mechanism — rewriting to upstream's exact selector shape is a structural change beyond a style-only port.",
+  },
+  "button-group:button-group:orientation:vertical": {
+    extra: ["[&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-md!"],
+    reason: "same mechanism difference as the horizontal orientation entry above, mirrored for the vertical axis.",
+  },
+  "button-group:button-group-separator": {
+    extra: ["data-horizontal:mx-px", "data-horizontal:w-auto", "data-vertical:my-px"],
+    reason:
+      "our own spacing choice with no upstream equivalent: new-york-v4's separator relies purely on flex layout (m-0! bg-input, already ported) with no explicit per-orientation margin/width; ours adds small axis-specific spacing/width adjustments (pre-existing in vega) that upstream's separator doesn't need.",
   },
   "tabs:tabs": {
     missing: ["group/tabs"],
