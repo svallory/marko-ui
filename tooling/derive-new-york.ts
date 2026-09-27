@@ -135,6 +135,13 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     reason:
       "two independent divergences on this slot. (1) missing: new-york-v4 rotates a single chevron SVG on open via this selector; our accordion.marko (accordion.marko:224-233) swaps between two separate icons (ChevronDown/ChevronUp via triggerIcon/triggerIconActive classes.ts fields) instead of rotating one — a pre-existing icon-mechanism divergence from bases/base, not a style-layer concern. (2) extra: `relative border border-transparent` is inherited from bases/base's accordion.tsx trigger (classes.ts), which new-york-v4's own Radix trigger doesn't carry (its focus ring comes from focus-visible:border-ring alone, no base border) — a real base-implementation difference between Base UI and Radix, same class as the pilot's button:button `select-none` entry; the `**:data-[slot=accordion-trigger-icon]:*` rules position/color our two-icon swap from (1) — not a new-york-v4 concept since it renders one rotating SVG, not two.",
   },
+  "progress:progress": {
+    missing: ["h-2", "overflow-hidden", "rounded-full", "bg-primary/20"],
+    extra: ["flex", "items-center", "overflow-x-hidden", "flex-col", "gap-2"],
+    reason:
+      "slot-mapping gap, not a style bug: new-york-v4's single Progress.Root element carries both layout AND the visible bar (h-2 w-full overflow-hidden rounded-full bg-primary/20), matching this tool's `progress` slot. Our progress.marko (ported from bases/base's Base-UI-style root/track/indicator split) puts the bar's own classes on a SEPARATE `progress-track` element (classes.ts's `track` field: already `bg-muted relative h-2 w-full overflow-hidden rounded-full`, ported to new-york's `bg-primary/20 rounded-full` in style-new-york.css) — but `track` carries no `mu-*` hook class at all (a pre-existing gap across all 8 styles, not introduced by this port), so --check cannot verify it directly against this tool's slot name. Verified by reading progress.marko: styles.track is applied with no mu- prefix. Root (`mu-progress`) is genuinely just the flex layout wrapper for the optional label/value row, which new-york-v4 has no equivalent of at all (upstream's Progress has no label prop). Out of scope for a style-only port to add a hook class to classes.ts.",
+  },
+
   "accordion:accordion-content": {
     missing: ["pt-0", "pb-4"],
     extra: ["overflow-hidden", "data-open:animate-accordion-down", "data-closed:animate-accordion-up"],
