@@ -71,6 +71,14 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   { from: "data-[inset]:", to: "data-inset:" },
   // Arbitrary-value spacing that equals a token already in Tailwind's default scale (8rem = 32 * 0.25rem).
   { from: "min-w-[8rem]", to: "min-w-32" },
+  // This repo spells the 3px focus ring width as the bare utility `ring-3` (Tailwind v4's default
+  // ring width scale), not new-york-v4's `ring-[3px]` arbitrary value — same computed value,
+  // repo-wide convention (19 pre-existing uses in style-new-york.css alone). Whole-token form
+  // handles it bare; the compounded form (`focus-visible:ring-[3px]`, by far the most common
+  // shape in new-york-v4) needs its own entry since normalizeToken only matches a `from` as a
+  // whole token or a PREFIX, never a suffix.
+  { from: "ring-[3px]", to: "ring-3" },
+  { from: "focus-visible:ring-[3px]", to: "focus-visible:ring-3" },
 ]
 
 /**
@@ -112,6 +120,26 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
   "dropdown-menu:dropdown-menu-sub-content": {
     missing: ["origin-(--radix-dropdown-menu-content-transform-origin)"],
     reason: "same as dropdown-menu-content: positioning var lives in classes.ts, not the style layer.",
+  },
+
+  // batch B
+  "accordion:accordion-item": {
+    missing: ["border-b", "last:border-b-0"],
+    extra: ["not-last:border-b"],
+    reason:
+      "spelling-only: our `not-last:border-b` (this repo's `not-last:` custom variant, globals.css) and upstream's `border-b last:border-b-0` pair both mean \"border on every item except the last\" — same computed result, not a genuine divergence, but not expressible as a single-token EQUIVALENCES entry (one of our tokens maps to a two-token upstream pair, and `border-b` alone can't be globally aliased without corrupting every other component's real border-b usage).",
+  },
+  "accordion:accordion-trigger": {
+    missing: ["[&[data-state=open]>svg]:rotate-180"],
+    extra: ["relative", "border", "border-transparent", "**:data-[slot=accordion-trigger-icon]:text-muted-foreground", "**:data-[slot=accordion-trigger-icon]:ml-auto", "**:data-[slot=accordion-trigger-icon]:size-4"],
+    reason:
+      "two independent divergences on this slot. (1) missing: new-york-v4 rotates a single chevron SVG on open via this selector; our accordion.marko (accordion.marko:224-233) swaps between two separate icons (ChevronDown/ChevronUp via triggerIcon/triggerIconActive classes.ts fields) instead of rotating one — a pre-existing icon-mechanism divergence from bases/base, not a style-layer concern. (2) extra: `relative border border-transparent` is inherited from bases/base's accordion.tsx trigger (classes.ts), which new-york-v4's own Radix trigger doesn't carry (its focus ring comes from focus-visible:border-ring alone, no base border) — a real base-implementation difference between Base UI and Radix, same class as the pilot's button:button `select-none` entry; the `**:data-[slot=accordion-trigger-icon]:*` rules position/color our two-icon swap from (1) — not a new-york-v4 concept since it renders one rotating SVG, not two.",
+  },
+  "accordion:accordion-content": {
+    missing: ["pt-0", "pb-4"],
+    extra: ["overflow-hidden", "data-open:animate-accordion-down", "data-closed:animate-accordion-up"],
+    reason:
+      "missing: new-york-v4's AccordionContent is a single element carrying both the collapse wrapper and pt-0/pb-4 padding. Our accordion.marko splits this into content (the ResizeObserver-measured collapse wrapper, classes.ts's `content`) and contentInner (classes.ts's `contentInner`, already `pt-0 pb-4` — a pre-existing bases/base-derived split, not a style-layer choice); the tool only checks the `content` slot, contentInner already carries this value verbatim. extra: `overflow-hidden` is structural (classes.ts); `data-open:.../data-closed:...` drive our height-measured collapse animation (marko-accordion-down/-up keyframes, see accordion/classes.ts's height comment) which has no class-level equivalent in new-york-v4 — Radix's own collapse animation there is driven by its own CSS vars, not a Tailwind class in this slot's string.",
   },
 }
 

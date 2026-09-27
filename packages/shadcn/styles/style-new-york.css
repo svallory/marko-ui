@@ -29,16 +29,17 @@
 .style-new-york {
   /* new-york: no upstream new-york-v4 source; vega rules (pilot scope: not yet ported) */
   /* MARK: Accordion */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/accordion.tsx) */
   .mu-accordion-item {
     @apply not-last:border-b;
   }
 
   .mu-accordion-trigger {
-    @apply focus-visible:ring-ring/50 focus-visible:border-ring focus-visible:after:border-ring **:data-[slot=accordion-trigger-icon]:text-muted-foreground rounded-md py-4 text-left text-sm font-medium hover:underline focus-visible:ring-3 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-4;
+    @apply focus-visible:ring-ring/50 focus-visible:border-ring **:data-[slot=accordion-trigger-icon]:text-muted-foreground gap-4 rounded-md py-4 text-left text-sm font-medium hover:underline focus-visible:ring-3 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-4;
   }
 
   .mu-accordion-content {
-    @apply data-open:animate-accordion-down data-closed:animate-accordion-up text-sm;
+    @apply data-open:animate-accordion-down data-closed:animate-accordion-up;
   }
 
   .mu-accordion-content-inner {
