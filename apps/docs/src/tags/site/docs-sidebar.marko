@@ -31,14 +31,28 @@ export interface Input {
   input.currentPath != null &&
   (href === "/docs" ? input.currentPath === href : input.currentPath.startsWith(href))/>
 
-<!-- Sidebar: className verbatim from docs-sidebar.tsx:173. collapsible="none"
-     (no SidebarProvider needed) matches upstream's own usage there. -->
+<!-- Sidebar: className verbatim from docs-sidebar.tsx:173. Upstream wraps
+     DocsSidebar in a SidebarProvider (its own app/(app)/docs/layout.tsx);
+     ours needs none — our Sidebar component takes collapsible="none" as a
+     plain prop with no context requirement (see sidebar.marko: that branch
+     renders a bare positioned <div>, no provider-supplied state read), which
+     is a design difference in this port, not something that happens to
+     match upstream's own reason for using SidebarProvider (theirs also
+     drives the icon-collapse/mobile-sheet variants elsewhere in the app;
+     this port has no other collapsible sidebar in the docs shell, so there
+     was nothing to share a provider for). -->
 <Sidebar
   collapsible="none"
   class="sticky top-[calc(var(--header-height)+0.6rem)] z-30 hidden h-[calc(100svh-10rem)] overflow-hidden overscroll-none bg-transparent [--sidebar-menu-width:--spacing(56)] lg:flex"
 >
-  <!-- The faded vertical divider (docs-sidebar.tsx:177) is rendered by the
-       caller (routes/docs/+layout.marko) — not duplicated here. -->
+  <!-- Faded vertical divider (docs-sidebar.tsx:177) — the literal first
+       child of <Sidebar> upstream, not caller-rendered. Moved here (was
+       previously in routes/docs/+layout.marko) to match: verified it
+       renders identically, since Sidebar's own sticky positioning (the
+       class above) establishes the containing block this absolute-
+       positioned div needs, the same way the caller's `relative` <aside>
+       did before. -->
+  <div class="absolute top-12 right-2 bottom-0 hidden h-full w-px bg-[linear-gradient(to_bottom,transparent_0%,var(--border)_10%,var(--border)_90%,transparent_100%)] lg:flex"/>
   <!-- SidebarContent: className verbatim from docs-sidebar.tsx:181,
        including scroll-fade scrollbar-none (missing before this round). -->
   <SidebarContent class="w-(--sidebar-menu-width) scroll-fade scrollbar-none overflow-x-hidden pl-2.5">
