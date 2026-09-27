@@ -450,7 +450,31 @@ export const headingFonts: RegistryItem[] = FONT_DEFINITIONS.map(
 export const fonts: RegistryItem[] = [...bodyFonts, ...headingFonts];
 
 // ---------------------------------------------------------------------------
-// registry/themes.ts (copied verbatim)
+// registry/themes.ts (copied verbatim, EXCEPT for the accessibility
+// divergences below — same "option A" decision already applied to the
+// shipped packages/shadcn/styles/globals*.css, ported here because /create
+// renders its own preview AND generates the CSS/preset a user takes away
+// from these exact values, not from the shipped globals.css)
+//
+// DIVERGENCE: light-mode `destructive` darkened 0.577 -> 0.47 (same absolute
+// value, all 7 neutral-ish base colours: neutral/stone/zinc/mauve/olive/
+// mist/taupe — destructive's L/C/H is identical across every base colour
+// upstream, so one darkened value applies uniformly) — text-destructive
+// (incl. /80) on a destructive/10-tinted background fails 4.5:1 at 0.577,
+// clears it at 0.47. See packages/shadcn/styles/globals.css's own
+// DIVERGENCE comment for the full contrast reasoning; this is the same fix,
+// applied here because /create's generated preset never imports that file.
+//
+// DIVERGENCE: light-mode `muted-foreground` darkened per base colour by the
+// same ~0.021 absolute lightness step already verified for the shipped
+// neutral theme (0.556 -> 0.535), applied proportionally to each base
+// colour's own starting lightness (hue/chroma unchanged) since all 7 base
+// colours start within the same narrow 0.542-0.58 L band and fail the same
+// tinted-background pairing (text-muted-foreground on a muted/tinted bg) the
+// same way: stone 0.553->0.532, zinc 0.552->0.531, mauve 0.542->0.521,
+// olive 0.58->0.559, mist 0.56->0.539, taupe 0.547->0.526. Dark-mode values
+// are untouched (upstream's dark muted-foreground/destructive already clear
+// 4.5:1 as text-on-dark-bg, per the shipped globals.css dark-mode comment).
 // ---------------------------------------------------------------------------
 
 export const THEMES = [
@@ -471,10 +495,10 @@ export const THEMES = [
         secondary: "oklch(0.97 0 0)",
         "secondary-foreground": "oklch(0.205 0 0)",
         muted: "oklch(0.97 0 0)",
-        "muted-foreground": "oklch(0.556 0 0)",
+        "muted-foreground": "oklch(0.535 0 0)", // DIVERGENCE: darkened from 0.556 for 4.5:1 (see header)
         accent: "oklch(0.97 0 0)",
         "accent-foreground": "oklch(0.205 0 0)",
-        destructive: "oklch(0.577 0.245 27.325)",
+        destructive: "oklch(0.47 0.238 27.325)", // DIVERGENCE: darkened from 0.577 for 4.5:1 (see header)
         border: "oklch(0.922 0 0)",
         input: "oklch(0.922 0 0)",
         ring: "oklch(0.708 0 0)",
@@ -545,10 +569,10 @@ export const THEMES = [
         secondary: "oklch(0.97 0.001 106.424)",
         "secondary-foreground": "oklch(0.216 0.006 56.043)",
         muted: "oklch(0.97 0.001 106.424)",
-        "muted-foreground": "oklch(0.553 0.013 58.071)",
+        "muted-foreground": "oklch(0.532 0.013 58.071)", // DIVERGENCE: darkened from 0.553 for 4.5:1 (see header)
         accent: "oklch(0.97 0.001 106.424)",
         "accent-foreground": "oklch(0.216 0.006 56.043)",
-        destructive: "oklch(0.577 0.245 27.325)",
+        destructive: "oklch(0.47 0.238 27.325)", // DIVERGENCE: darkened from 0.577 for 4.5:1 (see header)
         border: "oklch(0.923 0.003 48.717)",
         input: "oklch(0.923 0.003 48.717)",
         ring: "oklch(0.709 0.01 56.259)",
@@ -619,10 +643,10 @@ export const THEMES = [
         secondary: "oklch(0.967 0.001 286.375)",
         "secondary-foreground": "oklch(0.21 0.006 285.885)",
         muted: "oklch(0.967 0.001 286.375)",
-        "muted-foreground": "oklch(0.552 0.016 285.938)",
+        "muted-foreground": "oklch(0.531 0.016 285.938)", // DIVERGENCE: darkened from 0.552 for 4.5:1 (see header)
         accent: "oklch(0.967 0.001 286.375)",
         "accent-foreground": "oklch(0.21 0.006 285.885)",
-        destructive: "oklch(0.577 0.245 27.325)",
+        destructive: "oklch(0.47 0.238 27.325)", // DIVERGENCE: darkened from 0.577 for 4.5:1 (see header)
         border: "oklch(0.92 0.004 286.32)",
         input: "oklch(0.92 0.004 286.32)",
         ring: "oklch(0.705 0.015 286.067)",
@@ -693,10 +717,10 @@ export const THEMES = [
         secondary: "oklch(0.96 0.003 325.6)",
         "secondary-foreground": "oklch(0.212 0.019 322.12)",
         muted: "oklch(0.96 0.003 325.6)",
-        "muted-foreground": "oklch(0.542 0.034 322.5)",
+        "muted-foreground": "oklch(0.521 0.034 322.5)", // DIVERGENCE: darkened from 0.542 for 4.5:1 (see header)
         accent: "oklch(0.96 0.003 325.6)",
         "accent-foreground": "oklch(0.212 0.019 322.12)",
-        destructive: "oklch(0.577 0.245 27.325)",
+        destructive: "oklch(0.47 0.238 27.325)", // DIVERGENCE: darkened from 0.577 for 4.5:1 (see header)
         border: "oklch(0.922 0.005 325.62)",
         input: "oklch(0.922 0.005 325.62)",
         ring: "oklch(0.711 0.019 323.02)",
@@ -767,10 +791,10 @@ export const THEMES = [
         secondary: "oklch(0.966 0.005 106.5)",
         "secondary-foreground": "oklch(0.228 0.013 107.4)",
         muted: "oklch(0.966 0.005 106.5)",
-        "muted-foreground": "oklch(0.58 0.031 107.3)",
+        "muted-foreground": "oklch(0.559 0.031 107.3)", // DIVERGENCE: darkened from 0.58 for 4.5:1 (see header)
         accent: "oklch(0.966 0.005 106.5)",
         "accent-foreground": "oklch(0.228 0.013 107.4)",
-        destructive: "oklch(0.577 0.245 27.325)",
+        destructive: "oklch(0.47 0.238 27.325)", // DIVERGENCE: darkened from 0.577 for 4.5:1 (see header)
         border: "oklch(0.93 0.007 106.5)",
         input: "oklch(0.93 0.007 106.5)",
         ring: "oklch(0.737 0.021 106.9)",
@@ -841,10 +865,10 @@ export const THEMES = [
         secondary: "oklch(0.963 0.002 197.1)",
         "secondary-foreground": "oklch(0.218 0.008 223.9)",
         muted: "oklch(0.963 0.002 197.1)",
-        "muted-foreground": "oklch(0.56 0.021 213.5)",
+        "muted-foreground": "oklch(0.539 0.021 213.5)", // DIVERGENCE: darkened from 0.56 for 4.5:1 (see header)
         accent: "oklch(0.963 0.002 197.1)",
         "accent-foreground": "oklch(0.218 0.008 223.9)",
-        destructive: "oklch(0.577 0.245 27.325)",
+        destructive: "oklch(0.47 0.238 27.325)", // DIVERGENCE: darkened from 0.577 for 4.5:1 (see header)
         border: "oklch(0.925 0.005 214.3)",
         input: "oklch(0.925 0.005 214.3)",
         ring: "oklch(0.723 0.014 214.4)",
@@ -915,10 +939,10 @@ export const THEMES = [
         secondary: "oklch(0.96 0.002 17.2)",
         "secondary-foreground": "oklch(0.214 0.009 43.1)",
         muted: "oklch(0.96 0.002 17.2)",
-        "muted-foreground": "oklch(0.547 0.021 43.1)",
+        "muted-foreground": "oklch(0.526 0.021 43.1)", // DIVERGENCE: darkened from 0.547 for 4.5:1 (see header)
         accent: "oklch(0.96 0.002 17.2)",
         "accent-foreground": "oklch(0.214 0.009 43.1)",
-        destructive: "oklch(0.577 0.245 27.325)",
+        destructive: "oklch(0.47 0.238 27.325)", // DIVERGENCE: darkened from 0.577 for 4.5:1 (see header)
         border: "oklch(0.922 0.005 34.3)",
         input: "oklch(0.922 0.005 34.3)",
         ring: "oklch(0.714 0.014 41.2)",
