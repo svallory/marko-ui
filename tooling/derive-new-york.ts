@@ -78,6 +78,8 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   { from: "disabled:", to: "data-disabled:" },
   // Arbitrary-value spacing that equals a token already in Tailwind's default scale (8rem = 32 * 0.25rem).
   { from: "min-w-[8rem]", to: "min-w-32" },
+  // ring-[3px] (upstream's arbitrary value) === ring-3 (Tailwind's default scale token, same 3px).
+  { from: "ring-[3px]", to: "ring-3" },
   // upstream's arbitrary-selector "ancestor has this data-slot" pattern -> Tailwind v4's in-* variant shorthand for the same descendant-context selector.
   { from: "[[data-slot=tooltip-content]_&]:", to: "in-data-[slot=tooltip-content]:" },
   // Radix data-[orientation=*] selectors -> our custom variants (globals.css @custom-variant list).
@@ -171,6 +173,11 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     extra: ["object-cover", "rounded-full"],
     reason:
       "our own object-fit/radius on the image element; upstream relies solely on the avatar root's overflow-hidden+rounded-full to clip — pre-existing across every base style.",
+  },
+  "textarea:textarea": {
+    extra: ["aria-invalid:ring-3", "dark:aria-invalid:border-destructive/50"],
+    reason:
+      "our own extras with no upstream equivalent: aria-invalid:ring-3 keeps the error-state ring the same width as the focus ring (upstream only sets the error ring's color/opacity, relying on the browser default width), dark:aria-invalid:border-destructive/50 is a dark-mode border-color adjustment upstream doesn't carry. Pre-existing across every base style.",
   },
   "radio-group:radio-group": {
     extra: ["w-full"],
@@ -379,12 +386,15 @@ function muClassName(slot: string): string {
 
 /** Applies every EQUIVALENCES replacement to a raw token (prefix or whole-token match). */
 function normalizeToken(token: string): string {
-  // Try the equivalence at the token's own start, and also after a leading "dark:" modifier
-  // (a compound variant chain like dark:data-[state=checked]:bg-primary) — a from/to pair is
-  // about the STATE selector, which can be modified by dark: same as any other variant.
-  for (const prefix of ["", "dark:"]) {
-    if (!token.startsWith(prefix)) continue
-    const rest = token.slice(prefix.length)
+  // A Tailwind token is a chain of variant prefixes ending in the base utility
+  // (dark:focus-visible:ring-[3px]) — an EQUIVALENCES pair can be about any link in that chain
+  // (a state selector, or the base utility itself), so try the match at every "cut point": the
+  // token's own start, and right after each variant's trailing ":".
+  const cutPoints: number[] = [0]
+  for (let i = 0; i < token.length; i++) if (token[i] === ":") cutPoints.push(i + 1)
+  for (const at of cutPoints) {
+    const prefix = token.slice(0, at)
+    const rest = token.slice(at)
     for (const { from, to } of EQUIVALENCES) {
       if (rest === from) return prefix + to
       if (rest.startsWith(from)) return prefix + to + rest.slice(from.length)
