@@ -72,6 +72,10 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   // Radix data-[state=checked/unchecked] -> our Zag custom variants (globals.css @custom-variant list).
   { from: "data-[state=checked]:", to: "data-checked:" },
   { from: "data-[state=unchecked]:", to: "data-unchecked:" },
+  { from: "has-data-[state=checked]:", to: "has-data-checked:" },
+  // upstream's [&>[data-slot=x]]: / [&>*]:data-[slot=x]: direct-child arbitrary selectors -> Tailwind v4's *:data-[slot=x]: shorthand for the same direct-child selector.
+  { from: "[&>[data-slot=field-group]]:", to: "*:data-[slot=field-group]:" },
+  { from: "[&>*]:data-[slot=field]:", to: "*:data-[slot=field]:" },
   // upstream's native disabled: pseudo-class -> our Zag components' data-disabled attribute
   // (many of our controls render a non-form element, e.g. checkbox's <span> control, so the
   // machine emits a data-disabled attribute rather than relying on a native disabled attribute).
@@ -211,6 +215,33 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
   "combobox:combobox-chip-input": {
     extra: ["bg-transparent", "px-1", "text-sm", "placeholder:text-muted-foreground", "data-disabled:cursor-not-allowed", "data-disabled:opacity-50"],
     reason: "structural (classes.ts's chipInput literal) — our own input styling with no upstream equivalent (upstream's ComboboxChipsInput carries no classes of its own at all), pre-existing across every base style.",
+  },
+  "field:field-label": {
+    missing: [
+      "has-[>[data-slot=field]]:w-full",
+      "has-[>[data-slot=field]]:flex-col",
+      "has-data-checked:border-primary",
+      "items-center",
+      "text-sm",
+      "font-medium",
+    ],
+    extra: [
+      "has-data-checked:border-primary/30",
+      "dark:has-data-checked:border-primary/20",
+      "has-data-checked:bg-primary/5",
+      "dark:has-data-checked:bg-primary/10",
+      "has-[>[data-slot=field]]:rounded-md",
+      "has-[>[data-slot=field]]:border",
+      "*:data-[slot=field]:p-4",
+    ],
+    reason:
+      "TWO distinct sources of divergence collide on this one key because upstream literally reuses data-slot=\"field-label\" for BOTH its FieldLabel and FieldTitle functions (verified in the raw .tsx — not a tool bug), so both parts hash to the same mu-field-label lookup even though our own component gives FieldTitle its own separate mu-field-title class with different CSS. (1) FieldLabel's own real gaps: has-[>[data-slot=field]]:w-full/flex-col live in classes.ts's nested literal, invisible to the tool (same class of gap as avatar-badge); border-primary/30 + a dark /20 variant is our own softer-emphasis choice vs. upstream's plain border-primary, pre-existing across every base style. (2) FieldTitle's expected tokens (items-center/text-sm/font-medium) are compared against mu-field-label's CSS instead of mu-field-title's (which already carries them correctly, verified separately) purely because of the shared-slot-name collision above — not a real gap in either class.",
+  },
+  "field:field-description": {
+    missing: ["last:mt-0", "nth-last-2:-mt-1", "[&>a]:underline", "[&>a]:underline-offset-4", "[&>a:hover]:text-primary"],
+    extra: ["text-left"],
+    reason:
+      "tool limitation: the missing tokens live in classes.ts's spacing/links sub-exports (fieldDescription.spacing/.links), multi-literal exports the tool can't see (same class as avatar-badge's sizeSm/sizeDefault/sizeLg) — field.marko already concatenates root+spacing+links via cn(), so these ARE emitted. text-left is our own explicit alignment, pre-existing across every base style.",
   },
   "popover:popover-content": {
     extra: ["ring-foreground/10", "flex", "flex-col", "gap-4", "text-sm", "ring-1", "duration-100"],
