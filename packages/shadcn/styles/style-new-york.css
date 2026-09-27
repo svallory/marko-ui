@@ -1135,12 +1135,18 @@
   }
 
   /* MARK: Sheet */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/sheet.tsx). SheetContent's
+     per-side classes are a JS ternary on the `side` prop, not a Tailwind data-attribute selector
+     (same tokenizer-artifact shape as scroll-area's ScrollBar) — verified by reading the raw
+     source directly; our always-rendered data-[side=X] selectors are the semantic equivalent
+     (this file's SSR-safe Zag pattern: one element, live data-side attribute, vs. upstream
+     switching component output per prop). */
   .mu-sheet-overlay {
-    @apply bg-black/10 supports-backdrop-filter:backdrop-blur-xs;
+    @apply bg-black/50;
   }
 
   .mu-sheet-content {
-    @apply bg-popover text-popover-foreground fixed z-50 flex flex-col gap-4 bg-clip-padding text-sm shadow-lg transition duration-200 ease-in-out data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm;
+    @apply fixed z-50 flex flex-col gap-4 bg-background shadow-lg transition ease-in-out data-closed:duration-300 data-open:duration-500 data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=left]:sm:max-w-sm data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=right]:sm:max-w-sm data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b;
   }
 
   .mu-sheet-close {
@@ -1156,7 +1162,7 @@
   }
 
   .mu-sheet-title {
-    @apply text-foreground font-medium;
+    @apply text-foreground font-semibold;
   }
 
   .mu-sheet-description {
