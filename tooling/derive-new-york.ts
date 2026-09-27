@@ -76,6 +76,12 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   // upstream new-york-v4's breadcrumb.tsx still writes the legacy break-words alias; both compile to
   // overflow-wrap: break-word.
   { from: "break-words", to: "wrap-break-word" },
+  // batch A: our alert-dialog/dialog family write the translate-centering shorthand utilities;
+  // upstream new-york-v4 writes the equivalent arbitrary-value form. Same computed transform.
+  { from: "top-[50%]", to: "top-1/2" },
+  { from: "left-[50%]", to: "left-1/2" },
+  { from: "translate-x-[-50%]", to: "-translate-x-1/2" },
+  { from: "translate-y-[-50%]", to: "-translate-y-1/2" },
   // batch A: resizable.tsx uses react-resizable-panels, which sets an ARIA orientation attribute;
   // our resizable.marko is Zag-based (splitter machine) and emits data-orientation instead (verified
   // in packages/shadcn/ui/resizable/resizable.marko via api().getRootProps()) — same meaning, different
@@ -282,6 +288,23 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     extra: ["gap-2", "[&_svg:not([class*='size-'])]:size-4"],
     reason:
       "ours-only: our sub-trigger renders a trailing chevron icon needing gap/sizing rules — new-york-v4's MenubarSubTrigger className has no gap or svg-sizing rule at all (its ChevronRightIcon has no explicit classes in the raw source).",
+  },
+  "alert-dialog:alert-dialog-content": {
+    missing: ["group/alert-dialog-content"],
+    extra: ["outline-none"],
+    reason:
+      "group/alert-dialog-content is a tool limitation (same class as toggle-group:toggle-group above): classes.ts genuinely carries it verbatim (packages/shadcn/ui/alert-dialog/classes.ts content slot), matching upstream's own group/alert-dialog-content exactly. outline-none is a pre-existing structural addition (in classes.ts before this port) with no upstream equivalent — new-york-v4's AlertDialogContent className has no outline rule at all.",
+  },
+  "alert-dialog:alert-dialog-description": {
+    extra: [
+      "*:[a]:hover:text-foreground",
+      "text-balance",
+      "md:text-pretty",
+      "*:[a]:underline",
+      "*:[a]:underline-offset-3",
+    ],
+    reason:
+      "ours-only: link styling and text-wrapping refinements inside the description with no upstream equivalent — new-york-v4's AlertDialogDescription is a plain text-sm text-muted-foreground, no anchor-tag styling and no text-balance/text-pretty at all.",
   },
 }
 
