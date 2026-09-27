@@ -114,6 +114,7 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   // whole token or a PREFIX, never a suffix.
   { from: "ring-[3px]", to: "ring-3" },
   { from: "focus-visible:ring-[3px]", to: "focus-visible:ring-3" },
+  { from: "has-[[data-slot=input-group-control]:focus-visible]:ring-[3px]", to: "has-[[data-slot=input-group-control]:focus-visible]:ring-3" },
   // Radix data-[orientation=*] selectors -> our Zag custom variants (globals.css @custom-variant list).
   { from: "data-[orientation=horizontal]:", to: "data-horizontal:" },
   { from: "data-[orientation=vertical]:", to: "data-vertical:" },
@@ -204,6 +205,34 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     extra: ["[&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-md!"],
     reason: "same mechanism difference as the horizontal orientation entry above, mirrored for the vertical axis.",
   },
+  "input-group:input-group": {
+    missing: ["group/input-group", "relative", "flex", "w-full", "items-center", "outline-none", "min-w-0", "has-[>textarea]:h-auto"],
+    extra: ["in-data-[slot=combobox-content]:focus-within:border-inherit", "in-data-[slot=combobox-content]:focus-within:ring-0", "has-[[data-slot][aria-invalid=true]]:ring-3"],
+    reason:
+      "two causes. missing: TOOL LIMITATION (same class as switch:switch's group/switch entry) — isStructuralOnlyToken() strips every `group/*` token from OUR side unconditionally, but new-york-v4's own InputGroup root ALSO writes `group/input-group`; the rest of this list is genuinely already present in classes.ts's root field verbatim (`group/input-group relative flex w-full items-center outline-none min-w-0 has-[>textarea]:h-auto`), just invisible to the tool because it's bundled with the stripped group token in the same literal. extra: `in-data-[slot=combobox-content]:*` is our own addition with no new-york-v4 equivalent (suppresses the input-group's own focus ring/border when nested in a combobox popover, letting the combobox's own focus styling show through — new-york-v4 has no concept of combobox nesting); `has-[[data-slot][aria-invalid=true]]:ring-3` duplicates the ring width upstream doesn't repeat on its own aria-invalid rule (upstream: `aria-invalid:ring-destructive/20` alone, ring width already covered by the focus-visible rule) — harmless, pre-existing.",
+  },
+  "input-group:input-group-control": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason:
+      "TOOL BUG, not a real mismatch: new-york-v4's inputGroupButtonVariants cva() call has no data-slot of its own (InputGroupButton renders <Button>, which carries its own internal data-slot=\"button\") — extractParts()'s guessSlotForVariants() walks forward looking for the NEXT data-slot in the file and lands on InputGroupInput's unrelated `input-group-control` (same class of bug as native-select's mismapped wrapper/select slots). The real target for this variant group is our mu-input-group-button* rules (see their own comment in style-new-york.css's MARK: Input Group section, already ported there) — verify those directly. The genuine input-group-control slot (InputGroupInput/InputGroupTextarea) matches our mu-input-group-input/-textarea rules, unaffected by this bug and unchanged from vega.",
+  },
+  "input-group:input-group-control:size:xs": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same tool bug as input-group:input-group-control; real target is .mu-input-group-button-size-xs.",
+  },
+  "input-group:input-group-control:size:sm": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same tool bug as input-group:input-group-control; real target is .mu-input-group-button-size-sm.",
+  },
+  "input-group:input-group-control:size:icon-xs": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same tool bug as input-group:input-group-control; real target is .mu-input-group-button-size-icon-xs.",
+  },
+  "input-group:input-group-control:size:icon-sm": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same tool bug as input-group:input-group-control; real target is .mu-input-group-button-size-icon-sm.",
+  },
+
   "marker:marker": {
     missing: ["group/marker"],
     reason:
