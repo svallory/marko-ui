@@ -202,15 +202,6 @@
   @apply mx-auto max-w-[1400px] px-4 3xl:max-w-screen-2xl lg:px-8;
 }
 
-@utility no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
 /* DEVIATION: `scrollbar-none` is used in several of our tags (docs-article,
    docs-toc, typeset docs-content) as if it were a Tailwind built-in — it is
    not (v4 core ships no such utility, and shadcn's own source doesn't define
