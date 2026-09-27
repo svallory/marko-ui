@@ -8,7 +8,8 @@ Apply the full process on the official-repo path (the tooling exists there). On 
 
 - WHEN: once per upstream library, before any parity work.
 - HOW: a resolver with a fixed order — env var override → maintainer sibling clone → shallow auto-clone (`--filter=blob:none`) into a gitignored `.upstream/` dir. Per library the only inputs are the repo URL and the content paths inside it (docs dir, demos/examples dir).
-- ARTIFACT: the resolver + `.gitignore` entry.
+- RULE: pin and record the upstream commit SHA every parity run used (`git -C <clone> log -1 --format=%H`). A comparison against an unknown upstream revision proves nothing. Do the same for the artifacts you port: take them from the canonical source (what upstream's CLI/installer emits today), not from the first file that looks right. See `failure-classes.md` §2.
+- ARTIFACT: the resolver + `.gitignore` entry + the recorded SHA.
 
 ## 2. Demo name alignment — the pairing key
 
@@ -38,10 +39,10 @@ Apply the full process on the official-repo path (the tooling exists there). On 
 - HOW: a thin app in the upstream's OWN framework that renders any upstream demo at `/demo/<name>` on a blank page, straight from the clone. This is where agent reasoning is spent — the framework-shim checklist of what WILL break:
   - alias framework deps into the clone's own `node_modules` (do not reinstall the upstream dep tree);
   - a build plugin generating a virtual demo registry + dynamic Tailwind `@source` directives (the clone path varies per machine);
-  - shim framework-specific imports (`next/image` → `img`, `next/link` → `a`, `next/font` → static, `next-themes` → fixed light theme — adapt per framework);
+  - shim framework-specific imports (`next/image` → `img`, `next/link` → `a`, `next/font` → static, `next-themes` → fixed theme — adapt per framework). A shim must reproduce everything the real library writes to the DOM, not just "pick a theme". `next-themes` sets both the theme class AND `color-scheme` on `<html>`. Drop one and dark-mode text differs between the harnesses, which then looks like a component bug;
   - pin fonts identically on BOTH harnesses;
-  - byte-copy the upstream Tailwind base on both sides.
-  Your side: a blank per-demo route resolving demos from your manifest, a stable `[data-parity-demo]` wrapper, forced light theme + default style.
+  - both harnesses import ONE copy of the upstream Tailwind base (a single file, generated from the clone). Two hand-maintained copies drift (`failure-classes.md` §4).
+  Your side: a blank per-demo route resolving demos from your manifest, a stable `[data-parity-demo]` wrapper, and forced light theme. Use the style/theme class upstream renders that demo with, on the same element upstream puts it on. There is no global "default style" (`failure-classes.md` §6–7). The harness consumes your library through its shipped package entry and CSS, exactly like a user (`failure-classes.md` §3).
 - ARTIFACT: two harnesses.
 
 ## 6. Interaction steps (stateful demos)

@@ -32,7 +32,11 @@ Dev servers hide hydration bugs. Build for production, serve the build, and driv
 
 ## 4. Visual parity vs the source library
 
-Screenshot the ported component next to the source library's live docs/demo for the same state (default, hover where reproducible, open/expanded, disabled). Same structure, spacing, and behavior — differences either get fixed or logged as explicit deviations in your report. Do not eyeball from memory; take the screenshots.
+Screenshot the ported component next to upstream's rendering of the same demo in the same state (default, hover where reproducible, open/expanded, disabled), using the style/theme upstream uses for that area. Same structure, spacing, and behavior. Differences are either fixed or logged as explicit deviations. Do not eyeball from memory; take the screenshots.
+
+Screenshots are supporting evidence, never the primary one. The primary evidence is the mechanical attribute/class diff in `parity-checklist.md`. An upstream docs site also carries site CSS and runtime actors (theme providers and the like) that users of the library don't get, so "looks like the docs site" is not parity.
+
+**Authoritative runs only.** Pixel baselines are platform-specific (font rasterisation). A visual check counts as evidence only on the platform its baselines were generated on, normally the CI runner (Linux). A local macOS run against Linux baselines is noise, whether it passes or fails. Never cite it, and never regenerate baselines locally.
 
 ## 5. Behavior tests (keep them)
 
@@ -63,6 +67,14 @@ It runs two detectors against the upstream clone and writes `parity-report/repor
 
 The judgment steps behind those artifacts (name pairing, taxonomy, harness shims, interactions) are procedures in `parity-process.md`. (The toolkit is monorepo-only today; community registries use the manual screenshot comparison in §4 until it ships as a standalone dev package.)
 
+## 6. Independent review (mandatory)
+
+Self-verification repeatedly missed defects that an independent pass caught. Before any component is called done, a reviewer who did not write it compares it against upstream **source** (not screenshots) using `parity-checklist.md`. In an agent setup that means a fresh subagent. Its brief contains only the upstream path, your path, and the checklist, never your conclusions. Every finding is either fixed or logged. "The author checked it" does not satisfy this step.
+
+## 7. Accessibility scan
+
+Run axe (or equivalent) over every component page, open states included. A violation inherited verbatim from upstream is still a violation. Fix it as an intentional divergence, applied everywhere per `failure-classes.md` §9, or log it.
+
 ## Report format
 
-End with a table: component → checks passed (types / SSR / hydration / interactions / visual) → deviations. "All good" with no evidence is a failed report.
+End with a table: component → checks passed (types / SSR / hydration / interactions / visual [authoritative run link] / review / axe) → deviations. Attach the filled `parity-checklist.md` per component and the upstream SHA. "All good" with no evidence is a failed report.
