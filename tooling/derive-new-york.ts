@@ -180,6 +180,43 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     reason:
       "our own object-fit/radius on the image element; upstream relies solely on the avatar root's overflow-hidden+rounded-full to clip — pre-existing across every base style.",
   },
+  "combobox:combobox-trigger": {
+    extra: ["flex", "h-9", "w-9", "items-center", "justify-center", "text-muted-foreground", "data-disabled:cursor-not-allowed", "data-disabled:opacity-50"],
+    reason:
+      "our combobox uses a completely different trigger architecture than upstream: a plain in-flow icon button (flex/h-9/w-9) inside our own input-group control, vs. upstream's InputGroupButton+ComboboxTrigger composition with no classes of its own on the trigger element itself (all its sizing comes from InputGroupButton's own size=\"icon-xs\" variant, not visible in this file). Pre-existing across every base style, out of scope for a style-only port.",
+  },
+  "combobox:combobox-content": {
+    missing: ["w-(--anchor-width)", "min-w-[calc(var(--anchor-width)+--spacing(7))]", "data-[chips=true]:min-w-(--anchor-width)"],
+    extra: ["max-h-(--available-height)", "w-(--reference-width)", "overflow-x-hidden", "overflow-y-auto", "min-w-36"],
+    reason:
+      "structural (classes.ts's content literal) — our Zag combobox positions/sizes its content via its own --available-height/--reference-width CSS vars (Zag's anchor-positioning API), a different mechanism than upstream's Base UI --anchor-width/--available-width vars. Pre-existing across every base style, out of scope for a style-only port.",
+  },
+  "combobox:combobox-list": {
+    extra: ["overscroll-contain", "no-scrollbar"],
+    reason: "our own scroll-behavior extras with no upstream equivalent, pre-existing across every base style.",
+  },
+  "combobox:combobox-item": {
+    extra: ["not-data-[variant=destructive]:data-highlighted:**:text-accent-foreground"],
+    reason:
+      "our own descendant-text-color extra for a destructive-variant item (upstream's ComboboxItem has no variant concept at all), pre-existing across every base style.",
+  },
+  "combobox:combobox-empty": {
+    extra: ["py-1.5", "px-2"],
+    reason: "our own padding, pre-existing across every base style (upstream's ComboboxEmpty uses py-2 text-center instead of py-1.5 px-2 — a different empty-state layout choice, not introduced by this port).",
+  },
+  "combobox:combobox-chips": {
+    extra: ["gap-1", "p-1"],
+    reason: "structural (classes.ts's chips literal) — our own internal padding/gap for the chips container, pre-existing across every base style.",
+  },
+  "combobox:combobox-chip-input": {
+    extra: ["bg-transparent", "px-1", "text-sm", "placeholder:text-muted-foreground", "data-disabled:cursor-not-allowed", "data-disabled:opacity-50"],
+    reason: "structural (classes.ts's chipInput literal) — our own input styling with no upstream equivalent (upstream's ComboboxChipsInput carries no classes of its own at all), pre-existing across every base style.",
+  },
+  "popover:popover-content": {
+    extra: ["ring-foreground/10", "flex", "flex-col", "gap-4", "text-sm", "ring-1", "duration-100"],
+    reason:
+      "our own extras with no upstream equivalent: a ring-1 accent ring (ring-foreground/10) and a flex/flex-col/gap-4/text-sm layout duplicating popover-header's own flex/gap-1/text-sm — pre-existing across every base style, not introduced by this port.",
+  },
   "dialog:dialog-description": {
     extra: ["*:[a]:hover:text-foreground", "*:[a]:underline", "*:[a]:underline-offset-3"],
     reason:
@@ -352,17 +389,17 @@ function extractParts(src: string): Part[] {
     // or before) the className match itself; fall back to the first in the body if none
     // precedes it (covers the simple one-element-per-function case unchanged).
     const classNameAttrIdx = cnCallMatch ? cnCallMatch.index! : /className=/.exec(body)?.index
-    let slot: string | undefined
-    if (classNameAttrIdx !== undefined) {
-      const before = body.slice(0, classNameAttrIdx)
-      const slotMatches = [...before.matchAll(/data-slot=["'{]([\w"'-]+)/g)]
-      if (slotMatches.length) slot = slotMatches[slotMatches.length - 1]![1]!.replace(/["']/g, "")
-    }
-    if (!slot) {
-      const firstSlotMatch = /data-slot=["'{]([\w"'-]+)/.exec(body)
-      if (!firstSlotMatch) continue
-      slot = firstSlotMatch[1]!.replace(/["']/g, "")
-    }
+    if (classNameAttrIdx === undefined) continue
+    const before = body.slice(0, classNameAttrIdx)
+    const slotMatches = [...before.matchAll(/data-slot=["'{]([\w"'-]+)/g)]
+    // Only a data-slot genuinely preceding this className is trustworthy — a JSX element with
+    // no data-slot of its own (e.g. combobox.tsx's plain <InputGroup className="w-auto">) has
+    // no reliable attribution, and grabbing some LATER data-slot from elsewhere in the function
+    // body (the previous fallback here) can misattribute classes to the wrong slot entirely, as
+    // it did for combobox-input's classes landing on "input-group-button" instead. Skip rather
+    // than guess wrong.
+    if (!slotMatches.length) continue
+    const slot = slotMatches[slotMatches.length - 1]![1]!.replace(/["']/g, "")
     if (cnCallMatch) {
       const inner = cnCallMatch[1]!
       let sm: RegExpExecArray | null
