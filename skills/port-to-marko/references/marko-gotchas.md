@@ -64,10 +64,25 @@ Rules:
 - **LIFECYCLE-CLEANUP**: `onMount() { ...; return () => cleanup() }` SILENTLY DROPS the cleanup (Marko `Object.assign`s the return value onto `this`). Correct: `return { cleanup: () => {...} }` in onMount + `onDestroy() { this.cleanup?.(); }` — or just put teardown in `onDestroy` directly.
 - **SCROLL-DELEGATION**: element `scroll` events never reach Marko's document-level delegation — an `onScroll` attribute on a scrollable element NEVER fires, silently. Attach directly in onMount (`el.addEventListener("scroll", fn, { passive: true })`) with cleanup. Wheel/touch/key events bubble and are fine as attributes.
 - **FORMATTER**: prettier-plugin-marko can convert multi-line attribute arrows to block bodies WITHOUT `return`, silently breaking getters. Keep tag-attribute closures single-expression; re-verify after any format pass.
-- **BOOLEAN-DATA-ATTR**: `data-active=true` renders bare (`data-active`), so `data-[active=true]:` Tailwind selectors never match. Wrap: `data-active=String(x)`.
+- **BOOLEAN-DATA-ATTR**: `data-active=true` renders bare (`data-active`), and `data-active=false` renders NOTHING, so `data-[active=true]:`/`data-[active=false]:` selectors never match. React renders both as strings (`"true"`/`"false"`). Wrap: `data-active=String(x)`. See §React-to-Marko attribute semantics.
 - **DYNAMIC-TAG-HYDRATION** (marko 6.3.34): dynamic tags (`<${SomeVar}/>`) in route files crash production hydration. Use static `<if>/<else-if>` chains over static imports.
 - **CONTROLLED-INPUT-VALUE**: a bare `value=state` on a native `<input>` sets the attribute, not the live DOM value — after the user types, programmatic state changes stop reaching the field. Use `value=state` WITH `valueChange` (Marko's controllable pair) for text inputs you clear or set from code.
 - **ASYNC-SIBLINGS-AT-MOUNT**: content rendered by `<await>` does not exist yet when sibling `onMount` runs in client-inserted trees — `querySelectorAll` at mount finds nothing and imperative wiring silently no-ops. Prefer reactive state over onMount DOM queries; if you must query, do it lazily at event time.
+
+## React-to-Marko attribute semantics (porting from JSX)
+
+Port the HTML React **renders**, not the JSX you read. For each attribute in the upstream JSX, find its React output and reproduce that exact output. Diff against upstream's SSR HTML to confirm.
+
+| Upstream JSX | React renders | Marko: write |
+|---|---|---|
+| `data-x={bool}` | `data-x="true"` / `data-x="false"` | `data-x=String(bool)` (never a bare boolean) |
+| `aria-x={bool}` | `aria-x="true"` / `"false"` | `aria-x=String(bool)` |
+| `aria-current={c ? "page" : undefined}` | attribute only when `c` | `aria-current=(c ? "page" : undefined)` |
+| `disabled={bool}` (real HTML boolean attr) | bare when true, absent when false | `disabled=bool` (same) |
+| `x={undefined}` / `x={null}` | absent | same |
+| `className` / `htmlFor` / `tabIndex` | `class` / `for` / `tabindex` | HTML names |
+| `style={{ marginTop: 4 }}` | `margin-top:4px` | `style={ "margin-top": "4px" }` (units explicit) |
+| `asChild` / Slot | props merged onto the child | render-prop or the component's own element; never a wrapper element |
 
 ## Custom controllers (state shared across parts, no zag machine)
 
@@ -82,3 +97,5 @@ Marko has no context/provider primitive, so Radix-style per-part sibling files c
 - Tokens only (`bg-primary`, `text-muted-foreground`, `border-border`) — no hex, no raw oklch, so themes restyle the port untouched.
 - If you ship a component stylesheet, put component rules in `layer(components)` so consumer utilities always win, and ship any `@custom-variant` lines your variant classes rely on — without them the classes are silently inert.
 - Consumers must add your package/source dir to their Tailwind `@source`, or utilities used only in your files silently drop from their build.
+- One copy of every stylesheet/token file. The port's own docs import the shipped CSS entry like a user does. Site CSS only adds chrome or overrides tokens, and never redefines a library token, `@custom-variant`, or component class. A "fix" that only works as a global docs rule is hiding a real defect (`failure-classes.md` §3–4).
+- Shipped token names and values come from upstream's CURRENT emitted set (read the installer/CLI code path). Theme/style classes go on the element upstream puts them on (`failure-classes.md` §2, §7–8).
