@@ -367,6 +367,22 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     reason:
       "ours-only: a group-based highlight so the shortcut text picks up the parent item's selected-state color — upstream's CommandShortcut is a plain span with a fixed text-muted-foreground, no group-based color rule.",
   },
+  "drawer:drawer-portal": {
+    reason:
+      "no rendered classes for this slot (same reason-only pattern as hover-card:hover-card-portal above): DrawerPortal is a bare pass-through of DrawerPrimitive.Portal, data-slot=\"drawer-portal\" with no className at all in new-york-v4's own source.",
+  },
+  "drawer:drawer-header": {
+    missing: [
+      "group-data-[vaul-drawer-direction=bottom]/drawer-content:text-center",
+      "group-data-[vaul-drawer-direction=top]/drawer-content:text-center",
+    ],
+    extra: [
+      "group-data-[swipe-direction=down]/drawer-content:text-center",
+      "group-data-[swipe-direction=up]/drawer-content:text-center",
+    ],
+    reason:
+      "different underlying primitive library, same class as the resizable aria-vs-data-orientation divergence above: upstream's drawer.tsx is vaul-based (data-vaul-drawer-direction, bottom/top/left/right), ours is Zag-based (data-swipe-direction, verified in packages/shadcn/ui/drawer/*.marko: contentProps()[\"data-swipe-direction\"] as \"up\" | \"down\" | \"left\" | \"right\") — Zag's down/up map to vaul's bottom/top respectively, a genuine vocabulary difference between primitives, not a spelling equivalence (unlike resizable's aria-vs-data case, the value names themselves differ: \"bottom\"/\"top\" vs \"down\"/\"up\"), so a shared EQUIVALENCES entry would be misleading.",
+  },
   "alert-dialog:alert-dialog-description": {
     extra: [
       "*:[a]:hover:text-foreground",

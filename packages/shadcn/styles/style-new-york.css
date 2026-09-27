@@ -520,8 +520,9 @@
   }
 
   /* MARK: Drawer */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/drawer.tsx) */
   .mu-drawer-overlay {
-    @apply bg-black/10 supports-backdrop-filter:backdrop-blur-xs;
+    @apply bg-black/50;
   }
 
   .mu-drawer-content {
@@ -549,7 +550,7 @@
   }
 
   .mu-drawer-title {
-    @apply text-foreground font-medium;
+    @apply text-foreground font-semibold;
   }
 
   .mu-drawer-description {
