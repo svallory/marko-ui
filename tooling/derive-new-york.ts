@@ -90,6 +90,12 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   // above — Tailwind variant composition means the compound needs its own equivalence entry).
   { from: "group-data-[orientation=horizontal]/tabs:", to: "group-data-horizontal/tabs:" },
   { from: "group-data-[orientation=vertical]/tabs:", to: "group-data-vertical/tabs:" },
+  // Radix's data-[state=open|closed] compounded onto navigation-menu's group-data-[viewport=false]
+  // scoping selector -> our Zag data-open/data-closed custom variants.
+  { from: "group-data-[viewport=false]/navigation-menu:data-[state=closed]:", to: "group-data-[viewport=false]/navigation-menu:data-closed:" },
+  { from: "group-data-[viewport=false]/navigation-menu:data-[state=open]:", to: "group-data-[viewport=false]/navigation-menu:data-open:" },
+  // Tailwind arbitrary z-index vs. our bare scale value at the same computed z-index (1).
+  { from: "z-[1]", to: "z-1" },
   // Tailwind v4's `*:` direct-child variant shorthand for the older `[&>*]:` arbitrary form.
   { from: "[&>*]:focus-visible:relative", to: "*:focus-visible:relative" },
   { from: "[&>*]:focus-visible:z-10", to: "*:focus-visible:z-10" },
@@ -238,6 +244,35 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     extra: ["data-open:fade-in-0", "data-[side=bottom]:data-[state=open]:slide-in-from-bottom-10", "data-[side=left]:data-[state=open]:slide-in-from-left-10", "data-[side=right]:data-[state=open]:slide-in-from-right-10", "data-[side=top]:data-[state=open]:slide-in-from-top-10", "data-closed:fade-out-0", "data-[side=bottom]:data-[state=closed]:slide-out-to-bottom-10", "data-[side=left]:data-[state=closed]:slide-out-to-left-10", "data-[side=right]:data-[state=closed]:slide-out-to-right-10", "data-[side=top]:data-[state=closed]:slide-out-to-top-10", "data-[side=bottom]:inset-x-0", "data-[side=bottom]:bottom-0", "data-[side=bottom]:h-auto", "data-[side=bottom]:border-t", "data-[side=left]:inset-y-0", "data-[side=left]:left-0", "data-[side=left]:h-full", "data-[side=left]:w-3/4", "data-[side=left]:border-r", "data-[side=left]:sm:max-w-sm", "data-[side=right]:inset-y-0", "data-[side=right]:right-0", "data-[side=right]:h-full", "data-[side=right]:w-3/4", "data-[side=right]:border-l", "data-[side=right]:sm:max-w-sm", "data-[side=top]:inset-x-0", "data-[side=top]:top-0", "data-[side=top]:h-auto", "data-[side=top]:border-b"],
     reason:
       "two causes, both about token shape, not real visual mismatches. missing: upstream's SheetContent picks per-side layout classes with a JS ternary on the `side` prop (`side === \"right\" && \"inset-y-0 right-0 h-full w-3/4 border-l ...\"`), not a Tailwind data-attribute selector — extractParts() doesn't parse that shape (same tokenizer-artifact class as scroll-area's ScrollBar and sheet's own side==='left'/'top'/'bottom' branches), so the literal words \"right\"/\"left\"/\"top\"/\"bottom\" leak into the target token list, and the real per-side classes (inset-y-0, right-0, h-full, w-3/4, border-l, slide-in/out) appear unprefixed while our rule spells them data-[side=right]:-prefixed (semantically identical, verified by reading the raw source and comparing side-by-side — our data-[side=X]: prefixed forms already carry every one of these values, just not matched token-for-token by the tool). extra: our classes.ts (sheet/classes.ts's content field) bakes each slide animation with a fixed -10 (10%) distance and includes fade-in-0/fade-out-0 companions on every side; new-york-v4's slide-in-from-<side>/slide-out-to-<side> have no explicit distance (Tailwind's animate-in default) and no fade pairing — pre-existing across all 8 styles, not introduced by this port; changing the animation distance is a behavioral/motion change beyond a style-only port.",
+  },
+  "navigation-menu:navigation-menu": {
+    missing: ["group/navigation-menu"],
+    reason: "TOOL LIMITATION (same class as switch:switch's group/switch entry): isStructuralOnlyToken() strips every `group/*` token from OUR side unconditionally, but new-york-v4's own NavigationMenu root ALSO writes `group/navigation-menu` — our classes.ts (navigation-menu/classes.ts's `base` field) already carries it verbatim.",
+  },
+  "navigation-menu:navigation-menu-trigger": {
+    missing: ["group"],
+    extra: ["inline-flex", "h-9", "w-max", "items-center", "justify-center", "outline-none", "disabled:pointer-events-none", "hover:bg-accent", "focus:bg-accent", "data-open:hover:bg-accent", "data-open:focus:bg-accent", "data-open:bg-accent/50", "focus-visible:ring-ring/50", "data-popup-open:bg-accent/50", "data-popup-open:hover:bg-accent", "rounded-md", "px-4", "py-2", "text-sm", "font-medium", "transition-all", "focus-visible:ring-3", "focus-visible:outline-1", "disabled:opacity-50"],
+    reason:
+      "structural mislabel: the whole \"extra\" list is our real ported style rule (already correct — bg-accent etc, verified against upstream directly) plus classes.ts's own structural string (inline-flex h-9 w-max items-center justify-center outline-none disabled:pointer-events-none), which the tool doesn't subtract here because upstream's own trigger fn has no separate cva()/classes()-derivable structural half for this tool to diff against — it only flags the union as \"extra\" since it can't tell which half is ours. `group` (bare, no slash-name) is the same isStructuralOnlyToken() strip as group/navigation-menu above, applied to upstream's own bare `group` on NavigationMenuTrigger (its trigger-icon reads group-hover:rotate-180 off it) — our classes.ts already carries it verbatim too.",
+  },
+  "navigation-menu:navigation-menu-content": {
+    extra: ["ease-[cubic-bezier(0.22,1,0.36,1)]"],
+    reason: "our own easing curve with no new-york-v4 equivalent (upstream's animate-in/out use Tailwind's default easing) — pre-existing, harmless.",
+  },
+  "navigation-menu:navigation-menu-viewport": {
+    missing: ["absolute", "top-full", "left-0", "isolate", "z-50", "flex", "justify-center"],
+    extra: ["origin-top-center", "relative", "mt-1.5", "h-[var(--viewport-height)]", "w-[var(--viewport-width)]", "overflow-hidden", "bg-popover", "text-popover-foreground", "data-open:animate-in", "data-closed:animate-out", "data-closed:zoom-out-95", "data-open:zoom-in-90", "rounded-md", "border", "shadow"],
+    reason:
+      "TOOL BUG, not a real mismatch: new-york-v4's NavigationMenuViewport fn body has TWO className={cn(...)} calls — an outer wrapping div with no data-slot, and the inner real Radix Viewport carrying data-slot=\"navigation-menu-viewport\" — and extractParts()'s cnCallMatch regex only captures the FIRST cn() call per function, so this tool's \"navigation-menu-viewport\" slot is actually the OUTER wrapper's classes (matching our mu-navigation-menu-viewport-wrapper's existing rule verbatim, nothing to port there). The real inner-viewport target (everything in \"extra\" above, minus our own --viewport-height/-width positioning vars which are structural, this file's own Zag CSS-var wiring) was hand-derived from the raw source and ported onto .mu-navigation-menu-viewport directly — verify that rule against apps/v4/registry/new-york-v4/ui/navigation-menu.tsx:101-116 rather than trusting this slot's --check result.",
+  },
+  "navigation-menu:navigation-menu-indicator": {
+    extra: ["[width:var(--trigger-width)]", "[translate:var(--trigger-x)_0]"],
+    reason: "structural, pre-existing (classes.ts's indicator field): Zag-only positioning vars for the active-trigger indicator's width/offset, no upstream equivalent (Radix positions its indicator differently) — same class as the pilot's dropdown-menu positioning-var entries.",
+  },
+  "navigation-menu:navigation-menu-link": {
+    extra: ["items-center", "gap-1.5", "in-data-[slot=navigation-menu-content]:rounded-sm"],
+    reason:
+      "pre-existing vega layout choice, not introduced by this port: upstream's link is a plain flex flex-col gap-1 (column stack, no centering); ours additionally centers items and uses a slightly larger gap-1.5, plus a context-specific corner rounding when nested inside navigation-menu-content. Changing this is a layout behavior change beyond a style-only port without visual verification — flagged for the lead to decide whether to align exactly.",
   },
   "sheet:sheet-overlay": {
     extra: ["duration-100"],
