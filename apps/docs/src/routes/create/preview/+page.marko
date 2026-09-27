@@ -389,7 +389,9 @@ static async function applyIconLibrary(iconLibrary: IconLibraryName) {
       if (!validateDesignSystemParams(event.data)) return;
 
       const data = event.data.data as DesignSystemSearchParams & { __isDark?: boolean };
-      document.documentElement.classList.toggle("dark", Boolean(data.__isDark));
+      const isDark = Boolean(data.__isDark);
+      document.documentElement.classList.toggle("dark", isDark);
+      document.documentElement.style.colorScheme = isDark ? "dark" : "light";
       applyParams(data);
       if (data.iconLibrary) {
         applyIconLibrary(data.iconLibrary);

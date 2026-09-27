@@ -1,3 +1,19 @@
+// Rebuilt (Round 2, corrected Round 4) from packages/shadcn/ui/sidebar
+// parts, matching upstream's components/docs-sidebar.tsx structurally: uses
+// our Sidebar and SidebarContent parts (not a bare <nav>), with every
+// className below copied verbatim from docs-sidebar.tsx (line cited per
+// part). Only the active-state selector syntax differs: upstream's
+// data-[active=true]:X -> our shipped data-active: custom-variant, which
+// matches the same data-active="true" attribute SidebarMenuButton sets.
+import Sidebar from "@marko-ui/shadcn/ui/sidebar/sidebar.marko";
+import SidebarContent from "@marko-ui/shadcn/ui/sidebar/content.marko";
+import SidebarGroup from "@marko-ui/shadcn/ui/sidebar/group.marko";
+import SidebarGroupLabel from "@marko-ui/shadcn/ui/sidebar/group-label.marko";
+import SidebarGroupContent from "@marko-ui/shadcn/ui/sidebar/group-content.marko";
+import SidebarMenu from "@marko-ui/shadcn/ui/sidebar/menu.marko";
+import SidebarMenuItem from "@marko-ui/shadcn/ui/sidebar/menu-item.marko";
+import SidebarMenuButton from "@marko-ui/shadcn/ui/sidebar/menu-button.marko";
+
 export interface DocsSidebarSection {
   title: string;
   items: Array<{ href: string; label: string }>;
@@ -5,37 +21,49 @@ export interface DocsSidebarSection {
 
 export interface Input {
   sections: DocsSidebarSection[];
+  /** Current route pathname, for server-side active-link detection (no
+      client script needed — matches components-sidebar.marko's pattern). */
+  currentPath?: string;
   class?: string;
 }
 
-<nav/navEl class=`flex flex-col gap-4 no-scrollbar ${input.class ?? ""}` data-slot="docs-sidebar">
-  <for|section| of=input.sections by=(section)=>section.title>
-    <div class="flex flex-col p-2">
-      <div class="flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-muted-foreground">${section.title}</div>
-      <ul class="flex w-full min-w-0 flex-col gap-0.5">
-        <for|item| of=section.items by=(item)=>item.href>
-          <li>
-            <a
-              href=item.href
-              data-site-nav-link
-              data-href=item.href
-              class="relative flex h-[30px] w-fit items-center overflow-visible rounded-md border border-transparent px-2 text-[0.8rem] font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground data-active:border-accent data-active:bg-accent data-active:font-medium"
-            >
-              ${item.label}
-            </a>
-          </li>
-        </for>
-      </ul>
-    </div>
-  </for>
-</nav>
+<const/isActive=(href: string) =>
+  input.currentPath != null &&
+  (href === "/docs" ? input.currentPath === href : input.currentPath.startsWith(href))/>
 
-<lifecycle
-  onMount() {
-    const path = window.location.pathname;
-    navEl()?.querySelectorAll("[data-site-nav-link]").forEach((link) => {
-      const href = link.getAttribute("data-href");
-      link.toggleAttribute("data-active", href === path);
-    });
-  }
-/>
+<!-- Sidebar: className verbatim from docs-sidebar.tsx:173. collapsible="none"
+     (no SidebarProvider needed) matches upstream's own usage there. -->
+<Sidebar
+  collapsible="none"
+  class="sticky top-[calc(var(--header-height)+0.6rem)] z-30 hidden h-[calc(100svh-10rem)] overflow-hidden overscroll-none bg-transparent [--sidebar-menu-width:--spacing(56)] lg:flex"
+>
+  <!-- The faded vertical divider (docs-sidebar.tsx:177) is rendered by the
+       caller (routes/docs/+layout.marko) — not duplicated here. -->
+  <!-- SidebarContent: className verbatim from docs-sidebar.tsx:181,
+       including scroll-fade scrollbar-none (missing before this round). -->
+  <SidebarContent class="w-(--sidebar-menu-width) scroll-fade scrollbar-none overflow-x-hidden pl-2.5">
+    <for|section, index| of=input.sections by=(section)=>section.title>
+      <!-- pt-12 only on the first group, docs-sidebar.tsx:183. -->
+      <SidebarGroup class=(index === 0 ? "pt-12" : undefined)>
+        <SidebarGroupLabel class="font-medium text-muted-foreground">
+          ${section.title}
+        </SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu class="gap-0.5">
+            <for|item| of=section.items by=(item)=>item.href>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  href=item.href
+                  active=isActive(item.href)
+                  class="relative h-[30px] w-fit overflow-visible border border-transparent text-[0.8rem] font-medium after:absolute after:inset-x-0 after:-inset-y-1 after:z-0 after:rounded-md data-active:border-accent data-active:bg-accent 3xl:fixed:w-full 3xl:fixed:max-w-48"
+                >
+                  ${item.label}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </for>
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    </for>
+  </SidebarContent>
+</Sidebar>

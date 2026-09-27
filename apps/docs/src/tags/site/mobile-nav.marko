@@ -35,9 +35,15 @@ static const NAV_ITEMS = [
   </summary>
   <nav class="absolute left-0 top-full z-50 mt-2 flex w-48 flex-col gap-1 rounded-md border border-border bg-popover p-2 shadow-md">
     <for|item| of=NAV_ITEMS by=(item)=>item.href>
+      <!-- No hover:bg-accent: upstream's components/mobile-nav.tsx MobileLink
+           (its closest counterpart, modulo the Popover-vs-<details>
+           structural difference) has no hover class at all —
+           `className={cn("flex items-center gap-2 text-2xl font-medium",
+           className)}` (mobile-nav.tsx:210) — so this matches upstream
+           verbatim rather than inventing a hover treatment it doesn't have. -->
       <a
         href=item.href
-        class="rounded-sm px-2 py-1.5 text-sm font-medium text-popover-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        class="rounded-sm px-2 py-1.5 text-sm font-medium text-popover-foreground"
       >
         ${item.label}
       </a>

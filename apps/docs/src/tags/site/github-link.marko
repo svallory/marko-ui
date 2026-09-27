@@ -1,3 +1,5 @@
+import { buttonVariants } from "@marko-ui/shadcn/ui/button/variants.ts";
+
 export interface Input {
   href?: string;
 }
@@ -10,7 +12,7 @@ export interface Input {
   rel="noreferrer"
   aria-label="GitHub repository"
   data-slot="github-link"
-  class="inline-flex h-8 items-center justify-center gap-2 rounded-md px-2 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+  class=buttonVariants({ variant: "ghost", size: "icon" })
 >
   <svg
     xmlns="http://www.w3.org/2000/svg"

@@ -30,6 +30,23 @@ static const BLOCKING_SCRIPT = `<!doctype html>
         var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
         var isDark = storedTheme ? storedTheme === "dark" : prefersDark;
         document.documentElement.classList.toggle("dark", isDark);
+        document.documentElement.style.colorScheme = isDark ? "dark" : "light";
+
+        // Cross-tab sync: the storage event fires in every OTHER open tab
+        // when one tab calls localStorage.setItem("theme", ...), so
+        // switching themes in one tab updates every other tab too.
+        window.addEventListener("storage", function (event) {
+          if (event.key !== "theme" && event.key !== null) return;
+          var nextTheme = null;
+          try {
+            nextTheme = localStorage.getItem("theme");
+          } catch (error) {}
+          var nextIsDark = nextTheme
+            ? nextTheme === "dark"
+            : window.matchMedia("(prefers-color-scheme: dark)").matches;
+          document.documentElement.classList.toggle("dark", nextIsDark);
+          document.documentElement.style.colorScheme = nextIsDark ? "dark" : "light";
+        });
       })();
     </html-script>
   </head>
@@ -47,10 +64,11 @@ static const TOGGLE = `<let/isDark=false/>
 <button
   type="button"
   aria-label="Toggle theme"
-  class="inline-flex size-8 items-center justify-center rounded-md text-foreground hover:bg-accent hover:text-accent-foreground"
+  class="inline-flex size-8 items-center justify-center rounded-md text-foreground hover:bg-muted hover:text-foreground"
   onClick() {
     const nextIsDark = !document.documentElement.classList.contains("dark");
     document.documentElement.classList.toggle("dark", nextIsDark);
+    document.documentElement.style.colorScheme = nextIsDark ? "dark" : "light";
     try {
       localStorage.setItem("theme", nextIsDark ? "dark" : "light");
     } catch (error) {}
@@ -107,12 +125,26 @@ static const SYSTEM_ONLY = `@custom-variant dark (&:where(.dark, .dark *), @medi
 
   <code-block language="marko" filename="src/routes/+layout.marko" code=BLOCKING_SCRIPT/>
 
-  <p>The script does three things, in this order:</p>
+  <p>The script does five things, in this order:</p>
 
   <ol>
     <li>Reads <code>localStorage.theme</code>, wrapped in a <code>try</code> because storage throws in private-mode and sandboxed contexts.</li>
     <li>Falls back to the OS preference via <code>prefers-color-scheme</code> when nothing is stored.</li>
     <li>Toggles <code>.dark</code> on <code>document.documentElement</code> synchronously, before the body renders.</li>
+    <li>
+      Sets <code>document.documentElement.style.colorScheme</code> to match. This is the CSS
+      <code>color-scheme</code> property, not the <code>prefers-color-scheme</code> media query above — without
+      it, native browser-drawn UI (checkboxes, <code>&lt;select&gt;</code> panels, date/color pickers, scrollbars)
+      keeps rendering in the OS's light theme even while every custom component is dark.
+    </li>
+    <li>
+      Adds a <code>storage</code> event listener, so switching the theme in one tab updates every other open tab
+      of the same site immediately — the event fires in every <em>other</em> tab when one tab writes to
+      <code>localStorage</code>, mirroring how <code>next-themes</code> keeps tabs in sync. There is no "system"
+      mode to track here (this toggle only ever stores the literal <code>"dark"</code> or <code>"light"</code>),
+      so unlike <code>next-themes</code> there is no separate <code>matchMedia</code> listener for it — the OS
+      preference is only read once, as the fallback in step 2.
+    </li>
   </ol>
 
   <p>

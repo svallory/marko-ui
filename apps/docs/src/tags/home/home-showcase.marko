@@ -29,7 +29,14 @@ import RailCard from "./rail-card.marko";
 <!-- Wrapper classes verbatim from shadcn CardsDemo (cards/index.tsx),
      including theme-neutral: legacy-themes.css remaps --chart-* (and friends)
      to neutral grays inside it — this is why shadcn's homepage charts render
-     gray even though :root's chart palette is blue. -->
+     gray even though :root's chart palette is blue.
+
+     style-rhea is genuine upstream parity, not an invented divergence: every
+     one of upstream's 16 home-page cards
+     (data/shadcn-ui/apps/v4/app/(app)/(root)/cards/*.tsx, excluding the
+     index.tsx wrapper itself) imports its components from
+     `@/styles/base-rhea/ui`, confirmed 16/16 via
+     `grep -rl "base-rhea/ui" 'apps/v4/app/(app)/(root)/cards/'*.tsx`. -->
 <section
   id="components"
   data-slot="demo"

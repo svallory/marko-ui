@@ -89,12 +89,37 @@ import {
         var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
         var isDark = storedTheme ? storedTheme === "dark" : prefersDark;
         document.documentElement.classList.toggle("dark", isDark);
+        document.documentElement.style.colorScheme = isDark ? "dark" : "light";
 
         var storedPalette = null;
         try {
           storedPalette = localStorage.getItem("chart-palette");
         } catch (error) {}
         document.documentElement.classList.toggle("theme-marko", storedPalette === "marko");
+
+        // Cross-tab sync, mirroring next-themes: the storage event fires in
+        // every OTHER same-origin tab/window when a tab explicitly sets
+        // "theme" (this tab's own localStorage.setItem call never fires its
+        // own storage event, only other tabs'), so switching the theme in
+        // one tab updates every other open tab without a reload. We have no
+        // "system" mode to re-sync on OS-preference change (unlike
+        // next-themes, which also listens to matchMedia's own change event
+        // when the stored theme is "system") — our toggle only ever stores
+        // the literal "dark"/"light" (see theme-toggle.marko), so mirroring
+        // "what we support" means storage-event sync only, not a matchMedia
+        // listener for a mode that doesn't exist here.
+        window.addEventListener("storage", function (event) {
+          if (event.key !== "theme" && event.key !== null) return;
+          var nextTheme = null;
+          try {
+            nextTheme = localStorage.getItem("theme");
+          } catch (error) {}
+          var nextIsDark = nextTheme
+            ? nextTheme === "dark"
+            : window.matchMedia("(prefers-color-scheme: dark)").matches;
+          document.documentElement.classList.toggle("dark", nextIsDark);
+          document.documentElement.style.colorScheme = nextIsDark ? "dark" : "light";
+        });
       })();
     </html-script>
   </head>

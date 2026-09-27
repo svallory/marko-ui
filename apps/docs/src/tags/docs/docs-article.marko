@@ -3,6 +3,8 @@
 // shadcn's docs page (breadcrumb → h1 → description → article → pager → toc).
 import { DOCS_NAV_FLAT } from "./docs-nav.ts";
 import type { DocsTocEntry } from "./docs-toc.marko";
+import { buttonVariants } from "@marko-ui/shadcn/ui/button/variants.ts";
+import { cn } from "@marko-ui/shadcn/lib/utils.ts";
 
 export interface Input {
   title: string;
@@ -41,7 +43,7 @@ export interface Input {
           <if=previousPage>
             <a
               href=previousPage.href
-              class="inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+              class=buttonVariants({ variant: "outline", size: "sm" })
             >
               ← ${previousPage.label}
             </a>
@@ -49,7 +51,7 @@ export interface Input {
           <if=nextPage>
             <a
               href=nextPage.href
-              class="ml-auto inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+              class=cn(buttonVariants({ variant: "outline", size: "sm" }), "ml-auto")
             >
               ${nextPage.label} →
             </a>

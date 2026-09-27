@@ -277,9 +277,9 @@ for reference tables.
 - `packages/shadcn/package.json` `exports` lists `./ui/*`, `./lib/*`, `./styles/*`, `./blocks/*` pointing directly at the real authored files — no generated indirection.
 - Compound components use attr-tags with a **single tag name + `type` discriminant** when order matters — cross-name attr-tag order is unrecoverable in Marko. `items=` arrays remain as sugar. Docs: `/docs/creating-components` §5 and `notes/component-authoring.md`.
 
-## Docs-app CSS (two-layer split)
+## Docs-app CSS (imports the shipped theme, 2026-09-26)
 
-`apps/docs/src/app.css` is a faithful port of shadcn's site `globals.css` (site tokens, multiplicative radius scale); `packages/shadcn/styles/globals.css` is the separate **consumer** theme that `shadcn add` users get. The docs app does not import the consumer theme. Tailwind `@source` must include `packages/shadcn` so the site's own Tailwind build compiles the imported source style layers — utilities used only in style variants silently drop from the build otherwise. Full details and traps: `notes/css-architecture.md`.
+`apps/docs/src/app.css` imports `@marko-ui/shadcn/styles/globals.css` directly — the same package export a real consumer uses per `/docs/installation` — instead of hand-copying shadcn's site tokens into a separately-drifting file (the prior "two-layer split" design; retired because docs and a real user's app could render differently whenever the copy drifted, which it repeatedly did — see `scratch/team-lead/reports/audit-docs-consumption.md`). Everything else in `app.css`/`site-tokens.css` is strictly additive site chrome and must never redefine a token, `@custom-variant`, or restyle an `mu-*`/`data-slot` class the shipped theme already owns. The shipped theme's radius scale is multiplicative (matching upstream's current CLI, not the additive scale an earlier version of this note described). Tailwind `@source` must include `packages/shadcn` so the site's own Tailwind build compiles the imported source style layers — utilities used only in style variants silently drop from the build otherwise. Full details and traps: `notes/css-architecture.md`.
 
 ## The docs site's own canonical URL
 

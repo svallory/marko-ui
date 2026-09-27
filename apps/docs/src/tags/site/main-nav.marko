@@ -1,3 +1,6 @@
+import { buttonVariants } from "@marko-ui/shadcn/ui/button/variants.ts";
+import { cn } from "@marko-ui/shadcn/lib/utils.ts";
+
 export interface Input {
   class?: string;
 }
@@ -17,7 +20,10 @@ static const NAV_ITEMS = [
       href=item.href
       data-site-nav-link
       data-href=item.href
-      class="inline-flex h-8 items-center rounded-md px-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground data-active:text-foreground"
+      class=cn(
+        buttonVariants({ variant: "ghost", size: "sm" }),
+        "text-muted-foreground data-active:text-foreground",
+      )
     >
       ${item.label}
     </a>
