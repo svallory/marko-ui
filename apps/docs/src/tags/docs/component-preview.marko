@@ -33,10 +33,13 @@ export interface Input {
   /**
    * Extra class(es) on the stage div (data-slot="preview"), not the outer
    * bordered box. Mirrors upstream's per-demo `previewClassName` prop
-   * (content/docs/components/base/*.mdx) — e.g. "theme-blue" for the six
-   * components upstream scopes to that preset (chart, bubble, marker,
-   * message, attachment, message-scroller). See component-page.marko's
-   * THEME_BLUE_COMPONENTS for which components use this.
+   * (content/docs/components/base/*.mdx) — e.g. "theme-blue" for 5 of the 6
+   * components upstream scopes to that preset (bubble, marker, message,
+   * attachment, message-scroller: every demo). The 6th, chart, applies
+   * theme-blue to its hero demo only, via `class` on the OUTER box instead
+   * (see component-page.marko's CHART_HERO_CLASS/CHART_HERO_DEMO_ID) — not
+   * this prop, since upstream's own chart.mdx:17 puts the class there, not
+   * on previewClassName.
    */
   previewClass?: string;
 }

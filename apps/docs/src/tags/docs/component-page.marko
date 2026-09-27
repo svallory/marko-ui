@@ -30,18 +30,37 @@ import { buttonVariants } from "@marko-ui/shadcn/ui/button/variants.ts";
 import { cn } from "@marko-ui/shadcn/lib/utils.ts";
 
 // Components whose docs demos upstream scopes to the "theme-blue" preset via
-// previewClassName, per-demo, across every example on the page — not just
-// the hero. Verified: `grep -l theme-blue content/docs/components/base/*.mdx`
-// in data/shadcn-ui/apps/v4 returns exactly these 6 (chart.mdx, bubble.mdx,
-// marker.mdx, message.mdx, attachment.mdx, message-scroller.mdx).
+// previewClassName, on EVERY demo on the page. Verified per-demo, not just
+// per-page (Round 5 correction — Round 4's version checked file presence
+// only): counted <ComponentPreview>/theme-blue occurrences 1:1 in all 5 of
+// these mdx files (9/9 bubble, 8/8 marker, 6/6 message, 6/6 attachment,
+// 11/11 message-scroller). chart.mdx is NOT in this set — see below, it
+// applies theme-blue to exactly one of its many demos, not all of them.
 static const THEME_BLUE_COMPONENTS = new Set([
-  "chart",
   "bubble",
   "marker",
   "message",
   "attachment",
   "message-scroller",
 ]);
+
+// chart.mdx applies theme-blue to ONLY its hero preview (chart.mdx:14-18,
+// name="chart-demo"), together with layout overrides that make the
+// (otherwise fixed-height) preview stage grow to fit the full chart. Every
+// other chart demo on the page (chart.mdx:181-186, 213-217, 252-256,
+// 294-298, 337-341, 597-602 — 6 more <ComponentPreview>s, verified none of
+// them carry theme-blue) gets plain previewClassName="h-80"/"h-92" and no
+// theme override, i.e. the shipped theme's own grey chart-1..5 default.
+// Verified exhaustively: chart.mdx has exactly 7 <ComponentPreview>s total
+// and exactly 1 "theme-blue" occurrence.
+static const CHART_HERO_DEMO_ID = "chart/chart-demo";
+// Upstream's className on the hero (chart.mdx:17), targeting `.preview` and
+// its child div — mapped to our markup's data-slot="preview" stage
+// (component-preview.marko has no `.preview` class, only the data-slot
+// attribute, so the descendant selectors are rewritten to match it 1:1;
+// semantically identical selectors, same specificity shape).
+static const CHART_HERO_CLASS =
+  "theme-blue [&_[data-slot=preview]]:h-auto [&_[data-slot=preview]]:p-0 [&_[data-slot=preview]]:lg:min-h-[404px] [&_[data-slot=preview]>div]:w-full [&_[data-slot=preview]>div]:border-none [&_[data-slot=preview]>div]:shadow-none";
 
 export interface Input {
   /** Component name from the URL, e.g. "button". */
@@ -59,7 +78,17 @@ export interface Input {
 }
 
 <const/page=getComponentPageData(input.name)/>
-<const/previewClass=(THEME_BLUE_COMPONENTS.has(input.name) ? "theme-blue" : undefined)/>
+// Per-demo, not per-page (Round 5 correction) — chart is the one component
+// where theme-blue applies to a single demo, not every demo on the page.
+// The 5 always-blue components apply it on the stage div (previewClass, no
+// layout override needed); chart's one hero demo applies it on the OUTER
+// box instead (outerClassFor/CHART_HERO_CLASS), matching upstream's own
+// className placement — theme-blue's CSS custom properties inherit down to
+// the stage regardless of which element it's declared on.
+<const/previewClassFor=(demoId: string) =>
+  THEME_BLUE_COMPONENTS.has(input.name) ? "theme-blue" : undefined/>
+<const/outerClassFor=(demoId: string) =>
+  demoId === CHART_HERO_DEMO_ID ? CHART_HERO_CLASS : undefined/>
 
 <if=!page>
   <main class="mx-auto max-w-3xl px-4 py-24 text-center">
@@ -163,7 +192,8 @@ export interface Input {
                     demo=input.demo
                     demoId=page.examples[0].demoId
                     source=page.examples[0].source
-                    previewClass=previewClass
+                    previewClass=previewClassFor(page.examples[0].demoId)
+                    class=outerClassFor(page.examples[0].demoId)
                   />
                 </div>
               </section>
@@ -246,7 +276,7 @@ export interface Input {
                     <if=example.description>
                       <p class="mt-2 text-sm leading-7 text-muted-foreground">${example.description}</p>
                     </if>
-                    <component-preview demo=input.demo demoId=example.demoId source=example.source previewClass=previewClass/>
+                    <component-preview demo=input.demo demoId=example.demoId source=example.source previewClass=previewClassFor(example.demoId) class=outerClassFor(example.demoId)/>
                   </div>
                   </if>
                 </for>
