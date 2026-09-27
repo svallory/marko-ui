@@ -388,8 +388,9 @@
   }
 
   /* MARK: Command */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/command.tsx) */
   .mu-command {
-    @apply bg-popover text-popover-foreground rounded-xl! p-1;
+    @apply bg-popover text-popover-foreground rounded-md;
   }
 
   .mu-command-dialog {

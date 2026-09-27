@@ -82,6 +82,9 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   { from: "left-[50%]", to: "left-1/2" },
   { from: "translate-x-[-50%]", to: "-translate-x-1/2" },
   { from: "translate-y-[-50%]", to: "-translate-y-1/2" },
+  // batch A: cmdk's data-[disabled=true]/data-[selected=true] boolean-valued attributes are our
+  // components' plain data-disabled/data-highlighted (same class as the other Radix->Zag mappings above).
+  { from: "data-[disabled=true]:", to: "data-disabled:" },
   // batch A: resizable.tsx uses react-resizable-panels, which sets an ARIA orientation attribute;
   // our resizable.marko is Zag-based (splitter machine) and emits data-orientation instead (verified
   // in packages/shadcn/ui/resizable/resizable.marko via api().getRootProps()) — same meaning, different
@@ -294,6 +297,75 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     extra: ["outline-none"],
     reason:
       "group/alert-dialog-content is a tool limitation (same class as toggle-group:toggle-group above): classes.ts genuinely carries it verbatim (packages/shadcn/ui/alert-dialog/classes.ts content slot), matching upstream's own group/alert-dialog-content exactly. outline-none is a pre-existing structural addition (in classes.ts before this port) with no upstream equivalent — new-york-v4's AlertDialogContent className has no outline rule at all.",
+  },
+  "command:command": {
+    missing: ["h-full", "w-full"],
+    extra: ["size-full"],
+    reason: "same-meaning Tailwind shorthand: size-full == h-full w-full, just written as the combined utility.",
+  },
+  "command:command-input-wrapper": {
+    missing: [
+      "flex",
+      "h-10",
+      "w-full",
+      "rounded-md",
+      "bg-transparent",
+      "py-3",
+      "text-sm",
+      "outline-hidden",
+      "placeholder:text-muted-foreground",
+      "disabled:cursor-not-allowed",
+      "disabled:opacity-50",
+    ],
+    extra: ["p-1", "pb-0"],
+    reason:
+      "tool limitation, not a real gap (same class as table:table-container/hover-card:hover-card-portal above): upstream's CommandInput() function has TWO class-bearing elements (a wrapper div data-slot=\"command-input-wrapper\" with a plain string className, and the actual CommandPrimitive.Input data-slot=\"command-input\" with the cn()-merged classes) — extractParts()'s regex only matches a literal className={cn(...)} call, so it skips the wrapper's plain string and attributes the Input element's classes to the wrapper's slot name. Our architecture splits these correctly: mu-command-input-wrapper (p-1 pb-0, ours) and mu-command-input (packages/shadcn/ui/command/classes.ts, already carries outline-hidden disabled:cursor-not-allowed disabled:opacity-50 structurally) are separate slots, verified against upstream's real wrapper/input split.",
+  },
+  "command:command-list": {
+    missing: ["max-h-[300px]"],
+    extra: ["no-scrollbar", "max-h-72", "outline-none"],
+    reason:
+      "pre-existing structural/style choices predating this port: our list caps at max-h-72 (18rem) with a custom no-scrollbar utility instead of upstream's max-h-[300px] with cmdk's own default scrollbar, and outline-none is a structural addition with no upstream equivalent (new-york-v4's CommandList className has no outline rule) — a deliberate divergence from a prior port round, out of scope to re-litigate in a style-only pass.",
+  },
+  "command:command-group": {
+    missing: [
+      "[&_[cmdk-group-heading]]:px-2",
+      "[&_[cmdk-group-heading]]:py-1.5",
+      "[&_[cmdk-group-heading]]:text-xs",
+      "[&_[cmdk-group-heading]]:font-medium",
+      "[&_[cmdk-group-heading]]:text-muted-foreground",
+    ],
+    extra: [
+      "**:[[cmdk-group-heading]]:text-muted-foreground",
+      "**:[[cmdk-group-heading]]:px-2",
+      "**:[[cmdk-group-heading]]:py-1.5",
+      "**:[[cmdk-group-heading]]:text-xs",
+      "**:[[cmdk-group-heading]]:font-medium",
+    ],
+    reason:
+      "same-meaning selector, different combinator: our component uses Tailwind v4's **: (all-descendants) arbitrary variant instead of upstream's [&_...] descendant-combinator arbitrary selector — both target the exact same [cmdk-group-heading] descendant, verified against packages/shadcn/ui/command's own markup (still built on the cmdk library's own DOM attribute, not a Zag-specific renaming), a pre-existing selector-style choice predating this port.",
+  },
+  "command:command-separator": {
+    extra: ["w-auto"],
+    reason: "pre-existing structural addition (in classes.ts before this port) with no upstream equivalent — new-york-v4's CommandSeparator has no width rule (relies on -mx-1's negative margin alone).",
+  },
+  "command:command-item": {
+    missing: ["data-[selected=true]:bg-accent", "data-[selected=true]:text-accent-foreground", "[&_svg:not([class*='text-'])]:text-muted-foreground"],
+    extra: [
+      "data-[highlighted]:bg-accent",
+      "data-[highlighted]:text-accent-foreground",
+      "data-selected:bg-muted",
+      "data-selected:text-foreground",
+      "data-selected:**:[svg]:text-foreground",
+      "in-data-[slot=dialog-content]:rounded-lg!",
+    ],
+    reason:
+      "real architectural split, not a style choice: cmdk has one boolean state (data-[selected=true], keyboard/pointer highlight) that upstream styles with the accent color; our Zag-based combobox distinguishes keyboard highlight (data-[highlighted], styled the same accent way — ported above under data-disabled's equivalence family) from an actually-chosen value (data-selected, styled differently as a persistent muted background) — cmdk's command palette has no concept of a persisted selected value at all, it is a one-shot action list. in-data-[slot=dialog-content]:rounded-lg! is ours-only responsive corner-rounding when nested in a dialog, no upstream equivalent.",
+  },
+  "command:command-shortcut": {
+    extra: ["group-data-selected/command-item:text-foreground"],
+    reason:
+      "ours-only: a group-based highlight so the shortcut text picks up the parent item's selected-state color — upstream's CommandShortcut is a plain span with a fixed text-muted-foreground, no group-based color rule.",
   },
   "alert-dialog:alert-dialog-description": {
     extra: [
