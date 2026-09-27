@@ -174,6 +174,30 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     reason:
       "our own object-fit/radius on the image element; upstream relies solely on the avatar root's overflow-hidden+rounded-full to clip — pre-existing across every base style.",
   },
+  "carousel:carousel": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason:
+      "tool limitation, not a real gap: carousel/carousel-content/carousel-item's classes.ts literals ('relative', 'overflow-hidden outline-none...', 'min-w-0 shrink-0 grow-0 basis-full') have no mu-* hook prefix at all, so readStructuralTokens finds nothing and there's no style-new-york.css rule to read either (none needed — every upstream token for these 3 slots is already covered by the existing structural literal verbatim).",
+  },
+  "carousel:carousel-content": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same as carousel:carousel — no mu-* hook prefix on this slot's literal, tool-invisible, nothing to add.",
+  },
+  "carousel:carousel-item": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same as carousel:carousel — no mu-* hook prefix on this slot's literal, tool-invisible, nothing to add.",
+  },
+  "carousel:carousel-previous": {
+    missing: ["size-8", "horizontal", "-left-12", "-top-12", "left-1/2", "-translate-x-1/2", "rotate-90"],
+    extra: ["left-2", "touch-manipulation"],
+    reason:
+      "our carousel has no vertical-orientation support at all (grep confirms no orientation/horizontal/vertical logic anywhere in carousel.marko) — a pre-existing feature gap, out of scope for a style-only port, so upstream's horizontal:/vertical-only positioning tokens don't apply. size-8 is inherited automatically from Button's already-ported size=\"icon-sm\" variant (mu-button-size-icon-sm resolves to size-8, matching upstream exactly) rather than set directly here. left-2/touch-manipulation are our own pre-existing positioning/touch-handling choices.",
+  },
+  "carousel:carousel-next": {
+    missing: ["size-8", "horizontal", "-right-12", "-bottom-12", "left-1/2", "-translate-x-1/2", "rotate-90"],
+    extra: ["right-2", "touch-manipulation"],
+    reason: "same as carousel:carousel-previous.",
+  },
   "pagination:pagination-link": {
     missing: ["outline", "ghost"],
     reason:
@@ -526,7 +550,18 @@ function runCheck(component: string): boolean {
     const style = readStyleTokens(muClass)
 
     if (style === undefined && structural.size === 0) {
-      results.push({ part: part.slot, muClass, ok: false, missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"], extra: [], allowlistedMissing: [], allowlistedExtra: [] })
+      // Some slots have no mu-* hook prefix at all on their classes.ts literal (e.g. carousel's
+      // root/content/item), so neither structural nor style tokens are ever visible to this
+      // tool — a documented tool limitation, not necessarily a real gap. Still allow a
+      // DIVERGENCES entry to explain and allowlist this case, same as any other mismatch,
+      // instead of always hard-failing before the allowlist is even consulted.
+      const noEntryToken = "(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"
+      const divergence = DIVERGENCES[`${component}:${part.slot}`]
+      if (divergence?.missing?.includes(noEntryToken)) {
+        results.push({ part: part.slot, muClass, ok: true, missing: [], extra: [], allowlistedMissing: [noEntryToken], allowlistedExtra: [] })
+      } else {
+        results.push({ part: part.slot, muClass, ok: false, missing: [noEntryToken], extra: [], allowlistedMissing: [], allowlistedExtra: [] })
+      }
       continue
     }
 

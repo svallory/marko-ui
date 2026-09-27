@@ -300,6 +300,7 @@
   }
 
   /* MARK: Carousel */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/carousel.tsx) */
   .mu-carousel-previous {
     @apply rounded-full;
   }
