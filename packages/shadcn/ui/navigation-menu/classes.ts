@@ -12,7 +12,7 @@ export const navigationMenu = {
   indicator: "mu-navigation-menu-indicator top-full z-1 flex h-1.5 items-end justify-center overflow-hidden [width:var(--trigger-width)] [translate:var(--trigger-x)_0]",
   indicatorArrow: "mu-navigation-menu-indicator-arrow relative top-[60%] size-2 rotate-45",
   viewportPositioner: "mu-navigation-menu-viewport-wrapper absolute top-full left-0 isolate z-50 flex justify-center",
-  viewport: "mu-navigation-menu-viewport origin-top-center relative mt-1.5 h-[var(--viewport-height)] w-[var(--viewport-width)] overflow-hidden",
+  viewport: "mu-navigation-menu-viewport origin-top relative mt-1.5 h-[var(--viewport-height)] w-[var(--viewport-width)] overflow-hidden",
   content: "mu-navigation-menu-content top-0 left-0 w-full **:data-[slot=navigation-menu-link]:focus:ring-0 **:data-[slot=navigation-menu-link]:focus:outline-none md:absolute md:w-auto",
   linksGrid: "grid gap-2",
   linksGridFeatured: "w-[500px] grid-cols-[.75fr_1fr]",
