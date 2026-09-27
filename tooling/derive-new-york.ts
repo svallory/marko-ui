@@ -186,6 +186,31 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     reason:
       "tool limitation, not a real gap: new-york-v4's Table() function renders TWO nested elements each with their own data-slot (an outer div data-slot=\"table-container\" with fixed classes relative w-full overflow-x-auto, and an inner table data-slot=\"table\" carrying the cn()-merged w-full caption-bottom text-sm) — extractParts()'s function-body regex only captures the FIRST data-slot match per function, so it reports the table-container slot name paired with the inner table's cn() classes. Verified our own components split correctly: mu-table-container is relative w-full overflow-x-auto and mu-table is w-full caption-bottom text-sm, an exact match for upstream's two elements respectively.",
   },
+  "tooltip:tooltip-content": {
+    extra: [
+      "max-w-xs",
+      "data-open:animate-in",
+      "data-open:fade-in-0",
+      "data-open:zoom-in-95",
+      "data-[state=delayed-open]:animate-in",
+      "data-[state=delayed-open]:fade-in-0",
+      "data-[state=delayed-open]:zoom-in-95",
+      "inline-flex",
+      "items-center",
+      "gap-1.5",
+      "has-data-[slot=kbd]:pr-1.5",
+      "**:data-[slot=kbd]:relative",
+      "**:data-[slot=kbd]:isolate",
+      "**:data-[slot=kbd]:z-50",
+      "**:data-[slot=kbd]:rounded-sm",
+    ],
+    reason:
+      "our tooltip is a Zag-based extended version with no upstream equivalent for these behaviors: max-w-xs (wrapping long content, upstream's tooltip has no max-width at all — w-fit only), kbd-slot layout (has-data-[slot=kbd]/**:data-[slot=kbd]:* — upstream's tooltip renders only {children}, no keyboard-shortcut convention), and a delayed-open animation state (data-[state=delayed-open]:* — Zag's tooltip machine models an intermediate delayed-open state that Radix's simpler open/closed tooltip has no equivalent for, so the plain data-open:* forms are additive alongside the bare animate-in/fade-in-0/zoom-in-95 ported above, not a replacement for them).",
+  },
+  "hover-card:hover-card-portal": {
+    reason:
+      "tool limitation: HoverCardContent() renders TWO nested elements each with their own data-slot (HoverCardPrimitive.Portal data-slot=\"hover-card-portal\" wrapping HoverCardPrimitive.Content data-slot=\"hover-card-content\", which carries the actual cn()-merged classes) — extractParts()'s function-body regex only captures the FIRST data-slot per function, same class of bug as table:table-container above. Our real slot is mu-hover-card-content (packages/shadcn/ui/hover-card/classes.ts), verified and ported by hand in style-new-york.css; hover-card-portal has no rendered element of its own to style.",
+  },
 }
 
 interface Part {
@@ -441,6 +466,18 @@ function runCheck(component: string): boolean {
     const style = readStyleTokens(muClass)
 
     if (style === undefined && structural.size === 0) {
+      // batch A: a component whose function renders 2+ elements each with their own data-slot (e.g.
+      // a Portal wrapper) hits this path for the wrapper's slot, since extractParts() attributes the
+      // whole function's classes to only the FIRST data-slot it finds (see the table:table-container
+      // and hover-card:hover-card-portal DIVERGENCES entries for real examples) — a real, reachable
+      // mu-* class never exists for a slot with no rendered classes of its own. A DIVERGENCES entry
+      // with no missing/extra (reason only) marks that slot as intentionally-unmatched instead of a
+      // permanent, unfixable FAIL.
+      const wholePartDivergence = DIVERGENCES[`${component}:${part.slot}`]
+      if (wholePartDivergence && !wholePartDivergence.missing && !wholePartDivergence.extra) {
+        results.push({ part: part.slot, muClass, ok: true, missing: [], extra: [], allowlistedMissing: [`(no rendered classes for this slot — ${wholePartDivergence.reason})`], allowlistedExtra: [] })
+        continue
+      }
       results.push({ part: part.slot, muClass, ok: false, missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"], extra: [], allowlistedMissing: [], allowlistedExtra: [] })
       continue
     }
