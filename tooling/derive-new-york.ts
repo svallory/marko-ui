@@ -73,6 +73,23 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   // the bare prefix form above).
   { from: "dark:data-[state=checked]:", to: "dark:data-checked:" },
   { from: "dark:data-[state=unchecked]:", to: "dark:data-unchecked:" },
+  // Radix's data-[state=active] on a tab trigger -> our Zag equivalent. tabs/classes.ts's
+  // structural string spells this two different ways depending on the specific rule (verified by
+  // reading it directly): the attribute-presence form `data-[selected]:` for the plain
+  // bg-background/text-foreground/border-input set, and the custom variant `data-active:` for the
+  // group-scoped shadow rules in style-new-york.css. Both match the same real DOM condition; two
+  // entries since normalizeToken can't try multiple candidates per token.
+  { from: "data-[state=active]:", to: "data-[selected]:" },
+  { from: "dark:data-[state=active]:", to: "dark:data-[selected]:" },
+  { from: "group-data-[variant=default]/tabs-list:data-[state=active]:shadow-sm", to: "group-data-[variant=default]/tabs-list:data-active:shadow-sm" },
+  { from: "group-data-[variant=line]/tabs-list:data-[state=active]:shadow-none", to: "group-data-[variant=line]/tabs-list:data-active:shadow-none" },
+  { from: "group-data-[variant=line]/tabs-list:data-[state=active]:", to: "group-data-[variant=line]/tabs-list:data-[selected]:" },
+  { from: "dark:group-data-[variant=line]/tabs-list:data-[state=active]:", to: "dark:group-data-[variant=line]/tabs-list:data-[selected]:" },
+  // Radix's data-[orientation=*] compounded onto a `group-*/tabs:` selector (our custom
+  // group-data-horizontal//vertical variants, not the bare data-horizontal:/data-vertical: pair
+  // above — Tailwind variant composition means the compound needs its own equivalence entry).
+  { from: "group-data-[orientation=horizontal]/tabs:", to: "group-data-horizontal/tabs:" },
+  { from: "group-data-[orientation=vertical]/tabs:", to: "group-data-vertical/tabs:" },
   // Radix boolean-attribute selectors -> our components' equivalent plain data attributes.
   { from: "data-[disabled]:", to: "data-disabled:" },
   { from: "data-[inset]:", to: "data-inset:" },
@@ -174,6 +191,20 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
   "native-select:native-select-optgroup": {
     missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
     reason: "same as native-select:native-select-option.",
+  },
+  "tabs:tabs": {
+    missing: ["group/tabs"],
+    reason:
+      "TOOL LIMITATION (same class as switch:switch's group/switch entry): isStructuralOnlyToken() strips every `group/*` token from OUR side unconditionally, but new-york-v4's own Tabs root ALSO writes a real `group/tabs` (its TabsList/TabsTrigger read group-data-[orientation=*]/tabs: off it) — our classes.ts (tabs/classes.ts's `root` field) already carries `group/tabs` verbatim.",
+  },
+  "tabs:tabs-list": {
+    missing: ["group/tabs-list"],
+    reason: "same tool limitation as tabs:tabs's group/tabs entry, for group/tabs-list (tabs/classes.ts's `list.base` field already carries it verbatim).",
+  },
+  "tabs:tabs-trigger": {
+    extra: ["has-data-[icon=inline-end]:pr-1.5", "has-data-[icon=inline-start]:pl-1.5"],
+    reason:
+      "our own addition with no new-york-v4 equivalent: new-york-v4's TabsTrigger has no icon-affordance padding concept at all (its gap-1.5 alone separates icon and label; padding never adjusts based on which side an icon sits). This repo's tabs.marko passes an `icon` slot marker (data-icon=inline-start/inline-end) that other components (toggle-group, button-group) also use for the same purpose — pre-existing, not introduced by this port.",
   },
   "switch:switch": {
     missing: ["group/switch", "disabled:cursor-not-allowed", "disabled:opacity-50"],

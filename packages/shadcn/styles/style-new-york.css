@@ -1371,6 +1371,7 @@
   }
 
   /* MARK: Tabs */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/tabs.tsx) */
   .mu-tabs {
     @apply gap-2;
   }
@@ -1387,9 +1388,8 @@
     @apply group-data-[variant=default]/tabs-list:data-selected:shadow-sm group-data-[variant=line]/tabs-list:data-selected:shadow-none;
   }
 
-  .mu-tabs-content {
-    @apply text-sm;
-  }
+  /* mu-tabs-content: new-york-v4 sets no classes beyond flex-1 outline-none, already structural
+     (classes.ts) — nothing to port. */
 
   /* MARK: Textarea */
   .mu-textarea {
