@@ -76,6 +76,8 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   // upstream's [&>[data-slot=x]]: / [&>*]:data-[slot=x]: direct-child arbitrary selectors -> Tailwind v4's *:data-[slot=x]: shorthand for the same direct-child selector.
   { from: "[&>[data-slot=field-group]]:", to: "*:data-[slot=field-group]:" },
   { from: "[&>*]:data-[slot=field]:", to: "*:data-[slot=field]:" },
+  // upstream's group-has-[[data-slot=x]]/y: arbitrary-selector pattern -> Tailwind v4's group-has-data-[slot=x]/y: shorthand for the same has() selector.
+  { from: "group-has-[[data-slot=item-description]]/item:", to: "group-has-data-[slot=item-description]/item:" },
   // upstream's native disabled: pseudo-class -> our Zag components' data-disabled attribute
   // (many of our controls render a non-form element, e.g. checkbox's <span> control, so the
   // machine emits a data-disabled attribute rather than relying on a native disabled attribute).
@@ -236,6 +238,41 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     ],
     reason:
       "TWO distinct sources of divergence collide on this one key because upstream literally reuses data-slot=\"field-label\" for BOTH its FieldLabel and FieldTitle functions (verified in the raw .tsx — not a tool bug), so both parts hash to the same mu-field-label lookup even though our own component gives FieldTitle its own separate mu-field-title class with different CSS. (1) FieldLabel's own real gaps: has-[>[data-slot=field]]:w-full/flex-col live in classes.ts's nested literal, invisible to the tool (same class of gap as avatar-badge); border-primary/30 + a dark /20 variant is our own softer-emphasis choice vs. upstream's plain border-primary, pre-existing across every base style. (2) FieldTitle's expected tokens (items-center/text-sm/font-medium) are compared against mu-field-label's CSS instead of mu-field-title's (which already carries them correctly, verified separately) purely because of the shared-slot-name collision above — not a real gap in either class.",
+  },
+  "item:item": {
+    missing: ["border-transparent"],
+    extra: ["w-full"],
+    reason:
+      "border-transparent is unconditional on upstream's base itemVariants string but organized per-variant in ours (item:variant:default/muted both apply it, item:variant:outline applies border-border instead) — same net visual result, an organizational difference not a real gap. w-full is structural (classes.ts base literal), pre-existing across every base style.",
+  },
+  "item:item:variant:default": {
+    missing: ["bg-transparent"],
+    extra: ["border-transparent"],
+    reason: "same organizational difference as item:item — border-transparent lives here instead of on the base rule; bg-transparent is genuinely present via classes.ts's own base structural string (not missing in practice, only from this slot's own CSS rule).",
+  },
+  "item:item:variant:muted": {
+    extra: ["border-transparent"],
+    reason: "same organizational difference as item:item.",
+  },
+  "item:item-media:variant:image": {
+    extra: ["group-data-[size=sm]/item:size-8", "group-data-[size=xs]/item:size-6"],
+    reason: "our own responsive media sizing across our extra xs size tier (upstream has no xs size and a fixed size-10 media), pre-existing across every base style.",
+  },
+  "item:item-group": {
+    extra: ["w-full", "gap-4", "has-data-[size=sm]:gap-2.5", "has-data-[size=xs]:gap-2"],
+    reason: "structural (classes.ts base literal) plus our own size-aware gap extras; upstream's ItemGroup carries no classes at all beyond structural. Pre-existing across every base style.",
+  },
+  "item:item-content": {
+    extra: ["group-data-[size=xs]/item:gap-0"],
+    reason: "our own xs-size gap override (upstream has no xs size tier), pre-existing across every base style.",
+  },
+  "item:item-title": {
+    extra: ["line-clamp-1", "underline-offset-4"],
+    reason: "structural (classes.ts base literal, line-clamp-1) plus our own underline-offset-4 extra with no upstream equivalent, pre-existing across every base style.",
+  },
+  "item:item-description": {
+    extra: ["text-left", "group-data-[size=xs]/item:text-xs"],
+    reason: "our own explicit alignment plus xs-size text scaling (upstream has no xs size tier), pre-existing across every base style.",
   },
   "field:field-description": {
     missing: ["last:mt-0", "nth-last-2:-mt-1", "[&>a]:underline", "[&>a]:underline-offset-4", "[&>a:hover]:text-primary"],

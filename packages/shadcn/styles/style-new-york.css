@@ -739,8 +739,9 @@
   }
 
   /* MARK: Item */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/item.tsx) */
   .mu-item {
-    @apply [a]:hover:bg-muted rounded-md border text-sm;
+    @apply [a]:hover:bg-accent/50 rounded-md border text-sm;
   }
 
   .mu-item-variant-default {
@@ -756,11 +757,11 @@
   }
 
   .mu-item-size-default {
-    @apply gap-3.5 px-4 py-3.5;
+    @apply gap-4 p-4;
   }
 
   .mu-item-size-sm {
-    @apply gap-2.5 px-3 py-2.5;
+    @apply gap-2.5 px-4 py-3;
   }
 
   .mu-item-size-xs {
@@ -776,7 +777,7 @@
   }
 
   .mu-item-media-variant-icon {
-    @apply [&_svg:not([class*='size-'])]:size-4;
+    @apply size-8 rounded-sm border bg-muted [&_svg:not([class*='size-'])]:size-4;
   }
 
   .mu-item-media-variant-image {
@@ -792,7 +793,7 @@
   }
 
   .mu-item-description {
-    @apply text-muted-foreground text-left text-sm leading-normal group-data-[size=xs]/item:text-xs;
+    @apply text-muted-foreground text-left text-sm leading-normal text-balance group-data-[size=xs]/item:text-xs;
   }
 
   .mu-item-actions {
@@ -812,7 +813,7 @@
   }
 
   .mu-item-separator {
-    @apply my-2;
+    @apply my-0;
   }
 
   /* MARK: Kbd */
