@@ -30,6 +30,15 @@ export interface Input {
   /** Alignment of the demo inside the stage. shadcn also supports "end". */
   align?: "center" | "start" | "end";
   class?: string;
+  /**
+   * Extra class(es) on the stage div (data-slot="preview"), not the outer
+   * bordered box. Mirrors upstream's per-demo `previewClassName` prop
+   * (content/docs/components/base/*.mdx) — e.g. "theme-blue" for the six
+   * components upstream scopes to that preset (chart, bubble, marker,
+   * message, attachment, message-scroller). See component-page.marko's
+   * THEME_BLUE_COMPONENTS for which components use this.
+   */
+  previewClass?: string;
 }
 
 <const/align=input.align ?? "center"/>
@@ -60,7 +69,7 @@ export interface Input {
     data-slot="preview"
     data-align=align
     tabindex="0"
-    class="flex h-72 w-full justify-center overflow-x-auto p-10 data-[align=center]:items-center data-[align=end]:items-start data-[align=start]:items-start sm:data-[align=end]:items-end"
+    class=`flex h-72 w-full justify-center overflow-x-auto p-10 data-[align=center]:items-center data-[align=end]:items-start data-[align=start]:items-start sm:data-[align=end]:items-end ${input.previewClass ?? ""}`
   >
     <if=input.demo>
       <${input.demo.content}(input.demoId)/>
