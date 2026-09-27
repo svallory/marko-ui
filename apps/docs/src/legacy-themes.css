@@ -510,7 +510,7 @@
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.47 0.238 27.325); /* DIVERGENCE: darkened from shadcn 0.577 to clear 4.5:1 where text-destructive renders on a destructive tint (bubble, attachment); same value and reason as packages/shadcn/styles/globals.css */
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -579,7 +579,7 @@
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.47 0.238 27.325); /* DIVERGENCE: darkened from shadcn 0.577 to clear 4.5:1 where text-destructive renders on a destructive tint (bubble, attachment); same value and reason as packages/shadcn/styles/globals.css */
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);

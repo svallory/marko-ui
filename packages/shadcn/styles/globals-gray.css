@@ -127,7 +127,7 @@
   --muted-foreground: oklch(0.551 0.027 264.364);
   --accent: oklch(0.967 0.003 264.542);
   --accent-foreground: oklch(0.21 0.034 264.665);
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.47 0.238 27.325); /* DIVERGENCE: darkened from shadcn 0.577 to clear 4.5:1 where text-destructive renders on a destructive tint (bubble, attachment); same value and reason as globals.css */
   --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.928 0.006 264.531);
   --input: oklch(0.928 0.006 264.531);
