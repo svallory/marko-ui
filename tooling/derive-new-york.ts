@@ -71,6 +71,10 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   { from: "data-[inset]:", to: "data-inset:" },
   // Arbitrary-value spacing that equals a token already in Tailwind's default scale (8rem = 32 * 0.25rem).
   { from: "min-w-[8rem]", to: "min-w-32" },
+  // batch A: same-meaning Tailwind utility rename — our classes.ts (Tailwind v4) writes wrap-break-word,
+  // upstream new-york-v4's breadcrumb.tsx still writes the legacy break-words alias; both compile to
+  // overflow-wrap: break-word.
+  { from: "break-words", to: "wrap-break-word" },
 ]
 
 /**
@@ -112,6 +116,37 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
   "dropdown-menu:dropdown-menu-sub-content": {
     missing: ["origin-(--radix-dropdown-menu-content-transform-origin)"],
     reason: "same as dropdown-menu-content: positioning var lives in classes.ts, not the style layer.",
+  },
+  // batch A
+  "toggle-group:toggle-group": {
+    missing: ["data-[spacing=default]:data-[variant=outline]:shadow-xs", "group/toggle-group"],
+    extra: [
+      "flex-row",
+      "data-vertical:flex-col",
+      "data-vertical:items-stretch",
+      "data-[spacing=0]:data-[variant=outline]:shadow-xs",
+    ],
+    reason:
+      "1) upstream's own data-spacing attribute is always a plain number (default 0), so the literal string selector data-[spacing=default] can never match anything real — verified against new-york-v4's and our own toggle-group.tsx, both coerce a numeric spacing prop into data-spacing. Our data-[spacing=0]:data-[variant=outline]:shadow-xs selector on the same rule is the reachable equivalent already covering the intended (no-gap) state. 2) group/toggle-group is a tool limitation, not a real gap: isStructuralOnlyToken() excludes any group/* token from our side entirely (designed for hook classes with no upstream concept), but here classes.ts genuinely carries group/toggle-group verbatim — verified present in packages/shadcn/ui/toggle-group/classes.ts. 3) flex-row/data-vertical:flex-col/data-vertical:items-stretch are ours-only: new-york-v4 has no vertical-orientation support at all (see the toggle-group-item entry below), our component is Zag-driven and supports both orientations (ported from bases/base's orientation-aware ToggleGroup) — out of scope for a style-only port.",
+  },
+  "toggle-group:toggle-group-item": {
+    missing: [
+      "data-[spacing=0]:first:rounded-l-md",
+      "data-[spacing=0]:last:rounded-r-md",
+      "data-[spacing=0]:data-[variant=outline]:first:border-l",
+    ],
+    extra: [
+      "group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-l-md",
+      "group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-t-md",
+      "group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-r-md",
+      "group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-b-md",
+      "group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-l",
+      "group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t",
+      "group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-l-0",
+      "group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0",
+    ],
+    reason:
+      "new-york-v4's toggle-group has no vertical-orientation support at all (verified: no data-vertical/aria-orientation handling anywhere in its source), so its first:rounded-l-md/last:rounded-r-md/first:border-l/border-l-0 selectors are unconditional (horizontal-only, no group-data qualifier). Our component is Zag-driven and supports both orientations (ported from bases/base's orientation-aware ToggleGroup, whose classes.ts already carried this same group-data-horizontal/vertical split verbatim before this port), so it needs the qualifier to also cover the vertical case new-york-v4 doesn't have — out of scope for a style-only port.",
   },
 }
 

@@ -147,6 +147,7 @@
   }
 
   /* MARK: Breadcrumb */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/breadcrumb.tsx) */
   .mu-breadcrumb-list {
     @apply text-muted-foreground gap-1.5 text-sm sm:gap-2.5;
   }
@@ -168,7 +169,7 @@
   }
 
   .mu-breadcrumb-ellipsis {
-    @apply size-5 [&>svg]:size-4;
+    @apply size-9;
   }
 
   /* MARK: Button */
@@ -819,6 +820,7 @@
   }
 
   /* MARK: Label */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/label.tsx) */
   .mu-label {
     @apply gap-2 text-sm leading-none font-medium group-data-[disabled=true]:opacity-50 peer-disabled:opacity-50;
   }
@@ -1258,8 +1260,9 @@
   }
 
   /* MARK: Skeleton */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/skeleton.tsx) */
   .mu-skeleton {
-    @apply bg-muted rounded-md;
+    @apply bg-accent rounded-md;
   }
 
   /* MARK: Slider */
@@ -1406,12 +1409,13 @@
   }
 
   /* MARK: Toggle Group */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/toggle-group.tsx) */
   .mu-toggle-group {
     @apply rounded-md data-[spacing=0]:data-[variant=outline]:shadow-xs;
   }
 
   .mu-toggle-group-item {
-    @apply data-[state=on]:bg-muted group-data-[spacing=0]/toggle-group:rounded-none group-data-[spacing=0]/toggle-group:px-2 group-data-[spacing=0]/toggle-group:shadow-none group-data-[spacing=0]/toggle-group:has-data-[icon=inline-end]:pr-1.5 group-data-[spacing=0]/toggle-group:has-data-[icon=inline-start]:pl-1.5 group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-l-md group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-t-md group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-r-md group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-b-md;
+    @apply w-auto min-w-0 px-3 data-[spacing=0]:rounded-none data-[spacing=0]:shadow-none data-[spacing=0]:data-[variant=outline]:border-l-0 group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-l-md group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-t-md group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-r-md group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-b-md group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-l group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t;
   }
 
   /* MARK: Tooltip */
