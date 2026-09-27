@@ -245,6 +245,14 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     reason:
       "two causes, both about token shape, not real visual mismatches. missing: upstream's SheetContent picks per-side layout classes with a JS ternary on the `side` prop (`side === \"right\" && \"inset-y-0 right-0 h-full w-3/4 border-l ...\"`), not a Tailwind data-attribute selector — extractParts() doesn't parse that shape (same tokenizer-artifact class as scroll-area's ScrollBar and sheet's own side==='left'/'top'/'bottom' branches), so the literal words \"right\"/\"left\"/\"top\"/\"bottom\" leak into the target token list, and the real per-side classes (inset-y-0, right-0, h-full, w-3/4, border-l, slide-in/out) appear unprefixed while our rule spells them data-[side=right]:-prefixed (semantically identical, verified by reading the raw source and comparing side-by-side — our data-[side=X]: prefixed forms already carry every one of these values, just not matched token-for-token by the tool). extra: our classes.ts (sheet/classes.ts's content field) bakes each slide animation with a fixed -10 (10%) distance and includes fade-in-0/fade-out-0 companions on every side; new-york-v4's slide-in-from-<side>/slide-out-to-<side> have no explicit distance (Tailwind's animate-in default) and no fade pairing — pre-existing across all 8 styles, not introduced by this port; changing the animation distance is a behavioral/motion change beyond a style-only port.",
   },
+  "attachment:attachment": {
+    missing: ["group/attachment"],
+    reason: "TOOL LIMITATION (same class as switch:switch's group/switch entry): isStructuralOnlyToken() strips every `group/*` token from OUR side unconditionally, but new-york-v4's own attachmentVariants base ALSO writes `group/attachment` — our classes.ts (attachment/classes.ts's `base` field) already carries it verbatim.",
+  },
+  "attachment:attachment-description": {
+    missing: ["max-w-full"],
+    reason: "tool limitation, not a real gap: attachment/description.marko applies `max-w-full` via a SEPARATE classes.ts literal (`description.maxWidth`, no mu-* prefix — the tool's readStructuralTokens() only finds literals starting with the muClass), concatenated alongside `description.root` at the call site (`cn(styles.root, styles.maxWidth, className)`). The value is genuinely present on the rendered element already; verified by reading description.marko directly.",
+  },
   "navigation-menu:navigation-menu": {
     missing: ["group/navigation-menu"],
     reason: "TOOL LIMITATION (same class as switch:switch's group/switch entry): isStructuralOnlyToken() strips every `group/*` token from OUR side unconditionally, but new-york-v4's own NavigationMenu root ALSO writes `group/navigation-menu` — our classes.ts (navigation-menu/classes.ts's `base` field) already carries it verbatim.",

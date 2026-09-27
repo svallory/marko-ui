@@ -1617,6 +1617,8 @@
   }
 
   /* MARK: Attachment */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/attachment.tsx) — no change
+     from vega; new-york-v4's classes already equal vega's rule verbatim. */
   .mu-attachment {
     @apply rounded-xl w-fit focus-within:ring-1 focus-within:ring-ring/50;
   }
