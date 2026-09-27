@@ -204,6 +204,24 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     extra: ["[&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-md!"],
     reason: "same mechanism difference as the horizontal orientation entry above, mirrored for the vertical axis.",
   },
+  "empty:empty": {
+    extra: ["w-full"],
+    reason:
+      "structural, pre-existing: our classes.ts root (`flex w-full min-w-0 flex-1 flex-col items-center justify-center text-center text-balance`) carries `w-full` where neither new-york-v4 nor bases/base's own root string does (both rely on flex-1 alone for width) — a real, harmless base-implementation extra, not a style-layer choice.",
+  },
+  "empty:empty-icon": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason:
+      "naming mismatch, pre-existing: empty/media.marko renders `data-slot=\"empty-icon\"` (matching new-york-v4's own data-slot verbatim), but our classes.ts/style-new-york.css name that part's hook class `mu-empty-media` (see empty/classes.ts's `media` export), not `mu-empty-icon` — muClassName() derives the expected class from the upstream data-slot name, so it looks for a class that doesn't exist. The real port lives on `.mu-empty-media`/`.mu-empty-media-default`/`.mu-empty-media-icon` (see their own MARK: Empty rules) — verify those directly.",
+  },
+  "empty:empty-icon:variant:default": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same naming mismatch as empty:empty-icon; real target is .mu-empty-media-default.",
+  },
+  "empty:empty-icon:variant:icon": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same naming mismatch as empty:empty-icon; real target is .mu-empty-media-icon.",
+  },
   "button-group:button-group-separator": {
     extra: ["data-horizontal:mx-px", "data-horizontal:w-auto", "data-vertical:my-px"],
     reason:

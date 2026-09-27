@@ -620,12 +620,13 @@
   }
 
   /* MARK: Empty */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/empty.tsx) */
   .mu-empty {
-    @apply gap-4 rounded-lg border-dashed p-12;
+    @apply gap-6 rounded-lg border-dashed p-6 md:p-12;
   }
 
   .mu-empty-header {
-    @apply gap-2;
+    @apply gap-2 text-center;
   }
 
   .mu-empty-media {
