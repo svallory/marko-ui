@@ -135,3 +135,59 @@ test.describe("shipped radius formula parity", () => {
     expect(radiusSmPx).toBeCloseTo(radiusPx * 0.6, 1);
   });
 });
+
+test.describe("cross-tab theme sync (next-themes parity)", () => {
+  test("switching theme in one tab updates another open tab", async ({
+    context,
+  }) => {
+    // Two real pages sharing one browser context (same origin, same
+    // localStorage) — the actual shape the storage event requires; it never
+    // fires in the SAME tab/document that called setItem, only in others.
+    const pageA = await context.newPage();
+    const pageB = await context.newPage();
+
+    await pageA.addInitScript(() => {
+      try {
+        localStorage.setItem("theme", "light");
+      } catch {}
+    });
+    await pageB.addInitScript(() => {
+      try {
+        localStorage.setItem("theme", "light");
+      } catch {}
+    });
+
+    await pageA.goto("/");
+    await pageB.goto("/");
+
+    await expect
+      .poll(() => pageA.evaluate(() => document.documentElement.classList.contains("dark")))
+      .toBe(false);
+    await expect
+      .poll(() => pageB.evaluate(() => document.documentElement.classList.contains("dark")))
+      .toBe(false);
+
+    // Flip the theme in tab A only, via the real toggle button (not a
+    // direct localStorage write from the test), so this exercises the
+    // actual click handler's setItem call, not a synthetic shortcut.
+    await pageA.getByRole("button", { name: "Toggle theme" }).click();
+
+    await expect
+      .poll(() => pageA.evaluate(() => document.documentElement.classList.contains("dark")))
+      .toBe(true);
+
+    // Tab B never touched the toggle — its update can only come from the
+    // storage-event listener picking up tab A's localStorage write.
+    await expect
+      .poll(() => pageB.evaluate(() => document.documentElement.classList.contains("dark")), {
+        timeout: 5000,
+      })
+      .toBe(true);
+    await expect
+      .poll(() => pageB.evaluate(() => document.documentElement.style.colorScheme))
+      .toBe("dark");
+
+    await pageA.close();
+    await pageB.close();
+  });
+});

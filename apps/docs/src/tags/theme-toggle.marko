@@ -6,6 +6,27 @@ import Button from "@marko-ui/shadcn/ui/button/button.marko";
   isDark = document.documentElement.classList.contains("dark");
 </script>
 
+<lifecycle
+  onMount() {
+    // Keep this icon in sync with the boot script's own cross-tab "storage"
+    // listener (+layout.marko) — that listener toggles the <html> class, but
+    // this component's own `isDark` state (which drives the icon) needs its
+    // own listener on the same event to notice.
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== "theme" && event.key !== null) return;
+      let stored: string | null = null;
+      try {
+        stored = localStorage.getItem("theme");
+      } catch (error) {}
+      isDark = stored
+        ? stored === "dark"
+        : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }
+/>
+
 <Button
   type="button"
   variant="ghost"
