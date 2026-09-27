@@ -29,6 +29,20 @@ import { getComponentPageData } from "../../lib/component-page-data.ts";
 import { buttonVariants } from "@marko-ui/shadcn/ui/button/variants.ts";
 import { cn } from "@marko-ui/shadcn/lib/utils.ts";
 
+// Components whose docs demos upstream scopes to the "theme-blue" preset via
+// previewClassName, per-demo, across every example on the page — not just
+// the hero. Verified: `grep -l theme-blue content/docs/components/base/*.mdx`
+// in data/shadcn-ui/apps/v4 returns exactly these 6 (chart.mdx, bubble.mdx,
+// marker.mdx, message.mdx, attachment.mdx, message-scroller.mdx).
+static const THEME_BLUE_COMPONENTS = new Set([
+  "chart",
+  "bubble",
+  "marker",
+  "message",
+  "attachment",
+  "message-scroller",
+]);
+
 export interface Input {
   /** Component name from the URL, e.g. "button". */
   name: string;
@@ -45,6 +59,7 @@ export interface Input {
 }
 
 <const/page=getComponentPageData(input.name)/>
+<const/previewClass=(THEME_BLUE_COMPONENTS.has(input.name) ? "theme-blue" : undefined)/>
 
 <if=!page>
   <main class="mx-auto max-w-3xl px-4 py-24 text-center">
@@ -85,11 +100,12 @@ export interface Input {
     >
       <aside class="relative hidden lg:block">
         <!-- Faded vertical divider, ported verbatim from shadcn's docs-sidebar.tsx
-             (a gradient hairline, not a solid border-r). -->
+             (a gradient hairline, not a solid border-r). Sticky/scroll/height
+             classes live on components-sidebar.marko's own Sidebar/
+             SidebarContent parts now (Round 4) — this <aside> is just a plain
+             positioning wrapper. -->
         <div class="absolute top-12 right-2 bottom-0 hidden h-full w-px bg-[linear-gradient(to_bottom,transparent_0%,var(--border)_10%,var(--border)_90%,transparent_100%)] lg:flex"/>
-        <div class="no-scrollbar sticky top-[calc(3.5rem+0.6rem)] max-h-[calc(100svh-10rem)] overflow-y-auto overscroll-none pt-6 pl-2.5">
-          <components-sidebar activeComponent=page.name/>
-        </div>
+        <components-sidebar activeComponent=page.name/>
       </aside>
 
       <div class="flex items-stretch pb-8 xl:w-full">
@@ -147,6 +163,7 @@ export interface Input {
                     demo=input.demo
                     demoId=page.examples[0].demoId
                     source=page.examples[0].source
+                    previewClass=previewClass
                   />
                 </div>
               </section>
@@ -229,7 +246,7 @@ export interface Input {
                     <if=example.description>
                       <p class="mt-2 text-sm leading-7 text-muted-foreground">${example.description}</p>
                     </if>
-                    <component-preview demo=input.demo demoId=example.demoId source=example.source/>
+                    <component-preview demo=input.demo demoId=example.demoId source=example.source previewClass=previewClass/>
                   </div>
                   </if>
                 </for>
