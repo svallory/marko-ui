@@ -69,6 +69,13 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   // Radix boolean-attribute selectors -> our components' equivalent plain data attributes.
   { from: "data-[disabled]:", to: "data-disabled:" },
   { from: "data-[inset]:", to: "data-inset:" },
+  // Radix data-[state=checked/unchecked] -> our Zag custom variants (globals.css @custom-variant list).
+  { from: "data-[state=checked]:", to: "data-checked:" },
+  { from: "data-[state=unchecked]:", to: "data-unchecked:" },
+  // upstream's native disabled: pseudo-class -> our Zag components' data-disabled attribute
+  // (many of our controls render a non-form element, e.g. checkbox's <span> control, so the
+  // machine emits a data-disabled attribute rather than relying on a native disabled attribute).
+  { from: "disabled:", to: "data-disabled:" },
   // Arbitrary-value spacing that equals a token already in Tailwind's default scale (8rem = 32 * 0.25rem).
   { from: "min-w-[8rem]", to: "min-w-32" },
 ]
@@ -159,6 +166,11 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     extra: ["object-cover", "rounded-full"],
     reason:
       "our own object-fit/radius on the image element; upstream relies solely on the avatar root's overflow-hidden+rounded-full to clip — pre-existing across every base style.",
+  },
+  "checkbox:checkbox": {
+    extra: ["relative", "after:absolute", "after:-inset-x-3", "after:-inset-y-2", "group-has-disabled/field:opacity-50"],
+    reason:
+      "our own extended touch hit-area (after:* pseudo, no upstream equivalent) and field-integration disabled cascade (group-has-disabled/field:), pre-existing across every base style — out of scope for a style-only port.",
   },
   "avatar:avatar-badge": {
     missing: [
@@ -334,12 +346,18 @@ function muClassName(slot: string): string {
 
 /** Applies every EQUIVALENCES replacement to a raw token (prefix or whole-token match). */
 function normalizeToken(token: string): string {
-  let out = token
-  for (const { from, to } of EQUIVALENCES) {
-    if (out === from) { out = to; break }
-    if (out.startsWith(from)) { out = to + out.slice(from.length); break }
+  // Try the equivalence at the token's own start, and also after a leading "dark:" modifier
+  // (a compound variant chain like dark:data-[state=checked]:bg-primary) — a from/to pair is
+  // about the STATE selector, which can be modified by dark: same as any other variant.
+  for (const prefix of ["", "dark:"]) {
+    if (!token.startsWith(prefix)) continue
+    const rest = token.slice(prefix.length)
+    for (const { from, to } of EQUIVALENCES) {
+      if (rest === from) return prefix + to
+      if (rest.startsWith(from)) return prefix + to + rest.slice(from.length)
+    }
   }
-  return out
+  return token
 }
 
 /** Normalizes every token and drops our own hook classes (mu-*, group/*, peer/*) — see isStructuralOnlyToken. */
