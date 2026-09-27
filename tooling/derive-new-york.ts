@@ -140,11 +140,14 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   // our resizable.marko is Zag-based (splitter machine) and emits data-orientation instead (verified
   // in packages/shadcn/ui/resizable/resizable.marko via api().getRootProps()) — same meaning, different
   // underlying primitive library, same class of divergence as the dropdown-menu Base-UI-vs-Radix case.
-  // NOTE: distinct from the bare data-[orientation=*] -> data-horizontal:/data-vertical: pair below,
-  // which is Radix's own attribute name on a different component; resizable's source attribute is
-  // `aria-orientation`, not `data-orientation`, so it needs its own aria->data step first.
-  { from: "aria-[orientation=vertical]:", to: "data-[orientation=vertical]:" },
-  { from: "aria-[orientation=horizontal]:", to: "data-[orientation=horizontal]:" },
+  // Maps straight to the SAME final bare form the data-[orientation=*] -> data-horizontal:/
+  // data-vertical: pair below produces (normalizeToken is single-pass/break-on-first-match, so
+  // going through the intermediate bracketed form here would leave the aria-sourced token one
+  // step behind ours, which normalizes via that later rule) — verified both forms are the same
+  // custom variant in globals.css (@custom-variant data-vertical matches [data-orientation=
+  // "vertical"], the exact attribute our Zag splitter emits via getRootProps()).
+  { from: "aria-[orientation=vertical]:", to: "data-vertical:" },
+  { from: "aria-[orientation=horizontal]:", to: "data-horizontal:" },
   { from: "[&[aria-orientation=horizontal]>div]:", to: "[&[data-orientation=horizontal]>div]:" },
   // This repo spells the 3px focus ring width as the bare utility `ring-3` (Tailwind v4's default
   // ring width scale), not new-york-v4's `ring-[3px]` arbitrary value — same computed value,
@@ -243,24 +246,24 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
   },
   "resizable:resizable-handle": {
     missing: [
-      "data-[orientation=horizontal]:h-px",
-      "data-[orientation=horizontal]:w-full",
-      "data-[orientation=horizontal]:after:left-0",
-      "data-[orientation=horizontal]:after:h-1",
-      "data-[orientation=horizontal]:after:w-full",
-      "data-[orientation=horizontal]:after:translate-x-0",
-      "data-[orientation=horizontal]:after:-translate-y-1/2",
+      "data-horizontal:h-px",
+      "data-horizontal:w-full",
+      "data-horizontal:after:left-0",
+      "data-horizontal:after:h-1",
+      "data-horizontal:after:w-full",
+      "data-horizontal:after:translate-x-0",
+      "data-horizontal:after:-translate-y-1/2",
       "[&[data-orientation=horizontal]>div]:rotate-90",
     ],
     extra: [
       "ring-offset-background",
-      "data-[orientation=vertical]:h-px",
-      "data-[orientation=vertical]:w-full",
-      "data-[orientation=vertical]:after:left-0",
-      "data-[orientation=vertical]:after:h-1",
-      "data-[orientation=vertical]:after:w-full",
-      "data-[orientation=vertical]:after:translate-x-0",
-      "data-[orientation=vertical]:after:-translate-y-1/2",
+      "data-vertical:h-px",
+      "data-vertical:w-full",
+      "data-vertical:after:left-0",
+      "data-vertical:after:h-1",
+      "data-vertical:after:w-full",
+      "data-vertical:after:translate-x-0",
+      "data-vertical:after:-translate-y-1/2",
       "[&[data-orientation=vertical]>div]:rotate-90",
     ],
     reason:
@@ -299,10 +302,10 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
       "tool limitation: HoverCardContent() renders TWO nested elements each with their own data-slot (HoverCardPrimitive.Portal data-slot=\"hover-card-portal\" wrapping HoverCardPrimitive.Content data-slot=\"hover-card-content\", which carries the actual cn()-merged classes) — extractParts()'s function-body regex only captures the FIRST data-slot per function, same class of bug as table:table-container above. Our real slot is mu-hover-card-content (packages/shadcn/ui/hover-card/classes.ts), verified and ported by hand in style-new-york.css; hover-card-portal has no rendered element of its own to style.",
   },
   "input-otp:input-otp": {
-    missing: ["disabled:cursor-not-allowed"],
+    missing: ["data-disabled:cursor-not-allowed"],
     extra: ["flex", "items-center", "has-disabled:opacity-50", "gap-2"],
     reason:
-      "upstream's InputOTP() function has TWO class-bearing props on the same element (containerClassName=\"flex items-center gap-2 has-disabled:opacity-50\" for the wrapper div, className=\"disabled:cursor-not-allowed\" for the underlying native <input>) — extractParts() only matches a literal className={cn(...)} call, correctly skipping containerClassName, so it attributes the input-only disabled:cursor-not-allowed string to the input-otp data-slot, which is really the CONTAINER. Our architecture splits root (container, mu-input-otp) from a separate native-input slot (mu-input-otp-input) that already carries disabled:cursor-not-allowed verbatim (packages/shadcn/ui/input-otp/classes.ts) — verified both classes exist, just on different slots than the tool's extraction assumes.",
+      "upstream's InputOTP() function has TWO class-bearing props on the same element (containerClassName=\"flex items-center gap-2 has-disabled:opacity-50\" for the wrapper div, className=\"disabled:cursor-not-allowed\" for the underlying native <input>, normalized to data-disabled:cursor-not-allowed by the repo-wide disabled:->data-disabled: equivalence) — extractParts() only matches a literal className={cn(...)} call, correctly skipping containerClassName, so it attributes the input-only disabled:cursor-not-allowed string to the input-otp data-slot, which is really the CONTAINER. Our architecture splits root (container, mu-input-otp) from a separate native-input slot (mu-input-otp-input) that already carries disabled:cursor-not-allowed verbatim (packages/shadcn/ui/input-otp/classes.ts) — verified both classes exist, just on different slots than the tool's extraction assumes.",
   },
   "input-otp:input-otp-group": {
     extra: [
@@ -380,23 +383,10 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     extra: ["size-full"],
     reason: "same-meaning Tailwind shorthand: size-full == h-full w-full, just written as the combined utility.",
   },
-  "command:command-input-wrapper": {
-    missing: [
-      "flex",
-      "h-10",
-      "w-full",
-      "rounded-md",
-      "bg-transparent",
-      "py-3",
-      "text-sm",
-      "outline-hidden",
-      "placeholder:text-muted-foreground",
-      "disabled:cursor-not-allowed",
-      "disabled:opacity-50",
-    ],
-    extra: ["p-1", "pb-0"],
+  "command:command-input": {
+    missing: ["flex", "h-10", "rounded-md", "bg-transparent", "py-3", "placeholder:text-muted-foreground"],
     reason:
-      "tool limitation, not a real gap (same class as table:table-container/hover-card:hover-card-portal above): upstream's CommandInput() function has TWO class-bearing elements (a wrapper div data-slot=\"command-input-wrapper\" with a plain string className, and the actual CommandPrimitive.Input data-slot=\"command-input\" with the cn()-merged classes) — extractParts()'s regex only matches a literal className={cn(...)} call, so it skips the wrapper's plain string and attributes the Input element's classes to the wrapper's slot name. Our architecture splits these correctly: mu-command-input-wrapper (p-1 pb-0, ours) and mu-command-input (packages/shadcn/ui/command/classes.ts, already carries outline-hidden disabled:cursor-not-allowed disabled:opacity-50 structurally) are separate slots, verified against upstream's real wrapper/input split.",
+      "ours-only architecture split, not a real gap: our command input sits inside a separate mu-command-input-group subcomponent (bg-input/30, h-8!, rounded-lg!, its own border/height/background) that already covers sizing/background/radius/padding at the group level — the plain input itself only needs width/text-size (mu-command-input: w-full text-sm) plus the structural outline-hidden/disabled:* it already carries. Applying upstream's flex/h-10/rounded-md/bg-transparent/py-3/placeholder-color directly to the bare input would conflict with the input-group's own styling of the same concerns; the input-group is the real style surface, verified against packages/shadcn/ui/command/classes.ts's inputGroup literal.",
   },
   "command:command-list": {
     missing: ["max-h-[300px]"],
@@ -448,6 +438,59 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
     reason:
       "no rendered classes for this slot (same allowlisted-no-hook pattern as hover-card:hover-card-portal above): DrawerPortal is a bare pass-through of DrawerPrimitive.Portal, data-slot=\"drawer-portal\" with no className at all in new-york-v4's own source.",
+  },
+  "drawer:drawer-content": {
+    missing: [
+      "data-[vaul-drawer-direction=top]:inset-x-0",
+      "data-[vaul-drawer-direction=top]:top-0",
+      "data-[vaul-drawer-direction=top]:mb-24",
+      "data-[vaul-drawer-direction=top]:max-h-[80vh]",
+      "data-[vaul-drawer-direction=top]:rounded-b-lg",
+      "data-[vaul-drawer-direction=top]:border-b",
+      "data-[vaul-drawer-direction=bottom]:inset-x-0",
+      "data-[vaul-drawer-direction=bottom]:bottom-0",
+      "data-[vaul-drawer-direction=bottom]:mt-24",
+      "data-[vaul-drawer-direction=bottom]:max-h-[80vh]",
+      "data-[vaul-drawer-direction=bottom]:rounded-t-lg",
+      "data-[vaul-drawer-direction=bottom]:border-t",
+      "data-[vaul-drawer-direction=right]:inset-y-0",
+      "data-[vaul-drawer-direction=right]:right-0",
+      "data-[vaul-drawer-direction=right]:w-3/4",
+      "data-[vaul-drawer-direction=right]:border-l",
+      "data-[vaul-drawer-direction=right]:sm:max-w-sm",
+      "data-[vaul-drawer-direction=left]:inset-y-0",
+      "data-[vaul-drawer-direction=left]:left-0",
+      "data-[vaul-drawer-direction=left]:w-3/4",
+      "data-[vaul-drawer-direction=left]:border-r",
+      "data-[vaul-drawer-direction=left]:sm:max-w-sm",
+    ],
+    extra: [
+      "outline-none",
+      "data-[swipe-direction=up]:inset-x-0",
+      "data-[swipe-direction=up]:top-0",
+      "data-[swipe-direction=up]:mb-24",
+      "data-[swipe-direction=up]:max-h-[80vh]",
+      "data-[swipe-direction=up]:rounded-b-lg",
+      "data-[swipe-direction=up]:border-b",
+      "data-[swipe-direction=down]:inset-x-0",
+      "data-[swipe-direction=down]:bottom-0",
+      "data-[swipe-direction=down]:mt-24",
+      "data-[swipe-direction=down]:max-h-[80vh]",
+      "data-[swipe-direction=down]:rounded-t-lg",
+      "data-[swipe-direction=down]:border-t",
+      "data-[swipe-direction=right]:inset-y-0",
+      "data-[swipe-direction=right]:right-0",
+      "data-[swipe-direction=right]:w-3/4",
+      "data-[swipe-direction=right]:border-l",
+      "data-[swipe-direction=right]:sm:max-w-sm",
+      "data-[swipe-direction=left]:inset-y-0",
+      "data-[swipe-direction=left]:left-0",
+      "data-[swipe-direction=left]:w-3/4",
+      "data-[swipe-direction=left]:border-r",
+      "data-[swipe-direction=left]:sm:max-w-sm",
+    ],
+    reason:
+      "same class as drawer:drawer-header below (and the resizable aria-vs-data-orientation divergence above): upstream's drawer.tsx is vaul-based (data-vaul-drawer-direction, bottom/top/left/right), ours is Zag-based (data-swipe-direction, down/up/left/right) — every value here is otherwise IDENTICAL between the two sides (same inset/margin/max-height/radius/border/width classes per direction), only the attribute name and the bottom<->down/top<->up value spelling differ, verified value-for-value against the raw new-york-v4 source. outline-none is structural (classes.ts). This was previously invisible to --check (mu-drawer-content's old CSS rule used the vaul attribute name verbatim, which never matches our Zag component's real data-swipe-direction attribute — orphaned/dead CSS fixed in this same change to use the correct attribute).",
   },
   "drawer:drawer-header": {
     missing: [
