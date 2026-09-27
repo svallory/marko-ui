@@ -73,6 +73,9 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   { from: "data-[state=checked]:", to: "data-checked:" },
   { from: "data-[state=unchecked]:", to: "data-unchecked:" },
   { from: "has-data-[state=checked]:", to: "has-data-checked:" },
+  // Sidebar's own data-[active=true] selector -> our data-active custom variant (same boolean-ish attribute).
+  { from: "data-[active=true]:", to: "data-active:" },
+  { from: "peer-data-[active=true]/", to: "peer-data-active/" },
   // upstream's [&>[data-slot=x]]: / [&>*]:data-[slot=x]: direct-child arbitrary selectors -> Tailwind v4's *:data-[slot=x]: shorthand for the same direct-child selector.
   { from: "[&>[data-slot=field-group]]:", to: "*:data-[slot=field-group]:" },
   { from: "[&>*]:data-[slot=field]:", to: "*:data-[slot=field]:" },
@@ -238,6 +241,43 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     ],
     reason:
       "TWO distinct sources of divergence collide on this one key because upstream literally reuses data-slot=\"field-label\" for BOTH its FieldLabel and FieldTitle functions (verified in the raw .tsx — not a tool bug), so both parts hash to the same mu-field-label lookup even though our own component gives FieldTitle its own separate mu-field-title class with different CSS. (1) FieldLabel's own real gaps: has-[>[data-slot=field]]:w-full/flex-col live in classes.ts's nested literal, invisible to the tool (same class of gap as avatar-badge); border-primary/30 + a dark /20 variant is our own softer-emphasis choice vs. upstream's plain border-primary, pre-existing across every base style. (2) FieldTitle's expected tokens (items-center/text-sm/font-medium) are compared against mu-field-label's CSS instead of mu-field-title's (which already carries them correctly, verified separately) purely because of the shared-slot-name collision above — not a real gap in either class.",
+  },
+  "sidebar:sidebar-menu-button": {
+    missing: ["[&>svg]:size-4", "[&>svg]:shrink-0"],
+    extra: ["[&_svg]:size-4", "[&_svg]:shrink-0"],
+    reason: "our own descendant `[&_svg]` selector (not upstream's direct-child `[&>svg]`), pre-existing across every base style.",
+  },
+  "sidebar:sidebar-wrapper": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "tool limitation, not a real gap: sidebar-wrapper's classes.ts literal has no mu-* hook prefix, tool-invisible — every upstream token for this slot is already in the structural literal verbatim.",
+  },
+  "sidebar:sidebar": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same as sidebar:sidebar-wrapper — no mu-* hook prefix on this slot's literal, tool-invisible, nothing to add.",
+  },
+  "sidebar:sidebar-menu-item": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same as sidebar:sidebar-wrapper — no mu-* hook prefix on this slot's literal, tool-invisible, nothing to add.",
+  },
+  "sidebar:sidebar-menu-sub-item": {
+    missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
+    reason: "same as sidebar:sidebar-wrapper — no mu-* hook prefix on this slot's literal, tool-invisible, nothing to add.",
+  },
+  "sidebar:sidebar-rail": {
+    missing: ["-translate-x-1/2", "after:left-1/2"],
+    extra: ["after:start-1/2", "ltr:-translate-x-1/2", "rtl:-translate-x-1/2"],
+    reason:
+      "our rail is RTL-aware where upstream is LTR-only: after:start-1/2 (logical property) instead of after:left-1/2, and an explicit ltr:/rtl: split instead of one unconditional -translate-x-1/2. Pre-existing across every base style, an improvement over upstream not a regression, out of scope for a style-only port.",
+  },
+  "sidebar:sidebar-content": {
+    extra: ["no-scrollbar"],
+    reason: "our own scroll-behavior extra with no upstream equivalent, pre-existing across every base style.",
+  },
+  "sidebar:sidebar-menu-sub-button": {
+    missing: ["sm", "text-xs", "md", "text-sm"],
+    extra: ["data-[size=md]:text-sm", "data-[size=sm]:text-xs"],
+    reason:
+      "tool parsing artifact, not a real gap: upstream's SidebarMenuSubButton doesn't express its size classes as string literals in the cn() call at all — it uses JS conditionals (size === \"sm\" && \"text-xs\", size === \"md\" && \"text-sm\"), so the tokenizer captures the bare identifiers \"sm\"/\"md\" from those expressions as if they were classes. Our data-[size=md]:text-sm/data-[size=sm]:text-xs are the correct data-attribute-selector equivalent of the same size-conditional logic, already present.",
   },
   "item:item": {
     missing: ["border-transparent"],

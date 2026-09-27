@@ -1156,6 +1156,11 @@
   }
 
   /* MARK: Sidebar */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/sidebar.tsx) */
+  .mu-sidebar-trigger {
+    @apply size-7;
+  }
+
   .mu-sidebar-gap {
     @apply transition-[width] duration-200 ease-linear;
   }
@@ -1241,7 +1246,7 @@
   }
 
   .mu-sidebar-menu-action {
-    @apply text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground peer-hover/menu-button:text-sidebar-accent-foreground absolute top-1.5 right-1 aspect-square w-5 rounded-md p-0 peer-data-[size=default]/menu-button:top-1.5 peer-data-[size=lg]/menu-button:top-2.5 peer-data-[size=sm]/menu-button:top-1 focus-visible:ring-2 [&>svg]:size-4;
+    @apply text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground peer-hover/menu-button:text-sidebar-accent-foreground peer-data-active/menu-button:text-sidebar-accent-foreground absolute top-1.5 right-1 aspect-square w-5 rounded-md p-0 peer-data-[size=default]/menu-button:top-1.5 peer-data-[size=lg]/menu-button:top-2.5 peer-data-[size=sm]/menu-button:top-1 focus-visible:ring-2 [&>svg]:size-4 group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-open:opacity-100 md:opacity-0;
   }
 
   .mu-sidebar-menu-badge {
