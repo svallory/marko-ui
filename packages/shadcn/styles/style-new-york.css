@@ -1556,6 +1556,8 @@
   }
 
   /* MARK: Bubble */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/bubble.tsx) — no change from
+     vega; new-york-v4's classes already equal vega's rule verbatim. */
   .mu-bubble {
     @apply gap-1 data-[align=end]:self-end max-w-[80%] data-[variant=ghost]:max-w-full group-data-[align=end]/message:self-end;
   }
