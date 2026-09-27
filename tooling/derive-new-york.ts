@@ -211,6 +211,39 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     reason:
       "tool limitation: HoverCardContent() renders TWO nested elements each with their own data-slot (HoverCardPrimitive.Portal data-slot=\"hover-card-portal\" wrapping HoverCardPrimitive.Content data-slot=\"hover-card-content\", which carries the actual cn()-merged classes) — extractParts()'s function-body regex only captures the FIRST data-slot per function, same class of bug as table:table-container above. Our real slot is mu-hover-card-content (packages/shadcn/ui/hover-card/classes.ts), verified and ported by hand in style-new-york.css; hover-card-portal has no rendered element of its own to style.",
   },
+  "input-otp:input-otp": {
+    missing: ["disabled:cursor-not-allowed"],
+    extra: ["flex", "items-center", "has-disabled:opacity-50", "gap-2"],
+    reason:
+      "upstream's InputOTP() function has TWO class-bearing props on the same element (containerClassName=\"flex items-center gap-2 has-disabled:opacity-50\" for the wrapper div, className=\"disabled:cursor-not-allowed\" for the underlying native <input>) — extractParts() only matches a literal className={cn(...)} call, correctly skipping containerClassName, so it attributes the input-only disabled:cursor-not-allowed string to the input-otp data-slot, which is really the CONTAINER. Our architecture splits root (container, mu-input-otp) from a separate native-input slot (mu-input-otp-input) that already carries disabled:cursor-not-allowed verbatim (packages/shadcn/ui/input-otp/classes.ts) — verified both classes exist, just on different slots than the tool's extraction assumes.",
+  },
+  "input-otp:input-otp-group": {
+    extra: [
+      "has-aria-invalid:ring-destructive/20",
+      "dark:has-aria-invalid:ring-destructive/40",
+      "has-aria-invalid:border-destructive",
+      "rounded-md",
+      "has-aria-invalid:ring-3",
+    ],
+    reason:
+      "ours-only container-level aria-invalid indicator (a ring around the whole slot group when any slot inside is invalid) with no upstream equivalent — new-york-v4's InputOTPGroup is a bare flex wrapper, div data-slot=\"input-otp-group\" className=\"flex items-center\" only, no validity styling at the group level at all.",
+  },
+  "input-otp:input-otp-slot": {
+    extra: ["has-focus:z-10"],
+    reason:
+      "pre-existing structural convention (in classes.ts before this port, packages/shadcn/ui/input-otp/classes.ts slot: \"...has-focus:z-10\"), a keyboard-focus z-index bump upstream doesn't need (upstream instead raises z-index only for the data-[active=true] state, ported above as data-[active=true]:z-10) — out of scope for a style-only port.",
+  },
+  "message-scroller:message-scroller": {
+    missing: ["group/message-scroller"],
+    reason:
+      "tool limitation, not a real gap (same class as toggle-group:toggle-group above): isStructuralOnlyToken() excludes any group/* token from OUR side entirely, but classes.ts genuinely carries group/message-scroller verbatim (packages/shadcn/ui/message-scroller/classes.ts root) matching upstream's own group/message-scroller.",
+  },
+  "message-scroller:message-scroller-viewport": {
+    missing: ["data-autoscrolling:scrollbar-none"],
+    extra: ["data-autoscrolling:scrollbar-thumb-transparent", "data-autoscrolling:scrollbar-track-transparent"],
+    reason:
+      "pre-existing structural choice (in classes.ts before this port): our component hides the scrollbar during autoscroll by making its thumb/track transparent (two utilities from a scrollbar plugin), while new-york-v4 uses that same plugin's blunter data-autoscrolling:scrollbar-none. Same visual outcome (scrollbar invisible while autoscrolling), different utility — a structural implementation choice, not a style-layer concern, out of scope for a style-only port.",
+  },
 }
 
 interface Part {

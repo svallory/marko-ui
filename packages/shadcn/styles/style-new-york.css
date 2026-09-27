@@ -714,6 +714,7 @@
   }
 
   /* MARK: Input OTP */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/input-otp.tsx) */
   .mu-input-otp {
     @apply gap-2;
   }
@@ -723,7 +724,7 @@
   }
 
   .mu-input-otp-slot {
-    @apply dark:bg-input/30 border-input data-[active=true]:border-ring data-[active=true]:ring-ring/50 data-[active=true]:aria-invalid:ring-destructive/20 dark:data-[active=true]:aria-invalid:ring-destructive/40 aria-invalid:border-destructive data-[active=true]:aria-invalid:border-destructive size-9 border-y border-r text-sm shadow-xs transition-all outline-none first:rounded-l-md first:border-l last:rounded-r-md data-[active=true]:ring-3;
+    @apply dark:bg-input/30 border-input data-[active=true]:border-ring data-[active=true]:ring-ring/50 data-[active=true]:aria-invalid:ring-destructive/20 dark:data-[active=true]:aria-invalid:ring-destructive/40 aria-invalid:border-destructive data-[active=true]:aria-invalid:border-destructive h-9 w-9 border-y border-r text-sm shadow-xs transition-all outline-none first:rounded-l-md first:border-l last:rounded-r-md data-[active=true]:z-10 data-[active=true]:ring-[3px];
   }
 
   .mu-input-otp-caret-line {
@@ -1654,6 +1655,11 @@
   }
 
   /* MARK: Message Scroller */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/message-scroller.tsx) */
+  .mu-message-scroller-viewport {
+    @apply data-pending-scroll:invisible;
+  }
+
   .mu-message-scroller-content {
     @apply gap-8;
   }
