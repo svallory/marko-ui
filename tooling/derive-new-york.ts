@@ -80,6 +80,12 @@ const EQUIVALENCES: Array<{ from: string; to: string }> = [
   { from: "min-w-[8rem]", to: "min-w-32" },
   // ring-[3px] (upstream's arbitrary value) === ring-3 (Tailwind's default scale token, same 3px).
   { from: "ring-[3px]", to: "ring-3" },
+  // top-[50%]/left-[50%] (upstream's arbitrary %) === top-1/2/left-1/2 (Tailwind's default fraction scale, same 50%).
+  { from: "top-[50%]", to: "top-1/2" },
+  { from: "left-[50%]", to: "left-1/2" },
+  // translate-x-[-50%]/-y-[-50%] (upstream's arbitrary negative %) === -translate-x-1/2/-y-1/2 (same -50%, Tailwind's negative-utility spelling).
+  { from: "translate-x-[-50%]", to: "-translate-x-1/2" },
+  { from: "translate-y-[-50%]", to: "-translate-y-1/2" },
   // upstream's arbitrary-selector "ancestor has this data-slot" pattern -> Tailwind v4's in-* variant shorthand for the same descendant-context selector.
   { from: "[[data-slot=tooltip-content]_&]:", to: "in-data-[slot=tooltip-content]:" },
   // Radix data-[orientation=*] selectors -> our custom variants (globals.css @custom-variant list).
@@ -173,6 +179,11 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     extra: ["object-cover", "rounded-full"],
     reason:
       "our own object-fit/radius on the image element; upstream relies solely on the avatar root's overflow-hidden+rounded-full to clip — pre-existing across every base style.",
+  },
+  "dialog:dialog-description": {
+    extra: ["*:[a]:hover:text-foreground", "*:[a]:underline", "*:[a]:underline-offset-3"],
+    reason:
+      "our own link-hover styling with no upstream equivalent (new-york-v4's DialogDescription carries no [a] rule at all) — pre-existing across every base style, not introduced by this port.",
   },
   "carousel:carousel": {
     missing: ["(no classes.ts entry and no style-new-york.css rule found for this mu-* class)"],
@@ -331,12 +342,27 @@ function extractParts(src: string): Part[] {
   while ((m = fnRe.exec(src))) {
     const fnName = m[1]!
     const body = m[2]!
-    const slotMatch = /data-slot=["'{]([\w"'-]+)/.exec(body)
-    if (!slotMatch) continue
-    const slot = slotMatch[1]!.replace(/["']/g, "")
     const classNames: string[] = []
     // Grab every top-level string literal argument inside a cn(...) call in this function
     const cnCallMatch = /className=\{cn\(([\s\S]*?)\)\}/.exec(body)
+    // A function can render more than one JSX element with its own data-slot before reaching
+    // the element that actually carries className (e.g. DialogContent wraps its classed
+    // Content in a data-slot="dialog-portal" wrapper first) — the FIRST data-slot in the body
+    // is not necessarily the one this className belongs to. Take the data-slot nearest to (at
+    // or before) the className match itself; fall back to the first in the body if none
+    // precedes it (covers the simple one-element-per-function case unchanged).
+    const classNameAttrIdx = cnCallMatch ? cnCallMatch.index! : /className=/.exec(body)?.index
+    let slot: string | undefined
+    if (classNameAttrIdx !== undefined) {
+      const before = body.slice(0, classNameAttrIdx)
+      const slotMatches = [...before.matchAll(/data-slot=["'{]([\w"'-]+)/g)]
+      if (slotMatches.length) slot = slotMatches[slotMatches.length - 1]![1]!.replace(/["']/g, "")
+    }
+    if (!slot) {
+      const firstSlotMatch = /data-slot=["'{]([\w"'-]+)/.exec(body)
+      if (!firstSlotMatch) continue
+      slot = firstSlotMatch[1]!.replace(/["']/g, "")
+    }
     if (cnCallMatch) {
       const inner = cnCallMatch[1]!
       let sm: RegExpExecArray | null

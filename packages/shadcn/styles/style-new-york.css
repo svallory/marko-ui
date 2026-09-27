@@ -492,12 +492,13 @@
   }
 
   /* MARK: Dialog */
+  /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/dialog.tsx) */
   .mu-dialog-overlay {
-    @apply data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs;
+    @apply bg-black/50 data-closed:animate-out data-closed:fade-out-0 data-open:animate-in data-open:fade-in-0;
   }
 
   .mu-dialog-content {
-    @apply bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 ring-foreground/10 grid max-w-[calc(100%-2rem)] gap-6 rounded-xl p-6 text-sm ring-1 duration-100 sm:max-w-md;
+    @apply grid max-w-[calc(100%-2rem)] gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 sm:max-w-lg;
   }
 
   .mu-dialog-close {
@@ -505,7 +506,7 @@
   }
 
   .mu-dialog-header {
-    @apply gap-2;
+    @apply gap-2 text-center sm:text-left;
   }
 
   .mu-dialog-footer {
@@ -513,7 +514,7 @@
   }
 
   .mu-dialog-title {
-    @apply leading-none font-medium;
+    @apply text-lg leading-none font-semibold;
   }
 
   .mu-dialog-description {
