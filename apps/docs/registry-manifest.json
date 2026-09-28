@@ -1817,7 +1817,7 @@
     },
     {
       "path": "styles/new-york/accordion.json",
-      "sha256": "ec52a60c11d0266a330edd1f113c198d79e60f6a75a537a20ee7d5697acff8e3"
+      "sha256": "13f83ae553e37ade8b2d6ea0121d619855cbca337580d20a65d68c4db279444e"
     },
     {
       "path": "styles/new-york/alert-dialog.json",
@@ -1841,7 +1841,7 @@
     },
     {
       "path": "styles/new-york/avatar.json",
-      "sha256": "8935bb7a6f81f4df734585ca91e93c3d90ddc405de49f9da8423cd712747004c"
+      "sha256": "df68936d9599dc40803ef98b7decfd1f5dec44d24f91a93b46feb08f2d5d59ba"
     },
     {
       "path": "styles/new-york/badge.json",
@@ -1905,11 +1905,11 @@
     },
     {
       "path": "styles/new-york/command.json",
-      "sha256": "8eeec825f178c5fdf3f1a434481eb366b3aa85b5a5525672a8be5468e1d7d48a"
+      "sha256": "6b09a331029831230a6d5a121b5ef730494d84da28f33e5e1112b3c4afba8d13"
     },
     {
       "path": "styles/new-york/context-menu.json",
-      "sha256": "9fd05bf30d72b9029ec2e72879992f0b67d0d5a46b85ccade36e26677a9ca6bc"
+      "sha256": "914b2066036706047b1ffce3929089de9eb44299d64090b61d33716ee2f2ec1c"
     },
     {
       "path": "styles/new-york/data-table.json",
@@ -1925,7 +1925,7 @@
     },
     {
       "path": "styles/new-york/dialog.json",
-      "sha256": "ca7f1253627f5f3c272f9f13858f23ae3f501c2da63ac6add73fb9c7ebbbbcb2"
+      "sha256": "98df0383bf469baa6eeefb15ced92c99282667e19b3afd4ea2f0a215e5394f70"
     },
     {
       "path": "styles/new-york/direction.json",
@@ -1973,7 +1973,7 @@
     },
     {
       "path": "styles/new-york/input-group.json",
-      "sha256": "08eaa52c34e3da351b1ed391345d1a0bc4ba0e5a099511ee23d8d1c29ebd20fb"
+      "sha256": "c7b1c006f9c827e6b8c4694cca843462bb80c1a1382617ca48d21a751cd95b78"
     },
     {
       "path": "styles/new-york/input-otp.json",
@@ -1985,7 +1985,7 @@
     },
     {
       "path": "styles/new-york/item.json",
-      "sha256": "1f265a6a028541919e7fc31e58abe525dcb0a6642af18c97f82ad38e74361260"
+      "sha256": "a8869998730dcf8da9ce3d5cec11b13f35eea98f9e939b2429cc69e85bde1bc2"
     },
     {
       "path": "styles/new-york/kbd.json",
@@ -2025,7 +2025,7 @@
     },
     {
       "path": "styles/new-york/navigation-menu.json",
-      "sha256": "d84209df03533f79602b74339a086d02311f3a7319606793acd51566334ee4b0"
+      "sha256": "8f16c19c30c1142b365686301399dfa178d554dcc2c6ab9f4396e29c63162aaa"
     },
     {
       "path": "styles/new-york/number-input.json",
@@ -2033,7 +2033,7 @@
     },
     {
       "path": "styles/new-york/pagination.json",
-      "sha256": "1786f358b511feac46aae6eb0075c6ad264cf857e4f69a057a1ab026aeed3add"
+      "sha256": "641392791949e7fe2bbab3abef1045e19279a251a85e94d20e10ef07ce08d644"
     },
     {
       "path": "styles/new-york/password-input.json",
@@ -2053,7 +2053,7 @@
     },
     {
       "path": "styles/new-york/radio-group.json",
-      "sha256": "45ccf8c6334718cd0768f317bafb82abb8852e23bb88fb797639352cb1e94972"
+      "sha256": "191586814d444b8f2ca4fc9e787df0773b2ad7f2a1e4821e92c394dd1ad3d5b5"
     },
     {
       "path": "styles/new-york/rating-group.json",
@@ -2069,7 +2069,7 @@
     },
     {
       "path": "styles/new-york/select.json",
-      "sha256": "4e2e34125333c60613838327d9e466c927b84a7e6c307fd3da5ab1dd83f78824"
+      "sha256": "6783216696124ffccaa181ad4824e5f346767d8f0c03c2da8831bd0782617e22"
     },
     {
       "path": "styles/new-york/separator.json",
@@ -2077,11 +2077,11 @@
     },
     {
       "path": "styles/new-york/sheet.json",
-      "sha256": "b48df68a10fe510b6482636f4d29f0970965ad4c293a0fc6110720079d32c704"
+      "sha256": "4fe24a7771c27ea74d734de53ef1b1b742cedb98c7cbc6e219a6f55f8a43819b"
     },
     {
       "path": "styles/new-york/sidebar.json",
-      "sha256": "f2a3d8db13e46967b03f57f6656350c1f27c073ac7708cc652a7d4c46c988ac4"
+      "sha256": "5f8961497e2c77c917dff083e96d235d09d465b0ce07d9e53284a579ce65bb52"
     },
     {
       "path": "styles/new-york/signature-pad.json",
@@ -2149,7 +2149,7 @@
     },
     {
       "path": "styles/new-york/tooltip.json",
-      "sha256": "daa58cfdcedf3bb2b7da255e3e6933eb36b5e31ed61c40283ad29c6fb399b22d"
+      "sha256": "a10c8b7a0ac1e691acb0cdf2414ed97ae79d35bf685644b7571cb0bc34ccf9fc"
     },
     {
       "path": "styles/new-york/tour.json",
