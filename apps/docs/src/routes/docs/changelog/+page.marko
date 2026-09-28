@@ -9,6 +9,7 @@ import { COMPONENTS } from "../../../lib/components-list.ts";
 
 static const TOC = [
   { id: "unreleased", label: "Unreleased" },
+  { id: "0.4.0", label: "0.4.0" },
   { id: "0.3.1", label: "0.3.1" },
   { id: "0.3.0", label: "0.3.0" },
   { id: "0.2.1", label: "0.2.1" },
@@ -25,6 +26,26 @@ export interface ChangelogEntry {
 }
 
 static const ENTRIES: ChangelogEntry[] = [
+  {
+    version: "0.4.0",
+    date: "2026-09-28",
+    title: "The new-york style, icon-library-aware add, and a parity pass",
+    summary:
+      "A ninth style ported from upstream's new-york-v4, `marko-ui add` finally honoring the icon library you chose, a round of accessibility and parity fixes across the components, and the docs site's chrome moved onto new-york.",
+    changes: [
+      "New style: `new-york`, a port of upstream shadcn's new-york-v4, covering every component that has a new-york-v4 counterpart, verified against upstream's class strings with a mechanical check (`tooling/derive-new-york.ts --check`).",
+      "`marko-ui add` now honors `iconLibrary` in components.json: only the configured library's icon map is copied (lucide, tabler, phosphor, remixicon or hugeicons), instead of shipping all five and always rendering lucide. Switching libraries removes the previous generated map; an unknown value prints a warning and keeps the previous behavior, matching upstream.",
+      "`marko-ui init`/`add` first-run fixes: never prompt when stdin isn't interactive, wire the CSS entry so the theme actually loads, guard the tsconfig, install missing dependencies.",
+      "Accessibility: Switch now exposes `role=\"switch\"` (it was announced as a plain checkbox); menu radio items (menubar, dropdown-menu, context-menu) render upstream's filled circle instead of a check mark.",
+      "Breaking: `--destructive-foreground` was removed from the themes (upstream no longer uses it), and light-mode destructive and muted-foreground colors were darkened in the theme presets and base-color variants to meet WCAG AA contrast.",
+      "Breaking: Pagination was re-ported to upstream parity as presentational parts, dropping its Zag machine.",
+      "Radius scale now matches upstream's CLI (multiplicative, 7 steps).",
+      "Fixes: Calendar's month caption no longer overlaps the weekday row; chart area/bar/line no longer crash on SSR/hydration serialization; ScrollArea no longer mismatches on hydration or flashes a full-width thumb; the accordion panel no longer gets stuck at a stale height after a reflow; navigation-menu's viewport used an invalid Tailwind utility; the missing `.mu-rtl-flip` rule now ships; message-scroller hides its viewport until the opening scroll position is applied (upstream parity).",
+      "The 8 existing style layers and base components were synced to upstream shadcn 98a1fe6 (field-label focus rules).",
+      "Docs site: chrome, /blocks and /charts render in new-york; the docs consume the shipped `@marko-ui/shadcn` theme instead of a forked copy; the active sidebar item scrolls into view; served from Cloudflare Workers with static assets.",
+      "Guards: the CI visual suite now also covers the new-york chrome, /blocks and /charts, overlays opened (popover in every style), the 7 base colors, and toast and tour; a behavior-coverage format and static coverage script landed, piloted on switch, dropdown-menu and combobox (issue #72).",
+    ],
+  },
   {
     version: "0.3.1",
     date: "2026-09-17",
@@ -99,8 +120,8 @@ static const ENTRIES: ChangelogEntry[] = [
   <h2 id="unreleased">Unreleased</h2>
 
   <p>
-    Nothing yet: everything merged to <code>main</code> since <code>0.3.0</code> is in the
-    <a href="#0.3.1"><code>0.3.1</code></a> entry below.
+    Nothing yet: everything merged to <code>main</code> since <code>0.3.1</code> is in the
+    <a href="#0.4.0"><code>0.4.0</code></a> entry below.
   </p>
 
   <p>Currently in the registry: ${COMPONENTS.length} components, plus the theme and utils items.</p>
