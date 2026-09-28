@@ -200,7 +200,7 @@ export async function processFiles(
       for (const stale of findStaleIconMaps(
         path.dirname(filePath),
         config.iconLibrary
-      )) {
+      ).deletable) {
         ;(result.removals ??= []).push(
           path.relative(config.resolvedPaths.cwd, stale)
         )

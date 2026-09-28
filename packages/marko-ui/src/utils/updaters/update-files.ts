@@ -50,11 +50,15 @@ export async function updateFiles(
   }
 ) {
   // Keep only the configured iconLibrary's icon map (see icon-library.ts).
-  files = applyIconLibrary(files, config.iconLibrary)
+  files = applyIconLibrary(files, config.iconLibrary, {
+    warn: !options.silent,
+  })
   if (options.plannedFiles) {
     options = {
       ...options,
-      plannedFiles: applyIconLibrary(options.plannedFiles, config.iconLibrary),
+      plannedFiles: applyIconLibrary(options.plannedFiles, config.iconLibrary, {
+        warn: false,
+      }),
     }
   }
   if (!files?.length) {
@@ -225,9 +229,20 @@ export async function updateFiles(
     // libraries left by an earlier `add` under a different iconLibrary would
     // otherwise stay in the project unused.
     if (isIconResolverPath(file.path) && isIconLibraryName(config.iconLibrary)) {
-      for (const stale of findStaleIconMaps(targetDir, config.iconLibrary)) {
-        await fs.rm(stale)
-        filesRemoved.push(path.relative(config.resolvedPaths.cwd, stale))
+      const stale = findStaleIconMaps(targetDir, config.iconLibrary)
+      for (const file of stale.deletable) {
+        await fs.rm(file)
+        filesRemoved.push(path.relative(config.resolvedPaths.cwd, file))
+      }
+      for (const file of stale.skipped) {
+        if (!options.silent) {
+          logger.warn(
+            `Left ${path.relative(
+              config.resolvedPaths.cwd,
+              file
+            )} in place: it is not a generated icon map, so it was not deleted. It is unused; remove it if you don't need it.`
+          )
+        }
       }
     }
 
