@@ -41,9 +41,19 @@ fi
 rm -f .marko-run/routes.d.ts
 
 port=4417
-bunx marko-run dev --port "$port" > /dev/null 2>&1 &
+# `bunx marko-run dev &` backgrounds only the bunx wrapper process; the real
+# `node .../marko-run dev` it execs is a CHILD, not a replacement (bunx does
+# not exec(3) into it). Killing just $! (the wrapper's pid) leaves that node
+# child running, reparented to pid 1 — an orphaned dev server surviving every
+# exit path, found live 24 minutes after a run that had already exited.
+# setsid puts the whole tree in its own process group so `kill -TERM -"$pgid"`
+# (the negative pid form) reaches the wrapper AND every process it spawned,
+# on every exit path: normal success, the 27s timeout, or a signal to this
+# script itself.
+setsid bunx marko-run dev --port "$port" > /dev/null 2>&1 &
 dev_pid=$!
-trap 'kill -9 "$dev_pid" 2>/dev/null; wait "$dev_pid" 2>/dev/null || true' EXIT
+pgid="$dev_pid"
+trap 'kill -TERM -"$pgid" 2>/dev/null; sleep 0.2; kill -KILL -"$pgid" 2>/dev/null; wait "$dev_pid" 2>/dev/null || true' EXIT INT TERM
 
 sleep 2
 curl -s -m 25 -o /dev/null "http://localhost:$port/" &
