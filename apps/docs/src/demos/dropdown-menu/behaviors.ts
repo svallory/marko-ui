@@ -96,13 +96,13 @@ export const behaviors: ComponentBehavior[] = [
   {
     id: "dropdown-menu/a11y/trigger-aria-haspopup-expanded",
     kind: "a11y",
-    description: "Trigger carries aria-haspopup and aria-expanded reflecting open state, plus aria-controls pointing at the content.",
+    description: "Trigger carries valid aria-haspopup, aria-expanded, and aria-controls (structural ARIA validity only — axe-scan proves the attributes are present and well-formed, not that aria-expanded's VALUE tracks open state; see notes/behavior-coverage.md \"axe = validity only\").",
     source: "docs.ts accessibilityNotes",
   },
   {
     id: "dropdown-menu/a11y/checkbox-radio-item-roles",
     kind: "a11y",
-    description: "Checkbox/radio items expose role=\"menuitemcheckbox\"/\"menuitemradio\" with aria-checked reflecting checked state.",
+    description: "Checkbox/radio items expose valid role=\"menuitemcheckbox\"/\"menuitemradio\" with a well-formed aria-checked attribute (structural ARIA validity only — axe-scan does not prove aria-checked's VALUE tracks checked state; see notes/behavior-coverage.md \"axe = validity only\").",
     source: "docs.ts accessibilityNotes",
   },
   {

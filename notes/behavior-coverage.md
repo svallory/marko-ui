@@ -172,6 +172,52 @@ Root `vitest.config.ts`'s `include` was widened to add `scripts/**/*.test.ts`
 (it previously covered `packages/**`, `apps/docs/scripts/**`,
 `tooling/**` — `scripts/ci/` had no test coverage of its own before this).
 
+## Rule: axe-scan proves structural ARIA validity only, never that a value tracks state
+
+`axe-scan` runs axe-core against a rendered (possibly opened) page and checks
+WCAG/ARIA rules: is this role valid here, is this aria-* attribute
+well-formed, present, and pointing at a real element. It never re-renders the
+page after an interaction and re-checks the attribute's new value — it has no
+concept of "before vs. after a state change." So an `a11y`-kind behavior
+`provenBy` an `axe-scan` check may only claim **structural validity** ("a
+valid role/attribute is present and well-formed"), never **value-tracks-state**
+("this attribute's value changes correctly when the component's state
+changes"). The latter needs a `vitest` check that reads the attribute at two
+different states and asserts both values (the pattern `toggle-controls.test.ts`
+already uses for switch/checkbox `data-state`).
+
+Applied in round 2: `dropdown-menu/a11y/trigger-aria-haspopup-expanded`,
+`dropdown-menu/a11y/checkbox-radio-item-roles`, and
+`combobox/a11y/combobox-listbox-roles` all narrowed from "reflects/tracks
+state" to "structurally valid, presence/well-formedness only" — their
+`provenBy` stayed `axe-scan` (still correct for that narrower claim), but the
+`description` no longer claims what axe can't prove. If a future round wants
+the stronger "value tracks state" claim for one of these, it needs a new
+`vitest`-provenBy behavior split out separately, not a reused axe-scan
+mapping.
+
+## Lead's answers to round-1 open questions
+
+1. **Visual-guard captures (e.g. preview-page-4 opening dropdown-menu) prove
+   only `visual`-kind behaviors** — "renders correctly across style layers
+   while in this state" — never an `interaction`/`keyboard`/`a11y` claim, even
+   though opening the overlay does exercise the click. A pixel-diff assertion
+   proves nothing about ARIA values or focus, so `visual-guard` stays scoped
+   to behaviors whose `kind` is literally `"visual"`.
+2. **Build a stub scaffold before the round-2 rollout**, per the round-1
+   estimate: pre-populate `id`/`kind`/`source` from each component's `docs.ts`
+   examples (title → interaction stub) and its zag machine's `Props` keys
+   (each prop → an `api`-kind stub), so round 2 is filling in
+   descriptions/mappings rather than writing 1,300+ entries from scratch.
+3. **The badge will be release-pinned like the others** — same `badges`
+   branch / release-pipeline pattern as `hydration-invariant`/`axe`, not
+   `badges-main`. Needs the `--json` mode on `scripts/ci/behavior-coverage.ts`
+   before it can be wired into `scripts/ci/badge.ts`'s `combine`.
+4. **Combobox's async-loading demo waits for round 2** —
+   `combobox/api/async-item-loading` stays listed with no proving check for
+   this round; building a real debounced-fetch demo is in scope for the
+   round-2 rollout, not this spike.
+
 ## Open questions for the lead
 
 1. **Does a visual-guard capture count as proving an interaction/keyboard

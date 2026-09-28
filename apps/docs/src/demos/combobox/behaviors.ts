@@ -101,7 +101,7 @@ export const behaviors: ComponentBehavior[] = [
   {
     id: "combobox/a11y/combobox-listbox-roles",
     kind: "a11y",
-    description: "Input carries role=\"combobox\"; the list carries role=\"listbox\"; aria-activedescendant on the input tracks the highlighted option.",
+    description: "Input carries a valid role=\"combobox\"; the list carries a valid role=\"listbox\"; aria-activedescendant is present and well-formed (structural ARIA validity only — axe-scan does not prove aria-activedescendant's VALUE tracks the highlighted option; see notes/behavior-coverage.md \"axe = validity only\").",
     source: "docs.ts accessibilityNotes; WAI-ARIA APG combobox pattern",
   },
   {
