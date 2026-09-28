@@ -11,6 +11,28 @@
 // task's requested "real scroll listener + ResizeObserver in an effect"
 // idiom, using this project's actual effect primitive (`<lifecycle>`; Marko
 // has no separate `<effect>` tag).
+//
+// KNOWN GAP vs. upstream (shadcn 503a3a5, `data-pending-scroll`): upstream's
+// React source computes its `pendingDefaultScrollStore`'s initial value
+// synchronously during render, so the SERVER markup already carries
+// `data-pending-scroll` when `defaultScrollPosition` is "end"/"last-anchor" —
+// the styled viewport (`data-pending-scroll:invisible` in classes.ts) is
+// hidden from first paint until client JS clears it. This port's controller
+// (lib/controller.ts) is created lazily, browser-only (see
+// message-scroller-provider.marko's SERIALIZATION RULE comment), and every
+// attribute it writes — `data-scrollable`/`data-autoscrolling` today, and now
+// `data-pending-scroll` — is applied imperatively on mount via
+// `writeStateAttributes`, never rendered into the SSR HTML. So our port
+// reproduces the FULL client-side lifecycle (initial pending state, cleared
+// once the opening scroll position applies or the transcript is empty — see
+// controller.ts's `pendingDefaultScroll`/`clearPendingDefaultScroll`) but,
+// unlike upstream, cannot hide a server-rendered "top of thread" flash before
+// hydration: nothing sets the attribute until `<lifecycle onMount>` runs.
+// Giving `viewport.marko`/`message-scroller.marko` a static
+// `defaultScrollPosition` input (bypassing the controller for this one
+// SSR-time computation) would close the gap, but widens this component's
+// input surface beyond controller.ts — out of scope here; flagged for the
+// team lead to decide on separately.
 import { cn } from "#lib/utils.ts";
 import type { MessageScrollerControllerGetter } from "./lib/controller.ts";
 import { USER_SCROLL_KEYS } from "./lib/types.ts";
