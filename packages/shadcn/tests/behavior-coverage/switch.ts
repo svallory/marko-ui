@@ -59,11 +59,19 @@ export const coverage: BehaviorCoverageEntry[] = [
       },
     ],
   },
+  {
+    // Restored by the #79 fix: the focusable hidden input now carries
+    // role="switch"; its native `checked` property exposes the checked state.
+    behaviorId: "switch/a11y/role-and-checked-state-exposed",
+    provenBy: [
+      {
+        source: "vitest",
+        file: TOGGLE_CONTROLS_FILE,
+        title: [SWITCH_DESCRIBE, "exposes role=switch with aria-checked=false by default"],
+      },
+    ],
+  },
   // Not covered by any existing check (honest gaps, not omissions):
-  // switch/a11y/role-and-checked-state-exposed — real a11y gap, not a test gap:
-  //   the hidden input is a plain type="checkbox" (no role, no aria-checked),
-  //   and the styled control carries aria-hidden="true" — no rendered element
-  //   exposes role=switch/aria-checked. See notes/team-lead/reports/report-behavior-coverage.md.
   // switch/interaction/click-toggles-checked
   // switch/interaction/label-click-toggles-checked
   // switch/api/controlled-checked
