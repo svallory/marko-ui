@@ -44,7 +44,9 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 import { VISUAL_STYLES } from "../packages/marko-ui/src/registry/constants";
+import { BASE_COLORS as REGISTRY_BASE_COLORS } from "../apps/docs/src/tags/create/lib/registry-config";
 import {
+  applyBaseColor,
   applyStyle,
   applyTheme,
   freezeForScreenshot,
@@ -162,5 +164,244 @@ for (const item of PREVIEW_ITEMS) {
         });
       });
     }
+  }
+}
+
+/**
+ * OVERLAYS-OPEN GUARD (AGENTS.md "Gallery visual guard" follow-up #1)
+ * -------------------------------------------------------------------
+ * preview-page-4 (apps/docs/src/tags/create/preview-blocks/preview-page-4)
+ * renders one instance each of 6 non-modal overlay/portal components
+ * (popover, hover-card, command, context-menu, menubar, navigation-menu —
+ * command is always-open by construction, no trigger needed) plus 4 modal
+ * ones (dialog, alert-dialog, sheet, drawer). Every one is opened here via
+ * real user interaction on its trigger — never a demo "start open" prop —
+ * per AGENTS.md's determinism rules.
+ *
+ * EVERY overlay is captured as an isolated per-component element screenshot
+ * (open alone, screenshot just its content slot, close before the next
+ * opens) — NOT the "open several at once, one full-page shot" shape the
+ * other 3 pages use. That shape was tried first and measured broken:
+ * clicking Menubar's trigger is a real click elsewhere on the page, which
+ * Popover/HoverCard/ContextMenu's outside-click-to-close detection reacts
+ * to — verified with an isolated debug run: after clicking Menubar's "File"
+ * trigger, Popover/HoverCard/ContextMenu's content-slot count all dropped to
+ * 0, and Navigation-menu's click then closed Menubar the same way. Several
+ * non-modal overlays sharing one page is exactly the collision risk AGENTS.md
+ * calls out; per-component isolation is the fix, same principle the 4 modal
+ * captures already use for a stronger reason (their backdrops cover the
+ * whole viewport).
+ *
+ * Popover keeps the full 8-style x light/dark treatment (the highest-risk
+ * case for a style-layer regression: @zag-js/popper positioning plus the
+ * content's own spacing/radius tokens). The other 5 non-modal overlays and
+ * all 4 modals are nova-only x light/dark, per the lead's shot-budget call
+ * (see AGENTS.md for the full matrix and the +10 overshoot from this
+ * redesign).
+ *
+ * toast/sonner and tour are NOT covered — see AGENTS.md for why.
+ */
+const OVERLAY_ITEM = "preview-page-4";
+
+/** Non-modal overlay name -> [how to open it, open content data-slot]. */
+const NON_MODAL_OVERLAYS = [
+  ["popover", async (page: Page) => page.getByRole("button", { name: "Open Popover" }).click(), "popover-content"],
+  ["hover-card", async (page: Page) => page.getByRole("link", { name: "@marko-ui" }).hover(), "hover-card-content"],
+  ["context-menu", async (page: Page) =>
+    page
+      .locator('[data-overlay-card="context-menu"]')
+      .getByText("Right click here")
+      .click({ button: "right" }), "context-menu-content"],
+  ["menubar", async (page: Page) => page.getByRole("button", { name: "File", exact: true }).click(), "menubar-content"],
+  ["navigation-menu", async (page: Page) => page.getByRole("button", { name: "Getting Started" }).click(), "navigation-menu-content"],
+] as const;
+
+/** Command has no trigger — it renders its listbox open by construction
+ *  (an inline list, not a popover/dialog) — so it needs no open step and is
+ *  captured directly by locating its own content, nova-only, no separate
+ *  loop entry needed beyond a fixed content-slot selector. */
+const COMMAND_CONTENT_SLOT = '[data-overlay-card="command"] [data-slot="command"]';
+
+async function captureNonModalOverlay(
+  page: Page,
+  open: (page: Page) => Promise<void>,
+  contentSlot: string,
+): Promise<import("@playwright/test").Locator> {
+  await open(page);
+  const content = page.locator(`[data-slot="${contentSlot}"]`);
+  await content.waitFor({ state: "visible" });
+  // Positioning (@zag-js/popper) computes the floating panel's placement
+  // asynchronously after open — wait for its geometry to stop changing, the
+  // same signature waitForLayoutSettled uses for the whole page, scoped to
+  // just this content slot.
+  await page.waitForFunction(
+    (sel) => {
+      const w = window as unknown as { __overlayContentSettle?: { last: string; count: number } };
+      const el = document.querySelector(sel);
+      const r = el?.getBoundingClientRect();
+      const signature = r ? `${r.x}:${r.y}:${r.width}:${r.height}` : "";
+      const state = (w.__overlayContentSettle ??= { last: "", count: 0 });
+      state.count = signature && signature === state.last ? state.count + 1 : 0;
+      state.last = signature;
+      return Boolean(signature) && state.count >= 3;
+    },
+    `[data-slot="${contentSlot}"]`,
+    { timeout: 20_000, polling: "raf" },
+  );
+  return content;
+}
+
+for (const style of GUARDED_STYLES) {
+  for (const theme of THEMES) {
+    test(`overlays open ${OVERLAY_ITEM} — popover ${style.name} ${theme}`, async ({ page }) => {
+      await page.goto(`/create/preview?item=${OVERLAY_ITEM}`, { waitUntil: "load" });
+      await waitForHydration(page);
+
+      await applyStyle(page, style.name);
+      await applyTheme(page, theme);
+      await freezeForScreenshot(page);
+      await waitForLayoutSettled(page);
+
+      const [, open, contentSlot] = NON_MODAL_OVERLAYS[0];
+      const content = await captureNonModalOverlay(page, open, contentSlot);
+
+      await expect(content).toHaveScreenshot(`overlays-open-popover-${style.name}-${theme}.png`, {
+        animations: "disabled",
+        caret: "hide",
+        timeout: 30_000,
+        maxDiffPixels: 0,
+      });
+    });
+  }
+}
+
+for (const theme of THEMES) {
+  test(`overlays open ${OVERLAY_ITEM} — command nova ${theme}`, async ({ page }) => {
+    await page.goto(`/create/preview?item=${OVERLAY_ITEM}`, { waitUntil: "load" });
+    await waitForHydration(page);
+
+    await applyStyle(page, "nova");
+    await applyTheme(page, theme);
+    await freezeForScreenshot(page);
+    await waitForLayoutSettled(page);
+
+    const content = page.locator(COMMAND_CONTENT_SLOT);
+    await expect(content).toHaveScreenshot(`overlays-open-command-nova-${theme}.png`, {
+      animations: "disabled",
+      caret: "hide",
+      timeout: 30_000,
+      maxDiffPixels: 0,
+    });
+  });
+
+  for (const [name, open, contentSlot] of NON_MODAL_OVERLAYS.slice(1)) {
+    test(`overlays open ${OVERLAY_ITEM} — ${name} nova ${theme}`, async ({ page }) => {
+      await page.goto(`/create/preview?item=${OVERLAY_ITEM}`, { waitUntil: "load" });
+      await waitForHydration(page);
+
+      await applyStyle(page, "nova");
+      await applyTheme(page, theme);
+      await freezeForScreenshot(page);
+      await waitForLayoutSettled(page);
+
+      const content = await captureNonModalOverlay(page, open, contentSlot);
+
+      await expect(content).toHaveScreenshot(`overlays-open-${name}-nova-${theme}.png`, {
+        animations: "disabled",
+        caret: "hide",
+        timeout: 30_000,
+        maxDiffPixels: 0,
+      });
+    });
+  }
+}
+
+/** Modal name -> [trigger accessible name, open content data-slot]. */
+const MODAL_OVERLAYS = [
+  ["dialog", "Edit Profile", "dialog-content"],
+  ["alert-dialog", "Show Dialog", "alert-dialog-content"],
+  ["sheet", "Open", "sheet-content"],
+  ["drawer", "Open Drawer", "drawer-content"],
+] as const;
+
+for (const theme of THEMES) {
+  for (const [name, triggerLabel, contentSlot] of MODAL_OVERLAYS) {
+    test(`overlays open ${OVERLAY_ITEM} — modal ${name} nova ${theme}`, async ({ page }) => {
+      await page.goto(`/create/preview?item=${OVERLAY_ITEM}`, { waitUntil: "load" });
+      await waitForHydration(page);
+
+      await applyStyle(page, "nova");
+      await applyTheme(page, theme);
+      await freezeForScreenshot(page);
+      await waitForLayoutSettled(page);
+
+      await page.getByRole("button", { name: triggerLabel, exact: true }).click();
+      const content = page.locator(`[data-slot="${contentSlot}"]`);
+      await content.waitFor({ state: "visible" });
+      await waitForLayoutSettled(page);
+
+      await expect(content).toHaveScreenshot(`overlays-open-modal-${name}-nova-${theme}.png`, {
+        animations: "disabled",
+        caret: "hide",
+        timeout: 30_000,
+        maxDiffPixels: 0,
+      });
+
+      // Close before the next test reuses this same page's server render —
+      // each test gets a fresh page via goto() above, so this is a
+      // defense-in-depth cleanup, not load-bearing for the next iteration.
+      await page.keyboard.press("Escape");
+    });
+  }
+}
+
+/**
+ * BASE-COLOR GUARD (AGENTS.md "Gallery visual guard" follow-up #2)
+ * ------------------------------------------------------------------
+ * Production pairs `style-*` with `base-color-*` (applyParams() in
+ * create/preview/+page.marko sets both); this guard's style-swap loop above
+ * never touched base-color at all. Covers the real 7-name BASE_COLORS axis
+ * (registry-config.ts — neutral/stone/zinc/mauve/olive/mist/taupe; NOT the
+ * unrelated globals-{zinc,slate,stone,gray}.css files, which are a different,
+ * copy-path-only axis with no relationship to /create's base-color picker).
+ *
+ * Scoped to nova only, on preview-page-1 only, per the lead's shot-budget
+ * decision — see AGENTS.md for the full matrix and what remains unguarded
+ * (no style x base-color cross-product, no base-color pass on the overlays
+ * page).
+ *
+ * applyBaseColor() (e2e/visual-helpers.ts) drives this through the real
+ * `design-system-params` postMessage applyParams() itself listens for — the
+ * same mechanism the live /create customizer uses — never a hand-rolled
+ * re-implementation of buildRegistryTheme's CSS-var math.
+ */
+const BASE_COLOR_ITEM = "preview-page-1";
+const BASE_COLORS = ["neutral", "stone", "zinc", "mauve", "olive", "mist", "taupe"] as const;
+
+test("the base-color list this guard covers matches the registry", () => {
+  expect(REGISTRY_BASE_COLORS.map((c) => c.name)).toEqual([...BASE_COLORS]);
+});
+
+for (const baseColor of BASE_COLORS) {
+  for (const theme of THEMES) {
+    test(`base-color ${BASE_COLOR_ITEM} — ${baseColor} nova ${theme}`, async ({ page }) => {
+      await page.goto(`/create/preview?item=${BASE_COLOR_ITEM}`, { waitUntil: "load" });
+      await waitForHydration(page);
+
+      await applyStyle(page, "nova");
+      await applyTheme(page, theme);
+      await applyBaseColor(page, baseColor);
+      await freezeForScreenshot(page);
+      await waitForLayoutSettled(page);
+
+      await expect(page).toHaveScreenshot(`base-color-${baseColor}-nova-${theme}.png`, {
+        fullPage: true,
+        animations: "disabled",
+        caret: "hide",
+        mask: masksFor(page),
+        timeout: 30_000,
+        maxDiffPixels: 0,
+      });
+    });
   }
 }

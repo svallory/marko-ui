@@ -96,6 +96,58 @@ export async function applyTheme(page: Page, theme: "light" | "dark"): Promise<v
 }
 
 /**
+ * Apply a `base-color-*` layer the same way the real /create customizer does
+ * — via the exact `design-system-params` postMessage
+ * apps/docs/src/routes/create/preview/+page.marko's `applyParams()` listens
+ * for, never a hand-rolled re-implementation of its CSS-var math. `theme` and
+ * `chartColor` are set equal to `baseColor`: every BASE_COLORS name is also a
+ * THEMES name (see registry-config.ts's `BASE_COLORS = THEMES.filter(...)`),
+ * so this pairing is always valid and `buildRegistryTheme` never throws.
+ *
+ * `style` must be passed too (read off the page's own current
+ * `style-*` body class) — `applyParams()`'s class-add branch is gated on
+ * `if (style && theme && font && baseColor)` all four being truthy, so an
+ * omitted `style` silently skips adding BOTH the `style-*` and
+ * `base-color-*` classes even though the second `if` block (CSS-var
+ * injection) still runs unconditionally on baseColor/theme/menuAccent/
+ * radius alone — confirmed by an isolated debug run: the `#design-system-
+ * theme-vars` style tag appeared but `body.classList` never gained
+ * `base-color-*`. Call `applyStyle` BEFORE this so the current style is
+ * already on the body to read back.
+ */
+export async function applyBaseColor(page: Page, baseColor: string): Promise<void> {
+  await page.evaluate((name) => {
+    const currentStyle = Array.from(document.body.classList)
+      .find((c) => c.startsWith("style-"))
+      ?.slice("style-".length);
+    window.postMessage(
+      {
+        type: "design-system-params",
+        data: {
+          style: currentStyle,
+          baseColor: name,
+          theme: name,
+          chartColor: name,
+          font: "inter",
+          fontHeading: "inherit",
+          radius: "default",
+          menuAccent: "subtle",
+          pointer: false,
+        },
+      },
+      "*",
+    );
+  }, baseColor);
+  // The listener applies synchronously off the message event, but let the
+  // event loop actually deliver it before the caller proceeds.
+  await page.waitForFunction(
+    (name) => document.body.classList.contains(`base-color-${name}`),
+    baseColor,
+    { timeout: 5_000 },
+  );
+}
+
+/**
  * Wait for Marko resumption — the same signal scripts/ci/axe-scan.ts and the
  * behavior-test helpers use. Screenshotting before hydration captures the
  * SSR paint, which differs from the hydrated one for components whose Zag
