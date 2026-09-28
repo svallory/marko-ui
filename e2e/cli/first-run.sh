@@ -257,10 +257,14 @@ import Icon from "../../components/ui/icon/icon.marko";
 MARKO
 
 ICON_LIBS="lucide tabler phosphor remixicon hugeicons"
+prev_lib=""
 for lib in $ICON_LIBS; do
   echo "-- $lib"
   icon_dir="$APP/src/components/ui/icon"
-  rm -rf "$icon_dir" "$APP/dist"
+  # NOT removing $icon_dir: each iteration SWITCHES library on top of the last
+  # one's output, so the "other maps absent" assertions below prove that `add`
+  # deletes the previous library's stale map instead of leaving it behind.
+  rm -rf "$APP/dist"
   (cd "$APP" && node -e '
     const fs = require("fs");
     const c = JSON.parse(fs.readFileSync("components.json", "utf8"));
@@ -270,6 +274,13 @@ for lib in $ICON_LIBS; do
 
   icon_out="$(run_cli add icon --overwrite)"
   [ $? -eq 0 ] && ok "$lib: add icon succeeded" || { bad "$lib: add icon failed"; echo "$icon_out" | tail -10; }
+
+  if [ -n "$prev_lib" ]; then
+    grep -q "Removed 1 stale icon map" <<<"$icon_out" && grep -q "__${prev_lib}__.ts" <<<"$icon_out" \
+      && ok "$lib: add logged the removal of the stale $prev_lib map" \
+      || bad "$lib: add did not log removing the stale $prev_lib map"
+  fi
+  prev_lib="$lib"
 
   # Files: exactly this library's map, none of the others, no runtime switcher.
   [ -f "$icon_dir/__${lib}__.ts" ] && ok "$lib: __${lib}__.ts copied" || bad "$lib: __${lib}__.ts missing"
@@ -310,6 +321,19 @@ for lib in $ICON_LIBS; do
     fi
   done <<<"$markers"
 done
+
+echo "-- unknown iconLibrary"
+(cd "$APP" && node -e '
+  const fs = require("fs");
+  const c = JSON.parse(fs.readFileSync("components.json", "utf8"));
+  c.iconLibrary = "heroicons";
+  fs.writeFileSync("components.json", JSON.stringify(c, null, 2));
+')
+bad_out="$(run_cli add icon --overwrite)"
+bad_rc=$?
+[ $bad_rc -ne 0 ] && grep -q 'Invalid icon library "heroicons"' <<<"$bad_out" \
+  && ok "unknown iconLibrary fails with InvalidConfigIconLibraryError message" \
+  || { bad "unknown iconLibrary did not fail clearly (rc=$bad_rc)"; echo "$bad_out" | tail -5; }
 
 echo
 echo "================================"
