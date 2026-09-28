@@ -51,7 +51,23 @@ export type Input = MachineInput<"input", switchMachine.Props> & {
 // id; when no label content is rendered that reference dangles and the
 // switch ends up with NO accessible name (axe: label). Keep the reference
 // only when the label part actually exists.
-<const/hiddenInputProps=() => api().getHiddenInputProps()/>
+//
+// Zag's own getHiddenInputProps() only emits type="checkbox" (see
+// @zag-js/switch's switch.connect.ts) — the visible control/thumb parts are
+// aria-hidden, so nothing in the tree carries the switch semantics and AT
+// announces a plain checkbox. Upstream (Radix) puts role="switch" on the
+// focusable element it renders; the hidden input is our focusable element,
+// so role="switch" belongs there. A native checkbox + role="switch" is a
+// valid, well-supported override (WAI-ARIA: host language semantics may be
+// strengthened by an ARIA role), and the native checked/indeterminate state
+// still drives the accessible checked state through the input's own
+// semantics — no separate aria-checked needed alongside a real checkbox.
+<const/hiddenInputProps=(): ReturnType<
+  ReturnType<typeof api>["getHiddenInputProps"]
+> & { role: "switch" } => ({
+  role: "switch" as const,
+  ...api().getHiddenInputProps(),
+})/>
 
 // The root <label> WRAPS the control, so Zag's `for` pointing at the hidden
 // input is redundant — drop it (html-validate no-redundant-for); the wrapping
