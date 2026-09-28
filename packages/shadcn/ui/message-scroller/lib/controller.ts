@@ -113,16 +113,6 @@ export function createMessageScrollerController(options: MessageScrollerProvider
   let streamingTurn: HTMLElement | null = null;
   let content: HTMLElement | null = null;
   let defaultScrollPositionApplied = false;
-  // Port of shadcn 503a3a5's pendingDefaultScrollStore: true only when the
-  // opening position is "end"/"last-anchor" (those are the two positions
-  // that move the viewport away from its natural top-of-content start, so
-  // only they risk a visible jump). Cleared the moment the position is
-  // actually applied, or immediately for an empty transcript (nothing to
-  // scroll to, so nothing to hide). Unlike upstream's React store this needs
-  // no separate pub/sub: it is written straight onto the DOM alongside the
-  // other state attributes (see writeStateAttributes), since nothing here
-  // re-renders off of it.
-  let pendingDefaultScroll = defaultScrollPosition === "end" || defaultScrollPosition === "last-anchor";
   let firstItem: HTMLElement | null = null;
   let itemCount = 0;
   let lastScrollTop = 0;
@@ -159,20 +149,7 @@ export function createMessageScrollerController(options: MessageScrollerProvider
       }
 
       element.toggleAttribute("data-autoscrolling", autoscrolling);
-      element.toggleAttribute("data-pending-scroll", pendingDefaultScroll);
     }
-  }
-
-  // Port of shadcn 503a3a5's clearPendingDefaultScroll/markDefaultScrollPositionApplied.
-  function clearPendingDefaultScroll() {
-    if (!pendingDefaultScroll) return;
-    pendingDefaultScroll = false;
-    writeStateAttributes(stateStore.getSnapshot());
-  }
-
-  function markDefaultScrollPositionApplied() {
-    defaultScrollPositionApplied = true;
-    clearPendingDefaultScroll();
   }
 
   // Owns the one follow-bottom transition: arm at the bottom, release on any
@@ -353,13 +330,13 @@ export function createMessageScrollerController(options: MessageScrollerProvider
     if (!element) {
       if (itemCount === 0) {
         pendingScrollToMessage = { messageId, options: scrollOptions };
-        markDefaultScrollPositionApplied();
+        defaultScrollPositionApplied = true;
         return true;
       }
       return false;
     }
 
-    markDefaultScrollPositionApplied();
+    defaultScrollPositionApplied = true;
 
     if (scrollToElement(element, scrollOptions)) {
       pendingScrollToMessage = null;
@@ -381,7 +358,7 @@ export function createMessageScrollerController(options: MessageScrollerProvider
     if (!handled) return false;
 
     pendingScrollToMessage = null;
-    markDefaultScrollPositionApplied();
+    defaultScrollPositionApplied = true;
     return true;
   }
 
@@ -455,7 +432,7 @@ export function createMessageScrollerController(options: MessageScrollerProvider
 
     if (!handled) return false;
 
-    markDefaultScrollPositionApplied();
+    defaultScrollPositionApplied = true;
     return true;
   }
 
@@ -474,8 +451,6 @@ export function createMessageScrollerController(options: MessageScrollerProvider
 
       if (previousItemCount === 0) {
         if (applyDefaultScrollPosition()) return;
-
-        if (items.length === 0) clearPendingDefaultScroll();
 
         if (items.length > 0 && autoScroll && scrollToEnd({ behavior: "auto" })) return;
 
@@ -673,9 +648,7 @@ export function createMessageScrollerController(options: MessageScrollerProvider
   // + the mount-time autoScroll layout effect. Call once the root/viewport/
   // content elements have all attached (see message-scroller-provider.marko).
   function init() {
-    if (!applyDefaultScrollPosition() && itemCount === 0) {
-      clearPendingDefaultScroll();
-    }
+    applyDefaultScrollPosition();
 
     if (autoScroll && mode === "following-bottom" && itemCount > 0) {
       scrollToEnd({ behavior: "auto" });
