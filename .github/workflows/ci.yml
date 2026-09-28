@@ -271,6 +271,7 @@ jobs:
       # mapping points at a renamed/deleted test, so drift fails the job
       # instead of publishing a stale number.
       - name: Behavior coverage badge
+        if: always()
         run: |
           bun scripts/ci/behavior-coverage.ts --json > behavior-coverage.json
           bun scripts/ci/badge.ts behavior-coverage behavior-coverage.json badge-out

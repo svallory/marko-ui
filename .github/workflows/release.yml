@@ -278,6 +278,7 @@ jobs:
       # behavior-coverage kind (v0.4.0 and older) are skipped, not failed, so
       # badges_only still works for them.
       - name: Generate behavior coverage badge
+        if: always()
         run: |
           if ! grep -q 'case "behavior-coverage"' scripts/ci/badge.ts; then
             echo "::notice::this tag's badge.ts has no behavior-coverage kind; skipping the coverage badge"
