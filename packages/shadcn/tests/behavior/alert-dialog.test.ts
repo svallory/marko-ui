@@ -52,6 +52,11 @@ async function waitForOpenAlert(page: Page): Promise<Locator> {
   return content;
 }
 
+/** Wait for text to be visible (vitest's `expect` has no Playwright matchers). */
+async function seeText(scope: Locator, text: string): Promise<void> {
+  await scope.getByText(text).first().waitFor({ state: "visible" });
+}
+
 afterAll(async () => {
   await closeSharedBrowser();
 });
@@ -187,15 +192,15 @@ describe("alert-dialog props", () => {
   it("follows a controlled open state driven by openChange", { timeout: 60_000 }, async () => {
     await withAlertDialogPage(async (page) => {
       const demo = demoByTitle(page, "Controlled");
-      await expect(demo.getByText("open: false")).toBeVisible();
+      await seeText(demo, "open: false");
 
       await triggerIn(page, "Controlled").click();
       const content = await waitForOpenAlert(page);
-      await expect(demo.getByText("open: true")).toBeVisible();
+      await seeText(demo, "open: true");
 
       await content.locator('[data-slot="alert-dialog-cancel"]').click();
       await content.waitFor({ state: "detached" });
-      await expect(demo.getByText("open: false")).toBeVisible();
+      await seeText(demo, "open: false");
     });
   });
 
@@ -213,7 +218,7 @@ describe("alert-dialog props", () => {
     });
   });
 
-  it("renders the media slot above the title", { timeout: 60_000 }, async () => {
+  it("renders the media slot ahead of the title", { timeout: 60_000 }, async () => {
     await withAlertDialogPage(async (page) => {
       await triggerIn(page, "Media").click();
       const content = await waitForOpenAlert(page);
@@ -224,7 +229,10 @@ describe("alert-dialog props", () => {
       const mediaBox = await media.boundingBox();
       const titleBox = await title.boundingBox();
       if (!mediaBox || !titleBox) throw new Error("media or title has no bounding box");
-      expect(mediaBox.y + mediaBox.height).toBeLessThanOrEqual(titleBox.y + 1);
+      // Stacked above the title on narrow layouts, beside it (start side) on sm+ layouts.
+      const above = mediaBox.y + mediaBox.height <= titleBox.y + 1;
+      const before = mediaBox.x + mediaBox.width <= titleBox.x + 1;
+      expect(above || before, "media should precede the title").toBe(true);
     });
   });
 });

@@ -51,6 +51,11 @@ async function waitForOpenPopover(page: Page): Promise<Locator> {
   return content;
 }
 
+/** Wait for text to be visible (vitest's `expect` has no Playwright matchers). */
+async function seeText(scope: Locator, text: string): Promise<void> {
+  await scope.getByText(text).first().waitFor({ state: "visible" });
+}
+
 afterAll(async () => {
   await closeSharedBrowser();
 });
@@ -184,15 +189,15 @@ describe("popover props", () => {
   it("follows a controlled open state driven by openChange", { timeout: 60_000 }, async () => {
     await withPopoverPage(async (page) => {
       const demo = demoByTitle(page, "Controlled");
-      await expect(demo.getByText("open: false")).toBeVisible();
+      await seeText(demo, "open: false");
 
       await triggerIn(page, "Controlled").click();
       await popoverContent(page).waitFor({ state: "visible" });
-      await expect(demo.getByText("open: true")).toBeVisible();
+      await seeText(demo, "open: true");
 
       await pressKey(page, "Escape");
       await popoverContent(page).waitFor({ state: "detached" });
-      await expect(demo.getByText("open: false")).toBeVisible();
+      await seeText(demo, "open: false");
     });
   });
 });

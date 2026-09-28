@@ -144,7 +144,7 @@ export const coverage: BehaviorCoverageEntry[] = [
       {
         source: "vitest",
         file: "packages/shadcn/tests/behavior/alert-dialog.test.ts",
-        title: ["alert-dialog props", "renders the media slot above the title"],
+        title: ["alert-dialog props", "renders the media slot ahead of the title"],
       },
     ],
   },

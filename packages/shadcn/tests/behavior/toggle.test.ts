@@ -25,6 +25,11 @@ function toggleIn(page: Page, demoTitle: string): Locator {
   return demoByTitle(page, demoTitle).locator('[data-slot="toggle"]').first();
 }
 
+/** Wait for text to be visible (vitest's `expect` has no Playwright matchers). */
+async function seeText(scope: Locator, text: string): Promise<void> {
+  await scope.getByText(text).first().waitFor({ state: "visible" });
+}
+
 afterAll(async () => {
   await closeSharedBrowser();
 });
@@ -109,14 +114,14 @@ describe("toggle props", () => {
 
       // The demo starts with pressed=true and mirrors the value beside the toggle.
       expect(await attributeOf(toggle, "aria-pressed")).toBe("true");
-      await expect(demo.getByText("pressed: true")).toBeVisible();
+      await seeText(demo, "pressed: true");
 
       await toggle.click();
-      await expect(demo.getByText("pressed: false")).toBeVisible();
+      await seeText(demo, "pressed: false");
       expect(await attributeOf(toggle, "aria-pressed")).toBe("false");
 
       await toggle.click();
-      await expect(demo.getByText("pressed: true")).toBeVisible();
+      await seeText(demo, "pressed: true");
       expect(await attributeOf(toggle, "aria-pressed")).toBe("true");
     });
   });

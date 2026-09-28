@@ -72,7 +72,7 @@ export const behaviors: ComponentBehavior[] = [
   {
     id: "alert-dialog/api/media-slot",
     kind: "api",
-    description: "The `@media` slot renders an icon/image above the title.",
+    description: "The `@media` slot renders an icon/image in the header ahead of the title (above it when narrow, beside it on sm+ layouts).",
     source: "alert-dialog.marko; alert-dialog-media.marko",
   },
   {

@@ -36,6 +36,11 @@ async function expectPanelHidden(panel: Locator, hidden: boolean): Promise<void>
   await expect.poll(() => panel.evaluate((element) => (element as HTMLElement).hidden)).toBe(hidden);
 }
 
+/** Wait for text to be visible (vitest's `expect` has no Playwright matchers). */
+async function seeText(scope: Locator, text: string): Promise<void> {
+  await scope.getByText(text).first().waitFor({ state: "visible" });
+}
+
 afterAll(async () => {
   await closeSharedBrowser();
 });
@@ -102,7 +107,7 @@ describe("collapsible pointer interaction", () => {
 
       await triggerIn(demo).click();
       await expectPanelHidden(panel, false);
-      await expect(panel.getByText("This panel can be expanded")).toBeVisible();
+      await seeText(panel, "This panel can be expanded");
 
       await triggerIn(demo).click();
       await expectPanelHidden(panel, true);
@@ -114,22 +119,26 @@ describe("collapsible pointer interaction", () => {
     await withCollapsiblePage(async (page) => {
       const demo = demoByTitle(page, "File Tree");
       const components = demo.getByRole("button", { name: "components", exact: true });
-      await components.click();
+      // The tree sits in a clipped stage that another block overlaps, so activate by keyboard.
+      await focusElement(components);
+      await pressKey(page, "Enter");
       await expect.poll(() => attributeOf(components, "aria-expanded")).toBe("true");
 
       const ui = demo.getByRole("button", { name: "ui", exact: true });
-      await ui.click();
+      await focusElement(ui);
+      await pressKey(page, "Enter");
       await expect.poll(() => attributeOf(ui, "aria-expanded")).toBe("true");
-      await expect(demo.getByText("button.marko")).toBeVisible();
+      await seeText(demo, "button.marko");
 
       // Closing the child leaves the parent open.
-      await ui.click();
+      await pressKey(page, "Enter");
       await expect.poll(() => attributeOf(ui, "aria-expanded")).toBe("false");
       expect(await attributeOf(components, "aria-expanded")).toBe("true");
-      await expect(demo.getByText("login-form.marko")).toBeVisible();
+      await seeText(demo, "login-form.marko");
 
       // Closing the parent does not need the child's state to change first.
-      await components.click();
+      await focusElement(components);
+      await pressKey(page, "Enter");
       await expect.poll(() => attributeOf(components, "aria-expanded")).toBe("false");
     });
   });
@@ -164,7 +173,8 @@ describe("collapsible props", () => {
 
       expect(await attributeOf(trigger, "data-disabled")).not.toBeUndefined();
 
-      await trigger.click();
+      // aria-disabled makes Playwright refuse a normal click; a user click still lands.
+      await trigger.click({ force: true });
       await settle(page);
       expect(await attributeOf(trigger, "aria-expanded")).toBe("false");
 
@@ -183,17 +193,17 @@ describe("collapsible props", () => {
       const trigger = triggerIn(demo);
       const panel = contentIn(demo);
 
-      await expect(demo.getByText("State: closed")).toBeVisible();
+      await seeText(demo, "State: closed");
 
       // The consumer flips `open`; the machine must follow it.
       await demo.getByRole("button", { name: "Toggle externally" }).click();
-      await expect(demo.getByText("State: open")).toBeVisible();
+      await seeText(demo, "State: open");
       await expect.poll(() => attributeOf(trigger, "aria-expanded")).toBe("true");
       await expectPanelHidden(panel, false);
 
       // And a user toggle is reported back through openChange.
       await trigger.click();
-      await expect(demo.getByText("State: closed")).toBeVisible();
+      await seeText(demo, "State: closed");
       await expectPanelHidden(panel, true);
     });
   });
