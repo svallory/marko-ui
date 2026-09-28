@@ -50,8 +50,11 @@ describe("switch keyboard contract (APG)", () => {
     await withComponentPage("switch", async (page) => {
       const control = demoByTitle(page, "Basic").locator('[data-scope="switch"][data-part="control"]');
       const root = demoByTitle(page, "Basic").locator('[data-scope="switch"][data-part="root"]');
+      const input = hiddenInputIn(demoByTitle(page, "Basic")).first();
 
       expect(await attributeOf(root, "data-state")).toBe("unchecked");
+      expect(await attributeOf(input, "role")).toBe("switch");
+      expect(await attributeOf(input, "aria-checked")).toBe("false");
       await expect.poll(() => control.count()).toBeGreaterThan(0);
     });
   });
