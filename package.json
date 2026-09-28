@@ -45,6 +45,7 @@
     "@types/pngjs": "^6.0.5",
     "@zag-js/tabs": "1.43.3",
     "axe-core": "^4.13.0",
+    "happy-dom": "^20.14.5",
     "lucide-static": "^1.37.0",
     "marko": "6.3.46",
     "odiff-bin": "^4.5.0",

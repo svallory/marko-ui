@@ -1,8 +1,14 @@
 import { defineConfig } from "vitest/config";
+import { fileURLToPath } from "node:url";
 import marko from "@marko/vite";
 
 export default defineConfig({
   plugins: [marko({ linked: false })],
+  resolve: {
+    // Lets root-run tests import CLI sources (packages/marko-ui) that use its
+    // "@/src/*" alias, e.g. the icon add-time transform.
+    alias: { "@/src": fileURLToPath(new URL("./packages/marko-ui/src", import.meta.url)) },
+  },
   test: {
     environment: "node",
     include: [
