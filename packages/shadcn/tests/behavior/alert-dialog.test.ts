@@ -53,7 +53,7 @@ async function waitForOpenAlert(page: Page): Promise<Locator> {
 }
 
 /** Wait for text to be visible (vitest's `expect` has no Playwright matchers). */
-async function seeText(scope: Locator, text: string): Promise<void> {
+async function seeText(scope: Locator | Page, text: string): Promise<void> {
   await scope.getByText(text).first().waitFor({ state: "visible" });
 }
 
@@ -191,17 +191,17 @@ describe("alert-dialog ARIA", () => {
 describe("alert-dialog props", () => {
   it("follows a controlled open state driven by openChange", { timeout: 60_000 }, async () => {
     await withAlertDialogPage(async (page) => {
-      const demo = demoByTitle(page, "Controlled");
-      await seeText(demo, "open: false");
+      // Read the state text page-wide: while the modal is open Zag marks the rest of the
+      // page aria-hidden, which drops the demo's heading out of role-based lookups.
+      await seeText(page, "open: false");
 
       await triggerIn(page, "Controlled").click();
       const content = await waitForOpenAlert(page);
-      // Compare against the demo's full text so a failure shows what it actually rendered.
-      await expect.poll(() => demo.textContent()).toContain("open: true");
+      await seeText(page, "open: true");
 
       await content.locator('[data-slot="alert-dialog-cancel"]').click();
       await content.waitFor({ state: "detached" });
-      await seeText(demo, "open: false");
+      await seeText(page, "open: false");
     });
   });
 
