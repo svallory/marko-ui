@@ -17,8 +17,16 @@
  * there is no equivalent "list without running" for a Playwright spec, so
  * those sources are trusted to run for every component they claim to cover.
  *
- * Usage: bun scripts/ci/behavior-coverage.ts [component...]
+ * Behaviors with `status: "stub"` (scaffold output, see
+ * scripts/ci/scaffold-behaviors.ts) are NOT countable: they are excluded
+ * from `total`/`covered` and reported as `pending` per component, so an
+ * unreviewed stub can neither dilute nor inflate the number. A mapping
+ * entry that cites a stub is an error (review the behavior first).
+ *
+ * Usage: bun scripts/ci/behavior-coverage.ts [--json] [component...]
  *   No args: every component with a behaviors.ts file.
+ *   --json: print a machine-readable summary (fed to scripts/ci/badge.ts)
+ *   instead of the table; still exits non-zero on errors.
  *   Exits non-zero on: an unknown behaviorId in a mapping, a duplicate
  *   behaviorId within one behaviors.ts, or a vitest proving check whose
  *   title no longer exists.
@@ -122,8 +130,11 @@ function checkExists(check: ProvingCheck): true | string {
 
 interface ComponentReport {
   component: string;
+  /** Reviewed behaviors only; stubs are excluded. */
   total: number;
   covered: number;
+  /** Unreviewed stubs, not counted anywhere. */
+  pending: number;
   uncovered: string[];
   errors: string[];
 }
@@ -146,17 +157,20 @@ async function loadComponent(component: string, roots: ComponentRoots = DEFAULT_
   const behaviorsModule = (await freshImport(join(roots.demosDir, component, "behaviors.ts"))) as {
     behaviors: ComponentBehavior[];
   };
-  const behaviors = behaviorsModule.behaviors;
+  const allBehaviors = behaviorsModule.behaviors;
+  const pending = allBehaviors.filter((b) => b.status === "stub").length;
+  const behaviors = allBehaviors.filter((b) => b.status !== "stub");
+  const stubIds = new Set(allBehaviors.filter((b) => b.status === "stub").map((b) => b.id));
 
   // Duplicate id check.
   const seen = new Map<string, number>();
-  for (const b of behaviors) {
+  for (const b of allBehaviors) {
     seen.set(b.id, (seen.get(b.id) ?? 0) + 1);
   }
   for (const [id, count] of seen) {
     if (count > 1) errors.push(`duplicate behavior id "${id}" (${count}x) in ${component}/behaviors.ts`);
   }
-  for (const b of behaviors) {
+  for (const b of allBehaviors) {
     if (!b.id.startsWith(`${component}/`)) {
       errors.push(`behavior id "${b.id}" in ${component}/behaviors.ts does not start with "${component}/"`);
     }
@@ -170,6 +184,10 @@ async function loadComponent(component: string, roots: ComponentRoots = DEFAULT_
 
   const provenIds = new Set<string>();
   for (const entry of coverage) {
+    if (stubIds.has(entry.behaviorId)) {
+      errors.push(`mapping entry for "${entry.behaviorId}" targets an unreviewed stub — review the behavior (remove status: "stub") first`);
+      continue;
+    }
     if (!behaviorIds.has(entry.behaviorId)) {
       errors.push(
         `mapping references unknown behavior id "${entry.behaviorId}" — not declared in ${component}/behaviors.ts`,
@@ -207,8 +225,37 @@ async function loadComponent(component: string, roots: ComponentRoots = DEFAULT_
     component,
     total: behaviors.length,
     covered: provenIds.size,
+    pending,
     uncovered,
     errors,
+  };
+}
+
+export interface CoverageSummary {
+  covered: number;
+  /** Reviewed behaviors across listed components. */
+  total: number;
+  /** Components with >=1 reviewed behavior. */
+  listedComponents: number;
+  /** Components whose behaviors.ts exists but holds only unreviewed stubs. */
+  stubOnlyComponents: number;
+  pendingStubs: number;
+  components: { component: string; covered: number; total: number; pending: number }[];
+}
+
+/**
+ * Only components with >=1 reviewed behavior count as "listed"; a
+ * stub-only file contributes nothing to any number but the pending count.
+ */
+export function summarize(reports: ComponentReport[]): CoverageSummary {
+  const listed = reports.filter((r) => r.total > 0);
+  return {
+    covered: listed.reduce((n, r) => n + r.covered, 0),
+    total: listed.reduce((n, r) => n + r.total, 0),
+    listedComponents: listed.length,
+    stubOnlyComponents: reports.filter((r) => r.total === 0 && r.pending > 0).length,
+    pendingStubs: reports.reduce((n, r) => n + r.pending, 0),
+    components: reports.map((r) => ({ component: r.component, covered: r.covered, total: r.total, pending: r.pending })),
   };
 }
 
@@ -218,7 +265,9 @@ function pct(covered: number, total: number): string {
 }
 
 async function main() {
-  const argComponents = process.argv.slice(2);
+  const args = process.argv.slice(2);
+  const json = args.includes("--json");
+  const argComponents = args.filter((a) => a !== "--json");
   const components = argComponents.length > 0 ? argComponents : findComponentsWithBehaviors();
 
   if (components.length === 0) {
@@ -241,21 +290,33 @@ async function main() {
     if (report.errors.length > 0) hadError = true;
   }
 
+  if (json) {
+    // Errors go to stderr; stdout stays pure JSON for badge.ts.
+    for (const r of reports) for (const e of r.errors) console.error(`${r.component}: ${e}`);
+    console.log(JSON.stringify(summarize(reports)));
+    if (hadError) process.exit(1);
+    return;
+  }
+
   const nameWidth = Math.max(9, ...reports.map((r) => r.component.length));
-  console.log(`${"component".padEnd(nameWidth)}  covered  total  coverage`);
-  console.log("-".repeat(nameWidth + 26));
+  console.log(`${"component".padEnd(nameWidth)}  covered  total  coverage  pending`);
+  console.log("-".repeat(nameWidth + 36));
   let totalCovered = 0;
   let totalBehaviors = 0;
   for (const r of reports) {
     console.log(
-      `${r.component.padEnd(nameWidth)}  ${String(r.covered).padStart(7)}  ${String(r.total).padStart(5)}  ${pct(r.covered, r.total).padStart(8)}`,
+      `${r.component.padEnd(nameWidth)}  ${String(r.covered).padStart(7)}  ${String(r.total).padStart(5)}  ${pct(r.covered, r.total).padStart(8)}  ${String(r.pending).padStart(7)}`,
     );
     totalCovered += r.covered;
     totalBehaviors += r.total;
   }
-  console.log("-".repeat(nameWidth + 26));
+  console.log("-".repeat(nameWidth + 36));
+  const summary = summarize(reports);
   console.log(
-    `${"TOTAL".padEnd(nameWidth)}  ${String(totalCovered).padStart(7)}  ${String(totalBehaviors).padStart(5)}  ${pct(totalCovered, totalBehaviors).padStart(8)}`,
+    `${"TOTAL".padEnd(nameWidth)}  ${String(totalCovered).padStart(7)}  ${String(totalBehaviors).padStart(5)}  ${pct(totalCovered, totalBehaviors).padStart(8)}  ${String(summary.pendingStubs).padStart(7)}`,
+  );
+  console.log(
+    `${summary.listedComponents} listed component(s), ${summary.stubOnlyComponents} stub-only (${summary.pendingStubs} unreviewed stub entries excluded from all counts)`,
   );
 
   for (const r of reports) {
@@ -277,4 +338,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 }
 
 export { loadComponent, findComponentsWithBehaviors, checkExists };
-export type { ComponentRoots };
+export type { ComponentRoots, ComponentReport };

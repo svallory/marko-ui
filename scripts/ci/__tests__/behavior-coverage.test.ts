@@ -15,7 +15,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadComponent, type ComponentRoots } from "../behavior-coverage.ts";
+import { loadComponent, summarize, type ComponentRoots } from "../behavior-coverage.ts";
 
 const FIXTURE_NAME = "__behcov_fixture__";
 
@@ -219,5 +219,61 @@ export const coverage: BehaviorCoverageEntry[] = [];
 
     const report = await loadComponent(FIXTURE_NAME, roots);
     expect(report.errors.some((e) => e.includes("does not start with"))).toBe(true);
+  });
+});
+
+describe("behavior-coverage: unreviewed stubs", () => {
+  const stubBehaviors = `${BEHAVIOR_TYPES_IMPORT}
+export const behaviors: ComponentBehavior[] = [
+  { id: "${FIXTURE_NAME}/keyboard/reviewed", kind: "keyboard", description: "x", source: "x" },
+  { id: "${FIXTURE_NAME}/api/stubbed", kind: "api", description: "TODO", source: "x", status: "stub" },
+  { id: "${FIXTURE_NAME}/api/stubbed-2", kind: "api", description: "TODO", source: "x", status: "stub" },
+];
+`;
+
+  it("excludes stubs from total and reports them as pending", async () => {
+    writeBehaviors(stubBehaviors);
+    const r = await loadComponent(FIXTURE_NAME, roots);
+    expect(r.total).toBe(1);
+    expect(r.pending).toBe(2);
+    expect(r.covered).toBe(0);
+    expect(r.uncovered).toEqual([`${FIXTURE_NAME}/keyboard/reviewed`]);
+    expect(r.errors).toEqual([]);
+  });
+
+  it("rejects a mapping entry that targets a stub", async () => {
+    writeBehaviors(stubBehaviors);
+    writeMapping(`${MAPPING_TYPES_IMPORT}
+export const coverage: BehaviorCoverageEntry[] = [
+  { behaviorId: "${FIXTURE_NAME}/api/stubbed", provenBy: [{ source: "axe-scan", file: "scripts/ci/axe-scan.ts", title: ["switch"] }] },
+];
+`);
+    const r = await loadComponent(FIXTURE_NAME, roots);
+    expect(r.errors.some((e) => e.includes("unreviewed stub"))).toBe(true);
+    expect(r.covered).toBe(0);
+  });
+
+  it("still flags a duplicate id that involves a stub", async () => {
+    writeBehaviors(`${BEHAVIOR_TYPES_IMPORT}
+export const behaviors: ComponentBehavior[] = [
+  { id: "${FIXTURE_NAME}/api/dup", kind: "api", description: "x", source: "x" },
+  { id: "${FIXTURE_NAME}/api/dup", kind: "api", description: "x", source: "x", status: "stub" },
+];
+`);
+    const r = await loadComponent(FIXTURE_NAME, roots);
+    expect(r.errors.some((e) => e.includes("duplicate behavior id"))).toBe(true);
+  });
+
+  it("summarize: stub-only components are not listed; counts come from reviewed behaviors only", () => {
+    const mk = (component: string, covered: number, total: number, pending: number) =>
+      ({ component, covered, total, pending, uncovered: [], errors: [] });
+    const s = summarize([mk("a", 3, 10, 0), mk("b", 0, 0, 7), mk("c", 1, 2, 4)]);
+    expect(s).toMatchObject({
+      covered: 4,
+      total: 12,
+      listedComponents: 2,
+      stubOnlyComponents: 1,
+      pendingStubs: 11,
+    });
   });
 });
