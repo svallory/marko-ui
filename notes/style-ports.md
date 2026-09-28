@@ -19,6 +19,24 @@ that superseded precompiled shipping are in
 structural notes below are kept as historical record of how the (now-replaced)
 hand ports were produced; do not use them as a guide for current work.
 
+## Upstream sync log
+
+**Last synced to upstream shadcn 98a1fe6 on 2026-09-28 (styles + bases/base).**
+No SHA had ever been recorded before this entry — `tooling/parity/harnesses/
+shadcn/upstream-shadcn.ts`'s `ensureShadcnClone` clones upstream's tip with no
+pin, so there was nothing to grep for. The prior base was estimated (by CSS
+content matching, not a recorded fact) to sit strictly between upstream
+`a85299a` (2026-08-12) and `5c8f5b0` (2026-08-17). This sync applied the one
+real change in that window: `5c8f5b0`'s `group-has-[:focus-visible]/
+field-label:*` additions to `.mu-checkbox`/`.mu-radio-group-item`/`.mu-switch`/
+`.mu-field-label` across all 8 `packages/shadcn/styles/style-*.css` files
+(`.mu-questionnaire-choice` skipped — we don't ship that hook/component), plus
+`data-pending-scroll:invisible` on `packages/shadcn/ui/message-scroller/
+classes.ts`'s `viewport.root`. Full research and per-rule detail: `scratch/
+team-lead/reports/research-upstream-98a1fe6.md` and `scratch/team-lead/
+reports/report-upstream-98a1fe6.md`. Next sync should record its base SHA
+here immediately, since the clone tool still has no pin mechanism.
+
 ## Layout & imports (historical — see the plans above for the current layout)
 
 - `packages/shadcn/ui/<component>/<part>.marko` — the default registry,
