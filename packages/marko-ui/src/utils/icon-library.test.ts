@@ -14,6 +14,7 @@ import {
   mapFilePattern,
   unknownIconLibraryMessage,
   isIconResolverPath,
+  renderClientIconResolver,
   ICON_LIBRARIES,
   isIconLibraryName,
   renderIconResolver,
@@ -41,6 +42,7 @@ const iconItemFiles = () => [
   iconFile("icon.marko"),
   iconFile("render.ts"),
   iconFile("resolve.ts", "// registry resolver"),
+  iconFile("resolve-client.ts", "// registry client resolver"),
 ]
 
 const paths = (files: ReturnType<typeof iconItemFiles> | undefined) =>
@@ -62,7 +64,7 @@ describe("applyIconLibrary", () => {
   it.each(LIBRARIES)("keeps only the %s map and drops switcher/data files", (lib) => {
     const out = applyIconLibrary(iconItemFiles(), lib)
     expect(paths(out as never)).toEqual(
-      ["icon-names.ts", "icon.marko", "render.ts", "resolve.ts", `__${lib}__.ts`].sort()
+      ["icon-names.ts", "icon.marko", "render.ts", "resolve-client.ts", "resolve.ts", `__${lib}__.ts`].sort()
     )
   })
 
@@ -153,6 +155,16 @@ describe("renderIconResolver", () => {
     }
   })
 
+  it("exports the same API as the registry resolve-client.ts", () => {
+    const real = readFileSync(path.join(REAL_ICON_DIR, "resolve-client.ts"), "utf8")
+    for (const lib of LIBRARIES) {
+      for (const name of ["resolveIconLibrary", "resolveClientIconInner", "loadClientIconInner"]) {
+        expect(real).toContain(`export function ${name}(`)
+        expect(renderClientIconResolver(lib)).toContain(`export function ${name}(`)
+      }
+    }
+  })
+
   it("exports the same API as the registry resolve.ts", () => {
     const real = readFileSync(path.join(REAL_ICON_DIR, "resolve.ts"), "utf8")
     for (const lib of LIBRARIES) {
@@ -170,12 +182,20 @@ describe("generated resolver against the real icon maps", () => {
   it.each(LIBRARIES)("%s resolves a real icon and ignores the library prop", async (lib) => {
     const dir = mkdtempSync(path.join(tmpdir(), "marko-ui-icon-"))
     for (const f of readdirSync(REAL_ICON_DIR)) {
-      if (f.endsWith(".ts") && f !== "resolve.ts" && f !== "client-swap.ts") {
+      if (f.endsWith(".ts") && !["resolve.ts", "resolve-client.ts", "client-swap.ts"].includes(f)) {
         if (/^__/.test(f) && f !== `__${lib}__.ts`) continue
         cpSync(path.join(REAL_ICON_DIR, f), path.join(dir, f))
       }
     }
     writeFileSync(path.join(dir, "resolve.ts"), renderIconResolver(lib))
+    writeFileSync(path.join(dir, "resolve-client.ts"), renderClientIconResolver(lib))
+
+    const client = await import(/* @vite-ignore */ path.join(dir, "resolve-client.ts"))
+    expect(client.resolveIconLibrary("tabler")).toBe(lib)
+    const clientInner = client.resolveClientIconInner("SearchIcon", "tabler")
+    expect(clientInner).not.toBe('<rect width="18" height="18" x="3" y="3" rx="2"/>')
+    expect(clientInner.length).toBeGreaterThan(0)
+    expect(client.loadClientIconInner("SearchIcon", "tabler")).toBeUndefined()
 
     const mod = await import(/* @vite-ignore */ path.join(dir, "resolve.ts"))
     expect(mod.resolveIconLibrary("tabler")).toBe(lib)

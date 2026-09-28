@@ -24,20 +24,40 @@
 // let the preview iframe's OWN opt-in re-render script (not this
 // component) find and patch icons after the initial SSR paint.
 //
-// `resolveIconInner` is imported with `server import` (see below): every
-// real caller passes `name`/`library` as non-reactive values (string
-// literals or a <const> derived once from $global at SSR time — see
-// resolve.ts's header and TODO.md's icon-chunks entry), so the interpolated
-// SVG markup never needs to be recomputed client-side. `server import`
-// keeps resolve.ts's 5 statically-imported per-library maps (~360KB
-// combined) out of every client bundle that renders an <icon>, instead of
-// only client-swap.ts's callers avoiding them.
+// Environments (perf/icon-chunks). Marko compiles a template's module-level
+// imports into BOTH bundles, so a plain `import` of resolve.ts (all 5
+// libraries' maps, ~360KB source) shipped every map to every route that
+// renders an <icon>. A subtree first created in the BROWSER (an overlay body
+// opened after hydration, an <if> branch never true at SSR) re-runs this
+// whole template client-side, so the client needs a resolver too — just not
+// resolve.ts. `resolveInitialInner` is assigned once per environment:
+// - server: resolve.ts's resolveIconInner (all 5 libraries; SSR output is
+//   unchanged).
+// - client: resolve-client.ts, synchronous for the default library (lucide,
+//   the only map the client bundle carries), a placeholder glyph otherwise.
+//   For a non-default library the <script> below then loads that library's
+//   map through resolve-client.ts's dynamic import() and patches the <svg>,
+//   so a client-mounted icon never stays empty.
+// `marko-ui add` rewrites resolve.ts AND resolve-client.ts to import the one
+// configured library (packages/marko-ui/src/utils/icon-library.ts), where
+// both sides resolve synchronously and loadClientIconInner returns undefined.
 import { cn } from "#lib/utils.ts";
-import { resolveIconLibrary } from "./resolve.ts";
-server import { resolveIconInner } from "./resolve.ts";
 import { ICON_WRAPPER_ATTRS } from "./render.ts";
 import type { IconLibraryName, IconName } from "./icon-names.ts";
 import { icon as styles } from "./classes.ts";
+import { resolveIconLibrary } from "./resolve-client.ts";
+server import { resolveIconInner } from "./resolve.ts";
+client import { resolveClientIconInner, loadClientIconInner } from "./resolve-client.ts";
+
+static let resolveInitialInner: (name: string, library: IconLibraryName) => string;
+
+server {
+  resolveInitialInner = resolveIconInner;
+}
+
+client {
+  resolveInitialInner = resolveClientIconInner;
+}
 
 export interface Input extends Omit<Marko.HTMLAttributes<Element>, "lang"> {
   /** Abstract icon name, e.g. "SearchIcon" — shared across all 5 libraries. */
@@ -72,7 +92,7 @@ export interface Input extends Omit<Marko.HTMLAttributes<Element>, "lang"> {
 <const/{ name, library: _library, class: className, unsized, ...rest }=input/>
 <const/wrapperAttrs=ICON_WRAPPER_ATTRS[library]/>
 
-<svg
+<svg/svgEl
   ...rest
   xmlns="http://www.w3.org/2000/svg"
   viewBox=wrapperAttrs.viewBox
@@ -87,5 +107,18 @@ export interface Input extends Omit<Marko.HTMLAttributes<Element>, "lang"> {
   data-icon-name=name
   data-icon-library=library
 >
-  $!{resolveIconInner(name, library)}
+  $!{resolveInitialInner(name, library)}
 </svg>
+
+<!--
+  Client-only, once per mount (name/library are non-reactive at every real
+  call site). loadClientIconInner returns undefined when resolveInitialInner
+  already produced the real markup (default library, or a single-library
+  copy), so this only acts for a non-default library first mounted in the
+  browser, where the sync pass rendered the placeholder glyph.
+-->
+<script>
+  loadClientIconInner(name, library)?.then((inner) => {
+    svgEl().innerHTML = inner;
+  });
+</script>

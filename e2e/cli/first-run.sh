@@ -294,6 +294,7 @@ for lib in $ICON_LIBS; do
   # Source: the copied resolver imports this library's map and no other.
   resolver="$icon_dir/resolve.ts"
   grep -q "__${lib}__.ts" "$resolver" && ok "$lib: resolve.ts imports the $lib map" || bad "$lib: resolve.ts does not import __${lib}__"
+  grep -q "__${lib}__.ts" "$icon_dir/resolve-client.ts" && ok "$lib: resolve-client.ts imports the $lib map" || bad "$lib: resolve-client.ts does not import __${lib}__"
   stray=""
   for other in $ICON_LIBS; do
     [ "$other" = "$lib" ] && continue

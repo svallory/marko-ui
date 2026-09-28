@@ -12,19 +12,16 @@ import { phosphorIcons } from "./__phosphor__.ts";
 import { remixiconIcons } from "./__remixicon__.ts";
 import { hugeiconsIcons } from "./__hugeicons__.ts";
 import type { IconLibraryName } from "./icon-names.ts";
-import { FALLBACK_INNER, ICON_WRAPPER_ATTRS, renderHugeiconsNodes, withSuffixFallback } from "./render.ts";
+import { FALLBACK_INNER, renderHugeiconsNodes, withSuffixFallback } from "./render.ts";
 
-// The library an <Icon> actually renders from. Here every library is bundled,
-// so an explicit valid `library` wins and anything else falls back to lucide.
+// The library an <Icon> actually renders from (defined in resolve-client.ts so
+// the browser can reach it without this module's 5 maps): an explicit valid
+// `library` wins and anything else falls back to lucide.
 // `marko-ui add` REPLACES this whole file with a single-library version (see
 // packages/marko-ui/src/utils/icon-library.ts) whose resolveIconLibrary always
 // returns the components.json `iconLibrary`; keep both exports' signatures in
 // sync with that generator.
-export function resolveIconLibrary(requested?: string): IconLibraryName {
-  return requested !== undefined && requested in ICON_WRAPPER_ATTRS
-    ? (requested as IconLibraryName)
-    : "lucide";
-}
+export { resolveIconLibrary } from "./resolve-client.ts";
 
 // Resolves the inner SVG markup string for (name, library) at SSR time.
 export function resolveIconInner(name: string, library: IconLibraryName): string {
