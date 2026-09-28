@@ -44,7 +44,7 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 import { VISUAL_STYLES } from "../packages/marko-ui/src/registry/constants";
-import { BASE_COLORS as REGISTRY_BASE_COLORS } from "../apps/docs/src/tags/create/lib/registry-config";
+import { BASE_COLORS as REGISTRY_BASE_COLORS, THEMES as REGISTRY_THEMES } from "../apps/docs/src/tags/create/lib/registry-config";
 import {
   applyBaseColor,
   applyStyle,
@@ -374,12 +374,43 @@ for (const theme of THEMES) {
  * `design-system-params` postMessage applyParams() itself listens for — the
  * same mechanism the live /create customizer uses — never a hand-rolled
  * re-implementation of buildRegistryTheme's CSS-var math.
+ *
+ * VALUE ASSERTION, not just the class: `base-color-<name>` on <body> has no
+ * CSS of its own — the actual color comes from the `#design-system-theme-
+ * vars` <style> tag applyParams() writes from buildRegistryTheme(), inside a
+ * try/catch that silently sets registryTheme=null on failure while the class
+ * still gets added regardless (create/preview/+page.marko's applyParams()).
+ * A broken injection would therefore still pass the class-only check
+ * applyBaseColor() waits on and commit 7 visually-identical screenshots that
+ * guard nothing. Before each capture, assert `--primary` on `<html>` (the
+ * one var every one of the 7 BASE_COLORS entries defines with a genuinely
+ * different oklch() value — see registry-config.ts's THEMES; `theme` is set
+ * equal to `baseColor` in applyBaseColor(), so :root ends up with that
+ * color's own light.primary, unmodified by any theme/chartColor override)
+ * matches the expected value from THEMES exactly, and fail loudly if the
+ * style tag or the var is missing.
  */
 const BASE_COLOR_ITEM = "preview-page-1";
 const BASE_COLORS = ["neutral", "stone", "zinc", "mauve", "olive", "mist", "taupe"] as const;
 
+const EXPECTED_PRIMARY_BY_BASE_COLOR: Record<(typeof BASE_COLORS)[number], string> = Object.fromEntries(
+  BASE_COLORS.map((name) => {
+    const theme = REGISTRY_THEMES.find((t) => t.name === name);
+    const primary = theme?.cssVars.light?.primary;
+    if (!primary) {
+      throw new Error(`registry-config.ts THEMES has no light.primary for base color "${name}"`);
+    }
+    return [name, primary];
+  }),
+) as Record<(typeof BASE_COLORS)[number], string>;
+
 test("the base-color list this guard covers matches the registry", () => {
   expect(REGISTRY_BASE_COLORS.map((c) => c.name)).toEqual([...BASE_COLORS]);
+});
+
+test("every base color this guard covers has a genuinely distinct --primary value", () => {
+  const values = Object.values(EXPECTED_PRIMARY_BY_BASE_COLOR);
+  expect(new Set(values).size).toBe(values.length);
 });
 
 for (const baseColor of BASE_COLORS) {
@@ -391,6 +422,17 @@ for (const baseColor of BASE_COLORS) {
       await applyStyle(page, "nova");
       await applyTheme(page, theme);
       await applyBaseColor(page, baseColor);
+
+      const actualPrimary = await page.evaluate(() => {
+        const styleTag = document.getElementById("design-system-theme-vars");
+        if (!styleTag) return null;
+        return getComputedStyle(document.documentElement).getPropertyValue("--primary").trim();
+      });
+      expect(
+        actualPrimary,
+        `#design-system-theme-vars must exist and set --primary for base color "${baseColor}"`,
+      ).toBe(EXPECTED_PRIMARY_BY_BASE_COLOR[baseColor]);
+
       await freezeForScreenshot(page);
       await waitForLayoutSettled(page);
 
