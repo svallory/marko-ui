@@ -447,28 +447,40 @@ export function createMessageScrollerController(options: MessageScrollerProvider
       return false;
     }
 
-    let handled = false;
+    // The scroll/geometry calls below are real DOM reads and writes
+    // (getBoundingClientRect, scrollTo, ResizeObserver-adjacent math) that
+    // can throw on a malformed tree. Guarantee pendingDefaultScroll is
+    // cleared even if one does — an uncaught throw here must never leave
+    // the viewport hidden forever (see notes/style-ports.md's
+    // "pending-scroll" section). Rethrow rather than swallow: a genuine bug
+    // here should surface, not be silently absorbed.
+    try {
+      let handled = false;
 
-    if (defaultScrollPosition === "last-anchor") {
-      const anchor = content && viewport ? getLastScrollAnchor(getMessageScrollerItems(content, spacer)) : null;
+      if (defaultScrollPosition === "last-anchor") {
+        const anchor = content && viewport ? getLastScrollAnchor(getMessageScrollerItems(content, spacer)) : null;
 
-      if (!content || !viewport || !anchor) {
-        handled = scrollToEnd({ behavior: "auto" });
+        if (!content || !viewport || !anchor) {
+          handled = scrollToEnd({ behavior: "auto" });
+        } else {
+          const anchorTop = getElementTop(anchor, viewport);
+          const contentBottom = getContentBottom({ content, spacer, viewport });
+          const lastTurnFits = contentBottom - anchorTop <= viewport.clientHeight;
+
+          handled = lastTurnFits ? scrollToEnd({ behavior: "auto" }) : scrollToElement(anchor, { align: "start" }, { keepPreviousPeek: true });
+        }
       } else {
-        const anchorTop = getElementTop(anchor, viewport);
-        const contentBottom = getContentBottom({ content, spacer, viewport });
-        const lastTurnFits = contentBottom - anchorTop <= viewport.clientHeight;
-
-        handled = lastTurnFits ? scrollToEnd({ behavior: "auto" }) : scrollToElement(anchor, { align: "start" }, { keepPreviousPeek: true });
+        handled = defaultScrollPosition === "end" ? scrollToEnd({ behavior: "auto" }) : scrollToStart({ behavior: "auto" });
       }
-    } else {
-      handled = defaultScrollPosition === "end" ? scrollToEnd({ behavior: "auto" }) : scrollToStart({ behavior: "auto" });
+
+      if (!handled) return false;
+
+      markDefaultScrollPositionApplied();
+      return true;
+    } catch (error) {
+      clearPendingDefaultScroll();
+      throw error;
     }
-
-    if (!handled) return false;
-
-    markDefaultScrollPositionApplied();
-    return true;
   }
 
   function handleContentChange() {

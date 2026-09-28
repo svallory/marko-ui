@@ -35,11 +35,56 @@ const FAKE_RECT: DOMRect = {
 
 const FAKE_COMPUTED_STYLE = { paddingBlockEnd: "0px", paddingBlockStart: "0px", paddingBottom: "0px", paddingTop: "0px" } as CSSStyleDeclaration;
 
+// getMessageScrollerItems (geometry.ts) filters content.children with
+// `instanceof HTMLElement`, which needs a real HTMLElement constructor to
+// match against. Stubbing a minimal one lets "content arrives after an
+// empty mount" be driven through handleContentChange()'s real item-walking
+// code, in this node-environment suite, without jsdom.
+class FakeHTMLElement {
+  attributes = new Map<string, string>();
+  children: FakeHTMLElement[] = [];
+  dataset: Record<string, string> = {};
+  scrollTop = 0;
+  scrollHeight = 0;
+  clientHeight = 0;
+  scrollTo = () => {};
+  getBoundingClientRect = () => FAKE_RECT;
+  setAttribute(name: string, value: string) {
+    this.attributes.set(name, value);
+  }
+  removeAttribute(name: string) {
+    this.attributes.delete(name);
+  }
+  toggleAttribute(name: string, force: boolean) {
+    if (force) this.attributes.set(name, "");
+    else this.attributes.delete(name);
+  }
+  hasAttribute(name: string) {
+    return this.attributes.has(name);
+  }
+}
+
 beforeEach(() => {
-  vi.stubGlobal("window", { getComputedStyle: () => FAKE_COMPUTED_STYLE });
+  // Fake timers: some paths (setAutoScrolling's clear timer, rAF-coalesced
+  // commits) schedule real callbacks that would otherwise fire AFTER a test
+  // ends and vi.unstubAllGlobals() has already torn down the window/
+  // HTMLElement stubs below — an unhandled "HTMLElement is not defined"
+  // from a stray timer, not a real assertion failure. Fake timers make
+  // every scheduled callback inert unless a test explicitly advances them.
+  vi.useFakeTimers();
+  vi.stubGlobal("window", {
+    getComputedStyle: () => FAKE_COMPUTED_STYLE,
+    setTimeout: (fn: () => void) => setTimeout(fn),
+    clearTimeout: (id: unknown) => clearTimeout(id as unknown as number),
+    requestAnimationFrame: (fn: () => void) => setTimeout(fn, 0),
+    cancelAnimationFrame: (id: unknown) => clearTimeout(id as unknown as number),
+  });
+  vi.stubGlobal("HTMLElement", FakeHTMLElement);
 });
 
 afterEach(() => {
+  vi.clearAllTimers();
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
@@ -49,29 +94,7 @@ afterEach(() => {
 // calls, getBoundingClientRect on the viewport (items stay empty so their
 // own getBoundingClientRect is never called).
 function createFakeElement() {
-  const attributes = new Map<string, string>();
-  return {
-    attributes,
-    children: [] as unknown[],
-    scrollTop: 0,
-    scrollHeight: 0,
-    clientHeight: 0,
-    scrollTo: () => {},
-    getBoundingClientRect: () => FAKE_RECT,
-    setAttribute(name: string, value: string) {
-      attributes.set(name, value);
-    },
-    removeAttribute(name: string) {
-      attributes.delete(name);
-    },
-    toggleAttribute(name: string, force: boolean) {
-      if (force) attributes.set(name, "");
-      else attributes.delete(name);
-    },
-    hasAttribute(name: string) {
-      return attributes.has(name);
-    },
-  };
+  return new FakeHTMLElement();
 }
 
 describe("message-scroller pending-default-scroll: initial value", () => {
@@ -193,6 +216,43 @@ describe("message-scroller pending-default-scroll: mount-order gate (tryInitialS
     expect(remountedViewport.hasAttribute("data-pending-scroll")).toBe(false);
   });
 
+  // Matches upstream 503a3a5 exactly (verified against
+  // use-message-scroller-controller.ts's mount-only useLayoutEffect): an
+  // initially-empty transcript clears pendingDefaultScroll at the FIRST
+  // sync and never re-arms it, even once real content streams in
+  // afterward. Upstream's own docs (message-scroller.mdx, "Avoiding a Flash
+  // on Reload") scope the whole feature to a server-rendered transcript and
+  // explicitly say to skip the companion technique "when messages load on
+  // the client" — this is not a gap in this port, it is the documented
+  // upstream contract. See viewport.marko's SSR STORY comment.
+  it("content arriving after an empty mount is never hidden — matches upstream, does not re-arm pending-scroll", () => {
+    const controller = createMessageScrollerController({ defaultScrollPosition: "end" });
+    const root = createFakeElement();
+    const viewport = createFakeElement();
+    const content = createFakeElement();
+
+    // All three register with content still empty (0 children) — the
+    // initial sync clears pending-scroll immediately (empty-transcript
+    // path), exactly like upstream's mount-time layout effect.
+    controller.setContentElement(content as unknown as HTMLElement);
+    controller.setViewportElement(viewport as unknown as HTMLElement);
+    controller.setRootElement(root as unknown as HTMLElement);
+    expect(viewport.hasAttribute("data-pending-scroll")).toBe(false);
+    expect(root.hasAttribute("data-pending-scroll")).toBe(false);
+
+    // A real message streams in (content gains a child) and the
+    // MutationObserver equivalent fires handleContentChange() again — the
+    // viewport moves to "end" (applyDefaultScrollPosition succeeds, since
+    // itemCount was 0 before this call), but the attribute must stay
+    // cleared: it must never be resurrected once content arrives.
+    const item = new FakeHTMLElement();
+    content.children.push(item);
+    controller.handleContentChange();
+
+    expect(viewport.hasAttribute("data-pending-scroll")).toBe(false);
+    expect(root.hasAttribute("data-pending-scroll")).toBe(false);
+  });
+
   it("does not fire the gate while any one of root/viewport/content is still missing", () => {
     const controller = createMessageScrollerController({ defaultScrollPosition: "end" });
     const root = createFakeElement();
@@ -245,5 +305,42 @@ describe("message-scroller pending-default-scroll: other clear paths", () => {
     controller.setViewportElement(viewport as unknown as HTMLElement);
 
     expect(viewport.hasAttribute("data-pending-scroll")).toBe(false);
+  });
+});
+
+describe("message-scroller pending-default-scroll: throw safety", () => {
+  // applyDefaultScrollPosition's scroll/geometry calls are real DOM
+  // reads/writes that can throw on a malformed tree. If one does, the
+  // viewport must never be left permanently hidden — the flag has to clear
+  // even on the error path, and the error must still surface (not be
+  // silently swallowed).
+  it("clears pending-scroll and rethrows if the scroll application throws", () => {
+    const controller = createMessageScrollerController({ defaultScrollPosition: "end" });
+    const root = createFakeElement();
+    const viewport = createFakeElement();
+    const content = createFakeElement();
+
+    // One real item so applyDefaultScrollPosition doesn't bail out early on
+    // itemCount === 0, and a scrollHeight/clientHeight gap large enough that
+    // scrollToPosition takes the viewport.scrollTo(...) branch (not the
+    // direct scrollTop assignment, which never throws here).
+    content.children.push(new FakeHTMLElement());
+    viewport.scrollHeight = 1000;
+    viewport.clientHeight = 200;
+    const scrollError = new Error("boom: scrollTo failed");
+    viewport.scrollTo = () => {
+      throw scrollError;
+    };
+
+    controller.setContentElement(content as unknown as HTMLElement);
+    controller.setViewportElement(viewport as unknown as HTMLElement);
+
+    // setRootElement is the registration that completes the gate and
+    // triggers the throwing handleContentChange() — assert it propagates
+    // (not swallowed) AND that the attribute is cleared despite the throw.
+    expect(() => controller.setRootElement(root as unknown as HTMLElement)).toThrow(scrollError);
+
+    expect(viewport.hasAttribute("data-pending-scroll")).toBe(false);
+    expect(root.hasAttribute("data-pending-scroll")).toBe(false);
   });
 });

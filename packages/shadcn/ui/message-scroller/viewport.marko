@@ -37,11 +37,24 @@
 // by the time this component's first paint happens; `data-pending-scroll`
 // is set and cleared within that same synchronous call and a viewport whose
 // position never needed to change never visibly toggles `invisible` at all.
-// The attribute still earns its keep for content that arrives AFTER mount
-// (e.g. a streamed-in transcript, or `itemCount === 0` at SSR time): there,
-// hiding the viewport until the first non-empty `handleContentChange()`
-// settles avoids the "content briefly rendered unpositioned" jump upstream's
-// port targets.
+// Content arriving AFTER an EMPTY mount is NOT protected, and this matches
+// upstream exactly — not a gap in this port. Upstream's own
+// `useLayoutEffect` (use-message-scroller-controller.ts, the "REACT REF"
+// diff in 503a3a5) runs applyDefaultScrollPosition() once at mount and, if
+// it returns false because itemCount is 0, immediately calls
+// clearPendingDefaultScroll() right there — before any later message ever
+// streams in. This port's tryInitialSync()/handleContentChange() gate
+// mirrors that exact sequence (controller.ts's reconcileScrollPosition:
+// `if (items.length === 0) clearPendingDefaultScroll();` on the first,
+// empty, sync). So in both upstream and here, an initially-empty transcript
+// permanently disarms pendingDefaultScroll at mount; a message streaming in
+// afterward runs applyDefaultScrollPosition() again (still true — it
+// re-checks defaultScrollPositionApplied, not the pending flag) and moves
+// the viewport, but WITHOUT the attribute's hide, because upstream's own
+// docs (message-scroller.mdx, "Avoiding a Flash on Reload") scope the
+// feature to "a server-rendered transcript" specifically and say to skip
+// even the companion inline unhide-script "when messages load on the
+// client" — content streaming in live was never this feature's target.
 import { cn } from "#lib/utils.ts";
 import type { MessageScrollerControllerGetter } from "./lib/controller.ts";
 import { USER_SCROLL_KEYS } from "./lib/types.ts";
