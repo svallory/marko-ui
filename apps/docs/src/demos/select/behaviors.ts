@@ -1,0 +1,155 @@
+// Behavior list for Select (round 2a, reviewed against @zag-js/select and the APG Select-Only Combobox / Listbox patterns).
+import type { ComponentBehavior } from "../behavior-types.ts";
+
+export const behaviors: ComponentBehavior[] = [
+  {
+    id: "select/interaction/mouse-open-supports-arrow-navigation",
+    kind: "interaction",
+    description: "After opening with the mouse, ArrowDown moves the highlight and Enter selects it.",
+    source: "@zag-js/select; select-demo.marko",
+  },
+  {
+    id: "select/interaction/starts-closed",
+    kind: "interaction",
+    description: "The trigger starts with aria-expanded=false and no listbox rendered.",
+    source: "@zag-js/select; select-demo.marko",
+  },
+  {
+    id: "select/keyboard/enter-opens-listbox",
+    kind: "keyboard",
+    description: "Enter on the trigger opens the listbox.",
+    source: "WAI-ARIA APG select-only combobox",
+  },
+  {
+    id: "select/keyboard/space-opens-listbox",
+    kind: "keyboard",
+    description: "Space on the trigger opens the listbox.",
+    source: "WAI-ARIA APG select-only combobox",
+  },
+  {
+    id: "select/keyboard/arrow-down-up-moves-highlight",
+    kind: "keyboard",
+    description: "ArrowDown/ArrowUp move the highlighted option.",
+    source: "WAI-ARIA APG select-only combobox",
+  },
+  {
+    id: "select/keyboard/enter-selects-highlighted-and-closes",
+    kind: "keyboard",
+    description: "Enter selects the highlighted option, closes the listbox and shows it in the trigger.",
+    source: "WAI-ARIA APG select-only combobox",
+  },
+  {
+    id: "select/keyboard/escape-closes-without-change",
+    kind: "keyboard",
+    description: "Escape closes the listbox and leaves the selection unchanged.",
+    source: "WAI-ARIA APG select-only combobox",
+  },
+  {
+    id: "select/keyboard/home-end-jump-highlight",
+    kind: "keyboard",
+    description: "Home/End move the highlight to the first/last option.",
+    source: "select docs.ts accessibilityKeyboard",
+  },
+  {
+    id: "select/keyboard/typeahead-jumps-highlight",
+    kind: "keyboard",
+    description: "Typing characters moves the highlight to the next option whose label matches.",
+    source: "select docs.ts accessibilityKeyboard",
+  },
+  {
+    id: "select/keyboard/tab-closes-and-moves-focus",
+    kind: "keyboard",
+    description: "Tab closes the listbox and moves focus to the next focusable element.",
+    source: "select docs.ts accessibilityKeyboard",
+  },
+  {
+    id: "select/a11y/trigger-aria-expanded-tracks-state",
+    kind: "a11y",
+    description: "The trigger's aria-expanded is false when closed and true when open.",
+    source: "WAI-ARIA APG select-only combobox",
+  },
+  {
+    id: "select/a11y/listbox-role",
+    kind: "a11y",
+    description: "The open popup has role=\"listbox\".",
+    source: "WAI-ARIA APG select-only combobox",
+  },
+  {
+    id: "select/a11y/selected-option-aria-selected",
+    kind: "a11y",
+    description: "The selected option carries aria-selected=\"true\" when the listbox is reopened.",
+    source: "WAI-ARIA APG listbox",
+  },
+  {
+    id: "select/api/default-value",
+    kind: "api",
+    description: "`defaultValue` selects that option initially.",
+    source: "@zag-js/select Props.defaultValue; select-default-value.marko",
+  },
+  {
+    id: "select/api/disabled-blocks-open",
+    kind: "api",
+    description: "`disabled` disables the trigger and no listbox opens.",
+    source: "@zag-js/select Props.disabled; select-disabled.marko",
+  },
+  {
+    id: "select/api/disabled-items-never-highlighted",
+    kind: "api",
+    description: "Items with `disabled: true` are never highlighted during arrow navigation.",
+    source: "@zag-js/select collection isItemDisabled; select-disabled-items.marko",
+  },
+  {
+    id: "select/api/controlled-value",
+    kind: "api",
+    description: "A controlled `value` keeps its selection until the consumer updates it via `valueChange`.",
+    source: "@zag-js/select Props.value; select-controlled.marko",
+  },
+  {
+    id: "select/api/groups",
+    kind: "api",
+    description: "`groups=` renders labeled, separated option groups.",
+    source: "select.marko; select-groups.marko",
+  },
+  {
+    id: "select/api/multiple-selection",
+    kind: "api",
+    description: "`multiple` allows several options to be selected and keeps the listbox open.",
+    source: "@zag-js/select Props.multiple",
+  },
+  {
+    id: "select/api/form-submission-value",
+    kind: "api",
+    description: "A hidden native <select> mirrors items and value so `name`/`form` participate in native form submission.",
+    source: "@zag-js/select Props.name/form; select docs.ts notes",
+  },
+  {
+    id: "select/api/invalid-state",
+    kind: "api",
+    description: "`aria-invalid` on Select (plus `invalid` on Field) shows and announces the error state.",
+    source: "select-invalid.marko",
+  },
+  {
+    id: "select/api/compound-option-tags",
+    kind: "api",
+    description: "`<@option>` attribute tags render the same options as `items=`.",
+    source: "select.marko; select-compound.marko",
+  },
+  {
+    id: "select/a11y/structurally-valid-aria",
+    kind: "a11y",
+    description: "The hero demo's rendered markup has well-formed roles/aria-* attributes and an accessible name where one is required (structural validity only; says nothing about values tracking state).",
+    source: "WAI-ARIA APG; scripts/ci/axe-scan.ts scans the select hero demo",
+  },
+  {
+    id: "select/ssr-hydration/attributes-stable",
+    kind: "ssr-hydration",
+    description: "Server-rendered ARIA/data attributes on the scoped elements are unchanged after client hydration.",
+    source: "packages/shadcn/tests/hydration-coverage.ts INTERACTIVE_COMPONENTS",
+  },
+  {
+    id: "select/visual/rtl-mirrors",
+    kind: "visual",
+    description: "Under dir=\"rtl\" the component renders mirrored via logical properties.",
+    source: "select-rtl.marko",
+  },
+];
