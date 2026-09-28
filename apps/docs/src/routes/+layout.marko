@@ -122,6 +122,71 @@ import {
         });
       })();
     </html-script>
+
+    // Docs sidebar active-into-view: on load, scroll the docs sidebar's OWN
+    // scroll container ([data-slot="sidebar-content"], set overflow-auto by
+    // packages/shadcn/ui/sidebar/content.marko) so the active item is
+    // visible, without moving the page/window. Matches upstream shadcn's
+    // apps/v4/lib/docs-sidebar-scroll.ts: sets container.scrollTop directly
+    // rather than element.scrollIntoView() (which can walk up and scroll
+    // ancestors, including the window) — mathematically confined to the one
+    // container. Runs as a blocking inline script in <head>, before the
+    // sidebar's own markup has even been parsed yet, so a MutationObserver
+    // (same as upstream) watches the document until the container appears
+    // and has real layout height, then applies and disconnects — this is
+    // what makes it run before first paint with no visible jump/animation,
+    // and it's why prefers-reduced-motion needs no special-case: an instant
+    // scrollTop assignment has no animation to reduce. Not ported: upstream's
+    // sessionStorage scroll-position restore — out of scope here (issue #76
+    // only asks for active-item visibility on load).
+    <html-script>
+      (function () {
+        if (!location.pathname.startsWith("/docs")) return;
+
+        function centerActiveItem(container) {
+          var active = container.querySelector('[data-active="true"]');
+          if (!active) return;
+
+          var containerRect = container.getBoundingClientRect();
+          var activeRect = active.getBoundingClientRect();
+          if (activeRect.top >= containerRect.top && activeRect.bottom <= containerRect.bottom) return;
+
+          container.scrollTop +=
+            activeRect.top - containerRect.top - (container.clientHeight - activeRect.height) / 2;
+        }
+
+        function run() {
+          var containers = document.querySelectorAll('[data-slot="sidebar-content"]');
+          var ready = containers.length > 0;
+          for (var i = 0; i < containers.length; i++) {
+            if (!containers[i].clientHeight) {
+              ready = false;
+              continue;
+            }
+            centerActiveItem(containers[i]);
+          }
+          return ready;
+        }
+
+        if (run()) return;
+
+        var observer = new MutationObserver(function () {
+          if (run()) observer.disconnect();
+        });
+        observer.observe(document.documentElement, { childList: true, subtree: true });
+
+        if (document.readyState === "loading") {
+          document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+              run();
+              observer.disconnect();
+            },
+            { once: true },
+          );
+        }
+      })();
+    </html-script>
   </head>
   <body class="group/body style-nova theme-default overscroll-none antialiased [--footer-height:calc(var(--spacing)*14)] xl:[--footer-height:calc(var(--spacing)*24)]">
     <div data-slot="layout" class="group/layout relative z-10 flex min-h-svh flex-col bg-background has-data-[slot=designer]:h-svh has-data-[slot=designer]:overflow-hidden">
