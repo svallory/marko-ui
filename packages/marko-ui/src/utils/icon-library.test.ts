@@ -1,10 +1,16 @@
-import { cpSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "fs"
+import { cpSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "fs"
 import { tmpdir } from "os"
 import path from "path"
 import { describe, expect, it } from "vitest"
 
+import { InvalidConfigIconLibraryError } from "@/src/registry/errors"
+import type { Config } from "@/src/utils/get-config"
+import { processFiles, type DryRunResult } from "./dry-run"
+import { updateFiles } from "./updaters/update-files"
 import {
   applyIconLibrary,
+  findStaleIconMaps,
+  isIconResolverPath,
   ICON_LIBRARIES,
   isIconLibraryName,
   renderIconResolver,
@@ -115,8 +121,8 @@ describe("applyIconLibrary", () => {
     expect(out.map((f) => f.path)).toEqual(["registry/x/ui/icon/__tabler__.ts"])
   })
 
-  it.each([undefined, "", "heroicons", "feather"])(
-    "passes files through unchanged for unsupported iconLibrary %j (legacy)",
+  it.each([undefined, "", "radix"])(
+    "passes files through unchanged for unset/legacy iconLibrary %j",
     (lib) => {
       const input = iconItemFiles()
       expect(applyIconLibrary(input, lib)).toBe(input)
@@ -177,5 +183,162 @@ describe("generated resolver against the real icon maps", () => {
     expect(inner).not.toBe('<rect width="18" height="18" x="3" y="3" rx="2"/>')
     // Unknown names still fall back instead of throwing.
     expect(mod.resolveIconInner("NoSuchIconAnywhere")).toContain("<rect")
+  })
+})
+
+describe("MAP_FILE tracks ICON_LIBRARIES", () => {
+  it("the registry ships exactly one map per library the CLI knows", () => {
+    const shipped = readdirSync(REAL_ICON_DIR)
+      .map((f) => /^__([a-z]+)__\.ts$/.exec(f)?.[1])
+      .filter(Boolean)
+      .sort()
+    expect(shipped).toEqual([...LIBRARIES].sort())
+  })
+
+  it("recognises every known library's map as a map (never passes it through)", () => {
+    for (const lib of LIBRARIES) {
+      const other = LIBRARIES.find((l) => l !== lib)!
+      const out = applyIconLibrary([iconFile(`__${other}__.ts`)], lib)
+      expect(out).toEqual([])
+    }
+  })
+})
+
+describe("unknown iconLibrary", () => {
+  it("throws InvalidConfigIconLibraryError listing valid options when icon files are added", () => {
+    expect(() => applyIconLibrary(iconItemFiles(), "heroicons")).toThrow(
+      InvalidConfigIconLibraryError
+    )
+    try {
+      applyIconLibrary(iconItemFiles(), "heroicons")
+    } catch (error) {
+      expect((error as Error).message).toContain('"heroicons"')
+      for (const lib of LIBRARIES) expect((error as Error).message).toContain(lib)
+    }
+  })
+
+  it("does not throw when no icon files are involved", () => {
+    const button = [{ path: "ui/button/button.marko", type: "registry:ui" as const, content: "x" }]
+    expect(applyIconLibrary(button, "heroicons")).toBe(button)
+  })
+
+  it("passes legacy radix and unset/empty values through, like upstream", () => {
+    for (const lib of ["radix", "", undefined]) {
+      const input = iconItemFiles()
+      expect(applyIconLibrary(input, lib)).toBe(input)
+    }
+  })
+})
+
+describe("findStaleIconMaps", () => {
+  it("returns only other known libraries' maps that exist in the dir", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "marko-ui-stale-"))
+    for (const f of ["__lucide__.ts", "__tabler__.ts", "__custom__.ts", "notes.ts"]) {
+      writeFileSync(path.join(dir, f), "")
+    }
+    expect(findStaleIconMaps(dir, "tabler").map((f) => path.basename(f))).toEqual([
+      "__lucide__.ts",
+    ])
+    expect(findStaleIconMaps(dir, "hugeicons").map((f) => path.basename(f)).sort()).toEqual([
+      "__lucide__.ts",
+      "__tabler__.ts",
+    ])
+  })
+
+  it("isIconResolverPath matches only the icon resolver", () => {
+    expect(isIconResolverPath("ui/icon/resolve.ts")).toBe(true)
+    expect(isIconResolverPath("ui/button/resolve.ts")).toBe(false)
+  })
+})
+
+describe("updateFiles: switching iconLibrary", () => {
+  const setup = (lib: string) => {
+    const cwd = mkdtempSync(path.join(tmpdir(), "marko-ui-switch-"))
+    writeFileSync(path.join(cwd, "package.json"), "{}")
+    const ui = path.join(cwd, "src/components/ui")
+    const config = {
+      iconLibrary: lib,
+      resolvedPaths: { cwd, ui, components: path.join(cwd, "src/components"), lib: "", hooks: "" },
+    } as unknown as Config
+    return { cwd, config, iconDir: path.join(ui, "icon") }
+  }
+  const run = (config: Config) =>
+    updateFiles(iconItemFiles(), config, { overwrite: true, silent: true, interactive: false })
+  const maps = (dir: string) => readdirSync(dir).filter((f) => /^__.*__\.ts$/.test(f))
+
+  it("removes the old library's map and keeps only the new one", async () => {
+    const { config, iconDir } = setup("lucide")
+    await run(config)
+    expect(maps(iconDir)).toEqual(["__lucide__.ts"])
+
+    config.iconLibrary = "tabler"
+    const result = await run(config)
+    expect(maps(iconDir)).toEqual(["__tabler__.ts"])
+    expect(result.filesRemoved.map((f) => path.basename(f))).toEqual(["__lucide__.ts"])
+    expect(readFileSync(path.join(iconDir, "resolve.ts"), "utf8")).toContain("__tabler__.ts")
+  })
+
+  it("leaves unrelated files and a custom __x__.ts alone", async () => {
+    const { config, iconDir } = setup("lucide")
+    await run(config)
+    writeFileSync(path.join(iconDir, "__custom__.ts"), "")
+    writeFileSync(path.join(iconDir, "keep.ts"), "")
+    config.iconLibrary = "phosphor"
+    await run(config)
+    expect(readdirSync(iconDir)).toEqual(expect.arrayContaining(["__custom__.ts", "keep.ts"]))
+    expect(maps(iconDir).sort()).toEqual(["__custom__.ts", "__phosphor__.ts"])
+  })
+
+  it("removes nothing outside the configured icon dir", async () => {
+    const { cwd, config } = setup("lucide")
+    const elsewhere = path.join(cwd, "src/other")
+    mkdirSync(elsewhere, { recursive: true })
+    writeFileSync(path.join(elsewhere, "__lucide__.ts"), "")
+    await run(config)
+    config.iconLibrary = "tabler"
+    await run(config)
+    expect(readdirSync(elsewhere)).toEqual(["__lucide__.ts"])
+  })
+
+  it("re-adding the same library removes nothing", async () => {
+    const { config } = setup("remixicon")
+    await run(config)
+    expect((await run(config)).filesRemoved).toEqual([])
+  })
+
+  it("keeps the old map when the user declines the resolver overwrite", async () => {
+    const { config, iconDir } = setup("lucide")
+    await run(config)
+    config.iconLibrary = "tabler"
+    // non-interactive without overwrite: existing resolve.ts is skipped
+    await updateFiles(iconItemFiles(), config, { overwrite: false, silent: true, interactive: false })
+    expect(maps(iconDir)).toContain("__lucide__.ts")
+  })
+
+  it("rejects an unknown iconLibrary before writing anything", async () => {
+    const { config, iconDir } = setup("heroicons")
+    await expect(run(config)).rejects.toThrow(InvalidConfigIconLibraryError)
+    expect(() => readdirSync(iconDir)).toThrow()
+  })
+})
+
+describe("dry-run lists stale icon maps without deleting them", () => {
+  it("reports removals and leaves the file", async () => {
+    const cwd = mkdtempSync(path.join(tmpdir(), "marko-ui-dry-"))
+    writeFileSync(path.join(cwd, "package.json"), "{}")
+    const ui = path.join(cwd, "src/components/ui")
+    const config = {
+      iconLibrary: "lucide",
+      resolvedPaths: { cwd, ui, components: path.join(cwd, "src/components"), lib: "", hooks: "" },
+    } as unknown as Config
+    await updateFiles(iconItemFiles(), config, { overwrite: true, silent: true, interactive: false })
+    config.iconLibrary = "tabler"
+
+    const result: DryRunResult = { files: [], dependencies: [], devDependencies: [], css: null, envVars: null, fonts: [], docs: null }
+    await processFiles({ files: iconItemFiles() } as never, config, result, {})
+    expect(result.removals?.map((f) => f.replace(/\\/g, "/"))).toEqual([
+      "src/components/ui/icon/__lucide__.ts",
+    ])
+    expect(readdirSync(path.join(ui, "icon"))).toContain("__lucide__.ts")
   })
 })
