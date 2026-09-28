@@ -306,8 +306,9 @@ library-wide). Color follows lighthouse: ≥90 brightgreen, ≥50 yellow, else r
 (red is deliberate at today's 40%). Generated in ci.yml's `tests` job, published
 to `badges-main` by the existing publish-badges job, linked from the README
 badge row. **Supersedes round-1 answer 3 (release-pinned):** per the round-2a
-brief it ships main-only first; release.yml is untouched, so the home page has
-no such badge yet.
+brief it shipped main-only first. Since then release.yml's release-badges job
+also publishes it to the release-pinned `badges` branch; the home page still
+has no slot for it (waits for >= 50%).
 
 ### First reviewed batch (12 components)
 

@@ -273,6 +273,19 @@ jobs:
         if: always()
         run: bun scripts/ci/badge.ts axe axe-results.json badge-out
 
+      # Release-pinned behavior coverage (coverage.json on `badges`), measured
+      # on the tag like the numbers above. Tags whose badge.ts predates the
+      # behavior-coverage kind (v0.4.0 and older) are skipped, not failed, so
+      # badges_only still works for them.
+      - name: Generate behavior coverage badge
+        run: |
+          if ! grep -q 'case "behavior-coverage"' scripts/ci/badge.ts; then
+            echo "::notice::this tag's badge.ts has no behavior-coverage kind; skipping the coverage badge"
+            exit 0
+          fi
+          bun scripts/ci/behavior-coverage.ts --json > behavior-coverage.json
+          bun scripts/ci/badge.ts behavior-coverage behavior-coverage.json badge-out
+
       - name: Combine test badges into checks.json
         run: bun scripts/ci/badge.ts combine badge-out badge-out
 
