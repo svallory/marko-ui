@@ -61,6 +61,7 @@ import type { IconLibraryName } from "@marko-ui/shadcn/ui/icon/icon-names.ts";
 import PreviewPage1 from "../../../tags/create/preview-blocks/preview-page-1/index.marko";
 import PreviewPage2 from "../../../tags/create/preview-blocks/preview-page-2/index.marko";
 import PreviewPage3 from "../../../tags/create/preview-blocks/preview-page-3/index.marko";
+import PreviewPage4 from "../../../tags/create/preview-blocks/preview-page-4/index.marko";
 
 static const THEME_STYLE_ELEMENT_ID = "design-system-theme-vars";
 static const MANAGED_BODY_CLASS_PREFIXES = ["style-", "base-color-"] as const;
@@ -361,6 +362,9 @@ static async function applyIconLibrary(iconLibrary: IconLibraryName) {
   </if>
   <else if=(item === "preview-page-3")>
     <PreviewPage3/>
+  </else>
+  <else if=(item === "preview-page-4")>
+    <PreviewPage4/>
   </else>
   <else>
     <PreviewPage1/>

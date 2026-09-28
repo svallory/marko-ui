@@ -1,0 +1,228 @@
+// preview-page-4 — NOT a shadcn port, NOT a customizer showcase page in the
+// same sense as preview-page-1/2/3: this page exists purely to close the
+// "overlays open" gap AGENTS.md's "Gallery visual guard" section documents
+// (35 of 86 registry components skewed to overlay/portal components were not
+// screenshotted at all, and presence-while-closed on the other three pages
+// doesn't catch a regression in an overlay's open state).
+//
+// Renders one instance each of the 6 non-modal overlay/portal components
+// (popover, hover-card, command, context-menu, menubar, navigation-menu) in
+// a layout where each has its own space — non-modal overlays don't
+// backdrop-block each other the way dialog/sheet/drawer/alert-dialog do, so
+// they can coexist on one page. e2e/gallery-visual.spec.ts opens each one via
+// real user interaction (click/hover/keyboard on its trigger) before
+// capturing, never via a demo-only "start open" prop — see that spec for
+// which interaction drives which component.
+//
+// The 4 MODAL overlays (dialog, alert-dialog, sheet, drawer) are NOT on this
+// page: a modal's backdrop covers the whole viewport, so two open at once on
+// one page is meaningless (whichever opened second hides the first). Those
+// four keep their own trigger buttons here (closed by default, same as any
+// other card) and are captured individually via Playwright's element/page
+// screenshot after opening one at a time and closing it before opening the
+// next — see gallery-visual.spec.ts's modal tests.
+//
+// toast/sonner and tour are deliberately NOT covered by this page — see
+// AGENTS.md "Gallery visual guard" for why (toast is a timed/ephemeral
+// overlay, tour is a multi-step guided overlay; both need dedicated
+// determinism design beyond this page's click-to-open pattern and were
+// out of scope for this pass).
+//
+// ALSO A VISUAL-REGRESSION FIXTURE: e2e/gallery-visual.spec.ts screenshots
+// this page's overlay-open states in all 8 styles x light/dark, and (nova
+// style only) after applying each of the 7 base colors. Editing it moves
+// committed baselines — see AGENTS.md "Gallery visual guard" for how to
+// regenerate them.
+import Popover from "@marko-ui/shadcn/ui/popover/popover.marko";
+import HoverCard from "@marko-ui/shadcn/ui/hover-card/hover-card.marko";
+import Command from "@marko-ui/shadcn/ui/command/command.marko";
+import ContextMenu from "@marko-ui/shadcn/ui/context-menu/context-menu.marko";
+import Menubar from "@marko-ui/shadcn/ui/menubar/menubar.marko";
+import MenubarMenu from "@marko-ui/shadcn/ui/menubar/menu.marko";
+import NavigationMenu from "@marko-ui/shadcn/ui/navigation-menu/navigation-menu.marko";
+import Dialog from "@marko-ui/shadcn/ui/dialog/dialog.marko";
+import AlertDialog from "@marko-ui/shadcn/ui/alert-dialog/alert-dialog.marko";
+import Sheet from "@marko-ui/shadcn/ui/sheet/sheet.marko";
+import Drawer from "@marko-ui/shadcn/ui/drawer/drawer.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
+import Label from "@marko-ui/shadcn/ui/label/label.marko";
+import type { DropdownMenuItem } from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
+import type { NavigationMenuItem } from "@marko-ui/shadcn/ui/navigation-menu/navigation-menu.marko";
+
+static const commandGroups = [
+  {
+    label: "Suggestions",
+    items: [
+      { value: "calendar", label: "Calendar" },
+      { value: "search-emoji", label: "Search Emoji" },
+      { value: "calculator", label: "Calculator" },
+    ],
+  },
+];
+
+static const contextMenuItems = [
+  { value: "back", label: "Back" },
+  { value: "forward", label: "Forward", disabled: true },
+  { value: "reload", label: "Reload" },
+];
+
+static const menubarFileItems = [
+  { value: "new-tab", label: "New Tab", shortcut: "⌘T" },
+  { type: "separator" },
+  { value: "share", label: "Share" },
+] satisfies DropdownMenuItem[];
+
+static const navigationMenuItems = [
+  {
+    type: "menu",
+    value: "getting-started",
+    label: "Getting Started",
+    links: [
+      {
+        title: "Introduction",
+        description: "Re-usable components built with Marko and Tailwind CSS.",
+        href: "#introduction",
+      },
+      {
+        title: "Installation",
+        description: "How to install dependencies and structure your app.",
+        href: "#installation",
+      },
+    ],
+  },
+] satisfies NavigationMenuItem[];
+
+<div class="grid grid-cols-1 gap-12 bg-muted p-12 dark:bg-background md:grid-cols-3" data-slot="capture-target">
+  <div class="flex flex-col items-start gap-3 rounded-lg border bg-card p-6" data-overlay-card="popover">
+    <h3 class="text-sm font-medium">Popover</h3>
+    <Popover positioning={ placement: "bottom-start" }>
+      <@trigger|props|>
+        <Button type="button" ...props variant="outline">Open Popover</Button>
+      </@trigger>
+      <div class="grid gap-2">
+        <h4 class="leading-none font-medium">Dimensions</h4>
+        <p class="text-muted-foreground text-sm">
+          Set the dimensions for the layer.
+        </p>
+      </div>
+    </Popover>
+  </div>
+
+  <div class="flex flex-col items-start gap-3 rounded-lg border bg-card p-6" data-overlay-card="hover-card">
+    <h3 class="text-sm font-medium">Hover Card</h3>
+    <HoverCard>
+      <@trigger|props|>
+        <a ...props href="#" class="text-sm font-medium underline underline-offset-4">
+          @marko-ui
+        </a>
+      </@trigger>
+      <div class="flex justify-between gap-4">
+        <div class="space-y-1">
+          <h4 class="text-sm font-semibold">@marko-ui</h4>
+          <p class="text-sm text-muted-foreground">
+            A shadcn-compatible component registry, ported to Marko 6.
+          </p>
+        </div>
+      </div>
+    </HoverCard>
+  </div>
+
+  <div class="flex flex-col items-start gap-3 rounded-lg border bg-card p-6" data-overlay-card="command">
+    <h3 class="text-sm font-medium">Command</h3>
+    <div class="w-full max-w-[320px]">
+      <Command groups=commandGroups placeholder="Type a command or search..." class="rounded-lg border shadow-md"/>
+    </div>
+  </div>
+
+  <div class="flex flex-col items-start gap-3 rounded-lg border bg-card p-6" data-overlay-card="context-menu">
+    <h3 class="text-sm font-medium">Context Menu</h3>
+    <ContextMenu items=contextMenuItems>
+      <div class="flex h-[100px] w-[250px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+        Right click here
+      </div>
+    </ContextMenu>
+  </div>
+
+  <div class="flex flex-col items-start gap-3 rounded-lg border bg-card p-6" data-overlay-card="menubar">
+    <h3 class="text-sm font-medium">Menubar</h3>
+    <Menubar>
+      <MenubarMenu items=menubarFileItems>
+        <@trigger|triggerProps|>
+          <button type="button" ...triggerProps class="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none">
+            File
+          </button>
+        </@trigger>
+      </MenubarMenu>
+    </Menubar>
+  </div>
+
+  <div class="flex flex-col items-start gap-3 rounded-lg border bg-card p-6" data-overlay-card="navigation-menu">
+    <h3 class="text-sm font-medium">Navigation Menu</h3>
+    <NavigationMenu items=navigationMenuItems/>
+  </div>
+
+  <div class="flex flex-col items-start gap-3 rounded-lg border bg-card p-6" data-overlay-card="dialog">
+    <h3 class="text-sm font-medium">Dialog</h3>
+    <Dialog>
+      <@trigger|props|>
+        <Button type="button" ...props variant="outline">Edit Profile</Button>
+      </@trigger>
+      <@title>Edit profile</@title>
+      <@description>Make changes to your profile here. Click save when you're done.</@description>
+      <div class="grid gap-4">
+        <div class="grid gap-2">
+          <Label for="pp4-dialog-name">Name</Label>
+          <TextInput id="pp4-dialog-name" name="name" value="Pedro Duarte"/>
+        </div>
+      </div>
+    </Dialog>
+  </div>
+
+  <div class="flex flex-col items-start gap-3 rounded-lg border bg-card p-6" data-overlay-card="alert-dialog">
+    <h3 class="text-sm font-medium">Alert Dialog</h3>
+    <AlertDialog>
+      <@trigger|props|>
+        <Button type="button" ...props variant="outline">Show Dialog</Button>
+      </@trigger>
+      <@title>Are you absolutely sure?</@title>
+      <@description>
+        This action cannot be undone. This will permanently delete your account from our servers.
+      </@description>
+    </AlertDialog>
+  </div>
+
+  <div class="flex flex-col items-start gap-3 rounded-lg border bg-card p-6" data-overlay-card="sheet">
+    <h3 class="text-sm font-medium">Sheet</h3>
+    <Sheet>
+      <@trigger|props|>
+        <Button type="button" ...props variant="outline">Open</Button>
+      </@trigger>
+      <@title>Edit profile</@title>
+      <@description>Make changes to your profile here. Click save when you're done.</@description>
+      <div class="grid gap-4">
+        <div class="grid gap-2">
+          <Label for="pp4-sheet-name">Name</Label>
+          <TextInput id="pp4-sheet-name" name="name" value="Pedro Duarte"/>
+        </div>
+      </div>
+    </Sheet>
+  </div>
+
+  <div class="flex flex-col items-start gap-3 rounded-lg border bg-card p-6" data-overlay-card="drawer">
+    <h3 class="text-sm font-medium">Drawer</h3>
+    <Drawer>
+      <@trigger|props|>
+        <Button type="button" ...props variant="outline">Open Drawer</Button>
+      </@trigger>
+      <@title>Edit profile</@title>
+      <@description>Make changes to your profile here. Click save when you're done.</@description>
+      <div class="grid gap-4 px-4">
+        <div class="grid gap-2">
+          <Label for="pp4-drawer-name">Name</Label>
+          <TextInput id="pp4-drawer-name" name="name" value="Pedro Duarte"/>
+        </div>
+      </div>
+    </Drawer>
+  </div>
+</div>

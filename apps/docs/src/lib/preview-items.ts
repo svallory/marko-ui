@@ -13,6 +13,7 @@ export const PREVIEW_ITEMS = [
   "preview-page-1",
   "preview-page-2",
   "preview-page-3",
+  "preview-page-4",
 ] as const;
 
 export type PreviewItem = (typeof PREVIEW_ITEMS)[number];
