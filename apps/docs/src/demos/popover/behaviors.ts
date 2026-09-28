@@ -1,5 +1,5 @@
 // Behavior list for Popover (round 2a, reviewed against @zag-js/popover and the APG Dialog (non-modal) pattern).
-// No dedicated behavior suite exists for popover; only the structural checks apply.
+// Interaction, keyboard and ARIA behaviors are proven by packages/shadcn/tests/behavior/popover.test.ts.
 import type { ComponentBehavior } from "../behavior-types.ts";
 
 export const behaviors: ComponentBehavior[] = [

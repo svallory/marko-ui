@@ -1,5 +1,5 @@
 // Behavior list for Collapsible (round 2a, reviewed against @zag-js/collapsible).
-// No dedicated behavior suite exists for collapsible; only the structural checks apply.
+// Interaction, keyboard and ARIA behaviors are proven by packages/shadcn/tests/behavior/collapsible.test.ts.
 import type { ComponentBehavior } from "../behavior-types.ts";
 
 export const behaviors: ComponentBehavior[] = [

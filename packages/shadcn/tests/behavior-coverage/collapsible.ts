@@ -23,16 +23,88 @@ export const coverage: BehaviorCoverageEntry[] = [
       },
     ],
   },
+  {
+    behaviorId: "collapsible/interaction/trigger-click-toggles-open",
+    provenBy: [
+      {
+        source: "vitest",
+        file: "packages/shadcn/tests/behavior/collapsible.test.ts",
+        title: ["collapsible pointer interaction", "toggles the panel when the trigger is clicked"],
+      },
+    ],
+  },
+  {
+    behaviorId: "collapsible/keyboard/space-enter-toggle",
+    provenBy: [
+      {
+        source: "vitest",
+        file: "packages/shadcn/tests/behavior/collapsible.test.ts",
+        title: ["collapsible keyboard contract (APG disclosure)", "toggles with Enter and with Space"],
+      },
+    ],
+  },
+  {
+    behaviorId: "collapsible/interaction/content-stays-in-dom",
+    provenBy: [
+      {
+        source: "vitest",
+        file: "packages/shadcn/tests/behavior/collapsible.test.ts",
+        title: ["collapsible pointer interaction", "keeps the panel in the DOM while closed, hidden until opened"],
+      },
+    ],
+  },
+  {
+    behaviorId: "collapsible/api/disabled-ignores-clicks",
+    provenBy: [
+      {
+        source: "vitest",
+        file: "packages/shadcn/tests/behavior/collapsible.test.ts",
+        title: ["collapsible props", "ignores activation when disabled but keeps the trigger focusable"],
+      },
+    ],
+  },
+  {
+    behaviorId: "collapsible/api/controlled-open",
+    provenBy: [
+      {
+        source: "vitest",
+        file: "packages/shadcn/tests/behavior/collapsible.test.ts",
+        title: ["collapsible props", "follows a controlled open state changed from outside the trigger"],
+      },
+    ],
+  },
+  {
+    behaviorId: "collapsible/a11y/trigger-aria-expanded-tracks-state",
+    provenBy: [
+      {
+        source: "vitest",
+        file: "packages/shadcn/tests/behavior/collapsible.test.ts",
+        title: ["collapsible ARIA", "tracks aria-expanded and points aria-controls at the panel"],
+      },
+    ],
+  },
+  {
+    behaviorId: "collapsible/a11y/trigger-controls-content",
+    provenBy: [
+      {
+        source: "vitest",
+        file: "packages/shadcn/tests/behavior/collapsible.test.ts",
+        title: ["collapsible ARIA", "tracks aria-expanded and points aria-controls at the panel"],
+      },
+    ],
+  },
+  {
+    behaviorId: "collapsible/interaction/nested-collapsibles-independent",
+    provenBy: [
+      {
+        source: "vitest",
+        file: "packages/shadcn/tests/behavior/collapsible.test.ts",
+        title: ["collapsible pointer interaction", "toggles nested collapsibles independently of their parent"],
+      },
+    ],
+  },
   // Not covered by any existing check (honest gaps, not omissions):
-  // collapsible/interaction/trigger-click-toggles-open
-  // collapsible/keyboard/space-enter-toggle
-  // collapsible/interaction/content-stays-in-dom
-  // collapsible/api/disabled-ignores-clicks
-  // collapsible/api/controlled-open
   // collapsible/api/default-open
   // collapsible/api/collapsed-height
-  // collapsible/a11y/trigger-aria-expanded-tracks-state
-  // collapsible/a11y/trigger-controls-content
-  // collapsible/interaction/nested-collapsibles-independent
   // collapsible/visual/rtl-mirrors
 ];

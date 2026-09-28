@@ -1,5 +1,5 @@
 // Behavior list for Toggle (round 2a). Toggle is a plain native <button> with local state, not a zag machine.
-// No behavior suite, and no hydration-invariant coverage (not Zag-backed): only the axe structural check applies.
+// Behaviors are proven by packages/shadcn/tests/behavior/toggle.test.ts. No hydration-invariant coverage (not Zag-backed).
 import type { ComponentBehavior } from "../behavior-types.ts";
 
 export const behaviors: ComponentBehavior[] = [

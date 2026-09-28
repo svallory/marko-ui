@@ -1,5 +1,5 @@
 // Behavior list for Alert Dialog (round 2a, reviewed against @zag-js/dialog with role=alertdialog and the APG Alert Dialog pattern).
-// No dedicated behavior suite exists for alert-dialog (dialog.test.ts covers only <Dialog>); the gaps below are real.
+// Behaviors are proven by packages/shadcn/tests/behavior/alert-dialog.test.ts (dialog.test.ts covers only <Dialog>).
 import type { ComponentBehavior } from "../behavior-types.ts";
 
 export const behaviors: ComponentBehavior[] = [

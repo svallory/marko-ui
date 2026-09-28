@@ -1,5 +1,5 @@
 // Behavior list for Tooltip (round 2a, reviewed against @zag-js/tooltip and the WAI-ARIA Tooltip pattern).
-// No dedicated behavior suite exists for tooltip; only the structural checks apply.
+// Interaction, keyboard and ARIA behaviors are proven by packages/shadcn/tests/behavior/tooltip.test.ts.
 import type { ComponentBehavior } from "../behavior-types.ts";
 
 export const behaviors: ComponentBehavior[] = [
@@ -52,10 +52,16 @@ export const behaviors: ComponentBehavior[] = [
     source: "tooltip docs.ts notes",
   },
   {
-    id: "tooltip/a11y/role-tooltip-unless-aria-label",
+    id: "tooltip/a11y/role-tooltip",
     kind: "a11y",
-    description: "The content has role=\"tooltip\" unless the trigger already has an aria-label.",
-    source: "tooltip docs.ts notes; tooltip.marko",
+    description: "The content has role=\"tooltip\" and the trigger's aria-describedby uses its id.",
+    source: "WAI-ARIA APG tooltip pattern; @zag-js/tooltip getContentProps",
+  },
+  {
+    id: "tooltip/a11y/role-omitted-with-tooltip-aria-label",
+    kind: "a11y",
+    description: "When the tooltip itself is given an `aria-label`, the content drops role=\"tooltip\" and its id (Zag hasAriaLabel); a label on the trigger button does not.",
+    source: "@zag-js/tooltip getContentProps; tooltip.marko",
   },
   {
     id: "tooltip/api/positioning-placement",
