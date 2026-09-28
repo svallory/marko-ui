@@ -23,8 +23,18 @@
 // packages, never user input. `data-icon-name`/`data-icon-library` markers
 // let the preview iframe's OWN opt-in re-render script (not this
 // component) find and patch icons after the initial SSR paint.
+//
+// `resolveIconInner` is imported with `server import` (see below): every
+// real caller passes `name`/`library` as non-reactive values (string
+// literals or a <const> derived once from $global at SSR time — see
+// resolve.ts's header and TODO.md's icon-chunks entry), so the interpolated
+// SVG markup never needs to be recomputed client-side. `server import`
+// keeps resolve.ts's 5 statically-imported per-library maps (~360KB
+// combined) out of every client bundle that renders an <icon>, instead of
+// only client-swap.ts's callers avoiding them.
 import { cn } from "#lib/utils.ts";
-import { resolveIconInner, resolveIconLibrary } from "./resolve.ts";
+import { resolveIconLibrary } from "./resolve.ts";
+server import { resolveIconInner } from "./resolve.ts";
 import { ICON_WRAPPER_ATTRS } from "./render.ts";
 import type { IconLibraryName, IconName } from "./icon-names.ts";
 import { icon as styles } from "./classes.ts";
