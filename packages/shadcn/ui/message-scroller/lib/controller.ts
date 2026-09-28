@@ -113,6 +113,28 @@ export function createMessageScrollerController(options: MessageScrollerProvider
   let streamingTurn: HTMLElement | null = null;
   let content: HTMLElement | null = null;
   let defaultScrollPositionApplied = false;
+  // Port of shadcn 503a3a5's pendingDefaultScrollStore: true only when the
+  // opening position is "end"/"last-anchor" (those are the two positions
+  // that move the viewport away from its natural top-of-content start, so
+  // only they risk a visible jump). Cleared the moment the position is
+  // actually applied, or immediately for an empty transcript (nothing to
+  // scroll to, so nothing to hide). Unlike upstream's React store this needs
+  // no separate pub/sub: it is written straight onto the DOM alongside the
+  // other state attributes (see writeStateAttributes), since nothing here
+  // re-renders off of it.
+  let pendingDefaultScroll = defaultScrollPosition === "end" || defaultScrollPosition === "last-anchor";
+  // Mount-order guard (see notes/style-ports.md's "pending-scroll" section
+  // for the bug this fixes): Marko mounts a child (content.marko) before its
+  // ancestor (viewport.marko/message-scroller.marko) finishes mounting, so
+  // root/viewport/content register in whatever order the real tree produces
+  // (content first, in practice) — never the "root, then viewport, then
+  // content" order a naive test would assume. The initial content sync
+  // (which is what calls applyDefaultScrollPosition for the first time) must
+  // not run until all three are registered, or applyDefaultScrollPosition
+  // silently fails (viewport/content still null) and pendingDefaultScroll
+  // is stuck true forever. initialSyncDone ensures it runs exactly once,
+  // whichever setter is the last to register.
+  let initialSyncDone = false;
   let firstItem: HTMLElement | null = null;
   let itemCount = 0;
   let lastScrollTop = 0;
@@ -149,7 +171,20 @@ export function createMessageScrollerController(options: MessageScrollerProvider
       }
 
       element.toggleAttribute("data-autoscrolling", autoscrolling);
+      element.toggleAttribute("data-pending-scroll", pendingDefaultScroll);
     }
+  }
+
+  // Port of shadcn 503a3a5's clearPendingDefaultScroll/markDefaultScrollPositionApplied.
+  function clearPendingDefaultScroll() {
+    if (!pendingDefaultScroll) return;
+    pendingDefaultScroll = false;
+    writeStateAttributes(stateStore.getSnapshot());
+  }
+
+  function markDefaultScrollPositionApplied() {
+    defaultScrollPositionApplied = true;
+    clearPendingDefaultScroll();
   }
 
   // Owns the one follow-bottom transition: arm at the bottom, release on any
@@ -330,13 +365,13 @@ export function createMessageScrollerController(options: MessageScrollerProvider
     if (!element) {
       if (itemCount === 0) {
         pendingScrollToMessage = { messageId, options: scrollOptions };
-        defaultScrollPositionApplied = true;
+        markDefaultScrollPositionApplied();
         return true;
       }
       return false;
     }
 
-    defaultScrollPositionApplied = true;
+    markDefaultScrollPositionApplied();
 
     if (scrollToElement(element, scrollOptions)) {
       pendingScrollToMessage = null;
@@ -358,7 +393,7 @@ export function createMessageScrollerController(options: MessageScrollerProvider
     if (!handled) return false;
 
     pendingScrollToMessage = null;
-    defaultScrollPositionApplied = true;
+    markDefaultScrollPositionApplied();
     return true;
   }
 
@@ -432,7 +467,7 @@ export function createMessageScrollerController(options: MessageScrollerProvider
 
     if (!handled) return false;
 
-    defaultScrollPositionApplied = true;
+    markDefaultScrollPositionApplied();
     return true;
   }
 
@@ -451,6 +486,8 @@ export function createMessageScrollerController(options: MessageScrollerProvider
 
       if (previousItemCount === 0) {
         if (applyDefaultScrollPosition()) return;
+
+        if (items.length === 0) clearPendingDefaultScroll();
 
         if (items.length > 0 && autoScroll && scrollToEnd({ behavior: "auto" })) return;
 
@@ -604,18 +641,38 @@ export function createMessageScrollerController(options: MessageScrollerProvider
     writeStateAttributes(stateStore.getSnapshot());
   }
 
+  // Runs the first handleContentChange() once root, viewport AND content are
+  // all registered — whichever part's onMount is the last to call its setter
+  // (see the mount-order comment on pendingDefaultScroll/initialSyncDone
+  // above; in the real tree this is content, viewport, then root, but this
+  // gate does not assume any particular order). Before this point
+  // applyDefaultScrollPosition would silently no-op because viewport/content
+  // are still null, leaving pendingDefaultScroll stuck true forever.
+  function tryInitialSync() {
+    if (initialSyncDone || !root || !viewport || !content) return;
+    initialSyncDone = true;
+    handleContentChange();
+  }
+
   function setRootElement(element: HTMLElement | null) {
     root = element;
-    if (element) mirrorStateAttributes();
+    if (element) {
+      mirrorStateAttributes();
+      tryInitialSync();
+    }
   }
 
   function setViewportElement(element: HTMLElement | null) {
     viewport = element;
-    if (element) mirrorStateAttributes();
+    if (element) {
+      mirrorStateAttributes();
+      tryInitialSync();
+    }
   }
 
   function setContentElement(element: HTMLElement | null) {
     content = element;
+    if (element) tryInitialSync();
   }
 
   function setSpacerElement(element: HTMLElement | null) {

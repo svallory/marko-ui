@@ -11,6 +11,37 @@
 // task's requested "real scroll listener + ResizeObserver in an effect"
 // idiom, using this project's actual effect primitive (`<lifecycle>`; Marko
 // has no separate `<effect>` tag).
+//
+// SSR STORY for `data-pending-scroll` (shadcn 503a3a5 port, see
+// lib/controller.ts's `pendingDefaultScroll` comment and notes/
+// style-ports.md's "pending-scroll" section): CLIENT-ONLY, not render-time.
+// Upstream's React source computes `pendingDefaultScrollStore`'s initial
+// value synchronously during render, so the server markup already carries
+// the attribute. This port's controller is created lazily, browser-only (see
+// message-scroller-provider.marko's SERIALIZATION RULE comment), so it
+// cannot write anything into the SSR HTML — a static `defaultScrollPosition`
+// input threaded past the controller would close that specific gap, but
+// widens this component's input surface beyond controller.ts, which the
+// task scope excludes.
+//
+// This does not reintroduce a visible flicker for a server-rendered,
+// already-visible transcript: `message-scroller-provider.marko`'s
+// `<const/controller>` closure lazily builds ONE controller shared by every
+// part, and `setRootElement`/`setViewportElement`/`setContentElement` each
+// call `tryInitialSync()`, which runs `handleContentChange()` exactly once,
+// synchronously, the moment the LAST of the three parts registers during
+// Marko's mount pass — before any `requestAnimationFrame` and before the
+// browser paints. `applyDefaultScrollPosition()`'s `scrollTo`/`scrollTop`
+// writes are themselves synchronous DOM assignments (no rAF), so for an
+// SSR'd non-empty transcript the opening scroll position is already correct
+// by the time this component's first paint happens; `data-pending-scroll`
+// is set and cleared within that same synchronous call and a viewport whose
+// position never needed to change never visibly toggles `invisible` at all.
+// The attribute still earns its keep for content that arrives AFTER mount
+// (e.g. a streamed-in transcript, or `itemCount === 0` at SSR time): there,
+// hiding the viewport until the first non-empty `handleContentChange()`
+// settles avoids the "content briefly rendered unpositioned" jump upstream's
+// port targets.
 import { cn } from "#lib/utils.ts";
 import type { MessageScrollerControllerGetter } from "./lib/controller.ts";
 import { USER_SCROLL_KEYS } from "./lib/types.ts";

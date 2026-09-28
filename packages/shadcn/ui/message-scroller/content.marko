@@ -37,7 +37,14 @@ export interface Input extends Marko.Input<"div"> {
     controller().setContentElement(contentEl);
     controller().setSpacerElement(spacerEl());
 
-    controller().handleContentChange();
+    // Do NOT call controller().handleContentChange() here unconditionally:
+    // Marko mounts a child (this component) before its ancestor
+    // (viewport.marko/message-scroller.marko) finishes mounting, so at this
+    // point the controller's viewport/root refs are often still null. The
+    // initial sync is instead triggered by setContentElement itself once
+    // root, viewport AND content have all registered — see
+    // lib/controller.ts's tryInitialSync (and notes/style-ports.md's
+    // "pending-scroll" section for the bug this replaces).
 
     let mutationObserver: MutationObserver | undefined;
     if (typeof MutationObserver !== "undefined") {
