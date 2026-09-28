@@ -262,6 +262,8 @@ jobs:
         run: bunx vitest run --reporter=default --reporter=json --outputFile.json=vitest-results.json
       - name: Validate HTML
         run: bun run check:html
+      - name: Check preload helper is not co-located with shiki
+        run: bun scripts/ci/check-preload-helper.ts
       - name: Generate badges
         if: always()
         run: bun scripts/ci/badge.ts vitest vitest-results.json badge-out
