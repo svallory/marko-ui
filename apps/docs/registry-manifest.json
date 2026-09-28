@@ -57,7 +57,7 @@
     },
     {
       "path": "calendar.json",
-      "sha256": "497f61619117bb9458818ff0d4c7e96cd87e5aafbce27c86c819b0373f99ac4d"
+      "sha256": "b00e700b7660c8f278281086a3185d749e222267a9a1143798b83c68d2c9dc5c"
     },
     {
       "path": "card.json",
@@ -489,7 +489,7 @@
     },
     {
       "path": "styles/luma/calendar.json",
-      "sha256": "1071b16f620833d299b7ff98a58741cf4631ae4e29efa4592bf054aa65d08cac"
+      "sha256": "bc233391b82dad12af29ac350ec732c424ea0121dc0b5976e78c0f03fcc631c1"
     },
     {
       "path": "styles/luma/card.json",
@@ -833,7 +833,7 @@
     },
     {
       "path": "styles/lyra/calendar.json",
-      "sha256": "403e1c6ba21fcda634bef4621466ed4e4794489ac6aaadaffe1e005bc225a4eb"
+      "sha256": "f6a032dcbbee1d60b60dff2db1176686c4503efa9baae77747728412b2196b57"
     },
     {
       "path": "styles/lyra/card.json",
@@ -1177,7 +1177,7 @@
     },
     {
       "path": "styles/maia/calendar.json",
-      "sha256": "31b163dfc58b7c78767e54bb46c51a421394b524447dc852bb7be86a83815854"
+      "sha256": "17f0e65ed3b1e9bccddaa6a829eb5b4d1acac803baf09186bf2d4b699759b3f3"
     },
     {
       "path": "styles/maia/card.json",
@@ -1521,7 +1521,7 @@
     },
     {
       "path": "styles/mira/calendar.json",
-      "sha256": "af977b5e105dae6f55edd6378bd2e2ec73a2f62ebf249e3ca0defce4bb32cd3f"
+      "sha256": "35bbf5d5497061933dc1db44f225af97aabc4ce950b0d25da6ddf30ff92363c3"
     },
     {
       "path": "styles/mira/card.json",
@@ -1865,7 +1865,7 @@
     },
     {
       "path": "styles/new-york/calendar.json",
-      "sha256": "a327f0fc405662a3d13b452cee5736bc6699a82680fa63592141d50fd969f9cf"
+      "sha256": "31ddc7d2423e3bb739e7713aeb64b7a534092dd190540ded5086738430e18f0e"
     },
     {
       "path": "styles/new-york/card.json",
@@ -2209,7 +2209,7 @@
     },
     {
       "path": "styles/nova/calendar.json",
-      "sha256": "f7288f3890ef9e7fe8622a57e17b97a89cdd613987ac29bd4af75a10b72e74e7"
+      "sha256": "68224961f23458afcfa9976e3db1dd67661d2d95739be643ea91485899ea84fb"
     },
     {
       "path": "styles/nova/card.json",
@@ -2553,7 +2553,7 @@
     },
     {
       "path": "styles/rhea/calendar.json",
-      "sha256": "951ed5e9609707789fb5e8bad17d7c4a8ff24fa8232783f9357c33fda0ffb4f5"
+      "sha256": "d43f8ddc3876d5a3109ac93b4c2bbc070794e81972609263d5d08f22e8f8291e"
     },
     {
       "path": "styles/rhea/card.json",
@@ -2897,7 +2897,7 @@
     },
     {
       "path": "styles/sera/calendar.json",
-      "sha256": "fc0a4b16b3200eb616fc50ff6e464db698d09c30601634be28124dcb617af8e8"
+      "sha256": "831288ea361cf397ed97c4699735e44b172c6d5e800cbff8b755ebb21cae5395"
     },
     {
       "path": "styles/sera/card.json",
@@ -3241,7 +3241,7 @@
     },
     {
       "path": "styles/vega/calendar.json",
-      "sha256": "ce324f35155fb2d65f9ff4666a7d3fad7bce78aec239703283883a496e914b2d"
+      "sha256": "53ea6a326057b40d8edf65e710d20ec15884537d413786eb07c702294ecc6384"
     },
     {
       "path": "styles/vega/card.json",
