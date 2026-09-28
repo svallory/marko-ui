@@ -39,7 +39,7 @@
   }
 
   .mu-accordion-content {
-    @apply data-open:animate-accordion-down data-closed:animate-accordion-up;
+    @apply overflow-hidden text-sm data-open:animate-accordion-down data-closed:animate-accordion-up;
   }
 
   .mu-accordion-content-inner {
@@ -113,7 +113,7 @@
   }
 
   .mu-avatar-badge {
-    @apply bg-primary text-primary-foreground ring-background;
+    @apply bg-primary text-primary-foreground ring-2 ring-background group-data-[size=sm]/avatar:size-2 group-data-[size=sm]/avatar:[&>svg]:hidden group-data-[size=default]/avatar:size-2.5 group-data-[size=default]/avatar:[&>svg]:size-2 group-data-[size=lg]/avatar:size-3 group-data-[size=lg]/avatar:[&>svg]:size-2;
   }
 
   .mu-avatar-group-count {
@@ -404,7 +404,7 @@
   }
 
   .mu-command-dialog {
-    @apply rounded-xl!;
+    @apply overflow-hidden p-0;
   }
 
   .mu-command-input-wrapper {
@@ -478,7 +478,7 @@
   }
 
   .mu-context-menu-item-indicator {
-    @apply absolute left-2 size-3.5;
+    @apply absolute left-2 flex size-3.5 items-center justify-center;
   }
 
   .mu-context-menu-label {
@@ -512,7 +512,7 @@
   }
 
   .mu-dialog-close {
-    @apply absolute top-4 right-4;
+    @apply absolute top-4 right-4 opacity-70 hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 data-open:bg-accent data-open:text-muted-foreground;
   }
 
   .mu-dialog-header {
@@ -754,11 +754,11 @@
   /* MARK: Item */
   /* new-york: ported from new-york-v4 (apps/v4/registry/new-york-v4/ui/item.tsx) */
   .mu-item {
-    @apply [a]:hover:bg-accent/50 rounded-md border text-sm;
+    @apply [a]:hover:bg-accent/50 rounded-md border border-transparent text-sm;
   }
 
   .mu-item-variant-default {
-    @apply border-transparent;
+    @apply bg-transparent;
   }
 
   .mu-item-variant-outline {
@@ -929,7 +929,7 @@
   }
 
   .mu-navigation-menu-trigger {
-    @apply hover:bg-accent focus:bg-accent data-open:hover:bg-accent data-open:focus:bg-accent data-open:bg-accent/50 focus-visible:ring-ring/50 data-popup-open:bg-accent/50 data-popup-open:hover:bg-accent rounded-md px-4 py-2 text-sm font-medium transition-all focus-visible:ring-3 focus-visible:outline-1 disabled:opacity-50;
+    @apply bg-background hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-open:hover:bg-accent data-open:focus:bg-accent data-open:bg-accent/50 data-open:text-accent-foreground focus-visible:ring-ring/50 data-popup-open:bg-accent/50 data-popup-open:hover:bg-accent rounded-md px-4 py-2 text-sm font-medium transition-[color,box-shadow] focus-visible:ring-3 focus-visible:outline-1 disabled:opacity-50;
   }
 
   .mu-navigation-menu-link {
@@ -992,11 +992,11 @@
   }
 
   .mu-pagination-previous {
-    @apply pl-2!;
+    @apply gap-1 px-2.5 sm:pl-2.5;
   }
 
   .mu-pagination-next {
-    @apply pr-2!;
+    @apply gap-1 px-2.5 sm:pr-2.5;
   }
 
   /* MARK: Popover */
@@ -1055,7 +1055,7 @@
   }
 
   .mu-radio-group-item {
-    @apply rounded-full border-input shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30 dark:aria-invalid:ring-destructive/40 flex size-4 data-checked:bg-primary data-checked:text-primary-foreground dark:data-checked:bg-primary data-checked:border-primary aria-invalid:aria-checked:border-primary dark:aria-invalid:border-destructive/50;
+    @apply rounded-full border-input shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30 dark:aria-invalid:ring-destructive/40 flex size-4;
   }
 
   .mu-radio-group-item-aria {
@@ -1063,11 +1063,11 @@
   }
 
   .mu-radio-group-indicator {
-    @apply flex size-4 items-center justify-center;
+    @apply relative flex size-4 items-center justify-center;
   }
 
   .mu-radio-group-indicator-icon {
-    @apply bg-primary-foreground absolute top-1/2 left-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full;
+    @apply bg-primary absolute top-1/2 left-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full;
   }
 
   /* MARK: Resizable */
@@ -1131,7 +1131,7 @@
   }
 
   .mu-select-item-indicator {
-    @apply pointer-events-none absolute right-2 flex size-4 items-center justify-center;
+    @apply pointer-events-none absolute right-2 flex size-3.5 items-center justify-center;
   }
 
   .mu-select-group {
@@ -1187,7 +1187,7 @@
   }
 
   .mu-sheet-close {
-    @apply absolute top-4 right-4;
+    @apply absolute top-4 right-4 opacity-70 hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 data-open:bg-secondary;
   }
 
   .mu-sheet-header {
@@ -1217,7 +1217,7 @@
   }
 
   .mu-sidebar-inner {
-    @apply bg-sidebar group-data-[variant=floating]:ring-sidebar-border group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1;
+    @apply bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow-sm;
   }
 
   .mu-sidebar-rail {
@@ -1501,7 +1501,7 @@
   }
 
   .mu-tooltip-arrow {
-    @apply size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px];
+    @apply z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px];
   }
 
   .mu-tooltip-arrow-logical {
@@ -1566,11 +1566,11 @@
   }
 
   .mu-input-group-input {
-    @apply rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent;
+    @apply rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent;
   }
 
   .mu-input-group-textarea {
-    @apply rounded-none border-0 bg-transparent py-3 shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent;
+    @apply rounded-none border-0 bg-transparent py-3 shadow-none focus-visible:ring-0 dark:bg-transparent;
   }
 
   /* MARK: Menu Translucent */

@@ -612,9 +612,9 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
   },
   "navigation-menu:navigation-menu-trigger": {
     missing: ["group"],
-    extra: ["inline-flex", "h-9", "w-max", "items-center", "justify-center", "outline-none", "data-disabled:pointer-events-none", "hover:bg-accent", "focus:bg-accent", "data-open:hover:bg-accent", "data-open:focus:bg-accent", "data-open:bg-accent/50", "focus-visible:ring-ring/50", "data-popup-open:bg-accent/50", "data-popup-open:hover:bg-accent", "rounded-md", "px-4", "py-2", "text-sm", "font-medium", "transition-all", "focus-visible:ring-3", "focus-visible:outline-1", "data-disabled:opacity-50"],
+    extra: ["inline-flex", "h-9", "w-max", "items-center", "justify-center", "outline-none", "data-disabled:pointer-events-none", "bg-background", "hover:bg-accent", "hover:text-accent-foreground", "focus:bg-accent", "focus:text-accent-foreground", "data-open:hover:bg-accent", "data-open:focus:bg-accent", "data-open:bg-accent/50", "data-open:text-accent-foreground", "focus-visible:ring-ring/50", "data-popup-open:bg-accent/50", "data-popup-open:hover:bg-accent", "rounded-md", "px-4", "py-2", "text-sm", "font-medium", "transition-[color,box-shadow]", "focus-visible:ring-3", "focus-visible:outline-1", "data-disabled:opacity-50"],
     reason:
-      "structural mislabel: the whole \"extra\" list is our real ported style rule (already correct — bg-accent etc, verified against upstream directly) plus classes.ts's own structural string (inline-flex h-9 w-max items-center justify-center outline-none disabled:pointer-events-none, normalized to data-disabled:pointer-events-none by the repo-wide disabled:->data-disabled: equivalence added in the batch C merge), which the tool doesn't subtract here because upstream's own trigger fn has no separate cva()/classes()-derivable structural half for this tool to diff against — it only flags the union as \"extra\" since it can't tell which half is ours. `group` (bare, no slash-name) is the same isStructuralOnlyToken() strip as group/navigation-menu above, applied to upstream's own bare `group` on NavigationMenuTrigger (its trigger-icon reads group-hover:rotate-180 off it) — our classes.ts already carries it verbatim too.",
+      "structural mislabel: the whole \"extra\" list is our real ported style rule plus classes.ts's own structural string (inline-flex h-9 w-max items-center justify-center outline-none disabled:pointer-events-none, normalized to data-disabled:pointer-events-none by the repo-wide disabled:->data-disabled: equivalence added in the batch C merge), which the tool doesn't subtract here because upstream's own trigger fn has no separate cva()/classes()-derivable structural half for this tool to diff against — it only flags the union as \"extra\" since it can't tell which half is ours. `group` (bare, no slash-name) is the same isStructuralOnlyToken() strip as group/navigation-menu above, applied to upstream's own bare `group` on NavigationMenuTrigger (its trigger-icon reads group-hover:rotate-180 off it) — our classes.ts already carries it verbatim too. CORRECTED 2026-09-28: an earlier version of this entry claimed the style rule was already correct and verified against upstream — that was false; the CSS rule was missing bg-background/hover:text-accent-foreground/focus:text-accent-foreground/data-open:text-accent-foreground and used transition-all instead of transition-[color,box-shadow]. Fixed in style-new-york.css the same day; this entry's extra list now reflects the corrected rule.",
   },
   "navigation-menu:navigation-menu-content": {
     extra: ["ease-[cubic-bezier(0.22,1,0.36,1)]"],
@@ -697,9 +697,9 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
 
   "accordion:accordion-content": {
     missing: ["pt-0", "pb-4"],
-    extra: ["overflow-hidden", "data-open:animate-accordion-down", "data-closed:animate-accordion-up"],
+    extra: ["overflow-hidden", "text-sm", "data-open:animate-accordion-down", "data-closed:animate-accordion-up"],
     reason:
-      "missing: new-york-v4's AccordionContent is a single element carrying both the collapse wrapper and pt-0/pb-4 padding. Our accordion.marko splits this into content (the ResizeObserver-measured collapse wrapper, classes.ts's `content`) and contentInner (classes.ts's `contentInner`, already `pt-0 pb-4` — a pre-existing bases/base-derived split, not a style-layer choice); the tool only checks the `content` slot, contentInner already carries this value verbatim. extra: `overflow-hidden` is structural (classes.ts); `data-open:.../data-closed:...` drive our height-measured collapse animation (marko-accordion-down/-up keyframes, see accordion/classes.ts's height comment) which has no class-level equivalent in new-york-v4 — Radix's own collapse animation there is driven by its own CSS vars, not a Tailwind class in this slot's string.",
+      "missing: new-york-v4's AccordionContent is a single element carrying both the collapse wrapper and pt-0/pb-4 padding. Our accordion.marko splits this into content (the ResizeObserver-measured collapse wrapper, classes.ts's `content`) and contentInner (classes.ts's `contentInner`, already `pt-0 pb-4` — a pre-existing bases/base-derived split, not a style-layer choice); the tool only checks the `content` slot, contentInner already carries this value verbatim. extra: `overflow-hidden` is structural (classes.ts); `text-sm` (added 2026-09-28) genuinely matches upstream's own `text-sm` on this slot 1:1 — not a real divergence, the tool just hadn't seen this token here before this fix; `data-open:.../data-closed:...` drive our height-measured collapse animation (marko-accordion-down/-up keyframes, see accordion/classes.ts's height comment) which has no class-level equivalent in new-york-v4 — Radix's own collapse animation there is driven by its own CSS vars, not a Tailwind class in this slot's string.",
   },
 
   // batch C
@@ -844,11 +844,14 @@ const DIVERGENCES: Record<string, { missing?: string[]; extra?: string[]; reason
     reason:
       "border-transparent is unconditional on upstream's base itemVariants string but organized per-variant in ours (item:variant:default/muted both apply it, item:variant:outline applies border-border instead) — same net visual result, an organizational difference not a real gap. w-full is structural (classes.ts base literal), pre-existing across every base style.",
   },
-  "item:item:variant:default": {
-    missing: ["bg-transparent"],
-    extra: ["border-transparent"],
-    reason: "same organizational difference as item:item — border-transparent lives here instead of on the base rule; bg-transparent is genuinely present via classes.ts's own base structural string (not missing in practice, only from this slot's own CSS rule).",
-  },
+  // "item:item:variant:default" DELETED 2026-09-28: previously claimed bg-transparent
+  // was genuinely present via classes.ts's own base structural string — that was false
+  // (verified: no such string exists in item/classes.ts). Real fix applied instead:
+  // bg-transparent moved onto .mu-item-variant-default and border-transparent moved onto
+  // .mu-item's base rule (matching upstream's own composition — itemVariants' base cva
+  // string carries border border-transparent, its default variant adds only
+  // bg-transparent). If --check still reports a mismatch here, re-add an entry with the
+  // real remaining gap — do not restore the old false claim.
   "item:item:variant:muted": {
     extra: ["border-transparent"],
     reason: "same organizational difference as item:item.",
