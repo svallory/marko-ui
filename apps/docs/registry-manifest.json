@@ -161,7 +161,7 @@
     },
     {
       "path": "icon.json",
-      "sha256": "ce93851f1cee63a7aee916bbaea737b06fa08f389641e945fd96977ab84da419"
+      "sha256": "18a89ad570f05c5fed1ccbfa557e536e88ea5fd886099b39e4746b3cf32b17dc"
     },
     {
       "path": "image-cropper.json",
@@ -169,7 +169,7 @@
     },
     {
       "path": "index.json",
-      "sha256": "af7e857e0a480c6fdbd41c029f6a95add67f85489a439d0207baf5239a07cec6"
+      "sha256": "b5005be5fcfec1bcbd65eccf2d1e06a8744e3bce5f96e897cf6e3620e2047e0e"
     },
     {
       "path": "input-group.json",
@@ -285,7 +285,7 @@
     },
     {
       "path": "registry.json",
-      "sha256": "7579e4a59cfff633c561d09d45d5101d1b06c2e9a2d1d5d3bdf4677b27505114"
+      "sha256": "e36137c12e3ab2a53f809502ee9ec7bfd28a06a2f20b65d0ffb4165ca1ca5c62"
     },
     {
       "path": "resizable.json",
@@ -589,7 +589,7 @@
     },
     {
       "path": "styles/luma/icon.json",
-      "sha256": "f04ec9a03059c96a769f0ec464712e0eddec2e4461c3c8a68dc76df67a3bc8b9"
+      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
     },
     {
       "path": "styles/luma/image-cropper.json",
@@ -933,7 +933,7 @@
     },
     {
       "path": "styles/lyra/icon.json",
-      "sha256": "f04ec9a03059c96a769f0ec464712e0eddec2e4461c3c8a68dc76df67a3bc8b9"
+      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
     },
     {
       "path": "styles/lyra/image-cropper.json",
@@ -1277,7 +1277,7 @@
     },
     {
       "path": "styles/maia/icon.json",
-      "sha256": "f04ec9a03059c96a769f0ec464712e0eddec2e4461c3c8a68dc76df67a3bc8b9"
+      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
     },
     {
       "path": "styles/maia/image-cropper.json",
@@ -1621,7 +1621,7 @@
     },
     {
       "path": "styles/mira/icon.json",
-      "sha256": "f04ec9a03059c96a769f0ec464712e0eddec2e4461c3c8a68dc76df67a3bc8b9"
+      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
     },
     {
       "path": "styles/mira/image-cropper.json",
@@ -1965,7 +1965,7 @@
     },
     {
       "path": "styles/new-york/icon.json",
-      "sha256": "f04ec9a03059c96a769f0ec464712e0eddec2e4461c3c8a68dc76df67a3bc8b9"
+      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
     },
     {
       "path": "styles/new-york/image-cropper.json",
@@ -2309,7 +2309,7 @@
     },
     {
       "path": "styles/nova/icon.json",
-      "sha256": "f04ec9a03059c96a769f0ec464712e0eddec2e4461c3c8a68dc76df67a3bc8b9"
+      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
     },
     {
       "path": "styles/nova/image-cropper.json",
@@ -2653,7 +2653,7 @@
     },
     {
       "path": "styles/rhea/icon.json",
-      "sha256": "f04ec9a03059c96a769f0ec464712e0eddec2e4461c3c8a68dc76df67a3bc8b9"
+      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
     },
     {
       "path": "styles/rhea/image-cropper.json",
@@ -2997,7 +2997,7 @@
     },
     {
       "path": "styles/sera/icon.json",
-      "sha256": "f04ec9a03059c96a769f0ec464712e0eddec2e4461c3c8a68dc76df67a3bc8b9"
+      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
     },
     {
       "path": "styles/sera/image-cropper.json",
@@ -3341,7 +3341,7 @@
     },
     {
       "path": "styles/vega/icon.json",
-      "sha256": "f04ec9a03059c96a769f0ec464712e0eddec2e4461c3c8a68dc76df67a3bc8b9"
+      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
     },
     {
       "path": "styles/vega/image-cropper.json",
