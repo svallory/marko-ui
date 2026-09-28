@@ -58,6 +58,35 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: ./.github/actions/setup
 
+      # Every step below that needs "which spec files does the `visual`
+      # project run" reads this list rather than re-deriving it with its own
+      # heuristic. A previous version had each step independently grep
+      # playwright.config.ts's testMatch array for a literal quoted
+      # filename — that breaks silently (a real visual spec treated as
+      # needing no baselines, in every step, with no error) the moment
+      # testMatch becomes a RegExp or uses single quotes, since neither
+      # matches the grep pattern. Asking Playwright itself for its own
+      # resolved test list has no such blind spot: it reflects whatever
+      # testMatch/testIgnore/project config actually resolves to, however
+      # it's spelled. `--list` needs no server (pure static discovery; ran
+      # locally against port with nothing listening) but does need
+      # dependencies installed, hence placed right after `setup`. Fails the
+      # step (not just prints a warning) if the list command errors or
+      # resolves to zero specs — either means the whole guard would be
+      # silently guarding nothing downstream.
+      - name: List visual specs
+        run: |
+          set -euo pipefail
+          bunx playwright test --project=visual --list --reporter=json \
+            | jq -r '[.. | .file? // empty] | unique | .[]' \
+            > "$RUNNER_TEMP/visual-specs.txt"
+          if [ ! -s "$RUNNER_TEMP/visual-specs.txt" ]; then
+            echo "::error::playwright --list resolved zero specs for the visual project."
+            exit 1
+          fi
+          echo "visual project specs:"
+          cat "$RUNNER_TEMP/visual-specs.txt"
+
       - name: Build and serve docs
         run: bash scripts/ci/serve-docs.sh
 
@@ -66,39 +95,30 @@ jobs:
       # them). Playwright itself would WRITE the missing baselines and exit
       # 0, which would make the guard look green while guarding nothing.
       #
-      # Generalized over every *.spec.ts-snapshots dir the `visual` project's
-      # spec files produce (currently gallery-visual.spec.ts and
-      # chrome-visual.spec.ts) rather than hardcoding one file's snapshot
-      # dir — a hardcoded path here would let a NEW visual spec with no
-      # baselines pass green while guarding nothing, exactly the failure
-      # mode this check exists to catch. Fails closed: ANY spec's linux
-      # baseline dir being empty/missing fails the whole check.
+      # Generalized over every spec file "List visual specs" (above)
+      # resolved rather than hardcoding one file's snapshot dir — a
+      # hardcoded path here would let a NEW visual spec with no baselines
+      # pass green while guarding nothing, exactly the failure mode this
+      # check exists to catch. Fails closed: ANY spec's linux baseline dir
+      # being empty/missing fails the whole check.
       - name: Check baselines exist
         run: |
           set -euo pipefail
           fail=0
-          for spec in e2e/*.spec.ts; do
-            name=$(basename "$spec")
+          while IFS= read -r name; do
             dir="e2e/${name}-snapshots/linux"
             # `find`, not `ls` (SC2012): counts only real .png baselines, so a
             # stray non-PNG in the directory can't make an empty baseline set
-            # look populated. A spec with no snapshots at all (not every
-            # e2e/*.spec.ts is a visual spec) never created this dir, so
-            # `find` on a missing dir correctly reports 0 via 2>/dev/null.
+            # look populated.
             count=$(find "$dir" -type f -name '*.png' 2>/dev/null | wc -l | tr -d ' ')
             if [ "$count" -eq 0 ]; then
-              # Only a spec actually run under the `visual` Playwright
-              # project needs baselines; grep the config's testMatch list
-              # rather than assuming every e2e/*.spec.ts is one.
-              if grep -q "\"$name\"" playwright.config.ts; then
-                echo "::error::No linux baselines in $dir."
-                echo "::error::Generate them on the runner: Actions > Visual > Run workflow > update baselines = true."
-                fail=1
-              fi
+              echo "::error::No linux baselines in $dir."
+              echo "::error::Generate them on the runner: Actions > Visual > Run workflow > update baselines = true."
+              fail=1
             else
               echo "$dir: $count baseline(s) present"
             fi
-          done
+          done < "$RUNNER_TEMP/visual-specs.txt"
           exit $fail
 
       - name: Run gallery visual guard
@@ -139,25 +159,40 @@ jobs:
           ref: ${{ github.ref_name }}
       - uses: ./.github/actions/setup
 
+      # Same derivation and same rationale as the `visual` job's own "List
+      # visual specs" step above — see its comment for why a
+      # grep-testMatch-for-a-literal-filename heuristic is a silent blind
+      # spot and asking Playwright itself is not.
+      - name: List visual specs
+        run: |
+          set -euo pipefail
+          bunx playwright test --project=visual --list --reporter=json \
+            | jq -r '[.. | .file? // empty] | unique | .[]' \
+            > "$RUNNER_TEMP/visual-specs.txt"
+          if [ ! -s "$RUNNER_TEMP/visual-specs.txt" ]; then
+            echo "::error::playwright --list resolved zero specs for the visual project."
+            exit 1
+          fi
+          echo "visual project specs:"
+          cat "$RUNNER_TEMP/visual-specs.txt"
+
       - name: Build and serve docs
         run: bash scripts/ci/serve-docs.sh
 
       # Deleted first so a baseline whose test no longer exists does not
       # survive forever as an orphan. Generalized over every visual spec's
-      # snapshot dir (not just gallery-visual.spec.ts's) — see the "Check
-      # baselines exist" step above for why a hardcoded single-file path
+      # snapshot dir (not just gallery-visual.spec.ts's) — see "List visual
+      # specs" above for the derivation and the "Check baselines exist" step
+      # in the `visual` job for why a hardcoded/grepped single-file path
       # here is the same class of bug.
       - name: Regenerate
         env:
           DOCS_BASE_URL: http://localhost:3000
         run: |
           set -euo pipefail
-          for spec in e2e/*.spec.ts; do
-            name=$(basename "$spec")
-            if grep -q "\"$name\"" playwright.config.ts; then
-              rm -rf "e2e/${name}-snapshots/linux"
-            fi
-          done
+          while IFS= read -r name; do
+            rm -rf "e2e/${name}-snapshots/linux"
+          done < "$RUNNER_TEMP/visual-specs.txt"
           bun run test:visual:update
 
       # Lossless only. `-o 4 --strip safe` re-encodes the pixel data more
@@ -196,17 +231,16 @@ jobs:
           oxipng="$PWD/oxipng-${OXIPNG_VERSION}-x86_64-unknown-linux-musl/oxipng"
           "$oxipng" --version
 
-          for spec in e2e/*.spec.ts; do
-            name=$(basename "$spec")
+          while IFS= read -r name; do
             dir="e2e/${name}-snapshots/linux"
-            if [ ! -d "$dir" ] || ! grep -q "\"$name\"" playwright.config.ts; then
+            if [ ! -d "$dir" ]; then
               continue
             fi
             before=$(du -sk "$dir" | cut -f1)
             "$oxipng" -o 4 --strip safe -q "$dir"/*.png
             after=$(du -sk "$dir" | cut -f1)
             echo "$dir: ${before}KB -> ${after}KB"
-          done
+          done < "$RUNNER_TEMP/visual-specs.txt"
 
           rm -rf "$tarball" "oxipng-${OXIPNG_VERSION}-x86_64-unknown-linux-musl"
 
@@ -227,12 +261,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for spec in e2e/*.spec.ts; do
-            name=$(basename "$spec")
-            if grep -q "\"$name\"" playwright.config.ts; then
-              git add -A "e2e/${name}-snapshots"
-            fi
-          done
+          while IFS= read -r name; do
+            git add -A "e2e/${name}-snapshots"
+          done < "$RUNNER_TEMP/visual-specs.txt"
           if git diff --cached --quiet; then
             echo "baselines unchanged"
             exit 0
