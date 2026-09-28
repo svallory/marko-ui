@@ -242,6 +242,76 @@ else
 fi
 
 echo
+echo "== iconLibrary: add must ship ONLY the configured library (#80) =="
+# components.json `iconLibrary` used to be validated and then ignored: every
+# consumer got all five icon maps (~85 KB gzip of unused data per page). For
+# each supported library: set it, add the Icon, build, and assert on the BUILD
+# OUTPUT that this library's icon data is in the bundle and no other's is.
+markers="$(cd "$REPO" && bun e2e/cli/icon-markers.ts)"
+mkdir -p "$APP/src/routes/icons"
+cat > "$APP/src/routes/icons/+page.marko" <<'MARKO'
+import Icon from "../../components/ui/icon/icon.marko";
+
+<h1>icons</h1>
+<Icon name="Search"/>
+MARKO
+
+ICON_LIBS="lucide tabler phosphor remixicon hugeicons"
+for lib in $ICON_LIBS; do
+  echo "-- $lib"
+  icon_dir="$APP/src/components/ui/icon"
+  rm -rf "$icon_dir" "$APP/dist"
+  (cd "$APP" && node -e '
+    const fs = require("fs");
+    const c = JSON.parse(fs.readFileSync("components.json", "utf8"));
+    c.iconLibrary = process.argv[1];
+    fs.writeFileSync("components.json", JSON.stringify(c, null, 2));
+  ' "$lib")
+
+  icon_out="$(run_cli add icon --overwrite)"
+  [ $? -eq 0 ] && ok "$lib: add icon succeeded" || { bad "$lib: add icon failed"; echo "$icon_out" | tail -10; }
+
+  # Files: exactly this library's map, none of the others, no runtime switcher.
+  [ -f "$icon_dir/__${lib}__.ts" ] && ok "$lib: __${lib}__.ts copied" || bad "$lib: __${lib}__.ts missing"
+  for other in $ICON_LIBS; do
+    [ "$other" = "$lib" ] && continue
+    [ ! -e "$icon_dir/__${other}__.ts" ] && ok "$lib: __${other}__.ts not copied" \
+      || bad "$lib: __${other}__.ts copied though iconLibrary is $lib"
+  done
+  [ ! -e "$icon_dir/client-swap.ts" ] && ok "$lib: client-swap.ts not copied" || bad "$lib: client-swap.ts copied"
+
+  # Source: the copied resolver imports this library's map and no other.
+  resolver="$icon_dir/resolve.ts"
+  grep -q "__${lib}__.ts" "$resolver" && ok "$lib: resolve.ts imports the $lib map" || bad "$lib: resolve.ts does not import __${lib}__"
+  stray=""
+  for other in $ICON_LIBS; do
+    [ "$other" = "$lib" ] && continue
+    stray="$stray$(grep -rl "__${other}__" "$icon_dir" 2>/dev/null)"
+  done
+  [ -z "$stray" ] && ok "$lib: no file references another library's map" || bad "$lib: stray library references in: $stray"
+
+  build_out="$(cd "$APP" && timeout 600 bun run build 2>&1)"
+  if [ $? -ne 0 ]; then
+    bad "$lib: bun run build failed"
+    echo "$build_out" | tail -20
+    continue
+  fi
+  ok "$lib: build succeeded"
+
+  built_js="$(find "$APP/dist" -name '*.js' -o -name '*.mjs' 2>/dev/null)"
+  while read -r mlib marker; do
+    hits="$(grep -lF -- "$marker" $built_js 2>/dev/null | wc -l | tr -d ' ')"
+    if [ "$mlib" = "$lib" ]; then
+      [ "$hits" -gt 0 ] && ok "$lib: built output contains $lib icon data" \
+        || bad "$lib: built output has NO $lib icon data — icons would not render"
+    else
+      [ "$hits" = "0" ] && ok "$lib: built output has no $mlib icon data" \
+        || bad "$lib: built output ships $mlib icon data ($hits files) though iconLibrary is $lib"
+    fi
+  done <<<"$markers"
+done
+
+echo
 echo "================================"
 echo "PASS=$pass FAIL=$fail"
 [ "$fail" -eq 0 ]
