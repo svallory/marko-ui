@@ -331,9 +331,19 @@ echo "-- unknown iconLibrary"
 ')
 bad_out="$(run_cli add icon --overwrite)"
 bad_rc=$?
-[ $bad_rc -ne 0 ] && grep -q 'Invalid icon library "heroicons"' <<<"$bad_out" \
-  && ok "unknown iconLibrary fails with InvalidConfigIconLibraryError message" \
-  || { bad "unknown iconLibrary did not fail clearly (rc=$bad_rc)"; echo "$bad_out" | tail -5; }
+# Upstream ignores unknown values silently; we match it (no failure, no
+# transform) but warn, since the project then ships every library.
+[ $bad_rc -eq 0 ] && ok "unknown iconLibrary does not fail add (exit 0)" \
+  || { bad "unknown iconLibrary failed add (rc=$bad_rc)"; echo "$bad_out" | tail -5; }
+grep -q 'Invalid icon library "heroicons"' <<<"$bad_out" \
+  && ok "unknown iconLibrary prints a warning naming the value" \
+  || bad "no warning for unknown iconLibrary"
+grep -q 'lucide, tabler, phosphor, remixicon, hugeicons' <<<"$bad_out" \
+  && ok "warning lists the valid options" || bad "warning does not list valid options"
+missing=""
+for l in $ICON_LIBS; do [ -f "$APP/src/components/ui/icon/__${l}__.ts" ] || missing="$missing $l"; done
+[ -z "$missing" ] && ok "unknown iconLibrary: icon files shipped untransformed (all maps)" \
+  || bad "unknown iconLibrary: maps missing:$missing"
 
 echo
 echo "================================"

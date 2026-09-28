@@ -1,15 +1,18 @@
 import { cpSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "fs"
 import { tmpdir } from "os"
 import path from "path"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
-import { InvalidConfigIconLibraryError } from "@/src/registry/errors"
+import { logger } from "@/src/utils/logger"
 import type { Config } from "@/src/utils/get-config"
 import { processFiles, type DryRunResult } from "./dry-run"
 import { updateFiles } from "./updaters/update-files"
 import {
   applyIconLibrary,
   findStaleIconMaps,
+  GENERATED_MAP_MARKER,
+  mapFilePattern,
+  unknownIconLibraryMessage,
   isIconResolverPath,
   ICON_LIBRARIES,
   isIconLibraryName,
@@ -20,6 +23,8 @@ import {
 const LIBRARIES = Object.keys(ICON_LIBRARIES) as IconLibraryName[]
 const REAL_ICON_DIR = path.resolve(__dirname, "../../../shadcn/ui/icon")
 
+const GENERATED = `// ${GENERATED_MAP_MARKER}. Do not edit by hand.\nexport {};\n`
+
 const iconFile = (name: string, content = `// ${name}`) => ({
   path: `ui/icon/${name}`,
   type: "registry:file" as const,
@@ -29,7 +34,7 @@ const iconFile = (name: string, content = `// ${name}`) => ({
 
 // The icon item's file list as build-registry.ts emits it.
 const iconItemFiles = () => [
-  ...LIBRARIES.map((lib) => iconFile(`__${lib}__.ts`)),
+  ...LIBRARIES.map((lib) => iconFile(`__${lib}__.ts`, GENERATED)),
   iconFile("client-swap.ts"),
   iconFile("icon-mapping.json", "{}"),
   iconFile("icon-names.ts"),
@@ -205,44 +210,66 @@ describe("MAP_FILE tracks ICON_LIBRARIES", () => {
 })
 
 describe("unknown iconLibrary", () => {
-  it("throws InvalidConfigIconLibraryError listing valid options when icon files are added", () => {
-    expect(() => applyIconLibrary(iconItemFiles(), "heroicons")).toThrow(
-      InvalidConfigIconLibraryError
-    )
-    try {
-      applyIconLibrary(iconItemFiles(), "heroicons")
-    } catch (error) {
-      expect((error as Error).message).toContain('"heroicons"')
-      for (const lib of LIBRARIES) expect((error as Error).message).toContain(lib)
-    }
+  it("does not throw: warns once and leaves every file untouched", () => {
+    const warn = vi.spyOn(logger, "warn").mockImplementation(() => {})
+    const input = iconItemFiles()
+    expect(applyIconLibrary(input, "heroicons")).toBe(input)
+    expect(applyIconLibrary(input, "heroicons")).toBe(input)
+    expect(warn).toHaveBeenCalledTimes(1)
+    const msg = warn.mock.calls[0][0] as string
+    expect(msg).toContain('"heroicons"')
+    for (const lib of LIBRARIES) expect(msg).toContain(lib)
+    expect(msg).toBe(unknownIconLibraryMessage("heroicons"))
+    warn.mockRestore()
   })
 
-  it("does not throw when no icon files are involved", () => {
+  it("stays quiet when warn is disabled or no icon files are involved", () => {
+    const warn = vi.spyOn(logger, "warn").mockImplementation(() => {})
+    applyIconLibrary(iconItemFiles(), "feather", { warn: false })
     const button = [{ path: "ui/button/button.marko", type: "registry:ui" as const, content: "x" }]
-    expect(applyIconLibrary(button, "heroicons")).toBe(button)
+    expect(applyIconLibrary(button, "feather")).toBe(button)
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
   })
 
-  it("passes legacy radix and unset/empty values through, like upstream", () => {
+  it("passes legacy radix and unset/empty values through silently, like upstream", () => {
+    const warn = vi.spyOn(logger, "warn").mockImplementation(() => {})
     for (const lib of ["radix", "", undefined]) {
       const input = iconItemFiles()
       expect(applyIconLibrary(input, lib)).toBe(input)
     }
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
+  })
+})
+
+describe("mapFilePattern", () => {
+  it("escapes regex metacharacters in library keys", () => {
+    const re = mapFilePattern(["a.b", "c+d", "(e)"])
+    expect(re.test("ui/icon/__a.b__.ts")).toBe(true)
+    expect(re.test("ui/icon/__aXb__.ts")).toBe(false)
+    expect(re.test("ui/icon/__c+d__.ts")).toBe(true)
+    expect(re.test("ui/icon/__ccd__.ts")).toBe(false)
+    expect(re.test("ui/icon/__(e)__.ts")).toBe(true)
   })
 })
 
 describe("findStaleIconMaps", () => {
-  it("returns only other known libraries' maps that exist in the dir", () => {
+  it("splits other libraries' maps into generated (deletable) and hand-written (skipped)", () => {
     const dir = mkdtempSync(path.join(tmpdir(), "marko-ui-stale-"))
-    for (const f of ["__lucide__.ts", "__tabler__.ts", "__custom__.ts", "notes.ts"]) {
-      writeFileSync(path.join(dir, f), "")
-    }
-    expect(findStaleIconMaps(dir, "tabler").map((f) => path.basename(f))).toEqual([
-      "__lucide__.ts",
-    ])
-    expect(findStaleIconMaps(dir, "hugeicons").map((f) => path.basename(f)).sort()).toEqual([
-      "__lucide__.ts",
-      "__tabler__.ts",
-    ])
+    writeFileSync(path.join(dir, "__lucide__.ts"), GENERATED)
+    writeFileSync(path.join(dir, "__tabler__.ts"), "export const mine = 1\n")
+    writeFileSync(path.join(dir, "__custom__.ts"), GENERATED)
+    writeFileSync(path.join(dir, "notes.ts"), "")
+    const names = (r: string[]) => r.map((f) => path.basename(f))
+
+    const forHuge = findStaleIconMaps(dir, "hugeicons")
+    expect(names(forHuge.deletable)).toEqual(["__lucide__.ts"])
+    expect(names(forHuge.skipped)).toEqual(["__tabler__.ts"])
+
+    const forTabler = findStaleIconMaps(dir, "tabler")
+    expect(names(forTabler.deletable)).toEqual(["__lucide__.ts"])
+    expect(forTabler.skipped).toEqual([])
   })
 
   it("isIconResolverPath matches only the icon resolver", () => {
@@ -289,6 +316,23 @@ describe("updateFiles: switching iconLibrary", () => {
     expect(maps(iconDir).sort()).toEqual(["__custom__.ts", "__phosphor__.ts"])
   })
 
+  it("keeps a hand-written __<lib>__.ts and warns instead of deleting it", async () => {
+    const warn = vi.spyOn(logger, "warn").mockImplementation(() => {})
+    const { config, iconDir } = setup("lucide")
+    await run(config)
+    writeFileSync(path.join(iconDir, "__lucide__.ts"), "export const mine = 1\n")
+    config.iconLibrary = "tabler"
+    const result = await updateFiles(iconItemFiles(), config, {
+      overwrite: true,
+      silent: false,
+      interactive: false,
+    })
+    expect(result.filesRemoved).toEqual([])
+    expect(readFileSync(path.join(iconDir, "__lucide__.ts"), "utf8")).toBe("export const mine = 1\n")
+    expect(warn.mock.calls.some((c) => String(c[0]).includes("not a generated icon map"))).toBe(true)
+    warn.mockRestore()
+  })
+
   it("removes nothing outside the configured icon dir", async () => {
     const { cwd, config } = setup("lucide")
     const elsewhere = path.join(cwd, "src/other")
@@ -315,10 +359,20 @@ describe("updateFiles: switching iconLibrary", () => {
     expect(maps(iconDir)).toContain("__lucide__.ts")
   })
 
-  it("rejects an unknown iconLibrary before writing anything", async () => {
-    const { config, iconDir } = setup("heroicons")
-    await expect(run(config)).rejects.toThrow(InvalidConfigIconLibraryError)
-    expect(() => readdirSync(iconDir)).toThrow()
+  it("an unknown iconLibrary warns and ships the files as-is (no throw, nothing deleted)", async () => {
+    const warn = vi.spyOn(logger, "warn").mockImplementation(() => {})
+    const { config, iconDir } = setup("lucide")
+    await run(config)
+    config.iconLibrary = "zzz-unknown"
+    const result = await updateFiles(iconItemFiles(), config, {
+      overwrite: true,
+      silent: false,
+      interactive: false,
+    })
+    expect(result.filesRemoved).toEqual([])
+    expect(maps(iconDir).sort()).toEqual(LIBRARIES.map((l) => `__${l}__.ts`).sort())
+    expect(warn.mock.calls.some((c) => String(c[0]).includes('"zzz-unknown"'))).toBe(true)
+    warn.mockRestore()
   })
 })
 
