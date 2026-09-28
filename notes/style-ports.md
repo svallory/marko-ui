@@ -31,8 +31,10 @@ real change in that window: `5c8f5b0`'s `group-has-[:focus-visible]/
 field-label:*` additions to `.mu-checkbox`/`.mu-radio-group-item`/`.mu-switch`/
 `.mu-field-label` across all 8 `packages/shadcn/styles/style-*.css` files
 (`.mu-questionnaire-choice` skipped — we don't ship that hook/component), plus
-`data-pending-scroll:invisible` on `packages/shadcn/ui/message-scroller/
-classes.ts`'s `viewport.root`. Full research and per-rule detail: `scratch/
+the `data-pending-scroll:invisible` CSS hook on `packages/shadcn/ui/
+message-scroller/classes.ts`'s `viewport.root` (CSS class only — see below for
+why the attribute-writing logic itself is not ported). Full research and
+per-rule detail: `scratch/
 team-lead/reports/research-upstream-98a1fe6.md` and `scratch/team-lead/
 reports/report-upstream-98a1fe6.md`. Next sync should record its base SHA
 here immediately, since the clone tool still has no pin mechanism.
@@ -52,6 +54,38 @@ the first place, the rule can never match. See
 `apps/docs/src/demos/field/field-checkbox.marko`'s own comments for the
 concrete nested-label trap this avoids. Revisit if `FieldLabel` ever grows a
 wrapping composition mode.
+
+**`data-pending-scroll:invisible` is a CSS hook only — upstream 503a3a5's
+attribute-writing logic is deliberately NOT ported.** A round-3 review of an
+earlier attempt (commit `cd2fdb17`, reverted in `0dac72cd`) found a HIGH
+bug: `packages/shadcn/ui/message-scroller/content.marko`'s `onMount` calls
+`controller().handleContentChange()` unconditionally, and Marko mounts a
+child (`content`) before its ancestor (`viewport`) finishes mounting. With
+an SSR'd non-empty transcript, `handleContentChange` therefore runs
+`applyDefaultScrollPosition()` while the controller's `viewport` ref is
+still `null` — that call fails (returns `false` without ever setting
+`viewport`), so the `pendingDefaultScroll` flag stays `true` and is never
+retried. When `viewport.marko`'s own `onMount` later calls
+`setViewportElement`, it mirrors that still-`true` flag onto the real
+element, and nothing in this component ever calls `init()` from a `.marko`
+file to re-run `applyDefaultScrollPosition()` afterward — so the viewport
+gets `data-pending-scroll` permanently and, styled with the `invisible`
+hook, disappears for good. This is real mount-order fragility specific to
+Marko's child-before-ancestor mount order (the opposite of React's
+top-down effect order, which is why upstream's identical-looking logic is
+safe there), not a hypothetical: the unit tests added alongside `cd2fdb17`
+missed it because they registered refs in an order (root, then viewport,
+then optionally content) that the real component tree never produces.
+
+Porting the attribute for real needs a mount-order-aware design — e.g. an
+explicit `init()`/`applyDefaultScrollPosition()` call gated on root+
+viewport+content all being registered, regardless of which one mounts
+last — plus a unit test that drives registration in the REAL tree's order
+(content before viewport, viewport before root's own post-children
+completion) before this is attempted again. Until then, the CSS class
+(`packages/shadcn/ui/message-scroller/classes.ts`'s `viewport.root`) stays
+as vendored, upstream-parity source that no runtime code ever sets the
+attribute for.
 
 ## Layout & imports (historical — see the plans above for the current layout)
 
