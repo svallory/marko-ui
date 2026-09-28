@@ -70,26 +70,20 @@ const PAGES = [
 ] as const;
 
 /**
- * `[data-slot="scroll-area-scrollbar"]` (and its thumb) is masked because
- * blocks-nav.marko's horizontal ScrollArea (the "Featured/Sidebar/Login/
- * Signup" category rail on /blocks) measures its scrollbar geometry via
- * @zag-js/scroll-area's ResizeObserver + setTimeout (see
- * packages/shadcn/ui/scroll-area/scroll-area.marko's own comment on why the
- * scrollbar/thumb are always DOM-present and only CSS-hidden) — the exact
- * same class of runtime-measured, capture-can-land-on-either-side
- * nondeterminism gallery-visual.spec.ts already documents for the
- * accordion's ResizeObserver. Measured locally: 2 runs of
- * `chrome blocks — light mobile` differed by 2,228 pixels, localized to a
- * ~6px-tall, ~320px-wide band immediately below the nav row (y 384-390,
- * x 42-361 on a 390-wide capture) — the scrollbar thumb's width/position
- * settling on one side or the other of the capture. No other page/theme/
- * viewport combination in this spec showed any diff across 2 local runs
- * (11 of 12 byte-identical), and docs-button/charts use no horizontal
- * ScrollArea, so the mask is scoped to blocks-nav's own scrollbar rather
- * than applied file-wide.
+ * No mask needed: `waitForHydration` (via `waitForScrollAreaThumbsSettled`
+ * in visual-helpers.ts) now waits for every ScrollArea thumb's transform +
+ * computed size to hold stable across 3 consecutive frames before returning,
+ * the same fix pattern as the accordion's ResizeObserver race (see that
+ * case's own history in AGENTS.md "Gallery visual guard") — wait for the
+ * runtime measurement to settle, don't mask around it. Both `/blocks`
+ * (blocks-nav.marko) and `/charts` (charts-nav.marko) use a horizontal
+ * ScrollArea category rail with the same @zag-js/scroll-area machine;
+ * `/docs/components/button` uses none. Verified: 3 local runs post-fix,
+ * 12/12 byte-identical across all three pages/themes/viewports (see the
+ * commit message / report for the pre-fix flake this replaced).
  */
-function masksFor(page: Page) {
-  return [page.locator('[data-slot="scroll-area-scrollbar"]')];
+function masksFor(_page: Page) {
+  return [];
 }
 
 for (const pageDef of PAGES) {

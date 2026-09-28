@@ -115,6 +115,57 @@ export async function waitForHydration(page: Page): Promise<void> {
         requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
       })
   );
+  await waitForScrollAreaThumbsSettled(page);
+}
+
+/**
+ * Wait for every @zag-js/scroll-area thumb on the page to stop moving.
+ *
+ * scroll-area.machine.ts's `trackContentResize` effect (see @zag-js/scroll-area
+ * source) observes the content+root elements with a ResizeObserver that fires
+ * ONCE at mount, debounced through a 1ms setTimeout, and dispatches
+ * `thumb.measure` — which both sets reactive `thumbSize` state (consumed by
+ * `<zag>`'s api getter, re-rendered by Marko as the thumb's width/height) and
+ * writes `thumbXEl.style.transform` directly. That is two separate async
+ * commits (a setTimeout-gated machine notify, then a follow-up Marko
+ * re-render) landing on top of `waitForHydration`'s fixed 2-rAF wait — on a
+ * fast run, 2 rAFs can complete in under 1ms and beat the setTimeout(1),
+ * exactly the settling race waitForLayoutSettled's own comment documents for
+ * the accordion, just with a different runtime-measured component. Measured:
+ * without this wait, 2 local runs of `chrome blocks — light mobile` differed
+ * by 2,228 pixels in a band immediately below `/blocks`'s ScrollArea-backed
+ * category nav (y 384-390, x 42-361 on a 390px capture) — the thumb's
+ * width/position landing on one side or the other of the capture.
+ *
+ * Rather than a fixed extra delay, poll each `[data-slot="scroll-area-thumb"]`
+ * element's transform + computed width/height for 3 identical consecutive
+ * frames, the same signature waitForLayoutSettled uses for the whole page —
+ * this waits exactly as long as the machine actually needs and no longer, and
+ * still fails (rather than silently racing) if a thumb never stops moving.
+ * No-ops instantly when the page has no scroll-area (`querySelectorAll`
+ * returns an empty list, so `waitForFunction`'s condition is vacuously true
+ * on its first poll).
+ */
+async function waitForScrollAreaThumbsSettled(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => {
+      const w = window as unknown as { __thumbSettle?: { last: string; count: number } };
+      const thumbs = Array.from(document.querySelectorAll('[data-slot="scroll-area-thumb"]'));
+      const signature = thumbs
+        .map((el) => {
+          const style = getComputedStyle(el);
+          return `${style.transform}:${style.width}:${style.height}`;
+        })
+        .join("|");
+
+      const state = (w.__thumbSettle ??= { last: "", count: 0 });
+      state.count = signature === state.last ? state.count + 1 : 0;
+      state.last = signature;
+      return state.count >= 3;
+    },
+    undefined,
+    { timeout: 20_000, polling: "raf" }
+  );
 }
 
 /**

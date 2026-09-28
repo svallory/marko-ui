@@ -1,10 +1,17 @@
-# Gallery visual-regression guard.
+# Gallery + docs chrome visual-regression guard.
 #
-# Renders the component gallery in every visual style the registry ships
-# (8: rhea, nova, vega, lyra, maia, mira, luma, sera) × light/dark × the
-# three /create/preview showcase pages = 48 full-page screenshots, and fails
-# on any pixel change. See e2e/gallery-visual.spec.ts for how the gallery is
-# assembled and AGENTS.md "Gallery visual guard" for the workflow around it.
+# Runs every spec in Playwright's `visual` project (playwright.config.ts):
+# gallery-visual.spec.ts renders the component gallery in every visual style
+# the registry ships (8: rhea, nova, vega, lyra, maia, mira, luma, sera) ×
+# light/dark × the three /create/preview showcase pages = 48 full-page
+# screenshots; chrome-visual.spec.ts covers the docs site chrome and the
+# new-york style on the surfaces it actually ships on (12 screenshots). Both
+# fail on any pixel change. This workflow's steps below are generalized over
+# every visual-project spec's own `e2e/*.spec.ts-snapshots/linux` dir rather
+# than hardcoding gallery-visual.spec.ts's — see each step's own comment for
+# why a hardcoded path here is a real bug, not just untidy. See each spec
+# file for how its gallery/pages are assembled and AGENTS.md "Gallery visual
+# guard" for the workflow around them.
 #
 # Deliberately a separate file from ci.yml: baselines are PNGs that only
 # ever match when generated on the same OS that compares them, so this
@@ -58,20 +65,41 @@ jobs:
       # at all (a first run on a new branch, or a bad merge that dropped
       # them). Playwright itself would WRITE the missing baselines and exit
       # 0, which would make the guard look green while guarding nothing.
+      #
+      # Generalized over every *.spec.ts-snapshots dir the `visual` project's
+      # spec files produce (currently gallery-visual.spec.ts and
+      # chrome-visual.spec.ts) rather than hardcoding one file's snapshot
+      # dir — a hardcoded path here would let a NEW visual spec with no
+      # baselines pass green while guarding nothing, exactly the failure
+      # mode this check exists to catch. Fails closed: ANY spec's linux
+      # baseline dir being empty/missing fails the whole check.
       - name: Check baselines exist
         run: |
           set -euo pipefail
-          dir="e2e/gallery-visual.spec.ts-snapshots/linux"
-          # `find`, not `ls` (SC2012): counts only real .png baselines, so a
-          # stray non-PNG in the directory can't make an empty baseline set
-          # look populated.
-          count=$(find "$dir" -type f -name '*.png' 2>/dev/null | wc -l | tr -d ' ')
-          if [ "$count" -eq 0 ]; then
-            echo "::error::No linux baselines in $dir."
-            echo "::error::Generate them on the runner: Actions > Visual > Run workflow > update baselines = true."
-            exit 1
-          fi
-          echo "$count baseline(s) present"
+          fail=0
+          for spec in e2e/*.spec.ts; do
+            name=$(basename "$spec")
+            dir="e2e/${name}-snapshots/linux"
+            # `find`, not `ls` (SC2012): counts only real .png baselines, so a
+            # stray non-PNG in the directory can't make an empty baseline set
+            # look populated. A spec with no snapshots at all (not every
+            # e2e/*.spec.ts is a visual spec) never created this dir, so
+            # `find` on a missing dir correctly reports 0 via 2>/dev/null.
+            count=$(find "$dir" -type f -name '*.png' 2>/dev/null | wc -l | tr -d ' ')
+            if [ "$count" -eq 0 ]; then
+              # Only a spec actually run under the `visual` Playwright
+              # project needs baselines; grep the config's testMatch list
+              # rather than assuming every e2e/*.spec.ts is one.
+              if grep -q "\"$name\"" playwright.config.ts; then
+                echo "::error::No linux baselines in $dir."
+                echo "::error::Generate them on the runner: Actions > Visual > Run workflow > update baselines = true."
+                fail=1
+              fi
+            else
+              echo "$dir: $count baseline(s) present"
+            fi
+          done
+          exit $fail
 
       - name: Run gallery visual guard
         env:
@@ -115,12 +143,21 @@ jobs:
         run: bash scripts/ci/serve-docs.sh
 
       # Deleted first so a baseline whose test no longer exists does not
-      # survive forever as an orphan.
+      # survive forever as an orphan. Generalized over every visual spec's
+      # snapshot dir (not just gallery-visual.spec.ts's) — see the "Check
+      # baselines exist" step above for why a hardcoded single-file path
+      # here is the same class of bug.
       - name: Regenerate
         env:
           DOCS_BASE_URL: http://localhost:3000
         run: |
-          rm -rf e2e/gallery-visual.spec.ts-snapshots/linux
+          set -euo pipefail
+          for spec in e2e/*.spec.ts; do
+            name=$(basename "$spec")
+            if grep -q "\"$name\"" playwright.config.ts; then
+              rm -rf "e2e/${name}-snapshots/linux"
+            fi
+          done
           bun run test:visual:update
 
       # Lossless only. `-o 4 --strip safe` re-encodes the pixel data more
@@ -159,11 +196,17 @@ jobs:
           oxipng="$PWD/oxipng-${OXIPNG_VERSION}-x86_64-unknown-linux-musl/oxipng"
           "$oxipng" --version
 
-          dir=e2e/gallery-visual.spec.ts-snapshots/linux
-          before=$(du -sk "$dir" | cut -f1)
-          "$oxipng" -o 4 --strip safe -q "$dir"/*.png
-          after=$(du -sk "$dir" | cut -f1)
-          echo "baselines: ${before}KB -> ${after}KB"
+          for spec in e2e/*.spec.ts; do
+            name=$(basename "$spec")
+            dir="e2e/${name}-snapshots/linux"
+            if [ ! -d "$dir" ] || ! grep -q "\"$name\"" playwright.config.ts; then
+              continue
+            fi
+            before=$(du -sk "$dir" | cut -f1)
+            "$oxipng" -o 4 --strip safe -q "$dir"/*.png
+            after=$(du -sk "$dir" | cut -f1)
+            echo "$dir: ${before}KB -> ${after}KB"
+          done
 
           rm -rf "$tarball" "oxipng-${OXIPNG_VERSION}-x86_64-unknown-linux-musl"
 
@@ -184,7 +227,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A e2e/gallery-visual.spec.ts-snapshots
+          for spec in e2e/*.spec.ts; do
+            name=$(basename "$spec")
+            if grep -q "\"$name\"" playwright.config.ts; then
+              git add -A "e2e/${name}-snapshots"
+            fi
+          done
           if git diff --cached --quiet; then
             echo "baselines unchanged"
             exit 0
