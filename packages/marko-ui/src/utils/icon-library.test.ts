@@ -169,7 +169,10 @@ describe("renderIconResolver", () => {
     const real = readFileSync(path.join(REAL_ICON_DIR, "resolve.ts"), "utf8")
     for (const lib of LIBRARIES) {
       for (const name of ["resolveIconLibrary", "resolveIconInner"]) {
-        expect(real).toContain(`export function ${name}(`)
+        // resolveIconLibrary is re-exported from resolve-client.ts in the registry.
+        expect(real).toMatch(
+          new RegExp(`export function ${name}\\(|export \\{ ${name} \\} from`)
+        )
         expect(renderIconResolver(lib)).toContain(`export function ${name}(`)
       }
     }
