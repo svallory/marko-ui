@@ -345,6 +345,16 @@ load. The decisive assertions are that a component utility (`inline-flex`), a
 theme token, and the `mu-font-heading` hook rule all appear in `dist/**/*.css`,
 and that the emitted CSS asset is actually referenced by the built output.
 
+`iconLibrary` in `components.json` is honored at add time by
+`packages/marko-ui/src/utils/icon-library.ts` (`applyIconLibrary`, called from
+`updateFiles` and the dry-run/diff path): it keeps only the configured library's
+`__<lib>__.ts` map, drops `client-swap.ts` and `icon-mapping.json`, and replaces
+`resolve.ts` with a single-library resolver. If you change `resolve.ts`'s
+exports in `packages/shadcn/ui/icon/`, update `renderIconResolver` to match
+(a unit test runs it against the real maps). The e2e asserts the built output
+of a scaffold per library contains only that library's icon data. The import
+distribution (`@marko-ui/shadcn`) is unaffected: all five libraries, lucide default.
+
 Other traps, each of which cost a debugging cycle:
 
 - **The registry must be built AND served locally.** `tooling/build-registry.ts`
