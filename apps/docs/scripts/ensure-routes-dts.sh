@@ -56,21 +56,64 @@ port=4417
 # later with the misleading ".marko-run/routes.d.ts did not appear" timeout
 # instead of a clear "setsid missing" error.
 #
-# Fallback (no setsid, or ENSURE_ROUTES_DTS_NO_SETSID set to force it for
-# testing): walk the bunx pid's descendants with `pkill -P` and kill each one
-# before the pid itself, since without a shared process group there is no
-# single signal that reaches the whole tree at once. `pkill -P` needs
-# procps — if that's ALSO missing there is no portable way to reach the
-# child process, so fail loudly rather than silently leaking it.
+# Fallback (no setsid, ENSURE_ROUTES_DTS_NO_SETSID set to force it for
+# testing, or setsid's pgid didn't verify below): walk the dev server's
+# whole descendant set with `pgrep -P` and signal it all at once, since
+# without a shared process group there is no single signal that reaches the
+# tree in one shot. `pgrep` needs procps — if that's ALSO missing there is
+# no portable way to reach the child process, so fail loudly rather than
+# silently leaking it.
+# `set +m` (job control off) before backgrounding: with job control ON, bash
+# puts each background job in its OWN process group regardless of what the
+# job itself does, which would make `pgid="$dev_pid"` wrong the moment
+# `setsid` forks internally or errors in a way this script doesn't detect —
+# the trap would then signal a process group that isn't the dev server's.
+# Verified below by reading back the real pgid with `ps`, not by assuming
+# `set +m` alone guarantees it.
+set +m
+
+# Collecting the descendant set (used by the pgrep-based fallback AND as the
+# pgid-mismatch fallback) walks `pgrep -P` breadth-first WITHOUT killing
+# anything mid-walk. Killing level-by-level (an earlier version of this
+# function did) is wrong: if an intermediate process (bunx) exits before its
+# child (node) is reached, the child reparents to pid 1 and the walk misses
+# it entirely — it's found via a DIFFERENT parent pid than the one being
+# killed. Collecting the whole set first, then signaling it all at once,
+# has no such race.
+collect_descendants() {
+  local root="$1" queue="$1" frontier pid found=""
+  while [ -n "$queue" ]; do
+    frontier=""
+    for pid in $queue; do
+      frontier="$frontier $(pgrep -P "$pid" 2>/dev/null || true)"
+    done
+    frontier="$(echo "$frontier" | tr -s ' ' '\n' | grep -v '^$' || true)"
+    [ -z "$frontier" ] && break
+    found="$found $frontier"
+    queue="$frontier"
+  done
+  echo "$found" | tr -s ' ' '\n' | grep -v '^$' || true
+}
+
 if [ -z "${ENSURE_ROUTES_DTS_NO_SETSID:-}" ] && command -v setsid > /dev/null 2>&1; then
-  use_setsid=1
   setsid bunx marko-run dev --port "$port" > /dev/null 2>&1 &
   dev_pid=$!
-  pgid="$dev_pid"
+  # `pgid="$dev_pid"` only holds if setsid actually put $dev_pid at the head
+  # of its own process group — true in the common case, but not guaranteed
+  # (setsid forks internally in some circumstances, or the assumption could
+  # simply be wrong on a platform this wasn't tested on). Verify with `ps`
+  # rather than trust it; fall back to the portable pgrep-based tree kill
+  # when it doesn't hold, same as the no-setsid branch.
+  if [ "$(ps -o pgid= -p "$dev_pid" 2>/dev/null | tr -d ' ')" = "$dev_pid" ]; then
+    use_setsid=1
+    pgid="$dev_pid"
+  else
+    use_setsid=0
+  fi
 else
   use_setsid=0
-  if ! command -v pkill > /dev/null 2>&1; then
-    echo "ensure-routes-dts: neither setsid nor pkill is available — cannot reliably clean up the dev server's process tree" >&2
+  if ! command -v pgrep > /dev/null 2>&1; then
+    echo "ensure-routes-dts: neither setsid nor pgrep is available — cannot reliably clean up the dev server's process tree" >&2
     exit 1
   fi
   bunx marko-run dev --port "$port" > /dev/null 2>&1 &
@@ -96,26 +139,18 @@ kill_tree() {
     sleep 0.2
     kill -KILL -"$pgid" 2>/dev/null || true
   else
-    # Recurse before killing: pkill -P only lists DIRECT children, and
-    # `bunx` -> `node .../marko-run` is itself already 2 levels deep.
-    local pids_to_check pid children
-    pids_to_check="$dev_pid"
-    while [ -n "$pids_to_check" ]; do
-      children=""
-      for pid in $pids_to_check; do
-        children="$children $(pgrep -P "$pid" 2>/dev/null || true)"
-      done
-      children="$(echo "$children" | tr -s ' ' '\n' | grep -v '^$' || true)"
-      [ -z "$children" ] && break
-      pids_to_check="$children"
+    local descendants
+    descendants="$(collect_descendants "$dev_pid")"
+    if [ -n "${ENSURE_ROUTES_DTS_DEBUG:-}" ]; then
+      echo "ensure-routes-dts: about to kill dev_pid=$dev_pid descendants=[$descendants]" >&2
       # shellcheck disable=SC2086
-      kill -TERM $children 2>/dev/null || true
-    done
-    kill -TERM "$dev_pid" 2>/dev/null || true
+      ps -o pid,ppid,pgid,args -p "$dev_pid" $descendants >&2 2>/dev/null || true
+    fi
+    # shellcheck disable=SC2086
+    kill -TERM "$dev_pid" $descendants 2>/dev/null || true
     sleep 0.2
     # shellcheck disable=SC2086
-    kill -KILL $(pgrep -P "$dev_pid" 2>/dev/null) 2>/dev/null || true
-    kill -KILL "$dev_pid" 2>/dev/null || true
+    kill -KILL "$dev_pid" $descendants 2>/dev/null || true
   fi
   wait "$dev_pid" 2>/dev/null || true
   exit "$exit_code"
