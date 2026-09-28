@@ -46,14 +46,83 @@ port=4417
 # not exec(3) into it). Killing just $! (the wrapper's pid) leaves that node
 # child running, reparented to pid 1 — an orphaned dev server surviving every
 # exit path, found live 24 minutes after a run that had already exited.
-# setsid puts the whole tree in its own process group so `kill -TERM -"$pgid"`
-# (the negative pid form) reaches the wrapper AND every process it spawned,
-# on every exit path: normal success, the 27s timeout, or a signal to this
-# script itself.
-setsid bunx marko-run dev --port "$port" > /dev/null 2>&1 &
-dev_pid=$!
-pgid="$dev_pid"
-trap 'kill -TERM -"$pgid" 2>/dev/null; sleep 0.2; kill -KILL -"$pgid" 2>/dev/null; wait "$dev_pid" 2>/dev/null || true' EXIT INT TERM
+#
+# `setsid` puts the whole tree in its own process group so `kill -TERM
+# -"$pgid"` (the negative pid form) reaches the wrapper AND every process it
+# spawned in one shot. It ships with util-linux (every Linux distro, and CI)
+# but NOT with macOS by default, and this repo is also developed on macOS —
+# without a fallback, `setsid ... &` would background a command that exits
+# 127 immediately, no server would ever start, and the script would fail 27s
+# later with the misleading ".marko-run/routes.d.ts did not appear" timeout
+# instead of a clear "setsid missing" error.
+#
+# Fallback (no setsid, or ENSURE_ROUTES_DTS_NO_SETSID set to force it for
+# testing): walk the bunx pid's descendants with `pkill -P` and kill each one
+# before the pid itself, since without a shared process group there is no
+# single signal that reaches the whole tree at once. `pkill -P` needs
+# procps — if that's ALSO missing there is no portable way to reach the
+# child process, so fail loudly rather than silently leaking it.
+if [ -z "${ENSURE_ROUTES_DTS_NO_SETSID:-}" ] && command -v setsid > /dev/null 2>&1; then
+  use_setsid=1
+  setsid bunx marko-run dev --port "$port" > /dev/null 2>&1 &
+  dev_pid=$!
+  pgid="$dev_pid"
+else
+  use_setsid=0
+  if ! command -v pkill > /dev/null 2>&1; then
+    echo "ensure-routes-dts: neither setsid nor pkill is available — cannot reliably clean up the dev server's process tree" >&2
+    exit 1
+  fi
+  bunx marko-run dev --port "$port" > /dev/null 2>&1 &
+  dev_pid=$!
+fi
+
+kill_tree() {
+  # Capture the exit code we're meant to preserve as the FIRST statement,
+  # before this function runs any command of its own that could change $?.
+  local exit_code="${__ensure_routes_exit_code:-$?}"
+  # This function runs under `set -e` (inherited from the script), as an
+  # EXIT trap. ANY command here that returns nonzero — including a `kill` on
+  # a process that already died, which is the common case, since cleanup
+  # often runs because the process just exited or was already signaled —
+  # aborts the trap immediately under `-e` and hands the shell that command's
+  # own exit status, silently truncating the rest of cleanup AND clobbering
+  # the exit code this trap exists to preserve (verified in isolation: a
+  # bare `kill -KILL <gone-pid>` with no `|| true` inside this trap turned an
+  # intended `exit 143` into `exit 1`, no error printed). Every command that
+  # can plausibly fail must therefore end in `|| true`.
+  if [ "$use_setsid" = 1 ]; then
+    kill -TERM -"$pgid" 2>/dev/null || true
+    sleep 0.2
+    kill -KILL -"$pgid" 2>/dev/null || true
+  else
+    # Recurse before killing: pkill -P only lists DIRECT children, and
+    # `bunx` -> `node .../marko-run` is itself already 2 levels deep.
+    local pids_to_check pid children
+    pids_to_check="$dev_pid"
+    while [ -n "$pids_to_check" ]; do
+      children=""
+      for pid in $pids_to_check; do
+        children="$children $(pgrep -P "$pid" 2>/dev/null || true)"
+      done
+      children="$(echo "$children" | tr -s ' ' '\n' | grep -v '^$' || true)"
+      [ -z "$children" ] && break
+      pids_to_check="$children"
+      # shellcheck disable=SC2086
+      kill -TERM $children 2>/dev/null || true
+    done
+    kill -TERM "$dev_pid" 2>/dev/null || true
+    sleep 0.2
+    # shellcheck disable=SC2086
+    kill -KILL $(pgrep -P "$dev_pid" 2>/dev/null) 2>/dev/null || true
+    kill -KILL "$dev_pid" 2>/dev/null || true
+  fi
+  wait "$dev_pid" 2>/dev/null || true
+  exit "$exit_code"
+}
+trap kill_tree EXIT
+trap '__ensure_routes_exit_code=130; exit 130' INT
+trap '__ensure_routes_exit_code=143; exit 143' TERM
 
 sleep 2
 curl -s -m 25 -o /dev/null "http://localhost:$port/" &
