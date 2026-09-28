@@ -3,23 +3,26 @@
 // freely without ever breaking this suite.
 //
 // checkExists/loadComponent are exercised through fixture files written to
-// a temp dir under REPO_ROOT (dynamic import() needs a real path it can
-// resolve; there's no virtual-fs mode for ESM import), and cleaned up
-// after each test.
-import { afterEach, describe, expect, it } from "vitest";
+// a real mkdtempSync directory (dynamic import() needs a real path it can
+// resolve; there's no virtual-fs mode for ESM import) — NEVER into the
+// tracked apps/docs/src/demos or packages/shadcn/tests/behavior-coverage
+// trees, since a crashed run would leave a bogus component that
+// build-demos-manifest.ts and behavior-coverage.ts would then pick up in
+// real invocations. loadComponent takes the roots to read from, so the
+// fixture directory is passed explicitly rather than relying on the
+// script's default (real) roots.
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import { loadComponent } from "../behavior-coverage.ts";
-
-const REPO_ROOT = dirname(dirname(dirname(dirname(fileURLToPath(import.meta.url)))));
-const DEMOS_DIR = join(REPO_ROOT, "apps/docs/src/demos");
-const MAPPING_DIR = join(REPO_ROOT, "packages/shadcn/tests/behavior-coverage");
+import { join } from "node:path";
+import { loadComponent, type ComponentRoots } from "../behavior-coverage.ts";
 
 const FIXTURE_NAME = "__behcov_fixture__";
-const fixtureDemoDir = join(DEMOS_DIR, FIXTURE_NAME);
-const fixtureMappingPath = join(MAPPING_DIR, `${FIXTURE_NAME}.ts`);
+
+let tmpRoot: string;
+let roots: ComponentRoots;
+let fixtureDemoDir: string;
+let fixtureMappingPath: string;
 
 function writeBehaviors(source: string) {
   mkdirSync(fixtureDemoDir, { recursive: true });
@@ -27,14 +30,28 @@ function writeBehaviors(source: string) {
 }
 
 function writeMapping(source: string) {
+  mkdirSync(roots.mappingDir, { recursive: true });
   writeFileSync(fixtureMappingPath, source);
 }
 
-afterEach(() => {
-  rmSync(fixtureDemoDir, { recursive: true, force: true });
-  rmSync(fixtureMappingPath, { force: true });
+beforeEach(() => {
+  setUpFixtureRoots();
 });
 
+afterEach(() => {
+  rmSync(tmpRoot, { recursive: true, force: true });
+});
+
+function setUpFixtureRoots() {
+  tmpRoot = mkdtempSync(join(tmpdir(), "behcov-fixture-"));
+  roots = { demosDir: join(tmpRoot, "demos"), mappingDir: join(tmpRoot, "mapping") };
+  fixtureDemoDir = join(roots.demosDir, FIXTURE_NAME);
+  fixtureMappingPath = join(roots.mappingDir, `${FIXTURE_NAME}.ts`);
+}
+
+// These are `import type` only, erased at runtime by Bun's transpiler, so
+// the fixture files never need the real behavior-types.ts/mapping-types.ts
+// to exist alongside them on disk.
 const BEHAVIOR_TYPES_IMPORT = `import type { ComponentBehavior } from "../behavior-types.ts";`;
 const MAPPING_TYPES_IMPORT = `import type { BehaviorCoverageEntry } from "./mapping-types.ts";`;
 
@@ -58,7 +75,7 @@ export const coverage: BehaviorCoverageEntry[] = [
 ];
 `);
 
-    const report = await loadComponent(FIXTURE_NAME);
+    const report = await loadComponent(FIXTURE_NAME, roots);
     expect(report.total).toBe(1);
     expect(report.covered).toBe(1);
     expect(report.uncovered).toEqual([]);
@@ -77,7 +94,7 @@ export const behaviors: ComponentBehavior[] = [
 export const coverage: BehaviorCoverageEntry[] = [];
 `);
 
-    const report = await loadComponent(FIXTURE_NAME);
+    const report = await loadComponent(FIXTURE_NAME, roots);
     expect(report.total).toBe(1);
     expect(report.covered).toBe(0);
     expect(report.uncovered).toEqual([`${FIXTURE_NAME}/interaction/click-toggles`]);
@@ -92,7 +109,7 @@ export const behaviors: ComponentBehavior[] = [
 `);
     // No mapping file written at all.
 
-    const report = await loadComponent(FIXTURE_NAME);
+    const report = await loadComponent(FIXTURE_NAME, roots);
     expect(report.covered).toBe(0);
     expect(report.uncovered).toHaveLength(1);
     expect(report.errors).toEqual([]);
@@ -119,7 +136,7 @@ export const coverage: BehaviorCoverageEntry[] = [
 ];
 `);
 
-    const report = await loadComponent(FIXTURE_NAME);
+    const report = await loadComponent(FIXTURE_NAME, roots);
     expect(report.errors.some((e) => e.includes("unknown behavior id"))).toBe(true);
     expect(report.errors.some((e) => e.includes(`${FIXTURE_NAME}/interaction/made-up`))).toBe(true);
   });
@@ -143,7 +160,7 @@ export const coverage: BehaviorCoverageEntry[] = [
 ];
 `);
 
-    const report = await loadComponent(FIXTURE_NAME);
+    const report = await loadComponent(FIXTURE_NAME, roots);
     expect(report.covered).toBe(0);
     expect(report.uncovered).toEqual([`${FIXTURE_NAME}/keyboard/renamed`]);
     expect(report.errors.some((e) => e.includes("no test titled"))).toBe(true);
@@ -162,7 +179,7 @@ export const behaviors: ComponentBehavior[] = [
 export const coverage: BehaviorCoverageEntry[] = [];
 `);
 
-    const report = await loadComponent(FIXTURE_NAME);
+    const report = await loadComponent(FIXTURE_NAME, roots);
     expect(report.errors.some((e) => e.includes("duplicate behavior id"))).toBe(true);
   });
 
@@ -184,7 +201,7 @@ export const coverage: BehaviorCoverageEntry[] = [
 ];
 `);
 
-    const report = await loadComponent(FIXTURE_NAME);
+    const report = await loadComponent(FIXTURE_NAME, roots);
     expect(report.errors.some((e) => e.includes("duplicate mapping entry"))).toBe(true);
   });
 });
@@ -200,7 +217,7 @@ export const behaviors: ComponentBehavior[] = [
 export const coverage: BehaviorCoverageEntry[] = [];
 `);
 
-    const report = await loadComponent(FIXTURE_NAME);
+    const report = await loadComponent(FIXTURE_NAME, roots);
     expect(report.errors.some((e) => e.includes("does not start with"))).toBe(true);
   });
 });

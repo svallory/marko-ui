@@ -33,14 +33,29 @@ import { DOCUMENTED_COMPONENTS } from "../../apps/docs/src/demos/demos-manifest.
 import { OPEN_STATES, NO_OPEN_STATE } from "./axe-open-states.ts";
 
 const REPO_ROOT = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
-const DEMOS_DIR = join(REPO_ROOT, "apps/docs/src/demos");
-const MAPPING_DIR = join(REPO_ROOT, "packages/shadcn/tests/behavior-coverage");
+const DEFAULT_DEMOS_DIR = join(REPO_ROOT, "apps/docs/src/demos");
+const DEFAULT_MAPPING_DIR = join(REPO_ROOT, "packages/shadcn/tests/behavior-coverage");
 
-function findComponentsWithBehaviors(): string[] {
-  return readdirSync(DEMOS_DIR, { withFileTypes: true })
+/**
+ * The two roots this script reads component data from. Defaults to the
+ * real tracked source trees; a test harness overrides both to point at a
+ * throwaway directory instead — no test may write fixtures into
+ * apps/docs/src/demos or packages/shadcn/tests/behavior-coverage, since a
+ * crashed run would leave a bogus component that build-demos-manifest.ts
+ * and this script would then pick up in real invocations.
+ */
+interface ComponentRoots {
+  demosDir: string;
+  mappingDir: string;
+}
+
+const DEFAULT_ROOTS: ComponentRoots = { demosDir: DEFAULT_DEMOS_DIR, mappingDir: DEFAULT_MAPPING_DIR };
+
+function findComponentsWithBehaviors(roots: ComponentRoots = DEFAULT_ROOTS): string[] {
+  return readdirSync(roots.demosDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
-    .filter((name) => existsSync(join(DEMOS_DIR, name, "behaviors.ts")))
+    .filter((name) => existsSync(join(roots.demosDir, name, "behaviors.ts")))
     .sort();
 }
 
@@ -125,10 +140,10 @@ async function freshImport(path: string): Promise<unknown> {
   return import(`${path}?t=${Date.now()}-${importNonce++}`);
 }
 
-async function loadComponent(component: string): Promise<ComponentReport> {
+async function loadComponent(component: string, roots: ComponentRoots = DEFAULT_ROOTS): Promise<ComponentReport> {
   const errors: string[] = [];
 
-  const behaviorsModule = (await freshImport(join(DEMOS_DIR, component, "behaviors.ts"))) as {
+  const behaviorsModule = (await freshImport(join(roots.demosDir, component, "behaviors.ts"))) as {
     behaviors: ComponentBehavior[];
   };
   const behaviors = behaviorsModule.behaviors;
@@ -148,7 +163,7 @@ async function loadComponent(component: string): Promise<ComponentReport> {
   }
 
   const behaviorIds = new Set(behaviors.map((b) => b.id));
-  const mappingPath = join(MAPPING_DIR, `${component}.ts`);
+  const mappingPath = join(roots.mappingDir, `${component}.ts`);
   const coverage: BehaviorCoverageEntry[] = existsSync(mappingPath)
     ? ((await freshImport(mappingPath)) as { coverage: BehaviorCoverageEntry[] }).coverage
     : [];
@@ -215,7 +230,7 @@ async function main() {
   let hadError = false;
 
   for (const component of components) {
-    const behaviorsPath = join(DEMOS_DIR, component, "behaviors.ts");
+    const behaviorsPath = join(DEFAULT_ROOTS.demosDir, component, "behaviors.ts");
     if (!existsSync(behaviorsPath)) {
       console.error(`behavior-coverage: no behaviors.ts for "${component}" (${behaviorsPath})`);
       hadError = true;
@@ -262,3 +277,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 }
 
 export { loadComponent, findComponentsWithBehaviors, checkExists };
+export type { ComponentRoots };
