@@ -7,7 +7,12 @@ import { isContentSame } from "@/src/utils/compare"
 import { isEnvFile } from "@/src/utils/env-helpers"
 import type { Config } from "@/src/utils/get-config"
 import { getProjectInfo } from "@/src/utils/get-project-info"
-import { applyIconLibrary } from "@/src/utils/icon-library"
+import {
+  applyIconLibrary,
+  findStaleIconMaps,
+  isIconLibraryName,
+  isIconResolverPath,
+} from "@/src/utils/icon-library"
 import { transformCss } from "@/src/utils/updaters/update-css"
 import { transformCssVars } from "@/src/utils/updaters/update-css-vars"
 import {
@@ -48,6 +53,8 @@ export type DryRunFont = {
 
 export type DryRunResult = {
   files: DryRunFile[]
+  /** Stale icon maps `add` would delete (paths relative to cwd). */
+  removals?: string[]
   dependencies: string[]
   devDependencies: string[]
   css: DryRunCss | null
@@ -110,7 +117,7 @@ export async function dryRunComponents(
   return result
 }
 
-async function processFiles(
+export async function processFiles(
   tree: z.infer<typeof registryResolvedItemsTreeSchema>,
   config: Config,
   result: DryRunResult,
@@ -182,6 +189,21 @@ async function processFiles(
         action = "skip"
       } else {
         action = "overwrite"
+      }
+    }
+
+    if (
+      action !== "skip" &&
+      isIconResolverPath(file.path) &&
+      isIconLibraryName(config.iconLibrary)
+    ) {
+      for (const stale of findStaleIconMaps(
+        path.dirname(filePath),
+        config.iconLibrary
+      )) {
+        ;(result.removals ??= []).push(
+          path.relative(config.resolvedPaths.cwd, stale)
+        )
       }
     }
 

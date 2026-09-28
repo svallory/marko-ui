@@ -11,7 +11,12 @@ import {
   parseEnvContent,
 } from "@/src/utils/env-helpers"
 import { Config } from "@/src/utils/get-config"
-import { applyIconLibrary } from "@/src/utils/icon-library"
+import {
+  applyIconLibrary,
+  findStaleIconMaps,
+  isIconResolverPath,
+  isIconLibraryName,
+} from "@/src/utils/icon-library"
 import { getProjectInfo, ProjectInfo } from "@/src/utils/get-project-info"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
@@ -57,6 +62,7 @@ export async function updateFiles(
       filesCreated: [],
       filesUpdated: [],
       filesSkipped: [],
+      filesRemoved: [] as string[],
     }
   }
   options = {
@@ -86,6 +92,7 @@ export async function updateFiles(
   let filesCreated: string[] = []
   let filesUpdated: string[] = []
   let filesSkipped: string[] = []
+  let filesRemoved: string[] = []
   let envVarsAdded: string[] = []
   let envFile: string | null = null
 
@@ -214,6 +221,16 @@ export async function updateFiles(
 
     await fs.writeFile(filePath, content, "utf-8")
 
+    // The resolver now imports only the configured library's map. Maps of other
+    // libraries left by an earlier `add` under a different iconLibrary would
+    // otherwise stay in the project unused.
+    if (isIconResolverPath(file.path) && isIconLibraryName(config.iconLibrary)) {
+      for (const stale of findStaleIconMaps(targetDir, config.iconLibrary)) {
+        await fs.rm(stale)
+        filesRemoved.push(path.relative(config.resolvedPaths.cwd, stale))
+      }
+    }
+
     // Handle file creation logging
     if (!existingFile) {
       filesCreated.push(path.relative(config.resolvedPaths.cwd, filePath))
@@ -295,6 +312,20 @@ export async function updateFiles(
     }
   }
 
+  if (filesRemoved.length) {
+    spinner(
+      `Removed ${filesRemoved.length} stale icon ${
+        filesRemoved.length === 1 ? "map" : "maps"
+      } (iconLibrary is ${config.iconLibrary}):`,
+      { silent: options.silent }
+    )?.info()
+    if (!options.silent) {
+      for (const file of filesRemoved) {
+        logger.log(`  - ${file}`)
+      }
+    }
+  }
+
   if (envVarsAdded.length && envFile) {
     spinner(
       `Added the following variables to ${highlighter.info(envFile)}:`
@@ -310,6 +341,7 @@ export async function updateFiles(
     filesCreated,
     filesUpdated,
     filesSkipped,
+    filesRemoved,
   }
 }
 

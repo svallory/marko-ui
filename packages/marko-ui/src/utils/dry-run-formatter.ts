@@ -89,6 +89,7 @@ function formatSummaryOutput(result: DryRunResult, componentNames: string[]) {
   lines.push(dim("│"))
 
   formatFilesSection(result, lines)
+  formatRemovalsSection(result, lines)
   formatListSection("Dependencies", result.dependencies, lines)
   formatListSection("Dev Dependencies", result.devDependencies, lines)
   formatCssSection(result, lines)
@@ -396,6 +397,22 @@ function formatFilesSection(result: DryRunResult, lines: string[]) {
     )
   }
 
+  lines.push(dim("│"))
+}
+
+function formatRemovalsSection(result: DryRunResult, lines: string[]) {
+  if (!result.removals?.length) {
+    return
+  }
+
+  lines.push(
+    `${dim("├")} ${bold("Remove")} ${dim(`(${result.removals.length})`)} ${dim(
+      "stale icon maps"
+    )}`
+  )
+  for (const file of result.removals) {
+    lines.push(`${dim("│")} ${red("-")} ${file}`)
+  }
   lines.push(dim("│"))
 }
 

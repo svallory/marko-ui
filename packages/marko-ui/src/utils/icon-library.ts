@@ -1,3 +1,6 @@
+import { existsSync } from "fs"
+import path from "path"
+import { InvalidConfigIconLibraryError } from "@/src/registry/errors"
 import type { RegistryItem } from "@/src/schema"
 
 // Icon libraries the registry's Icon component ships maps for. Mirrors
@@ -21,12 +24,39 @@ export function isIconLibraryName(value: unknown): value is IconLibraryName {
 type RegistryFile = NonNullable<RegistryItem["files"]>[number]
 
 const ICON_DIR = /(^|\/)ui\/icon\//
-const MAP_FILE = /(^|\/)ui\/icon\/__([a-z]+)__\.ts$/
+// Derived from ICON_LIBRARIES so a newly added library is recognised as a map
+// file automatically instead of falling through as "some other icon file".
+const MAP_FILE = new RegExp(
+  `(^|/)ui/icon/__(${Object.keys(ICON_LIBRARIES).join("|")})__\\.ts$`
+)
 const RESOLVE_FILE = /(^|\/)ui\/icon\/resolve\.ts$/
 // Files that only exist for our docs site's runtime library switcher / for
 // regenerating the maps. Neither is imported by icon.marko, and both name every
 // library, so a project with one fixed library has no use for them.
 const OMITTED_FILES = /(^|\/)ui\/icon\/(client-swap\.ts|icon-mapping\.json)$/
+
+// Legacy upstream value (see shadcn's legacy-icon-libraries.ts). Upstream's
+// add-time transform leaves files untouched for it; so do we.
+const LEGACY_ICON_LIBRARIES = new Set(["radix"])
+
+export function isIconResolverPath(filePath: string) {
+  return RESOLVE_FILE.test(filePath.split(path.sep).join("/"))
+}
+
+/**
+ * Maps of OTHER known libraries sitting next to a copied resolver, e.g. left
+ * behind by an earlier `add` under a different `iconLibrary`. Only the exact
+ * `__<known library>__.ts` names in `iconDir` are returned.
+ */
+export function findStaleIconMaps(
+  iconDir: string,
+  iconLibrary: IconLibraryName
+): string[] {
+  return (Object.keys(ICON_LIBRARIES) as IconLibraryName[])
+    .filter((lib) => lib !== iconLibrary)
+    .map((lib) => path.join(iconDir, `__${lib}__.ts`))
+    .filter((file) => existsSync(file))
+}
 
 /**
  * The single-library replacement for the registry's `ui/icon/resolve.ts`.
@@ -72,14 +102,25 @@ ${render}
  * the equivalent is to keep only the configured library's map and swap in a
  * resolver that imports just that map.
  *
- * Like upstream, an unset or unsupported `iconLibrary` (legacy libraries) is
- * left alone and the files pass through unchanged.
+ * Like upstream, an unset `iconLibrary` or the legacy `radix` is left alone and
+ * the files pass through unchanged. Unlike upstream (which silently ignores any
+ * unknown value), a non-empty unknown value throws when the icon files are being
+ * added, rather than silently shipping all five libraries.
  */
 export function applyIconLibrary(
   files: RegistryItem["files"],
   iconLibrary: string | undefined
 ): RegistryItem["files"] {
-  if (!files?.length || !isIconLibraryName(iconLibrary)) {
+  if (!files?.length || !iconLibrary || LEGACY_ICON_LIBRARIES.has(iconLibrary)) {
+    return files
+  }
+  if (!isIconLibraryName(iconLibrary)) {
+    if (files.some((file) => ICON_DIR.test(file.path))) {
+      throw new InvalidConfigIconLibraryError(
+        iconLibrary,
+        Object.keys(ICON_LIBRARIES)
+      )
+    }
     return files
   }
 
