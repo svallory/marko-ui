@@ -17,6 +17,7 @@ export const menu = {
     "mu-menubar-radio-item relative flex cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
   radioItemIndicator:
     "mu-menubar-radio-item-indicator pointer-events-none absolute flex items-center justify-center",
+  radioItemIcon: "size-2 fill-current",
   subTrigger: "mu-menubar-sub-trigger flex cursor-default items-center outline-none select-none",
   subTriggerIcon: "mu-rtl-flip ml-auto size-4",
   item: "mu-menubar-item group/menubar-item relative flex cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",

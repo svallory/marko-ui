@@ -6,6 +6,7 @@ export const contextMenu = {
   checkboxItem: "mu-context-menu-checkbox-item relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
   radioItem: "mu-context-menu-radio-item relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
   itemIndicator: "mu-context-menu-item-indicator pointer-events-none",
+  radioItemIcon: "size-2 fill-current",
   shortcut: "mu-context-menu-shortcut",
   subTrigger: "mu-context-menu-sub-trigger flex cursor-default items-center outline-hidden select-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
   subTriggerIcon: "mu-rtl-flip ml-auto",

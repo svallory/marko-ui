@@ -135,7 +135,7 @@ static function menuEntries(input: Input): ContextMenuItemAttrs[] {
             >
               <span ...api().getItemIndicatorProps({ value: entry.value ?? `item-${index}`, checked: entry.checked ?? false }) data-slot="context-menu-radio-item-indicator" class=styles.itemIndicator>
                 <if=entry.checked>
-                  <Icon name="Check"/>
+                  <Icon name="Circle" class=styles.radioItemIcon/>
                 </if>
               </span>
               <if=entry.content>

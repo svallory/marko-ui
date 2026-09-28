@@ -173,7 +173,7 @@ static function menuEntries(input: Input): DropdownMenuItemAttrs[] {
             >
               <span ...api().getItemIndicatorProps({ value: entry.radioValue ?? value, checked: entry.checked ?? false }) data-slot="dropdown-menu-radio-item-indicator" class=styles.itemIndicator>
                 <if=entry.checked>
-                  <Icon name="Check"/>
+                  <Icon name="Circle" class=styles.radioItemIcon/>
                 </if>
               </span>
               <if=entry.content>

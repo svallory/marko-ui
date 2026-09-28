@@ -6,6 +6,7 @@ export const dropdownMenu = {
   checkboxItem:
     "mu-dropdown-menu-checkbox-item relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
   itemIndicator: "mu-dropdown-menu-item-indicator pointer-events-none",
+  radioItemIcon: "size-2 fill-current",
   shortcut: "mu-dropdown-menu-shortcut",
   radioItem:
     "mu-dropdown-menu-radio-item relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
