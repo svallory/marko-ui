@@ -11,6 +11,7 @@ import {
   parseEnvContent,
 } from "@/src/utils/env-helpers"
 import { Config } from "@/src/utils/get-config"
+import { applyIconLibrary } from "@/src/utils/icon-library"
 import { getProjectInfo, ProjectInfo } from "@/src/utils/get-project-info"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
@@ -43,6 +44,14 @@ export async function updateFiles(
     supportedFontMarkers?: string[]
   }
 ) {
+  // Keep only the configured iconLibrary's icon map (see icon-library.ts).
+  files = applyIconLibrary(files, config.iconLibrary)
+  if (options.plannedFiles) {
+    options = {
+      ...options,
+      plannedFiles: applyIconLibrary(options.plannedFiles, config.iconLibrary),
+    }
+  }
   if (!files?.length) {
     return {
       filesCreated: [],

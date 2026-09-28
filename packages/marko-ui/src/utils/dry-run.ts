@@ -7,6 +7,7 @@ import { isContentSame } from "@/src/utils/compare"
 import { isEnvFile } from "@/src/utils/env-helpers"
 import type { Config } from "@/src/utils/get-config"
 import { getProjectInfo } from "@/src/utils/get-project-info"
+import { applyIconLibrary } from "@/src/utils/icon-library"
 import { transformCss } from "@/src/utils/updaters/update-css"
 import { transformCssVars } from "@/src/utils/updaters/update-css-vars"
 import {
@@ -115,7 +116,7 @@ async function processFiles(
   result: DryRunResult,
   options: { overwrite?: boolean }
 ) {
-  const files = tree.files
+  const files = applyIconLibrary(tree.files, config.iconLibrary)
   if (!files?.length) {
     return
   }

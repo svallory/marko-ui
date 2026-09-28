@@ -8,8 +8,12 @@
 // way, and this file is what keeps the two paths' rendering logic
 // (wrapper attrs, hugeicons node->HTML, name-suffix fallback) from
 // drifting apart while their IMPORT strategy differs.
-import type { IconNode } from "./__hugeicons__.ts";
 import type { IconLibraryName } from "./icon-names.ts";
+
+// [tagName, attributes][] — the shape hugeicons icons are stored in. Declared
+// here, not imported from the generated hugeicons map, so this file stays valid
+// when `marko-ui add` copies only the configured library's map.
+export type IconNode = [string, Record<string, string>][];
 
 export const FALLBACK_INNER = '<rect width="18" height="18" x="3" y="3" rx="2"/>';
 

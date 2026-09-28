@@ -24,7 +24,7 @@
 // let the preview iframe's OWN opt-in re-render script (not this
 // component) find and patch icons after the initial SSR paint.
 import { cn } from "#lib/utils.ts";
-import { resolveIconInner } from "./resolve.ts";
+import { resolveIconInner, resolveIconLibrary } from "./resolve.ts";
 import { ICON_WRAPPER_ATTRS } from "./render.ts";
 import type { IconLibraryName, IconName } from "./icon-names.ts";
 import { icon as styles } from "./classes.ts";
@@ -55,10 +55,10 @@ export interface Input extends Omit<Marko.HTMLAttributes<Element>, "lang"> {
 // TS `as IconLibraryName` cast — no runtime check. A malformed/stale/typo'd
 // `?iconLibrary=` query value would otherwise reach `ICON_WRAPPER_ATTRS[library]`
 // as `undefined` and throw on `wrapperAttrs.viewBox` below, crashing SSR for
-// the whole request. Guard here, the single choke point every icon render
-// passes through, rather than chasing every upstream cast site.
-<const/requestedLibrary=input.library ?? "lucide"/>
-<const/library=(requestedLibrary in ICON_WRAPPER_ATTRS ? requestedLibrary : "lucide") as IconLibraryName/>
+// the whole request. resolveIconLibrary is the single choke point every icon
+// render passes through. In a project set up with `marko-ui add` it is
+// rewritten to always return the components.json `iconLibrary`.
+<const/library=resolveIconLibrary(input.library)/>
 <const/{ name, library: _library, class: className, unsized, ...rest }=input/>
 <const/wrapperAttrs=ICON_WRAPPER_ATTRS[library]/>
 
