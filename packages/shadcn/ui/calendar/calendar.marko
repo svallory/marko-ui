@@ -154,6 +154,16 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
         <Icon name="ChevronLeft" class=styles.rtlFlip/>
         <span class=styles.srOnly>Previous</span>
       </button>
+      <button type="button"
+        ...api().getNextTriggerProps()
+        data-slot="calendar-next-trigger"
+        class=cn(navTriggerVariant, styles.navTrigger)
+      >
+        <Icon name="ChevronRight" class=styles.rtlFlip/>
+        <span class=styles.srOnly>Next</span>
+      </button>
+    </div>
+    <div data-slot="calendar-month-caption" class=styles.monthCaption>
       <if=captionLayout === "dropdown">
         <div
           data-slot="calendar-dropdowns"
@@ -214,14 +224,6 @@ static function toFocusedDateValue(date: PlainDate): DateValue {
           ${api().visibleRangeText.formatted}
         </button>
       </else>
-      <button type="button"
-        ...api().getNextTriggerProps()
-        data-slot="calendar-next-trigger"
-        class=cn(navTriggerVariant, styles.navTrigger)
-      >
-        <Icon name="ChevronRight" class=styles.rtlFlip/>
-        <span class=styles.srOnly>Next</span>
-      </button>
     </div>
     <table ...api().getTableProps() data-slot="calendar-table" class=styles.table>
       <thead ...api().getTableHeadProps() data-slot="calendar-table-head">
