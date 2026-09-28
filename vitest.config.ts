@@ -9,6 +9,7 @@ export default defineConfig({
       "packages/**/*.test.ts",
       "apps/docs/scripts/**/*.test.ts",
       "tooling/**/*.test.ts",
+      "scripts/**/*.test.ts",
     ],
     // packages/marko-ui runs its own vitest (its @/src path alias and msw setup
     // live in packages/marko-ui/vitest.config.ts): `bun run --filter marko-ui test`
