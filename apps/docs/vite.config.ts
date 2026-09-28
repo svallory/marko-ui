@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import marko from "@marko/run/vite";
+import type { Route } from "@marko/run/vite";
 import staticAdapter from "@marko/run-adapter-static";
 import tailwindcss from "@tailwindcss/vite";
 
@@ -20,12 +21,36 @@ import { FIXTURES } from "./src/tags/typeset/lib/fixtures/index.ts";
  * Enumerating them from the same modules the pages themselves read keeps the
  * two in lockstep: add a component to COMPONENTS and it is prerendered.
  */
-function staticUrls(): string[] {
-  const urls: string[] = [];
+export function staticUrls(routes: Route[]): string[] {
+  // The adapter's own crawl() does not dedupe its seed paths: it builds
+  // `pathsToVisit` from every parameterless route PLUS whatever this function
+  // returns, then maps the whole (possibly duplicated) list straight into
+  // concurrent visits with no dedup pass. Two visits of the same path both
+  // open `fs.createWriteStream` on the same file at once, and whichever
+  // finishes second wins — the loser's shorter/incomplete write can still
+  // leave its tail bytes behind, corrupting the file (observed as a
+  // duplicated `</script></body></html>` tail on chart.html, the largest
+  // page and so the one most likely to lose the race). Most components here
+  // already have their own generated parameterless route
+  // (src/routes/docs/components/<name>/+page.marko), so pushing
+  // `/docs/components/<name>` again is a guaranteed duplicate for those.
+  // Building the set from `routes` (which the adapter hands us for exactly
+  // this purpose) and filtering it out is what actually prevents the race,
+  // not just relying on `seen` — `seen` is populated from these paths too
+  // late to stop the initial concurrent batch.
+  const parameterlessPaths = new Set(
+    routes
+      .filter((route) => !route.path.params || !Object.keys(route.path.params).length)
+      .map((route) => route.path.path),
+  );
+
+  const urls = new Set<string>();
 
   for (const name of COMPONENTS) {
-    // The docs page itself...
-    urls.push(`/docs/components/${name}`);
+    // The docs page itself, but only when it isn't already one of the
+    // adapter's own parameterless routes (see comment above).
+    const componentPath = `/docs/components/${name}`;
+    if (!parameterlessPaths.has(componentPath)) urls.add(componentPath);
     // ...and its two markdown twins. `<name>.md` is the canonical one
     // (docs/components/$name/+handler.ts matches the suffix inside the param);
     // `/md` is the older alias (docs/components/$name/md/+handler.ts).
@@ -34,19 +59,19 @@ function staticUrls(): string[] {
     // written verbatim ONLY when the path carries a file extension, and is
     // otherwise dropped. The extensionless `/md` twin is listed anyway so the
     // crawl reports it, and is materialized by scripts/prerender-handlers.ts.
-    urls.push(`/docs/components/${name}.md`);
-    urls.push(`/docs/components/${name}/md`);
+    urls.add(`/docs/components/${name}.md`);
+    urls.add(`/docs/components/${name}/md`);
   }
 
   for (const category of BLOCK_CATEGORIES) {
     // The list includes an empty slug for the "all blocks" landing page, which
     // is already covered by the parameterless /blocks route.
-    if (category.slug) urls.push(`/blocks/${category.slug}`);
+    if (category.slug) urls.add(`/blocks/${category.slug}`);
   }
 
-  for (const type of CHART_TYPES) urls.push(`/charts/${type.slug}`);
+  for (const type of CHART_TYPES) urls.add(`/charts/${type.slug}`);
 
-  for (const name of Object.keys(FIXTURES)) urls.push(`/typeset/preview/${name}`);
+  for (const name of Object.keys(FIXTURES)) urls.add(`/typeset/preview/${name}`);
 
   // The showcase pages the /create customizer drives through its iframe.
   // /create/preview picks its whole body from `?item=` at RENDER time, so each
@@ -54,13 +79,13 @@ function staticUrls(): string[] {
   // onto these paths at request time (see worker/index.ts). Without this the
   // three items would collapse onto one file and the gallery visual guard
   // would silently screenshot preview-page-1 three times.
-  for (const item of PREVIEW_ITEMS) urls.push(`/create/preview/${item}`);
+  for (const item of PREVIEW_ITEMS) urls.add(`/create/preview/${item}`);
 
   // Extensionless handler; materialized by scripts/prerender-handlers.ts for
   // the same reason as the `/md` twins above.
-  urls.push("/typeset/css");
+  urls.add("/typeset/css");
 
-  return urls;
+  return [...urls];
 }
 
 /**
