@@ -199,7 +199,7 @@ jobs:
     steps:
       # Fresh checkout pinned to the tag just pushed — the badge numbers
       # must come from the tree that shipped, not from main.
-      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1e8685f8e4a348a # v4
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
         with:
           ref: v${{ needs.release.outputs.version }}
 
