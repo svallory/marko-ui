@@ -25,8 +25,8 @@
  *
  * Usage: bun scripts/ci/behavior-coverage.ts [--json] [component...]
  *   No args: every component with a behaviors.ts file.
- *   --json: print a machine-readable summary (fed to scripts/ci/badge.ts)
- *   instead of the table; still exits non-zero on errors.
+ *   --json: print a machine-readable summary (fed to scripts/ci/badge.ts
+ *   `behavior-coverage`) instead of the table; still exits non-zero on errors.
  *   Exits non-zero on: an unknown behaviorId in a mapping, a duplicate
  *   behaviorId within one behaviors.ts, or a vitest proving check whose
  *   title no longer exists.
@@ -85,8 +85,13 @@ function vitestTestTitles(file: string): Set<string> {
   }
   let raw: string;
   try {
+    // vitest detects an AI-agent environment (AI_AGENT set) and prepends an
+    // NDJSON banner line to stdout, which breaks JSON.parse; drop the var for
+    // the child and, belt and braces, parse from the array's opening bracket.
+    const { AI_AGENT: _aiAgent, ...env } = process.env;
     raw = execFileSync("bunx", ["vitest", "list", absPath, "--json"], {
       cwd: REPO_ROOT,
+      env,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
     });
@@ -94,7 +99,7 @@ function vitestTestTitles(file: string): Set<string> {
     console.error(`behavior-coverage: \`vitest list\` failed for ${file}`);
     throw err;
   }
-  const entries: { name: string; file: string }[] = JSON.parse(raw);
+  const entries: { name: string; file: string }[] = JSON.parse(raw.slice(raw.search(/^\[/m)));
   const titles = new Set(entries.map((e) => e.name));
   vitestListCache.set(absPath, titles);
   return titles;
@@ -240,6 +245,8 @@ export interface CoverageSummary {
   /** Components whose behaviors.ts exists but holds only unreviewed stubs. */
   stubOnlyComponents: number;
   pendingStubs: number;
+  /** Every documented component (DOCUMENTED_COMPONENTS): the "how many aren't listed yet" denominator. */
+  totalComponents: number;
   components: { component: string; covered: number; total: number; pending: number }[];
 }
 
@@ -247,7 +254,10 @@ export interface CoverageSummary {
  * Only components with >=1 reviewed behavior count as "listed"; a
  * stub-only file contributes nothing to any number but the pending count.
  */
-export function summarize(reports: ComponentReport[]): CoverageSummary {
+export function summarize(
+  reports: ComponentReport[],
+  totalComponents: number = DOCUMENTED_COMPONENTS.length,
+): CoverageSummary {
   const listed = reports.filter((r) => r.total > 0);
   return {
     covered: listed.reduce((n, r) => n + r.covered, 0),
@@ -255,6 +265,7 @@ export function summarize(reports: ComponentReport[]): CoverageSummary {
     listedComponents: listed.length,
     stubOnlyComponents: reports.filter((r) => r.total === 0 && r.pending > 0).length,
     pendingStubs: reports.reduce((n, r) => n + r.pending, 0),
+    totalComponents,
     components: reports.map((r) => ({ component: r.component, covered: r.covered, total: r.total, pending: r.pending })),
   };
 }

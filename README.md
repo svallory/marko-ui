@@ -6,6 +6,7 @@
 [![WCAG 2.2 AA automated scan](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges-main%2Faxe.json)](https://github.com/svallory/marko-ui/blob/main/scripts/ci/axe-scan.ts)
 [![Lighthouse accessibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges-main%2Flighthouse-accessibility.json)](https://github.com/svallory/marko-ui/actions/workflows/lighthouse.yml)
 [![Hydration invariance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges-main%2Fhydration.json)](https://github.com/svallory/marko-ui/tree/main/packages/shadcn/tests)
+[![Behavior coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsvallory%2Fmarko-ui%2Fbadges-main%2Fcoverage.json)](https://github.com/svallory/marko-ui/blob/main/notes/behavior-coverage.md)
 [![npm version (marko-ui)](https://img.shields.io/npm/v/marko-ui?label=marko-ui)](https://www.npmjs.com/package/marko-ui)
 [![npm version (@marko-ui/shadcn)](https://img.shields.io/npm/v/@marko-ui/shadcn?label=%40marko-ui%2Fshadcn)](https://www.npmjs.com/package/@marko-ui/shadcn)
 [![License: MIT](https://img.shields.io/npm/l/marko-ui)](https://github.com/svallory/marko-ui/blob/main/LICENSE)

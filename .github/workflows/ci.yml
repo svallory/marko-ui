@@ -6,7 +6,7 @@
 # release.yml from the release tag after each publish. Render with:
 #   https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/svallory/marko-ui/badges-main/<name>.json
 # Badge files: checks.json + checks-count.json (combine of tests.json),
-# tests.json, hydration.json, axe.json
+# tests.json, hydration.json, axe.json, coverage.json (behavior coverage)
 name: CI
 
 on:
@@ -274,6 +274,13 @@ jobs:
       - name: Generate badges
         if: always()
         run: bun scripts/ci/badge.ts vitest vitest-results.json badge-out
+      # Static (no server, no suite execution); exits non-zero when a
+      # mapping points at a renamed/deleted test, so drift fails the job
+      # instead of publishing a stale number.
+      - name: Behavior coverage badge
+        run: |
+          bun scripts/ci/behavior-coverage.ts --json > behavior-coverage.json
+          bun scripts/ci/badge.ts behavior-coverage behavior-coverage.json badge-out
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
         if: always()
         with:

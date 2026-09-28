@@ -2,7 +2,7 @@
  * Turn CI result files into shields.io endpoint JSON badges.
  *
  * Usage: bun scripts/ci/badge.ts <kind> <input-file> <out-dir>
- *   kind = vitest | axe | lighthouse-a11y | combine
+ *   kind = vitest | axe | lighthouse-a11y | behavior-coverage | combine
  *   (for `combine`, <input-file> is the directory holding the count-carrying
  *   badge files listed in COMBINE_PARTS)
  *
@@ -231,6 +231,34 @@ switch (kind) {
       label: "tests",
       message: String(passed === total ? total : `${passed}/${total}`),
       color: passFailColor(passed, total),
+    });
+    break;
+  }
+
+  case "behavior-coverage": {
+    // `bun scripts/ci/behavior-coverage.ts --json` output. Deliberately two
+    // numbers in one message: the percentage is covered / reviewed-listed
+    // behaviors (unreviewed stubs are excluded upstream), and the component
+    // count says how little of the library that percentage speaks for. A bare
+    // "41%" would read as library-wide coverage while most components have no
+    // behavior list at all — the same trap the hydration badge's denominator
+    // comment describes. Colors follow the lighthouse thresholds.
+    const { covered, total, listedComponents, totalComponents } = input as {
+      covered: number;
+      total: number;
+      listedComponents: number;
+      totalComponents: number;
+    };
+    if (![covered, total, listedComponents, totalComponents].every(Number.isFinite) || total <= 0 || totalComponents <= 0) {
+      console.error("behavior-coverage input has no listed behaviors or bad counts — wrong input file?");
+      process.exit(1);
+    }
+    const pct = Math.round((covered / total) * 100);
+    write("coverage", {
+      schemaVersion: 1,
+      label: "behavior coverage",
+      message: `${pct}% · ${listedComponents}/${totalComponents} components`,
+      color: pct >= 90 ? "brightgreen" : pct >= 50 ? "yellow" : "red",
     });
     break;
   }
