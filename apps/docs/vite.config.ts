@@ -116,13 +116,6 @@ const VENDOR_CHUNK_PATTERNS: ReadonlyArray<readonly [RegExp, string]> = [
   [/node_modules[\\/]@hugeicons[\\/]/, "vendor-icons"],
 ];
 
-function vendorChunk(id: string): string | undefined {
-  for (const [pattern, name] of VENDOR_CHUNK_PATTERNS) {
-    if (pattern.test(id)) return name;
-  }
-  return undefined;
-}
-
 export default defineConfig(({ isSsrBuild }) => ({
   plugins: [
     tailwindcss(),
@@ -138,7 +131,19 @@ export default defineConfig(({ isSsrBuild }) => ({
         // not read), so the chunk policy must live here to survive the merge.
         rolldownOptions: {
           output: {
-            manualChunks: vendorChunk,
+            // Rolldown `codeSplitting` groups (formerly `advancedChunks`), replacing
+            // the old `manualChunks` function. `manualChunks` could not separate
+            // Vite's `\0vite/preload-helper.js` from the shiki bundle it was
+            // first grouped with (#81), so any lazy `import()` in a shared
+            // component dragged ~270 KB gzip of shiki into every route. The
+            // helper gets its own group with the highest priority; the
+            // scripts/ci/check-preload-helper.ts guard checks the built output.
+            codeSplitting: {
+              groups: [
+                { name: "preload-helper", test: /vite[\\/]preload-helper/, priority: 100 },
+                ...VENDOR_CHUNK_PATTERNS.map(([test, name]) => ({ name, test })),
+              ],
+            },
           },
         },
       },
