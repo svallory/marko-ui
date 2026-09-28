@@ -25,11 +25,6 @@ function toggleIn(page: Page, demoTitle: string): Locator {
   return demoByTitle(page, demoTitle).locator('[data-slot="toggle"]').first();
 }
 
-/** Wait for text to be visible (vitest's `expect` has no Playwright matchers). */
-async function seeText(scope: Locator, text: string): Promise<void> {
-  await scope.getByText(text).first().waitFor({ state: "visible" });
-}
-
 afterAll(async () => {
   await closeSharedBrowser();
 });
@@ -113,16 +108,18 @@ describe("toggle props", () => {
       const toggle = demo.locator('[data-slot="toggle"]').first();
 
       // The demo starts with pressed=true and mirrors the value beside the toggle.
+      // (Marko renders a `false` interpolation as empty text, so "off" is asserted
+      // as the absence of "pressed: true" rather than the literal "pressed: false".)
       expect(await attributeOf(toggle, "aria-pressed")).toBe("true");
-      await seeText(demo, "pressed: true");
+      await expect.poll(() => demo.textContent()).toContain("pressed: true");
 
       await toggle.click();
-      await seeText(demo, "pressed: false");
       expect(await attributeOf(toggle, "aria-pressed")).toBe("false");
+      await expect.poll(() => demo.textContent()).not.toContain("pressed: true");
 
       await toggle.click();
-      await seeText(demo, "pressed: true");
       expect(await attributeOf(toggle, "aria-pressed")).toBe("true");
+      await expect.poll(() => demo.textContent()).toContain("pressed: true");
     });
   });
 });

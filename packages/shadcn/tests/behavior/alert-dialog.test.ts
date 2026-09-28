@@ -196,7 +196,8 @@ describe("alert-dialog props", () => {
 
       await triggerIn(page, "Controlled").click();
       const content = await waitForOpenAlert(page);
-      await seeText(demo, "open: true");
+      // Compare against the demo's full text so a failure shows what it actually rendered.
+      await expect.poll(() => demo.textContent()).toContain("open: true");
 
       await content.locator('[data-slot="alert-dialog-cancel"]').click();
       await content.waitFor({ state: "detached" });
