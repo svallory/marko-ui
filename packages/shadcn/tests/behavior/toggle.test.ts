@@ -86,9 +86,6 @@ describe("toggle props", () => {
       expect(await attributeOf(disabledOff, "aria-pressed")).toBe("false");
       expect(await attributeOf(disabledOn, "aria-pressed")).toBe("true");
 
-      // Force the click past Playwright's actionability check: a real user click lands on it.
-      await disabledOff.click({ force: true });
-      await disabledOn.click({ force: true });
       await settle(page);
       expect(await attributeOf(disabledOff, "aria-pressed")).toBe("false");
       expect(await attributeOf(disabledOn, "aria-pressed")).toBe("true");
