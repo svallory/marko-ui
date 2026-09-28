@@ -5,7 +5,7 @@ export const calendar = {
   navTrigger: "size-(--cell-size) p-0 select-none aria-disabled:opacity-50",
   rtlFlip: "mu-rtl-flip",
   srOnly: "sr-only",
-  monthCaption: "mu-calendar-month-caption flex h-(--cell-size) w-full items-center justify-center px-(--cell-size)",
+  monthCaption: "flex h-(--cell-size) w-full items-center justify-center px-(--cell-size)",
   dropdowns: "flex h-(--cell-size) w-full items-center justify-center gap-1.5 text-sm font-medium",
   dropdownRoot: "mu-calendar-dropdown-root relative rounded-(--cell-radius)",
   monthSelect: "absolute inset-0 bg-popover opacity-0",
