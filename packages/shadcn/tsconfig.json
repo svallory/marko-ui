@@ -20,5 +20,9 @@
     "../../tooling/check-classes.ts",
     "../../tooling/fs-utils.ts",
     "../../tooling/parity/harnesses/shadcn/upstream-shadcn.ts"
-  ]
+  ],
+  // Imports the CLI transform from packages/marko-ui (its @/src alias pulls
+  // that package's source graph, which this project does not list). Vitest
+  // still runs it from the root config, which aliases @/src.
+  "exclude": ["tests/icon-client-render.test.ts"]
 }
