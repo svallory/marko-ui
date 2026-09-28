@@ -44,6 +44,13 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 import { VISUAL_STYLES } from "../packages/marko-ui/src/registry/constants";
+import {
+  applyStyle,
+  applyTheme,
+  freezeForScreenshot,
+  waitForHydration,
+  waitForLayoutSettled,
+} from "./visual-helpers";
 
 /**
  * The showcase pages of /create/preview. Each renders a different
@@ -55,14 +62,19 @@ const PREVIEW_ITEMS = ["preview-page-1", "preview-page-2", "preview-page-3"] as 
 const THEMES = ["light", "dark"] as const;
 
 /**
- * `new-york` (added 2026-09-27) is deliberately excluded from this guard: it
- * is not offered in /create's own style picker (registry-config.ts's STYLES
- * list, ported from upstream's apps/v4/registry/styles.tsx, which doesn't
- * list new-york-v4 either), so the /create/preview pages this spec
- * screenshots can never render it — there is no `.style-new-york` class this
- * guard could apply that a real user-facing surface would ever produce. Any
- * future style added to VISUAL_STYLES that IS offered in /create must be
- * added here too, on purpose (see the array-equality guard below).
+ * `new-york` IS now guarded (issue #75, 2026-09-28) via chrome-visual.spec.ts,
+ * not this file: it is still not offered in /create's own style picker
+ * (registry-config.ts's STYLES list, ported from upstream's
+ * apps/v4/registry/styles.tsx, which doesn't list new-york-v4 either), so
+ * `/create/preview` — the page this spec screenshots — genuinely cannot
+ * render a `.style-new-york` body class; applying one here would assert a
+ * combination no real user-facing surface produces. new-york IS applied for
+ * real on the docs site chrome, /blocks and /charts (site-header.marko,
+ * site-footer.marko, blocks-gallery.marko, charts-gallery.marko all set
+ * `class="style-new-york"` directly), which is what chrome-visual.spec.ts
+ * covers instead. Any future style added to VISUAL_STYLES that IS offered in
+ * /create must be added here too, on purpose (see the array-equality guard
+ * below).
  */
 const GUARDED_STYLES = VISUAL_STYLES.filter((style) => style.name !== "new-york");
 
@@ -84,169 +96,6 @@ test("the style list this guard covers matches the registry", () => {
     "sera",
   ]);
 });
-
-/**
- * Freeze everything that would otherwise differ between two runs of the
- * same commit. This is done with injected CSS + DOM writes rather than by
- * editing the demos, so the guard never changes what ships.
- */
-async function freezeForScreenshot(page: Page): Promise<void> {
-  await page.addStyleTag({
-    content: `
-      /* Animations and transitions: a screenshot taken mid-transition
-         differs run to run. Freeze rather than disable so elements land in
-         their final state instead of their initial one. */
-      *, *::before, *::after {
-        animation-duration: 0s !important;
-        animation-delay: 0s !important;
-        animation-iteration-count: 1 !important;
-        animation-play-state: paused !important;
-        transition-duration: 0s !important;
-        transition-delay: 0s !important;
-      }
-      /* Caret blink in any focused text input. */
-      * { caret-color: transparent !important; }
-      /* Marquee-style scrollers translate on a timer. */
-      [data-slot="marquee"] *, .mu-marquee * {
-        animation-play-state: paused !important;
-        transform: none !important;
-      }
-      /* Focus rings depend on which element the browser happened to focus
-         first; the guard is about style layers, not focus state. */
-      *:focus, *:focus-visible { outline: none !important; box-shadow: none !important; }
-
-      /* The accordion animates height from 0 to a value a ResizeObserver
-         measures at runtime (--marko-accordion-content-height, see
-         packages/shadcn/styles/marko-accordion.css). The observer callback
-         can land on either side of a capture, so the panel is caught
-         mid-open: measured as a real 2,640-pixel diff between two runs of
-         the same commit, localised to the accordion card. Killing the
-         animation lands the panel on its natural height without hiding the
-         component — the accordion's open panel is still fully asserted.
-
-         Do NOT add "height: var(--marko-accordion-content-height)" to the
-         open panel here. (No backticks anywhere in this comment: it lives
-         inside a JS template literal, and one would terminate it — which
-         is exactly how the first attempt at this note broke the spec.)
-         That pin looks like it makes the panel more deterministic and does
-         the opposite: the var is the ResizeObserver's OUTPUT (it measures
-         this panel), so feeding it back in as the panel's height freezes
-         whatever was measured first and stops the observer from ever seeing
-         a subsequent reflow. Because this spec loads the page under the
-         app's default style and only then swaps the style-* class, the value
-         measured first is the DEFAULT style's, and a style whose type
-         metrics differ (lyra is text-xs, 12px/16px, where the default is
-         text-sm, 14px/20px) would then be screenshotted at the wrong
-         height. That is exactly the bistable "preview-page-1 — lyra light"
-         failure in runs 35185048583 / 35186686206: 3,816 pixels, identical
-         in both, the FAQ accordion held at the default style's 90px instead
-         of lyra's correct 74px, shifting every item below it. Measured
-         after removing the pin: 20/20 byte-identical full-page captures,
-         published height 74px in all 20 (with the pin: 20/20 identical but
-         stuck at the wrong 90px). The same feedback loop existed in the
-         component and was removed alongside this — see
-         packages/shadcn/ui/accordion/classes.ts. */
-      [data-slot="accordion-content"] {
-        animation: none !important;
-        transition: none !important;
-      }
-      /* Closed panels get the hidden attribute in this component, so this is
-         a backstop for the brief data-closing window a mid-close panel stays
-         visible for, not the main path. */
-      [data-slot="accordion-content"][data-state="closed"] {
-        height: 0 !important;
-      }
-    `,
-  });
-
-  // Blur whatever autofocused, so no element renders in a focused state.
-  await page.evaluate(() => {
-    const active = document.activeElement;
-    if (active instanceof HTMLElement) active.blur();
-  });
-}
-
-/** Apply a visual style the same way the real customizer does. */
-async function applyStyle(page: Page, style: string): Promise<void> {
-  await page.evaluate((name) => {
-    const body = document.body;
-    for (const className of Array.from(body.classList)) {
-      if (className.startsWith("style-")) body.classList.remove(className);
-    }
-    body.classList.add(`style-${name}`);
-  }, style);
-}
-
-/** Apply a theme the same way +layout.marko's inline boot script does. */
-async function applyTheme(page: Page, theme: "light" | "dark"): Promise<void> {
-  await page.evaluate((name) => {
-    document.documentElement.classList.toggle("dark", name === "dark");
-  }, theme);
-}
-
-/**
- * Wait for Marko resumption — the same signal scripts/ci/axe-scan.ts and the
- * behavior-test helpers use. Screenshotting before hydration captures the
- * SSR paint, which differs from the hydrated one for components whose Zag
- * machine writes attributes on mount.
- */
-async function waitForHydration(page: Page): Promise<void> {
-  await page.waitForFunction(() => document.querySelector("[data-ssr]") === null, undefined, {
-    timeout: 15_000,
-  });
-  await page.evaluate(() => document.fonts.ready);
-  // Let any ResizeObserver that publishes a measured size (the accordion's
-  // content height, chart containers) deliver its callback and settle
-  // before anything is captured.
-  await page.evaluate(
-    () =>
-      new Promise<void>((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-      })
-  );
-}
-
-/**
- * Block until the page's geometry stops changing, instead of guessing with a
- * fixed sleep.
- *
- * The style swap rewrites radius, padding, border widths and font weights, so
- * the whole page reflows; the accordion's ResizeObserver then republishes its
- * measured content height off the back of that reflow. A fixed `waitForTimeout`
- * is a bet that all of it finishes within N milliseconds — one that held on a
- * developer laptop and lost on the CI runner, where it produced a 4,102-pixel
- * diff on `preview-page-1 — mira dark` (and only that one, which is what a race
- * looks like: the same 24-sample probe finds the settled page perfectly stable).
- *
- * So sample the real thing instead: the full-document scroll size plus every
- * element's box, and require it to hold identical across consecutive frames
- * before returning. Bounded by a timeout so a genuinely animating page fails
- * the test rather than hanging it.
- */
-async function waitForLayoutSettled(page: Page): Promise<void> {
-  await page.waitForFunction(
-    () => {
-      const w = window as unknown as { __settle?: { last: string; count: number } };
-      const signature = [
-        document.documentElement.scrollWidth,
-        document.documentElement.scrollHeight,
-        ...Array.from(document.querySelectorAll("*")).map((el) => {
-          const r = el.getBoundingClientRect();
-          return `${r.x}:${r.y}:${r.width}:${r.height}`;
-        }),
-      ].join("|");
-
-      const state = (w.__settle ??= { last: "", count: 0 });
-      state.count = signature === state.last ? state.count + 1 : 0;
-      state.last = signature;
-      // Three identical consecutive frames — one repeat can happen by luck
-      // between two writes in the same frame budget.
-      return state.count >= 3;
-    },
-    undefined,
-    { timeout: 20_000, polling: "raf" }
-  );
-}
 
 /**
  * Regions that cannot be frozen with CSS because JavaScript writes their

@@ -32,15 +32,18 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
-      testIgnore: "gallery-visual.spec.ts",
+      testIgnore: ["gallery-visual.spec.ts", "chrome-visual.spec.ts"],
     },
     {
-      // The gallery visual-regression guard (e2e/gallery-visual.spec.ts).
-      // Isolated in its own project so its pixel snapshots get a platform
-      // suffix and a pinned viewport/scale factor, without changing how
-      // every other spec's text snapshots resolve.
+      // The pixel-snapshot visual guards (e2e/gallery-visual.spec.ts,
+      // e2e/chrome-visual.spec.ts). Isolated in their own project so their
+      // pixel snapshots get a platform suffix and a pinned viewport/scale
+      // factor, without changing how every other spec's text snapshots
+      // resolve. chrome-visual.spec.ts overrides viewport per test (desktop
+      // vs mobile) — the project's viewport below is only gallery-visual's
+      // default.
       name: "visual",
-      testMatch: "gallery-visual.spec.ts",
+      testMatch: ["gallery-visual.spec.ts", "chrome-visual.spec.ts"],
       snapshotPathTemplate: "{testDir}/{testFileName}-snapshots/{platform}/{arg}{ext}",
       use: {
         ...devices["Desktop Chrome"],
