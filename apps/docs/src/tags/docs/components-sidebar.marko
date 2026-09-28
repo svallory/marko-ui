@@ -31,12 +31,19 @@ export interface Input {
 
 <!-- Sidebar/SidebarContent classNames verbatim from docs-sidebar.tsx:173,181
      (see docs-sidebar.marko's header for the full citation) — this file
-     applies the same construction to the components-page rail. -->
+     applies the same construction to the components-page rail.
+     data-docs-sidebar-content marks this as a real docs-nav scroll
+     container too (same reasoning as docs-sidebar.marko) — this IS the
+     sidebar that had the original below-the-fold bug (issue #76), on every
+     /docs/components/<name> page. -->
 <Sidebar
   collapsible="none"
   class="sticky top-[calc(var(--header-height)+0.6rem)] z-30 hidden h-[calc(100svh-10rem)] overflow-hidden overscroll-none bg-transparent [--sidebar-menu-width:--spacing(56)] lg:flex"
 >
-  <SidebarContent class="w-(--sidebar-menu-width) scroll-fade scrollbar-none overflow-x-hidden pl-2.5">
+  <SidebarContent
+    data-docs-sidebar-content=""
+    class="w-(--sidebar-menu-width) scroll-fade scrollbar-none overflow-x-hidden pl-2.5"
+  >
     <for|section, index| of=DOCS_NAV by=(section) => section.title>
       <SidebarGroup class=(index === 0 ? "pt-12" : undefined)>
         <SidebarGroupLabel class="font-medium text-muted-foreground">

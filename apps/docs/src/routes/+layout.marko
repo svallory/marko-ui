@@ -123,22 +123,38 @@ import {
       })();
     </html-script>
 
-    // Docs sidebar active-into-view: on load, scroll the docs sidebar's OWN
-    // scroll container ([data-slot="sidebar-content"], set overflow-auto by
-    // packages/shadcn/ui/sidebar/content.marko) so the active item is
-    // visible, without moving the page/window. Matches upstream shadcn's
-    // apps/v4/lib/docs-sidebar-scroll.ts: sets container.scrollTop directly
-    // rather than element.scrollIntoView() (which can walk up and scroll
-    // ancestors, including the window) — mathematically confined to the one
-    // container. Runs as a blocking inline script in <head>, before the
-    // sidebar's own markup has even been parsed yet, so a MutationObserver
-    // (same as upstream) watches the document until the container appears
-    // and has real layout height, then applies and disconnects — this is
-    // what makes it run before first paint with no visible jump/animation,
-    // and it's why prefers-reduced-motion needs no special-case: an instant
-    // scrollTop assignment has no animation to reduce. Not ported: upstream's
-    // sessionStorage scroll-position restore — out of scope here (issue #76
-    // only asks for active-item visibility on load).
+    // Docs sidebar active-into-view: on load, scroll the docs nav's OWN
+    // scroll container so the active item is visible, without moving the
+    // page/window. Matches upstream shadcn's apps/v4/lib/docs-sidebar-
+    // scroll.ts: sets container.scrollTop directly rather than
+    // element.scrollIntoView() (which can walk up and scroll ancestors,
+    // including the window) — mathematically confined to the one container.
+    //
+    // Selects [data-docs-sidebar-content] specifically (set on the
+    // SidebarContent in tags/site/docs-sidebar.marko and
+    // tags/docs/components-sidebar.marko), NOT the generic
+    // [data-slot="sidebar-content"] every Sidebar instance carries — the
+    // generic selector would also match a live Sidebar demo on the page
+    // (e.g. sidebar-demo.marko's own active:true Inbox item on
+    // /docs/components/sidebar) and scroll that too. The two docs-nav tags
+    // are mutually exclusive per page (routes/docs/+layout.marko's
+    // ownsItsFrame branch renders exactly one of them), so there is at most
+    // one match — querySelector, not querySelectorAll.
+    //
+    // Runs as a blocking inline script in <head>, before the sidebar's own
+    // markup has even been parsed yet, so a MutationObserver (same as
+    // upstream) watches the document until the container appears in the DOM
+    // — this is what makes it run before first paint with no visible
+    // jump/animation, and it's why prefers-reduced-motion needs no
+    // special-case: an instant scrollTop assignment has no animation to
+    // reduce. Once the container exists, the observer always disconnects
+    // immediately — whether it has layout height (center the active item)
+    // or not (below the lg breakpoint, "hidden lg:flex": zero height is a
+    // terminal state, not "not ready yet" — there is nothing to scroll and
+    // nothing will change that later), so there is no unbounded rescan.
+    // Not ported: upstream's sessionStorage scroll-position restore — out
+    // of scope here (issue #76 only asks for active-item visibility on
+    // load).
     <html-script>
       (function () {
         if (!location.pathname.startsWith("/docs")) return;
@@ -156,16 +172,10 @@ import {
         }
 
         function run() {
-          var containers = document.querySelectorAll('[data-slot="sidebar-content"]');
-          var ready = containers.length > 0;
-          for (var i = 0; i < containers.length; i++) {
-            if (!containers[i].clientHeight) {
-              ready = false;
-              continue;
-            }
-            centerActiveItem(containers[i]);
-          }
-          return ready;
+          var container = document.querySelector("[data-docs-sidebar-content]");
+          if (!container) return false;
+          if (container.clientHeight) centerActiveItem(container);
+          return true;
         }
 
         if (run()) return;

@@ -54,8 +54,18 @@ export interface Input {
        did before. -->
   <div class="absolute top-12 right-2 bottom-0 hidden h-full w-px bg-[linear-gradient(to_bottom,transparent_0%,var(--border)_10%,var(--border)_90%,transparent_100%)] lg:flex"/>
   <!-- SidebarContent: className verbatim from docs-sidebar.tsx:181,
-       including scroll-fade scrollbar-none (missing before this round). -->
-  <SidebarContent class="w-(--sidebar-menu-width) scroll-fade scrollbar-none overflow-x-hidden pl-2.5">
+       including scroll-fade scrollbar-none (missing before this round).
+       data-docs-sidebar-content marks THIS as the real docs-nav scroll
+       container (matching upstream's own attribute name/selector,
+       apps/v4/lib/docs-sidebar-scroll.ts), so the active-into-view script in
+       routes/+layout.marko never also scrolls an unrelated live Sidebar demo
+       (e.g. sidebar-demo.marko on /docs/components/sidebar) that happens to
+       share the [data-slot="sidebar-content"] class the shipped component
+       sets on every instance. -->
+  <SidebarContent
+    data-docs-sidebar-content=""
+    class="w-(--sidebar-menu-width) scroll-fade scrollbar-none overflow-x-hidden pl-2.5"
+  >
     <for|section, index| of=input.sections by=(section)=>section.title>
       <!-- pt-12 only on the first group, docs-sidebar.tsx:183. -->
       <SidebarGroup class=(index === 0 ? "pt-12" : undefined)>
