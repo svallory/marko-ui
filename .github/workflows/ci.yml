@@ -254,6 +254,23 @@ jobs:
       - name: Run package checks
         run: bun run check:pkg
 
+  workspace-check:
+    name: Typecheck + workspace gates
+    # The exact gate release.yml runs before publishing (`bun run check`:
+    # check:tooling — anchors, classes, registry deps, conflict markers… —
+    # plus check:pkg and every workspace's typecheck). Ungated by path
+    # filters: it spans tooling, all packages and the docs app, and it only
+    # ran at release time before, so the 0.4.0 release failed on two
+    # regressions that had merged green (a calendar anchor, a cross-package
+    # test import).
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
+      - uses: ./.github/actions/setup
+      - name: Typecheck + workspace gates
+        run: bun run check
+
   tests:
     name: Behavior & hydration tests
     needs: changes
@@ -361,7 +378,7 @@ jobs:
   # `ci-ok` on a pipeline that never actually ran anything — a false green.
   ci-ok:
     name: CI ok
-    needs: [changes, cli-tests, registry-drift, pkg-checks, tests, axe]
+    needs: [changes, cli-tests, registry-drift, pkg-checks, workspace-check, tests, axe]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2
@@ -379,10 +396,11 @@ jobs:
           CLI_TESTS_RESULT: ${{ needs.cli-tests.result }}
           REGISTRY_DRIFT_RESULT: ${{ needs.registry-drift.result }}
           PKG_CHECKS_RESULT: ${{ needs.pkg-checks.result }}
+          WORKSPACE_CHECK_RESULT: ${{ needs.workspace-check.result }}
           TESTS_RESULT: ${{ needs.tests.result }}
           AXE_RESULT: ${{ needs.axe.result }}
         run: |
-          for r in "$CHANGES_RESULT" "$CLI_TESTS_RESULT" "$REGISTRY_DRIFT_RESULT" "$PKG_CHECKS_RESULT" "$TESTS_RESULT" "$AXE_RESULT"; do
+          for r in "$CHANGES_RESULT" "$CLI_TESTS_RESULT" "$REGISTRY_DRIFT_RESULT" "$PKG_CHECKS_RESULT" "$WORKSPACE_CHECK_RESULT" "$TESTS_RESULT" "$AXE_RESULT"; do
             if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then
               echo "a required job did not pass (result: $r)" >&2
               exit 1
