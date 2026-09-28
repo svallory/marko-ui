@@ -115,10 +115,17 @@ export interface Input extends Omit<Marko.HTMLAttributes<Element>, "lang"> {
   call site). loadClientIconInner returns undefined when resolveInitialInner
   already produced the real markup (default library, or a single-library
   copy), so this only acts for a non-default library first mounted in the
-  browser, where the sync pass rendered the placeholder glyph.
+  browser, where the sync pass rendered the placeholder glyph. The write is
+  guarded: it only lands while the <svg> is connected and still carries this
+  icon's own data-icon-library.
 -->
 <script>
   loadClientIconInner(name, library)?.then((inner) => {
-    svgEl().innerHTML = inner;
+    const svg = svgEl();
+    // Skip when the icon was unmounted, or claimed by another library while
+    // this load was in flight (the /create/preview picker swaps
+    // data-icon-library synchronously, then patches the markup itself).
+    if (!svg.isConnected || svg.getAttribute("data-icon-library") !== library) return;
+    svg.innerHTML = inner;
   });
 </script>

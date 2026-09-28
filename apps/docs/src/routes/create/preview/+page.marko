@@ -289,6 +289,13 @@ static async function applyIconLibrary(iconLibrary: IconLibraryName) {
       const name = svg.getAttribute("data-icon-name");
       if (!name) return;
 
+      // Claim the icon for the new library BEFORE awaiting. icon.marko's own
+      // async load (a client-mounted icon in a non-default library) only
+      // writes its markup while data-icon-library still equals the library it
+      // started with, so a slow load for the previous library cannot overwrite
+      // this swap. The same write is what makes a repeated call for this
+      // library a no-op while the swap is in flight.
+      svg.setAttribute("data-icon-library", iconLibrary);
       const inner = await resolveIconInnerAsync(name, iconLibrary);
       // A newer picker change may have superseded this in-flight request
       // (fast repeated hover-preview) — bail so a slow-resolving stale
@@ -304,7 +311,6 @@ static async function applyIconLibrary(iconLibrary: IconLibraryName) {
         }
       }
       svg.innerHTML = inner;
-      svg.setAttribute("data-icon-library", iconLibrary);
     })
   );
 }

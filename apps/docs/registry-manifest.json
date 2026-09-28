@@ -161,7 +161,7 @@
     },
     {
       "path": "icon.json",
-      "sha256": "18a89ad570f05c5fed1ccbfa557e536e88ea5fd886099b39e4746b3cf32b17dc"
+      "sha256": "e9fa5f7fbb5025888e80e0ee441a06b030a8cf9636acc28702ec396acc3fb2a9"
     },
     {
       "path": "image-cropper.json",
@@ -589,7 +589,7 @@
     },
     {
       "path": "styles/luma/icon.json",
-      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
+      "sha256": "251c8433387b0664dda4c1cc1aedd3dc852e5f8fca5e61daf79ff0416137f728"
     },
     {
       "path": "styles/luma/image-cropper.json",
@@ -933,7 +933,7 @@
     },
     {
       "path": "styles/lyra/icon.json",
-      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
+      "sha256": "251c8433387b0664dda4c1cc1aedd3dc852e5f8fca5e61daf79ff0416137f728"
     },
     {
       "path": "styles/lyra/image-cropper.json",
@@ -1277,7 +1277,7 @@
     },
     {
       "path": "styles/maia/icon.json",
-      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
+      "sha256": "251c8433387b0664dda4c1cc1aedd3dc852e5f8fca5e61daf79ff0416137f728"
     },
     {
       "path": "styles/maia/image-cropper.json",
@@ -1621,7 +1621,7 @@
     },
     {
       "path": "styles/mira/icon.json",
-      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
+      "sha256": "251c8433387b0664dda4c1cc1aedd3dc852e5f8fca5e61daf79ff0416137f728"
     },
     {
       "path": "styles/mira/image-cropper.json",
@@ -1965,7 +1965,7 @@
     },
     {
       "path": "styles/new-york/icon.json",
-      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
+      "sha256": "251c8433387b0664dda4c1cc1aedd3dc852e5f8fca5e61daf79ff0416137f728"
     },
     {
       "path": "styles/new-york/image-cropper.json",
@@ -2309,7 +2309,7 @@
     },
     {
       "path": "styles/nova/icon.json",
-      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
+      "sha256": "251c8433387b0664dda4c1cc1aedd3dc852e5f8fca5e61daf79ff0416137f728"
     },
     {
       "path": "styles/nova/image-cropper.json",
@@ -2653,7 +2653,7 @@
     },
     {
       "path": "styles/rhea/icon.json",
-      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
+      "sha256": "251c8433387b0664dda4c1cc1aedd3dc852e5f8fca5e61daf79ff0416137f728"
     },
     {
       "path": "styles/rhea/image-cropper.json",
@@ -2997,7 +2997,7 @@
     },
     {
       "path": "styles/sera/icon.json",
-      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
+      "sha256": "251c8433387b0664dda4c1cc1aedd3dc852e5f8fca5e61daf79ff0416137f728"
     },
     {
       "path": "styles/sera/image-cropper.json",
@@ -3341,7 +3341,7 @@
     },
     {
       "path": "styles/vega/icon.json",
-      "sha256": "ada52aafd2d3ac8e71f7b96520a772d5b0e10c8fe519a109236d15b2b1459cef"
+      "sha256": "251c8433387b0664dda4c1cc1aedd3dc852e5f8fca5e61daf79ff0416137f728"
     },
     {
       "path": "styles/vega/image-cropper.json",

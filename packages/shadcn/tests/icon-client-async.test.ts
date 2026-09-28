@@ -77,4 +77,31 @@ describe("client-mounted <Icon> from the registry source", () => {
     await new Promise((r) => setTimeout(r, 50));
     expect(svg.innerHTML).toBe(norm(FALLBACK_INNER));
   });
+
+  test("a library swap made while the async load is in flight is not overwritten", async () => {
+    const svg = mount("tabler");
+    // What /create/preview's applyIconLibrary does: claim the icon for the new
+    // library synchronously, then patch the markup once its own load resolves.
+    svg.setAttribute("data-icon-library", "remixicon");
+
+    // Let the (slower-started) tabler load resolve; it must not write.
+    await new Promise((r) => setTimeout(r, 100));
+    expect(svg.innerHTML).toBe(norm(FALLBACK_INNER));
+    expect(svg.getAttribute("data-icon-library")).toBe("remixicon");
+
+    svg.innerHTML = expected.remixicon();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(svg.innerHTML).toBe(norm(expected.remixicon()));
+    expect(svg.innerHTML).not.toBe(norm(expected.tabler()));
+    expect(svg.getAttribute("data-icon-library")).toBe("remixicon");
+  });
+
+  test("a load that resolves after the icon was removed writes nothing", async () => {
+    const svg = mount("tabler");
+    const host = svg.parentElement!;
+    host.remove();
+    await new Promise((r) => setTimeout(r, 100));
+    expect(svg.isConnected).toBe(false);
+    expect(svg.innerHTML).toBe(norm(FALLBACK_INNER));
+  });
 });
