@@ -1,7 +1,8 @@
 # Behavior coverage (issue #72) — spike design
 
-Round 1 (this doc): design + 3-component spike, no badge plumbing. Round 2:
-roll out to all 86 components, wire the badge.
+Round 1: design + 3-component spike. Round 2a: stub scaffold, unreviewed-stub
+exclusion, 12 more components, badge plumbing (README only). Rest of the
+rollout (~71 components) and the home-page slot are still open.
 
 ## Format
 
@@ -209,7 +210,7 @@ mapping.
    examples (title → interaction stub) and its zag machine's `Props` keys
    (each prop → an `api`-kind stub), so round 2 is filling in
    descriptions/mappings rather than writing 1,300+ entries from scratch.
-3. **The badge will be release-pinned like the others** — same `badges`
+3. **(Superseded in round 2a: ships main-only via `badges-main` first.) The badge will be release-pinned like the others** — same `badges`
    branch / release-pipeline pattern as `hydration-invariant`/`axe`, not
    `badges-main`. Needs the `--json` mode on `scripts/ci/behavior-coverage.ts`
    before it can be wired into `scripts/ci/badge.ts`'s `combine`.
@@ -257,3 +258,64 @@ mapping.
    for "spike the format," but it's also the async/server-shaped behavior
    the issue specifically asked this component to represent, and right now
    nothing in the docs shows it.
+
+## Round 2a additions
+
+### Scaffold: `scripts/ci/scaffold-behaviors.ts`
+
+`bun scripts/ci/scaffold-behaviors.ts <component...>` writes
+`apps/docs/src/demos/<component>/behaviors.ts` from three static sources:
+`docs.ts` example titles (each becomes an `interaction` stub), the zag
+machine's runtime `props` array (the `@zag-js/*` package the component's
+`.marko` imports; each relevant prop becomes an `api` stub — `id`/`ids`/
+`getRootNode` and `onXChange` handlers whose base prop exists are skipped),
+plus one `keyboard`, `a11y` and `ssr-hydration` stub. Components without a
+machine (toggle) get example + standard stubs only. It **never overwrites** an
+existing `behaviors.ts` (`flag: "wx"` plus an explicit check). Every generated
+entry carries `status: "stub"` and a `TODO(review)` description.
+
+Review workflow: edit each description against the machine / APG pattern and
+docs, delete padding, add missing behaviors, drop `status`. Expect the raw
+stub to over-generate (accordion: 21 stubs → 20 reviewed entries, but a
+different set; select: ~40 stubs, mostly machine props that are wiring).
+
+### The `status` field and the count
+
+`ComponentBehavior.status?: "stub"`. `behavior-coverage.ts` excludes stubs from
+`total`/`covered` (they neither dilute nor inflate), reports them as `pending`
+per component and in total, treats a stub-only file as "not listed", and turns
+a mapping entry that targets a stub into an error. A component is *listed* iff
+it has at least one reviewed behavior.
+
+`--json` prints `{covered, total, listedComponents, stubOnlyComponents,
+pendingStubs, totalComponents, components[]}`; `totalComponents` is
+`DOCUMENTED_COMPONENTS.length`.
+
+Gotcha: vitest prepends an NDJSON banner to `list --json` stdout when
+`AI_AGENT` is set; the script now removes the var for its child and parses from
+the array's opening bracket.
+
+### Badge formula
+
+`message = "<covered/total as %> · <listed>/<all> components"`, e.g.
+`40% · 15/86 components`, label `behavior coverage`, file `coverage.json`.
+Numerator/denominator are *reviewed* behaviors of *listed* components only — so
+the percentage is honest about what is listed, and the second figure shows how
+little of the library that speaks for (a bare percentage would read as
+library-wide). Color follows lighthouse: ≥90 brightgreen, ≥50 yellow, else red
+(red is deliberate at today's 40%). Generated in ci.yml's `tests` job, published
+to `badges-main` by the existing publish-badges job, linked from the README
+badge row. **Supersedes round-1 answer 3 (release-pinned):** per the round-2a
+brief it ships main-only first; release.yml is untouched, so the home page has
+no such badge yet.
+
+### First reviewed batch (12 components)
+
+accordion, alert-dialog, checkbox, collapsible, dialog, popover, radio-group,
+select, slider, tabs, toggle, tooltip — 257 reviewed behaviors across 15
+components, 103 covered (40%). Mappings cite a test only where it asserts the
+behavior as worded; visual-guard mappings were deliberately not used (the
+gallery guards only render style/theme states, not `visual`-kind RTL claims), so
+every `visual/rtl-mirrors` entry is an open gap. Components with no behavior
+suite (alert-dialog, collapsible, popover, toggle, tooltip) only get the axe /
+hydration structural mappings; the gaps are the finding.

@@ -437,6 +437,16 @@ the SAME branch safe — a publisher never rewrites another branch's files
 because each run starts from that branch's remote state and adds only its
 own.
 
+**Behavior coverage (#72) is a main-only badge, and only stubs-free lists
+count.** `coverage.json` (`<pct>% · <listed>/<all> components`) is generated
+by ci.yml's `tests` job from `bun scripts/ci/behavior-coverage.ts --json` and
+published to `badges-main` (README only). release.yml does not produce it, so
+the release-pinned `badges` branch and the site home have no such badge; wiring
+home's 4th slot is a pending product decision. The percentage is covered /
+*reviewed* behaviors of the listed components — a `behaviors.ts` entry with
+`status: "stub"` (from `scripts/ci/scaffold-behaviors.ts`) is excluded from
+every count until reviewed. Details in `notes/behavior-coverage.md`.
+
 **A badge is only as trustworthy as the job that publishes it.** `Publish
 badges` failed on every push to main from 2026-09-12 to 2026-09-17 because
 `combine` still required the removed style-matrix job's artifact, so the
