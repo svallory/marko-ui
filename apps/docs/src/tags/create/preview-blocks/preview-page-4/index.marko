@@ -22,11 +22,15 @@
 // screenshot after opening one at a time and closing it before opening the
 // next — see gallery-visual.spec.ts's modal tests.
 //
-// toast/sonner and tour are deliberately NOT covered by this page — see
-// AGENTS.md "Gallery visual guard" for why (toast is a timed/ephemeral
-// overlay, tour is a multi-step guided overlay; both need dedicated
-// determinism design beyond this page's click-to-open pattern and were
-// out of scope for this pass).
+// toast and tour (added by the follow-up documented in AGENTS.md "Gallery
+// visual guard" — visual-toast-tour) each get their own card below. Both are
+// captured with a fixed `duration: Infinity`/step-1-only design chosen for
+// determinism — see gallery-visual.spec.ts's TOAST_ITEM/TOUR_ITEM section for
+// the full reasoning. sonner is NOT captured separately: sonner.marko is a
+// thin wrapper over this same toast/toast-item machinery (no independent
+// visual surface of its own — see that file's header comment), so a second
+// screenshot of it would assert nothing this page's toast card doesn't
+// already cover.
 //
 // ALSO A VISUAL-REGRESSION FIXTURE: e2e/gallery-visual.spec.ts screenshots
 // this page's overlay-open states in all 8 styles x light/dark, and (nova
@@ -47,6 +51,10 @@ import Drawer from "@marko-ui/shadcn/ui/drawer/drawer.marko";
 import Button from "@marko-ui/shadcn/ui/button/button.marko";
 import TextInput from "@marko-ui/shadcn/ui/input/input.marko";
 import Label from "@marko-ui/shadcn/ui/label/label.marko";
+import Toaster from "@marko-ui/shadcn/ui/toast/toast.marko";
+import { toast } from "@marko-ui/shadcn/ui/toast/store.ts";
+import Tour from "@marko-ui/shadcn/ui/tour/tour.marko";
+import type { TourStep } from "@marko-ui/shadcn/ui/tour/tour.marko";
 import type { DropdownMenuItem } from "@marko-ui/shadcn/ui/dropdown-menu/dropdown-menu.marko";
 import type { NavigationMenuItem } from "@marko-ui/shadcn/ui/navigation-menu/navigation-menu.marko";
 
@@ -72,6 +80,27 @@ static const menubarFileItems = [
   { type: "separator" },
   { value: "share", label: "Share" },
 ] satisfies DropdownMenuItem[];
+
+// Fixed durations, never the store default: a real dismiss timer would make
+// the stack empty by the time Playwright captures it. `Infinity` means the
+// toast never auto-dismisses, matching the machine's own treatment of
+// type: "loading" toasts (see store.ts) — no component/demo edit required.
+static const TOAST_DURATION = Number.POSITIVE_INFINITY;
+
+// Step 1 has a target so the captured screenshot shows backdrop + spotlight
+// + the highlighted element together, not just a centered dialog card (a
+// "dialog"-type step, like tour-demo.marko's first step, would hide that).
+static const TOUR_STEPS = [
+  {
+    id: "publish",
+    title: "Ship it",
+    description: "When you are happy with your changes, publish them here.",
+    target: "#pp4-tour-target",
+    placement: "top",
+    arrow: true,
+    actions: [{ label: "Done", action: "dismiss" }],
+  },
+] satisfies TourStep[];
 
 static const navigationMenuItems = [
   {
@@ -224,5 +253,45 @@ static const navigationMenuItems = [
         </div>
       </div>
     </Drawer>
+  </div>
+
+  <div class="flex flex-col items-start gap-3 rounded-lg border bg-card p-6" data-overlay-card="toast">
+    <h3 class="text-sm font-medium">Toast</h3>
+    <button type="button"
+      data-overlay-trigger="toast"
+      onClick() {
+        // Fixed order/content so the resulting stack is deterministic
+        // regardless of click timing: two toasts, front-most (error) on top.
+        toast.message({
+          title: "Event has been created",
+          description: "Monday, January 3rd at 6:00pm.",
+          duration: TOAST_DURATION,
+        });
+        toast.error({
+          title: "Upload failed",
+          description: "The file exceeds the 10MB limit.",
+          action: { label: "Retry", onClick: () => {} },
+          duration: TOAST_DURATION,
+        });
+      }
+      class="border-input rounded-md border px-4 py-2 text-sm font-medium"
+    >
+      Show Toast
+    </button>
+    <Toaster/>
+  </div>
+
+  <div class="flex flex-col items-start gap-3 rounded-lg border bg-card p-6" data-overlay-card="tour">
+    <h3 class="text-sm font-medium">Tour</h3>
+    <div class="flex items-center gap-3">
+      <span id="pp4-tour-target" class="bg-primary text-primary-foreground rounded-md px-3 py-2 text-sm font-medium">
+        Publish
+      </span>
+      <Tour items=TOUR_STEPS>
+        <@trigger|props|>
+          <Button type="button" ...props data-overlay-trigger="tour" variant="outline">Start tour</Button>
+        </@trigger>
+      </Tour>
+    </div>
   </div>
 </div>

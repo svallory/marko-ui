@@ -447,3 +447,90 @@ for (const baseColor of BASE_COLORS) {
     });
   }
 }
+
+/**
+ * TOAST + TOUR GUARD (AGENTS.md "Gallery visual guard" follow-up #3,
+ * visual-toast-tour)
+ * ------------------------------------------------------------------
+ * The last two components with zero screenshot coverage. Both needed a
+ * determinism design beyond "click trigger, screenshot" (see AGENTS.md):
+ *
+ * - toast/sonner: an ephemeral, timed overlay (auto-dismiss). Made
+ *   deterministic by passing `duration: Infinity` on the fixture's own
+ *   trigger handler (preview-page-4's "Toast" card) — the SAME mechanism
+ *   `@zag-js/toast` uses internally for `type: "loading"` toasts to persist
+ *   until dismissed (`toast.machine.js`: `shouldPersist` is true when
+ *   `duration === Infinity`), not a test-only hack. No component or shared
+ *   demo file was edited. sonner.marko is a thin wrapper with no visual
+ *   surface of its own (see that file's header) and is not captured
+ *   separately — see preview-page-4's header comment.
+ * - tour: a multi-step guided overlay with no single "open" state. Made
+ *   deterministic by giving the fixture's tour exactly one step, with a
+ *   real `target`, opened via the component's own `trigger` render-prop
+ *   (`api().start()` on click — see tour.marko). No demo file was edited;
+ *   preview-page-4 has its own dedicated single-step tour, separate from
+ *   the 4-step apps/docs/src/demos/tour/tour-demo.marko.
+ *
+ * Both nova-only x light/dark (4 baselines total) — well under the ~12 shot
+ * budget for this follow-up; neither component's styling differs enough
+ * across the 8 style layers to justify more (toast/tour content uses the
+ * same border/radius/spacing/color tokens as every other popover-family
+ * surface already exercised at full 8-style breadth by the popover case
+ * above).
+ */
+const TOAST_ITEM = "preview-page-4";
+const TOUR_ITEM = "preview-page-4";
+
+for (const theme of THEMES) {
+  test(`overlays open ${TOAST_ITEM} — toast nova ${theme}`, async ({ page }) => {
+    await page.goto(`/create/preview?item=${TOAST_ITEM}`, { waitUntil: "load" });
+    await waitForHydration(page);
+
+    await applyStyle(page, "nova");
+    await applyTheme(page, theme);
+    await freezeForScreenshot(page);
+
+    await page.locator('[data-overlay-trigger="toast"]').click();
+    const region = page.locator('[data-slot="toaster"]');
+    const toasts = region.locator('[data-slot="toast"]');
+    await toasts.first().waitFor({ state: "visible" });
+    // Two toasts are created back-to-back; wait for both to be mounted
+    // before the settle check below, or a capture could land between them.
+    await expect(toasts).toHaveCount(2);
+    await waitForLayoutSettled(page);
+
+    // The group region itself (`[data-slot="toaster"]`) is a zero-size
+    // positioning anchor (getGroupPlacementStyle) — Playwright's element
+    // screenshot treats it as "not visible" and times out even though its
+    // toast children render fine. A full-page capture avoids that, same
+    // as the tour case just below.
+    await expect(page).toHaveScreenshot(`overlays-open-toast-nova-${theme}.png`, {
+      fullPage: true,
+      animations: "disabled",
+      caret: "hide",
+      timeout: 30_000,
+      maxDiffPixels: 0,
+    });
+  });
+
+  test(`overlays open ${TOUR_ITEM} — tour nova ${theme}`, async ({ page }) => {
+    await page.goto(`/create/preview?item=${TOUR_ITEM}`, { waitUntil: "load" });
+    await waitForHydration(page);
+
+    await applyStyle(page, "nova");
+    await applyTheme(page, theme);
+    await freezeForScreenshot(page);
+
+    await page.locator('[data-overlay-trigger="tour"]').click();
+    await page.locator('[data-slot="tour-content"]').waitFor({ state: "visible" });
+    await waitForLayoutSettled(page);
+
+    await expect(page).toHaveScreenshot(`overlays-open-tour-nova-${theme}.png`, {
+      fullPage: true,
+      animations: "disabled",
+      caret: "hide",
+      timeout: 30_000,
+      maxDiffPixels: 0,
+    });
+  });
+}
