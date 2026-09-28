@@ -37,6 +37,22 @@ team-lead/reports/research-upstream-98a1fe6.md` and `scratch/team-lead/
 reports/report-upstream-98a1fe6.md`. Next sync should record its base SHA
 here immediately, since the clone tool still has no pin mechanism.
 
+**The ported `group-has-[:focus-visible]/field-label:*` rules are currently
+inert.** They are a faithful port (parity with upstream is still correct to
+keep — they cost nothing and match if the composition below ever changes),
+but they never fire in our markup today: `Checkbox`/`Switch`/`RadioGroup`
+each render their OWN root `<label>` around the control, and `FieldLabel`
+also renders a `<label>` — nesting one `<label>` inside another is invalid
+HTML, so `FieldLabel` is always used as a SIBLING (`for=`/`id=` pairing),
+never as a wrapper. Since the upstream selector's whole mechanism is
+`group-has-[:focus-visible]/field-label` — the control detecting
+focus-visible on a `:focus-visible` descendant *inside its ancestor
+field-label* — and our control is never a descendant of a `field-label` in
+the first place, the rule can never match. See
+`apps/docs/src/demos/field/field-checkbox.marko`'s own comments for the
+concrete nested-label trap this avoids. Revisit if `FieldLabel` ever grows a
+wrapping composition mode.
+
 ## Layout & imports (historical — see the plans above for the current layout)
 
 - `packages/shadcn/ui/<component>/<part>.marko` — the default registry,
