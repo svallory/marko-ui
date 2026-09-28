@@ -48,11 +48,18 @@ afterAll(async () => {
 describe("switch keyboard contract (APG)", () => {
   it("exposes role=switch with aria-checked=false by default", { timeout: 60_000 }, async () => {
     await withComponentPage("switch", async (page) => {
-      const control = demoByTitle(page, "Basic").locator('[data-scope="switch"][data-part="control"]');
-      const root = demoByTitle(page, "Basic").locator('[data-scope="switch"][data-part="root"]');
+      const demo = demoByTitle(page, "Basic");
+      const input = hiddenInputIn(demo).first();
+      const root = demo.locator('[data-scope="switch"][data-part="root"]');
 
+      // The hidden native input is the focusable element (see hiddenInputIn's
+      // own doc comment), so it is the element that must carry role="switch" —
+      // a native checkbox's own `checked` property is what exposes the
+      // accessible checked state to AT once that role is applied, so we assert
+      // the property rather than a separate aria-checked attribute.
+      expect(await attributeOf(input, "role")).toBe("switch");
+      expect(await input.isChecked()).toBe(false);
       expect(await attributeOf(root, "data-state")).toBe("unchecked");
-      await expect.poll(() => control.count()).toBeGreaterThan(0);
     });
   });
 
@@ -67,6 +74,7 @@ describe("switch keyboard contract (APG)", () => {
 
       await pressKey(page, "Space");
       expect(await input.isChecked()).toBe(true);
+      expect(await attributeOf(input, "role")).toBe("switch");
       expect(await attributeOf(root, "data-state")).toBe("checked");
 
       await pressKey(page, "Space");
