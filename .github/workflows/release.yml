@@ -15,10 +15,22 @@
 # (full docs build + suites, ~2-4 min extra) — accepted: the consumer-facing
 # badges must describe the artifact actually being installed, and only the
 # tagged tree can measure it.
+#
+# `badges_only: true` + `tag: vX.Y.Z` skips publishing and only re-runs the
+# badge job against that existing tag (for when it failed after a publish).
 name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      badges_only:
+        description: "Skip publishing; only rebuild and publish the release-pinned badges for an existing tag"
+        type: boolean
+        default: false
+      tag:
+        description: "Existing release tag to measure when badges_only is set (e.g. v0.4.0)"
+        type: string
+        default: ""
 
 concurrency:
   group: release
@@ -30,6 +42,9 @@ permissions:
 jobs:
   release:
     name: Publish npm packages
+    # badges_only re-runs just the release-badges job for a tag that is
+    # already published (e.g. after that job failed on its own).
+    if: ${{ !inputs.badges_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
@@ -192,16 +207,48 @@ jobs:
   release-badges:
     name: Publish release-pinned badges
     needs: release
+    # Normal run: only after a successful publish. badges_only: the release
+    # job is skipped on purpose, so run anyway (always() is needed for a job
+    # whose dependency was skipped).
+    if: ${{ always() && (needs.release.result == 'success' || (inputs.badges_only && needs.release.result == 'skipped')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
       contents: write
     steps:
-      # Fresh checkout pinned to the tag just pushed — the badge numbers
-      # must come from the tree that shipped, not from main.
+      # badges_only publishes to the same `badges` branch the site home
+      # reads, so hold it to the same bar as a release: dispatched from main,
+      # measuring an existing v<semver> tag.
+      - name: Resolve badge tag
+        id: tag
+        env:
+          BADGES_ONLY: ${{ inputs.badges_only }}
+          INPUT_TAG: ${{ inputs.tag }}
+          RELEASED_VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          if [ "$BADGES_ONLY" != "true" ]; then
+            echo "ref=v$RELEASED_VERSION" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::badges_only must be dispatched from main (got $GITHUB_REF)"
+            exit 1
+          fi
+          if ! printf '%s' "$INPUT_TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::badges_only needs tag=v<major>.<minor>.<patch> (got '$INPUT_TAG')"
+            exit 1
+          fi
+          if ! git ls-remote --exit-code --tags "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$INPUT_TAG" >/dev/null; then
+            echo "::error::tag $INPUT_TAG does not exist"
+            exit 1
+          fi
+          echo "ref=$INPUT_TAG" >> "$GITHUB_OUTPUT"
+
+      # Fresh checkout pinned to the release tag — the badge numbers must
+      # come from the tree that shipped, not from main.
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
         with:
-          ref: v${{ needs.release.outputs.version }}
+          ref: ${{ steps.tag.outputs.ref }}
 
       - uses: ./.github/actions/setup
 
