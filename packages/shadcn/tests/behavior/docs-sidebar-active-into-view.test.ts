@@ -1,16 +1,23 @@
 /**
  * Docs sidebar active-into-view (issue #76 / ref sidebar-into-view).
  *
- * The docs sidebar's own scroll container ([data-slot="sidebar-content"],
- * set overflow-auto by packages/shadcn/ui/sidebar/content.marko) lists
- * Getting Started / AI Agents / Styling / Contributing before Components, so
- * a component page's active sidebar item (e.g. "Button" on
- * /docs/components/button) starts below the fold. The fix
- * (apps/docs/src/routes/+layout.marko's second blocking <html-script>)
- * scrolls that container so the active item is visible on load, matching
- * upstream shadcn's apps/v4/lib/docs-sidebar-scroll.ts approach: it sets
- * container.scrollTop directly, never element.scrollIntoView(), so only the
- * sidebar's own scrollTop can move — window.scrollY must stay 0.
+ * The docs nav's own scroll container ([data-docs-sidebar-content], set on
+ * the SidebarContent in tags/site/docs-sidebar.marko and
+ * tags/docs/components-sidebar.marko) lists Getting Started / AI Agents /
+ * Styling / Contributing before Components, so a component page's active
+ * sidebar item (e.g. "Button" on /docs/components/button) starts below the
+ * fold. The fix (apps/docs/src/routes/+layout.marko's second blocking
+ * <html-script>) scrolls that container so the active item is visible on
+ * load, matching upstream shadcn's apps/v4/lib/docs-sidebar-scroll.ts
+ * approach: it sets container.scrollTop directly, never
+ * element.scrollIntoView(), so only the sidebar's own scrollTop can move —
+ * window.scrollY must stay 0.
+ *
+ * The script deliberately selects [data-docs-sidebar-content], not the
+ * generic [data-slot="sidebar-content"] every Sidebar instance carries — a
+ * live Sidebar demo elsewhere on the page (e.g. sidebar-demo.marko on
+ * /docs/components/sidebar, which ships its own active:true "Inbox" item)
+ * must never be scrolled by this script. Covered below.
  *
  * Runs at a desktop viewport (withPage's default 1280x900), where the
  * sidebar is visible at all — its class list is `hidden ... lg:flex`.
@@ -40,7 +47,7 @@ async function activeItemWithinContainer(page: Page): Promise<{
   activeBox: Box | null;
 }> {
   const windowScrollY = await page.evaluate(() => window.scrollY);
-  const sidebar = page.locator('[data-slot="sidebar-content"]').first();
+  const sidebar = page.locator("[data-docs-sidebar-content]").first();
   await expect.poll(() => sidebar.isVisible()).toBe(true);
 
   const containerScrollTop = await sidebar.evaluate((element) => element.scrollTop);
@@ -97,6 +104,38 @@ describe("docs sidebar active-into-view", () => {
         expect(windowScrollY).toBe(0);
         expect(containerScrollTop).toBe(0);
         expectFullyContained(containerBox, activeBox);
+      });
+    },
+  );
+
+  it(
+    "leaves a live Sidebar demo's own scroll untouched while centering the docs nav",
+    { timeout: 30_000 },
+    async () => {
+      await withPage({}, async (page) => {
+        // /docs/components/sidebar renders components-sidebar.marko (the
+        // docs nav, [data-docs-sidebar-content]) AND sidebar-demo.marko (a
+        // live Sidebar example with its own pre-set active:true "Inbox"
+        // item) on the same page. Both carry the generic
+        // [data-slot="sidebar-content"] the shipped component sets on every
+        // instance, but only the docs nav carries
+        // [data-docs-sidebar-content] — the script must act on that one
+        // only.
+        await page.goto(`${DOCS_BASE_URL}/docs/components/sidebar`, { waitUntil: "load" });
+
+        const { windowScrollY, containerBox, activeBox } = await activeItemWithinContainer(page);
+        expect(windowScrollY).toBe(0);
+        expectFullyContained(containerBox, activeBox);
+
+        // The demo's own SidebarContent (generic data-slot, no
+        // data-docs-sidebar-content) must report scrollTop 0 — the script
+        // never touched it, even though it also has an active item.
+        const demoSidebar = page
+          .locator('[data-slot="sidebar-content"]:not([data-docs-sidebar-content])')
+          .first();
+        await expect.poll(() => demoSidebar.count()).toBeGreaterThan(0);
+        const demoScrollTop = await demoSidebar.evaluate((element) => element.scrollTop);
+        expect(demoScrollTop).toBe(0);
       });
     },
   );
