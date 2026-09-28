@@ -35,12 +35,14 @@ static const REPO = "https://github.com/svallory/marko-ui";
 // package (marko-ui/registry needs a built dist/), so this is maintained by
 // hand next to its source, same as COMPONENTS above. .length is DERIVED
 // from the array, never a hardcoded number, so a future style addition or
-// removal here can't silently desync the label from the list beside it —
-// which is exactly how this drifted to "9" before (there is no 9th/
-// "default" style; see that constants.ts file's own FALLBACK_STYLE comment
-// for why).
+// removal here can't silently desync the label from the list beside it.
+// Bumped to 9 (operator decision, 2026-09-28) once new-york's port was
+// complete and constants.ts's own VISUAL_STYLES already counted 9 — this
+// mirror had drifted stale at 8. There is still no 9th "default"/fallback
+// style on top of these 9 (see constants.ts's own FALLBACK_STYLE comment);
+// new-york is a real, ninth ported style, not the earlier false "9" drift.
 static const VISUAL_STYLES = [
-  "rhea", "nova", "vega", "lyra", "maia", "mira", "luma", "sera",
+  "rhea", "nova", "vega", "lyra", "maia", "mira", "luma", "sera", "new-york",
 ] as const;
 
 static const RECEIPTS = [
@@ -53,11 +55,12 @@ static const RECEIPTS = [
   {
     // VISUAL_STYLES is the same source of truth the registry itself ships
     // from (packages/marko-ui/src/registry/constants.ts) — never hardcode
-    // this count; it drifted to "9" once already (there is no 9th/"default"
-    // style — see that file's own header comment on FALLBACK_STYLE).
+    // this count; there is still no extra 9th/"default" fallback style on
+    // top of these 9 real ports (see that file's own header comment on
+    // FALLBACK_STYLE).
     value: String(VISUAL_STYLES.length),
     label: "styles",
-    title: "8 complete style ports — rhea, nova, vega, lyra, maia, mira, luma, sera",
+    title: "9 complete style ports — rhea, nova, vega, lyra, maia, mira, luma, sera, new-york",
     href: `${REPO}/tree/main/packages/shadcn/styles`,
   },
   {

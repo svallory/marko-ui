@@ -55,12 +55,25 @@ const PREVIEW_ITEMS = ["preview-page-1", "preview-page-2", "preview-page-3"] as 
 const THEMES = ["light", "dark"] as const;
 
 /**
+ * `new-york` (added 2026-09-27) is deliberately excluded from this guard: it
+ * is not offered in /create's own style picker (registry-config.ts's STYLES
+ * list, ported from upstream's apps/v4/registry/styles.tsx, which doesn't
+ * list new-york-v4 either), so the /create/preview pages this spec
+ * screenshots can never render it — there is no `.style-new-york` class this
+ * guard could apply that a real user-facing surface would ever produce. Any
+ * future style added to VISUAL_STYLES that IS offered in /create must be
+ * added here too, on purpose (see the array-equality guard below).
+ */
+const GUARDED_STYLES = VISUAL_STYLES.filter((style) => style.name !== "new-york");
+
+/**
  * Guard against this spec silently losing coverage if VISUAL_STYLES is
- * edited. The registry ships 8 styles; a change to that set is a deliberate
- * act that should also be a deliberate baseline change, not a quiet drop.
+ * edited. The registry ships 8 /create-offered styles (+ new-york, excluded
+ * above); a change to that set is a deliberate act that should also be a
+ * deliberate baseline change, not a quiet drop.
  */
 test("the style list this guard covers matches the registry", () => {
-  expect(VISUAL_STYLES.map((style) => style.name)).toEqual([
+  expect(GUARDED_STYLES.map((style) => style.name)).toEqual([
     "rhea",
     "nova",
     "vega",
@@ -267,7 +280,7 @@ function masksFor(page: Page) {
 }
 
 for (const item of PREVIEW_ITEMS) {
-  for (const style of VISUAL_STYLES) {
+  for (const style of GUARDED_STYLES) {
     for (const theme of THEMES) {
       test(`gallery ${item} — ${style.name} ${theme}`, async ({ page }) => {
         await page.goto(`/create/preview?item=${item}`, { waitUntil: "load" });

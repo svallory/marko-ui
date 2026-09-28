@@ -87,10 +87,10 @@ static const firstChartType: ChartTypeEntry = (() => {
 <const/typeEntry=(CHART_TYPES.find((entry) => entry.slug === input.type) ?? firstChartType)/>
 <const/typeLabel=(typeEntry.label.replace(" Charts", ""))/>
 
-<!-- style-vega: upstream's charts.tsx and layout.tsx both import from
-     @/registry/new-york-v4, matching site chrome's mapping (see
+<!-- style-new-york: upstream's charts.tsx and layout.tsx both import from
+     @/registry/new-york-v4, matching site chrome's mapping directly (see
      site-header.marko's own citation). -->
-<div class="style-vega">
+<div class="style-new-york">
 // ---- PageHeader (shadcn components/page-header.tsx, via charts/layout.tsx) ----
 <section class="border-grid">
   <div class="container-wrapper">

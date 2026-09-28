@@ -93,6 +93,12 @@
 @import "../../../packages/shadcn/styles/style-luma.css" layer(components);
 @import "../../../packages/shadcn/styles/style-sera.css" layer(components);
 @import "../../../packages/shadcn/styles/style-rhea.css" layer(components);
+/* new-york is imported like every other style layer but is NOT offered in
+   /create's picker (see VISUAL_STYLES's comment in constants.ts) — this
+   import exists so `.style-new-york` on an ancestor is stylable at all
+   (e.g. for parity verification), matching how every other style layer
+   works, without adding any UI surface that selects it. */
+@import "../../../packages/shadcn/styles/style-new-york.css" layer(components);
 
 /* DEVIATION: scan our Marko sources instead of shadcn's styles/base-* trees. */
 @source "../../**/*.marko";
@@ -108,6 +114,7 @@
 @custom-variant style-luma (&:where(.style-luma *));
 @custom-variant style-sera (&:where(.style-sera *));
 @custom-variant style-rhea (&:where(.style-rhea *));
+@custom-variant style-new-york (&:where(.style-new-york *));
 
 /* @custom-variant dark comes from globals.css above — not redeclared here. */
 @custom-variant fixed (&:is(.layout-fixed *));

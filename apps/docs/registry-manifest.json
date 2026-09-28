@@ -1,7 +1,7 @@
 {
   "generatedBy": "tooling/build-registry.ts",
   "normalization": "sha256 of file content with REGISTRY_BASE_URL occurrences replaced by __REGISTRY_BASE_URL__, so the manifest does not depend on the base URL used at build time",
-  "fileCount": 811,
+  "fileCount": 897,
   "files": [
     {
       "path": "accordion.json",
@@ -245,7 +245,7 @@
     },
     {
       "path": "navigation-menu.json",
-      "sha256": "3e067358b8910f40d3a15da5a3b1323b23e5ad85f29a921a207132597eb88ed4"
+      "sha256": "66f81883a418b684935bdfcbd97ce247497e9be75e39287df8797a8e350f8e05"
     },
     {
       "path": "number-input.json",
@@ -649,7 +649,7 @@
     },
     {
       "path": "styles/luma/navigation-menu.json",
-      "sha256": "da6ee6ceebaa0aaf6629c508f0a8fd833a615d62ca53d854ac0559f1edc8592b"
+      "sha256": "9ce91350eb51d4f4e4563fbbb47b31d0137c62195ba27a0c49f67f728dc1ae30"
     },
     {
       "path": "styles/luma/number-input.json",
@@ -993,7 +993,7 @@
     },
     {
       "path": "styles/lyra/navigation-menu.json",
-      "sha256": "2acae36e3dd02059bcd0732e7dbe5dc659a24c54c24c03a84c42152028e26325"
+      "sha256": "c68dae37a95192d24369232907af0d124f091376a84a969321b6d0165237ee50"
     },
     {
       "path": "styles/lyra/number-input.json",
@@ -1337,7 +1337,7 @@
     },
     {
       "path": "styles/maia/navigation-menu.json",
-      "sha256": "50d02788a1e5eb468bcde711e2c8e26b6cd93b37d4ce39cc89d94e31d92acaec"
+      "sha256": "ab01773b14c10139b8a30e508611540655d3051edfc9937d1bd00b4dc2c4bbae"
     },
     {
       "path": "styles/maia/number-input.json",
@@ -1681,7 +1681,7 @@
     },
     {
       "path": "styles/mira/navigation-menu.json",
-      "sha256": "8490b2b42ffefe64476a39164ed630cb3c5c0cf03e53445f806b77025f338e4a"
+      "sha256": "931e3a96cc67c1878edaf6ce9ae0134f47bfe1dfc517a69d53d99fb55bc645a7"
     },
     {
       "path": "styles/mira/number-input.json",
@@ -1813,6 +1813,350 @@
     },
     {
       "path": "styles/mira/tree-view.json",
+      "sha256": "eaf67c5625db604a290609d4ad7c422a0576537a51a2657eafcc14ada648fb24"
+    },
+    {
+      "path": "styles/new-york/accordion.json",
+      "sha256": "13f83ae553e37ade8b2d6ea0121d619855cbca337580d20a65d68c4db279444e"
+    },
+    {
+      "path": "styles/new-york/alert-dialog.json",
+      "sha256": "5b1be728b607597486e6412c0dfdbfcb336ad357bbc0cc1dee106e0b3d82f5f6"
+    },
+    {
+      "path": "styles/new-york/alert.json",
+      "sha256": "c4e31ac404a0cbd618d650925e2a3ce909468414cb01b11eaa1ce12bf9e0c466"
+    },
+    {
+      "path": "styles/new-york/angle-slider.json",
+      "sha256": "9e1b2101363f1e3be87acdd3c32b3cd9f82fce7cd523e08fa671ad22102e7aea"
+    },
+    {
+      "path": "styles/new-york/aspect-ratio.json",
+      "sha256": "d20cdcda14d9968378b688bcdb5f2c3f0f3bcc4ef5ceaab28b82478b6c30bb13"
+    },
+    {
+      "path": "styles/new-york/attachment.json",
+      "sha256": "307faee87bfdb3fdfea5543e1fc3d6bca28679a7f11f626f9ef7f039b9eb8191"
+    },
+    {
+      "path": "styles/new-york/avatar.json",
+      "sha256": "df68936d9599dc40803ef98b7decfd1f5dec44d24f91a93b46feb08f2d5d59ba"
+    },
+    {
+      "path": "styles/new-york/badge.json",
+      "sha256": "ac766a2b86b84b6cdcdddeaa5b2b1442db22e17c3ce81eff76a8f25e245e032f"
+    },
+    {
+      "path": "styles/new-york/breadcrumb.json",
+      "sha256": "774cd85b2d4632f6734d45c8b79bb39485dfa073f38c61a35e623d8b45e490b2"
+    },
+    {
+      "path": "styles/new-york/bubble.json",
+      "sha256": "9fa30971e93dcff1705cf387588aa1d22d5f5ddb009bf4b3826c6982283008e6"
+    },
+    {
+      "path": "styles/new-york/button-group.json",
+      "sha256": "0bb63e3094f29c18e48379d725a5ae2987f4bb734961597819f72c1dbfa0713d"
+    },
+    {
+      "path": "styles/new-york/button.json",
+      "sha256": "67b2e8de0102c369b966c62fac044649d6a642ce9edd3f7cd5819a14161954cf"
+    },
+    {
+      "path": "styles/new-york/calendar.json",
+      "sha256": "a327f0fc405662a3d13b452cee5736bc6699a82680fa63592141d50fd969f9cf"
+    },
+    {
+      "path": "styles/new-york/card.json",
+      "sha256": "759a353d05d74c66c3dd7ffffa7c00eae180c427b746bc37cabd9fdb7d21f6aa"
+    },
+    {
+      "path": "styles/new-york/carousel.json",
+      "sha256": "4ad6d791f754c4bf6e58be29d7737c588dc809e4962f5f7801bdfaa20adcda7c"
+    },
+    {
+      "path": "styles/new-york/cascade-select.json",
+      "sha256": "4f5da01d060df10992cf54a5e08954eb350bfed8c0f0703b65fb73042ee6d9c9"
+    },
+    {
+      "path": "styles/new-york/chart.json",
+      "sha256": "68290844d3ca6a8b9fff672ccf2b78afc0c450ecf659657689d2cd86a3949655"
+    },
+    {
+      "path": "styles/new-york/checkbox.json",
+      "sha256": "8891099e7e4c4c1d0f919d22af1d91bb03234fcd7f1e4614f836aad8bf887116"
+    },
+    {
+      "path": "styles/new-york/clipboard.json",
+      "sha256": "27a7d67f43caf420d75051f97b8678902643ffbad746a593fd41550a7c328dd7"
+    },
+    {
+      "path": "styles/new-york/collapsible.json",
+      "sha256": "389b114e0a6eccb82bbdd8419ca87c6d6119de632980f6395e4c78aa88df9f54"
+    },
+    {
+      "path": "styles/new-york/color-picker.json",
+      "sha256": "ceaf537f0fa8aeca5f3d894cf39227a89830f2b41a6e6afb2ca12eb34fddb48f"
+    },
+    {
+      "path": "styles/new-york/combobox.json",
+      "sha256": "1451bb01a2def528f7d15c9f306db1e9eca34da855b60409cc931f2e54524be0"
+    },
+    {
+      "path": "styles/new-york/command.json",
+      "sha256": "6b09a331029831230a6d5a121b5ef730494d84da28f33e5e1112b3c4afba8d13"
+    },
+    {
+      "path": "styles/new-york/context-menu.json",
+      "sha256": "914b2066036706047b1ffce3929089de9eb44299d64090b61d33716ee2f2ec1c"
+    },
+    {
+      "path": "styles/new-york/data-table.json",
+      "sha256": "abc14c66c057811492b97a20552a22f1a56ca09e82354c29bbd8c0d79c581fe5"
+    },
+    {
+      "path": "styles/new-york/date-input.json",
+      "sha256": "91ccac8ad522c387bbf6985f09d027f6f50b99977613b6f78bb0c8bfb49fa7f6"
+    },
+    {
+      "path": "styles/new-york/date-picker.json",
+      "sha256": "dd388c2f865ff940efd64ecd1b17b27018e04005beb1f1a52b1681daef841a09"
+    },
+    {
+      "path": "styles/new-york/dialog.json",
+      "sha256": "98df0383bf469baa6eeefb15ced92c99282667e19b3afd4ea2f0a215e5394f70"
+    },
+    {
+      "path": "styles/new-york/direction.json",
+      "sha256": "8f922b12c57a19a8d720ec04279b8d5f479fd49741e13532d29793df40b3c566"
+    },
+    {
+      "path": "styles/new-york/drawer.json",
+      "sha256": "9f158dc17b3f81127aef5d43b84e9323184f300d7a235be3c79f8a59869e1ec0"
+    },
+    {
+      "path": "styles/new-york/dropdown-menu.json",
+      "sha256": "55816e7f9f017da9ce6536b1b2d81f83009a7a63c5f07fb915e2571224b50a52"
+    },
+    {
+      "path": "styles/new-york/editable.json",
+      "sha256": "22cf2a1bb7d0687f331b6816c6f917cf583edac7618c76400eb2d8ae7ba4eee9"
+    },
+    {
+      "path": "styles/new-york/empty.json",
+      "sha256": "81bbfd9b8048eda55fec9f66fded117ce99c3fe833c7dbcfb2b8120996b20f61"
+    },
+    {
+      "path": "styles/new-york/field.json",
+      "sha256": "83430d8196c267ab7f76d4c2b7b9a98db3875f346ef4e9f2b6e7829140b5ebca"
+    },
+    {
+      "path": "styles/new-york/file-upload.json",
+      "sha256": "096ff12f9e4e4c62b5c0350a56491f2c491843781cab8e80a4dd3f56a14deb6c"
+    },
+    {
+      "path": "styles/new-york/floating-panel.json",
+      "sha256": "ea6f0a0ca8648b3601b6cebc34cb964376d86e625b39ca3e7fd8d872e971f32c"
+    },
+    {
+      "path": "styles/new-york/hover-card.json",
+      "sha256": "2577356fcaea6fce66b088e2308535392025da7cd16560479f00d42355230cbf"
+    },
+    {
+      "path": "styles/new-york/icon.json",
+      "sha256": "1a0aceb7fc0dd7911921e418292cac73f6678b9bfc04b81e327d69bf5a143ad3"
+    },
+    {
+      "path": "styles/new-york/image-cropper.json",
+      "sha256": "b54cdb9ebdb17dbfb6d3bb7a42c48740deece2dfac8bd396beada91d31e9d632"
+    },
+    {
+      "path": "styles/new-york/input-group.json",
+      "sha256": "c7b1c006f9c827e6b8c4694cca843462bb80c1a1382617ca48d21a751cd95b78"
+    },
+    {
+      "path": "styles/new-york/input-otp.json",
+      "sha256": "7f54bbdf7265892f001202e7dde3ca254583970e81641ed6ac6e72502c2623b2"
+    },
+    {
+      "path": "styles/new-york/input.json",
+      "sha256": "83f9bf369933760076790f6020e7cf18b37f06e8e47e03577a8888971a4f4bb6"
+    },
+    {
+      "path": "styles/new-york/item.json",
+      "sha256": "a8869998730dcf8da9ce3d5cec11b13f35eea98f9e939b2429cc69e85bde1bc2"
+    },
+    {
+      "path": "styles/new-york/kbd.json",
+      "sha256": "315a986407632290dcf3ad38f026d7105c4b1005d8c916f7c9a03ad617f11cf9"
+    },
+    {
+      "path": "styles/new-york/label.json",
+      "sha256": "c74142ef06e730382e4afd2a088134e2a34a479013c8a0d55ce0dd29caf80036"
+    },
+    {
+      "path": "styles/new-york/listbox.json",
+      "sha256": "5bc21264b53f0d38e034af13bd813790da897d2e019ff9510fa97cc71ce9e456"
+    },
+    {
+      "path": "styles/new-york/marker.json",
+      "sha256": "4d94a3ee8149214b7375f18a85573c4fdff8f006993c60e97ca7f97f53cd7b0b"
+    },
+    {
+      "path": "styles/new-york/marquee.json",
+      "sha256": "45b8f0fc1772295e93c91b57f0776437bfce4a3cb91128347df1147917f453c5"
+    },
+    {
+      "path": "styles/new-york/menubar.json",
+      "sha256": "4c84527343b04ee1cbb85616515f62b1428810ec6cd2fbc14e197c22b9418aac"
+    },
+    {
+      "path": "styles/new-york/message-scroller.json",
+      "sha256": "1b432692f8d02c3b8a448a3be0e7071f0a3ae4cda533b371319c3106f681eef2"
+    },
+    {
+      "path": "styles/new-york/message.json",
+      "sha256": "89ef70cc3a02414063f59055d7bc12178796cedf48337f1ebe2f1eb4fb985db3"
+    },
+    {
+      "path": "styles/new-york/native-select.json",
+      "sha256": "b0dd4211060fa2f0ce58950c32a0df9e56a75f786e0d31aa68d70b16804a78de"
+    },
+    {
+      "path": "styles/new-york/navigation-menu.json",
+      "sha256": "8f16c19c30c1142b365686301399dfa178d554dcc2c6ab9f4396e29c63162aaa"
+    },
+    {
+      "path": "styles/new-york/number-input.json",
+      "sha256": "9ec256b8350fd4e0ec03f7942bbbc5b8cde5dc14c6ed338f7c43ed6b0527cc4b"
+    },
+    {
+      "path": "styles/new-york/pagination.json",
+      "sha256": "641392791949e7fe2bbab3abef1045e19279a251a85e94d20e10ef07ce08d644"
+    },
+    {
+      "path": "styles/new-york/password-input.json",
+      "sha256": "37c6c9fe307754f0c519b0a6c36632daf3f93c765442cb6a50b76c651db77af9"
+    },
+    {
+      "path": "styles/new-york/popover.json",
+      "sha256": "12dede43fc83674a65186ee720b919f3c84ebae01dd83698b6a7373c3a1f65c2"
+    },
+    {
+      "path": "styles/new-york/progress.json",
+      "sha256": "ad2d33f8e0b106717714705af24c1fa468b4bcf705a35348b682c0c19bead619"
+    },
+    {
+      "path": "styles/new-york/qr-code.json",
+      "sha256": "753c25a500eed85dd75e99720c2a09321b990fd8e93e299f951f3e7e57f35ec2"
+    },
+    {
+      "path": "styles/new-york/radio-group.json",
+      "sha256": "191586814d444b8f2ca4fc9e787df0773b2ad7f2a1e4821e92c394dd1ad3d5b5"
+    },
+    {
+      "path": "styles/new-york/rating-group.json",
+      "sha256": "6c0e819349c1e9019ab50c77e28ab6418219f41f5d677f281019b3dad74439a9"
+    },
+    {
+      "path": "styles/new-york/resizable.json",
+      "sha256": "8c450c53a6b4d033eaefae6ae34e64c279bf22e6c7b1451678a6ba8bf4259188"
+    },
+    {
+      "path": "styles/new-york/scroll-area.json",
+      "sha256": "5a64a5cfe859da7f223feba73b69b834fe3a80df703b40f063263a964cc0e454"
+    },
+    {
+      "path": "styles/new-york/select.json",
+      "sha256": "6783216696124ffccaa181ad4824e5f346767d8f0c03c2da8831bd0782617e22"
+    },
+    {
+      "path": "styles/new-york/separator.json",
+      "sha256": "59390fa8bf1e6193f3d578920c545c971d136f744c87b47c7894cd05bfc9b4c9"
+    },
+    {
+      "path": "styles/new-york/sheet.json",
+      "sha256": "4fe24a7771c27ea74d734de53ef1b1b742cedb98c7cbc6e219a6f55f8a43819b"
+    },
+    {
+      "path": "styles/new-york/sidebar.json",
+      "sha256": "5f8961497e2c77c917dff083e96d235d09d465b0ce07d9e53284a579ce65bb52"
+    },
+    {
+      "path": "styles/new-york/signature-pad.json",
+      "sha256": "31568c35cdd24457fa16026771bfa18e44fe0137b284604c060c6dc71c5d8e0e"
+    },
+    {
+      "path": "styles/new-york/skeleton.json",
+      "sha256": "2ec6ee41813d0020145ed3de1a7204dc17ad21e279ca3ef23e25e50d6f70a331"
+    },
+    {
+      "path": "styles/new-york/slider.json",
+      "sha256": "67d29ccf8bf7697314eed4614ef4072e20fd0ab92e27947f1d4cfe9ed0452417"
+    },
+    {
+      "path": "styles/new-york/sonner.json",
+      "sha256": "4e474c10f1b9911e8f363eefba2b206a8133640661c8827b2b88a1fcec3f9d33"
+    },
+    {
+      "path": "styles/new-york/spinner.json",
+      "sha256": "aee7a409a2fbe2725a6393478f68ad1cd6044a8bc336045d657fc7082ef874f0"
+    },
+    {
+      "path": "styles/new-york/steps.json",
+      "sha256": "ed2b6af6c8119a7e0aa2cae804f507fee877474c65909978bbf9882318212a42"
+    },
+    {
+      "path": "styles/new-york/switch.json",
+      "sha256": "6e3e5b92396384768d1afab4c5f6b9c81fc1d5f4d701da19d13a0635d32dbf54"
+    },
+    {
+      "path": "styles/new-york/table.json",
+      "sha256": "efd849d87c1954a2fecc55b2324bfe820180cb70ebe2d22661d560265c870afd"
+    },
+    {
+      "path": "styles/new-york/tabs.json",
+      "sha256": "7bf26f4842de09c61c75646b54715fd4ebbef94a5915813df2e4b927f0e891eb"
+    },
+    {
+      "path": "styles/new-york/tags-input.json",
+      "sha256": "9f32bbc38a44dd77a015f23b61e4a0b4b63c574e070fa0fe342733b7024601d5"
+    },
+    {
+      "path": "styles/new-york/textarea.json",
+      "sha256": "d046c912fe152a4f2c6ca2cb113e1c07f2174bd1d0d4fbcad7caae496dacfd1b"
+    },
+    {
+      "path": "styles/new-york/timer.json",
+      "sha256": "ed981d57b3f5ecc9bd14d63876eb6c0fc7406162f42a9823fb92f97b7fa2c38d"
+    },
+    {
+      "path": "styles/new-york/toast.json",
+      "sha256": "16d900431046eda8b4458aab55074d352c7fa91137396691d98777578c433fc4"
+    },
+    {
+      "path": "styles/new-york/toc.json",
+      "sha256": "020349b5c733c129271c09baed302f3eb98a16b90ccc9519ebc84b8744d0973d"
+    },
+    {
+      "path": "styles/new-york/toggle-group.json",
+      "sha256": "98bdf04deb374bcb268e8ad07be7d5916f2340519222869d5d1bedd22cd89bbb"
+    },
+    {
+      "path": "styles/new-york/toggle.json",
+      "sha256": "564d08e014b90fec56f1d633ef86d68e4180fd7405ad31f4cc2ccf418b7fdabc"
+    },
+    {
+      "path": "styles/new-york/tooltip.json",
+      "sha256": "a10c8b7a0ac1e691acb0cdf2414ed97ae79d35bf685644b7571cb0bc34ccf9fc"
+    },
+    {
+      "path": "styles/new-york/tour.json",
+      "sha256": "b88702d1435106e0fb8d91fe1cf18d0ddb13744e25fe3ba64bf2b9a8c7e1ff4d"
+    },
+    {
+      "path": "styles/new-york/tree-view.json",
       "sha256": "eaf67c5625db604a290609d4ad7c422a0576537a51a2657eafcc14ada648fb24"
     },
     {
@@ -2025,7 +2369,7 @@
     },
     {
       "path": "styles/nova/navigation-menu.json",
-      "sha256": "9c0a0460070b2dc5d5aa03befecaf23d0330a881c9ccb7d76df8157f8e95ab56"
+      "sha256": "618e417abb6216bfdcc83feffa519f7498181d89762360454d119d7a4fe0c0a3"
     },
     {
       "path": "styles/nova/number-input.json",
@@ -2369,7 +2713,7 @@
     },
     {
       "path": "styles/rhea/navigation-menu.json",
-      "sha256": "bbe278ac09cffe1449ce2e547bcacde1e663aa7eea5c63fefc92b00342874a89"
+      "sha256": "6f0deb92486cbbcdef3a2ba4b686183fe057c19c3ff21a575513556a4d9c439a"
     },
     {
       "path": "styles/rhea/number-input.json",
@@ -2713,7 +3057,7 @@
     },
     {
       "path": "styles/sera/navigation-menu.json",
-      "sha256": "39140ef5259a93a1f3dc9b7c02576960b82b4759641537ef8289aea51d5ea36e"
+      "sha256": "eb1044e63d8b6280b25170ee12896edf192ab9e6f98b282176961c8049ba4613"
     },
     {
       "path": "styles/sera/number-input.json",
@@ -3057,7 +3401,7 @@
     },
     {
       "path": "styles/vega/navigation-menu.json",
-      "sha256": "1423a823dec2c8f56cf98276f4e67343eafd7166823cfa867c7df92b30e11e36"
+      "sha256": "f49c83a62dcc4e34b5ba52a8a30d0f5a46bc253c5b4c868c44259f675d035ff7"
     },
     {
       "path": "styles/vega/number-input.json",

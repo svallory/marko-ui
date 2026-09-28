@@ -50,12 +50,23 @@ export const BUILTIN_REGISTRIES: z.infer<typeof registryConfigSchema> = {
   "@marko-ui": `${REGISTRY_URL}/{name}.json`,
 }
 
-// The 8 shadcn-derived visual styles (shape/spacing/radius/borders — see
+// The 9 shadcn-derived visual styles (shape/spacing/radius/borders — see
 // notes/plans/dual-distribution-plan.md §1). Each ships as
 // `styles-src/style-<name>.css` for the copy path (baked into generated
 // component classes) and as a precompiled `@marko-ui/shadcn/styles/style-
 // <name>.css` layer for the import path. Fixed set, hardcoded like
 // BASE_COLORS.
+//
+// `new-york` is a port of upstream shadcn's `new-york-v4` style — the style a
+// user gets from `shadcn add` without /create, and what ui.shadcn.com's own
+// docs chrome/examples use. Unlike the other 8 (vendored from upstream's
+// `apps/v4/registry/styles/style-*.css` token layers with a cn- -> mu- rename),
+// new-york-v4 ships no such CSS: its classes are inline per component, so
+// `packages/shadcn/styles/style-new-york.css` is derived per-part instead —
+// see that file's header and scratch/team-lead/briefs/style-new-york-playbook.md.
+// Deliberately NOT listed in apps/docs/src/tags/create/lib/registry-config.ts's
+// `STYLES` (the /create picker's own separate list): upstream's own
+// `apps/v4/registry/styles.tsx` doesn't offer new-york-v4 in /create either.
 export const VISUAL_STYLES = [
   { name: "rhea", label: "Rhea" },
   { name: "nova", label: "Nova" },
@@ -65,6 +76,7 @@ export const VISUAL_STYLES = [
   { name: "mira", label: "Mira" },
   { name: "luma", label: "Luma" },
   { name: "sera", label: "Sera" },
+  { name: "new-york", label: "New York" },
 ] as const
 
 export const DEFAULT_VISUAL_STYLE = "vega"

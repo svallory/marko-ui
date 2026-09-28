@@ -23,13 +23,13 @@ static const FEATURED_BLOCK_NAMES = ["dashboard-01", "sidebar-07", "sidebar-03",
   ? FEATURED_BLOCK_NAMES.map((name) => findBlock(name)).filter((block) => block !== undefined)
   : blocksInCategory(input.categorySlug)/>
 
-<!-- style-vega: upstream's blocks/page.tsx and layout.tsx both import from
-     @/registry/new-york-v4/ui — matching site chrome's mapping (see
+<!-- style-new-york: upstream's blocks/page.tsx and layout.tsx both import from
+     @/registry/new-york-v4/ui — matching site chrome's mapping directly (see
      site-header.marko's own citation). Wraps the whole gallery (header, nav,
      block list) in one div; individual block previews under /blocks/view/*
      are a SEPARATE, deliberately un-styled isolated route (see that route's
      own comment) and are not affected by this wrapper. -->
-<div class="style-vega">
+<div class="style-new-york">
 // ---- PageHeader (shadcn components/page-header.tsx, via blocks/layout.tsx) ----
 <section class="border-grid">
   <div class="container-wrapper">
