@@ -83,7 +83,7 @@ jobs:
       # provides the OIDC-aware `npm publish`, bun's publish command doesn't
       # support it.
       - name: Setup Node
-        uses: actions/setup-node@db0fb3a98ed314b69026b6e8c9be26a7e2fe65a8 # v4
+        uses: actions/setup-node@7f84f1d52d0c56afb45c62fee31a93b843cea4d6 # v4
         with:
           node-version: 24
 
