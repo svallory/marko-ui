@@ -57,19 +57,30 @@ describe("third-party coverage", () => {
     // An unclaimed dep lands in an app chunk, making a machine<->app chunk cycle that
     // crashes @marko/run's post-build ("Maximum call stack size exceeded") with no hint why.
     const store = new URL("../../../node_modules/.bun/", import.meta.url).pathname;
+    const machines = loadZagMachines();
     const unclaimed = new Set<string>();
+    let manifests = 0;
+    let deps = 0;
     for (const dir of readdirSync(store).filter((d) => d.startsWith("@zag-js+"))) {
       const scope = join(store, dir, "node_modules/@zag-js");
       if (!existsSync(scope)) continue;
       for (const pkg of readdirSync(scope)) {
         const json = join(scope, pkg, "package.json");
         if (!existsSync(json)) continue;
+        manifests++;
         for (const dep of Object.keys(JSON.parse(readFileSync(json, "utf8")).dependencies ?? {})) {
           if (dep.startsWith("@zag-js/") || dep === "csstype" /* types only, never bundled */) continue;
-          if (!ZAG_MODULE_TEST.test(`/w/node_modules/${dep}/index.mjs`)) unclaimed.add(`${dep} (needed by @zag-js/${pkg})`);
+          deps++;
+          // Assert the name function actually claims the dep (non-null chunk
+          // name), not merely that the group test regex matches it.
+          if (zagChunkName(`/w/node_modules/${dep}/index.mjs`, machines) === null) unclaimed.add(`${dep} (needed by @zag-js/${pkg})`);
         }
       }
     }
+    // Fail loudly if the store layout changed and nothing was inspected — an
+    // empty scan would pass vacuously.
+    expect(manifests, "no @zag-js manifests resolved under node_modules/.bun — store layout changed?").toBeGreaterThan(0);
+    expect(deps, "no third-party deps inspected — the check above is vacuous").toBeGreaterThan(0);
     expect([...unclaimed], "add these to THIRD_PARTY_OWNER and ZAG_MODULE_TEST in apps/docs/vendor-chunks.ts").toEqual([]);
   });
 });

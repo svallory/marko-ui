@@ -83,4 +83,15 @@ describe("findDuplicates (fixture build)", () => {
       rmSync(empty, { recursive: true, force: true });
     }
   });
+  it("fails when EITHER build has zero chunks, not only when both do", () => {
+    // The bare pages reference a chunk that was never emitted: main still has
+    // chunks, so an `every(chunks === 0)` check would wrongly pass.
+    write("bare/x.html", `<script src="/assets/gone.js"></script>`);
+    const { builds } = findDuplicates(dir);
+    expect(builds.find((b) => b.name === "main")!.chunks).toBeGreaterThan(0);
+    expect(builds.find((b) => b.name === "bare")!.chunks).toBe(0);
+    const r = spawnSync("bun", [SCRIPT, dir], { encoding: "utf8" });
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain("build bare");
+  });
 });

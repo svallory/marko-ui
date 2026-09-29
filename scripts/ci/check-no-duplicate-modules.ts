@@ -21,9 +21,14 @@ for (const b of result.builds) {
   console.log(`build ${b.name}: ${b.chunks} chunks, ${b.withoutMap} without a sourcemap, ${b.duplicates.length} duplicated modules`);
   for (const d of b.duplicates.slice(0, 20)) console.error(`  ${d.source}\n    in: ${d.chunks.join(", ")}`);
 }
-if (result.builds.every((b) => b.chunks === 0)) {
-  console.error("check-no-duplicate-modules: no chunks found — build missing, or the HTML entry format changed.");
-  process.exit(1);
+// EACH expected build must have chunks: a build that emitted nothing (or whose
+// HTML entries no longer match the entry format) must fail the check on its
+// own — passing only because the OTHER build still has chunks is vacuous.
+for (const b of result.builds) {
+  if (b.chunks === 0) {
+    console.error(`check-no-duplicate-modules: build ${b.name}: no chunks found — build missing, or the HTML entry format changed.`);
+    process.exit(1);
+  }
 }
 const coverage = result.builds.flatMap(coverageProblems);
 if (coverage.length > 0) {
