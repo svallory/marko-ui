@@ -9,6 +9,7 @@ import { COMPONENTS } from "../../../lib/components-list.ts";
 
 static const TOC = [
   { id: "unreleased", label: "Unreleased" },
+  { id: "0.4.1", label: "0.4.1" },
   { id: "0.4.0", label: "0.4.0" },
   { id: "0.3.1", label: "0.3.1" },
   { id: "0.3.0", label: "0.3.0" },
@@ -26,6 +27,24 @@ export interface ChangelogEntry {
 }
 
 static const ENTRIES: ChangelogEntry[] = [
+  {
+    version: "0.4.1",
+    date: "2026-09-29",
+    title: "Fine-grained Zag bundle splitting, client icon map pruning, and release-pinned behavior coverage",
+    summary:
+      "Monolithic vendor-zag bundle split into per-machine chunks and core, unused icon libraries pruned from client bundles with async hydration fallback, behavior coverage tracked and surfaced on the homepage trust strip, and CI hardened with pre-merge workspace checks and deterministic route typing.",
+    changes: [
+      "Performance (Docs): Split monolithic 815 KB `vendor-zag` client bundle into per-machine chunks (`vendor-zag-<machine>`) and a shared `vendor-zag-core` chunk. Routes now only download Zag state machine code for components actually rendered on the page, guarded by CI gzip route budgets and duplicate-module guards (#87, PR #92).",
+      "Performance & Fix (Registry/Shadcn): Split icon resolution by environment. Server keeps full 5-library `resolve.ts` for SSR; client bundles now ship only default Lucide icons via `resolve-client.ts`, loading non-default libraries on demand via dynamic import (`client-swap.ts`), dropping ~360 KB of unused icon data from client routes. `marko-ui add` now rewrites `resolve-client.ts` to bundle only the configured icon library. Fixed async race condition when rapidly switching icon libraries in preview (PR #86).",
+      "Performance (Docs): Vite preload helper (`\\0vite/preload-helper.js`) pinned to an isolated 1.3 KB chunk via codeSplitting groups; previously Rolldown co-located it inside the ~770 KB Shiki syntax highlighter chunk, forcing routes with dynamic imports to download Shiki unnecessarily (#81, PR #85).",
+      "Docs: Homepage trust strip displays release-pinned behavior test coverage card reading `coverage.json` from the `badges` branch at build time, failing closed/empty on missing or malformed data (PR #91).",
+      "Testing: Real Playwright behavior test suites for five Round 2 components: Popover, Tooltip, Collapsible, AlertDialog, and Toggle, validating keyboard navigation contracts, ARIA modal state, and controlled states (#72 round 2b, PR #89).",
+      "Testing & CI: Behavior coverage tracking infrastructure piloted across 12 components (7 tested, 5 untested gaps transparently listed) with `--json` reporting and automated shields badge generation (#72 round 2a, PR #84).",
+      "Reliability: `scripts/gen-routes-dts.ts` replaces flaky background dev server boot in `ensure-routes-dts.sh` with a programmatic Vite server in `middlewareMode` with a 120s watchdog, eliminating CI typecheck race conditions and orphaned processes (PR #90).",
+      "CI: Full release gate (`bun run check`, running all workspace typechecks, invariant scripts, and publint/attw packaging checks) now runs on every push and PR via `workspace-check` job, preventing un-gated regressions from landing on main (PR #82).",
+      "Release Automation: Release workflow now publishes release-pinned `coverage.json` to the `badges` branch alongside test, hydration, and axe badges (PR #88). Added `badges_only: true` dispatch input to `.github/workflows/release.yml` to rebuild release-pinned badges for an existing tag without re-publishing packages (PR #83).",
+    ],
+  },
   {
     version: "0.4.0",
     date: "2026-09-28",
@@ -120,8 +139,8 @@ static const ENTRIES: ChangelogEntry[] = [
   <h2 id="unreleased">Unreleased</h2>
 
   <p>
-    Nothing yet: everything merged to <code>main</code> since <code>0.3.1</code> is in the
-    <a href="#0.4.0"><code>0.4.0</code></a> entry below.
+    Nothing yet: everything merged to <code>main</code> since <code>0.4.0</code> is in the
+    <a href="#0.4.1"><code>0.4.1</code></a> entry below.
   </p>
 
   <p>Currently in the registry: ${COMPONENTS.length} components, plus the theme and utils items.</p>
