@@ -8,6 +8,7 @@ import { BLOCK_CATEGORIES } from "./src/lib/blocks-list.ts";
 import { CHART_TYPES } from "./src/lib/charts-list.ts";
 import { COMPONENTS } from "./src/lib/components-list.ts";
 import { PREVIEW_ITEMS } from "./src/lib/preview-items.ts";
+import { loadZagMachines, zagChunkName, ZAG_MODULE_TEST } from "./vendor-chunks.ts";
 import { FIXTURES } from "./src/tags/typeset/lib/fixtures/index.ts";
 
 /**
@@ -104,12 +105,12 @@ export function staticUrls(routes: Route[]): string[] {
  * out — forcing chunks there risks split-instance/circular-chunk hazards in
  * the server graph for zero user benefit (the server bundle is never cached).
  */
+const ZAG_MACHINES = loadZagMachines();
+
 const VENDOR_CHUNK_PATTERNS: ReadonlyArray<readonly [RegExp, string]> = [
   // marko runtime first: it is the leaf-most dependency of every page.
   [/node_modules[\\/]marko[\\/]/, "vendor-marko"],
   // marko-zag's compiled tags sit next to the machines they wrap.
-  [/node_modules[\\/]marko-zag[\\/]/, "vendor-zag"],
-  [/node_modules[\\/]@zag-js[\\/]/, "vendor-zag"],
   [/node_modules[\\/]d3(-[a-z0-9-]+)?[\\/]/, "vendor-d3"],
   [/node_modules[\\/]shiki[\\/]/, "vendor-shiki"],
   [/node_modules[\\/]@tanstack[\\/]table-core[\\/]/, "vendor-table-core"],
@@ -141,6 +142,15 @@ export default defineConfig(({ isSsrBuild }) => ({
             codeSplitting: {
               groups: [
                 { name: "preload-helper", test: /vite[\\/]preload-helper/, priority: 100 },
+                {
+                  name: (id) => zagChunkName(id, ZAG_MACHINES),
+                  test: ZAG_MODULE_TEST,
+                  // The default (true) pulls a matched module's whole dependency
+                  // tree into ITS group, so machine chunks swallow the shared
+                  // dom-query/utils/core code and every other machine then
+                  // imports that machine's chunk for a utility.
+                  includeDependenciesRecursively: false,
+                },
                 ...VENDOR_CHUNK_PATTERNS.map(([test, name]) => ({ name, test })),
               ],
             },
