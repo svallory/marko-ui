@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { loadZagMachines, zagChunkName, zagMachineNames, ZAG_MODULE_TEST } from "../../../apps/docs/vendor-chunks.ts";
 
 const machines = new Set(["menu", "dialog", "number-input", "qr-code", "signature-pad"]);
@@ -48,5 +49,27 @@ describe("zagMachineNames", () => {
     expect(m.has("types")).toBe(false);
     const pkg = JSON.parse(readFileSync(new URL("../../../packages/shadcn/package.json", import.meta.url), "utf8"));
     for (const d of Object.keys(pkg.dependencies)) if (d.startsWith("@zag-js/") && d !== "@zag-js/types") expect(m.has(d.slice(8))).toBe(true);
+  });
+});
+
+describe("third-party coverage", () => {
+  it("every runtime dependency of an installed zag package is claimed by the zag chunk group", () => {
+    // An unclaimed dep lands in an app chunk, making a machine<->app chunk cycle that
+    // crashes @marko/run's post-build ("Maximum call stack size exceeded") with no hint why.
+    const store = new URL("../../../node_modules/.bun/", import.meta.url).pathname;
+    const unclaimed = new Set<string>();
+    for (const dir of readdirSync(store).filter((d) => d.startsWith("@zag-js+"))) {
+      const scope = join(store, dir, "node_modules/@zag-js");
+      if (!existsSync(scope)) continue;
+      for (const pkg of readdirSync(scope)) {
+        const json = join(scope, pkg, "package.json");
+        if (!existsSync(json)) continue;
+        for (const dep of Object.keys(JSON.parse(readFileSync(json, "utf8")).dependencies ?? {})) {
+          if (dep.startsWith("@zag-js/") || dep === "csstype" /* types only, never bundled */) continue;
+          if (!ZAG_MODULE_TEST.test(`/w/node_modules/${dep}/index.mjs`)) unclaimed.add(`${dep} (needed by @zag-js/${pkg})`);
+        }
+      }
+    }
+    expect([...unclaimed], "add these to THIRD_PARTY_OWNER and ZAG_MODULE_TEST in apps/docs/vendor-chunks.ts").toEqual([]);
   });
 });

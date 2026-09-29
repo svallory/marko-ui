@@ -39,6 +39,8 @@ export function zagMachineNames(pkgJson: { dependencies?: Record<string, string>
  * @marko/run's post-build chunk walk). Single-consumer ones ride with their
  * machine; the rest go to core.
  */
+// A NEW third-party dependency of a zag package must be added here (and to ZAG_MODULE_TEST);
+// scripts/ci/__tests__/vendor-chunks.test.ts fails naming it, before the build crashes cryptically.
 const THIRD_PARTY_OWNER: ReadonlyArray<readonly [RegExp, string]> = [
   [/node_modules[\\/]uqr[\\/]/, "vendor-zag-qr-code"],
   [/node_modules[\\/]perfect-freehand[\\/]/, "vendor-zag-signature-pad"],

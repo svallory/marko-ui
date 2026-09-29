@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { findDuplicates } from "../lib/duplicate-modules.ts";
+import { coverageProblems, findDuplicates, MAX_UNMAPPED_BYTES, MAX_UNMAPPED_CHUNKS } from "../lib/duplicate-modules.ts";
 
 const SCRIPT = fileURLToPath(new URL("../check-no-duplicate-modules.ts", import.meta.url));
 
@@ -52,6 +52,27 @@ describe("findDuplicates (fixture build)", () => {
     write("assets/nomap.js", "");
     write("assets/entry.js", `import"./nomap.js";import"./menu.js";import"./core.js"`);
     expect(findDuplicates(dir).builds[0]!.withoutMap).toBe(1);
+  });
+  it("fails closed when more chunks than the ceiling lack a sourcemap", () => {
+    const names = Array.from({ length: MAX_UNMAPPED_CHUNKS + 1 }, (_, i) => `nm${i}`);
+    for (const n of names) write(`assets/${n}.js`, "");
+    write("assets/entry.js", `import"./menu.js";import"./core.js";${names.map((n) => `import"./${n}.js"`).join(";")}`);
+    const main = findDuplicates(dir).builds[0]!;
+    expect(coverageProblems(main).join()).toMatch(/without a sourcemap/);
+    const r = spawnSync("bun", [SCRIPT, dir], { encoding: "utf8" });
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain("without a sourcemap");
+  });
+  it("fails closed when a single unmapped chunk is larger than the byte ceiling", () => {
+    write("assets/big.js", "x".repeat(MAX_UNMAPPED_BYTES + 1));
+    write("assets/entry.js", `import"./menu.js";import"./core.js";import"./big.js"`);
+    expect(coverageProblems(findDuplicates(dir).builds[0]!).join()).toMatch(/big\.js is \d+ B/);
+    expect(spawnSync("bun", [SCRIPT, dir], { encoding: "utf8" }).status).toBe(1);
+  });
+  it("tolerates a few tiny unmapped chunks", () => {
+    write("assets/tiny.js", "x");
+    write("assets/entry.js", `import"./menu.js";import"./core.js";import"./tiny.js"`);
+    expect(coverageProblems(findDuplicates(dir).builds[0]!)).toEqual([]);
   });
   it("exits 0 on a clean fixture and 1 when nothing was built", () => {
     expect(spawnSync("bun", [SCRIPT, dir], { encoding: "utf8" }).status).toBe(0);
