@@ -27,6 +27,7 @@
 // visible chrome.
 import Card from "@marko-ui/shadcn/ui/card/card.marko";
 import { COMPONENTS } from "../../lib/components-list.ts";
+import { fetchCoverageBadge } from "../../lib/coverage-badge.ts";
 
 static const REPO = "https://github.com/svallory/marko-ui";
 
@@ -77,6 +78,8 @@ static const RECEIPTS = [
   },
 ] as const;
 
+static const COVERAGE_LIST = `${REPO}/blob/main/notes/behavior-coverage.md`;
+
 static const BADGE_ENDPOINT = (name: string) =>
   `https://img.shields.io/endpoint?url=${encodeURIComponent(
     `https://raw.githubusercontent.com/svallory/marko-ui/badges/${name}.json`,
@@ -85,7 +88,9 @@ static const BADGE_ENDPOINT = (name: string) =>
 // Exactly three badges, all fed by the `badges` branch (last published
 // release — see the file header). npm/MIT/hydration are README-only: they
 // describe the repo and the suite, not the artifact a consumer installs.
-// The 4th slot is reserved for the behavior-coverage badge (issue #72).
+// The behavior-coverage figure (issue #72) is NOT in this list: it is a Card
+// below the receipts, fetched at build time from the same `badges` branch and
+// rendered only once that release has published coverage.json.
 static const BADGES = [
   {
     alt: "Tests passing (behavior and hydration suites)",
@@ -167,6 +172,31 @@ static const BADGES = [
         </else>
       </for>
     </div>
+    // Behavior coverage: only when the release-pinned coverage.json exists
+    // (nothing renders otherwise — no placeholder, no main-branch fallback).
+    // The percentage covers only components that have a behavior list, so the
+    // listed-components count is part of the sentence, never dropped.
+    <await|coverage|=fetchCoverageBadge()>
+      <if=coverage>
+        <Card class="group relative mt-3 flex flex-col items-center justify-center gap-1 px-4 py-6 text-center">
+          <a
+            href=COVERAGE_LIST
+            target="_blank"
+            rel="noreferrer"
+            title="Which behaviors are listed and which are covered by tests"
+            class="absolute inset-0 z-10 rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <span class="sr-only">${coverage.percent}% of documented behaviors covered by tests across ${coverage.listedComponents} components</span>
+          </a>
+          <span class="text-4xl font-bold tracking-tight text-primary tabular-nums sm:text-5xl">
+            ${coverage.percent}%
+          </span>
+          <span class="text-base text-muted-foreground underline-offset-4 group-hover:underline">
+            of documented behaviors covered by tests, across ${coverage.listedComponents} components
+          </span>
+        </Card>
+      </if>
+    </await>
   </div>
   <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-2 px-6 pb-5">
     <for|badge| of=BADGES>
