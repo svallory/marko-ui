@@ -136,11 +136,22 @@ describe("client-mounted icons render real markup (icon-chunks round 2)", () => 
       // The "copied" branch (and its <Icon name="Check">) never renders at SSR —
       // initial copyState is "idle" — so this icon mounts fresh in the browser
       // the first time the button flips to "copied".
+      //
+      // Pin the button by element handle BEFORE clicking: its accessible name is
+      // its text ("Copy Page"), which flips to "Copying…" and then "Copied", so a
+      // getByRole(/copy page/i) locator stops matching the moment the click lands
+      // and can never see the Check icon.
       const copyButton = page.getByRole("button", { name: /copy page/i });
+      const buttonHandle = (await copyButton.elementHandle())!;
       await copyButton.click();
 
-      const checkIcon = copyButton.locator('svg[data-icon-name="Check"]');
-      await expectPopulatedSvg(checkIcon);
+      // Atomic (one in-page poll): the Check icon exists AND has real children,
+      // before the 1.5s revert to "idle" can remove it.
+      await page.waitForFunction(
+        (button) => (button.querySelector('svg[data-icon-name="Check"]')?.innerHTML.trim().length ?? 0) > 0,
+        buttonHandle,
+        { timeout: 30_000 },
+      );
     } finally {
       await context.close();
     }
