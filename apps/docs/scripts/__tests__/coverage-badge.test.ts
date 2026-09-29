@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   COVERAGE_BADGE_URL,
   fetchCoverageBadge,
@@ -39,6 +39,7 @@ describe("parseCoverageBadge", () => {
 });
 
 describe("fetchCoverageBadge", () => {
+  afterEach(() => vi.restoreAllMocks());
   it("reads the release-pinned badges branch, never badges-main", () => {
     expect(COVERAGE_BADGE_URL).toContain("/badges/coverage.json");
     expect(COVERAGE_BADGE_URL).not.toContain("badges-main");
@@ -56,10 +57,27 @@ describe("fetchCoverageBadge", () => {
   it("returns null on a non-JSON body", async () => {
     expect(await fetchCoverageBadge((async () => new Response("<html>")) as typeof fetch)).toBeNull();
   });
-  it("returns null on a network error", async () => {
-    expect(await fetchCoverageBadge((async () => { throw new TypeError("fetch failed"); }) as typeof fetch)).toBeNull();
+  it("retries a transient timeout and succeeds", async () => {
+    const fetcher = vi.fn<typeof fetch>()
+      .mockRejectedValueOnce(new DOMException("timeout", "TimeoutError"))
+      .mockImplementation(json(good));
+    expect(await fetchCoverageBadge(fetcher)).toEqual({
+      percent: 58, listedComponents: 15, totalComponents: 86,
+    });
+    expect(fetcher).toHaveBeenCalledTimes(2);
   });
-  it("returns null on a malformed message", async () => {
-    expect(await fetchCoverageBadge(json({ message: "n/a" }))).toBeNull();
+  it("reports persistent network errors after three attempts", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const fetcher = vi.fn<typeof fetch>().mockRejectedValue(new TypeError("fetch failed"));
+    expect(await fetchCoverageBadge(fetcher)).toBeNull();
+    expect(fetcher).toHaveBeenCalledTimes(3);
+    expect(log).toHaveBeenCalledTimes(3);
+  });
+  it("reports malformed input without retrying", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const fetcher = vi.fn(json({ message: "n/a" }));
+    expect(await fetchCoverageBadge(fetcher)).toBeNull();
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(log).toHaveBeenCalledWith(expect.stringContaining("invalid payload"));
   });
 });

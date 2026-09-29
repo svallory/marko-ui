@@ -3,8 +3,8 @@
 // Reads `coverage.json` from the RELEASE-PINNED `badges` branch — the number
 // for what users install, never `badges-main`. That file only exists once a
 // release has been cut with release.yml's release-badges job (v0.4.0 and
-// older predate it), so "missing" is a normal state, not an error: callers get
-// `null` and render nothing extra.
+// older predate it). The Pages workflow now requires the card before deploy;
+// local builds can still omit it when offline, with a diagnostic.
 //
 // The message is produced by scripts/ci/badge.ts (`behavior-coverage`):
 // `<pct>% · <listed>/<all> components`. The percentage covers only the
@@ -37,19 +37,28 @@ export function parseCoverageBadge(payload: unknown): CoverageBadge | null {
 }
 
 /**
- * Build-time fetch (the home page is prerendered). Any failure — 404 before
- * the first release that publishes it, network error, timeout, malformed body
- * — resolves to `null`; a fake or stale number is worse than no card.
+ * Build-time fetch (the home page is prerendered). A busy prerender can exceed
+ * a short fetch timeout even when the badge is healthy. Retry transient failures;
+ * report the final cause, then let Pages' artifact assertion block deployment.
  */
 export async function fetchCoverageBadge(
   fetchImpl: typeof fetch = fetch,
   url: string = COVERAGE_BADGE_URL,
 ): Promise<CoverageBadge | null> {
-  try {
-    const res = await fetchImpl(url, { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) return null;
-    return parseCoverageBadge(await res.json());
-  } catch {
-    return null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetchImpl(url, { signal: AbortSignal.timeout(15000) });
+      if (res.ok) {
+        const badge = parseCoverageBadge(await res.json());
+        if (badge) return badge;
+        console.error(`Coverage badge at ${url} has an invalid payload`);
+        return null;
+      }
+      console.error(`Coverage badge at ${url}: HTTP ${res.status} (attempt ${attempt}/3)`);
+      if (res.status < 500 && res.status !== 429) return null;
+    } catch (error) {
+      console.error(`Coverage badge at ${url}: attempt ${attempt}/3 failed`, error);
+    }
   }
+  return null;
 }
