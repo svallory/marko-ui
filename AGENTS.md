@@ -442,8 +442,15 @@ own.
 `bun scripts/ci/behavior-coverage.ts --json` by ci.yml's `tests` job (published
 to `badges-main`, README) and by release.yml's release-badges job on the tag
 (published to the release-pinned `badges` branch; skipped for tags whose
-badge.ts predates the kind, v0.4.0 and older). The site home does not show it
-yet: its 4th slot waits for coverage >= 50%. The percentage is covered /
+badge.ts predates the kind, v0.4.0 and older). The site home shows the
+release-pinned badge as a separate coverage card.
+Its build-time loader (`apps/docs/src/lib/coverage-badge.ts`) fetches raw GitHub
+with a timeout and retries transient errors; a short timeout reproduced the
+missing card in a local static crawl even though the badge was available. Pages
+checks `dist/public/index.html` for the card before deploying, so a missing or
+malformed badge cannot silently ship a green deployment. Local/offline builds
+may still omit it with a logged cause; never hardcode a fallback percentage or
+read `badges-main` for consumer-facing coverage. The percentage is covered /
 *reviewed* behaviors of the listed components — a `behaviors.ts` entry with
 `status: "stub"` (from `scripts/ci/scaffold-behaviors.ts`) is excluded from
 every count until reviewed. Details in `notes/behavior-coverage.md`.
