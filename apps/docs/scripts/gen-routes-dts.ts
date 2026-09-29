@@ -15,6 +15,14 @@ import { createServer } from "vite";
 const root = join(import.meta.dirname, "..");
 const out = join(root, ".marko-run", "routes.d.ts");
 
+// Nothing here should take long; a hang (e.g. a future Vite/marko-run
+// handle that keeps the loop alive) must fail the caller, not block it.
+const watchdog = setTimeout(() => {
+  console.error("gen-routes-dts: timed out after 120s");
+  process.exit(1);
+}, 120_000);
+watchdog.unref();
+
 const server = await createServer({
   root,
   configFile: join(root, "vite.config.ts"),
@@ -35,3 +43,5 @@ if (!existsSync(out)) {
   console.error(`gen-routes-dts: ${out} was not written`);
   process.exit(1);
 }
+// Exit explicitly: don't depend on the event loop draining after close().
+process.exit(0);

@@ -12,7 +12,7 @@ const REAL_SCRIPTS_DIR = path.join(SCRIPTS_DIR, "..");
 // sandbox: a temp "apps/docs" directory with the real check.sh/
 // generate-mtc-baseline.sh/normalize-mtc.ts copied in (unmodified — this is
 // what actually guards against a regression in those files), a stub
-// ensure-routes-dts.sh (the real one boots a dev server, which is slow and
+// ensure-routes-dts.sh (the real one loads the whole docs Vite config, which is slow and
 // irrelevant to gate logic), and a stub `marko-type-check` placed first on
 // PATH so no real, heap-heavy mtc run ever happens in a test.
 let sandbox: string;
@@ -37,7 +37,7 @@ function setupSandbox() {
   copyRealScript("generate-mtc-baseline.sh");
   copyRealScript("normalize-mtc.ts");
 
-  // no-op stand-in for the real dev-server-booting script
+  // no-op stand-in for the real routes.d.ts generator
   writeScript("scripts/ensure-routes-dts.sh", "#!/usr/bin/env bash\nexit 0\n");
 
   // fake git repo so `git rev-parse --git-common-dir` (used for the cross-
