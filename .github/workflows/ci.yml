@@ -264,6 +264,10 @@ jobs:
         run: bun run check:html
       - name: Check preload helper is not co-located with shiki
         run: bun scripts/ci/check-preload-helper.ts
+      - name: Check no module is emitted into two client chunks
+        run: bun scripts/ci/check-no-duplicate-modules.ts
+      - name: Check per-route first-load budgets
+        run: bun scripts/ci/check-route-budgets.ts
       - name: Generate badges
         if: always()
         run: bun scripts/ci/badge.ts vitest vitest-results.json badge-out
