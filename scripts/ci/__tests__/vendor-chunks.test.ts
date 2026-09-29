@@ -71,9 +71,10 @@ describe("third-party coverage", () => {
         for (const dep of Object.keys(JSON.parse(readFileSync(json, "utf8")).dependencies ?? {})) {
           if (dep.startsWith("@zag-js/") || dep === "csstype" /* types only, never bundled */) continue;
           deps++;
-          // Assert the name function actually claims the dep (non-null chunk
-          // name), not merely that the group test regex matches it.
-          if (zagChunkName(`/w/node_modules/${dep}/index.mjs`, machines) === null) unclaimed.add(`${dep} (needed by @zag-js/${pkg})`);
+          // Rolldown puts a module in the group only when BOTH the group's
+          // `test` matches and the name function returns a name.
+          const id = `/w/node_modules/${dep}/index.mjs`;
+          if (!ZAG_MODULE_TEST.test(id) || zagChunkName(id, machines) === null) unclaimed.add(`${dep} (needed by @zag-js/${pkg})`);
         }
       }
     }
