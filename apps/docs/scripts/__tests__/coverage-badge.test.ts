@@ -51,11 +51,30 @@ describe("fetchCoverageBadge", () => {
       totalComponents: 86,
     });
   });
-  it("returns null on 404 (file not published yet)", async () => {
-    expect(await fetchCoverageBadge(json("404: Not Found", { status: 404 }))).toBeNull();
+  it("reports 404 without retrying (file not published yet)", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const fetcher = vi.fn(json("404: Not Found", { status: 404 }));
+    expect(await fetchCoverageBadge(fetcher)).toBeNull();
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(log).toHaveBeenCalledWith(expect.stringContaining("HTTP 404 (attempt 1/3)"));
   });
-  it("returns null on a non-JSON body", async () => {
+  it("reports a non-JSON body", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
     expect(await fetchCoverageBadge((async () => new Response("<html>")) as typeof fetch)).toBeNull();
+    expect(log).toHaveBeenCalledTimes(3);
+  });
+  it.each([503, 429])("backs off and recovers after HTTP %i", async (status) => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const wait = vi.fn(async (_ms: number) => {});
+    const fetcher = vi.fn<typeof fetch>()
+      .mockImplementationOnce(json("unavailable", { status }))
+      .mockImplementation(json(good));
+    expect(await fetchCoverageBadge(fetcher, COVERAGE_BADGE_URL, wait)).toEqual({
+      percent: 58, listedComponents: 15, totalComponents: 86,
+    });
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(wait).toHaveBeenCalledExactlyOnceWith(500);
+    expect(log).toHaveBeenCalledWith(expect.stringContaining(`HTTP ${status} (attempt 1/3)`));
   });
   it("retries a transient timeout and succeeds", async () => {
     const fetcher = vi.fn<typeof fetch>()

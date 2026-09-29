@@ -44,6 +44,7 @@ export function parseCoverageBadge(payload: unknown): CoverageBadge | null {
 export async function fetchCoverageBadge(
   fetchImpl: typeof fetch = fetch,
   url: string = COVERAGE_BADGE_URL,
+  wait: (ms: number) => Promise<void> = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 ): Promise<CoverageBadge | null> {
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
@@ -56,6 +57,7 @@ export async function fetchCoverageBadge(
       }
       console.error(`Coverage badge at ${url}: HTTP ${res.status} (attempt ${attempt}/3)`);
       if (res.status < 500 && res.status !== 429) return null;
+      if (attempt < 3) await wait(attempt * 500);
     } catch (error) {
       console.error(`Coverage badge at ${url}: attempt ${attempt}/3 failed`, error);
     }
