@@ -1,7 +1,8 @@
 # CLI test plan — project structures, orderings, environments
 
-Status measured 2026-09-30 (round 2 applied) against the built CLI at `e30cbdc4`
-(`packages/marko-ui/dist/index.js`, 0.4.1 + agent-onboarding).
+Status measured 2026-09-30 against the built CLI on `feat/agent-onboarding`
+(`packages/marko-ui/dist/index.js`, 0.4.1 + agent-onboarding), after the
+`fix/cli-init-robustness` round: 80 of 80 scenarios pass.
 
 ## Why this exists
 
@@ -42,8 +43,8 @@ path filter (the first-run harness was not covered by it either).
   and set `MARKO_UI_SKILLS_SOURCE=<repo root>`; nothing ever touches GitHub.
 - Every call: stdin closed (or an open never-written pipe for E03), 60 s
   timeout, `CLAUDECODE=1` by default, host `CI`/`NODE_EXTRA_CA_CERTS`/
-  `npm_config_user_agent` scrubbed, realpath'd temp dirs, registry on port 4457
-  (never 3000; 4455 belongs to `test:cli:e2e` and the unit suite).
+  `npm_config_user_agent` scrubbed, realpath'd temp dirs, registry on port 4470
+  (never 3000; 4455 belongs to `test:cli:e2e`, 4447-4449 and 4455-4460 to the unit suite).
 - **Known failures** are `scenario(id, title, { fails: "Dn" }, fn)` → `it.fails`.
   When the CLI dev fixes Dn the scenario goes RED ("expected to fail but
   passed"): remove the mark, never the assertion.
@@ -147,7 +148,7 @@ Not covered: `bun.lockb`, `deno.lock`, Yarn Berry/`packageManager` field, `user-
 | E08 | registry unreachable: `agents sync --no-skill` (component installed) | exit 0 (descriptions best-effort, per the code comment) | pass (fixed, was D13) |
 | K03 | no network at all, `--no-skill` | exit 0, AGENTS.md written, no skills/lock | pass |
 | K04 | skills source unreachable | exit 1 AFTER writing AGENTS.md; manual `skills add …` command printed | pass |
-| E09 | real TTY, `init` with no flags | asks base color / distribution / style | **not automated** — stdin/stdout are pipes here, so the TTY branch is never taken. Automate with a pty: `node-pty`, or `script -q /dev/null node … init` on a runner, send keys (`\r`), assert the three prompts and the resulting `components.json`. Owned by the `cli-init-prompts` brief (D3). |
+| E09 | real TTY, `init` with no flags | asks base color / distribution / style; Enter through all three equals `--defaults` | pass — automated as the pty suite in `packages/marko-ui/src/commands/init.test.ts` (`expect` drives the built CLI; needs `expect` installed, CI installs it) |
 | E10 | Windows paths, `bun.lockb`, Yarn Berry | see note | **not automated** — CI is ubuntu only; macOS/Linux path behaviour is covered by S15/S16 |
 
 ### Ordering
@@ -210,27 +211,28 @@ preserving the *content* of installed files — needs a content-edit fixture, lo
 risk; `eject` failure/partial eject — needs a registry fault-injection server;
 `bun.lockb`/`deno.lock`/`packageManager` field — unit-tested in
 `get-package-manager.test.ts`. Highest-value next
-step: a build of S07/S12 shapes once D2/D6 are fixed.
+step: a build of the S07/S12 shapes (D2 and D6 are fixed, so this is now possible).
 
 ## Defects
 
-D-ids are referenced by `fails:` marks in `e2e/cli/scenarios/*.test.ts`. The
-copy-pasteable repro for each (exact command, cwd structure, exit code, output)
-is in the report `scratch/team-lead/reports/cli-test-plan.md`.
+D-ids were the `fails:` marks in `e2e/cli/scenarios/*.test.ts`; every defect
+below is now fixed and no mark remains. The copy-pasteable repro for each (exact
+command, cwd structure, exit code, output) is in the report
+`scratch/team-lead/reports/cli-test-plan.md`.
 
 | id | one line | scenarios |
 |---|---|---|
-| D1 | **FIXED** (measured round 4): missing tsconfig tolerated. S05d fixed in round 4b | S05, S05b, S05c, S09, S09b–S09d now pass; S05d |
-| D2 | **FIXED** (measured round 4): unbacked aliases resolve to the source root, status/diff/AGENTS see components. O11b fixed in round 4b | S01–S01d, S03, S04, S05c, S06b, S10, S10b, S11, S12 now pass; O11b |
-| D4 | Package-manager detection reads only the cwd lockfile: monorepo app with root `bun.lock` gets `npx` for the skills relay | P-mono | fixed
-| D5 | No-`src/` project: CLI creates `src/styles/globals.css` and `./styles/globals.css`, `components.json` points at the latter, layout/routes not wired **Measured round 4: PARTIALLY fixed** — css path and button are now coherent (S06b passes), but S06 still fails: the CLI creates a `src/` directory in a project without one. **FIXED** (fix/cli-init-robustness: the theme no longer lands at a fixed `src/styles/globals.css`) | S06 |
-| D6 | Hand-wired Tailwind: `components.json` uses `src/styles/app.css` but an unused `src/styles/globals.css` is also created **FIXED** (fix/cli-init-robustness: theme retargeted to `tailwind.css`, merged into a user stylesheet) | S07 |
-| D7 | Non-Marko project: init passes preflight, writes `components.json`, then crashes (tsconfig); never says "not a Marko project" **FIXED** (fix/cli-init-robustness: preflight requires a `marko` dependency) | S13, S09e |
-| D9 | Import distribution: init says "no local component files", `add` writes 5 (NEEDS-DECISION) **FIXED** (fix/cli-init-robustness: `add` exits 1 on import, shows the import path) | DI01b (pinned) |
-| D10 | `add` before `init`, non-interactive: prints a Yes/No prompt, exits 0, does nothing **FIXED** (fix/cli-init-robustness: confirm only in a TTY without `-y`) | O07, O07b (pinned) |
-| D11 | `mergeAgentsFile` mishandles wrong-order / unterminated markers: appends a new section on every sync / leaves unbalanced markers | A04, A05 | fixed
-| D12 | `init` with the registry down exits 1 but leaves `components.json` behind **FIXED** (fix/cli-init-robustness: components.json rolled back on failure) | E07 |
-| D13 | `agents sync --no-skill` with the registry down and components installed exits 1 (the description fetch is documented best-effort) | E08 | fixed
-| doc | **Documentation discrepancy**: the documented exit 4 (network/registry unreachable) is unreachable for `manifest` — it prints static CLI metadata and never touches the registry. Fix the docs (or the code); no scenario. | — |
+| D1 | No `tsconfig.json` in the `components.json` dir made `init`, `agents sync`, `add`, `status`, `diff` crash with `Failed to load tsconfig.json`. **FIXED** (missing tsconfig tolerated) | S05, S05b, S05c, S05d, S09, S09b–S09d |
+| D2 | Without tsconfig `paths`, `aliases.ui` resolved to `<cwd>/@/components/ui`: installed components invisible to `status`, `diff`, AGENTS.md. **FIXED** (unbacked aliases resolve to the source root) | S01–S01d, S03, S04, S05c, S06b, S10, S10b, S11, S12, O11b |
+| D4 | Package-manager detection read only the cwd lockfile: monorepo app with root `bun.lock` got `npx` for the skills relay. **FIXED** | P-mono |
+| D5 | No-`src/` project: the CLI created `src/styles/globals.css` and `components.json` pointed elsewhere. **FIXED** (css path coherent; the theme no longer lands at a fixed `src/styles/globals.css`) | S06, S06b |
+| D6 | Hand-wired Tailwind: `components.json` used `src/styles/app.css` but an unused `src/styles/globals.css` was also created. **FIXED** (theme retargeted to `tailwind.css`, merged into a user stylesheet) | S07 |
+| D7 | Non-Marko project: init passed preflight, wrote `components.json`, then crashed. **FIXED** (preflight requires a `marko` dependency) | S13, S09e |
+| D9 | Import distribution: `add` wrote component source next to the `@marko-ui/shadcn` dependency. **FIXED** (`add` exits 1 on import and shows the import path; pinned) | DI01b |
+| D10 | `add` before `init`, non-interactive: printed a Yes/No prompt, exit 0, did nothing. **FIXED** (confirm only in a TTY without `-y`; pinned) | O07, O07b |
+| D11 | `mergeAgentsFile` mishandled wrong-order / unterminated markers. **FIXED** | A04, A05 |
+| D12 | `init` with the registry down exited 1 but left `components.json` behind. **FIXED** (rolled back on failure) | E07 |
+| D13 | `agents sync --no-skill` with the registry down and components installed exited 1. **FIXED** (descriptions are best-effort) | E08 |
+| doc | **Documentation discrepancy**: the documented exit 4 (network/registry unreachable) is unreachable for `manifest` — it prints static CLI metadata and never touches the registry. The code is kept and its description now says "(registry-backed commands)"; no scenario. | — |
 
-(D3 from the lead's list — `init` prompts in a real terminal — is E09, not automated; D8 was dropped after investigation: it was my shim, not the CLI.)
+(D3 from the lead's list — `init` prompts in a real terminal — is E09, now automated as a pty suite; D8 was dropped after investigation: it was my shim, not the CLI.)
