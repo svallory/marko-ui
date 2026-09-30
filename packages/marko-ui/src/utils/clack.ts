@@ -29,9 +29,16 @@ export async function confirm(message: string, initial = true) {
 
 export async function select(
   message: string,
-  options: { value: string; label: string; hint?: string }[]
+  options: { value: string; label: string; hint?: string }[],
+  opts: { initialValue?: string } = {}
 ) {
-  return handleCancel(await clack.select<string>({ message, options }))
+  return handleCancel(
+    await clack.select<string>({
+      message,
+      options,
+      initialValue: opts.initialValue,
+    })
+  )
 }
 
 export async function multiselect(

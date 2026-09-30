@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process"
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import os from "node:os"
 import path from "node:path"
+import net from "node:net"
 import { describe, expect, it } from "vitest"
 
 import {
@@ -256,6 +257,45 @@ describe.skipIf(!canPty)("init in a real pty", () => {
     expect(r.stdout).toContain("Cancelled.")
     expect(r.stdout).toContain("EXIT=1")
     expect(r.written).toBe(false)
+  })
+
+  it("Enter, Enter, Enter writes the same choices as --defaults: neutral, copy, vega", async () => {
+    // A registry that accepts connections and never answers: init stops at its
+    // first fetch, after components.json is written and before anything can
+    // fail and roll it back. (The kernel completes the handshake without the
+    // test process accepting, so blocking in spawnSync is fine.)
+    const server = net.createServer(() => {})
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve))
+    const { port } = server.address() as net.AddressInfo
+    try {
+      const r = runPty(
+        ask(String.raw`Which[^\r\n]*base color`) +
+          ask(String.raw`Which[^\r\n]*distribution`) +
+          String.raw`
+expect {
+  -re {Which[^\r\n]*visual style} { sleep 0.3; send "\r" }
+  timeout { puts "TIMEOUT"; exit 9 }
+  eof { puts "EOF-BEFORE-STEP"; exit 8 }
+}
+expect {
+  -re {\u2714[^\r\n]*Writing components} { puts "JSON:[exec cat components.json]:ENDJSON"; send "\003" }
+  timeout { puts "TIMEOUT"; exit 9 }
+  eof { puts "EOF-BEFORE-WRITE"; exit 8 }
+}
+expect eof
+`,
+        [],
+        { REGISTRY_URL: `http://127.0.0.1:${port}/r` }
+      )
+      const json = r.stdout.match(/JSON:([\s\S]*?):ENDJSON/)
+      expect(json, r.stdout).not.toBeNull()
+      const config = JSON.parse(json![1])
+      expect(config.tailwind.baseColor).toBe("neutral")
+      expect(config.distribution).toBe("copy")
+      expect(config.visualStyle).toBe("vega")
+    } finally {
+      server.close()
+    }
   })
 
   it("does not ask base color when --base-color is given; distribution is first", () => {
