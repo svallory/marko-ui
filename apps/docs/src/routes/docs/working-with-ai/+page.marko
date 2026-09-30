@@ -24,6 +24,7 @@ static const SETUP_CMD = "bunx marko-ui init --agents";
 static const CHECK_CMD = "bunx marko-ui agents sync --check";
 
 static const AGENT_PROMPT = `Set up marko-ui for AI-assisted development in this project.
+Run every command from the project root (where package.json and components.json are).
 
 1. Run: bunx marko-ui init --agents
 2. Run: bunx marko-ui agents sync --check
@@ -218,7 +219,8 @@ static const JSON_ENVELOPE = `{
 
   <p>
     You do not need the marko-ui CLI to install the skills. Use the
-    <code>skills</code> package directly; it opens an interactive agent picker:
+    <code>skills</code> package directly; it opens an interactive agent picker. The next
+    three blocks are alternatives — run exactly one, matching your package manager:
   </p>
 
   <code-block language="bash" code=SKILLS_BUN/>
@@ -226,7 +228,8 @@ static const JSON_ENVELOPE = `{
   <code-block language="bash" code=SKILLS_PNPM/>
 
   <p>
-    Add <code>-y</code> to accept the defaults without the picker. Add
+    In an <code>@marko/run</code> project, add <code>marko-run</code> after
+    <code>marko6</code> in the <code>--skill</code> list. Add <code>-y</code> to accept the defaults without the picker. Add
     <code>-g</code> to install for your user account instead of the project:
   </p>
 
@@ -264,10 +267,12 @@ static const JSON_ENVELOPE = `{
   <p>
     <code>--check</code> exits 0 with <code>Agent setup is up to date.</code>, or exits
     <strong>3</strong> with <code>Agent setup is out of date: …. Run marko-ui agents sync.</code>
-    when the <code>AGENTS.md</code> section is stale relative to the installed components
-    or an expected skill is missing (no lock entry, or no <code>.agents/skills/&lt;name&gt;/SKILL.md</code>).
-    It checks that setup exists and is current; it does not judge whether the content is
-    correct. <code>--check --no-skill</code> checks <code>AGENTS.md</code> only. It never
+    when <code>AGENTS.md</code> is missing or differs from what <code>agents sync</code>
+    would write — components added or removed, hand edits inside the markers, or a newer
+    marko-ui version (the generated comment embeds the CLI version) — and, unless you pass
+    <code>--no-skill</code>, when an expected skill is missing (no lock entry, or no
+    <code>.agents/skills/&lt;name&gt;/SKILL.md</code>). It checks that setup exists and is
+    current; it does not judge whether the content is correct. <code>--check --no-skill</code> checks <code>AGENTS.md</code> only. It never
     writes anything.
   </p>
 
@@ -383,7 +388,7 @@ static const JSON_ENVELOPE = `{
     <code>/docs/components/&lt;name&gt;.md</code>. The CLI surfaces this directly:
   </p>
 
-  <code-block language="bash" code="marko-ui docs button   # prints button's docs as markdown"/>
+  <code-block language="bash" code="bunx marko-ui docs button   # prints button's docs as markdown"/>
 
   <p>
     In an agent session, <code>marko-ui docs &lt;component&gt;</code> pulls the
@@ -439,8 +444,9 @@ static const JSON_ENVELOPE = `{
     The <code>skills</code> install failed, usually because you are offline or GitHub is
     unreachable. The command has already written <code>AGENTS.md</code> and exits 1 with
     the manual command. Run that command once you are online (see
-    <a href="#manual-installation">Manual Installation</a>), or re-run with
-    <code>--no-skill</code> to skip the skills.
+    <a href="#manual-installation">Manual Installation</a>), or skip the skills with
+    <code>bunx marko-ui agents sync --no-skill</code> (<code>init</code> has no
+    <code>--no-skill</code> flag).
   </p>
 
   <h3>The agent ignores the CLI or invents props</h3>
