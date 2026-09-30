@@ -1,5 +1,8 @@
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "fs"
+import { tmpdir } from "os"
+import path from "path"
 import { getFixturesDir } from "@/src/test-helpers"
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it } from "vitest"
 
 import {
   getPackageManager,
@@ -61,5 +64,104 @@ describe("getPackageRunnerCommand", () => {
     expect(getPackageRunnerCommand("bun")).toBe("bunx")
     expect(getPackageRunnerCommand("npm")).toBe("npx")
     expect(getPackageRunnerCommand(null)).toBe("npx")
+  })
+})
+
+describe("getPackageManager in monorepos", () => {
+  const roots: string[] = []
+
+  function tree(files: Record<string, string>) {
+    const root = mkdtempSync(path.join(tmpdir(), "pm-walk-"))
+    roots.push(root)
+    for (const [file, body] of Object.entries(files)) {
+      const target = path.join(root, file)
+      mkdirSync(path.dirname(target), { recursive: true })
+      writeFileSync(target, body)
+    }
+    return root
+  }
+
+  afterEach(() => {
+    for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true })
+  })
+
+  it("uses the lockfile in the app directory itself", async () => {
+    const root = tree({ "pnpm-lock.yaml": "", "apps/web/bun.lock": "" })
+    expect(await getPackageManager(path.join(root, "apps/web"))).toBe("bun")
+  })
+
+  it("walks up to a lockfile at the workspace root", async () => {
+    const root = tree({
+      "package.json": JSON.stringify({ workspaces: ["apps/*"] }),
+      "bun.lock": "",
+      "apps/web/package.json": "{}",
+    })
+    expect(await getPackageManager(path.join(root, "apps/web"))).toBe("bun")
+  })
+
+  it("walks up two levels", async () => {
+    const root = tree({
+      "pnpm-lock.yaml": "",
+      "pnpm-workspace.yaml": "packages:\n  - 'apps/**'\n",
+      "apps/group/web/package.json": "{}",
+    })
+    expect(await getPackageManager(path.join(root, "apps/group/web"))).toBe("pnpm")
+  })
+
+  it("stops at a workspaces root that has no lockfile", async () => {
+    const outer = tree({
+      "yarn.lock": "",
+      "inner/package.json": JSON.stringify({ workspaces: ["apps/*"] }),
+      "inner/apps/web/package.json": "{}",
+    })
+    expect(await getPackageManager(path.join(outer, "inner/apps/web"))).toBe("npm")
+  })
+
+  it("stops at pnpm-workspace.yaml without a lockfile", async () => {
+    const outer = tree({
+      "bun.lock": "",
+      "inner/pnpm-workspace.yaml": "packages: []\n",
+      "inner/apps/web/x": "",
+    })
+    expect(await getPackageManager(path.join(outer, "inner/apps/web"))).toBe("npm")
+  })
+
+  it("does not stop at a plain package.json without workspaces", async () => {
+    const root = tree({
+      "yarn.lock": "",
+      "apps/web/package.json": JSON.stringify({ name: "web" }),
+    })
+    expect(await getPackageManager(path.join(root, "apps/web"))).toBe("yarn")
+  })
+
+  it("resolves a symlinked cwd to the real tree before walking", async () => {
+    const root = tree({
+      "mono/package.json": JSON.stringify({ workspaces: ["apps/*"] }),
+      "mono/bun.lock": "",
+      "mono/apps/web/package.json": "{}",
+      "elsewhere/x": "",
+    })
+    const link = path.join(root, "elsewhere/web-link")
+    symlinkSync(path.join(root, "mono/apps/web"), link)
+    expect(await getPackageManager(link)).toBe("bun")
+  })
+
+  it("survives an unparseable package.json while walking", async () => {
+    const root = tree({ "bun.lock": "", "apps/web/package.json": "{nope" })
+    expect(await getPackageManager(path.join(root, "apps/web"))).toBe("bun")
+  })
+
+  it("falls back to the user agent when no lockfile exists up the tree", async () => {
+    const root = tree({ "apps/web/package.json": "{}" })
+    const previous = process.env.npm_config_user_agent
+    process.env.npm_config_user_agent = "pnpm/9.0.0 npm/? node/v22"
+    try {
+      expect(
+        await getPackageManager(path.join(root, "apps/web"), { withFallback: true })
+      ).toBe("pnpm")
+    } finally {
+      if (previous === undefined) delete process.env.npm_config_user_agent
+      else process.env.npm_config_user_agent = previous
+    }
   })
 })

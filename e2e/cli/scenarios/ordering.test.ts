@@ -177,9 +177,14 @@ describe("command ordering", () => {
 
   // Stock shape (no tsconfig paths): after the D2 fix doctor must pass with a line
   // stating the mapping — not warn and then pass.
-  scenario("O11b", "doctor on the stock shape after add: passes, states the alias mapping, no warning", { fails: "D2" }, async () => {
+  scenario("O11b", "doctor on the stock shape after add: passes, states the alias mapping, no warning", async () => {
     const ws = makeWorkspace()
     markoApp(ws)
+    // Installs are shimmed, so declare the dependencies `add button` would have
+    // installed: a healthy stock app must yield a clean doctor.
+    const pkg = readJson(ws, "package.json")
+    pkg.dependencies = { ...pkg.dependencies, clsx: "^2", "tailwind-merge": "^3", "class-variance-authority": "^0.7" }
+    writeFileSync(`${ws}/package.json`, JSON.stringify(pkg, null, 2))
     const { shim } = await bootstrap(ws)
     const doctor = await cli(ws, ["doctor"], { shim })
     const out = plain(doctor.out)

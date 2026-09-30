@@ -112,8 +112,6 @@ describe("project structures — tsconfig / alias variants", () => {
     expect(exists(ws, "AGENTS.md")).toBe(true)
   })
 
-  // Flips only when D1 AND D2 are both fixed: without a tsconfig the ui alias
-  // cannot resolve (D2), and today the flow dies earlier on D1.
   scenario("S05c", "no tsconfig and no jsconfig: the installed component is seen", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { tsconfig: "none" })
@@ -130,9 +128,10 @@ describe("project structures — tsconfig / alias variants", () => {
     expect(exists(ws, "AGENTS.md")).toBe(true)
   })
 
-  scenario("S05d", "no tsconfig, components.json present: doctor does not crash on the missing tsconfig", { fails: "D1" }, async () => {
+  scenario("S05d", "no tsconfig, components.json present: doctor does not crash on the missing tsconfig", async () => {
     const ws = makeWorkspace()
-    markoApp(ws, { tsconfig: "none", extra: { "components.json": componentsJson() } })
+    // A project whose components.json points at a stylesheet has that stylesheet.
+    markoApp(ws, { tsconfig: "none", extra: { "components.json": componentsJson(), "src/styles/globals.css": '@import "tailwindcss";\n' } })
     const doctor = await cli(ws, ["doctor"], { shim: withShims(makeWorkspace("shim")) })
     expect(plain(doctor.out)).not.toContain("Failed to load tsconfig.json")
     expect(doctor.code, tail(doctor.out)).toBe(0)
@@ -151,7 +150,6 @@ describe("project structures — tsconfig / alias variants", () => {
     expect(exists(ws, "src"), "CLI created a src/ directory in a project without one").toBe(false)
   })
 
-  // Flips only when D5 AND D2 are both fixed (plain tsconfig ⇒ unresolved alias).
   scenario("S06b", "no src/ directory (plain Vite): the installed component is seen", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { srcDir: false, framework: "marko-vite", viteConfig: true })
@@ -242,7 +240,7 @@ describe("project structures — monorepos", () => {
     expect([0, 3], tail(r.out)).toContain(r.code)
   })
 
-  // Flips only when D1 AND D7 are fixed: the root is not a Marko project, so the
+  // D1 is fixed; remaining mark is D7: the root is not a Marko project, so the
   // correct outcome is a clean exit 1 that writes nothing.
   scenario("S09e", "monorepo root, no components.json, no tsconfig: init fails cleanly, writes nothing", async () => {
     const ws = makeWorkspace()

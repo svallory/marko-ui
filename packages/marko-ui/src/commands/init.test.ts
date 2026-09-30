@@ -150,7 +150,7 @@ describe("init command flags", () => {
  * pty-driven checks of the BUILT CLI. The unit tests above cannot see the
  * class of bug this file exists for: the decision was right on paper and the
  * wiring was not. `expect(1)` is the pty driver, so no native dependency is
- * added; the tests skip where it (or the built CLI) is absent.
+ * added; the tests skip locally where it (or the built CLI) is absent, and fail under CI.
  *
  * Every case cancels (Ctrl-C) or stops at a prompt/first step, so none reaches
  * the network, the package manager, or the registry. The window size is set
