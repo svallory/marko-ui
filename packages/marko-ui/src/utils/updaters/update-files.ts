@@ -395,6 +395,10 @@ export function resolveFilePath(
 
   if (file.target) {
     if (file.target.startsWith("~/")) {
+      const aliasDir = resolveAliasBackedTarget(file.target, config)
+      if (aliasDir) {
+        return aliasDir
+      }
       return path.join(config.resolvedPaths.cwd, file.target.replace("~/", ""))
     }
 
@@ -425,6 +429,29 @@ export function resolveFilePath(
 
   const relativePath = resolveNestedFilePath(file.path, targetDir)
   return path.join(targetDir, relativePath)
+}
+
+// Registry targets are written against the conventional layout
+// (`~/src/components/ui/...`). The prefixes below correspond to an alias in
+// components.json, so they follow that alias's resolved directory — this keeps
+// the directory `add` writes to identical to the one status/diff/doctor/the
+// taglib read. Longest prefix first. Every other `~/` target (the theme
+// stylesheet, routes, ...) stays relative to the project root.
+const ALIAS_TARGET_PREFIXES = [
+  ["~/src/components/ui/", "ui"],
+  ["~/src/components/", "components"],
+  ["~/src/lib/", "lib"],
+  ["~/src/hooks/", "hooks"],
+] as const
+
+function resolveAliasBackedTarget(target: string, config: Config) {
+  for (const [prefix, key] of ALIAS_TARGET_PREFIXES) {
+    if (target.startsWith(prefix)) {
+      const root = config.resolvedPaths[key]
+      return root ? path.join(root, target.slice(prefix.length)) : null
+    }
+  }
+  return null
 }
 
 function resolveAliasTarget(target: string, config: Config) {

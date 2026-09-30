@@ -10,6 +10,7 @@ import { getProjectInfo } from "@/src/utils/get-project-info"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { resolveImportWithMetadata } from "@/src/utils/resolve-import"
+import { resolveConventionalAlias } from "@/src/utils/source-root"
 import { cosmiconfig } from "cosmiconfig"
 import fsExtra from "fs-extra"
 import fg from "fast-glob"
@@ -148,6 +149,30 @@ export function loadProjectTsConfig(
   return tsConfig
 }
 
+function isUnbackedConventionalAlias(
+  alias: string,
+  resolved: { source: string; matchedAlias: string }
+) {
+  return (
+    resolved.source === "tsconfig_paths" &&
+    resolved.matchedAlias === alias &&
+    resolveConventionalAlias(alias, "/") !== null
+  )
+}
+
+/**
+ * True when the alias resolves through tsconfig `paths`, package `imports` or a
+ * workspace package export rather than the conventional `@/` -> source-root
+ * fallback. Used by `doctor` to say which one is in effect.
+ */
+export async function isAliasBacked(alias: string, cwd: string) {
+  const resolved = await resolveImportWithMetadata(alias, {
+    ...loadProjectTsConfig(cwd),
+    cwd,
+  })
+  return Boolean(resolved?.path) && !isUnbackedConventionalAlias(alias, resolved!)
+}
+
 async function resolveAliasPath(
   aliasKey: "components" | "utils" | "ui" | "lib" | "hooks",
   alias: string,
@@ -159,8 +184,11 @@ async function resolveAliasPath(
     cwd,
   })
 
-  if (!resolved?.path) {
-    return null
+  // No tsconfig `paths` entry, package `imports` or workspace export backs this
+  // alias (tsconfig-paths' match-all would just join it onto the base URL, e.g.
+  // `<cwd>/@/components`): use the conventional source-root mapping instead.
+  if (!resolved?.path || isUnbackedConventionalAlias(alias, resolved)) {
+    return resolveConventionalAlias(alias, cwd)
   }
 
   if (alias.startsWith("#") && resolved.path === path.resolve(cwd, alias)) {

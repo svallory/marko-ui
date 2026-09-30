@@ -6,6 +6,7 @@ import { rawConfigSchema } from "@/src/schema"
 import { Framework, FRAMEWORKS } from "@/src/utils/frameworks"
 import { Config, getConfig, resolveConfigPaths } from "@/src/utils/get-config"
 import { getPackageInfo } from "@/src/utils/get-package-info"
+import { hasSrcDir } from "@/src/utils/source-root"
 import {
   getPackageImportAliases,
   getPackageImportPrefix,
@@ -65,7 +66,7 @@ export async function getProjectInfo(
         suppressErrors: true,
       }
     ),
-    fs.pathExists(path.resolve(cwd, "src")),
+    Promise.resolve(hasSrcDir(cwd)),
     isTypeScriptProject(cwd),
     getTailwindConfigFile(cwd),
     getTailwindCssFile(cwd, opts?.configCssFile),
