@@ -422,7 +422,7 @@ puts "EXIT=$rc"
       expect(r.written).toBe(false)
     })
 
-    it("--defaults refuses without asking and points at a terminal run", () => {
+    it("--defaults refuses without asking and says to drop the flag", () => {
       const r = runPty(
         String.raw`
 expect eof
@@ -435,7 +435,7 @@ puts "EXIT=$rc"
         { pkg: noMarko, shimBun: true }
       )
       expect(r.stdout).not.toContain("Install it?")
-      expect(r.stdout).toContain("in a terminal to be offered the Marko install")
+      expect(r.stdout).toContain("without -y/--defaults/--silent to be offered the Marko install")
       expect(r.stdout).toContain("EXIT=1")
       expect(r.installs).toEqual([])
     })

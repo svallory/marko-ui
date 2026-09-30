@@ -88,13 +88,18 @@ export async function installMarko(
     `Installing ${[...dependencies, ...dev].join(", ")}.`,
     { silent }
   )?.start()
+  let added = false
   try {
-    await installWithPackageManager(packageManager, dependencies, dev, cwd)
+    // Two calls on purpose: no package manager mixes prod and dev packages in
+    // one command (-D applies to the whole call).
+    await installWithPackageManager(packageManager, dependencies, [], cwd)
+    added = true
+    await installWithPackageManager(packageManager, [], dev, cwd)
     installSpinner?.succeed()
   } catch (error) {
     installSpinner?.fail()
     const manual = [
-      formatInstallCommand(packageManager, dependencies),
+      added ? null : formatInstallCommand(packageManager, dependencies),
       dev.length ? formatInstallCommand(packageManager, dev, true) : null,
     ]
       .filter(Boolean)
@@ -103,7 +108,11 @@ export async function installMarko(
     throw new CommandError(
       `Could not install Marko (${
         error instanceof Error ? error.message.split("\n")[0] : String(error)
-      }).\nInstall it manually, then run ${highlighter.info(
+      }).\n${
+        added && dev.length
+          ? `${dependencies.join(" and ")} were already added to package.json; only ${dev.join(" ")} is missing.\n`
+          : ""
+      }Install it manually, then run ${highlighter.info(
         "marko-ui init"
       )} again:\n${manual}`
     )

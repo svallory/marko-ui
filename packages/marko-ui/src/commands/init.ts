@@ -259,9 +259,13 @@ export async function runInit(
               )}.` +
               (preflight.offerDeclined
                 ? ""
-                : ` Or run ${highlighter.info(
-                    "marko-ui init"
-                  )} in a terminal to be offered the Marko install.`))
+                : options.yes || options.defaults || options.silent
+                  ? ` Or run ${highlighter.info(
+                      "marko-ui init"
+                    )} without -y/--defaults/--silent to be offered the Marko install.`
+                  : ` Or run ${highlighter.info(
+                      "marko-ui init"
+                    )} in a terminal to be offered the Marko install.`))
       )
     }
   }
