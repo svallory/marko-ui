@@ -242,6 +242,46 @@ else
 fi
 
 echo
+echo "== agent setup: AGENTS.md section + skills from a LOCAL source =="
+# MARKO_UI_SKILLS_SOURCE points the skills install at this checkout, so the
+# harness never touches GitHub. The scaffold is already initialized, which is
+# the `init --agents on an initialized project` path.
+run_agents() {
+  (cd "$APP" && REGISTRY_URL="$REGISTRY_URL" CLAUDECODE=1 MARKO_UI_SKILLS_SOURCE="$REPO" \
+    timeout 300 node "$CLI" "$@" </dev/null 2>&1)
+}
+
+agents_out="$(run_agents init --agents)"
+agents_rc=$?
+[ $agents_rc -eq 0 ] && ok "init --agents on an initialized project exited 0" \
+  || { bad "init --agents exited $agents_rc"; echo "$agents_out" | tail -15; }
+grep -q '<!-- marko-ui:start -->' "$APP/AGENTS.md" 2>/dev/null \
+  && ok "AGENTS.md has the marko-ui section" || bad "AGENTS.md has no marko-ui section"
+for comp in button card; do
+  grep -qi "$comp" "$APP/AGENTS.md" 2>/dev/null \
+    && ok "AGENTS.md lists $comp" || bad "AGENTS.md does not list $comp"
+done
+for skill in marko-ui marko6; do
+  grep -q "\"$skill\"" "$APP/skills-lock.json" 2>/dev/null \
+    && ok "skills-lock.json has $skill" || bad "skills-lock.json has no $skill"
+done
+[ -f "$APP/.agents/skills/marko-ui/SKILL.md" ] \
+  && ok ".agents/skills/marko-ui/SKILL.md installed" || bad ".agents/skills/marko-ui/SKILL.md missing"
+
+check_out="$(run_agents agents sync --check)"
+[ $? -eq 0 ] && ok "agents sync --check exits 0 after setup" \
+  || { bad "agents sync --check failed after setup"; echo "$check_out" | tail -5; }
+
+again_out="$(run_agents init --agents)"
+[ $? -eq 0 ] && ok "second init --agents exits 0" || bad "second init --agents failed"
+grep -q 'already installed' <<<"$again_out" \
+  && ok "second init --agents skips the installed skills" \
+  || bad "second init --agents did not report the skills as already installed"
+
+run_agents agents sync --no-skill >/dev/null
+[ $? -eq 0 ] && ok "agents sync --no-skill exits 0" || bad "agents sync --no-skill failed"
+
+echo
 echo "== iconLibrary: add must ship ONLY the configured library (#80) =="
 # components.json `iconLibrary` used to be validated and then ignored: every
 # consumer got all five icon maps (~85 KB gzip of unused data per page). For

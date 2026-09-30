@@ -26,6 +26,25 @@ export interface ChangelogEntry {
   changes: string[];
 }
 
+static const UNRELEASED: Omit<ChangelogEntry, "version" | "date"> = {
+  title: "Agent skills, a sturdier init, and config that matches your project",
+  summary:
+    "Agent setup now installs real skills through the `skills` package, `init` asks its questions in a terminal and refuses to half-configure a project, and the CLI resolves aliases, stylesheets and package managers the way stock Marko apps and monorepos actually lay them out.",
+  changes: [
+    "Agent skills: `marko-ui agents sync` and `init --agents` write the marker-delimited `## marko-ui components` section into `AGENTS.md` (distribution-aware, lists installed components) and install the `marko-ui` and `marko6` skills (plus `marko-run` in `@marko/run` projects) through the `skills` package, into `.agents/skills/` with symlinks for agent-specific folders and a `skills-lock.json` entry. Already-installed skills are skipped; a failed install exits 1 after writing `AGENTS.md` and prints the manual command; `--no-skill` writes `AGENTS.md` only. `agents sync --check` also exits 3 when a skill is missing. The generated `.claude/skills/marko-ui/SKILL.md` from 0.4.1 and earlier is replaced on the next sync.",
+    "`init --agents` on an already-initialized project skips project setup and syncs the agent docs (exit 0) instead of failing the preflight. The plain `init` error on an initialized project now names `agents sync`, `add` and `init --force`.",
+    "Breaking: the AGENTS.md section no longer advertises `show <name> --props`, a flag the CLI never had. Component API docs come from `marko-ui docs <name>`.",
+    "Config resolution: a project with no `tsconfig.json` or `jsconfig.json` no longer crashes status, doctor, diff, add or agents sync (including a monorepo package folder without one). An alias that no tsconfig `paths` entry backs (`@/components`) resolves to the source root (`src/` if it exists, otherwise the project root) instead of a literal `@/` folder, so status, diff, doctor, agents sync and the taglib see what `add` installed. `add` now follows your aliases for components, ui, lib and hooks, and `doctor` prints the alias mapping it used. Installing into an `@/*` alias that points outside `src/` now lands where the alias points.",
+    "`init` asks its three questions in a terminal: base color, distribution and visual style. Breaking: `-y`/`--yes` no longer defaults on, so it is an explicit opt-out of the questions, as are `--defaults`, `--silent` and non-interactive callers (agent shells, CI, piped stdin). The redundant \"write components.json?\" confirm is gone; Ctrl-C cancels without writing anything.",
+    "`add` on a project without `components.json` runs `init` with the defaults when non-interactive, and `add --dry-run` previews that without writing. `add` is refused on the import distribution, where components come from `@marko-ui/shadcn`, and says so.",
+    "`init` refuses projects that do not depend on Marko (`marko`, `@marko/run` or `@marko/vite`) and tells a workspace root to run from the app or pass `--cwd`; `--force` bypasses it. A failed `init` rolls back `components.json` and says what stays and that re-running is safe.",
+    "The theme merges into your own Tailwind entry instead of a second stylesheet: it is written inside a marked block (replaced on re-run), after `@import \"tailwindcss\"`, and your own CSS is never overwritten. `add` warns when the target stylesheet has no Tailwind import.",
+    "Package manager detection walks up from the project to the workspace root, so `add` and `agents sync` use the monorepo's lockfile.",
+    "Fixes: `AGENTS.md` with stray or reversed marker lines is repaired non-destructively (your text is kept, exactly one section remains); `agents sync` works offline by listing components found on disk; the progress spinner no longer hangs in a zero-width terminal, and overwrite prompts no longer hang when stdin is closed.",
+    "Testing: a CLI scenario suite (80 scenarios over project structures, init, add and agents sync) runs in CI, plus a pty-driven suite for the init prompts.",
+  ],
+};
+
 static const ENTRIES: ChangelogEntry[] = [
   {
     version: "0.4.1",
@@ -138,10 +157,18 @@ static const ENTRIES: ChangelogEntry[] = [
 >
   <h2 id="unreleased">Unreleased</h2>
 
-  <p>
-    Nothing yet: everything merged to <code>main</code> since <code>0.4.0</code> is in the
-    <a href="#0.4.1"><code>0.4.1</code></a> entry below.
-  </p>
+  <div class="mt-8 border-l-2 border-border pl-5">
+    <div class="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+      Not yet released
+    </div>
+    <h3 class="mt-1 text-base font-semibold tracking-tight">${UNRELEASED.title}</h3>
+    <p>${UNRELEASED.summary}</p>
+    <ul>
+      <for|change| of=UNRELEASED.changes>
+        <li>${change}</li>
+      </for>
+    </ul>
+  </div>
 
   <p>Currently in the registry: ${COMPONENTS.length} components, plus the theme and utils items.</p>
 
