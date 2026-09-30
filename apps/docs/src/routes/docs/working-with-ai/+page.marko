@@ -1,6 +1,7 @@
 // Working with AI — the "AI Agents" group landing page.
-// Explains how the CLI generates machine-checked context for coding agents,
-// what gets written, how agents should use the CLI, and how to verify setup.
+// Explains how one command sets a project up for coding agents (an AGENTS.md
+// section plus installed skills), how to do it by hand, how to keep it
+// current, how agents should use the CLI, and how to verify the setup.
 import "../../../tags/docs/docs-article.marko";
 import "../../../tags/docs/code-block.marko";
 import { CLI_MANIFEST } from "../../../lib/cli-manifest";
@@ -8,26 +9,41 @@ import { CLI_MANIFEST } from "../../../lib/cli-manifest";
 static const TOC = [
   { id: "overview", label: "Overview" },
   { id: "quick-start", label: "Quick Start" },
-  { id: "what-gets-generated", label: "What Gets Generated" },
+  { id: "what-gets-installed", label: "What Gets Installed" },
+  { id: "claude-code", label: "Claude Code" },
+  { id: "manual-installation", label: "Manual Installation" },
+  { id: "keeping-it-current", label: "Keeping It Current" },
   { id: "cli-contract", label: "CLI Contract for Agents" },
   { id: "skills", label: "Skills" },
   { id: "markdown-endpoints", label: "Markdown Endpoints" },
   { id: "check-your-setup", label: "Check Your Setup" },
+  { id: "troubleshooting", label: "Troubleshooting" },
 ];
 
-static const QUICK_START_PROMPT = `You are helping me set up marko-ui for AI-assisted development.
+static const SETUP_CMD = "bunx marko-ui init --agents";
+static const CHECK_CMD = "bunx marko-ui agents sync --check";
 
-Please do the following:
-1. If marko-ui is not yet initialised, run: bunx marko-ui init --agents
-2. If it is already initialised, run: bunx marko-ui agents sync
-3. Then read the generated AGENTS.md and .claude/skills/marko-ui/SKILL.md
-   (if the skill file exists, even if you are not Claude) so you have the
-   project's component list and the recommended agent workflow.
-Use bunx marko-ui for subsequent commands if it is not installed locally.`;
+static const AGENT_PROMPT = `Set up marko-ui for AI-assisted development in this project.
+Run every command from the project root (where package.json and components.json are).
+
+1. Run: bunx marko-ui init --agents
+2. Run: bunx marko-ui agents sync --check
+3. Read AGENTS.md, then load the marko-ui skill.
+
+If any step fails, stop and report the exact error message and exit code.
+Do not continue and do not work around it.`;
+
+static const CLAUDE_MD = `@AGENTS.md`;
+
+static const SKILLS_BUN = "bunx skills add svallory/marko-ui --skill marko-ui marko6";
+static const SKILLS_NPM = "npx skills add svallory/marko-ui --skill marko-ui marko6";
+static const SKILLS_PNPM = "pnpm dlx skills add svallory/marko-ui --skill marko-ui marko6";
+static const SKILLS_LIST = "bunx skills add svallory/marko-ui --list";
+static const SKILLS_GLOBAL = "bunx skills add svallory/marko-ui --skill marko-ui marko6 -g";
 
 static const VERIFY_PROMPT = `Please verify my marko-ui AI setup by answering these three questions.
-If you can't answer one of them, run \`bunx marko-ui agents sync\` first and re-read
-AGENTS.md and .claude/skills/marko-ui/SKILL.md.
+If you can't answer one of them, run \`bunx marko-ui agents sync\`, then re-read
+AGENTS.md and load the marko-ui and marko6 skills.
 
 1. What is the command to add the switch component to this project?
 2. How do you declare reactive state in Marko 6?
@@ -42,7 +58,7 @@ static const JSON_ENVELOPE = `{
 
 <docs-article
   title="Working with AI"
-  description="The marko-ui CLI feeds structured, machine-checked context to your coding agent to guide component discovery, installation, and Marko 6 authoring."
+  description="One command gives your coding agent the marko-ui CLI workflow, your installed component list, and the Marko 6 rules it gets wrong by default."
   href="/docs/working-with-ai"
   toc=TOC
 >
@@ -57,52 +73,84 @@ static const JSON_ENVELOPE = `{
   </p>
 
   <p>
-    The <code>marko-ui agents sync</code> command solves this at the source: it writes
-    a curated skill and an <code>AGENTS.md</code> section that teach your agent the CLI
-    workflow, the Marko 6 authoring landmines, and which components are actually installed
-    in your project. The CLI provides structured, machine-checked context through its manifest
-    and a freshness check for generated docs. The skill contains curated guidance;
-    run sync again when your installed components or CLI version change. See <a href="/docs/cli">CLI</a> for the full command reference.
+    marko-ui fixes this with two things in your project: a short section in
+    <code>AGENTS.md</code> that names your distribution, your installed components, and
+    the CLI commands to use, and a set of agent skills that the agent loads on demand
+    (the CLI workflow, Marko 6 authoring rules). One command installs both. See
+    <a href="/docs/cli">CLI</a> for the full command reference.
   </p>
 
   <h2 id="quick-start">Quick Start</h2>
 
+  <code-block language="bash" code=SETUP_CMD/>
+
   <p>
-    Paste this prompt into your AI agent. It handles both new and existing projects:
+    This one command works in every case. On a new project it runs the full
+    <code>init</code> first. On a project that already has a <code>components.json</code>
+    it prints <code>components.json already exists — skipping project setup and syncing the agent docs.</code>
+    and does only the agent setup. It is safe to re-run, and it exits 0 on success.
   </p>
 
-  <code-block language="text" code=QUICK_START_PROMPT/>
+  <p>It does two things:</p>
+
+  <ol>
+    <li>
+      Writes (or updates) a marker-delimited <code>## marko-ui components</code>
+      section in <code>AGENTS.md</code> at the project root.
+    </li>
+    <li>
+      Installs the agent skills with the <a href="https://skills.sh" target="_blank" rel="noopener noreferrer external">skills</a>
+      package: <code>marko-ui</code> and <code>marko6</code> always, plus
+      <code>marko-run</code> in an <code>@marko/run</code> project.
+    </li>
+  </ol>
 
   <p>
-    The agent will run one of two commands depending on your project's state:
+    Commit the files it creates, so every teammate and every agent session starts
+    with the same context:
   </p>
 
   <ul>
+    <li><code>AGENTS.md</code></li>
+    <li><code>skills-lock.json</code></li>
+    <li><code>.agents/</code> — the canonical skill copies</li>
     <li>
-      <code>bunx marko-ui init --agents</code> — first-time setup: initialises
-      <code>components.json</code>, installs the base theme, and writes the agent docs
-      in one step.
-    </li>
-    <li>
-      <code>marko-ui agents sync</code> — refresh the generated docs after adding or
-      removing components.
+      the agent-specific links, such as <code>.claude/skills/</code> for Claude Code
     </li>
   </ul>
 
-  <h2 id="what-gets-generated">What Gets Generated</h2>
-
   <p>
-    <code>agents sync</code> writes two outputs to your project root:
+    If you use Claude Code, also read <a href="#claude-code">Claude Code</a> below: it
+    does not read <code>AGENTS.md</code> on its own.
   </p>
 
-  <h3>The marko-ui Claude skill</h3>
+  <h3>Or let your agent do it</h3>
+
+  <p>Paste this into your agent. It runs the same command and checks the result:</p>
+
+  <code-block language="text" code=AGENT_PROMPT/>
+
+  <h2 id="what-gets-installed">What Gets Installed</h2>
+
+  <h3>The AGENTS.md section</h3>
 
   <p>
-    <code>.claude/skills/marko-ui/SKILL.md</code> — a structured skill file
-    (Claude-specific path; other agents read <code>AGENTS.md</code> instead) that
-    teaches the search → show → add → doctor workflow. Use the manifest
-    for the live command sequence, including component documentation:
+    The section sits between <code>&lt;!-- marko-ui:start --&gt;</code> and
+    <code>&lt;!-- marko-ui:end --&gt;</code> markers. If <code>AGENTS.md</code> does not
+    exist it is created. Everything outside the markers is preserved, and re-running
+    replaces only what is inside them, so your own agent instructions survive every sync.
   </p>
+
+  <p>The section is deliberately short, because agents load <code>AGENTS.md</code> on every task. It holds:</p>
+
+  <ul>
+    <li>the distribution (<code>copy</code> or <code>import</code>) and what that means for editing components;</li>
+    <li>the installed components with their descriptions (copy distribution);</li>
+    <li>the CLI commands the agent should use — <code>docs</code>, <code>search</code>, <code>add</code>, <code>show</code>, <code>doctor</code>, <code>agents sync</code>;</li>
+    <li>an instruction to load the <code>marko-ui</code> and <code>marko6</code> skills before writing component code.</li>
+  </ul>
+
+  <p>The CLI workflow the agent is taught, from the live manifest:</p>
 
   <ol>
     <for|step| of=CLI_MANIFEST.agentWorkflow>
@@ -110,27 +158,122 @@ static const JSON_ENVELOPE = `{
     </for>
   </ol>
 
+  <h3>The skills</h3>
+
   <p>
-    The skill also includes a 9-item Marko 6 authoring-landmines catalog — common
-    mistakes agents make when they apply React or Vue mental models to Marko — and a
-    list of the project's actually-installed component names. The AGENTS.md
-    index also includes registry descriptions when available.
+    The skills come from the <code>skills/</code> directory of the
+    <a href="https://github.com/svallory/marko-ui" target="_blank" rel="noopener noreferrer external">marko-ui repository</a>
+    and are installed by the <code>skills</code> package, not written by the CLI.
   </p>
 
-  <h3>AGENTS.md</h3>
+  <ul>
+    <li><code>marko-ui</code> — the CLI workflow, component conventions, and pitfalls.</li>
+    <li>
+      <code>marko6</code> — the Marko 6 language and an agent-error catalog. It comes
+      along because Marko 6 syntax is what agents get wrong first, and every component
+      you add is Marko 6 code.
+    </li>
+    <li>
+      <code>marko-run</code> — routing and handlers. Added only when the project is an
+      <code>@marko/run</code> app.
+    </li>
+  </ul>
+
+  <p>Where they land:</p>
+
+  <ul>
+    <li>
+      <code>.agents/skills/&lt;name&gt;/</code> — the canonical copy. Codex, Cursor, Gemini CLI,
+      and other agents that follow the shared convention read it directly.
+    </li>
+    <li>
+      Symlinks in agent-specific folders, such as <code>.claude/skills/&lt;name&gt;</code> for Claude Code.
+    </li>
+    <li><code>skills-lock.json</code> — records what was installed so it can be checked and updated.</li>
+  </ul>
 
   <p>
-    A marker-delimited section is inserted into (or appended to) <code>AGENTS.md</code>
-    in your project root. Everything outside the markers is preserved, so your own
-    agent instructions and notes survive each sync unchanged.
+    If the skills are already installed, the install step is skipped and the command says
+    so. If the install fails (offline, GitHub unreachable), the command exits 1
+    <em>after</em> writing <code>AGENTS.md</code> and prints the manual command. Pass
+    <code>--no-skill</code> to write <code>AGENTS.md</code> only, with no network access.
   </p>
 
-  <h3>CI gate</h3>
+  <h2 id="claude-code">Claude Code</h2>
 
   <p>
-    <code>marko-ui agents sync --check</code> exits 3 when the generated docs are stale
-    relative to the installed components. Wire it into your CI pipeline to catch agents
-    working from outdated context.
+    Claude Code reads <code>CLAUDE.md</code>, not <code>AGENTS.md</code>. The CLI does not
+    edit <code>CLAUDE.md</code>, so add one line to it (create the file if needed):
+  </p>
+
+  <code-block language="text" code=CLAUDE_MD/>
+
+  <p>
+    <code>@AGENTS.md</code> imports the file, so the marko-ui section reaches Claude Code
+    without being copied. Making <code>CLAUDE.md</code> a symlink to <code>AGENTS.md</code>
+    works too. The skills need no such step: <code>.claude/skills/</code> is where
+    Claude Code looks.
+  </p>
+
+  <h2 id="manual-installation">Manual Installation</h2>
+
+  <p>
+    You do not need the marko-ui CLI to install the skills. Use the
+    <code>skills</code> package directly; it opens an interactive agent picker. The next
+    three blocks are alternatives — run exactly one, matching your package manager:
+  </p>
+
+  <code-block language="bash" code=SKILLS_BUN/>
+  <code-block language="bash" code=SKILLS_NPM/>
+  <code-block language="bash" code=SKILLS_PNPM/>
+
+  <p>
+    In an <code>@marko/run</code> project, add <code>marko-run</code> after
+    <code>marko6</code> in the <code>--skill</code> list. Add <code>-y</code> to accept the defaults without the picker. Add
+    <code>-g</code> to install for your user account instead of the project:
+  </p>
+
+  <code-block language="bash" code=SKILLS_GLOBAL/>
+
+  <p>List everything the repository offers, including <code>marko-run</code> and <code>port-to-marko</code>:</p>
+
+  <code-block language="bash" code=SKILLS_LIST/>
+
+  <p>To get the <code>AGENTS.md</code> section without installing skills:</p>
+
+  <code-block language="bash" code="bunx marko-ui agents sync --no-skill"/>
+
+  <p>
+    This needs an initialized project (<code>components.json</code>) and no network.
+    Without one it exits 1 with <code>No components.json found</code>; run
+    <code>bunx marko-ui init --agents</code> instead. See
+    <a href="/docs/installation">Installation</a> for setting up a project.
+  </p>
+
+  <h2 id="keeping-it-current">Keeping It Current</h2>
+
+  <p>Refresh the <code>AGENTS.md</code> section after adding or removing components:</p>
+
+  <code-block language="bash" code="bunx marko-ui agents sync"/>
+
+  <p>Update the installed skills:</p>
+
+  <code-block language="bash" code="bunx skills update"/>
+
+  <p>Gate it in CI:</p>
+
+  <code-block language="bash" code=CHECK_CMD/>
+
+  <p>
+    <code>--check</code> exits 0 with <code>Agent setup is up to date.</code>, or exits
+    <strong>3</strong> with <code>Agent setup is out of date: …. Run marko-ui agents sync.</code>
+    when <code>AGENTS.md</code> is missing or differs from what <code>agents sync</code>
+    would write — components added or removed, hand edits inside the markers, or a newer
+    marko-ui version (the generated comment embeds the CLI version) — and, unless you pass
+    <code>--no-skill</code>, when an expected skill is missing (no lock entry, or no
+    <code>.agents/skills/&lt;name&gt;/SKILL.md</code>). It checks that setup exists and is
+    current; it does not judge whether the content is correct. <code>--check --no-skill</code> checks <code>AGENTS.md</code> only. It never
+    writes anything.
   </p>
 
   <h2 id="cli-contract">CLI Contract for Agents</h2>
@@ -194,21 +337,18 @@ static const JSON_ENVELOPE = `{
   <h2 id="skills">Skills</h2>
 
   <p>
-    Three additional agent skills are available through the
-    <a href="https://github.com/svallory/marko-ui" target="_blank" rel="noopener noreferrer external">marko-ui skills pack</a>:
+    The <a href="https://github.com/svallory/marko-ui" target="_blank" rel="noopener noreferrer external">marko-ui repository</a>
+    ships four agent skills. <code>init --agents</code> installs the first two (and
+    <code>marko-run</code> where it applies); <code>port-to-marko</code> is opt-in.
   </p>
 
-  <code-block language="bash" code="npx skills add svallory/marko-ui"/>
-
-  <h3>port-to-marko</h3>
+  <h3>marko-ui</h3>
 
   <p>
-    A complete workflow for porting any React component library to Marko: inventory
-    upstream components, port them with the SSR-safe Zag.js pattern, run mechanical
-    parity verification (type check, hydration invariant, visual diff against the
-    upstream), and publish through the official contribution or community registry path. See
-    <a href="/docs/contributing-a-library#port-with-an-agent">Contributing a Library</a> for the full
-    porting flow and the wanted-library list.
+    The CLI workflow (search, docs, add, diff, doctor), how to tell the
+    <code>copy</code> and <code>import</code> distributions apart, component
+    conventions, and the pitfalls agents hit when a component renders but
+    misbehaves.
   </p>
 
   <h3>marko6</h3>
@@ -224,7 +364,21 @@ static const JSON_ENVELOPE = `{
   <p>
     Routing, request handlers, middleware, and deployment targets for
     <code>@marko/run</code>. Covers the adapter model, the route file conventions,
-    and Node, static, and Netlify deployment adapters.
+    and Node, static, and Netlify deployment adapters. Installed only in
+    <code>@marko/run</code> projects.
+  </p>
+
+  <h3>port-to-marko</h3>
+
+  <p>
+    A complete workflow for porting a React component library to Marko: inventory
+    upstream components, port them with the SSR-safe Zag.js pattern, run mechanical
+    parity verification (type check, hydration invariant, visual diff against the
+    upstream), and publish through the official contribution or community registry path.
+    Not installed by <code>init --agents</code>; add it with
+    <code>bunx skills add svallory/marko-ui --skill port-to-marko</code>. See
+    <a href="/docs/contributing-a-library#port-with-an-agent">Contributing a Library</a> for the full
+    porting flow and the wanted-library list.
   </p>
 
   <h2 id="markdown-endpoints">Markdown Endpoints</h2>
@@ -234,7 +388,7 @@ static const JSON_ENVELOPE = `{
     <code>/docs/components/&lt;name&gt;.md</code>. The CLI surfaces this directly:
   </p>
 
-  <code-block language="bash" code="marko-ui docs button   # prints button's docs as markdown"/>
+  <code-block language="bash" code="bunx marko-ui docs button   # prints button's docs as markdown"/>
 
   <p>
     In an agent session, <code>marko-ui docs &lt;component&gt;</code> pulls the
@@ -244,15 +398,74 @@ static const JSON_ENVELOPE = `{
 
   <h2 id="check-your-setup">Check Your Setup</h2>
 
+  <p>First the mechanical check. It exits 0 when everything is in place:</p>
+
+  <code-block language="bash" code=CHECK_CMD/>
+
+  <p>Then confirm the skills are installed:</p>
+
+  <code-block language="bash" code="bunx skills list"/>
+
   <p>
-    Once you have run <code>agents sync</code>, paste this prompt to your agent to
-    verify that the context landed correctly:
+    Then paste this prompt to your agent to verify that the context actually reached it:
   </p>
 
   <code-block language="text" code=VERIFY_PROMPT/>
 
   <p>
-    A well-configured agent should answer all three using the generated files and the documentation they link to without performing a web search. If it can't, it should
-    run <code>marko-ui agents sync</code> first and re-read the files.
+    A well-configured agent answers all three from <code>AGENTS.md</code>, the loaded
+    skills, and <code>marko-ui docs</code>, without a web search. If it can't, see
+    <a href="#troubleshooting">Troubleshooting</a>.
+  </p>
+
+  <h2 id="troubleshooting">Troubleshooting</h2>
+
+  <h3>A components.json file already exists</h3>
+
+  <p>
+    You ran <code>marko-ui init</code> on an initialized project. With the current CLI,
+    <code>bunx marko-ui init --agents</code> handles this case and only does the agent
+    setup. With an older CLI, run <code>bunx marko-ui agents sync</code>. To re-run the
+    whole init, use <code>init --force</code>.
+  </p>
+
+  <h3>No components.json found</h3>
+
+  <p>
+    <code>agents sync</code> exits 1 because the project is not initialized (or you ran
+    it outside the project root; pass <code>-c &lt;dir&gt;</code> to point at it). Run
+    <code>bunx marko-ui init --agents</code>, which does the project setup and the agent
+    setup together.
+  </p>
+
+  <h3>Could not install the agent skills</h3>
+
+  <p>
+    The <code>skills</code> install failed, usually because you are offline or GitHub is
+    unreachable. The command has already written <code>AGENTS.md</code> and exits 1 with
+    the manual command. Run that command once you are online (see
+    <a href="#manual-installation">Manual Installation</a>), or skip the skills with
+    <code>bunx marko-ui agents sync --no-skill</code> (<code>init</code> has no
+    <code>--no-skill</code> flag).
+  </p>
+
+  <h3>The agent ignores the CLI or invents props</h3>
+
+  <p>Work through these in order:</p>
+
+  <ol>
+    <li>Run <code>bunx marko-ui agents sync --check</code>. Exit 3 means something is missing; run <code>agents sync</code>.</li>
+    <li>Using Claude Code? Confirm <code>CLAUDE.md</code> contains <code>@AGENTS.md</code>. See <a href="#claude-code">Claude Code</a>.</li>
+    <li>Tell the agent explicitly: "Load the marko-ui skill, then run <code>marko-ui docs &lt;name&gt;</code> before using a component."</li>
+    <li>Start a new session. Agents read instructions and skills at session start.</li>
+  </ol>
+
+  <h3>Upgrading from marko-ui 0.4.1 or earlier</h3>
+
+  <p>
+    Those versions wrote a Claude-only skill at <code>.claude/skills/marko-ui/SKILL.md</code>,
+    with no lock entry. Run <code>bunx marko-ui agents sync</code>: it replaces that file
+    with the symlinked skill from the <code>skills</code> package and records it in
+    <code>skills-lock.json</code>. Commit the result.
   </p>
 </docs-article>

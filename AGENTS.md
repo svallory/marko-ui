@@ -288,9 +288,11 @@ Verify JSON shape in the command implementation before documenting a shared enve
 `docs --list --json`, `doctor --json`, and `registry list --json` use
 `$type`/`version`/`ok`/`data`; `info --json` (alias of `status --json`) and
 `search --json` currently return plain result objects. `docs <component>`
-prints markdown, even with `--json`. The generated agent skill is curated in
-`packages/marko-ui/src/agents/content.ts`, not derived from the manifest;
-`agents sync --check` checks freshness, not correctness of every recipe.
+prints markdown, even with `--json`. The generated AGENTS.md section is in
+`packages/marko-ui/src/agents/content.ts`; the agent skills are not generated
+but installed from `skills/` by the `skills` package
+(`packages/marko-ui/src/agents/skills.ts`). `agents sync --check` checks
+freshness, not correctness of every recipe. `show` has no `--props` flag.
 Use the live manifest for supported flags and the generated docs manifest
 for reference tables.
 
