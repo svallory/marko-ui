@@ -355,6 +355,18 @@ exports in `packages/shadcn/ui/icon/`, update `renderIconResolver` to match
 of a scaffold per library contains only that library's icon data. The import
 distribution (`@marko-ui/shadcn`) is unaffected: all five libraries, lucide default.
 
+`bun run test:cli:e2e` drives ONE project shape in ONE order. The scenario
+suite, `bun run test:cli:scenarios` (`e2e/cli/scenarios/`, plan and defect list
+in `notes/cli-test-plan.md`), builds many shapes from small hand-made fixtures
+(monorepos, no tsconfig, jsconfig, existing Tailwind, every lockfile) and runs
+the built CLI through the orderings and environments users hit. Package
+managers/runners are logging shims, skills come from `MARKO_UI_SKILLS_SOURCE`,
+never GitHub. A scenario the CLI fails today is `{ fails: "Dn" }` (`it.fails`):
+the suite is green until a fix lands, then RED until the mark is removed —
+remove the mark, never weaken the assertion. `SCENARIOS_SHOW_FAILURES=1` shows
+the real failure behind each mark. New CLI behaviour gets a scenario here, not
+another block in `first-run.sh`.
+
 Other traps, each of which cost a debugging cycle:
 
 - **The registry must be built AND served locally.** `tooling/build-registry.ts`
