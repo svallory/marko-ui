@@ -152,7 +152,7 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
   </p>
 
   <ul>
-    <li><strong>Marko 6.</strong> A fresh <code>create-marko</code> app is one.</li>
+    <li><strong>Marko 6.</strong> A fresh <code>create-marko</code> app is one. <code>init</code> needs a <code>package.json</code> that depends on <code>marko</code> (the scaffold has it).</li>
     <li>
       <strong>Tailwind v4.</strong> On a fresh <code>create-marko</code> app you do not set it up:
       <code>init</code> installs it and wires it in (see <a href="#what-init-does">what
@@ -241,7 +241,8 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
   <code-block language="marko" code=USE_BUTTON_COPY/>
 
   <p>
-    On the <code>import</code> distribution there is no <code>add</code> step — every component is
+    On the <code>import</code> distribution there is no <code>add</code> step (<code>marko-ui add</code>
+    exits with a message on this distribution) — every component is
     already available from <code>@marko-ui/shadcn</code>:
   </p>
 
