@@ -40,6 +40,20 @@ describe("isInteractive", () => {
   )
 })
 
+describe("AI_AGENT", () => {
+  test("AI_AGENT=1 disables prompting even with a TTY", () => {
+    expect(
+      isInteractive({ env: { AI_AGENT: "1" }, stdin: { isTTY: true } })
+    ).toBe(false)
+  })
+
+  test("AI_AGENT=0 is treated as unset", () => {
+    expect(
+      isInteractive({ env: { AI_AGENT: "0" }, stdin: { isTTY: true } })
+    ).toBe(true)
+  })
+})
+
 describe("isNonInteractive", () => {
   test("is the inverse of isInteractive", () => {
     expect(isNonInteractive({ env: {}, stdin: { isTTY: true } })).toBe(false)

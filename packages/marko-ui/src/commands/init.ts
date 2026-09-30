@@ -78,7 +78,7 @@ export const init = new Command()
     "do not prompt; use the default for every choice not given by flag. same as --yes."
   )
   .option("-f, --force", "force overwrite of existing configuration.", false)
-  .option("-s, --silent", "mute output.", false)
+  .option("-s, --silent", "mute output. also disables prompts (defaults are used).", false)
   .option("-b, --base-color <name>", "the base color to use.")
   .option("--css-variables", "use css variables for theming.", true)
   .option("--no-css-variables", "do not use css variables for theming.")

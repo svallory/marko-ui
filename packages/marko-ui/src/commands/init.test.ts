@@ -116,8 +116,17 @@ describe("mayPromptForInit", () => {
     expect(mayPromptForInit({ ...flags, ...override }, true)).toBe(false)
   })
 
-  it("defaults to isInteractive() when the terminal state is not injected", () => {
-    expect(mayPromptForInit(flags)).toBe(isInteractive())
+  it("derives interactivity from the environment when not injected", () => {
+    // The default argument is `isInteractive()` over process.env/stdin.
+    const saved = { ...process.env }
+    try {
+      process.env.AI_AGENT = "1"
+      expect(mayPromptForInit(flags)).toBe(false)
+      delete process.env.AI_AGENT
+      expect(mayPromptForInit(flags)).toBe(isInteractive())
+    } finally {
+      process.env = saved
+    }
   })
 })
 
@@ -151,6 +160,20 @@ describe("init command flags", () => {
 const cli = path.resolve(__dirname, "../../dist/index.js")
 const hasExpect = spawnSync("expect", ["-v"]).status === 0
 const canPty = hasExpect && existsSync(cli)
+
+// Skipping silently in CI would turn this suite into a green no-op: fail there
+// and name what is missing.
+if (process.env.CI && !canPty) {
+  describe("init in a real pty", () => {
+    it("has its prerequisites", () => {
+      const missing = [
+        !hasExpect && "`expect` (apt-get install expect)",
+        !existsSync(cli) && `the built CLI at ${cli} (bun run --filter marko-ui build)`,
+      ].filter(Boolean)
+      throw new Error(`pty tests cannot run in CI; missing: ${missing.join(", ")}`)
+    })
+  })
+}
 
 // Drives `marko-ui init <args>` in a fixture project. `body` is Tcl run after
 // the spawn; it must print markers on stdout. Returns stdout + whether
@@ -195,6 +218,7 @@ expect {
   eof { puts "EOF-BEFORE-PROMPT"; exit 8 }
 }
 expect eof
+puts $expect_out(buffer)
 lassign [wait] pid spawnid os rc
 puts "EXIT=$rc"
 `
@@ -213,6 +237,7 @@ describe.skipIf(!canPty)("init in a real pty", () => {
   it("asks base color first; Ctrl-C there exits 1 and writes nothing", () => {
     const r = runPty(cancelAt(String.raw`Which[^\r\n]*base color`), [])
     expect(r.stdout).toMatch(/ASKED:.*base color/)
+    expect(r.stdout).toContain("Cancelled.")
     expect(r.stdout).toContain("EXIT=1")
     expect(r.written).toBe(false)
   })
@@ -225,6 +250,7 @@ describe.skipIf(!canPty)("init in a real pty", () => {
       []
     )
     expect(r.stdout).toMatch(/ASKED:.*visual style/)
+    expect(r.stdout).toContain("Cancelled.")
     expect(r.stdout).toContain("EXIT=1")
     expect(r.written).toBe(false)
   })
