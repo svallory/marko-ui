@@ -159,21 +159,25 @@ async function prepareAgentDocs(cwd: string) {
 async function collectInstalledComponents(
   cwd: string
 ): Promise<InstalledComponent[]> {
-  const names = await getProjectComponents(cwd)
-
-  // Descriptions come from the registry index — best-effort so sync also
-  // works offline (names only).
-  let descriptions = new Map<string, string>()
+  // One registry fetch per sync, shared with the on-disk listing. It is
+  // best-effort so sync also works offline (names only, no descriptions).
+  let index: Awaited<ReturnType<typeof getShadcnRegistryIndex>> | null = null
   try {
-    const index = await getShadcnRegistryIndex()
-    descriptions = new Map(
-      (index ?? [])
-        .filter((item) => item.description)
-        .map((item) => [item.name, item.description!])
+    index = await getShadcnRegistryIndex()
+  } catch (error) {
+    logger.debug(
+      `registry index unavailable: ${
+        error instanceof Error ? error.message : String(error)
+      }`
     )
-  } catch {
-    // Offline: index unavailable.
   }
+
+  const names = await getProjectComponents(cwd, index)
+  const descriptions = new Map(
+    (index ?? [])
+      .filter((item) => item.description)
+      .map((item) => [item.name, item.description!])
+  )
 
   return names.sort().map((name) => ({
     name,
@@ -185,52 +189,70 @@ async function collectInstalledComponents(
  * Replaces the marker-delimited section in an existing AGENTS.md (leaving
  * everything the user wrote intact), or appends/creates it.
  *
- * Malformed markers are repaired without deleting user text:
- * - Every complete start…end pair is one generated section. The first is
- *   replaced; later pairs are stale copies and are dropped.
- * - With no complete pair (end before start, a lone start, a lone end),
- *   the stray marker lines are removed, everything else is kept as user
- *   text, and a fresh section is appended. The next run then finds a valid
- *   pair, so repeated runs converge to the same file.
- * CRLF files stay CRLF.
+ * Invariant for any input: the result holds exactly one start and one end
+ * marker (the generated block) and no user text outside a generated pair is
+ * ever lost. Malformed markers are handled like this:
+ * - Each end marker pairs with the LAST start marker before it (innermost
+ *   pair). The first pair is replaced by the new section; later pairs are
+ *   stale generated copies and are dropped.
+ * - Every other marker (unmatched starts/ends) is a stray: only the marker
+ *   text is removed, the text around it is kept.
+ * - With no pair at all, strays are removed and a fresh section is appended.
+ * The next run then sees one valid pair, so repeated runs give the same file.
+ *
+ * Line endings: the majority style of the existing file wins (CRLF only when
+ * it has more CRLF than bare LF); the generated block is written in it.
  */
 export function mergeAgentsFile(existing: string | null, section: string) {
   if (!existing) {
     return `${section}\n`
   }
 
-  const eol = existing.includes("\r\n") ? "\r\n" : "\n"
-  const block = eol === "\r\n" ? section.replace(/\r?\n/g, eol) : section
+  const crlf = (existing.match(/\r\n/g) ?? []).length
+  const lf = (existing.match(/\n/g) ?? []).length - crlf
+  const eol = crlf > lf ? "\r\n" : "\n"
+  const block = section.replace(/\r?\n/g, eol)
 
-  const first = findMarkerPair(existing, 0)
-  if (first) {
-    let merged =
-      existing.slice(0, first.start) + block + existing.slice(first.end)
-    let from = first.start + block.length
-    for (let pair = findMarkerPair(merged, from); pair; ) {
-      merged = merged.slice(0, pair.start) + merged.slice(pair.end)
-      pair = findMarkerPair(merged, from)
-    }
-    return merged
+  const pairs = findMarkerPairs(existing)
+  if (!pairs.length) {
+    const cleaned = stripMarkers(existing)
+    const separator = cleaned.endsWith("\n") ? eol : `${eol}${eol}`
+    return `${cleaned}${separator}${block}${eol}`
   }
 
-  const cleaned = stripMarkerLines(existing)
-  const separator = cleaned.endsWith("\n") ? eol : `${eol}${eol}`
-  return `${cleaned}${separator}${block}${eol}`
+  let merged = ""
+  let cursor = 0
+  pairs.forEach((pair, i) => {
+    merged += stripMarkers(existing.slice(cursor, pair.start))
+    if (i === 0) merged += block
+    cursor = pair.end
+  })
+  return merged + stripMarkers(existing.slice(cursor))
 }
 
-/** First complete start…end pair at or after `from`: [start, end) offsets. */
-function findMarkerPair(text: string, from: number) {
-  const start = text.indexOf(AGENTS_START_MARKER, from)
-  if (start === -1) return null
-  const endAt = text.indexOf(AGENTS_END_MARKER, start + AGENTS_START_MARKER.length)
-  if (endAt === -1) return null
-  return { start, end: endAt + AGENTS_END_MARKER.length }
-}
-
-function stripMarkerLines(text: string) {
-  return [AGENTS_START_MARKER, AGENTS_END_MARKER].reduce(
-    (acc, marker) => acc.split(marker).join(""),
-    text
+/** Complete start…end pairs as [start, end) offsets, innermost pairing. */
+function findMarkerPairs(text: string) {
+  const pairs: { start: number; end: number }[] = []
+  let lastStart = -1
+  const marker = new RegExp(
+    `${escapeRegExp(AGENTS_START_MARKER)}|${escapeRegExp(AGENTS_END_MARKER)}`,
+    "g"
   )
+  for (const match of text.matchAll(marker)) {
+    if (match[0] === AGENTS_START_MARKER) {
+      lastStart = match.index!
+    } else if (lastStart !== -1) {
+      pairs.push({ start: lastStart, end: match.index! + match[0].length })
+      lastStart = -1
+    }
+  }
+  return pairs
+}
+
+function stripMarkers(text: string) {
+  return text.split(AGENTS_START_MARKER).join("").split(AGENTS_END_MARKER).join("")
+}
+
+function escapeRegExp(text: string) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 }

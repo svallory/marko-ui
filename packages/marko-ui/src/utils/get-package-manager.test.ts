@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "fs"
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "fs"
 import { tmpdir } from "os"
 import path from "path"
 import { getFixturesDir } from "@/src/test-helpers"
@@ -132,6 +132,18 @@ describe("getPackageManager in monorepos", () => {
       "apps/web/package.json": JSON.stringify({ name: "web" }),
     })
     expect(await getPackageManager(path.join(root, "apps/web"))).toBe("yarn")
+  })
+
+  it("resolves a symlinked cwd to the real tree before walking", async () => {
+    const root = tree({
+      "mono/package.json": JSON.stringify({ workspaces: ["apps/*"] }),
+      "mono/bun.lock": "",
+      "mono/apps/web/package.json": "{}",
+      "elsewhere/x": "",
+    })
+    const link = path.join(root, "elsewhere/web-link")
+    symlinkSync(path.join(root, "mono/apps/web"), link)
+    expect(await getPackageManager(link)).toBe("bun")
   })
 
   it("survives an unparseable package.json while walking", async () => {

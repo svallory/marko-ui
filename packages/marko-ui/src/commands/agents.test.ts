@@ -177,79 +177,76 @@ describe("mergeAgentsFile", () => {
     )
   })
 
-  describe("malformed markers", () => {
+  describe("marker permutations", () => {
     const S = AGENTS_START_MARKER
     const E = AGENTS_END_MARKER
     const occurrences = (text: string, needle: string) => text.split(needle).length - 1
-    const converges = (input: string) => {
-      const once = mergeAgentsFile(input, SECTION)
-      expect(mergeAgentsFile(once, SECTION)).toBe(once)
-      return once
+
+    // Every case: converges on a second run, exactly one S and one E (S
+    // first), and every user token survives. `gen` is stale generated text
+    // that may be replaced.
+    const cases: [string, string, string[]][] = [
+      ["no markers", "u1\n", ["u1"]],
+      ["ordered", "u1\n${S}\nSTALEGEN\n${E}\nu2\n", ["u1", "u2"]],
+      ["reversed E..S", "u1\n${E}\nu2\n${S}\nu3\n", ["u1", "u2", "u3"]],
+      ["start only", "u1\n${S}\nu2\n", ["u1", "u2"]],
+      ["end only", "u1\n${E}\nu2\n", ["u1", "u2"]],
+      ["duplicated pairs", "${S}\nSTALEGEN\n${E}\nu1\n${S}\nSTALEGEN\n${E}\nu2\n", ["u1", "u2"]],
+      ["nested starts", "${S}\nu1\n${S}\nSTALEGEN\n${E}\nu2\n", ["u1", "u2"]],
+      ["E S E", "u1\n${E}\nu2\n${S}\nSTALEGEN\n${E}\nu3\n", ["u1", "u2", "u3"]],
+      ["S E S", "u1\n${S}\nSTALEGEN\n${E}\nu2\n${S}\nu3\n", ["u1", "u2", "u3"]],
+      ["stray E before pair", "u1\n${E}\nu2\n${S}\nSTALEGEN\n${E}\nu3\n", ["u1", "u2", "u3"]],
+      ["pair then stray S", "${S}\nSTALEGEN\n${E}\nu1\n${S}\nu2\n", ["u1", "u2"]],
+      ["lone start, user text, then pair (old buggy run)", "u1\n${S}\nu2\n${S}\nSTALEGEN\n${E}\nu3\n", ["u1", "u2", "u3"]],
+      ["pair, stray E", "${S}\nSTALEGEN\n${E}\nu1\n${E}\nu2\n", ["u1", "u2"]],
+      ["adjacent markers", "u1${E}${S}u2\n", ["u1", "u2"]],
+    ]
+
+    for (const [name, template, tokens] of cases) {
+      for (const [label, eol] of [["LF", "\n"], ["CRLF", "\r\n"]] as const) {
+        it(`${name} (${label}): converges, one section, user text kept`, () => {
+          const input = template
+            .replaceAll("${S}", S)
+            .replaceAll("${E}", E)
+            .replaceAll("\n", eol)
+          const once = mergeAgentsFile(input, SECTION)
+          expect(mergeAgentsFile(once, SECTION)).toBe(once)
+          expect(occurrences(once, S)).toBe(1)
+          expect(occurrences(once, E)).toBe(1)
+          expect(once.indexOf(S)).toBeLessThan(once.indexOf(E))
+          for (const token of tokens) expect(once).toContain(token)
+          expect(once).not.toContain("STALEGEN")
+          if (eol === "\r\n") {
+            expect(once.replaceAll("\r\n", "")).not.toContain("\n")
+          }
+        })
+      }
     }
 
-    it("no markers: appends once, idempotent", () => {
-      const out = converges("# Notes\n")
-      expect(occurrences(out, S)).toBe(1)
+    it("keeps the user text between a lone start and a later pair", () => {
+      const out = mergeAgentsFile(`u1\n${S}\nkeep this\n${S}\nSTALEGEN\n${E}\n`, SECTION)
+      expect(out).toContain("keep this")
+      expect(out).toContain("u1")
     })
 
-    it("ordered markers: replaces in place", () => {
-      const out = converges(`a\n${S}\nold\n${E}\nb\n`)
-      expect(out).toBe(`a\n${SECTION}\nb\n`)
+    it("ordered markers: replaces exactly in place", () => {
+      expect(mergeAgentsFile(`a\n${S}\nold\n${E}\nb\n`, SECTION)).toBe(`a\n${SECTION}\nb\n`)
     })
 
-    it("reversed markers: keeps all user text, one section, idempotent", () => {
-      const out = converges(`# Mine\n${E}\nmiddle\n${S}\ntail\n`)
-      expect(out).toContain("middle")
-      expect(out).toContain("tail")
-      expect(occurrences(out, S)).toBe(1)
-      expect(occurrences(out, E)).toBe(1)
-    })
-
-    it("start only: keeps the orphaned text, one closed section", () => {
-      const out = converges(`keep\n${S}\nhalf\n`)
-      expect(out).toContain("keep")
-      expect(out).toContain("half")
-      expect(occurrences(out, S)).toBe(1)
-      expect(occurrences(out, E)).toBe(1)
-    })
-
-    it("end only: keeps the text, one closed section", () => {
-      const out = converges(`keep\n${E}\nmore\n`)
-      expect(out).toContain("keep")
-      expect(out).toContain("more")
-      expect(occurrences(out, S)).toBe(1)
-      expect(occurrences(out, E)).toBe(1)
-    })
-
-    it("duplicated sections: one survives, text between them is kept", () => {
-      const out = converges(`${S}\nx\n${E}\nuser between\n${S}\ny\n${E}\nend\n`)
-      expect(occurrences(out, S)).toBe(1)
-      expect(out).toContain("user between")
-      expect(out).toContain("end")
-      expect(out).not.toContain("\nx\n")
-    })
-
-    it("nested start markers: replaces from the first start to the first end", () => {
-      const out = converges(`${S}\na\n${S}\nb\n${E}\nz\n`)
-      expect(occurrences(out, S)).toBe(1)
-      expect(out.endsWith("\nz\n")).toBe(true)
-    })
-
-    it("CRLF file: keeps CRLF everywhere, idempotent", () => {
-      const out = converges(`# Top\r\n\r\n${S}\r\nold\r\n${E}\r\n\r\nouter\r\n`)
-      expect(out.startsWith("# Top\r\n\r\n")).toBe(true)
-      expect(out.endsWith("\r\n\r\nouter\r\n")).toBe(true)
-      expect(out.replace(/\r\n/g, "")).not.toContain("\n")
-    })
-
-    it("CRLF file without markers: appends with CRLF", () => {
-      const out = converges("# Top\r\nline")
-      expect(out.replace(/\r\n/g, "")).not.toContain("\n")
-      expect(out.startsWith("# Top\r\nline\r\n\r\n")).toBe(true)
+    it("mixed endings: the majority style wins", () => {
+      const crlfMajority = mergeAgentsFile("a\r\nb\r\nc\nd", SECTION)
+      expect(crlfMajority.endsWith(`${SECTION.replaceAll("\n", "\r\n")}\r\n`)).toBe(true)
+      const lfMajority = mergeAgentsFile("a\nb\nc\r\nd", SECTION)
+      expect(lfMajority.endsWith(`${SECTION}\n`)).toBe(true)
     })
 
     it("empty existing file is treated as new", () => {
       expect(mergeAgentsFile("", SECTION)).toBe(`${SECTION}\n`)
+    })
+
+    it("CRLF file without markers and no trailing newline: appends with CRLF", () => {
+      const out = mergeAgentsFile("# Top\r\nline", SECTION)
+      expect(out.startsWith("# Top\r\nline\r\n\r\n")).toBe(true)
     })
   })
 

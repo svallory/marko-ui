@@ -28,9 +28,12 @@ beforeEach(() => {
     path.join(root, "tsconfig.json"),
     JSON.stringify({ compilerOptions: { baseUrl: ".", paths: { "@/*": ["./src/*"] } } })
   )
-  for (const dir of ["button", "card", "my-own-folder"]) {
+  for (const dir of ["button", "card"]) {
     mkdirSync(path.join(root, "src/components/ui", dir), { recursive: true })
+    writeFileSync(path.join(root, "src/components/ui", dir, `${dir}.marko`), "")
   }
+  mkdirSync(path.join(root, "src/components/ui/my-own-folder"), { recursive: true })
+  writeFileSync(path.join(root, "src/components/ui/my-own-folder/notes.txt"), "")
   writeFileSync(path.join(root, "src/components/ui/badge.marko"), "")
 })
 
@@ -45,14 +48,19 @@ describe("getProjectComponents", () => {
     expect((await getProjectComponents(root)).sort()).toEqual(["badge", "button", "card"])
   })
 
-  it("degrades to every on-disk name when the registry is unreachable", async () => {
+  it("offline: keeps only entries holding a .marko file, not unrelated folders", async () => {
     registryIndex.mockRejectedValue(new Error("fetch failed"))
-    expect((await getProjectComponents(root)).sort()).toEqual([
-      "badge",
-      "button",
-      "card",
-      "my-own-folder",
-    ])
+    expect((await getProjectComponents(root)).sort()).toEqual(["badge", "button", "card"])
+  })
+
+  it("an index passed in is used without fetching", async () => {
+    expect(await getProjectComponents(root, [{ name: "card" }])).toEqual(["card"])
+    expect(registryIndex).not.toHaveBeenCalled()
+  })
+
+  it("an explicit null index means offline: no fetch, disk heuristic", async () => {
+    expect((await getProjectComponents(root, null)).sort()).toEqual(["badge", "button", "card"])
+    expect(registryIndex).not.toHaveBeenCalled()
   })
 
   it("returns [] without a components.json", async () => {

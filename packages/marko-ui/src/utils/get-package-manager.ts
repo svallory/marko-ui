@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "fs"
+import { existsSync, readFileSync, realpathSync } from "fs"
 import { dirname, join } from "path"
 
 export type PackageManager = "yarn" | "pnpm" | "bun" | "npm" | "deno"
@@ -33,7 +33,13 @@ const LOCKFILES: [string, PackageManager][] = [
 // workspace root. The walk ends at the first workspace root (a package.json
 // with `workspaces`, or pnpm-workspace.yaml) or the filesystem root.
 function detectFromLockfile(targetDir: string): PackageManager | null {
+  // Resolve symlinks so a cwd linked into a monorepo walks the real tree.
   let dir = targetDir
+  try {
+    dir = realpathSync(targetDir)
+  } catch {
+    // Nonexistent dir: walk the path as given.
+  }
 
   for (;;) {
     for (const [file, pm] of LOCKFILES) {
