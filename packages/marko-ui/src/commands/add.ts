@@ -115,9 +115,7 @@ export const add = new Command()
           return
         }
         if (
-          !options.yes &&
-          !isDryRun &&
-          (itemType === "registry:style" || itemType === "registry:theme")
+          shouldConfirmStyleInstall(options, itemType, isDryRun)
         ) {
           logger.break()
           const proceed = await confirm(
@@ -139,6 +137,7 @@ export const add = new Command()
         }
       }
 
+      assertHasComponents(options)
       if (!options.components?.length) {
         options.components = await promptForRegistryComponents(options)
       }
@@ -275,6 +274,50 @@ export const add = new Command()
       clearRegistryContext()
     }
   })
+
+/**
+ * Whether `add` should ask before overwriting CSS with a style/theme item.
+ * `-y`, a dry run and a caller with no terminal never get asked: the confirm
+ * is taken as yes, which is what `-y` has always meant.
+ */
+export function shouldConfirmStyleInstall(
+  options: Pick<z.infer<typeof addOptionsSchema>, "yes">,
+  itemType: string | undefined,
+  isDryRun: boolean,
+  interactive: boolean = isInteractive()
+): boolean {
+  return (
+    !options.yes &&
+    !isDryRun &&
+    interactive &&
+    (itemType === "registry:style" || itemType === "registry:theme")
+  )
+}
+
+/**
+ * `add` with no names opens a multiselect, which nothing can answer without a
+ * terminal (and `-y` says not to ask). Fail with a usage error (exit 2)
+ * naming the syntax instead of hanging or exiting 0 having done nothing.
+ */
+export function assertHasComponents(
+  options: Pick<z.infer<typeof addOptionsSchema>, "yes" | "all" | "components">,
+  interactive: boolean = isInteractive()
+) {
+  if (options.components?.length || options.all) {
+    return
+  }
+  if (interactive && !options.yes) {
+    return
+  }
+  throw new CommandError(
+    `Name the components to add: ${highlighter.info(
+      "marko-ui add <name...>"
+    )} (or ${highlighter.info("marko-ui add --all")}). Run ${highlighter.info(
+      "marko-ui search"
+    )} to list what is available.`,
+    { exitCode: 2 }
+  )
+}
 
 /**
  * Whether `add` should ask before creating a missing components.json.

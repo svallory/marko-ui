@@ -3,6 +3,7 @@ import path from "path"
 import { getShadcnRegistryIndex } from "@/src/registry/api"
 import { clearRegistryContext } from "@/src/registry/context"
 import { confirm } from "@/src/utils/clack"
+import { isInteractive } from "@/src/utils/interactive"
 import { addComponents } from "@/src/utils/add-components"
 import { getConfig } from "@/src/utils/get-config"
 import {
@@ -39,6 +40,14 @@ const ejectOptionsSchema = z.object({
  * the user removes it, since the copy path's generated components style
  * themselves independently — see the printed follow-up steps).
  */
+/** Only a person at a terminal, without `-y`, gets asked. */
+export function shouldConfirmEject(
+  options: { yes: boolean },
+  interactive: boolean = isInteractive()
+): boolean {
+  return !options.yes && interactive
+}
+
 export const eject = new Command()
   .name("eject")
   .description(
@@ -93,7 +102,9 @@ export const eject = new Command()
         )
       }
 
-      if (!options.yes) {
+      // Taken as yes without a terminal: nothing could answer, and the command
+      // is explicit about what it will overwrite in its own name.
+      if (shouldConfirmEject(options)) {
         const proceed = await confirm(
           `Eject ${highlighter.info(
             String(installedComponents.length)
