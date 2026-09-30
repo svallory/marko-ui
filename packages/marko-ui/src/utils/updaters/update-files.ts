@@ -26,6 +26,7 @@ import {
   resolveImportWithMetadata,
 } from "@/src/utils/resolve-import"
 import { confirm } from "@/src/utils/clack"
+import { isInteractive } from "@/src/utils/interactive"
 import { spinner } from "@/src/utils/spinner"
 import { isTargetAliasKey } from "@/src/utils/target-aliases"
 import { loadConfig, type ConfigLoaderSuccessResult } from "tsconfig-paths"
@@ -73,9 +74,13 @@ export async function updateFiles(
     overwrite: false,
     force: false,
     silent: false,
-    interactive: true,
     isWorkspace: false,
     ...options,
+    // Callers (add, init) never pass `interactive`, so the default decides
+    // whether "already exists, overwrite?" may be asked at all. A prompt that
+    // nothing can answer hangs a piped or agent run; without a TTY the
+    // existing file is kept and reported as skipped.
+    interactive: options.interactive ?? isInteractive(),
   }
   const filesCreatedSpinner = spinner(`Updating files.`, {
     silent: options.silent,
