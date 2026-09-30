@@ -43,6 +43,11 @@ import { scaffoldImportDistributionCss } from "@/src/utils/updaters/update-css-i
 import { Command } from "commander"
 import { z } from "zod"
 
+// The non-interactive defaults. The prompts start on the same values, so
+// pressing Enter through all three equals `--defaults`.
+const DEFAULT_BASE_COLOR = "neutral"
+const DEFAULT_DISTRIBUTION = "copy"
+
 export const initOptionsSchema = z.object({
   cwd: z.string(),
   components: z.array(z.string()).optional(),
@@ -616,11 +621,12 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
       BASE_COLORS.map((item) => ({
         value: item.name as string,
         label: item.label,
-      }))
+      })),
+      { initialValue: DEFAULT_BASE_COLOR }
     )
   }
   if (!baseColor) {
-    baseColor = "neutral"
+    baseColor = DEFAULT_BASE_COLOR
     appliedDefaults.push(`base color ${highlighter.info(baseColor)}`)
   }
 
@@ -647,11 +653,12 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
           label: "import",
           hint: "npm dependency, theme/switch styles from your own CSS",
         },
-      ]
+      ],
+      { initialValue: DEFAULT_DISTRIBUTION }
     )) as "copy" | "import"
   }
   if (!distribution) {
-    distribution = "copy"
+    distribution = DEFAULT_DISTRIBUTION
     appliedDefaults.push(`distribution ${highlighter.info(distribution)}`)
   }
 
@@ -677,7 +684,8 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
       VISUAL_STYLES.map((item) => ({
         value: item.name as string,
         label: item.label,
-      }))
+      })),
+      { initialValue: DEFAULT_VISUAL_STYLE }
     )
   }
   if (!visualStyle) {

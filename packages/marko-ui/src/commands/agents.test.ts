@@ -1,7 +1,14 @@
-import { readFileSync } from "fs"
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs"
+import { tmpdir } from "os"
 import path from "path"
 import { Command } from "commander"
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
+
+const { mockIndex } = vi.hoisted(() => ({ mockIndex: vi.fn() }))
+vi.mock("@/src/registry/api", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/src/registry/api")>()),
+  getShadcnRegistryIndex: mockIndex,
+}))
 
 import {
   AGENTS_END_MARKER,
@@ -9,7 +16,13 @@ import {
   buildAgentsSection,
 } from "@/src/agents/content"
 import { buildProgram } from "@/src/index"
-import { mergeAgentsFile } from "./agents"
+import {
+  agentsDocsAreCurrent,
+  agents,
+  mergeAgentsFile,
+  stripComponentDescriptions,
+} from "./agents"
+import { logger } from "@/src/utils/logger"
 
 const SECTION = buildAgentsSection([
   { name: "button", description: "A button." },
@@ -87,6 +100,14 @@ describe("buildAgentsSection", () => {
     expect(section).not.toContain("none installed yet")
     expect(section).not.toContain("marko-ui add")
     expect(section).not.toContain("Installed components:")
+  })
+
+  it("keeps agents sync in the import command list, without the add/remove wording", () => {
+    // The closing paragraph tells the agent to run it, so the list must name it.
+    const section = buildAgentsSection([], { distribution: "import" })
+    expect(section).toContain("`marko-ui agents sync` — refresh this section and install the agent skills")
+    expect(section).not.toContain("after adding or removing components")
+    expect(SECTION).toContain("after adding or removing components")
   })
 
   it("points at the skills by name, not at one agent's directory", () => {
@@ -253,5 +274,96 @@ describe("mergeAgentsFile", () => {
   it("is idempotent", () => {
     const once = mergeAgentsFile("# Notes\n", SECTION)
     expect(mergeAgentsFile(once, SECTION)).toBe(once)
+  })
+})
+
+describe("stripComponentDescriptions", () => {
+  it("drops the description of component lines only", () => {
+    const out = stripComponentDescriptions(SECTION)
+    expect(out).toContain("- `button`\n")
+    expect(out).not.toContain("A button.")
+    // command lines (backticks with spaces) keep their text
+    expect(out).toContain("— usage, props, and examples as markdown")
+  })
+})
+
+describe("agentsDocsAreCurrent", () => {
+  const withDescriptions = SECTION
+  const without = buildAgentsSection([{ name: "button" }, { name: "card" }])
+
+  it("needs an exact match when the index is available", () => {
+    expect(agentsDocsAreCurrent(withDescriptions, withDescriptions, true)).toBe(true)
+    expect(agentsDocsAreCurrent(withDescriptions, without, true)).toBe(false)
+  })
+  it("ignores descriptions when the index is unavailable", () => {
+    expect(agentsDocsAreCurrent(withDescriptions, without, false)).toBe(true)
+  })
+  it("still catches a real difference offline", () => {
+    const other = buildAgentsSection([{ name: "button" }])
+    expect(agentsDocsAreCurrent(withDescriptions, other, false)).toBe(false)
+    expect(agentsDocsAreCurrent(null, without, false)).toBe(false)
+  })
+})
+
+describe("agents sync --check when the registry index cannot be fetched", () => {
+  const dirs: string[] = []
+  afterEach(() => {
+    vi.restoreAllMocks()
+    mockIndex.mockReset()
+    for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true })
+  })
+
+  function project() {
+    const cwd = mkdtempSync(path.join(tmpdir(), "marko-ui-agents-check-"))
+    dirs.push(cwd)
+    writeFileSync(path.join(cwd, "package.json"), JSON.stringify({ name: "a", dependencies: { marko: "^6" } }))
+    writeFileSync(path.join(cwd, "tsconfig.json"), JSON.stringify({ compilerOptions: { paths: { "@/*": ["./src/*"] } } }))
+    writeFileSync(
+      path.join(cwd, "components.json"),
+      JSON.stringify({
+        style: "default", rsc: false, tsx: true, distribution: "copy", visualStyle: "vega",
+        tailwind: { config: "", css: "src/styles/globals.css", baseColor: "neutral", cssVariables: true, prefix: "" },
+        aliases: { components: "@/components", utils: "@/lib/utils", ui: "@/components/ui", lib: "@/lib", hooks: "@/hooks" },
+      })
+    )
+    mkdirSync(path.join(cwd, "src/components/ui/button"), { recursive: true })
+    writeFileSync(path.join(cwd, "src/components/ui/button/button.marko"), "<button/>")
+    return cwd
+  }
+  const check = async (cwd: string) => {
+    const exit = vi.spyOn(process, "exit").mockImplementation(((code?: number) => {
+      throw new Error(`exit ${code}`)
+    }) as never)
+    vi.spyOn(logger, "log").mockImplementation(() => {})
+    vi.spyOn(logger, "error").mockImplementation(() => {})
+    try {
+      await agents.parseAsync(["node", "agents", "sync", "--check", "--no-skill", "--cwd", cwd])
+      return 0
+    } catch (error) {
+      return Number(/exit (\d+)/.exec(String((error as Error).message))?.[1] ?? NaN)
+    } finally {
+      exit.mockRestore()
+    }
+  }
+
+  it("is up to date when only the descriptions are missing", async () => {
+    const cwd = project()
+    mockIndex.mockResolvedValue([{ name: "button", type: "registry:ui", description: "A button." }])
+    await agents.parseAsync(["node", "agents", "sync", "--no-skill", "--cwd", cwd])
+    expect(readFileSync(path.join(cwd, "AGENTS.md"), "utf8")).toContain("A button.")
+
+    mockIndex.mockRejectedValue(new Error("ECONNREFUSED"))
+    expect(await check(cwd)).toBe(0)
+  })
+
+  it("still exits 3 offline when a component was added since the last sync", async () => {
+    const cwd = project()
+    mockIndex.mockResolvedValue([{ name: "button", type: "registry:ui", description: "A button." }])
+    await agents.parseAsync(["node", "agents", "sync", "--no-skill", "--cwd", cwd])
+    mkdirSync(path.join(cwd, "src/components/ui/card"), { recursive: true })
+    writeFileSync(path.join(cwd, "src/components/ui/card/card.marko"), "<div/>")
+
+    mockIndex.mockRejectedValue(new Error("ECONNREFUSED"))
+    expect(await check(cwd)).toBe(3)
   })
 })

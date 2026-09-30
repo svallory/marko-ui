@@ -68,7 +68,7 @@ ${
     "- `marko-ui show <name> --deps` — a component's npm and registry dependencies (`--files` lists its files)",
     "- `marko-ui doctor --json` — verify project health (exit code 3 means a check failed)",
     isImport
-      ? null
+      ? "- `marko-ui agents sync` — refresh this section and install the agent skills"
       : "- `marko-ui agents sync` — refresh this section after adding or removing components",
   ]
     .filter(Boolean)

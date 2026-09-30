@@ -73,7 +73,7 @@ export function buildManifest(program: Command) {
         "1": "operational failure",
         "2": "usage error (unknown command/option, bad arguments)",
         "3": "doctor/validate/agents-check found problems",
-        "4": "network error or registry unreachable",
+        "4": "network error or registry unreachable (registry-backed commands)",
       },
       // Stable machine-readable error codes carried by registry errors
       // (RegistryError.code in error output and thrown errors).

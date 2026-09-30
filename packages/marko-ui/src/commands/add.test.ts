@@ -23,8 +23,11 @@ vi.mock("@/src/registry/api", () => ({
 import {
   add,
   assertAddableDistribution,
+  assertHasComponents,
   shouldConfirmAutoInit,
+  shouldConfirmStyleInstall,
 } from "@/src/commands/add"
+import { shouldConfirmEject } from "@/src/commands/eject"
 import { CommandError } from "@/src/utils/handle-error"
 import { logger } from "@/src/utils/logger"
 
@@ -161,5 +164,58 @@ describe("add on an uninitialized project", () => {
     expect(said).toMatch(/Non-interactive run — using base color neutral, distribution copy, visual style vega/)
     expect(existsSync(path.join(cwd, "components.json"))).toBe(true)
     expect(mocks.addComponents).toHaveBeenCalled()
+  })
+})
+
+describe("shouldConfirmStyleInstall", () => {
+  it.each(["registry:style", "registry:theme"])("asks for %s in a terminal without -y", (type) => {
+    expect(shouldConfirmStyleInstall({ yes: false }, type, false, true)).toBe(true)
+  })
+  it("does not ask for other item types", () => {
+    expect(shouldConfirmStyleInstall({ yes: false }, "registry:ui", false, true)).toBe(false)
+    expect(shouldConfirmStyleInstall({ yes: false }, undefined, false, true)).toBe(false)
+  })
+  it("takes the confirm as yes with -y, on a dry run, or without a terminal", () => {
+    expect(shouldConfirmStyleInstall({ yes: true }, "registry:style", false, true)).toBe(false)
+    expect(shouldConfirmStyleInstall({ yes: false }, "registry:style", true, true)).toBe(false)
+    expect(shouldConfirmStyleInstall({ yes: false }, "registry:theme", false, false)).toBe(false)
+  })
+})
+
+describe("assertHasComponents", () => {
+  const usage = (fn: () => void) => {
+    try {
+      fn()
+    } catch (error) {
+      expect(error).toBeInstanceOf(CommandError)
+      expect((error as CommandError).exitCode).toBe(2)
+      return plain((error as Error).message)
+    }
+    throw new Error("expected a usage error")
+  }
+
+  it("exits 2 naming the syntax when non-interactive with no names", () => {
+    const text = usage(() => assertHasComponents({ yes: false, all: false, components: [] }, false))
+    expect(text).toContain("marko-ui add <name...>")
+    expect(text).toContain("--all")
+  })
+  it("exits 2 with -y and no names, even in a terminal", () => {
+    usage(() => assertHasComponents({ yes: true, all: false, components: undefined }, true))
+  })
+  it("lets an interactive run without -y reach the picker", () => {
+    expect(() => assertHasComponents({ yes: false, all: false, components: [] }, true)).not.toThrow()
+  })
+  it("never complains when names or --all are given", () => {
+    expect(() => assertHasComponents({ yes: true, all: false, components: ["button"] }, false)).not.toThrow()
+    expect(() => assertHasComponents({ yes: true, all: true, components: [] }, false)).not.toThrow()
+  })
+})
+
+describe("shouldConfirmEject", () => {
+  it("asks only in a terminal without -y", () => {
+    expect(shouldConfirmEject({ yes: false }, true)).toBe(true)
+    expect(shouldConfirmEject({ yes: true }, true)).toBe(false)
+    expect(shouldConfirmEject({ yes: false }, false)).toBe(false)
+    expect(shouldConfirmEject({ yes: true }, false)).toBe(false)
   })
 })

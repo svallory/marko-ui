@@ -7,7 +7,7 @@ description: Use when a project has a components.json from marko-ui, or when ins
 
 [marko-ui](https://marko-ui.saulo.tech) is shadcn/ui for Marko 6: accessible components whose behavior comes from Zag.js state machines and whose styling is Tailwind v4. **Use the `marko-ui` CLI for everything below — do not hand-write a component that the registry already ships, and do not guess a component's props.**
 
-Run the CLI with the project's package runner (`bunx marko-ui`, `npx marko-ui`, `pnpm dlx marko-ui`). Every command is non-interactive when stdin is not a TTY.
+Run the CLI with the project's package runner (`bunx marko-ui`, `npx marko-ui`, `pnpm dlx marko-ui`). Every command is non-interactive when stdin is not a TTY: confirmations are taken as yes, `init` uses its defaults, and `add` with no component names exits 2 instead of opening a picker.
 
 ## First: which distribution is this project on?
 
@@ -54,7 +54,7 @@ import Button from "../components/ui/button/button.marko";
 - **Parts are attribute tags** (`<@trigger>`, `<@title>`), not separately imported subcomponents. `marko-ui docs <name>` lists each component's parts.
 - **`<@trigger|props|>` hands you the machine props** to spread onto whatever element you render. It is the equivalent of Radix's `asChild`.
 - **State binds with `:=`** (`open:=open`, `value:=value`, `checked:=checked`), or pass the value plus its `xChange` handler (`open=open openChange=(v) => { open = v }`).
-- **On the copy distribution `add` also generates a taglib** (`marko.json`), so installed components are usable as tags without an import (`<Button>`, `<CardHeader>`). An explicit import always works too.
+- **On the copy distribution `add` also generates a taglib** (`marko.json`), unless the project already has its own `marko.json`, so installed components are usable as tags without an import (`<Button>`, `<CardHeader>`). An explicit import always works too.
 - **Never import a component as `Input`.** It shadows Marko's reserved props type. The input component is imported as `TextInput`.
 
 ## Pitfalls that break components silently
