@@ -20,7 +20,7 @@ in-process compiler API, which the component build depends on. `marko-ui doctor`
 
 | Command | Description |
 | --- | --- |
-| `init [items...]` | Scaffold components.json, install the base theme, optionally install items |
+| `init [items...]` | Scaffold components.json, install the base theme, optionally install items; `--agents` also writes the AGENTS.md section and installs agent skills (on an initialized project it only does the agent setup) |
 | `add [items...]` | Install items — bare names (`button`), namespaced (`@acme/button`), URLs, or local paths |
 | `diff [item]` | Diff local files against their registry versions |
 | `docs [components...]` | Print component documentation as markdown (`--list` for the index) |
@@ -29,7 +29,7 @@ in-process compiler API, which the component build depends on. `marko-ui doctor`
 | `status` (alias `info`) | Project info: config, aliases, framework |
 | `doctor` | 9 health checks; exit code 3 when any fail |
 | `manifest` | Self-description: commands, flags, exit codes, agent workflow |
-| `agents sync` | Generate or refresh AGENTS.md and the marko-ui Claude skill (`--check` fails on stale) |
+| `agents sync` | Refresh the AGENTS.md section and install the agent skills through the `skills` package (`--check` exits 3 when stale or missing; `--no-skill` writes AGENTS.md only) |
 | `registry list/add/remove/validate` | Manage registries in components.json |
 
 Run `marko-ui manifest` for the complete, always-current surface.
@@ -49,6 +49,7 @@ Run `marko-ui manifest` for the complete, always-current surface.
 
 ## Notes
 
+- `init` requires a package.json that depends on `marko`; `add` is refused on the import distribution.
 - Components install as readable Marko source into your project — there
   is no runtime component package.
 - Zag-backed components import the [`marko-zag`](https://marko-zag.saulo.tech)
