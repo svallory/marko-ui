@@ -51,11 +51,16 @@ path filter (the first-run harness was not covered by it either).
 Expectations were written before running. Where the CLI disagreed it is a
 `fail`, not a changed expectation — with one exception: S08 (see note).
 
-## Result: 80 scenarios — 48 pass, 32 known failures
+## Result (round 4, after the config-resolution fix): 80 scenarios — 66 pass, 14 known failures
 
-(Final run: `Tests  48 passed | 32 expected fail (80)`. Round 2 added 7 known-failure scenarios: S05c, S05d, S06b, S09d, S09e, O07b, O11b; 4 of them carry a two-defect mark `Dx+Dy`.)
+(Round-4 run on `chore/cli-scenarios-flip`: `Tests  66 passed | 14 expected fail (80)`; 18 marks removed (D1, D2 and most of D5/S06b). Before: `48 passed | 32 expected fail`. Round 2 added 7 known-failure scenarios: S05c, S05d, S06b, S09d, S09e, O07b, O11b; 4 of them carry a two-defect mark `Dx+Dy`.)
 
 Status column: **pass**, **fail Dn** (known failure, see Defects), **not automated**.
+
+### Round-4 findings (mark kept, reason changed — assertions untouched)
+
+- **F1 — S05d**: `doctor` with `components.json` but no tsconfig and no stylesheet now exits 3 (`✖ CSS entry (src/styles/globals.css) … does not exist`), not a crash. The D1 crash is gone; the scenario's fixture has no stylesheet, so it fails on an honest finding. Needs a decision: fix the fixture (add the stylesheet) or accept exit 3.
+- **F2 — O11b**: the D2 fix works (`✔ Import alias (@/components)` + mapping text), but the output also has `⚠ Component npm dependencies … missing: class-variance-authority` because scenarios shim installs. Needs a decision: stub the dependency in the fixture's package.json or drop the `⚠` assertion.
 
 ### Legend
 
@@ -74,30 +79,30 @@ All run `init → add button → agents sync --no-skill` (shimmed installs) unle
 
 | id | structure | expected | status |
 |---|---|---|---|
-| S01 | stock create-marko (tsconfig, no `paths`, `src/`, no Tailwind/vite) | exit 0 ×3; `button.marko` in `src/components/ui/button/`; AGENTS.md lists button; status lists it | **fail D2** (AGENTS says "none installed yet", `components: []`) |
-| S01b | same | `resolvedPaths.ui == <cwd>/src/components/ui` | **fail D2** (`<cwd>/@/components/ui`) |
-| S01c | same | `diff` sees the installed component | **fail D2** ("No installed components found.") |
-| S01d | same | a `marko.json` taglib exists for the ui dir | **fail D2** (none generated) |
+| S01 | stock create-marko (tsconfig, no `paths`, `src/`, no Tailwind/vite) | exit 0 ×3; `button.marko` in `src/components/ui/button/`; AGENTS.md lists button; status lists it | pass (fixed by the config-resolution fix) |
+| S01b | same | `resolvedPaths.ui == <cwd>/src/components/ui` | pass (fixed by the config-resolution fix) |
+| S01c | same | `diff` sees the installed component | pass (fixed by the config-resolution fix) |
+| S01d | same | a `marko.json` taglib exists for the ui dir | pass (fixed by the config-resolution fix) |
 | S02 | tsconfig with `@/*` paths | as S01, all seen | pass |
-| S03 | package.json `imports` (`#components/*`), no `paths` | as S01 | **fail D2** |
-| S04 | `jsconfig.json`, no tsconfig | as S01 | **fail D2** |
-| S05 | no tsconfig, no jsconfig | init/add/sync exit 0; `components.json`, button, AGENTS.md written | **fail D1** (init: `Failed to load tsconfig.json`) |
-| S05c | same | button seen by AGENTS.md / status | **fail D1+D2** (flips only when both fixed) |
-| S05d | no tsconfig, `components.json` present | `doctor` does not crash, exit 0 | **fail D1** |
-| S05b | no tsconfig, `components.json` present | `agents sync` exit 0 | **fail D1** |
+| S03 | package.json `imports` (`#components/*`), no `paths` | as S01 | pass (fixed by the config-resolution fix) |
+| S04 | `jsconfig.json`, no tsconfig | as S01 | pass (fixed by the config-resolution fix) |
+| S05 | no tsconfig, no jsconfig | init/add/sync exit 0; `components.json`, button, AGENTS.md written | pass (fixed by the config-resolution fix) |
+| S05c | same | button seen by AGENTS.md / status | pass (fixed by the config-resolution fix) |
+| S05d | no tsconfig, `components.json` present | `doctor` does not crash, exit 0 | **fail — new reason, finding F1** (D1 fixed; doctor exits 3 on the fixture's missing stylesheet) |
+| S05b | no tsconfig, `components.json` present | `agents sync` exit 0 | pass (fixed by the config-resolution fix) |
 | S06 | no `src/` (plain Vite + Marko) | stylesheet in `components.json` exists; no `src/` created | **fail D5** |
-| S06b | same | button seen | **fail D5+D2** |
+| S06b | same | button seen | pass (fixed by the config-resolution fix) |
 | S07 | Tailwind v4 hand-wired (stylesheet + vite.config) | init reuses `src/styles/app.css`, no second stylesheet, vite.config untouched, one `@import`, one layout import | **fail D6** (extra `src/styles/globals.css`) |
 | S08 | hand-written vite.config.ts without Tailwind | config untouched; init warns to add `@tailwindcss/vite` | pass — *note: decided after run*: the CLI warns and does not edit a user config. I judged that acceptable (editing arbitrary config is unsafe) rather than a defect; if the product wants auto-wiring, change this scenario. |
-| S09 | monorepo, `components.json` at root, no tsconfig (D1 repro) | `agents sync` exit 0, AGENTS.md at root | **fail D1** |
-| S09b | same | `agents sync --check` exit 3 (stale), not a crash | **fail D1** |
-| S09c | same | `status --json` and `diff` exit 0, no tsconfig error | **fail D1** |
-| S09d | same | `doctor` no tsconfig crash (exit 0, or 3 for a real finding — root is not a Marko app) | **fail D1** |
-| S09e | monorepo root, no `components.json`, no tsconfig | `init` exits 1 cleanly, no tsconfig error, writes nothing | **fail D1+D7** |
-| S10 | monorepo, app in `apps/web`, CLI run from the app dir, lockfile only at root | full flow works in the app; nothing written at root | **fail D2** (flow works; listing doesn't) |
-| S10b | same, from repo root with `--cwd apps/web` | same | **fail D2** |
-| S11 | shared `packages/ui` holds components | init/add/sync from `packages/ui`; app untouched | **fail D2** |
-| S12 | plain Vite + Marko (not `@marko/run`) | full flow, seen | **fail D2** |
+| S09 | monorepo, `components.json` at root, no tsconfig (D1 repro) | `agents sync` exit 0, AGENTS.md at root | pass (fixed by the config-resolution fix) |
+| S09b | same | `agents sync --check` exit 3 (stale), not a crash | pass (fixed by the config-resolution fix) |
+| S09c | same | `status --json` and `diff` exit 0, no tsconfig error | pass (fixed by the config-resolution fix) |
+| S09d | same | `doctor` no tsconfig crash (exit 0, or 3 for a real finding — root is not a Marko app) | pass (fixed by the config-resolution fix) |
+| S09e | monorepo root, no `components.json`, no tsconfig | `init` exits 1 cleanly, no tsconfig error, writes nothing | **fail D7** (D1 fixed: init at a non-Marko root now exits 0 and writes `components.json`) |
+| S10 | monorepo, app in `apps/web`, CLI run from the app dir, lockfile only at root | full flow works in the app; nothing written at root | pass (fixed by the config-resolution fix) |
+| S10b | same, from repo root with `--cwd apps/web` | same | pass (fixed by the config-resolution fix) |
+| S11 | shared `packages/ui` holds components | init/add/sync from `packages/ui`; app untouched | pass (fixed by the config-resolution fix) |
+| S12 | plain Vite + Marko (not `@marko/run`) | full flow, seen | pass (fixed by the config-resolution fix) |
 | S13 | `package.json` with react only (has a tsconfig), not Marko | pinned: exit 1, no `components.json` written, output mentions Marko (case-insensitive, no fixed phrase) | **fail D7** |
 | S14 | empty directory | init/add/sync exit 1 with a next step; no AGENTS.md | pass |
 | S15 | path with spaces and parens | full flow exit 0 | pass |
@@ -162,7 +167,7 @@ Not covered: `bun.lockb`, `deno.lock`, Yarn Berry/`packageManager` field, `user-
 | O09 | init --agents, `add`, `--check` unsynced | exit 3 "AGENTS.md is stale" | pass |
 | O10 | remove component dir → `agents sync` | no longer listed, others are | pass |
 | O11 | `status`/`diff`/`doctor` after `add` (works-today shape) | see the component; doctor passes | pass |
-| O11b | stock shape (no `paths`), after add: `doctor` | exit 0, `✔ Import alias` line stating the mapping, no `⚠` | **fail D2** (warns then passes) |
+| O11b | stock shape (no `paths`), after add: `doctor` | exit 0, `✔ Import alias` line stating the mapping, no `⚠` | **fail — new reason, see finding F2** (D2 fixed: the mapping line is there; a `⚠` for missing component deps remains because installs are shimmed) |
 | O12 | edit an installed file → `diff` | reported | pass |
 | O13 | `add` unknown name | exit 1 naming it | pass |
 
@@ -216,10 +221,10 @@ is in the report `scratch/team-lead/reports/cli-test-plan.md`.
 
 | id | one line | scenarios |
 |---|---|---|
-| D1 | No `tsconfig.json` in the `components.json` dir ⇒ `Failed to load tsconfig.json` crash (exit 1) in `init`, `agents sync`, `add`, `status`, `diff` | S05, S05b, S05c, S05d, S09, S09b–S09e |
-| D2 | Without tsconfig `paths`, `aliases.ui` resolves to `<cwd>/@/components/ui`: installed components invisible to `status`, `diff`, AGENTS.md; `add` itself wrote `src/components/ui` | S01–S01d, S03, S04, S05c, S06b, S10, S10b, S11, S12, O11b |
+| D1 | **FIXED** (measured round 4): missing tsconfig tolerated. Residual: S05d fails on a fixture finding (F1) | S05, S05b, S05c, S09, S09b–S09d now pass; S05d F1 |
+| D2 | **FIXED** (measured round 4): unbacked aliases resolve to the source root, status/diff/AGENTS see components. Residual: O11b fails on a shim artifact (F2) | S01–S01d, S03, S04, S05c, S06b, S10, S10b, S11, S12 now pass; O11b F2 |
 | D4 | Package-manager detection reads only the cwd lockfile: monorepo app with root `bun.lock` gets `npx` for the skills relay | P-mono |
-| D5 | No-`src/` project: CLI creates `src/styles/globals.css` and `./styles/globals.css`, `components.json` points at the latter, layout/routes not wired | S06 |
+| D5 | No-`src/` project: CLI creates `src/styles/globals.css` and `./styles/globals.css`, `components.json` points at the latter, layout/routes not wired **Measured round 4: PARTIALLY fixed** — css path and button are now coherent (S06b passes), but S06 still fails: the CLI creates a `src/` directory in a project without one. | S06 |
 | D6 | Hand-wired Tailwind: `components.json` uses `src/styles/app.css` but an unused `src/styles/globals.css` is also created | S07 |
 | D7 | Non-Marko project: init passes preflight, writes `components.json`, then crashes (tsconfig); never says "not a Marko project" | S13, S09e |
 | D9 | Import distribution: init says "no local component files", `add` writes 5 (NEEDS-DECISION) | DI01b (pinned) |
