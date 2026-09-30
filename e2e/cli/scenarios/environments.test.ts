@@ -87,7 +87,7 @@ describe("environments — network", () => {
     expect(exists(ws, "components.json"), "components.json left behind by a failed init").toBe(false)
   })
 
-  scenario("E08", "registry unreachable: agents sync --no-skill still works (descriptions are best-effort)", { fails: "D13" }, async () => {
+  scenario("E08", "registry unreachable: agents sync --no-skill still works (descriptions are best-effort)", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { tsconfig: "paths" })
     const { shim } = await bootstrap(ws)

@@ -607,8 +607,15 @@ export async function getProjectComponents(cwd: string) {
     return []
   }
 
-  const registryIndex = await getShadcnRegistryIndex()
-  const registryNames = new Set(registryIndex?.map((item) => item.name) ?? [])
+  // The index only filters out unrelated folders; when the registry is
+  // unreachable keep every directory name rather than failing the caller.
+  let registryNames: Set<string> | null = null
+  try {
+    const registryIndex = await getShadcnRegistryIndex()
+    registryNames = new Set(registryIndex?.map((item) => item.name) ?? [])
+  } catch {
+    registryNames = null
+  }
 
   // marko-ui components install as directories (ui/button/button.marko),
   // single files are still recognized for flat layouts.
@@ -617,5 +624,5 @@ export async function getProjectComponents(cwd: string) {
     .map((entry) =>
       entry.isDirectory() ? entry.name : path.basename(entry.name, path.extname(entry.name))
     )
-    .filter((name) => registryNames.has(name))
+    .filter((name) => !registryNames || registryNames.has(name))
 }

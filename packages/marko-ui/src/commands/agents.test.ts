@@ -177,11 +177,80 @@ describe("mergeAgentsFile", () => {
     )
   })
 
-  it("appends rather than corrupting a file whose markers are out of order", () => {
-    const broken = `${AGENTS_END_MARKER}\nnotes\n${AGENTS_START_MARKER}\n`
-    const merged = mergeAgentsFile(broken, SECTION)
-    expect(merged.startsWith(broken)).toBe(true)
-    expect(merged.endsWith(`${SECTION}\n`)).toBe(true)
+  describe("malformed markers", () => {
+    const S = AGENTS_START_MARKER
+    const E = AGENTS_END_MARKER
+    const occurrences = (text: string, needle: string) => text.split(needle).length - 1
+    const converges = (input: string) => {
+      const once = mergeAgentsFile(input, SECTION)
+      expect(mergeAgentsFile(once, SECTION)).toBe(once)
+      return once
+    }
+
+    it("no markers: appends once, idempotent", () => {
+      const out = converges("# Notes\n")
+      expect(occurrences(out, S)).toBe(1)
+    })
+
+    it("ordered markers: replaces in place", () => {
+      const out = converges(`a\n${S}\nold\n${E}\nb\n`)
+      expect(out).toBe(`a\n${SECTION}\nb\n`)
+    })
+
+    it("reversed markers: keeps all user text, one section, idempotent", () => {
+      const out = converges(`# Mine\n${E}\nmiddle\n${S}\ntail\n`)
+      expect(out).toContain("middle")
+      expect(out).toContain("tail")
+      expect(occurrences(out, S)).toBe(1)
+      expect(occurrences(out, E)).toBe(1)
+    })
+
+    it("start only: keeps the orphaned text, one closed section", () => {
+      const out = converges(`keep\n${S}\nhalf\n`)
+      expect(out).toContain("keep")
+      expect(out).toContain("half")
+      expect(occurrences(out, S)).toBe(1)
+      expect(occurrences(out, E)).toBe(1)
+    })
+
+    it("end only: keeps the text, one closed section", () => {
+      const out = converges(`keep\n${E}\nmore\n`)
+      expect(out).toContain("keep")
+      expect(out).toContain("more")
+      expect(occurrences(out, S)).toBe(1)
+      expect(occurrences(out, E)).toBe(1)
+    })
+
+    it("duplicated sections: one survives, text between them is kept", () => {
+      const out = converges(`${S}\nx\n${E}\nuser between\n${S}\ny\n${E}\nend\n`)
+      expect(occurrences(out, S)).toBe(1)
+      expect(out).toContain("user between")
+      expect(out).toContain("end")
+      expect(out).not.toContain("\nx\n")
+    })
+
+    it("nested start markers: replaces from the first start to the first end", () => {
+      const out = converges(`${S}\na\n${S}\nb\n${E}\nz\n`)
+      expect(occurrences(out, S)).toBe(1)
+      expect(out.endsWith("\nz\n")).toBe(true)
+    })
+
+    it("CRLF file: keeps CRLF everywhere, idempotent", () => {
+      const out = converges(`# Top\r\n\r\n${S}\r\nold\r\n${E}\r\n\r\nouter\r\n`)
+      expect(out.startsWith("# Top\r\n\r\n")).toBe(true)
+      expect(out.endsWith("\r\n\r\nouter\r\n")).toBe(true)
+      expect(out.replace(/\r\n/g, "")).not.toContain("\n")
+    })
+
+    it("CRLF file without markers: appends with CRLF", () => {
+      const out = converges("# Top\r\nline")
+      expect(out.replace(/\r\n/g, "")).not.toContain("\n")
+      expect(out.startsWith("# Top\r\nline\r\n\r\n")).toBe(true)
+    })
+
+    it("empty existing file is treated as new", () => {
+      expect(mergeAgentsFile("", SECTION)).toBe(`${SECTION}\n`)
+    })
   })
 
   it("is idempotent", () => {

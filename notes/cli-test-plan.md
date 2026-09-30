@@ -113,7 +113,7 @@ All run `init → add button → agents sync --no-skill` (shimmed installs) unle
 | P-yarn | yarn.lock | `npx -y skills add …` (no yarn runner in the CLI) / `yarn add` | pass |
 | P-none | none | `npx -y skills add …` / `npm install` | pass |
 | P-yarn/P-none note | yarn.lock, no lockfile | **accepted current behaviour** (like S08, written to match the code, not derived from users): both use `npx`; the CLI has no `yarn dlx` runner. Change the scenario if the product wants yarn → `yarn dlx`. | — |
-| P-mono | app in `apps/web`, lockfile only at workspace root | `bunx …` (root lockfile) | **fail D4** (npx) |
+| P-mono | app in `apps/web`, lockfile only at workspace root | `bunx …` (root lockfile) | pass (fixed, was D4: npx) |
 | P-fw | plain Vite vs `@marko/run` | `marko-run` skill requested only for `@marko/run` | pass |
 
 Not covered: `bun.lockb`, `deno.lock`, Yarn Berry/`packageManager` field, `user-agent` fallback (unit-tested in `get-package-manager.test.ts`).
@@ -140,7 +140,7 @@ Not covered: `bun.lockb`, `deno.lock`, Yarn Berry/`packageManager` field, `user-
 | E05 | `agents sync` in CI | never prompts | pass |
 | E06 | registry unreachable: `add` | non-zero, registry message, no files, no hang | pass |
 | E07 | registry unreachable: `init` | non-zero, message, **no `components.json` left** | **fail D12** |
-| E08 | registry unreachable: `agents sync --no-skill` (component installed) | exit 0 (descriptions best-effort, per the code comment) | **fail D13** |
+| E08 | registry unreachable: `agents sync --no-skill` (component installed) | exit 0 (descriptions best-effort, per the code comment) | pass (fixed, was D13) |
 | K03 | no network at all, `--no-skill` | exit 0, AGENTS.md written, no skills/lock | pass |
 | K04 | skills source unreachable | exit 1 AFTER writing AGENTS.md; manual `skills add …` command printed | pass |
 | E09 | real TTY, `init` with no flags | asks base color / distribution / style | **not automated** — stdin/stdout are pipes here, so the TTY branch is never taken. Automate with a pty: `node-pty`, or `script -q /dev/null node … init` on a runner, send keys (`\r`), assert the three prompts and the resulting `components.json`. Owned by the `cli-init-prompts` brief (D3). |
@@ -173,8 +173,8 @@ Not covered: `bun.lockb`, `deno.lock`, Yarn Berry/`packageManager` field, `user-
 | A01 | absent | created, marker section | pass |
 | A02 | present, no markers | user text verbatim, one section appended (twice-run) | pass |
 | A03 | markers, user text before and after | both kept, section replaced, re-run byte-identical | pass |
-| A04 | markers in wrong order | user text kept, exactly one section after 3 syncs | **fail D11** (3 sections) |
-| A05 | unterminated start marker | balanced markers after the first sync | **fail D11** (2 start, 1 end) |
+| A04 | markers in wrong order | user text kept, exactly one section after 3 syncs | pass (fixed, was D11: 3 sections) |
+| A05 | unterminated start marker | balanced markers after the first sync | pass (fixed, was D11: 2 start, 1 end) |
 | A06 | CRLF around markers | user text kept, idempotent, `--check` clean | pass |
 | A07 | AGENTS.md reached via `CLAUDE.md` symlink | written through, link kept | pass |
 | A08 | `CLAUDE.md` without `@AGENTS.md` | untouched (documented: CLI does not add it) | pass |
@@ -218,15 +218,15 @@ is in the report `scratch/team-lead/reports/cli-test-plan.md`.
 |---|---|---|
 | D1 | No `tsconfig.json` in the `components.json` dir ⇒ `Failed to load tsconfig.json` crash (exit 1) in `init`, `agents sync`, `add`, `status`, `diff` | S05, S05b, S05c, S05d, S09, S09b–S09e |
 | D2 | Without tsconfig `paths`, `aliases.ui` resolves to `<cwd>/@/components/ui`: installed components invisible to `status`, `diff`, AGENTS.md; `add` itself wrote `src/components/ui` | S01–S01d, S03, S04, S05c, S06b, S10, S10b, S11, S12, O11b |
-| D4 | Package-manager detection reads only the cwd lockfile: monorepo app with root `bun.lock` gets `npx` for the skills relay | P-mono |
+| D4 | Package-manager detection reads only the cwd lockfile: monorepo app with root `bun.lock` gets `npx` for the skills relay | P-mono | fixed
 | D5 | No-`src/` project: CLI creates `src/styles/globals.css` and `./styles/globals.css`, `components.json` points at the latter, layout/routes not wired | S06 |
 | D6 | Hand-wired Tailwind: `components.json` uses `src/styles/app.css` but an unused `src/styles/globals.css` is also created | S07 |
 | D7 | Non-Marko project: init passes preflight, writes `components.json`, then crashes (tsconfig); never says "not a Marko project" | S13, S09e |
 | D9 | Import distribution: init says "no local component files", `add` writes 5 (NEEDS-DECISION) | DI01b (pinned) |
 | D10 | `add` before `init`, non-interactive: prints a Yes/No prompt, exits 0, does nothing | O07, O07b (pinned) |
-| D11 | `mergeAgentsFile` mishandles wrong-order / unterminated markers: appends a new section on every sync / leaves unbalanced markers | A04, A05 |
+| D11 | `mergeAgentsFile` mishandles wrong-order / unterminated markers: appends a new section on every sync / leaves unbalanced markers | A04, A05 | fixed
 | D12 | `init` with the registry down exits 1 but leaves `components.json` behind | E07 |
-| D13 | `agents sync --no-skill` with the registry down and components installed exits 1 (the description fetch is documented best-effort) | E08 |
+| D13 | `agents sync --no-skill` with the registry down and components installed exits 1 (the description fetch is documented best-effort) | E08 | fixed
 | doc | **Documentation discrepancy**: the documented exit 4 (network/registry unreachable) is unreachable for `manifest` — it prints static CLI metadata and never touches the registry. Fix the docs (or the code); no scenario. | — |
 
 (D3 from the lead's list — `init` prompts in a real terminal — is E09, not automated; D8 was dropped after investigation: it was my shim, not the CLI.)

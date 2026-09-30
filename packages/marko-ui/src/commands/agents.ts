@@ -184,23 +184,53 @@ async function collectInstalledComponents(
 /**
  * Replaces the marker-delimited section in an existing AGENTS.md (leaving
  * everything the user wrote intact), or appends/creates it.
+ *
+ * Malformed markers are repaired without deleting user text:
+ * - Every complete start…end pair is one generated section. The first is
+ *   replaced; later pairs are stale copies and are dropped.
+ * - With no complete pair (end before start, a lone start, a lone end),
+ *   the stray marker lines are removed, everything else is kept as user
+ *   text, and a fresh section is appended. The next run then finds a valid
+ *   pair, so repeated runs converge to the same file.
+ * CRLF files stay CRLF.
  */
 export function mergeAgentsFile(existing: string | null, section: string) {
   if (!existing) {
     return `${section}\n`
   }
 
-  const start = existing.indexOf(AGENTS_START_MARKER)
-  const end = existing.indexOf(AGENTS_END_MARKER)
+  const eol = existing.includes("\r\n") ? "\r\n" : "\n"
+  const block = eol === "\r\n" ? section.replace(/\r?\n/g, eol) : section
 
-  if (start !== -1 && end !== -1 && end > start) {
-    return (
-      existing.slice(0, start) +
-      section +
-      existing.slice(end + AGENTS_END_MARKER.length)
-    )
+  const first = findMarkerPair(existing, 0)
+  if (first) {
+    let merged =
+      existing.slice(0, first.start) + block + existing.slice(first.end)
+    let from = first.start + block.length
+    for (let pair = findMarkerPair(merged, from); pair; ) {
+      merged = merged.slice(0, pair.start) + merged.slice(pair.end)
+      pair = findMarkerPair(merged, from)
+    }
+    return merged
   }
 
-  const separator = existing.endsWith("\n") ? "\n" : "\n\n"
-  return `${existing}${separator}${section}\n`
+  const cleaned = stripMarkerLines(existing)
+  const separator = cleaned.endsWith("\n") ? eol : `${eol}${eol}`
+  return `${cleaned}${separator}${block}${eol}`
+}
+
+/** First complete start…end pair at or after `from`: [start, end) offsets. */
+function findMarkerPair(text: string, from: number) {
+  const start = text.indexOf(AGENTS_START_MARKER, from)
+  if (start === -1) return null
+  const endAt = text.indexOf(AGENTS_END_MARKER, start + AGENTS_START_MARKER.length)
+  if (endAt === -1) return null
+  return { start, end: endAt + AGENTS_END_MARKER.length }
+}
+
+function stripMarkerLines(text: string) {
+  return [AGENTS_START_MARKER, AGENTS_END_MARKER].reduce(
+    (acc, marker) => acc.split(marker).join(""),
+    text
+  )
 }
