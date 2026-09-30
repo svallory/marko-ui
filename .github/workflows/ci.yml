@@ -127,7 +127,7 @@ jobs:
               - '.github/actions/setup/**'
 
   cli-tests:
-    name: CLI unit tests
+    name: CLI unit + e2e + scenario tests
     needs: changes
     if: github.event_name != 'pull_request' || needs.changes.outputs.cli == 'true'
     runs-on: ubuntu-latest
@@ -162,7 +162,7 @@ jobs:
       # Known failures are marked `fails` with a defect id in
       # notes/cli-test-plan.md, so this step is green until a fix lands and
       # then forces the mark to be removed.
-      - name: Run CLI scenario suite
+      - name: Run CLI scenario suite (structures, orderings, environments)
         run: bun run test:cli:scenarios
 
   registry-drift:
