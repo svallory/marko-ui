@@ -75,16 +75,7 @@ export async function resolveConfigPaths(
     ...(config.registries || {}),
   }
 
-  // Read tsconfig.json.
-  const tsConfig = await loadConfig(cwd)
-
-  if (tsConfig.resultType === "failed") {
-    throw new Error(
-      `Failed to load ${config.tsx ? "tsconfig" : "jsconfig"}.json. ${
-        tsConfig.message ?? ""
-      }`.trim()
-    )
-  }
+  const tsConfig = loadProjectTsConfig(cwd)
 
   // Resolve the primary aliases first so fallbacks can reuse their results.
   const resolvedUtils = await resolveAliasPath(
@@ -134,6 +125,27 @@ export async function resolveConfigPaths(
       hooks: resolvedHooks,
     },
   })
+}
+
+/**
+ * Loads the tsconfig.json / jsconfig.json that governs `cwd` (tsconfig-paths
+ * walks up from `cwd`, follows `extends`, and tolerates comments).
+ *
+ * A project with NO such file is a normal structure — a monorepo root that
+ * only holds components.json, or a plain JS project — so its absence is not an
+ * error: it resolves as a config with no `paths` and `cwd` as the base URL.
+ * A file that exists but cannot be parsed still throws, naming the file.
+ */
+export function loadProjectTsConfig(
+  cwd: string
+): Pick<ConfigLoaderSuccessResult, "absoluteBaseUrl" | "paths"> {
+  const tsConfig = loadConfig(cwd)
+
+  if (tsConfig.resultType === "failed") {
+    return { absoluteBaseUrl: cwd, paths: {} }
+  }
+
+  return tsConfig
 }
 
 async function resolveAliasPath(
