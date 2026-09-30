@@ -514,7 +514,7 @@ export const CLI_MANIFEST: CliManifest = {
     "1": "operational failure",
     "2": "usage error (unknown command/option, bad arguments)",
     "3": "doctor/validate/agents-check found problems",
-    "4": "network error or registry unreachable"
+    "4": "network error or registry unreachable (registry-backed commands)"
   },
   "agentWorkflow": [
     "marko-ui search -q <query> — find items across configured registries",
