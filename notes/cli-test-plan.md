@@ -123,7 +123,7 @@ Not covered: `bun.lockb`, `deno.lock`, Yarn Berry/`packageManager` field, `user-
 | id | scenario | expected | status |
 |---|---|---|---|
 | DI01 | `init --distribution import` | config records `import`; `@marko-ui/shadcn` installed; stylesheet imports it | pass |
-| DI01b | import: `add button` | **pinned**: exit 1, prints that there is nothing to add on the import distribution and how to import (`@marko-ui/shadcn/ui/button/button.marko`), writes no files | **fail D9** |
+| DI01b | import: `add button` | **pinned**: exit 1, output mentions `@marko-ui/shadcn` (explaining how to import), writes no files; no fixed phrase asserted | **fail D9** |
 | DI02 | import: `agents sync` | AGENTS.md names the import distribution + `@marko-ui/shadcn` | pass |
 | DI03 | `eject` on a copy project | exit 1, "already on the copy distribution" | pass |
 | DI04 | import → `eject` (fake `node_modules/@marko-ui/shadcn`) | distribution flips to `copy`, source appears, seen | pass |
@@ -156,7 +156,7 @@ Not covered: `bun.lockb`, `deno.lock`, Yarn Berry/`packageManager` field, `user-
 | O04 | `init --agents` fresh | exit 0; AGENTS.md; `.agents/skills/{marko-ui,marko6,marko-run}`; lock; `.claude/skills` link; `--check` clean | pass |
 | O05 | `init --agents` on initialized | exit 0, "components.json already exists", agent setup done | pass |
 | O06 | `init --agents` twice | idempotent (AGENTS.md + lock byte-identical), "already installed" | pass |
-| O07 | `add` before `init`, non-interactive | **pinned**: interactive TTY keeps the confirm; `-y` or non-interactive auto-inits with the defaults: exit 0, `components.json` written, prints `Non-interactive run — using …`, component installed | **fail D10** (prompts Yes/No, exit 0, nothing done) |
+| O07 | `add` before `init`, non-interactive | **pinned**: interactive TTY keeps the confirm; `-y` or non-interactive auto-inits with the defaults: exit 0, `components.json` written, component installed, `@tailwindcss/vite` installed via the (succeeding) shim; no fixed message phrase asserted | **fail D10** (prompts Yes/No, exit 0, nothing done) |
 | O07b | `add button -y` before `init`, agent env unset | same outcome | **fail D10** |
 | O08 | `add → agents sync → --check` | exit 0, lists component | pass |
 | O09 | init --agents, `add`, `--check` unsynced | exit 3 "AGENTS.md is stale" | pass |

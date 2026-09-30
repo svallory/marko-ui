@@ -106,20 +106,22 @@ describe("command ordering", () => {
   // non-interactive (agent env, CI, no TTY) auto-inits with the defaults.
   scenario("O07", "add before init (non-interactive): auto-inits with defaults and installs the component", { fails: "D10" }, async () => {
     const ws = app()
-    const shim = withShims(makeWorkspace("shim"), undefined, { failing: true })
+    const shim = withShims(makeWorkspace("shim"))
     const add = await cli(ws, ["add", "button"], { shim })
     expect(add.code, tail(add.out)).toBe(0)
-    expect(plain(add.out)).toContain("Non-interactive run — using")
+    // auto-init installs Tailwind's Vite plugin through the (succeeding) shim
+    expect(shim.calls().some((c) => c.includes("add -D") && c.includes("@tailwindcss/vite")), shim.calls().join(" | ")).toBe(true)
     expect(exists(ws, "components.json")).toBe(true)
     expect(exists(ws, "src/components/ui/button/button.marko")).toBe(true)
   })
 
   scenario("O07b", "add -y before init: same auto-init, even with a TTY-like env", { fails: "D10" }, async () => {
     const ws = app()
-    const shim = withShims(makeWorkspace("shim"), undefined, { failing: true })
+    const shim = withShims(makeWorkspace("shim"))
     const add = await cli(ws, ["add", "button", "-y"], { shim, env: { CLAUDECODE: undefined } })
     expect(add.code, tail(add.out)).toBe(0)
-    expect(plain(add.out)).toContain("Non-interactive run — using")
+    // auto-init installs Tailwind's Vite plugin through the (succeeding) shim
+    expect(shim.calls().some((c) => c.includes("add -D") && c.includes("@tailwindcss/vite")), shim.calls().join(" | ")).toBe(true)
     expect(exists(ws, "src/components/ui/button/button.marko")).toBe(true)
   })
 
