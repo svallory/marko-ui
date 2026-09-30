@@ -163,7 +163,7 @@ describe("agent skills", () => {
     expect(r.code).toBe(1)
     expect(exists(ws, "AGENTS.md")).toBe(true)
     expect(plain(r.out)).toContain("Could not install the agent skills")
-    expect(plain(r.out)).toContain("skills add /nonexistent/nowhere --skill marko-ui marko6 marko-run -y")
+    expect(plain(r.out)).toContain("skills@1.7.0 add /nonexistent/nowhere --skill marko-ui marko6 marko-run -y")
     expect(plain(r.out)).toContain("--no-skill")
   })
 

@@ -101,7 +101,10 @@ static const JSON_ENVELOPE = `{
     <li>
       Installs the agent skills with the <a href="https://skills.sh" target="_blank" rel="noopener noreferrer external">skills</a>
       package: <code>marko-ui</code> and <code>marko6</code> always, plus
-      <code>marko-run</code> in an <code>@marko/run</code> project.
+      <code>marko-run</code> in an <code>@marko/run</code> project. The CLI runs
+      <code>bunx skills@1.7.0 add svallory/marko-ui --skill marko-ui marko6 -y</code>
+      (<code>npx -y</code> or <code>pnpm dlx</code> by lockfile). The version is pinned so
+      installs are deterministic; a manual install may use plain <code>skills</code>.
     </li>
   </ol>
 
