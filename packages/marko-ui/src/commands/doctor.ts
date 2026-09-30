@@ -7,7 +7,11 @@ import {
   getShadcnRegistryIndex,
 } from "@/src/registry/api"
 import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
-import { getConfig } from "@/src/utils/get-config"
+import { getConfig, isAliasBacked } from "@/src/utils/get-config"
+import {
+  getSourceRoot,
+  resolveConventionalAlias,
+} from "@/src/utils/source-root"
 import { getPackageInfo } from "@/src/utils/get-package-info"
 import {
   getProjectComponents,
@@ -79,7 +83,9 @@ export const doctor = new Command()
                 ? highlighter.warn("⚠")
                 : highlighter.error("✖")
           logger.log(`${icon} ${check.label}`)
-          if (check.message && check.status !== "pass") {
+          // Pass messages are printed on purpose (e.g. the alias fallback
+          // mapping); a check that has nothing to say leaves `message` unset.
+          if (check.message) {
             logger.log(`  ${check.message}`)
           }
         }
@@ -239,15 +245,11 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
         : `${config.tailwind.css} does not exist.`,
     })
 
-    // 6. Alias prefix resolves.
-    checks.push({
-      id: "aliases",
-      label: `Import alias (${config.aliases.components})`,
-      status: projectInfo?.aliasPrefix ? "pass" : "warn",
-      message: projectInfo?.aliasPrefix
-        ? undefined
-        : "No tsconfig path alias detected — installed imports may not resolve.",
-    })
+    // 6. Aliases resolve. An alias nothing backs (no tsconfig paths, package
+    // imports or workspace export) maps onto the source root; say so instead of
+    // warning, since installed components use relative imports.
+    const aliasCheck = await checkAliases(config)
+    checks.push(aliasCheck)
   }
 
   // 7. Registry reachable.
@@ -341,4 +343,28 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
   }
 
   return checks
+}
+
+export async function checkAliases(config: NonNullable<Awaited<ReturnType<typeof getConfig>>>): Promise<DoctorCheck> {
+  const alias = config.aliases.components
+  const label = `Import alias (${alias})`
+  if (await isAliasBacked(alias, config.resolvedPaths.cwd)) {
+    return { id: "aliases", label, status: "pass" }
+  }
+  const sourceRoot = path.relative(config.resolvedPaths.cwd, getSourceRoot(config.resolvedPaths.cwd)) || "."
+  const mapsTo = resolveConventionalAlias(alias, config.resolvedPaths.cwd)
+  if (mapsTo) {
+    return {
+      id: "aliases",
+      label,
+      status: "pass",
+      message: `no tsconfig paths entry for ${alias}; marko-ui maps it to ${sourceRoot}/ (installed components use relative imports and the marko.json taglib). Add a tsconfig paths entry only if your own code imports through ${alias}.`,
+    }
+  }
+  return {
+    id: "aliases",
+    label,
+    status: "fail",
+    message: `${alias} is not backed by tsconfig paths, package.json imports or a workspace export. Add one, or change aliases.components in components.json.`,
+  }
 }
