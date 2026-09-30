@@ -138,6 +138,14 @@ jobs:
       # packages/marko-ui is excluded from the root vitest config (it needs its
       # own @/ path alias + msw setup, see packages/marko-ui/vitest.config.ts),
       # so it must be run through its own config or it never executes in CI.
+      #
+      # init.test.ts drives the BUILT CLI through a pty (expect) and fails,
+      # rather than skips, under CI when either is missing — so both are
+      # provided before the suite runs.
+      - name: Install expect (pty driver for the init tests)
+        run: sudo apt-get update && sudo apt-get install -y expect
+      - name: Build the CLI
+        run: bun run --filter marko-ui build
       - name: Run marko-ui CLI suite
         run: bun run --filter marko-ui test
 
