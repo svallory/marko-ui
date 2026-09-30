@@ -23,6 +23,23 @@ describe("getPackageManager", () => {
 
     expect(await getPackageManager(getFixturesDir("next"))).toBe("pnpm")
   })
+
+  it("prefers the lockfile over the user agent when falling back", async () => {
+    // `withFallback` used to skip lockfile detection entirely, so a yarn
+    // project driven through `bunx` was reported as bun.
+    const previous = process.env.npm_config_user_agent
+    process.env.npm_config_user_agent = "bun/1.2.0 npm/? node/v22"
+    try {
+      expect(
+        await getPackageManager(getFixturesDir("project-yarn"), {
+          withFallback: true,
+        })
+      ).toBe("yarn")
+    } finally {
+      if (previous === undefined) delete process.env.npm_config_user_agent
+      else process.env.npm_config_user_agent = previous
+    }
+  })
 })
 
 describe("getPackageManagerFromUserAgent", () => {

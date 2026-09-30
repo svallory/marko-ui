@@ -1,4 +1,4 @@
-import { promises as fs } from "fs"
+import { existsSync, promises as fs } from "fs"
 import path from "path"
 import { runAgentsSync } from "@/src/commands/agents"
 import { writeProjectTaglib } from "@/src/utils/taglib"
@@ -77,7 +77,11 @@ export const init = new Command()
   .option("-b, --base-color <name>", "the base color to use.")
   .option("--css-variables", "use css variables for theming.", true)
   .option("--no-css-variables", "do not use css variables for theming.")
-  .option("--agents", "generate AGENTS.md and the marko-ui Claude skill.", false)
+  .option(
+    "--agents",
+    "also write the marko-ui section of AGENTS.md and install the agent skills. safe to run on an already-initialized project.",
+    false
+  )
   .option(
     "-D, --distribution <mode>",
     "how components are shipped: copy (flat generated source, default) or import (@marko-ui/shadcn hook-class components + CSS layers)."
@@ -102,6 +106,32 @@ export const init = new Command()
       })
 
       await loadEnvFiles(options.cwd)
+
+      // `init --agents` is the one command the docs hand to a coding agent,
+      // and an agent is usually pointed at a project that is ALREADY set up.
+      // Failing the preflight there ("components.json already exists") left
+      // the agent with neither AGENTS.md nor the skill and no hint that
+      // `agents sync` was the command it wanted. The project setup is done,
+      // so do the part that is not.
+      if (
+        options.agents &&
+        !options.force &&
+        existsSync(path.resolve(options.cwd, "components.json"))
+      ) {
+        if (!options.silent) {
+          logger.info(
+            `${highlighter.info(
+              "components.json"
+            )} already exists — skipping project setup and syncing the agent docs.`
+          )
+        }
+        await runAgentsSync(options.cwd, { silent: options.silent })
+        logger.log(
+          `${highlighter.success("Success!")} Agent setup completed.`
+        )
+        logger.break()
+        return
+      }
 
       await runInit(options)
 

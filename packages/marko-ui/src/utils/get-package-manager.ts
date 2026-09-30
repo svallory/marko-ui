@@ -11,7 +11,7 @@ export async function getPackageManager(
 ): Promise<PackageManager> {
   const packageManager = detectFromLockfile(targetDir)
 
-  if (!withFallback) {
+  if (packageManager || !withFallback) {
     return packageManager ?? "npm"
   }
 

@@ -39,9 +39,11 @@ export async function preFlightInit(
         "components.json"
       )} file already exists at ${highlighter.info(
         options.cwd
-      )}.\nTo start over, remove the ${highlighter.info(
-        "components.json"
-      )} file and run ${highlighter.info("init")} again.`
+      )} — this project is already initialized.\nTo add components, run ${highlighter.info(
+        "marko-ui add <name>"
+      )}. To set up AI agents, run ${highlighter.info(
+        "marko-ui agents sync"
+      )}.\nTo start over, run ${highlighter.info("marko-ui init --force")}.`
     )
   }
 

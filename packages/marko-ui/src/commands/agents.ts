@@ -4,9 +4,13 @@ import {
   AGENTS_END_MARKER,
   AGENTS_START_MARKER,
   buildAgentsSection,
-  buildSkill,
   type InstalledComponent,
 } from "@/src/agents/content"
+import {
+  getMissingSkills,
+  getWantedSkills,
+  installAgentSkills,
+} from "@/src/agents/skills"
 import { getShadcnRegistryIndex } from "@/src/registry/api"
 import { getConfig } from "@/src/utils/get-config"
 import { getProjectComponents } from "@/src/utils/get-project-info"
@@ -26,18 +30,27 @@ const syncOptionsSchema = z.object({
 
 export const agents = new Command()
   .name("agents")
-  .description("manage generated agent documentation")
+  .description("set up and refresh what AI coding agents need in this project")
 
 agents
   .command("sync")
-  .description("generate or refresh AGENTS.md and the marko-ui Claude skill")
+  .description(
+    "write the marko-ui section of AGENTS.md and install the agent skills"
+  )
   .option(
     "-c, --cwd <cwd>",
     "the working directory. defaults to the current directory.",
     process.cwd()
   )
-  .option("--check", "fail (exit 3) if the generated docs are stale.", false)
-  .option("--no-skill", "do not write .claude/skills/marko-ui/SKILL.md.")
+  .option(
+    "--check",
+    "fail (exit 3) if AGENTS.md is stale or the agent skills are not installed.",
+    false
+  )
+  .option(
+    "--no-skill",
+    "do not install (or check) the agent skills; AGENTS.md only."
+  )
   .option("-s, --silent", "mute output.", false)
   .action(async (opts) => {
     try {
@@ -53,42 +66,45 @@ agents
         throw new CommandError(
           `No ${highlighter.info(
             "components.json"
-          )} found. Run ${highlighter.info("marko-ui init")} first.`
+          )} found. Run ${highlighter.info(
+            "marko-ui init --agents"
+          )} to set up the project and the agent docs in one step.`
         )
       }
 
-      const { agentsPath, skillPath, nextAgents, nextSkill } =
-        await prepareAgentDocs(options.cwd)
-
       if (options.check) {
-        const staleFiles: string[] = []
+        const { agentsPath, nextAgents } = await prepareAgentDocs(options.cwd)
+        const problems: string[] = []
+
         const currentAgents = existsSync(agentsPath)
           ? await fs.readFile(agentsPath, "utf8")
           : null
         if (currentAgents !== nextAgents) {
-          staleFiles.push("AGENTS.md")
+          problems.push("AGENTS.md is stale")
         }
+
         if (options.skill) {
-          const currentSkill = existsSync(skillPath)
-            ? await fs.readFile(skillPath, "utf8")
-            : null
-          if (currentSkill !== nextSkill) {
-            staleFiles.push(".claude/skills/marko-ui/SKILL.md")
+          const missing = await getMissingSkills(
+            options.cwd,
+            await getWantedSkills(options.cwd)
+          )
+          if (missing.length) {
+            problems.push(`agent skills not installed: ${missing.join(", ")}`)
           }
         }
 
-        if (staleFiles.length) {
+        if (problems.length) {
           // Exit 3 is the documented "check found problems" code (shared
           // with doctor/validate) — preserve it.
           throw new CommandError(
-            `Agent docs are stale: ${staleFiles.join(
-              ", "
+            `Agent setup is out of date: ${problems.join(
+              "; "
             )}. Run ${highlighter.info("marko-ui agents sync")}.`,
             { exitCode: 3 }
           )
         }
         if (!options.silent) {
-          logger.log(highlighter.success("Agent docs are up to date."))
+          logger.log(highlighter.success("Agent setup is up to date."))
         }
         return
       }
@@ -103,46 +119,41 @@ agents
   })
 
 /**
- * Writes AGENTS.md (+ the Claude skill) for a project. Also called by
- * `init --agents`.
+ * Writes the AGENTS.md section and installs the agent skills. Also called
+ * by `init --agents`.
+ *
+ * AGENTS.md goes first on purpose: it needs no network, so an offline run
+ * still leaves the agent with the CLI pointers before the skill install
+ * fails loudly.
  */
 export async function runAgentsSync(
   cwd: string,
   options: { silent?: boolean; skill?: boolean } = {}
 ) {
-  const { agentsPath, skillPath, nextAgents, nextSkill } =
-    await prepareAgentDocs(cwd)
+  const { agentsPath, nextAgents } = await prepareAgentDocs(cwd)
 
-  const writeSpinner = spinner("Writing agent docs.", {
+  const writeSpinner = spinner("Writing AGENTS.md.", {
     silent: options.silent,
   }).start()
   await fs.writeFile(agentsPath, nextAgents, "utf8")
-  const written = ["AGENTS.md"]
-  if (options.skill !== false) {
-    await fs.mkdir(path.dirname(skillPath), { recursive: true })
-    await fs.writeFile(skillPath, nextSkill, "utf8")
-    written.push(".claude/skills/marko-ui/SKILL.md")
-  }
   writeSpinner.succeed()
 
-  if (!options.silent) {
-    for (const file of written) {
-      logger.log(`  - ${file}`)
-    }
+  if (options.skill !== false) {
+    await installAgentSkills(cwd, { silent: options.silent })
   }
 }
 
 async function prepareAgentDocs(cwd: string) {
+  const config = await getConfig(cwd)
   const components = await collectInstalledComponents(cwd)
   const agentsPath = path.resolve(cwd, "AGENTS.md")
-  const skillPath = path.resolve(cwd, ".claude/skills/marko-ui/SKILL.md")
 
   const nextAgents = mergeAgentsFile(
     existsSync(agentsPath) ? await fs.readFile(agentsPath, "utf8") : null,
-    buildAgentsSection(components)
+    buildAgentsSection(components, { distribution: config?.distribution })
   )
 
-  return { agentsPath, skillPath, nextAgents, nextSkill: buildSkill(components) }
+  return { agentsPath, nextAgents }
 }
 
 async function collectInstalledComponents(
