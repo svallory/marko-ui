@@ -9,7 +9,10 @@ import {
 import { getProjectInfo } from "@/src/utils/get-project-info"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
-import { resolveImportWithMetadata } from "@/src/utils/resolve-import"
+import {
+  matchesTsconfigPathsKey,
+  resolveImportWithMetadata,
+} from "@/src/utils/resolve-import"
 import { resolveConventionalAlias } from "@/src/utils/source-root"
 import { cosmiconfig } from "cosmiconfig"
 import fsExtra from "fs-extra"
@@ -136,6 +139,10 @@ export async function resolveConfigPaths(
  * only holds components.json, or a plain JS project — so its absence is not an
  * error: it resolves as a config with no `paths` and `cwd` as the base URL.
  * A file that exists but cannot be parsed still throws, naming the file.
+ *
+ * Note: tsconfig-paths walks UP from `cwd`, so with no tsconfig in `cwd` itself
+ * a tsconfig/jsconfig in a parent directory is used (its baseUrl relative to
+ * that parent). Pinned by a test in project-structures.test.ts.
  */
 export function loadProjectTsConfig(
   cwd: string
@@ -151,11 +158,14 @@ export function loadProjectTsConfig(
 
 function isUnbackedConventionalAlias(
   alias: string,
-  resolved: { source: string; matchedAlias: string }
+  resolved: { source: string },
+  paths: ConfigLoaderSuccessResult["paths"]
 ) {
+  // Decided from the tsconfig data: unbacked means no `paths` key (exact or
+  // wildcard) matches, so tsconfig-paths fell back to joining onto baseUrl.
   return (
     resolved.source === "tsconfig_paths" &&
-    resolved.matchedAlias === alias &&
+    !matchesTsconfigPathsKey(alias, paths) &&
     resolveConventionalAlias(alias, "/") !== null
   )
 }
@@ -166,11 +176,17 @@ function isUnbackedConventionalAlias(
  * fallback. Used by `doctor` to say which one is in effect.
  */
 export async function isAliasBacked(alias: string, cwd: string) {
-  const resolved = await resolveImportWithMetadata(alias, {
-    ...loadProjectTsConfig(cwd),
-    cwd,
-  })
-  return Boolean(resolved?.path) && !isUnbackedConventionalAlias(alias, resolved!)
+  const tsConfig = loadProjectTsConfig(cwd)
+  const resolved = await resolveImportWithMetadata(alias, { ...tsConfig, cwd })
+  if (!resolved?.path) {
+    return false
+  }
+  // A `#` alias "resolved" to <cwd>/#alias is tsconfig-paths' match-all, not a
+  // real package import (same rule resolveAliasPath applies).
+  if (alias.startsWith("#") && resolved.path === path.resolve(cwd, alias)) {
+    return false
+  }
+  return !isUnbackedConventionalAlias(alias, resolved, tsConfig.paths)
 }
 
 async function resolveAliasPath(
@@ -187,7 +203,7 @@ async function resolveAliasPath(
   // No tsconfig `paths` entry, package `imports` or workspace export backs this
   // alias (tsconfig-paths' match-all would just join it onto the base URL, e.g.
   // `<cwd>/@/components`): use the conventional source-root mapping instead.
-  if (!resolved?.path || isUnbackedConventionalAlias(alias, resolved)) {
+  if (!resolved?.path || isUnbackedConventionalAlias(alias, resolved, tsConfig.paths)) {
     return resolveConventionalAlias(alias, cwd)
   }
 

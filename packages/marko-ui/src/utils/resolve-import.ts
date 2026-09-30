@@ -114,6 +114,17 @@ function resolveFromTsconfigPaths(
   }
 }
 
+/**
+ * True when a real tsconfig `paths` key (exact or wildcard) matches the import.
+ * False means tsconfig-paths could only have used its baseUrl match-all.
+ */
+export function matchesTsconfigPathsKey(
+  importPath: string,
+  paths: ConfigLoaderSuccessResult["paths"]
+) {
+  return findMatchingTsPathPattern(importPath, paths) !== null
+}
+
 function findMatchingTsPathPattern(
   importPath: string,
   paths: ConfigLoaderSuccessResult["paths"]

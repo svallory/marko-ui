@@ -4,7 +4,12 @@ import { getShadcnRegistryIndex } from "@/src/registry/api"
 import { MARKO_UI_URL } from "@/src/registry/constants"
 import { rawConfigSchema } from "@/src/schema"
 import { Framework, FRAMEWORKS } from "@/src/utils/frameworks"
-import { Config, getConfig, resolveConfigPaths } from "@/src/utils/get-config"
+import {
+  Config,
+  getConfig,
+  loadProjectTsConfig,
+  resolveConfigPaths,
+} from "@/src/utils/get-config"
 import { getPackageInfo } from "@/src/utils/get-package-info"
 import { hasSrcDir } from "@/src/utils/source-root"
 import {
@@ -13,7 +18,6 @@ import {
 } from "@/src/utils/package-imports"
 import fg from "fast-glob"
 import fs from "fs-extra"
-import { loadConfig } from "tsconfig-paths"
 import { z } from "zod"
 
 export type TailwindVersion = "v3" | "v4" | null
@@ -236,9 +240,9 @@ export async function getTailwindConfigFile(cwd: string) {
 }
 
 export async function getTsConfigAliasPrefix(cwd: string) {
-  const tsConfig = await loadConfig(cwd)
+  const tsConfig = loadProjectTsConfig(cwd)
   const paths =
-    tsConfig?.resultType === "success" && Object.entries(tsConfig.paths).length
+    Object.entries(tsConfig.paths).length
       ? tsConfig.paths
       : (await getTsConfig(cwd))?.compilerOptions.paths
 

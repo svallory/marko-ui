@@ -10,6 +10,8 @@ import {
   isAliasBacked,
   loadProjectTsConfig,
 } from "./get-config"
+import { checkAliases } from "../commands/doctor"
+import { getTsConfigAliasPrefix } from "./get-project-info"
 import { getSourceRoot, resolveConventionalAlias } from "./source-root"
 
 /**
@@ -488,5 +490,120 @@ describe("taglib reads the directory add writes to", () => {
     const tags = await collectProjectTags(config)
     expect(tags.map((t) => t.pascal)).toEqual(["Badge"])
     expect(tags[0]?.template).toBe(`./${path.posix.join(base, "components/ui/badge/badge.marko")}`)
+  })
+})
+
+describe("exact-key paths entries", () => {
+  it("an exact (wildcard-less) paths key backs the alias and is not the fallback", async () => {
+    const cwd = await makeProject({
+      dirs: ["src"],
+      components: {
+        ...COMPONENTS_JSON,
+        aliases: {
+          components: "@/components",
+          utils: "@/lib/utils",
+          ui: "@/components/ui",
+          lib: "@/lib",
+          hooks: "@/hooks",
+        },
+      },
+      files: {
+        "tsconfig.json": {
+          compilerOptions: {
+            baseUrl: ".",
+            paths: {
+              "@/components/ui": ["./app/ui"],
+              "#unrelated/*": ["./src/*"],
+            },
+          },
+        },
+      },
+    })
+    const config = await getConfig(cwd)
+    expect(config?.resolvedPaths.ui).toBe(at(cwd, "app/ui"))
+    expect(await isAliasBacked("@/components/ui", cwd)).toBe(true)
+    // doctor checks the components alias, which this fixture does not back.
+    expect((await checkAliases(config!)).message).toMatch(/maps it to src\//)
+  })
+
+  it("an exact key alone (no wildcard) still backs only that alias", async () => {
+    const cwd = await makeProject({
+      dirs: ["src"],
+      files: {
+        "tsconfig.json": {
+          compilerOptions: { baseUrl: ".", paths: { "@/components/ui": ["./app/ui"] } },
+        },
+      },
+    })
+    const config = await getConfig(cwd)
+    expect(config?.resolvedPaths.ui).toBe(at(cwd, "app/ui"))
+    // @/components has no matching key -> match-all -> unbacked -> fallback.
+    expect(await isAliasBacked("@/components", cwd)).toBe(false)
+    expect(config?.resolvedPaths.components).toBe(at(cwd, "src/components"))
+  })
+
+  it("baseUrl match-all is unbacked", async () => {
+    const cwd = await makeProject({
+      dirs: ["src"],
+      files: { "tsconfig.json": { compilerOptions: { baseUrl: "." } } },
+    })
+    expect(await isAliasBacked("@/components", cwd)).toBe(false)
+  })
+})
+
+describe("doctor alias check", () => {
+  it("pass with the mapping message on the fallback", async () => {
+    const cwd = await makeProject({ dirs: ["src"] })
+    const check = await checkAliases((await getConfig(cwd))!)
+    expect(check.status).toBe("pass")
+    expect(check.message).toMatch(/maps it to src\//)
+  })
+
+  it("names the project root when there is no src/", async () => {
+    const cwd = await makeProject()
+    const check = await checkAliases((await getConfig(cwd))!)
+    expect(check.status).toBe("pass")
+    expect(check.message).toMatch(/maps it to \.\//)
+  })
+
+  it("pass with no message when backed", async () => {
+    const cwd = await makeProject({ dirs: ["src"], files: { "tsconfig.json": PATHS_SRC } })
+    const check = await checkAliases((await getConfig(cwd))!)
+    expect(check.status).toBe("pass")
+    expect(check.message).toBeUndefined()
+  })
+
+  it("fails with the fix for an unbacked non-conventional alias", async () => {
+    const cwd = await makeProject({ dirs: ["src"], files: { "tsconfig.json": PATHS_SRC } })
+    const config = (await getConfig(cwd))!
+    const check = await checkAliases({
+      ...config,
+      aliases: { ...config.aliases, components: "#components" },
+    })
+    expect(check.status).toBe("fail")
+    expect(check.message).toMatch(/tsconfig paths, package\.json imports or a workspace export/)
+    expect(check.message).toMatch(/aliases\.components/)
+  })
+})
+
+describe("tsconfig lookup behavior", () => {
+  it("walks up: a tsconfig in a parent directory governs a child without one", async () => {
+    const parent = await makeProject({
+      dirs: ["src"],
+      files: { "tsconfig.json": PATHS_SRC },
+    })
+    const child = path.join(parent, "packages", "app")
+    await fs.ensureDir(child)
+    const result = loadProjectTsConfig(child)
+    expect(result.paths).toEqual({ "@/*": ["./src/*"] })
+    expect(result.absoluteBaseUrl).toBe(parent)
+  })
+
+  it("a malformed tsconfig is reported the same way from every entry point", async () => {
+    const cwd = await makeProject({ files: { "tsconfig.json": "{ not json" } })
+    const fromConfig = await getConfig(cwd).catch((e: Error) => e.message)
+    const fromPrefix = await getTsConfigAliasPrefix(cwd).catch((e: Error) => e.message)
+    expect(fromConfig).toMatch(/tsconfig\.json is malformed/)
+    expect(fromPrefix).toBe(fromConfig)
   })
 })

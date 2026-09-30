@@ -83,6 +83,8 @@ export const doctor = new Command()
                 ? highlighter.warn("⚠")
                 : highlighter.error("✖")
           logger.log(`${icon} ${check.label}`)
+          // Pass messages are printed on purpose (e.g. the alias fallback
+          // mapping); a check that has nothing to say leaves `message` unset.
           if (check.message) {
             logger.log(`  ${check.message}`)
           }
@@ -343,7 +345,7 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
   return checks
 }
 
-async function checkAliases(config: NonNullable<Awaited<ReturnType<typeof getConfig>>>): Promise<DoctorCheck> {
+export async function checkAliases(config: NonNullable<Awaited<ReturnType<typeof getConfig>>>): Promise<DoctorCheck> {
   const alias = config.aliases.components
   const label = `Import alias (${alias})`
   if (await isAliasBacked(alias, config.resolvedPaths.cwd)) {
