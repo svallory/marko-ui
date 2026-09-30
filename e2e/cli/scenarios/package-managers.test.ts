@@ -16,11 +16,11 @@ import { scenario } from "./lib/scenario"
  * shim, so this asserts the CHOICE without installing anything.
  */
 const RUNNER: Record<Lock, string> = {
-  bun: "bunx skills add",
-  npm: "npx -y skills add",
-  pnpm: "pnpm dlx skills add",
-  yarn: "npx -y skills add", // yarn has no dlx in the CLI's runner table → npx
-  none: "npx -y skills add", // no lockfile → npm's runner
+  bun: "bunx skills@1.7.0 add",
+  npm: "npx -y skills@1.7.0 add",
+  pnpm: "pnpm dlx skills@1.7.0 add",
+  yarn: "npx -y skills@1.7.0 add", // yarn has no dlx in the CLI's runner table → npx
+  none: "npx -y skills@1.7.0 add", // no lockfile → npm's runner
 }
 const INSTALLER: Record<Lock, string> = {
   bun: "bun add",
@@ -40,7 +40,7 @@ describe("package manager detection", () => {
       const sync = await cli(ws, ["agents", "sync"], { shim })
       expect(sync.code, tail(sync.out)).toBe(0)
       expect(shim.calls().some((c) => c.startsWith(RUNNER[lock])), `runner calls: ${shim.calls().join(" | ")}`).toBe(true)
-      expect(shim.calls().join("\n")).toContain("skills add svallory/marko-ui --skill marko-ui marko6 marko-run -y")
+      expect(shim.calls().join("\n")).toContain("skills@1.7.0 add svallory/marko-ui --skill marko-ui marko6 marko-run -y")
 
       const add = await cli(ws, ["add", "button"], { shim })
       expect(add.code, tail(add.out)).toBe(0)
@@ -55,7 +55,7 @@ describe("package manager detection", () => {
     const shim = withShims(makeWorkspace("shim"))
     const sync = await cli(`${ws}/apps/web`, ["agents", "sync"], { shim })
     expect(sync.code, tail(sync.out)).toBe(0)
-    expect(shim.calls().some((c) => c.startsWith("bunx skills add")), `runner calls: ${shim.calls().join(" | ")}`).toBe(true)
+    expect(shim.calls().some((c) => c.startsWith("bunx skills@1.7.0 add")), `runner calls: ${shim.calls().join(" | ")}`).toBe(true)
   })
 
   scenario("P-fw", "plain Vite + Marko project does not get the marko-run skill; @marko/run does", async () => {
@@ -63,7 +63,7 @@ describe("package manager detection", () => {
     markoApp(vite, { framework: "marko-vite", viteConfig: true, tsconfig: "paths", extra: { "components.json": componentsJson() } })
     const shim = withShims(makeWorkspace("shim"))
     expect((await cli(vite, ["agents", "sync"], { shim })).code).toBe(0)
-    const call = shim.calls().find((c) => c.includes("skills add"))!
+    const call = shim.calls().find((c) => c.includes("skills@1.7.0 add"))!
     expect(call).toContain("--skill marko-ui marko6 -y")
     expect(call).not.toContain("marko-run")
   })

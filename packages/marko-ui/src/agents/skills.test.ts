@@ -10,6 +10,7 @@ import {
   getMissingSkills,
   getSkillsSource,
   selectAgentSkills,
+  SKILLS_PACKAGE,
 } from "./skills"
 
 describe("selectAgentSkills", () => {
@@ -50,6 +51,12 @@ describe("getSkillsSource", () => {
   })
 })
 
+describe("SKILLS_PACKAGE", () => {
+  it("pins an exact version, never a range or latest", () => {
+    expect(SKILLS_PACKAGE).toMatch(/^skills@\d+\.\d+\.\d+$/)
+  })
+})
+
 describe("buildSkillsInstallCommand", () => {
   const skills = ["marko-ui", "marko6"]
 
@@ -57,23 +64,23 @@ describe("buildSkillsInstallCommand", () => {
     const command = buildSkillsInstallCommand("bunx", skills, "svallory/marko-ui")
     expect(command).toEqual({
       file: "bunx",
-      args: ["skills", "add", "svallory/marko-ui", "--skill", "marko-ui", "marko6", "-y"],
+      args: ["skills@1.7.0", "add", "svallory/marko-ui", "--skill", "marko-ui", "marko6", "-y"],
     })
     expect(formatCommand(command)).toBe(
-      "bunx skills add svallory/marko-ui --skill marko-ui marko6 -y"
+      "bunx skills@1.7.0 add svallory/marko-ui --skill marko-ui marko6 -y"
     )
   })
 
   it("splits a two-word runner into file and args", () => {
     expect(
       formatCommand(buildSkillsInstallCommand("pnpm dlx", skills, "svallory/marko-ui"))
-    ).toBe("pnpm dlx skills add svallory/marko-ui --skill marko-ui marko6 -y")
+    ).toBe("pnpm dlx skills@1.7.0 add svallory/marko-ui --skill marko-ui marko6 -y")
   })
 
   it("answers npx's download prompt, which nothing else could", () => {
     const command = buildSkillsInstallCommand("npx", skills, "svallory/marko-ui")
     expect(command.file).toBe("npx")
-    expect(command.args.slice(0, 2)).toEqual(["-y", "skills"])
+    expect(command.args.slice(0, 2)).toEqual(["-y", "skills@1.7.0"])
   })
 
   it("passes every requested skill", () => {

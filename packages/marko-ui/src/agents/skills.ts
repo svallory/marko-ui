@@ -34,6 +34,17 @@ export function getSkillsSource(env: NodeJS.ProcessEnv = process.env) {
   return env.MARKO_UI_SKILLS_SOURCE || DEFAULT_SKILLS_SOURCE
 }
 
+/**
+ * The exact `skills` release the relay runs. Unpinned, every install would
+ * run whatever is latest that day, and a breaking change upstream would break
+ * `init --agents` with no change here. Bump it deliberately: check the new
+ * release's `add`/`update` flags and `skills-lock.json` format, then update
+ * the tests and the docs. It is not a dependency of marko-ui on purpose (no
+ * programmatic API, needs `git`, ~42 MB installed); see
+ * scratch/team-lead/reports/research-skills-package.md.
+ */
+export const SKILLS_PACKAGE = "skills@1.7.0"
+
 const BASE_SKILLS = ["marko-ui", "marko6"]
 
 /**
@@ -59,7 +70,7 @@ export function buildSkillsInstallCommand(
 
   return {
     file,
-    args: [...runnerArgs, "skills", "add", source, "--skill", ...skills, "-y"],
+    args: [...runnerArgs, SKILLS_PACKAGE, "add", source, "--skill", ...skills, "-y"],
   }
 }
 
@@ -120,7 +131,7 @@ export async function installAgentSkills(
       logger.info(
         `Agent skills already installed (${wanted.join(
           ", "
-        )}). Update them with ${highlighter.info(`${runner} skills update`)}.`
+        )}). Update them with ${highlighter.info(`${runner} ${SKILLS_PACKAGE} update`)}.`
       )
     }
     return
