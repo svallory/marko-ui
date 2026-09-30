@@ -1,6 +1,6 @@
 # CLI test plan — project structures, orderings, environments
 
-Status measured 2026-09-30 against the built CLI at `e30cbdc4`
+Status measured 2026-09-30 (round 2 applied) against the built CLI at `e30cbdc4`
 (`packages/marko-ui/dist/index.js`, 0.4.1 + agent-onboarding).
 
 ## Why this exists
@@ -14,7 +14,7 @@ that. The trigger: `bunx marko-ui agents sync` in a monorepo with
 ## How to run
 
 ```bash
-bun run test:cli:scenarios                       # builds CLI + registry, serves it on :4457, runs vitest
+bun run test:cli:scenarios                       # builds CLI + registry, serves it on :4470, runs vitest
 bun run test:cli:scenarios ordering              # a file filter
 SCENARIOS_SHOW_FAILURES=1 bun run test:cli:scenarios   # run known failures as plain tests: see the real defect output
 E2E_KEEP=1 …                                     # keep the temp project dirs
@@ -51,11 +51,22 @@ path filter (the first-run harness was not covered by it either).
 Expectations were written before running. Where the CLI disagreed it is a
 `fail`, not a changed expectation — with one exception: S08 (see note).
 
-## Result: 73 scenarios — 48 pass, 25 known failures
+## Result: 80 scenarios — 48 pass, 32 known failures
 
-(Final run: `Tests  48 passed | 25 expected fail (73)`.)
+(Final run: `Tests  48 passed | 32 expected fail (80)`. Round 2 added 7 known-failure scenarios: S05c, S05d, S06b, S09d, S09e, O07b, O11b; 4 of them carry a two-defect mark `Dx+Dy`.)
 
 Status column: **pass**, **fail Dn** (known failure, see Defects), **not automated**.
+
+### Legend
+
+Each table row is one scenario. Columns hold: **structure / starting state** (the
+fixture builder named in the scenario: `markoApp(ws, {…})`, `monorepo()`,
+`componentsJson()`), **commands in order** (the `commands` are in the expected
+column's prose and in the test body, all through `cli(cwd, args, { env, shim })`),
+**environment** (default: `CLAUDECODE=1`, stdin closed, all package managers shimmed;
+deviations are named in the row), **expected** (exit code + observable outcome) and
+**status**. Test bodies are the source of truth for exact argv and env.
+A `fails: "D1+D2"` mark means the scenario flips only when BOTH defects are fixed.
 
 ### Project structure
 
@@ -70,19 +81,24 @@ All run `init → add button → agents sync --no-skill` (shimmed installs) unle
 | S02 | tsconfig with `@/*` paths | as S01, all seen | pass |
 | S03 | package.json `imports` (`#components/*`), no `paths` | as S01 | **fail D2** |
 | S04 | `jsconfig.json`, no tsconfig | as S01 | **fail D2** |
-| S05 | no tsconfig, no jsconfig | init/add/sync exit 0, seen | **fail D1** (init: `Failed to load tsconfig.json`) |
+| S05 | no tsconfig, no jsconfig | init/add/sync exit 0; `components.json`, button, AGENTS.md written | **fail D1** (init: `Failed to load tsconfig.json`) |
+| S05c | same | button seen by AGENTS.md / status | **fail D1+D2** (flips only when both fixed) |
+| S05d | no tsconfig, `components.json` present | `doctor` does not crash, exit 0 | **fail D1** |
 | S05b | no tsconfig, `components.json` present | `agents sync` exit 0 | **fail D1** |
-| S06 | no `src/` (plain Vite + Marko) | stylesheet in `components.json` exists; no `src/` created; button seen | **fail D5** |
+| S06 | no `src/` (plain Vite + Marko) | stylesheet in `components.json` exists; no `src/` created | **fail D5** |
+| S06b | same | button seen | **fail D5+D2** |
 | S07 | Tailwind v4 hand-wired (stylesheet + vite.config) | init reuses `src/styles/app.css`, no second stylesheet, vite.config untouched, one `@import`, one layout import | **fail D6** (extra `src/styles/globals.css`) |
 | S08 | hand-written vite.config.ts without Tailwind | config untouched; init warns to add `@tailwindcss/vite` | pass — *note: decided after run*: the CLI warns and does not edit a user config. I judged that acceptable (editing arbitrary config is unsafe) rather than a defect; if the product wants auto-wiring, change this scenario. |
 | S09 | monorepo, `components.json` at root, no tsconfig (D1 repro) | `agents sync` exit 0, AGENTS.md at root | **fail D1** |
 | S09b | same | `agents sync --check` exit 3 (stale), not a crash | **fail D1** |
-| S09c | same | `status`/`diff` do not print the tsconfig error | **fail D1** |
+| S09c | same | `status --json` and `diff` exit 0, no tsconfig error | **fail D1** |
+| S09d | same | `doctor` no tsconfig crash (exit 0, or 3 for a real finding — root is not a Marko app) | **fail D1** |
+| S09e | monorepo root, no `components.json`, no tsconfig | `init` exits 1 cleanly, no tsconfig error, writes nothing | **fail D1+D7** |
 | S10 | monorepo, app in `apps/web`, CLI run from the app dir, lockfile only at root | full flow works in the app; nothing written at root | **fail D2** (flow works; listing doesn't) |
 | S10b | same, from repo root with `--cwd apps/web` | same | **fail D2** |
 | S11 | shared `packages/ui` holds components | init/add/sync from `packages/ui`; app untouched | **fail D2** |
 | S12 | plain Vite + Marko (not `@marko/run`) | full flow, seen | **fail D2** |
-| S13 | bare `package.json`, not Marko | init exit 1, says it is not a Marko project, nothing left behind | **fail D7** |
+| S13 | `package.json` with react only (has a tsconfig), not Marko | pinned: exit 1, no `components.json` written, output mentions Marko (case-insensitive, no fixed phrase) | **fail D7** |
 | S14 | empty directory | init/add/sync exit 1 with a next step; no AGENTS.md | pass |
 | S15 | path with spaces and parens | full flow exit 0 | pass |
 | S16 | project reached via symlink, `--cwd <link>` | files land in the real dir | pass |
@@ -96,6 +112,7 @@ All run `init → add button → agents sync --no-skill` (shimmed installs) unle
 | P-pnpm | pnpm-lock.yaml | `pnpm dlx skills add …` / `pnpm add` | pass |
 | P-yarn | yarn.lock | `npx -y skills add …` (no yarn runner in the CLI) / `yarn add` | pass |
 | P-none | none | `npx -y skills add …` / `npm install` | pass |
+| P-yarn/P-none note | yarn.lock, no lockfile | **accepted current behaviour** (like S08, written to match the code, not derived from users): both use `npx`; the CLI has no `yarn dlx` runner. Change the scenario if the product wants yarn → `yarn dlx`. | — |
 | P-mono | app in `apps/web`, lockfile only at workspace root | `bunx …` (root lockfile) | **fail D4** (npx) |
 | P-fw | plain Vite vs `@marko/run` | `marko-run` skill requested only for `@marko/run` | pass |
 
@@ -106,7 +123,7 @@ Not covered: `bun.lockb`, `deno.lock`, Yarn Berry/`packageManager` field, `user-
 | id | scenario | expected | status |
 |---|---|---|---|
 | DI01 | `init --distribution import` | config records `import`; `@marko-ui/shadcn` installed; stylesheet imports it | pass |
-| DI01b | import: `add button` | **NEEDS-DECISION** — `init` prints "no local component files" but `add` writes `button.marko`, `classes.ts`, `variants.ts`. Expectation follows the message. | **fail D9** |
+| DI01b | import: `add button` | **pinned**: exit 1, prints that there is nothing to add on the import distribution and how to import (`@marko-ui/shadcn/ui/button/button.marko`), writes no files | **fail D9** |
 | DI02 | import: `agents sync` | AGENTS.md names the import distribution + `@marko-ui/shadcn` | pass |
 | DI03 | `eject` on a copy project | exit 1, "already on the copy distribution" | pass |
 | DI04 | import → `eject` (fake `node_modules/@marko-ui/shadcn`) | distribution flips to `copy`, source appears, seen | pass |
@@ -126,8 +143,8 @@ Not covered: `bun.lockb`, `deno.lock`, Yarn Berry/`packageManager` field, `user-
 | E08 | registry unreachable: `agents sync --no-skill` (component installed) | exit 0 (descriptions best-effort, per the code comment) | **fail D13** |
 | K03 | no network at all, `--no-skill` | exit 0, AGENTS.md written, no skills/lock | pass |
 | K04 | skills source unreachable | exit 1 AFTER writing AGENTS.md; manual `skills add …` command printed | pass |
-| E09 | real TTY, `init` with no flags asks base color / distribution / style | **not automated** — stdin/stdout are pipes here, so the TTY branch is never taken. Automate with a pty: `node-pty`, or `script -q /dev/null node … init` on a runner, send keys (`\r`), assert the three prompts and the resulting `components.json`. Owned by the `cli-init-prompts` brief (D3). |
-| E10 | Windows path semantics, `bun.lockb`, Yarn Berry | **not automated** — CI is ubuntu only; macOS/Linux path behaviour is covered by S15/S16 |
+| E09 | real TTY, `init` with no flags | asks base color / distribution / style | **not automated** — stdin/stdout are pipes here, so the TTY branch is never taken. Automate with a pty: `node-pty`, or `script -q /dev/null node … init` on a runner, send keys (`\r`), assert the three prompts and the resulting `components.json`. Owned by the `cli-init-prompts` brief (D3). |
+| E10 | Windows paths, `bun.lockb`, Yarn Berry | see note | **not automated** — CI is ubuntu only; macOS/Linux path behaviour is covered by S15/S16 |
 
 ### Ordering
 
@@ -139,11 +156,13 @@ Not covered: `bun.lockb`, `deno.lock`, Yarn Berry/`packageManager` field, `user-
 | O04 | `init --agents` fresh | exit 0; AGENTS.md; `.agents/skills/{marko-ui,marko6,marko-run}`; lock; `.claude/skills` link; `--check` clean | pass |
 | O05 | `init --agents` on initialized | exit 0, "components.json already exists", agent setup done | pass |
 | O06 | `init --agents` twice | idempotent (AGENTS.md + lock byte-identical), "already installed" | pass |
-| O07 | `add` before `init`, non-interactive | fails loudly (exit ≠ 0) or auto-inits; not a silent no-op | **fail D10** (prompts Yes/No, exit 0, nothing done) |
+| O07 | `add` before `init`, non-interactive | **pinned**: interactive TTY keeps the confirm; `-y` or non-interactive auto-inits with the defaults: exit 0, `components.json` written, prints `Non-interactive run — using …`, component installed | **fail D10** (prompts Yes/No, exit 0, nothing done) |
+| O07b | `add button -y` before `init`, agent env unset | same outcome | **fail D10** |
 | O08 | `add → agents sync → --check` | exit 0, lists component | pass |
 | O09 | init --agents, `add`, `--check` unsynced | exit 3 "AGENTS.md is stale" | pass |
 | O10 | remove component dir → `agents sync` | no longer listed, others are | pass |
 | O11 | `status`/`diff`/`doctor` after `add` (works-today shape) | see the component; doctor passes | pass |
+| O11b | stock shape (no `paths`), after add: `doctor` | exit 0, `✔ Import alias` line stating the mapping, no `⚠` | **fail D2** (warns then passes) |
 | O12 | edit an installed file → `diff` | reported | pass |
 | O13 | `add` unknown name | exit 1 naming it | pass |
 
@@ -180,7 +199,13 @@ with non-default `aliases`; `marko-ui init <component>` (init + add in one);
 `search`/`docs`/`show` offline; `init` over a project with an existing
 `components.json` from shadcn (React) — hostile-input territory; yarn Berry /
 pnpm workspaces `workspace:` deps; build-output checks for non-stock structures
-(scenarios assert CLI behaviour; only `first-run.sh` builds). Highest-value next
+(scenarios assert CLI behaviour; only `first-run.sh` builds). Reviewer's additional gaps, each with a reason: combined axes (spaces + symlink +
+monorepo, `--cwd` through a symlink in a monorepo, Tailwind-wired monorepo) —
+single axes are covered and the paths are orthogonal in the code; `init --force`
+preserving the *content* of installed files — needs a content-edit fixture, low
+risk; `eject` failure/partial eject — needs a registry fault-injection server;
+`bun.lockb`/`deno.lock`/`packageManager` field — unit-tested in
+`get-package-manager.test.ts`. Highest-value next
 step: a build of S07/S12 shapes once D2/D6 are fixed.
 
 ## Defects
@@ -191,16 +216,17 @@ is in the report `scratch/team-lead/reports/cli-test-plan.md`.
 
 | id | one line | scenarios |
 |---|---|---|
-| D1 | No `tsconfig.json` in the `components.json` dir ⇒ `Failed to load tsconfig.json` crash (exit 1) in `init`, `agents sync`, `add`, `status`, `diff` | S05, S05b, S09, S09b, S09c |
-| D2 | Without tsconfig `paths`, `aliases.ui` resolves to `<cwd>/@/components/ui`: installed components invisible to `status`, `diff`, AGENTS.md; `add` itself wrote `src/components/ui` | S01–S01d, S03, S04, S10, S10b, S11, S12 |
+| D1 | No `tsconfig.json` in the `components.json` dir ⇒ `Failed to load tsconfig.json` crash (exit 1) in `init`, `agents sync`, `add`, `status`, `diff` | S05, S05b, S05c, S05d, S09, S09b–S09e |
+| D2 | Without tsconfig `paths`, `aliases.ui` resolves to `<cwd>/@/components/ui`: installed components invisible to `status`, `diff`, AGENTS.md; `add` itself wrote `src/components/ui` | S01–S01d, S03, S04, S05c, S06b, S10, S10b, S11, S12, O11b |
 | D4 | Package-manager detection reads only the cwd lockfile: monorepo app with root `bun.lock` gets `npx` for the skills relay | P-mono |
 | D5 | No-`src/` project: CLI creates `src/styles/globals.css` and `./styles/globals.css`, `components.json` points at the latter, layout/routes not wired | S06 |
 | D6 | Hand-wired Tailwind: `components.json` uses `src/styles/app.css` but an unused `src/styles/globals.css` is also created | S07 |
-| D7 | Non-Marko project: init passes preflight, writes `components.json`, then crashes (tsconfig); never says "not a Marko project" | S13 |
-| D9 | Import distribution: init says "no local component files", `add` writes 5 (NEEDS-DECISION) | DI01b |
-| D10 | `add` before `init`, non-interactive: prints a Yes/No prompt, exits 0, does nothing | O07 |
+| D7 | Non-Marko project: init passes preflight, writes `components.json`, then crashes (tsconfig); never says "not a Marko project" | S13, S09e |
+| D9 | Import distribution: init says "no local component files", `add` writes 5 (NEEDS-DECISION) | DI01b (pinned) |
+| D10 | `add` before `init`, non-interactive: prints a Yes/No prompt, exits 0, does nothing | O07, O07b (pinned) |
 | D11 | `mergeAgentsFile` mishandles wrong-order / unterminated markers: appends a new section on every sync / leaves unbalanced markers | A04, A05 |
 | D12 | `init` with the registry down exits 1 but leaves `components.json` behind | E07 |
 | D13 | `agents sync --no-skill` with the registry down and components installed exits 1 (the description fetch is documented best-effort) | E08 |
+| doc | **Documentation discrepancy**: the documented exit 4 (network/registry unreachable) is unreachable for `manifest` — it prints static CLI metadata and never touches the registry. Fix the docs (or the code); no scenario. | — |
 
 (D3 from the lead's list — `init` prompts in a real terminal — is E09, not automated; D8 was dropped after investigation: it was my shim, not the CLI.)

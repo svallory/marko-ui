@@ -34,3 +34,6 @@ apps/docs/.wrangler/
 
 # html-validate temp copies (transient; cleaned by tooling/check-html.ts)
 apps/docs/.htmlvalidate-tmp/
+
+# CLI scenario suite JSON report (written when CI is set)
+e2e/cli/scenarios/results.json
