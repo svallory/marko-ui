@@ -60,6 +60,14 @@ if ! curl -fsS -o /dev/null "http://localhost:$REGISTRY_PORT/r/style.json"; then
   exit 1
 fi
 
+# Fetch the pinned `skills` package once, so scenarios that run the real relay
+# in parallel do not race the first download. Output and failure are ignored:
+# offline, the relay scenarios report the problem themselves.
+echo
+echo "== pre-warming the pinned skills package =="
+SKILLS_SPEC="$(sed -n 's/^export const SKILLS_PACKAGE = "\(.*\)"$/\1/p' packages/marko-ui/src/agents/skills.ts)"
+bunx "${SKILLS_SPEC:-skills@1.7.0}" --version >/dev/null 2>&1 || true
+
 echo
 REGISTRY_URL="http://localhost:$REGISTRY_PORT/r" \
   bunx vitest run --config e2e/cli/scenarios/vitest.config.ts "$@"
