@@ -256,7 +256,12 @@ export async function runInit(
                 "marko-ui init"
               )} inside it. If it is a Marko project, pass ${highlighter.info(
                 "--force"
-              )}.`)
+              )}.` +
+              (preflight.offerDeclined
+                ? ""
+                : ` Or run ${highlighter.info(
+                    "marko-ui init"
+                  )} in a terminal to be offered the Marko install.`))
       )
     }
   }

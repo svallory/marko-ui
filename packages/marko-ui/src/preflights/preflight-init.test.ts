@@ -1,11 +1,19 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "fs"
 import { tmpdir } from "os"
 import path from "path"
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { runInit } from "@/src/commands/init"
-import { isMarkoProject, preFlightInit } from "@/src/preflights/preflight-init"
+import {
+  installMarko,
+  isMarkoProject,
+  preFlightInit,
+  shouldOfferMarkoInstall,
+} from "@/src/preflights/preflight-init"
 import * as ERRORS from "@/src/utils/errors"
+
+const { execaMock } = vi.hoisted(() => ({ execaMock: vi.fn() }))
+vi.mock("execa", () => ({ execa: execaMock }))
 
 const dirs: string[] = []
 function project(pkg: unknown | string | null, extra: Record<string, string> = {}) {
@@ -96,5 +104,62 @@ describe("runInit on a non-Marko project", () => {
     await expect(runInit(opts(cwd))).rejects.toThrow(/create marko@latest/)
     const { existsSync } = await import("fs")
     expect(existsSync(path.join(cwd, "components.json"))).toBe(false)
+  })
+})
+
+describe("shouldOfferMarkoInstall", () => {
+  const base = { defaults: false, yes: false, silent: false, force: false }
+  const ctx = { interactive: true, workspaceRoot: false }
+
+  it("offers in an interactive terminal with no flags", () => {
+    expect(shouldOfferMarkoInstall(base, ctx)).toBe(true)
+  })
+  it.each([
+    ["non-interactive", base, { ...ctx, interactive: false }],
+    ["--defaults", { ...base, defaults: true }, ctx],
+    ["--yes", { ...base, yes: true }, ctx],
+    ["--silent", { ...base, silent: true }, ctx],
+    ["--force", { ...base, force: true }, ctx],
+    ["a workspace root", base, { ...ctx, workspaceRoot: true }],
+    ["a workspace root, non-interactive", base, { interactive: false, workspaceRoot: true }],
+    ["--force at a workspace root", { ...base, force: true }, { ...ctx, workspaceRoot: true }],
+  ] as const)("does not offer: %s", (_name, flags, context) => {
+    expect(shouldOfferMarkoInstall(flags, context)).toBe(false)
+  })
+})
+
+describe("installMarko", () => {
+  beforeEach(() => {
+    execaMock.mockReset()
+    execaMock.mockResolvedValue({})
+  })
+  const calls = () => execaMock.mock.calls.map((c) => [c[0], ...(c[1] as string[])].join(" "))
+  const bunProject = (pkg: object) => project(pkg, { "bun.lock": "" })
+
+  it("run: installs marko + @marko/run", async () => {
+    await installMarko(bunProject({}), "run", { silent: true })
+    expect(calls()).toEqual(["bun add -- marko @marko/run"])
+  })
+  it("vite: installs marko + @marko/vite, and vite as a devDependency", async () => {
+    await installMarko(bunProject({}), "vite", { silent: true })
+    expect(calls()).toEqual(["bun add -- marko @marko/vite", "bun add -D -- vite"])
+  })
+  it.each(["dependencies", "devDependencies"])(
+    "vite: does not add vite when it is already in %s",
+    async (field) => {
+      await installMarko(bunProject({ [field]: { vite: "^7" } }), "vite", { silent: true })
+      expect(calls()).toEqual(["bun add -- marko @marko/vite"])
+    }
+  )
+  it("uses the project's package manager", async () => {
+    await installMarko(project({}, { "pnpm-lock.yaml": "" }), "run", { silent: true })
+    expect(calls()).toEqual(["pnpm add -- marko @marko/run"])
+  })
+  it("a failed install throws with the manual command", async () => {
+    execaMock.mockRejectedValue(new Error("ENOTFOUND registry"))
+    const cwd = bunProject({})
+    await expect(installMarko(cwd, "vite", { silent: true })).rejects.toThrow(
+      /ENOTFOUND registry[\s\S]*bun add marko @marko\/vite[\s\S]*bun add -D vite/
+    )
   })
 })
