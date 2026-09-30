@@ -180,7 +180,10 @@ if (process.env.CI && !canPty) {
 // components.json was written.
 function runPty(body: string, args: string[], env: Record<string, string> = {}) {
   const dir = mkdtempSync(path.join(os.tmpdir(), "marko-ui-init-pty-"))
-  writeFileSync(path.join(dir, "package.json"), '{"name":"fixture"}')
+  writeFileSync(
+    path.join(dir, "package.json"),
+    '{"name":"fixture","dependencies":{"marko":"^6.0.0"}}'
+  )
   const scriptPath = path.join(dir, "drive.exp")
   writeFileSync(
     scriptPath,
