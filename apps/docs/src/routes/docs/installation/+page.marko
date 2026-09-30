@@ -112,7 +112,8 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
     <strong>3. Run <code>init</code>.</strong> It sets up Tailwind, the theme, and
     <code>components.json</code> for you. In a terminal it asks for a base color, a distribution,
     and a visual style; press Enter at each question to accept <code>neutral</code>,
-    <code>copy</code>, and <code>vega</code>.
+    <code>copy</code>, and <code>vega</code>. <code>bunx marko-ui init --defaults</code> skips the
+    questions.
   </p>
 
   <code-block language="bash" code=QS_INIT/>
@@ -152,11 +153,13 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
   </p>
 
   <ul>
-    <li><strong>Marko 6.</strong> A fresh <code>create-marko</code> app is one. <code>init</code> needs a <code>package.json</code> that depends on <code>marko</code> (the scaffold has it).</li>
+    <li><strong>Marko 6.</strong> A fresh <code>create-marko</code> app is one. <code>init</code> needs a <code>package.json</code> that depends on <code>marko</code>, <code>@marko/run</code> or <code>@marko/vite</code> (the scaffold has it). Otherwise it refuses; <code>--force</code> bypasses the check, and at a workspace root it tells you to run from the app or pass <code>--cwd &lt;app&gt;</code>.</li>
     <li>
       <strong>Tailwind v4.</strong> On a fresh <code>create-marko</code> app you do not set it up:
       <code>init</code> installs it and wires it in (see <a href="#what-init-does">what
-      <code>init</code> changes</a>). An existing project needs a Tailwind v4 stylesheet;
+      <code>init</code> changes</a>). In an existing project, <code>init</code> reuses the
+      Tailwind stylesheet it finds, creates one if there is none, and warns when your own Vite
+      config lacks <code>@tailwindcss/vite</code>.
       <a href="/docs/components-json">components.json</a> explains how the CLI finds your CSS file
       and path aliases.
     </li>
@@ -179,7 +182,7 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
   <ul>
     <li>Writes <code>components.json</code>.</li>
     <li>Adds <code>allowImportingTsExtensions</code> to <code>tsconfig.json</code>.</li>
-    <li>Creates <code>src/styles/globals.css</code> and writes the theme into it.</li>
+    <li>Creates <code>src/styles/globals.css</code> and writes the theme into it, inside a <code>/* marko-ui:theme:start */ … /* marko-ui:theme:end */</code> block.</li>
     <li>Adds <code>import "../styles/globals.css"</code> to <code>src/routes/+layout.marko</code>.</li>
     <li>Creates <code>vite.config.ts</code> loading <code>@tailwindcss/vite</code>.</li>
     <li>Installs <code>@tailwindcss/vite</code>, <code>tailwindcss</code>, and <code>tw-animate-css</code>.</li>
@@ -191,6 +194,13 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
   </p>
 
   <h2 id="init">marko-ui init</h2>
+
+  <p>
+    The theme always lands inside a <code>/* marko-ui:theme:start */ … /* marko-ui:theme:end */</code>
+    block in the <code>tailwind.css</code> file named in <code>components.json</code>. A re-run
+    replaces only that block. In a stylesheet that holds your own CSS the block is appended; a
+    fresh app gets <code>src/styles/globals.css</code> created with it.
+  </p>
 
   <p>
     In an interactive terminal, <code>init</code> with no flags asks three questions: base color,
@@ -301,9 +311,9 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
 
   <p>
     To adopt marko-ui in a project that has no <code>components.json</code> yet, run
-    <code>init</code> there. Outside a fresh <code>create-marko</code> app it needs a Tailwind v4
-    stylesheet already in place; see <a href="/docs/components-json">components.json</a> for how
-    the CLI finds it.
+    <code>init</code> there. It reuses the Tailwind stylesheet it finds, creates one if there is none,
+    and warns when your own Vite config lacks <code>@tailwindcss/vite</code>; see
+    <a href="/docs/components-json">components.json</a> for how the CLI finds the stylesheet.
   </p>
 
   <h2 id="choosing">Choosing a distribution</h2>
@@ -451,10 +461,11 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
 
   <h3>Components render unstyled</h3>
   <p>
-    On the copy distribution, this is almost always a missing Tailwind <code>@source</code>
-    directive for your component directory. Tailwind v4 has to be told where your
-    <code>.marko</code> files live, and needs a second directive if components were installed
-    outside the directory the first one covers.
+    On the copy distribution, the theme stylesheet is usually not loading: check that the file
+    recorded as <code>tailwind.css</code> in <code>components.json</code> is imported by your root
+    layout and that <code>@tailwindcss/vite</code> is in your Vite config. <code>init</code> wires
+    both. Only if your components live outside the directory Tailwind scans does it also need an
+    <code>@source</code> directive for that directory.
   </p>
 
   <h3>"Cannot find module" for a @zag-js package</h3>
