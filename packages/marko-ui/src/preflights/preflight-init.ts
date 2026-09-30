@@ -8,6 +8,22 @@ import { spinner } from "@/src/utils/spinner"
 import fs from "fs-extra"
 import { z } from "zod"
 
+/**
+ * Whether the package.json at `cwd` declares Marko. `marko` itself is the
+ * signal: every Marko 6 project (`@marko/run`, `@marko/vite`, or a hand-rolled
+ * compiler setup) depends on it, and nothing that is not a Marko project does.
+ */
+export function isMarkoProject(cwd: string): boolean {
+  try {
+    const pkg = fs.readJsonSync(path.resolve(cwd, "package.json"))
+    return Boolean(pkg?.dependencies?.marko || pkg?.devDependencies?.marko)
+  } catch {
+    // An unreadable package.json is not proof of anything; let later steps
+    // report it rather than claiming the project is not Marko.
+    return true
+  }
+}
+
 export async function preFlightInit(
   options: z.infer<typeof initOptionsSchema>
 ) {
@@ -45,6 +61,14 @@ export async function preFlightInit(
         "marko-ui agents sync"
       )}.\nTo start over, run ${highlighter.info("marko-ui init --force")}.`
     )
+  }
+
+  if (!isMarkoProject(options.cwd)) {
+    projectSpinner?.fail()
+    errors[ERRORS.NOT_A_MARKO_PROJECT] = true
+    return {
+      errors,
+    }
   }
 
   projectSpinner?.succeed()

@@ -227,6 +227,22 @@ export async function runInit(
         )}), then run ${highlighter.info("marko-ui init")} inside it.`
       )
     }
+
+    if (preflight.errors[ERRORS.NOT_A_MARKO_PROJECT]) {
+      throw new CommandError(
+        `${highlighter.info(
+          options.cwd
+        )} does not look like a Marko project (no ${highlighter.info(
+          "marko"
+        )} dependency in package.json). Create one first (e.g. ${highlighter.info(
+          "bun create marko@latest"
+        )}), then run ${highlighter.info(
+          "marko-ui init"
+        )} inside it. In a monorepo, run it from the app's folder or pass ${highlighter.info(
+          "--cwd"
+        )}.`
+      )
+    }
   }
 
   const { config, distribution, visualStyle } = await promptForConfig(options)
