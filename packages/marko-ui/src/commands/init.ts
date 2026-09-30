@@ -24,6 +24,7 @@ import {
   writeComponentsJson,
   type Config,
 } from "@/src/utils/get-config"
+import { isMonorepoRoot } from "@/src/utils/get-monorepo-info"
 import { getProjectConfig, getProjectInfo } from "@/src/utils/get-project-info"
 import { CommandError, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
@@ -227,6 +228,32 @@ export async function runInit(
         )}), then run ${highlighter.info("marko-ui init")} inside it.`
       )
     }
+
+    if (preflight.errors[ERRORS.NOT_A_MARKO_PROJECT]) {
+      const workspaceRoot = await isMonorepoRoot(options.cwd)
+      throw new CommandError(
+        `${highlighter.info(
+          options.cwd
+        )} does not look like a Marko project (no ${highlighter.info(
+          "marko"
+        )}, ${highlighter.info("@marko/run")} or ${highlighter.info(
+          "@marko/vite"
+        )} dependency in package.json). ` +
+          (workspaceRoot
+            ? `This looks like a workspace root: run ${highlighter.info(
+                "marko-ui init"
+              )} from the app directory or pass ${highlighter.info(
+                "--cwd <app>"
+              )}.`
+            : `Create one first (e.g. ${highlighter.info(
+                "bun create marko@latest"
+              )}), then run ${highlighter.info(
+                "marko-ui init"
+              )} inside it. If it is a Marko project, pass ${highlighter.info(
+                "--force"
+              )}.`)
+      )
+    }
   }
 
   const { config, distribution, visualStyle } = await promptForConfig(options)
@@ -236,89 +263,153 @@ export async function runInit(
     silent: options.silent,
   }).start()
   const targetPath = path.resolve(options.cwd, "components.json")
+  const previousComponentsJson = existsSync(targetPath)
+    ? await fs.readFile(targetPath, "utf8")
+    : null
   await writeComponentsJson(targetPath, config)
   componentSpinner.succeed()
 
-  let fullConfig = await resolveConfigPaths(options.cwd, config)
+  // components.json is what makes a project "initialized": a later `init`
+  // refuses to run over it. Every other step below (tsconfig option,
+  // stylesheet, Vite wiring, dependencies, theme) skips what is already done,
+  // so it is safe to repeat. So if anything after this point fails — the
+  // registry being unreachable is the usual reason — put components.json back
+  // as it was (or remove it) and let the error through, rather than leave a
+  // project that cannot be re-initialized and has no theme.
+  let fullConfig: Config
+  try {
+    fullConfig = await resolveConfigPaths(options.cwd, config)
 
-  // Registry components import siblings with explicit `.ts` extensions, which
-  // a stock `create-marko` tsconfig rejects (TS5097). `init` already writes
-  // components.json and patches CSS, so the compiler option belongs here too —
-  // otherwise scaffold -> init -> add lands on a project that cannot typecheck.
-  await updateTsConfig(fullConfig, { silent: options.silent })
+    // Registry components import siblings with explicit `.ts` extensions, which
+    // a stock `create-marko` tsconfig rejects (TS5097). `init` already writes
+    // components.json and patches CSS, so the compiler option belongs here too —
+    // otherwise scaffold -> init -> add lands on a project that cannot typecheck.
+    await updateTsConfig(fullConfig, { silent: options.silent })
 
-  // The CSS entry point must exist before any theme or component tries to
-  // patch it. A `create-marko` scaffold ships no stylesheet at all, which is
-  // what made `init` die with ENOENT on the (previously Next.js-shaped)
-  // default path.
-  await ensureCssEntry(fullConfig, { silent: options.silent })
+    // The CSS entry point must exist before any theme or component tries to
+    // patch it. A `create-marko` scaffold ships no stylesheet at all, which is
+    // what made `init` die with ENOENT on the (previously Next.js-shaped)
+    // default path.
+    await ensureCssEntry(fullConfig, { silent: options.silent })
 
-  // Creating the stylesheet is not enough — it has to actually load. A
-  // `create-marko` scaffold imports no CSS anywhere (its layout uses an inline
-  // `<style>`) and has no Vite config, so without this the theme and every
-  // component utility are silently absent from the build output.
-  await wireCssEntry(fullConfig, { silent: options.silent })
+    // Creating the stylesheet is not enough — it has to actually load. A
+    // `create-marko` scaffold imports no CSS anywhere (its layout uses an inline
+    // `<style>`) and has no Vite config, so without this the theme and every
+    // component utility are silently absent from the build output.
+    await wireCssEntry(fullConfig, { silent: options.silent })
 
-  // Resolve any namespaced registries referenced by the requested components.
-  if (options.components?.length) {
-    const { config: configWithRegistries } = await ensureRegistriesInConfig(
-      options.components,
-      fullConfig,
-      { silent: options.silent }
-    )
-    fullConfig = configWithRegistries
-  }
-
-  if (distribution === "import") {
-    // Import path: no files are copied. `@marko-ui/shadcn` ships the mu-*
-    // hook-class components + precompiled style CSS layers; scaffold the
-    // dependency and the CSS entry that consumes them (see
-    // notes/plans/dual-distribution-plan.md §1/§4c).
-    await updateDependencies(["@marko-ui/shadcn"], [], fullConfig, {
-      silent: options.silent,
-    })
-    await scaffoldImportDistributionCss(fullConfig, {
-      baseColor: config.tailwind.baseColor ?? "neutral",
-      visualStyle,
-      silent: options.silent,
-    })
-
-    if (!options.silent) {
-      logger.info(
-        `Import distribution: components come from ${highlighter.info(
-          "@marko-ui/shadcn"
-        )} (no local component files). Use ${highlighter.info(
-          `class="style-${visualStyle}"`
-        )} on an ancestor element to activate the ${highlighter.info(
-          visualStyle
-        )} style.`
+    // Resolve any namespaced registries referenced by the requested components.
+    if (options.components?.length) {
+      const { config: configWithRegistries } = await ensureRegistriesInConfig(
+        options.components,
+        fullConfig,
+        { silent: options.silent }
       )
+      fullConfig = configWithRegistries
     }
-  } else {
-    // Copy path: install the theme matching the chosen base color (the
-    // registry publishes one style item per base color: style, style-zinc,
-    // ...) plus the requested components as flat generated source.
-    const styleItem =
-      !config.tailwind.baseColor || config.tailwind.baseColor === "neutral"
-        ? "style"
-        : `style-${config.tailwind.baseColor}`
-    const components = Array.from(
-      new Set([styleItem, ...(options.components ?? [])])
-    )
-    await addComponents(components, fullConfig, {
-      overwrite: true,
-      silent: options.silent,
-    })
 
-    // Zero-import tags for installed components (<Badge>, <badge>, ...).
-    await writeProjectTaglib(fullConfig)
+    if (distribution === "import") {
+      // Import path: no files are copied. `@marko-ui/shadcn` ships the mu-*
+      // hook-class components + precompiled style CSS layers; scaffold the
+      // dependency and the CSS entry that consumes them (see
+      // notes/plans/dual-distribution-plan.md §1/§4c).
+      await updateDependencies(["@marko-ui/shadcn"], [], fullConfig, {
+        silent: options.silent,
+      })
+      await scaffoldImportDistributionCss(fullConfig, {
+        baseColor: config.tailwind.baseColor ?? "neutral",
+        visualStyle,
+        silent: options.silent,
+      })
+
+      if (!options.silent) {
+        logger.info(
+          `Import distribution: components come from ${highlighter.info(
+            "@marko-ui/shadcn"
+          )} (no local component files). Use ${highlighter.info(
+            `class="style-${visualStyle}"`
+          )} on an ancestor element to activate the ${highlighter.info(
+            visualStyle
+          )} style.`
+        )
+      }
+    } else {
+      // Copy path: install the theme matching the chosen base color (the
+      // registry publishes one style item per base color: style, style-zinc,
+      // ...) plus the requested components as flat generated source.
+      const styleItem =
+        !config.tailwind.baseColor || config.tailwind.baseColor === "neutral"
+          ? "style"
+          : `style-${config.tailwind.baseColor}`
+      const components = Array.from(
+        new Set([styleItem, ...(options.components ?? [])])
+      )
+      await addComponents(components, fullConfig, {
+        overwrite: true,
+        silent: options.silent,
+      })
+
+      // Zero-import tags for installed components (<Badge>, <badge>, ...).
+      await writeProjectTaglib(fullConfig)
+    }
+
+    // (`--agents` runs after the try, below.)
+  } catch (error) {
+    await rollbackComponentsJson(targetPath, previousComponentsJson, options)
+    throw error
   }
 
+  // Outside the rollback scope on purpose: the project is fully initialized by
+  // now, so a skills-install failure exits 1 with its own message and keeps
+  // the project instead of undoing it.
   if (options.agents) {
     await runAgentsSync(options.cwd, { silent: options.silent })
   }
 
   return fullConfig
+}
+
+/**
+ * Puts components.json back as it was (removes it, or restores the previous
+ * one under `--force`) after a failed init.
+ *
+ * The restore must never mask the failure that caused it: if it fails too, say
+ * which file is left behind and return, so the caller rethrows the ORIGINAL
+ * error.
+ */
+export async function rollbackComponentsJson(
+  targetPath: string,
+  previous: string | null,
+  options: { silent?: boolean } = {}
+) {
+  try {
+    if (previous === null) {
+      await fs.rm(targetPath, { force: true })
+    } else {
+      await fs.writeFile(targetPath, previous, "utf8")
+    }
+  } catch (restoreError) {
+    logger.warn(
+      `Could not ${
+        previous === null ? "remove" : "restore"
+      } ${highlighter.info(targetPath)} after the failed init (${
+        restoreError instanceof Error ? restoreError.message : restoreError
+      }). It is left behind: fix or delete it by hand before running ${highlighter.info(
+        "marko-ui init"
+      )} again.`
+    )
+    return
+  }
+
+  if (!options.silent) {
+    logger.info(
+      `Init failed. ${highlighter.info(
+        "components.json"
+      )} was rolled back; anything already done stays in place (tsconfig option, stylesheet, layout import, Vite config, installed dependencies). Running ${highlighter.info(
+        "marko-ui init"
+      )} again is safe.`
+    )
+  }
 }
 
 /**
@@ -438,6 +529,37 @@ export function mayPromptForInit(
   interactive: boolean = isInteractive()
 ): boolean {
   return !options.defaults && !options.yes && !options.silent && interactive
+}
+
+/**
+ * The config a non-interactive `init` would write, resolved against `cwd`
+ * without writing anything. `add --dry-run` uses it to preview an
+ * uninitialized project.
+ */
+export async function buildDefaultConfig(cwd: string): Promise<Config> {
+  const projectInfo = await getProjectInfo(cwd)
+  const aliasDefaults = getInitAliasDefaults(DEFAULT_COMPONENTS, undefined)
+  const raw = rawConfigSchema.parse({
+    $schema: "https://ui.shadcn.com/schema.json",
+    style: "default",
+    distribution: "copy",
+    visualStyle: DEFAULT_VISUAL_STYLE,
+    tailwind: {
+      config: "",
+      css: resolveTailwindCssPath({
+        detectedCss: projectInfo?.tailwindCssFile,
+        frameworkName: projectInfo?.framework?.name,
+        isSrcDir: projectInfo?.isSrcDir,
+      }),
+      baseColor: "neutral",
+      cssVariables: true,
+      prefix: "",
+    },
+    rsc: false,
+    tsx: true,
+    aliases: { components: DEFAULT_COMPONENTS, ...aliasDefaults },
+  })
+  return resolveConfigPaths(cwd, raw)
 }
 
 async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Promise<{

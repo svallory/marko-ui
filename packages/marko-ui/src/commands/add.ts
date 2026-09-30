@@ -1,5 +1,5 @@
 import path from "path"
-import { runInit } from "@/src/commands/init"
+import { buildDefaultConfig, runInit } from "@/src/commands/init"
 import { preFlightAdd } from "@/src/preflights/preflight-add"
 import { getRegistryItems, getShadcnRegistryIndex } from "@/src/registry/api"
 import { clearRegistryContext } from "@/src/registry/context"
@@ -10,13 +10,14 @@ import { dryRunComponents } from "@/src/utils/dry-run"
 import { formatDryRunResult } from "@/src/utils/dry-run-formatter"
 import { loadEnvFiles } from "@/src/utils/env-loader"
 import * as ERRORS from "@/src/utils/errors"
-import { createConfig, getConfig } from "@/src/utils/get-config"
+import { createConfig, getConfig, type Config } from "@/src/utils/get-config"
 import {
   CleanExit,
   CommandError,
   handleError,
 } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
+import { isInteractive } from "@/src/utils/interactive"
 import { logger } from "@/src/utils/logger"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
 import { confirm, exitIfEmptySelection, multiselect } from "@/src/utils/clack"
@@ -74,6 +75,14 @@ export const add = new Command()
             cwd: options.cwd,
           },
         })
+      }
+
+      if (hasExistingConfig && initialConfig.distribution === "import") {
+        assertAddableDistribution(
+          initialConfig,
+          components,
+          await getUiComponentNames()
+        )
       }
 
       let hasNewRegistries = false
@@ -138,16 +147,61 @@ export const add = new Command()
 
       // No components.json file. Prompt the user to run init.
       let initHasRun = false
-      if (errors[ERRORS.MISSING_CONFIG]) {
-        const proceed = await confirm(
-          `You need to create a ${highlighter.info(
-            "components.json"
-          )} file to add components. Proceed?`
+      if (errors[ERRORS.MISSING_CONFIG] && isDryRun) {
+        // A preview must not initialize anything: resolve against the config
+        // init would write and say so.
+        if (!options.components?.length) {
+          throw new CommandError("Name a component to preview.")
+        }
+        const defaults = await buildDefaultConfig(options.cwd)
+        const previewConfig = (
+          await ensureRegistriesInConfig(options.components, defaults, {
+            silent: true,
+            writeFile: false,
+          })
+        ).config
+        logger.info(
+          `This project is not initialized: add would run ${highlighter.info(
+            "init"
+          )} with the defaults (base color ${highlighter.info(
+            defaults.tailwind.baseColor ?? "neutral"
+          )}, distribution ${highlighter.info(
+            defaults.distribution ?? "copy"
+          )}, visual style ${highlighter.info(
+            defaults.visualStyle ?? "vega"
+          )}), then add ${options.components
+            .map((name) => highlighter.info(name))
+            .join(", ")}. Nothing was written.`
         )
+        const previewSpinner = spinner("Resolving items.", {
+          silent: options.silent,
+        }).start()
+        const previewResult = await dryRunComponents(
+          options.components,
+          previewConfig,
+          { overwrite: options.overwrite }
+        )
+        previewSpinner.stop()
+        logger.log(formatDryRunResult(previewResult, options.components, {}))
+        return
+      }
 
-        if (!proceed) {
-          // User declined to create components.json — nothing to add.
-          throw new CleanExit(1)
+      if (errors[ERRORS.MISSING_CONFIG]) {
+        // Only a person at a terminal gets asked. `-y` and non-interactive
+        // callers (agent, CI, no TTY) go straight to init with the defaults;
+        // a confirm there has nobody to answer it and the run used to end
+        // "successfully" having added nothing.
+        if (shouldConfirmAutoInit(options)) {
+          const proceed = await confirm(
+            `You need to create a ${highlighter.info(
+              "components.json"
+            )} file to add components. Proceed?`
+          )
+
+          if (!proceed) {
+            // User declined to create components.json — nothing to add.
+            throw new CleanExit(1)
+          }
         }
 
         config = await runInit({
@@ -221,6 +275,76 @@ export const add = new Command()
       clearRegistryContext()
     }
   })
+
+/**
+ * Whether `add` should ask before creating a missing components.json.
+ * Exported with `interactive` injectable so it is testable without a pty.
+ */
+export function shouldConfirmAutoInit(
+  options: Pick<z.infer<typeof addOptionsSchema>, "yes">,
+  interactive: boolean = isInteractive()
+): boolean {
+  return !options.yes && interactive
+}
+
+/**
+ * The import distribution ships no component source: components are imported
+ * from `@marko-ui/shadcn`. `add` would copy files nobody asked for and the
+ * project would then carry two copies of each component, so it refuses and
+ * shows the import path instead. Nothing has been written at this point.
+ *
+ * `uiComponents` is the set of names that really are ui components; the import
+ * path is only printed for those (an invented path is worse than none). When
+ * it is unknown (registry unreachable) the generic form is shown.
+ */
+export function assertAddableDistribution(
+  config: Pick<Config, "distribution">,
+  components: string[] = [],
+  uiComponents?: ReadonlySet<string>
+) {
+  if (config.distribution !== "import") {
+    return
+  }
+
+  const examples = uiComponents
+    ? components
+        .filter((name) => uiComponents.has(name))
+        .map(
+          (name) =>
+            `  ${highlighter.info(`@marko-ui/shadcn/ui/${name}/${name}.marko`)}`
+        )
+    : []
+
+  throw new CommandError(
+    `This project uses the ${highlighter.info(
+      "import"
+    )} distribution, so there is nothing to add: components are imported from ${highlighter.info(
+      "@marko-ui/shadcn"
+    )}, not copied into the project. Items from other registries and URLs are refused too.\n` +
+      (examples.length
+        ? `Import them like this:\n${examples.join("\n")}\n`
+        : `Import a component as ${highlighter.info(
+            "@marko-ui/shadcn/ui/<name>/<name>.marko"
+          )}.\n`) +
+      `To copy component source into the project instead, run ${highlighter.info(
+        "marko-ui eject"
+      )}.`
+  )
+}
+
+/** Names of the registry's ui components, or undefined when the index is unreachable. */
+async function getUiComponentNames(): Promise<ReadonlySet<string> | undefined> {
+  try {
+    const index = await getShadcnRegistryIndex()
+    return new Set(
+      (index ?? [])
+        .filter((entry) => entry.type === "registry:ui")
+        .map((entry) => entry.name)
+    )
+  } catch {
+    return undefined
+  }
+}
 
 async function promptForRegistryComponents(
   options: z.infer<typeof addOptionsSchema>

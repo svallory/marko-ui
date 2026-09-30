@@ -137,7 +137,7 @@ describe("project structures — tsconfig / alias variants", () => {
     expect(doctor.code, tail(doctor.out)).toBe(0)
   })
 
-  scenario("S06", "no src/ directory (plain Vite): stylesheet and component paths are coherent", { fails: "D5" }, async () => {
+  scenario("S06", "no src/ directory (plain Vite): stylesheet and component paths are coherent", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { srcDir: false, framework: "marko-vite", viteConfig: true })
     const { init, add } = await fullFlow(ws)
@@ -160,7 +160,7 @@ describe("project structures — tsconfig / alias variants", () => {
 })
 
 describe("project structures — build tooling already present", () => {
-  scenario("S07", "Tailwind v4 hand-wired: init reuses the stylesheet, no duplicate or new entry", { fails: "D6" }, async () => {
+  scenario("S07", "Tailwind v4 hand-wired: init reuses the stylesheet, no duplicate or new entry", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { tailwind: true })
     const before = read(ws, "vite.config.ts")
@@ -242,7 +242,7 @@ describe("project structures — monorepos", () => {
 
   // D1 is fixed; remaining mark is D7: the root is not a Marko project, so the
   // correct outcome is a clean exit 1 that writes nothing.
-  scenario("S09e", "monorepo root, no components.json, no tsconfig: init fails cleanly, writes nothing", { fails: "D7" }, async () => {
+  scenario("S09e", "monorepo root, no components.json, no tsconfig: init fails cleanly, writes nothing", async () => {
     const ws = makeWorkspace()
     monorepo(ws)
     const r = await cli(ws, ["init"], { shim: withShims(makeWorkspace("shim"), undefined, { failing: true }) })
@@ -302,7 +302,7 @@ describe("project structures — monorepos", () => {
 describe("project structures — not a usable project", () => {
   // Behaviour only: no fixed phrase. (The fixture has a tsconfig so this fails
   // for D7 alone, not D1.)
-  scenario("S13", "bare package.json (not Marko): init exits 1, mentions Marko, writes nothing", { fails: "D7" }, async () => {
+  scenario("S13", "bare package.json (not Marko): init exits 1, mentions Marko, writes nothing", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { framework: "none", extra: { "package.json": { name: "x", dependencies: { react: "19" } } } })
     const init = await cli(ws, ["init"], { shim: withShims(makeWorkspace("shim"), undefined, { failing: true }) })

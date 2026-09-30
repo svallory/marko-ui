@@ -77,7 +77,7 @@ describe("environments — network", () => {
     expect(exists(ws, "src/components/ui/badge")).toBe(false)
   })
 
-  scenario("E07", "registry unreachable: init exits non-zero, says so, does not leave a half-initialised project", { fails: "D12" }, async () => {
+  scenario("E07", "registry unreachable: init exits non-zero, says so, does not leave a half-initialised project", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { tsconfig: "paths" })
     const r = await cli(ws, ["init"], { shim: withShims(makeWorkspace("shim")), env: { REGISTRY_URL: DEAD_REGISTRY }, timeoutMs: 45_000 })

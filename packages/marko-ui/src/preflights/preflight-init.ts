@@ -1,12 +1,29 @@
 import path from "path"
 import { initOptionsSchema } from "@/src/commands/init"
 import * as ERRORS from "@/src/utils/errors"
+import { hasMarkoDependency } from "@/src/utils/get-project-info"
 import { highlighter } from "@/src/utils/highlighter"
 import { CommandError } from "@/src/utils/handle-error"
 import { logger } from "@/src/utils/logger"
 import { spinner } from "@/src/utils/spinner"
 import fs from "fs-extra"
 import { z } from "zod"
+
+/**
+ * Whether the package.json at `cwd` declares Marko (`marko`, `@marko/run` or
+ * `@marko/vite`, in dependencies, devDependencies or peerDependencies).
+ */
+export function isMarkoProject(cwd: string): boolean {
+  try {
+    return hasMarkoDependency(
+      fs.readJsonSync(path.resolve(cwd, "package.json"))
+    )
+  } catch {
+    // An unreadable package.json is not proof of anything; let later steps
+    // report it rather than claiming the project is not Marko.
+    return true
+  }
+}
 
 export async function preFlightInit(
   options: z.infer<typeof initOptionsSchema>
@@ -45,6 +62,16 @@ export async function preFlightInit(
         "marko-ui agents sync"
       )}.\nTo start over, run ${highlighter.info("marko-ui init --force")}.`
     )
+  }
+
+  // `--force` skips the check: it is the escape hatch for a project this
+  // detector does not recognise.
+  if (!options.force && !isMarkoProject(options.cwd)) {
+    projectSpinner?.fail()
+    errors[ERRORS.NOT_A_MARKO_PROJECT] = true
+    return {
+      errors,
+    }
   }
 
   projectSpinner?.succeed()

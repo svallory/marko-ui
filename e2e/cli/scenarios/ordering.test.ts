@@ -104,7 +104,7 @@ describe("command ordering", () => {
 
   // Pinned decision: interactive terminal keeps the confirm; `-y` or
   // non-interactive (agent env, CI, no TTY) auto-inits with the defaults.
-  scenario("O07", "add before init (non-interactive): auto-inits with defaults and installs the component", { fails: "D10" }, async () => {
+  scenario("O07", "add before init (non-interactive): auto-inits with defaults and installs the component", async () => {
     const ws = app()
     const shim = withShims(makeWorkspace("shim"))
     const add = await cli(ws, ["add", "button"], { shim })
@@ -115,7 +115,7 @@ describe("command ordering", () => {
     expect(exists(ws, "src/components/ui/button/button.marko")).toBe(true)
   })
 
-  scenario("O07b", "add -y before init: same auto-init, even with a TTY-like env", { fails: "D10" }, async () => {
+  scenario("O07b", "add -y before init: same auto-init, even with a TTY-like env", async () => {
     const ws = app()
     const shim = withShims(makeWorkspace("shim"))
     const add = await cli(ws, ["add", "button", "-y"], { shim, env: { CLAUDECODE: undefined } })
