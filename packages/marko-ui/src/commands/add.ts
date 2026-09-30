@@ -10,13 +10,14 @@ import { dryRunComponents } from "@/src/utils/dry-run"
 import { formatDryRunResult } from "@/src/utils/dry-run-formatter"
 import { loadEnvFiles } from "@/src/utils/env-loader"
 import * as ERRORS from "@/src/utils/errors"
-import { createConfig, getConfig } from "@/src/utils/get-config"
+import { createConfig, getConfig, type Config } from "@/src/utils/get-config"
 import {
   CleanExit,
   CommandError,
   handleError,
 } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
+import { isInteractive } from "@/src/utils/interactive"
 import { logger } from "@/src/utils/logger"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
 import { confirm, exitIfEmptySelection, multiselect } from "@/src/utils/clack"
@@ -74,6 +75,10 @@ export const add = new Command()
             cwd: options.cwd,
           },
         })
+      }
+
+      if (hasExistingConfig) {
+        assertAddableDistribution(initialConfig, components)
       }
 
       let hasNewRegistries = false
@@ -139,15 +144,21 @@ export const add = new Command()
       // No components.json file. Prompt the user to run init.
       let initHasRun = false
       if (errors[ERRORS.MISSING_CONFIG]) {
-        const proceed = await confirm(
-          `You need to create a ${highlighter.info(
-            "components.json"
-          )} file to add components. Proceed?`
-        )
+        // Only a person at a terminal gets asked. `-y` and non-interactive
+        // callers (agent, CI, no TTY) go straight to init with the defaults;
+        // a confirm there has nobody to answer it and the run used to end
+        // "successfully" having added nothing.
+        if (shouldConfirmAutoInit(options)) {
+          const proceed = await confirm(
+            `You need to create a ${highlighter.info(
+              "components.json"
+            )} file to add components. Proceed?`
+          )
 
-        if (!proceed) {
-          // User declined to create components.json — nothing to add.
-          throw new CleanExit(1)
+          if (!proceed) {
+            // User declined to create components.json — nothing to add.
+            throw new CleanExit(1)
+          }
         }
 
         config = await runInit({
@@ -221,6 +232,55 @@ export const add = new Command()
       clearRegistryContext()
     }
   })
+
+/**
+ * Whether `add` should ask before creating a missing components.json.
+ * Exported with `interactive` injectable so it is testable without a pty.
+ */
+export function shouldConfirmAutoInit(
+  options: Pick<z.infer<typeof addOptionsSchema>, "yes">,
+  interactive: boolean = isInteractive()
+): boolean {
+  return !options.yes && interactive
+}
+
+/**
+ * The import distribution ships no component source: components are imported
+ * from `@marko-ui/shadcn`. `add` would copy files nobody asked for and the
+ * project would then carry two copies of each component, so it refuses and
+ * shows the import path instead. Nothing has been written at this point.
+ */
+export function assertAddableDistribution(
+  config: Pick<Config, "distribution">,
+  components: string[] = []
+) {
+  if (config.distribution !== "import") {
+    return
+  }
+
+  const examples = components
+    .filter((name) => /^[a-z0-9][a-z0-9-]*$/.test(name))
+    .map(
+      (name) =>
+        `  ${highlighter.info(`@marko-ui/shadcn/ui/${name}/${name}.marko`)}`
+    )
+
+  throw new CommandError(
+    `This project uses the ${highlighter.info(
+      "import"
+    )} distribution, so there is nothing to add: components are imported from ${highlighter.info(
+      "@marko-ui/shadcn"
+    )}, not copied into the project.\n` +
+      (examples.length
+        ? `Import them like this:\n${examples.join("\n")}\n`
+        : `Import a component as ${highlighter.info(
+            "@marko-ui/shadcn/ui/<name>/<name>.marko"
+          )}.\n`) +
+      `To copy component source into the project instead, run ${highlighter.info(
+        "marko-ui eject"
+      )}.`
+  )
+}
 
 async function promptForRegistryComponents(
   options: z.infer<typeof addOptionsSchema>
