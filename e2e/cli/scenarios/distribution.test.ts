@@ -6,6 +6,7 @@ import {
   jsonOut,
   makeWorkspace,
   markoApp,
+  plain,
   read,
   readJson,
   tail,
@@ -28,7 +29,7 @@ describe("distribution: copy, import, eject", () => {
 
   // Pinned decision: `add` on the import distribution exits 1, points at @marko-ui/shadcn for imports,
   // and writes nothing.
-  scenario("DI01b", "import distribution: add exits 1, explains how to import, writes no files", { fails: "D9" }, async () => {
+  scenario("DI01b", "import distribution: add exits 1, explains how to import, writes no files", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { tsconfig: "paths" })
     const shim = withShims(makeWorkspace("shim"))

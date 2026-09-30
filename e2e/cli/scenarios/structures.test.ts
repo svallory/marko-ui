@@ -28,7 +28,7 @@ async function fullFlow(_ws: string, cwd = _ws, extra: string[] = []) {
 }
 
 describe("project structures — the stock scaffold (D2)", () => {
-  scenario("S01", "stock create-marko app: agent docs and status see the installed component", { fails: "D2" }, async () => {
+  scenario("S01", "stock create-marko app: agent docs and status see the installed component", async () => {
     const ws = makeWorkspace()
     markoApp(ws)
     const { init, add, sync } = await fullFlow(ws)
@@ -41,7 +41,7 @@ describe("project structures — the stock scaffold (D2)", () => {
     expect(status.components).toContain("button")
   })
 
-  scenario("S01b", "stock create-marko app: status resolves ui dir to where add wrote", { fails: "D2" }, async () => {
+  scenario("S01b", "stock create-marko app: status resolves ui dir to where add wrote", async () => {
     const ws = makeWorkspace()
     markoApp(ws)
     await fullFlow(ws)
@@ -49,7 +49,7 @@ describe("project structures — the stock scaffold (D2)", () => {
     expect(ui).toBe(`${ws}/src/components/ui`)
   })
 
-  scenario("S01c", "stock create-marko app: diff sees an unmodified installed component", { fails: "D2" }, async () => {
+  scenario("S01c", "stock create-marko app: diff sees an unmodified installed component", async () => {
     const ws = makeWorkspace()
     markoApp(ws)
     await fullFlow(ws)
@@ -58,7 +58,7 @@ describe("project structures — the stock scaffold (D2)", () => {
     expect(diff.out).not.toContain("No installed components found")
   })
 
-  scenario("S01d", "stock create-marko app: init generates a marko.json taglib for the ui dir", { fails: "D2" }, async () => {
+  scenario("S01d", "stock create-marko app: init generates a marko.json taglib for the ui dir", async () => {
     const ws = makeWorkspace()
     markoApp(ws)
     await fullFlow(ws)
@@ -80,7 +80,7 @@ describe("project structures — tsconfig / alias variants", () => {
     expect(status.components).toContain("button")
   })
 
-  scenario("S03", "package.json imports (#components/*): init and add succeed and are seen", { fails: "D2" }, async () => {
+  scenario("S03", "package.json imports (#components/*): init and add succeed and are seen", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { imports: true })
     const { init, add, sync } = await fullFlow(ws)
@@ -90,7 +90,7 @@ describe("project structures — tsconfig / alias variants", () => {
     expect(read(ws, "AGENTS.md")).toContain("- `button`")
   })
 
-  scenario("S04", "jsconfig.json, no tsconfig: init and add succeed and are seen", { fails: "D2" }, async () => {
+  scenario("S04", "jsconfig.json, no tsconfig: init and add succeed and are seen", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { jsconfig: true })
     const { init, add, sync } = await fullFlow(ws)
@@ -100,7 +100,7 @@ describe("project structures — tsconfig / alias variants", () => {
     expect(read(ws, "AGENTS.md")).toContain("- `button`")
   })
 
-  scenario("S05", "no tsconfig and no jsconfig: init, add, sync exit 0 and write their files", { fails: "D1" }, async () => {
+  scenario("S05", "no tsconfig and no jsconfig: init, add, sync exit 0 and write their files", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { tsconfig: "none" })
     const { init, add, sync } = await fullFlow(ws)
@@ -114,7 +114,7 @@ describe("project structures — tsconfig / alias variants", () => {
 
   // Flips only when D1 AND D2 are both fixed: without a tsconfig the ui alias
   // cannot resolve (D2), and today the flow dies earlier on D1.
-  scenario("S05c", "no tsconfig and no jsconfig: the installed component is seen", { fails: "D1+D2" }, async () => {
+  scenario("S05c", "no tsconfig and no jsconfig: the installed component is seen", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { tsconfig: "none" })
     await fullFlow(ws)
@@ -122,7 +122,7 @@ describe("project structures — tsconfig / alias variants", () => {
     expect(jsonOut((await cli(ws, ["status", "--json"])).out).components).toContain("button")
   })
 
-  scenario("S05b", "no tsconfig, components.json already present: agents sync succeeds", { fails: "D1" }, async () => {
+  scenario("S05b", "no tsconfig, components.json already present: agents sync succeeds", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { tsconfig: "none", extra: { "components.json": componentsJson() } })
     const sync = await cli(ws, ["agents", "sync", "--no-skill"])
@@ -138,7 +138,7 @@ describe("project structures — tsconfig / alias variants", () => {
     expect(doctor.code, tail(doctor.out)).toBe(0)
   })
 
-  scenario("S06", "no src/ directory (plain Vite): stylesheet and component paths are coherent", { fails: "D5" }, async () => {
+  scenario("S06", "no src/ directory (plain Vite): stylesheet and component paths are coherent", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { srcDir: false, framework: "marko-vite", viteConfig: true })
     const { init, add } = await fullFlow(ws)
@@ -152,7 +152,7 @@ describe("project structures — tsconfig / alias variants", () => {
   })
 
   // Flips only when D5 AND D2 are both fixed (plain tsconfig ⇒ unresolved alias).
-  scenario("S06b", "no src/ directory (plain Vite): the installed component is seen", { fails: "D5+D2" }, async () => {
+  scenario("S06b", "no src/ directory (plain Vite): the installed component is seen", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { srcDir: false, framework: "marko-vite", viteConfig: true })
     await fullFlow(ws)
@@ -162,7 +162,7 @@ describe("project structures — tsconfig / alias variants", () => {
 })
 
 describe("project structures — build tooling already present", () => {
-  scenario("S07", "Tailwind v4 hand-wired: init reuses the stylesheet, no duplicate or new entry", { fails: "D6" }, async () => {
+  scenario("S07", "Tailwind v4 hand-wired: init reuses the stylesheet, no duplicate or new entry", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { tailwind: true })
     const before = read(ws, "vite.config.ts")
@@ -187,7 +187,7 @@ describe("project structures — build tooling already present", () => {
     expect(plain(init.out)).toContain("@tailwindcss/vite")
   })
 
-  scenario("S12", "plain Vite + Marko (no @marko/run): init/add/sync succeed and are seen", { fails: "D2" }, async () => {
+  scenario("S12", "plain Vite + Marko (no @marko/run): init/add/sync succeed and are seen", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { framework: "marko-vite", viteConfig: true })
     const { init, add, sync } = await fullFlow(ws)
@@ -208,7 +208,7 @@ describe("project structures — monorepos", () => {
     })
   }
 
-  scenario("S09", "monorepo root: components.json at root, no tsconfig there — agents sync works (D1)", { fails: "D1" }, async () => {
+  scenario("S09", "monorepo root: components.json at root, no tsconfig there — agents sync works (D1)", async () => {
     const ws = makeWorkspace()
     monorepo(ws, { rootComponents: true })
     const sync = await cli(ws, ["agents", "sync", "--no-skill"])
@@ -216,7 +216,7 @@ describe("project structures — monorepos", () => {
     expect(exists(ws, "AGENTS.md")).toBe(true)
   })
 
-  scenario("S09b", "monorepo root, no tsconfig: agents sync --check does not crash (D1)", { fails: "D1" }, async () => {
+  scenario("S09b", "monorepo root, no tsconfig: agents sync --check does not crash (D1)", async () => {
     const ws = makeWorkspace()
     monorepo(ws, { rootComponents: true })
     const check = await cli(ws, ["agents", "sync", "--check", "--no-skill"])
@@ -224,7 +224,7 @@ describe("project structures — monorepos", () => {
     expect(check.code, tail(check.out)).toBe(3)
   })
 
-  scenario("S09c", "monorepo root, no tsconfig: status --json and diff exit 0 without the tsconfig error", { fails: "D1" }, async () => {
+  scenario("S09c", "monorepo root, no tsconfig: status --json and diff exit 0 without the tsconfig error", async () => {
     const ws = makeWorkspace()
     monorepo(ws, { rootComponents: true })
     for (const cmd of [["status", "--json"], ["diff"]]) {
@@ -234,7 +234,7 @@ describe("project structures — monorepos", () => {
     }
   })
 
-  scenario("S09d", "monorepo root, no tsconfig: doctor does not crash (exit 0, or 3 for a real finding — the root is not a Marko app)", { fails: "D1" }, async () => {
+  scenario("S09d", "monorepo root, no tsconfig: doctor does not crash (exit 0, or 3 for a real finding — the root is not a Marko app)", async () => {
     const ws = makeWorkspace()
     monorepo(ws, { rootComponents: true })
     const r = await cli(ws, ["doctor"], { shim: withShims(makeWorkspace("shim")) })
@@ -244,7 +244,7 @@ describe("project structures — monorepos", () => {
 
   // Flips only when D1 AND D7 are fixed: the root is not a Marko project, so the
   // correct outcome is a clean exit 1 that writes nothing.
-  scenario("S09e", "monorepo root, no components.json, no tsconfig: init fails cleanly, writes nothing", { fails: "D1+D7" }, async () => {
+  scenario("S09e", "monorepo root, no components.json, no tsconfig: init fails cleanly, writes nothing", async () => {
     const ws = makeWorkspace()
     monorepo(ws)
     const r = await cli(ws, ["init"], { shim: withShims(makeWorkspace("shim"), undefined, { failing: true }) })
@@ -253,7 +253,7 @@ describe("project structures — monorepos", () => {
     expect(exists(ws, "components.json"), "failed init left a components.json behind").toBe(false)
   })
 
-  scenario("S10", "monorepo app dir: init/add/sync from apps/web work (root lockfile only)", { fails: "D2" }, async () => {
+  scenario("S10", "monorepo app dir: init/add/sync from apps/web work (root lockfile only)", async () => {
     const ws = makeWorkspace()
     monorepo(ws)
     markoApp(ws, { dir: "apps/web", lock: "none" })
@@ -267,7 +267,7 @@ describe("project structures — monorepos", () => {
     expect(exists(ws, "AGENTS.md")).toBe(false)
   })
 
-  scenario("S10b", "monorepo: same flow from the repo root with --cwd apps/web", { fails: "D2" }, async () => {
+  scenario("S10b", "monorepo: same flow from the repo root with --cwd apps/web", async () => {
     const ws = makeWorkspace()
     monorepo(ws)
     markoApp(ws, { dir: "apps/web", lock: "none" })
@@ -285,7 +285,7 @@ describe("project structures — monorepos", () => {
     expect(exists(ws, "components.json")).toBe(false)
   })
 
-  scenario("S11", "monorepo shared packages/ui: components install into the package, not the app", { fails: "D2" }, async () => {
+  scenario("S11", "monorepo shared packages/ui: components install into the package, not the app", async () => {
     const ws = makeWorkspace()
     monorepo(ws)
     markoApp(ws, { dir: "apps/web", lock: "none" })
@@ -304,7 +304,7 @@ describe("project structures — monorepos", () => {
 describe("project structures — not a usable project", () => {
   // Behaviour only: no fixed phrase. (The fixture has a tsconfig so this fails
   // for D7 alone, not D1.)
-  scenario("S13", "bare package.json (not Marko): init exits 1, mentions Marko, writes nothing", { fails: "D7" }, async () => {
+  scenario("S13", "bare package.json (not Marko): init exits 1, mentions Marko, writes nothing", async () => {
     const ws = makeWorkspace()
     markoApp(ws, { framework: "none", extra: { "package.json": { name: "x", dependencies: { react: "19" } } } })
     const init = await cli(ws, ["init"], { shim: withShims(makeWorkspace("shim"), undefined, { failing: true }) })
