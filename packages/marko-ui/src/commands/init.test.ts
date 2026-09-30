@@ -1,6 +1,16 @@
+import { spawnSync } from "node:child_process"
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import os from "node:os"
+import path from "node:path"
 import { describe, expect, it } from "vitest"
 
-import { MARKO_DEFAULT_CSS, resolveTailwindCssPath } from "@/src/commands/init"
+import {
+  MARKO_DEFAULT_CSS,
+  init,
+  mayPromptForInit,
+  resolveTailwindCssPath,
+} from "@/src/commands/init"
+import { isInteractive } from "@/src/utils/interactive"
 
 /**
  * Regression coverage for the components.json stylesheet path.
@@ -79,4 +89,224 @@ describe("resolveTailwindCssPath", () => {
     )
     expect(resolveTailwindCssPath({})).toBe("app/globals.css")
   })
+})
+
+/**
+ * `-y, --yes` used to default to `true`, so every run looked like an explicit
+ * `--yes` and the documented three questions (base color, distribution,
+ * visual style) were never asked in a real terminal; defaults were silently
+ * applied. These pin the decision table.
+ */
+describe("mayPromptForInit", () => {
+  const flags = { defaults: false, yes: false, silent: false }
+
+  it("prompts in an interactive terminal with no flags", () => {
+    expect(mayPromptForInit(flags, true)).toBe(true)
+  })
+
+  it("never prompts when nothing can answer (non-interactive)", () => {
+    expect(mayPromptForInit(flags, false)).toBe(false)
+  })
+
+  it.each([
+    ["--defaults", { defaults: true }],
+    ["-y/--yes", { yes: true }],
+    ["--silent", { silent: true }],
+  ])("%s disables prompting even in a terminal", (_name, override) => {
+    expect(mayPromptForInit({ ...flags, ...override }, true)).toBe(false)
+  })
+
+  it("derives interactivity from the environment when not injected", () => {
+    // The default argument is `isInteractive()` over process.env/stdin.
+    const saved = { ...process.env }
+    try {
+      process.env.AI_AGENT = "1"
+      expect(mayPromptForInit(flags)).toBe(false)
+      delete process.env.AI_AGENT
+      expect(mayPromptForInit(flags)).toBe(isInteractive())
+    } finally {
+      process.env = saved
+    }
+  })
+})
+
+describe("init command flags", () => {
+  const yes = init.options.find((o) => o.long === "--yes")!
+  const defaults = init.options.find((o) => o.long === "--defaults")!
+
+  it("does not default --yes (or --defaults) to true", () => {
+    // Commander leaves the value undefined/false unless the caller passes it.
+    expect(yes.defaultValue).toBeFalsy()
+    expect(defaults.defaultValue).toBeFalsy()
+  })
+
+  it("describes what --yes and --defaults do", () => {
+    expect(yes.description).toMatch(/do not prompt/i)
+    expect(defaults.description).toMatch(/do not prompt/i)
+  })
+})
+
+/**
+ * pty-driven checks of the BUILT CLI. The unit tests above cannot see the
+ * class of bug this file exists for: the decision was right on paper and the
+ * wiring was not. `expect(1)` is the pty driver, so no native dependency is
+ * added; the tests skip where it (or the built CLI) is absent.
+ *
+ * Every case cancels (Ctrl-C) or stops at a prompt/first step, so none reaches
+ * the network, the package manager, or the registry. The window size is set
+ * explicitly: a pty with 0 columns (expect's default) makes `ora` erase lines
+ * forever, which reads as a hang unrelated to prompting.
+ */
+const cli = path.resolve(__dirname, "../../dist/index.js")
+const hasExpect = spawnSync("expect", ["-v"]).status === 0
+const canPty = hasExpect && existsSync(cli)
+
+// Skipping silently in CI would turn this suite into a green no-op: fail there
+// and name what is missing.
+if (process.env.CI && !canPty) {
+  describe("init in a real pty", () => {
+    it("has its prerequisites", () => {
+      const missing = [
+        !hasExpect && "`expect` (apt-get install expect)",
+        !existsSync(cli) && `the built CLI at ${cli} (bun run --filter marko-ui build)`,
+      ].filter(Boolean)
+      throw new Error(`pty tests cannot run in CI; missing: ${missing.join(", ")}`)
+    })
+  })
+}
+
+// Drives `marko-ui init <args>` in a fixture project. `body` is Tcl run after
+// the spawn; it must print markers on stdout. Returns stdout + whether
+// components.json was written.
+function runPty(body: string, args: string[], env: Record<string, string> = {}) {
+  const dir = mkdtempSync(path.join(os.tmpdir(), "marko-ui-init-pty-"))
+  writeFileSync(path.join(dir, "package.json"), '{"name":"fixture"}')
+  const scriptPath = path.join(dir, "drive.exp")
+  writeFileSync(
+    scriptPath,
+    String.raw`set stty_init "rows 40 columns 120"
+set timeout 20
+cd ${dir}
+log_user 0
+spawn env -u CLAUDECODE -u CI -u CURSOR_AGENT -u REPL_ID -u AI_AGENT {*}$argv
+` + body
+  )
+  const envArgs = Object.entries(env).map(([k, v]) => `${k}=${v}`)
+  const result = spawnSync(
+    "expect",
+    [scriptPath, "env", ...envArgs, "node", cli, "init", ...args],
+    { encoding: "utf8", timeout: 40_000 }
+  )
+  const written = existsSync(path.join(dir, "components.json"))
+  rmSync(dir, { recursive: true, force: true })
+  return { stdout: result.stdout, written }
+}
+
+// Tcl snippets. `ask` answers a prompt with Enter (accept the highlighted
+// option); `cancel` sends Ctrl-C and reports the exit status.
+const ask = (pattern: string) => String.raw`
+expect {
+  -re {${pattern}} { puts "STEP"; sleep 0.3; send "\r"; expect -re {\u25c7[^\r\n]*} }
+  timeout { puts "TIMEOUT"; exit 9 }
+  eof { puts "EOF-BEFORE-STEP"; exit 8 }
+}
+`
+const cancelAt = (pattern: string) => String.raw`
+expect {
+  -re {${pattern}} { puts "ASKED:$expect_out(0,string)"; sleep 0.3; send "\003" }
+  timeout { puts "TIMEOUT"; exit 9 }
+  eof { puts "EOF-BEFORE-PROMPT"; exit 8 }
+}
+expect eof
+puts $expect_out(buffer)
+lassign [wait] pid spawnid os rc
+puts "EXIT=$rc"
+`
+// Expect either a question or the first post-prompt step; stop there.
+const questionOrProceed = String.raw`
+expect {
+  -re {Which[^\r\n]*} { puts "ASKED:$expect_out(0,string)"; send "\003" }
+  -re {Non-interactive run[^\r\n]*} { puts "LINE:$expect_out(0,string)"; send "\003" }
+  -re {Writing components} { puts "PROCEEDED"; send "\003" }
+  timeout { puts "TIMEOUT"; exit 9 }
+}
+expect eof
+`
+
+describe.skipIf(!canPty)("init in a real pty", () => {
+  it("asks base color first; Ctrl-C there exits 1 and writes nothing", () => {
+    const r = runPty(cancelAt(String.raw`Which[^\r\n]*base color`), [])
+    expect(r.stdout).toMatch(/ASKED:.*base color/)
+    expect(r.stdout).toContain("Cancelled.")
+    expect(r.stdout).toContain("EXIT=1")
+    expect(r.written).toBe(false)
+  })
+
+  it("asks all three in order: base color, distribution, visual style", () => {
+    const r = runPty(
+      ask(String.raw`Which[^\r\n]*base color`) +
+        ask(String.raw`Which[^\r\n]*distribution`) +
+        cancelAt(String.raw`Which[^\r\n]*visual style`),
+      []
+    )
+    expect(r.stdout).toMatch(/ASKED:.*visual style/)
+    expect(r.stdout).toContain("Cancelled.")
+    expect(r.stdout).toContain("EXIT=1")
+    expect(r.written).toBe(false)
+  })
+
+  it("does not ask base color when --base-color is given; distribution is first", () => {
+    const r = runPty(questionOrProceed, ["--base-color", "zinc"])
+    expect(r.stdout).toMatch(/ASKED:.*distribution/)
+    expect(r.stdout).not.toMatch(/base color/)
+  })
+
+  it("does not ask distribution when --distribution is given", () => {
+    const r = runPty(
+      ask(String.raw`Which[^\r\n]*base color`) + questionOrProceed,
+      ["--distribution", "copy"]
+    )
+    expect(r.stdout).toMatch(/ASKED:.*visual style/)
+    expect(r.stdout).not.toMatch(/ASKED:[^\n]*distribution/)
+  })
+
+  it("does not ask visual style when --visual-style is given", () => {
+    const r = runPty(
+      ask(String.raw`Which[^\r\n]*base color`) +
+        ask(String.raw`Which[^\r\n]*distribution`) +
+        questionOrProceed,
+      ["--visual-style", "nova"]
+    )
+    expect(r.stdout).not.toMatch(/ASKED:[^\n]*visual style/)
+    expect(r.stdout).toContain("PROCEEDED")
+  })
+
+  it("with all three flags asks nothing", () => {
+    const r = runPty(questionOrProceed, [
+      "--base-color",
+      "zinc",
+      "--distribution",
+      "import",
+      "--visual-style",
+      "nova",
+    ])
+    expect(r.stdout).not.toContain("ASKED")
+    expect(r.stdout).toContain("PROCEEDED")
+  })
+
+  it.each([
+    ["--defaults", ["--defaults"], {}],
+    ["-y", ["-y"], {}],
+    ["an agent env var, with a TTY", [], { AI_AGENT: "1" }],
+    ["CI=1, with a TTY", [], { CI: "1" }],
+  ] as [string, string[], Record<string, string>][])(
+    "%s: no prompt, reports the defaults it applied",
+    (_name, args, env) => {
+      const r = runPty(questionOrProceed, args, env)
+      expect(r.stdout).not.toContain("ASKED")
+      expect(r.stdout).toContain(
+        "LINE:Non-interactive run — using base color neutral, distribution copy, visual style vega."
+      )
+    }
+  )
 })

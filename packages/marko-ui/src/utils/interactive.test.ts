@@ -20,7 +20,7 @@ describe("isInteractive", () => {
     expect(isInteractive({ env: {}, stdin: {} })).toBe(false)
   })
 
-  test.each(["CI", "CLAUDECODE", "CURSOR_AGENT", "REPL_ID"])(
+  test.each(["CI", "CLAUDECODE", "AI_AGENT", "CURSOR_AGENT", "REPL_ID"])(
     "is not interactive when %s is set, even with a TTY",
     (name) => {
       expect(
@@ -38,6 +38,20 @@ describe("isInteractive", () => {
       ).toBe(true)
     }
   )
+})
+
+describe("AI_AGENT", () => {
+  test("AI_AGENT=1 disables prompting even with a TTY", () => {
+    expect(
+      isInteractive({ env: { AI_AGENT: "1" }, stdin: { isTTY: true } })
+    ).toBe(false)
+  })
+
+  test("AI_AGENT=0 is treated as unset", () => {
+    expect(
+      isInteractive({ env: { AI_AGENT: "0" }, stdin: { isTTY: true } })
+    ).toBe(true)
+  })
 })
 
 describe("isNonInteractive", () => {

@@ -14,7 +14,10 @@
  *   parent that never attached one. This is the ground truth for "no human can
  *   type an answer", and the one clack itself cannot recover from.
  * - CI — conventional, set by every major CI provider.
- * - An agent/editor harness that runs commands non-interactively.
+ * - An agent/editor harness that runs commands non-interactively: any of
+ *   `CLAUDECODE`, `AI_AGENT`, `CURSOR_AGENT`, `REPL_ID` (see
+ *   NON_INTERACTIVE_ENV_VARS). A value of `0`, `false` or empty counts as
+ *   unset for every one of them.
  *
  * `--yes`/`--defaults` are handled by the caller, not here: they are explicit
  * user intent rather than an environment property.
@@ -26,6 +29,9 @@ const NON_INTERACTIVE_ENV_VARS = [
   "CI",
   // Claude Code.
   "CLAUDECODE",
+  // Generic agent marker (Claude Code and other harnesses; bun keys its own
+  // "Detected an AI agent environment" notice off it too).
+  "AI_AGENT",
   // Common agent/editor harnesses that spawn commands without a TTY.
   "CURSOR_AGENT",
   "REPL_ID",
