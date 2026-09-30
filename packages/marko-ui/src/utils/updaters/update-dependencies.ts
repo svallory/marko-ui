@@ -191,7 +191,7 @@ export function assertSafeDependencies(deps: string[]) {
   }
 }
 
-async function installWithPackageManager(
+export async function installWithPackageManager(
   packageManager: Awaited<ReturnType<typeof getPackageManager>>,
   dependencies: string[],
   devDependencies: string[],

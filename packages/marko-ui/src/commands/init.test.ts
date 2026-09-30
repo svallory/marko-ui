@@ -1,5 +1,12 @@
 import { spawnSync } from "node:child_process"
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import net from "node:net"
@@ -179,12 +186,31 @@ if (process.env.CI && !canPty) {
 // Drives `marko-ui init <args>` in a fixture project. `body` is Tcl run after
 // the spawn; it must print markers on stdout. Returns stdout + whether
 // components.json was written.
-function runPty(body: string, args: string[], env: Record<string, string> = {}) {
+function runPty(
+  body: string,
+  args: string[],
+  env: Record<string, string> = {},
+  fixture: { pkg?: string; shimBun?: boolean } = {}
+) {
   const dir = mkdtempSync(path.join(os.tmpdir(), "marko-ui-init-pty-"))
   writeFileSync(
     path.join(dir, "package.json"),
-    '{"name":"fixture","dependencies":{"marko":"^6.0.0"}}'
+    fixture.pkg ?? '{"name":"fixture","dependencies":{"marko":"^6.0.0"}}'
   )
+  // A logging `bun` first on PATH (plus a bun.lock so the CLI picks it): the
+  // install the CLI runs is recorded, not performed, so no network.
+  const installLog = path.join(dir, "install.log")
+  if (fixture.shimBun) {
+    const bin = path.join(dir, "shim-bin")
+    mkdirSync(bin)
+    writeFileSync(path.join(dir, "bun.lock"), "")
+    writeFileSync(
+      path.join(bin, "bun"),
+      `#!/bin/sh\necho "bun $*" >> "${installLog}"\nexit 0\n`,
+      { mode: 0o755 }
+    )
+    env = { ...env, PATH: `${bin}:${process.env.PATH}` }
+  }
   const scriptPath = path.join(dir, "drive.exp")
   writeFileSync(
     scriptPath,
@@ -202,8 +228,11 @@ spawn env -u CLAUDECODE -u CI -u CURSOR_AGENT -u REPL_ID -u AI_AGENT {*}$argv
     { encoding: "utf8", timeout: 40_000 }
   )
   const written = existsSync(path.join(dir, "components.json"))
+  const installs = existsSync(installLog)
+    ? readFileSync(installLog, "utf8").trim().split("\n")
+    : []
   rmSync(dir, { recursive: true, force: true })
-  return { stdout: result.stdout, written }
+  return { stdout: result.stdout, written, installs }
 }
 
 // Tcl snippets. `ask` answers a prompt with Enter (accept the highlighted
@@ -352,4 +381,63 @@ expect eof
       )
     }
   )
+
+  describe("a project without Marko", () => {
+    const noMarko = '{"name":"fixture","dependencies":{"react":"19"}}'
+    const offer = String.raw`Install it\?`
+
+    it("offers the install; the first option installs marko + @marko/run and init continues", () => {
+      const r = runPty(
+        ask(offer) + cancelAt(String.raw`Which[^\r\n]*base color`),
+        [],
+        {},
+        { pkg: noMarko, shimBun: true }
+      )
+      expect(r.installs).toEqual(["bun add -- marko @marko/run"])
+      expect(r.stdout).toMatch(/ASKED:.*base color/)
+      expect(r.written).toBe(false)
+    })
+
+    it("No exits 1 with the refusal, installs nothing and writes nothing", () => {
+      const r = runPty(
+        String.raw`
+expect {
+  -re {Install it\?} { sleep 0.3; send "\033\[B"; sleep 0.2; send "\033\[B"; sleep 0.2; send "\r" }
+  timeout { puts "TIMEOUT"; exit 9 }
+  eof { puts "EOF-BEFORE-PROMPT"; exit 8 }
+}
+expect eof
+puts $expect_out(buffer)
+lassign [wait] pid spawnid os rc
+puts "EXIT=$rc"
+`,
+        [],
+        {},
+        { pkg: noMarko, shimBun: true }
+      )
+      expect(r.stdout).toContain("does not look like a Marko project")
+      expect(r.stdout).not.toContain("to be offered the Marko install")
+      expect(r.stdout).toContain("EXIT=1")
+      expect(r.installs).toEqual([])
+      expect(r.written).toBe(false)
+    })
+
+    it("--defaults refuses without asking and says to drop the flag", () => {
+      const r = runPty(
+        String.raw`
+expect eof
+puts $expect_out(buffer)
+lassign [wait] pid spawnid os rc
+puts "EXIT=$rc"
+`,
+        ["--defaults"],
+        {},
+        { pkg: noMarko, shimBun: true }
+      )
+      expect(r.stdout).not.toContain("Install it?")
+      expect(r.stdout).toContain("without -y/--defaults/--silent to be offered the Marko install")
+      expect(r.stdout).toContain("EXIT=1")
+      expect(r.installs).toEqual([])
+    })
+  })
 })

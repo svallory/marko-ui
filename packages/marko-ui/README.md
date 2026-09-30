@@ -49,7 +49,7 @@ Run `marko-ui manifest` for the complete, always-current surface.
 
 ## Notes
 
-- `init` requires a package.json that depends on `marko`; `add` is refused on the import distribution.
+- `init` requires a package.json that depends on `marko` (a terminal run offers to install it); `add` is refused on the import distribution.
 - Components install as readable Marko source into your project — there
   is no runtime component package.
 - Zag-backed components import the [`marko-zag`](https://marko-zag.saulo.tech)
