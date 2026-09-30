@@ -1,6 +1,7 @@
 import path from "path"
 import { initOptionsSchema } from "@/src/commands/init"
 import * as ERRORS from "@/src/utils/errors"
+import { hasMarkoDependency } from "@/src/utils/get-project-info"
 import { highlighter } from "@/src/utils/highlighter"
 import { CommandError } from "@/src/utils/handle-error"
 import { logger } from "@/src/utils/logger"
@@ -9,14 +10,14 @@ import fs from "fs-extra"
 import { z } from "zod"
 
 /**
- * Whether the package.json at `cwd` declares Marko. `marko` itself is the
- * signal: every Marko 6 project (`@marko/run`, `@marko/vite`, or a hand-rolled
- * compiler setup) depends on it, and nothing that is not a Marko project does.
+ * Whether the package.json at `cwd` declares Marko (`marko`, `@marko/run` or
+ * `@marko/vite`, in dependencies, devDependencies or peerDependencies).
  */
 export function isMarkoProject(cwd: string): boolean {
   try {
-    const pkg = fs.readJsonSync(path.resolve(cwd, "package.json"))
-    return Boolean(pkg?.dependencies?.marko || pkg?.devDependencies?.marko)
+    return hasMarkoDependency(
+      fs.readJsonSync(path.resolve(cwd, "package.json"))
+    )
   } catch {
     // An unreadable package.json is not proof of anything; let later steps
     // report it rather than claiming the project is not Marko.
@@ -63,7 +64,9 @@ export async function preFlightInit(
     )
   }
 
-  if (!isMarkoProject(options.cwd)) {
+  // `--force` skips the check: it is the escape hatch for a project this
+  // detector does not recognise.
+  if (!options.force && !isMarkoProject(options.cwd)) {
     projectSpinner?.fail()
     errors[ERRORS.NOT_A_MARKO_PROJECT] = true
     return {

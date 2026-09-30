@@ -24,6 +24,7 @@ import {
   writeComponentsJson,
   type Config,
 } from "@/src/utils/get-config"
+import { isMonorepoRoot } from "@/src/utils/get-monorepo-info"
 import { getProjectConfig, getProjectInfo } from "@/src/utils/get-project-info"
 import { CommandError, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
@@ -229,18 +230,28 @@ export async function runInit(
     }
 
     if (preflight.errors[ERRORS.NOT_A_MARKO_PROJECT]) {
+      const workspaceRoot = await isMonorepoRoot(options.cwd)
       throw new CommandError(
         `${highlighter.info(
           options.cwd
         )} does not look like a Marko project (no ${highlighter.info(
           "marko"
-        )} dependency in package.json). Create one first (e.g. ${highlighter.info(
-          "bun create marko@latest"
-        )}), then run ${highlighter.info(
-          "marko-ui init"
-        )} inside it. In a monorepo, run it from the app's folder or pass ${highlighter.info(
-          "--cwd"
-        )}.`
+        )}, ${highlighter.info("@marko/run")} or ${highlighter.info(
+          "@marko/vite"
+        )} dependency in package.json). ` +
+          (workspaceRoot
+            ? `This looks like a workspace root: run ${highlighter.info(
+                "marko-ui init"
+              )} from the app directory or pass ${highlighter.info(
+                "--cwd <app>"
+              )}.`
+            : `Create one first (e.g. ${highlighter.info(
+                "bun create marko@latest"
+              )}), then run ${highlighter.info(
+                "marko-ui init"
+              )} inside it. If it is a Marko project, pass ${highlighter.info(
+                "--force"
+              )}.`)
       )
     }
   }
@@ -265,8 +276,9 @@ export async function runInit(
   // registry being unreachable is the usual reason — put components.json back
   // as it was (or remove it) and let the error through, rather than leave a
   // project that cannot be re-initialized and has no theme.
+  let fullConfig: Config
   try {
-    let fullConfig = await resolveConfigPaths(options.cwd, config)
+    fullConfig = await resolveConfigPaths(options.cwd, config)
 
     // Registry components import siblings with explicit `.ts` extensions, which
     // a stock `create-marko` tsconfig rejects (TS5097). `init` already writes
@@ -341,18 +353,62 @@ export async function runInit(
       await writeProjectTaglib(fullConfig)
     }
 
-    if (options.agents) {
-      await runAgentsSync(options.cwd, { silent: options.silent })
-    }
-
-    return fullConfig
+    // (`--agents` runs after the try, below.)
   } catch (error) {
-    if (previousComponentsJson === null) {
+    await rollbackComponentsJson(targetPath, previousComponentsJson, options)
+    throw error
+  }
+
+  // Outside the rollback scope on purpose: the project is fully initialized by
+  // now, so a skills-install failure exits 1 with its own message and keeps
+  // the project instead of undoing it.
+  if (options.agents) {
+    await runAgentsSync(options.cwd, { silent: options.silent })
+  }
+
+  return fullConfig
+}
+
+/**
+ * Puts components.json back as it was (removes it, or restores the previous
+ * one under `--force`) after a failed init.
+ *
+ * The restore must never mask the failure that caused it: if it fails too, say
+ * which file is left behind and return, so the caller rethrows the ORIGINAL
+ * error.
+ */
+export async function rollbackComponentsJson(
+  targetPath: string,
+  previous: string | null,
+  options: { silent?: boolean } = {}
+) {
+  try {
+    if (previous === null) {
       await fs.rm(targetPath, { force: true })
     } else {
-      await fs.writeFile(targetPath, previousComponentsJson, "utf8")
+      await fs.writeFile(targetPath, previous, "utf8")
     }
-    throw error
+  } catch (restoreError) {
+    logger.warn(
+      `Could not ${
+        previous === null ? "remove" : "restore"
+      } ${highlighter.info(targetPath)} after the failed init (${
+        restoreError instanceof Error ? restoreError.message : restoreError
+      }). It is left behind: fix or delete it by hand before running ${highlighter.info(
+        "marko-ui init"
+      )} again.`
+    )
+    return
+  }
+
+  if (!options.silent) {
+    logger.info(
+      `Init failed. ${highlighter.info(
+        "components.json"
+      )} was rolled back; anything already done stays in place (tsconfig option, stylesheet, layout import, Vite config, installed dependencies). Running ${highlighter.info(
+        "marko-ui init"
+      )} again is safe.`
+    )
   }
 }
 
@@ -473,6 +529,37 @@ export function mayPromptForInit(
   interactive: boolean = isInteractive()
 ): boolean {
   return !options.defaults && !options.yes && !options.silent && interactive
+}
+
+/**
+ * The config a non-interactive `init` would write, resolved against `cwd`
+ * without writing anything. `add --dry-run` uses it to preview an
+ * uninitialized project.
+ */
+export async function buildDefaultConfig(cwd: string): Promise<Config> {
+  const projectInfo = await getProjectInfo(cwd)
+  const aliasDefaults = getInitAliasDefaults(DEFAULT_COMPONENTS, undefined)
+  const raw = rawConfigSchema.parse({
+    $schema: "https://ui.shadcn.com/schema.json",
+    style: "default",
+    distribution: "copy",
+    visualStyle: DEFAULT_VISUAL_STYLE,
+    tailwind: {
+      config: "",
+      css: resolveTailwindCssPath({
+        detectedCss: projectInfo?.tailwindCssFile,
+        frameworkName: projectInfo?.framework?.name,
+        isSrcDir: projectInfo?.isSrcDir,
+      }),
+      baseColor: "neutral",
+      cssVariables: true,
+      prefix: "",
+    },
+    rsc: false,
+    tsx: true,
+    aliases: { components: DEFAULT_COMPONENTS, ...aliasDefaults },
+  })
+  return resolveConfigPaths(cwd, raw)
 }
 
 async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Promise<{

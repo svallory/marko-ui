@@ -37,6 +37,12 @@ describe("isMarkoProject", () => {
   it("is true with marko in devDependencies", () => {
     expect(isMarkoProject(project({ devDependencies: { marko: "^6.0.0" } }))).toBe(true)
   })
+  it.each(["@marko/run", "@marko/vite"])("is true with %s alone", (name) => {
+    expect(isMarkoProject(project({ dependencies: { [name]: "1" } }))).toBe(true)
+  })
+  it("is true with marko in peerDependencies", () => {
+    expect(isMarkoProject(project({ peerDependencies: { marko: "^6" } }))).toBe(true)
+  })
   it("is false for a package.json without marko", () => {
     expect(isMarkoProject(project({ dependencies: { react: "19" } }))).toBe(false)
   })
@@ -44,7 +50,7 @@ describe("isMarkoProject", () => {
     expect(isMarkoProject(project({}))).toBe(false)
   })
   it("is false when only a marko-named package is present", () => {
-    expect(isMarkoProject(project({ dependencies: { "@marko/run": "1", "marko-foo": "1" } }))).toBe(false)
+    expect(isMarkoProject(project({ dependencies: { "marko-foo": "1", "@marko/translator-default": "1" } }))).toBe(false)
   })
   it("does not claim a corrupt package.json is non-Marko", () => {
     expect(isMarkoProject(project("{ not json"))).toBe(true)
@@ -65,6 +71,10 @@ describe("preFlightInit", () => {
     expect(errors[ERRORS.MISSING_DIR_OR_EMPTY_PROJECT]).toBe(true)
     expect(errors[ERRORS.NOT_A_MARKO_PROJECT]).toBeUndefined()
   })
+  it("--force skips the Marko check", async () => {
+    const { errors } = await preFlightInit(opts(project({ dependencies: { react: "19" } }), { force: true }))
+    expect(errors).toEqual({})
+  })
   it("reports an existing components.json before the Marko check", async () => {
     const cwd = project({ dependencies: { react: "19" } }, { "components.json": "{}" })
     await expect(preFlightInit(opts(cwd))).rejects.toThrow(/already initialized/)
@@ -72,6 +82,14 @@ describe("preFlightInit", () => {
 })
 
 describe("runInit on a non-Marko project", () => {
+  it("tells a workspace root to run from the app or pass --cwd <app>", async () => {
+    const cwd = project({ name: "root", workspaces: ["apps/*"] })
+    await expect(runInit(opts(cwd))).rejects.toThrow(/workspace root.*--cwd <app>/)
+  })
+  it("tells a plain non-Marko project how to create one and about --force", async () => {
+    const cwd = project({ dependencies: { react: "19" } })
+    await expect(runInit(opts(cwd))).rejects.toThrow(/create marko@latest.*--force/)
+  })
   it("throws a Marko-specific error and writes nothing", async () => {
     const cwd = project({ dependencies: { react: "19" } })
     await expect(runInit(opts(cwd))).rejects.toThrow(/does not look like a Marko project/)

@@ -123,6 +123,33 @@ export async function getProjectInfo(
   return type
 }
 
+/** Packages whose presence marks a Marko project (the detector above keys off the same ones). */
+const MARKO_PACKAGES = ["marko", "@marko/run", "@marko/vite"]
+
+/**
+ * Whether a package.json declares Marko in dependencies, devDependencies or
+ * peerDependencies. Used by `init`'s preflight to refuse non-Marko projects.
+ */
+export function hasMarkoDependency(
+  packageJson:
+    | {
+        dependencies?: Record<string, string>
+        devDependencies?: Record<string, string>
+        peerDependencies?: Record<string, string>
+      }
+    | null
+    | undefined
+): boolean {
+  if (!packageJson) return false
+  return MARKO_PACKAGES.some((name) =>
+    [
+      packageJson.dependencies,
+      packageJson.devDependencies,
+      packageJson.peerDependencies,
+    ].some((deps) => Boolean(deps?.[name]))
+  )
+}
+
 export async function getFrameworkVersion(
   framework: Framework,
   packageJson: ReturnType<typeof getPackageInfo>
