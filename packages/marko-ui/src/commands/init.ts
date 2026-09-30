@@ -252,89 +252,108 @@ export async function runInit(
     silent: options.silent,
   }).start()
   const targetPath = path.resolve(options.cwd, "components.json")
+  const previousComponentsJson = existsSync(targetPath)
+    ? await fs.readFile(targetPath, "utf8")
+    : null
   await writeComponentsJson(targetPath, config)
   componentSpinner.succeed()
 
-  let fullConfig = await resolveConfigPaths(options.cwd, config)
+  // components.json is what makes a project "initialized": a later `init`
+  // refuses to run over it. Every other step below (tsconfig option,
+  // stylesheet, Vite wiring, dependencies, theme) skips what is already done,
+  // so it is safe to repeat. So if anything after this point fails — the
+  // registry being unreachable is the usual reason — put components.json back
+  // as it was (or remove it) and let the error through, rather than leave a
+  // project that cannot be re-initialized and has no theme.
+  try {
+    let fullConfig = await resolveConfigPaths(options.cwd, config)
 
-  // Registry components import siblings with explicit `.ts` extensions, which
-  // a stock `create-marko` tsconfig rejects (TS5097). `init` already writes
-  // components.json and patches CSS, so the compiler option belongs here too —
-  // otherwise scaffold -> init -> add lands on a project that cannot typecheck.
-  await updateTsConfig(fullConfig, { silent: options.silent })
+    // Registry components import siblings with explicit `.ts` extensions, which
+    // a stock `create-marko` tsconfig rejects (TS5097). `init` already writes
+    // components.json and patches CSS, so the compiler option belongs here too —
+    // otherwise scaffold -> init -> add lands on a project that cannot typecheck.
+    await updateTsConfig(fullConfig, { silent: options.silent })
 
-  // The CSS entry point must exist before any theme or component tries to
-  // patch it. A `create-marko` scaffold ships no stylesheet at all, which is
-  // what made `init` die with ENOENT on the (previously Next.js-shaped)
-  // default path.
-  await ensureCssEntry(fullConfig, { silent: options.silent })
+    // The CSS entry point must exist before any theme or component tries to
+    // patch it. A `create-marko` scaffold ships no stylesheet at all, which is
+    // what made `init` die with ENOENT on the (previously Next.js-shaped)
+    // default path.
+    await ensureCssEntry(fullConfig, { silent: options.silent })
 
-  // Creating the stylesheet is not enough — it has to actually load. A
-  // `create-marko` scaffold imports no CSS anywhere (its layout uses an inline
-  // `<style>`) and has no Vite config, so without this the theme and every
-  // component utility are silently absent from the build output.
-  await wireCssEntry(fullConfig, { silent: options.silent })
+    // Creating the stylesheet is not enough — it has to actually load. A
+    // `create-marko` scaffold imports no CSS anywhere (its layout uses an inline
+    // `<style>`) and has no Vite config, so without this the theme and every
+    // component utility are silently absent from the build output.
+    await wireCssEntry(fullConfig, { silent: options.silent })
 
-  // Resolve any namespaced registries referenced by the requested components.
-  if (options.components?.length) {
-    const { config: configWithRegistries } = await ensureRegistriesInConfig(
-      options.components,
-      fullConfig,
-      { silent: options.silent }
-    )
-    fullConfig = configWithRegistries
-  }
-
-  if (distribution === "import") {
-    // Import path: no files are copied. `@marko-ui/shadcn` ships the mu-*
-    // hook-class components + precompiled style CSS layers; scaffold the
-    // dependency and the CSS entry that consumes them (see
-    // notes/plans/dual-distribution-plan.md §1/§4c).
-    await updateDependencies(["@marko-ui/shadcn"], [], fullConfig, {
-      silent: options.silent,
-    })
-    await scaffoldImportDistributionCss(fullConfig, {
-      baseColor: config.tailwind.baseColor ?? "neutral",
-      visualStyle,
-      silent: options.silent,
-    })
-
-    if (!options.silent) {
-      logger.info(
-        `Import distribution: components come from ${highlighter.info(
-          "@marko-ui/shadcn"
-        )} (no local component files). Use ${highlighter.info(
-          `class="style-${visualStyle}"`
-        )} on an ancestor element to activate the ${highlighter.info(
-          visualStyle
-        )} style.`
+    // Resolve any namespaced registries referenced by the requested components.
+    if (options.components?.length) {
+      const { config: configWithRegistries } = await ensureRegistriesInConfig(
+        options.components,
+        fullConfig,
+        { silent: options.silent }
       )
+      fullConfig = configWithRegistries
     }
-  } else {
-    // Copy path: install the theme matching the chosen base color (the
-    // registry publishes one style item per base color: style, style-zinc,
-    // ...) plus the requested components as flat generated source.
-    const styleItem =
-      !config.tailwind.baseColor || config.tailwind.baseColor === "neutral"
-        ? "style"
-        : `style-${config.tailwind.baseColor}`
-    const components = Array.from(
-      new Set([styleItem, ...(options.components ?? [])])
-    )
-    await addComponents(components, fullConfig, {
-      overwrite: true,
-      silent: options.silent,
-    })
 
-    // Zero-import tags for installed components (<Badge>, <badge>, ...).
-    await writeProjectTaglib(fullConfig)
+    if (distribution === "import") {
+      // Import path: no files are copied. `@marko-ui/shadcn` ships the mu-*
+      // hook-class components + precompiled style CSS layers; scaffold the
+      // dependency and the CSS entry that consumes them (see
+      // notes/plans/dual-distribution-plan.md §1/§4c).
+      await updateDependencies(["@marko-ui/shadcn"], [], fullConfig, {
+        silent: options.silent,
+      })
+      await scaffoldImportDistributionCss(fullConfig, {
+        baseColor: config.tailwind.baseColor ?? "neutral",
+        visualStyle,
+        silent: options.silent,
+      })
+
+      if (!options.silent) {
+        logger.info(
+          `Import distribution: components come from ${highlighter.info(
+            "@marko-ui/shadcn"
+          )} (no local component files). Use ${highlighter.info(
+            `class="style-${visualStyle}"`
+          )} on an ancestor element to activate the ${highlighter.info(
+            visualStyle
+          )} style.`
+        )
+      }
+    } else {
+      // Copy path: install the theme matching the chosen base color (the
+      // registry publishes one style item per base color: style, style-zinc,
+      // ...) plus the requested components as flat generated source.
+      const styleItem =
+        !config.tailwind.baseColor || config.tailwind.baseColor === "neutral"
+          ? "style"
+          : `style-${config.tailwind.baseColor}`
+      const components = Array.from(
+        new Set([styleItem, ...(options.components ?? [])])
+      )
+      await addComponents(components, fullConfig, {
+        overwrite: true,
+        silent: options.silent,
+      })
+
+      // Zero-import tags for installed components (<Badge>, <badge>, ...).
+      await writeProjectTaglib(fullConfig)
+    }
+
+    if (options.agents) {
+      await runAgentsSync(options.cwd, { silent: options.silent })
+    }
+
+    return fullConfig
+  } catch (error) {
+    if (previousComponentsJson === null) {
+      await fs.rm(targetPath, { force: true })
+    } else {
+      await fs.writeFile(targetPath, previousComponentsJson, "utf8")
+    }
+    throw error
   }
-
-  if (options.agents) {
-    await runAgentsSync(options.cwd, { silent: options.silent })
-  }
-
-  return fullConfig
 }
 
 /**

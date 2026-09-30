@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 import { canRenderSpinner, spinner } from "@/src/utils/spinner"
 
+// ora exposes `isEnabled` at runtime but omits it from its typings.
+const enabled = (text: string) =>
+  (spinner(text) as unknown as { isEnabled: boolean }).isEnabled
+
 // ora draws to stderr and redraws by counting wrapped lines from `columns`.
 // With columns 0 (a 0x0 pty) that count never terminates, so the spinner must
 // be off there.
@@ -46,17 +50,17 @@ describe("spinner", () => {
 
   test("is enabled on a TTY with a width", () => {
     process.stderr.columns = 80
-    expect(spinner("x").isEnabled).toBe(true)
+    expect(enabled("x")).toBe(true)
   })
 
   test("is disabled when columns is 0", () => {
     process.stderr.columns = 0
-    expect(spinner("x").isEnabled).toBe(false)
+    expect(enabled("x")).toBe(false)
   })
 
   test("is disabled when columns is undefined", () => {
     process.stderr.columns = undefined as unknown as number
-    expect(spinner("x").isEnabled).toBe(false)
+    expect(enabled("x")).toBe(false)
   })
 
   test("start/succeed on a disabled spinner return without looping", () => {
