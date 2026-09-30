@@ -532,13 +532,47 @@ export function mayPromptForInit(
 }
 
 /**
+ * What the project already decides for `init`: aliases, stylesheet path and
+ * extra registries, derived from an existing config or detected project files.
+ * Shared by `promptForConfig` and `buildDefaultConfig` so the `add --dry-run`
+ * preview resolves exactly the paths auto-init would write.
+ */
+async function deriveProjectDefaults(cwd: string) {
+  const [existingConfig, projectConfig, projectInfo] = await Promise.all([
+    getConfig(cwd).catch(() => null),
+    getProjectConfig(cwd).catch(() => null),
+    getProjectInfo(cwd),
+  ])
+
+  // Derived config from the project (aliases, css file) when available.
+  const detected = projectConfig ?? existingConfig
+
+  const componentsAlias = detected?.aliases?.components ?? DEFAULT_COMPONENTS
+  const aliasDefaults = getInitAliasDefaults(componentsAlias, detected?.aliases)
+
+  const tailwindCss = resolveTailwindCssPath({
+    configuredCss: detected?.tailwind?.css,
+    detectedCss: projectInfo?.tailwindCssFile,
+    frameworkName: projectInfo?.framework?.name,
+    isSrcDir: projectInfo?.isSrcDir,
+  })
+
+  return {
+    componentsAlias,
+    aliasDefaults,
+    tailwindCss,
+    registries: filterBuiltinRegistries(detected?.registries),
+  }
+}
+
+/**
  * The config a non-interactive `init` would write, resolved against `cwd`
  * without writing anything. `add --dry-run` uses it to preview an
  * uninitialized project.
  */
 export async function buildDefaultConfig(cwd: string): Promise<Config> {
-  const projectInfo = await getProjectInfo(cwd)
-  const aliasDefaults = getInitAliasDefaults(DEFAULT_COMPONENTS, undefined)
+  const { componentsAlias, aliasDefaults, tailwindCss, registries } =
+    await deriveProjectDefaults(cwd)
   const raw = rawConfigSchema.parse({
     $schema: "https://ui.shadcn.com/schema.json",
     style: "default",
@@ -546,18 +580,15 @@ export async function buildDefaultConfig(cwd: string): Promise<Config> {
     visualStyle: DEFAULT_VISUAL_STYLE,
     tailwind: {
       config: "",
-      css: resolveTailwindCssPath({
-        detectedCss: projectInfo?.tailwindCssFile,
-        frameworkName: projectInfo?.framework?.name,
-        isSrcDir: projectInfo?.isSrcDir,
-      }),
+      css: tailwindCss,
       baseColor: "neutral",
       cssVariables: true,
       prefix: "",
     },
     rsc: false,
     tsx: true,
-    aliases: { components: DEFAULT_COMPONENTS, ...aliasDefaults },
+    aliases: { components: componentsAlias, ...aliasDefaults },
+    registries,
   })
   return resolveConfigPaths(cwd, raw)
 }
@@ -567,14 +598,8 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
   distribution: "copy" | "import"
   visualStyle: string
 }> {
-  const [existingConfig, projectConfig, projectInfo] = await Promise.all([
-    getConfig(options.cwd).catch(() => null),
-    getProjectConfig(options.cwd).catch(() => null),
-    getProjectInfo(options.cwd),
-  ])
-
-  // Derived config from the project (aliases, css file) when available.
-  const detected = projectConfig ?? existingConfig
+  const { componentsAlias, aliasDefaults, tailwindCss, registries } =
+    await deriveProjectDefaults(options.cwd)
 
   const mayPrompt = mayPromptForInit(options)
 
@@ -668,19 +693,6 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
     )
   }
 
-  const componentsAlias = detected?.aliases?.components ?? DEFAULT_COMPONENTS
-  const aliasDefaults = getInitAliasDefaults(
-    componentsAlias,
-    detected?.aliases
-  )
-
-  const tailwindCss = resolveTailwindCssPath({
-    configuredCss: detected?.tailwind?.css,
-    detectedCss: projectInfo?.tailwindCssFile,
-    frameworkName: projectInfo?.framework?.name,
-    isSrcDir: projectInfo?.isSrcDir,
-  })
-
   // A non-interactive run must still say what it decided on the user's
   // behalf, so the result is reviewable without re-deriving the defaults.
   if (appliedDefaults.length && !options.silent) {
@@ -709,7 +721,7 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
       components: componentsAlias,
       ...aliasDefaults,
     },
-    registries: filterBuiltinRegistries(detected?.registries),
+    registries,
   })
 
   return { config, distribution, visualStyle }

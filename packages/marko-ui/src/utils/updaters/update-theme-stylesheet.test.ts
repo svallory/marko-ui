@@ -5,6 +5,7 @@ import {
   THEME_BLOCK_START,
   THEME_STYLESHEET_TARGET,
   isThemeStylesheetFile,
+  hasStaleMarkerlessTheme,
   hasTailwindImport,
   mergeThemeIntoStylesheet,
 } from "./update-theme-stylesheet"
@@ -172,8 +173,38 @@ describe("hasTailwindImport", () => {
     expect(hasTailwindImport(`@import "tailwindcss";\nbody{}`)).toBe(true)
     expect(hasTailwindImport(`@import 'tailwindcss'`)).toBe(true)
   })
+  it.each([
+    `@import "tailwindcss" source("../src");`,
+    `@import "tailwindcss" prefix(tw);`,
+    `@import "tailwindcss" layer(base);`,
+    `@import "tailwindcss/theme.css" layer(theme);`,
+    `@import "tailwindcss/utilities";`,
+    `@import url("tailwindcss");`,
+    `  @import 'tailwindcss/preflight.css';`,
+  ])("matches the modifier/subpath form %s", (line) => {
+    expect(hasTailwindImport(`${line}\nbody{}`)).toBe(true)
+  })
+  it.each([`@import "tailwindcss-animate";`, `@import "./tailwindcss.css";`, `/* @import "tailwindcss"; */ body{}`])(
+    "does not match unrelated %s",
+    (line) => {
+      expect(hasTailwindImport(line)).toBe(false)
+    }
+  )
   it("is false without it", () => {
     expect(hasTailwindImport(`body{}`)).toBe(false)
-    expect(hasTailwindImport(`@import "tailwindcss/theme.css";`)).toBe(false)
+  })
+})
+
+describe("hasStaleMarkerlessTheme", () => {
+  it("is true for an edited marker-less theme", () => {
+    expect(hasStaleMarkerlessTheme(THEME + ".x{}", THEME)).toBe(true)
+  })
+  it.each([
+    ["no file", null],
+    ["the identical theme", THEME],
+    ["the user's own stylesheet", `@import "tailwindcss";\nbody{}`],
+    ["a file that already has the block", mergeThemeIntoStylesheet(null, THEME)],
+  ])("is false for %s", (_label, existing) => {
+    expect(hasStaleMarkerlessTheme(existing, THEME)).toBe(false)
   })
 })

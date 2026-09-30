@@ -77,9 +77,30 @@ function endOfLeadingImports(lines: string[]): number {
   return end
 }
 
-/** True when the stylesheet imports Tailwind (without that the theme block is inert). */
+const ANY_TAILWIND_IMPORT = /^\s*@import\s+(?:url\(\s*)?["']tailwindcss["'/]/
+
+/**
+ * True when the stylesheet imports Tailwind in any form — bare, with modifiers
+ * (`source(...)`, `prefix(...)`, `layer(...)`), a subpath
+ * (`tailwindcss/theme.css`) or as `url(...)`. Without one the theme block is
+ * inert.
+ */
 export function hasTailwindImport(css: string): boolean {
-  return css.split("\n").some((line) => TAILWIND_IMPORT.test(line))
+  return css.split("\n").some((line) => ANY_TAILWIND_IMPORT.test(line))
+}
+
+/**
+ * True for a marker-less stylesheet that carries (an older version of) the
+ * theme but is not byte-identical to `theme`. `mergeThemeIntoStylesheet` keeps
+ * such a file and appends the block, leaving a stale duplicate theme.
+ */
+export function hasStaleMarkerlessTheme(
+  existing: string | null,
+  theme: string
+): boolean {
+  if (existing === null || existing === theme) return false
+  if (existing.includes(THEME_BLOCK_START)) return false
+  return /@custom-variant\s+data-open\b/.test(existing)
 }
 
 /**

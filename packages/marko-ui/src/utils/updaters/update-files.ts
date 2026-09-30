@@ -29,6 +29,7 @@ import { confirm } from "@/src/utils/clack"
 import { isInteractive } from "@/src/utils/interactive"
 import { spinner } from "@/src/utils/spinner"
 import {
+  hasStaleMarkerlessTheme,
   hasTailwindImport,
   isThemeStylesheetFile,
   mergeThemeIntoStylesheet,
@@ -137,10 +138,20 @@ export async function updateFiles(
     let themeContent: string | undefined
     if (isThemeStylesheetFile(file) && config.resolvedPaths.tailwindCss) {
       filePath = config.resolvedPaths.tailwindCss
-      themeContent = mergeThemeIntoStylesheet(
-        existsSync(filePath) ? await fs.readFile(filePath, "utf-8") : null,
-        file.content
-      )
+      const existingCss = existsSync(filePath)
+        ? await fs.readFile(filePath, "utf-8")
+        : null
+      themeContent = mergeThemeIntoStylesheet(existingCss, file.content)
+      if (
+        !options.silent &&
+        hasStaleMarkerlessTheme(existingCss, file.content)
+      ) {
+        logger.info(
+          `${highlighter.info(
+            path.relative(config.resolvedPaths.cwd, filePath)
+          )} already holds an older copy of the theme; the current one was added in a marked block below it. Delete the older copy by hand if you no longer need it.`
+        )
+      }
       if (!options.silent && !hasTailwindImport(themeContent)) {
         logger.warn(
           `${highlighter.info(
