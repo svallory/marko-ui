@@ -110,18 +110,25 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
 
   <p>
     <strong>3. Run <code>init</code>.</strong> It sets up Tailwind, the theme, and
-    <code>components.json</code> for you.
+    <code>components.json</code> for you. In a terminal it asks for a base color, a distribution,
+    and a visual style; press Enter at each question to accept <code>neutral</code>,
+    <code>copy</code>, and <code>vega</code>.
   </p>
 
   <code-block language="bash" code=QS_INIT/>
+
+  <p>To skip the questions and take those defaults, pass <code>--defaults</code>:</p>
+
+  <code-block language="bash" code=INIT_DEFAULTS/>
 
   <p><strong>4. Add a component.</strong></p>
 
   <code-block language="bash" code=QS_ADD/>
 
   <p>
-    <strong>5. Use it.</strong> Add the import to a page, for example
-    <code>src/routes/+page.marko</code>. Adjust the relative path to where your file sits:
+    <strong>5. Use it.</strong> Replace the contents of the scaffold's
+    <code>src/routes/+page.marko</code> with this. If you put it in another file, adjust the
+    relative import path to where that file sits:
   </p>
 
   <code-block language="marko" filename="src/routes/+page.marko" code=QS_USE/>
@@ -131,12 +138,18 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
   <code-block language="bash" code=QS_DEV/>
 
   <p>
-    Open the URL it prints. The button is now source in your repo at
+    Open the URL it prints. You should see a "Hello" heading and a styled outline button labelled
+    "Click me". The button is now source in your repo at
     <code>src/components/ui/button/button.marko</code>. Next,
     <a href="#ai-agent">set up your AI agent</a> if you use one.
   </p>
 
   <h2 id="requirements">Requirements</h2>
+
+  <p>
+    Commands use <code>bunx</code> and <code>bun run</code>. With npm, use <code>npx</code> and
+    <code>npm run</code>; with pnpm, <code>pnpm dlx</code> and <code>pnpm run</code>.
+  </p>
 
   <ul>
     <li><strong>Marko 6.</strong> A fresh <code>create-marko</code> app is one.</li>
@@ -198,8 +211,8 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
   <p>
     <code>--distribution</code> accepts <code>copy</code> (the default) or <code>import</code>.
     <code>--visual-style</code> accepts <code>rhea</code>, <code>nova</code>, <code>vega</code>
-    (the default), <code>lyra</code>, <code>maia</code>, <code>mira</code>, <code>luma</code>, or
-    <code>sera</code> — see <a href="/docs/theming">Theming</a> for what each one changes. Both
+    (the default), <code>lyra</code>, <code>maia</code>, <code>mira</code>, <code>luma</code>,
+    <code>sera</code>, or <code>new-york</code> — see <a href="/docs/theming">Theming</a> for what each one changes. Both
     flags are recorded in <code>components.json</code> so later <code>add</code> and
     <code>eject</code> calls know which mode and style you're on. The full flag list is in the
     <a href="/docs/cli">CLI reference</a>.
@@ -253,7 +266,8 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
   <p>
     This writes a <code>marko-ui</code> section into <code>AGENTS.md</code> at the project root
     (your own content outside it is kept) and installs the <code>marko-ui</code> and
-    <code>marko6</code> agent skills into <code>.agents/skills/</code> through the
+    <code>marko6</code> agent skills (plus <code>marko-run</code> in an <code>@marko/run</code>
+    project, which the scaffold is) into <code>.agents/skills/</code> through the
     <a href="https://skills.sh" target="_blank" rel="noreferrer">skills</a> package. Commit both.
     Claude Code reads <code>CLAUDE.md</code>, not <code>AGENTS.md</code>, so add the line
     <code>@AGENTS.md</code> to your <code>CLAUDE.md</code>.
@@ -307,7 +321,7 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
 
   <p>
     <strong>import</strong> installs <code>@marko-ui/shadcn</code>, a single npm package that ships
-    the same components as <code>mu-*</code> hook-class components plus all 8 visual
+    the same components as <code>mu-*</code> hook-class components plus all 9 visual
     style layers. Nothing is copied into your project; you theme, override, or switch between
     styles entirely from your own stylesheet. Pick this when you expect to swap styles at runtime
     or theme centrally without maintaining a fork of the component source.
@@ -401,7 +415,7 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
 
   <p>
     Switching styles at runtime — no rebuild, no reinstall — is just toggling which
-    <code>style-&lt;name&gt;</code> class is present on an ancestor element. All 8
+    <code>style-&lt;name&gt;</code> class is present on an ancestor element. All 9
     layers ship in the package at once, so this works the moment you import more than one of them:
   </p>
 
