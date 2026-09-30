@@ -65,9 +65,10 @@ jobs:
       #     job in this workflow runs `playwright test`; not added. If a
       #     playwright job is ever added here, gate it on `docs` and add
       #     playwright.config.ts + e2e/** to that filter.
-      #   - e2e/** — only consumed by `test:acceptance`
+      #   - e2e/acceptance/** — only consumed by `test:acceptance`
       #     (e2e/acceptance/vitest.config.ts), which is its own workflow
-      #     (acceptance.yml) and not part of ci.yml. Not added.
+      #     (acceptance.yml) and not part of ci.yml. Not added. (e2e/cli/**
+      #     IS in `cli`: its harnesses run in the cli-tests job.)
       #   - tooling/** — already listed explicitly in `docs` and `registry`
       #     (the registry/style build scripts themselves); `cli` doesn't run
       #     any tooling script, so it's correctly absent there.
@@ -79,6 +80,9 @@ jobs:
           filters: |
             cli:
               - 'packages/marko-ui/**'
+              # the CLI e2e harnesses (first-run.sh, scenarios/) run in this
+              # job, so editing them must run it.
+              - 'e2e/cli/**'
               - 'bun.lock'
               - 'package.json'
               - 'scripts/ci/**'
@@ -123,11 +127,11 @@ jobs:
               - '.github/actions/setup/**'
 
   cli-tests:
-    name: CLI unit tests
+    name: CLI unit + e2e + scenario tests
     needs: changes
     if: github.event_name != 'pull_request' || needs.changes.outputs.cli == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
       - uses: ./.github/actions/setup
@@ -149,6 +153,17 @@ jobs:
       # run this.
       - name: Run CLI first-run e2e
         run: bun run test:cli:e2e
+
+      # The first-run e2e above drives ONE project shape in ONE order. This
+      # suite builds many (monorepos, no tsconfig, jsconfig, existing Tailwind,
+      # spaces/symlinks, every lockfile) from small hand-made fixtures and runs
+      # the built CLI through the orderings and environments users really hit
+      # (agents sync before init, add before init, offline, CI, stale AGENTS.md).
+      # Known failures are marked `fails` with a defect id in
+      # notes/cli-test-plan.md, so this step is green until a fix lands and
+      # then forces the mark to be removed.
+      - name: Run CLI scenario suite (structures, orderings, environments)
+        run: bun run test:cli:scenarios
 
   registry-drift:
     name: Registry drift check

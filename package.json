@@ -15,6 +15,7 @@
     "test": "bun run test:cli && bun run test:docs",
     "test:cli": "bun run --filter marko-ui test",
     "test:cli:e2e": "bash e2e/cli/run.sh",
+    "test:cli:scenarios": "bash e2e/cli/scenarios/run.sh",
     "test:docs": "vitest run",
     "build:registry": "bun tooling/build-registry.ts",
     "extract:api": "bun tooling/extract-api.ts",

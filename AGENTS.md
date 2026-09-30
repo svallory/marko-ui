@@ -357,6 +357,18 @@ exports in `packages/shadcn/ui/icon/`, update `renderIconResolver` to match
 of a scaffold per library contains only that library's icon data. The import
 distribution (`@marko-ui/shadcn`) is unaffected: all five libraries, lucide default.
 
+`bun run test:cli:e2e` drives ONE project shape in ONE order. The scenario
+suite, `bun run test:cli:scenarios` (`e2e/cli/scenarios/`, plan and defect list
+in `notes/cli-test-plan.md`), builds many shapes from small hand-made fixtures
+(monorepos, no tsconfig, jsconfig, existing Tailwind, every lockfile) and runs
+the built CLI through the orderings and environments users hit. Package
+managers/runners are logging shims, skills come from `MARKO_UI_SKILLS_SOURCE`,
+never GitHub. A scenario the CLI fails today is `{ fails: "Dn" }` (`it.fails`):
+the suite is green until a fix lands, then RED until the mark is removed —
+remove the mark, never weaken the assertion. `SCENARIOS_SHOW_FAILURES=1` shows
+the real failure behind each mark. Prefer a scenario here for orderings,
+structures and environments.
+
 Other traps, each of which cost a debugging cycle:
 
 - **The registry must be built AND served locally.** `tooling/build-registry.ts`
@@ -364,9 +376,11 @@ Other traps, each of which cost a debugging cycle:
   otherwise fetches the live registry, which this document notes is stale
   relative to `main`. Registry items also embed absolute URLs, so the build
   needs `REGISTRY_BASE_URL` pointing at the local server.
-- **Port 4455 is shared with the CLI test suite.** `src/registry/resolver.test.ts`
-  binds it too, so a registry server left running makes `bun run test:cli` fail
-  with `EADDRINUSE` in a file unrelated to the change. `run.sh` refuses to start
+- **Ports 4447-4460 are bound by the CLI unit suite.** `src/registry/resolver.test.ts`
+  listens on 4447-4449 and 4455-4460, so a registry server left running on any of
+  them makes `bun run test:cli` fail with `EADDRINUSE` in a file unrelated to the
+  change. `test:cli:e2e` serves on 4455 (it must not overlap a unit run);
+  `test:cli:scenarios` defaults to 4470, which nothing binds. `run.sh` refuses to start
   on a port already in use and always stops its own server; override with
   `REGISTRY_PORT`.
 - **Run the CLI with stdin closed** (`< /dev/null`) and a timeout. That is what
