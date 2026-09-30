@@ -28,6 +28,10 @@ import {
 import { confirm } from "@/src/utils/clack"
 import { isInteractive } from "@/src/utils/interactive"
 import { spinner } from "@/src/utils/spinner"
+import {
+  isThemeStylesheetFile,
+  mergeThemeIntoStylesheet,
+} from "@/src/utils/updaters/update-theme-stylesheet"
 import { isTargetAliasKey } from "@/src/utils/target-aliases"
 import { loadConfig, type ConfigLoaderSuccessResult } from "tsconfig-paths"
 import { z } from "zod"
@@ -126,6 +130,18 @@ export async function updateFiles(
       continue
     }
 
+    // The theme stylesheet goes into the project's own Tailwind entry point
+    // (components.json `tailwind.css`), not a second file at its registry
+    // path; content is merged there when the file already has user CSS.
+    let themeContent: string | undefined
+    if (isThemeStylesheetFile(file) && config.resolvedPaths.tailwindCss) {
+      filePath = config.resolvedPaths.tailwindCss
+      themeContent = mergeThemeIntoStylesheet(
+        existsSync(filePath) ? await fs.readFile(filePath, "utf-8") : null,
+        file.content
+      )
+    }
+
     const fileName = basename(file.path)
     const targetDir = path.dirname(filePath)
 
@@ -148,7 +164,7 @@ export async function updateFiles(
     // marko-ui registry items ship final-form content (imports are rewritten
     // at registry build time), so no AST transformers run here. Upstream
     // shadcn ran its tsx transformer pipeline at this point.
-    const content = file.content
+    const content = themeContent ?? file.content
 
     // Skip the file if it already exists and the content is the same.
     // Exception: Don't skip .env files as we merge content instead of replacing
