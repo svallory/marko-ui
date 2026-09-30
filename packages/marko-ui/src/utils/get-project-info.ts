@@ -649,18 +649,25 @@ export async function getProjectComponents(
       : path.basename(entry.name, path.extname(entry.name))
     if (registryNames) {
       if (registryNames.has(name)) names.push(name)
-    } else if (await looksLikeComponent(uiDir, entry)) {
+    } else if (await looksLikeComponent(uiDir, entry.name)) {
       names.push(name)
     }
   }
   return names
 }
 
-async function looksLikeComponent(
-  uiDir: string,
-  entry: import("fs").Dirent
-) {
-  if (!entry.isDirectory()) return entry.name.endsWith(".marko")
-  const files = await fsPromises.readdir(path.join(uiDir, entry.name))
-  return files.some((file) => file.endsWith(".marko"))
+async function looksLikeComponent(uiDir: string, name: string) {
+  const full = path.join(uiDir, name)
+  try {
+    // stat follows symlinks, so a linked component folder still counts.
+    if (!(await fsPromises.stat(full)).isDirectory()) {
+      return name.endsWith(".marko")
+    }
+    return (await fsPromises.readdir(full)).some((file) =>
+      file.endsWith(".marko")
+    )
+  } catch {
+    // Broken symlink or unreadable folder: not a component we can list.
+    return false
+  }
 }

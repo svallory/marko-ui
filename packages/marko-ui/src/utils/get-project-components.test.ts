@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "fs"
+import { chmodSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "fs"
 import { tmpdir } from "os"
 import path from "path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -51,6 +51,29 @@ describe("getProjectComponents", () => {
   it("offline: keeps only entries holding a .marko file, not unrelated folders", async () => {
     registryIndex.mockRejectedValue(new Error("fetch failed"))
     expect((await getProjectComponents(root)).sort()).toEqual(["badge", "button", "card"])
+  })
+
+  it("offline: a symlinked component folder counts, a broken symlink does not crash", async () => {
+    registryIndex.mockRejectedValue(new Error("fetch failed"))
+    const ui = path.join(root, "src/components/ui")
+    const real = path.join(root, "shared/dialog")
+    mkdirSync(real, { recursive: true })
+    writeFileSync(path.join(real, "dialog.marko"), "")
+    symlinkSync(real, path.join(ui, "dialog"))
+    symlinkSync(path.join(root, "nowhere"), path.join(ui, "ghost"))
+    expect((await getProjectComponents(root)).sort()).toEqual(["badge", "button", "card", "dialog"])
+  })
+
+  it("offline: an unreadable component folder is skipped, not fatal", async () => {
+    registryIndex.mockRejectedValue(new Error("fetch failed"))
+    const locked = path.join(root, "src/components/ui/locked")
+    mkdirSync(locked)
+    chmodSync(locked, 0o000)
+    try {
+      expect(await getProjectComponents(root)).not.toContain("locked")
+    } finally {
+      chmodSync(locked, 0o755)
+    }
   })
 
   it("an index passed in is used without fetching", async () => {
