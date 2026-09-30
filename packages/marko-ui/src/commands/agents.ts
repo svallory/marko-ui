@@ -73,13 +73,14 @@ agents
       }
 
       if (options.check) {
-        const { agentsPath, nextAgents } = await prepareAgentDocs(options.cwd)
+        const { agentsPath, nextAgents, indexAvailable } =
+          await prepareAgentDocs(options.cwd)
         const problems: string[] = []
 
         const currentAgents = existsSync(agentsPath)
           ? await fs.readFile(agentsPath, "utf8")
           : null
-        if (currentAgents !== nextAgents) {
+        if (!agentsDocsAreCurrent(currentAgents, nextAgents, indexAvailable)) {
           problems.push("AGENTS.md is stale")
         }
 
@@ -145,7 +146,7 @@ export async function runAgentsSync(
 
 async function prepareAgentDocs(cwd: string) {
   const config = await getConfig(cwd)
-  const components = await collectInstalledComponents(cwd)
+  const { components, indexAvailable } = await collectInstalledComponents(cwd)
   const agentsPath = path.resolve(cwd, "AGENTS.md")
 
   const nextAgents = mergeAgentsFile(
@@ -153,12 +154,12 @@ async function prepareAgentDocs(cwd: string) {
     buildAgentsSection(components, { distribution: config?.distribution })
   )
 
-  return { agentsPath, nextAgents }
+  return { agentsPath, nextAgents, indexAvailable }
 }
 
 async function collectInstalledComponents(
   cwd: string
-): Promise<InstalledComponent[]> {
+): Promise<{ components: InstalledComponent[]; indexAvailable: boolean }> {
   // One registry fetch per sync, shared with the on-disk listing. It is
   // best-effort so sync also works offline (names only, no descriptions).
   let index: Awaited<ReturnType<typeof getShadcnRegistryIndex>> | null = null
@@ -179,10 +180,36 @@ async function collectInstalledComponents(
       .map((item) => [item.name, item.description!])
   )
 
-  return names.sort().map((name) => ({
-    name,
-    description: descriptions.get(name),
-  }))
+  return {
+    components: names.sort().map((name) => ({
+      name,
+      description: descriptions.get(name),
+    })),
+    indexAvailable: index !== null,
+  }
+}
+
+/** Drops the ` — description` tail from `- \`name\` — ...` component lines. */
+export function stripComponentDescriptions(text: string) {
+  return text.replace(/^(- `[^`\s]+`) — .*$/gm, "$1")
+}
+
+/**
+ * Whether the AGENTS.md on disk matches the one sync would write.
+ *
+ * Component descriptions come from the registry index. When the index could
+ * not be fetched the expected section has none, so comparing them would turn
+ * every offline `--check` (a CI job that lost network) red for a file that is
+ * not stale: compare without descriptions on both sides instead.
+ */
+export function agentsDocsAreCurrent(
+  current: string | null,
+  next: string,
+  indexAvailable: boolean
+) {
+  if (current === null) return false
+  if (indexAvailable) return current === next
+  return stripComponentDescriptions(current) === stripComponentDescriptions(next)
 }
 
 /**
