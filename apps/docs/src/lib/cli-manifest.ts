@@ -31,7 +31,7 @@ export type CliManifest = {
 };
 
 export const CLI_MANIFEST: CliManifest = {
-  "cliVersion": "0.2.0",
+  "cliVersion": "0.4.1",
   "commands": [
     {
       "name": "init",
@@ -53,13 +53,11 @@ export const CLI_MANIFEST: CliManifest = {
         },
         {
           "flags": "-y, --yes",
-          "description": "skip confirmation prompt.",
-          "defaultValue": true
+          "description": "do not prompt; use the default for every choice not given by flag (base color, distribution, visual style)."
         },
         {
           "flags": "-d, --defaults",
-          "description": "use default configuration.",
-          "defaultValue": false
+          "description": "do not prompt; use the default for every choice not given by flag. same as --yes."
         },
         {
           "flags": "-f, --force",
@@ -68,7 +66,7 @@ export const CLI_MANIFEST: CliManifest = {
         },
         {
           "flags": "-s, --silent",
-          "description": "mute output.",
+          "description": "mute output. also disables prompts (defaults are used).",
           "defaultValue": false
         },
         {
@@ -86,7 +84,7 @@ export const CLI_MANIFEST: CliManifest = {
         },
         {
           "flags": "--agents",
-          "description": "generate AGENTS.md and the marko-ui Claude skill.",
+          "description": "also write the marko-ui section of AGENTS.md and install the agent skills. safe to run on an already-initialized project.",
           "defaultValue": false
         },
         {
@@ -95,7 +93,7 @@ export const CLI_MANIFEST: CliManifest = {
         },
         {
           "flags": "--visual-style <name>",
-          "description": "the visual style to use with --distribution import (rhea, nova, vega, lyra, maia, mira, luma, sera). ignored for copy."
+          "description": "the visual style to use (rhea, nova, vega, lyra, maia, mira, luma, sera, new-york). selects the generated source for copy, and the precompiled CSS layer for import."
         }
       ]
     },
@@ -346,14 +344,14 @@ export const CLI_MANIFEST: CliManifest = {
     {
       "name": "agents",
       "aliases": [],
-      "description": "manage generated agent documentation",
+      "description": "set up and refresh what AI coding agents need in this project",
       "arguments": [],
       "options": [],
       "subcommands": [
         {
           "name": "sync",
           "aliases": [],
-          "description": "generate or refresh AGENTS.md and the marko-ui Claude skill",
+          "description": "write the marko-ui section of AGENTS.md and install the agent skills",
           "arguments": [],
           "options": [
             {
@@ -363,12 +361,12 @@ export const CLI_MANIFEST: CliManifest = {
             },
             {
               "flags": "--check",
-              "description": "fail (exit 3) if the generated docs are stale.",
+              "description": "fail (exit 3) if AGENTS.md is stale or the agent skills are not installed.",
               "defaultValue": false
             },
             {
               "flags": "--no-skill",
-              "description": "do not write .claude/skills/marko-ui/SKILL.md."
+              "description": "do not install (or check) the agent skills; AGENTS.md only."
             },
             {
               "flags": "-s, --silent",
