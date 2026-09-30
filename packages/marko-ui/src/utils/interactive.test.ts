@@ -20,7 +20,7 @@ describe("isInteractive", () => {
     expect(isInteractive({ env: {}, stdin: {} })).toBe(false)
   })
 
-  test.each(["CI", "CLAUDECODE", "CURSOR_AGENT", "REPL_ID"])(
+  test.each(["CI", "CLAUDECODE", "AI_AGENT", "CURSOR_AGENT", "REPL_ID"])(
     "is not interactive when %s is set, even with a TTY",
     (name) => {
       expect(

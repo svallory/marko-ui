@@ -25,15 +25,11 @@ import {
   type Config,
 } from "@/src/utils/get-config"
 import { getProjectConfig, getProjectInfo } from "@/src/utils/get-project-info"
-import {
-  CleanExit,
-  CommandError,
-  handleError,
-} from "@/src/utils/handle-error"
+import { CommandError, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
-import { confirm, select } from "@/src/utils/clack"
+import { select } from "@/src/utils/clack"
 import { isInteractive } from "@/src/utils/interactive"
 import { spinner } from "@/src/utils/spinner"
 import { updateDependencies } from "@/src/utils/updaters/update-dependencies"
@@ -49,8 +45,8 @@ import { z } from "zod"
 export const initOptionsSchema = z.object({
   cwd: z.string(),
   components: z.array(z.string()).optional(),
-  yes: z.boolean(),
-  defaults: z.boolean(),
+  yes: z.boolean().default(false),
+  defaults: z.boolean().default(false),
   force: z.boolean(),
   silent: z.boolean(),
   cssVariables: z.boolean().default(true),
@@ -70,8 +66,17 @@ export const init = new Command()
     "the working directory. defaults to the current directory.",
     process.cwd()
   )
-  .option("-y, --yes", "skip confirmation prompt.", true)
-  .option("-d, --defaults", "use default configuration.", false)
+  // No default here: this used to be `true`, which made every run look like
+  // an explicit `--yes` and so switched the interactive questions off in a
+  // real terminal. The flag is now only ever set by the caller.
+  .option(
+    "-y, --yes",
+    "do not prompt; use the default for every choice not given by flag (base color, distribution, visual style)."
+  )
+  .option(
+    "-d, --defaults",
+    "do not prompt; use the default for every choice not given by flag. same as --yes."
+  )
   .option("-f, --force", "force overwrite of existing configuration.", false)
   .option("-s, --silent", "mute output.", false)
   .option("-b, --base-color <name>", "the base color to use.")
@@ -225,19 +230,6 @@ export async function runInit(
   }
 
   const { config, distribution, visualStyle } = await promptForConfig(options)
-
-  if (!options.yes && !options.silent) {
-    const proceed = await confirm(
-      `Write configuration to ${highlighter.info(
-        "components.json"
-      )}. Proceed?`
-    )
-
-    if (!proceed) {
-      // User declined — a successful no-op, not a failure.
-      throw new CleanExit(0)
-    }
-  }
 
   // Write components.json.
   const componentSpinner = spinner(`Writing components.json.`, {
@@ -426,6 +418,28 @@ function filterBuiltinRegistries(
   return Object.keys(filtered).length ? filtered : undefined
 }
 
+/**
+ * Whether this run may ask questions at all.
+ *
+ * `--defaults`/`--yes` (and `--silent`) are explicit intent to skip prompting;
+ * a non-TTY stdin, CI, or an agent harness means nothing could answer one.
+ * Both are needed: consulting only the flags made an agent/piped invocation
+ * hang on the first prompt, and (the inverse) `--yes` defaulting to `true` made
+ * a real terminal never prompt, silently taking defaults.
+ *
+ * Exported with `interactive` injectable so the decision is unit-testable
+ * without a pty.
+ */
+export function mayPromptForInit(
+  options: Pick<
+    z.infer<typeof initOptionsSchema>,
+    "defaults" | "yes" | "silent"
+  >,
+  interactive: boolean = isInteractive()
+): boolean {
+  return !options.defaults && !options.yes && !options.silent && interactive
+}
+
 async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Promise<{
   config: z.infer<typeof rawConfigSchema>
   distribution: "copy" | "import"
@@ -440,16 +454,7 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
   // Derived config from the project (aliases, css file) when available.
   const detected = projectConfig ?? existingConfig
 
-  // Whether this run may block on a TTY prompt at all. `--defaults`/`--yes`
-  // are explicit intent to skip prompting; a non-TTY stdin, CI, or an agent
-  // harness means nothing could answer one. Previously only the two flags
-  // were consulted, so an agent/piped invocation hung forever on the first
-  // prompt (the base-color select) instead of taking the documented default.
-  const mayPrompt =
-    !options.defaults &&
-    !options.yes &&
-    !options.silent &&
-    isInteractive()
+  const mayPrompt = mayPromptForInit(options)
 
   // Defaults applied because prompting was skipped, reported in one line at
   // the end so a non-interactive run still says what it chose.

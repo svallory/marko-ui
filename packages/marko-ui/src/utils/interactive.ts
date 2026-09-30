@@ -26,6 +26,9 @@ const NON_INTERACTIVE_ENV_VARS = [
   "CI",
   // Claude Code.
   "CLAUDECODE",
+  // Generic agent marker (Claude Code and other harnesses; bun keys its own
+  // "Detected an AI agent environment" notice off it too).
+  "AI_AGENT",
   // Common agent/editor harnesses that spawn commands without a TTY.
   "CURSOR_AGENT",
   "REPL_ID",
