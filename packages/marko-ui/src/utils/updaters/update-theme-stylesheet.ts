@@ -20,6 +20,9 @@ export const THEME_BLOCK_END = "/* marko-ui:theme:end */"
 
 const TAILWIND_IMPORT = /^\s*@import\s+["']tailwindcss["']\s*;?\s*$/
 const IMPORT_LINE = /^\s*@import\b[^;]*;\s*$/
+// May legally sit before an `@import`: `@charset` (must be first) and the
+// statement form of `@layer a, b;`.
+const PRELUDE_LINE = /^\s*(@charset\b[^;]*;|@layer\s+[^{;]*;)\s*$/
 
 export function isThemeStylesheetFile(file: { target?: string }): boolean {
   return file.target === THEME_STYLESHEET_TARGET
@@ -29,11 +32,6 @@ export function isThemeStylesheetFile(file: { target?: string }): boolean {
 function isBare(css: string): boolean {
   const lines = css.split("\n").filter((line) => line.trim() !== "")
   return lines.every((line) => TAILWIND_IMPORT.test(line))
-}
-
-/** The theme's own signature: its polymorphic variants. A file with these IS (a version of) the theme. */
-function carriesTheme(css: string): boolean {
-  return /@custom-variant\s+data-open\b/.test(css)
 }
 
 function escapeRegExp(value: string) {
@@ -70,7 +68,7 @@ function endOfLeadingImports(lines: string[]): number {
       if (!line.includes("*/")) inComment = true
       continue
     }
-    if (IMPORT_LINE.test(line)) {
+    if (IMPORT_LINE.test(line) || PRELUDE_LINE.test(line)) {
       end = i + 1
       continue
     }
@@ -79,40 +77,47 @@ function endOfLeadingImports(lines: string[]): number {
   return end
 }
 
+/** True when the stylesheet imports Tailwind (without that the theme block is inert). */
+export function hasTailwindImport(css: string): boolean {
+  return css.split("\n").some((line) => TAILWIND_IMPORT.test(line))
+}
+
 /**
  * Returns the stylesheet content that puts `theme` into `existing`.
  *
- * - missing, empty or only the bare Tailwind import: the theme verbatim
- * - already the theme (carries its variants) and no marker block: the theme
- *   verbatim, as `init` always did for the file it created itself
- * - a user's own stylesheet: the theme minus its Tailwind import, in a marked
- *   block appended at the end; its other `@import`s join the leading import
- *   block (an `@import` after any rule is invalid CSS). Re-running replaces the
- *   block instead of stacking another.
+ * The theme always lives inside a marked block, so a re-run replaces exactly
+ * what this function wrote and never anything the user wrote:
+ *
+ * - missing, empty or only the bare Tailwind import: `@import "tailwindcss"`
+ *   plus the block
+ * - a marker-less stylesheet that is byte-identical to the theme (what older
+ *   CLI versions wrote): treated as bare, so the block replaces it
+ * - any other stylesheet (the user's own, or an older theme someone edited or
+ *   that a later step reformatted): kept whole, the block appended — user CSS is
+ *   never destroyed, at the cost of a stale duplicate theme in the file
+ * - a stylesheet with a block: the block replaced
+ *
+ * The theme's non-Tailwind `@import`s join the leading import block (an
+ * `@import` after any rule is invalid CSS).
  */
 export function mergeThemeIntoStylesheet(
   existing: string | null,
   theme: string
 ): string {
-  if (existing === null || isBare(existing)) {
-    return theme
-  }
-
   const blockPattern = new RegExp(
     `${escapeRegExp(THEME_BLOCK_START)}[\\s\\S]*?${escapeRegExp(THEME_BLOCK_END)}\\n?`
   )
-  const hasBlock = blockPattern.test(existing)
-
-  if (!hasBlock && carriesTheme(existing)) {
-    return theme
-  }
-
   const { imports, body } = splitTheme(theme)
   const block = `${THEME_BLOCK_START}\n${body}\n${THEME_BLOCK_END}\n`
 
-  let result = hasBlock
-    ? existing.replace(blockPattern, block)
-    : `${existing.replace(/\s*$/, "")}\n\n${block}`
+  let base = existing ?? ""
+  if (isBare(base) || (!blockPattern.test(base) && base === theme)) {
+    base = `@import "tailwindcss";\n`
+  }
+
+  let result = blockPattern.test(base)
+    ? base.replace(blockPattern, () => block)
+    : `${base.replace(/\s*$/, "")}\n\n${block}`
 
   const missing = imports.filter(
     (line) => !result.split("\n").some((l) => l.trim() === line)

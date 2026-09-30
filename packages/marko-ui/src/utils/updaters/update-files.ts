@@ -29,6 +29,7 @@ import { confirm } from "@/src/utils/clack"
 import { isInteractive } from "@/src/utils/interactive"
 import { spinner } from "@/src/utils/spinner"
 import {
+  hasTailwindImport,
   isThemeStylesheetFile,
   mergeThemeIntoStylesheet,
 } from "@/src/utils/updaters/update-theme-stylesheet"
@@ -140,6 +141,13 @@ export async function updateFiles(
         existsSync(filePath) ? await fs.readFile(filePath, "utf-8") : null,
         file.content
       )
+      if (!options.silent && !hasTailwindImport(themeContent)) {
+        logger.warn(
+          `${highlighter.info(
+            path.relative(config.resolvedPaths.cwd, filePath)
+          )} does not ${highlighter.info('@import "tailwindcss"')} — the theme was added but will have no effect until it does.`
+        )
+      }
     }
 
     const fileName = basename(file.path)

@@ -5,6 +5,7 @@ import {
   THEME_BLOCK_START,
   THEME_STYLESHEET_TARGET,
   isThemeStylesheetFile,
+  hasTailwindImport,
   mergeThemeIntoStylesheet,
 } from "./update-theme-stylesheet"
 
@@ -28,25 +29,77 @@ describe("isThemeStylesheetFile", () => {
 })
 
 describe("mergeThemeIntoStylesheet", () => {
-  it("returns the theme when there is no stylesheet yet", () => {
-    expect(mergeThemeIntoStylesheet(null, THEME)).toBe(THEME)
+  const inBlock = (out: string) =>
+    out.slice(out.indexOf(THEME_BLOCK_START), out.indexOf(THEME_BLOCK_END))
+
+  it("writes the Tailwind import plus the theme in a marked block when there is no stylesheet", () => {
+    const out = mergeThemeIntoStylesheet(null, THEME)
+    expect(out.startsWith(`@import "tailwindcss";\n`)).toBe(true)
+    expect(count(out, `@import "tailwindcss"`)).toBe(1)
+    expect(inBlock(out)).toContain("@custom-variant data-open")
+    expect(inBlock(out)).toContain("--background: oklch(1 0 0)")
+    expect(inBlock(out)).not.toContain("@import")
   })
 
-  it("returns the theme for an empty stylesheet", () => {
-    expect(mergeThemeIntoStylesheet("", THEME)).toBe(THEME)
-    expect(mergeThemeIntoStylesheet("\n\n", THEME)).toBe(THEME)
+  it("does the same for an empty stylesheet", () => {
+    expect(mergeThemeIntoStylesheet("", THEME)).toBe(mergeThemeIntoStylesheet(null, THEME))
+    expect(mergeThemeIntoStylesheet("\n\n", THEME)).toBe(mergeThemeIntoStylesheet(null, THEME))
   })
 
   it.each([`@import "tailwindcss";\n`, `@import 'tailwindcss'\n`, `@import "tailwindcss";`])(
-    "returns the theme for the bare import init creates (%j)",
+    "does the same for the bare import init creates (%j)",
     (bare) => {
-      expect(mergeThemeIntoStylesheet(bare, THEME)).toBe(THEME)
+      expect(mergeThemeIntoStylesheet(bare, THEME)).toBe(mergeThemeIntoStylesheet(null, THEME))
     }
   )
 
-  it("replaces a file that already is the theme (no marker block), as init always did", () => {
+  it("hoists the theme's other @imports above the block", () => {
+    const out = mergeThemeIntoStylesheet(null, THEME)
+    expect(out.indexOf(`@import "tw-animate-css"`)).toBeGreaterThan(-1)
+    expect(out.indexOf(`@import "tw-animate-css"`)).toBeLessThan(out.indexOf(THEME_BLOCK_START))
+  })
+
+  it("replaces a marker-less file that is byte-identical to the theme (older CLI output)", () => {
+    const out = mergeThemeIntoStylesheet(THEME, THEME)
+    expect(out).toBe(mergeThemeIntoStylesheet(null, THEME))
+    expect(count(out, "@custom-variant data-open")).toBe(1)
+  })
+
+  it("never destroys CSS in a marker-less file that carries an edited theme", () => {
     const edited = THEME + "\n.mine { color: red; }\n"
-    expect(mergeThemeIntoStylesheet(edited, THEME)).toBe(THEME)
+    const out = mergeThemeIntoStylesheet(edited, THEME)
+    expect(out).toContain(".mine { color: red; }")
+    expect(out).toContain(THEME_BLOCK_START)
+    // the old content is kept whole
+    expect(out.startsWith(edited.replace(/\s*$/, ""))).toBe(true)
+  })
+
+  it("keeps a reformatted older theme and appends the block", () => {
+    const reformatted = THEME.replace("oklch(1 0 0)", "oklch(1 0 0 / 100%)")
+    const out = mergeThemeIntoStylesheet(reformatted, THEME)
+    expect(out).toContain("oklch(1 0 0 / 100%)")
+    expect(out).toContain(THEME_BLOCK_START)
+  })
+
+  it("is idempotent on a stylesheet that already has the block", () => {
+    const once = mergeThemeIntoStylesheet(null, THEME)
+    expect(mergeThemeIntoStylesheet(once, THEME)).toBe(once)
+  })
+
+  it("keeps $-patterns in the theme literal when replacing the block", () => {
+    const theme = THEME + '.x::after { content: "$& $1 $$"; }\n'
+    const once = mergeThemeIntoStylesheet(`@import "tailwindcss";\n.a{}\n`, theme)
+    const twice = mergeThemeIntoStylesheet(once, theme)
+    expect(twice).toContain('content: "$& $1 $$"')
+    expect(twice).toBe(once)
+  })
+
+  it("skips @charset and statement-form @layer when hoisting imports", () => {
+    const user = `@charset "utf-8";\n@layer base, components;\n@import "tailwindcss";\nbody{}\n`
+    const lines = mergeThemeIntoStylesheet(user, THEME).split("\n")
+    const animate = lines.indexOf(`@import "tw-animate-css";`)
+    expect(animate).toBeGreaterThan(lines.indexOf(`@import "tailwindcss";`))
+    expect(lines.indexOf(`@charset "utf-8";`)).toBe(0)
   })
 
   describe("a user's own stylesheet", () => {
@@ -111,5 +164,16 @@ describe("mergeThemeIntoStylesheet", () => {
       const out = mergeThemeIntoStylesheet(`@import "tailwindcss";\n.a{}`, THEME)
       expect(out).toContain(".a{}\n\n" + THEME_BLOCK_START)
     })
+  })
+})
+
+describe("hasTailwindImport", () => {
+  it("detects the import in either quote style", () => {
+    expect(hasTailwindImport(`@import "tailwindcss";\nbody{}`)).toBe(true)
+    expect(hasTailwindImport(`@import 'tailwindcss'`)).toBe(true)
+  })
+  it("is false without it", () => {
+    expect(hasTailwindImport(`body{}`)).toBe(false)
+    expect(hasTailwindImport(`@import "tailwindcss/theme.css";`)).toBe(false)
   })
 })
