@@ -17,7 +17,11 @@ import Button from "../components/ui/button/button.marko";
   <p>Form fields go here.</p>
 </Dialog>`;
 
+static const GET_STARTED = `bunx marko-ui init
+bunx marko-ui add button`;
+
 static const TOC = [
+  { id: "get-started", label: "Get started" },
   { id: "open-code", label: "Open Code" },
   { id: "composition", label: "Composition" },
   { id: "distribution", label: "Distribution" },
@@ -57,18 +61,30 @@ import Label from "../components/ui/label/label.marko";
   <ul>
     <li><strong>Open Code:</strong> the component source lands in your repo, not in node_modules.</li>
     <li><strong>Composition:</strong> every component is a Marko tag with attribute tags for its parts.</li>
-    <li><strong>Distribution:</strong> a shadcn-compatible registry served over HTTP, installed with the shadcn CLI.</li>
+    <li><strong>Distribution:</strong> a shadcn-format registry served over HTTP, installed with the <code>marko-ui</code> CLI, or imported as the <code>@marko-ui/shadcn</code> package.</li>
     <li><strong>Behavior from Zag:</strong> keyboard handling, focus management, and ARIA come from framework-agnostic machines.</li>
     <li><strong>Resumable:</strong> components are written to survive Marko's serialize-and-resume model, not just to render.</li>
   </ul>
 
+  <h2 id="get-started">Get started</h2>
+
+  <p>In a Marko 6 app, two commands give you a working component:</p>
+
+  <code-block language="bash" code=GET_STARTED/>
+
+  <p>
+    <a href="/docs/installation">Installation</a> walks through it from an empty folder, including
+    what <code>init</code> changes. If you use an AI coding agent, read
+    <a href="/docs/working-with-ai">Working with AI</a> to set it up.
+  </p>
+
   <h2 id="open-code">Open Code</h2>
 
   <p>
-    Installing a component copies its <code>.marko</code> files into
-    <code>src/components/ui/&lt;name&gt;/</code> in your project. There is no
-    <code>@marko-ui/components</code> package to import from, and no wrapper layer to fight when a
-    design calls for something the default styling does not do.
+    By default, installing a component copies its <code>.marko</code> files into
+    <code>src/components/ui/&lt;name&gt;/</code> in your project. Nothing is imported from a
+    marko-ui package, and there is no wrapper layer to fight when a design calls for something the
+    default styling does not do. This is the <em>copy</em> distribution.
   </p>
 
   <ul>
@@ -78,7 +94,15 @@ import Label from "../components/ui/label/label.marko";
   </ul>
 
   <p>
-    The tradeoff is the same one shadcn/ui makes: upstream fixes to <em>styling</em> do not flow to
+    If you would rather not own the source, the <em>import</em> distribution installs the
+    <code>@marko-ui/shadcn</code> package instead: the same components, styled through
+    <code>mu-*</code> hook classes from your own stylesheet. You can switch from import to copy
+    later with <code>marko-ui eject</code>. <a href="/docs/installation#choosing">Choosing a
+    distribution</a> compares the two.
+  </p>
+
+  <p>
+    On the copy distribution the tradeoff is the same one shadcn/ui makes: upstream fixes to <em>styling</em> do not flow to
     you automatically. Behavior fixes largely do, because the behavior lives in the
     <code>@zag-js/*</code> packages you install from npm, and those you can bump like any other
     dependency.
@@ -113,20 +137,18 @@ import Label from "../components/ui/label/label.marko";
 
   <p>
     The registry is published as static JSON in the
-    <a href="https://ui.shadcn.com/schema/registry.json" target="_blank" rel="noreferrer">shadcn registry-item format</a>,
-    which means the official <code>shadcn</code> CLI installs marko-ui components without knowing
-    anything about Marko. Every file ships as a plain <code>registry:file</code> with an explicit
-    target path, so the CLI never runs its React-specific transforms over our templates.
+    <a href="https://ui.shadcn.com/schema/registry.json" target="_blank" rel="noreferrer">shadcn registry-item format</a>.
+    The <code>marko-ui</code> CLI reads it: it resolves each component's registry dependencies,
+    installs the <code>@zag-js/*</code> packages it needs, and writes the files to the target path
+    each one declares.
   </p>
 
-  <code-block
-    language="bash"
-    code="bunx marko-ui@latest add https://marko-ui.saulo.tech/r/switch.json"
-  />
+  <code-block language="bash" code="bunx marko-ui add switch"/>
 
   <p>
-    See <a href="/docs/installation">Installation</a> for project setup and
-    <a href="/docs/cli">CLI</a> for the full command reference.
+    Installing from a registry URL still works for third-party and private registries; see the
+    <a href="/docs/cli">CLI</a> reference. See <a href="/docs/installation">Installation</a> for
+    project setup.
   </p>
 
   <h2 id="behavior-from-zag">Behavior from Zag</h2>
@@ -135,7 +157,7 @@ import Label from "../components/ui/label/label.marko";
     Zag.js implements each interactive widget as a framework-agnostic state machine that already
     handles roving focus, typeahead, dismiss layers, scroll locking, and the ARIA attributes each
     pattern requires. marko-ui binds those machines into Marko through the
-    <code>marko-ui</code> package, so an accordion behaves identically here and in the React,
+    <a href="/docs/zag-adapter"><code>marko-zag</code></a> package, so an accordion behaves identically here and in the React,
     Vue, or Solid ports of the same machine.
   </p>
 
@@ -167,14 +189,18 @@ import Label from "../components/ui/label/label.marko";
   <h3>Can I use marko-ui with plain Marko, without @marko/run?</h3>
   <p>
     Yes. The components are ordinary Marko tags and only need Marko 6, Tailwind v4, and the
-    relevant <code>@zag-js/*</code> packages. @marko/run is what this documentation site uses and
-    what the installation guide assumes, but nothing in the components depends on it.
+    relevant <code>@zag-js/*</code> packages and <code>marko-zag</code> (<code>marko-ui add</code> installs a component's
+    dependencies). @marko/run is what this documentation site uses, but nothing
+    in the components depends on it.
   </p>
 
   <h3>How do I get upstream component updates?</h3>
   <p>
-    Re-run <code>bunx marko-ui@latest add</code> for the component with <code>--overwrite</code>, then
-    diff. Because the files are yours, this is a merge you perform deliberately rather than a
-    version bump that silently changes your UI.
+    On the copy distribution, run <code>bunx marko-ui diff &lt;name&gt;</code> to see how your
+    local files differ from the registry version. To take the registry version, run
+    <code>bunx marko-ui add &lt;name&gt; --overwrite</code>, which replaces your local edits, so
+    commit first and review the result. Because the files are yours, this is a merge you perform
+    deliberately rather than a version bump that silently changes your UI. On the import
+    distribution, update <code>@marko-ui/shadcn</code> like any other dependency.
   </p>
 </docs-article>

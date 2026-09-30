@@ -6,25 +6,50 @@ import "../../../tags/docs/docs-article.marko";
 import "../../../tags/docs/code-block.marko";
 
 static const TOC = [
-  { id: "choosing", label: "Choosing a distribution" },
-  { id: "create-project", label: "Create a project" },
+  { id: "quick-start", label: "Quick start" },
+  { id: "requirements", label: "Requirements" },
+  { id: "what-init-does", label: "What init changes" },
   { id: "init", label: "marko-ui init" },
   { id: "add-components", label: "Adding components" },
+  { id: "ai-agent", label: "Set up your AI agent" },
+  { id: "existing-projects", label: "Existing projects" },
+  { id: "choosing", label: "Choosing a distribution" },
   { id: "import-css", label: "The import CSS entry" },
   { id: "eject", label: "marko-ui eject" },
   { id: "mu-hooks", label: "mu-* styling hooks" },
   { id: "troubleshooting", label: "Troubleshooting" },
 ];
 
-static const CREATE_APP = `bun create marko my-app
-cd my-app
-bun install`;
+static const QS_CREATE = `bunx create-marko@latest --name my-app --template basic`;
+
+static const QS_CD = `cd my-app`;
+
+static const QS_INIT = `bunx marko-ui init`;
+
+static const QS_ADD = `bunx marko-ui add button`;
+
+static const QS_USE = `import Button from "../components/ui/button/button.marko";
+
+<h1>Hello</h1>
+<Button variant="outline">Click me</Button>`;
+
+static const QS_DEV = `bun run dev`;
+
+static const INIT_AGENTS = `bunx marko-ui init --agents`;
+
+static const AGENTS_SYNC = `bunx marko-ui agents sync`;
+
+static const AGENTS_MANUAL = `bunx skills add svallory/marko-ui --skill marko-ui marko6`;
+
+static const AGENTS_CHECK = `bunx marko-ui agents sync --check`;
+
+static const ALREADY_INIT_ERROR = `A components.json file already exists at <cwd> — this project is already initialized. To add components, run marko-ui add <name>. To set up AI agents, run marko-ui agents sync. To start over, run marko-ui init --force.`;
+
+static const INIT_DEFAULTS = `bunx marko-ui init --defaults`;
 
 static const INIT_COPY = `bunx marko-ui init --distribution copy --visual-style vega --base-color neutral`;
 
 static const INIT_IMPORT = `bunx marko-ui init --distribution import --visual-style vega --base-color neutral`;
-
-static const INIT_INTERACTIVE = `bunx marko-ui init`;
 
 static const ADD_COMMAND = `bunx marko-ui add button`;
 
@@ -69,58 +94,103 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
   toc=TOC
 >
   <p>
-    marko-ui ships components two different ways. Pick the one that matches what you want to own:
+    Follow the quick start top to bottom to get a component rendering. Everything after it
+    explains what each step did and the options you can change.
   </p>
 
-  <h2 id="choosing">Choosing a distribution</h2>
+  <h2 id="quick-start">Quick start</h2>
+
+  <p><strong>1. Create a Marko app.</strong></p>
+
+  <code-block language="bash" code=QS_CREATE/>
+
+  <p><strong>2. Move into it.</strong></p>
+
+  <code-block language="bash" code=QS_CD/>
 
   <p>
-    <strong>copy</strong> (<code>marko-ui add</code>) writes flat generated component source
-    straight into your project — Tailwind utility classes baked in, no runtime dependency on
-    marko-ui. This is the shadcn model: once it's in your repo, the code is yours to edit however
-    you like.
+    <strong>3. Run <code>init</code>.</strong> It sets up Tailwind, the theme, and
+    <code>components.json</code> for you.
   </p>
 
+  <code-block language="bash" code=QS_INIT/>
+
+  <p><strong>4. Add a component.</strong></p>
+
+  <code-block language="bash" code=QS_ADD/>
+
   <p>
-    <strong>import</strong> installs <code>@marko-ui/shadcn</code>, a single npm package that ships
-    the same components as <code>mu-*</code> hook-class components plus all 8 visual
-    style layers. Nothing is copied into your project; you theme, override, or switch between
-    styles entirely from your own stylesheet. Pick this when you expect to swap styles at runtime
-    or theme centrally without maintaining a fork of the component source.
+    <strong>5. Use it.</strong> Add the import to a page, for example
+    <code>src/routes/+page.marko</code>. Adjust the relative path to where your file sits:
   </p>
 
-  <h2 id="create-project">Create a project</h2>
+  <code-block language="marko" filename="src/routes/+page.marko" code=QS_USE/>
 
-  <p>Start from a Marko 6 app with Tailwind v4 already wired up. A fresh <code>@marko/run</code> app works:</p>
+  <p><strong>6. Run the dev server.</strong></p>
 
-  <code-block language="bash" code=CREATE_APP/>
+  <code-block language="bash" code=QS_DEV/>
 
   <p>
-    Any project with a Tailwind v4 stylesheet works — see
-    <a href="/docs/components-json">components.json</a> for how the CLI detects your CSS file and
-    path aliases.
+    Open the URL it prints. The button is now source in your repo at
+    <code>src/components/ui/button/button.marko</code>. Next,
+    <a href="#ai-agent">set up your AI agent</a> if you use one.
   </p>
 
+  <h2 id="requirements">Requirements</h2>
+
+  <ul>
+    <li><strong>Marko 6.</strong> A fresh <code>create-marko</code> app is one.</li>
+    <li>
+      <strong>Tailwind v4.</strong> On a fresh <code>create-marko</code> app you do not set it up:
+      <code>init</code> installs it and wires it in (see <a href="#what-init-does">what
+      <code>init</code> changes</a>). An existing project needs a Tailwind v4 stylesheet;
+      <a href="/docs/components-json">components.json</a> explains how the CLI finds your CSS file
+      and path aliases.
+    </li>
+    <li>
+      <strong>TypeScript ^5 or ^6.</strong> TypeScript 7 (the native <code>tsgo</code>
+      compiler) is not supported — it ships no in-process compiler API, which both marko-ui's own
+      tooling and the component build depend on. Keep your project on <code>typescript ^5</code> or
+      <code>^6</code> until marko-ui's TS 7 support lands.
+    </li>
+    <li><strong>Node.js 20.18.1 or newer.</strong></li>
+  </ul>
+
+  <h2 id="what-init-does">What init changes</h2>
+
   <p>
-    <strong>Requires TypeScript 5 or 6.</strong> TypeScript 7 (the native <code>tsgo</code>
-    compiler) is not supported — it ships no in-process compiler API, which both marko-ui's own
-    tooling and the component build depend on. Keep your project on <code>typescript ^5</code> or
-    <code>^6</code> until marko-ui's TS 7 support lands.
+    On a fresh <code>create-marko</code> app, <code>marko-ui init</code> makes exactly these
+    changes:
+  </p>
+
+  <ul>
+    <li>Writes <code>components.json</code>.</li>
+    <li>Adds <code>allowImportingTsExtensions</code> to <code>tsconfig.json</code>.</li>
+    <li>Creates <code>src/styles/globals.css</code> and writes the theme into it.</li>
+    <li>Adds <code>import "../styles/globals.css"</code> to <code>src/routes/+layout.marko</code>.</li>
+    <li>Creates <code>vite.config.ts</code> loading <code>@tailwindcss/vite</code>.</li>
+    <li>Installs <code>@tailwindcss/vite</code>, <code>tailwindcss</code>, and <code>tw-animate-css</code>.</li>
+  </ul>
+
+  <p>
+    <code>marko-ui add button</code> then writes <code>src/components/ui/button/button.marko</code>
+    and <code>src/lib/utils.ts</code>, and installs the npm packages that component needs.
   </p>
 
   <h2 id="init">marko-ui init</h2>
 
   <p>
-    Run <code>marko-ui init</code> inside your project. With no flags it prompts interactively for
-    base color, distribution, and visual style:
+    In an interactive terminal, <code>init</code> with no flags asks three questions: base color,
+    distribution, and visual style. Non-interactive callers — an AI agent's shell, CI, piped
+    stdin — and <code>--defaults</code> skip the questions and get base color
+    <code>neutral</code>, distribution <code>copy</code>, and visual style <code>vega</code>. It
+    prints <code>Non-interactive run — using base color neutral, distribution copy, visual style vega.</code>
+    so you can see what it chose.
   </p>
 
-  <code-block language="bash" code=INIT_INTERACTIVE/>
+  <code-block language="bash" code=INIT_DEFAULTS/>
 
-  <p>
-    Or set everything non-interactively with <code>--distribution</code> and
-    <code>--visual-style</code>:
-  </p>
+  <p>To skip the questions and choose yourself, pass the flags:</p>
 
   <code-block language="bash" filename="copy distribution" code=INIT_COPY/>
   <code-block language="bash" filename="import distribution" code=INIT_IMPORT/>
@@ -131,7 +201,8 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
     (the default), <code>lyra</code>, <code>maia</code>, <code>mira</code>, <code>luma</code>, or
     <code>sera</code> — see <a href="/docs/theming">Theming</a> for what each one changes. Both
     flags are recorded in <code>components.json</code> so later <code>add</code> and
-    <code>eject</code> calls know which mode and style you're on.
+    <code>eject</code> calls know which mode and style you're on. The full flag list is in the
+    <a href="/docs/cli">CLI reference</a>.
   </p>
 
   <p>On <code>copy</code>, <code>init</code> writes <code>components.json</code>, then fetches and writes the theme matching your base color plus any components you named on the command line, as flat generated source under your components alias directory.</p>
@@ -166,6 +237,80 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
   <p>
     Every component's page in the <a href="/docs/components">Components</a> section shows the
     exact install command and a live demo.
+  </p>
+
+  <h2 id="ai-agent">Set up your AI agent</h2>
+
+  <p>
+    In a new project, add <code>--agents</code> to <code>init</code> to set up the project and your
+    agent in one step. In an initialized project, run the same command (it skips project setup) or
+    <code>agents sync</code>:
+  </p>
+
+  <code-block language="bash" code=INIT_AGENTS/>
+  <code-block language="bash" code=AGENTS_SYNC/>
+
+  <p>
+    This writes a <code>marko-ui</code> section into <code>AGENTS.md</code> at the project root
+    (your own content outside it is kept) and installs the <code>marko-ui</code> and
+    <code>marko6</code> agent skills into <code>.agents/skills/</code> through the
+    <a href="https://skills.sh" target="_blank" rel="noreferrer">skills</a> package. Commit both.
+    Claude Code reads <code>CLAUDE.md</code>, not <code>AGENTS.md</code>, so add the line
+    <code>@AGENTS.md</code> to your <code>CLAUDE.md</code>.
+  </p>
+
+  <p>Without the marko-ui CLI, or if the skill install failed, install the skills by hand:</p>
+
+  <code-block language="bash" code=AGENTS_MANUAL/>
+
+  <p>
+    The full guide — what gets written, the CLI commands agents use, and how to check your setup —
+    is <a href="/docs/working-with-ai">Working with AI</a>.
+  </p>
+
+  <h2 id="existing-projects">Existing projects</h2>
+
+  <p>
+    Running <code>init</code> in a project that already has a <code>components.json</code> fails:
+  </p>
+
+  <code-block language="text" code=ALREADY_INIT_ERROR/>
+
+  <p>Run the command that matches what you want instead:</p>
+
+  <ul>
+    <li><code>marko-ui add &lt;name&gt;</code> to add components.</li>
+    <li><code>marko-ui agents sync</code> to set up or refresh the AI agent files.</li>
+    <li><code>marko-ui init --force</code> to start over. It overwrites the existing configuration.</li>
+  </ul>
+
+  <p>
+    To adopt marko-ui in a project that has no <code>components.json</code> yet, run
+    <code>init</code> there. Outside a fresh <code>create-marko</code> app it needs a Tailwind v4
+    stylesheet already in place; see <a href="/docs/components-json">components.json</a> for how
+    the CLI finds it.
+  </p>
+
+  <h2 id="choosing">Choosing a distribution</h2>
+
+  <p>
+    marko-ui ships components two different ways. The quick start used the default, copy. Pick
+    the one that matches what you want to own:
+  </p>
+
+  <p>
+    <strong>copy</strong> (<code>marko-ui add</code>) writes flat generated component source
+    straight into your project — Tailwind utility classes baked in, no runtime dependency on
+    marko-ui. This is the shadcn model: once it's in your repo, the code is yours to edit however
+    you like.
+  </p>
+
+  <p>
+    <strong>import</strong> installs <code>@marko-ui/shadcn</code>, a single npm package that ships
+    the same components as <code>mu-*</code> hook-class components plus all 8 visual
+    style layers. Nothing is copied into your project; you theme, override, or switch between
+    styles entirely from your own stylesheet. Pick this when you expect to swap styles at runtime
+    or theme centrally without maintaining a fork of the component source.
   </p>
 
   <h2 id="import-css">The import CSS entry</h2>
@@ -263,6 +408,23 @@ static const MU_SWITCH_CLASS = `<div class="style-lyra">
   <code-block language="marko" code=MU_SWITCH_CLASS/>
 
   <h2 id="troubleshooting">Troubleshooting</h2>
+
+  <h3>"A components.json file already exists"</h3>
+  <p>
+    <code>init</code> refuses to run twice in the same project. Nothing is wrong: use
+    <code>marko-ui add &lt;name&gt;</code> for components or <code>marko-ui agents sync</code> for
+    the agent files, and <code>marko-ui init --force</code> only if you want to start over. See
+    <a href="#existing-projects">existing projects</a>.
+  </p>
+
+  <h3>My agent does not use the marko-ui CLI, or the skill is missing</h3>
+  <p>
+    Run <code>bunx marko-ui agents sync --check</code>. It exits 0 when the setup is current and
+    3 when <code>AGENTS.md</code> is stale or a skill is missing; <code>bunx marko-ui agents sync</code>
+    fixes both. If your agent is Claude Code, confirm <code>CLAUDE.md</code> contains
+    <code>@AGENTS.md</code>. More in
+    <a href="/docs/working-with-ai#troubleshooting">Working with AI</a>.
+  </p>
 
   <h3>An override or a data-* variant class does nothing</h3>
   <p>
