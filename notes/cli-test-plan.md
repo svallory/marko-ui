@@ -51,16 +51,15 @@ path filter (the first-run harness was not covered by it either).
 Expectations were written before running. Where the CLI disagreed it is a
 `fail`, not a changed expectation — with one exception: S08 (see note).
 
-## Result (round 4, after the config-resolution fix): 80 scenarios — 66 pass, 14 known failures
+## Result (round 4, after the config-resolution fix): 80 scenarios — 68 pass, 12 known failures
 
-(Round-4 run on `chore/cli-scenarios-flip`: `Tests  66 passed | 14 expected fail (80)`; 18 marks removed (D1, D2 and most of D5/S06b). Before: `48 passed | 32 expected fail`. Round 2 added 7 known-failure scenarios: S05c, S05d, S06b, S09d, S09e, O07b, O11b; 4 of them carry a two-defect mark `Dx+Dy`.)
+(Round-4 run on `chore/cli-scenarios-flip`: `Tests  68 passed | 12 expected fail (80)`; 20 marks removed (incl. S05d, O11b after fixture fixes) (D1, D2 and most of D5/S06b). Before: `48 passed | 32 expected fail`. Round 2 added 7 known-failure scenarios: S05c, S05d, S06b, S09d, S09e, O07b, O11b; 4 of them carry a two-defect mark `Dx+Dy`.)
 
 Status column: **pass**, **fail Dn** (known failure, see Defects), **not automated**.
 
-### Round-4 findings (mark kept, reason changed — assertions untouched)
+### Round-4 findings
 
-- **F1 — S05d**: `doctor` with `components.json` but no tsconfig and no stylesheet now exits 3 (`✖ CSS entry (src/styles/globals.css) … does not exist`), not a crash. The D1 crash is gone; the scenario's fixture has no stylesheet, so it fails on an honest finding. Needs a decision: fix the fixture (add the stylesheet) or accept exit 3.
-- **F2 — O11b**: the D2 fix works (`✔ Import alias (@/components)` + mapping text), but the output also has `⚠ Component npm dependencies … missing: class-variance-authority` because scenarios shim installs. Needs a decision: stub the dependency in the fixture's package.json or drop the `⚠` assertion.
+F1 (S05d: fixture lacked the stylesheet) and F2 (O11b: shimmed installs left component deps undeclared) were fixture problems, fixed in the fixtures with assertions untouched; both scenarios now pass unmarked.
 
 ### Legend
 
@@ -88,7 +87,7 @@ All run `init → add button → agents sync --no-skill` (shimmed installs) unle
 | S04 | `jsconfig.json`, no tsconfig | as S01 | pass (fixed by the config-resolution fix) |
 | S05 | no tsconfig, no jsconfig | init/add/sync exit 0; `components.json`, button, AGENTS.md written | pass (fixed by the config-resolution fix) |
 | S05c | same | button seen by AGENTS.md / status | pass (fixed by the config-resolution fix) |
-| S05d | no tsconfig, `components.json` present | `doctor` does not crash, exit 0 | **fail — new reason, finding F1** (D1 fixed; doctor exits 3 on the fixture's missing stylesheet) |
+| S05d | no tsconfig, `components.json` present | `doctor` does not crash, exit 0 | pass (fixture now has its stylesheet; F1 resolved) |
 | S05b | no tsconfig, `components.json` present | `agents sync` exit 0 | pass (fixed by the config-resolution fix) |
 | S06 | no `src/` (plain Vite + Marko) | stylesheet in `components.json` exists; no `src/` created | **fail D5** |
 | S06b | same | button seen | pass (fixed by the config-resolution fix) |
@@ -167,7 +166,7 @@ Not covered: `bun.lockb`, `deno.lock`, Yarn Berry/`packageManager` field, `user-
 | O09 | init --agents, `add`, `--check` unsynced | exit 3 "AGENTS.md is stale" | pass |
 | O10 | remove component dir → `agents sync` | no longer listed, others are | pass |
 | O11 | `status`/`diff`/`doctor` after `add` (works-today shape) | see the component; doctor passes | pass |
-| O11b | stock shape (no `paths`), after add: `doctor` | exit 0, `✔ Import alias` line stating the mapping, no `⚠` | **fail — new reason, see finding F2** (D2 fixed: the mapping line is there; a `⚠` for missing component deps remains because installs are shimmed) |
+| O11b | stock shape (no `paths`), after add: `doctor` | exit 0, `✔ Import alias` line stating the mapping, no `⚠` | pass (fixture declares the component deps; F2 resolved) |
 | O12 | edit an installed file → `diff` | reported | pass |
 | O13 | `add` unknown name | exit 1 naming it | pass |
 
@@ -221,8 +220,8 @@ is in the report `scratch/team-lead/reports/cli-test-plan.md`.
 
 | id | one line | scenarios |
 |---|---|---|
-| D1 | **FIXED** (measured round 4): missing tsconfig tolerated. Residual: S05d fails on a fixture finding (F1) | S05, S05b, S05c, S09, S09b–S09d now pass; S05d F1 |
-| D2 | **FIXED** (measured round 4): unbacked aliases resolve to the source root, status/diff/AGENTS see components. Residual: O11b fails on a shim artifact (F2) | S01–S01d, S03, S04, S05c, S06b, S10, S10b, S11, S12 now pass; O11b F2 |
+| D1 | **FIXED** (measured round 4): missing tsconfig tolerated. S05d fixed in round 4b | S05, S05b, S05c, S09, S09b–S09d now pass; S05d |
+| D2 | **FIXED** (measured round 4): unbacked aliases resolve to the source root, status/diff/AGENTS see components. O11b fixed in round 4b | S01–S01d, S03, S04, S05c, S06b, S10, S10b, S11, S12 now pass; O11b |
 | D4 | Package-manager detection reads only the cwd lockfile: monorepo app with root `bun.lock` gets `npx` for the skills relay | P-mono |
 | D5 | No-`src/` project: CLI creates `src/styles/globals.css` and `./styles/globals.css`, `components.json` points at the latter, layout/routes not wired **Measured round 4: PARTIALLY fixed** — css path and button are now coherent (S06b passes), but S06 still fails: the CLI creates a `src/` directory in a project without one. | S06 |
 | D6 | Hand-wired Tailwind: `components.json` uses `src/styles/app.css` but an unused `src/styles/globals.css` is also created | S07 |

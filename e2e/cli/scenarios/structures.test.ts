@@ -128,9 +128,10 @@ describe("project structures — tsconfig / alias variants", () => {
     expect(exists(ws, "AGENTS.md")).toBe(true)
   })
 
-  scenario("S05d", "no tsconfig, components.json present: doctor does not crash on the missing tsconfig", { fails: "D1" }, async () => {
+  scenario("S05d", "no tsconfig, components.json present: doctor does not crash on the missing tsconfig", async () => {
     const ws = makeWorkspace()
-    markoApp(ws, { tsconfig: "none", extra: { "components.json": componentsJson() } })
+    // A project whose components.json points at a stylesheet has that stylesheet.
+    markoApp(ws, { tsconfig: "none", extra: { "components.json": componentsJson(), "src/styles/globals.css": '@import "tailwindcss";\n' } })
     const doctor = await cli(ws, ["doctor"], { shim: withShims(makeWorkspace("shim")) })
     expect(plain(doctor.out)).not.toContain("Failed to load tsconfig.json")
     expect(doctor.code, tail(doctor.out)).toBe(0)
