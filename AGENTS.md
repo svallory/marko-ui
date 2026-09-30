@@ -387,6 +387,16 @@ Other traps, each of which cost a debugging cycle:
   a CI/agent caller looks like, and it is what surfaces a prompt nothing can
   answer — the failure mode is a hang, so without a timeout the harness hangs
   too.
+- **Drive interactive behavior under a real pty, with a window size.** Stdin
+  closed only proves the non-interactive path; `init`'s questions (base color,
+  distribution, visual style) only exist on a TTY, and `-y, --yes` once
+  defaulted to `true`, so a real terminal silently took defaults while every
+  test passed. `expect(1)` spawns a pty whose size is 0x0 unless you
+  `set stty_init "rows 40 columns 120"` first; at 0 columns `ora` erases
+  lines forever (millions of cursor-up sequences, then a stall on pty
+  back-pressure) and it reads as a hang in `init`. `init.test.ts` has a
+  pty-driven suite that does this; unset `CLAUDECODE`/`CI`/`CURSOR_AGENT`/
+  `REPL_ID`/`AI_AGENT` for the child or the CLI correctly refuses to prompt.
 - **Idempotence needs a real second run.** Hash the project tree, run `init`
   again, compare. Several first-run defects only appear on the second call.
 
