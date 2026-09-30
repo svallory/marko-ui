@@ -283,13 +283,16 @@ export interface RunResult {
 /** Env vars that would leak the host's context into a scenario. */
 const SCRUB = [
   "CI",
-  "CLAUDECODE",
+  "AI_AGENT",
+  "REPL_ID",
   "NODE_EXTRA_CA_CERTS",
   "npm_config_user_agent",
   "MARKO_UI_SKILLS_SOURCE",
   "REGISTRY_URL",
   "INIT_CWD",
 ]
+/** Agent / editor detectors are scrubbed by prefix (CLAUDECODE, CLAUDE_CODE_*, CURSOR_*, …). */
+const SCRUB_PREFIXES = ["CLAUDE", "CURSOR"]
 
 /**
  * Runs the built CLI. stdin is closed by default (what CI/agent callers look
@@ -298,16 +301,21 @@ const SCRUB = [
  */
 export function cli(cwd: string, args: string[], o: RunOptions = {}): Promise<RunResult> {
   const env: Record<string, string | undefined> = { ...process.env }
-  for (const key of SCRUB) delete env[key]
+  for (const key of Object.keys(env)) {
+    if (SCRUB.includes(key) || SCRUB_PREFIXES.some((p) => key.startsWith(p))) delete env[key]
+  }
   Object.assign(env, { REGISTRY_URL: registryUrl(), CLAUDECODE: "1" }, o.env)
   if (o.shim) env.PATH = `${o.shim.bin}:${env.PATH}`
   for (const [k, v] of Object.entries(env)) if (v === undefined) delete env[k]
 
   return new Promise((resolvePromise) => {
+    // detached: the child leads its own process group, so a timeout can kill
+    // grandchildren too (`bunx skills …`) instead of leaving them running.
     const child = spawn("node", [CLI, ...args], {
       cwd,
       env: env as NodeJS.ProcessEnv,
       stdio: [o.openStdin ? "pipe" : "ignore", "pipe", "pipe"],
+      detached: true,
     })
     let out = ""
     let timedOut = false
@@ -315,7 +323,11 @@ export function cli(cwd: string, args: string[], o: RunOptions = {}): Promise<Ru
     child.stderr!.on("data", (d) => (out += d))
     const timer = setTimeout(() => {
       timedOut = true
-      child.kill("SIGKILL")
+      try {
+        process.kill(-child.pid!, "SIGKILL")
+      } catch {
+        child.kill("SIGKILL")
+      }
     }, o.timeoutMs ?? 60_000)
     child.on("close", (code) => {
       clearTimeout(timer)

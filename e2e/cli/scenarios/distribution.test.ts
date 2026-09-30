@@ -26,18 +26,19 @@ describe("distribution: copy, import, eject", () => {
     expect(read(ws, "src/styles/globals.css")).toContain("@marko-ui/shadcn/styles/globals.css")
   })
 
-  // NEEDS-DECISION: init prints "components come from @marko-ui/shadcn (no
-  // local component files)", but `add` under the import distribution still
-  // writes button.marko/classes.ts/variants.ts into the project. Either the
-  // message or `add` is wrong. Expectation here follows the message.
-  scenario("DI01b", "import distribution: add writes no local component source (as init promises)", { fails: "D9" }, async () => {
+  // Pinned decision: `add` on the import distribution exits 1, says there is
+  // nothing to add and how to import, and writes nothing.
+  scenario("DI01b", "import distribution: add exits 1, explains how to import, writes no files", { fails: "D9" }, async () => {
     const ws = makeWorkspace()
     markoApp(ws, { tsconfig: "paths" })
     const shim = withShims(makeWorkspace("shim"))
     await cli(ws, ["init", "--distribution", "import"], { shim })
     const add = await cli(ws, ["add", "button"], { shim })
-    expect(add.code, tail(add.out)).toBe(0)
-    expect(exists(ws, "src/components/ui/button/button.marko")).toBe(false)
+    expect(add.code, tail(add.out)).toBe(1)
+    expect(plain(add.out)).toMatch(/nothing to add/i)
+    expect(plain(add.out)).toContain("@marko-ui/shadcn/ui/button/button.marko")
+    expect(exists(ws, "src/components/ui/button")).toBe(false)
+    expect(exists(ws, "src/lib/utils.ts")).toBe(false)
   })
 
   scenario("DI02", "import distribution: agents sync names the import distribution in AGENTS.md", async () => {

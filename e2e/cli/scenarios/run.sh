@@ -8,8 +8,9 @@
 # registry must be built with a REGISTRY_BASE_URL that points at the server.
 #
 # ENV
-#   REGISTRY_PORT           local registry port (default 4457 — not 3000, and not
-#                           4455 which run.sh and the CLI unit suite use)
+#   REGISTRY_PORT           local registry port (default 4470 — not 3000, and outside
+#                           4447-4460, which packages/marko-ui's resolver.test.ts
+#                           binds; `e2e/cli/run.sh` uses 4455)
 #   SCENARIOS_SHOW_FAILURES=1  run known failures as plain tests, to see the
 #                           real assertion output behind each `fails` mark
 #   E2E_KEEP=1              keep the temp project dirs
@@ -19,7 +20,7 @@ set -uo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$REPO"
 
-REGISTRY_PORT="${REGISTRY_PORT:-4457}"
+REGISTRY_PORT="${REGISTRY_PORT:-4470}"
 
 server_pid=""
 cleanup() {

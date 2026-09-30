@@ -102,12 +102,25 @@ describe("command ordering", () => {
     expect(md5(ws, "skills-lock.json")).toBe(lock)
   })
 
-  scenario("O07", "add before init (non-interactive): fails loudly (not exit 0), names init, writes nothing", { fails: "D10" }, async () => {
+  // Pinned decision: interactive terminal keeps the confirm; `-y` or
+  // non-interactive (agent env, CI, no TTY) auto-inits with the defaults.
+  scenario("O07", "add before init (non-interactive): auto-inits with defaults and installs the component", { fails: "D10" }, async () => {
     const ws = app()
-    const add = await cli(ws, ["add", "button"])
-    expect(add.code).toBe(1)
-    expect(plain(add.out)).toMatch(/marko-ui init/)
-    expect(exists(ws, "src/components")).toBe(false)
+    const shim = withShims(makeWorkspace("shim"), undefined, { failing: true })
+    const add = await cli(ws, ["add", "button"], { shim })
+    expect(add.code, tail(add.out)).toBe(0)
+    expect(plain(add.out)).toContain("Non-interactive run — using")
+    expect(exists(ws, "components.json")).toBe(true)
+    expect(exists(ws, "src/components/ui/button/button.marko")).toBe(true)
+  })
+
+  scenario("O07b", "add -y before init: same auto-init, even with a TTY-like env", { fails: "D10" }, async () => {
+    const ws = app()
+    const shim = withShims(makeWorkspace("shim"), undefined, { failing: true })
+    const add = await cli(ws, ["add", "button", "-y"], { shim, env: { CLAUDECODE: undefined } })
+    expect(add.code, tail(add.out)).toBe(0)
+    expect(plain(add.out)).toContain("Non-interactive run — using")
+    expect(exists(ws, "src/components/ui/button/button.marko")).toBe(true)
   })
 
   scenario("O08", "add → agents sync → agents sync --check: clean (exit 0) and AGENTS.md lists the component", async () => {
@@ -158,6 +171,20 @@ describe("command ordering", () => {
     const doctor = await cli(ws, ["doctor"], { shim })
     expect(doctor.code, tail(doctor.out)).toBe(0)
     expect(plain(doctor.out)).toContain("All checks passed")
+  })
+
+  // Stock shape (no tsconfig paths): after the D2 fix doctor must pass with a line
+  // stating the mapping — not warn and then pass.
+  scenario("O11b", "doctor on the stock shape after add: passes, states the alias mapping, no warning", { fails: "D2" }, async () => {
+    const ws = makeWorkspace()
+    markoApp(ws)
+    const { shim } = await bootstrap(ws)
+    const doctor = await cli(ws, ["doctor"], { shim })
+    const out = plain(doctor.out)
+    expect(doctor.code, tail(doctor.out)).toBe(0)
+    expect(out).toMatch(/✔ Import alias/)
+    expect(out).not.toContain("No tsconfig path alias detected")
+    expect(out).not.toContain("⚠")
   })
 
   scenario("O12", "a locally edited component is reported by diff", async () => {

@@ -1,4 +1,4 @@
-import { mkdirSync, symlinkSync, lstatSync, readFileSync, writeFileSync } from "node:fs"
+import { lstatSync, symlinkSync } from "node:fs"
 import { describe, expect } from "vitest"
 import {
   SKILLS_SRC,
@@ -12,7 +12,6 @@ import {
   readJson,
   tail,
   withShims,
-  writeTree,
 } from "./lib/harness"
 import { scenario } from "./lib/scenario"
 
@@ -200,5 +199,3 @@ describe("broken inputs", () => {
   })
 })
 
-// retained for future fixtures
-void [mkdirSync, readFileSync, writeFileSync, writeTree]
