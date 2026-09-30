@@ -67,7 +67,7 @@ describe("AGENTS.md handling", () => {
     expect(read(ws, "AGENTS.md")).toBe(once)
   })
 
-  scenario("A04", "markers in the wrong order: user text kept, still exactly one section after repeated syncs", { fails: "D11" }, async () => {
+  scenario("A04", "markers in the wrong order: user text kept, still exactly one section after repeated syncs", async () => {
     const user = `# Mine\n${END}\nmiddle\n${START}\ntail\n`
     const ws = initialized({ "AGENTS.md": user })
     const first = await sync(ws)
@@ -80,7 +80,7 @@ describe("AGENTS.md handling", () => {
     expect(count(md, "## marko-ui components"), "section duplicated on every sync").toBe(1)
   })
 
-  scenario("A05", "unterminated start marker: user text kept, exactly one closed section", { fails: "D11" }, async () => {
+  scenario("A05", "unterminated start marker: user text kept, exactly one closed section", async () => {
     const user = `# Mine\n\nkeep me\n${START}\nhalf a section, no end marker\n`
     const ws = initialized({ "AGENTS.md": user })
     await sync(ws)

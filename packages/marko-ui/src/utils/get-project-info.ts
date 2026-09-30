@@ -11,6 +11,7 @@ import {
   resolveConfigPaths,
 } from "@/src/utils/get-config"
 import { getPackageInfo } from "@/src/utils/get-package-info"
+import { logger } from "@/src/utils/logger"
 import { hasSrcDir } from "@/src/utils/source-root"
 import {
   getPackageImportAliases,
@@ -595,7 +596,23 @@ export async function getProjectTailwindVersionFromConfig(config: {
   return projectInfo.tailwindVersion
 }
 
-export async function getProjectComponents(cwd: string) {
+type RegistryIndex = { name: string }[] | null | undefined
+
+/**
+ * Names of the components installed in the project's ui directory.
+ *
+ * `registryIndex`: pass an already-fetched index to avoid a second network
+ * round trip (a caller that tried and failed passes `null`); leave it
+ * `undefined` to have it fetched here.
+ *
+ * Offline degradation: without the index we cannot tell components from
+ * unrelated folders by name, so only entries that contain a `.marko` file
+ * (or are one) are kept.
+ */
+export async function getProjectComponents(
+  cwd: string,
+  registryIndex?: RegistryIndex
+) {
   const existingConfig = await getConfig(cwd)
   if (!existingConfig) {
     return []
@@ -607,15 +624,43 @@ export async function getProjectComponents(cwd: string) {
     return []
   }
 
-  const registryIndex = await getShadcnRegistryIndex()
-  const registryNames = new Set(registryIndex?.map((item) => item.name) ?? [])
+  let index = registryIndex
+  if (index === undefined) {
+    try {
+      index = await getShadcnRegistryIndex()
+    } catch (error) {
+      logger.debug(
+        `registry index unavailable, listing installed components from disk: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      )
+      index = null
+    }
+  }
+  const registryNames = index ? new Set(index.map((item) => item.name)) : null
 
   // marko-ui components install as directories (ui/button/button.marko),
   // single files are still recognized for flat layouts.
   const entries = await fsPromises.readdir(uiDir, { withFileTypes: true })
-  return entries
-    .map((entry) =>
-      entry.isDirectory() ? entry.name : path.basename(entry.name, path.extname(entry.name))
-    )
-    .filter((name) => registryNames.has(name))
+  const names: string[] = []
+  for (const entry of entries) {
+    const name = entry.isDirectory()
+      ? entry.name
+      : path.basename(entry.name, path.extname(entry.name))
+    if (registryNames) {
+      if (registryNames.has(name)) names.push(name)
+    } else if (await looksLikeComponent(uiDir, entry)) {
+      names.push(name)
+    }
+  }
+  return names
+}
+
+async function looksLikeComponent(
+  uiDir: string,
+  entry: import("fs").Dirent
+) {
+  if (!entry.isDirectory()) return entry.name.endsWith(".marko")
+  const files = await fsPromises.readdir(path.join(uiDir, entry.name))
+  return files.some((file) => file.endsWith(".marko"))
 }

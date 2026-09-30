@@ -177,11 +177,77 @@ describe("mergeAgentsFile", () => {
     )
   })
 
-  it("appends rather than corrupting a file whose markers are out of order", () => {
-    const broken = `${AGENTS_END_MARKER}\nnotes\n${AGENTS_START_MARKER}\n`
-    const merged = mergeAgentsFile(broken, SECTION)
-    expect(merged.startsWith(broken)).toBe(true)
-    expect(merged.endsWith(`${SECTION}\n`)).toBe(true)
+  describe("marker permutations", () => {
+    const S = AGENTS_START_MARKER
+    const E = AGENTS_END_MARKER
+    const occurrences = (text: string, needle: string) => text.split(needle).length - 1
+
+    // Every case: converges on a second run, exactly one S and one E (S
+    // first), and every user token survives. `gen` is stale generated text
+    // that may be replaced.
+    const cases: [string, string, string[]][] = [
+      ["no markers", "u1\n", ["u1"]],
+      ["ordered", "u1\n${S}\nSTALEGEN\n${E}\nu2\n", ["u1", "u2"]],
+      ["reversed E..S", "u1\n${E}\nu2\n${S}\nu3\n", ["u1", "u2", "u3"]],
+      ["start only", "u1\n${S}\nu2\n", ["u1", "u2"]],
+      ["end only", "u1\n${E}\nu2\n", ["u1", "u2"]],
+      ["duplicated pairs", "${S}\nSTALEGEN\n${E}\nu1\n${S}\nSTALEGEN\n${E}\nu2\n", ["u1", "u2"]],
+      ["nested starts", "${S}\nu1\n${S}\nSTALEGEN\n${E}\nu2\n", ["u1", "u2"]],
+      ["E S E", "u1\n${E}\nu2\n${S}\nSTALEGEN\n${E}\nu3\n", ["u1", "u2", "u3"]],
+      ["S E S", "u1\n${S}\nSTALEGEN\n${E}\nu2\n${S}\nu3\n", ["u1", "u2", "u3"]],
+      ["stray E before pair", "u1\n${E}\nu2\n${S}\nSTALEGEN\n${E}\nu3\n", ["u1", "u2", "u3"]],
+      ["pair then stray S", "${S}\nSTALEGEN\n${E}\nu1\n${S}\nu2\n", ["u1", "u2"]],
+      ["lone start, user text, then pair (old buggy run)", "u1\n${S}\nu2\n${S}\nSTALEGEN\n${E}\nu3\n", ["u1", "u2", "u3"]],
+      ["pair, stray E", "${S}\nSTALEGEN\n${E}\nu1\n${E}\nu2\n", ["u1", "u2"]],
+      ["adjacent markers", "u1${E}${S}u2\n", ["u1", "u2"]],
+    ]
+
+    for (const [name, template, tokens] of cases) {
+      for (const [label, eol] of [["LF", "\n"], ["CRLF", "\r\n"]] as const) {
+        it(`${name} (${label}): converges, one section, user text kept`, () => {
+          const input = template
+            .replaceAll("${S}", S)
+            .replaceAll("${E}", E)
+            .replaceAll("\n", eol)
+          const once = mergeAgentsFile(input, SECTION)
+          expect(mergeAgentsFile(once, SECTION)).toBe(once)
+          expect(occurrences(once, S)).toBe(1)
+          expect(occurrences(once, E)).toBe(1)
+          expect(once.indexOf(S)).toBeLessThan(once.indexOf(E))
+          for (const token of tokens) expect(once).toContain(token)
+          expect(once).not.toContain("STALEGEN")
+          if (eol === "\r\n") {
+            expect(once.replaceAll("\r\n", "")).not.toContain("\n")
+          }
+        })
+      }
+    }
+
+    it("keeps the user text between a lone start and a later pair", () => {
+      const out = mergeAgentsFile(`u1\n${S}\nkeep this\n${S}\nSTALEGEN\n${E}\n`, SECTION)
+      expect(out).toContain("keep this")
+      expect(out).toContain("u1")
+    })
+
+    it("ordered markers: replaces exactly in place", () => {
+      expect(mergeAgentsFile(`a\n${S}\nold\n${E}\nb\n`, SECTION)).toBe(`a\n${SECTION}\nb\n`)
+    })
+
+    it("mixed endings: the majority style wins", () => {
+      const crlfMajority = mergeAgentsFile("a\r\nb\r\nc\nd", SECTION)
+      expect(crlfMajority.endsWith(`${SECTION.replaceAll("\n", "\r\n")}\r\n`)).toBe(true)
+      const lfMajority = mergeAgentsFile("a\nb\nc\r\nd", SECTION)
+      expect(lfMajority.endsWith(`${SECTION}\n`)).toBe(true)
+    })
+
+    it("empty existing file is treated as new", () => {
+      expect(mergeAgentsFile("", SECTION)).toBe(`${SECTION}\n`)
+    })
+
+    it("CRLF file without markers and no trailing newline: appends with CRLF", () => {
+      const out = mergeAgentsFile("# Top\r\nline", SECTION)
+      expect(out.startsWith("# Top\r\nline\r\n\r\n")).toBe(true)
+    })
   })
 
   it("is idempotent", () => {

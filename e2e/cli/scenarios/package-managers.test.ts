@@ -48,7 +48,7 @@ describe("package manager detection", () => {
     })
   }
 
-  scenario("P-mono", "monorepo app with the lockfile at the workspace root: runner follows the root bun.lock", { fails: "D4" }, async () => {
+  scenario("P-mono", "monorepo app with the lockfile at the workspace root: runner follows the root bun.lock", async () => {
     const ws = makeWorkspace()
     writeTree(ws, { "package.json": { name: "mono", private: true, workspaces: ["apps/*"] }, "bun.lock": "" })
     markoApp(ws, { dir: "apps/web", lock: "none", tsconfig: "paths", extra: { "components.json": componentsJson() } })
