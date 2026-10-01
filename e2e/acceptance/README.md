@@ -497,3 +497,30 @@ This file **has folded in the first suites** — `core.init-defaults-copy` was
 are green, and `scenarios.yaml` is the single source for them.
 `import-path.test.ts` is deleted too: `post.import-distribution` and
 `kind.marko-vite-no-run` cover the import path and were green in the full run.
+
+### Windows (report-only CI job)
+
+The `windows (core, report only)` job runs the `core` kind on the packed tarball and never
+blocks a release. Triage of its first run (run 36942701465), 13 core scenarios:
+
+- 9 failed, all with one cause: `lib/proc.ts` opened the literal `/dev/null`, which Windows
+  resolves to `D:\dev\null` (`ENOENT`) — every spawn failed before the CLI ran. **Fixed**
+  (`os.devNull`). Scenarios: `core.init-defaults-copy`, `init-explicit-flags`,
+  `init-with-components`, `add-zag-machine-and-composite`, `read-commands-search-show-docs`,
+  `manifest-and-registry-list`, `add-unknown-component`, `eject-on-copy-refuses`,
+  `init-twice-refuses`.
+- 4 skipped by design (`requires.os: [linux, macos]`: pty needs `expect`):
+  `init-interactive-pty-defaults`, `init-interactive-pty-choices`, `add-multiple-at-once`,
+  `full-agent-loop`.
+- 2 runner unit tests failed for the same `/dev/null` cause, and 1 `_filters` test assumed
+  the host is never Windows. Both fixed.
+
+**Known gaps, predicted from the code and NOT yet observed** (the first run died before
+reaching them; re-triage after the next Windows run and move anything real above):
+
+- Pre-steps (`run:`) and `@helper` scripts are launched through `sh`, which is not
+  guaranteed on a Windows `PATH`.
+- The registry mirror needs `flock`, a POSIX process group and `ps`, and `/tmp` lock files;
+  none exist on Windows, so any scenario that needs the mirror cannot run there. The job
+  therefore downloads no registry artifact.
+- Path separators in `fileContains`/`filesExist` expectations are written with `/`.

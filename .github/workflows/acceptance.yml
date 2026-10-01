@@ -162,6 +162,12 @@ jobs:
     # build is its own job, so it is not here). Worst cases are README §Timing's
     # upper bounds — ESTIMATES until a real run replaces them.
     timeout-minutes: ${{ matrix.timeout }}
+    env:
+      # Yarn Berry turns on immutable installs when CI is set, so the scenario's
+      # `corepack use yarn@4` (which migrates the project and must rewrite
+      # yarn.lock) died with YN0028 on the runner while passing locally. The
+      # suite is testing the CLI, not Yarn's CI lockfile policy.
+      YARN_ENABLE_IMMUTABLE_INSTALLS: "false"
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.derive-matrix.outputs.matrix) }}

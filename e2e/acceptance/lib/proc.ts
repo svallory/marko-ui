@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process"
 import { closeSync, openSync } from "node:fs"
+import { devNull as DEV_NULL } from "node:os"
 
 export interface RunResult {
   stdout: string
@@ -45,7 +46,9 @@ export function run(
   args: string[],
   options: RunOptions
 ): RunResult {
-  const devNull = openSync("/dev/null", "r")
+  // os.devNull, not "/dev/null": Windows has no such path (it is `\\.\nul`), and
+  // the literal resolved to D:\dev\null there and failed every spawn.
+  const devNull = openSync(DEV_NULL, "r")
   try {
     const result = spawnSync(cmd, args, {
       cwd: options.cwd,

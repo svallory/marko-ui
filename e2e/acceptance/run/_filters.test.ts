@@ -111,13 +111,16 @@ describe("acceptance · the selection", () => {
       // os:windows; a Windows-only requirement is a decision this host has to
       // reach, and the reason has to name what was required.
       const target = targetConfig(doc)
-      const windowsOnly = {
+      // An OS that is NOT this one — a fixed "windows" made this test assert a
+      // skip on the Windows CI job, where the scenario correctly runs.
+      const other = currentOs() === "windows" ? ("linux" as const) : ("windows" as const)
+      const otherOnly = {
         ...find("core.init-defaults-copy"),
-        requires: { os: ["windows" as const] },
+        requires: { os: [other] },
       }
-      const reason = skipReason(windowsOnly, { target })
+      const reason = skipReason(otherOnly, { target })
       expect(reason).toBe(
-        `requires os windows; this machine is ${currentOs()}`
+        `requires os ${other}; this machine is ${currentOs()}`
       )
     })
 
