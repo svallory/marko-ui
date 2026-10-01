@@ -592,6 +592,35 @@ flows:
       expect:
         exit: 0
         stdoutMatches: ["(?i)no updates found|up to date"]
+
+  # The import distribution installs nothing into src/components/ui at all:
+  # `add` refuses on it by design (0.5.0 breaking change, asserted two steps
+  # earlier in post.import-distribution). So `status` is still run — it is a
+  # read-only command the scenario should exercise — but it is asked whether it
+  # SUCCEEDED and what it listed, not which component it listed, because the
+  # correct answer on this distribution is an empty list. Asserting `[]` is
+  # stronger than the old `'"button"'` substring, not weaker: it fails if
+  # anything at all is copied into the project.
+  verify-clean-no-components:
+    - name: status runs clean, and nothing was copied into the project
+      command: status
+      args: ["--json"]
+      expect:
+        exit: 0
+        jsonPath:
+          - source: stdout
+            pointer: /components
+            equals: []
+    - name: doctor passes
+      command: doctor
+      expect:
+        exit: 0
+        stdoutMatches: ["(?i)all checks passed"]
+    - name: diff reports no drift
+      command: diff
+      expect:
+        exit: 0
+        stdoutMatches: ["(?i)no updates found|up to date"]
   # Build the app and assert the component really rendered. The build alone
   # proves nothing: marko-run emits a server bundle, not prerendered HTML.
   build-and-render-button:
@@ -2485,7 +2514,7 @@ scenarios:
         expect:
           exit: 0
           appBuild: pass
-      - use: verify-clean
+      - use: verify-clean-no-components
 
   - id: post.eject-import-to-copy
     title: "eject flips an import project back to copy and writes the source"
