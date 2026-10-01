@@ -24,6 +24,7 @@ import { spawnSync } from "node:child_process"
 import { createHash } from "node:crypto"
 import {
   existsSync,
+  mkdirSync,
   readdirSync,
   readFileSync,
   symlinkSync,
@@ -200,10 +201,11 @@ const NON_INTERACTIVE_ENV_VARS = [
   "CODEX_SANDBOX",
 ]
 
-function buildEnv(
+export function buildEnv(
   scenario: Scenario,
   step: Step,
-  target: TargetConfig
+  target: TargetConfig,
+  vars: Record<string, string>
 ): Record<string, string | undefined> {
   const env: Record<string, string | undefined> = {
     ...(process.env as Record<string, string | undefined>),
@@ -218,7 +220,13 @@ function buildEnv(
   }
   for (const [key, value] of Object.entries(step.env ?? {})) {
     if (value === null) delete env[key]
-    else env[key] = value
+    // `env` values are interpolated with the same closed `$VAR` set as `args`
+    // (and the same `$$` escape), because a scenario has no other way to reach
+    // the runner's own mirror port: env.custom-registry-url has to point
+    // REGISTRY_URL at `http://127.0.0.1:$ACCEPTANCE_MIRROR_PORT/r`, and a
+    // literal `$NAME` handed to the CLI is not a URL — `new URL()` rejects it
+    // with the unhelpfully-named "Invalid URL" and init rolls back.
+    else env[key] = interpolate(value, vars)
   }
   return env
 }
@@ -280,7 +288,7 @@ async function resolveCliInstall(
 // Pre-steps
 // ---------------------------------------------------------------------------
 
-async function applyPreSteps(
+export async function applyPreSteps(
   steps: PreStep[],
   options: {
     doc: ScenariosDoc
@@ -368,8 +376,17 @@ async function applyPreSteps(
     if (step.run) {
       const command = step.run.cmd ?? body(step.run.body)
       if (!command) throw new StepFailure(`${at}: a run step needs a command`)
+      // `cwd` is the pre-step's own key, documented as "relative to the
+      // scenario workspace" (scenarios.schema.json preStep.cwd) — the same key
+      // the helper branch below reads. `run.cwd` is accepted as a synonym, and
+      // BOTH resolve against the workspace: env.symlinked-project sets
+      // `cwd: "."` to make its `ln -s app link-to-app` land at the root, and
+      // this branch used to read neither the key nor the base, so the link was
+      // created inside the app (self-referential) and the scenario's first
+      // step died on "No project found at link-to-app".
+      const runCwd = step.cwd ?? step.run.cwd
       const result = run("sh", ["-c", command], {
-        cwd: step.run.cwd ? at_(step.run.cwd) : options.cwd,
+        cwd: runCwd ? join(options.workspace, runCwd) : options.cwd,
         timeoutMs: 600_000,
       })
       if (result.exitCode !== 0 && !step.run.allowFailure) {
@@ -432,7 +449,7 @@ async function executeStep(step: Step, ctx: StepContext): Promise<StepOutcome> {
   }
   const vars = stepVars(ctx.scenario, step, ctx.target, extraVars)
   const args = (step.args ?? []).map((arg) => interpolate(arg, vars))
-  let env = buildEnv(ctx.scenario, step, ctx.target)
+  let env = buildEnv(ctx.scenario, step, ctx.target, vars)
   // The runner's own geometry, exported so a helper can find the app without
   // being told its path on every call.
   env = { ...env, ...extraVars, ACCEPTANCE_TARGET: ctx.target.kind }
@@ -531,7 +548,7 @@ async function executeStep(step: Step, ctx: StepContext): Promise<StepOutcome> {
   const runner = step.runner ?? defaultRunner(ctx.pm)
   const invocation = resolveInvocation(runner, command, step, ctx, vars)
   return step.stdin === "pty"
-    ? runPtyStep(invocation, step, cwd, timeoutMs)
+    ? runPtyStep(invocation, step, cwd, timeoutMs, vars)
     : runInvocation(invocation, step, cwd, env, timeoutMs)
 }
 
@@ -604,6 +621,21 @@ interface Invocation {
   label: string
 }
 
+/**
+ * The directory a pinned `cliVersion` is installed into, created if absent.
+ *
+ * Exported because the bug it fixes is invisible from the call site: the
+ * install runs with `cwd: pinned`, and spawnSync reports a missing working
+ * directory as ENOENT — the same error as a missing binary — so a missing
+ * mkdir reads as "bun is not installed" on a machine where bun is plainly on
+ * PATH. post.upgrade-from-0-4-1 is the scenario that proves it.
+ */
+export function ensurePinnedCliDir(installRoot: string, version: string): string {
+  const pinned = join(installRoot, ".acceptance-cli", version)
+  mkdirSync(pinned, { recursive: true })
+  return pinned
+}
+
 function resolveInvocation(
   runner: Runner,
   command: string,
@@ -629,6 +661,11 @@ function resolveInvocation(
       const pinned = join(ctx.installRoot, ".acceptance-cli", step.cliVersion)
       if (!existsSync(join(pinned, "node_modules", CLI_ENTRY))) {
         const driver = driverFor(ctx.pm)
+        // The install runs IN `pinned`, and spawnSync reports a missing cwd as
+        // ENOENT exactly as it reports a missing binary — so without this the
+        // upgrade scenario fails as "bun add -d marko-ui@0.4.1 / spawnSync
+        // bun ENOENT" on a machine where bun is plainly on PATH.
+        ensurePinnedCliDir(ctx.installRoot, step.cliVersion)
         const added = driver.add(pinned, [spec], 600_000)
         if (added.exitCode !== 0) {
           throw new StepFailure(
@@ -695,7 +732,8 @@ function runPtyStep(
   invocation: Invocation,
   step: Step,
   cwd: string,
-  timeoutMs: number
+  timeoutMs: number,
+  vars: Record<string, string>
 ): StepOutcome {
   const answers = step.pty ?? []
   if (answers.length === 0) {
@@ -703,7 +741,11 @@ function runPtyStep(
   }
   const env: Record<string, string | null> = {}
   for (const [key, value] of Object.entries(step.env ?? {})) {
-    env[key] = value
+    // Interpolated for the same reason as in buildEnv: one rule for `env`,
+    // whichever way the step gets its stdin. `null` keeps its delete-the-
+    // variable meaning.
+    if (value === null) env[key] = null
+    else env[key] = interpolate(value, vars)
   }
   const result = runPty({
     cwd,
