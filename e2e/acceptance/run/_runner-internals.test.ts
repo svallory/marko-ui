@@ -30,7 +30,8 @@ import {
   buildEnv,
   ensurePinnedCliDir,
 } from "../lib/run-scenario.ts"
-import type { Scenario, ScenariosDoc, Step, TargetConfig } from "../lib/scenario-doc.ts"
+import type { Scenario, ScenariosDoc, Step } from "../lib/scenario-doc.ts"
+import type { TargetConfig } from "../lib/selection.ts"
 
 const target: TargetConfig = {
   kind: "tarball",
@@ -130,6 +131,31 @@ describe("acceptance · runner · a pinned cliVersion gets a directory to instal
     // The exact path resolveInvocation installs into, so a divergence between
     // the helper and its caller fails here rather than in a scenario.
     expect(pinned).toBe(join(workspace, ".acceptance-cli", "0.4.1"))
+  })
+
+  it("makes it a package root, or the install hoists into the scenario workspace", async () => {
+    // The scenario workspace has a package.json of its own — the CLI under test
+    // is installed there — and `bun add` inside an empty subdirectory of a
+    // package root installs into THAT root. Without a manifest here the install
+    // exits 0, hoists, and the invocation fails with "Cannot find module
+    // …/.acceptance-cli/0.4.1/node_modules/marko-ui/dist/index.js".
+    const workspace = await mkdtemp(join(tmpdir(), "marko-ui-acceptance-pinned-"))
+    await writeFile(
+      join(workspace, "package.json"),
+      JSON.stringify({ name: "workspace", private: true })
+    )
+    const pinned = ensurePinnedCliDir(workspace, "0.4.1")
+    const manifest = JSON.parse(await readFile(join(pinned, "package.json"), "utf8"))
+    expect(manifest.private).toBe(true)
+    expect(manifest.name).toBe("marko-ui-acceptance-cli-0.4.1")
+  })
+
+  it("leaves an existing manifest alone", async () => {
+    const workspace = await mkdtemp(join(tmpdir(), "marko-ui-acceptance-pinned-"))
+    const pinned = ensurePinnedCliDir(workspace, "0.4.1")
+    await writeFile(join(pinned, "package.json"), JSON.stringify({ name: "mine" }))
+    ensurePinnedCliDir(workspace, "0.4.1")
+    expect(JSON.parse(await readFile(join(pinned, "package.json"), "utf8")).name).toBe("mine")
   })
 
   it("is safe to call twice and does not empty a directory that is already installed", async () => {
