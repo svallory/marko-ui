@@ -566,6 +566,32 @@ flows:
       expect:
         exit: 0
         stdoutMatches: ["(?i)no updates found|up to date"]
+
+  # verify-clean, for the scenarios that install something other than button.
+  # Same three read-only commands and the same assertions as `verify-clean` —
+  # only the component `status` is asked to list differs, because these
+  # scenarios never install a button and a `status --json` that does not mention
+  # the component that is actually on disk is a correct answer, not a defect.
+  # One flow per component rather than a parameterised one: `use:` takes no
+  # arguments, and a flow asserted for `select` must not silently become the
+  # flow other scenarios run.
+  verify-clean-lists-style:
+    - name: status lists the installed component
+      command: status
+      args: ["--json"]
+      expect:
+        exit: 0
+        stdoutContains: '"style"'
+    - name: doctor passes
+      command: doctor
+      expect:
+        exit: 0
+        stdoutMatches: ["(?i)all checks passed"]
+    - name: diff reports no drift right after add
+      command: diff
+      expect:
+        exit: 0
+        stdoutMatches: ["(?i)no updates found|up to date"]
   # Build the app and assert the component really rendered. The build alone
   # proves nothing: marko-run emits a server bundle, not prerendered HTML.
   build-and-render-button:
@@ -2568,7 +2594,7 @@ scenarios:
             - path: src/styles/globals.css
               contains: "/* marko-ui:theme:start */"
           stdoutNotContains: "error"
-      - use: verify-clean
+      - use: verify-clean-lists-style
 
   # =========================================================================
   # kind: skills — AGENTS.md and the agent skills lifecycle
