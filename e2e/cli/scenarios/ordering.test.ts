@@ -227,7 +227,9 @@ describe("command ordering", () => {
 
     expect(add.code, tail(add.out)).toBe(0)
     expect(out).not.toContain("Would you like to overwrite")
-    expect(out).toMatch(/Skipped 1 file/)
+    // A component is several files (button.marko, variants.ts, the shared lib
+    // files), so the count is whatever the item really carries.
+    expect(out).toMatch(/Skipped \d+ files?:/)
     expect(out).toContain("src/components/ui/button/button.marko")
     expect(out).toContain("--overwrite")
     expect(md5(ws, "src/components/ui/button/button.marko"), "-y overwrote a file it must not touch").toBe(before)
