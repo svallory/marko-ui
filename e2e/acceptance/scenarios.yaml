@@ -1039,7 +1039,21 @@ scenarios:
     steps:
       - use: init-copy-vega-neutral
       - use: add-zag-machine-and-composite
+      # verify-clean asserts `status --json` lists "button", and
+      # build-and-render-button needs a wired Button route — so this scenario
+      # needs button installed too. It used add-zag-machine-and-composite only,
+      # so both flows asserted on a component the scenario never installed
+      # (observed: step 3, `stdout does not contain "\"button\""`).
+      - use: add-button
       - use: verify-clean
+      - name: wire Button into the home route
+        command: "@helper"
+        helper: wire-button
+        expect:
+          exit: 0
+          fileContains:
+            - path: src/routes/+page.marko
+              contains: "Acceptance Button"
       - use: build-and-render-button
       - name: the framework-specific skill is the one @marko/run gets
         command: agents
