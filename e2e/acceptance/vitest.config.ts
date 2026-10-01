@@ -27,9 +27,10 @@ try {
 
 const include =
   kinds === null
-    ? ["run/_filters.test.ts"]
+    ? ["run/_filters.test.ts", "run/_runner-internals.test.ts"]
     : [
         "run/_filters.test.ts",
+        "run/_runner-internals.test.ts",
         ...kinds.map((kind) => `run/${kind}.test.ts`),
         // The pre-runner acceptance files (the copy path, the import path,
         // add/doctor/diff, registry health) are folded into scenarios.yaml and
