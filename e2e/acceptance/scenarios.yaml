@@ -344,14 +344,17 @@ helpers:
   make-pnpm-workspace-with-ui:
     description: >
       Builds a pnpm workspace with two packages: the scaffolded Marko app moved
-      to `apps/web`, and a new `packages/ui` holding a package.json that depends
-      on the app via the `workspace:*` protocol, declares `marko` itself (it is
-      about to hold `.marko` components, so a package that does not depend on
-      marko is not a shape any real monorepo has — and the CLI's
-      isMarkoProject guard reads exactly that dependency), plus its own tsconfig.
-      Runs the workspace install so pnpm-lock.yaml sits at the root. This is the
-      "shared components package" layout: the components belong in packages/ui
-      and the app consumes them, not the reverse.
+      to `apps/web`, and a new `packages/ui` holding a `src/` directory, a
+      package.json that depends on the app via the `workspace:*` protocol,
+      declares `marko` itself (it is about to hold `.marko` components, so a
+      package that does not depend on marko is not a shape any real monorepo
+      has — and the CLI's isMarkoProject guard reads exactly that dependency),
+      plus its own tsconfig. Writes pnpm-workspace.yaml, because pnpm does NOT
+      read the `workspaces` field: without it packages/ui is not a workspace
+      member and its `workspace:*` dependency cannot resolve. Runs the workspace
+      install so pnpm-lock.yaml sits at the root. This is the "shared components
+      package" layout: the components belong in packages/ui and the app consumes
+      them, not the reverse.
     language: node
     cwd: "."
     source: |
@@ -369,7 +372,8 @@ helpers:
           2
         ) + "\n"
       )
-      fs.mkdirSync(path.join("packages", "ui"), { recursive: true })
+      fs.mkdirSync(path.join("packages", "ui", "src"), { recursive: true })
+      fs.writeFileSync("pnpm-workspace.yaml", "packages:\n  - \"apps/*\"\n  - \"packages/*\"\n")
       fs.writeFileSync(
         path.join("packages", "ui", "package.json"),
         JSON.stringify(
