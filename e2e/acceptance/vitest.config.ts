@@ -27,9 +27,13 @@ try {
 
 const include =
   kinds === null
-    ? ["run/_filters.test.ts"]
+    ? ["run/_filters.test.ts", "lib/pm.test.ts"]
     : [
         "run/_filters.test.ts",
+        // Pure argv tests, no pnpm/yarn/network: cheap enough to run in EVERY
+        // invocation, filtered or not, so a driver's flag cannot go missing
+        // between full-suite runs.
+        "lib/pm.test.ts",
         ...kinds.map((kind) => `run/${kind}.test.ts`),
         // The pre-runner acceptance files (the copy path, the import path,
         // add/doctor/diff, registry health) are folded into scenarios.yaml and
