@@ -10,6 +10,7 @@ import {
   markoProjectBelowSix,
   preFlightInit,
   shouldOfferMarkoInstall,
+  tailwindProjectBelowFour,
 } from "@/src/preflights/preflight-init"
 import * as ERRORS from "@/src/utils/errors"
 
@@ -107,6 +108,49 @@ describe("markoProjectBelowSix", () => {
   })
 })
 
+describe("tailwindProjectBelowFour", () => {
+  const markoDep = { dependencies: { marko: "^6.0.0" } }
+  it("flags a tailwindcss range that cannot resolve to v4", async () => {
+    const cwd = project({ dependencies: { ...markoDep.dependencies, tailwindcss: "^3.4.0" } })
+    expect(await tailwindProjectBelowFour(cwd)).toMatchObject({ reason: expect.stringContaining("^3.4.0") })
+  })
+  it("flags an installed v3 under a range that allows v4", async () => {
+    const cwd = project(
+      { dependencies: { ...markoDep.dependencies, tailwindcss: "*" } },
+      { "node_modules/tailwindcss/package.json": JSON.stringify({ name: "tailwindcss", version: "3.4.17" }) }
+    )
+    expect(await tailwindProjectBelowFour(cwd)).toMatchObject({ reason: expect.stringContaining("3.4.17") })
+  })
+  it("flags a tailwind.config with no tailwindcss dep and no v4 setup", async () => {
+    const cwd = project(markoDep, { "tailwind.config.js": "export default {}\n" })
+    expect(await tailwindProjectBelowFour(cwd)).toMatchObject({ reason: expect.stringContaining("tailwind.config.js") })
+  })
+  it("passes a tailwind.config when a stylesheet uses the v4 import", async () => {
+    const cwd = project(markoDep, {
+      "tailwind.config.js": "export default {}\n",
+      "src/styles/app.css": '@import "tailwindcss";\n',
+    })
+    expect(await tailwindProjectBelowFour(cwd)).toBe(null)
+  })
+  it("passes a tailwind.config when tailwindcss allows v4", async () => {
+    const cwd = project(
+      { dependencies: { ...markoDep.dependencies, tailwindcss: "^4.0.0" } },
+      { "tailwind.config.js": "export default {}\n" }
+    )
+    expect(await tailwindProjectBelowFour(cwd)).toBe(null)
+  })
+  it("passes a tailwind.config when a @tailwindcss/* v4 package is present", async () => {
+    const cwd = project(
+      { dependencies: markoDep.dependencies, devDependencies: { "@tailwindcss/vite": "^4.0.0" } },
+      { "tailwind.config.js": "export default {}\n" }
+    )
+    expect(await tailwindProjectBelowFour(cwd)).toBe(null)
+  })
+  it("passes a project with no Tailwind at all", async () => {
+    expect(await tailwindProjectBelowFour(project(markoDep))).toBe(null)
+  })
+})
+
 describe("preFlightInit version guards", () => {
   it("refuses a Marko 5 project, citing the upgrade guide", async () => {
     await expect(
@@ -119,7 +163,42 @@ describe("preFlightInit version guards", () => {
     )
     expect(errors).toEqual({})
   })
-        it("runInit on a Marko 5 project throws the refusal and writes nothing", async () => {
+  it("refuses a Tailwind v3 project, pointing at the upgrade tool", async () => {
+    await expect(
+      preFlightInit(
+        opts(project({ dependencies: { marko: "^6.0.0", tailwindcss: "^3.4.0" } }))
+      )
+    ).rejects.toThrow(/marko-ui requires Tailwind v4[\s\S]*@tailwindcss\/upgrade/)
+  })
+  it("uses the project's package runner in the upgrade command", async () => {
+    await expect(
+      preFlightInit(
+        opts(
+          project(
+            { dependencies: { marko: "^6.0.0", tailwindcss: "^3.4.0" } },
+            { "bun.lock": "" }
+          )
+        )
+      )
+    ).rejects.toThrow(/bunx @tailwindcss\/upgrade/)
+    await expect(
+      preFlightInit(
+        opts(
+          project(
+            { dependencies: { marko: "^6.0.0", tailwindcss: "^3.4.0" } },
+            { "pnpm-lock.yaml": "" }
+          )
+        )
+      )
+    ).rejects.toThrow(/pnpm dlx @tailwindcss\/upgrade/)
+  })
+  it("--force bypasses the Tailwind v3 check", async () => {
+    const { errors } = await preFlightInit(
+      opts(project({ dependencies: { marko: "^6.0.0", tailwindcss: "^3.4.0" } }), { force: true })
+    )
+    expect(errors).toEqual({})
+  })
+  it("runInit on a Marko 5 project throws the refusal and writes nothing", async () => {
     const cwd = project({ dependencies: { marko: "^5.37.0" } })
     await expect(runInit(opts(cwd))).rejects.toThrow(/marko-ui requires Marko 6/)
     const { existsSync } = await import("fs")

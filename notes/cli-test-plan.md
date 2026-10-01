@@ -156,6 +156,7 @@ Not covered: `bun.lockb`, `deno.lock`, Yarn Berry/`packageManager` field, `user-
 | id | project shape | expected | status |
 |---|---|---|---|
 | G01 | `marko: ^5` dependency | `init` exit 1, "marko-ui requires Marko 6" + upgrade link, nothing written; `--force` proceeds | pass |
+| G02 | `tailwindcss: ^3` + `tailwind.config.js` | `init` exit 1, "marko-ui requires Tailwind v4" + `bunx @tailwindcss/upgrade` (project's runner), nothing written; `--force` proceeds | pass |
 
 ### Ordering
 

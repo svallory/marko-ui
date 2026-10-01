@@ -3,7 +3,7 @@ import { initOptionsSchema, mayPromptForInit } from "@/src/commands/init"
 import { select } from "@/src/utils/clack"
 import { isMonorepoRoot } from "@/src/utils/get-monorepo-info"
 import { getPackageInfo } from "@/src/utils/get-package-info"
-import { getPackageManager } from "@/src/utils/get-package-manager"
+import { getPackageManager, getPackageRunner } from "@/src/utils/get-package-manager"
 import {
   formatInstallCommand,
   installWithPackageManager,
@@ -21,6 +21,7 @@ import { CommandError } from "@/src/utils/handle-error"
 import { logger } from "@/src/utils/logger"
 import { spinner } from "@/src/utils/spinner"
 import fs from "fs-extra"
+import fg from "fast-glob"
 import { z } from "zod"
 
 /**
@@ -77,6 +78,72 @@ export function markoProjectBelowSix(cwd: string): boolean {
   // No direct `marko` range (e.g. only `@marko/run`, which is 6-only): pass.
   if (!range) return false
   return rangeExcludesMajor(range, 6)
+}
+
+/**
+ * Whether the project's Tailwind setup is v3-shaped: the installed or
+ * declared `tailwindcss` cannot reach 4, or a `tailwind.config.*` file
+ * exists with no v4 setup anywhere (no `tailwindcss` 4 range, no
+ * `@import "tailwindcss"` stylesheet, no `@tailwindcss/*` v4 package).
+ */
+export async function tailwindProjectBelowFour(
+  cwd: string
+): Promise<{ reason: string } | null> {
+  const installed = installedVersion(cwd, "tailwindcss")
+  if (installed && /^[0-3]\./.test(installed)) {
+    return { reason: `tailwindcss ${installed} is installed` }
+  }
+
+  let packageJson
+  try {
+    packageJson = fs.readJsonSync(path.resolve(cwd, "package.json"))
+  } catch {
+    return null
+  }
+  const allDeps = {
+    ...(packageJson?.dependencies ?? {}),
+    ...(packageJson?.devDependencies ?? {}),
+    ...(packageJson?.peerDependencies ?? {}),
+  }
+
+  const range = declaredRange(packageJson, "tailwindcss")
+  if (!installed && range && rangeExcludesMajor(range, 4)) {
+    return { reason: `tailwindcss ${range} cannot resolve to v4` }
+  }
+
+  // The range allowing 4 (or tailwindcss being absent) is not the whole
+  // story: a v3 config file with no v4 marker anywhere is a v3 project.
+  // A `@tailwindcss/*` package (the v4 plugin/postcss/cli) counts as a v4
+  // setup, as does a stylesheet with the v4 import.
+  if (installed || (range && !rangeExcludesMajor(range, 4))) return null
+  if (Object.keys(allDeps).some((name) => name.startsWith("@tailwindcss/"))) {
+    return null
+  }
+
+  const configFiles = await fg.glob("tailwind.config.{js,cjs,mjs,ts}", {
+    cwd,
+    deep: 3,
+    ignore: ["**/node_modules/**"],
+    suppressErrors: true,
+  })
+  if (!configFiles.length) return null
+
+  const cssFiles = await fg.glob(["**/*.css", "**/*.scss"], {
+    cwd,
+    deep: 5,
+    ignore: ["**/node_modules/**", "public", "dist", "build", ".marko-run"],
+    suppressErrors: true,
+  })
+  for (const file of cssFiles) {
+    const contents = await fs.readFile(path.resolve(cwd, file), "utf8")
+    if (
+      contents.includes('@import "tailwindcss"') ||
+      contents.includes("@import 'tailwindcss'")
+    ) {
+      return null
+    }
+  }
+  return { reason: `it has ${configFiles[0]} and no Tailwind v4 setup` }
 }
 
 /** What each offered choice installs. `vite` is only added when absent. */
@@ -257,6 +324,23 @@ export async function preFlightInit(
       throw new CommandError(
         `marko-ui requires Marko 6, but the Marko this project resolves cannot satisfy it.\nUpgrade to Marko 6 first (${highlighter.info(
           MARKO_6_UPGRADE_URL
+        )}), then run ${highlighter.info(
+          "marko-ui init"
+        )} again. To skip this check, pass ${highlighter.info("--force")}.`
+      )
+    }
+
+    const tailwindV3 = await tailwindProjectBelowFour(options.cwd)
+    if (tailwindV3) {
+      projectSpinner?.fail()
+      const runner = await getPackageRunner(options.cwd)
+      throw new CommandError(
+        `marko-ui requires Tailwind v4, but this project is on v3 (${
+          tailwindV3.reason
+        }).\nRun the official upgrade tool first: ${highlighter.info(
+          `${runner} @tailwindcss/upgrade`
+        )} (${highlighter.info(
+          "https://tailwindcss.com/docs/upgrade-guide"
         )}), then run ${highlighter.info(
           "marko-ui init"
         )} again. To skip this check, pass ${highlighter.info("--force")}.`
