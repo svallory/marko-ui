@@ -1820,6 +1820,19 @@ scenarios:
   - id: config.unbacked-custom-alias-doctor-fails
     title: "a custom alias nothing backs is a doctor failure (exit 3), not a warning"
     kind: config-shape
+    status: known-bug
+    bug: >
+      doctor on a project whose components.json carries an unbacked custom
+      alias (#custom/*) exits 1 with \"Something went wrong … Could not resolve
+      the following aliases in <cwd>: components, ui.\" — getConfig's
+      assertResolvedAliases (src/utils/get-config.ts:242-268) throws while
+      doctor.ts:196 is loading the config, so the check that exists for exactly
+      this case (checkAliases, src/commands/doctor.ts:348-371 → status fail →
+      exit 3, naming aliases.components) never runs. Repro: marko-ui init
+      --yes, set aliases.components AND aliases.ui to \"#custom/*\", run
+      \`marko-ui doctor\` → exit 1, generic error; expected exit 3 with
+      \"Import alias (#custom/*)\" and the aliases.components fix. Found by
+      accept-sweep-a under the packed tarball target, 2026-10-01.
     tags: [os:linux, os:macos, kind:alias, speed:fast]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
