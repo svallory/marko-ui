@@ -121,7 +121,10 @@ export const search = new Command()
         if (fullConfig) {
           config = configWithDefaults(fullConfig)
         }
-      } catch {
+      } catch (error) {
+        // A refusal (React components.json) is not a "partial config" — it
+        // must reach the user, not be shadowed over.
+        if (error instanceof CommandError) throw error
         // Use shadow config if getConfig fails (partial components.json).
       }
 

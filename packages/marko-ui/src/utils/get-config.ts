@@ -329,8 +329,11 @@ export async function getRawConfig(
  * Marko. An unreadable package.json proves nothing and is ignored.
  *
  * Lives here — the single place every command's config load funnels through
- * — rather than per command, so `add`, `diff`, `doctor`, `agents`, `eject`,
- * `info`, `search`, `view` and `registry build` all refuse identically.
+ * — rather than per command, so `add`, `status`, `diff`, `doctor`, `agents`,
+ * `eject`, `info`, `search`, `show` and `registry build` all refuse
+ * identically. The commands that legitimately bypass this loader (`registry
+ * list`/`add`/`remove` tolerate PARTIAL configs and read the file directly)
+ * call this same detector themselves — the rule exists once, here.
  * (`init` refuses earlier: an existing components.json, React or not, means
  * "already initialized".)
  */

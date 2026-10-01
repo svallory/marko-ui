@@ -1,5 +1,6 @@
 import path from "path"
 import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
+import { assertNotReactComponentsJson } from "@/src/utils/get-config"
 import { handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
@@ -52,6 +53,10 @@ export async function removeRegistriesFromConfig(
       )}.`
     )
   }
+
+  // This command reads/writes components.json directly, bypassing
+  // getRawConfig's React refusal — run the same detector before any delete.
+  assertNotReactComponentsJson(cwd, configPath)
 
   const config = await fs.readJson(configPath)
   const existing: Record<string, unknown> = config.registries ?? {}

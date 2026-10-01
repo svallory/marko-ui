@@ -6,7 +6,7 @@ import { validateRegistryConfigForItems } from "@/src/registry/validator"
 import { rawConfigSchema } from "@/src/schema"
 import { loadEnvFiles } from "@/src/utils/env-loader"
 import { getConfig } from "@/src/utils/get-config"
-import { CleanExit, handleError } from "@/src/utils/handle-error"
+import { CleanExit, CommandError, handleError } from "@/src/utils/handle-error"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
 import { Command } from "commander"
 import fsExtra from "fs-extra"
@@ -58,7 +58,10 @@ export const view = new Command()
         if (fullConfig) {
           config = configWithDefaults(fullConfig)
         }
-      } catch {
+      } catch (error) {
+        // A refusal (React components.json) is not a "partial config" — it
+        // must reach the user, not be shadowed over.
+        if (error instanceof CommandError) throw error
         // Use shadow config if getConfig fails (partial components.json).
       }
 
