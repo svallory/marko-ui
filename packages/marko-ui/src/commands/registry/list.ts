@@ -1,10 +1,12 @@
 import path from "path"
 import { getRegistries, getRegistriesConfig } from "@/src/registry/api"
 import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
+import { assertNotReactComponentsJson } from "@/src/utils/get-config"
 import { handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { Command } from "commander"
+import fs from "fs-extra"
 import { z } from "zod"
 
 const listOptionsSchema = z.object({
@@ -102,6 +104,13 @@ async function collectRegistries(
 
     // Merged view: package.json-declared registries + components.json —
     // the same set the resolver actually uses.
+    // getRegistriesConfig reads components.json directly (it tolerates
+    // partial configs), so the React-config refusal in getRawConfig never
+    // fires on this path — run the same detector explicitly first.
+    const componentsJsonPath = path.resolve(cwd, "components.json")
+    if (fs.existsSync(componentsJsonPath)) {
+      assertNotReactComponentsJson(cwd, componentsJsonPath)
+    }
     const config = await getRegistriesConfig(cwd).catch(() => null)
     for (const [name, entry] of Object.entries(config?.registries ?? {})) {
       if (seen.has(name)) {

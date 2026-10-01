@@ -52,9 +52,9 @@ path filter (the first-run harness was not covered by it either).
 Expectations were written before running. Where the CLI disagreed it is a
 `fail`, not a changed expectation — with one exception: S08 (see note).
 
-## Result: 80 scenarios — 80 pass, 0 known failures
+## Result: 84 scenarios — 84 pass, 0 known failures
 
-(`fix/cli-init-robustness` after merging `feat/agent-onboarding`: `Tests  80 passed`; marks removed for D5/S06, D6, D7, D9, D10, D12.) (Round-4 run on `chore/cli-scenarios-flip`: `Tests  68 passed | 12 expected fail (80)`; 20 marks removed (incl. S05d, O11b after fixture fixes) (D1, D2 and most of D5/S06b). Before: `48 passed | 32 expected fail`. Round 2 added 7 known-failure scenarios: S05c, S05d, S06b, S09d, S09e, O07b, O11b; 4 of them carry a two-defect mark `Dx+Dy`.)
+(`fix/cli-guards` round 2 added G04 (every config-loading command vs a React fixture): `Tests 84 passed`; round 1 added the 3 Guards scenarios G01–G03. Earlier: `fix/cli-init-robustness` after merging `feat/agent-onboarding`: `Tests  80 passed`; marks removed for D5/S06, D6, D7, D9, D10, D12.) (Round-4 run on `chore/cli-scenarios-flip`: `Tests  68 passed | 12 expected fail (80)`; 20 marks removed (incl. S05d, O11b after fixture fixes) (D1, D2 and most of D5/S06b). Before: `48 passed | 32 expected fail`. Round 2 added 7 known-failure scenarios: S05c, S05d, S06b, S09d, S09e, O07b, O11b; 4 of them carry a two-defect mark `Dx+Dy`.)
 
 Status column: **pass**, **fail Dn** (known failure, see Defects), **not automated**.
 
@@ -151,6 +151,15 @@ Not covered: `bun.lockb`, `deno.lock`, Yarn Berry/`packageManager` field, `user-
 | E09 | real TTY, `init` with no flags | asks base color / distribution / style; Enter through all three equals `--defaults` | pass — automated as the pty suite in `packages/marko-ui/src/commands/init.test.ts` (`expect` drives the built CLI; needs `expect` installed, CI installs it) |
 | E10 | Windows paths, `bun.lockb`, Yarn Berry | see note | **not automated** — CI is ubuntu only; macOS/Linux path behaviour is covered by S15/S16 |
 
+### Guards (version / foreign-config refusals)
+
+| id | project shape | expected | status |
+|---|---|---|---|
+| G01 | `marko: ^5` dependency | `init` exit 1, "marko-ui requires Marko 6" + upgrade link, nothing written; `--force` proceeds | pass |
+| G02 | `tailwindcss: ^3` + `tailwind.config.js` | `init` exit 1, "marko-ui requires Tailwind v4" + `bunx @tailwindcss/upgrade` (project's runner), nothing written; `--force` proceeds | pass |
+| G03 | shadcn/ui-for-React `components.json` (react dep, no Marko) | `add` exit 1, "belongs to shadcn/ui for React" + `--cwd <app>` hint, nothing installed | pass |
+| G04 | same, 13 config-reading/writing commands (`status`, `add`, `diff`, `doctor`, `agents sync`, `eject`, `search`, `show`, `registry build`/`list`/`add`/`remove`) | each exits 1 with the refusal; components.json byte-identical (caught `search`/`show`/`registry list` swallowing it and `registry add` writing into it) | pass |
+
 ### Ordering
 
 | id | sequence | expected | status |
@@ -201,8 +210,7 @@ state behind on failure (D7, D12); `.agents/` gitignored fresh clone (K02).
 
 `add --all`, `add --path`, `add --dry-run` in odd structures; `components.json`
 with non-default `aliases`; `marko-ui init <component>` (init + add in one);
-`search`/`docs`/`show` offline; `init` over a project with an existing
-`components.json` from shadcn (React) — hostile-input territory; yarn Berry /
+`search`/`docs`/`show` offline; yarn Berry /
 pnpm workspaces `workspace:` deps; build-output checks for non-stock structures
 (scenarios assert CLI behaviour; only `first-run.sh` builds). Reviewer's additional gaps, each with a reason: combined axes (spaces + symlink +
 monorepo, `--cwd` through a symlink in a monorepo, Tailwind-wired monorepo) —

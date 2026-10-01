@@ -7,8 +7,10 @@ import { runInit } from "@/src/commands/init"
 import {
   installMarko,
   isMarkoProject,
+  markoProjectBelowSix,
   preFlightInit,
   shouldOfferMarkoInstall,
+  tailwindProjectBelowFour,
 } from "@/src/preflights/preflight-init"
 import * as ERRORS from "@/src/utils/errors"
 
@@ -69,6 +71,285 @@ describe("isMarkoProject", () => {
   })
   it("does not claim a corrupt package.json is non-Marko", () => {
     expect(isMarkoProject(project("{ not json"))).toBe(true)
+  })
+})
+
+describe("markoProjectBelowSix", () => {
+  it.each(["^5.37.0", "~5", "5.37.0", "5", "5.x", ">=5 <6"])(
+    "is true when the declared marko range cannot satisfy 6: %s",
+    (range) => {
+      expect(markoProjectBelowSix(project({ dependencies: { marko: range } }))).toBe(true)
+    }
+  )
+  it.each(["^6.0.0", "6", ">=5", "*", "latest", "workspace:*"])(
+    "is false when the range allows 6: %s",
+    (range) => {
+      expect(markoProjectBelowSix(project({ dependencies: { marko: range } }))).toBe(false)
+    }
+  )
+  it("is false when only @marko/run is declared (it is 6-only)", () => {
+    expect(
+      markoProjectBelowSix(project({ dependencies: { "@marko/run": "^0.9.0" } }))
+    ).toBe(false)
+  })
+  it("prefers the installed version over a range that would allow 6", () => {
+    const cwd = project(
+      { dependencies: { marko: "*" } },
+      { "node_modules/marko/package.json": JSON.stringify({ name: "marko", version: "5.37.0" }) }
+    )
+    expect(markoProjectBelowSix(cwd)).toBe(true)
+  })
+  it("prefers the installed version over a range that excludes 6", () => {
+    const cwd = project(
+      { dependencies: { marko: "^5" } },
+      { "node_modules/marko/package.json": JSON.stringify({ name: "marko", version: "6.3.46" }) }
+    )
+    expect(markoProjectBelowSix(cwd)).toBe(false)
+  })
+})
+
+describe("tailwindProjectBelowFour", () => {
+  const markoDep = { dependencies: { marko: "^6.0.0" } }
+  it("flags a tailwindcss range that cannot resolve to v4", async () => {
+    const cwd = project({ dependencies: { ...markoDep.dependencies, tailwindcss: "^3.4.0" } })
+    expect(await tailwindProjectBelowFour(cwd)).toMatchObject({ reason: expect.stringContaining("^3.4.0") })
+  })
+  it("flags an installed v3 under a range that allows v4", async () => {
+    const cwd = project(
+      { dependencies: { ...markoDep.dependencies, tailwindcss: "*" } },
+      { "node_modules/tailwindcss/package.json": JSON.stringify({ name: "tailwindcss", version: "3.4.17" }) }
+    )
+    expect(await tailwindProjectBelowFour(cwd)).toMatchObject({ reason: expect.stringContaining("3.4.17") })
+  })
+  it("flags a tailwind.config with no tailwindcss dep and no v4 setup", async () => {
+    const cwd = project(markoDep, { "tailwind.config.js": "export default {}\n" })
+    expect(await tailwindProjectBelowFour(cwd)).toMatchObject({ reason: expect.stringContaining("tailwind.config.js") })
+  })
+  it("passes a tailwind.config when a stylesheet uses the v4 import", async () => {
+    const cwd = project(markoDep, {
+      "tailwind.config.js": "export default {}\n",
+      "src/styles/app.css": '@import "tailwindcss";\n',
+    })
+    expect(await tailwindProjectBelowFour(cwd)).toBe(null)
+  })
+  it("passes a tailwind.config when tailwindcss allows v4", async () => {
+    const cwd = project(
+      { dependencies: { ...markoDep.dependencies, tailwindcss: "^4.0.0" } },
+      { "tailwind.config.js": "export default {}\n" }
+    )
+    expect(await tailwindProjectBelowFour(cwd)).toBe(null)
+  })
+  it("passes a tailwind.config when a @tailwindcss/* v4 package is present", async () => {
+    const cwd = project(
+      { dependencies: markoDep.dependencies, devDependencies: { "@tailwindcss/vite": "^4.0.0" } },
+      { "tailwind.config.js": "export default {}\n" }
+    )
+    expect(await tailwindProjectBelowFour(cwd)).toBe(null)
+  })
+  it("passes a project with no Tailwind at all", async () => {
+    expect(await tailwindProjectBelowFour(project(markoDep))).toBe(null)
+  })
+  it("passes a stylesheet importing a tailwindcss submodule path (v4 theme.css)", async () => {
+    const cwd = project(markoDep, {
+      "tailwind.config.js": "export default {}\n",
+      "src/styles/app.css": '@import "tailwindcss/theme.css";\n',
+    })
+    expect(await tailwindProjectBelowFour(cwd)).toBe(null)
+  })
+})
+
+describe("tailwindProjectBelowFour monorepo walk (hoisted Tailwind)", () => {
+  const appFiles = {
+    "app/package.json": JSON.stringify({ name: "app", dependencies: { marko: "^6.0.0" } }),
+    "app/tailwind.config.js": "export default {}\n",
+  }
+  const monorepo = (rootPkg: object, extra: Record<string, string> = {}) => {
+    const root = project(
+      { name: "root", workspaces: ["app"], ...rootPkg },
+      { ...appFiles, ...extra }
+    )
+    return { root, app: path.join(root, "app") }
+  }
+
+  it("passes a stale-config app when the workspace root declares tailwindcss ^4", async () => {
+    const { app } = monorepo({ devDependencies: { tailwindcss: "^4.0.0" } })
+    expect(await tailwindProjectBelowFour(app)).toBe(null)
+  })
+  it("passes a stale-config app when tailwindcss v4 is installed at the root", async () => {
+    const { app } = monorepo(
+      { name: "root" },
+      { "node_modules/tailwindcss/package.json": JSON.stringify({ name: "tailwindcss", version: "4.1.0" }) }
+    )
+    expect(await tailwindProjectBelowFour(app)).toBe(null)
+  })
+  it("refuses when the workspace root declares a v3 range (hoisted v3 is what runs)", async () => {
+    const { app } = monorepo({ devDependencies: { tailwindcss: "^3.4.0" } })
+    expect(await tailwindProjectBelowFour(app)).toMatchObject({
+      reason: expect.stringContaining("^3.4.0"),
+    })
+  })
+  it("refuses when tailwindcss v3 is installed at the root", async () => {
+    const { app } = monorepo(
+      { name: "root" },
+      { "node_modules/tailwindcss/package.json": JSON.stringify({ name: "tailwindcss", version: "3.4.17" }) }
+    )
+    expect(await tailwindProjectBelowFour(app)).toMatchObject({
+      reason: expect.stringContaining("3.4.17"),
+    })
+  })
+  it("nearest evidence wins: an app-level v3 range refuses even under a v4 root", async () => {
+    const { app } = monorepo(
+      { devDependencies: { tailwindcss: "^4.0.0" } },
+      {
+        "app/package.json": JSON.stringify({
+          name: "app",
+          dependencies: { marko: "^6.0.0", tailwindcss: "^3.4.0" },
+        }),
+      }
+    )
+    expect(await tailwindProjectBelowFour(app)).toMatchObject({
+      reason: expect.stringContaining("^3.4.0"),
+    })
+  })
+  it("does not walk past the workspace root", async () => {
+    // The root has no tailwindcss; the walk must stop there (config-file
+    // branch), not climb into the machine's temp-dir ancestors.
+    const { app } = monorepo({ name: "root" })
+    expect(await tailwindProjectBelowFour(app)).toMatchObject({
+      reason: expect.stringContaining("tailwind.config.js"),
+    })
+  })
+
+  it("ignores an UNRELATED ancestor's tailwindcss ^3 (no workspaces claim, never installed)", async () => {
+    // The reviewer's repro: a legit Marko app below a scratch parent whose
+    // package.json happens to declare tailwindcss must not be refused.
+    const root = project(
+      { name: "unrelated-parent", devDependencies: { tailwindcss: "^3.4.1" } },
+      {
+        "code/app/package.json": JSON.stringify({ name: "app", dependencies: { marko: "^6.0.0" } }),
+        "code/app/tailwind.config.js": "export default {}\n",
+        "code/app/src/app.css": '@import "tailwindcss";\n',
+      }
+    )
+    expect(await tailwindProjectBelowFour(path.join(root, "code/app"))).toBe(null)
+  })
+  it("still refuses the config-file shape under an unrelated ancestor (round-1 semantics unchanged)", async () => {
+    const root = project(
+      { name: "unrelated-parent", devDependencies: { tailwindcss: "^3.4.1" } },
+      {
+        "code/app/package.json": JSON.stringify({ name: "app", dependencies: { marko: "^6.0.0" } }),
+        "code/app/tailwind.config.js": "export default {}\n",
+      }
+    )
+    // Refused for its OWN shape (config file, no v4 setup) — the reason must
+    // not name the ancestor's range.
+    expect(await tailwindProjectBelowFour(path.join(root, "code/app"))).toMatchObject({
+      reason: expect.stringContaining("tailwind.config.js"),
+    })
+  })
+  it("honors an installed v3 at an unrelated ancestor (node resolution genuinely reaches it)", async () => {
+    const root = project(
+      { name: "unrelated-parent" },
+      {
+        "node_modules/tailwindcss/package.json": JSON.stringify({ name: "tailwindcss", version: "3.4.17" }),
+        "code/app/package.json": JSON.stringify({ name: "app", dependencies: { marko: "^6.0.0" } }),
+        "code/app/tailwind.config.js": "export default {}\n",
+      }
+    )
+    expect(await tailwindProjectBelowFour(path.join(root, "code/app"))).toMatchObject({
+      reason: expect.stringContaining("3.4.17"),
+    })
+  })
+  it("refuses when a real workspace root's v3 covers the app (workspaces glob match)", async () => {
+    const root = project(
+      { name: "root", workspaces: ["code/*"], devDependencies: { tailwindcss: "^3.4.0" } },
+      {
+        "code/app/package.json": JSON.stringify({ name: "app", dependencies: { marko: "^6.0.0" } }),
+        "code/app/tailwind.config.js": "export default {}\n",
+      }
+    )
+    expect(await tailwindProjectBelowFour(path.join(root, "code/app"))).toMatchObject({
+      reason: expect.stringContaining("^3.4.0"),
+    })
+  })
+  it("ignores a workspace root whose globs do NOT cover the app", async () => {
+    const root = project(
+      { name: "root", workspaces: ["other/*"], devDependencies: { tailwindcss: "^3.4.0" } },
+      {
+        "code/app/package.json": JSON.stringify({ name: "app", dependencies: { marko: "^6.0.0" } }),
+        "code/app/tailwind.config.js": "export default {}\n",
+        "code/app/src/app.css": '@import "tailwindcss";\n',
+      }
+    )
+    expect(await tailwindProjectBelowFour(path.join(root, "code/app"))).toBe(null)
+  })
+  it("honors a pnpm-workspace.yaml that covers the app", async () => {
+    const root = project(
+      { name: "root", devDependencies: { tailwindcss: "^3.4.0" } },
+      {
+        "pnpm-workspace.yaml": 'packages:\n  - "code/*"\n',
+        "code/app/package.json": JSON.stringify({ name: "app", dependencies: { marko: "^6.0.0" } }),
+        "code/app/tailwind.config.js": "export default {}\n",
+      }
+    )
+    expect(await tailwindProjectBelowFour(path.join(root, "code/app"))).toMatchObject({
+      reason: expect.stringContaining("^3.4.0"),
+    })
+  })
+})
+
+describe("preFlightInit version guards", () => {
+  it("refuses a Marko 5 project, citing the upgrade guide", async () => {
+    await expect(
+      preFlightInit(opts(project({ dependencies: { marko: "^5.37.0" } })))
+    ).rejects.toThrow(/marko-ui requires Marko 6[\s\S]*markojs\.com/)
+  })
+  it("--force bypasses the Marko version check", async () => {
+    const { errors } = await preFlightInit(
+      opts(project({ dependencies: { marko: "^5.37.0" } }), { force: true })
+    )
+    expect(errors).toEqual({})
+  })
+  it("refuses a Tailwind v3 project, pointing at the upgrade tool", async () => {
+    await expect(
+      preFlightInit(
+        opts(project({ dependencies: { marko: "^6.0.0", tailwindcss: "^3.4.0" } }))
+      )
+    ).rejects.toThrow(/marko-ui requires Tailwind v4[\s\S]*@tailwindcss\/upgrade/)
+  })
+  it("uses the project's package runner in the upgrade command", async () => {
+    await expect(
+      preFlightInit(
+        opts(
+          project(
+            { dependencies: { marko: "^6.0.0", tailwindcss: "^3.4.0" } },
+            { "bun.lock": "" }
+          )
+        )
+      )
+    ).rejects.toThrow(/bunx @tailwindcss\/upgrade/)
+    await expect(
+      preFlightInit(
+        opts(
+          project(
+            { dependencies: { marko: "^6.0.0", tailwindcss: "^3.4.0" } },
+            { "pnpm-lock.yaml": "" }
+          )
+        )
+      )
+    ).rejects.toThrow(/pnpm dlx @tailwindcss\/upgrade/)
+  })
+  it("--force bypasses the Tailwind v3 check", async () => {
+    const { errors } = await preFlightInit(
+      opts(project({ dependencies: { marko: "^6.0.0", tailwindcss: "^3.4.0" } }), { force: true })
+    )
+    expect(errors).toEqual({})
+  })
+  it("runInit on a Marko 5 project throws the refusal and writes nothing", async () => {
+    const cwd = project({ dependencies: { marko: "^5.37.0" } })
+    await expect(runInit(opts(cwd))).rejects.toThrow(/marko-ui requires Marko 6/)
+    const { existsSync } = await import("fs")
+    expect(existsSync(path.join(cwd, "components.json"))).toBe(false)
   })
 })
 
