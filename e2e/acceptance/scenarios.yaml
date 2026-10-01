@@ -932,7 +932,11 @@ scenarios:
         expect:
           exit: 0
           jsonPath:
-            - { source: stdout, pointer: "/commands", equals: "<exists>" }
+            # The manifest wraps everything in data: buildManifest returns
+            # { $type, version, ok, data: { name, cliVersion, commands, … } }
+            # (commands/manifest.ts:61-68), so the pointer that resolves is
+            # /data/commands; /commands does not exist in the output.
+            - { source: stdout, pointer: "/data/commands", equals: "<exists>" }
       - use: init-copy-vega-neutral
       - name: registry list resolves the built-in @marko-ui registry
         command: registry
