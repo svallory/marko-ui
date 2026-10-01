@@ -3436,7 +3436,20 @@ scenarios:
     steps:
       - use: init-copy-vega-neutral
       - use: add-zag-machine-and-composite
+      # verify-clean asserts `status --json` lists "button" and
+      # build-and-render-button needs a wired Button route, so button must be
+      # installed and wired here too (first CI run: step 3 `stdout does not
+      # contain "\"button\""` — the same defect kind.marko-run-app had).
+      - use: add-button
       - use: verify-clean
+      - name: wire Button into the home route
+        command: "@helper"
+        helper: wire-button
+        expect:
+          exit: 0
+          fileContains:
+            - path: src/routes/+page.marko
+              contains: "Acceptance Button"
       - use: build-and-render-button
 
   # =========================================================================
