@@ -377,7 +377,8 @@ whose `relay()` helper shims `bun, npm, npx, pnpm, yarn` and leaves `bunx` real
 `withShims(ws)` with `ALL_SHIMS`, `bunx` included, so it never reaches npm — it
 does fetch the locally served registry on :4470). The runner comes from the
 fixture's lockfile (`bun.lock` → `bunx`), so the relay is the only thing in the
-suite that can reach the network.
+suite that can reach the network — and what it reaches is npm, to fetch the
+pinned `skills` package (the registry itself is the locally served one).
 
 There is no non-destructive way to run the relay cold. Bun's package cache is
 `~/.cache/.bun/install/cache`; `BUN_INSTALL` and `XDG_CACHE_HOME` both redirect
@@ -391,8 +392,40 @@ run; and even bypassing that, an already-resolved package still resolves in
 without ever creating the redirected one (`--no-cache` changes nothing: it
 governs the manifest cache, not the package entry). Seeing the first fetch means
 moving that entry out of the shared cache by hand and running vitest directly
-against `e2e/cli/scenarios/*.test.ts` with the registry served — put it back
-afterwards. A scenario also cannot outlive the harness: `cli()`'s default 60s
+against `e2e/cli/scenarios/*.test.ts` with the registry served. The scenario
+config sets its own `root`, so the obvious form collects nothing at all and
+exits 0:
+
+```bash
+bunx vitest list e2e/cli/scenarios/ordering.test.ts   # exit 0, empty output
+```
+
+The working form is the full sequence — build, serve on :4470, stash the
+pinned `skills@<version>@@@1` entry out of `~/.cache/.bun/install/cache`, run
+with `REGISTRY_URL` and the scenarios config, then restore the entry (a killed
+run leaves your cache short, which is why the restore is not optional):
+
+```bash
+flock /tmp/marko-ui-heavy.lock bash -c '
+set -uo pipefail
+REGISTRY_PORT=4470
+bun run --filter marko-ui build &&
+  REGISTRY_BASE_URL="http://localhost:$REGISTRY_PORT/r" bun tooling/build-registry.ts || exit 1
+SERVE_ROOT="$PWD/apps/docs/public" SERVE_PORT="$REGISTRY_PORT" \
+  bun e2e/cli/serve.ts >/dev/null 2>&1 &
+server_pid=$!
+trap "kill $server_pid 2>/dev/null" EXIT
+until curl -fsS -o /dev/null "http://localhost:$REGISTRY_PORT/r/style.json"; do sleep 0.5; done
+mv ~/.cache/.bun/install/cache/skills@1.7.0@@@1 /tmp/   # the pinned entry
+REGISTRY_URL="http://localhost:$REGISTRY_PORT/r" \
+  bunx vitest run --config e2e/cli/scenarios/vitest.config.ts ordering.test.ts
+mv /tmp/skills@1.7.0@@@1 ~/.cache/.bun/install/cache/     # always put it back
+'
+```
+
+(`bunx vitest list` and the file filter are both misleading: the filter matches
+against paths relative to the config's root, and the root vitest config does not
+include `e2e/` at all.) A scenario also cannot outlive the harness: `cli()`'s default 60s
 timeout (`environments.test.ts` lowers it to 30s
 in four `init`/`agents sync` scenarios, and to 45s in the two that point at a
 dead registry, `:73` and `:83`) and vitest's 90s `testTimeout` both fire before
