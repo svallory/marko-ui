@@ -7,6 +7,7 @@ import { runInit } from "@/src/commands/init"
 import {
   installMarko,
   isMarkoProject,
+  markoProjectBelowSix,
   preFlightInit,
   shouldOfferMarkoInstall,
 } from "@/src/preflights/preflight-init"
@@ -69,6 +70,60 @@ describe("isMarkoProject", () => {
   })
   it("does not claim a corrupt package.json is non-Marko", () => {
     expect(isMarkoProject(project("{ not json"))).toBe(true)
+  })
+})
+
+describe("markoProjectBelowSix", () => {
+  it.each(["^5.37.0", "~5", "5.37.0", "5", "5.x", ">=5 <6"])(
+    "is true when the declared marko range cannot satisfy 6: %s",
+    (range) => {
+      expect(markoProjectBelowSix(project({ dependencies: { marko: range } }))).toBe(true)
+    }
+  )
+  it.each(["^6.0.0", "6", ">=5", "*", "latest", "workspace:*"])(
+    "is false when the range allows 6: %s",
+    (range) => {
+      expect(markoProjectBelowSix(project({ dependencies: { marko: range } }))).toBe(false)
+    }
+  )
+  it("is false when only @marko/run is declared (it is 6-only)", () => {
+    expect(
+      markoProjectBelowSix(project({ dependencies: { "@marko/run": "^0.9.0" } }))
+    ).toBe(false)
+  })
+  it("prefers the installed version over a range that would allow 6", () => {
+    const cwd = project(
+      { dependencies: { marko: "*" } },
+      { "node_modules/marko/package.json": JSON.stringify({ name: "marko", version: "5.37.0" }) }
+    )
+    expect(markoProjectBelowSix(cwd)).toBe(true)
+  })
+  it("prefers the installed version over a range that excludes 6", () => {
+    const cwd = project(
+      { dependencies: { marko: "^5" } },
+      { "node_modules/marko/package.json": JSON.stringify({ name: "marko", version: "6.3.46" }) }
+    )
+    expect(markoProjectBelowSix(cwd)).toBe(false)
+  })
+})
+
+describe("preFlightInit version guards", () => {
+  it("refuses a Marko 5 project, citing the upgrade guide", async () => {
+    await expect(
+      preFlightInit(opts(project({ dependencies: { marko: "^5.37.0" } })))
+    ).rejects.toThrow(/marko-ui requires Marko 6[\s\S]*markojs\.com/)
+  })
+  it("--force bypasses the Marko version check", async () => {
+    const { errors } = await preFlightInit(
+      opts(project({ dependencies: { marko: "^5.37.0" } }), { force: true })
+    )
+    expect(errors).toEqual({})
+  })
+        it("runInit on a Marko 5 project throws the refusal and writes nothing", async () => {
+    const cwd = project({ dependencies: { marko: "^5.37.0" } })
+    await expect(runInit(opts(cwd))).rejects.toThrow(/marko-ui requires Marko 6/)
+    const { existsSync } = await import("fs")
+    expect(existsSync(path.join(cwd, "components.json"))).toBe(false)
   })
 })
 

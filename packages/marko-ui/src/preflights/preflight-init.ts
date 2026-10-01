@@ -10,6 +10,11 @@ import {
 } from "@/src/utils/updaters/update-dependencies"
 import * as ERRORS from "@/src/utils/errors"
 import { hasMarkoDependency } from "@/src/utils/get-project-info"
+import {
+  declaredRange,
+  installedVersion,
+  rangeExcludesMajor,
+} from "@/src/utils/semver-range"
 import { isInteractive } from "@/src/utils/interactive"
 import { highlighter } from "@/src/utils/highlighter"
 import { CommandError } from "@/src/utils/handle-error"
@@ -35,6 +40,44 @@ export function isMarkoProject(cwd: string): boolean {
 }
 
 export type MarkoInstallChoice = "run" | "vite"
+
+/**
+ * The Marko 5 → 6 upgrade reference cited by the below-6 refusal: the
+ * official docs page covering the class-to-Tags-API split and running the
+ * two versions together.
+ */
+export const MARKO_6_UPGRADE_URL =
+  "https://markojs.com/docs/guide/marko-5-interop"
+
+/**
+ * Whether the Marko a project resolves can be Marko 6 — the only version
+ * marko-ui's tags-API components run on. The installed version wins when
+ * readable (the range may be `*` or `latest` while node_modules holds 5);
+ * otherwise the declared `marko` range decides, with anything the range
+ * parser cannot prove (workspace:, dist tags, exotic comparators) treated
+ * as allowing 6 — a false refusal is worse than a missed one, and `--force`
+ * is the escape hatch for the genuinely odd ones.
+ */
+export function markoProjectBelowSix(cwd: string): boolean {
+  const installed = installedVersion(cwd, "marko")
+  if (installed) {
+    const major = Number(installed.split(".")[0])
+    if (Number.isInteger(major)) return major < 6
+  }
+
+  let packageJson
+  try {
+    packageJson = fs.readJsonSync(path.resolve(cwd, "package.json"))
+  } catch {
+    // Unreadable here is handled upstream (MISSING_DIR_OR_EMPTY_PROJECT or
+    // the isMarkoProject fallback); nothing to add.
+    return false
+  }
+  const range = declaredRange(packageJson, "marko")
+  // No direct `marko` range (e.g. only `@marko/run`, which is 6-only): pass.
+  if (!range) return false
+  return rangeExcludesMajor(range, 6)
+}
 
 /** What each offered choice installs. `vite` is only added when absent. */
 export const MARKO_INSTALL_PACKAGES: Record<
@@ -202,6 +245,22 @@ export async function preFlightInit(
         errors,
         offerDeclined,
       }
+    }
+  }
+
+  // Version guards. Same escape hatch as the non-Marko refusal: `--force`
+  // skips them. Both throw rather than flagging `errors` because there is no
+  // offer to make — the fix is in the user's project, not in this command.
+  if (!options.force && isMarkoProject(options.cwd)) {
+    if (markoProjectBelowSix(options.cwd)) {
+      projectSpinner?.fail()
+      throw new CommandError(
+        `marko-ui requires Marko 6, but the Marko this project resolves cannot satisfy it.\nUpgrade to Marko 6 first (${highlighter.info(
+          MARKO_6_UPGRADE_URL
+        )}), then run ${highlighter.info(
+          "marko-ui init"
+        )} again. To skip this check, pass ${highlighter.info("--force")}.`
+      )
     }
   }
 

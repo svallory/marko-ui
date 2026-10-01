@@ -151,6 +151,12 @@ Not covered: `bun.lockb`, `deno.lock`, Yarn Berry/`packageManager` field, `user-
 | E09 | real TTY, `init` with no flags | asks base color / distribution / style; Enter through all three equals `--defaults` | pass — automated as the pty suite in `packages/marko-ui/src/commands/init.test.ts` (`expect` drives the built CLI; needs `expect` installed, CI installs it) |
 | E10 | Windows paths, `bun.lockb`, Yarn Berry | see note | **not automated** — CI is ubuntu only; macOS/Linux path behaviour is covered by S15/S16 |
 
+### Guards (version / foreign-config refusals)
+
+| id | project shape | expected | status |
+|---|---|---|---|
+| G01 | `marko: ^5` dependency | `init` exit 1, "marko-ui requires Marko 6" + upgrade link, nothing written; `--force` proceeds | pass |
+
 ### Ordering
 
 | id | sequence | expected | status |
