@@ -150,6 +150,14 @@ export interface MirrorEffects {
   readPid(): PidEntry | null
   clearPid(): void
   isAlive(pid: number): boolean
+  /**
+   * Take back a mirror this worktree started — kill its process group, drop
+   * the pidfile. Only ever called for an entry whose `repo` is ours, and only
+   * when it is ours to take: a dead group, or a live one serving an older HEAD
+   * of this same worktree (any commit changes the identity, so after one, the
+   * mirror a crashed run left behind is stale by definition).
+   */
+  reap(entry: PidEntry): void
 }
 
 export class MirrorIdentityError extends Error {
@@ -204,8 +212,10 @@ export async function ensureMirror(
   // mirror of this worktree, so its answer carries no weight.
   const pid = effects.readPid()
   const reaped =
-    pid !== null && sameIdentity(pid.identity, identity) && !effects.isAlive(pid.pgid)
-  if (reaped) effects.clearPid()
+    pid !== null &&
+    pid.identity.repo === identity.repo &&
+    (!effects.isAlive(pid.pgid) || pid.identity.head !== identity.head)
+  if (reaped) effects.reap(pid)
 
   const probe = await effects.probe(identity.port)
   if (probe.listening && !reaped) {
@@ -229,7 +239,10 @@ export async function ensureMirror(
           `  ours:    ${identityText(identity)}`,
           pid === null
             ? "  no pidfile, so nothing here was started by this worktree"
-            : `  pidfile says pgid ${pid.pgid} (${identityText(pid.identity)}), alive: ${effects.isAlive(pid.pgid)}`,
+            : `  pidfile says pgid ${pid.pgid} (${identityText(pid.identity)}), alive: ${effects.isAlive(pid.pgid)}` +
+              (pid.identity.repo === identity.repo
+                ? " — ours, so stopping it is safe; re-run after the port is free"
+                : " — a different worktree's, so it is not ours to stop"),
           "  stop it and re-run:",
           `    kill -TERM -${pid?.pgid ?? "<pgid>"}   # if a pidfile is listed above`,
           `    lsof -ti:${identity.port} | xargs kill  # otherwise`,
@@ -429,6 +442,25 @@ export function realEffects(): MirrorEffects {
         return true
       } catch {
         return false
+      }
+    },
+    reap: (entry) => {
+      // SIGTERM first so a server with a shutdown path can use it, then the
+      // group is gone either way. The pgid is a whole number precisely so a
+      // negative kill can take the process tree with it.
+      for (const signal of ["SIGTERM", "SIGKILL"] as const) {
+        if (Number.isInteger(entry.pgid) && entry.pgid > 0) {
+          try {
+            process.kill(-entry.pgid, signal)
+          } catch {
+            // Already gone, or not ours to signal; the pidfile still goes.
+          }
+        }
+      }
+      try {
+        unlinkSync(pidFilePath())
+      } catch {
+        // Already gone.
       }
     },
   }

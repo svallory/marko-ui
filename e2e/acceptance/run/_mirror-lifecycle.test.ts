@@ -104,6 +104,10 @@ function harness(options: {
     // (4242, alive unless `newServerAlive: false`).
     isAlive: (pid: number) =>
       pid === 4242 ? (options.newServerAlive ?? true) : (options.alive ?? true),
+    reap: (entry) => {
+      calls.push(`reap(${entry.pgid})`)
+      state.pid = null
+    },
   }
   return {
     effects,
@@ -188,7 +192,7 @@ describe("the mirror lifecycle", () => {
     const world = harness({ listening: true, identity: ours, pid: orphan, alive: false })
     const registry = await ensureMirror(world.effects, { identity: ours })
 
-    expect(world.calls).toContain("clearPid")
+    expect(world.calls).toContain("reap(999)")
     expect(world.calls).toContain("spawn")
     expect(registry.startedHere).toBe(true)
     // And the reap path does not then TRUST the port's answer: it builds and
