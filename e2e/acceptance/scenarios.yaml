@@ -1503,6 +1503,15 @@ scenarios:
   - id: existing.component-name-collision
     title: "a hand-written components/ui/button/button.marko is reported, not silently clobbered"
     kind: existing-project
+    status: known-bug
+    # The expectation below is CORRECT; the CLI does not meet it.
+    # addComponents defaults `interactive: true`
+    # (packages/marko-ui/src/utils/add-components.ts:52) and `add` passes its
+    # raw commander options, which carry no `interactive` key
+    # (packages/marko-ui/src/commands/add.ts:264) — so updateFiles is told it
+    # may prompt, pre-empting the `?? isInteractive()` default it would
+    # otherwise get (utils/updaters/update-files.ts:87).
+    bug: "add <name> -y prompts for overwrite with no TTY: add-components.ts:52 hardcodes interactive: true, defeating update-files.ts:87's isInteractive() default"
     tags: [os:linux, os:macos, kind:collision, speed:medium]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
