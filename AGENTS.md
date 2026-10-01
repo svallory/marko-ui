@@ -392,40 +392,82 @@ run; and even bypassing that, an already-resolved package still resolves in
 without ever creating the redirected one (`--no-cache` changes nothing: it
 governs the manifest cache, not the package entry). Seeing the first fetch means
 moving that entry out of the shared cache by hand and running vitest directly
-against `e2e/cli/scenarios/*.test.ts` with the registry served. The scenario
-config sets its own `root`, so the obvious form collects nothing at all and
+against `e2e/cli/scenarios/*.test.ts` with the registry served. You must pass the
+scenario suite's own config — the root vitest config's `include` does not cover
+`e2e/`, so without `--config` the obvious form collects nothing at all and
 exits 0:
 
 ```bash
 bunx vitest list e2e/cli/scenarios/ordering.test.ts   # exit 0, empty output
 ```
 
-The working form is the full sequence — build, serve on :4470, stash the
-pinned `skills@<version>@@@1` entry out of `~/.cache/.bun/install/cache`, run
-with `REGISTRY_URL` and the scenarios config, then restore the entry (a killed
-run leaves your cache short, which is why the restore is not optional):
+The working form is the full sequence, run from the repo root: build, serve on
+:4470, stash the pinned `skills@<version>@@@1` entry out of
+`~/.cache/.bun/install/cache`, run with `REGISTRY_URL` and the scenarios config,
+then restore the entry — in the EXIT trap, so a Ctrl-C or a crash still puts your
+shared cache back:
 
 ```bash
 flock /tmp/marko-ui-heavy.lock bash -c '
-set -uo pipefail
+set -euo pipefail
+cd /path/to/marko-ui            # repo root; the paths below are relative to it
 REGISTRY_PORT=4470
-bun run --filter marko-ui build &&
-  REGISTRY_BASE_URL="http://localhost:$REGISTRY_PORT/r" bun tooling/build-registry.ts || exit 1
+CACHE="$HOME/.cache/.bun/install/cache"
+STASH="$(mktemp -d)"
+
+server_pid=""
+cleanup() {
+  # `set -e` aborts the whole trap on the first non-zero status, so every
+  # failure-tolerant step below ends in `|| true`.
+  if [ -n "$server_pid" ]; then kill "$server_pid" 2>/dev/null || true; wait "$server_pid" 2>/dev/null || true; fi
+  # restore the stashed entry if it is still out of the cache (the run re-fetches
+# it, so the target usually exists again — rm -rf first or mv nests it inside)
+  if [ -n "$(ls -A "$STASH" 2>/dev/null)" ]; then
+    for d in "$STASH"/*; do rm -rf "$CACHE/$(basename "$d")"; mv "$d" "$CACHE/"; done
+  fi
+  rmdir "$STASH" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+if lsof -ti:"$REGISTRY_PORT" >/dev/null 2>&1; then
+  echo "port $REGISTRY_PORT is already in use — stop whatever holds it or set REGISTRY_PORT."
+  exit 1
+fi
+
+bun run --filter marko-ui build
+REGISTRY_BASE_URL="http://localhost:$REGISTRY_PORT/r" bun tooling/build-registry.ts
+
 SERVE_ROOT="$PWD/apps/docs/public" SERVE_PORT="$REGISTRY_PORT" \
   bun e2e/cli/serve.ts >/dev/null 2>&1 &
 server_pid=$!
-trap "kill $server_pid 2>/dev/null" EXIT
-until curl -fsS -o /dev/null "http://localhost:$REGISTRY_PORT/r/style.json"; do sleep 0.5; done
-mv ~/.cache/.bun/install/cache/skills@1.7.0@@@1 /tmp/   # the pinned entry
+
+for _ in $(seq 1 30); do
+  if curl -fsS -o /dev/null "http://localhost:$REGISTRY_PORT/r/style.json" 2>/dev/null; then break; fi
+  sleep 0.5
+done
+if ! curl -fsS -o /dev/null "http://localhost:$REGISTRY_PORT/r/style.json" 2>/dev/null; then
+  echo "registry did not come up on :$REGISTRY_PORT"
+  exit 1
+fi
+
+# stash the pinned skills entry out of the shared cache (the first fetch)
+SKILLS_SPEC="$(sed -n '"'"'s/^export const SKILLS_PACKAGE = "\(.*\)"$/\1/p'"'"' \
+  packages/marko-ui/src/agents/skills.ts)"
+ENTRY="$CACHE/${SKILLS_SPEC}@@@1"
+if [ ! -d "$ENTRY" ]; then
+  echo "no cached entry for $SKILLS_SPEC at $ENTRY — it was never fetched; nothing to make cold."
+  exit 1
+fi
+mv "$ENTRY" "$STASH/"
+
 REGISTRY_URL="http://localhost:$REGISTRY_PORT/r" \
   bunx vitest run --config e2e/cli/scenarios/vitest.config.ts ordering.test.ts
-mv /tmp/skills@1.7.0@@@1 ~/.cache/.bun/install/cache/     # always put it back
 '
 ```
 
-(`bunx vitest list` and the file filter are both misleading: the filter matches
-against paths relative to the config's root, and the root vitest config does not
-include `e2e/` at all.) A scenario also cannot outlive the harness: `cli()`'s default 60s
+(The file filter is fine — under `--config` a bare `ordering.test.ts` and the
+repo-relative `e2e/cli/scenarios/ordering.test.ts` both match. It is the missing
+`--config` that collects zero tests.) A scenario also cannot outlive the harness: `cli()`'s default 60s
 timeout (`environments.test.ts` lowers it to 30s
 in four `init`/`agents sync` scenarios, and to 45s in the two that point at a
 dead registry, `:73` and `:83`) and vitest's 90s `testTimeout` both fire before
