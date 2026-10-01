@@ -8,7 +8,7 @@
  * (see `scaffoldProject`) — the copy is of a real scaffold, and every scenario
  * still runs its own real install against the shared pm cache.
  */
-import { existsSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { cp, mkdir, readFile, rm, stat } from "node:fs/promises"
 import { createHash } from "node:crypto"
 import { join } from "node:path"
@@ -31,13 +31,71 @@ export interface PmDriver {
   cacheKey(): string
 }
 
+/** What each manager's "add a dev dependency" command is called. */
+const ADD_BASE: Record<Pm, string[]> = {
+  bun: ["add", "-d"],
+  npm: ["install", "-D"],
+  pnpm: ["add", "-D"],
+  "yarn-classic": ["add", "-D"],
+  "yarn-berry": ["add", "-D"],
+}
+
+/**
+ * Whether `cwd` is the root of a *declared* workspace — the one case where a
+ * plain `add` is refused by the manager itself:
+ *
+ *   pnpm:  ERR_PNPM_ADDING_TO_ROOT — "run this command again with -w"
+ *   yarn:  "Running this command will add the dependency to the workspace root"
+ *
+ * Which marker counts is manager-specific, so it is read manager-specifically:
+ * pnpm reads `pnpm-workspace.yaml` and ignores the `workspaces` field of
+ * package.json entirely (it warns and carries on), while yarn reads the
+ * `workspaces` field. bun and npm install at a workspace root without
+ * complaint, so they are never passed a flag.
+ */
+function declaresWorkspace(cwd: string, pm: Pm): boolean {
+  if (pm === "pnpm") {
+    return existsSync(join(cwd, "pnpm-workspace.yaml"))
+  }
+  if (pm === "yarn-classic" || pm === "yarn-berry") {
+    try {
+      const pkg = JSON.parse(readFileSync(join(cwd, "package.json"), "utf8")) as {
+        workspaces?: unknown
+      }
+      return pkg.workspaces !== undefined
+    } catch {
+      return false
+    }
+  }
+  return false
+}
+
+/**
+ * The argv for "add these dev dependencies here", including the workspace-root
+ * flag when — and only when — this manager needs it at this cwd.
+ *
+ * Split out from the drivers so it can be tested without spawning pnpm or yarn:
+ * the flag's absence is invisible until a scenario dies in setup with a
+ * manager-specific error, which is exactly how it reached main.
+ */
+export function addArgv(pm: Pm, cwd: string, specs: string[]): string[] {
+  const workspaceFlag = !declaresWorkspace(cwd, pm)
+    ? []
+    : pm === "pnpm"
+      ? ["-w"]
+      : pm === "yarn-classic" || pm === "yarn-berry"
+        ? ["-W"]
+        : []
+  return [...ADD_BASE[pm], ...workspaceFlag, ...specs]
+}
+
 const DRIVERS: Record<Pm, PmDriver> = {
   bun: {
     name: "bun",
     bin: "bun",
     install: (cwd, timeoutMs) => run("bun", ["install"], { cwd, timeoutMs }),
     add: (cwd, specs, timeoutMs) =>
-      run("bun", ["add", "-d", ...specs], { cwd, timeoutMs }),
+      run("bun", addArgv("bun", cwd, specs), { cwd, timeoutMs }),
     dlx: (tool) => ["bunx", tool],
     cacheKey: () => "bun",
   },
@@ -46,7 +104,7 @@ const DRIVERS: Record<Pm, PmDriver> = {
     bin: "npm",
     install: (cwd, timeoutMs) => run("npm", ["install"], { cwd, timeoutMs }),
     add: (cwd, specs, timeoutMs) =>
-      run("npm", ["install", "-D", ...specs], { cwd, timeoutMs }),
+      run("npm", addArgv("npm", cwd, specs), { cwd, timeoutMs }),
     // `npm exec --yes` is npx; kept as the npx spelling because that is what
     // the CLI itself falls back to and what the YAML's `runner: npx` means.
     dlx: (tool) => ["npx", "--yes", tool],
@@ -56,8 +114,11 @@ const DRIVERS: Record<Pm, PmDriver> = {
     name: "pnpm",
     bin: "pnpm",
     install: (cwd, timeoutMs) => run("pnpm", ["install"], { cwd, timeoutMs }),
+    // `-w` when this is a pnpm workspace root: without it pnpm refuses the
+    // whole command (ERR_PNPM_ADDING_TO_ROOT), which killed every pnpm
+    // monorepo scenario in setup. See addArgv.
     add: (cwd, specs, timeoutMs) =>
-      run("pnpm", ["add", "-D", ...specs], { cwd, timeoutMs }),
+      run("pnpm", addArgv("pnpm", cwd, specs), { cwd, timeoutMs }),
     dlx: (tool) => ["pnpm", "dlx", tool],
     cacheKey: () => "pnpm",
   },
@@ -65,8 +126,9 @@ const DRIVERS: Record<Pm, PmDriver> = {
     name: "yarn-classic",
     bin: "yarn",
     install: (cwd, timeoutMs) => run("yarn", ["install"], { cwd, timeoutMs }),
+    // `-W`, the same rule under yarn's spelling.
     add: (cwd, specs, timeoutMs) =>
-      run("yarn", ["add", "-D", ...specs], { cwd, timeoutMs }),
+      run("yarn", addArgv("yarn-classic", cwd, specs), { cwd, timeoutMs }),
     // Yarn 1 has no `yarn dlx`. The CLI makes the same choice
     // (getPackageRunnerCommand: only pnpm and bun get their own runner,
     // everything else falls back to npx), so a classic scenario is a real test
@@ -79,7 +141,7 @@ const DRIVERS: Record<Pm, PmDriver> = {
     bin: "yarn",
     install: (cwd, timeoutMs) => run("yarn", ["install"], { cwd, timeoutMs }),
     add: (cwd, specs, timeoutMs) =>
-      run("yarn", ["add", "-D", ...specs], { cwd, timeoutMs }),
+      run("yarn", addArgv("yarn-berry", cwd, specs), { cwd, timeoutMs }),
     dlx: (tool) => ["yarn", "dlx", tool],
     cacheKey: () => "yarn-berry",
   },

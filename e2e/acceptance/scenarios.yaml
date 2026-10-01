@@ -384,11 +384,17 @@ helpers:
   make-pnpm-workspace-with-ui:
     description: >
       Builds a pnpm workspace with two packages: the scaffolded Marko app moved
-      to `apps/web`, and a new `packages/ui` holding a package.json that depends
-      on the app via the `workspace:*` protocol plus its own tsconfig. Runs the
-      workspace install so pnpm-lock.yaml sits at the root. This is the "shared
-      components package" layout: the components belong in packages/ui and the
-      app consumes them, not the reverse.
+      to `apps/web`, and a new `packages/ui` holding a `src/` directory, a
+      package.json that depends on the app via the `workspace:*` protocol,
+      declares `marko` itself (it is about to hold `.marko` components, so a
+      package that does not depend on marko is not a shape any real monorepo
+      has — and the CLI's isMarkoProject guard reads exactly that dependency),
+      plus its own tsconfig. Writes pnpm-workspace.yaml, because pnpm does NOT
+      read the `workspaces` field: without it packages/ui is not a workspace
+      member and its `workspace:*` dependency cannot resolve. Runs the workspace
+      install so pnpm-lock.yaml sits at the root. This is the "shared components
+      package" layout: the components belong in packages/ui and the app consumes
+      them, not the reverse.
     language: node
     cwd: "."
     source: |
@@ -398,6 +404,16 @@ helpers:
       if (!app) throw new Error("APP is not set")
       fs.mkdirSync("apps", { recursive: true })
       fs.renameSync(app, path.join("apps", "web"))
+      // The moved app is scaffolded as `create-marko --name app`, so its
+      // package is called "app". A real monorepo names the package after its
+      // new home; leaving it "app" while packages/ui depends on "@acme/web"
+      // makes pnpm refuse the whole workspace install —
+      // ERR_PNPM_WORKSPACE_PKG_NOT_FOUND, "Packages found in the workspace:
+      // workspace-root, app, @acme/ui" — before a CLI command runs.
+      const appPkgPath = path.join("apps", "web", "package.json")
+      const appPkg = JSON.parse(fs.readFileSync(appPkgPath, "utf8"))
+      appPkg.name = "@acme/web"
+      fs.writeFileSync(appPkgPath, JSON.stringify(appPkg, null, 2) + "\n")
       fs.writeFileSync(
         "package.json",
         JSON.stringify(
@@ -406,11 +422,12 @@ helpers:
           2
         ) + "\n"
       )
-      fs.mkdirSync(path.join("packages", "ui"), { recursive: true })
+      fs.mkdirSync(path.join("packages", "ui", "src"), { recursive: true })
+      fs.writeFileSync("pnpm-workspace.yaml", "packages:\n  - \"apps/*\"\n  - \"packages/*\"\n")
       fs.writeFileSync(
         path.join("packages", "ui", "package.json"),
         JSON.stringify(
-          { name: "@acme/ui", version: "0.0.0", private: true, dependencies: { "@acme/web": "workspace:*" } },
+          { name: "@acme/ui", version: "0.0.0", private: true, dependencies: { marko: "^6.0.0", "@acme/web": "workspace:*" } },
           null,
           2
         ) + "\n"
@@ -1142,7 +1159,21 @@ scenarios:
     steps:
       - use: init-copy-vega-neutral
       - use: add-zag-machine-and-composite
+      # verify-clean asserts `status --json` lists "button", and
+      # build-and-render-button needs a wired Button route — so this scenario
+      # needs button installed too. It used add-zag-machine-and-composite only,
+      # so both flows asserted on a component the scenario never installed
+      # (observed: step 3, `stdout does not contain "\"button\""`).
+      - use: add-button
       - use: verify-clean
+      - name: wire Button into the home route
+        command: "@helper"
+        helper: wire-button
+        expect:
+          exit: 0
+          fileContains:
+            - path: src/routes/+page.marko
+              contains: "Acceptance Button"
       - use: build-and-render-button
       - name: the framework-specific skill is the one @marko/run gets
         command: agents
@@ -1541,7 +1572,7 @@ scenarios:
         - run: { cmd: "bun add -d tailwindcss @tailwindcss/vite" }
         - write: { path: src/styles/globals.css, body: own-tailwind-v4-css }
         - write:
-            { path: src/styles/admin.css, content: '@import "tailwindcss";\n' }
+            { path: src/styles/admin.css, content: "@import \"tailwindcss\";\n" }
     speed: medium
     ci: { shard: existing }
     covers: ["unusual or multiple CSS entries"]
@@ -1592,6 +1623,15 @@ scenarios:
   - id: existing.component-name-collision
     title: "a hand-written components/ui/button/button.marko is reported, not silently clobbered"
     kind: existing-project
+    status: known-bug
+    # The expectation below is CORRECT; the CLI does not meet it.
+    # addComponents defaults `interactive: true`
+    # (packages/marko-ui/src/utils/add-components.ts:52) and `add` passes its
+    # raw commander options, which carry no `interactive` key
+    # (packages/marko-ui/src/commands/add.ts:264) — so updateFiles is told it
+    # may prompt, pre-empting the `?? isInteractive()` default it would
+    # otherwise get (utils/updaters/update-files.ts:87).
+    bug: "marko-ui-so5.2 add <name> -y prompts for overwrite with no TTY: add-components.ts:52 hardcodes interactive: true, defeating update-files.ts:87's isInteractive() default"
     tags: [os:linux, os:macos, kind:collision, speed:medium]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
@@ -1981,6 +2021,18 @@ scenarios:
       - use: init-copy-vega-neutral
       - use: add-button
       - use: verify-clean
+      # build-and-render-button asserts the built server renders
+      # "Acceptance Button", which needs the route wired first — the same
+      # two steps core.init-defaults-copy has. Without them the render
+      # assertion was unsatisfiable on a stock app.
+      - name: wire Button into the home route
+        command: "@helper"
+        helper: wire-button
+        expect:
+          exit: 0
+          fileContains:
+            - path: src/routes/+page.marko
+              contains: "Acceptance Button"
       - use: build-and-render-button
 
   - id: pm.pnpm
@@ -2168,6 +2220,14 @@ scenarios:
   - id: mono.root-components-json-cwd-flag
     title: "a monorepo with components.json at the ROOT, every command driven from the root with --cwd"
     kind: monorepo
+    status: known-bug
+    # The expectation below is CORRECT; the CLI does not meet it. init's own
+    # workspace-root refusal tells the user to do exactly what step 1 does:
+    # "run marko-ui init from the app directory or pass --cwd <app>"
+    # (packages/marko-ui/src/commands/init.ts:246-252), and
+    # preflight-init.ts:294 says the same ("a root needs --cwd <app>").
+    # Filed as beads marko-ui-so5.4.
+    bug: "marko-ui-so5.4 init --cwd <app> from a workspace root fails on a fresh monorepo: getWorkspaceConfig (utils/get-config.ts:495-525) resolves the ui alias to <app> and demands a components.json there before init can finish writing one"
     tags: [os:linux, os:macos, pm:bun, kind:monorepo, speed:medium]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:

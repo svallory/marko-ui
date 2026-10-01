@@ -34,9 +34,13 @@ try {
 
 const include =
   kinds === null
-    ? GATE_FILES
+    ? [...GATE_FILES, "lib/pm.test.ts"]
     : [
         ...GATE_FILES,
+        // Pure argv tests from sweep-b, no pnpm/yarn/network: cheap enough to run
+        // in EVERY invocation, filtered or not, so a driver's flag cannot go
+        // missing between full-suite runs.
+        "lib/pm.test.ts",
         ...kinds.map((kind) => `run/${kind}.test.ts`),
         // The pre-runner acceptance files (the copy path, the import path,
         // add/doctor/diff, registry health) are folded into scenarios.yaml and
