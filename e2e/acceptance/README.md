@@ -424,8 +424,13 @@ runs one job.
 
 ### CI sharding
 
-`ci.shard` is the primary split — `core`, `kinds`, `existing`, `config`, `pm`, `mono`,
-`post`, `skills`, `env`, `registry`. Tags add the dimensions:
+`.github/workflows/acceptance.yml` shards by the scenario's `kind` field. The list of kinds is
+derived from this file by `scripts/kind-matrix.ts` (so a new kind is a new shard with no workflow
+edit) and each shard runs `ACCEPTANCE_TAGS=kind:<kind>`. The registry mirror is built once in its
+own job and handed to every shard as an artifact. Targets: pull requests run `tarball`, the weekly
+schedule `published`, dispatch takes a `target` input; `release.yml` calls the workflow with
+`tarball` and does not publish until it is green. (`ci.shard` in the YAML is annotation only.)
+Tags add the dimensions:
 
 - `os:linux` is the blocking job. `os:macos` runs on macOS runners when available.
   `os:windows` runs on `windows-latest` and **reports but never blocks** — no scenario
