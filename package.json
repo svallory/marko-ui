@@ -27,6 +27,7 @@
     "build:cli-manifest": "bun apps/docs/scripts/build-cli-manifest.ts",
     "check:parity": "bun tooling/check-parity.ts",
     "test:acceptance": "vitest run --config e2e/acceptance/vitest.config.ts",
+    "check:acceptance": "bun e2e/acceptance/scripts/validate-scenarios.ts",
     "parity:extract:shadcn": "bun tooling/parity/harnesses/shadcn/extract/index.ts",
     "parity:extract:marko-ui": "bun tooling/parity/harnesses/marko-ui/extract/index.ts",
     "format": "prettier --write ."
@@ -45,6 +46,7 @@
     "@types/pixelmatch": "^5.2.6",
     "@types/pngjs": "^6.0.5",
     "@zag-js/tabs": "1.43.3",
+    "ajv": "^8.20.0",
     "axe-core": "^4.13.0",
     "happy-dom": "^20.14.5",
     "lucide-static": "^1.37.0",
