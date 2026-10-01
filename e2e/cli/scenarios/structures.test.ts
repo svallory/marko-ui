@@ -353,5 +353,35 @@ describe("project structures — paths", () => {
     expect(exists(real, BUTTON)).toBe(true)
     expect(exists(real, "AGENTS.md")).toBe(true)
   })
+
+  // marko-ui-so5.1: the config loader's alias assertion fired while doctor was
+  // still LOADING the config, so the alias check written for this very case
+  // never ran: the user got "Something went wrong" and exit 1.
+  scenario("S17", "custom alias nothing backs: doctor reports the failed alias check and exits 3", async () => {
+    const ws = makeWorkspace()
+    markoApp(ws, {
+      tsconfig: "paths",
+      extra: {
+        "components.json": componentsJson({
+          aliases: {
+            components: "#components",
+            utils: "#lib/utils",
+            ui: "#components/ui",
+            lib: "#lib",
+            hooks: "#hooks",
+          },
+        }),
+        "src/styles/globals.css": '@import "tailwindcss";\n',
+      },
+    })
+
+    const doctor = await cli(ws, ["doctor"], { shim: withShims(makeWorkspace("shim")) })
+    const out = plain(doctor.out)
+
+    expect(out, "doctor crashed instead of reporting").not.toContain("Something went wrong")
+    expect(out).toContain("#components")
+    expect(out).toMatch(/✖ Import alias/)
+    expect(doctor.code, tail(doctor.out)).toBe(3)
+  })
 })
 
