@@ -1452,7 +1452,7 @@ scenarios:
         - run: { cmd: "bun add -d tailwindcss @tailwindcss/vite" }
         - write: { path: src/styles/globals.css, body: own-tailwind-v4-css }
         - write:
-            { path: src/styles/admin.css, content: '@import "tailwindcss";\n' }
+            { path: src/styles/admin.css, content: "@import \"tailwindcss\";\n" }
     speed: medium
     ci: { shard: existing }
     covers: ["unusual or multiple CSS entries"]
