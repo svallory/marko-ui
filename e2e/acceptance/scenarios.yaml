@@ -766,16 +766,23 @@ scenarios:
               pointer: /visualStyle
               equals: maia
       - name: the theme block really carries the chosen base color
+        # The base color never appears in the stylesheet BY NAME: the registry
+        # publishes one `style-<color>` item per base color and the items differ
+        # only in their oklch values (`style` has --primary: oklch(0.205 0 0),
+        # `style-slate` has --primary: oklch(0.208 0.042 265.755) and contains
+        # zero occurrences of the string "slate" — verified against
+        # https://marko-ui.saulo.tech/r/style-slate.json). So the assertion is on
+        # slate's primary value, which is what actually distinguishes the theme.
         command: "@helper"
         helper: count-markers
-        args: ["--slate-", "src/styles/globals.css"]
+        args: ["0.042 265.755", "src/styles/globals.css"]
         expect:
           exit: 0
           stdoutMatches: ["^[1-9]\\d*$"]
       - name: the default base color is not what got written
         command: "@helper"
         helper: count-markers
-        args: ["--neutral-", "src/styles/globals.css"]
+        args: ["oklch(0.205 0 0)", "src/styles/globals.css"]
         expect:
           exit: 0
           stdoutMatches: ["^0$"]
