@@ -2,6 +2,13 @@ import { defineConfig } from "vitest/config"
 import { loadScenarioDoc } from "./lib/scenario-doc.ts"
 import { filterSpecFromEnv, selectScenarios } from "./lib/selection.ts"
 
+/** The files that are always in a run: the gates and the hermetic unit tests. */
+const GATE_FILES = [
+  "run/_filters.test.ts",
+  "run/_runner-internals.test.ts",
+  "run/_mirror-lifecycle.test.ts",
+]
+
 // The document is loaded HERE as well as in each test file, because this config
 // decides which files exist for this run: a filter that selects three scenarios
 // must not load the other ten kind files, and a filter that selects nothing
@@ -27,10 +34,9 @@ try {
 
 const include =
   kinds === null
-    ? ["run/_filters.test.ts", "run/_runner-internals.test.ts"]
+    ? GATE_FILES
     : [
-        "run/_filters.test.ts",
-        "run/_runner-internals.test.ts",
+        ...GATE_FILES,
         ...kinds.map((kind) => `run/${kind}.test.ts`),
         // The pre-runner acceptance files (the copy path, the import path,
         // add/doctor/diff, registry health) are folded into scenarios.yaml and
