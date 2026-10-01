@@ -99,6 +99,23 @@ export function sameIdentity(
   )
 }
 
+/**
+ * Is this command line our own registry server?
+ *
+ * A pidfile can be stale in the worst way: the process it names is gone and the
+ * OS has since handed that pid — or that process-GROUP id — to something else.
+ * Killing `-<pgid>` on a recycled id takes an unrelated process tree with it, so
+ * the reap path asks what the pgid is actually running first. Both halves
+ * matter: `e2e/cli/serve.ts` alone would match a SIBLING worktree's mirror,
+ * which shares the port and is not ours to stop.
+ */
+export function isOurServeCommand(
+  commandLine: string,
+  repoRoot: string = REPO_ROOT
+): boolean {
+  return commandLine.includes(join(repoRoot, "e2e", "cli", "serve.ts"))
+}
+
 export function parseIdentity(text: string | undefined): MirrorIdentity | undefined {
   if (!text) return undefined
   try {
@@ -150,6 +167,8 @@ export interface MirrorEffects {
   readPid(): PidEntry | null
   clearPid(): void
   isAlive(pid: number): boolean
+  /** The command line of a pid, or "" when it is gone. */
+  describePid(pid: number): string
   /**
    * Take back a mirror this worktree started — kill its process group, drop
    * the pidfile. Only ever called for an entry whose `repo` is ours, and only
@@ -211,13 +230,38 @@ export async function ensureMirror(
   // gone means whatever is still answering on the port is a ghost, not a live
   // mirror of this worktree, so its answer carries no weight.
   const pid = effects.readPid()
+  const ours = pid !== null && pid.identity.repo === identity.repo
+  const alive = ours ? effects.isAlive(pid.pgid) : false
+  // A LIVE pgid is only reaped once we have seen that it is really our server.
+  // The pidfile can name a pid the OS has since recycled, and `kill -<pgid>`
+  // takes a whole process group with it, so this is the check that keeps an
+  // unrelated process tree out of it.
+  const recycled =
+    alive && !isOurServeCommand(effects.describePid(pid.pgid), pid.identity.repo)
   const reaped =
-    pid !== null &&
-    pid.identity.repo === identity.repo &&
-    (!effects.isAlive(pid.pgid) || pid.identity.head !== identity.head)
-  if (reaped) effects.reap(pid)
+    ours && (recycled || !alive || pid.identity.head !== identity.head)
+  if (reaped && !recycled) {
+    effects.reap(pid)
+  } else if (reaped) {
+    // Ours on paper, something else on the machine: drop the pidfile so the
+    // next run starts clean, and say what we found rather than killing it.
+    effects.clearPid()
+  }
 
   const probe = await effects.probe(identity.port)
+  if (recycled && probe.listening) {
+    throw new MirrorIdentityError(
+      [
+        `port ${identity.port} is held by something this worktree did not start.`,
+        `  the pidfile names pgid ${pid?.pgid} as ours, but that process is now:`,
+        `    ${effects.describePid(pid?.pgid ?? -1)}`,
+        "  a pid is only recycled when the original is gone, so the pidfile is stale.",
+        "  the stale pidfile has been removed; stop whatever is on the port and re-run:",
+        `    lsof -ti:${identity.port} | xargs kill`,
+      ].join("\n"),
+    )
+  }
+
   if (probe.listening && !reaped) {
     if (sameIdentity(probe.identity, identity)) {
       // Someone already serving exactly what we would serve — including a
@@ -443,6 +487,14 @@ export function realEffects(): MirrorEffects {
       } catch {
         return false
       }
+    },
+    describePid: (pid) => {
+      if (!Number.isInteger(pid) || pid <= 0) return ""
+      const described = run("ps", ["-o", "command=", "-p", String(pid)], {
+        cwd: REPO_ROOT,
+        timeoutMs: 5_000,
+      })
+      return described.exitCode === 0 ? described.stdout.trim() : ""
     },
     reap: (entry) => {
       // SIGTERM first so a server with a shutdown path can use it, then the

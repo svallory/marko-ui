@@ -29,6 +29,7 @@ import {
   MirrorIdentityError,
   ensureMirror,
   identityOf,
+  isOurServeCommand,
   parseIdentity,
   sameIdentity,
   sharedLocalRegistry,
@@ -57,6 +58,8 @@ function harness(options: {
   startedIdentity?: MirrorIdentity
   /** Liveness of the NEW server (pgid 4242); the pidfile's pgid uses `alive`. */
   newServerAlive?: boolean
+  /** What the pidfile's pgid is actually running — our serve.ts by default. */
+  pidCommand?: string
 } = {}): Harness {
   const calls: string[] = []
   const state = {
@@ -104,6 +107,10 @@ function harness(options: {
     // (4242, alive unless `newServerAlive: false`).
     isAlive: (pid: number) =>
       pid === 4242 ? (options.newServerAlive ?? true) : (options.alive ?? true),
+    describePid: (pid: number) =>
+      pid === 4242
+        ? `bun ${join("/our/repo", "e2e", "cli", "serve.ts")}`
+        : (options.pidCommand ?? `bun ${join("/repo", "e2e", "cli", "serve.ts")}`),
     reap: (entry) => {
       calls.push(`reap(${entry.pgid})`)
       state.pid = null
@@ -225,6 +232,38 @@ describe("the mirror lifecycle", () => {
     ).rejects.toThrow(MirrorIdentityError)
   })
 
+  it("does NOT kill a pgid the OS has recycled onto something else", async () => {
+    // A pidfile can outlive its process, and the OS hands the id to something
+    // else. `kill --<pgid>` takes a whole process group, so the reap path asks
+    // what the pgid is running first and refuses when the answer is not our
+    // server — even though the pidfile claims it is.
+    const recycled = harness({
+      listening: true,
+      identity: ours,
+      pid: { pgid: 999, identity: ours, startedAt: "x" },
+      alive: true,
+      pidCommand: "/usr/bin/vim /tmp/someones-notes.md",
+    })
+    await expect(
+      ensureMirror(recycled.effects, { identity: ours })
+    ).rejects.toThrow(/recycled|stale pidfile/)
+    expect(recycled.calls).not.toContain("reap(999)")
+    expect(recycled.killed).toBe(0)
+  })
+
+  it("reaps a live pgid only when it really is our serve.ts", async () => {
+    const world = harness({
+      listening: true,
+      identity: ours,
+      pid: { pgid: 999, identity: { ...ours, head: "e".repeat(40) }, startedAt: "x" },
+      alive: true,
+      pidCommand: `bun ${join("/repo", "e2e", "cli", "serve.ts")}`,
+    })
+    await ensureMirror(world.effects, { identity: ours })
+    expect(world.calls).toContain("reap(999)")
+    expect(world.calls).toContain("spawn")
+  })
+
   it("kills the server and clears the pidfile if the identity never appears", async () => {
     // A server that comes up serving the WRONG identity must not be left
     // running and holding the port, with a pidfile claiming it is ours.
@@ -238,6 +277,22 @@ describe("the mirror lifecycle", () => {
 })
 
 describe("identity", () => {
+  it("recognises our own serve.ts, and not a sibling worktree's", () => {
+    const oursLine = `bun ${join("/worktrees/acceptance-matrix", "e2e", "cli", "serve.ts")}`
+    expect(isOurServeCommand(oursLine, "/worktrees/acceptance-matrix")).toBe(true)
+    // Same program, different worktree: shares the port, not ours to stop.
+    expect(
+      isOurServeCommand(
+        `bun ${join("/worktrees/accept-sweep-b", "e2e", "cli", "serve.ts")}`,
+        "/worktrees/acceptance-matrix"
+      )
+    ).toBe(false)
+    expect(isOurServeCommand("/usr/bin/vim /tmp/notes.md", "/worktrees/acceptance-matrix")).toBe(
+      false
+    )
+    expect(isOurServeCommand("", "/worktrees/acceptance-matrix")).toBe(false)
+  })
+
   it("matches only on repo, HEAD and port together", () => {
     expect(sameIdentity(ours, ours)).toBe(true)
     expect(sameIdentity({ ...ours, head: "x" }, ours)).toBe(false)

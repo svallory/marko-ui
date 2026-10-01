@@ -40,7 +40,16 @@ jobs:
   acceptance:
     name: Published-package acceptance suite
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Headroom, deliberately generous. The registry build is IN-SUITE — the
+    # mirror builds what it serves, on a cold checkout, before any scenario
+    # starts — and its own timeout is 30 minutes; a 77-scenario matrix on cold
+    # package-manager caches is hours, not minutes (README §Timing: ~4 h
+    # single-threaded at a ~3-min median). This job is scheduled/weekly and does
+    # not block a PR, so a high ceiling costs nothing while a low one kills a
+    # run that was making progress. When the matrix is sharded (a later
+    # change), each shard's budget can come down to its own measured worst case
+    # plus that 30-minute build.
+    timeout-minutes: 360
     steps:
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
       - uses: ./.github/actions/setup
