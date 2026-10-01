@@ -31,7 +31,7 @@ export type CliManifest = {
 };
 
 export const CLI_MANIFEST: CliManifest = {
-  "cliVersion": "0.4.1",
+  "cliVersion": "0.5.0",
   "commands": [
     {
       "name": "init",
