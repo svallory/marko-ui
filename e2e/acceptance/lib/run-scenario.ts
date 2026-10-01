@@ -399,6 +399,8 @@ interface StepContext {
   pm: Pm
   cli: CliTargetPaths
   installRoot: string
+  /** Sibling of the workspace holding the CLI install for `noScaffold` setups. */
+  cliHostDir?: string
   helpers: Record<string, Helper> | undefined
   /** Content hashes recorded by `snapshot:`, keyed `<where>:<path>`. */
   snapshots: Map<string, string>
@@ -640,7 +642,10 @@ function resolveInvocation(
         label: `node <${spec}> ${cliArgs.join(" ")}`,
       }
     }
-    const bin = findCli(ctx.defaultCwd, ctx.workspace) ?? findCli(ctx.workspace, ctx.workspace)
+    const bin =
+      findCli(ctx.defaultCwd, ctx.workspace) ??
+      findCli(ctx.workspace, ctx.workspace) ??
+      (ctx.cliHostDir ? findCli(ctx.cliHostDir, ctx.cliHostDir) : null)
     if (!bin) {
       throw new StepFailure(
         `the CLI under test is not installed: no node_modules/${CLI_ENTRY} at or above ${ctx.workspace}`,
@@ -848,6 +853,7 @@ export async function runScenario(options: RunOptions): Promise<ScenarioRunResul
   const steps = expandSteps(scenario.steps, doc)
   const workspace = await makeTempWorkspace(scenario.id.replace(/\./g, "-"))
   const reportedOnly = scenario.status === "unknown-expectation"
+  let cliHostDir: string | undefined
 
   try {
     log(`  workspace: ${workspace}`)
@@ -898,8 +904,22 @@ export async function runScenario(options: RunOptions): Promise<ScenarioRunResul
     // before that would leave the CLI's devDependency written into a file
     // that no longer mentions it.
     const cli = await resolveCliInstall(setup, target)
+    // A `noScaffold` workspace IS the subject of its scenario (an empty
+    // directory, a bare registry-health dir), so installing the CLI into it
+    // would break the premise the steps assert on. For those, the CLI goes
+    // into a sibling host dir and resolveInvocation falls back to it — but
+    // only when a step actually invokes the CLI: a registry-health scenario
+    // (`network: registry-only`, only `@http` steps) must not pay an npm
+    // install it has no network for.
+    const needsCli = steps.some(
+      (step) => step.command !== undefined && !step.command.startsWith("@"),
+    )
     if (!setup.noScaffold) {
       await installCliUnderTest(workspace, appDir, pm, cli, target)
+    } else if (needsCli) {
+      cliHostDir = `${workspace}-cli-host`
+      await mkdir(cliHostDir, { recursive: true })
+      await installCliUnderTest(cliHostDir, cliHostDir, pm, cli, target)
     }
 
     const defaultCwd = scenario.cwd
@@ -917,6 +937,7 @@ export async function runScenario(options: RunOptions): Promise<ScenarioRunResul
       pm,
       cli,
       installRoot: workspace,
+      cliHostDir,
       helpers: doc.helpers,
       snapshots: new Map(),
     }
@@ -958,6 +979,9 @@ export async function runScenario(options: RunOptions): Promise<ScenarioRunResul
     return { workspace, stepsRun: steps.length, reportedOnly }
   } finally {
     await cleanupTempWorkspace(workspace, target.keepTemp)
+    if (cliHostDir) {
+      await cleanupTempWorkspace(cliHostDir, target.keepTemp)
+    }
   }
 }
 
