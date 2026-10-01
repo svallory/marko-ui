@@ -20,7 +20,10 @@ export async function makeTempWorkspace(prefix: string): Promise<string> {
   return realpath(dir)
 }
 
-export async function cleanupTempWorkspace(dir: string): Promise<void> {
-  if (process.env.ACCEPTANCE_KEEP_TEMP === "1") return
+export async function cleanupTempWorkspace(
+  dir: string,
+  keep: boolean = process.env.ACCEPTANCE_KEEP_TEMP === "1"
+): Promise<void> {
+  if (keep) return
   await rm(dir, { recursive: true, force: true })
 }
