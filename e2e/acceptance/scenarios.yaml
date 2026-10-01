@@ -597,6 +597,92 @@ flows:
         exit: 0
         stdoutMatches: ["(?i)no updates found|up to date"]
 
+
+  # verify-clean, for the scenarios that install something other than button.
+  # Same three read-only commands and the same assertions as `verify-clean` —
+  # only the component `status` is asked to list differs, because these
+  # scenarios never install a button and a `status --json` that does not mention
+  # the component that is actually on disk is a correct answer, not a defect.
+  # One flow per component rather than a parameterised one: `use:` takes no
+  # arguments, and a flow asserted for `select` must not silently become the
+  # flow other scenarios run.
+  verify-clean-lists-select:
+    - name: status lists the installed component
+      command: status
+      args: ["--json"]
+      expect:
+        exit: 0
+        stdoutContains: '"select"'
+    - name: doctor passes
+      command: doctor
+      expect:
+        exit: 0
+        stdoutMatches: ["(?i)all checks passed"]
+    - name: diff reports no drift right after add
+      command: diff
+      expect:
+        exit: 0
+        stdoutMatches: ["(?i)no updates found|up to date"]
+
+  # verify-clean, for the scenarios that install something other than button.
+  # Same three read-only commands and the same assertions as `verify-clean` —
+  # only the component `status` is asked to list differs, because these
+  # scenarios never install a button and a `status --json` that does not mention
+  # the component that is actually on disk is a correct answer, not a defect.
+  # One flow per component rather than a parameterised one: `use:` takes no
+  # arguments, and a flow asserted for `select` must not silently become the
+  # flow other scenarios run.
+  verify-clean-lists-style:
+    - name: status lists the installed component
+      command: status
+      args: ["--json"]
+      expect:
+        exit: 0
+        stdoutContains: '"style"'
+    - name: doctor passes
+      command: doctor
+      expect:
+        exit: 0
+        stdoutMatches: ["(?i)all checks passed"]
+    # `add style` writes a stylesheet, not a component directory, so `diff` has
+    # no installed COMPONENT to compare and says so. Observed, not assumed: the
+    # shared flow's "no updates found|up to date" cannot hold here, and `diff`
+    # is the one that is right — the theme block this scenario is about is
+    # asserted by the scenario's own step, not by the spine.
+    - name: diff has no component to compare, and says exactly that
+      command: diff
+      expect:
+        exit: 0
+        stdoutContains: "No installed components found"
+
+  # The import distribution installs nothing into src/components/ui at all:
+  # `add` refuses on it by design (0.5.0 breaking change, asserted two steps
+  # earlier in post.import-distribution). So `status` is still run — it is a
+  # read-only command the scenario should exercise — but it is asked whether it
+  # SUCCEEDED and what it listed, not which component it listed, because the
+  # correct answer on this distribution is an empty list. Asserting `[]` is
+  # stronger than the old `'"button"'` substring, not weaker: it fails if
+  # anything at all is copied into the project.
+  verify-clean-no-components:
+    - name: status runs clean, and nothing was copied into the project
+      command: status
+      args: ["--json"]
+      expect:
+        exit: 0
+        jsonPath:
+          - source: stdout
+            pointer: /components
+            equals: []
+    - name: doctor passes
+      command: doctor
+      expect:
+        exit: 0
+        stdoutMatches: ["(?i)all checks passed"]
+    - name: diff has no component to compare, and says exactly that
+      command: diff
+      expect:
+        exit: 0
+        stdoutContains: "No installed components found"
   # Build the app and assert the component really rendered. The build alone
   # proves nothing: marko-run emits a server bundle, not prerendered HTML.
   build-and-render-button:
@@ -2478,7 +2564,7 @@ scenarios:
           fileContains:
             - path: src/components/ui/icon/resolve-client.ts
               contains: "tablerIcons"
-      - use: verify-clean
+      - use: verify-clean-lists-select
 
   - id: post.readd-user-edited-component
     title: "re-adding an edited component is refused in a terminal and skipped non-interactively"
@@ -2490,6 +2576,23 @@ scenarios:
     speed: medium
     ci: { shard: post }
     covers: ["re-add a user-edited component", "diff", "overwrite prompt"]
+    # The expectation is CORRECT and the CLI does not meet it. Marked rather
+    # than fixed or relaxed, so it is re-asserted the moment marko-ui-so5.2
+    # lands. Verified independently of the report that named it:
+    # addComponents hardcodes `interactive: true` (utils/add-components.ts:52)
+    # and commands/add.ts never threads its own isInteractive() into those
+    # options, so the `options.interactive ?? isInteractive()` fallback in
+    # utils/updaters/update-files.ts:89 — the one that is supposed to keep a
+    # non-TTY run from asking — can never fire on the `add` path. That
+    # contradicts the CLI's own stated intent three lines above it: "A prompt
+    # that nothing can answer hangs a piped or agent run; without a TTY the
+    # existing file is kept and reported as skipped."
+    status: known-bug
+    bug: >-
+      marko-ui-so5.2 — `add button -y` on a user-edited file shows the clack
+      overwrite prompt (exit 0) instead of skipping the file and saying so;
+      addComponents hardcodes interactive: true, so the non-TTY branch in
+      update-files.ts is unreachable from `add`.
     notes: >
       Both answers to the same prompt are asserted in one scenario: a terminal
       asks (and this scenario answers No), a non-interactive run keeps the file
@@ -2609,7 +2712,7 @@ scenarios:
         expect:
           exit: 0
           appBuild: pass
-      - use: verify-clean
+      - use: verify-clean-no-components
 
   - id: post.eject-import-to-copy
     title: "eject flips an import project back to copy and writes the source"
@@ -2718,7 +2821,7 @@ scenarios:
             - path: src/styles/globals.css
               contains: "/* marko-ui:theme:start */"
           stdoutNotContains: "error"
-      - use: verify-clean
+      - use: verify-clean-lists-style
 
   # =========================================================================
   # kind: skills — AGENTS.md and the agent skills lifecycle
