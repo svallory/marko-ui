@@ -1111,7 +1111,12 @@ async function addOverride(
   pkg.overrides = { ...(pkg.overrides ?? {}), [name]: spec }
   await writeFile(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`)
   const driver = driverFor(pm)
-  const result = driver.add(workspace, [], 600_000)
+  // Re-resolve with `install` and NO packages, not `add` with an empty list:
+  // `pnpm add` with no specs is an error (ERR_PNPM_MISSING_PACKAGE_NAME), so
+  // the override step killed every pnpm scenario before a single CLI command
+  // ran. What is wanted here is "re-read the manifests and re-link", which is
+  // exactly `install`.
+  const result = driver.install(workspace, 600_000)
   if (result.exitCode !== 0) {
     throw new StepFailure(
       `re-resolving with the ${name} override failed (exit ${result.exitCode})\n${result.stdout}\n${result.stderr}`,
