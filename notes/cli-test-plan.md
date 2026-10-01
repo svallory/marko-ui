@@ -157,6 +157,7 @@ Not covered: `bun.lockb`, `deno.lock`, Yarn Berry/`packageManager` field, `user-
 |---|---|---|---|
 | G01 | `marko: ^5` dependency | `init` exit 1, "marko-ui requires Marko 6" + upgrade link, nothing written; `--force` proceeds | pass |
 | G02 | `tailwindcss: ^3` + `tailwind.config.js` | `init` exit 1, "marko-ui requires Tailwind v4" + `bunx @tailwindcss/upgrade` (project's runner), nothing written; `--force` proceeds | pass |
+| G03 | shadcn/ui-for-React `components.json` (react dep, no Marko) | `add` exit 1, "belongs to shadcn/ui for React" + `--cwd <app>` hint, nothing installed | pass |
 
 ### Ordering
 
@@ -208,8 +209,7 @@ state behind on failure (D7, D12); `.agents/` gitignored fresh clone (K02).
 
 `add --all`, `add --path`, `add --dry-run` in odd structures; `components.json`
 with non-default `aliases`; `marko-ui init <component>` (init + add in one);
-`search`/`docs`/`show` offline; `init` over a project with an existing
-`components.json` from shadcn (React) — hostile-input territory; yarn Berry /
+`search`/`docs`/`show` offline; yarn Berry /
 pnpm workspaces `workspace:` deps; build-output checks for non-stock structures
 (scenarios assert CLI behaviour; only `first-run.sh` builds). Reviewer's additional gaps, each with a reason: combined axes (spaces + symlink +
 monorepo, `--cwd` through a symlink in a monorepo, Tailwind-wired monorepo) —

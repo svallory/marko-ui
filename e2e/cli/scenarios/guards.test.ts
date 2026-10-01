@@ -12,6 +12,20 @@ import {
 } from "./lib/harness"
 import { scenario } from "./lib/scenario"
 
+const REACT_COMPONENTS_JSON = {
+  $schema: "https://ui.shadcn.com/schema.json",
+  style: "new-york",
+  rsc: true,
+  tsx: true,
+  tailwind: {
+    config: "tailwind.config.ts",
+    css: "app/globals.css",
+    baseColor: "neutral",
+    cssVariables: true,
+  },
+  aliases: { components: "@/components", utils: "@/lib/utils" },
+}
+
 describe("guards — refusals the CLI owes the user", () => {
   scenario("G01", "marko ^5 project: init exits 1 citing the Marko 6 upgrade; --force bypasses", async () => {
     const ws = makeWorkspace()
@@ -57,4 +71,24 @@ describe("guards — refusals the CLI owes the user", () => {
     expect(forced.code, tail(forced.out)).toBe(0)
   })
 
-});
+  scenario("G03", "shadcn/ui-for-React components.json: add exits 1 naming it and the --cwd hint, installs nothing", async () => {
+    const ws = makeWorkspace()
+    writeTree(ws, {
+      "package.json": {
+        name: "react-app",
+        dependencies: { react: "^19.0.0", "react-dom": "^19.0.0", next: "^15.0.0" },
+      },
+      "components.json": REACT_COMPONENTS_JSON,
+      "app/globals.css": '@import "tailwindcss";\n',
+      "tailwind.config.ts": "export default {}\n",
+    })
+
+    const shim = withShims(makeWorkspace("shim"))
+    const r = await cli(ws, ["add", "button"], { shim, timeoutMs: 30_000 })
+    expect(r.timedOut, "add hung").toBe(false)
+    expect(r.code, tail(r.out)).toBe(1)
+    expect(plain(r.out)).toContain("belongs to shadcn/ui for React")
+    expect(plain(r.out)).toContain("--cwd <app>")
+    expect(exists(ws, "components/ui/button"), "a component landed in a React project").toBe(false)
+  })
+})

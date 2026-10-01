@@ -6,7 +6,8 @@ import {
   registryConfigSchema,
   workspaceConfigSchema,
 } from "@/src/schema"
-import { getProjectInfo } from "@/src/utils/get-project-info"
+import { CommandError } from "@/src/utils/handle-error"
+import { getProjectInfo, hasMarkoDependency } from "@/src/utils/get-project-info"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import {
@@ -291,9 +292,17 @@ export async function getRawConfig(
       }
     }
 
+    assertNotReactComponentsJson(
+      path.dirname(configResult.filepath),
+      configResult.filepath
+    )
+
     return config
   } catch (error) {
     const componentPath = `${cwd}/components.json`
+    if (error instanceof CommandError) {
+      throw error
+    }
     if (error instanceof Error && error.message.includes("reserved registry")) {
       throw error
     }
@@ -301,6 +310,64 @@ export async function getRawConfig(
       `Invalid configuration found in ${highlighter.info(componentPath)}.`
     )
   }
+}
+
+/**
+ * Refuses a shadcn/ui-for-React components.json. One parse is not enough to
+ * tell them apart — a React shadcn config is valid against marko-ui's schema
+ * (marko-ui deliberately keeps wire compatibility, down to the meaningless
+ * `rsc` key) — so the detector looks at the OWNING project instead:
+ *
+ *   the package.json next to the components.json declares `react`
+ *   (deps/devDeps/peerDeps) AND no Marko package.
+ *
+ * The config-side signals the eye would pick (`tsx: true`, an `rsc` key) are
+ * NOT used: marko-ui itself writes `tsx: true` for a TypeScript Marko
+ * project and always writes the `rsc` key (shadcn's published schema.json
+ * requires it), so both would false-positive on a real marko-ui project.
+ * React-present + Marko-absent cannot: a marko-ui project always depends on
+ * Marko. An unreadable package.json proves nothing and is ignored.
+ *
+ * Lives here — the single place every command's config load funnels through
+ * — rather than per command, so `add`, `diff`, `doctor`, `agents`, `eject`,
+ * `info`, `search`, `view` and `registry build` all refuse identically.
+ * (`init` refuses earlier: an existing components.json, React or not, means
+ * "already initialized".)
+ */
+export function assertNotReactComponentsJson(
+  projectDir: string,
+  configPath: string
+) {
+  let packageJson
+  try {
+    packageJson = fsExtra.readJsonSync(
+      path.resolve(projectDir, "package.json")
+    )
+  } catch {
+    return
+  }
+
+  const declaresReact = [
+    packageJson?.dependencies,
+    packageJson?.devDependencies,
+    packageJson?.peerDependencies,
+  ].some((deps) => Boolean(deps?.react))
+
+  if (!declaresReact || hasMarkoDependency(packageJson)) {
+    return
+  }
+
+  throw new CommandError(
+    `The ${highlighter.info(
+      "components.json"
+    )} at ${highlighter.info(
+      configPath
+    )} belongs to shadcn/ui for React (the project depends on ${highlighter.info(
+      "react"
+    )}, not Marko).\nRun ${highlighter.info(
+      "marko-ui"
+    )} in your Marko app, or pass ${highlighter.info("--cwd <app>")}.`
+  )
 }
 
 /**
