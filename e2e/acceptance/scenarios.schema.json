@@ -1,0 +1,549 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marko-ui.saulo.tech/schemas/acceptance-scenarios.json",
+  "title": "marko-ui acceptance scenarios",
+  "description": "One file describing every acceptance scenario for the published marko-ui CLI: real scaffolders, real package managers, real projects. Consumed by e2e/acceptance/scripts/validate-scenarios.ts and, once the runner lands, by the vitest suite.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "defaults", "fixtures", "flows", "scenarios"],
+  "properties": {
+    "version": { "const": 1 },
+    "defaults": { "$ref": "#/$defs/defaults" },
+    "bodies": {
+      "type": "object",
+      "description": "Named multi-line strings (file bodies, shell scripts) reused by pre-steps, so a scenario stays readable.",
+      "propertyNames": { "pattern": "^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$" },
+      "additionalProperties": { "type": "string" }
+    },
+    "fixtures": {
+      "type": "object",
+      "description": "Named, reusable project scaffolds. A scenario either names one with setup.fixture or inlines its own setup.scaffold.",
+      "propertyNames": { "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+      "additionalProperties": { "$ref": "#/$defs/setup" }
+    },
+    "flows": {
+      "type": "object",
+      "description": "Named, reusable step sequences. A step may be `use: <flow>` to splice a whole flow in at that position.",
+      "propertyNames": { "pattern": "^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$" },
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "items": { "$ref": "#/$defs/step" }
+      }
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/scenario" }
+    }
+  },
+
+  "$defs": {
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cliTarget", "registryUrl", "timeoutSeconds"],
+      "properties": {
+        "cliTarget": {
+          "description": "How the CLI under test is obtained. `published` = `marko-ui@<version>` from npm; `tarball` = `bun pack`ed from this repo and installed from the .tgz. Overridable per scenario with setup.cliTarget.",
+          "enum": ["published", "tarball"]
+        },
+        "version": {
+          "description": "npm version used when cliTarget is `published`. `latest` tracks dist-tags.",
+          "type": "string",
+          "minLength": 1
+        },
+        "registryUrl": { "type": "string", "format": "uri", "minLength": 1 },
+        "timeoutSeconds": { "type": "integer", "minimum": 30, "maximum": 3600 }
+      }
+    },
+
+    "tag": {
+      "description": "key:value tag. `os` and `pm` drive the CI matrix; `kind` and `speed` drive sharding. Free-form keys are allowed but CI only knows these four.",
+      "type": "string",
+      "pattern": "^(os|pm|kind|speed|status):[A-Za-z0-9][A-Za-z0-9.+_-]*$"
+    },
+
+    "pm": {
+      "description": "Which real package manager drives installs and CLI invocation. `yarn-classic` and `yarn-berry` are separate: they differ in runner (`npx` fallback vs `yarn dlx`) and lockfile.",
+      "enum": ["bun", "npm", "pnpm", "yarn-classic", "yarn-berry"]
+    },
+
+    "os": { "enum": ["linux", "macos", "windows"] },
+
+    "network": {
+      "description": "How much network the scenario needs. `none` must pass with the network cut.",
+      "enum": ["none", "registry-only", "npm", "both"]
+    },
+
+    "requires": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "os": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/os" },
+          "uniqueItems": true
+        },
+        "network": { "$ref": "#/$defs/network" },
+        "node": {
+          "description": "Node majors the scenario is meaningful on. A scenario with no `node` runs on the CI default only.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "enum": ["20", "22", "24"] },
+          "uniqueItems": true
+        },
+        "tools": {
+          "description": "Binaries that must be on PATH. The runner skips (does not fail) a scenario whose tool is missing, and reports it as skipped.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "bun",
+              "node",
+              "git",
+              "pnpm",
+              "npm",
+              "yarn",
+              "corepack",
+              "curl"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "minCliVersion": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        }
+      }
+    },
+
+    "setup": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fixture": {
+          "description": "Name from the top-level `fixtures` map. Mutually exclusive with `scaffold`.",
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "scaffold": {
+          "description": "An inline real scaffolder run. `tool` is the bin, `args` its arguments (the runner prefixes the right dlx runner per pm), `dir` is the subdirectory the app lands in, relative to the scenario workspace.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["tool", "args"],
+          "properties": {
+            "tool": { "type": "string", "minLength": 1 },
+            "args": { "type": "array", "items": { "type": "string" } },
+            "dir": { "type": "string", "minLength": 1 },
+            "timeoutSeconds": { "type": "integer", "minimum": 30 }
+          }
+        },
+        "pm": { "$ref": "#/$defs/pm" },
+        "install": {
+          "description": "Run the scaffold's own dependency install with `pm`. false means the scenario wants an uninstalled scaffold (rare, and only with a post-step that installs).",
+          "type": "boolean"
+        },
+        "noScaffold": {
+          "description": "The workspace starts empty: no scaffolder runs at all (the `empty-dir` case, and the registry-health scenarios that only make HTTP requests).",
+          "type": "boolean"
+        },
+        "cliTarget": {
+          "description": "Override defaults.cliTarget for this scenario (used by the tarball sweep).",
+          "enum": ["published", "tarball"]
+        },
+        "pre": {
+          "description": "Applied after the scaffold, before `install`.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/preStep" }
+        },
+        "post": {
+          "description": "Applied after `install`, before the first CLI step.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/preStep" }
+        }
+      },
+      "oneOf": [
+        { "required": ["fixture"] },
+        { "required": ["scaffold"] },
+        { "required": ["noScaffold"] }
+      ]
+    },
+
+    "preStep": {
+      "description": "A mutation applied to the project before any CLI command runs. Exactly one verb per step.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string" },
+        "write": {
+          "description": "Create or replace a file. `content` may be a literal string or a named fixture body.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path"],
+          "properties": {
+            "path": { "type": "string", "minLength": 1 },
+            "content": { "type": "string" },
+            "body": {
+              "description": "Alternative to `content`: a named string from the top-level `bodies` map, resolved by the runner before writing.",
+              "type": "string",
+              "pattern": "^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$"
+            }
+          },
+          "oneOf": [{ "required": ["content"] }, { "required": ["body"] }]
+        },
+        "append": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "content"],
+          "properties": {
+            "path": { "type": "string", "minLength": 1 },
+            "content": { "type": "string" }
+          }
+        },
+        "mkdir": { "type": "string", "minLength": 1 },
+        "rm": { "type": "string", "minLength": 1 },
+        "cp": {
+          "description": "Copy a scaffolded file or directory to another path. Used by pre-steps that build a monorepo layout out of a single scaffold.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["from", "to"],
+          "properties": {
+            "from": { "type": "string", "minLength": 1 },
+            "to": { "type": "string", "minLength": 1 }
+          }
+        },
+        "run": {
+          "description": "A shell command run in the scenario workspace. Real tools only — no stubs.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["cmd"],
+          "properties": {
+            "cmd": { "type": "string", "minLength": 1 },
+            "body": {
+              "description": "Alternative to `cmd`: a named script from the top-level `bodies` map.",
+              "type": "string",
+              "pattern": "^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$"
+            },
+            "cwd": { "type": "string" },
+            "allowFailure": { "type": "boolean" }
+          },
+          "oneOf": [{ "required": ["cmd"] }, { "required": ["body"] }]
+        }
+      },
+      "oneOf": [
+        { "required": ["write"] },
+        { "required": ["append"] },
+        { "required": ["mkdir"] },
+        { "required": ["rm"] },
+        { "required": ["cp"] },
+        { "required": ["run"] }
+      ]
+    },
+
+    "stdinMode": {
+      "description": "closed = /dev/null or an immediately-EOF pipe; null = inherited closed pipe the runner never writes; piped = a pipe the runner writes `stdin` into then closes; pty = a real pseudo-terminal driven by `pty`.",
+      "enum": ["closed", "null", "piped", "pty"]
+    },
+
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "use": {
+          "description": "Splice in a named flow from the top-level `flows` map at this position.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$"
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "command": {
+          "description": "Top-level marko-ui command, or an @-prefixed runner operation (see README §Operations).",
+          "type": "string",
+          "pattern": "^(init|add|diff|docs|show|view|search|list|status|info|doctor|eject|manifest|agents|registry|@[a-z][a-z0-9-]*)$"
+        },
+        "sub": {
+          "description": "Subcommand path under `command`, e.g. [\"sync\"] for `agents sync`, [\"list\"] for `registry list`. Flags belong in `args`, not here.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
+        },
+        "args": { "type": "array", "items": { "type": "string" } },
+        "cwd": {
+          "description": "Where to run the step, relative to the scenario workspace. `.` is the workspace root; the fixture's app dir is named explicitly.",
+          "type": "string",
+          "minLength": 1
+        },
+        "runner": {
+          "description": "How the CLI binary is invoked. Omit to use the scenario's pm default (bunx / npx -y / pnpm dlx / yarn dlx).",
+          "enum": ["bunx", "npx", "pnpm-dlx", "yarn-dlx", "node", "shim"]
+        },
+        "cliVersion": {
+          "description": "Pin this step to a specific published version (\"0.4.1\") instead of defaults.version. The upgrade scenario uses it to initialize a project with the previous release; every other step must omit it.",
+          "type": "string",
+          "pattern": "^(latest|[0-9]+\\.[0-9]+\\.[0-9]+)$"
+        },
+        "stdin": { "$ref": "#/$defs/stdinMode" },
+        "stdinText": { "type": "string" },
+        "pty": {
+          "description": "Pseudo-terminal answer script for interactive runs. Each entry waits for `expect` to appear in the merged output, then types `send`. The runner fails the step if `expect` never appears (with a 30 s cap).",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["expect", "send"],
+            "properties": {
+              "expect": { "type": "string", "minLength": 1 },
+              "send": { "type": "string" },
+              "note": { "type": "string" }
+            }
+          }
+        },
+        "env": {
+          "description": "Extra environment for this step only. `null` unsets a variable inherited from the scenario env.",
+          "type": "object",
+          "additionalProperties": { "type": ["string", "null"] }
+        },
+        "timeoutSeconds": { "type": "integer", "minimum": 10 },
+        "expect": { "$ref": "#/$defs/expect" },
+        "notes": { "type": "string" }
+      },
+      "oneOf": [{ "required": ["use"] }, { "required": ["command"] }]
+    },
+
+    "expect": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "description": "What the step must produce. All listed assertions must hold; nothing unlisted is asserted.",
+      "properties": {
+        "exit": {
+          "description": "Exact exit code, or a set of accepted codes. The CLI documents 0/1/2/3/4.",
+          "oneOf": [
+            { "type": "integer", "minimum": 0, "maximum": 255 },
+            {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "integer", "minimum": 0, "maximum": 255 }
+            }
+          ]
+        },
+        "stdoutContains": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } }
+          ]
+        },
+        "stdoutNotContains": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } }
+          ]
+        },
+        "stdoutMatches": {
+          "description": "Regex sources matched against stdout with ANSI escapes stripped (the repo's proto shim injects NO_COLOR=1 — never assert on color).",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "format": "regex" }
+        },
+        "stderrContains": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } }
+          ]
+        },
+        "filesExist": {
+          "description": "Paths (relative to the step's cwd) that must exist. A trailing `/**` matches recursively.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "filesAbsent": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "fileContains": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path"],
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "contains": { "type": "string" },
+              "matches": { "type": "string", "format": "regex" },
+              "notContains": { "type": "string" },
+              "minLines": { "type": "integer", "minimum": 1 }
+            },
+            "anyOf": [
+              { "required": ["contains"] },
+              { "required": ["matches"] },
+              { "required": ["notContains"] }
+            ]
+          }
+        },
+        "jsonPath": {
+          "description": "RFC 6901 pointer assertions against a JSON file (components.json, skills-lock.json), or against the step's own stdout with `source: stdout` (where `path` is omitted).",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["equals"],
+            "properties": {
+              "source": { "enum": ["file", "stdout"], "default": "file" },
+              "path": { "type": "string", "minLength": 1 },
+              "pointer": {
+                "description": "JSON pointer. Empty string means the document root.",
+                "type": "string",
+                "pattern": "^(/[^/~]*)*$"
+              },
+              "equals": {
+                "description": "Deep-equal expected value, or the string \"<exists>\" to assert only that the pointer resolves to anything.",
+                "anyOf": [
+                  { "type": "string", "enum": ["<exists>"] },
+                  {
+                    "type": [
+                      "string",
+                      "number",
+                      "boolean",
+                      "null",
+                      "array",
+                      "object"
+                    ]
+                  }
+                ]
+              }
+            },
+            "if": {
+              "properties": { "source": { "const": "file" } },
+              "required": ["source"]
+            },
+            "then": { "required": ["path"] }
+          }
+        },
+        "appBuild": {
+          "description": "Run the project's own build script with its own package manager and assert the outcome.",
+          "enum": ["pass", "fail"]
+        },
+        "appRender": {
+          "description": "Start the built server on a free port, fetch one route, assert the markup, stop it.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["route"],
+          "properties": {
+            "route": { "type": "string", "minLength": 1 },
+            "status": { "type": "integer", "minimum": 100, "maximum": 599 },
+            "contains": { "type": "array", "items": { "type": "string" } },
+            "notContains": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "dirExists": { "type": "string", "minLength": 1 },
+        "noop": {
+          "description": "Assert nothing but the exit code. Used where the observable outcome is captured for a human, not asserted.",
+          "type": "boolean"
+        }
+      }
+    },
+
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "kind", "tags", "requires", "setup", "steps"],
+      "properties": {
+        "id": {
+          "description": "Stable, unique, dot-namespaced id. CI filters and replay use it verbatim.",
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*(\\.[a-z0-9]+(-[a-z0-9]+)*)+$"
+        },
+        "title": { "type": "string", "minLength": 1 },
+        "kind": {
+          "description": "The KIND of user situation this represents. Two scenarios of the same kind must not both exist — the runner's coverage argument is 'one scenario per kind of situation, not per product'.",
+          "enum": [
+            "core",
+            "project-kind",
+            "existing-project",
+            "config-shape",
+            "package-manager",
+            "monorepo",
+            "post-setup",
+            "skills",
+            "environment",
+            "registry"
+          ]
+        },
+        "tags": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/tag" }
+        },
+        "requires": { "$ref": "#/$defs/requires" },
+        "setup": { "$ref": "#/$defs/setup" },
+        "env": {
+          "description": "Environment for every step in this scenario.",
+          "type": "object",
+          "additionalProperties": { "type": ["string", "null"] }
+        },
+        "cwd": {
+          "description": "Default step cwd for the whole scenario. Defaults to the fixture's app dir.",
+          "type": "string",
+          "minLength": 1
+        },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/step" }
+        },
+        "speed": {
+          "description": "Rough wall-clock class, from the measured table in README §Timing. `fast` ≤ ~2 min, `medium` ≤ ~6 min, `slow` > 6 min (a real install-heavy or Node-matrix scenario).",
+          "enum": ["fast", "medium", "slow"]
+        },
+        "ci": {
+          "description": "CI placement. Windows runs report but never block: windows-blocking stays false everywhere.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "shard": { "type": "string", "minLength": 1 },
+            "windowsBlocking": { "type": "boolean", "default": false },
+            "nightlyOnly": {
+              "description": "Runs in the nightly job, not the per-push blocking job (Node matrices, slow monorepo sweeps).",
+              "type": "boolean"
+            }
+          }
+        },
+        "status": {
+          "description": "`unknown-expectation` marks a scenario whose expected behavior could not be determined from the code. It is reported, not asserted, until a human answers `question`.",
+          "enum": ["specified", "unknown-expectation"],
+          "default": "specified"
+        },
+        "question": {
+          "description": "Required when status is unknown-expectation: the exact question to the CLI owner, with the scenario id.",
+          "type": "string",
+          "minLength": 1
+        },
+        "covers": {
+          "description": "The axis entries this scenario is the representative for (free text; used to build the coverage table in the README).",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "notes": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "unknown-expectation" } },
+            "required": ["status"]
+          },
+          "then": { "required": ["question"] }
+        }
+      ]
+    }
+  }
+}
