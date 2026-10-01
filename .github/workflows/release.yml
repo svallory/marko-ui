@@ -108,11 +108,18 @@ jobs:
       # to main, and releases dispatch from main, so this job re-gates only
       # the packages being published rather than duplicating that server +
       # browser setup here.
-      - name: Run CLI tests
-        run: bun run test:cli
+      #
+      # init.test.ts drives the BUILT CLI through a pty (expect) and fails,
+      # rather than skips, under CI when either is missing — so expect is
+      # installed and the CLI built before the suite runs (same as ci.yml).
+      - name: Install expect (pty driver for the init tests)
+        run: sudo apt-get update && sudo apt-get install -y expect
 
       - name: Build CLI package
         run: bun run --filter marko-ui build
+
+      - name: Run CLI tests
+        run: bun run test:cli
 
       - name: Run publint and attw
         run: bun run check:pkg
