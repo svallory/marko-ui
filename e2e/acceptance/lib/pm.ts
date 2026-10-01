@@ -134,6 +134,36 @@ async function copyTree(from: string, to: string): Promise<void> {
   await cp(from, to, { recursive: true, verbatimSymlinks: true })
 }
 
+/** Each package manager's lockfile, in the CLI's own detection order. */
+const LOCKFILES: Record<string, string[]> = {
+  bun: ["bun.lock", "bun.lockb"],
+  npm: ["package-lock.json"],
+  pnpm: ["pnpm-lock.yaml"],
+  "yarn-classic": ["yarn.lock"],
+  "yarn-berry": ["yarn.lock"],
+}
+
+/**
+ * A scaffolder installs with whatever it likes (create-marko uses bun), so a
+ * `pm: yarn-classic` project can arrive carrying a `bun.lock` as well as the
+ * `yarn.lock` its own install just wrote. The CLI detects the package manager
+ * from the first lockfile it finds (get-package-manager.ts's LOCKFILES, bun
+ * first), so a project with two is a bun project wearing a yarn.lock — and the
+ * skills relay then names `bunx` where the scenario is asserting the npx
+ * fallback. Removing the other managers' lockfiles makes `setup.pm` mean what
+ * it says. It is a copy per scenario, so the cached scaffold is untouched.
+ */
+async function pruneForeignLockfiles(appDir: string, pm: Pm): Promise<void> {
+  const mine = new Set(LOCKFILES[pm])
+  for (const [owner, files] of Object.entries(LOCKFILES)) {
+    if (owner === pm) continue
+    for (const file of files) {
+      if (mine.has(file)) continue
+      await rm(join(appDir, file), { force: true })
+    }
+  }
+}
+
 export interface ScaffoldResult {
   /** Absolute, realpath'd path of the scaffolded app inside the workspace. */
   appDir: string
@@ -190,6 +220,7 @@ export async function scaffoldProject(options: {
         `${driver.bin} install failed in the scaffold (exit ${installed.exitCode})\n${installed.stdout}\n${installed.stderr}`,
       )
     }
+    await pruneForeignLockfiles(join(workspace, dir), pm)
   }
 
   if (useCache) {

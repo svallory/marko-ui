@@ -1206,8 +1206,14 @@ scenarios:
         expect:
           exit: 1
           stdoutMatches: ["(?i)does not look like a Marko project"]
-          filesAbsent: ["components.json", "AGENTS.md"]
+          filesAbsent: ["components.json"]
+          # create-astro@latest ships its OWN AGENTS.md and CLAUDE.md, so
+          # filesAbsent can never hold for AGENTS.md; what this scenario means
+          # is that the CLI wrote nothing, which is the absence of its own
+          # marker in the scaffolder's file.
           fileContains:
+            - path: AGENTS.md
+              notContains: "<!-- marko-ui:start -->"
             - path: package.json
               notContains: "marko"
 
@@ -1229,7 +1235,14 @@ scenarios:
           exit: 1
           stdoutMatches: ["(?i)does not look like a Marko project"]
           stdoutContains: "--force"
-          filesAbsent: ["components.json", "AGENTS.md"]
+          filesAbsent: ["components.json"]
+          # create-astro@latest ships its OWN AGENTS.md and CLAUDE.md, so
+          # filesAbsent can never hold for AGENTS.md; what this scenario means
+          # is that the CLI wrote nothing, which is the absence of its own
+          # marker in the scaffolder's file.
+          fileContains:
+            - path: AGENTS.md
+              notContains: "<!-- marko-ui:start -->"
       - name: agents sync before init points at init --agents
         command: agents
         sub: ["sync"]
