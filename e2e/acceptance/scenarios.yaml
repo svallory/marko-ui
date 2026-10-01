@@ -587,11 +587,16 @@ flows:
       expect:
         exit: 0
         stdoutMatches: ["(?i)all checks passed"]
-    - name: diff reports no drift right after add
+    # `add style` writes a stylesheet, not a component directory, so `diff` has
+    # no installed COMPONENT to compare and says so. Observed, not assumed: the
+    # shared flow's "no updates found|up to date" cannot hold here, and `diff`
+    # is the one that is right — the theme block this scenario is about is
+    # asserted by the scenario's own step, not by the spine.
+    - name: diff has no component to compare, and says exactly that
       command: diff
       expect:
         exit: 0
-        stdoutMatches: ["(?i)no updates found|up to date"]
+        stdoutContains: "No installed components found"
 
   # The import distribution installs nothing into src/components/ui at all:
   # `add` refuses on it by design (0.5.0 breaking change, asserted two steps
@@ -616,11 +621,11 @@ flows:
       expect:
         exit: 0
         stdoutMatches: ["(?i)all checks passed"]
-    - name: diff reports no drift
+    - name: diff has no component to compare, and says exactly that
       command: diff
       expect:
         exit: 0
-        stdoutMatches: ["(?i)no updates found|up to date"]
+        stdoutContains: "No installed components found"
   # Build the app and assert the component really rendered. The build alone
   # proves nothing: marko-run emits a server bundle, not prerendered HTML.
   build-and-render-button:
