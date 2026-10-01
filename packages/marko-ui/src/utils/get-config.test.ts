@@ -8,6 +8,8 @@ import { describe, expect, it } from "vitest"
 import {
   assertNotReactComponentsJson,
   createConfig,
+  findCommonRoot,
+  findPackageRoot,
   getConfig,
   getRawConfig,
   getWorkspaceConfig,
@@ -284,6 +286,54 @@ describe("getProjectConfig", () => {
       registries: {
         "@marko-ui": "https://marko-ui.saulo.tech/r/{name}.json",
       },
+    })
+  })
+})
+
+describe("getConfig: unresolved aliases", () => {
+  async function unbackedAliasDir(dir: string) {
+    await fs.writeJson(path.join(dir, "package.json"), { name: "app" })
+    await fs.writeJson(path.join(dir, "tsconfig.json"), {
+      compilerOptions: { paths: { "@/*": ["./src/*"] } },
+    })
+    await fs.mkdir(path.join(dir, "src"), { recursive: true })
+    await fs.writeJson(path.join(dir, "components.json"), {
+      style: "default",
+      rsc: false,
+      tsx: true,
+      tailwind: {
+        config: "",
+        css: "src/styles/globals.css",
+        baseColor: "neutral",
+        cssVariables: true,
+      },
+      aliases: { components: "#components", utils: "#lib/utils" },
+    })
+    return dir
+  }
+
+  it("refuses an alias nothing backs", async () => {
+    await withTempDir(async (dir) => {
+      await expect(getConfig(await unbackedAliasDir(dir))).rejects.toThrow(
+        /Could not resolve the following aliases/
+      )
+    })
+  })
+
+  it("loads it for a caller that only reports the problem", async () => {
+    // `doctor` reports the failed alias check instead of dying on this, so it
+    // needs a usable config back. The unresolved alias is pointed at the
+    // source root so the config parses; nothing writes there.
+    await withTempDir(async (dir) => {
+      const config = await getConfig(await unbackedAliasDir(dir), {
+        allowUnresolvedAliases: true,
+      })
+
+      expect(config?.resolvedPaths.components).toBe(path.join(dir, "src"))
+      expect(config?.resolvedPaths.utils).toBe(path.join(dir, "src"))
+      // `ui` is derived from the (null) components alias, so it fell back to
+      // cwd before the lenient substitution ran; nothing here is written.
+      expect(config?.resolvedPaths.ui).toBe(path.join(dir, "ui"))
     })
   })
 })
@@ -663,6 +713,96 @@ describe("getWorkspaceConfig", () => {
       )
     } finally {
       await fs.remove(tempDir)
+    }
+  })
+
+  // marko-ui-so5.4: a RELATIVE `resolvedPaths.cwd` (which is what `init` used
+  // to hand on whenever `--cwd` was relative) paired with the absolute alias
+  // paths it resolves against. findCommonRoot compares path segments, so the
+  // two share no leading segment, it returns "", and every alias then looked
+  // like it belonged to a DIFFERENT package — so getWorkspaceConfig demanded a
+  // components.json in the very workspace init was creating one in.
+  it("a relative resolvedPaths.cwd does not make the project's own aliases look foreign", async () => {
+    const fixtureRoot = getFixturesDir("frameworks/vite-monorepo-imports")
+    const appCwd = path.join(fixtureRoot, "apps/web")
+    const config = await getConfig(appCwd)
+    if (!config) {
+      throw new Error("Failed to load monorepo app config")
+    }
+
+    // The exact shape `init --cwd apps/web` produced: the process sits at the
+    // workspace root and `resolvedPaths.cwd` is the RELATIVE "apps/web", while
+    // every alias path is absolute. Before the fix this threw "Could not load
+    // the workspace config in apps/web" — for the app that was about to be
+    // written to, and for a config that had just been written to it.
+    const originalCwd = process.cwd()
+    process.chdir(fixtureRoot)
+    try {
+      const relativeCwdConfig = {
+        ...config,
+        resolvedPaths: { ...config.resolvedPaths, cwd: "apps/web" },
+      }
+
+      // The ui alias genuinely lives in another package in this fixture, so
+      // the workspace config must still be FOUND — by the same path it takes
+      // with an absolute cwd, not skipped and not demanded of the app. Keys
+      // that belong to the app itself pass the input config through unchanged
+      // (hence the relative cwd they carry back out).
+      await expect(getWorkspaceConfig(relativeCwdConfig)).resolves.toMatchObject({
+        components: { resolvedPaths: { cwd: "apps/web" } },
+        ui: {
+          resolvedPaths: { cwd: path.join(fixtureRoot, "packages/ui") },
+        },
+      })
+    } finally {
+      process.chdir(originalCwd)
+    }
+  })
+})
+
+describe("findPackageRoot", () => {
+  it("resolves a relative cwd before comparing it with an absolute alias path", async () => {
+    const fixtureRoot = getFixturesDir("frameworks/vite-monorepo-imports")
+    const appCwd = path.join(fixtureRoot, "apps/web")
+    const ui = path.join(fixtureRoot, "packages/ui/src/components")
+
+    // The mixed pair is the bug: findCommonRoot("apps/web", "/abs/...") is "",
+    // an empty common root that made every alias look like it belonged to a
+    // different package.
+    expect(findCommonRoot("apps/web", ui)).toBe("")
+
+    const originalCwd = process.cwd()
+    process.chdir(fixtureRoot)
+    try {
+      // Resolving first, the relative cwd finds the very same package root an
+      // absolute one does.
+      expect(await findPackageRoot("apps/web", ui)).toBe(
+        await findPackageRoot(appCwd, ui)
+      )
+      expect(await findPackageRoot("apps/web", ui)).toBe(
+        path.join(fixtureRoot, "packages/ui")
+      )
+    } finally {
+      process.chdir(originalCwd)
+    }
+  })
+
+  it("returns null for a relative cwd and an alias inside that same project", async () => {
+    const appCwd = getFixturesDir("frameworks/vite-monorepo-imports/apps/web")
+    const ui = path.join(appCwd, "src/components/ui")
+
+    // Absolute: the alias is in the app's own package, so there is no foreign
+    // package root to report.
+    expect(await findPackageRoot(appCwd, ui)).toBeNull()
+
+    const originalCwd = process.cwd()
+    process.chdir(path.dirname(path.dirname(appCwd)))
+    try {
+      // Relative, as init used to pass it: still no foreign package root, and
+      // in particular no bogus "add components.json to this workspace".
+      expect(await findPackageRoot("apps/web", ui)).toBeNull()
+    } finally {
+      process.chdir(originalCwd)
     }
   })
 })

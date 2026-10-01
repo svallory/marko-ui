@@ -189,11 +189,15 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
     })
   }
 
-  // 3. components.json.
+  // 3. components.json. Loaded leniently about aliases: reporting an alias
+  // nothing backs is one of doctor's jobs (`checkAliases`, below), and the
+  // strict loader refused to hand back a config at all in exactly that case —
+  // so the command died with "Something went wrong" (exit 1) instead of
+  // naming the alias and exiting 3. Every other command still refuses.
   let config = null
   let configError: string | null = null
   try {
-    config = await getConfig(cwd)
+    config = await getConfig(cwd, { allowUnresolvedAliases: true })
   } catch (error) {
     configError = error instanceof Error ? error.message : String(error)
   }
@@ -274,7 +278,12 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
   // doctor checks exactly what installed components require instead of
   // hardcoding package knowledge.
   if (Array.isArray(index)) {
-    const installed = await getProjectComponents(cwd)
+    // Lenient about aliases, like the config load above: listing installed
+    // components is read-only, and refusing to answer would take down the
+    // dependency check that runs after it.
+    const installed = await getProjectComponents(cwd, undefined, {
+      allowUnresolvedAliases: true,
+    })
     const byName = new Map(index.map((item) => [item.name, item]))
     const missing = new Set<string>()
     for (const name of installed) {

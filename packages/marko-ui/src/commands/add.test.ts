@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "fs"
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "fs"
 import { tmpdir } from "os"
 import path from "path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -8,6 +8,12 @@ const mocks = vi.hoisted(() => ({
   dryRunComponents: vi.fn(),
   getRegistryItems: vi.fn(),
   getShadcnRegistryIndex: vi.fn(),
+  isInteractive: vi.fn(() => false),
+}))
+
+vi.mock("@/src/utils/interactive", () => ({
+  isInteractive: mocks.isInteractive,
+  isNonInteractive: vi.fn(() => true),
 }))
 
 vi.mock("@/src/utils/add-components", () => ({ addComponents: mocks.addComponents }))
@@ -26,6 +32,7 @@ import {
   assertHasComponents,
   shouldConfirmAutoInit,
   shouldConfirmStyleInstall,
+  shouldPrompt,
 } from "@/src/commands/add"
 import { shouldConfirmEject } from "@/src/commands/eject"
 import { CommandError } from "@/src/utils/handle-error"
@@ -112,6 +119,81 @@ describe("assertAddableDistribution: hint only for ui components", () => {
 
   it("lets `add style` through once the project is ejected to copy", () => {
     expect(() => assertAddableDistribution({ distribution: "copy" }, ["style"], new Set())).not.toThrow()
+  })
+})
+
+describe("add on an initialized project", () => {
+  const dirs: string[] = []
+
+  function initializedApp() {
+    const cwd = mkdtempSync(path.join(tmpdir(), "marko-ui-add-inited-"))
+    dirs.push(cwd)
+    writeFileSync(
+      path.join(cwd, "package.json"),
+      JSON.stringify({ name: "a", dependencies: { marko: "^6.0.0", "@marko/run": "^1.0.0" } })
+    )
+    writeFileSync(path.join(cwd, "tsconfig.json"), JSON.stringify({ compilerOptions: { paths: { "@/*": ["./src/*"] } } }))
+    writeFileSync(
+      path.join(cwd, "components.json"),
+      JSON.stringify({
+        $schema: "https://ui.shadcn.com/schema.json",
+        style: "default",
+        rsc: true,
+        tsx: true,
+        tailwind: {
+          config: "",
+          css: "src/styles/globals.css",
+          baseColor: "neutral",
+          cssVariables: true,
+        },
+        aliases: { components: "@/components", utils: "@/lib/utils" },
+      })
+    )
+    mkdirSync(path.join(cwd, "src/styles"), { recursive: true })
+    writeFileSync(path.join(cwd, "src/styles/globals.css"), '@import "tailwindcss";\n')
+    return cwd
+  }
+
+  beforeEach(() => {
+    mocks.getRegistryItems.mockResolvedValue([{ type: "registry:ui", name: "button" }])
+    mocks.addComponents.mockResolvedValue(undefined)
+    vi.spyOn(logger, "info").mockImplementation(() => {})
+    vi.spyOn(logger, "log").mockImplementation(() => {})
+  })
+  afterEach(() => {
+    vi.restoreAllMocks()
+    for (const m of Object.values(mocks)) m.mockReset()
+    for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true })
+  })
+
+  // `add` used to hand `addComponents` its raw commander options: a `yes` but
+  // no `interactive`, so the file writer defaulted to "interactive" and asked
+  // "already exists, overwrite?" even under `-y`. Pinned here at the command
+  // boundary, since that is where the value was dropped.
+  it("-y tells the file writer not to prompt", async () => {
+    const cwd = initializedApp()
+    mocks.isInteractive.mockReturnValue(true)
+
+    await add.parseAsync(["node", "add", "button", "-y", "--cwd", cwd])
+
+    expect(mocks.addComponents).toHaveBeenCalledWith(
+      ["button"],
+      expect.anything(),
+      expect.objectContaining({ interactive: false })
+    )
+  })
+
+  it("still lets a terminal without -y prompt", async () => {
+    const cwd = initializedApp()
+    mocks.isInteractive.mockReturnValue(true)
+
+    await add.parseAsync(["node", "add", "button", "--cwd", cwd])
+
+    expect(mocks.addComponents).toHaveBeenCalledWith(
+      ["button"],
+      expect.anything(),
+      expect.objectContaining({ interactive: true })
+    )
   })
 })
 
@@ -208,6 +290,18 @@ describe("assertHasComponents", () => {
   it("never complains when names or --all are given", () => {
     expect(() => assertHasComponents({ yes: true, all: false, components: ["button"] }, false)).not.toThrow()
     expect(() => assertHasComponents({ yes: true, all: true, components: [] }, false)).not.toThrow()
+  })
+})
+
+describe("shouldPrompt", () => {
+  it("asks in a terminal without -y", () => {
+    expect(shouldPrompt({ yes: false }, true)).toBe(true)
+  })
+  it("never asks with -y, even in a terminal", () => {
+    expect(shouldPrompt({ yes: true }, true)).toBe(false)
+  })
+  it("never asks without a terminal", () => {
+    expect(shouldPrompt({ yes: false }, false)).toBe(false)
   })
 })
 

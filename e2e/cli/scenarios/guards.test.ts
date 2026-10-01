@@ -136,4 +136,25 @@ describe("guards — refusals the CLI owes the user", () => {
       expect(read(ws, "components.json"), `${label} mutated the React components.json`).toBe(before)
     }
   })
+
+  // marko-ui-so5.3: a bare `registry add` rendered "Which registries would you
+  // like to add?" with nothing able to answer it, then exited 0 having
+  // registered nothing — so a CI or agent step calling it bare went green
+  // having done nothing at all.
+  scenario("G05", "registry add with no arguments and no terminal: exit 2 naming the syntax, nothing written", async () => {
+    const ws = makeWorkspace()
+    markoApp(ws)
+
+    const r = await cli(ws, ["registry", "add"], { shim: withShims(makeWorkspace("shim")), timeoutMs: 30_000 })
+    const out = plain(r.out)
+
+    expect(r.timedOut, "registry add hung").toBe(false)
+    expect(r.code, tail(r.out)).toBe(2)
+    expect(out).not.toContain("Which registries would you like to add?")
+    expect(out).toContain("marko-ui registry add @namespace=url")
+    expect(out).toContain("marko-ui registry list")
+    // The refusal happens before any config is read, so nothing is written.
+    expect(exists(ws, "components.json"), "a failed registry add wrote a config").toBe(false)
+    expect(exists(ws, "package.json")).toBe(true)
+  })
 })

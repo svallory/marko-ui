@@ -7,14 +7,14 @@ import {
   workspaceConfigSchema,
 } from "@/src/schema"
 import { CommandError } from "@/src/utils/handle-error"
-import { getProjectInfo, hasMarkoDependency } from "@/src/utils/get-project-info"
+import { hasMarkoDependency } from "@/src/utils/get-project-info"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import {
   matchesTsconfigPathsKey,
   resolveImportWithMetadata,
 } from "@/src/utils/resolve-import"
-import { resolveConventionalAlias } from "@/src/utils/source-root"
+import { getSourceRoot, resolveConventionalAlias } from "@/src/utils/source-root"
 import { cosmiconfig } from "cosmiconfig"
 import fsExtra from "fs-extra"
 import fg from "fast-glob"
@@ -42,7 +42,10 @@ export const explorer = cosmiconfig("components", {
 
 export type Config = z.infer<typeof configSchema>
 
-export async function getConfig(cwd: string) {
+export async function getConfig(
+  cwd: string,
+  options: { allowUnresolvedAliases?: boolean } = {}
+) {
   const config = await getRawConfig(cwd)
 
   if (!config) {
@@ -67,12 +70,13 @@ export async function getConfig(cwd: string) {
     config.visualStyle = DEFAULT_VISUAL_STYLE
   }
 
-  return await resolveConfigPaths(cwd, config)
+  return await resolveConfigPaths(cwd, config, options)
 }
 
 export async function resolveConfigPaths(
   cwd: string,
-  config: z.infer<typeof rawConfigSchema>
+  config: z.infer<typeof rawConfigSchema>,
+  options: { allowUnresolvedAliases?: boolean } = {}
 ) {
   // Merge built-in registries with user registries
   config.registries = {
@@ -100,18 +104,35 @@ export async function resolveConfigPaths(
     : path.resolve(resolvedComponents ?? cwd, "ui")
   const resolvedLib = config.aliases["lib"]
     ? await resolveAliasPath("lib", config.aliases["lib"], cwd, tsConfig)
+    // TODO: Make this configurable.
+    // For now, we assume the lib and hooks directories are one level up from the components directory.
     : path.resolve(resolvedUtils ?? cwd, "..")
   const resolvedHooks = config.aliases["hooks"]
     ? await resolveAliasPath("hooks", config.aliases["hooks"], cwd, tsConfig)
     : path.resolve(resolvedComponents ?? cwd, "..", "hooks")
 
-  assertResolvedAliases(cwd, {
+  const resolvedAliases = {
     components: resolvedComponents,
     utils: resolvedUtils,
     ui: resolvedUi,
     lib: resolvedLib,
     hooks: resolvedHooks,
-  })
+  }
+
+  if (options.allowUnresolvedAliases) {
+    // `doctor` is the one caller that must survive an alias that resolves to
+    // nothing: reporting that is its job, and the assertion below used to fire
+    // first, so the command died with "Something went wrong" instead of naming
+    // the alias. An unresolved alias has no path to offer, so it is pointed at
+    // the source root purely to keep the parsed config usable — the alias
+    // check is what tells the user the truth. Every other command still
+    // refuses, with the actionable error.
+    for (const key of Object.keys(resolvedAliases) as (keyof typeof resolvedAliases)[]) {
+      resolvedAliases[key] ??= getSourceRoot(cwd)
+    }
+  } else {
+    assertResolvedAliases(cwd, resolvedAliases)
+  }
 
   return configSchema.parse({
     ...config,
@@ -121,13 +142,7 @@ export async function resolveConfigPaths(
         ? path.resolve(cwd, config.tailwind.config)
         : "",
       tailwindCss: path.resolve(cwd, config.tailwind.css),
-      utils: resolvedUtils,
-      components: resolvedComponents,
-      ui: resolvedUi,
-      // TODO: Make this configurable.
-      // For now, we assume the lib and hooks directories are one level up from the components directory.
-      lib: resolvedLib,
-      hooks: resolvedHooks,
+      ...resolvedAliases,
     },
   })
 }
@@ -539,8 +554,17 @@ export async function getWorkspaceConfig(config: Config) {
 }
 
 export async function findPackageRoot(cwd: string, resolvedPath: string) {
-  const commonRoot = findCommonRoot(cwd, resolvedPath)
-  const relativePath = path.relative(commonRoot, resolvedPath)
+  // Both inputs are resolved before anything else. findCommonRoot compares
+  // path SEGMENTS, so one relative and one absolute input share no leading
+  // segment and it returns "" — an empty common root that makes
+  // `path.relative` fall back to the process cwd and makes every alias look
+  // like it lives in some other package. A config whose `resolvedPaths.cwd`
+  // has not been resolved (or a library caller that built one by hand) must
+  // degrade to "no foreign package root", not to a bogus error.
+  const absoluteCwd = path.resolve(cwd)
+  const absolutePath = path.resolve(absoluteCwd, resolvedPath)
+  const commonRoot = findCommonRoot(absoluteCwd, absolutePath)
+  const relativePath = path.relative(commonRoot, absolutePath)
 
   const packageRoots = await fg.glob("**/package.json", {
     cwd: commonRoot,

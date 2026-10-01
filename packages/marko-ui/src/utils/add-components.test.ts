@@ -4,6 +4,7 @@ import { addComponents, validateFilesTarget } from "./add-components"
 
 const {
   mockGetRegistryItems,
+  mockIsInteractive,
   mockResolveRegistryTree,
   mockUpdateDependencies,
   mockUpdateTailwindConfig,
@@ -27,6 +28,7 @@ const {
 
   return {
     mockGetRegistryItems: vi.fn(),
+    mockIsInteractive: vi.fn(() => false),
     mockResolveRegistryTree: vi.fn(),
     mockUpdateDependencies: vi.fn(),
     mockUpdateTailwindConfig: vi.fn(),
@@ -87,6 +89,10 @@ vi.mock("@/src/utils/updaters/update-fonts", () => ({
 
 vi.mock("@/src/utils/updaters/update-files", () => ({
   updateFiles: mockUpdateFiles,
+}))
+
+vi.mock("@/src/utils/interactive", () => ({
+  isInteractive: mockIsInteractive,
 }))
 
 vi.mock("@/src/utils/updaters/update-css", () => ({
@@ -176,6 +182,46 @@ describe("addComponents", () => {
       expect.any(Array),
       expect.any(Object),
       expect.objectContaining({ interactive: false })
+    )
+  })
+
+  // The second half of this test is the pin for the DEFAULT being a constant
+  // `true` again, which is how so5.2 happened: with `interactive: true`
+  // hardcoded, the first assertion below fails (it receives `true` where
+  // nothing can answer a prompt). Verified by mutation, not by inspection.
+  it("asks whether an existing file may be overwritten only in a real terminal", async () => {
+    mockResolveRegistryTree.mockResolvedValue({
+      dependencies: [],
+      devDependencies: [],
+      files: [
+        {
+          path: "registry/default/ui/button.tsx",
+          type: "registry:ui",
+          content: "export function Button() {}",
+        },
+      ],
+    })
+
+    const config = { resolvedPaths: { cwd: "/test/project" } } as any
+
+    // No `interactive` from the caller — which is what `add` does, so the
+    // default decides, and it has to follow what can actually answer the
+    // prompt. It used to be hardcoded `true`, which is how `add button -y`
+    // ended up asking "already exists, overwrite?" anyway.
+    mockIsInteractive.mockReturnValue(false)
+    await addComponents(["button"], config, { silent: true })
+    expect(mockUpdateFiles).toHaveBeenLastCalledWith(
+      expect.any(Array),
+      expect.any(Object),
+      expect.objectContaining({ interactive: false })
+    )
+
+    mockIsInteractive.mockReturnValue(true)
+    await addComponents(["button"], config, { silent: true })
+    expect(mockUpdateFiles).toHaveBeenLastCalledWith(
+      expect.any(Array),
+      expect.any(Object),
+      expect.objectContaining({ interactive: true })
     )
   })
 

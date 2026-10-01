@@ -5,8 +5,9 @@ import {
   assertNotReactComponentsJson,
   writeConfigRegistries,
 } from "@/src/utils/get-config"
-import { handleError } from "@/src/utils/handle-error"
+import { CommandError, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
+import { isInteractive } from "@/src/utils/interactive"
 import { logger } from "@/src/utils/logger"
 import { exitIfEmptySelection, multiselect } from "@/src/utils/clack"
 import { spinner } from "@/src/utils/spinner"
@@ -39,6 +40,10 @@ export const add = new Command()
         silent: opts.silent,
       })
 
+      // Throws (exit 2) when a bare `registry add` cannot be answered; a
+      // terminal still falls through to the picker below.
+      assertHasRegistries(registries)
+
       const registryArgs =
         registries.length > 0
           ? registries
@@ -52,6 +57,34 @@ export const add = new Command()
       handleError(error)
     }
   })
+
+/**
+ * `registry add` with no arguments opens a multiselect, which nothing can
+ * answer without a terminal. It used to render the prompt anyway and exit 0
+ * having registered nothing, so a CI or agent step calling it bare went green
+ * having done nothing at all. Same treatment as `add`'s assertHasComponents:
+ * fail with a usage error (exit 2) naming the syntax, and let a real terminal
+ * reach the picker.
+ *
+ * Exported with `interactive` injectable so it is testable without a pty.
+ */
+export function assertHasRegistries(
+  registries: string[],
+  interactive: boolean = isInteractive()
+) {
+  if (registries.length > 0 || interactive) {
+    return
+  }
+
+  throw new CommandError(
+    `Name the registries to add: ${highlighter.info(
+      "marko-ui registry add @namespace=url"
+    )} (the URL must include the ${highlighter.info("{name}")} placeholder). Run ${highlighter.info(
+      "marko-ui registry list"
+    )} to see what is available.`,
+    { exitCode: 2 }
+  )
+}
 
 export function parseRegistryArg(arg: string): {
   namespace: string
