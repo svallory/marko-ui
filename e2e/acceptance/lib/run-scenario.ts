@@ -28,6 +28,7 @@ import {
   readdirSync,
   readFileSync,
   symlinkSync,
+  writeFileSync,
 } from "node:fs"
 import { appendFile, cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
@@ -633,6 +634,22 @@ interface Invocation {
 export function ensurePinnedCliDir(installRoot: string, version: string): string {
   const pinned = join(installRoot, ".acceptance-cli", version)
   mkdirSync(pinned, { recursive: true })
+  // The directory also needs to be a PACKAGE ROOT, not just a directory. The
+  // scenario workspace has a package.json of its own (the CLI under test is
+  // installed there), and a package manager run inside an empty subdirectory of
+  // a package root installs into THAT root: `bun add -d marko-ui@0.4.1` here
+  // exits 0 having hoisted the package to <workspace>/node_modules, so the
+  // guard above re-installs on every step and the invocation then dies with
+  // "Cannot find module …/.acceptance-cli/0.4.1/node_modules/marko-ui/dist/
+  // index.js". Verified by hand: the same `bun add` in a directory with no
+  // ancestor package.json does produce node_modules/marko-ui/dist/index.js.
+  const manifest = join(pinned, "package.json")
+  if (!existsSync(manifest)) {
+    writeFileSync(
+      manifest,
+      `${JSON.stringify({ name: `marko-ui-acceptance-cli-${version}`, private: true }, null, 2)}\n`
+    )
+  }
   return pinned
 }
 
