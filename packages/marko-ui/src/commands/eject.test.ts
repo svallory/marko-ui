@@ -11,7 +11,7 @@ vi.mock("@/src/registry/api", () => ({
   getShadcnRegistryIndex: mockGetShadcnRegistryIndex,
 }))
 
-import { findImportedComponents, setDistribution } from "./eject"
+import { ejectTargetConfig, findImportedComponents, setDistribution } from "./eject"
 
 /**
  * Scaffolds the real published layout: node_modules/@marko-ui/shadcn/ui/<name>.
@@ -101,5 +101,14 @@ describe("setDistribution", () => {
   it("no-ops when components.json does not exist", async () => {
     const dir = mkdtempSync(path.join(tmpdir(), "marko-ui-eject-noconfig-"))
     await expect(setDistribution(dir, "copy")).resolves.toBeUndefined()
+  })
+})
+
+describe("ejectTargetConfig", () => {
+  it("flips distribution to copy without mutating the input or dropping fields", () => {
+    const config = { distribution: "import" as const, visualStyle: "nova", style: "default" }
+    const target = ejectTargetConfig(config)
+    expect(target).toEqual({ distribution: "copy", visualStyle: "nova", style: "default" })
+    expect(config.distribution).toBe("import")
   })
 })
