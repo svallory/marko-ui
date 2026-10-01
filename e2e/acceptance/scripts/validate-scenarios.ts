@@ -65,6 +65,9 @@ const gated = doc.scenarios
     (scenario) =>
       `${scenario.id} (needs:${scenario.tags.find((tag) => tag.startsWith("needs:"))?.split(":")[1] ?? "?"})`,
   )
+const buggy = doc.scenarios
+  .filter((scenario) => scenario.status === "known-bug")
+  .map((scenario) => `${scenario.id} — ${scenario.bug ?? "(no bug: recorded)"}`)
 
 console.log("✓ scenarios.yaml validates against scenarios.schema.json")
 console.log(
@@ -85,5 +88,10 @@ if (unknown.length) {
 if (gated.length) {
   console.log(
     `  status:needs-cli-guards — ${gated.length} (reported and SKIPPED, not failed, until the gate lands):\n    ${gated.join("\n    ")}`,
+  )
+}
+if (buggy.length) {
+  console.log(
+    `  status:known-bug — ${buggy.length} (the expectation stands; the scenario is reported and SKIPPED, never weakened):\n    ${buggy.join("\n    ")}`,
   )
 }

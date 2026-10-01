@@ -206,8 +206,10 @@ export interface Scenario {
   steps: Step[]
   speed?: "fast" | "medium" | "slow"
   ci?: { shard?: string; windowsBlocking?: boolean; nightlyOnly?: boolean }
-  status?: "specified" | "unknown-expectation" | "needs-cli-guards"
+  status?: "specified" | "unknown-expectation" | "needs-cli-guards" | "known-bug"
   question?: string
+  /** Required when `status: known-bug` — the tracking id or a one-line repro. */
+  bug?: string
   covers?: string[]
   notes?: string
 }
@@ -458,6 +460,14 @@ export function crossReferenceProblems(doc: ScenariosDoc): string[] {
     if (scenario.status === "unknown-expectation" && !scenario.question) {
       problems.push(
         `${scenario.id}: status unknown-expectation without a question`,
+      )
+    }
+    // A known bug with nothing to track it by is a known bug that gets deleted
+    // in a week: the whole point of the status is that the expectation stays
+    // written down and the DEFECT is what gets carried, not the other way round.
+    if (scenario.status === "known-bug" && !scenario.bug) {
+      problems.push(
+        `${scenario.id}: status known-bug without a bug: (a tracking id or a one-line repro), so nothing records the defect the scenario found`,
       )
     }
     // A gated scenario the runner cannot gate is worse than an ungated one: it

@@ -116,6 +116,15 @@ export function skipReason(
 ): string | null {
   const { requires, tags } = scenario
 
+  // `status: known-bug` is a defect the scenario FOUND, not a defect in the
+  // scenario: the expectation stays exactly as written, and the scenario is
+  // reported and skipped so the bug is re-reported on every run instead of
+  // being deleted or quietly relaxed until it passes. `bug:` is required by the
+  // schema, so the text is always there to print.
+  if (scenario.status === "known-bug") {
+    return `status: known-bug — ${scenario.bug ?? "(no bug: recorded)"}`
+  }
+
   if (requires.os && !requires.os.includes(currentOs())) {
     return `requires os ${requires.os.join("|")}; this machine is ${currentOs()}`
   }
