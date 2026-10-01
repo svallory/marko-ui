@@ -330,7 +330,7 @@ export async function getRawConfig(
  *
  * Lives here — the single place every command's config load funnels through
  * — rather than per command, so `add`, `status`, `diff`, `doctor`, `agents`,
- * `eject`, `info`, `search`, `show` and `registry build` all refuse
+ * `eject`, `search`, `show` and `registry build` all refuse
  * identically. The commands that legitimately bypass this loader (`registry
  * list`/`add`/`remove` tolerate PARTIAL configs and read the file directly)
  * call this same detector themselves — the rule exists once, here.
