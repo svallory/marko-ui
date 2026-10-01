@@ -1097,17 +1097,18 @@ scenarios:
   - id: kind.marko5-class
     title: "a Marko 5 class-API project is refused: marko-ui requires Marko 6"
     kind: project-kind
-    tags: [os:linux, os:macos, kind:marko5, speed:fast, needs:cli-guards]
+    tags: [os:linux, os:macos, kind:marko5, speed:fast]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
       fixture: marko5-class
     speed: fast
     ci: { shard: kinds }
     covers: ["Marko 5 (class API) project"]
-    status: needs-cli-guards
     notes: >
-      Settled by the operator. Today `isMarkoProject` (preflights/preflight-init.ts)
-      only checks that SOME `marko` dependency is declared, so init happily
+      Settled by the operator, guard landed (fix/cli-guards, main 8c36c2e1): the
+      preflight now reads the installed `marko` version and refuses a Marko 5
+      project. Before it, `isMarkoProject` (preflights/preflight-init.ts)
+      only checked that SOME `marko` dependency was declared, so init happily
       configures a Marko 5 project and writes Marko 6 tags-API source
       (`<zag/api=`, attr-tags) that a Marko 5 compiler cannot consume — the
       failure would not surface until the user's own build. The guard belongs in
@@ -1373,7 +1374,7 @@ scenarios:
   - id: existing.tailwind-v3-config
     title: "a Tailwind v3 project is refused: marko-ui needs Tailwind v4"
     kind: existing-project
-    tags: [os:linux, os:macos, kind:tailwind, speed:fast, needs:cli-guards]
+    tags: [os:linux, os:macos, kind:tailwind, speed:fast]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
@@ -1384,13 +1385,10 @@ scenarios:
     speed: fast
     ci: { shard: existing }
     covers: ["Tailwind v3 config"]
-    status: needs-cli-guards
     notes: >
-      Settled by the operator. The Tailwind v3 guard lands on fix/cli-guards;
-      until it does, the runner SKIPS this scenario (reported, not failed)
-      because the CLI today accepts a v3 project and silently upgrades its
-      build. Skipped scenarios are listed in the run summary so an unlanded
-      guard cannot hide.
+      Settled by the operator; the guard landed on fix/cli-guards (main
+      8c36c2e1) and the scenario is asserted, not skipped. Before it, the CLI
+      accepted a v3 project and silently upgraded its build.
 
       What the guard must do, from the code: getProjectTailwindVersionFromConfig
       already reads the installed version, so the check belongs where init runs
@@ -1524,7 +1522,7 @@ scenarios:
   - id: existing.shadcn-components-json
     title: "a React shadcn components.json is recognised, not silently adopted"
     kind: existing-project
-    tags: [os:linux, os:macos, kind:react, speed:fast, needs:cli-guards]
+    tags: [os:linux, os:macos, kind:react, speed:fast]
     requires: { os: [linux, macos], network: npm, tools: [bun, node] }
     setup:
       fixture: react-vite
@@ -1533,7 +1531,6 @@ scenarios:
     speed: fast
     ci: { shard: existing }
     covers: ["an existing React shadcn components.json"]
-    status: needs-cli-guards
     notes: >
       Settled by the operator. A React components.json parses against the
       CLI's OWN schema — `style`, `rsc`, `tsx`, `tailwind.*` and
@@ -1910,7 +1907,12 @@ scenarios:
         sub: ["sync"]
         expect:
           exit: 0
-          stdoutMatches: ["(?i)skills.*installed|npx"]
+          # The FIRST sync installs the skills, and the install path reports
+          # through the spinner/logger, which writes to stderr; only the
+          # "already installed" path (a second sync) writes to stdout. The line
+          # that names the runner is the install one, so that is the stream the
+          # assertion belongs on.
+          stderrContains: ["npx -y skills@1.7.0 add"]
 
   - id: pm.yarn-berry
     title: "yarn berry (packageManager field + node-modules linker): the whole loop succeeds"
@@ -2027,6 +2029,9 @@ scenarios:
         "components.json in the app",
         "run from inside the app",
       ]
+    # make-bun-workspace moves the app to apps/web, so the scenario's default
+    # step cwd (normally the fixture's app dir) names where it now is.
+    cwd: apps/web
     steps:
       - name: init inside apps/web
         command: init
@@ -2162,6 +2167,9 @@ scenarios:
         "shared packages/ui components dir",
         "workspace: deps",
       ]
+    # packages/ui is this scenario's app: the shared flows default to the
+    # scenario's cwd, which is where components.json is written.
+    cwd: packages/ui
     steps:
       - name: init in the shared ui package
         command: init

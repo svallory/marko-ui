@@ -24,7 +24,6 @@ import { spawnSync } from "node:child_process"
 import { createHash } from "node:crypto"
 import {
   existsSync,
-  mkdirSync,
   readdirSync,
   readFileSync,
   symlinkSync,
@@ -176,6 +175,31 @@ function stepVars(
   return vars
 }
 
+/**
+ * The variables that make the CLI decide it is non-interactive
+ * (NON_INTERACTIVE_ENV_VARS in packages/marko-ui/src/utils/interactive.ts),
+ * plus the rest of the proto shim's trigger set (root AGENTS.md).
+ *
+ * They are cleared for every step that is not a pty step, and the scenario's
+ * own `env:` is applied afterwards, so a scenario that WANTS one
+ * (`env: {CI: "1"}`, `env: {AI_AGENT: "1"}`) still gets it. This is not
+ * cosmetic: an agent session exports several of these, so without the clear a
+ * local run tests a different code path than CI does. Observed while proving
+ * pm.yarn-classic: with them set, `agents sync` wrote nothing at all and exited
+ * 0, because the skills relay reports through a prompt-aware path that
+ * non-interactive runs skip — a green-looking step asserting nothing.
+ */
+const NON_INTERACTIVE_ENV_VARS = [
+  "CI",
+  "CLAUDECODE",
+  "AI_AGENT",
+  "CURSOR_AGENT",
+  "REPL_ID",
+  "CLAUDE_CODE",
+  "CURSOR_TRACE_ID",
+  "CODEX_SANDBOX",
+]
+
 function buildEnv(
   scenario: Scenario,
   step: Step,
@@ -187,6 +211,7 @@ function buildEnv(
     // a staging registry is only really exercised if this is forwarded.
     REGISTRY_URL: target.registryUrl,
   }
+  for (const name of NON_INTERACTIVE_ENV_VARS) delete env[name]
   for (const [key, value] of Object.entries(scenario.env ?? {})) {
     if (value === null) delete env[key]
     else env[key] = value
@@ -386,7 +411,18 @@ function describeCommand(command: string, args: string[]): string {
 async function executeStep(step: Step, ctx: StepContext): Promise<StepOutcome> {
   const command = step.command as string
   const timeoutMs = (step.timeoutSeconds ?? ctx.target.timeoutSeconds) * 1000
-  const cwd = step.cwd ? resolve(ctx.workspace, step.cwd) : ctx.defaultCwd
+  // The default step cwd (the scenario's own `cwd:`, else the fixture's app
+  // dir) is resolved at STEP time, not at setup time: the monorepo helpers MOVE
+  // the app directory (app → apps/web), and a cwd captured before the move is a
+  // path that no longer exists, which surfaces as a bare `spawnSync … ENOENT`
+  // from a shared flow step that never mentions the move. If it is gone, the
+  // workspace root is the only directory certainly there, and the step message
+  // names the cwd that was used either way.
+  const cwd = step.cwd
+    ? resolve(ctx.workspace, step.cwd)
+    : existsSync(ctx.defaultCwd)
+      ? ctx.defaultCwd
+      : ctx.workspace
   const extraVars = {
     WORKSPACE: ctx.workspace,
     APP: ctx.appDir,
@@ -947,7 +983,15 @@ async function installCliUnderTest(
     )
   }
   const specs = [cli.spec]
-  const result = driver.add(workspace, specs, 600_000)
+  // One retry: this is a real install against the real registry, and a single
+  // 404/timeout there is a flake, not a verdict on the scenario. Observed
+  // (bun add of the packed tarball failing on
+  // baseline-browser-mapping-2.11.27.tgz → 404), which is why the retry exists
+  // rather than a theory.
+  let result = driver.add(workspace, specs, 600_000)
+  if (result.exitCode !== 0) {
+    result = driver.add(workspace, specs, 600_000)
+  }
   if (result.exitCode !== 0) {
     throw new StepFailure(
       `installing the CLI under test (${cli.spec}) failed (exit ${result.exitCode})\n${result.stdout}\n${result.stderr}`,
