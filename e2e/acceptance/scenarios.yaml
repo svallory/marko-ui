@@ -540,6 +540,32 @@ flows:
         exit: 0
         stdoutMatches: ["(?i)no updates found|up to date"]
 
+
+  # verify-clean, for the scenarios that install something other than button.
+  # Same three read-only commands and the same assertions as `verify-clean` —
+  # only the component `status` is asked to list differs, because these
+  # scenarios never install a button and a `status --json` that does not mention
+  # the component that is actually on disk is a correct answer, not a defect.
+  # One flow per component rather than a parameterised one: `use:` takes no
+  # arguments, and a flow asserted for `select` must not silently become the
+  # flow other scenarios run.
+  verify-clean-lists-select:
+    - name: status lists the installed component
+      command: status
+      args: ["--json"]
+      expect:
+        exit: 0
+        stdoutContains: '"select"'
+    - name: doctor passes
+      command: doctor
+      expect:
+        exit: 0
+        stdoutMatches: ["(?i)all checks passed"]
+    - name: diff reports no drift right after add
+      command: diff
+      expect:
+        exit: 0
+        stdoutMatches: ["(?i)no updates found|up to date"]
   # Build the app and assert the component really rendered. The build alone
   # proves nothing: marko-run emits a server bundle, not prerendered HTML.
   build-and-render-button:
@@ -2302,7 +2328,7 @@ scenarios:
           fileContains:
             - path: src/components/ui/icon/resolve-client.ts
               contains: "tablerIcons"
-      - use: verify-clean
+      - use: verify-clean-lists-select
 
   - id: post.readd-user-edited-component
     title: "re-adding an edited component is refused in a terminal and skipped non-interactively"
