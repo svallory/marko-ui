@@ -55,6 +55,7 @@ interface PreStep {
   helper?: string;
   args?: string[];
   cwd?: string;
+  offline?: boolean;
   write?: { path?: string; body?: string };
   run?: { body?: string };
 }
@@ -64,6 +65,7 @@ interface Step {
   helper?: string;
   args?: string[];
   cwd?: string;
+  offline?: boolean;
   snapshot?: string[];
   expect?: Record<string, unknown>;
   notes?: string;
@@ -300,8 +302,10 @@ function walkSteps(steps: Step[] | undefined, where: string): void {
         problems.push(`${at}: unknown helper "${step.helper}"`);
       } else {
         usedHelpers.add(step.helper);
+        checkHelperCwd(step.helper, step.cwd, at);
       }
     }
+    checkOffline(step.command, step.args, step.offline, at);
     // `snapshot:` records a path a LATER expect.unchanged/changed refers to.
     // Recording the ORDER here is what lets the pairing check below insist the
     // snapshot came first.
@@ -355,6 +359,49 @@ for (const name of Object.keys(doc.flows)) {
     problems.push(`flows.${name} is declared but never used`);
 }
 
+// A helper whose declared cwd is the WORKSPACE ROOT (".") is written against a
+// different directory than the documented default (the fixture's app dir).
+// Inheriting the default would run it one level too deep — the exact bug where
+// make-bun-workspace moves the app into itself. So a root-scoped helper must be
+// invoked with an explicit cwd: ".", stated at the call site where it is
+// visible, rather than relying on the helper's own default being honoured.
+function checkHelperCwd(
+  helper: string | undefined,
+  stepCwd: string | undefined,
+  at: string,
+): void {
+  const declared = helper ? doc.helpers?.[helper]?.cwd : undefined;
+  if (declared === "." && stepCwd === undefined) {
+    problems.push(
+      `${at}: helper "${helper}" is scoped to the WORKSPACE ROOT (helpers.${helper}.cwd: ".") but the step sets no cwd — it would inherit the app-dir default and run one level too deep. Add cwd: "." here.`,
+    );
+  }
+}
+
+// `offline` cuts egress for its OWN step only; it says nothing about the rest
+// of the scenario, so it is legal in a scenario whose requires.network is
+// "both" (that is exactly env.offline-no-skill: init and add run live, only the
+// agents sync is cut). What IS contradictory is an offline step that is itself
+// supposed to be talking to the network.
+function checkOffline(
+  command: string | undefined,
+  args: string[] | undefined,
+  offline: boolean | undefined,
+  at: string,
+): void {
+  if (!offline) return;
+  if (command === "@http") {
+    problems.push(
+      `${at}: offline: true on an @http step contradicts itself — the step is defined as fetching a URL.`,
+    );
+  }
+  if ((args ?? []).some((arg) => arg.includes("$REGISTRY_URL"))) {
+    problems.push(
+      `${at}: offline: true but args interpolate $REGISTRY_URL — the step cannot reach the registry it names.`,
+    );
+  }
+}
+
 for (const [name, setup] of Object.entries(doc.fixtures)) {
   if (setup.fixture && !doc.fixtures[setup.fixture]) {
     problems.push(
@@ -379,8 +426,10 @@ function walkPre(steps: PreStep[] | undefined, where: string): void {
         problems.push(`${at}: unknown helper "${step.helper}"`);
       } else {
         usedHelpers.add(step.helper);
+        checkHelperCwd(step.helper, step.cwd, at);
       }
     }
+    checkOffline(undefined, step.args, step.offline, at);
     for (const arg of step.args ?? []) {
       const vars = arg.matchAll(/(?<!\$)\$(?!\$)([A-Za-z_][A-Za-z0-9_]*)/g);
       for (const match of vars) {
@@ -401,6 +450,16 @@ for (const [name, setup] of Object.entries(doc.fixtures)) {
 for (const scenario of doc.scenarios) {
   walkPre(scenario.setup?.pre, `${scenario.id}.setup.pre`);
   walkPre(scenario.setup?.post, `${scenario.id}.setup.post`);
+}
+
+// Mirror of the flows check above. It has to run HERE, after BOTH walkers:
+// setup pre/post steps invoke helpers too, and three of the eight are invoked
+// only from setup, so a check placed before walkPre would report them as
+// declared-but-unused. That ordering mistake is what made the first version of
+// this check a no-op.
+for (const name of Object.keys(doc.helpers ?? {})) {
+  if (!usedHelpers.has(name))
+    problems.push(`helpers.${name} is declared but never used`);
 }
 
 if (problems.length) {

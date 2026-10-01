@@ -304,7 +304,7 @@
           }
         },
         "helper": {
-          "description": "Name from the top-level `helpers` map. Required by, and only valid with, `command: \"@helper\"`. The runner executes the helper's `source` with the step's `args` as its argv, from the step's cwd.",
+          "description": "Name from the top-level `helpers` map. Required by, and only valid with, `command: \"@helper\"`. The runner executes the helper's `source` with the step's `args` as its argv, from the step's cwd, and with the same five variables the step walker exports into the environment ($WORKSPACE, $APP, $PM, $REGISTRY_URL, $ACCEPTANCE_MIRROR_PORT) \u2014 several helpers read process.env.APP to locate the scaffolded app rather than depending on their cwd for it.",
           "type": "string",
           "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
         },
@@ -345,7 +345,7 @@
           "additionalProperties": { "type": ["string", "null"] }
         },
         "offline": {
-          "description": "Run this one step with egress to BOTH the registry and npm blocked. Replaces the old magic `ACCEPTANCE_OFFLINE=1` env var. Legal only on a step whose scenario does not otherwise need the network (`requires.network: none` or `npm`).",
+          "description": "Run THIS ONE step with egress to both the registry and npm blocked. It is a per-step switch and says nothing about the rest of the scenario, so it is legal in a scenario whose requires.network is `both` \u2014 env.offline-no-skill runs init and add live against the registry and cuts only the final agents sync. Contradictory uses are rejected by check:acceptance: `offline: true` on an `@http` step, or on a step whose args interpolate $REGISTRY_URL.",
           "type": "boolean"
         },
         "pathWithout": {
@@ -413,7 +413,7 @@
         },
         "source": { "type": "string", "minLength": 1 },
         "cwd": {
-          "description": "DEFAULT cwd when a step invoking this helper does not set one. Relative to the scenario workspace.",
+          "description": "DEFAULT cwd when a step invoking this helper does not set one. Relative to the scenario workspace. Note the overall default (the fixture's app dir) does NOT apply to a helper that declares its own cwd: a helper scoped to the workspace root (\".\") says so here, and check:acceptance then REQUIRES every invocation to restate `cwd: \".\"` at the call site \u2014 inheriting the app-dir default would run the program one level too deep, which is exactly how make-bun-workspace would move the app into itself.",
           "type": "string",
           "minLength": 1
         }
