@@ -481,16 +481,14 @@ These suites under `e2e/` are all real-tool suites and stay:
 
 | suite                                      | what it pins                                                     |
 | ------------------------------------------ | ---------------------------------------------------------------- |
-| `e2e/acceptance/import-path.test.ts` (2)   | the import path, until its scenarios are green                   |
 | `e2e/cli/first-run.sh`                     | one shape, one order: scaffold → init → add → build              |
 | `e2e/cli/scenarios/` (80)                  | code paths, hermetic, shimmed package managers                   |
 | `packages/marko-ui/src/commands/*.test.ts` | units, including the pty-driven `init` prompts                   |
 
-This file **has folded in the first suite** — `core.init-defaults-copy` was
+This file **has folded in the first suites** — `core.init-defaults-copy` was
 `copy-path.test.ts`, `core.full-agent-loop`'s doctor/diff tail was
 `add-doctor-diff.test.ts`, and the three `registry.*` scenarios were
 `registry-health.test.ts`; all three files are deleted now that those scenarios
 are green, and `scenarios.yaml` is the single source for them.
-`import-path.test.ts` is the last one standing: its replacements are
-`post.import-distribution` and `kind.marko-vite-no-run`'s build half, which
-belong to other kinds' sweeps, so it stays until they are green.
+`import-path.test.ts` is deleted too: `post.import-distribution` and
+`kind.marko-vite-no-run` cover the import path and were green in the full run.

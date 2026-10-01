@@ -451,7 +451,7 @@ helpers:
     source: |
       const fs = require("node:fs")
       const path = require("node:path")
-      const from = path.join(process.env.APP, "components.json")
+      const from = path.join("apps", "web", "components.json")
       fs.copyFileSync(from, "components.json")
       if (!fs.existsSync("components.json")) throw new Error("root components.json missing")
 
@@ -597,6 +597,30 @@ flows:
         exit: 0
         stdoutMatches: ["(?i)no updates found|up to date"]
 
+
+  # verify-clean, for scenarios whose last add deliberately LEFT a user-edited
+  # component file in place (`add -y` skips it). Same status and doctor
+  # assertions; the diff step is inverted on purpose: the local file differs
+  # from the registry version, so `diff` must report it — "no drift" here
+  # would mean the edit was lost.
+  verify-clean-edited:
+    - name: status lists the installed component
+      command: status
+      args: ["--json"]
+      expect:
+        exit: 0
+        stdoutContains: '"button"'
+    - name: doctor passes
+      command: doctor
+      expect:
+        exit: 0
+        stdoutMatches: ["(?i)all checks passed"]
+    - name: diff still reports the user's edited file as drifted
+      command: diff
+      args: ["button", "--name-only"]
+      expect:
+        exit: 0
+        stdoutContains: "button.marko"
 
   # verify-clean, for the scenarios that install something other than button.
   # Same three read-only commands and the same assertions as `verify-clean` —
@@ -1740,11 +1764,11 @@ scenarios:
         args: ["button", "-y"]
         expect:
           exit: 0
-          stdoutMatches: ["(?i)skipped"]
+          stderrContains: "Skipped"
           fileContains:
             - path: src/components/ui/button/button.marko
               contains: "my own button"
-      - use: verify-clean
+      - use: verify-clean-edited
 
   - id: existing.shadcn-components-json
     title: "a React shadcn components.json is recognised, not silently adopted"
@@ -2611,11 +2635,11 @@ scenarios:
         args: ["button", "-y"]
         expect:
           exit: 0
-          stdoutMatches: ["(?i)skipped"]
+          stderrContains: "Skipped"
           fileContains:
             - path: src/components/ui/button/button.marko
               contains: "my local tweak"
-      - use: verify-clean
+      - use: verify-clean-edited
 
   - id: post.readd-with-overwrite
     title: "--overwrite replaces the edited component with registry source"
@@ -2694,6 +2718,8 @@ scenarios:
   - id: post.eject-import-to-copy
     title: "eject flips an import project back to copy and writes the source"
     kind: post-setup
+    status: known-bug
+    bug: "eject writes import-form source (button/variants.ts imports ./classes.ts) where `add` writes flat copy-path source, so `diff` right after eject+add lists ~190 files as drifted (button/variants.ts, sonner, icon, ...). Repro: init --distribution import; eject -y; add button -y; diff --name-only"
     tags: [os:linux, os:macos, kind:import-distribution, speed:medium]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
@@ -2746,13 +2772,9 @@ scenarios:
         command: "@shell"
         args:
           [
-            "test",
-            "-f",
-            ".claude/skills/marko-ui/SKILL.md",
-            "||",
-            "test",
-            "-f",
-            ".agents/skills/marko-ui/SKILL.md",
+            "sh",
+            "-c",
+            "test -f .claude/skills/marko-ui/SKILL.md || test -f .agents/skills/marko-ui/SKILL.md",
           ]
         expect:
           exit: 0

@@ -8,7 +8,7 @@
  * (see `scaffoldProject`) — the copy is of a real scaffold, and every scenario
  * still runs its own real install against the shared pm cache.
  */
-import { existsSync, readFileSync } from "node:fs"
+import { existsSync, readFileSync, rmSync } from "node:fs"
 import { cp, mkdir, readFile, rm, stat } from "node:fs/promises"
 import { createHash } from "node:crypto"
 import { join } from "node:path"
@@ -264,11 +264,22 @@ export async function scaffoldProject(options: {
   if (!bin) {
     throw new Error(`${driver.name} produced no dlx runner for ${scaffold.tool}`)
   }
-  const scaffolded = run(bin, [...dlxArgv.slice(1), ...scaffold.args], {
+  // Scaffolders fetch templates from GitHub/npm; one transient network failure
+  // (e.g. create-astro "Failed to fetch ...examples/minimal") must not fail a
+  // scenario. Bounded to 2 attempts; a deterministic failure fails both.
+  let scaffolded = run(bin, [...dlxArgv.slice(1), ...scaffold.args], {
     cwd: workspace,
     timeoutMs: (scaffold.timeoutSeconds ?? 300) * 1000,
     env: options.env,
   })
+  if (scaffolded.exitCode !== 0) {
+    rmSync(join(workspace, dir), { recursive: true, force: true })
+    scaffolded = run(bin, [...dlxArgv.slice(1), ...scaffold.args], {
+      cwd: workspace,
+      timeoutMs: (scaffold.timeoutSeconds ?? 300) * 1000,
+      env: options.env,
+    })
+  }
   if (scaffolded.exitCode !== 0) {
     throw new Error(
       `${bin} ${[...dlxArgv.slice(1), ...scaffold.args].join(" ")} failed (exit ${scaffolded.exitCode})\n${scaffolded.stdout}\n${scaffolded.stderr}`,
