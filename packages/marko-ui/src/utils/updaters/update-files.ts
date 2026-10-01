@@ -1,5 +1,4 @@
 import { existsSync, promises as fs, statSync } from "fs"
-import { tmpdir } from "os"
 import path, { basename } from "path"
 import { RegistryItem, registryItemFileSchema } from "@/src/schema"
 import { isContentSame } from "@/src/utils/compare"
