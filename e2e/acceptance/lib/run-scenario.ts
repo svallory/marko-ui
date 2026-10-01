@@ -21,9 +21,18 @@
  * working project".
  */
 import { spawnSync } from "node:child_process"
-import { existsSync } from "node:fs"
-import { appendFile, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises"
+import { createHash } from "node:crypto"
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  symlinkSync,
+} from "node:fs"
+import { appendFile, cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
+import { tmpdir } from "node:os"
 import { join, resolve } from "node:path"
+import { resolveHelper, runHelper } from "./helpers.ts"
 import {
   evaluateExpectations,
   outputTail,
@@ -33,19 +42,18 @@ import {
 import { driverFor, scaffoldProject } from "./pm.ts"
 import { run } from "./proc.ts"
 import { runPty } from "./pty.ts"
+import { MIRROR_PORT, sharedLocalRegistry } from "./registry.ts"
 import {
-  DEAD_REGISTRY_URL,
-  MIRROR_PORT,
-  sharedLocalRegistry,
-} from "./registry.ts"
-import type {
-  Pm,
-  PreStep,
-  Runner,
-  ScenariosDoc,
-  Scenario,
-  Setup,
-  Step,
+  INTERPOLATED_VARS,
+  type Expectations,
+  type Helper,
+  type Pm,
+  type PreStep,
+  type Runner,
+  type ScenariosDoc,
+  type Scenario,
+  type Setup,
+  type Step,
 } from "./scenario-doc.ts"
 import type { TargetConfig } from "./selection.ts"
 import { ensurePackedTarget } from "./target.ts"
@@ -127,17 +135,20 @@ export function resolveSetup(doc: ScenariosDoc, scenario: Scenario): Setup {
 // Environment
 // ---------------------------------------------------------------------------
 
-function interpolate(
-  value: string,
-  vars: Record<string, string>
-): string {
-  return value.replace(/\$([A-Z_][A-Z0-9_]*)/g, (_match, name: string) => {
-    if (Object.hasOwn(vars, name)) return vars[name] as string
-    throw new StepFailure(
-      `$${name} is not defined for this step (known: ${Object.keys(vars).sort().join(", ")}). ` +
-        `A step may only interpolate variables the runner or the scenario sets.`,
-    )
-  })
+function interpolate(value: string, vars: Record<string, string>): string {
+  // `$$` is an escaped literal `$`; every other `$NAME` must be one of the
+  // closed set the schema documents, so an undefined variable is a loud error
+  // rather than an empty string.
+  return value
+    .replace(/\$\$/g, "\u0000DOLLAR\u0000")
+    .replace(/\$([A-Z_][A-Z0-9_]*)/g, (_match, name: string) => {
+      if (Object.hasOwn(vars, name)) return vars[name] as string
+      throw new StepFailure(
+        `$${name} is not one of the interpolable variables (${[...INTERPOLATED_VARS].join(", ")}). ` +
+          `A literal $ is written $$.`,
+      )
+    })
+    .replace(/\u0000DOLLAR\u0000/g, "$")
 }
 
 function stepVars(
@@ -146,12 +157,15 @@ function stepVars(
   target: TargetConfig,
   extra: Record<string, string>
 ): Record<string, string> {
+  // The closed set from scenarios.schema.json's `args` description, and
+  // nothing else: a scenario cannot interpolate a variable the runner does
+  // not define here.
   const vars: Record<string, string> = {
+    WORKSPACE: extra.WORKSPACE ?? "",
+    APP: extra.APP ?? "",
+    PM: extra.PM ?? "bun",
     REGISTRY_URL: target.registryUrl,
-    DEAD_REGISTRY_URL,
     ACCEPTANCE_MIRROR_PORT: String(MIRROR_PORT),
-    ACCEPTANCE_PKG_VERSION: target.version,
-    ACCEPTANCE_TARGET: target.kind,
   }
   for (const [key, value] of Object.entries({ ...process.env, ...extra })) {
     if (typeof value === "string") vars[key] = value
@@ -248,6 +262,7 @@ async function applyPreSteps(
     cwd: string
     label: string
     pm: Pm
+    workspace: string
   }
 ): Promise<void> {
   for (const [index, step] of steps.entries()) {
@@ -289,6 +304,42 @@ async function applyPreSteps(
       await cp(from, at_(step.cp.to), { recursive: true })
       continue
     }
+    if (step.helper) {
+      // The pre-step form of `{command: "@helper"}`: setup builds project
+      // shapes (monorepo layouts, a relocatable config) with the same
+      // documented programs the steps use, so each helper has ONE
+      // implementation and ONE contract.
+      const helper = resolveHelper(options.doc.helpers, step.helper)
+      const result = runHelper({
+        helper,
+        name: step.helper,
+        cwd: step.cwd
+          ? join(options.workspace, step.cwd)
+          : join(options.workspace, helper.cwd ?? "."),
+        args: (step.args ?? []).map((arg) =>
+          interpolate(arg, {
+            WORKSPACE: options.workspace,
+            APP: options.cwd,
+            PM: options.pm,
+          })
+        ),
+        env: {
+          ...process.env,
+          WORKSPACE: options.workspace,
+          APP: options.cwd,
+          PM: options.pm,
+        },
+        timeoutMs: 600_000,
+      })
+      if (result.exitCode !== 0) {
+        throw new StepFailure(
+          `${at}: helper ${step.helper} failed (exit ${result.exitCode})\n${result.command}\n${outputTail(
+            { exitCode: result.exitCode, stdout: result.stdout, stderr: result.stderr, cwd: options.cwd },
+          )}`,
+        )
+      }
+      continue
+    }
     if (step.run) {
       const command = step.run.cmd ?? body(step.run.body)
       if (!command) throw new StepFailure(`${at}: a run step needs a command`)
@@ -318,10 +369,14 @@ interface StepContext {
   setup: Setup
   target: TargetConfig
   workspace: string
+  appDir: string
   defaultCwd: string
   pm: Pm
   cli: CliTargetPaths
   installRoot: string
+  helpers: Record<string, Helper> | undefined
+  /** Content hashes recorded by `snapshot:`, keyed `<where>:<path>`. */
+  snapshots: Map<string, string>
 }
 
 function describeCommand(command: string, args: string[]): string {
@@ -332,9 +387,39 @@ async function executeStep(step: Step, ctx: StepContext): Promise<StepOutcome> {
   const command = step.command as string
   const timeoutMs = (step.timeoutSeconds ?? ctx.target.timeoutSeconds) * 1000
   const cwd = step.cwd ? resolve(ctx.workspace, step.cwd) : ctx.defaultCwd
-  const vars = stepVars(ctx.scenario, step, ctx.target, {})
+  const extraVars = {
+    WORKSPACE: ctx.workspace,
+    APP: ctx.appDir,
+    PM: ctx.pm,
+  }
+  const vars = stepVars(ctx.scenario, step, ctx.target, extraVars)
   const args = (step.args ?? []).map((arg) => interpolate(arg, vars))
-  const env = buildEnv(ctx.scenario, step, ctx.target)
+  let env = buildEnv(ctx.scenario, step, ctx.target)
+  // The runner's own geometry, exported so a helper can find the app without
+  // being told its path on every call.
+  env = { ...env, ...extraVars, ACCEPTANCE_TARGET: ctx.target.kind }
+  if (step.offline) env = withEgressBlocked(env)
+  if (step.pathWithout?.length) {
+    env = { ...env, PATH: await pathWithout(step.pathWithout) }
+  }
+
+  if (command === "@helper") {
+    const helper = resolveHelper(ctx.helpers, step.helper as string)
+    const result = runHelper({
+      helper,
+      name: step.helper as string,
+      cwd: step.cwd ? cwd : resolve(ctx.workspace, helper.cwd ?? "."),
+      args,
+      env,
+      timeoutMs,
+    })
+    return {
+      exitCode: result.exitCode,
+      stdout: strip(result.stdout),
+      stderr: strip(result.stderr),
+      cwd,
+    }
+  }
 
   if (command === "@http") {
     const url = interpolate(args[0] ?? "", vars)
@@ -410,6 +495,68 @@ async function executeStep(step: Step, ctx: StepContext): Promise<StepOutcome> {
   return step.stdin === "pty"
     ? runPtyStep(invocation, step, cwd, timeoutMs)
     : runInvocation(invocation, step, cwd, env, timeoutMs)
+}
+
+/**
+ * Egress blocked, for `offline: true`. Pointing every proxy variable at a port
+ * nothing listens on is the only block available without root: bun, npm and
+ * node's own fetch all honour HTTP(S)_PROXY/ALL_PROXY, so a registry or npm
+ * request from this step gets ECONNREFUSED instead of a real answer. It is a
+ * best-effort block — a tool that ignores proxy variables would still reach the
+ * network — and the scenarios that use it assert the CLI's offline behaviour,
+ * not the block's completeness.
+ */
+function withEgressBlocked(
+  env: Record<string, string | undefined>
+): Record<string, string | undefined> {
+  const dead = "http://127.0.0.1:1"
+  return {
+    ...env,
+    HTTP_PROXY: dead,
+    HTTPS_PROXY: dead,
+    ALL_PROXY: dead,
+    http_proxy: dead,
+    https_proxy: dead,
+    npm_config_proxy: dead,
+    npm_config_https_proxy: dead,
+  }
+}
+
+const shimDirs = new Map<string, string>()
+
+/**
+ * A PATH that cannot resolve the named binaries, built the way the schema
+ * describes it: a directory of links to everything else on PATH, placed first.
+ * Filtering PATH entries instead would be wrong — a binary can live in more
+ * than one of them.
+ */
+async function pathWithout(excluded: string[]): Promise<string> {
+  const key = excluded.slice().sort().join(",")
+  const cached = shimDirs.get(key)
+  if (cached) return cached
+  const skip = new Set(excluded)
+  const dir = await mkdtemp(join(tmpdir(), "marko-ui-path-"))
+  for (const entry of (process.env.PATH ?? "").split(":")) {
+    if (entry === "") continue
+    let names: string[]
+    try {
+      names = readdirSync(entry)
+    } catch {
+      continue
+    }
+    for (const name of names) {
+      if (skip.has(name)) continue
+      const link = join(dir, name)
+      if (existsSync(link)) continue
+      try {
+        symlinkSync(join(entry, name), link)
+      } catch {
+        // A dangling or unreadable entry is not worth failing the step over.
+      }
+    }
+  }
+  shimDirs.set(key, dir)
+  return dir
 }
 
 interface Invocation {
@@ -582,6 +729,75 @@ function describeStepCommand(step: Step, ctx: StepContext): string {
   ].join(" ")
 }
 
+/**
+ * `snapshot:` / `expect.unchanged` / `expect.changed`.
+ *
+ * A content hash recorded after a step passes, compared later. Keyed by
+ * `<where>:<path>` where `where` is the scenario id (or a flow name), so a
+ * flow's snapshot is shared by every scenario that uses the flow — which is
+ * the point: the flow establishes the state, the scenario asserts on it.
+ */
+function hashFile(path: string): string | null {
+  const content = readFileSync(path)
+  return createHash("sha256").update(content).digest("hex")
+}
+
+function recordSnapshots(
+  step: Step,
+  outcome: StepOutcome,
+  where: string,
+  index: number,
+  snapshots: Map<string, string>
+): void {
+  for (const path of step.snapshot ?? []) {
+    const full = resolve(outcome.cwd, path)
+    if (!existsSync(full)) {
+      throw new StepFailure(
+        `${where}[${index}]: snapshot: ${path} does not exist after the step succeeded — a snapshot of nothing is not a baseline`,
+      )
+    }
+    snapshots.set(`${where}:${path}`, hashFile(full) as string)
+  }
+}
+
+function evaluateSnapshots(
+  expectations: Expectations,
+  outcome: StepOutcome,
+  where: string,
+  snapshots: Map<string, string>
+): string[] {
+  const failures: string[] = []
+  const check = (path: string, want: "unchanged" | "changed"): void => {
+    const full = resolve(outcome.cwd, path)
+    const recorded = snapshots.get(`${where}:${path}`)
+    if (recorded === undefined) {
+      failures.push(
+        `expect.${want}: ${path} has no earlier snapshot to compare against (this is a document bug — the loader checks the pairing)`,
+      )
+      return
+    }
+    if (!existsSync(full)) {
+      failures.push(`expect.${want}: ${path} does not exist`)
+      return
+    }
+    const actual = hashFile(full) as string
+    const same = actual === recorded
+    if (want === "unchanged" && !same) {
+      failures.push(
+        `${path} changed, but expect.unchanged says it must be byte-identical to the earlier snapshot`,
+      )
+    }
+    if (want === "changed" && same) {
+      failures.push(
+        `${path} is byte-identical to the earlier snapshot, but expect.changed says it must differ`,
+      )
+    }
+  }
+  for (const path of expectations.unchanged ?? []) check(path, "unchanged")
+  for (const path of expectations.changed ?? []) check(path, "changed")
+  return failures
+}
+
 export interface ScenarioRunResult {
   workspace: string
   stepsRun: number
@@ -624,13 +840,25 @@ export async function runScenario(options: RunOptions): Promise<ScenarioRunResul
 
     // 2. Pre-steps, then the CLI under test, then post-steps: a post-step is
     //    "the project as the user has it", which includes the CLI.
-    await applyPreSteps(setup.pre ?? [], { doc, cwd: appDir, label: "pre", pm })
+    await applyPreSteps(setup.pre ?? [], {
+      doc,
+      cwd: appDir,
+      label: "pre",
+      pm,
+      workspace,
+    })
 
     const cli = await resolveCliInstall(setup, target)
     if (!setup.noScaffold) {
       await installCliUnderTest(workspace, appDir, pm, cli, target)
     }
-    await applyPreSteps(setup.post ?? [], { doc, cwd: appDir, label: "post", pm })
+    await applyPreSteps(setup.post ?? [], {
+      doc,
+      cwd: appDir,
+      label: "post",
+      pm,
+      workspace,
+    })
 
     const defaultCwd = scenario.cwd
       ? resolve(workspace, scenario.cwd)
@@ -642,10 +870,13 @@ export async function runScenario(options: RunOptions): Promise<ScenarioRunResul
       setup,
       target,
       workspace,
+      appDir,
       defaultCwd,
       pm,
       cli,
       installRoot: workspace,
+      helpers: doc.helpers,
+      snapshots: new Map(),
     }
 
     // 3. Steps, in order. The first failure stops the scenario: a later step
@@ -662,7 +893,10 @@ export async function runScenario(options: RunOptions): Promise<ScenarioRunResul
         log(`  step ${index + 1}/${steps.length} ${name} → exit ${outcome.exitCode}`)
         continue
       }
-      const failures = evaluateExpectations(step.expect, outcome)
+      const failures = [
+        ...evaluateExpectations(step.expect, outcome),
+        ...evaluateSnapshots(step.expect, outcome, scenario.id, ctx.snapshots),
+      ]
       if (failures.length > 0) {
         throw new StepFailure(
           [
@@ -676,6 +910,7 @@ export async function runScenario(options: RunOptions): Promise<ScenarioRunResul
         )
       }
       log(`  step ${index + 1}/${steps.length} ${name} → ok`)
+      recordSnapshots(step, outcome, scenario.id, index, ctx.snapshots)
     }
 
     return { workspace, stepsRun: steps.length, reportedOnly }

@@ -185,6 +185,21 @@ function checkJsonPointer(
   return null
 }
 
+/**
+ * The scenarios' regexes are written PCRE-flavoured — `(?i)all checks passed` —
+ * because that is how a reader thinks about a case-insensitive match. JavaScript
+ * has no inline flags, so a leading `(?i)` becomes the `i` flag and the rest of
+ * the source is used unchanged. `m` is always on, because these patterns are
+ * matched against multi-line command output.
+ */
+export function compilePattern(source: string): RegExp {
+  const inline = /^\(\?([ims]+)\)/
+  const match = inline.exec(source)
+  if (!match) return new RegExp(source, "m")
+  const flags = new Set(`m${match[1] ?? ""}`.split(""))
+  return new RegExp(source.slice(match[0].length), [...flags].join(""))
+}
+
 function checkFileContains(
   assertion: FileContainsAssertion,
   outcome: StepOutcome
@@ -199,7 +214,7 @@ function checkFileContains(
     return `${assertion.path} contains ${show(assertion.notContains)}, which it must not`
   }
   if (assertion.matches !== undefined) {
-    if (!new RegExp(assertion.matches, "m").test(content)) {
+    if (!compilePattern(assertion.matches).test(content)) {
       return `${assertion.path} does not match /${assertion.matches}/`
     }
   }
@@ -244,7 +259,7 @@ export function evaluateExpectations(
     }
   }
   for (const pattern of expectations.stdoutMatches ?? []) {
-    if (!new RegExp(pattern, "m").test(outcome.stdout)) {
+    if (!compilePattern(pattern).test(outcome.stdout)) {
       failures.push(`stdout does not match /${pattern}/`)
     }
   }

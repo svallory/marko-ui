@@ -142,9 +142,10 @@ export function skipReason(
     return `requires marko-ui >= ${requires.minCliVersion}; the target is ${options.target.version}`
   }
 
-  // `needs:<capability>` marks a scenario whose expectations depend on a CLI
-  // guard that does not exist yet. It is reported, never asserted, until the
-  // capability is declared available: ACCEPTANCE_NEEDS=<capability>,…
+  // `needs:<capability>` marks a scenario whose expectation is settled but
+  // depends on a CLI guard that has not landed (`status: needs-cli-guards`).
+  // It is reported, never asserted, until the capability is declared available:
+  // ACCEPTANCE_NEEDS=<capability>,…
   const needed = (options.extraNeeds ?? []).concat(
     tags
       .filter((tag) => tag.startsWith(`${NEEDS_KEY}:`))

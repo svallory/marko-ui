@@ -78,6 +78,14 @@ export interface WriteSpec {
   content?: string
   body?: string
 }
+export interface Helper {
+  /** The contract: what the helper guarantees when it exits 0. */
+  description: string
+  language: "node" | "posix-shell"
+  source: string
+  /** Default cwd for a step/pre-step that invokes it, relative to the workspace. */
+  cwd?: string
+}
 export interface PreStep {
   label?: string
   write?: WriteSpec
@@ -91,6 +99,10 @@ export interface PreStep {
     cwd?: string
     allowFailure?: boolean
   }
+  /** Run a named helper — the pre-step form of `{command: "@helper"}`. */
+  helper?: string
+  args?: string[]
+  cwd?: string
 }
 export interface ScaffoldSpec {
   tool: string
@@ -143,6 +155,10 @@ export interface Expectations {
     contains?: string[]
     notContains?: string[]
   }
+  /** Each path must have exactly the content an earlier step snapshotted. */
+  unchanged?: string[]
+  /** The inverse of `unchanged`: the content must differ from the snapshot. */
+  changed?: string[]
   dirExists?: string
   noop?: boolean
 }
@@ -152,6 +168,8 @@ export interface Step {
   command?: string
   sub?: string[]
   args?: string[]
+  /** Name from the top-level `helpers` map; required by `command: "@helper"`. */
+  helper?: string
   cwd?: string
   runner?: Runner
   cliVersion?: string
@@ -159,6 +177,12 @@ export interface Step {
   stdinText?: string
   pty?: PtyAnswer[]
   env?: Record<string, string | null>
+  /** Run this step with egress to both the registry and npm blocked. */
+  offline?: boolean
+  /** Run this step with these binaries removed from PATH. */
+  pathWithout?: string[]
+  /** Record a content hash of each path after this step succeeds. */
+  snapshot?: string[]
   timeoutSeconds?: number
   expect?: Expectations
   notes?: string
@@ -182,7 +206,7 @@ export interface Scenario {
   steps: Step[]
   speed?: "fast" | "medium" | "slow"
   ci?: { shard?: string; windowsBlocking?: boolean; nightlyOnly?: boolean }
-  status?: "specified" | "unknown-expectation"
+  status?: "specified" | "unknown-expectation" | "needs-cli-guards"
   question?: string
   covers?: string[]
   notes?: string
@@ -196,12 +220,27 @@ export interface ScenariosDoc {
     timeoutSeconds: number
   }
   bodies?: Record<string, string>
+  helpers?: Record<string, Helper>
   fixtures: Record<string, Setup>
   flows: Record<string, Step[]>
   scenarios: Scenario[]
 }
 
-export const TAG_KEYS = new Set(["os", "pm", "kind", "speed", "status"])
+export const TAG_KEYS = new Set(["os", "pm", "kind", "speed", "status", "needs"])
+
+/**
+ * The closed set of `$VAR`s a step or pre-step may interpolate (kept in
+ * lockstep with the `args` description in scenarios.schema.json). `$$` is a
+ * literal `$`. An unknown variable is a validation error, never an empty
+ * string, so a scenario can never smuggle in an undefined value.
+ */
+export const INTERPOLATED_VARS = new Set([
+  "WORKSPACE",
+  "APP",
+  "PM",
+  "REGISTRY_URL",
+  "ACCEPTANCE_MIRROR_PORT",
+])
 export const SCENARIO_KINDS = new Set([
   "core",
   "project-kind",
@@ -256,25 +295,16 @@ function parseYamlText(text: string): YamlValue {
 }
 
 /** The document as a domain type, or a named error naming every problem. */
-function parseYaml(path: string): ScenariosDoc {
+function parseYaml(source: string, path: string): YamlValue | ScenarioDocError {
   let parsed: YamlValue
   try {
-    parsed = parseYamlText(readFileSync(path, "utf8"))
+    parsed = parseYamlText(source)
   } catch (error) {
-    throw new ScenarioDocError(`${path} is not parseable YAML:`, [
+    return new ScenarioDocError(`${path} is not parseable YAML:`, [
       (error as Error).message,
     ])
   }
-  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-    throw new ScenarioDocError(`${path} did not parse to a document:`, [
-      `got ${parsed === null ? "null" : Array.isArray(parsed) ? "a list" : typeof parsed}`,
-    ])
-  }
-  // SAFETY: a YAML mapping is not structurally comparable to ScenariosDoc, but
-  // the next thing loadScenarioDoc does is validate the whole document against
-  // scenarios.schema.json (additionalProperties: false, every key required), so
-  // an unvalidated document can never reach any other code path.
-  return parsed as unknown as ScenariosDoc
+  return parsed
 }
 
 function readSchema(path: string): object {
@@ -296,7 +326,27 @@ export function loadScenarioDoc(
   options: { scenariosPath?: string; schemaPath?: string } = {}
 ): ScenariosDoc {
   const scenariosFile = options.scenariosPath ?? scenariosPath()
-  const doc = parseYaml(scenariosFile)
+  const source = readFileSync(scenariosFile, "utf8")
+  const duplicates = duplicateKeyProblems(source)
+  if (duplicates.length) {
+    throw new ScenarioDocError(
+      "scenarios.yaml has duplicate mapping keys (the earlier value is silently dropped):",
+      duplicates,
+    )
+  }
+  const parsed = parseYaml(source, scenariosFile)
+  if (parsed instanceof ScenarioDocError) throw parsed
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    throw new ScenarioDocError(
+      `${scenariosFile} did not parse to a document:`,
+      [`got ${Array.isArray(parsed) ? "a list" : typeof parsed}`],
+    )
+  }
+  // SAFETY: a YAML mapping is not structurally comparable to ScenariosDoc, but
+  // the next thing this function does is validate the whole document against
+  // scenarios.schema.json (additionalProperties: false, every key required), so
+  // an unvalidated document can never reach any other code path.
+  const doc = parsed as unknown as ScenariosDoc
 
   const schema = readSchema(options.schemaPath ?? schemaPath())
   // ajv-formats / ajv-errors are deliberately not dependencies: a schema keyword
@@ -319,7 +369,7 @@ export function loadScenarioDoc(
         error.keyword === "additionalProperties"
           ? ` (${String((error.params as Record<string, unknown>).additionalProperty)})`
           : ""
-      return `${where}${extra}: ${error.message ?? ""}`
+      return `  ${where}${extra}: ${error.message ?? ""}`
     })
     throw new ScenarioDocError(
       `scenarios.yaml does not satisfy scenarios.schema.json (${all.length} error(s)):`,
@@ -335,6 +385,61 @@ export function loadScenarioDoc(
     )
   }
   return doc
+}
+
+/**
+ * Duplicate mapping keys are a SILENT data-loss bug: both parsers keep the last
+ * one and discard the rest, so an `expect:` block carrying two
+ * `stdoutContains:` keys passes on half its assertions without anyone noticing.
+ * Caught from the source text before parsing, because after parsing the
+ * information is gone. The check is indentation-based, and a sequence item is
+ * its own mapping scope: the `- ` counts as one column, so the keys under
+ * `- name: foo` sit one level deeper than the dash and are siblings of `name`,
+ * not of the key that owns the list.
+ */
+export function duplicateKeyProblems(text: string): string[] {
+  const found: string[] = []
+  // Stack of open scopes, innermost last.
+  const stack: { indent: number; keys: Map<string, number> }[] = []
+  const KEY = /^(\s*)([A-Za-z_][A-Za-z0-9_-]*):(\s|$)/
+  const ITEM = /^(\s*)-\s/
+  const popTo = (indent: number): void => {
+    while (stack.length) {
+      const top = stack[stack.length - 1]
+      if (top === undefined || top.indent < indent) break
+      stack.pop()
+    }
+  }
+  for (const [index, raw] of text.split("\n").entries()) {
+    const line = raw.replace(/\s+$/, "")
+    if (line.trim() === "" || line.trimStart().startsWith("#")) continue
+    const item = ITEM.exec(line)
+    if (item) {
+      const dash = item[1]?.length ?? 0
+      popTo(dash)
+      stack.push({ indent: dash + 1, keys: new Map() })
+      continue
+    }
+    const match = KEY.exec(line)
+    const indentText = match?.[1]
+    const key = match?.[2]
+    if (indentText === undefined || key === undefined) continue
+    const indent = indentText.length
+    popTo(indent + 1)
+    const parent = stack[stack.length - 1]
+    if (parent) {
+      const first = parent.keys.get(key)
+      if (first !== undefined) {
+        found.push(
+          `line ${index + 1}: duplicate key "${key}" (first on line ${first}) — the earlier value is silently dropped; merge them into one sequence`,
+        )
+      } else {
+        parent.keys.set(key, index + 1)
+      }
+    }
+    stack.push({ indent, keys: new Map([[key, index + 1]]) })
+  }
+  return found
 }
 
 /** The rules a JSON Schema cannot express. Returns every problem found. */
@@ -355,6 +460,17 @@ export function crossReferenceProblems(doc: ScenariosDoc): string[] {
         `${scenario.id}: status unknown-expectation without a question`,
       )
     }
+    // A gated scenario the runner cannot gate is worse than an ungated one: it
+    // either fails for an unlanded guard or, if the tag is missing, silently
+    // becomes a hard expectation for behaviour that does not exist yet.
+    if (
+      scenario.status === "needs-cli-guards" &&
+      !scenario.tags.some((tag) => tag.startsWith("needs:"))
+    ) {
+      problems.push(
+        `${scenario.id}: status needs-cli-guards without a needs:<gate> tag, so the runner has nothing to skip it for`,
+      )
+    }
     for (const tag of scenario.tags ?? []) {
       const key = tag.split(":")[0] ?? ""
       if (!TAG_KEYS.has(key))
@@ -362,9 +478,28 @@ export function crossReferenceProblems(doc: ScenariosDoc): string[] {
     }
   }
 
-  // Every `use:` resolves, every flow is used at least once, and every
-  // command step asserts something.
+  // Every `use:` resolves, every flow and helper is used at least once, every
+  // `$VAR` is one the runner defines, and every command step asserts something.
   const usedFlows = new Set<string>()
+  const usedHelpers = new Set<string>()
+  const snapshotOrder: { key: string; where: string; index: number }[] = []
+  const snapshotRefs: { key: string; where: string; index: number }[] = []
+
+  const checkVars = (args: string[], at: string): void => {
+    for (const arg of args) {
+      // `$$` is an escaped literal `$`; every other `$NAME` must be in the
+      // closed set, so the runner never has to decide what an undefined one is.
+      for (const match of arg.matchAll(/(?<!\$)\$(?!\$)([A-Za-z_][A-Za-z0-9_]*)/g)) {
+        const name = match[1]
+        if (name && !INTERPOLATED_VARS.has(name)) {
+          problems.push(
+            `${at}: args interpolate "$${name}", which is not in the closed set (${[...INTERPOLATED_VARS].join(", ")})`,
+          )
+        }
+      }
+    }
+  }
+
   const walkSteps = (steps: Step[] | undefined, where: string): void => {
     for (const [index, step] of (steps ?? []).entries()) {
       const at = `${where}[${index}]`
@@ -373,21 +508,57 @@ export function crossReferenceProblems(doc: ScenariosDoc): string[] {
           problems.push(`${at}: use: "${step.use}" is not a declared flow`)
         }
         usedFlows.add(step.use)
-        if (step.command)
+        if (step.command) {
           problems.push(`${at}: a step is either use: or command:, not both`)
+        }
         continue
       }
-      if (!step.expect && !step.notes) {
-        problems.push(
-          `${at}: a command step with neither expect nor notes asserts nothing`,
-        )
+      if (!step.expect) {
+        problems.push(`${at}: a command step with no expect asserts nothing`)
       }
+      if (step.command === "@helper" && !step.helper) {
+        problems.push(`${at}: command @helper without a helper name`)
+      }
+      if (step.helper) {
+        if (!doc.helpers?.[step.helper]) {
+          problems.push(`${at}: unknown helper "${step.helper}"`)
+        } else {
+          usedHelpers.add(step.helper)
+        }
+      }
+      // `snapshot:` records a path a LATER expect.unchanged/changed refers to.
+      // Recording the ORDER is what lets the pairing check insist the snapshot
+      // came first.
+      for (const path of step.snapshot ?? []) {
+        snapshotOrder.push({ key: `${where}:${path}`, where: at, index })
+      }
+      for (const path of [
+        ...(step.expect?.unchanged ?? []),
+        ...(step.expect?.changed ?? []),
+      ]) {
+        snapshotRefs.push({ key: `${where}:${path}`, where: at, index })
+      }
+      checkVars(step.args ?? [], at)
     }
   }
 
   for (const [name, steps] of Object.entries(doc.flows))
     walkSteps(steps, `flows.${name}`)
   for (const scenario of doc.scenarios) walkSteps(scenario.steps, scenario.id)
+
+  // Every expect.unchanged/changed must name a path an EARLIER step snapshotted.
+  for (const ref of snapshotRefs) {
+    const snap = snapshotOrder.find((entry) => entry.key === ref.key)
+    if (!snap) {
+      problems.push(
+        `${ref.where}: expect.unchanged/changed names a path nothing snapshotted — add a snapshot: to the step that establishes it`,
+      )
+    } else if (snap.index > ref.index) {
+      problems.push(
+        `${ref.where}: expect.unchanged/changed refers to a path snapshotted LATER (${snap.where}) — the snapshot has to establish the state first`,
+      )
+    }
+  }
 
   for (const name of Object.keys(doc.flows)) {
     if (!usedFlows.has(name))
@@ -404,10 +575,22 @@ export function crossReferenceProblems(doc: ScenariosDoc): string[] {
 
   const walkPre = (steps: PreStep[] | undefined, where: string): void => {
     for (const [index, step] of (steps ?? []).entries()) {
+      const at = `${where}[${index}]`
       const body = step.write?.body ?? step.run?.body
       if (body && !doc.bodies?.[body]) {
-        problems.push(`${where}[${index}]: unknown body "${body}"`)
+        problems.push(`${at}: unknown body "${body}"`)
       }
+      // Setup invokes helpers too, so a typo'd helper in a setup.post — or a
+      // helper used ONLY during setup — has to be caught here, or the
+      // "declared but never used" check never fires for those.
+      if (step.helper) {
+        if (!doc.helpers?.[step.helper]) {
+          problems.push(`${at}: unknown helper "${step.helper}"`)
+        } else {
+          usedHelpers.add(step.helper)
+        }
+      }
+      checkVars(step.args ?? [], at)
     }
   }
   for (const [name, setup] of Object.entries(doc.fixtures)) {
@@ -417,6 +600,14 @@ export function crossReferenceProblems(doc: ScenariosDoc): string[] {
   for (const scenario of doc.scenarios) {
     walkPre(scenario.setup?.pre, `${scenario.id}.setup.pre`)
     walkPre(scenario.setup?.post, `${scenario.id}.setup.post`)
+  }
+
+  // Checked last: a helper can be referenced from a step OR from setup, so this
+  // only means anything once every walk above has run.
+  for (const name of Object.keys(doc.helpers ?? {})) {
+    if (!usedHelpers.has(name)) {
+      problems.push(`helpers.${name} is declared but never used`)
+    }
   }
 
   return problems

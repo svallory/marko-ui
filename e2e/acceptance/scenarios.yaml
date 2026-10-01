@@ -186,6 +186,209 @@ bodies:
 # Fixtures — real scaffolds, cached by the runner between scenarios.
 # `dir` is where the scaffold lands inside the scenario workspace.
 # --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# Helpers — named programs the scenario runs with `{command: "@helper",
+# helper: <name>}`. They exist so a scenario says WHAT it is building instead of
+# which shell incantation builds it: the runner dev implements each one once,
+# from the `description` contract plus `source`, and a reviewer reads the
+# description alone. Everything here is real: real files, real layouts, no
+# stubs. `cwd` is the default working directory (relative to the scenario
+# workspace) when the invoking step does not set its own.
+# --------------------------------------------------------------------------
+helpers:
+  # --- project content -----------------------------------------------------
+
+  wire-button:
+    description: >
+      Rewrites the app's home route so it imports the just-installed Button
+      component from the components alias and renders it with the text
+      "Acceptance Button". Exits 0 only when the rewritten route contains both
+      the import and the rendered tag; it fails loudly if the route template it
+      expects (create-marko's) is not there, so a scaffolder change shows up as
+      a helper failure rather than a silently unwired build.
+    language: node
+    cwd: app
+    source: |
+      const fs = require("node:fs")
+      const route = "src/routes/+page.marko"
+      const page = fs.readFileSync(route, "utf8")
+      const marker = page.includes("<mouse-mask/>") ? "<mouse-mask/>" : "<!-- anchor -->"
+      if (!page.includes(marker)) {
+        throw new Error(`no insertion point in ${route}`)
+      }
+      fs.writeFileSync(
+        route,
+        'import Button from "../components/ui/button/button.marko";\n\n' +
+          page.replace(marker, '<Button variant="outline">Acceptance Button</Button>\n' + marker)
+      )
+
+  set-icon-library:
+    description: >
+      Sets `iconLibrary` in the project's components.json to argv[2] (the only
+      argument a caller passes). Exits 0 only if components.json parsed and now
+      carries that value, so a caller that forgot to `init` first fails here
+      rather than in the next `add`.
+    language: node
+    cwd: app
+    source: |
+      const fs = require("node:fs")
+      const [library] = process.argv.slice(2)
+      if (!library) throw new Error("usage: set-icon-library <library>")
+      const config = JSON.parse(fs.readFileSync("components.json", "utf8"))
+      config.iconLibrary = library
+      fs.writeFileSync("components.json", JSON.stringify(config, null, 2) + "\n")
+      if (JSON.parse(fs.readFileSync("components.json", "utf8")).iconLibrary !== library) {
+        throw new Error("iconLibrary did not persist")
+      }
+
+  unback-alias:
+    description: >
+      Rewrites `aliases.components` AND `aliases.ui` in the project's
+      components.json to the prefix given as argv[2] (e.g. "#custom/*"). Both
+      keys are set because `doctor`'s alias check reads `aliases.components` only
+      (commands/doctor.ts checkAliases) — changing `aliases.ui` alone leaves
+      doctor passing, which is the mistake this scenario exists to prevent.
+      Exits 0 only if the file still parses afterwards.
+    language: node
+    cwd: app
+    source: |
+      const fs = require("node:fs")
+      const [prefix] = process.argv.slice(2)
+      if (!prefix) throw new Error("usage: unback-alias <prefix>")
+      const config = JSON.parse(fs.readFileSync("components.json", "utf8"))
+      config.aliases.components = prefix
+      config.aliases.ui = prefix
+      fs.writeFileSync("components.json", JSON.stringify(config, null, 2) + "\n")
+      JSON.parse(fs.readFileSync("components.json", "utf8"))
+
+  count-markers:
+    description: >
+      Prints a single integer to stdout: the total number of occurrences of the
+      needle (argv[2]) across the files named after it (argv[3..]), each file
+      counted relative to the step's cwd. Exists because "exactly one" cannot be
+      expressed by contains/notContains without also passing when the marker is
+      absent — `stdoutNotContains: "\\n2"` looks right and can never fail. A
+      step asserts the number with `stdoutMatches: ["^1$"]` (exactly one) or
+      `["^[1-9]\\d*$"]` (at least one). Exits 0 whatever the count is: the count
+      IS the assertion, and a missing file contributing 0 is what makes
+      `^1$` fail loudly rather than pass vacuously.
+    language: node
+    cwd: app
+    source: |
+      const fs = require("node:fs")
+      const [needle, ...files] = process.argv.slice(2)
+      if (!needle || !files.length) throw new Error("usage: count-markers <needle> <file...>")
+      let total = 0
+      for (const file of files) {
+        try {
+          total += fs.readFileSync(file, "utf8").split(needle).length - 1
+        } catch {
+          // a file that was never created simply contributes 0
+        }
+      }
+      process.stdout.write(String(total))
+
+  # --- monorepo layout -----------------------------------------------------
+
+  make-bun-workspace:
+    description: >
+      Turns the scaffolded app in $APP into a bun-workspace root: moves the app
+      to `apps/web`, writes a root package.json declaring
+      `{"workspaces": ["apps/*"], "name": "workspace-root", "private": true}`,
+      and runs the workspace's own install so a single `bun.lock` exists at the
+      ROOT (the shape the 0.5.0 package-manager-detection fix is about:
+      detection walks up to the workspace root). Exits 0 only when both
+      `apps/web/package.json` and a root lockfile exist.
+    language: node
+    source: |
+      const fs = require("node:fs")
+      const path = require("node:path")
+      const app = process.env.APP
+      if (!app) throw new Error("APP is not set")
+      fs.renameSync(app, path.join("apps", "web"))
+      fs.writeFileSync(
+        "package.json",
+        JSON.stringify(
+          { name: "workspace-root", private: true, workspaces: ["apps/*"] },
+          null,
+          2
+        ) + "\n"
+      )
+
+  make-npm-workspace:
+    description: >
+      Same layout as make-bun-workspace, but declares npm's `workspaces` field
+      and runs npm's install, so the root has a package-lock.json and no bun
+      lockfile. Used by the scenario that asserts init at a workspace ROOT is
+      refused with the --cwd instruction.
+    language: node
+    source: |
+      const fs = require("node:fs")
+      const path = require("node:path")
+      const app = process.env.APP
+      if (!app) throw new Error("APP is not set")
+      fs.renameSync(app, path.join("apps", "web"))
+      fs.writeFileSync(
+        "package.json",
+        JSON.stringify(
+          { name: "workspace-root", private: true, version: "1.0.0", workspaces: ["apps/*"] },
+          null,
+          2
+        ) + "\n"
+      )
+
+  make-pnpm-workspace-with-ui:
+    description: >
+      Builds a pnpm workspace with two packages: the scaffolded Marko app moved
+      to `apps/web`, and a new `packages/ui` holding a package.json that depends
+      on the app via the `workspace:*` protocol plus its own tsconfig. Runs the
+      workspace install so pnpm-lock.yaml sits at the root. This is the "shared
+      components package" layout: the components belong in packages/ui and the
+      app consumes them, not the reverse.
+    language: node
+    source: |
+      const fs = require("node:fs")
+      const path = require("node:path")
+      const app = process.env.APP
+      if (!app) throw new Error("APP is not set")
+      fs.renameSync(app, path.join("apps", "web"))
+      fs.writeFileSync(
+        "package.json",
+        JSON.stringify(
+          { name: "workspace-root", private: true, version: "1.0.0", packageManager: "pnpm@9.0.0", workspaces: ["apps/*", "packages/*"] },
+          null,
+          2
+        ) + "\n"
+      )
+      fs.mkdirSync(path.join("packages", "ui"), { recursive: true })
+      fs.writeFileSync(
+        path.join("packages", "ui", "package.json"),
+        JSON.stringify(
+          { name: "@acme/ui", version: "0.0.0", private: true, dependencies: { "@acme/web": "workspace:*" } },
+          null,
+          2
+        ) + "\n"
+      )
+      fs.writeFileSync(
+        path.join("packages", "ui", "tsconfig.json"),
+        JSON.stringify({ compilerOptions: { noEmit: true }, include: ["**/*"] }, null, 2) + "\n"
+      )
+
+  relocate-config-to-root:
+    description: >
+      Moves the app's components.json to the scenario workspace root (the
+      "one shared config for the whole monorepo" layout) and prints the path it
+      wrote. Nothing else is moved: the app keeps its own package.json, tsconfig
+      and stylesheet, so the only thing that changed is where the config lives.
+      Exits 0 only if the root config exists afterwards.
+    language: node
+    source: |
+      const fs = require("node:fs")
+      const path = require("node:path")
+      const from = path.join(process.env.APP, "components.json")
+      fs.copyFileSync(from, "components.json")
+      if (!fs.existsSync("components.json")) throw new Error("root components.json missing")
+
 fixtures:
   # The shape the docs Installation page tells users to start from:
   # `bunx create-marko@latest --name my-app --template basic`.
@@ -292,7 +495,7 @@ flows:
           - src/lib/utils.ts
         fileContains:
           - path: src/components/ui/button/button.marko
-            contains: "export interface Input"
+            contains: "export type Input"
 
   add-zag-machine-and-composite:
     - name: "add one zag-machine part and one multi-file composite"
@@ -412,8 +615,8 @@ scenarios:
       - use: add-button
       - use: verify-clean
       - name: wire Button into the home route
-        command: "@shell"
-        args: ["node", "-e", "wire-button"]
+        command: "@helper"
+        helper: wire-button
         expect:
           exit: 0
           fileContains:
@@ -430,12 +633,18 @@ scenarios:
       fixture: stock-marko-run
     speed: fast
     ci: { shard: core }
-    covers: ["flag-driven init (no prompt)"]
+    covers:
+      - "flag-driven init (no prompt)"
+      - "the read-only spine: status/doctor/diff all agree after an add"
     notes: >
       The rest of the core scenarios share this setup through the
       init-copy-vega-neutral flow; this one exists because flags and defaults are
       two different code paths (promptForConfig takes the option branch and skips
-      the prompt branch entirely).
+      the prompt branch entirely). It is also the scenario that stands for the
+      "after a plain add, status/doctor/diff all agree the project is healthy"
+      situation: the spine is asserted here once, explicitly, rather than
+      re-declared as its own duplicate scenario (the `verify-clean` flow splices
+      it into every other scenario that installs a component).
     steps:
       - use: init-copy-vega-neutral
       - use: add-button
@@ -473,9 +682,15 @@ scenarios:
     ci: { shard: core }
     covers: ["interactive pty run", "Enter-through-all == --defaults"]
     notes: >
-      Windows has no pty in the node-pty sense we drive; the Windows leg of
-      interactive init is covered by the `core.init-interactive-pty-choices`
-      scenario's windows-blocking:false entry instead of a duplicate here.
+      Windows has no pty in the node-pty sense we drive, so this scenario is
+      linux+macos only and the Windows interactive leg is reported, not
+      blocked.
+
+      The point of the scenario is that Enter-through-all-three is EQUIVALENT to
+      --defaults, so it does not stop at the config: it adds a component and runs
+      the read-only spine afterwards, exactly as core.init-defaults-copy does.
+      Asserting only /visualStyle: vega would duplicate that scenario's
+      assertion without showing equivalence.
     steps:
       - name: init asks base color, distribution, visual style
         command: init
@@ -503,6 +718,8 @@ scenarios:
             - path: components.json
               pointer: /visualStyle
               equals: vega
+      - use: add-button
+      - use: verify-clean
 
   - id: core.init-interactive-pty-choices
     title: "in a real terminal the arrow keys choose a non-default base color and visual style"
@@ -539,12 +756,20 @@ scenarios:
             - path: components.json
               pointer: /visualStyle
               equals: maia
-      - name: the theme block reflects the chosen base color
-        command: "@shell"
-        args: ["grep", "-c", "--", "--slate-", "src/styles/globals.css"]
+      - name: the theme block really carries the chosen base color
+        command: "@helper"
+        helper: count-markers
+        args: ["--slate-", "src/styles/globals.css"]
         expect:
           exit: 0
-          stdoutNotContains: "\n0"
+          stdoutMatches: ["^[1-9]\\d*$"]
+      - name: the default base color is not what got written
+        command: "@helper"
+        helper: count-markers
+        args: ["--neutral-", "src/styles/globals.css"]
+        expect:
+          exit: 0
+          stdoutMatches: ["^0$"]
 
   - id: core.add-zag-machine-and-composite
     title: "add a zag-machine part and a multi-file composite, then build and render"
@@ -629,31 +854,11 @@ scenarios:
           exit: 0
           stdoutContains: "button"
 
-  - id: core.status-doctor-diff-clean
-    title: "after a plain add, status/doctor/diff all agree the project is healthy"
-    kind: core
-    tags: [os:linux, os:macos, os:windows, pm:bun, kind:marko-run, speed:medium]
-    requires: { os: [linux, macos, windows], network: both, tools: [bun, node] }
-    setup:
-      fixture: stock-marko-run
-    speed: medium
-    ci: { shard: core }
-    covers: ["read-only command spine"]
-    steps:
-      - use: init-copy-vega-neutral
-      - use: add-button
-      - use: verify-clean
-
   - id: core.read-commands-search-show-docs
     title: "search, show and docs answer from the live registry before anything is installed"
     kind: core
     tags: [os:linux, os:macos, os:windows, kind:registry, speed:fast]
-    requires:
-      {
-        os: [linux, macos, windows],
-        network: registry-only,
-        tools: [bun, node],
-      }
+    requires: { os: [linux, macos, windows], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
     speed: fast
@@ -693,12 +898,7 @@ scenarios:
     title: "manifest describes the whole CLI and registry list resolves the configured registries"
     kind: core
     tags: [os:linux, os:macos, os:windows, kind:registry, speed:fast]
-    requires:
-      {
-        os: [linux, macos, windows],
-        network: registry-only,
-        tools: [bun, node],
-      }
+    requires: { os: [linux, macos, windows], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
     speed: fast
@@ -762,12 +962,7 @@ scenarios:
     title: "eject on a copy project explains there is nothing to eject"
     kind: core
     tags: [os:linux, os:macos, os:windows, kind:marko-run, speed:fast]
-    requires:
-      {
-        os: [linux, macos, windows],
-        network: registry-only,
-        tools: [bun, node],
-      }
+    requires: { os: [linux, macos, windows], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
     speed: fast
@@ -791,12 +986,7 @@ scenarios:
     title: "a second init refuses and points at add, agents sync and --force"
     kind: core
     tags: [os:linux, os:macos, os:windows, kind:marko-run, speed:fast]
-    requires:
-      {
-        os: [linux, macos, windows],
-        network: registry-only,
-        tools: [bun, node],
-      }
+    requires: { os: [linux, macos, windows], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
     speed: fast
@@ -810,9 +1000,7 @@ scenarios:
         expect:
           exit: 1
           stdoutMatches: ["(?i)already initialized"]
-          stdoutContains: "marko-ui add"
-          stdoutContains: "marko-ui agents sync"
-          stdoutContains: "--force"
+          stdoutContains: ["marko-ui add", "marko-ui agents sync", "--force"]
           jsonPath:
             - path: components.json
               pointer: /distribution
@@ -898,37 +1086,55 @@ scenarios:
       - use: verify-clean
 
   - id: kind.marko5-class
-    title: "a Marko 5 class-API project initializes, and the class-API components are what land"
+    title: "a Marko 5 class-API project is refused: marko-ui requires Marko 6"
     kind: project-kind
-    tags: [os:linux, os:macos, kind:marko5, speed:medium]
+    tags: [os:linux, os:macos, kind:marko5, speed:fast, needs:cli-guards]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
       fixture: marko5-class
-    speed: medium
+    speed: fast
     ci: { shard: kinds }
     covers: ["Marko 5 (class API) project"]
-    status: unknown-expectation
-    question: >
-      Does `init`/`add` officially support a Marko 5 project? packages/marko-ui's
-      docs say Marko 6 only and the registry ships Marko 6 tags-API source
-      (`<zag/api=`, attr-tags), which a Marko 5 compiler cannot consume. The
-      code has no version guard: isMarkoProject() only checks for a `marko`
-      dependency, so init will succeed and write Marko 6 components that the
-      project's own `marko build` cannot compile. Is that the intended answer
-      (init succeeds, and it is the user who must migrate), or should init
-      refuse a `marko@^5` dependency the way it refuses a non-Marko project?
-      Until answered, this scenario asserts only the pre-component state
-      (init exit 0, components.json written, AGENTS.md written) and does not
-      build the app.
+    status: needs-cli-guards
+    notes: >
+      Settled by the operator. Today `isMarkoProject` (preflights/preflight-init.ts)
+      only checks that SOME `marko` dependency is declared, so init happily
+      configures a Marko 5 project and writes Marko 6 tags-API source
+      (`<zag/api=`, attr-tags) that a Marko 5 compiler cannot consume — the
+      failure would not surface until the user's own build. The guard belongs in
+      the same preflight as the non-Marko-project check; this scenario is the
+      executable statement of what it must do, and the runner SKIPS it until the
+      guard lands on fix/cli-guards.
+
+      --force bypasses, exactly as --force bypasses the non-Marko-project check:
+      a project this detector misreads is precisely what --force is the escape
+      hatch for.
     steps:
-      - use: init-copy-vega-neutral
-      - name: no marko-run skill here either (this template is @marko/run 0.8)
-        command: agents
-        sub: ["sync"]
+      - name: init refuses and names the version requirement
+        command: init
+        args: ["--yes"]
+        expect:
+          exit: 1
+          stdoutMatches: ["(?i)marko-ui requires marko 6"]
+          stdoutContains: "--force"
+          filesAbsent: ["components.json", "AGENTS.md"]
+      - name: the preflight wrote nothing into the Marko 5 project
+        command: "@helper"
+        helper: count-markers
+        args: ["components.json", "package.json"]
         expect:
           exit: 0
-          filesExist: [".agents/skills/marko-ui/SKILL.md"]
-      - use: verify-clean
+          stdoutMatches: ["^0$"]
+      - name: --force bypasses the version guard and configures the project
+        command: init
+        args: ["--yes", "--force"]
+        expect:
+          exit: 0
+          filesExist: ["components.json"]
+          jsonPath:
+            - path: components.json
+              pointer: /distribution
+              equals: copy
 
   - id: kind.astro-without-marko-interactive
     title: "a non-Marko host framework, in a terminal: init offers to install Marko and the offer is accepted"
@@ -1143,9 +1349,9 @@ scenarios:
       - use: verify-clean
 
   - id: existing.tailwind-v3-config
-    title: "a Tailwind v3 project with its own config file still initializes"
+    title: "a Tailwind v3 project is refused: marko-ui needs Tailwind v4"
     kind: existing-project
-    tags: [os:linux, os:macos, kind:tailwind, speed:medium]
+    tags: [os:linux, os:macos, kind:tailwind, speed:fast, needs:cli-guards]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
@@ -1153,36 +1359,56 @@ scenarios:
         - run: { cmd: "bun add -d tailwindcss@3 postcss autoprefixer" }
         - write: { path: tailwind.config.js, body: tailwind-v3-config-js }
         - write: { path: postcss.config.js, body: postcss-config-js }
-    speed: medium
+    speed: fast
     ci: { shard: existing }
     covers: ["Tailwind v3 config"]
-    status: unknown-expectation
-    question: >
-      What does `init` do in a project whose package.json depends on
-      tailwindcss@^3 and which ships a tailwind.config.js? getProjectTailwindVersionFromConfig()
-      reads the version and update-css-vars.ts has a `v4` plugin branch, so the
-      CLI is aware of v3 — but init installs tailwindcss@^4 + @tailwindcss/vite
-      unconditionally and the docs only ever describe Tailwind v4. Is a v3
-      project supported (init should keep v3 and write v3-shaped theme tokens),
-      or out of scope (init upgrades the project to v4, which is a destructive
-      change to a user's build)? This scenario asserts only that init does not
-      crash and writes a components.json whose tailwind.config points at the
-      existing file.
+    status: needs-cli-guards
+    notes: >
+      Settled by the operator. The Tailwind v3 guard lands on fix/cli-guards;
+      until it does, the runner SKIPS this scenario (reported, not failed)
+      because the CLI today accepts a v3 project and silently upgrades its
+      build. Skipped scenarios are listed in the run summary so an unlanded
+      guard cannot hide.
+
+      What the guard must do, from the code: getProjectTailwindVersionFromConfig
+      already reads the installed version, so the check belongs where init runs
+      its preflights. The refusal names Tailwind v4 as the requirement and
+      points at `npx @tailwindcss/upgrade` executed with the project's own
+      package manager, and --force bypasses it exactly as --force bypasses the
+      non-Marko-project check.
     steps:
-      - name: init does not crash and records the existing tailwind config
+      - name: init refuses and names the upgrade path
         command: init
         args: ["--yes"]
+        expect:
+          exit: 1
+          stdoutMatches: ["(?i)tailwind v4"]
+          stdoutContains: ["@tailwindcss/upgrade", "--force"]
+          filesAbsent: ["components.json"]
+      - name: the project's own config files are left alone
+        command: "@helper"
+        helper: count-markers
+        args: ["content", "tailwind.config.js"]
+        expect:
+          exit: 0
+          stdoutMatches: ["^[1-9]\\d*$"]
+          filesExist: ["tailwind.config.js", "postcss.config.js"]
+      - name: --force bypasses the guard and initializes normally
+        command: init
+        args: ["--yes", "--force"]
         expect:
           exit: 0
           filesExist: ["components.json"]
           jsonPath:
             - path: components.json
               pointer: /tailwind/config
-              equals: tailwind.config.js
-      - use: add-button
+              equals: ""
+            - path: components.json
+              pointer: /distribution
+              equals: copy
 
   - id: existing.multiple-css-entries
-    title: "two candidate stylesheets: init picks one deterministically and records it"
+    title: "two candidate stylesheets: init uses exactly one, and leaves the other untouched"
     kind: existing-project
     tags: [os:linux, os:macos, kind:tailwind, speed:medium]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
@@ -1196,17 +1422,49 @@ scenarios:
     speed: medium
     ci: { shard: existing }
     covers: ["unusual or multiple CSS entries"]
+    notes: >
+      WHICH file init picks is deliberately NOT asserted. getTailwindCssFile
+      (utils/get-project-info.ts) globs `**/*.{css,scss}` and returns the first
+      match, and fast-glob's traversal order is filesystem-dependent — asserting
+      the winner would make this scenario flaky across CI machines for no
+      coverage gain. What must hold, and is asserted: exactly ONE theme block
+      exists across both candidates, both files survive, the user's own CSS in
+      each is intact, and no THIRD stylesheet was invented.
     steps:
-      - name: init picks one entry and says which
+      - name: init writes a config naming a stylesheet under src/styles
         command: init
         args: ["--yes"]
         expect:
           exit: 0
           filesExist: ["components.json"]
-          jsonPath:
-            - path: components.json
-              pointer: /tailwind/css
-              equals: "<exists>"
+          stdoutMatches: ["(?i)src/styles/[a-z-]+\\.css"]
+          filesAbsent: ["src/styles/app.css"]
+      - name: exactly one of the two candidates carries the theme block
+        command: "@helper"
+        helper: count-markers
+        args:
+          [
+            "/* marko-ui:theme:start */",
+            "src/styles/globals.css",
+            "src/styles/admin.css",
+          ]
+        expect:
+          exit: 0
+          stdoutMatches: ["^1$"]
+      - name: the user's own CSS survived in both files
+        command: "@helper"
+        helper: count-markers
+        args:
+          [
+            '@import "tailwindcss"',
+            "src/styles/globals.css",
+            "src/styles/admin.css",
+          ]
+        expect:
+          exit: 0
+          stdoutMatches: ["^2$"]
+      - use: add-button
+      - use: verify-clean
 
   - id: existing.component-name-collision
     title: "a hand-written components/ui/button/button.marko is reported, not silently clobbered"
@@ -1242,9 +1500,9 @@ scenarios:
       - use: verify-clean
 
   - id: existing.shadcn-components-json
-    title: "an existing React shadcn components.json is handled, not half-adopted"
+    title: "a React shadcn components.json is recognised, not silently adopted"
     kind: existing-project
-    tags: [os:linux, os:macos, kind:react, speed:fast]
+    tags: [os:linux, os:macos, kind:react, speed:fast, needs:cli-guards]
     requires: { os: [linux, macos], network: npm, tools: [bun, node] }
     setup:
       fixture: react-vite
@@ -1253,33 +1511,63 @@ scenarios:
     speed: fast
     ci: { shard: existing }
     covers: ["an existing React shadcn components.json"]
-    status: unknown-expectation
-    question: >
-      A React project's components.json parses against the CLI's own schema
-      (`style`, `rsc`, `tsx`, `tailwind.*`, `aliases.components`/`utils` are all
-      fields marko-ui reads), so every command except init will happily treat a
-      React project as a configured Marko one. Only `init` guards, on the
-      components.json-exists rule. Should the CLI recognise a React-shaped
-      config (tsx: true, an app/ router, a next dependency) and refuse with a
-      message pointing at shadcn's own CLI, or is ignoring components.json for a
-      non-Marko project acceptable? Until answered, this scenario asserts only
-      that init refuses without rewriting the user's file.
+    status: needs-cli-guards
+    notes: >
+      Settled by the operator. A React components.json parses against the
+      CLI's OWN schema — `style`, `rsc`, `tsx`, `tailwind.*` and
+      `aliases.components`/`utils` are all fields marko-ui reads — so every
+      command except init currently treats a React project as a configured Marko
+      one and happily writes `.marko` files into a React app.
+
+      The guard is a React-shaped-config detection at config-load time, so it
+      covers EVERY command that loads the config, not just init: init, add,
+      status, doctor, diff and agents sync each exit 1 naming shadcn/ui as the
+      React project's own CLI and suggesting `--cwd <app>` for the case where a
+      monorepo holds both a React app and a Marko app. The runner SKIPS this
+      scenario until the guard lands on fix/cli-guards.
     steps:
-      - name: init refuses and leaves the React config untouched
+      - name: init refuses on a React-shaped config
         command: init
         args: ["--force", "--defaults"]
         expect:
-          exit: [0, 1]
-          fileContains:
-            - path: components.json
-              contains: "ui.shadcn.com/schema.json"
+          exit: 1
+          stdoutMatches: ["(?i)shadcn/ui"]
+          stdoutContains: "--cwd"
+      - name: the user's own React config is not rewritten
+        command: "@helper"
+        helper: count-markers
+        args: ["ui.shadcn.com/schema.json", "components.json"]
+        expect:
+          exit: 0
+          stdoutMatches: ["^1$"]
+      - name: status refuses too — the guard is not init-only
+        command: status
+        expect:
+          exit: 1
+          stdoutMatches: ["(?i)shadcn/ui"]
+      - name: doctor refuses too
+        command: doctor
+        expect:
+          exit: [1, 3]
+          stdoutMatches: ["(?i)shadcn/ui"]
+      - name: diff refuses too
+        command: diff
+        expect:
+          exit: 1
+          stdoutMatches: ["(?i)shadcn/ui"]
+      - name: agents sync refuses too
+        command: agents
+        sub: ["sync"]
+        expect:
+          exit: 1
+          stdoutMatches: ["(?i)shadcn/ui"]
+          filesAbsent: ["AGENTS.md"]
 
   - id: existing.dirty-git-tree
     title: "a dirty git tree does not block init, and nothing is committed or stashed"
     kind: existing-project
     tags: [os:linux, os:macos, kind:git, speed:fast]
-    requires:
-      { os: [linux, macos], network: registry-only, tools: [bun, node, git] }
+    requires: { os: [linux, macos], network: both, tools: [bun, node, git] }
     setup:
       fixture: stock-marko-run
       post:
@@ -1322,17 +1610,25 @@ scenarios:
     setup:
       scaffold:
         tool: create-marko@latest
-        args: ["--name", "app", "--template", "basic", "--yes"]
+        args: ["--name", "app", "--template", "basic", "--no-git", "--yes"]
         dir: app
       pm: bun
       install: true
-      post:
-        - label: "create-marko runs without --no-git here; assert the repo really is absent"
-          run: { cmd: "test ! -d .git" }
     speed: medium
     ci: { shard: existing }
-    covers: ["git missing", "npx runner fallback with no lockfile"]
-    notes: The skills relay needs git to clone its source; with no .git here it still has to work, which is what the scenario pins.
+    covers: ["git missing", "skills relay with no project repo"]
+    notes: >
+      The scaffold passes --no-git, because upstream create-marko initializes a
+      git repository BY DEFAULT (`--no-git  Skip initializing a git repository` in
+      `create-marko --help`). Without the flag this scenario would silently test
+      a project that has a repo, and the post-step assertion that it does not
+      would either fail or — if it ran at the workspace root — pass vacuously
+      while app/.git existed. The premise is now established by the flag, not by
+      an assertion that depends on where `run` happens to execute.
+
+      The skills relay clones its source with the `skills` package, which shells
+      out to git; with no repo here it must still work, which is what the
+      scenario pins.
     steps:
       - use: init-copy-vega-neutral
       - use: add-button
@@ -1412,6 +1708,61 @@ scenarios:
       - use: add-button
       - use: verify-clean
 
+  - id: config.no-config
+    title: "a project with neither tsconfig.json nor jsconfig.json does not crash any command"
+    kind: config-shape
+    tags: [os:linux, os:macos, kind:alias, speed:medium]
+    requires: { os: [linux, macos], network: both, tools: [bun, node] }
+    setup:
+      fixture: stock-marko-run
+      post:
+        - label: "the project declares nothing: no tsconfig, no paths"
+          rm: tsconfig.json
+        - label: "and no jsconfig either, so there is no config file at all"
+          run: { cmd: "test ! -e jsconfig.json" }
+    speed: medium
+    ci: { shard: config }
+    covers: ["no config file at all"]
+    notes: >
+      A real user situation, and a 0.5.0 fix with a history: before it, a project
+      with no tsconfig.json made status, doctor, diff, add and agents sync all
+      crash with `Failed to load tsconfig.json. Couldn't find tsconfig.json`.
+      Every one of those commands is exercised here, so a regression is caught
+      whichever command reintroduces it.
+
+      The consequence of having no config is also asserted: an alias nothing
+      backs falls back to the source root, so components still land under src/
+      and doctor can see them.
+    steps:
+      - use: init-copy-vega-neutral
+      - use: add-button
+      - name: status survives the missing tsconfig
+        command: status
+        args: ["--json"]
+        expect:
+          exit: 0
+          stdoutContains: "button"
+      - name: doctor survives it, and prints the alias mapping it fell back to
+        command: doctor
+        expect:
+          exit: 0
+          stdoutMatches: ["(?i)all checks passed", "(?i)import alias"]
+      - name: diff survives it
+        command: diff
+        expect:
+          exit: 0
+          stdoutMatches: ["(?i)no updates found|up to date"]
+      - name: agents sync survives it
+        command: agents
+        sub: ["sync"]
+        args: ["--no-skill"]
+        expect:
+          exit: 0
+          filesExist: ["AGENTS.md"]
+          fileContains:
+            - path: AGENTS.md
+              contains: "button"
+
   - id: config.tsconfig-extends-base
     title: "a tsconfig that extends a base package still resolves the alias"
     kind: config-shape
@@ -1434,7 +1785,7 @@ scenarios:
     title: "a custom alias nothing backs is a doctor failure (exit 3), not a warning"
     kind: config-shape
     tags: [os:linux, os:macos, kind:alias, speed:fast]
-    requires: { os: [linux, macos], network: registry-only, tools: [bun, node] }
+    requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
     speed: fast
@@ -1445,23 +1796,35 @@ scenarios:
       nothing backs (tsconfig paths, package imports, workspace export) is a
       failed doctor check. A second custom-alias scenario that IS backed is not
       written — it takes the same branch as config.tsconfig-paths-alias.
+
+      BOTH aliases.components and aliases.ui are rewritten to #custom/*, and the
+      assertion pins both, because doctor's alias check reads
+      config.aliases.components ONLY (commands/doctor.ts checkAliases, line 349).
+      Changing aliases.ui alone leaves aliases.components at @/components, which
+      is backed by create-marko's tsconfig — doctor would exit 0 and this
+      scenario would pass vacuously.
     steps:
       - use: init-copy-vega-neutral
       - use: add-button
       - name: hand-edit components.json to an alias nothing backs
-        command: "@shell"
-        args: ["node", "-e", "unback-alias"]
+        command: "@helper"
+        helper: unback-alias
+        args: ["#custom/*"]
         expect:
           exit: 0
           jsonPath:
             - path: components.json
+              pointer: /aliases/components
+              equals: "#custom/*"
+            - path: components.json
               pointer: /aliases/ui
               equals: "#custom/*"
-      - name: doctor fails with exit 3
+      - name: doctor fails with exit 3, naming the alias it checked
         command: doctor
         expect:
           exit: 3
-          stdoutMatches: ["(?i)alias"]
+          stdoutMatches: ["(?i)#custom/\\*"]
+          stdoutContains: "aliases.components"
 
   # =========================================================================
   # kind: package-manager — which real package manager drives the CLI
@@ -1528,7 +1891,7 @@ scenarios:
           stdoutMatches: ["(?i)skills.*installed|npx"]
 
   - id: pm.yarn-berry
-    title: "yarn berry (packageManager field + .yarnrc.yml): full loop"
+    title: "yarn berry (packageManager field + node-modules linker): the whole loop succeeds"
     kind: package-manager
     tags: [os:linux, os:macos, pm:yarn-berry, kind:marko-run, speed:medium]
     requires:
@@ -1538,7 +1901,8 @@ scenarios:
       pm: yarn-berry
       install: true
       post:
-        - write:
+        - label: "nodeLinker, so the project has a real node_modules to resolve against"
+          write:
             path: .yarnrc.yml
             content: |
               nodeLinker: node-modules
@@ -1546,22 +1910,42 @@ scenarios:
           run: { cmd: "corepack use yarn@4" }
     speed: medium
     ci: { shard: pm }
-    covers: ["yarn berry", "packageManager field"]
-    status: unknown-expectation
-    question: >
-      get-package-manager.test.ts unit-tests `packageManager: "yarn@4.x"` and
-      `bun.lockb`, but no scenario has run a real Yarn Berry project. Under Yarn
-      Berry the CLI shells out to `yarn dlx`, which Yarn Berry accepts — but
-      Berry also refuses to run scripts it did not resolve from its own lockfile,
-      and the skills relay passes `-y` to `skills add` (a flag shaped for npx).
-      Question for the lead: is `yarn dlx skills@1.7.0 add ... -y` actually
-      accepted by Yarn 4, and does `marko-ui init`'s dependency install succeed
-      in a PnP project? Until run once by a human, this scenario asserts init +
-      add + verify only, and the runner skips it when corepack is unavailable.
+    covers: ["yarn berry", "the packageManager field"]
+    notes: >
+      Settled by the operator, and the premise corrected: the CLI NEVER uses
+      `yarn dlx`. getPackageRunnerCommand (utils/get-package-manager.ts:102-107)
+      returns "pnpm dlx" for pnpm, "bunx" for bun, and "npx" for EVERYTHING
+      else — so on a Yarn Berry project the skills relay runs
+      `npx -y skills@1.7.0 add …`, which npx handles fine. An earlier revision of
+      this scenario asked whether `yarn dlx … -y` was accepted by Yarn 4; that
+      was a false premise and there is nothing to ask.
+
+      What this scenario now asserts is the only thing there is to assert: the
+      scenario SUCCEEDS. Exit 0 at every step, a buildable project. A failure is
+      a bug in the CLI's Yarn support (or in this file's setup), not an open
+      question — so there is no unknown-expectation, and the runner must not
+      skip it merely because it looks exotic. It is skipped only when corepack or
+      yarn is genuinely absent (requires.tools).
+
+      `.yarnrc.yml` sets nodeLinker: node-modules deliberately: PnP (the Berry
+      default) changes module resolution enough that it is a different kind of
+      situation, and one scenario covers one kind. PnP is listed as deliberately
+      uncovered in README §Coverage.
     steps:
       - use: init-copy-vega-neutral
       - use: add-button
       - use: verify-clean
+      - name: the app builds under Berry
+        command: "@app-build"
+        expect:
+          exit: 0
+          appBuild: pass
+      - name: the skills relay succeeds (it goes through npx, not yarn dlx)
+        command: agents
+        sub: ["sync"]
+        expect:
+          exit: 0
+          filesExist: [".agents/skills/marko-ui/SKILL.md"]
 
   - id: pm.no-lockfile
     title: "no lockfile at all: the CLI still picks a runner and finishes"
@@ -1611,7 +1995,7 @@ scenarios:
       install: true
       post:
         - label: turn the app into a bun workspace root with apps/web inside it
-          run: { cmd: "node -e make-bun-workspace" }
+          helper: make-bun-workspace
     speed: medium
     ci: { shard: mono }
     covers:
@@ -1638,7 +2022,7 @@ scenarios:
       - use: verify-clean
 
   - id: mono.root-components-json-cwd-flag
-    title: "a monorepo with components.json at the root, driven from the root with --cwd"
+    title: "a monorepo with components.json at the ROOT, every command driven from the root with --cwd"
     kind: monorepo
     tags: [os:linux, os:macos, pm:bun, kind:monorepo, speed:medium]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
@@ -1647,38 +2031,60 @@ scenarios:
       pm: bun
       install: true
       post:
-        - run: { cmd: "node -e make-bun-workspace" }
-        - run: { cmd: "node -e hoist-components-json" }
+        - label: turn the app into a bun workspace root with apps/web inside it
+          helper: make-bun-workspace
     speed: medium
     ci: { shard: mono }
     covers:
       [
         "components.json at the workspace root",
-        "--cwd",
-        "root lockfile drives the runner",
+        "--cwd from the repo root",
+        "the root lockfile drives the package manager",
       ]
+    notes: >
+      The "one shared config for the whole monorepo" leg: the app is configured
+      normally first, then its components.json is hoisted to the root, and every
+      later command is issued from the ROOT with --cwd pointing back at the app.
+      This is the other half of mono.bun-workspaces-app-dir (config in the app,
+      CLI run from inside it) and the pair between them covers "components.json
+      at the root vs in the app, run from root with --cwd vs inside the app".
     steps:
-      - name: init from the repo root with --cwd
+      - name: init into the app first, so there is a config to hoist
         command: init
         args: ["--yes", "--cwd", "apps/web"]
         cwd: .
         expect:
           exit: 0
-          filesExist: ["components.json"]
-      - name: add from the repo root with --cwd
+          filesExist: ["apps/web/components.json"]
+          filesAbsent: ["components.json"]
+      - name: hoist the config to the workspace root
+        command: "@helper"
+        helper: relocate-config-to-root
+        expect:
+          exit: 0
+          filesExist: ["components.json", "apps/web/components.json"]
+      - name: add from the repo root with --cwd resolves the app's aliases through the root config
         command: add
         args: ["button", "-y", "--cwd", "apps/web"]
         cwd: .
         expect:
           exit: 0
           filesExist: ["apps/web/src/components/ui/button/button.marko"]
-      - name: the root skills relay used the root bun.lock, so no npx
-        command: agents
-        sub: ["sync"]
-        cwd: apps/web
+      - name: doctor from the root with --cwd is clean
+        command: doctor
+        args: ["--cwd", "apps/web"]
+        cwd: .
         expect:
           exit: 0
-          filesExist: [".agents/skills/marko-ui/SKILL.md"]
+          stdoutMatches: ["(?i)all checks passed"]
+      - name: the skills relay ran from the app and used the root bun.lock
+        command: agents
+        sub: ["sync"]
+        args: ["--cwd", "apps/web"]
+        cwd: .
+        expect:
+          exit: 0
+          filesExist: ["apps/web/.agents/skills/marko-ui/SKILL.md"]
 
   - id: mono.npm-workspaces-root-init-refuses
     title: "running init at a workspace root is refused with the --cwd instruction"
@@ -1690,7 +2096,8 @@ scenarios:
       pm: npm
       install: true
       post:
-        - run: { cmd: "node -e make-npm-workspace" }
+        - label: turn the app into an npm workspace root
+          helper: make-npm-workspace
     speed: fast
     ci: { shard: mono }
     covers: ["npm workspaces", "workspace-root refusal"]
@@ -1718,7 +2125,8 @@ scenarios:
       pm: pnpm
       install: true
       post:
-        - run: { cmd: "node -e make-pnpm-workspace-with-ui" }
+        - label: build a pnpm workspace with a shared packages/ui
+          helper: make-pnpm-workspace-with-ui
     speed: medium
     ci: { shard: mono }
     covers:
@@ -1771,11 +2179,12 @@ scenarios:
             - path: src/styles/globals.css
               contains: "font-family: system-ui"
       - name: exactly one theme block survives the re-run
-        command: "@shell"
-        args: ["grep", "-c", "marko-ui:theme:start", "src/styles/globals.css"]
+        command: "@helper"
+        helper: count-markers
+        args: ["/* marko-ui:theme:start */", "src/styles/globals.css"]
         expect:
           exit: 0
-          stdoutNotContains: "\n2"
+          stdoutMatches: ["^1$"]
       - use: verify-clean
 
   - id: post.change-visual-style
@@ -1829,24 +2238,35 @@ scenarios:
         expect:
           exit: 0
       - name: switch the icon library in components.json
-        command: "@shell"
-        args: ["node", "-e", "set-icon-library", "tabler"]
+        command: "@helper"
+        helper: set-icon-library
+        args: ["tabler"]
         expect:
           exit: 0
           jsonPath:
             - path: components.json
               pointer: /iconLibrary
               equals: tabler
-      - name: re-add rewrites the map for the new library
+      - name: "re-add pulls the icon item and writes only the tabler map"
         command: add
         args: ["select", "-y", "--overwrite"]
         expect:
           exit: 0
-      - name: the stale lucide map is gone
-        command: "@shell"
-        args: ["grep", "-rq", "lucide", "src/components/ui/select/"]
+          filesExist:
+            - src/components/ui/icon/__tabler__.ts
+            - src/components/ui/icon/resolve-client.ts
+          filesAbsent:
+            - src/components/ui/icon/__lucide__.ts
+      - name: the generated resolve-client now imports tablerIcons, not lucideIcons
+        command: "@helper"
+        helper: count-markers
+        args: ["lucideIcons", "src/components/ui/icon/resolve-client.ts"]
         expect:
-          exit: [0, 1]
+          exit: 0
+          stdoutMatches: ["^0$"]
+          fileContains:
+            - path: src/components/ui/icon/resolve-client.ts
+              contains: "tablerIcons"
       - use: verify-clean
 
   - id: post.readd-user-edited-component
@@ -1938,7 +2358,7 @@ scenarios:
             - path: src/components/ui/button/button.marko
               notContains: "my local tweak"
             - path: src/components/ui/button/button.marko
-              contains: "export interface Input"
+              contains: "export type Input"
       - use: verify-clean
 
   - id: post.import-distribution
@@ -2142,22 +2562,19 @@ scenarios:
       - use: init-copy-vega-neutral
       - use: add-button
       - use: agents-sync-and-check
-      - name: snapshot the generated files
-        command: "@shell"
-        args: ["shasum", "AGENTS.md", "skills-lock.json"]
+      - name: record what the first sync generated
+        command: agents
+        sub: ["sync"]
         expect:
           exit: 0
+        snapshot: ["AGENTS.md", "skills-lock.json"]
       - name: sync again
         command: agents
         sub: ["sync"]
         expect:
           exit: 0
           stdoutMatches: ["(?i)already installed"]
-      - name: the files are unchanged
-        command: "@shell"
-        args: ["shasum", "-c", ".agents-sync.sha"]
-        expect:
-          exit: 0
+          unchanged: ["AGENTS.md", "skills-lock.json"]
 
   - id: skills.user-installed-via-skills-cli
     title: "skills the user installed by hand are adopted, not reinstalled"
@@ -2218,7 +2635,7 @@ scenarios:
     title: "--no-skill writes AGENTS.md only, and no skill is installed"
     kind: skills
     tags: [os:linux, os:macos, kind:skills, speed:fast]
-    requires: { os: [linux, macos], network: none, tools: [bun, node] }
+    requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
     speed: fast
@@ -2246,7 +2663,7 @@ scenarios:
     title: "a hand-written AGENTS.md keeps every word the user wrote around the generated section"
     kind: skills
     tags: [os:linux, os:macos, kind:agents-md, speed:fast]
-    requires: { os: [linux, macos], network: registry-only, tools: [bun, node] }
+    requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
       post:
@@ -2272,28 +2689,34 @@ scenarios:
               contains: "Do not edit anything below this line."
             - path: AGENTS.md
               contains: "<!-- marko-ui:end -->"
-      - name: sync again is byte-identical
-        command: "@shell"
-        args: ["shasum", "AGENTS.md"]
+      - name: record the merged AGENTS.md
+        command: "@helper"
+        helper: count-markers
+        args: ["<!-- marko-ui:start -->", "AGENTS.md"]
         expect:
           exit: 0
-      - name: second sync
+          stdoutMatches: ["^1$"]
+        snapshot: ["AGENTS.md"]
+      - name: a second sync is byte-identical and adds no second section
         command: agents
         sub: ["sync"]
         args: ["--no-skill"]
         expect:
           exit: 0
-      - name: still one section, still identical
-        command: "@shell"
-        args: ["shasum", "-c", ".agents-sync.sha"]
+          unchanged: ["AGENTS.md"]
+      - name: still exactly one generated section
+        command: "@helper"
+        helper: count-markers
+        args: ["<!-- marko-ui:start -->", "AGENTS.md"]
         expect:
           exit: 0
+          stdoutMatches: ["^1$"]
 
   - id: skills.claude-md-only
     title: "a CLAUDE.md with no @AGENTS.md is left alone; a symlinked AGENTS.md is written through"
     kind: skills
     tags: [os:linux, os:macos, kind:agents-md, speed:fast]
-    requires: { os: [linux, macos], network: registry-only, tools: [bun, node] }
+    requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
       post:
@@ -2355,7 +2778,7 @@ scenarios:
     title: "with no git binary the skills install fails loudly, AGENTS.md still lands, and the manual command is printed"
     kind: skills
     tags: [os:linux, os:macos, kind:skills, speed:medium]
-    requires: { os: [linux, macos], network: none, tools: [bun, node] }
+    requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
     speed: medium
@@ -2367,7 +2790,7 @@ scenarios:
       - name: a PATH without git makes the relay fail after AGENTS.md is written
         command: agents
         sub: ["sync"]
-        env: { PATH_NO_GIT: "1" }
+        pathWithout: ["git"]
         expect:
           exit: 1
           filesExist: ["AGENTS.md"]
@@ -2383,7 +2806,7 @@ scenarios:
     title: "an unreachable skills source exits 1 after AGENTS.md and prints the command to run by hand"
     kind: skills
     tags: [os:linux, os:macos, kind:skills, speed:medium]
-    requires: { os: [linux, macos], network: none, tools: [bun, node, git] }
+    requires: { os: [linux, macos], network: both, tools: [bun, node, git] }
     setup:
       fixture: stock-marko-run
     speed: medium
@@ -2399,8 +2822,8 @@ scenarios:
         expect:
           exit: 1
           filesExist: ["AGENTS.md"]
-          stdoutContains: "Install them manually"
-          stdoutContains: "svallory/this-repo-does-not-exist-9ce"
+          stdoutContains:
+            ["Install them manually", "svallory/this-repo-does-not-exist-9ce"]
 
   # =========================================================================
   # kind: environment — how the CLI is invoked and what the world looks like
@@ -2410,12 +2833,7 @@ scenarios:
     title: "an agent harness env var is enough to make init non-interactive"
     kind: environment
     tags: [os:linux, os:macos, os:windows, kind:non-interactive, speed:fast]
-    requires:
-      {
-        os: [linux, macos, windows],
-        network: registry-only,
-        tools: [bun, node],
-      }
+    requires: { os: [linux, macos, windows], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
     speed: fast
@@ -2439,12 +2857,7 @@ scenarios:
     title: "CI=1 alone is enough to make init non-interactive"
     kind: environment
     tags: [os:linux, os:macos, os:windows, kind:non-interactive, speed:fast]
-    requires:
-      {
-        os: [linux, macos, windows],
-        network: registry-only,
-        tools: [bun, node],
-      }
+    requires: { os: [linux, macos, windows], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
     speed: fast
@@ -2464,12 +2877,7 @@ scenarios:
     title: "a stdin pipe nobody writes does not hang init or an overwrite prompt"
     kind: environment
     tags: [os:linux, os:macos, os:windows, kind:non-interactive, speed:fast]
-    requires:
-      {
-        os: [linux, macos, windows],
-        network: registry-only,
-        tools: [bun, node],
-      }
+    requires: { os: [linux, macos, windows], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
     speed: fast
@@ -2490,7 +2898,7 @@ scenarios:
     title: "an unreachable registry fails init and leaves no components.json behind"
     kind: environment
     tags: [os:linux, os:macos, os:windows, kind:registry-down, speed:fast]
-    requires: { os: [linux, macos, windows], network: none, tools: [bun, node] }
+    requires: { os: [linux, macos, windows], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
     speed: fast
@@ -2515,7 +2923,7 @@ scenarios:
     title: "an unreachable registry fails add without writing component files"
     kind: environment
     tags: [os:linux, os:macos, kind:registry-down, speed:medium]
-    requires: { os: [linux, macos], network: none, tools: [bun, node] }
+    requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
     speed: medium
@@ -2549,8 +2957,16 @@ scenarios:
     covers: ["custom registry URL"]
     notes: >
       The runner serves a copy of the published registry JSON from a local static
-      server and rewrites components.json's @marko-ui entry to it, so the scenario
-      proves the URL is honoured end to end (not just that the env var is read).
+      server and the scenario points REGISTRY_URL at it for BOTH the init and the
+      add, so the URL is proved honoured end to end — the components that land
+      can only have come from the mirror.
+
+      Note there is deliberately NO assertion that components.json records
+      @marko-ui anywhere. The built-in registry is never written to the config:
+      filterBuiltinRegistries (commands/init.ts) strips it, and
+      assertNoBuiltinRegistryOverride (utils/get-config.ts) rejects any config
+      that tries to define it. Earlier revisions of this scenario asserted
+      `/registries/@marko-ui` existed, which cannot be true.
     steps:
       - name: init against a local mirror
         command: init
@@ -2558,10 +2974,7 @@ scenarios:
         env: { REGISTRY_URL: "http://127.0.0.1:$ACCEPTANCE_MIRROR_PORT/r" }
         expect:
           exit: 0
-          jsonPath:
-            - path: components.json
-              pointer: /registries/@marko-ui
-              equals: "<exists>"
+          filesExist: ["components.json", "src/styles/globals.css"]
       - name: add from the same mirror
         command: add
         args: ["button", "-y"]
@@ -2574,7 +2987,7 @@ scenarios:
     title: "agents sync --no-skill works with the network cut"
     kind: environment
     tags: [os:linux, os:macos, kind:offline, speed:fast]
-    requires: { os: [linux, macos], network: none, tools: [bun, node] }
+    requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
       fixture: stock-marko-run
     speed: fast
@@ -2587,7 +3000,7 @@ scenarios:
         command: agents
         sub: ["sync"]
         args: ["--no-skill"]
-        env: { ACCEPTANCE_OFFLINE: "1" }
+        offline: true
         expect:
           exit: 0
           filesExist: ["AGENTS.md"]
@@ -2631,14 +3044,25 @@ scenarios:
     setup:
       fixture: stock-marko-run
       post:
-        - run: { cmd: 'ln -s "$PWD" link-to-app' }
+        - label: "a sibling symlink to the app, made at the WORKSPACE ROOT"
+          cwd: "."
+          run: { cmd: "ln -s app link-to-app" }
     speed: medium
     ci: { shard: env }
-    covers: ["symlinked project", "symlinked AGENTS.md"]
+    covers: ["symlinked project"]
     notes: >
+      The symlink target is `app`, and the link is created at the workspace root
+      (cwd is set explicitly to "."), so `link-to-app` and `app` are two names
+      for one directory. `ln -s "$PWD"` here would be wrong twice over: a setup
+      `run` defaults to the app dir, so "$PWD" is the app and the link would be
+      self-referential inside it, and even at the root it would point the link at
+      the root, which has no package.json.
+
       The published CLI's entrypoint guard compares import.meta.url against
       pathToFileURL(argv[1]); the runner must invoke it through the realpath, or
-      main() silently never runs (see e2e/acceptance/lib/workspace.ts).
+      main() silently never runs (see e2e/acceptance/lib/workspace.ts). The
+      symlinked-AGENTS.md half of this axis is the same symlink machinery and is
+      left to env.symlinked-project's note in README §Coverage.
     steps:
       - name: init through the symlink
         command: init
