@@ -1709,7 +1709,6 @@ scenarios:
   - id: existing.component-name-collision
     title: "a hand-written components/ui/button/button.marko is reported, not silently clobbered"
     kind: existing-project
-    status: known-bug
     # The expectation below is CORRECT; the CLI does not meet it.
     # addComponents defaults `interactive: true`
     # (packages/marko-ui/src/utils/add-components.ts:52) and `add` passes its
@@ -1717,7 +1716,6 @@ scenarios:
     # (packages/marko-ui/src/commands/add.ts:264) — so updateFiles is told it
     # may prompt, pre-empting the `?? isInteractive()` default it would
     # otherwise get (utils/updaters/update-files.ts:87).
-    bug: "marko-ui-so5.2 add <name> -y prompts for overwrite with no TTY: add-components.ts:52 hardcodes interactive: true, defeating update-files.ts:87's isInteractive() default"
     tags: [os:linux, os:macos, kind:collision, speed:medium]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
@@ -2032,19 +2030,6 @@ scenarios:
   - id: config.unbacked-custom-alias-doctor-fails
     title: "a custom alias nothing backs is a doctor failure (exit 3), not a warning"
     kind: config-shape
-    status: known-bug
-    bug: >
-      doctor on a project whose components.json carries an unbacked custom
-      alias (#custom/*) exits 1 with "Something went wrong … Could not resolve
-      the following aliases in <cwd>: components, ui." — getConfig's
-      assertResolvedAliases (src/utils/get-config.ts:242-268) throws while
-      doctor.ts:196 is loading the config, so the check that exists for exactly
-      this case (checkAliases, src/commands/doctor.ts:348-371 → status fail →
-      exit 3, naming aliases.components) never runs. Repro: marko-ui init
-      --yes, set aliases.components AND aliases.ui to "#custom/*", run
-      "marko-ui doctor" → exit 1, generic error; expected exit 3 with
-      "Import alias (#custom/*)" and the aliases.components fix. Found by
-      accept-sweep-a under the packed tarball target, 2026-10-01.
     tags: [os:linux, os:macos, kind:alias, speed:fast]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
@@ -2306,14 +2291,12 @@ scenarios:
   - id: mono.root-components-json-cwd-flag
     title: "a monorepo with components.json at the ROOT, every command driven from the root with --cwd"
     kind: monorepo
-    status: known-bug
     # The expectation below is CORRECT; the CLI does not meet it. init's own
     # workspace-root refusal tells the user to do exactly what step 1 does:
     # "run marko-ui init from the app directory or pass --cwd <app>"
     # (packages/marko-ui/src/commands/init.ts:246-252), and
     # preflight-init.ts:294 says the same ("a root needs --cwd <app>").
     # Filed as beads marko-ui-so5.4.
-    bug: "marko-ui-so5.4 init --cwd <app> from a workspace root fails on a fresh monorepo: getWorkspaceConfig (utils/get-config.ts:495-525) resolves the ui alias to <app> and demands a components.json there before init can finish writing one"
     tags: [os:linux, os:macos, pm:bun, kind:monorepo, speed:medium]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
@@ -2587,12 +2570,6 @@ scenarios:
     # contradicts the CLI's own stated intent three lines above it: "A prompt
     # that nothing can answer hangs a piped or agent run; without a TTY the
     # existing file is kept and reported as skipped."
-    status: known-bug
-    bug: >-
-      marko-ui-so5.2 — `add button -y` on a user-edited file shows the clack
-      overwrite prompt (exit 0) instead of skipping the file and saying so;
-      addComponents hardcodes interactive: true, so the non-TTY branch in
-      update-files.ts is unreachable from `add`.
     notes: >
       Both answers to the same prompt are asserted in one scenario: a terminal
       asks (and this scenario answers No), a non-interactive run keeps the file
