@@ -7,6 +7,8 @@ const GATE_FILES = [
   "run/_filters.test.ts",
   "run/_runner-internals.test.ts",
   "run/_mirror-lifecycle.test.ts",
+  // The CI shard derivation (cheap, pure): a broken matrix must fail every shard.
+  "scripts/kind-matrix.test.ts",
 ]
 
 // The document is loaded HERE as well as in each test file, because this config
