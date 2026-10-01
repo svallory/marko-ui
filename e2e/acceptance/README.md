@@ -467,17 +467,20 @@ cannot express:
 
 ## Relationship to the tests that exist today
 
-The four suites under `e2e/` are all real-tool suites and stay:
+These suites under `e2e/` are all real-tool suites and stay:
 
 | suite                                      | what it pins                                                     |
 | ------------------------------------------ | ---------------------------------------------------------------- |
-| `e2e/acceptance/*.test.ts` (12 tests)      | the copy path, the import path, add/doctor/diff, registry health |
+| `e2e/acceptance/import-path.test.ts` (2)   | the import path, until its scenarios are green                   |
 | `e2e/cli/first-run.sh`                     | one shape, one order: scaffold → init → add → build              |
 | `e2e/cli/scenarios/` (80)                  | code paths, hermetic, shimmed package managers                   |
 | `packages/marko-ui/src/commands/*.test.ts` | units, including the pty-driven `init` prompts                   |
 
-This file **folds the first suite in** — `core.init-defaults-copy` is `copy-path.test.ts`,
-`post.import-distribution` + `kind.marko-vite-no-run`'s build half is `import-path.test.ts`,
-`core.full-agent-loop`'s doctor/diff tail is `add-doctor-diff.test.ts`, and the three
-`registry.*` scenarios are `registry-health.test.ts`. When the runner lands, those four
-files are deleted in the same change and `scenarios.yaml` becomes the single source.
+This file **has folded in the first suite** — `core.init-defaults-copy` was
+`copy-path.test.ts`, `core.full-agent-loop`'s doctor/diff tail was
+`add-doctor-diff.test.ts`, and the three `registry.*` scenarios were
+`registry-health.test.ts`; all three files are deleted now that those scenarios
+are green, and `scenarios.yaml` is the single source for them.
+`import-path.test.ts` is the last one standing: its replacements are
+`post.import-distribution` and `kind.marko-vite-no-run`'s build half, which
+belong to other kinds' sweeps, so it stays until they are green.
