@@ -18,7 +18,20 @@ const HERE = dirname(import.meta.dir);
 const YAML_PATH = join(HERE, "scenarios.yaml");
 const SCHEMA_PATH = join(HERE, "scenarios.schema.json");
 
-const TAG_KEYS = new Set(["os", "pm", "kind", "speed", "status"]);
+const TAG_KEYS = new Set(["os", "pm", "kind", "speed", "status", "needs"]);
+
+/**
+ * The closed set of `$VAR`s a scenario may interpolate. Kept in lockstep with
+ * the `args` description in scenarios.schema.json; a scenario referencing
+ * anything else is a bug the runner would otherwise turn into an empty string.
+ */
+const INTERPOLATED_VARS = new Set([
+  "WORKSPACE",
+  "APP",
+  "PM",
+  "REGISTRY_URL",
+  "ACCEPTANCE_MIRROR_PORT",
+]);
 const SCENARIO_KINDS = new Set([
   "core",
   "project-kind",
@@ -39,14 +52,28 @@ const SCENARIO_KINDS = new Set([
 interface PreStep {
   label?: string;
   body?: string;
+  helper?: string;
+  args?: string[];
+  cwd?: string;
   write?: { path?: string; body?: string };
   run?: { body?: string };
 }
 interface Step {
   use?: string;
   command?: string;
+  helper?: string;
+  args?: string[];
+  cwd?: string;
+  snapshot?: string[];
   expect?: Record<string, unknown>;
   notes?: string;
+}
+/** A named program the runner executes; see the `helpers` section of the file. */
+interface Helper {
+  description: string;
+  language: "node" | "posix-shell";
+  source: string;
+  cwd?: string;
 }
 interface Setup {
   fixture?: string;
@@ -72,6 +99,7 @@ interface ScenariosDoc {
   version: number;
   defaults: { cliTarget: string; registryUrl: string; timeoutSeconds: number };
   bodies?: Record<string, string>;
+  helpers?: Record<string, Helper>;
   fixtures: Record<string, Setup>;
   flows: Record<string, Step[]>;
   scenarios: Scenario[];
@@ -80,6 +108,72 @@ interface ScenariosDoc {
 function fail(message: string): never {
   console.error(`\n✗ ${message}`);
   process.exit(1);
+}
+
+/**
+ * Duplicate mapping keys are a SILENT data-loss bug: Bun.YAML keeps the last
+ * one and discards the rest, so an `expect:` block carrying two
+ * `stdoutContains:` keys passes on half its assertions without anyone noticing.
+ * Three such blocks existed in this file. Catch them from the source text
+ * before parsing — merging two values must be a deliberate edit, never an
+ * accident of parser ordering.
+ *
+ * The check is indentation-based, and a sequence item is its own mapping scope:
+ * the `- ` counts as one column, so the keys under `- name: foo` sit one level
+ * deeper than the dash and are siblings of `name`, not of the key that owns
+ * the list. Without that, every item's keys collide with each other.
+ */
+function findDuplicateKeys(path: string): string[] {
+  const found: string[] = [];
+  // Stack of open scopes, innermost last: { indent, keys }.
+  const stack: { indent: number; keys: Map<string, number> }[] = [];
+  const KEY = /^(\s*)([A-Za-z_][A-Za-z0-9_-]*):(\s|$)/;
+  const ITEM = /^(\s*)-\s/;
+  const popTo = (indent: number): void => {
+    while (stack.length) {
+      const top = stack[stack.length - 1];
+      if (top === undefined || top.indent < indent) break;
+      stack.pop();
+    }
+  };
+  for (const [index, raw] of readFileSync(path, "utf8").split("\n").entries()) {
+    const line = raw.replace(/\s+$/, "");
+    if (line.trim() === "" || line.trimStart().startsWith("#")) continue;
+    const item = ITEM.exec(line);
+    if (item) {
+      const dash = item[1]?.length ?? 0;
+      popTo(dash);
+      // The dash occupies one column, so the item's own keys are at dash + 1.
+      stack.push({ indent: dash + 1, keys: new Map() });
+      continue;
+    }
+    const match = KEY.exec(line);
+    const [, indentText, key] = match ?? [];
+    if (indentText === undefined || key === undefined) continue;
+    const indent = indentText.length;
+    // A sibling key starts a new entry in the level strictly above it.
+    popTo(indent + 1);
+    const parent = stack[stack.length - 1];
+    if (parent) {
+      const first = parent.keys.get(key);
+      if (first !== undefined) {
+        found.push(
+          `line ${index + 1}: duplicate key "${key}" (first on line ${first}) — the earlier value is silently dropped; merge them into one sequence`,
+        );
+      } else {
+        parent.keys.set(key, index + 1);
+      }
+    }
+    stack.push({ indent, keys: new Map([[key, index + 1]]) });
+  }
+  return found;
+}
+
+const duplicateKeys = findDuplicateKeys(YAML_PATH);
+if (duplicateKeys.length) {
+  fail(
+    `scenarios.yaml has duplicate mapping keys (the earlier value is silently dropped):\n  ${duplicateKeys.join("\n  ")}`,
+  );
 }
 
 function parseYaml(path: string): ScenariosDoc {
@@ -154,6 +248,17 @@ for (const scenario of doc.scenarios) {
       `${scenario.id}: status unknown-expectation without a question`,
     );
   }
+  // A gated scenario the runner cannot gate is worse than an ungated one: it
+  // either fails for an unlanded guard or, if the tag is missing, silently
+  // becomes a hard expectation for behaviour that does not exist yet.
+  if (
+    scenario.status === "needs-cli-guards" &&
+    !scenario.tags.some((tag) => tag.startsWith("needs:"))
+  ) {
+    problems.push(
+      `${scenario.id}: status needs-cli-guards without a needs:<gate> tag, so the runner has nothing to skip it for`,
+    );
+  }
   for (const tag of scenario.tags ?? []) {
     const key = tag.split(":")[0] ?? "";
     if (!TAG_KEYS.has(key))
@@ -161,9 +266,13 @@ for (const scenario of doc.scenarios) {
   }
 }
 
-// Every `use:` resolves, every flow is used at least once, and every
-// command step asserts something.
+// Every `use:` resolves, every flow is used at least once, every helper is
+// used at least once, every `$VAR` is one the runner actually defines, and
+// every command step asserts something.
 const usedFlows = new Set<string>();
+const usedHelpers = new Set<string>();
+const snapshotOrder: { key: string; where: string; line: number }[] = [];
+const snapshotRefs: { key: string; where: string; line: number }[] = [];
 function walkSteps(steps: Step[] | undefined, where: string): void {
   for (const [index, step] of (steps ?? []).entries()) {
     const at = `${where}[${index}]`;
@@ -172,14 +281,53 @@ function walkSteps(steps: Step[] | undefined, where: string): void {
         problems.push(`${at}: use: "${step.use}" is not a declared flow`);
       }
       usedFlows.add(step.use);
-      if (step.command)
+      if (step.command) {
         problems.push(`${at}: a step is either use: or command:, not both`);
+      }
       continue;
     }
-    if (!step.expect && !step.notes) {
-      problems.push(
-        `${at}: a command step with neither expect nor notes asserts nothing`,
-      );
+    // The schema already requires `expect` on every command step. Repeating it
+    // here buys a located, named error — "this step asserts nothing" is the
+    // thing a scenario author needs to hear, not "required property expect".
+    if (!step.expect) {
+      problems.push(`${at}: a command step with no expect asserts nothing`);
+    }
+    if (step.command === "@helper" && !step.helper) {
+      problems.push(`${at}: command @helper without a helper name`);
+    }
+    if (step.helper) {
+      if (!doc.helpers?.[step.helper]) {
+        problems.push(`${at}: unknown helper "${step.helper}"`);
+      } else {
+        usedHelpers.add(step.helper);
+      }
+    }
+    // `snapshot:` records a path a LATER expect.unchanged/changed refers to.
+    // Recording the ORDER here is what lets the pairing check below insist the
+    // snapshot came first.
+    for (const path of step.snapshot ?? []) {
+      snapshotOrder.push({ key: `${where}:${path}`, where: at, line: index });
+    }
+    const expect = step.expect as
+      { unchanged?: string[]; changed?: string[] } | undefined;
+    for (const path of expect?.unchanged ?? []) {
+      snapshotRefs.push({ key: `${where}:${path}`, where: at, line: index });
+    }
+    for (const path of expect?.changed ?? []) {
+      snapshotRefs.push({ key: `${where}:${path}`, where: at, line: index });
+    }
+    for (const arg of step.args ?? []) {
+      // `$$` is an escaped literal `$`; every other `$NAME` must be in the
+      // closed set, so the runner never has to decide what an undefined one is.
+      const vars = arg.matchAll(/(?<!\$)\$(?!\$)([A-Za-z_][A-Za-z0-9_]*)/g);
+      for (const match of vars) {
+        const name = match[1];
+        if (name && !INTERPOLATED_VARS.has(name)) {
+          problems.push(
+            `${at}: args interpolate "$${name}", which is not in the closed set (${[...INTERPOLATED_VARS].join(", ")})`,
+          );
+        }
+      }
     }
   }
 }
@@ -187,6 +335,20 @@ function walkSteps(steps: Step[] | undefined, where: string): void {
 for (const [name, steps] of Object.entries(doc.flows))
   walkSteps(steps, `flows.${name}`);
 for (const scenario of doc.scenarios) walkSteps(scenario.steps, scenario.id);
+
+// Every expect.unchanged/changed must name a path an EARLIER step snapshotted.
+for (const ref of snapshotRefs) {
+  const snap = snapshotOrder.find((entry) => entry.key === ref.key);
+  if (!snap) {
+    problems.push(
+      `${ref.where}: expect.unchanged/changed names a path nothing snapshotted — add a snapshot: to the step that establishes it`,
+    );
+  } else if (snap.line > ref.line) {
+    problems.push(
+      `${ref.where}: expect.unchanged/changed refers to a path snapshotted LATER (${snap.where}) — the snapshot has to establish the state first`,
+    );
+  }
+}
 
 for (const name of Object.keys(doc.flows)) {
   if (!usedFlows.has(name))
@@ -246,12 +408,19 @@ const prefix = (key: string): string[] =>
 const unknown = doc.scenarios
   .filter((scenario) => scenario.status === "unknown-expectation")
   .map((scenario) => scenario.id);
+const gated = doc.scenarios
+  .filter((scenario) => scenario.status === "needs-cli-guards")
+  .map(
+    (scenario) =>
+      `${scenario.id} (needs:${scenario.tags.find((t) => t.startsWith("needs:"))?.split(":")[1] ?? "?"})`,
+  );
 
 console.log("✓ scenarios.yaml validates against scenarios.schema.json");
 console.log(
   `  ${doc.scenarios.length} scenarios · ` +
     `${doc.scenarios.reduce((sum, scenario) => sum + scenario.steps.length, 0)} steps · ` +
-    `${Object.keys(doc.flows).length} flows · ${Object.keys(doc.fixtures).length} fixtures`,
+    `${Object.keys(doc.flows).length} flows · ${Object.keys(doc.fixtures).length} fixtures · ` +
+    `${Object.keys(doc.helpers ?? {}).length} helpers`,
 );
 console.log(`  by kind: ${show(kinds)}`);
 console.log(`  by os:   ${show(tally(prefix("os")))}`);
@@ -260,5 +429,10 @@ console.log(`  by speed: ${show(speeds)}`);
 if (unknown.length) {
   console.log(
     `  status:unknown-expectation — ${unknown.length}: ${unknown.join(", ")}`,
+  );
+}
+if (gated.length) {
+  console.log(
+    `  status:needs-cli-guards — ${gated.length} (reported and SKIPPED, not failed, until the gate lands):\n    ${gated.join("\n    ")}`,
   );
 }

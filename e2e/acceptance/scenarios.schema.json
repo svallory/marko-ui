@@ -9,6 +9,12 @@
   "properties": {
     "version": { "const": 1 },
     "defaults": { "$ref": "#/$defs/defaults" },
+    "helpers": {
+      "type": "object",
+      "description": "Named helper programs the runner executes via a `{command: \"@helper\", helper: <name>}` step. A helper exists so that a scenario says WHAT it is building, not which shell incantation builds it: the runner dev implements each helper once, in one language, from the contract in `description` plus `source`.",
+      "propertyNames": { "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+      "additionalProperties": { "$ref": "#/$defs/helper" }
+    },
     "bodies": {
       "type": "object",
       "description": "Named multi-line strings (file bodies, shell scripts) reused by pre-steps, so a scenario stays readable.",
@@ -59,9 +65,9 @@
     },
 
     "tag": {
-      "description": "key:value tag. `os` and `pm` drive the CI matrix; `kind` and `speed` drive sharding. Free-form keys are allowed but CI only knows these four.",
+      "description": "key:value tag. `os` and `pm` drive the CI matrix; `kind` and `speed` drive sharding. `needs:<branch-or-gate>` marks a scenario whose expectation depends on behaviour that is not merged yet: the runner SKIPS it (reported, not failed) while the gate is unlanded, and the CI job that runs it is keyed on the same tag. Free-form keys are allowed but the runner only knows these five.",
       "type": "string",
-      "pattern": "^(os|pm|kind|speed|status):[A-Za-z0-9][A-Za-z0-9.+_-]*$"
+      "pattern": "^(os|pm|kind|speed|status|needs):[A-Za-z0-9][A-Za-z0-9.+_-]*$"
     },
 
     "pm": {
@@ -72,7 +78,7 @@
     "os": { "enum": ["linux", "macos", "windows"] },
 
     "network": {
-      "description": "How much network the scenario needs. `none` must pass with the network cut.",
+      "description": "What the scenario needs reachable, counting setup (scaffold + install) as well as steps. `none`: the scenario passes with ALL egress blocked. `registry-only`: the registry host must answer; nothing is installed from npm during the scenario, so npm may be blocked (registry-health scenarios that only issue HTTP). `npm`: npm must answer; the registry is unreachable or never consulted (the registry-down scenarios point REGISTRY_URL at a dead port). `both`: both must answer — this is the default for anything that runs `init` or `add` on a really-installed project, because init fetches the style item from the registry AND installs @tailwindcss/vite + tw-animate-css from npm.",
       "enum": ["none", "registry-only", "npm", "both"]
     },
 
@@ -231,6 +237,24 @@
             "allowFailure": { "type": "boolean" }
           },
           "oneOf": [{ "required": ["cmd"] }, { "required": ["body"] }]
+        },
+        "helper": {
+          "description": "Run a named helper from the top-level `helpers` map. The pre-step form of `{command: \"@helper\"}` — setup builds project shapes (monorepo layouts, a relocatable config) with the same documented programs the steps use, so each helper has one implementation and one contract. `cwd` defaults to the helper's own declared default.",
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "args": {
+          "description": "Literal argv for the helper. Same closed `$VAR` set as a step's `args`.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(\\$\\$|\\$[A-Z_][A-Z0-9_]*|[^$]*)*$"
+          }
+        },
+        "cwd": {
+          "description": "Working directory for this pre-step, relative to the scenario workspace.",
+          "type": "string",
+          "minLength": 1
         }
       },
       "oneOf": [
@@ -239,7 +263,8 @@
         { "required": ["mkdir"] },
         { "required": ["rm"] },
         { "required": ["cp"] },
-        { "required": ["run"] }
+        { "required": ["run"] },
+        { "required": ["helper"] }
       ]
     },
 
@@ -270,9 +295,21 @@
           "minItems": 1,
           "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
         },
-        "args": { "type": "array", "items": { "type": "string" } },
+        "args": {
+          "description": "Literal argv. `$VAR` is interpolated by the runner from a FIXED, closed set, so a scenario can never smuggle in an undefined variable: $WORKSPACE (absolute scenario workspace), $APP (absolute fixture app dir), $PM (the scenario's package manager name), $REGISTRY_URL (defaults.registryUrl, or the ACCEPTANCE_REGISTRY_URL override), $ACCEPTANCE_MIRROR_PORT (the port the scenario's local registry mirror is served on). A literal `$` is written `$$`. Unknown `$VAR` is a validation error, not an empty string.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(\\$\\$|\\$[A-Z_][A-Z0-9_]*|[^$]*)*$"
+          }
+        },
+        "helper": {
+          "description": "Name from the top-level `helpers` map. Required by, and only valid with, `command: \"@helper\"`. The runner executes the helper's `source` with the step's `args` as its argv, from the step's cwd.",
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
         "cwd": {
-          "description": "Where to run the step, relative to the scenario workspace. `.` is the workspace root; the fixture's app dir is named explicitly.",
+          "description": "Where to run the step, relative to the scenario workspace. `.` is the workspace root; the fixture's app dir is named explicitly (usually `app`). DEFAULT: the fixture's app dir, or the workspace root when the fixture has none (`noScaffold`).",
           "type": "string",
           "minLength": 1
         },
@@ -307,11 +344,80 @@
           "type": "object",
           "additionalProperties": { "type": ["string", "null"] }
         },
+        "offline": {
+          "description": "Run this one step with egress to BOTH the registry and npm blocked. Replaces the old magic `ACCEPTANCE_OFFLINE=1` env var. Legal only on a step whose scenario does not otherwise need the network (`requires.network: none` or `npm`).",
+          "type": "boolean"
+        },
+        "pathWithout": {
+          "description": "Run this one step with these binaries removed from PATH, by putting a PATH whose entries exclude them first. Replaces the old magic `PATH_NO_GIT=1` env var.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "bun",
+              "node",
+              "git",
+              "npm",
+              "npx",
+              "pnpm",
+              "yarn",
+              "corepack",
+              "curl"
+            ]
+          }
+        },
+        "snapshot": {
+          "description": "After this step succeeds, record a content hash of each of these paths (relative to the step's cwd) in the scenario's snapshot table. A later `expect.unchanged` compares against it. Replaces the `shasum` + hand-written `.agents-sync.sha` convention.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
         "timeoutSeconds": { "type": "integer", "minimum": 10 },
         "expect": { "$ref": "#/$defs/expect" },
         "notes": { "type": "string" }
       },
-      "oneOf": [{ "required": ["use"] }, { "required": ["command"] }]
+      "oneOf": [{ "required": ["use"] }, { "required": ["command"] }],
+      "dependentSchemas": {
+        "command": { "required": ["expect"] },
+        "helper": { "required": ["command"] }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "command": { "const": "@helper" } },
+            "required": ["command"]
+          },
+          "then": { "required": ["helper"] }
+        },
+        {
+          "if": { "required": ["helper"] },
+          "then": { "properties": { "command": { "const": "@helper" } } }
+        }
+      ]
+    },
+
+    "helper": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "language", "source"],
+      "properties": {
+        "description": {
+          "description": "The CONTRACT, in one short paragraph: what the helper guarantees to have done when it exits 0. The runner dev implements from this plus `source`; a reviewer reads this alone.",
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "description": "`node` sources run under the scenario's node with no flags. `posix-shell` sources run under `sh`. There is no third option, deliberately: the helpers exist because eleven near-identical inline `node -e` programs were unreadable, not to introduce a build step.",
+          "enum": ["node", "posix-shell"]
+        },
+        "source": { "type": "string", "minLength": 1 },
+        "cwd": {
+          "description": "DEFAULT cwd when a step invoking this helper does not set one. Relative to the scenario workspace.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
     },
 
     "expect": {
@@ -443,9 +549,25 @@
             "notContains": { "type": "array", "items": { "type": "string" } }
           }
         },
-        "dirExists": { "type": "string", "minLength": 1 },
+        "unchanged": {
+          "description": "Each path (relative to the step's cwd) must have exactly the content it had when an earlier step's `snapshot:` recorded it. This is how the idempotence assertions work — no shasum, no committed .sha file.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "changed": {
+          "description": "Each path (relative to the step's cwd) must NOT match the content snapshotted for it earlier — the inverse of `unchanged`.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "dirExists": {
+          "description": "A directory (relative to the step's cwd) must exist. Distinct from filesExist, which must NOT match a directory.",
+          "type": "string",
+          "minLength": 1
+        },
         "noop": {
-          "description": "Assert nothing but the exit code. Used where the observable outcome is captured for a human, not asserted.",
+          "description": "Assert nothing but the exit code. Exists for the rare step whose observable outcome is recorded for a human rather than asserted; prefer a real assertion.",
           "type": "boolean"
         }
       }
@@ -518,8 +640,8 @@
           }
         },
         "status": {
-          "description": "`unknown-expectation` marks a scenario whose expected behavior could not be determined from the code. It is reported, not asserted, until a human answers `question`.",
-          "enum": ["specified", "unknown-expectation"],
+          "description": "`specified` (the default): asserted normally. `unknown-expectation`: the expected behaviour could not be determined from the code — reported, not asserted, until a human answers `question`. `needs-cli-guards`: the behaviour IS settled and the expectation is written down, but it depends on a guard that has not landed yet (see the `needs:` tag) — reported and SKIPPED, never failed, until the guard lands. The distinction matters: an unknown expectation is a question for a human, a needs-guards expectation is a known answer waiting on code.",
+          "enum": ["specified", "unknown-expectation", "needs-cli-guards"],
           "default": "specified"
         },
         "question": {
