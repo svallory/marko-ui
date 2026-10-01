@@ -48,6 +48,13 @@ export function shouldConfirmEject(
   return !options.yes && interactive
 }
 
+/** The config `eject` fetches and writes with: the project as it will be once ejected. */
+export function ejectTargetConfig<T extends { distribution?: "copy" | "import" }>(
+  config: T
+): T & { distribution: "copy" } {
+  return { ...config, distribution: "copy" }
+}
+
 export const eject = new Command()
   .name("eject")
   .description(
@@ -126,13 +133,20 @@ export const eject = new Command()
       // Reuse `add`'s exact fetch-and-write engine so the result is
       // identical to what `marko-ui add <every installed component>` would
       // produce on the copy path — no separate copy logic to keep in sync.
-      await addComponents(installedComponents, config, {
+      //
+      // The config must already say `copy` here: the resolver only fetches
+      // the per-style flat registry tree (`styles/<visualStyle>/<name>.json`)
+      // when `distribution === "copy"`, and otherwise falls back to the
+      // unstyled import-form item (imports ./classes.ts), which `diff` then
+      // reports as drift against everything `add` writes.
+      const copyConfig = ejectTargetConfig(config)
+      await addComponents(installedComponents, copyConfig, {
         overwrite: true,
         silent: true,
         interactive: false,
       })
 
-      const taglib = await writeProjectTaglib(config)
+      const taglib = await writeProjectTaglib(copyConfig)
 
       // Flip the config so `add`/`doctor`/future `eject` calls see copy mode.
       await setDistribution(options.cwd, "copy")
