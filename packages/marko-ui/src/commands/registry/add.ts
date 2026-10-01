@@ -1,7 +1,10 @@
 import path from "path"
 import { getRegistries } from "@/src/registry/api"
 import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
-import { writeConfigRegistries } from "@/src/utils/get-config"
+import {
+  assertNotReactComponentsJson,
+  writeConfigRegistries,
+} from "@/src/utils/get-config"
 import { handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
@@ -88,6 +91,15 @@ export async function addRegistriesToConfig(
         "package.json"
       )} found. Run ${highlighter.info("marko-ui init")} first.`
     )
+  }
+
+  // This command bypasses getRawConfig (the target may be a PARTIAL config),
+  // so the React refusal there never fires — run the same detector before
+  // any write. Mutating a shadcn/ui-for-React components.json is the exact
+  // harm the guard exists to stop. The package.json fallback target needs
+  // no check: with no components.json there is no shadcn config to protect.
+  if (path.basename(configPath) === "components.json") {
+    assertNotReactComponentsJson(path.dirname(configPath), configPath)
   }
 
   const configFileName = path.basename(configPath)

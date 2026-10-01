@@ -1,11 +1,12 @@
 import os from "os"
 import path from "path"
-import { getFixturesDir } from "@/src/test-helpers"
+import { getFixturesDir, withTempDir } from "@/src/test-helpers"
 import { getProjectConfig } from "@/src/utils/get-project-info"
 import fs from "fs-extra"
 import { describe, expect, it } from "vitest"
 
 import {
+  assertNotReactComponentsJson,
   createConfig,
   getConfig,
   getRawConfig,
@@ -37,6 +38,96 @@ describe("getRawConfig", () => {
     await expect(
       getRawConfig(getFixturesDir("config-invalid"))
     ).rejects.toThrowError()
+  })
+})
+
+describe("React components.json refusal", () => {
+  const reactComponentsJson = JSON.stringify({
+    $schema: "https://ui.shadcn.com/schema.json",
+    style: "new-york",
+    rsc: true,
+    tsx: true,
+    tailwind: {
+      config: "tailwind.config.ts",
+      css: "app/globals.css",
+      baseColor: "neutral",
+      cssVariables: true,
+    },
+    aliases: { components: "@/components", utils: "@/lib/utils" },
+  })
+
+  function reactProject(extra: Record<string, string> = {}) {
+    return {
+      "package.json": JSON.stringify({
+        name: "react-app",
+        dependencies: { react: "^19.0.0", "react-dom": "^19.0.0" },
+      }),
+      "components.json": reactComponentsJson,
+      ...extra,
+    }
+  }
+
+  async function writeTree(dir: string, tree: Record<string, string>) {
+    for (const [rel, contents] of Object.entries(tree)) {
+      const target = path.join(dir, rel)
+      await fs.ensureDir(path.dirname(target))
+      await fs.writeFile(target, contents)
+    }
+  }
+
+  it("getRawConfig refuses a shadcn/ui-for-React project with the --cwd hint", async () => {
+    await withTempDir(async (dir) => {
+      await writeTree(dir, reactProject())
+      await expect(getRawConfig(dir)).rejects.toThrow(
+        /belongs to shadcn\/ui for React[\s\S]*--cwd <app>/
+      )
+    })
+  })
+
+  it("getConfig refuses it too (the single choke point every command uses)", async () => {
+    await withTempDir(async (dir) => {
+      await writeTree(dir, reactProject())
+      await expect(getConfig(dir)).rejects.toThrow(
+        /belongs to shadcn\/ui for React/
+      )
+    })
+  })
+
+  it("passes a project that depends on BOTH react and Marko (a real marko-ui project wins)", async () => {
+    await withTempDir(async (dir) => {
+      await writeTree(dir, {
+        "package.json": JSON.stringify({
+          name: "mixed",
+          dependencies: { react: "^19.0.0", marko: "^6.0.0" },
+        }),
+        "components.json": reactComponentsJson,
+      })
+      await expect(getRawConfig(dir)).resolves.toMatchObject({
+        style: "new-york",
+      })
+    })
+  })
+
+  it("passes a marko-ui components.json written for a TS Marko project (tsx: true, rsc key present)", async () => {
+    await withTempDir(async (dir) => {
+      await writeTree(dir, {
+        "package.json": JSON.stringify({
+          name: "marko-app",
+          dependencies: { marko: "^6.0.0" },
+        }),
+        "components.json": reactComponentsJson,
+      })
+      await expect(getRawConfig(dir)).resolves.toMatchObject({ tsx: true })
+    })
+  })
+
+  it("ignores an unreadable package.json rather than claiming React", () => {
+    expect(() =>
+      assertNotReactComponentsJson(
+        "/nonexistent-dir-xyz",
+        "/nonexistent-dir-xyz/components.json"
+      )
+    ).not.toThrow()
   })
 })
 

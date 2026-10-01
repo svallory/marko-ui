@@ -1,5 +1,6 @@
 import { searchRegistries } from "@/src/registry/search"
 import { getConfig } from "@/src/utils/get-config"
+import { CommandError } from "@/src/utils/handle-error"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
 import fsExtra from "fs-extra"
 import { beforeEach, describe, expect, it, vi } from "vitest"
@@ -348,3 +349,43 @@ function mockProcessExit() {
     throw new Error(`process.exit:${code}`)
   })
 }
+
+describe("React components.json refusal (re-throw from the shadow-config catch)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("re-throws the refusal instead of shadowing over it", async () => {
+    const exit = mockProcessExit()
+    vi.mocked(getConfig).mockRejectedValueOnce(
+      new CommandError(
+        "The components.json belongs to shadcn/ui for React."
+      )
+    )
+
+    await expect(
+      search.parseAsync(["@marko-ui", "--cwd", "/tmp/test-project"], {
+        from: "user",
+      })
+    ).rejects.toThrow("process.exit:1")
+    expect(searchRegistries).not.toHaveBeenCalled()
+    exit.mockRestore()
+  })
+
+  it("still falls back to the shadow config when getConfig fails for a partial config", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {})
+    const exit = mockProcessExit()
+    vi.mocked(getConfig).mockRejectedValueOnce(
+      new Error("Invalid configuration found in components.json.")
+    )
+
+    await expect(
+      search.parseAsync(["@marko-ui", "--cwd", "/tmp/test-project"], {
+        from: "user",
+      })
+    ).rejects.toThrow("process.exit:0")
+    expect(searchRegistries).toHaveBeenCalled()
+    log.mockRestore()
+    exit.mockRestore()
+  })
+})

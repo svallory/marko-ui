@@ -88,3 +88,27 @@ describe("removeRegistriesFromConfig", () => {
     ).rejects.toThrow(/components.json/)
   })
 })
+
+describe("removeRegistriesFromConfig React guard", () => {
+  it("refuses to delete from a shadcn/ui-for-React components.json, leaving it byte-identical", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "marko-ui-remove-"))
+    const configFile = path.join(dir, "components.json")
+    writeFileSync(
+      configFile,
+      JSON.stringify({
+        style: "default",
+        registries: { "@acme": "https://acme.com/r/{name}.json" },
+      })
+    )
+    writeFileSync(
+      path.join(dir, "package.json"),
+      JSON.stringify({ name: "react-app", dependencies: { react: "^19.0.0" } })
+    )
+    const before = await fs.readFile(configFile, "utf8")
+
+    await expect(
+      removeRegistriesFromConfig(["@acme"], dir, { silent: true })
+    ).rejects.toThrow(/belongs to shadcn\/ui for React/)
+    expect(await fs.readFile(configFile, "utf8")).toBe(before)
+  })
+})
