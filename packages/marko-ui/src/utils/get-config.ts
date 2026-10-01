@@ -554,8 +554,17 @@ export async function getWorkspaceConfig(config: Config) {
 }
 
 export async function findPackageRoot(cwd: string, resolvedPath: string) {
-  const commonRoot = findCommonRoot(cwd, resolvedPath)
-  const relativePath = path.relative(commonRoot, resolvedPath)
+  // Both inputs are resolved before anything else. findCommonRoot compares
+  // path SEGMENTS, so one relative and one absolute input share no leading
+  // segment and it returns "" — an empty common root that makes
+  // `path.relative` fall back to the process cwd and makes every alias look
+  // like it lives in some other package. A config whose `resolvedPaths.cwd`
+  // has not been resolved (or a library caller that built one by hand) must
+  // degrade to "no foreign package root", not to a bogus error.
+  const absoluteCwd = path.resolve(cwd)
+  const absolutePath = path.resolve(absoluteCwd, resolvedPath)
+  const commonRoot = findCommonRoot(absoluteCwd, absolutePath)
+  const relativePath = path.relative(commonRoot, absolutePath)
 
   const packageRoots = await fg.glob("**/package.json", {
     cwd: commonRoot,

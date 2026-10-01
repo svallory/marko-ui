@@ -283,6 +283,33 @@ describe("project structures — monorepos", () => {
     expect(exists(ws, "components.json")).toBe(false)
   })
 
+  // marko-ui-so5.4: init's own workspace-root refusal tells the user to run
+  // from the app dir "or pass --cwd <app>", and preflight-init says the same.
+  // Doing exactly that with a RELATIVE path used to fail: init wrote
+  // components.json, then getWorkspaceConfig demanded a config in the very
+  // workspace init was creating one in, rolled it back and exited 1.
+  scenario("S10c", "monorepo root: init --yes --cwd apps/web (relative) from the root succeeds, then add/status", async () => {
+    const ws = makeWorkspace()
+    monorepo(ws)
+    markoApp(ws, { dir: "apps/web", lock: "none" })
+    const shim = withShims(makeWorkspace("shim"))
+    const app = `${ws}/apps/web`
+
+    const init = await cli(ws, ["init", "--yes", "--cwd", "apps/web"], { shim })
+    expect(init.code, tail(init.out)).toBe(0)
+    expect(exists(app, "components.json"), "init left no config in the app").toBe(true)
+    expect(exists(ws, "components.json"), "init wrote a config at the workspace root").toBe(false)
+
+    const add = await cli(ws, ["add", "button", "-y", "--cwd", "apps/web"], { shim })
+    expect(add.code, tail(add.out)).toBe(0)
+    expect(exists(app, BUTTON)).toBe(true)
+
+    const status = jsonOut(
+      (await cli(ws, ["status", "--json", "--cwd", "apps/web"])).out
+    )
+    expect(status.components).toContain("button")
+  })
+
   scenario("S11", "monorepo shared packages/ui: components install into the package, not the app", async () => {
     const ws = makeWorkspace()
     monorepo(ws)
