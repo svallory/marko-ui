@@ -8,6 +8,21 @@ name: Acceptance
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: >-
+          Published package version (npm dist-tag or semver). Empty =
+          ACCEPTANCE_PKG_VERSION repo variable, else `latest`.
+        required: false
+        default: ""
+        type: string
+      registry_url:
+        description: >-
+          Registry base URL. Empty = ACCEPTANCE_REGISTRY_URL repo
+          variable, else the live registry.
+        required: false
+        default: ""
+        type: string
   pull_request:
     paths:
       - "e2e/acceptance/**"
@@ -32,8 +47,11 @@ jobs:
       - name: Run acceptance suite against live registry + npm
         run: bun run test:acceptance
         env:
-          ACCEPTANCE_REGISTRY_URL: ${{ vars.ACCEPTANCE_REGISTRY_URL }}
-          ACCEPTANCE_PKG_VERSION: ${{ vars.ACCEPTANCE_PKG_VERSION }}
+          # Dispatch inputs win when set; otherwise fall back to the repo
+          # variables so scheduled/PR runs are unchanged (empty string =>
+          # e2e/acceptance/lib/env.ts falls back to its own default).
+          ACCEPTANCE_REGISTRY_URL: ${{ inputs.registry_url||vars.ACCEPTANCE_REGISTRY_URL }}
+          ACCEPTANCE_PKG_VERSION: ${{ inputs.version||vars.ACCEPTANCE_PKG_VERSION }}
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
