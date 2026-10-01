@@ -345,10 +345,13 @@ helpers:
     description: >
       Builds a pnpm workspace with two packages: the scaffolded Marko app moved
       to `apps/web`, and a new `packages/ui` holding a package.json that depends
-      on the app via the `workspace:*` protocol plus its own tsconfig. Runs the
-      workspace install so pnpm-lock.yaml sits at the root. This is the "shared
-      components package" layout: the components belong in packages/ui and the
-      app consumes them, not the reverse.
+      on the app via the `workspace:*` protocol, declares `marko` itself (it is
+      about to hold `.marko` components, so a package that does not depend on
+      marko is not a shape any real monorepo has — and the CLI's
+      isMarkoProject guard reads exactly that dependency), plus its own tsconfig.
+      Runs the workspace install so pnpm-lock.yaml sits at the root. This is the
+      "shared components package" layout: the components belong in packages/ui
+      and the app consumes them, not the reverse.
     language: node
     cwd: "."
     source: |
@@ -370,7 +373,7 @@ helpers:
       fs.writeFileSync(
         path.join("packages", "ui", "package.json"),
         JSON.stringify(
-          { name: "@acme/ui", version: "0.0.0", private: true, dependencies: { "@acme/web": "workspace:*" } },
+          { name: "@acme/ui", version: "0.0.0", private: true, dependencies: { marko: "^6.0.0", "@acme/web": "workspace:*" } },
           null,
           2
         ) + "\n"
