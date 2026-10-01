@@ -18,7 +18,6 @@ import {
 import { isInteractive } from "@/src/utils/interactive"
 import { highlighter } from "@/src/utils/highlighter"
 import { CommandError } from "@/src/utils/handle-error"
-import { logger } from "@/src/utils/logger"
 import { spinner } from "@/src/utils/spinner"
 import fs from "fs-extra"
 import fg from "fast-glob"
@@ -81,45 +80,79 @@ export function markoProjectBelowSix(cwd: string): boolean {
 }
 
 /**
- * Whether the project's Tailwind setup is v3-shaped: the installed or
- * declared `tailwindcss` cannot reach 4, or a `tailwind.config.*` file
- * exists with no v4 setup anywhere (no `tailwindcss` 4 range, no
- * `@import "tailwindcss"` stylesheet, no `@tailwindcss/*` v4 package).
+ * Whether the project's Tailwind setup is v3-shaped: the nearest installed
+ * or declared `tailwindcss` (walking up to the workspace root, the way
+ * lockfile detection does — a monorepo app inherits a hoisted Tailwind from
+ * the root, so checking only `<cwd>` refuses a v4 workspace with a stale
+ * config file) cannot reach 4, or a `tailwind.config.*` file exists with no
+ * v4 setup anywhere (no `tailwindcss` 4 range, no `@import "tailwindcss"`
+ * stylesheet, no `@tailwindcss/*` v4 package).
  */
 export async function tailwindProjectBelowFour(
   cwd: string
 ): Promise<{ reason: string } | null> {
-  const installed = installedVersion(cwd, "tailwindcss")
-  if (installed && /^[0-3]\./.test(installed)) {
-    return { reason: `tailwindcss ${installed} is installed` }
+  // The NEAREST directory with any tailwindcss evidence decides. The walk
+  // mirrors get-package-manager's detectFromLockfile: up from cwd, stopping
+  // after the first workspace root (which is also where bun/pnpm hoist the
+  // dependency's node_modules).
+  let dir = cwd
+  for (;;) {
+    const installed = installedVersion(dir, "tailwindcss")
+    if (installed) {
+      if (/^[0-3]\./.test(installed)) {
+        return {
+          reason: `tailwindcss ${installed} is installed${
+            dir === cwd ? "" : ` at ${dir}`
+          }`,
+        }
+      }
+      return null
+    }
+
+    let packageJson
+    try {
+      packageJson = fs.readJsonSync(path.resolve(dir, "package.json"))
+    } catch {
+      packageJson = null
+    }
+    if (packageJson) {
+      const range = declaredRange(packageJson, "tailwindcss")
+      if (range) {
+        if (rangeExcludesMajor(range, 4)) {
+          return {
+            reason: `tailwindcss ${range} cannot resolve to v4${
+              dir === cwd ? "" : ` (declared at ${dir})`
+            }`,
+          }
+        }
+        // A range allowing 4 (or tailwindcss being absent) is not the whole
+        // story, but a v4-capable declaration IS a v4 setup in progress:
+        // v4 loads a legacy tailwind.config through `@config`, so the
+        // project is mid-migration, not on v3.
+        return null
+      }
+      // A `@tailwindcss/*` package (the v4 plugin/postcss/cli) counts as a
+      // v4 setup.
+      const allDeps = {
+        ...(packageJson?.dependencies ?? {}),
+        ...(packageJson?.devDependencies ?? {}),
+        ...(packageJson?.peerDependencies ?? {}),
+      }
+      if (
+        Object.keys(allDeps).some((name) => name.startsWith("@tailwindcss/"))
+      ) {
+        return null
+      }
+    }
+
+    if (isWorkspaceRootDir(dir)) break
+    const parent = path.dirname(dir)
+    if (parent === dir) break
+    dir = parent
   }
 
-  let packageJson
-  try {
-    packageJson = fs.readJsonSync(path.resolve(cwd, "package.json"))
-  } catch {
-    return null
-  }
-  const allDeps = {
-    ...(packageJson?.dependencies ?? {}),
-    ...(packageJson?.devDependencies ?? {}),
-    ...(packageJson?.peerDependencies ?? {}),
-  }
-
-  const range = declaredRange(packageJson, "tailwindcss")
-  if (!installed && range && rangeExcludesMajor(range, 4)) {
-    return { reason: `tailwindcss ${range} cannot resolve to v4` }
-  }
-
-  // The range allowing 4 (or tailwindcss being absent) is not the whole
-  // story: a v3 config file with no v4 marker anywhere is a v3 project.
-  // A `@tailwindcss/*` package (the v4 plugin/postcss/cli) counts as a v4
-  // setup, as does a stylesheet with the v4 import.
-  if (installed || (range && !rangeExcludesMajor(range, 4))) return null
-  if (Object.keys(allDeps).some((name) => name.startsWith("@tailwindcss/"))) {
-    return null
-  }
-
+  // No tailwindcss evidence anywhere up to the workspace root: a v3 config
+  // file with no v4 import in any stylesheet is the remaining v3 signal.
   const configFiles = await fg.glob("tailwind.config.{js,cjs,mjs,ts}", {
     cwd,
     deep: 3,
@@ -136,14 +169,29 @@ export async function tailwindProjectBelowFour(
   })
   for (const file of cssFiles) {
     const contents = await fs.readFile(path.resolve(cwd, file), "utf8")
-    if (
-      contents.includes('@import "tailwindcss"') ||
-      contents.includes("@import 'tailwindcss'")
-    ) {
+    if (hasTailwindV4Import(contents)) {
       return null
     }
   }
   return { reason: `it has ${configFiles[0]} and no Tailwind v4 setup` }
+}
+
+/** `@import "tailwindcss"` or a v4 submodule import (`tailwindcss/theme.css`). */
+function hasTailwindV4Import(contents: string): boolean {
+  return /@import\s+["']tailwindcss["'/]/.test(contents)
+}
+
+/** Mirrors the workspace-root rule in get-package-manager's lockfile walk. */
+function isWorkspaceRootDir(dir: string): boolean {
+  if (fs.existsSync(path.resolve(dir, "pnpm-workspace.yaml"))) {
+    return true
+  }
+  try {
+    const pkg = fs.readJsonSync(path.resolve(dir, "package.json"))
+    return Boolean(pkg?.workspaces)
+  } catch {
+    return false
+  }
 }
 
 /** What each offered choice installs. `vite` is only added when absent. */
@@ -333,6 +381,11 @@ export async function preFlightInit(
     const tailwindV3 = await tailwindProjectBelowFour(options.cwd)
     if (tailwindV3) {
       projectSpinner?.fail()
+      // getPackageRunner maps yarn → npx: the CLI's deliberate yarn fallback
+      // (getPackageRunnerCommand), shared with the skills relay and every
+      // other runner command the CLI suggests. So a yarn project sees
+      // `npx @tailwindcss/upgrade` — kept for consistency rather than
+      // special-casing `yarn dlx` here.
       const runner = await getPackageRunner(options.cwd)
       throw new CommandError(
         `marko-ui requires Tailwind v4, but this project is on v3 (${

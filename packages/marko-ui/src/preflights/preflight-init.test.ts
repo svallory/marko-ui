@@ -149,6 +149,76 @@ describe("tailwindProjectBelowFour", () => {
   it("passes a project with no Tailwind at all", async () => {
     expect(await tailwindProjectBelowFour(project(markoDep))).toBe(null)
   })
+  it("passes a stylesheet importing a tailwindcss submodule path (v4 theme.css)", async () => {
+    const cwd = project(markoDep, {
+      "tailwind.config.js": "export default {}\n",
+      "src/styles/app.css": '@import "tailwindcss/theme.css";\n',
+    })
+    expect(await tailwindProjectBelowFour(cwd)).toBe(null)
+  })
+})
+
+describe("tailwindProjectBelowFour monorepo walk (hoisted Tailwind)", () => {
+  const appFiles = {
+    "app/package.json": JSON.stringify({ name: "app", dependencies: { marko: "^6.0.0" } }),
+    "app/tailwind.config.js": "export default {}\n",
+  }
+  const monorepo = (rootPkg: object, extra: Record<string, string> = {}) => {
+    const root = project(
+      { name: "root", workspaces: ["app"], ...rootPkg },
+      { ...appFiles, ...extra }
+    )
+    return { root, app: path.join(root, "app") }
+  }
+
+  it("passes a stale-config app when the workspace root declares tailwindcss ^4", async () => {
+    const { app } = monorepo({ devDependencies: { tailwindcss: "^4.0.0" } })
+    expect(await tailwindProjectBelowFour(app)).toBe(null)
+  })
+  it("passes a stale-config app when tailwindcss v4 is installed at the root", async () => {
+    const { app } = monorepo(
+      { name: "root" },
+      { "node_modules/tailwindcss/package.json": JSON.stringify({ name: "tailwindcss", version: "4.1.0" }) }
+    )
+    expect(await tailwindProjectBelowFour(app)).toBe(null)
+  })
+  it("refuses when the workspace root declares a v3 range (hoisted v3 is what runs)", async () => {
+    const { app } = monorepo({ devDependencies: { tailwindcss: "^3.4.0" } })
+    expect(await tailwindProjectBelowFour(app)).toMatchObject({
+      reason: expect.stringContaining("^3.4.0"),
+    })
+  })
+  it("refuses when tailwindcss v3 is installed at the root", async () => {
+    const { app } = monorepo(
+      { name: "root" },
+      { "node_modules/tailwindcss/package.json": JSON.stringify({ name: "tailwindcss", version: "3.4.17" }) }
+    )
+    expect(await tailwindProjectBelowFour(app)).toMatchObject({
+      reason: expect.stringContaining("3.4.17"),
+    })
+  })
+  it("nearest evidence wins: an app-level v3 range refuses even under a v4 root", async () => {
+    const { app } = monorepo(
+      { devDependencies: { tailwindcss: "^4.0.0" } },
+      {
+        "app/package.json": JSON.stringify({
+          name: "app",
+          dependencies: { marko: "^6.0.0", tailwindcss: "^3.4.0" },
+        }),
+      }
+    )
+    expect(await tailwindProjectBelowFour(app)).toMatchObject({
+      reason: expect.stringContaining("^3.4.0"),
+    })
+  })
+  it("does not walk past the workspace root", async () => {
+    // The root has no tailwindcss; the walk must stop there (config-file
+    // branch), not climb into the machine's temp-dir ancestors.
+    const { app } = monorepo({ name: "root" })
+    expect(await tailwindProjectBelowFour(app)).toMatchObject({
+      reason: expect.stringContaining("tailwind.config.js"),
+    })
+  })
 })
 
 describe("preFlightInit version guards", () => {
