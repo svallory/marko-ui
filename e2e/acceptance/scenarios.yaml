@@ -222,6 +222,46 @@ helpers:
           page.replace(marker, '<Button variant="outline">Acceptance Button</Button>\n' + marker)
       )
 
+  wire-component:
+    description: >
+      Rewrites the app's home route so it imports the named component from the
+      components alias and renders it with the text "Acceptance <Name>", the
+      same shape as wire-button but for any component already installed under
+      src/components/ui/<name>/<name>.marko (argv[2] is the kebab-case name).
+      Exits 0 only when the component file exists, the rewritten route contains
+      both the import and the rendered tag, and the insertion point
+      (create-marko's) was there — so a scenario that forgot to add the
+      component, or a scaffolder change, fails here rather than producing a
+      green render assertion over markup that never contained the component.
+    language: node
+    cwd: app
+    source: |
+      const fs = require("node:fs")
+      const [name] = process.argv.slice(2)
+      if (!name) throw new Error("usage: wire-component <kebab-name>")
+      const source = `src/components/ui/${name}/${name}.marko`
+      if (!fs.existsSync(source)) {
+        throw new Error(`${source} does not exist — add ${name} before wiring it`)
+      }
+      const route = "src/routes/+page.marko"
+      const page = fs.readFileSync(route, "utf8")
+      const marker = page.includes("<mouse-mask/>") ? "<mouse-mask/>" : "<!-- anchor -->"
+      if (!page.includes(marker)) {
+        throw new Error(`no insertion point in ${route}`)
+      }
+      const pascal = name
+        .split("-")
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join("")
+      fs.writeFileSync(
+        route,
+        `import ${pascal} from "../components/ui/${name}/${name}.marko";\n\n` +
+          page.replace(
+            marker,
+            `<${pascal} id="acceptance-${name}">Acceptance ${pascal}</${pascal}>\n` + marker
+          )
+      )
+
   set-icon-library:
     description: >
       Sets `iconLibrary` in the project's components.json to argv[2] (the only
@@ -766,16 +806,23 @@ scenarios:
               pointer: /visualStyle
               equals: maia
       - name: the theme block really carries the chosen base color
+        # The base color never appears in the stylesheet BY NAME: the registry
+        # publishes one `style-<color>` item per base color and the items differ
+        # only in their oklch values (`style` has --primary: oklch(0.205 0 0),
+        # `style-slate` has --primary: oklch(0.208 0.042 265.755) and contains
+        # zero occurrences of the string "slate" — verified against
+        # https://marko-ui.saulo.tech/r/style-slate.json). So the assertion is on
+        # slate's primary value, which is what actually distinguishes the theme.
         command: "@helper"
         helper: count-markers
-        args: ["--slate-", "src/styles/globals.css"]
+        args: ["0.042 265.755", "src/styles/globals.css"]
         expect:
           exit: 0
           stdoutMatches: ["^[1-9]\\d*$"]
       - name: the default base color is not what got written
         command: "@helper"
         helper: count-markers
-        args: ["--neutral-", "src/styles/globals.css"]
+        args: ["oklch(0.205 0 0)", "src/styles/globals.css"]
         expect:
           exit: 0
           stdoutMatches: ["^0$"]
@@ -790,11 +837,57 @@ scenarios:
     speed: medium
     ci: { shard: core }
     covers: ["zag machine component", "composite component (many files)"]
+    notes: >
+      The verify-clean and build-and-render-button flows are NOT spliced in
+      here: both are written for a project that installed *button*
+      (status must list "button", the rendered route must contain "Acceptance
+      Button"), and this scenario installs switch and dropdown-menu instead, so
+      those two flows could never hold — the read-only spine is restated below
+      against the components this scenario actually installed, and the render
+      asserts the zag machine's own data-slot. kind.marko-run-app has the same
+      composition and the same problem; it belongs to another kind and was left
+      for its owner.
     steps:
       - use: init-copy-vega-neutral
       - use: add-zag-machine-and-composite
-      - use: verify-clean
-      - use: build-and-render-button
+      - name: wire the zag machine into the home route
+        command: "@helper"
+        helper: wire-component
+        args: ["switch"]
+        expect:
+          exit: 0
+          fileContains:
+            - path: src/routes/+page.marko
+              contains: "Acceptance Switch"
+      - name: status lists both installed components
+        command: status
+        args: ["--json"]
+        expect:
+          exit: 0
+          stdoutContains: ['"switch"', '"dropdown-menu"']
+      - name: doctor passes
+        command: doctor
+        expect:
+          exit: 0
+          stdoutMatches: ["(?i)all checks passed"]
+      - name: diff reports no drift right after add
+        command: diff
+        expect:
+          exit: 0
+          stdoutMatches: ["(?i)no updates found|up to date"]
+      - name: the app builds
+        command: "@app-build"
+        expect:
+          exit: 0
+          appBuild: pass
+      - name: the built server renders the zag machine
+        command: "@app-render"
+        expect:
+          exit: 0
+          appRender:
+            route: /
+            status: 200
+            contains: ["Acceptance Switch", "data-slot=switch"]
 
   - id: core.add-multiple-at-once
     title: "add resolves registry dependencies across three components in one command"
@@ -882,8 +975,14 @@ scenarios:
     notes: search/show/docs work against a registry with no components.json present, so this scenario needs no init.
     steps:
       - name: search finds items
+        # No components.json yet, so search cannot enumerate \"everything
+        # configured\" — with no namespace and no config it refuses by design
+        # (commands/search.ts:132-151: \"Provide a registry or namespace to
+        # search\"), which commands/search.test.ts:219 pins. The coverage this
+        # scenario is after — registry-backed commands before init — needs the
+        # namespace spelled out.
         command: search
-        args: ["--query", "button", "--json"]
+        args: ["@marko-ui", "--query", "button", "--json"]
         expect:
           exit: 0
           stdoutContains: '"button"'
@@ -919,7 +1018,11 @@ scenarios:
         expect:
           exit: 0
           jsonPath:
-            - { source: stdout, pointer: "/commands", equals: "<exists>" }
+            # The manifest wraps everything in data: buildManifest returns
+            # { $type, version, ok, data: { name, cliVersion, commands, … } }
+            # (commands/manifest.ts:61-68), so the pointer that resolves is
+            # /data/commands; /commands does not exist in the output.
+            - { source: stdout, pointer: "/data/commands", equals: "<exists>" }
       - use: init-copy-vega-neutral
       - name: registry list resolves the built-in @marko-ui registry
         command: registry
@@ -1803,6 +1906,19 @@ scenarios:
   - id: config.unbacked-custom-alias-doctor-fails
     title: "a custom alias nothing backs is a doctor failure (exit 3), not a warning"
     kind: config-shape
+    status: known-bug
+    bug: >
+      doctor on a project whose components.json carries an unbacked custom
+      alias (#custom/*) exits 1 with "Something went wrong … Could not resolve
+      the following aliases in <cwd>: components, ui." — getConfig's
+      assertResolvedAliases (src/utils/get-config.ts:242-268) throws while
+      doctor.ts:196 is loading the config, so the check that exists for exactly
+      this case (checkAliases, src/commands/doctor.ts:348-371 → status fail →
+      exit 3, naming aliases.components) never runs. Repro: marko-ui init
+      --yes, set aliases.components AND aliases.ui to "#custom/*", run
+      "marko-ui doctor" → exit 1, generic error; expected exit 3 with
+      "Import alias (#custom/*)" and the aliases.components fix. Found by
+      accept-sweep-a under the packed tarball target, 2026-10-01.
     tags: [os:linux, os:macos, kind:alias, speed:fast]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
@@ -3183,7 +3299,12 @@ scenarios:
         args: ["$REGISTRY_URL/index.json"]
         expect:
           exit: 0
-          stdoutContains: '"items"'
+          # The index is a top-level JSON ARRAY (registryIndexSchema is
+          # z.array(registryItemSchema) — packages/marko-ui/src/registry/schema.ts:280,
+          # consumed by getShadcnRegistryIndex at src/registry/api.ts:278), so
+          # "reachable and non-empty" is asserted on a real item, not on an
+          # "items" wrapper key the format does not have.
+          stdoutContains: ['"name": "button"', '"type": "registry:ui"']
 
   - id: registry.item-schema-valid
     title: "a component item and its styled variant both validate against the published schema"
