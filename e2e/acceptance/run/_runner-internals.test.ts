@@ -26,6 +26,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import {
+  addOverride,
   applyPreSteps,
   buildEnv,
   ensurePinnedCliDir,
@@ -275,5 +276,79 @@ describe("kind filters", () => {
     })
     expect(linux.length).toBeGreaterThan(0)
     for (const candidate of linux) expect(candidate.tags).toContain("os:linux")
+  })
+})
+
+/**
+ * The tarball target's shadcn override re-resolves the workspace. It used to do
+ * that with `driver.add(workspace, [])` — an "add" with no packages, which bun
+ * shrugs at (it treats it as `bun install`) and pnpm rejects outright with
+ * ERR_PNPM_MISSING_PACKAGE_NAME. So every pnpm scenario died in setup, before a
+ * single CLI command ran, with an error that named neither the cause nor the
+ * scenario's subject.
+ *
+ * The mutation is the proof, and this is the guard: a fake driver records which
+ * call was made, so reverting to `add(workspace, [])` fails HERE, in a
+ * millisecond, instead of in the two pnpm scenarios.
+ */
+describe("the shadcn override re-resolve", () => {
+  it("goes through install, never through add with an empty package list", async () => {
+    const workspace = await mkdtemp(join(tmpdir(), "marko-ui-acceptance-override-"))
+    await writeFile(
+      join(workspace, "package.json"),
+      JSON.stringify({ name: "workspace", private: true }, null, 2) + "\n"
+    )
+
+    const calls: string[] = []
+    const fake = {
+      name: "pnpm",
+      bin: "pnpm",
+      install: () => {
+        calls.push("install")
+        return { stdout: "", stderr: "", exitCode: 0 }
+      },
+      add: (_cwd: string, specs: string[]) => {
+        calls.push(`add(${JSON.stringify(specs)})`)
+        return { stdout: "", stderr: "", exitCode: 0 }
+      },
+      dlx: () => ["pnpm", "dlx"],
+      cacheKey: () => "pnpm",
+    }
+
+    await addOverride(
+      workspace,
+      workspace,
+      "@marko-ui/shadcn",
+      "/tmp/shadcn.tgz",
+      "pnpm",
+      target,
+      fake
+    )
+
+    expect(calls).toEqual(["install"])
+    expect(calls.some((call) => call.startsWith("add("))).toBe(false)
+    const manifest = JSON.parse(
+      await readFile(join(workspace, "package.json"), "utf8")
+    )
+    expect(manifest.overrides["@marko-ui/shadcn"]).toBe("/tmp/shadcn.tgz")
+  })
+
+  it("propagates a failed re-resolve instead of continuing with a stale tree", async () => {
+    const workspace = await mkdtemp(join(tmpdir(), "marko-ui-acceptance-override-"))
+    await writeFile(
+      join(workspace, "package.json"),
+      JSON.stringify({ name: "workspace", private: true }, null, 2) + "\n"
+    )
+    const failing = {
+      name: "pnpm",
+      bin: "pnpm",
+      install: () => ({ stdout: "", stderr: "ERR_PNPM_OUTDATED_LOCKFILE", exitCode: 1 }),
+      add: () => ({ stdout: "", stderr: "", exitCode: 0 }),
+      dlx: () => ["pnpm", "dlx"],
+      cacheKey: () => "pnpm",
+    }
+    await expect(
+      addOverride(workspace, workspace, "@marko-ui/shadcn", "/tmp/s.tgz", "pnpm", target, failing)
+    ).rejects.toThrow(/re-resolving/)
   })
 })

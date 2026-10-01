@@ -40,7 +40,7 @@ import {
   strip,
   type StepOutcome,
 } from "./expectations.ts"
-import { driverFor, scaffoldProject } from "./pm.ts"
+import { driverFor, scaffoldProject, type PmDriver } from "./pm.ts"
 import { run } from "./proc.ts"
 import { runPty } from "./pty.ts"
 import { MIRROR_PORT, sharedLocalRegistry } from "./registry.ts"
@@ -1092,13 +1092,21 @@ async function installCliUnderTest(
   }
 }
 
-async function addOverride(
+export async function addOverride(
   workspace: string,
   _appDir: string,
   name: string,
   spec: string,
   pm: Pm,
-  _target: TargetConfig
+  _target: TargetConfig,
+  /**
+   * The driver, injectable only so run/_runner-internals.test.ts can prove the
+   * re-resolve goes through `install` and never through `add` with an empty
+   * spec list — which pnpm rejects outright, killing every pnpm scenario in
+   * setup. A fake driver is the only way to assert that without a real pnpm and
+   * a real registry in a unit test.
+   */
+  driverOverride: PmDriver = driverFor(pm)
 ): Promise<void> {
   const pkgPath = join(workspace, "package.json")
   const raw = await readFile(pkgPath, "utf8")
@@ -1110,7 +1118,7 @@ async function addOverride(
   }
   pkg.overrides = { ...(pkg.overrides ?? {}), [name]: spec }
   await writeFile(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`)
-  const driver = driverFor(pm)
+  const driver = driverOverride
   // Re-resolve with `install` and NO packages, not `add` with an empty list:
   // `pnpm add` with no specs is an error (ERR_PNPM_MISSING_PACKAGE_NAME), so
   // the override step killed every pnpm scenario before a single CLI command

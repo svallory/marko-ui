@@ -12,8 +12,13 @@
  *   the filter that was asked for and the ids/tags that do exist.
  */
 import { beforeAll, describe, expect, it } from "vitest"
-import { loadScenarioDoc, type ScenariosDoc } from "../lib/scenario-doc.ts"
 import {
+  loadScenarioDoc,
+  type Scenario,
+  type ScenariosDoc,
+} from "../lib/scenario-doc.ts"
+import {
+  currentOs,
   filterSpecFromEnv,
   jobNetwork,
   selectScenarios,
@@ -78,7 +83,79 @@ describe("acceptance · the selection", () => {
       )
     }
     // A skip is legitimate (a missing tool, a different OS); it is never a
-    // failure, and it is never silent.
-    expect(Array.isArray(skipped)).toBe(true)
+    // failure, and it is never silent. What is asserted is the shape of the
+    // decision, computed below and by name.
+    expect(skipped.every((entry) => entry.reason !== null)).toBe(true)
+  })
+
+  // The review's finding, taken: the assertion above could not fail. These pin
+  // the actual skip DECISION, with a real scenario from the document and a real
+  // reason, so breaking skipReason — or the comparison it rests on — fails here
+  // instead of turning a skip into a silent pass or a spurious failure.
+  describe("the skip decision itself", () => {
+    // Computed inside each test, not at collection time: the document is
+    // loaded in `beforeAll`, and a describe body runs before any hook.
+    const find = (id: string): Scenario => {
+      const found = doc.scenarios.find((scenario) => scenario.id === id)
+      if (!found) throw new Error(`no scenario called ${id} — the test moved`)
+      return found
+    }
+
+    it("returns no reason for a scenario this machine can run", () => {
+      const target = targetConfig(doc)
+      expect(skipReason(find("core.init-defaults-copy"), { target })).toBeNull()
+    })
+
+    it("skips with a reason naming the OS a scenario needs and this one does not have", () => {
+      // Every scenario in the suite lists os:linux, os:macos and/or
+      // os:windows; a Windows-only requirement is a decision this host has to
+      // reach, and the reason has to name what was required.
+      const target = targetConfig(doc)
+      const windowsOnly = {
+        ...find("core.init-defaults-copy"),
+        requires: { os: ["windows" as const] },
+      }
+      const reason = skipReason(windowsOnly, { target })
+      expect(reason).toBe(
+        `requires os windows; this machine is ${currentOs()}`
+      )
+    })
+
+    it("skips with a reason naming a tool that is not installed", () => {
+      const target = targetConfig(doc)
+      const reason = skipReason(
+        { ...find("core.init-defaults-copy"), requires: { tools: ["definitely-not-a-real-binary"] } },
+        { target }
+      )
+      expect(reason).toBe(
+        "requires the `definitely-not-a-real-binary` binary on PATH"
+      )
+    })
+
+    it("skips a known-bug scenario with its bug text, and never fails it", () => {
+      const target = targetConfig(doc)
+      const reason = skipReason(
+        {
+          ...find("core.init-defaults-copy"),
+          status: "known-bug",
+          bug: "marko-ui-9ce.7",
+        },
+        { target }
+      )
+      expect(reason).toBe("status: known-bug — marko-ui-9ce.7")
+    })
+
+    it("lets a granted gate run, and skips it when the gate is not granted", () => {
+      const target = targetConfig(doc)
+      const gated = {
+        ...find("core.init-defaults-copy"),
+        status: "needs-cli-guards" as const,
+        tags: [...find("core.init-defaults-copy").tags, "needs:cli-guards"],
+      }
+      expect(skipReason(gated, { target })).toMatch(/needs:cli-guards/)
+      expect(
+        skipReason(gated, { target, granted: ["cli-guards"] })
+      ).toBeNull()
+    })
   })
 })

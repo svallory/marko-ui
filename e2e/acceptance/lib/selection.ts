@@ -135,7 +135,8 @@ export function skipReason(
   options: {
     target: TargetConfig
     network?: Network
-    extraNeeds?: string[]
+    /** Capabilities this job declares available, beyond ACCEPTANCE_NEEDS. */
+    granted?: string[]
   }
 ): string | null {
   const { requires, tags } = scenario
@@ -179,12 +180,13 @@ export function skipReason(
   // depends on a CLI guard that has not landed (`status: needs-cli-guards`).
   // It is reported, never asserted, until the capability is declared available:
   // ACCEPTANCE_NEEDS=<capability>,…
-  const needed = (options.extraNeeds ?? []).concat(
-    tags
-      .filter((tag) => tag.startsWith(`${NEEDS_KEY}:`))
-      .map((tag) => tag.slice(NEEDS_KEY.length + 1)),
-  )
-  const granted = new Set(extraNeedsFromEnv())
+  // What the scenario needs, and what this job has granted. `granted` was
+  // called `extraNeeds` and meant the opposite of what the name said, which is
+  // how a test could assert "granted a gate" and get a skip back.
+  const needed = tags
+    .filter((tag) => tag.startsWith(`${NEEDS_KEY}:`))
+    .map((tag) => tag.slice(NEEDS_KEY.length + 1))
+  const granted = new Set([...extraNeedsFromEnv(), ...(options.granted ?? [])])
   for (const capability of needed) {
     if (!granted.has(capability)) {
       return `tagged needs:${capability} — the CLI does not guard this yet (re-run with ACCEPTANCE_NEEDS=${capability} to run it anyway)`
