@@ -889,8 +889,14 @@ scenarios:
     notes: search/show/docs work against a registry with no components.json present, so this scenario needs no init.
     steps:
       - name: search finds items
+        # No components.json yet, so search cannot enumerate \"everything
+        # configured\" — with no namespace and no config it refuses by design
+        # (commands/search.ts:132-151: \"Provide a registry or namespace to
+        # search\"), which commands/search.test.ts:219 pins. The coverage this
+        # scenario is after — registry-backed commands before init — needs the
+        # namespace spelled out.
         command: search
-        args: ["--query", "button", "--json"]
+        args: ["@marko-ui", "--query", "button", "--json"]
         expect:
           exit: 0
           stdoutContains: '"button"'
