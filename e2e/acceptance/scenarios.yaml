@@ -1879,6 +1879,18 @@ scenarios:
       - use: init-copy-vega-neutral
       - use: add-button
       - use: verify-clean
+      # build-and-render-button asserts the built server renders
+      # "Acceptance Button", which needs the route wired first — the same
+      # two steps core.init-defaults-copy has. Without them the render
+      # assertion was unsatisfiable on a stock app.
+      - name: wire Button into the home route
+        command: "@helper"
+        helper: wire-button
+        expect:
+          exit: 0
+          fileContains:
+            - path: src/routes/+page.marko
+              contains: "Acceptance Button"
       - use: build-and-render-button
 
   - id: pm.pnpm
