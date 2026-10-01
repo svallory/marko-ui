@@ -3183,7 +3183,12 @@ scenarios:
         args: ["$REGISTRY_URL/index.json"]
         expect:
           exit: 0
-          stdoutContains: '"items"'
+          # The index is a top-level JSON ARRAY (registryIndexSchema is
+          # z.array(registryItemSchema) — packages/marko-ui/src/registry/schema.ts:280,
+          # consumed by getShadcnRegistryIndex at src/registry/api.ts:278), so
+          # "reachable and non-empty" is asserted on a real item, not on an
+          # "items" wrapper key the format does not have.
+          stdoutContains: ['"name": "button"', '"type": "registry:ui"']
 
   - id: registry.item-schema-valid
     title: "a component item and its styled variant both validate against the published schema"
