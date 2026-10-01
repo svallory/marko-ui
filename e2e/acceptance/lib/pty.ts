@@ -48,7 +48,12 @@ const UNSET_FOR_PTY = [
 /** Per-answer cap from the scenarios contract: a prompt that never appears fails the step. */
 const ANSWER_TIMEOUT_SECONDS = 30
 
-const ANSI = "(?:\\x1b\\[[0-9;?]*[a-zA-Z]|\\x1b\\][^\\x07\\x1b]*(?:\\x07|\\x1b\\\\))?"
+// One ANSI escape sequence: a CSI (`ESC[1m`) or an OSC (`ESC]…BEL`/`ESC]…ESC\`).
+// It is joined BETWEEN characters with a `*` quantifier of its own, so the
+// pattern is `a(?:…)*b(?:…)*c` — never `(?:…)?*`, which Tcl's regex engine
+// rejects as "quantifier operand invalid".
+const ANSI_SEQUENCE =
+  "(?:\\x1b\\[[0-9;?]*[a-zA-Z]|\\x1b\\][^\\x07\\x1b]*(?:\\x07|\\x1b\\\\))"
 
 function escapeRegexChar(char: string): string {
   return /[\\^$.|?*+()[\]{}]/.test(char) ? `\\${char}` : char
@@ -64,7 +69,7 @@ function expectPattern(literal: string): string {
   return literal
     .split("")
     .map(escapeRegexChar)
-    .join(`${ANSI}*`)
+    .join(`${ANSI_SEQUENCE}*`)
 }
 
 /** A Tcl double-quoted string: escape the substitution metacharacters and controls. */

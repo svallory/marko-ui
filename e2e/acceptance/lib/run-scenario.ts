@@ -848,10 +848,6 @@ export async function runScenario(options: RunOptions): Promise<ScenarioRunResul
       workspace,
     })
 
-    const cli = await resolveCliInstall(setup, target)
-    if (!setup.noScaffold) {
-      await installCliUnderTest(workspace, appDir, pm, cli, target)
-    }
     await applyPreSteps(setup.post ?? [], {
       doc,
       cwd: appDir,
@@ -859,6 +855,16 @@ export async function runScenario(options: RunOptions): Promise<ScenarioRunResul
       pm,
       workspace,
     })
+
+    // The CLI under test goes in LAST, after the post-steps: a post-step is
+    // "the project as the user has it", and the monorepo helpers rewrite the
+    // workspace root's package.json into a workspace declaration. Installing
+    // before that would leave the CLI's devDependency written into a file
+    // that no longer mentions it.
+    const cli = await resolveCliInstall(setup, target)
+    if (!setup.noScaffold) {
+      await installCliUnderTest(workspace, appDir, pm, cli, target)
+    }
 
     const defaultCwd = scenario.cwd
       ? resolve(workspace, scenario.cwd)

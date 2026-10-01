@@ -134,9 +134,15 @@ never be confused with one:
 | `@app-render` | start the built server on a free port, fetch one route, assert the markup, tear it down                         |
 | `@shell`      | run a real command in the workspace (`args` is argv, not a shell string)                                        |
 | `@http`       | GET a URL and assert on the response body — used by the registry-health scenarios, which need no project at all |
+| `@helper`     | run a named program from the top-level `helpers:` section with the step's `args` as its argv — see [Helpers](#helpers) |
 
 `@app-render` exists because a `marko-run build` produces a **server bundle**, not prerendered
 HTML: exit 0 from a build proves the code compiled, not that the component rendered.
+
+`@helper` is the step form of a helper; a `setup.pre`/`setup.post` entry uses the same program
+as `{helper: <name>, args: [...]}`. Both forms run the helper's `source` from a file outside the
+workspace, with `$WORKSPACE`, `$APP` and `$PM` exported into its environment, so a helper finds
+the project it is reshaping without every call site repeating the path.
 
 ### `stdin` modes
 

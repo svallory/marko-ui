@@ -306,6 +306,7 @@ helpers:
       const path = require("node:path")
       const app = process.env.APP
       if (!app) throw new Error("APP is not set")
+      fs.mkdirSync("apps", { recursive: true })
       fs.renameSync(app, path.join("apps", "web"))
       fs.writeFileSync(
         "package.json",
@@ -329,6 +330,7 @@ helpers:
       const path = require("node:path")
       const app = process.env.APP
       if (!app) throw new Error("APP is not set")
+      fs.mkdirSync("apps", { recursive: true })
       fs.renameSync(app, path.join("apps", "web"))
       fs.writeFileSync(
         "package.json",
@@ -354,6 +356,7 @@ helpers:
       const path = require("node:path")
       const app = process.env.APP
       if (!app) throw new Error("APP is not set")
+      fs.mkdirSync("apps", { recursive: true })
       fs.renameSync(app, path.join("apps", "web"))
       fs.writeFileSync(
         "package.json",
