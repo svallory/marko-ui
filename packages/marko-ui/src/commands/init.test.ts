@@ -8,6 +8,7 @@ import {
   writeFileSync,
 } from "node:fs"
 import os from "node:os"
+import { stripVTControlCharacters } from "node:util"
 import path from "node:path"
 import net from "node:net"
 import { describe, expect, it } from "vitest"
@@ -232,7 +233,11 @@ spawn env -u CLAUDECODE -u CI -u CURSOR_AGENT -u REPL_ID -u AI_AGENT {*}$argv
     ? readFileSync(installLog, "utf8").trim().split("\n")
     : []
   rmSync(dir, { recursive: true, force: true })
-  return { stdout: result.stdout, written, installs }
+  // The CLI colors values (kleur) whenever it decides the terminal supports
+  // it, and that decision differs between machines: GitHub's runners color
+  // `neutral`/`copy`/`vega` in the defaults line, a local pty may not. The
+  // assertions are about text, so compare without escape sequences.
+  return { stdout: stripVTControlCharacters(result.stdout ?? ""), written, installs }
 }
 
 // Tcl snippets. `ask` answers a prompt with Enter (accept the highlighted
