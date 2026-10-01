@@ -27,6 +27,17 @@ export interface ChangelogEntry {
   changes: string[];
 }
 
+static const UNRELEASED: Omit<ChangelogEntry, "version" | "date"> = {
+  title: "CLI guards: no more installing into Marko 5, Tailwind v3, or React projects",
+  summary:
+    "Three wrong-project shapes the CLI used to accept and silently mis-configure are now hard refusals with the fix spelled out: a Marko that cannot reach 6, a Tailwind v3 setup, and a components.json that belongs to shadcn/ui for React.",
+  changes: [
+    "Breaking: `init` refuses a project whose `marko` cannot satisfy Marko 6 (`^5`, `~5`, `5.37.0`, `<6`; the installed version in node_modules wins when readable), exiting 1 with 'marko-ui requires Marko 6' and the official upgrade/interop guide (https://markojs.com/docs/guide/marko-5-interop). Ranges that allow 6 (`>=5`, `*`, `latest`, `workspace:`) pass, and `--force` bypasses — the same escape hatch as the non-Marko refusal. Previously init installed Marko 6 tags-API components into Marko 5 (class API) projects.",
+    "Breaking: `init` refuses a Tailwind v3 project — an installed or declared `tailwindcss` that cannot reach 4, or a `tailwind.config.{js,cjs,mjs,ts}` with no v4 setup (no `tailwindcss` 4 range, no `@import \"tailwindcss\"` stylesheet, no `@tailwindcss/*` package) — exiting 1 and pointing at the official upgrade tool with the project's own runner (`bunx`/`pnpm dlx`/`npx @tailwindcss/upgrade`, https://tailwindcss.com/docs/upgrade-guide). No silent upgrade; `--force` bypasses.",
+    "Breaking: every command that loads `components.json` (`add`, `diff`, `doctor`, `agents`, `eject`, `info`, `search`, `view`, `registry build`) now refuses one that belongs to shadcn/ui for React — detected from the owning project (declares `react`, no Marko dependency), not from config fields, because marko-ui itself writes `tsx: true` and the `rsc` key for real Marko projects. Exit 1 says the config is shadcn/ui-for-React and points at `--cwd <app>`; previously a React config parsed as valid and components were installed into a React app. The check lives in the one config loader, not per command.",
+  ],
+};
+
 static const ENTRIES: ChangelogEntry[] = [
   {
     version: "0.5.0",
@@ -159,10 +170,18 @@ static const ENTRIES: ChangelogEntry[] = [
 >
   <h2 id="unreleased">Unreleased</h2>
 
-  <p>
-    Nothing yet: everything merged to <code>main</code> since <code>0.4.1</code> is in the
-    <a href="#0.5.0"><code>0.5.0</code></a> entry below.
-  </p>
+  <div class="mt-8 border-l-2 border-border pl-5">
+    <div class="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+      Not yet released
+    </div>
+    <h3 class="mt-1 text-base font-semibold tracking-tight">${UNRELEASED.title}</h3>
+    <p>${UNRELEASED.summary}</p>
+    <ul>
+      <for|change| of=UNRELEASED.changes>
+        <li>${change}</li>
+      </for>
+    </ul>
+  </div>
 
   <p>Currently in the registry: ${COMPONENTS.length} components, plus the theme and utils items.</p>
 
