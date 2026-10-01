@@ -185,6 +185,10 @@ describe("addComponents", () => {
     )
   })
 
+  // The second half of this test is the pin for the DEFAULT being a constant
+  // `true` again, which is how so5.2 happened: with `interactive: true`
+  // hardcoded, the first assertion below fails (it receives `true` where
+  // nothing can answer a prompt). Verified by mutation, not by inspection.
   it("asks whether an existing file may be overwritten only in a real terminal", async () => {
     mockResolveRegistryTree.mockResolvedValue({
       dependencies: [],
