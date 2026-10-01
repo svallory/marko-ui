@@ -288,6 +288,54 @@ describe("getProjectConfig", () => {
   })
 })
 
+describe("getConfig: unresolved aliases", () => {
+  async function unbackedAliasDir(dir: string) {
+    await fs.writeJson(path.join(dir, "package.json"), { name: "app" })
+    await fs.writeJson(path.join(dir, "tsconfig.json"), {
+      compilerOptions: { paths: { "@/*": ["./src/*"] } },
+    })
+    await fs.mkdir(path.join(dir, "src"), { recursive: true })
+    await fs.writeJson(path.join(dir, "components.json"), {
+      style: "default",
+      rsc: false,
+      tsx: true,
+      tailwind: {
+        config: "",
+        css: "src/styles/globals.css",
+        baseColor: "neutral",
+        cssVariables: true,
+      },
+      aliases: { components: "#components", utils: "#lib/utils" },
+    })
+    return dir
+  }
+
+  it("refuses an alias nothing backs", async () => {
+    await withTempDir(async (dir) => {
+      await expect(getConfig(await unbackedAliasDir(dir))).rejects.toThrow(
+        /Could not resolve the following aliases/
+      )
+    })
+  })
+
+  it("loads it for a caller that only reports the problem", async () => {
+    // `doctor` reports the failed alias check instead of dying on this, so it
+    // needs a usable config back. The unresolved alias is pointed at the
+    // source root so the config parses; nothing writes there.
+    await withTempDir(async (dir) => {
+      const config = await getConfig(await unbackedAliasDir(dir), {
+        allowUnresolvedAliases: true,
+      })
+
+      expect(config?.resolvedPaths.components).toBe(path.join(dir, "src"))
+      expect(config?.resolvedPaths.utils).toBe(path.join(dir, "src"))
+      // `ui` is derived from the (null) components alias, so it fell back to
+      // cwd before the lenient substitution ran; nothing here is written.
+      expect(config?.resolvedPaths.ui).toBe(path.join(dir, "ui"))
+    })
+  })
+})
+
 describe("getConfig", () => {
   it("get config", async () => {
     expect(await getConfig(getFixturesDir("config-none"))).toEqual(null)

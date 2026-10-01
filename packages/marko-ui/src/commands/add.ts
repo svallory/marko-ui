@@ -111,7 +111,10 @@ export const add = new Command()
           itemType !== "registry:base"
 
         if (isUniversalRegistryItem(registryItem) && !isDryRun) {
-          await addComponents(components, initialConfig, options)
+          await addComponents(components, initialConfig, {
+            ...options,
+            interactive: shouldPrompt(options),
+          })
           return
         }
         if (
@@ -261,7 +264,12 @@ export const add = new Command()
       }
 
       if (!initHasRun) {
-        await addComponents(options.components, config, options)
+        await addComponents(options.components, config, {
+          ...options,
+          // Threaded, not defaulted: the file writer asks before overwriting a
+          // file that differs, and `-y` means "don't ask me anything".
+          interactive: shouldPrompt(options),
+        })
         // Keep the project taglib (zero-import <Badge>/<badge> tags) in
         // sync with what is installed. No-op unless marko.json is ours.
         await writeProjectTaglib(config)
@@ -324,6 +332,21 @@ export function assertHasComponents(
  * Exported with `interactive` injectable so it is testable without a pty.
  */
 export function shouldConfirmAutoInit(
+  options: Pick<z.infer<typeof addOptionsSchema>, "yes">,
+  interactive: boolean = isInteractive()
+): boolean {
+  return !options.yes && interactive
+}
+
+/**
+ * Whether `add` may prompt the user at all — the file writer's overwrite
+ * question included. `-y` is explicit intent ("do not ask"), and a session
+ * with no terminal cannot answer, so both suppress every prompt. The file
+ * writer then keeps the existing file and reports it as skipped.
+ *
+ * Exported with `interactive` injectable so it is testable without a pty.
+ */
+export function shouldPrompt(
   options: Pick<z.infer<typeof addOptionsSchema>, "yes">,
   interactive: boolean = isInteractive()
 ): boolean {

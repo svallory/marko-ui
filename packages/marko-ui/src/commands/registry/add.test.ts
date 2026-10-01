@@ -3,7 +3,49 @@ import path from "path"
 import fs from "fs-extra"
 import { describe, expect, it } from "vitest"
 
-import { addRegistriesToConfig, parseRegistryArg } from "./add"
+import { CommandError } from "@/src/utils/handle-error"
+
+import {
+  addRegistriesToConfig,
+  assertHasRegistries,
+  parseRegistryArg,
+} from "./add"
+
+const plain = (s: string) => s.replace(/\u001b\[[0-9;]*m/g, "")
+
+function usageError(run: () => void) {
+  try {
+    run()
+  } catch (error) {
+    expect(error).toBeInstanceOf(CommandError)
+    expect((error as CommandError).exitCode).toBe(2)
+    return plain((error as Error).message)
+  }
+  throw new Error("expected a usage error")
+}
+
+describe("assertHasRegistries", () => {
+  // A bare `registry add` opened the picker even with nothing to answer it,
+  // then exited 0 having registered nothing — so a CI or agent step calling it
+  // went green having done nothing at all.
+  it("exits 2 with no arguments when nothing can answer", () => {
+    const text = usageError(() => assertHasRegistries([], false))
+    expect(text).toContain("marko-ui registry add @namespace=url")
+    expect(text).toContain("{name}")
+    expect(text).toContain("marko-ui registry list")
+  })
+
+  it("lets a terminal with no arguments reach the picker", () => {
+    expect(() => assertHasRegistries([], true)).not.toThrow()
+  })
+
+  it("never complains when a registry is named", () => {
+    expect(() => assertHasRegistries(["@acme"], false)).not.toThrow()
+    expect(() =>
+      assertHasRegistries(["@acme=https://example.com/r/{name}.json"], false)
+    ).not.toThrow()
+  })
+})
 
 describe("parseRegistryArg", () => {
   it("should parse namespace without URL", () => {

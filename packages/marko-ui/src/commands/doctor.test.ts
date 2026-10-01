@@ -5,7 +5,9 @@ import { describe, expect, it } from "vitest"
 
 import { runDoctorChecks } from "./doctor"
 
-function scaffoldMarkoApp(overrides: { skipCss?: boolean } = {}) {
+function scaffoldMarkoApp(
+  overrides: { skipCss?: boolean; aliases?: Record<string, string> } = {}
+) {
   const dir = mkdtempSync(path.join(tmpdir(), "marko-ui-doctor-"))
   writeFileSync(
     path.join(dir, "package.json"),
@@ -34,7 +36,10 @@ function scaffoldMarkoApp(overrides: { skipCss?: boolean } = {}) {
         baseColor: "neutral",
         cssVariables: true,
       },
-      aliases: { components: "@/components", utils: "@/lib/utils" },
+      aliases: overrides.aliases ?? {
+        components: "@/components",
+        utils: "@/lib/utils",
+      },
     })
   )
   mkdirSync(path.join(dir, "src/styles"), { recursive: true })
@@ -123,6 +128,25 @@ describe("runDoctorChecks", () => {
     const typescript = checks.find((check) => check.id === "typescript")
 
     expect(typescript?.status).toBe("pass")
+  })
+
+  it("reports the alias check instead of crashing when an alias resolves to nothing", async () => {
+    // A `#`-prefixed alias that no tsconfig paths entry and no package.json
+    // `imports` backs. The config loader used to throw while doctor was still
+    // loading it, so `checkAliases` — written for exactly this case — never
+    // ran and the user saw "Something went wrong" with exit 1.
+    const dir = scaffoldMarkoApp({
+      aliases: { components: "#components", utils: "#lib/utils" },
+    })
+
+    const checks = await runDoctorChecks(dir)
+    const status = statusOf(checks)
+
+    expect(status.config).toBe("pass")
+    expect(status.aliases).toBe("fail")
+
+    const aliases = checks.find((check) => check.id === "aliases")
+    expect(aliases?.message).toContain("#components")
   })
 
   it("falls back to the declared package.json range when typescript isn't installed", async () => {

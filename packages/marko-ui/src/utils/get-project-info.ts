@@ -186,7 +186,11 @@ export async function getTailwindVersion(
 ): Promise<ProjectInfo["tailwindVersion"]> {
   const [packageInfo, config] = await Promise.all([
     getPackageInfo(cwd, false),
-    getConfig(cwd),
+    // Only `tailwind.config` is read below, never a resolved path, so an
+    // alias nothing backs is irrelevant here — and refusing to answer would
+    // take `doctor` down (through getProjectInfo) before it could report
+    // that very alias.
+    getConfig(cwd, { allowUnresolvedAliases: true }),
   ])
 
   // If the config file is empty, we can assume that it's a v4 project.
@@ -632,20 +636,26 @@ type RegistryIndex = { name: string }[] | null | undefined
  * round trip (a caller that tried and failed passes `null`); leave it
  * `undefined` to have it fetched here.
  *
+ * `allowUnresolvedAliases`: read-only callers that must survive an alias
+ * nothing backs set it (`doctor` reports that alias as a failed check). Left
+ * off, an unbacked alias still throws, which is what the commands that write
+ * or diff against these paths want.
+ *
  * Offline degradation: without the index we cannot tell components from
  * unrelated folders by name, so only entries that contain a `.marko` file
  * (or are one) are kept.
  */
 export async function getProjectComponents(
   cwd: string,
-  registryIndex?: RegistryIndex
+  registryIndex?: RegistryIndex,
+  options: { allowUnresolvedAliases?: boolean } = {}
 ) {
-  const existingConfig = await getConfig(cwd)
+  const existingConfig = await getConfig(cwd, options)
   if (!existingConfig) {
     return []
   }
 
-  const resolvedConfig = await resolveConfigPaths(cwd, existingConfig)
+  const resolvedConfig = await resolveConfigPaths(cwd, existingConfig, options)
   const uiDir = resolvedConfig.resolvedPaths.ui
   if (!fs.existsSync(uiDir)) {
     return []

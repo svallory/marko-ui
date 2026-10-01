@@ -15,6 +15,7 @@ import {
   type Config,
 } from "@/src/utils/get-config"
 import { getProjectTailwindVersionFromConfig } from "@/src/utils/get-project-info"
+import { isInteractive } from "@/src/utils/interactive"
 import { isSafeTarget } from "@/src/utils/is-safe-target"
 import { logger } from "@/src/utils/logger"
 import { spinner } from "@/src/utils/spinner"
@@ -32,6 +33,13 @@ export interface AddComponentsOptions {
   overwrite?: boolean
   overwriteCssVars?: boolean
   silent?: boolean
+  /**
+   * Whether a prompt may be shown at all. Left unset, it resolves to "a
+   * person could answer" ({@link isInteractive}) — never to `true` outright,
+   * because a prompt nobody can answer is a hang, not a question. Callers that
+   * have an explicit `--yes` (or a silent mandate) pass `false` themselves;
+   * that decision belongs to the command, not here.
+   */
   interactive?: boolean
   resolvedTree?: NonNullable<Awaited<ReturnType<typeof resolveRegistryTree>>>
   skipFonts?: boolean
@@ -49,7 +57,12 @@ export async function addComponents(
   options = {
     overwrite: false,
     silent: false,
-    interactive: true,
+    // Was hardcoded `true`, which made `add -y` ask "already exists, overwrite?"
+    // anyway: `add` passed its raw commander options (a `yes` but no
+    // `interactive`), so the file writer saw an interactive session no matter
+    // what the user asked for. Defaulting to what can actually be answered,
+    // with each command threading its own `-y` through, is the fix.
+    interactive: isInteractive(),
     ...options,
   }
 
