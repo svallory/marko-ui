@@ -365,9 +365,32 @@ for (const [name, setup] of Object.entries(doc.fixtures)) {
 
 function walkPre(steps: PreStep[] | undefined, where: string): void {
   for (const [index, step] of (steps ?? []).entries()) {
+    const at = `${where}[${index}]`;
     const body = step.write?.body ?? step.run?.body;
     if (body && !doc.bodies?.[body]) {
-      problems.push(`${where}[${index}]: unknown body "${body}"`);
+      problems.push(`${at}: unknown body "${body}"`);
+    }
+    // Setup invokes helpers too, so the helper reference has to be resolved
+    // here as well as in the step walk — otherwise a typo'd helper in a
+    // setup.post, or a helper used ONLY during setup, passes unnoticed and the
+    // "declared but never used" check silently never fires for those three.
+    if (step.helper) {
+      if (!doc.helpers?.[step.helper]) {
+        problems.push(`${at}: unknown helper "${step.helper}"`);
+      } else {
+        usedHelpers.add(step.helper);
+      }
+    }
+    for (const arg of step.args ?? []) {
+      const vars = arg.matchAll(/(?<!\$)\$(?!\$)([A-Za-z_][A-Za-z0-9_]*)/g);
+      for (const match of vars) {
+        const name = match[1];
+        if (name && !INTERPOLATED_VARS.has(name)) {
+          problems.push(
+            `${at}: args interpolate "$${name}", which is not in the closed set (${[...INTERPOLATED_VARS].join(", ")})`,
+          );
+        }
+      }
     }
   }
 }
