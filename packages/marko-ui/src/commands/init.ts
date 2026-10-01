@@ -109,11 +109,24 @@ export const init = new Command()
   )
   .action(async (components, opts) => {
     try {
+      // `...opts` FIRST, `cwd` last. This used to be the other way round, so
+      // the raw `--cwd` string won: `init --yes --cwd apps/web` from a
+      // workspace root kept the RELATIVE path as `options.cwd`, while every
+      // resolved alias was absolute (they are resolved against this same cwd
+      // and against tsconfig `paths`, which are always absolute). The mixed
+      // pair then walked into getWorkspaceConfig, whose findCommonRoot
+      // returns "" when the two paths share no leading segment, and the empty
+      // common root made every alias look like it belonged to a DIFFERENT
+      // package — so init demanded a components.json in the very workspace it
+      // was creating one in, rolled it back and exited 1. Exactly what the
+      // workspace-root refusal tells the user to do used to fail. Every other
+      // command in this CLI (add, diff, doctor, agents, …) already lists its
+      // fields after the spread; keep it that way.
       const options = initOptionsSchema.parse({
+        ...opts,
         cwd: path.resolve(opts.cwd),
         components,
         baseColor: opts.baseColor,
-        ...opts,
       })
 
       await loadEnvFiles(options.cwd)
