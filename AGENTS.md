@@ -369,6 +369,34 @@ remove the mark, never weaken the assertion. `SCENARIOS_SHOW_FAILURES=1` shows
 the real failure behind each mark. Prefer a scenario here for orderings,
 structures and environments.
 
+Three facts when a scenario flakes on the relay (`--agents`), i.e. the two files
+whose `relay()` helper shims `bun, npm, npx, pnpm, yarn` and leaves `bunx` real
+(`ordering.test.ts`, `agents-md.test.ts`; every other scenario uses
+`withShims(ws)` with `ALL_SHIMS`, `bunx` included, so it never reaches npm — it
+does fetch the locally served registry on :4470). The runner comes from the
+fixture's lockfile (`bun.lock` → `bunx`), so the relay is the only thing in the
+suite that can reach the network.
+
+There is no non-destructive way to run the relay cold. Bun's package cache is
+`~/.cache/.bun/install/cache`; `BUN_INSTALL` and `XDG_CACHE_HOME` both redirect
+it (measured on bun 1.3.11 and 1.4.2: `bun pm cache` follows them and a real
+`bun install` writes only under them) while `HOME` does not — bun asks the
+password database, not the env. But `run.sh` pre-warms the pinned spec
+(`bunx "${SKILLS_SPEC:-skills@1.7.0}" --version`, run.sh:69) before vitest
+starts, so no env var passed to `bun run test:cli:scenarios` can produce a cold
+run; and even bypassing that, an already-resolved package still resolves in
+~0.2–0.4 s from its `skills@<version>@@@1` entry in the shared cache directory
+without ever creating the redirected one (`--no-cache` changes nothing: it
+governs the manifest cache, not the package entry). Seeing the first fetch means
+moving that entry out of the shared cache by hand and running vitest directly
+against `e2e/cli/scenarios/*.test.ts` with the registry served — put it back
+afterwards. A scenario also cannot outlive the harness: `cli()`'s default 60s
+timeout (`environments.test.ts` lowers it to 30s
+in four `init`/`agents sync` scenarios, and to 45s in the two that point at a
+dead registry, `:73` and `:83`) and vitest's 90s `testTimeout` both fire before
+the CLI's own 180s `execa` for the relay, so a stalled download shows up as a
+scenario timeout, not as a relay error.
+
 Other traps, each of which cost a debugging cycle:
 
 - **The registry must be built AND served locally.** `tooling/build-registry.ts`
