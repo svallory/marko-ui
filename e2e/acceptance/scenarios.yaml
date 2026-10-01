@@ -364,6 +364,16 @@ helpers:
       if (!app) throw new Error("APP is not set")
       fs.mkdirSync("apps", { recursive: true })
       fs.renameSync(app, path.join("apps", "web"))
+      // The moved app is scaffolded as `create-marko --name app`, so its
+      // package is called "app". A real monorepo names the package after its
+      // new home; leaving it "app" while packages/ui depends on "@acme/web"
+      // makes pnpm refuse the whole workspace install —
+      // ERR_PNPM_WORKSPACE_PKG_NOT_FOUND, "Packages found in the workspace:
+      // workspace-root, app, @acme/ui" — before a CLI command runs.
+      const appPkgPath = path.join("apps", "web", "package.json")
+      const appPkg = JSON.parse(fs.readFileSync(appPkgPath, "utf8"))
+      appPkg.name = "@acme/web"
+      fs.writeFileSync(appPkgPath, JSON.stringify(appPkg, null, 2) + "\n")
       fs.writeFileSync(
         "package.json",
         JSON.stringify(
@@ -2100,7 +2110,7 @@ scenarios:
     # "run marko-ui init from the app directory or pass --cwd <app>"
     # (packages/marko-ui/src/commands/init.ts:246-252), and
     # preflight-init.ts:294 says the same ("a root needs --cwd <app>").
-    bug: "init --cwd <app> from a workspace root fails on a fresh monorepo: getWorkspaceConfig (utils/get-config.ts:495-525) resolves the ui alias to <app> and demands a components.json there before init can finish writing one"
+    bug: "marko-ui-so5.4 init --cwd <app> from a workspace root fails on a fresh monorepo: getWorkspaceConfig (utils/get-config.ts:495-525) resolves the ui alias to <app> and demands a components.json there before init can finish writing one"
     tags: [os:linux, os:macos, pm:bun, kind:monorepo, speed:medium]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
