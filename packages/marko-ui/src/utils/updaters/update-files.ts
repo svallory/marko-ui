@@ -82,10 +82,11 @@ export async function updateFiles(
     silent: false,
     isWorkspace: false,
     ...options,
-    // Callers (add, init) never pass `interactive`, so the default decides
-    // whether "already exists, overwrite?" may be asked at all. A prompt that
-    // nothing can answer hangs a piped or agent run; without a TTY the
-    // existing file is kept and reported as skipped.
+    // `add` threads this in explicitly (it folds in `-y`, which is why it is
+    // not just `isInteractive()`), and `init` always passes `overwrite: true`,
+    // so neither relies on this default. A prompt that nothing can answer
+    // hangs a piped or agent run; without a TTY the existing file is kept and
+    // reported as skipped.
     interactive: options.interactive ?? isInteractive(),
   }
   const filesCreatedSpinner = spinner(`Updating files.`, {

@@ -210,4 +210,40 @@ describe("command ordering", () => {
     expect(add.code).toBe(1)
     expect(plain(add.out)).toContain("definitely-not-a-component")
   })
+
+  // marko-ui-so5.2: `add button -y` asked "already exists, overwrite?" anyway
+  // (addComponents hardcoded interactive: true), so a scripted add either hung
+  // on a prompt nobody could answer or quietly kept the old file behind a
+  // question it was told not to ask.
+  scenario("O14", "add -y over an edited component: skips it, says which and how to overwrite, never prompts", async () => {
+    const ws = app()
+    const { shim } = await bootstrap(ws)
+    const button = `${ws}/src/components/ui/button/button.marko`
+    writeFileSync(button, readFileSync(button, "utf8") + "\n// local edit\n")
+    const before = md5(ws, "src/components/ui/button/button.marko")
+
+    const add = await cli(ws, ["add", "button", "-y"], { shim })
+    const out = plain(add.out)
+
+    expect(add.code, tail(add.out)).toBe(0)
+    expect(out).not.toContain("Would you like to overwrite")
+    expect(out).toMatch(/Skipped 1 file/)
+    expect(out).toContain("src/components/ui/button/button.marko")
+    expect(out).toContain("--overwrite")
+    expect(md5(ws, "src/components/ui/button/button.marko"), "-y overwrote a file it must not touch").toBe(before)
+  })
+
+  scenario("O15", "add --overwrite still replaces an edited component", async () => {
+    const ws = app()
+    const { shim } = await bootstrap(ws)
+    const button = `${ws}/src/components/ui/button/button.marko`
+    writeFileSync(button, readFileSync(button, "utf8") + "\n// local edit\n")
+
+    const add = await cli(ws, ["add", "button", "--overwrite"], { shim })
+    const out = plain(add.out)
+
+    expect(add.code, tail(add.out)).toBe(0)
+    expect(out).not.toContain("Would you like to overwrite")
+    expect(readFileSync(button, "utf8")).not.toContain("// local edit")
+  })
 })
