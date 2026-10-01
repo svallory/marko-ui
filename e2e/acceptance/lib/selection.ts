@@ -16,7 +16,7 @@
  */
 import { execFileSync } from "node:child_process"
 import { platform } from "node:os"
-import type { CliTarget, Network, Scenario, ScenariosDoc } from "./scenario-doc"
+import type { CliTarget, Network, Scenario, ScenariosDoc } from "./scenario-doc.ts"
 
 // ---------------------------------------------------------------------------
 // Target

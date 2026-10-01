@@ -27,8 +27,8 @@ import { spawnSync } from "node:child_process"
 import { mkdtempSync, realpathSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { hasTool } from "./selection"
-import type { PtyAnswer } from "./scenario-doc"
+import { hasTool } from "./selection.ts"
+import type { PtyAnswer } from "./scenario-doc.ts"
 
 // The CLI's own NON_INTERACTIVE_ENV_VARS (CI, CLAUDECODE, AI_AGENT,
 // CURSOR_AGENT, REPL_ID) plus the other proto-shim triggers documented in the

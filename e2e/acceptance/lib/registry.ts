@@ -18,9 +18,9 @@
 import { spawn, type ChildProcess } from "node:child_process"
 import { existsSync } from "node:fs"
 import { join } from "node:path"
-import { run } from "./proc"
-import { REPO_ROOT } from "./pm"
-import { hasTool } from "./selection"
+import { run } from "./proc.ts"
+import { REPO_ROOT } from "./pm.ts"
+import { hasTool } from "./selection.ts"
 
 export const MIRROR_PORT = Number(
   process.env.ACCEPTANCE_MIRROR_PORT || process.env.REGISTRY_PORT || 4470

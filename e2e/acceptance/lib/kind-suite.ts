@@ -13,19 +13,19 @@
  * filtered out, or reported as skipped with a reason).
  */
 import { describe, it } from "vitest"
-import { loadScenarioDoc, type Scenario, type ScenariosDoc } from "./scenario-doc"
+import { loadScenarioDoc, type Scenario, type ScenariosDoc } from "./scenario-doc.ts"
 import {
   expandSteps,
   resolveSetup,
   runScenario,
-} from "./run-scenario"
+} from "./run-scenario.ts"
 import {
   filterSpecFromEnv,
   selectScenarios,
   skipReason,
   targetConfig,
-} from "./selection"
-import { ptyAvailable } from "./pty"
+} from "./selection.ts"
+import { ptyAvailable } from "./pty.ts"
 
 /** Setup (scaffold + install + the CLI) gets its own budget on top of the steps. */
 const SETUP_BUDGET_MS = 15 * 60_000

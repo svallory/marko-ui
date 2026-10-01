@@ -18,12 +18,19 @@
  * nothing lands in the worktree. The output is a standard .tgz, installable by
  * bun, npm, pnpm and yarn alike, which is what the non-bun scenarios need.
  */
-import { existsSync, mkdirSync, readFileSync, statSync } from "node:fs"
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  renameSync,
+  statSync,
+} from "node:fs"
 import { mkdtemp, readdir, rm, stat } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { run } from "./proc"
-import { acceptanceDir } from "./scenario-doc"
+import { run } from "./proc.ts"
+import { acceptanceDir } from "./scenario-doc.ts"
 
 export const REPO_ROOT = join(acceptanceDir(), "..", "..")
 export const CLI_PACKAGE_DIR = join(REPO_ROOT, "packages", "marko-ui")
@@ -58,22 +65,25 @@ async function newestMtime(dir: string): Promise<number> {
 }
 
 function pack(pkgDir: string, destination: string, filename: string): string {
-  const result = run(
-    "bun",
-    ["pm", "pack", "--destination", destination, "--filename", filename],
-    { cwd: pkgDir, timeoutMs: 300_000 }
-  )
+  // --destination and --filename are mutually exclusive in bun 1.3 ("cannot use
+  // both filename and destination"), so pack into the directory and rename.
+  const result = run("bun", ["pm", "pack", "--destination", destination], {
+    cwd: pkgDir,
+    timeoutMs: 300_000,
+  })
   if (result.exitCode !== 0) {
     throw new Error(
       `bun pm pack failed in ${pkgDir} (exit ${result.exitCode})\n${result.stdout}\n${result.stderr}`,
     )
   }
-  const tarball = join(destination, filename)
-  if (!existsSync(tarball)) {
+  const produced = readdirSync(destination).filter((entry) => entry.endsWith(".tgz"))
+  if (produced.length !== 1) {
     throw new Error(
-      `bun pm pack reported success but ${tarball} does not exist\n${result.stdout}`,
+      `bun pm pack in ${pkgDir} produced ${produced.length} tarball(s) in ${destination} (${produced.join(", ") || "none"}), expected exactly one`,
     )
   }
+  const tarball = join(destination, filename)
+  if (produced[0] !== filename) renameSync(join(destination, produced[0] as string), tarball)
   return tarball
 }
 
@@ -90,8 +100,13 @@ function pack(pkgDir: string, destination: string, filename: string): string {
 export async function ensurePackedTarget(): Promise<PackedTarget> {
   const version = readVersion(CLI_PACKAGE_DIR)
   const dir = join(tarballDir(), `marko-ui-${version}`)
-  const cli = join(dir, "marko-ui.tgz")
-  const shadcn = join(dir, "marko-ui-shadcn.tgz")
+  // One destination per package: `bun pm pack --destination` writes the
+  // package's own `<name>-<version>.tgz` there, and a shared directory would
+  // make the CLI's tarball look like a second product of the shadcn pack.
+  const cliDir = join(dir, "cli")
+  const shadcnDir = join(dir, "shadcn")
+  const cli = join(cliDir, "marko-ui.tgz")
+  const shadcn = join(shadcnDir, "marko-ui-shadcn.tgz")
 
   const sourceMtime = Math.max(
     await newestMtime(join(CLI_PACKAGE_DIR, "src")),
@@ -102,7 +117,8 @@ export async function ensurePackedTarget(): Promise<PackedTarget> {
   }
 
   await rm(dir, { recursive: true, force: true })
-  mkdirSync(dir, { recursive: true })
+  mkdirSync(cliDir, { recursive: true })
+  mkdirSync(shadcnDir, { recursive: true })
 
   // The tarball ships dist/; without this the packed CLI is whatever the last
   // build left behind, which is the classic "acceptance passed against a stale
@@ -123,8 +139,8 @@ export async function ensurePackedTarget(): Promise<PackedTarget> {
     )
   }
 
-  const packedCli = pack(CLI_PACKAGE_DIR, dir, "marko-ui.tgz")
-  const packedShadcn = pack(SHADCN_PACKAGE_DIR, dir, "marko-ui-shadcn.tgz")
+  const packedCli = pack(CLI_PACKAGE_DIR, cliDir, "marko-ui.tgz")
+  const packedShadcn = pack(SHADCN_PACKAGE_DIR, shadcnDir, "marko-ui-shadcn.tgz")
   return { cli: packedCli, shadcn: packedShadcn, builtAt: new Date() }
 }
 

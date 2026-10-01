@@ -139,8 +139,9 @@ differ. Strip ANSI before matching.
 
 ## Replaying
 
-Filters are read by the runner from the environment; the exact syntax the runner must
-implement is:
+Filters are read by the runner from the environment. **An empty selection is a
+failure, not a green run**: the suite exits non-zero with the filter it was given, every
+scenario id and every tag that exists.
 
 | variable                  | meaning                                                             | example                            |
 | ------------------------- | ------------------------------------------------------------------- | ---------------------------------- |
@@ -151,6 +152,42 @@ implement is:
 | `ACCEPTANCE_PKG_VERSION`  | the published version to install, overriding `defaults.version`     | `0.5.0`                            |
 | `ACCEPTANCE_REGISTRY_URL` | the registry to point `REGISTRY_URL` at                             | `http://127.0.0.1:4470/r`          |
 | `ACCEPTANCE_KEEP_TEMP`    | keep the scenario workspaces (default: delete)                      | `1`                                |
+| `ACCEPTANCE_NETWORK`      | what this job can reach: `none`, `registry-only`, `npm`, `both` (default `both`) | `registry-only`          |
+| `ACCEPTANCE_NEEDS`        | capabilities to grant to `needs:`-tagged scenarios (see below)       | `cli-guards`                       |
+
+Exact replay commands, all from the repo root:
+
+```bash
+# one scenario, against the published CLI
+ACCEPTANCE_SCENARIOS=core.init-defaults-copy bun run test:acceptance
+
+# one scenario, against a tarball packed from this working tree (the release-gate shape)
+ACCEPTANCE_TARGET=tarball ACCEPTANCE_SCENARIOS=core.init-defaults-copy bun run test:acceptance
+
+# a whole kind, a whole namespace, a tag expression
+ACCEPTANCE_TAGS=kind:core bun run test:acceptance
+ACCEPTANCE_SCENARIOS='skills.*' bun run test:acceptance
+ACCEPTANCE_TAGS=pm:npm bun run test:acceptance
+ACCEPTANCE_EXCLUDE_TAGS=speed:slow,pm:yarn-berry bun run test:acceptance
+
+# the smallest honest sweep: the read-only registry checks, seconds, no scaffold
+ACCEPTANCE_TAGS=kind:registry bun run test:acceptance
+
+# a failing run you can look at
+ACCEPTANCE_KEEP_TEMP=1 ACCEPTANCE_SCENARIOS=core.init-explicit-flags bun run test:acceptance
+```
+
+Two environment rules:
+
+- **A scenario that this machine cannot run is skipped, never failed, and never silent.**
+  `requires.os`, `requires.tools`, `requires.node` and `requires.network` are all checked
+  before anything is installed, and the reason is printed as a `SKIP <id> — <reason>` line.
+  `ACCEPTANCE_NETWORK` is how a job declares what it can reach, so an offline runner
+  reports the registry scenarios as skipped instead of failing on a refused connection.
+- **A scenario tagged `needs:<capability>` documents a CLI guard that does not exist yet.**
+  It is reported, not asserted, until `ACCEPTANCE_NEEDS=<capability>` is set — which is how
+  a scenario whose expectation is a *decision* rather than current behaviour stays in the
+  file without turning the suite red.
 
 ## Coverage
 
@@ -201,28 +238,64 @@ assert them until a human answers the `question:` on the scenario.
 
 ## Runner design
 
-The runner does not exist yet; this is the contract it must meet.
+The runner landed in `feat/acceptance-runner`. This section is both the contract and the
+description of what was built; where the implementation made a decision the spec left open,
+the decision is named.
+
+```
+e2e/acceptance/
+  lib/scenario-doc.ts   parse + schema + cross-references (shared with the validator)
+  lib/selection.ts      filters, target config, "can this machine run it"
+  lib/target.ts         published version vs a tarball packed from this repo
+  lib/pm.ts             real package managers, dlx runners, the scaffold cache
+  lib/pty.ts            the pty driver (expect)
+  lib/registry.ts       the deployed registry, or a local mirror of this tree
+  lib/expectations.ts   what expect: asserts, and how a mismatch reads
+  lib/run-scenario.ts   setup resolution + step execution
+  lib/kind-suite.ts     one test per scenario, grouped by kind
+  run/<kind>.test.ts    two lines each: describeKind("<kind>")
+  run/_filters.test.ts  the load gate and the empty-selection gate
+```
 
 ### Loading
 
-`scenarios.yaml` is parsed with `Bun.YAML.parse` and validated against
-`scenarios.schema.json` **at load time**, in a `beforeAll`, not only in
-`bun run check:acceptance` — a scenario added and run locally must fail the same way it
-fails CI. The cross-reference checks (`use:`, `fixture:`, `body:`, unique ids, unknown tag
-keys, "a command step that asserts nothing") live in
-[`scripts/validate-scenarios.ts`](./scripts/validate-scenarios.ts) and are reused by the
-suite rather than reimplemented.
+`scenarios.yaml` is parsed and validated against `scenarios.schema.json` **at load time**,
+in a `beforeAll`, not only in `bun run check:acceptance` — a scenario added and run locally
+must fail the same way it fails CI. The cross-reference checks (`use:`, `fixture:`, `body:`,
+unique ids, unknown tag keys, "a command step that asserts nothing") live in
+[`lib/scenario-doc.ts`](./lib/scenario-doc.ts) and are used by
+[`scripts/validate-scenarios.ts`](./scripts/validate-scenarios.ts) as well as the suite, so
+the two cannot drift: the validator is now a CLI wrapper around the loader, and its output
+is unchanged.
 
 Then: expand `use:` references recursively (a flow may itself `use:` a flow), apply
 `setup`/`pre`/`post`, and run `steps` in order in a fresh temp workspace.
 
+**One decision the spec did not make: the YAML parser.** `Bun.YAML` is used when it exists,
+but vitest's config and its workers run under **Node** even when the suite is launched with
+`bun run test:acceptance`, so a Bun-only parser would make the document unloadable in
+exactly the place that matters. The fallback is the `yaml` package (a new devDependency,
+used for nothing else), configured with `uniqueKeys: false` so it matches `Bun.YAML`'s
+last-value-wins behaviour on a repeated mapping key.
+
 ### Vitest shape
 
-One file per `kind` (`e2e/acceptance/run/{kind}.test.ts`), generated from the YAML by a
-small `describe.each`, so `vitest --reporter` shows scenario ids and a failure names the
-scenario without opening the YAML. `e2e/acceptance/vitest.config.ts` keeps
-`fileParallelism: false` (the existing acceptance suite's reason: each journey spawns
-several real installs that stampede the global bun cache) and a 5-minute test timeout.
+One file per `kind` (`e2e/acceptance/run/{kind}.test.ts`), each two lines long and each
+generated from the YAML by a `describe.each` in `lib/kind-suite.ts`, so `vitest --reporter`
+shows scenario ids and a failure names the scenario without opening the YAML.
+`e2e/acceptance/vitest.config.ts` keeps `fileParallelism: false` (the existing acceptance
+suite's reason: each journey spawns several real installs that stampede the global bun cache).
+
+Two things the config does beyond listing test files:
+
+- **It asks the same selection question the suite asks.** A filter that selects three
+  scenarios does not load the other nine kind files, and a broken document loads only
+  `run/_filters.test.ts`, which then fails on it. A green run with nothing in it is not
+  reachable.
+- **Per-test timeouts are derived from the scenario**, not fixed: setup gets its own budget
+  and each step contributes its own `timeoutSeconds` (defaulting to
+  `defaults.timeoutSeconds`), capped at 45 minutes. The config's `testTimeout` is only the
+  fallback.
 
 A scenario whose `requires.tools` are missing, whose `requires.os` does not match, or
 whose `requires.network` is more than the job has is **skipped**, not failed. Skip reasons
@@ -232,11 +305,11 @@ are printed — a silently skipped scenario is how coverage quietly disappears.
 
 | driver           | what it wraps                                                           | notes                                                                                                                                                        |
 | ---------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `scaffold`       | `create-marko` / `create-astro` / `create-vite` under the scenario's pm | **cached per (tool, args, pm)** in `.cache/acceptance/scaffolds/`; 77 scenarios share 7 fixtures, and re-scaffolding per scenario is the single biggest cost |
-| `packageManager` | bun / npm / pnpm / yarn, install + dlx runner                           | the existing `e2e/acceptance/lib/cli.ts` + `proc.ts` are the starting point; they already handle the `/dev/null` stdin trap                                  |
-| `pty`            | a pseudo-terminal for the interactive scenarios                         | `node-pty`; the CLI package's own `init.test.ts` already drives a built CLI this way and is the reference for answer scripting                               |
-| `registry`       | the real registry, or a local static mirror                             | needed by `env.custom-registry-url` and `env.registry-down-*`; a small `Bun.serve` static file server is enough                                              |
-| `http`           | `@http` steps                                                           | plain `fetch` with one retry                                                                                                                                 |
+| `scaffold`       | `create-marko` / `create-astro` / `create-vite` under the scenario's pm | **cached per (tool, args, pm, install)** in `.cache/acceptance/scaffolds/`; 77 scenarios share 7 fixtures, and re-scaffolding per scenario is the single biggest cost. `ACCEPTANCE_SCAFFOLD_CACHE=0` turns the cache off; deleting the directory is how you pick up a new upstream template |
+| `packageManager` | bun / npm / pnpm / yarn classic / yarn berry, install + dlx runner      | `lib/pm.ts`; `lib/proc.ts` still provides the `/dev/null` stdin trap. yarn classic's dlx runner **is** `npx --yes`, because that is what the CLI itself falls back to (`getPackageRunnerCommand`) — so the scenario tests the CLI's real fallback rather than a runner fiction |
+| `pty`            | a pseudo-terminal for the interactive scenarios                         | `expect` (Tcl), the same driver `packages/marko-ui/src/commands/init.test.ts` uses, so no native dependency is added. The window size is set explicitly and the CLI's non-interactive env vars are unset for the child, or a "real terminal" run is a non-interactive one |
+| `registry`       | the real registry, or a local static mirror                             | the mirror **reuses `e2e/cli/serve.ts`** rather than shipping a second static server, builds the registry with `bun tooling/build-registry.ts` under `/tmp/marko-ui-heavy.lock`, and holds that lock for the server's lifetime because port 4470 is shared with `e2e/cli/scenarios/run.sh`. A step asks for it with `$ACCEPTANCE_MIRROR_PORT` |
+| `http`           | `@http` steps                                                           | plain `fetch` with one retry; a non-2xx response is a non-zero exit, so a 404 from the registry is a failure rather than a passed expectation |
 
 **Keep the two traps the current suite already documents** (`e2e/acceptance/lib/workspace.ts`,
 `lib/proc.ts`):
@@ -248,14 +321,38 @@ are printed — a silently skipped scenario is how coverage quietly disappears.
 2. stdin must be a real, openable fd, not a "pipe" left unwritten — the clack layer exits 0
    and writes nothing at all.
 
+**Where the CLI under test is installed: the workspace root, not the app.** A user runs
+`bunx marko-ui init` and does not add the CLI to their project's `package.json`, so the app
+must stay clean (`doctor` reads the project's dependencies); and a monorepo scenario is only
+real if the CLI can be invoked from a root *above* the app. A step finds it by searching up
+from its own cwd for `node_modules/marko-ui/dist/index.js`.
+
+**How the CLI is invoked: `node <installed CLI>` by default**, not a dlx runner — the target
+switch only means something if the binary under test is the one that was installed. A step
+can still ask for a runner explicitly (`runner: bunx | npx | pnpm-dlx | yarn-dlx`), and
+`runner: node` with a `cliVersion` installs that older release into its own directory
+beside the workspace, which is what the upgrade scenario needs. Yarn Berry is the one
+exception: PnP has no `node_modules` tree to run from, so its default is `yarn dlx`.
+
 ### Target switch
 
-`defaults.cliTarget: published` installs `marko-ui@<version>` (default `latest`) as a
-devDependency of the scenario app and runs `node_modules/marko-ui/dist/index.js`, which is
-what `e2e/acceptance/lib/cli.ts` already does. `cliTarget: tarball` instead runs
-`bun pack` in `packages/marko-ui`, installs the resulting `.tgz`, and sets
-`ACCEPTANCE_TARGET=tarball`. The whole suite should be runnable both ways; that is how a
-PR proves itself before release rather than after it.
+`defaults.cliTarget: published` installs `marko-ui@<version>` (default `latest`) with the
+scenario's own package manager and runs `node_modules/marko-ui/dist/index.js`.
+`cliTarget: tarball` instead runs `bun pm pack` in `packages/marko-ui` (and in
+`packages/shadcn`, whose tarball is offered to the pm as an `overrides` entry so a local CLI
+never mixes with a published sibling), installs the resulting `.tgz`, and needs no network
+for the CLI itself. The whole suite is runnable both ways; that is how a PR proves itself
+before release rather than after it.
+
+**`bun pm pack`, not `npm pack`:** this repo is bun-only (AGENTS.md), `bun pm pack` goes
+through the same `files`/`prepare` wiring the real publish does (so a tarball that installs
+here is one npm would have accepted), it needs no npm binary on the machine, and
+`--destination` keeps the artifact out of the worktree. The output is a standard `.tgz`,
+installable by bun, npm, pnpm and yarn alike, which the non-bun scenarios need. The CLI is
+**rebuilt** before packing (the tarball ships `dist/`), and the tarball is re-packed when the
+package's sources are newer than it, so an edited CLI is never tested against a stale
+artifact. Packed tarballs live in `$TMPDIR/marko-ui-acceptance-tarballs/`, never in the repo
+(`ACCEPTANCE_TARBALL_DIR` overrides).
 
 Pin the published version with `ACCEPTANCE_PKG_VERSION`. The existing workflow reads
 `vars.ACCEPTANCE_PKG_VERSION` and defaults to `latest`, so **the suite silently starts

@@ -18,6 +18,7 @@
 import { existsSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import Ajv2020 from "ajv/dist/2020"
+import { parse as parseWithYaml } from "yaml"
 
 let cachedDir: string | undefined
 
@@ -245,16 +246,13 @@ function parseYamlText(text: string): YamlValue {
   const bun = (globalThis as { Bun?: { YAML?: { parse(input: string): YamlValue } } })
     .Bun
   if (bun?.YAML) return bun.YAML.parse(text)
-  const { parse } = require("yaml") as {
-    parse(input: string, options: { uniqueKeys: boolean }): YamlValue
-  }
   // `uniqueKeys: false` matches Bun.YAML, which is the parser the document was
   // written against: a repeated mapping key resolves to the last value rather
   // than aborting the load. (scenarios.yaml has one such repeat today —
   // core.init-twice-refuses lists stdoutContains three times — and the two
   // dropped expectations are a content bug for the scenarios' owner, not
   // something the loader should paper over by refusing to run.)
-  return parse(text, { uniqueKeys: false })
+  return parseWithYaml(text, { uniqueKeys: false }) as YamlValue
 }
 
 /** The document as a domain type, or a named error naming every problem. */

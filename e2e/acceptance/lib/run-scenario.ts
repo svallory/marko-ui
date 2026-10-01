@@ -29,15 +29,15 @@ import {
   outputTail,
   strip,
   type StepOutcome,
-} from "./expectations"
-import { driverFor, scaffoldProject } from "./pm"
-import { run } from "./proc"
-import { runPty } from "./pty"
+} from "./expectations.ts"
+import { driverFor, scaffoldProject } from "./pm.ts"
+import { run } from "./proc.ts"
+import { runPty } from "./pty.ts"
 import {
   DEAD_REGISTRY_URL,
   MIRROR_PORT,
   sharedLocalRegistry,
-} from "./registry"
+} from "./registry.ts"
 import type {
   Pm,
   PreStep,
@@ -46,11 +46,11 @@ import type {
   Scenario,
   Setup,
   Step,
-} from "./scenario-doc"
-import type { TargetConfig } from "./selection"
-import { ensurePackedTarget } from "./target"
-import { cleanupTempWorkspace, makeTempWorkspace } from "./workspace"
-import { freePort, renderBuiltRouteWith } from "./render"
+} from "./scenario-doc.ts"
+import type { TargetConfig } from "./selection.ts"
+import { ensurePackedTarget } from "./target.ts"
+import { cleanupTempWorkspace, makeTempWorkspace } from "./workspace.ts"
+import { freePort, renderBuiltRouteWith } from "./render.ts"
 
 export class StepFailure extends Error {
   constructor(message: string) {
@@ -404,9 +404,9 @@ async function executeStep(step: Step, ctx: StepContext): Promise<StepOutcome> {
     }
   }
 
-  // A real marko-ui command.
+  // A real marko-ui command: `node <bin> <command> <sub…> <args…>`.
   const runner = step.runner ?? defaultRunner(ctx.pm)
-  const invocation = resolveInvocation(runner, step, ctx, vars)
+  const invocation = resolveInvocation(runner, command, step, ctx, vars)
   return step.stdin === "pty"
     ? runPtyStep(invocation, step, cwd, timeoutMs)
     : runInvocation(invocation, step, cwd, env, timeoutMs)
@@ -421,11 +421,19 @@ interface Invocation {
 
 function resolveInvocation(
   runner: Runner,
+  command: string,
   step: Step,
   ctx: StepContext,
   vars: Record<string, string>
 ): Invocation {
-  const cliArgs = [...(step.sub ?? []), ...(step.args ?? []).map((arg) => interpolate(arg, vars))]
+  // `command` is the subcommand itself (`init`, `add`, …) and `sub` its
+  // subcommand path (`agents sync`), so the argv is
+  // `<bin> <command> <sub…> <args…>`.
+  const cliArgs = [
+    command,
+    ...(step.sub ?? []),
+    ...(step.args ?? []).map((arg) => interpolate(arg, vars)),
+  ]
 
   if (runner === "node" || runner === "shim") {
     if (step.cliVersion) {
@@ -561,6 +569,19 @@ function runWithStdin(
 // The run
 // ---------------------------------------------------------------------------
 
+function describeStepCommand(step: Step, ctx: StepContext): string {
+  const args = step.args ?? []
+  if (step.command?.startsWith("@")) {
+    return [step.command, ...args].join(" ")
+  }
+  return [
+    `${defaultRunner(ctx.pm) === "node" ? "node <installed marko-ui>" : ctx.pm} `,
+    step.command,
+    ...(step.sub ?? []),
+    ...args,
+  ].join(" ")
+}
+
 export interface ScenarioRunResult {
   workspace: string
   stepsRun: number
@@ -643,14 +664,10 @@ export async function runScenario(options: RunOptions): Promise<ScenarioRunResul
       }
       const failures = evaluateExpectations(step.expect, outcome)
       if (failures.length > 0) {
-        const invocation =
-          step.command?.startsWith("@") ?? true
-            ? `command: ${step.command} ${(step.args ?? []).join(" ")}`.trim()
-            : `command: the marko-ui CLI under test`
         throw new StepFailure(
           [
             `${scenario.id} — step ${index + 1} of ${steps.length}: ${name}`,
-            `  ${invocation}`,
+            `  command: ${describeStepCommand(step, ctx)}`,
             `  cwd: ${outcome.cwd}`,
             `  expectations not met:`,
             ...failures.map((failure) => `    - ${failure}`),

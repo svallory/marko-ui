@@ -1,6 +1,6 @@
 import { defineConfig } from "vitest/config"
-import { loadScenarioDoc } from "./lib/scenario-doc"
-import { filterSpecFromEnv, selectScenarios } from "./lib/selection"
+import { loadScenarioDoc } from "./lib/scenario-doc.ts"
+import { filterSpecFromEnv, selectScenarios } from "./lib/selection.ts"
 
 // The document is loaded HERE as well as in each test file, because this config
 // decides which files exist for this run: a filter that selects three scenarios

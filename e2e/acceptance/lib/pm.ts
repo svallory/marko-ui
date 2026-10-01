@@ -12,8 +12,8 @@ import { existsSync } from "node:fs"
 import { cp, mkdir, readFile, rm, stat } from "node:fs/promises"
 import { createHash } from "node:crypto"
 import { join } from "node:path"
-import { acceptanceDir, type Pm, type ScaffoldSpec } from "./scenario-doc"
-import { run, type RunResult } from "./proc"
+import { acceptanceDir, type Pm, type ScaffoldSpec } from "./scenario-doc.ts"
+import { run, type RunResult } from "./proc.ts"
 
 export const REPO_ROOT = join(acceptanceDir(), "..", "..")
 

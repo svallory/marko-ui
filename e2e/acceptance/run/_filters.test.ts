@@ -12,15 +12,15 @@
  *   the filter that was asked for and the ids/tags that do exist.
  */
 import { beforeAll, describe, expect, it } from "vitest"
-import { loadScenarioDoc, type ScenariosDoc } from "../lib/scenario-doc"
+import { loadScenarioDoc, type ScenariosDoc } from "../lib/scenario-doc.ts"
 import {
   filterSpecFromEnv,
   jobNetwork,
   selectScenarios,
   skipReason,
   targetConfig,
-} from "../lib/selection"
-import { staticProblems } from "../lib/kind-suite"
+} from "../lib/selection.ts"
+import { staticProblems } from "../lib/kind-suite.ts"
 
 let doc: ScenariosDoc
 

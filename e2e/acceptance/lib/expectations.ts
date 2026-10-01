@@ -18,7 +18,7 @@ import type {
   Expectations,
   FileContainsAssertion,
   JsonPathAssertion,
-} from "./scenario-doc"
+} from "./scenario-doc.ts"
 
 export interface StepOutcome {
   exitCode: number
