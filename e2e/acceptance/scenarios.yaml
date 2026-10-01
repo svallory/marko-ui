@@ -2719,7 +2719,7 @@ scenarios:
     title: "eject flips an import project back to copy and writes the source"
     kind: post-setup
     status: known-bug
-    bug: "eject writes import-form source (button/variants.ts imports ./classes.ts) where `add` writes flat copy-path source, so `diff` right after eject+add lists ~190 files as drifted (button/variants.ts, sonner, icon, ...). Repro: init --distribution import; eject -y; add button -y; diff --name-only"
+    bug: "marko-ui-so5.5: eject writes import-form source (button/variants.ts imports ./classes.ts) where `add` writes flat copy-path source, so `diff` right after eject+add lists ~190 files as drifted (button/variants.ts, sonner, icon, ...). Repro: init --distribution import; eject -y; add button -y; diff --name-only"
     tags: [os:linux, os:macos, kind:import-distribution, speed:medium]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
     setup:
