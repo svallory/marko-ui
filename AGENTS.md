@@ -505,6 +505,8 @@ Other traps, each of which cost a debugging cycle:
 - **Idempotence needs a real second run.** Hash the project tree, run `init`
   again, compare. Several first-run defects only appear on the second call.
 
+**`getRawConfig` finds `components.json` ONLY in the directory you pass it — cosmiconfig v9's default `searchStrategy: "none"` does not walk up to parent directories** (verified 2026-10-01: `explorer.search("<proj>/src/app")` returns null when the config sits at `<proj>/components.json`; the same search at `<proj>` finds it). A command run from a subdirectory of the project therefore sees NO config, exactly as if the project were uninitialised — don't assume "the CLI searches upward for components.json the way it does for lockfiles" (lockfile lookup DOES walk up, `get-package-manager.ts`; the asymmetry is easy to trip over when writing tests).
+
 ## Acceptance suite (published packages, live registry)
 
 `e2e/acceptance/` tests the **published** `marko-ui`/`@marko-ui/shadcn` npm packages and the **live** registry deploy (`https://marko-ui.saulo.tech/r`) — not the workspace. It exists to catch a broken publish or a stale registry deploy in CI before a user hits it. Run with `bun run test:acceptance` (own vitest config, not part of `bun run test`/`bun run check` — see `.github/workflows/acceptance.yml`, `workflow_dispatch` + weekly cron, deliberately not in `ci.yml` since it depends on external services).

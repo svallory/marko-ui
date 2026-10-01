@@ -65,7 +65,7 @@
     },
 
     "tag": {
-      "description": "key:value tag. `os` and `pm` drive the CI matrix; `kind` and `speed` drive sharding. `needs:<branch-or-gate>` marks a scenario whose expectation depends on behaviour that is not merged yet: the runner SKIPS it (reported, not failed) while the gate is unlanded, and the CI job that runs it is keyed on the same tag. Free-form keys are allowed but the runner only knows these five.",
+      "description": "key:value tag. `os` and `pm` drive the CI matrix; `speed` drives sharding; `needs:<branch-or-gate>` marks a scenario whose expectation depends on behaviour that is not merged yet: the runner SKIPS it (reported, not failed) while the gate is unlanded, and the CI job that runs it is keyed on the same tag. `kind:<x>` is the SUB-THEME inside a scenario's kind (`kind:theming`, `kind:alias`, `kind:registry`), not a second spelling of the kind: a `kind:<group>` FILTER also matches every scenario whose `kind` field is that group, so a group is always selectable and a sub-theme tag can never make one unselectable. Free-form keys are allowed but the runner only knows these five.",
       "type": "string",
       "pattern": "^(os|pm|kind|speed|status|needs):[A-Za-z0-9][A-Za-z0-9.+_-]*$"
     },
@@ -640,12 +640,22 @@
           }
         },
         "status": {
-          "description": "`specified` (the default): asserted normally. `unknown-expectation`: the expected behaviour could not be determined from the code — reported, not asserted, until a human answers `question`. `needs-cli-guards`: the behaviour IS settled and the expectation is written down, but it depends on a guard that has not landed yet (see the `needs:` tag) — reported and SKIPPED, never failed, until the guard lands. The distinction matters: an unknown expectation is a question for a human, a needs-guards expectation is a known answer waiting on code.",
-          "enum": ["specified", "unknown-expectation", "needs-cli-guards"],
+          "description": "`specified` (the default): asserted normally. `unknown-expectation`: the expected behaviour could not be determined from the code — reported, not asserted, until a human answers `question`. `needs-cli-guards`: the behaviour IS settled and the expectation is written down, but it depends on a guard that has not landed yet (see the `needs:` tag) — reported and SKIPPED, never failed, until the guard lands. `known-bug`: the expectation is correct and the CLI does not meet it — a real defect, recorded in `bug` — reported and SKIPPED, never failed and never quietly weakened, until the bug is fixed. The three non-defaults are three different situations and the distinction is the point: an unknown expectation is a QUESTION for a human, a needs-guards expectation is a KNOWN ANSWER waiting on code, and a known-bug is a KNOWN ANSWER that the code does not meet.",
+          "enum": [
+            "specified",
+            "unknown-expectation",
+            "needs-cli-guards",
+            "known-bug"
+          ],
           "default": "specified"
         },
         "question": {
           "description": "Required when status is unknown-expectation: the exact question to the CLI owner, with the scenario id.",
+          "type": "string",
+          "minLength": 1
+        },
+        "bug": {
+          "description": "Required when status is known-bug: the tracking id (a beads id, an issue URL) or a one-line repro. This is the record that keeps the scenario's expectation intact while the defect it found is open — the scenario is SKIPPED with this text, so the bug is reported on every run instead of being deleted, inverted, or relaxed until it passes.",
           "type": "string",
           "minLength": 1
         },
@@ -664,6 +674,13 @@
             "required": ["status"]
           },
           "then": { "required": ["question"] }
+        },
+        {
+          "if": {
+            "properties": { "status": { "const": "known-bug" } },
+            "required": ["status"]
+          },
+          "then": { "required": ["bug"] }
         }
       ]
     }

@@ -212,3 +212,54 @@ describe("addRegistriesToConfig", () => {
     }
   })
 })
+
+describe("addRegistriesToConfig React guard", () => {
+  it("refuses to write into a shadcn/ui-for-React components.json, leaving it byte-identical", async () => {
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
+    const componentsJsonFile = path.join(tempDir, "components.json")
+    await fs.writeJson(componentsJsonFile, {
+      style: "new-york",
+      registries: { "@acme": "https://acme.com/r/{name}.json" },
+    })
+    await fs.writeJson(path.join(tempDir, "package.json"), {
+      name: "react-app",
+      dependencies: { react: "^19.0.0" },
+    })
+    const before = await fs.readFile(componentsJsonFile, "utf8")
+
+    try {
+      await expect(
+        addRegistriesToConfig(["@new=https://new.com/r/{name}.json"], tempDir, {
+          silent: true,
+        })
+      ).rejects.toThrow(/belongs to shadcn\/ui for React/)
+      expect(await fs.readFile(componentsJsonFile, "utf8")).toBe(before)
+    } finally {
+      await fs.rm(tempDir, { recursive: true })
+    }
+  })
+
+  it("still writes registries into a Marko project's components.json", async () => {
+    const tempDir = await fs.mkdtemp(path.join(tmpdir(), "marko-ui-test-"))
+    const componentsJsonFile = path.join(tempDir, "components.json")
+    await fs.writeJson(componentsJsonFile, { style: "new-york" })
+    await fs.writeJson(path.join(tempDir, "package.json"), {
+      name: "marko-app",
+      dependencies: { marko: "^6.0.0" },
+    })
+
+    try {
+      await addRegistriesToConfig(
+        ["@acme=https://acme.com/r/{name}.json"],
+        tempDir,
+        { silent: true }
+      )
+      const config = await fs.readJson(componentsJsonFile)
+      expect(config.registries).toEqual({
+        "@acme": "https://acme.com/r/{name}.json",
+      })
+    } finally {
+      await fs.rm(tempDir, { recursive: true })
+    }
+  })
+})

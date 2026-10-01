@@ -134,9 +134,15 @@ never be confused with one:
 | `@app-render` | start the built server on a free port, fetch one route, assert the markup, tear it down                         |
 | `@shell`      | run a real command in the workspace (`args` is argv, not a shell string)                                        |
 | `@http`       | GET a URL and assert on the response body — used by the registry-health scenarios, which need no project at all |
+| `@helper`     | run a named program from the top-level `helpers:` section with the step's `args` as its argv — see [Helpers](#helpers) |
 
 `@app-render` exists because a `marko-run build` produces a **server bundle**, not prerendered
 HTML: exit 0 from a build proves the code compiled, not that the component rendered.
+
+`@helper` is the step form of a helper; a `setup.pre`/`setup.post` entry uses the same program
+as `{helper: <name>, args: [...]}`. Both forms run the helper's `source` from a file outside the
+workspace, with `$WORKSPACE`, `$APP` and `$PM` exported into its environment, so a helper finds
+the project it is reshaping without every call site repeating the path.
 
 ### `stdin` modes
 
@@ -203,9 +209,34 @@ differ. Strip ANSI before matching.
    copying three steps a fourth time, that sequence wants to be a flow.
 4. Put anything reusable into `bodies` or `fixtures`.
 5. Run `bun run check:acceptance`. It fails on a typo'd field, a duplicate id, an
-   unresolvable `use:`/`fixture:`/`body:`, a flow nobody uses, an unknown tag key, a
-   command step that asserts nothing, an `unknown-expectation` without a question, and a
-   `needs-cli-guards` without a `needs:` tag.
+   unresolvable `use:`/`fixture:`/`body:`/`helper:`, a flow or helper nobody uses, an unknown
+   tag key, a command step that asserts nothing, an `unknown-expectation` without a
+   question, a `needs-cli-guards` without a `needs:` tag, and a `known-bug` without a `bug:`.
+
+### When a scenario finds a real CLI bug
+
+Do **not** weaken the expectation to make it pass, and do not delete the scenario. Mark it:
+
+```yaml
+- id: core.full-agent-loop
+  status: known-bug # the expectation below is CORRECT; the CLI does not meet it
+  bug: marko-ui-9ce.7 # a beads id, an issue URL, or a one-line repro
+  steps: […] # unchanged
+```
+
+`bug:` is required — the validator rejects a `known-bug` without one, because a known bug
+with nothing to track it by is a known bug that gets deleted in a fortnight. The runner
+**reports and skips** such a scenario, printing the bug text, so:
+
+- it never passes while the defect is open (a green tick would be a lie about the product);
+- it never fails either (an open, filed defect is not a broken build);
+- the expectation stays written down and re-runs the moment `status` goes back to
+  `specified`, which is what makes "fix the bug, flip one word" the whole workflow.
+
+The three non-default statuses are three different situations, and the distinction is the
+point: `unknown-expectation` is a **question** for a human, `needs-cli-guards` is a **known
+answer** waiting on code that does not exist yet, and `known-bug` is a **known answer the
+code does not meet**.
 
 ## Replaying
 
@@ -215,13 +246,23 @@ implement is:
 | variable                  | meaning                                                             | example                            |
 | ------------------------- | ------------------------------------------------------------------- | ---------------------------------- |
 | `ACCEPTANCE_SCENARIOS`    | comma-separated scenario ids (exact, or `prefix.*` for a namespace) | `core.init-defaults-copy,skills.*` |
-| `ACCEPTANCE_TAGS`         | comma-separated `key:value` tags, ANDed                             | `pm:npm,speed:fast`                |
+| `ACCEPTANCE_TAGS`         | comma-separated `key:value` tags, ANDed (see the note below)        | `pm:npm,speed:fast`                |
 | `ACCEPTANCE_EXCLUDE_TAGS` | comma-separated `key:value` tags, subtracted                        | `speed:slow`                       |
 | `ACCEPTANCE_TARGET`       | `published` (default) or `tarball`                                  | `tarball`                          |
 | `ACCEPTANCE_PKG_VERSION`  | the published version to install, overriding `defaults.version`     | `0.5.0`                            |
 | `ACCEPTANCE_REGISTRY_URL` | the registry to point `REGISTRY_URL` at                             | `http://127.0.0.1:4470/r`          |
 | `ACCEPTANCE_KEEP_TEMP`    | keep the scenario workspaces (default: delete)                      | `1`                                |
 | `ACCEPTANCE_NEEDS`        | gates to treat as landed, comma-separated (default: none)           | `cli-guards`                       |
+
+### `kind:` is a sub-theme, and a group filter reads the `kind` field
+
+A `kind:<group>` selector matches every scenario whose **`kind` field** is that group, not
+only the ones carrying a `kind:<group>` tag. The `kind:` tags in this file are sub-themes
+*inside* a kind — `kind:theming`, `kind:alias`, `kind:agents-md`, `kind:registry` — and no
+scenario is tagged with a group name, so before this rule `ACCEPTANCE_TAGS=kind:skills`
+selected nothing at all and two skills scenarios dropped out of every kind-filtered run.
+Now `kind:skills` finds the ten skills scenarios, and `kind:theming` still finds the two
+that are about theming.
 
 ### What `requires.network` means
 
@@ -238,6 +279,11 @@ and its install) as well as the steps:
 A scenario with `status: needs-cli-guards` is **skipped and reported, never failed**, until
 the gate named in its `needs:` tag lands — so a guard that is specified but not yet built
 cannot turn CI red, and cannot quietly hide either.
+
+A scenario with `status: known-bug` is **skipped and reported with its `bug:` text, never
+failed and never quietly weakened** — the expectation is correct and the CLI does not meet
+it, so the defect is what gets tracked. See [When a scenario finds a real CLI
+bug](#when-a-scenario-finds-a-real-cli-bug).
 
 ## Coverage
 
@@ -420,10 +466,12 @@ cannot express:
 - every `expect.unchanged`/`changed` names a path an **earlier** step snapshotted;
 - every command step has an `expect` — a step that asserts nothing is an error, not a
   documentation-only step;
-- known tag keys, unique scenario ids, a known `kind`, and `status: unknown-expectation`
-  without a question or `status: needs-cli-guards` without a `needs:` tag;
+- known tag keys, unique scenario ids, a known `kind`, `status: unknown-expectation`
+  without a question, `status: needs-cli-guards` without a `needs:` tag, and
+  `status: known-bug` without a `bug:`;
   It prints the tally by kind/os/pm/speed and names every
-  gated scenario, so the coverage numbers in this file cannot drift from the data silently. `ajv-formats` and `ajv-errors` are deliberately not dependencies:
+  gated, unknown and known-buggy scenario, so the coverage numbers in this file cannot drift
+  from the data silently. `ajv-formats` and `ajv-errors` are deliberately not dependencies:
   the schema's `format:` keywords are then ignored rather than enforced, which is the right
   trade for a file where the field names matter far more than URI syntax.
 
