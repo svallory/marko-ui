@@ -246,13 +246,23 @@ implement is:
 | variable                  | meaning                                                             | example                            |
 | ------------------------- | ------------------------------------------------------------------- | ---------------------------------- |
 | `ACCEPTANCE_SCENARIOS`    | comma-separated scenario ids (exact, or `prefix.*` for a namespace) | `core.init-defaults-copy,skills.*` |
-| `ACCEPTANCE_TAGS`         | comma-separated `key:value` tags, ANDed                             | `pm:npm,speed:fast`                |
+| `ACCEPTANCE_TAGS`         | comma-separated `key:value` tags, ANDed (see the note below)        | `pm:npm,speed:fast`                |
 | `ACCEPTANCE_EXCLUDE_TAGS` | comma-separated `key:value` tags, subtracted                        | `speed:slow`                       |
 | `ACCEPTANCE_TARGET`       | `published` (default) or `tarball`                                  | `tarball`                          |
 | `ACCEPTANCE_PKG_VERSION`  | the published version to install, overriding `defaults.version`     | `0.5.0`                            |
 | `ACCEPTANCE_REGISTRY_URL` | the registry to point `REGISTRY_URL` at                             | `http://127.0.0.1:4470/r`          |
 | `ACCEPTANCE_KEEP_TEMP`    | keep the scenario workspaces (default: delete)                      | `1`                                |
 | `ACCEPTANCE_NEEDS`        | gates to treat as landed, comma-separated (default: none)           | `cli-guards`                       |
+
+### `kind:` is a sub-theme, and a group filter reads the `kind` field
+
+A `kind:<group>` selector matches every scenario whose **`kind` field** is that group, not
+only the ones carrying a `kind:<group>` tag. The `kind:` tags in this file are sub-themes
+*inside* a kind — `kind:theming`, `kind:alias`, `kind:agents-md`, `kind:registry` — and no
+scenario is tagged with a group name, so before this rule `ACCEPTANCE_TAGS=kind:skills`
+selected nothing at all and two skills scenarios dropped out of every kind-filtered run.
+Now `kind:skills` finds the ten skills scenarios, and `kind:theming` still finds the two
+that are about theming.
 
 ### What `requires.network` means
 

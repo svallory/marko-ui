@@ -77,18 +77,42 @@ function idMatches(pattern: string, id: string): boolean {
   return pattern === id
 }
 
+/**
+ * A `kind:<x>` selector matches BOTH the scenario's own `kind` (the axis group)
+ * and an explicit `kind:<x>` tag (the sub-theme inside it).
+ *
+ * The suite uses `kind:` tags as a sub-theme axis — `kind:theming`,
+ * `kind:alias`, `kind:agents-md` — and 60+ scenarios carry a sub-theme tag that
+ * is deliberately not their group. So `ACCEPTANCE_TAGS=kind:skills` used to
+ * select nothing at all, because no scenario is TAGGED `kind:skills`: the two
+ * skills scenarios that carry `kind:agents-md` were silently dropped by the
+ * exact filter a reader would reach for. Deriving the group from the `kind`
+ * field is what makes both spellings work, and it is why the filter cannot
+ * quietly lose a scenario again: the group is always selectable, whether or not
+ * anybody remembered to tag it.
+ */
+function matchesTag(
+  selector: string,
+  scenario: Scenario,
+  tags: Set<string>
+): boolean {
+  if (tags.has(selector)) return true
+  return selector.startsWith("kind:") && scenario.kind === selector.slice(5)
+}
+
 export function selectScenarios(
   doc: ScenariosDoc,
   filter: FilterSpec = filterSpecFromEnv()
-): Scenario[] {
-  return doc.scenarios.filter((scenario) => {
+): Scenario[] {  return doc.scenarios.filter((scenario) => {
     if (filter.scenarios.length) {
       if (!filter.scenarios.some((pattern) => idMatches(pattern, scenario.id)))
         return false
     }
     if (filter.tags.length) {
       const tags = new Set(scenario.tags)
-      if (!filter.tags.every((tag) => tags.has(tag))) return false
+      if (!filter.tags.every((tag) => matchesTag(tag, scenario, tags))) {
+        return false
+      }
     }
     if (filter.excludeTags.length) {
       const tags = new Set(scenario.tags)

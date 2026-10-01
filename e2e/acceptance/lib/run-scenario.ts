@@ -893,6 +893,10 @@ export async function runScenario(options: RunOptions): Promise<ScenarioRunResul
   const setup = resolveSetup(doc, scenario)
   const pm = setup.pm ?? "bun"
   const steps = expandSteps(scenario.steps, doc)
+  // Before the workspace exists: the mirror is a shared run resource, and a
+  // scenario that needs it must not get as far as its first step with nothing
+  // listening.
+  await ensureMirrorFor(doc, scenario)
   const workspace = await makeTempWorkspace(scenario.id.replace(/\./g, "-"))
   const reportedOnly = scenario.status === "unknown-expectation"
   let cliHostDir: string | undefined
@@ -1109,12 +1113,28 @@ export function scenarioNeedsMirror(doc: ScenariosDoc, scenario: Scenario): bool
   return haystack.includes("ACCEPTANCE_MIRROR_PORT")
 }
 
-export async function ensureMirrorIfNeeded(
+/**
+ * The mirror, once per RUN, for whichever scenario needs it.
+ *
+ * The suite's globalSetup starts it before any test file loads, so the first
+ * scenario that needs it does not pay for it and — more importantly — a run that
+ * needs it cannot get as far as its first step with nothing on :4470, which is
+ * what a never-called `ensureMirrorIfNeeded` looked like from the outside:
+ * `env.custom-registry-url` just got ECONNREFUSED.
+ *
+ * Calling it from a worker is still correct and still cheap: the health check
+ * finds the server the main process started and returns it without starting
+ * anything, and `startedHere` is false there, so no worker kills the server.
+ */
+export async function ensureMirrorFor(
   doc: ScenariosDoc,
   scenario: Scenario
 ): Promise<void> {
   if (!scenarioNeedsMirror(doc, scenario)) return
   const registry = await sharedLocalRegistry()
+  // The port is already the runner's own default (MIRROR_PORT), so a step's
+  // `$ACCEPTANCE_MIRROR_PORT` resolves without this; the env var is set for the
+  // case where a caller moved the mirror off the default port.
   process.env.ACCEPTANCE_MIRROR_PORT = String(registry.port)
   process.env.ACCEPTANCE_MIRROR_URL = registry.url
 }

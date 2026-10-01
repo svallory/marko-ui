@@ -30,6 +30,8 @@ import {
   buildEnv,
   ensurePinnedCliDir,
 } from "../lib/run-scenario.ts"
+import { loadScenarioDoc } from "../lib/scenario-doc.ts"
+import { selectScenarios } from "../lib/selection.ts"
 import type { Scenario, ScenariosDoc, Step, TargetConfig } from "../lib/scenario-doc.ts"
 
 const target: TargetConfig = {
@@ -138,5 +140,82 @@ describe("acceptance · runner · a pinned cliVersion gets a directory to instal
     await writeFile(join(workspace, ".acceptance-cli", "0.4.1", "marker"), "x")
     ensurePinnedCliDir(workspace, "0.4.1")
     expect(existsSync(join(workspace, ".acceptance-cli", "0.4.1", "marker"))).toBe(true)
+  })
+})
+
+/**
+ * The `kind:` filter trap, pinned.
+ *
+ * `skills.user-edited-agents-md` and `skills.claude-md-only` have
+ * `kind: skills` but the sub-theme tag `kind:agents-md`, and NO scenario in the
+ * suite is tagged `kind:skills` — so `ACCEPTANCE_TAGS=kind:skills`, the filter a
+ * reader reaches for, used to select nothing at all and the two scenarios
+ * vanished from every kind-filtered run.
+ *
+ * The suite uses `kind:` tags as a SUB-THEME axis (`kind:theming`, `kind:alias`,
+ * `kind:registry`) on scenarios of many different kinds, so the fix cannot be
+ * "the tag must equal the kind field" — that would rewrite sixty-odd scenarios
+ * and delete the sub-theme axis the CI sharding is built on. The fix is that a
+ * `kind:<x>` selector matches the scenario's `kind` FIELD as well as its tags,
+ * which makes a group always selectable whatever anybody tagged. These tests
+ * fail if that ever stops being true, which is a stronger guard than a YAML
+ * lint: the bug was in the runner, not in the document.
+ */
+describe("kind filters", () => {
+  const realDoc = loadScenarioDoc()
+
+  it("selects EVERY scenario of a kind by ACCEPTANCE_TAGS=kind:<group>", () => {
+    // Containment, not equality: a sub-theme tag legitimately crosses groups
+    // (env.custom-registry-url is an `environment` scenario tagged
+    // `kind:registry`), so `kind:registry` may select more than the three
+    // registry scenarios. What must never happen is the other direction — a
+    // group filter dropping one of its own scenarios, which is the bug.
+    for (const kind of ["core", "skills", "monorepo", "environment", "registry"]) {
+      const selected = new Set(
+        selectScenarios(realDoc, {
+          scenarios: [],
+          tags: [`kind:${kind}`],
+          excludeTags: [],
+        }).map((candidate) => candidate.id)
+      )
+      const inKind = realDoc.scenarios
+        .filter((candidate) => candidate.kind === kind)
+        .map((candidate) => candidate.id)
+      expect(inKind.length).toBeGreaterThan(0)
+      for (const id of inKind) expect(selected.has(id)).toBe(true)
+    }
+  })
+
+  it("keeps the two skills scenarios that the trap used to drop", () => {
+    const selected = selectScenarios(realDoc, {
+      scenarios: [],
+      tags: ["kind:skills"],
+      excludeTags: [],
+    })
+    const ids = selected.map((candidate) => candidate.id)
+    expect(ids).toContain("skills.user-edited-agents-md")
+    expect(ids).toContain("skills.claude-md-only")
+  })
+
+  it("still selects a sub-theme on its own, and does not widen to the group", () => {
+    const selected = selectScenarios(realDoc, {
+      scenarios: [],
+      tags: ["kind:theming"],
+      excludeTags: [],
+    })
+    expect(selected.length).toBeGreaterThan(0)
+    for (const candidate of selected) {
+      expect(candidate.tags).toContain("kind:theming")
+    }
+  })
+
+  it("ANDs a group filter with an os filter, as every other tag does", () => {
+    const linux = selectScenarios(realDoc, {
+      scenarios: [],
+      tags: ["kind:skills", "os:linux"],
+      excludeTags: [],
+    })
+    expect(linux.length).toBeGreaterThan(0)
+    for (const candidate of linux) expect(candidate.tags).toContain("os:linux")
   })
 })

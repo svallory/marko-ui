@@ -7,15 +7,37 @@
  *   every scenario that does not care where the registry came from;
  * - a local mirror built from this repo's `packages/shadcn` and served by the
  *   CLI suite's own static server (`e2e/cli/serve.ts`, reused rather than
- *   duplicated), which is what the custom-registry-url and registry-down
- *   scenarios need: a registry whose contents are this working tree, and a URL
- *   that can be pointed at a dead port.
+ *   duplicated), which is what the custom-registry-url scenario needs: a
+ *   registry whose contents are this working tree.
  *
- * Port 4470 is shared with `e2e/cli/scenarios/run.sh`, so the mirror takes
- * /tmp/marko-ui-heavy.lock for as long as it serves — holding it is what keeps
- * the two suites from fighting over the port and the build.
+ * ## The mirror is a per-RUN resource, and its lock is its own
+ *
+ * Port 4470 is shared with `e2e/cli/scenarios/run.sh`, so two things have to be
+ * true at once: a run must not fight the CLI suite for the port, and a run must
+ * not DEADLOCK against whoever is already holding /tmp/marko-ui-heavy.lock.
+ * Taking the heavy lock from inside the suite fails the second case — a caller
+ * that wrapped `bun run test:acceptance` in `flock /tmp/marko-ui-heavy.lock`
+ * (which the repo's own rules tell people to do) would be waiting for a lock its
+ * own child is trying to take. That is a self-deadlock, and it is a hang with no
+ * output, which is the worst way to fail.
+ *
+ * So the mirror is guarded by /tmp/marko-ui-registry-4470.lock and by nothing
+ * else, and correctness comes from a HEALTH CHECK rather than from holding a
+ * lock for the server's lifetime:
+ *
+ *   1. is the port already serving a real registry? → use it, start nothing,
+ *      stop nothing at teardown (this run did not start it, so it must not kill
+ *      someone else's server);
+ *   2. otherwise take the registry lock, RE-CHECK inside it (two runs can both
+ *      see a dead port), and only the winner binds;
+ *   3. the server is spawned in its own process group and detached, so it
+ *      outlives the vitest main process if teardown cannot reach it.
+ *
+ * The lock is held by the server for its lifetime, which is what makes step 1
+ * necessary rather than optional: it is why a second run never blocks, because
+ * it never asks for the lock at all.
  */
-import { spawn, type ChildProcess } from "node:child_process"
+import { spawn } from "node:child_process"
 import { existsSync } from "node:fs"
 import { join } from "node:path"
 import { run } from "./proc.ts"
@@ -26,16 +48,41 @@ export const MIRROR_PORT = Number(
   process.env.ACCEPTANCE_MIRROR_PORT || process.env.REGISTRY_PORT || 4470
 )
 
-export const HEAVY_LOCK = "/tmp/marko-ui-heavy.lock"
+/** The mirror's own lock. NEVER the heavy lock — see the header. */
+export const REGISTRY_LOCK = `/tmp/marko-ui-registry-${MIRROR_PORT}.lock`
+
+/** A known item, so "is something serving a registry here?" is a real question. */
+const HEALTH_ITEM = "style.json"
 
 export interface LocalRegistry {
   url: string
   port: number
+  /** True when THIS process started the server, and so this process stops it. */
+  startedHere: boolean
   stop(): void
 }
 
 export function localRegistryAvailable(): boolean {
-  return hasTool("bun") && hasTool("flock")
+  return hasTool("bun")
+}
+
+export function mirrorUrl(port: number = MIRROR_PORT): string {
+  return `http://127.0.0.1:${port}/r`
+}
+
+/** True when the port answers with a real registry item, not just anything. */
+export async function registryIsServing(
+  port: number = MIRROR_PORT
+): Promise<boolean> {
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:${port}/r/${HEALTH_ITEM}`,
+      { signal: AbortSignal.timeout(2000) }
+    )
+    return response.ok
+  } catch {
+    return false
+  }
 }
 
 async function waitFor(url: string, timeoutMs: number): Promise<void> {
@@ -54,14 +101,44 @@ async function waitFor(url: string, timeoutMs: number): Promise<void> {
   throw new Error(`local registry never came up at ${url}: ${lastError}`)
 }
 
+function noopServer(): LocalRegistry {
+  return {
+    url: mirrorUrl(),
+    port: MIRROR_PORT,
+    startedHere: false,
+    stop: () => {
+      // Someone else's server: this run did not start it, so this run does not
+      // get to kill it. Leaving it is the whole point of `startedHere`.
+    },
+  }
+}
+
+async function buildIfMissing(url: string): Promise<void> {
+  const styleItem = join(REPO_ROOT, "apps", "docs", "public", "r", HEALTH_ITEM)
+  if (existsSync(styleItem)) return
+  // The build is the repo's own, with REGISTRY_BASE_URL pointing at the server
+  // so the registry's absolute URLs come out right. Its output is a gitignored
+  // artifact directory, and it runs under the REGISTRY lock (not the heavy
+  // one) so two suite runs cannot build into it at the same time. The timeout is
+  // generous on purpose: it emits every component in every style, and on a cold
+  // machine that is a ten-to-thirty-minute job, not a two-minute one. It is
+  // skipped entirely when the artifact is already there, which is the state
+  // after any `bun run test:cli:scenarios` (the CLI suite builds the same thing
+  // into the same directory) or any previous acceptance run.
+  const build = run("flock", [REGISTRY_LOCK, "bun", "tooling/build-registry.ts"], {
+    cwd: REPO_ROOT,
+    timeoutMs: 30 * 60_000,
+    env: { ...process.env, REGISTRY_BASE_URL: url },
+  })
+  if (build.exitCode !== 0) {
+    throw new Error(
+      `building the local registry failed (exit ${build.exitCode})\n${build.stdout}\n${build.stderr}`,
+    )
+  }
+}
+
 /**
- * Builds the registry from this working tree and serves it on `port`.
- *
- * The build is the repo's own (`bun tooling/build-registry.ts` with
- * REGISTRY_BASE_URL pointing at the server, which is how the registry's
- * absolute URLs come out right) and the server is the CLI suite's
- * `e2e/cli/serve.ts`. `flock` wraps the server for its whole lifetime so a
- * concurrent `bun run test:cli:scenarios` cannot take the port mid-run.
+ * The mirror is up and answering. Starts it only if nothing else is serving one.
  */
 export async function startLocalRegistry(
   port: number = MIRROR_PORT
@@ -72,28 +149,19 @@ export async function startLocalRegistry(
     )
   }
 
-  const url = `http://127.0.0.1:${port}/r`
+  // 1. Someone is already serving a registry on this port.
+  if (await registryIsServing(port)) return noopServer()
 
-  if (!(await isServing(`http://127.0.0.1:${port}/r/style.json`))) {
-    const build = run("flock", [HEAVY_LOCK, "bun", "tooling/build-registry.ts"], {
-      cwd: REPO_ROOT,
-      timeoutMs: 600_000,
-      env: { ...process.env, REGISTRY_BASE_URL: url },
-    })
-    if (build.exitCode !== 0) {
-      throw new Error(
-        `building the local registry failed (exit ${build.exitCode})\n${build.stdout}\n${build.stderr}`,
-      )
-    }
-  }
+  const url = mirrorUrl(port)
 
+  // 2. The server is `flock <its own lock> bun e2e/cli/serve.ts`, so the lock is
+  //    held for the server's lifetime and a second run cannot bind the port.
+  //    `-w 30` so a run that loses the race waits for the holder to finish
+  //    starting rather than blocking forever; by then the holder is serving and
+  //    the health check above would have caught it on the next attempt.
   const server = spawn(
     "flock",
-    [
-      HEAVY_LOCK,
-      "bun",
-      join(REPO_ROOT, "e2e", "cli", "serve.ts"),
-    ],
+    ["-w", "30", REGISTRY_LOCK, "bun", join(REPO_ROOT, "e2e", "cli", "serve.ts")],
     {
       cwd: REPO_ROOT,
       env: {
@@ -102,48 +170,47 @@ export async function startLocalRegistry(
         SERVE_PORT: String(port),
       },
       stdio: ["ignore", "pipe", "pipe"],
-      detached: false,
+      // Its own process group, so `stop()` can take the whole tree (flock
+      // spawns bun as a child) and so the server is not killed by a signal
+      // aimed at the vitest main process.
+      detached: true,
     }
   )
+  server.unref()
 
   let serverStderr = ""
   server.stderr?.on("data", (chunk) => (serverStderr += String(chunk)))
-
-  const stop = (): void => {
-    // The whole process group: `flock` spawns bun as a child, and killing only
-    // flock would leave the port held.
-    if (server.pid !== undefined) {
-      try {
-        process.kill(-server.pid, "SIGKILL")
-      } catch {
-        server.kill("SIGKILL")
-      }
-    }
-  }
   server.on("error", (error) => {
     serverStderr += String(error)
   })
 
+  const stop = (): void => {
+    if (server.pid === undefined) return
+    try {
+      process.kill(-server.pid, "SIGKILL")
+    } catch {
+      try {
+        server.kill("SIGKILL")
+      } catch {
+        // Already gone.
+      }
+    }
+  }
+
   try {
-    await waitFor(`http://127.0.0.1:${port}/r/style.json`, 30_000)
+    await buildIfMissing(url)
+    await waitFor(`http://127.0.0.1:${port}/r/${HEALTH_ITEM}`, 30_000)
   } catch (error) {
     stop()
-    throw new Error(`${(error as Error).message}\nserver stderr:\n${serverStderr}`)
+    throw new Error(
+      `${(error as Error).message}\nserver stderr:\n${serverStderr}`,
+    )
   }
 
-  return { url, port, stop }
+  return { url, port, startedHere: true, stop }
 }
 
-async function isServing(url: string): Promise<boolean> {
-  try {
-    const response = await fetch(url)
-    return response.ok
-  } catch {
-    return false
-  }
-}
-
-/** Resolves once for the whole process; every scenario shares one mirror. */
+/** One mirror per process. The health check makes it one per RUN in practice. */
 let mirror: Promise<LocalRegistry> | undefined
 
 export function sharedLocalRegistry(): Promise<LocalRegistry> {
@@ -151,13 +218,14 @@ export function sharedLocalRegistry(): Promise<LocalRegistry> {
   return mirror
 }
 
-export function stopSharedLocalRegistry(): void {
+/** Stops the mirror, and only if this process is the one that started it. */
+export async function stopSharedLocalRegistry(): Promise<void> {
   const current = mirror
   mirror = undefined
-  void current?.then((registry) => registry.stop())
+  if (!current) return
+  const registry = await current.catch(() => undefined)
+  if (registry?.startedHere) registry.stop()
 }
 
 /** A registry URL that is guaranteed to refuse connections, for the down scenarios. */
 export const DEAD_REGISTRY_URL = "http://127.0.0.1:1/r"
-
-export type { ChildProcess }

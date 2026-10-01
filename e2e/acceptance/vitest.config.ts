@@ -48,6 +48,10 @@ export default defineConfig({
   test: {
     root: import.meta.dirname,
     include,
+    // Per-RUN setup, in this process: starts the local registry mirror once if
+    // any selected scenario needs it, and stops it at teardown only if this run
+    // started it. See run/global-setup.ts and lib/registry.ts.
+    globalSetup: ["./run/global-setup.ts"],
     // A per-test timeout is passed explicitly (a scenario's own budget is
     // derived from its steps); this is only the fallback.
     testTimeout: 5 * 60_000,

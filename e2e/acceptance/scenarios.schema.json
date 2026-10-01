@@ -65,7 +65,7 @@
     },
 
     "tag": {
-      "description": "key:value tag. `os` and `pm` drive the CI matrix; `kind` and `speed` drive sharding. `needs:<branch-or-gate>` marks a scenario whose expectation depends on behaviour that is not merged yet: the runner SKIPS it (reported, not failed) while the gate is unlanded, and the CI job that runs it is keyed on the same tag. Free-form keys are allowed but the runner only knows these five.",
+      "description": "key:value tag. `os` and `pm` drive the CI matrix; `speed` drives sharding; `needs:<branch-or-gate>` marks a scenario whose expectation depends on behaviour that is not merged yet: the runner SKIPS it (reported, not failed) while the gate is unlanded, and the CI job that runs it is keyed on the same tag. `kind:<x>` is the SUB-THEME inside a scenario's kind (`kind:theming`, `kind:alias`, `kind:registry`), not a second spelling of the kind: a `kind:<group>` FILTER also matches every scenario whose `kind` field is that group, so a group is always selectable and a sub-theme tag can never make one unselectable. Free-form keys are allowed but the runner only knows these five.",
       "type": "string",
       "pattern": "^(os|pm|kind|speed|status|needs):[A-Za-z0-9][A-Za-z0-9.+_-]*$"
     },
