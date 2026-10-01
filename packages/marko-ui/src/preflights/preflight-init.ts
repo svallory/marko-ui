@@ -91,10 +91,18 @@ export function markoProjectBelowSix(cwd: string): boolean {
 export async function tailwindProjectBelowFour(
   cwd: string
 ): Promise<{ reason: string } | null> {
-  // The NEAREST directory with any tailwindcss evidence decides. The walk
-  // mirrors get-package-manager's detectFromLockfile: up from cwd, stopping
-  // after the first workspace root (which is also where bun/pnpm hoist the
-  // dependency's node_modules).
+  // The walk mirrors get-package-manager's detectFromLockfile: up from cwd,
+  // stopping after the first workspace root. What counts as evidence depends
+  // on WHERE it is:
+  //
+  // - an INSTALLED tailwindcss (node_modules) counts at any level, because
+  //   node resolution genuinely reaches it from the project;
+  // - a DECLARED range or @tailwindcss/* package counts only at cwd or at a
+  //   workspace root whose workspaces/pnpm-workspace globs actually cover
+  //   the project. An unrelated ancestor that merely has a package.json
+  //   (never installed, no workspaces claim) is not this project's Tailwind
+  //   — its declaration is ignored and the walk climbs on, failing open
+  //   rather than refusing a legitimate app over a parent's dependency.
   let dir = cwd
   for (;;) {
     const installed = installedVersion(dir, "tailwindcss")
@@ -109,39 +117,40 @@ export async function tailwindProjectBelowFour(
       return null
     }
 
-    let packageJson
-    try {
-      packageJson = fs.readJsonSync(path.resolve(dir, "package.json"))
-    } catch {
-      packageJson = null
-    }
-    if (packageJson) {
-      const range = declaredRange(packageJson, "tailwindcss")
-      if (range) {
-        if (rangeExcludesMajor(range, 4)) {
-          return {
-            reason: `tailwindcss ${range} cannot resolve to v4${
-              dir === cwd ? "" : ` (declared at ${dir})`
-            }`,
+    if (dir === cwd || (await workspaceCoversProject(dir, cwd))) {
+      let packageJson
+      try {
+        packageJson = fs.readJsonSync(path.resolve(dir, "package.json"))
+      } catch {
+        packageJson = null
+      }
+      if (packageJson) {
+        const range = declaredRange(packageJson, "tailwindcss")
+        if (range) {
+          if (rangeExcludesMajor(range, 4)) {
+            return {
+              reason: `tailwindcss ${range} cannot resolve to v4${
+                dir === cwd ? "" : ` (declared at ${dir})`
+              }`,
+            }
           }
+          // A v4-capable declaration IS a v4 setup in progress: v4 loads a
+          // legacy tailwind.config through `@config`, so the project is
+          // mid-migration, not on v3.
+          return null
         }
-        // A range allowing 4 (or tailwindcss being absent) is not the whole
-        // story, but a v4-capable declaration IS a v4 setup in progress:
-        // v4 loads a legacy tailwind.config through `@config`, so the
-        // project is mid-migration, not on v3.
-        return null
-      }
-      // A `@tailwindcss/*` package (the v4 plugin/postcss/cli) counts as a
-      // v4 setup.
-      const allDeps = {
-        ...(packageJson?.dependencies ?? {}),
-        ...(packageJson?.devDependencies ?? {}),
-        ...(packageJson?.peerDependencies ?? {}),
-      }
-      if (
-        Object.keys(allDeps).some((name) => name.startsWith("@tailwindcss/"))
-      ) {
-        return null
+        // A `@tailwindcss/*` package (the v4 plugin/postcss/cli) counts as a
+        // v4 setup.
+        const allDeps = {
+          ...(packageJson?.dependencies ?? {}),
+          ...(packageJson?.devDependencies ?? {}),
+          ...(packageJson?.peerDependencies ?? {}),
+        }
+        if (
+          Object.keys(allDeps).some((name) => name.startsWith("@tailwindcss/"))
+        ) {
+          return null
+        }
       }
     }
 
@@ -179,6 +188,82 @@ export async function tailwindProjectBelowFour(
 /** `@import "tailwindcss"` or a v4 submodule import (`tailwindcss/theme.css`). */
 function hasTailwindV4Import(contents: string): boolean {
   return /@import\s+["']tailwindcss["'/]/.test(contents)
+}
+
+/**
+ * Whether `dir` is a workspace root whose globs claim `cwd` — the only
+ * ancestor whose DECLARED dependencies may count as the project's own.
+ * The globs (`workspaces` in package.json, `packages` in pnpm-workspace.yaml)
+ * are expanded on disk with fast-glob and the project must land inside one
+ * of the matched directories. Negated globs (rare) are ignored.
+ */
+async function workspaceCoversProject(
+  dir: string,
+  cwd: string
+): Promise<boolean> {
+  const globs = workspaceGlobs(dir).filter((glob) => !glob.startsWith("!"))
+  if (!globs.length) return false
+
+  const rel = path.relative(dir, cwd)
+  if (!rel || rel.startsWith("..")) return false
+
+  const matches = await fg.glob(globs, {
+    cwd: dir,
+    onlyDirectories: true,
+    suppressErrors: true,
+    followSymbolicLinks: false,
+  })
+  return matches.some(
+    (match) => rel === match || rel.startsWith(`${match}/`)
+  )
+}
+
+/**
+ * The workspace globs `dir` declares, from pnpm-workspace.yaml and/or
+ * package.json `workspaces` (array or `{ packages }`). The pnpm file gets a
+ * deliberately minimal line parse of its `packages:` list — a real YAML
+ * parser is not worth a dependency for this shape.
+ */
+function workspaceGlobs(dir: string): string[] {
+  const globs: string[] = []
+
+  try {
+    const yaml = fs.readFileSync(
+      path.resolve(dir, "pnpm-workspace.yaml"),
+      "utf8"
+    )
+    let inPackages = false
+    for (const line of yaml.split("\n")) {
+      if (/^packages\s*:/.test(line)) {
+        inPackages = true
+        continue
+      }
+      if (inPackages) {
+        const entry = line.match(/^\s+-\s*["']?([^"'\s]+)["']?\s*$/)
+        if (entry) {
+          globs.push(entry[1])
+        } else if (line.trim() && !/^[\s]/.test(line)) {
+          break
+        }
+      }
+    }
+  } catch {
+    // No pnpm-workspace.yaml here.
+  }
+
+  try {
+    const pkg = fs.readJsonSync(path.resolve(dir, "package.json"))
+    const workspaces = pkg?.workspaces
+    if (Array.isArray(workspaces)) {
+      globs.push(...workspaces)
+    } else if (Array.isArray(workspaces?.packages)) {
+      globs.push(...workspaces.packages)
+    }
+  } catch {
+    // No (readable) package.json here.
+  }
+
+  return globs
 }
 
 /** Mirrors the workspace-root rule in get-package-manager's lockfile walk. */

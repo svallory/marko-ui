@@ -219,6 +219,83 @@ describe("tailwindProjectBelowFour monorepo walk (hoisted Tailwind)", () => {
       reason: expect.stringContaining("tailwind.config.js"),
     })
   })
+
+  it("ignores an UNRELATED ancestor's tailwindcss ^3 (no workspaces claim, never installed)", async () => {
+    // The reviewer's repro: a legit Marko app below a scratch parent whose
+    // package.json happens to declare tailwindcss must not be refused.
+    const root = project(
+      { name: "unrelated-parent", devDependencies: { tailwindcss: "^3.4.1" } },
+      {
+        "code/app/package.json": JSON.stringify({ name: "app", dependencies: { marko: "^6.0.0" } }),
+        "code/app/tailwind.config.js": "export default {}\n",
+        "code/app/src/app.css": '@import "tailwindcss";\n',
+      }
+    )
+    expect(await tailwindProjectBelowFour(path.join(root, "code/app"))).toBe(null)
+  })
+  it("still refuses the config-file shape under an unrelated ancestor (round-1 semantics unchanged)", async () => {
+    const root = project(
+      { name: "unrelated-parent", devDependencies: { tailwindcss: "^3.4.1" } },
+      {
+        "code/app/package.json": JSON.stringify({ name: "app", dependencies: { marko: "^6.0.0" } }),
+        "code/app/tailwind.config.js": "export default {}\n",
+      }
+    )
+    // Refused for its OWN shape (config file, no v4 setup) — the reason must
+    // not name the ancestor's range.
+    expect(await tailwindProjectBelowFour(path.join(root, "code/app"))).toMatchObject({
+      reason: expect.stringContaining("tailwind.config.js"),
+    })
+  })
+  it("honors an installed v3 at an unrelated ancestor (node resolution genuinely reaches it)", async () => {
+    const root = project(
+      { name: "unrelated-parent" },
+      {
+        "node_modules/tailwindcss/package.json": JSON.stringify({ name: "tailwindcss", version: "3.4.17" }),
+        "code/app/package.json": JSON.stringify({ name: "app", dependencies: { marko: "^6.0.0" } }),
+        "code/app/tailwind.config.js": "export default {}\n",
+      }
+    )
+    expect(await tailwindProjectBelowFour(path.join(root, "code/app"))).toMatchObject({
+      reason: expect.stringContaining("3.4.17"),
+    })
+  })
+  it("refuses when a real workspace root's v3 covers the app (workspaces glob match)", async () => {
+    const root = project(
+      { name: "root", workspaces: ["code/*"], devDependencies: { tailwindcss: "^3.4.0" } },
+      {
+        "code/app/package.json": JSON.stringify({ name: "app", dependencies: { marko: "^6.0.0" } }),
+        "code/app/tailwind.config.js": "export default {}\n",
+      }
+    )
+    expect(await tailwindProjectBelowFour(path.join(root, "code/app"))).toMatchObject({
+      reason: expect.stringContaining("^3.4.0"),
+    })
+  })
+  it("ignores a workspace root whose globs do NOT cover the app", async () => {
+    const root = project(
+      { name: "root", workspaces: ["other/*"], devDependencies: { tailwindcss: "^3.4.0" } },
+      {
+        "code/app/package.json": JSON.stringify({ name: "app", dependencies: { marko: "^6.0.0" } }),
+        "code/app/tailwind.config.js": "export default {}\n",
+        "code/app/src/app.css": '@import "tailwindcss";\n',
+      }
+    )
+    expect(await tailwindProjectBelowFour(path.join(root, "code/app"))).toBe(null)
+  })
+  it("honors a pnpm-workspace.yaml that covers the app", async () => {
+    const root = project(
+      { name: "root", devDependencies: { tailwindcss: "^3.4.0" } },
+      {
+        "pnpm-workspace.yaml": 'packages:\n  - "code/*"\n',
+        "code/app/package.json": JSON.stringify({ name: "app", dependencies: { marko: "^6.0.0" } }),
+        "code/app/tailwind.config.js": "export default {}\n",
+      }
+    )
+    expect(await tailwindProjectBelowFour(path.join(root, "code/app"))).toMatchObject({
+      reason: expect.stringContaining("^3.4.0"),
+    })
+  })
 })
 
 describe("preFlightInit version guards", () => {
