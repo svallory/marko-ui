@@ -104,6 +104,17 @@ Three things a scenario file may rely on, all closed sets — nothing else is ex
   default applies to `write.path`, `rm`, `mkdir`, and a helper's `cwd`. Anything relative to
   the workspace root says `cwd: "."` explicitly — the symlink scenario depends on it, and
   the ambiguity is the kind that silently produces a vacuous assertion.
+- **A helper's `cwd` is its own**, not the app-dir default. A helper that declares
+  `cwd: "."` is scoped to the **workspace root**, and every invocation must restate
+  `cwd: "."` at the call site — `check:acceptance` rejects a root-scoped helper
+  invoked without one. That rule exists because of a real bug: `make-bun-workspace`
+  does `renameSync($APP, "apps/web")` plus `writeFileSync("package.json", …)`, and run
+  one level too deep it moves the app into itself and overwrites the app's own
+  `package.json`. The rule is stated at the call site, where it is visible.
+- **Helpers inherit the same five variables in their environment** as steps get in
+  `args` — `$WORKSPACE`, `$APP`, `$PM`, `$REGISTRY_URL`, `$ACCEPTANCE_MIRROR_PORT`.
+  Several helpers read `process.env.APP` to locate the scaffolded app rather than
+  depending on their `cwd` for it, so this is load-bearing, not a convenience.
 - **`$VAR` interpolation in `args`** draws from exactly five variables: `$WORKSPACE` (the
   absolute scenario workspace), `$APP` (the absolute app dir), `$PM` (the scenario's package
   manager), `$REGISTRY_URL` (the effective registry, including the
@@ -114,7 +125,7 @@ Three things a scenario file may rely on, all closed sets — nothing else is ex
 
 ### Operations (`@`-prefixed commands)
 
-Four step commands are not CLI subcommands, and are spelled with a leading `@` so they can
+Five step commands are not CLI subcommands, and are spelled with a leading `@` so they can
 never be confused with one:
 
 | operation     | what it does                                                                                                    |
@@ -400,7 +411,11 @@ cannot express:
   which is how three `expect:` blocks ended up passing on half their assertions. The
   check reads the source text, before parsing;
 - every `use:`, `fixture:`, `helper:` and `body:` reference resolves;
-- every declared flow and every declared helper is actually used;
+- every declared flow and every declared helper is actually used — the helper check
+  runs **after** both walkers, because three of the eight helpers are invoked only
+  from `setup.post`, and a check placed earlier reports them as unused;
+- a root-scoped helper (`helpers.X.cwd: "."`) is invoked with an explicit `cwd: "."`;
+- `offline: true` is not on a step that is itself supposed to reach the network;
 - every `$VAR` is one of the five documented interpolation variables;
 - every `expect.unchanged`/`changed` names a path an **earlier** step snapshotted;
 - every command step has an `expect` — a step that asserts nothing is an error, not a

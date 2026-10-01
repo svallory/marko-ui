@@ -485,6 +485,25 @@ export function crossReferenceProblems(doc: ScenariosDoc): string[] {
   const snapshotOrder: { key: string; where: string; index: number }[] = []
   const snapshotRefs: { key: string; where: string; index: number }[] = []
 
+  // A helper whose declared cwd is the WORKSPACE ROOT (".") is written against a
+  // different directory than the documented default (the fixture's app dir).
+  // Inheriting the default would run it one level too deep — the exact bug
+  // where make-bun-workspace moves the app into itself. So a root-scoped helper
+  // must be invoked with an explicit `cwd: "."`, stated at the call site where
+  // it is visible, rather than relying on the helper's own default.
+  const checkHelperCwd = (
+    helper: string | undefined,
+    stepCwd: string | undefined,
+    at: string
+  ): void => {
+    const declared = helper ? doc.helpers?.[helper]?.cwd : undefined
+    if (declared === "." && stepCwd === undefined) {
+      problems.push(
+        `${at}: helper "${helper}" is scoped to the WORKSPACE ROOT (helpers.${helper}.cwd: ".") but the step sets no cwd — it would inherit the app-dir default and run one level too deep. Add cwd: "." here.`,
+      )
+    }
+  }
+
   const checkVars = (args: string[], at: string): void => {
     for (const arg of args) {
       // `$$` is an escaped literal `$`; every other `$NAME` must be in the
@@ -525,6 +544,7 @@ export function crossReferenceProblems(doc: ScenariosDoc): string[] {
         } else {
           usedHelpers.add(step.helper)
         }
+        checkHelperCwd(step.helper, step.cwd, at)
       }
       // `snapshot:` records a path a LATER expect.unchanged/changed refers to.
       // Recording the ORDER is what lets the pairing check insist the snapshot
@@ -589,6 +609,7 @@ export function crossReferenceProblems(doc: ScenariosDoc): string[] {
         } else {
           usedHelpers.add(step.helper)
         }
+        checkHelperCwd(step.helper, step.cwd, at)
       }
       checkVars(step.args ?? [], at)
     }

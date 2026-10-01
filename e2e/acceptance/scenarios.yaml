@@ -300,6 +300,7 @@ helpers:
       detection walks up to the workspace root). Exits 0 only when both
       `apps/web/package.json` and a root lockfile exist.
     language: node
+    cwd: "."
     source: |
       const fs = require("node:fs")
       const path = require("node:path")
@@ -322,6 +323,7 @@ helpers:
       lockfile. Used by the scenario that asserts init at a workspace ROOT is
       refused with the --cwd instruction.
     language: node
+    cwd: "."
     source: |
       const fs = require("node:fs")
       const path = require("node:path")
@@ -346,6 +348,7 @@ helpers:
       components package" layout: the components belong in packages/ui and the
       app consumes them, not the reverse.
     language: node
+    cwd: "."
     source: |
       const fs = require("node:fs")
       const path = require("node:path")
@@ -376,12 +379,15 @@ helpers:
 
   relocate-config-to-root:
     description: >
-      Moves the app's components.json to the scenario workspace root (the
-      "one shared config for the whole monorepo" layout) and prints the path it
-      wrote. Nothing else is moved: the app keeps its own package.json, tsconfig
-      and stylesheet, so the only thing that changed is where the config lives.
-      Exits 0 only if the root config exists afterwards.
+      COPIES the app's components.json to the scenario workspace root (the
+      "one shared config for the whole monorepo" layout). It copies rather than
+      moves on purpose: the app keeps its own package.json, tsconfig and
+      stylesheet, and the step asserts that BOTH configs exist afterwards, which
+      is the layout under test — one config at the root that every command finds
+      via --cwd, alongside the one the app itself was initialized with. Exits 0
+      only if the root config exists and still parses.
     language: node
+    cwd: "."
     source: |
       const fs = require("node:fs")
       const path = require("node:path")
@@ -1995,6 +2001,7 @@ scenarios:
       install: true
       post:
         - label: turn the app into a bun workspace root with apps/web inside it
+          cwd: "."
           helper: make-bun-workspace
     speed: medium
     ci: { shard: mono }
@@ -2032,6 +2039,7 @@ scenarios:
       install: true
       post:
         - label: turn the app into a bun workspace root with apps/web inside it
+          cwd: "."
           helper: make-bun-workspace
     speed: medium
     ci: { shard: mono }
@@ -2057,9 +2065,10 @@ scenarios:
           exit: 0
           filesExist: ["apps/web/components.json"]
           filesAbsent: ["components.json"]
-      - name: hoist the config to the workspace root
+      - name: copy the config to the workspace root
         command: "@helper"
         helper: relocate-config-to-root
+        cwd: "."
         expect:
           exit: 0
           filesExist: ["components.json", "apps/web/components.json"]
@@ -2097,6 +2106,7 @@ scenarios:
       install: true
       post:
         - label: turn the app into an npm workspace root
+          cwd: "."
           helper: make-npm-workspace
     speed: fast
     ci: { shard: mono }
@@ -2126,6 +2136,7 @@ scenarios:
       install: true
       post:
         - label: build a pnpm workspace with a shared packages/ui
+          cwd: "."
           helper: make-pnpm-workspace-with-ui
     speed: medium
     ci: { shard: mono }
@@ -2713,7 +2724,7 @@ scenarios:
           stdoutMatches: ["^1$"]
 
   - id: skills.claude-md-only
-    title: "a CLAUDE.md with no @AGENTS.md is left alone; a symlinked AGENTS.md is written through"
+    title: "a CLAUDE.md with no @AGENTS.md is left completely untouched"
     kind: skills
     tags: [os:linux, os:macos, kind:agents-md, speed:fast]
     requires: { os: [linux, macos], network: both, tools: [bun, node] }
@@ -2726,8 +2737,17 @@ scenarios:
     ci: { shard: skills }
     covers: ["skills: CLAUDE.md only"]
     notes: >
-      The AGENTS.md-reached-through-a-CLAUDE.md-symlink half is covered by
-      env.symlinked-project (same symlink machinery, asserted end to end).
+      The documented behaviour (the 0.5.0 changelog: the CLI writes AGENTS.md and
+      does not add an `@AGENTS.md` pointer to a CLAUDE.md that lacks one), so the
+      only assertion that matters is the negative one: AGENTS.md appears and
+      CLAUDE.md comes out byte-for-byte as it went in.
+
+      An earlier revision of this title also claimed the symlinked-AGENTS.md half
+      ("written through"), which this scenario never asserted — its sync runs in
+      the app directory, not through a link. The clause and the deferral note
+      pointing back at this same scenario are both gone rather than left as an
+      unbacked coverage claim. The symlink machinery itself is asserted by
+      env.symlinked-project.
     steps:
       - use: init-copy-vega-neutral
       - name: sync writes AGENTS.md and leaves CLAUDE.md untouched
@@ -2738,6 +2758,8 @@ scenarios:
           exit: 0
           filesExist: ["AGENTS.md"]
           fileContains:
+            - path: CLAUDE.md
+              contains: "No agents file here."
             - path: CLAUDE.md
               notContains: "marko-ui:start"
 
@@ -2993,6 +3015,15 @@ scenarios:
     speed: fast
     ci: { shard: env }
     covers: ["offline", "descriptions are best-effort"]
+    notes: >
+      `requires.network` is `both` because the first two steps run init and add
+      against the live registry and npm — that is the point: the project is
+      fully set up and only the FINAL step is cut. `offline` is a per-step
+      switch, so it applies to the agents sync below and to nothing else in this
+      scenario; the validator rejects it only where it would contradict the step
+      itself (an @http step, or args naming $REGISTRY_URL). An earlier schema
+      description claimed offline required a scenario-level network constraint
+      that did not hold here; the rule is now the one the file actually follows.
     steps:
       - use: init-copy-vega-neutral
       - use: add-button
