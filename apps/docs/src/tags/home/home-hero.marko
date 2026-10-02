@@ -8,8 +8,6 @@ export interface Input {
 
 static const HEADLINE_PREFIX = "The Foundation for your";
 static const HEADLINE_SUFFIX = "Design System";
-static const DESCRIPTION =
-  "A set of beautifully designed components that you can customize, extend, and build on. Copy the code into your Marko 6 app, own it, and make it yours. Open Source. Open Code.";
 
 <const/announcementHref=input.announcementHref ?? "/docs/changelog">
 <const/announcementLabel=input.announcement ??
@@ -17,29 +15,29 @@ static const DESCRIPTION =
 
 <section class="border-grid" data-slot="home-hero">
   <div class="container-wrapper">
-    <div class="container flex flex-col items-center gap-4 px-6 py-8 text-center md:py-16 lg:py-20 xl:gap-4">
-      <a
-        href=announcementHref
-        class="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-      >
-        <Badge variant="secondary" class="bg-muted gap-1">
-          ${announcementLabel}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="size-3"
-            aria-hidden="true"
-          >
-            <path d="M5 12h14"/>
-            <path d="m12 5 7 7-7 7"/>
-          </svg>
-        </Badge>
-      </a>
+    <div class="container flex flex-col items-center gap-4 px-6 py-8 pb-12 text-center md:py-16 md:pb-12 lg:py-20 lg:pb-12 xl:gap-4">
+      // <a
+      //   href=announcementHref
+      //   class="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      // >
+      //   <Badge variant="secondary" class="bg-muted gap-1">
+      //     ${announcementLabel}
+      //     <svg
+      //       xmlns="http://www.w3.org/2000/svg"
+      //       viewBox="0 0 24 24"
+      //       fill="none"
+      //       stroke="currentColor"
+      //       stroke-width="2"
+      //       stroke-linecap="round"
+      //       stroke-linejoin="round"
+      //       class="size-3"
+      //       aria-hidden="true"
+      //     >
+      //       <path d="M5 12h14"/>
+      //       <path d="m12 5 7 7-7 7"/>
+      //     </svg>
+      //   </Badge>
+      // </a>
       <span class="leading-tighter flex max-w-3xl flex-wrap items-center justify-center gap-x-3 text-1xl font-semibold tracking-tight text-balance text-primary lg:leading-[1.1] lg:font-semibold xl:text-3xl xl:tracking-tighter">
         ${HEADLINE_PREFIX}
       </span>
@@ -152,10 +150,16 @@ static const DESCRIPTION =
             />
           </svg>
         </span>
+        <br>
       </p>
 
       <p class="max-w-4xl text-base text-balance text-foreground sm:text-lg">
-        ${DESCRIPTION}
+        Full shadcn parity, all styles supported, but that's <mark class="home-marker">just the start!</mark><br>
+
+        Marko UI is <mark class="home-marker">a registry of UI libraries</mark> and the most popular ones are comming soon.<br>
+
+        If you want to port one yourself, you can
+        <a class="home-marker" href="http://localhost:3000/docs/contributing-a-library" target="blank">do that with a single prompt.</a>
       </p>
 
       <div class="flex w-full items-center justify-center gap-2 pt-2">
@@ -184,3 +188,77 @@ static const DESCRIPTION =
     </div>
   </div>
 </section>
+
+<style>
+  /* Highlighter-marker effect. The light tints of the Marko logo
+     (public/brand/marko/logos: red #FF5467, green #7CED64, yellow #FFD100,
+     cyan #00CFFB) cycle across the highlights in document order. Text stays
+     black on every tint so it reads in both color schemes. Each swipe is a
+     skewed, rotated pseudo-element with its own angle, overshoot, corner radii
+     and ink-pressure streak, so no two look stamped from one template.
+     The host is taller than the glyphs (paragraph line-height), so the small
+     vertical insets make each swipe taller than the text. Highlights
+     are inline-block so the skew applies to one clean shape; on very narrow
+     screens a phrase moves to the next line whole. */
+  .home-marker {
+    --marker: #ff5467;
+    --top: 6%;
+    --bottom: 2%;
+    --alpha: 55%;
+    --over-l: 0.12em;
+    --over-r: 0.18em;
+    --skew: -5deg;
+    --rot: -0.8deg;
+    --radius: 0.4em 0.9em 0.3em 0.8em / 0.7em 0.35em 0.8em 0.4em;
+    --streak: 100deg;
+    position: relative;
+    isolation: isolate;
+    display: inline-block;
+    padding: 0 0.1em;
+    color: #000;
+    background: none;
+    text-decoration: none;
+  }
+  mark.home-marker:nth-of-type(2) {
+    --marker: #7ced64;
+    --top: 3%;
+    --bottom: 5%;
+    --over-l: 0.22em;
+    --over-r: 0.08em;
+    --skew: -9deg;
+    --rot: 0.9deg;
+    --radius: 0.9em 0.3em 0.8em 0.4em / 0.4em 0.8em 0.35em 0.7em;
+    --streak: 80deg;
+  }
+  a.home-marker {
+    --marker: #ffd100;
+    --top: 8%;
+    --bottom: 0%;
+    --over-l: 0.08em;
+    --over-r: 0.25em;
+    --skew: -3deg;
+    --rot: -0.4deg;
+    --radius: 0.3em 0.6em 0.9em 0.35em / 0.8em 0.5em 0.4em 0.7em;
+    --streak: 112deg;
+  }
+  .home-marker::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: var(--top) calc(-1 * var(--over-r)) var(--bottom) calc(-1 * var(--over-l));
+    background:
+      linear-gradient(var(--streak), transparent 0 1.5%, rgb(255 255 255 / 0.2) 3% 6%, transparent 9%),
+      color-mix(in oklab, var(--marker) var(--alpha), transparent);
+    border-radius: var(--radius);
+    transform: skewX(var(--skew)) rotate(var(--rot));
+    transition: inset 150ms ease;
+  }
+  a.home-marker:hover::before,
+  a.home-marker:focus-visible::before { --top: 0%; --bottom: -4%; }
+  a.home-marker:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; border-radius: 0.25em; }
+  /* Translucent tints dull on a dark page and black text needs the ink back. */
+  :is(.dark) .home-marker { --alpha: 85%; }
+  @media (prefers-reduced-motion: reduce) {
+    .home-marker::before { transition: none; }
+  }
+</style>
