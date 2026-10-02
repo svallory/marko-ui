@@ -736,7 +736,7 @@ export function dlxTool(cli: CliTargetPaths, cliVersion?: string): string {
 /** The full dlx argv (runner + spec). A local tarball needs `-p` under Yarn Berry, which has no "run this file" form. */
 export function dlxArgv(pm: Pm, tool: string): string[] {
   if (pm === "yarn-berry" && !tool.startsWith("marko-ui@")) {
-    return ["yarn", "dlx", "-p", `file:${tool}`, "marko-ui"]
+    return ["yarn", "dlx", "-p", `marko-ui@file:${tool}`, "marko-ui"]
   }
   return driverFor(pm).dlx(tool)
 }

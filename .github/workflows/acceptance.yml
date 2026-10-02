@@ -94,6 +94,11 @@ env:
   # string => e2e/acceptance/lib falls back to its own default).
   ACCEPTANCE_REGISTRY_URL: ${{ inputs.registry_url || vars.ACCEPTANCE_REGISTRY_URL }}
   ACCEPTANCE_PKG_VERSION: ${{ inputs.version || vars.ACCEPTANCE_PKG_VERSION }}
+  # create-marko downloads its template from GitHub's API and the scaffolds'
+  # skills clone from GitHub; unauthenticated, a shared runner IP hits the rate
+  # limit (run 4's Windows job: "Hit GitHub's API rate limit. Set GITHUB_TOKEN").
+  # The job token is read-only (permissions: contents: read).
+  GITHUB_TOKEN: ${{ github.token }}
 
 jobs:
   # Kinds come from scenarios.yaml, so a new `kind` is a new shard with no

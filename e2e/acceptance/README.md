@@ -521,3 +521,7 @@ them are in other kinds; the Windows job is not given the registry artifact):
 - The registry mirror needs `flock`, a POSIX process group and `ps`, and `/tmp` lock files, so
   any scenario that needs the mirror cannot run on Windows.
 - Only `core` is run on Windows; every other kind is untested there.
+- Run 4 (36943928837): the Windows job's 9 core scenarios all failed in ~1.3 s, not from a
+  Windows defect but because `create-marko` hit GitHub's unauthenticated API rate limit
+  downloading its template ("Set GITHUB_TOKEN"). `acceptance.yml` now exports the job's
+  read-only `GITHUB_TOKEN` to every job. Run 3 had passed the same scenarios.

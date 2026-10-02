@@ -358,9 +358,9 @@ describe("the dlx invocation", () => {
     expect(dlxTool(published, "0.4.1")).toBe("marko-ui@0.4.1")
   })
 
-  it("Yarn Berry runs a local tarball through `dlx -p file:<tgz> marko-ui`", () => {
+  it("Yarn Berry runs a local tarball through `dlx -p marko-ui@file:<tgz> marko-ui`", () => {
     expect(dlxArgv("yarn-berry", dlxTool(tarball))).toEqual([
-      "yarn", "dlx", "-p", `file:${tarball.spec}`, "marko-ui",
+      "yarn", "dlx", "-p", `marko-ui@file:${tarball.spec}`, "marko-ui",
     ])
   })
 })
