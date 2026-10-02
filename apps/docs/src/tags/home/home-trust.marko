@@ -1,18 +1,15 @@
-// Trust strip between the hero and the showcase. Two kinds of proof, no
-// overlap:
-//   - RECEIPTS: identity facts about the library (component/style counts,
-//     no-JS rendering, license), maintained by hand next to their sources —
-//     see the COMPONENTS import and the VISUAL_STYLES const below for each.
-//   - BADGES: live shields.io endpoint images fed by CI. This is the SITE
-//     home — its audience is consumers — so every badge must describe the
-//     last PUBLISHED release (the `badges` branch, written by
-//     .github/workflows/release.yml from the release tag), not main. Team /
-//     main-branch numbers (npm, hydration suite mechanics, MIT) live on the
-//     README, which reads `badges-main`. Their numbers update themselves;
-//     never restate them as receipts.
+// Trust strip between the hero and the showcase: static cards written as
+// plain markup, styled by the `home-trust-*` classes in the style block below
+// (Tailwind @apply, so utilities stay the single source of design values).
+//   - Identity facts (component/style counts, no-JS rendering, license),
+//     maintained by hand next to their sources — see the COMPONENTS import and
+//     the VISUAL_STYLES const below.
+//   - Quality claims (WCAG scan, Lighthouse accessibility): the values are CI
+//     gates (axe: 0 means 0; Lighthouse floors in .github/lighthouse) — if a
+//     gate is ever loosened, edit them here. No network fetch; live badges
+//     for the repo live on the README (`badges-main`).
 //
-// RECEIPTS rendered as hero-stat-size cards (text-4xl/5xl value, text-base
-// label) — 4 across on desktop, 2x2 on mobile. ALL FOUR use the real <Card>
+// Hero-stat-size cards — 3 across on desktop, 2 across on mobile. ALL use the real <Card>
 // component so they look identical in every registry style (radius/ring/bg
 // are per-style tokens baked into Card's own class list — a hand-rolled
 // `<a class="rounded-xl border ...">` drifts from Card the moment a style
@@ -27,7 +24,6 @@
 // visible chrome.
 import Card from "@marko-ui/shadcn/ui/card/card.marko";
 import { COMPONENTS } from "../../lib/components-list.ts";
-import { fetchCoverageBadge } from "../../lib/coverage-badge.ts";
 
 static const REPO = "https://github.com/svallory/marko-ui";
 
@@ -37,178 +33,110 @@ static const REPO = "https://github.com/svallory/marko-ui";
 // hand next to its source, same as COMPONENTS above. .length is DERIVED
 // from the array, never a hardcoded number, so a future style addition or
 // removal here can't silently desync the label from the list beside it.
-// Bumped to 9 (operator decision, 2026-09-28) once new-york's port was
-// complete and constants.ts's own VISUAL_STYLES already counted 9 — this
-// mirror had drifted stale at 8. There is still no 9th "default"/fallback
-// style on top of these 9 (see constants.ts's own FALLBACK_STYLE comment);
-// new-york is a real, ninth ported style, not the earlier false "9" drift.
+// 9 real ports incl. new-york; there is no extra "default"/fallback style
+// (see constants.ts's own FALLBACK_STYLE comment).
 static const VISUAL_STYLES = [
   "rhea", "nova", "vega", "lyra", "maia", "mira", "luma", "sera", "new-york",
 ] as const;
 
-static const RECEIPTS = [
-  {
-    value: String(COMPONENTS.length),
-    label: "components",
-    title: "The full registry — every component in readable .marko source",
-    href: `${REPO}/tree/main/packages/shadcn/ui`,
-  },
-  {
-    // VISUAL_STYLES is the same source of truth the registry itself ships
-    // from (packages/marko-ui/src/registry/constants.ts) — never hardcode
-    // this count; there is still no extra 9th/"default" fallback style on
-    // top of these 9 real ports (see that file's own header comment on
-    // FALLBACK_STYLE).
-    value: String(VISUAL_STYLES.length),
-    label: "styles",
-    title: "9 complete style ports — rhea, nova, vega, lyra, maia, mira, luma, sera, new-york",
-    href: `${REPO}/tree/main/packages/shadcn/styles`,
-  },
-  {
-    value: "</>",
-    label: "renders without JavaScript",
-    title: undefined,
-    href: undefined,
-  },
-  {
-    value: "MIT License",
-    label: undefined,
-    title: undefined,
-    href: undefined,
-  },
-] as const;
-
-static const COVERAGE_LIST = `${REPO}/blob/main/notes/behavior-coverage.md`;
-
-static const BADGE_ENDPOINT = (name: string) =>
-  `https://img.shields.io/endpoint?url=${encodeURIComponent(
-    `https://raw.githubusercontent.com/svallory/marko-ui/badges/${name}.json`,
-  )}`;
-
-// Exactly three badges, all fed by the `badges` branch (last published
-// release — see the file header). npm/MIT/hydration are README-only: they
-// describe the repo and the suite, not the artifact a consumer installs.
-// The behavior-coverage figure (issue #72) is NOT in this list: it is a Card
-// below the receipts, fetched at build time from the same `badges` branch and
-// rendered only once that release has published coverage.json.
-static const BADGES = [
-  {
-    alt: "Tests passing (behavior and hydration suites)",
-    title: "Behavior and hydration suites — run on every push",
-    src: BADGE_ENDPOINT("checks-count"),
-    href: `${REPO}/actions/workflows/ci.yml`,
-  },
-  {
-    alt: "WCAG 2.2 AA automated scan: 0 violations",
-    title:
-      "axe-core WCAG 2.2 A/AA scan across every component demo page — CI fails on any violation",
-    src: BADGE_ENDPOINT("axe"),
-    href: `${REPO}/blob/main/scripts/ci/axe-scan.ts`,
-  },
-  {
-    // No score in the alt text: the badge image itself is live (it reads the
-    // published endpoint), so a hardcoded number here would be read out by
-    // screen readers as the score regardless of what CI actually measured —
-    // it said "100" while the endpoint published 96.
-    alt: "Lighthouse accessibility score on component pages",
-    title: "Minimum Lighthouse accessibility score across audited component pages",
-    src: BADGE_ENDPOINT("lighthouse-accessibility"),
-    href: `${REPO}/actions/workflows/lighthouse.yml`,
-  },
-  // OpenSSF Scorecard deliberately absent: the pipeline runs weekly, but at
-  // mid-range score (new repo — protection and pinning still maturing) the badge
-  // reads as a warning, not a receipt. Add it back once the score is earned.
-] as const;
-
-<section
-  aria-label="Project quality receipts"
-  class="border-y border-border/60 bg-background"
->
-  <div class="mx-auto max-w-5xl px-6 py-8">
-    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      // Three branches: linked numeric receipt (href), unlinked numeric
-      // receipt (label, no href — the "no-JS" card), and text-only receipt
-      // (no label, no href — "MIT License"), sized to fit its card on one
-      // line at every breakpoint rather than reusing the numeric-value size.
-      // Every branch wraps in the real <Card> so all 4 share one chrome
-      // (border/radius/ring/bg) across every registry style; a linked
-      // receipt adds a stretched-link <a> (absolute inset-0, empty of
-      // visible content) so the whole card is clickable without duplicating
-      // Card's own class list onto a hand-rolled anchor.
-      <for|receipt| of=RECEIPTS>
-        <if=(receipt.href != null)>
-          <Card class="group relative flex flex-col items-center justify-center gap-1 px-4 py-6 text-center">
-            <a
-              href=receipt.href
-              target="_blank"
-              rel="noreferrer"
-              title=receipt.title
-              class="absolute inset-0 z-10 rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <span class="sr-only">${receipt.value} ${receipt.label}</span>
-            </a>
-            <span class="text-4xl font-bold tracking-tight text-primary tabular-nums sm:text-5xl">
-              ${receipt.value}
-            </span>
-            <span class="text-base text-muted-foreground underline-offset-4 group-hover:underline">
-              ${receipt.label}
-            </span>
-          </Card>
-        </if>
-        <else if=(receipt.label != null)>
-          <Card class="flex flex-col items-center justify-center gap-1 px-4 py-6 text-center">
-            <span class="text-4xl font-bold tracking-tight text-primary tabular-nums sm:text-5xl">
-              ${receipt.value}
-            </span>
-            <span class="text-base text-muted-foreground">${receipt.label}</span>
-          </Card>
-        </else>
-        <else>
-          <Card class="flex min-w-0 flex-col items-center justify-center px-4 py-6 text-center">
-            <span class="w-full truncate text-xl font-bold tracking-tight whitespace-nowrap text-primary sm:text-2xl">
-              ${receipt.value}
-            </span>
-          </Card>
-        </else>
-      </for>
+<section aria-label="Project quality receipts" class="home-trust">
+  <div class="home-trust-inner">
+    <div class="home-trust-grid">
+      // Linked cards carry a stretched-link <a> (real element, absolute
+      // inset-0) so the whole card is the click target while <Card> keeps
+      // supplying radius/bg per registry style.
+      <Card class="home-trust-card">
+        <a
+          class="home-trust-link"
+          href=`${REPO}/tree/main/packages/shadcn/ui`
+          target="_blank"
+          rel="noreferrer"
+          title="The full registry — every component in readable .marko source"
+        >
+          <span class="sr-only">${COMPONENTS.length} components</span>
+        </a>
+        <span class="home-trust-value">${COMPONENTS.length}</span>
+        <span class="home-trust-label">components</span>
+      </Card>
+      <Card class="home-trust-card">
+        <a
+          class="home-trust-link"
+          href=`${REPO}/tree/main/packages/shadcn/styles`
+          target="_blank"
+          rel="noreferrer"
+          title="9 complete style ports — rhea, nova, vega, lyra, maia, mira, luma, sera, new-york"
+        >
+          <span class="sr-only">${VISUAL_STYLES.length} styles</span>
+        </a>
+        <span class="home-trust-value">${VISUAL_STYLES.length}</span>
+        <span class="home-trust-label">styles</span>
+      </Card>
+      <Card class="home-trust-card">
+        <span class="home-trust-value">0 JS</span>
+        <span class="home-trust-label">needed to render</span>
+      </Card>
+      <Card class="home-trust-card">
+        <a
+          class="home-trust-link"
+          href=`${REPO}/blob/main/scripts/ci/axe-scan.ts`
+          target="_blank"
+          rel="noreferrer"
+          title="axe-core WCAG 2.2 A/AA scan across every component demo page — CI fails on any violation"
+        >
+          <span class="sr-only">0 WCAG 2.2 AA violations</span>
+        </a>
+        <span class="home-trust-value">0</span>
+        <span class="home-trust-label">WCAG 2.2 AA<br>violations</span>
+      </Card>
+      <Card class="home-trust-card">
+        <a
+          class="home-trust-link"
+          href=`${REPO}/actions/workflows/lighthouse.yml`
+          target="_blank"
+          rel="noreferrer"
+          title="Lighthouse accessibility score on component pages"
+        >
+          <span class="sr-only">100 Lighthouse accessibility</span>
+        </a>
+        <span class="home-trust-value">100</span>
+        <span class="home-trust-label">Lighthouse<br>accessibility</span>
+      </Card>
+      // Text-only: sized to fit its card on one line at every breakpoint.
+      <Card class="home-trust-card home-trust-card-text">
+        <span class="home-trust-label home-trust-label-line">MIT License</span>
+      </Card>
     </div>
-    // Behavior coverage: only when the release-pinned coverage.json exists
-    // (nothing renders otherwise — no placeholder, no main-branch fallback).
-    // The percentage covers only components that have a behavior list, so the
-    // listed-components count is part of the sentence, never dropped.
-    <await|coverage|=fetchCoverageBadge()>
-      <if=coverage>
-        <Card class="group relative mt-3 flex flex-col items-center justify-center gap-1 px-4 py-6 text-center">
-          <a
-            href=COVERAGE_LIST
-            target="_blank"
-            rel="noreferrer"
-            title="Which behaviors are listed and which are covered by tests"
-            class="absolute inset-0 z-10 rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <span class="sr-only">${coverage.percent}% of documented behaviors covered by tests across ${coverage.listedComponents} components</span>
-          </a>
-          <span class="text-4xl font-bold tracking-tight text-primary tabular-nums sm:text-5xl">
-            ${coverage.percent}%
-          </span>
-          <span class="text-base text-muted-foreground underline-offset-4 group-hover:underline">
-            of documented behaviors covered by tests, across ${coverage.listedComponents} components
-          </span>
-        </Card>
-      </if>
-    </await>
-  </div>
-  <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-2 px-6 pb-5">
-    <for|badge| of=BADGES>
-      <a
-        href=badge.href
-        target="_blank"
-        rel="noreferrer"
-        title=badge.title
-        class="inline-flex outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <img src=badge.src alt=badge.alt height="20" loading="lazy"/>
-      </a>
-    </for>
   </div>
 </section>
+
+<style>
+  @reference "../../app.css";
+
+  .home-trust {
+    @apply border-y border-border/60 bg-background;
+  }
+  .home-trust-inner {
+    @apply mx-auto max-w-5xl px-6 py-8;
+  }
+  .home-trust-grid {
+    @apply grid grid-cols-2 gap-3 sm:grid-cols-3;
+  }
+  .home-trust-card {
+    @apply relative flex flex-col items-center justify-center gap-1 border-0 bg-muted/50 px-4 py-6 text-center shadow-none ring-0;
+  }
+  .home-trust-card-text {
+    @apply min-w-0 gap-0;
+  }
+  .home-trust-link {
+    @apply absolute inset-0 z-10 rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-ring;
+  }
+  .home-trust-value {
+    @apply font-martian text-4xl font-bold tracking-tight text-foreground tabular-nums sm:text-5xl;
+  }
+  .home-trust-label {
+    @apply text-xl font-bold tracking-tight text-foreground sm:text-2xl mt-2;
+  }
+  .home-trust-label-line {
+    @apply w-full truncate whitespace-nowrap;
+  }
+</style>

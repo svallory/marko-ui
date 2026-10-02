@@ -21,6 +21,7 @@
   --font-sans: var(--font-sans);
   --font-heading: var(--font-heading);
   --font-mono: var(--font-mono);
+  --font-martian: var(--font-martian);
   --color-surface: var(--surface);
   --color-surface-foreground: var(--surface-foreground);
   --color-code: var(--code);
@@ -40,6 +41,7 @@
   --font-heading: var(--font-sans);
   --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo,
     Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-martian: "Martian Mono Variable", var(--font-mono);
   --surface: oklch(0.98 0 0);
   --surface-foreground: var(--foreground);
   --code: var(--surface);

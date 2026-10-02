@@ -48,6 +48,9 @@
    [data-lang] rules below keep the var hooks and fall back to system fonts. */
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
+/* Martian Mono: display face for the home trust-strip numbers. Self-hosted via
+   fontsource like Geist (no fonts.googleapis.com request at runtime). */
+@import "@fontsource-variable/martian-mono";
 /* Measured-height accordion animation is already in globals.css above (its
    own header comment: "shared by the consumer theme and the docs site's
    app.css — both must import it after tw-animate-css"). No separate import
