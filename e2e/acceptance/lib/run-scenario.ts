@@ -260,7 +260,7 @@ function defaultRunner(pm: Pm): Runner {
   return "node"
 }
 
-interface CliTargetPaths {
+export interface CliTargetPaths {
   kind: TargetConfig["kind"]
   version: string
   /** The .tgz (tarball target) or the npm spec (published). */
@@ -709,14 +709,36 @@ function resolveInvocation(
   }
 
   const driver = driverFor(ctx.pm)
-  const tool = `marko-ui@${step.cliVersion ?? ctx.cli.version}`
-  const [bin, ...prefix] = driver.dlx(tool)
+  const tool = dlxTool(ctx.cli, step.cliVersion)
+  const argv = dlxArgv(ctx.pm, tool)
+  const [bin, ...prefix] = argv
   if (!bin) throw new StepFailure(`${driver.name} has no dlx runner`)
   return {
     command: bin,
     args: [...prefix, ...cliArgs],
-    label: `${describeCommand(bin, [...prefix, tool, ...cliArgs])}`,
+    label: `${describeCommand(bin, [...prefix, ...cliArgs])}`,
   }
+}
+
+/**
+ * The package spec a dlx runner is asked to run: a pinned `cliVersion` wins,
+ * then the packed .tgz for the tarball target, else `marko-ui@<version>`.
+ * The tarball target's "version" is the literal string `tarball`, so building
+ * `marko-ui@${version}` for it sent Yarn Berry to the registry for a dist-tag
+ * called "tarball" (YN0016).
+ */
+export function dlxTool(cli: CliTargetPaths, cliVersion?: string): string {
+  if (cliVersion) return `marko-ui@${cliVersion}`
+  if (cli.kind === "tarball") return cli.spec
+  return `marko-ui@${cli.version}`
+}
+
+/** The full dlx argv (runner + spec). A local tarball needs `-p` under Yarn Berry, which has no "run this file" form. */
+export function dlxArgv(pm: Pm, tool: string): string[] {
+  if (pm === "yarn-berry" && !tool.startsWith("marko-ui@")) {
+    return ["yarn", "dlx", "-p", `file:${tool}`, "marko-ui"]
+  }
+  return driverFor(pm).dlx(tool)
 }
 
 function runInvocation(

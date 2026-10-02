@@ -501,26 +501,23 @@ are green, and `scenarios.yaml` is the single source for them.
 ### Windows (report-only CI job)
 
 The `windows (core, report only)` job runs the `core` kind on the packed tarball and never
-blocks a release. Triage of its first run (run 36942701465), 13 core scenarios:
+blocks a release.
 
-- 9 failed, all with one cause: `lib/proc.ts` opened the literal `/dev/null`, which Windows
-  resolves to `D:\dev\null` (`ENOENT`) — every spawn failed before the CLI ran. **Fixed**
-  (`os.devNull`). Scenarios: `core.init-defaults-copy`, `init-explicit-flags`,
-  `init-with-components`, `add-zag-machine-and-composite`, `read-commands-search-show-docs`,
-  `manifest-and-registry-list`, `add-unknown-component`, `eject-on-copy-refuses`,
-  `init-twice-refuses`.
-- 4 skipped by design (`requires.os: [linux, macos]`: pty needs `expect`):
+- Run 1 (36942701465): 9 of 13 core scenarios failed because `lib/proc.ts` opened the literal
+  `/dev/null` (`D:\dev\null` on Windows). Fixed with `os.devNull`.
+- Run 3 (36943124599): **all 9 runnable core scenarios pass on Windows** (init, add, read
+  commands, manifest, refusals; the longest, `add-zag-machine-and-composite`, took ~127 s). The 4
+  others skip by design (`requires.os: [linux, macos]`, they need the `expect` pty driver):
   `init-interactive-pty-defaults`, `init-interactive-pty-choices`, `add-multiple-at-once`,
-  `full-agent-loop`.
-- 2 runner unit tests failed for the same `/dev/null` cause, and 1 `_filters` test assumed
-  the host is never Windows. Both fixed.
+  `full-agent-loop`. Two runner unit tests still failed there — `pwd` under Git-for-Windows'
+  `sh` prints an MSYS path (`/tmp/x`) that `realpath` resolves on the wrong drive — now fixed
+  by recording `process.cwd()` instead.
 
-**Known gaps, predicted from the code and NOT yet observed** (the first run died before
-reaching them; re-triage after the next Windows run and move anything real above):
+**Known gaps, NOT observed** (the job runs only `kind:core`, and the scenarios that would hit
+them are in other kinds; the Windows job is not given the registry artifact):
 
-- Pre-steps (`run:`) and `@helper` scripts are launched through `sh`, which is not
-  guaranteed on a Windows `PATH`.
-- The registry mirror needs `flock`, a POSIX process group and `ps`, and `/tmp` lock files;
-  none exist on Windows, so any scenario that needs the mirror cannot run there. The job
-  therefore downloads no registry artifact.
-- Path separators in `fileContains`/`filesExist` expectations are written with `/`.
+- Pre-steps (`run:`) and `@helper` scripts are launched through `sh`, which is on the
+  runner's PATH via Git for Windows but is not guaranteed elsewhere.
+- The registry mirror needs `flock`, a POSIX process group and `ps`, and `/tmp` lock files, so
+  any scenario that needs the mirror cannot run on Windows.
+- Only `core` is run on Windows; every other kind is untested there.

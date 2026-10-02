@@ -29,6 +29,8 @@ import {
   addOverride,
   applyPreSteps,
   buildEnv,
+  dlxArgv,
+  dlxTool,
   ensurePinnedCliDir,
 } from "../lib/run-scenario.ts"
 import { loadScenarioDoc } from "../lib/scenario-doc.ts"
@@ -62,6 +64,10 @@ async function scratch(): Promise<{ workspace: string; app: string }> {
   return { workspace, app }
 }
 
+// `node`, not `pwd`: under Git-for-Windows' sh, `pwd` prints an MSYS path
+// (/tmp/x) that realpath resolves against the wrong drive.
+const WRITE_CWD = `node -e "require('fs').writeFileSync('where.txt', process.cwd())"`
+
 /** Where a `run` pre-step actually executed, by asking it. */
 async function cwdOfRun(step: Step, workspace: string, app: string) {
   await applyPreSteps([step], { doc, cwd: app, label: "post", pm: "bun", workspace })
@@ -84,7 +90,7 @@ describe("acceptance · runner · a pre-step run honours its cwd", () => {
     // self-referential link, and the scenario's first step then dies on
     // "No project found at link-to-app".
     const where = await cwdOfRun(
-      { label: "record the cwd", cwd: ".", run: { cmd: "pwd > where.txt" } } as unknown as Step,
+      { label: "record the cwd", cwd: ".", run: { cmd: WRITE_CWD } } as unknown as Step,
       workspace,
       app
     )
@@ -94,7 +100,7 @@ describe("acceptance · runner · a pre-step run honours its cwd", () => {
   it("still defaults to the app dir when no cwd is given", async () => {
     const { workspace, app } = await scratch()
     const where = await cwdOfRun(
-      { label: "record the cwd", run: { cmd: "pwd > where.txt" } } as unknown as Step,
+      { label: "record the cwd", run: { cmd: WRITE_CWD } } as unknown as Step,
       workspace,
       app
     )
@@ -319,5 +325,42 @@ describe("the shadcn override re-resolve", () => {
     await expect(
       addOverride(workspace, workspace, "@marko-ui/shadcn", "/tmp/s.tgz", "pnpm", target, failing)
     ).rejects.toThrow(/re-resolving/)
+  })
+})
+
+describe("the dlx invocation", () => {
+  const PMS = ["bun", "npm", "pnpm", "yarn-classic", "yarn-berry"] as const
+  const tarball = {
+    kind: "tarball" as const,
+    version: "tarball",
+    spec: "/tmp/marko-ui-acceptance-tarballs/marko-ui-1.2.3/cli/marko-ui.tgz",
+  }
+  const published = { kind: "published" as const, version: "0.5.0", spec: "marko-ui@0.5.0" }
+
+  it("never builds marko-ui@tarball for any pm: the tarball target runs the packed .tgz", () => {
+    // `tarball` is the target's name, not a version; Yarn Berry once asked the
+    // registry for that dist-tag (YN0016 "Registry failed to return tag tarball").
+    for (const pm of PMS) {
+      const argv = dlxArgv(pm, dlxTool(tarball)).join(" ")
+      expect(argv, pm).not.toContain("@tarball")
+      expect(argv, pm).toContain(tarball.spec)
+    }
+  })
+
+  it("keeps the published target on marko-ui@<version>", () => {
+    for (const pm of PMS) {
+      expect(dlxArgv(pm, dlxTool(published)).join(" "), pm).toContain("marko-ui@0.5.0")
+    }
+  })
+
+  it("a pinned cliVersion wins over either target", () => {
+    expect(dlxTool(tarball, "0.4.1")).toBe("marko-ui@0.4.1")
+    expect(dlxTool(published, "0.4.1")).toBe("marko-ui@0.4.1")
+  })
+
+  it("Yarn Berry runs a local tarball through `dlx -p file:<tgz> marko-ui`", () => {
+    expect(dlxArgv("yarn-berry", dlxTool(tarball))).toEqual([
+      "yarn", "dlx", "-p", `file:${tarball.spec}`, "marko-ui",
+    ])
   })
 })
