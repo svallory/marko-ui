@@ -40,8 +40,23 @@ permissions:
   contents: read
 
 jobs:
+  # Gate: the packed tarball (the exact CLI + shadcn this commit would publish)
+  # must pass the whole acceptance matrix before anything is published. Calls
+  # the reusable workflow rather than copying it, so the gate and the PR/weekly
+  # runs cannot drift. Skipped for badges_only, which publishes nothing.
+  # The Windows job is off here: it is report-only, and the release should not
+  # wait on it (it still runs on PRs, dispatches and the weekly schedule).
+  acceptance:
+    name: Acceptance gate (tarball)
+    if: ${{ !inputs.badges_only }}
+    uses: ./.github/workflows/acceptance.yml
+    with:
+      target: tarball
+      windows: false
+
   release:
     name: Publish npm packages
+    needs: acceptance
     # badges_only re-runs just the release-badges job for a tag that is
     # already published (e.g. after that job failed on its own).
     if: ${{ !inputs.badges_only }}

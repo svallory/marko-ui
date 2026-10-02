@@ -26,7 +26,7 @@
  * Note this asserts LIVE HEALTH, not freshness: the poll succeeds against
  * whatever the edge currently serves, so a stale-but-healthy previous deploy
  * can give a green first poll. Freshness relative to main is the weekly
- * acceptance suite's job (e2e/acceptance/registry-health.test.ts).
+ * acceptance suite's job (e2e/acceptance/scenarios.yaml, kind: registry).
  *
  * Deliberately standalone and quick: the acceptance suite is the full weekly
  * validation; this is the per-deploy tripwire.

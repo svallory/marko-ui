@@ -1,18 +1,38 @@
-# Acceptance suite (e2e/acceptance) — exercises the PUBLISHED marko-ui/
-# @marko-ui/shadcn packages and the live registry deploy, not the workspace.
-# Deliberately NOT part of ci.yml: it depends on external services (npm,
-# the deployed registry) that are outside this repo's control, so a
-# failure here means "something published/deployed is broken," not "this PR
-# broke something" — it shouldn't block or flake every PR's required checks.
+# Acceptance suite (e2e/acceptance) — real CLI, real scaffolders, real package
+# managers, real registry. A YAML-driven matrix (scenarios.yaml); see
+# e2e/acceptance/README.md.
+#
+# Three ways to run it, one workflow:
+#   schedule            weekly, target=published   — catches a broken publish or a
+#                       stale registry deploy with nobody watching.
+#   pull_request        target=tarball             — tests the PR's own CLI, packed
+#                       from the checkout, before it is published.
+#   workflow_dispatch   target input (default published), plus version/registry_url.
+#   workflow_call       release.yml gates the npm publish on target=tarball from
+#                       the same commit.
+#
+# Shape (Node 24 everywhere unless a job says otherwise): derive-matrix (kinds from scenarios.yaml) -> registry (built once) ->
+# shards (one job per kind, fail-fast off) -> acceptance (aggregate gate) ; plus
+# a non-blocking Windows job. The aggregate `acceptance` job is the single name
+# a caller or branch protection depends on.
 name: Acceptance
 
 on:
   workflow_dispatch:
     inputs:
+      target:
+        description: >-
+          CLI under test: `published` (npm, marko-ui@<version>) or `tarball`
+          (packed from this checkout).
+        required: false
+        default: published
+        type: choice
+        options: [published, tarball]
       version:
         description: >-
           Published package version (npm dist-tag or semver). Empty =
-          ACCEPTANCE_PKG_VERSION repo variable, else `latest`.
+          ACCEPTANCE_PKG_VERSION repo variable, else `latest`. Ignored for
+          target=tarball.
         required: false
         default: ""
         type: string
@@ -23,39 +43,283 @@ on:
         required: false
         default: ""
         type: string
+  workflow_call:
+    inputs:
+      target:
+        description: "published | tarball"
+        required: false
+        default: tarball
+        type: string
+      version:
+        required: false
+        default: ""
+        type: string
+      registry_url:
+        required: false
+        default: ""
+        type: string
+      windows:
+        description: >-
+          Run the report-only Windows job. release.yml passes false: the job
+          cannot fail the gate, but the called run still waits for it to
+          finish, and a release should not wait on a report.
+        required: false
+        default: true
+        type: boolean
   pull_request:
     paths:
       - "e2e/acceptance/**"
       - ".github/workflows/acceptance.yml"
+      # target=tarball packs the CLI and the shadcn package from the checkout,
+      # and the in-suite registry mirror is built from them, so a change to any
+      # of these changes what is under test.
+      - "packages/marko-ui/**"
+      - "packages/shadcn/**"
+      - "tooling/**"
+      - "bun.lock"
   schedule:
     # Weekly, well off :00/:30 to avoid the fleet-wide top-of-hour thundering
-    # herd. Catches a stale registry deploy or a broken publish within a
-    # week even with nobody watching.
+    # herd.
     - cron: "17 6 * * 1"
 
 permissions:
   contents: read
 
+env:
+  # Resolved once. An explicit input wins (dispatch, or release.yml's call);
+  # a pull_request is tarball; everything else (schedule) is published. `||`
+  # because an unset input is an empty string, not an absent key.
+  ACCEPTANCE_TARGET: ${{ inputs.target || (github.event_name == 'pull_request' && 'tarball') || 'published' }}
+  # Dispatch/call inputs win when set; otherwise the repo variables (empty
+  # string => e2e/acceptance/lib falls back to its own default).
+  ACCEPTANCE_REGISTRY_URL: ${{ inputs.registry_url || vars.ACCEPTANCE_REGISTRY_URL }}
+  ACCEPTANCE_PKG_VERSION: ${{ inputs.version || vars.ACCEPTANCE_PKG_VERSION }}
+  # create-marko downloads its template from GitHub's API and the scaffolds'
+  # skills clone from GitHub; unauthenticated, a shared runner IP hits the rate
+  # limit (run 4's Windows job: "Hit GitHub's API rate limit. Set GITHUB_TOKEN").
+  # The job token is read-only (permissions: contents: read).
+  GITHUB_TOKEN: ${{ github.token }}
+
 jobs:
-  acceptance:
-    name: Published-package acceptance suite
+  # Kinds come from scenarios.yaml, so a new `kind` is a new shard with no
+  # workflow edit. Needs bun + the repo's YAML loader, hence install.
+  derive-matrix:
+    name: Derive shard matrix
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.kinds.outputs.matrix }}
     steps:
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
-      - uses: ./.github/actions/setup
-      - name: Run acceptance suite against live registry + npm
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.11
+      - run: bun install --frozen-lockfile
+      - name: Validate scenarios.yaml
+        run: bun run check:acceptance
+      - name: Derive kinds
+        id: kinds
+        run: bun e2e/acceptance/scripts/kind-matrix.ts --github >> "$GITHUB_OUTPUT"
+
+  # The docs registry (`tooling/build-registry.ts`, 120 items + per-style
+  # variants) is what the in-suite mirror serves. Cold it is 10-30 minutes
+  # (registry.ts buildReal's own timeout is 30). Built ONCE here and handed to
+  # every shard as an artifact: buildReal skips its own build when
+  # apps/docs/public/r/style.json already exists, so no runner change is needed
+  # and a shard that finds the artifact never builds. The base URL is the
+  # mirror's own (127.0.0.1:4470) because the items embed absolute URLs.
+  registry:
+    name: Build registry mirror once
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.11
+      - run: bun install --frozen-lockfile
+      - name: Cache the built registry
+        id: cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: apps/docs/public/r
+          # Everything build-registry.ts reads (see ci.yml's `registry` filter).
+          key: acceptance-registry-${{ hashFiles('packages/shadcn/**', 'packages/marko-ui/src/registry/**', 'tooling/**', 'apps/docs/src/data/directory.json', 'bun.lock') }}
+      - name: Build registry
+        if: steps.cache.outputs.cache-hit != 'true'
+        env:
+          REGISTRY_BASE_URL: http://127.0.0.1:4470/r
+        run: bun tooling/build-registry.ts
+      - name: Upload registry artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        with:
+          name: acceptance-registry
+          path: apps/docs/public/r
+          retention-days: 1
+          if-no-files-found: error
+
+  shard:
+    name: ${{ matrix.kind }}
+    needs: [derive-matrix, registry]
+    runs-on: ubuntu-latest
+    # Per-kind: sum of the scenarios' worst cases + 15 min tool/install
+    # overhead, derived in e2e/acceptance/scripts/kind-matrix.ts (the registry
+    # build is its own job, so it is not here). Worst cases are README §Timing's
+    # upper bounds — ESTIMATES until a real run replaces them.
+    timeout-minutes: ${{ matrix.timeout }}
+    env:
+      # Yarn Berry turns on immutable installs when CI is set, so the scenario's
+      # `corepack use yarn@4` (which migrates the project and must rewrite
+      # yarn.lock) died with YN0028 on the runner while passing locally. The
+      # suite is testing the CLI, not Yarn's CI lockfile policy.
+      YARN_ENABLE_IMMUTABLE_INSTALLS: "false"
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.derive-matrix.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.11
+      - run: bun install --frozen-lockfile
+      - uses: actions/setup-node@7f84f1d52d0c56afb45c62fee31a93b843cea4d6 # v4
+        with:
+          node-version: 24
+      # The pm.* and pty scenarios skip (not fail) when a tool is missing, so a
+      # runner without one would go green while testing nothing. corepack
+      # provides pnpm and yarn classic from one mechanism, and is itself what
+      # pm.yarn-berry's `corepack use yarn@4` needs.
+      - name: Package managers (pnpm, yarn classic, corepack)
+        run: |
+          corepack enable
+          corepack prepare pnpm@9 --activate
+          corepack prepare yarn@1.22.22 --activate
+          pnpm --version
+          yarn --version
+      # init.test-style pty scenarios drive the CLI through `expect`.
+      - name: Install expect (pty driver)
+        run: sudo apt-get update && sudo apt-get install -y expect
+      - name: Download the shared registry build
+        uses: actions/download-artifact@484a0b528fb4d7bd804637ccb632e47a0e638317 # v4
+        with:
+          name: acceptance-registry
+          path: apps/docs/public/r
+      - name: Run shard
         run: bun run test:acceptance
         env:
-          # Dispatch inputs win when set; otherwise fall back to the repo
-          # variables so scheduled/PR runs are unchanged (empty string =>
-          # e2e/acceptance/lib/env.ts falls back to its own default).
-          ACCEPTANCE_REGISTRY_URL: ${{ inputs.registry_url||vars.ACCEPTANCE_REGISTRY_URL }}
-          ACCEPTANCE_PKG_VERSION: ${{ inputs.version||vars.ACCEPTANCE_PKG_VERSION }}
+          ACCEPTANCE_TAGS: kind:${{ matrix.kind }}
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
         with:
-          name: acceptance-results
+          name: acceptance-results-${{ matrix.kind }}
           path: e2e/acceptance/results.json
           if-no-files-found: ignore
+
+  # `env.node-version-matrix` is "the core loop on each supported Node major",
+  # but a shard runs ONE Node (24, what current create-marko needs). The kind
+  # shard therefore covers 24; this job covers the older supported majors. The
+  # scenario's own `requires.node` skips it on any other major.
+  node-versions:
+    name: node ${{ matrix.node }} (env.node-version-matrix)
+    needs: registry
+    runs-on: ubuntu-latest
+    # One slow scenario (README: 6-12 min) + 15 min overhead.
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        # 24 is the environment shard's own Node. Unverified: whether
+        # create-marko's own engines accept 20 — the first run will say.
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.11
+      - run: bun install --frozen-lockfile
+      - uses: actions/setup-node@7f84f1d52d0c56afb45c62fee31a93b843cea4d6 # v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Download the shared registry build
+        uses: actions/download-artifact@484a0b528fb4d7bd804637ccb632e47a0e638317 # v4
+        with:
+          name: acceptance-registry
+          path: apps/docs/public/r
+      - name: Run env.node-version-matrix on this Node
+        run: bun run test:acceptance
+        env:
+          ACCEPTANCE_SCENARIOS: env.node-version-matrix
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        with:
+          name: acceptance-results-node-${{ matrix.node }}
+          path: e2e/acceptance/results.json
+          if-no-files-found: ignore
+
+  # Windows reports, never blocks: it is not in `acceptance`'s needs, and its
+  # own continue-on-error keeps a failure from turning the run red. Core kind on
+  # the packed tarball only. Not given the shared registry artifact: the mirror
+  # uses flock + a POSIX process group, which Windows lacks, so any core
+  # scenario needing it fails here — a known limit of a report-only job.
+  windows:
+    name: windows (core, report only)
+    # `inputs.windows` exists only on workflow_call (release.yml passes false).
+    # On dispatch/schedule/PR it is null, and `null != false` is FALSE in the
+    # expression language (both coerce to 0), which skipped this job on the
+    # first run. So: run unless a caller said false.
+    if: ${{ inputs.windows || github.event_name != 'workflow_call' }}
+    runs-on: windows-latest
+    continue-on-error: true
+    # 13 core scenarios; Windows installs are slower than Linux's.
+    timeout-minutes: 90
+    env:
+      ACCEPTANCE_TARGET: tarball
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.11
+      - run: bun install --frozen-lockfile
+      - uses: actions/setup-node@7f84f1d52d0c56afb45c62fee31a93b843cea4d6 # v4
+        with:
+          node-version: 24
+      - name: Run core kind
+        run: bun run test:acceptance
+        env:
+          ACCEPTANCE_TAGS: kind:core
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        with:
+          name: acceptance-results-windows
+          path: e2e/acceptance/results.json
+          if-no-files-found: ignore
+
+  # The one name to depend on (release.yml's gate, branch protection). Fails if
+  # any shard — or the matrix derivation or registry build behind them —
+  # failed or was cancelled; Windows is deliberately absent.
+  acceptance:
+    name: Acceptance (gate)
+    if: always()
+    needs: [derive-matrix, registry, shard, node-versions]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require every shard green
+        env:
+          DERIVE: ${{ needs.derive-matrix.result }}
+          REGISTRY: ${{ needs.registry.result }}
+          SHARD: ${{ needs.shard.result }}
+          NODES: ${{ needs.node-versions.result }}
+        run: |
+          echo "derive-matrix=$DERIVE registry=$REGISTRY shard=$SHARD node-versions=$NODES"
+          # An upstream failure makes `shard` report `skipped`, which must not
+          # read as green, so all three must be exactly `success`.
+          for r in "$DERIVE" "$REGISTRY" "$SHARD" "$NODES"; do
+            if [ "$r" != "success" ]; then
+              echo "::error::acceptance did not pass (derive-matrix=$DERIVE registry=$REGISTRY shard=$SHARD node-versions=$NODES)"
+              exit 1
+            fi
+          done
