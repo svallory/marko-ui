@@ -1,6 +1,6 @@
 {
   "name": "marko-ui",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "The marko-ui CLI — install and manage Marko UI components from shadcn-format registries.",
   "publishConfig": {
     "access": "public"

@@ -9,6 +9,7 @@ import { COMPONENTS } from "../../../lib/components-list.ts";
 
 static const TOC = [
   { id: "unreleased", label: "Unreleased" },
+  { id: "0.6.0", label: "0.6.0" },
   { id: "0.5.0", label: "0.5.0" },
   { id: "0.4.1", label: "0.4.1" },
   { id: "0.4.0", label: "0.4.0" },
@@ -27,27 +28,30 @@ export interface ChangelogEntry {
   changes: string[];
 }
 
-static const UNRELEASED: Omit<ChangelogEntry, "version" | "date"> = {
-  title: "CLI guards: no more installing into Marko 5, Tailwind v3, or React projects",
-  summary:
-    "Three wrong-project shapes the CLI used to accept and silently mis-configure are now hard refusals with the fix spelled out: a Marko that cannot reach 6, a Tailwind v3 setup, and a components.json that belongs to shadcn/ui for React. Two prompt/crash defects the acceptance suite found are fixed too: `add -y` no longer asks to overwrite, and `doctor` reports an unbacked alias instead of crashing.",
-  changes: [
-    "`registry add` with no arguments and no terminal to answer them is now a usage error (exit 2) naming `marko-ui registry add @namespace=url`, instead of rendering the picker and exiting 0 having registered nothing — a CI or agent step calling it bare used to go green having done nothing. A terminal still gets the picker.",
-    "`add -y` never asks \"already exists, overwrite?\" any more: it keeps the file, reports it as skipped and says `--overwrite` is how to replace it. The file writer is told a prompt is allowed only when a terminal is there to answer it, so an edited component survives a scripted `add` (previously the question appeared regardless, hanging a piped run or quietly keeping the old file behind a prompt the user had opted out of). A terminal without `-y` still asks, and `--overwrite` still replaces.",
-    "`doctor` reports an alias nothing backs as a failed check and exits 3 instead of dying with \"Something went wrong\" and exit 1 — the config loader refused to hand back a config at all for exactly the case `doctor`'s own alias check exists to report. Every other command still refuses, with the same actionable alias error.",
-    "`eject` now writes the same flat, per-style component source `add` writes. It used to fetch while `components.json` still said `import`, which makes the registry resolver skip the per-style tree and serve the import-form items (they import `./classes.ts`), so a freshly ejected project showed roughly 190 files as drifted in `diff` against the copy registry. The fetch (and the `marko.json` taglib) now run against a copy-distribution view of the config. Eject still writes every component in `@marko-ui/shadcn`, as before.",
-    "Breaking: `init` refuses a project whose `marko` cannot satisfy Marko 6 (`^5`, `~5`, `5.37.0`, `<6`; the installed version in node_modules wins when readable), exiting 1 with 'marko-ui requires Marko 6' and the official upgrade/interop guide (https://markojs.com/docs/guide/marko-5-interop). Ranges that allow 6 (`>=5`, `*`, `latest`, `workspace:`) pass, and `--force` bypasses — the same escape hatch as the non-Marko refusal. Previously init installed Marko 6 tags-API components into Marko 5 (class API) projects.",
-    "Breaking: `init` refuses a Tailwind v3 project — the nearest installed or declared `tailwindcss` (resolved walking up to the workspace root, so a hoisted monorepo app is judged by the workspace's Tailwind, not by its own empty package.json) cannot reach 4, or a `tailwind.config.{js,cjs,mjs,ts}` exists with no v4 setup (no `tailwindcss` 4 range, no `@import \"tailwindcss\"` stylesheet, no `@tailwindcss/*` package) — exiting 1 and pointing at the official upgrade tool with the project's own runner (`bunx`/`pnpm dlx`/`npx @tailwindcss/upgrade`, https://tailwindcss.com/docs/upgrade-guide). No silent upgrade; `--force` bypasses.",
-    "Breaking: every command that reads or writes `components.json` (`add`, `status`, `diff`, `doctor`, `agents sync`, `eject`, `search`, `show`, `registry build`/`list`/`add`/`remove`) now refuses one that belongs to shadcn/ui for React — detected from the owning project (declares `react`, no Marko dependency), not from config fields, because marko-ui itself writes `tsx: true` and the `rsc` key for real Marko projects. Exit 1 says the config is shadcn/ui-for-React and points at `--cwd <app>`, and the file is left byte-identical (previously `registry add` even wrote into it, and a React config parsed as valid so components were installed into a React app). The detector lives in one place — the config loader — and the commands that bypass the loader for partial configs call it directly.",
-    "`init --cwd <app>` from a workspace root works with a RELATIVE path, which is exactly what init's own workspace-root message tells you to do (\"run marko-ui init from the app directory or pass `--cwd <app>`\"). It used to write `components.json`, then fail with \"Could not load the workspace config in apps/web. Add components.json to this workspace…\" — asking for a config in the very workspace it was creating one in — roll the file back and exit 1. A relative `--cwd` was kept verbatim while every alias path resolved to an absolute path under it, and comparing the two path-segment by path-segment gave an empty common root, so the app's own alias looked like it belonged to a different package. `init` now resolves `--cwd` the way every other command already did, and the workspace lookup resolves its inputs too, so a config that has not been resolved degrades to \"no foreign package\" instead of an error. An absolute `--cwd` is unaffected.",
-  ],
-};
-
 static const ENTRIES: ChangelogEntry[] = [
+  {
+    version: "0.6.0",
+    date: "2026-10-01",
+    title: "CLI guards, five acceptance-found fixes, and a release gate",
+    summary:
+      "Three wrong-project shapes the CLI used to accept and silently mis-configure are now hard refusals with the fix spelled out: a Marko that cannot reach 6, a Tailwind v3 setup, and a components.json that belongs to shadcn/ui for React. Five defects the new acceptance matrix found are fixed too: `add -y` no longer asks to overwrite, `doctor` reports an unbacked alias instead of crashing, a bare `registry add` without a terminal is a usage error, `init --cwd <app>` from a workspace root works, and `eject` writes the same source `add` does.",
+    changes: [
+      "`registry add` with no arguments and no terminal to answer them is now a usage error (exit 2) naming `marko-ui registry add @namespace=url`, instead of rendering the picker and exiting 0 having registered nothing — a CI or agent step calling it bare used to go green having done nothing. A terminal still gets the picker.",
+      '`add -y` never asks "already exists, overwrite?" any more: it keeps the file, reports it as skipped and says `--overwrite` is how to replace it. The file writer is told a prompt is allowed only when a terminal is there to answer it, so an edited component survives a scripted `add` (previously the question appeared regardless, hanging a piped run or quietly keeping the old file behind a prompt the user had opted out of). A terminal without `-y` still asks, and `--overwrite` still replaces.',
+      '`doctor` reports an alias nothing backs as a failed check and exits 3 instead of dying with "Something went wrong" and exit 1 — the config loader refused to hand back a config at all for exactly the case `doctor`\'s own alias check exists to report. Every other command still refuses, with the same actionable alias error.',
+      "`eject` now writes the same flat, per-style component source `add` writes. It used to fetch while `components.json` still said `import`, which makes the registry resolver skip the per-style tree and serve the import-form items (they import `./classes.ts`), so a freshly ejected project showed roughly 190 files as drifted in `diff` against the copy registry. The fetch (and the `marko.json` taglib) now run against a copy-distribution view of the config. Eject still writes every component in `@marko-ui/shadcn`, as before.",
+      "Breaking: `init` refuses a project whose `marko` cannot satisfy Marko 6 (`^5`, `~5`, `5.37.0`, `<6`; the installed version in node_modules wins when readable), exiting 1 with 'marko-ui requires Marko 6' and the official upgrade/interop guide (https://markojs.com/docs/guide/marko-5-interop). Ranges that allow 6 (`>=5`, `*`, `latest`, `workspace:`) pass, and `--force` bypasses — the same escape hatch as the non-Marko refusal. Previously init installed Marko 6 tags-API components into Marko 5 (class API) projects.",
+      "Breaking: `init` refuses a Tailwind v3 project — the nearest installed or declared `tailwindcss` (resolved walking up to the workspace root, so a hoisted monorepo app is judged by the workspace's Tailwind, not by its own empty package.json) cannot reach 4, or a `tailwind.config.{js,cjs,mjs,ts}` exists with no v4 setup (no `tailwindcss` 4 range, no `@import \"tailwindcss\"` stylesheet, no `@tailwindcss/*` package) — exiting 1 and pointing at the official upgrade tool with the project's own runner (`bunx`/`pnpm dlx`/`npx @tailwindcss/upgrade`, https://tailwindcss.com/docs/upgrade-guide). No silent upgrade; `--force` bypasses.",
+      "Breaking: every command that reads or writes `components.json` (`add`, `status`, `diff`, `doctor`, `agents sync`, `eject`, `search`, `show`, `registry build`/`list`/`add`/`remove`) now refuses one that belongs to shadcn/ui for React — detected from the owning project (declares `react`, no Marko dependency), not from config fields, because marko-ui itself writes `tsx: true` and the `rsc` key for real Marko projects. Exit 1 says the config is shadcn/ui-for-React and points at `--cwd <app>`, and the file is left byte-identical (previously `registry add` even wrote into it, and a React config parsed as valid so components were installed into a React app). The detector lives in one place — the config loader — and the commands that bypass the loader for partial configs call it directly.",
+      '`init --cwd <app>` from a workspace root works with a RELATIVE path, which is exactly what init\'s own workspace-root message tells you to do ("run marko-ui init from the app directory or pass `--cwd <app>`"). It used to write `components.json`, then fail with "Could not load the workspace config in apps/web. Add components.json to this workspace…" — asking for a config in the very workspace it was creating one in — roll the file back and exit 1. A relative `--cwd` was kept verbatim while every alias path resolved to an absolute path under it, and comparing the two path-segment by path-segment gave an empty common root, so the app\'s own alias looked like it belonged to a different package. `init` now resolves `--cwd` the way every other command already did, and the workspace lookup resolves its inputs too, so a config that has not been resolved degrades to "no foreign package" instead of an error. An absolute `--cwd` is unaffected.',
+      "Testing: an acceptance matrix (e2e/acceptance/scenarios.yaml, 77 scenarios across 11 kinds: project kinds, existing projects, monorepos, package managers including Yarn Berry, post-setup changes, environments, agent skills) runs the real CLI against real scaffolds. CI shards it by kind against the CLI packed from the commit, tests Node 20, 22 and 24, and the npm publish now waits for it to pass on the exact tarball being released. It found the five CLI bugs fixed in this release.",
+    ],
+  },
   {
     version: "0.5.0",
     date: "2026-10-01",
-    title: "Agent skills, a sturdier init, and config that matches your project",
+    title:
+      "Agent skills, a sturdier init, and config that matches your project",
     summary:
       "Agent setup now installs real skills through the `skills` package, `init` asks its questions in a terminal and refuses to half-configure a project, and the CLI resolves aliases, stylesheets and package managers the way stock Marko apps and monorepos actually lay them out.",
     changes: [
@@ -55,10 +59,10 @@ static const ENTRIES: ChangelogEntry[] = [
       "`init --agents` on an already-initialized project skips project setup and syncs the agent docs (exit 0) instead of failing the preflight. The plain `init` error on an initialized project now names `agents sync`, `add` and `init --force`.",
       "The AGENTS.md section no longer advertises `show <name> --props`, a flag the CLI never had. Component API docs come from `marko-ui docs <name>`.",
       "Config resolution: a project with no `tsconfig.json` or `jsconfig.json` no longer crashes status, doctor, diff, add or agents sync (including a monorepo package folder without one). An alias that no tsconfig `paths` entry backs (`@/components`) resolves to the source root (`src/` if it exists, otherwise the project root) instead of a literal `@/` folder, so status, diff, doctor, agents sync and the taglib see what `add` installed. `add` now follows your aliases for components, ui, lib and hooks, and `doctor` prints the alias mapping it used. Breaking: an alias that is not `@/` or `~/` and that nothing backs (tsconfig `paths`, package `imports` or a workspace export) is now a failed `doctor` check (exit 3); it was a warning. Installing into an `@/*` alias that points outside `src/` now lands where the alias points.",
-      "`init` asks its three questions in a terminal: base color, distribution and visual style. Breaking: `-y`/`--yes` no longer defaults on, so it is an explicit opt-out of the questions, as are `--defaults`, `--silent` and non-interactive callers (agent shells, CI, piped stdin). The redundant \"write components.json?\" confirm is gone; Ctrl-C cancels without writing anything.",
+      '`init` asks its three questions in a terminal: base color, distribution and visual style. Breaking: `-y`/`--yes` no longer defaults on, so it is an explicit opt-out of the questions, as are `--defaults`, `--silent` and non-interactive callers (agent shells, CI, piped stdin). The redundant "write components.json?" confirm is gone; Ctrl-C cancels without writing anything.',
       "`add` on a project without `components.json` runs `init` with the defaults when non-interactive, and `add --dry-run` previews that without writing. Breaking: `add` is refused on the import distribution (exit 1; it used to copy files), because components come from `@marko-ui/shadcn`; it says so.",
       "Breaking: `init` refuses projects that do not depend on Marko (`marko`, `@marko/run` or `@marko/vite`) unless a terminal run accepts the offer to install it, and tells a workspace root to run from the app or pass `--cwd`; `--force` bypasses it. A failed `init` rolls back `components.json` and says what stays and that re-running is safe.",
-      "The theme merges into your own Tailwind entry instead of a second stylesheet: it is written inside a marked block (replaced on re-run), after `@import \"tailwindcss\"`, and your own CSS is never overwritten. `add` warns when the target stylesheet has no Tailwind import. Upgrading a project whose stylesheet holds the old theme without markers: `add style` or `init --force` appends the new marked block and prints a note; delete the old copy by hand.",
+      'The theme merges into your own Tailwind entry instead of a second stylesheet: it is written inside a marked block (replaced on re-run), after `@import "tailwindcss"`, and your own CSS is never overwritten. `add` warns when the target stylesheet has no Tailwind import. Upgrading a project whose stylesheet holds the old theme without markers: `add style` or `init --force` appends the new marked block and prints a note; delete the old copy by hand.',
       "Package manager detection walks up from the project to the workspace root, so `add` and `agents sync` use the monorepo's lockfile.",
       "Fixes: `AGENTS.md` with stray or reversed marker lines is repaired non-destructively (your text is kept, exactly one section remains); `agents sync` works offline by listing components found on disk; the progress spinner no longer hangs in a zero-width terminal, and overwrite prompts no longer hang when stdin is closed.",
       "Testing: a CLI scenario suite (80 scenarios over project structures, init, add and agents sync) runs in CI, plus a pty-driven suite for the init prompts.",
@@ -67,7 +71,8 @@ static const ENTRIES: ChangelogEntry[] = [
   {
     version: "0.4.1",
     date: "2026-09-29",
-    title: "Fine-grained Zag bundle splitting, client icon map pruning, and release-pinned behavior coverage",
+    title:
+      "Fine-grained Zag bundle splitting, client icon map pruning, and release-pinned behavior coverage",
     summary:
       "Monolithic vendor-zag bundle split into per-machine chunks and core, unused icon libraries pruned from client bundles with async hydration fallback, behavior coverage tracked and surfaced on the homepage trust strip, and CI hardened with pre-merge workspace checks and deterministic route typing.",
     changes: [
@@ -92,7 +97,7 @@ static const ENTRIES: ChangelogEntry[] = [
       "New style: `new-york`, a port of upstream shadcn's new-york-v4, covering every component that has a new-york-v4 counterpart, verified against upstream's class strings with a mechanical check (`tooling/derive-new-york.ts --check`).",
       "`marko-ui add` now honors `iconLibrary` in components.json: only the configured library's icon map is copied (lucide, tabler, phosphor, remixicon or hugeicons), instead of shipping all five and always rendering lucide. Switching libraries removes the previous generated map; an unknown value prints a warning and keeps the previous behavior, matching upstream.",
       "`marko-ui init`/`add` first-run fixes: never prompt when stdin isn't interactive, wire the CSS entry so the theme actually loads, guard the tsconfig, install missing dependencies.",
-      "Accessibility: Switch now exposes `role=\"switch\"` (it was announced as a plain checkbox); menu radio items (menubar, dropdown-menu, context-menu) render upstream's filled circle instead of a check mark.",
+      'Accessibility: Switch now exposes `role="switch"` (it was announced as a plain checkbox); menu radio items (menubar, dropdown-menu, context-menu) render upstream\'s filled circle instead of a check mark.',
       "Breaking: `--destructive-foreground` was removed from the themes (upstream no longer uses it), and light-mode destructive and muted-foreground colors were darkened in the theme presets and base-color variants to meet WCAG AA contrast.",
       "Breaking: Pagination was re-ported to upstream parity as presentational parts, dropping its Zag machine.",
       "Radius scale now matches upstream's CLI (multiplicative, 7 steps).",
@@ -107,15 +112,15 @@ static const ENTRIES: ChangelogEntry[] = [
     date: "2026-09-17",
     title: "Honest numbers, a green pipeline, and the no-JS form claim proved",
     summary:
-      "A correctness pass over everything the project claims publicly: each published number was re-derived from the repo and corrected where it had drifted, the CI pipeline was made genuinely green, and the headline \"forms validate without JavaScript\" claim became a test instead of an assertion.",
+      'A correctness pass over everything the project claims publicly: each published number was re-derived from the repo and corrected where it had drifted, the CI pipeline was made genuinely green, and the headline "forms validate without JavaScript" claim became a test instead of an assertion.',
     changes: [
       "Fixed `marko-ui init` crashing on a freshly scaffolded Marko app: with no Tailwind stylesheet to detect yet, it fell back to shadcn's inherited Next.js `app/globals.css`, wrote that into components.json, and then died with ENOENT on the very path it had just failed to find. Marko projects now fall back to `src/styles/globals.css`.",
-      "`--visual-style`'s help text no longer claims it is \"ignored for copy\" — the copy path fetches per-style registry items, so the style selects which generated source is copied in.",
-      "The documented install commands now pass `--base-color`, so the \"non-interactive\" form really is non-interactive.",
+      '`--visual-style`\'s help text no longer claims it is "ignored for copy" — the copy path fetches per-style registry items, so the style selects which generated source is copied in.',
+      'The documented install commands now pass `--base-color`, so the "non-interactive" form really is non-interactive.',
       "Fixed the `Publish badges` CI job, which had failed on every push to main since the style-matrix job was removed — it still required that job's artifact, so the run showed red while all four substantive jobs passed.",
       "Raised syntax-highlighting contrast to WCAG AA. Three shiki token colors sat just under 4.5:1 on the code background, which was the sole cause of the Lighthouse accessibility score sitting at 96/97; it is 100 on all audited pages now.",
-      "Added a no-JS form route and a browserless test that POSTs to it and asserts the valibot messages are present in the returned HTML — the \"forms validate without JavaScript\" claim had no in-repo verification before this.",
-      "Corrected the public numbers: 8 visual styles (not 9 — \"default\" was a vestigial shadcn field), hydration coverage stated as 33 of 54 rather than implying all, and the real keyboard-contract test count (71) in place of an unreproducible one.",
+      'Added a no-JS form route and a browserless test that POSTs to it and asserts the valibot messages are present in the returned HTML — the "forms validate without JavaScript" claim had no in-repo verification before this.',
+      'Corrected the public numbers: 8 visual styles (not 9 — "default" was a vestigial shadcn field), hydration coverage stated as 33 of 54 rather than implying all, and the real keyboard-contract test count (71) in place of an unreproducible one.',
       "Documented a phantom docs type-check failure that is environmental, not a repo defect: with the AI_AGENT variable set and `bun` resolving through a proto shim, an NDJSON banner lands in the type checker's captured output and is fingerprinted as an error that exists nowhere in the source. Run `env -u AI_AGENT bun run check`; CI is never affected.",
       "0.3.1 onward is published through the OIDC trusted-publishing workflow and carries npm provenance attestations; 0.3.0 and earlier do not.",
       "Breaking: adopted marko-zag 3.0.0's automatic `Props` shadowing — a component's declared member now always wins over a same-named native attribute, with no `Omit` or 3rd type-parameter gymnastics. Every component using the retired patterns was migrated.",
@@ -143,19 +148,21 @@ static const ENTRIES: ChangelogEntry[] = [
     version: "0.2.1",
     date: "2026-09-08",
     title: "CLI symlink fix, acceptance suite",
-    summary: "A real CLI bug fix, plus a new test suite that runs against the published npm packages instead of the workspace.",
+    summary:
+      "A real CLI bug fix, plus a new test suite that runs against the published npm packages instead of the workspace.",
     changes: [
       "Fixed a CLI entrypoint bug: on macOS, invoking the CLI through a path containing a symlinked directory (e.g. `/var` → `/private/var`, which `os.tmpdir()` returns) made the entrypoint guard's comparison fail silently — the process exited 0 having done nothing, with no output and no error.",
       "Added `e2e/acceptance/`: a suite that scaffolds real apps against the published `marko-ui`/`@marko-ui/shadcn` npm packages and the live registry deploy, covering the copy path, the import path, `doctor`/`diff`, and registry health.",
       "TypeScript pinned to `^6.0` (downgraded from an attempted 7.x) — TS 7's `tsgo` ships no in-process compiler API, which both the docs type-check tooling and the marko-ui CLI's build depend on.",
-      "Calendar demos pinned to a fixed `defaultFocusedValue` instead of relying on the browser's real \"today\", stopping day-of-month snapshot drift.",
+      'Calendar demos pinned to a fixed `defaultFocusedValue` instead of relying on the browser\'s real "today", stopping day-of-month snapshot drift.',
     ],
   },
   {
     version: "0.2.0",
     date: "2026-09-03",
     title: "First tagged release",
-    summary: "marko-ui and @marko-ui/shadcn published to npm for the first time, alongside the attr-tag compound API, full CSS architecture, and the migration to marko-zag's single `<zag>` tag.",
+    summary:
+      "marko-ui and @marko-ui/shadcn published to npm for the first time, alongside the attr-tag compound API, full CSS architecture, and the migration to marko-zag's single `<zag>` tag.",
     changes: [
       "Breaking: migrated every Zag-backed component from the three-tag `<machine-props>`/`<service>`/`<connect>` wiring to marko-zag 2.0's single `<zag/api=() => mod from=input/>` tag.",
       "Attribute-tag compound API shipped across the multi-part components that need it (dropdown-menu, menubar, context-menu submenus, and others).",
@@ -175,28 +182,25 @@ static const ENTRIES: ChangelogEntry[] = [
 >
   <h2 id="unreleased">Unreleased</h2>
 
-  <div class="mt-8 border-l-2 border-border pl-5">
-    <div class="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-      Not yet released
-    </div>
-    <h3 class="mt-1 text-base font-semibold tracking-tight">${UNRELEASED.title}</h3>
-    <p>${UNRELEASED.summary}</p>
-    <ul>
-      <for|change| of=UNRELEASED.changes>
-        <li>${change}</li>
-      </for>
-    </ul>
-  </div>
+  <p>
+    Nothing yet: everything merged to <code>main</code> since <code>0.5.0</code>
+    is in the <a href="#0.6.0"><code>0.6.0</code></a> entry below.
+  </p>
 
-  <p>Currently in the registry: ${COMPONENTS.length} components, plus the theme and utils items.</p>
+  <p>
+    Currently in the registry: ${COMPONENTS.length} components, plus the theme
+    and utils items.
+  </p>
 
-  <for|entry| of=ENTRIES by=(entry)=>entry.version>
+  <for|entry| of=ENTRIES by=(entry) => entry.version>
     <h2 id=entry.version>${entry.version}</h2>
     <div class="mt-8 border-l-2 border-border pl-5">
       <div class="text-xs font-medium tracking-wide text-muted-foreground uppercase">
         ${entry.date}
       </div>
-      <h3 class="mt-1 text-base font-semibold tracking-tight">${entry.title}</h3>
+      <h3 class="mt-1 text-base font-semibold tracking-tight">
+        ${entry.title}
+      </h3>
       <p>${entry.summary}</p>
       <ul>
         <for|change| of=entry.changes>
@@ -209,25 +213,26 @@ static const ENTRIES: ChangelogEntry[] = [
   <h2 id="versioning">Versioning</h2>
 
   <p>
-    Because component source lives in your repo rather than in a package you upgrade, marko-ui has
-    two independent version surfaces:
+    Because component source lives in your repo rather than in a package you
+    upgrade, marko-ui has two independent version surfaces:
   </p>
 
   <ul>
     <li>
-      <strong>The registry</strong> is unversioned and always reflects the current main branch.
-      Components you already installed are unaffected by changes here — you take an update only by
-      re-running <code>add --overwrite</code>.
+      <strong>The registry</strong> is unversioned and always reflects the
+      current main branch. Components you already installed are unaffected by
+      changes here — you take an update only by re-running
+      <code>add --overwrite</code>.
     </li>
     <li>
-      <strong><code>marko-ui</code></strong> is a normal npm package and follows semver. It is the
-      adapter binding Zag machines into Marko, and it is the dependency that actually ships fixes
-      to you.
+      <strong><code>marko-ui</code></strong> is a normal npm package and follows
+      semver. It is the adapter binding Zag machines into Marko, and it is the
+      dependency that actually ships fixes to you.
     </li>
   </ul>
 
   <p>
-    Before taking a component update, use <code>diff</code> to see exactly what would change.
-    See <a href="/docs/cli">CLI</a>.
+    Before taking a component update, use <code>diff</code> to see exactly what
+    would change. See <a href="/docs/cli">CLI</a>.
   </p>
 </docs-article>
