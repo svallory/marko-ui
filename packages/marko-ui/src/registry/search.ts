@@ -2,8 +2,8 @@ import {
   registryItemTypeSchema,
   registryPaginationSchema,
   searchResultErrorSchema,
-  searchResultItemSchema,
   searchResultsSchema,
+  searchableResultItemSchema,
 } from "@/src/schema"
 import { Config } from "@/src/utils/get-config"
 import { highlighter } from "@/src/utils/highlighter"
@@ -138,9 +138,9 @@ async function searchRegistriesWithContext(
   // A registry that returns `pagination` has already filtered and paginated
   // its items server-side (see the dynamic search docs). Its items are kept
   // as-is while items from static registries go through the local pipeline.
-  let localItems: z.infer<typeof searchResultItemSchema>[] = []
+  let localItems: z.infer<typeof searchableResultItemSchema>[] = []
   const serverResults: {
-    items: z.infer<typeof searchResultItemSchema>[]
+    items: z.infer<typeof searchableResultItemSchema>[]
     pagination: z.infer<typeof registryPaginationSchema>
   }[] = []
 
@@ -162,16 +162,19 @@ async function searchRegistriesWithContext(
       continue
     }
 
+    // `title` survives here and is stripped by the final
+    // `searchResultsSchema.parse` (see searchableResultItemSchema): ranking
+    // weighs it, output does not need it. `addCommandArgument` is not carried
+    // at all — it is `<registry>/<name>` for every item, so carrying it on every
+    // item is N copies of a rule; see buildSearchData, which states it once.
     const itemsWithRegistry = (outcome.value.items || []).map((item) => ({
       name: item.name,
       title: item.title,
-      type: item.type,
+      // Short form, decided here — at the data level — so the human list and
+      // the JSON agree. `formatSearchResultType` is idempotent.
+      type: formatSearchResultType(item.type),
       description: item.description,
       registry,
-      addCommandArgument: buildRegistryItemNameFromRegistry(
-        item.name,
-        registry
-      ),
     }))
 
     if (outcome.value.pagination) {
@@ -212,7 +215,7 @@ async function searchRegistriesWithContext(
     localItems = searchItems(localItems, {
       query,
       limit: localItems.length,
-    }) as z.infer<typeof searchResultItemSchema>[]
+    }) as z.infer<typeof searchableResultItemSchema>[]
   }
 
   // Merge pre-filtered items (in registry order) with locally filtered items,
@@ -731,7 +734,10 @@ function formatSearchResultItem(
     showRegistry: boolean
   }
 ) {
-  const name = item.addCommandArgument ?? item.name
+  // The address you would pass to `add` — recomputed from `name` + `registry`
+  // instead of read off the item, because that is exactly what it is and
+  // shipping it on every item shipped N copies of a one-line rule.
+  const name = buildRegistryItemNameFromRegistry(item.name, item.registry)
   const type = formatSearchResultType(item.type)
   const typeSuffix = type ? ` (${type})` : ""
   const registrySuffix =
@@ -771,6 +777,50 @@ function formatSearchScope(options: {
   }
 
   return scope
+}
+
+/**
+ * The `data` payload of the `marko-ui/search` envelope.
+ *
+ * Pagination and `errors` are carried through unchanged. Items are the
+ * compact shape the schema already produces (`name`, short `type`,
+ * `description`, `registry`) — `title` was dropped because it is derivable
+ * from `name`, and per-item `addCommandArgument` because it is
+ * `<registry>/<name>`, i.e. the same rule for every item.
+ *
+ * That rule is stated ONCE here, and only when it actually applies: an item
+ * from a registry other than the built-in default is addressed as
+ * `<registry>/<name>`, while a default-registry item is addressed by `name`
+ * alone. When every result came from the default registry there is nothing to
+ * disambiguate, so the key is absent rather than present-and-useless.
+ */
+export type SearchData = {
+  pagination: z.infer<typeof registryPaginationSchema>
+  items: z.infer<typeof searchResultsSchema>["items"]
+  errors?: z.infer<typeof searchResultErrorSchema>[]
+  addArgument?: { default: string; custom: string }
+}
+
+export function buildSearchData(
+  results: z.infer<typeof searchResultsSchema>
+): SearchData {
+  const hasCustomRegistry = results.items.some(
+    (item) => !(item.registry in BUILTIN_REGISTRIES)
+  )
+
+  return {
+    pagination: results.pagination,
+    items: results.items,
+    ...(results.errors?.length ? { errors: results.errors } : {}),
+    ...(hasCustomRegistry
+      ? {
+          addArgument: {
+            default: "<name>",
+            custom: "<registry>/<name>",
+          },
+        }
+      : {}),
+  }
 }
 
 export function printSearchResults(

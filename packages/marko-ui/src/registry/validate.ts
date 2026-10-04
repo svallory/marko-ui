@@ -76,8 +76,11 @@ export async function validateRegistry(options: {
     addDiagnostic(context, {
       registryFile: rootFile,
       message: "Root source registry file must be named registry.json.",
+      // The command name here must be THIS tool's: the suggestion is what a user
+      // types next, and it named `shadcn registry validate`, a binary they
+      // do not have installed.
       suggestion:
-        "Rename the file to registry.json and pass that file to shadcn registry validate.",
+        "Rename the file to registry.json and pass that file to marko-ui registry validate.",
     })
   }
 

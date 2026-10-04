@@ -146,10 +146,16 @@ describe("buildManifest narrowed to one command", () => {
 
 describe("the manifest command", () => {
   it("prints JSON for a named command and exits 2 for an unknown one", async () => {
-    const output: string[] = []
-    const log = vi.spyOn(console, "log").mockImplementation((line: string) => {
-      output.push(line)
-    })
+    // Captured from process.stdout.write, not console.log: the command prints
+    // through printJson so that one helper owns every JSON document the CLI
+    // emits (and its pretty/compact split — see src/utils/json-output.ts).
+    const chunks: string[] = []
+    const write = vi
+      .spyOn(process.stdout, "write")
+      .mockImplementation((chunk: unknown) => {
+        chunks.push(String(chunk))
+        return true
+      })
     const error = vi.spyOn(console, "error").mockImplementation(() => {})
     const exit = vi.spyOn(process, "exit").mockImplementation(((code?: number) => {
       throw new Error(`exit ${code}`)
@@ -157,7 +163,7 @@ describe("the manifest command", () => {
 
     try {
       buildProgram().parse(["node", "marko-ui", "manifest", "search"], { from: "node" })
-      expect(JSON.parse(output.join("\n")).data.commands[0].name).toBe("search")
+      expect(JSON.parse(chunks.join("")).data.commands[0].name).toBe("search")
 
       let code: number | undefined
       try {
@@ -167,7 +173,7 @@ describe("the manifest command", () => {
       }
       expect(code).toBe(2)
     } finally {
-      log.mockRestore()
+      write.mockRestore()
       error.mockRestore()
       exit.mockRestore()
     }

@@ -4,6 +4,7 @@ import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
 import { assertNotReactComponentsJson } from "@/src/utils/get-config"
 import { handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
+import { printEnvelope } from "@/src/utils/json-output"
 import { logger } from "@/src/utils/logger"
 import { setJsonMode } from "@/src/utils/output-mode"
 import { Command } from "commander"
@@ -50,18 +51,7 @@ export const list = new Command()
       })
 
       if (options.json) {
-        console.log(
-          JSON.stringify(
-            {
-              $type: "marko-ui/registry.list",
-              version: 1,
-              ok: true,
-              data: { registries: rows },
-            },
-            null,
-            2
-          )
-        )
+        printEnvelope("marko-ui/registry.list", { registries: rows })
         return
       }
 

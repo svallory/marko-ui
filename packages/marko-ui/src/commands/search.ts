@@ -4,6 +4,7 @@ import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
 import { clearRegistryContext } from "@/src/registry/context"
 import { RegistryErrorCode } from "@/src/registry/errors"
 import {
+  buildSearchData,
   findUnknownSearchTypes,
   printSearchResults,
   resolveSearchRegistries,
@@ -11,15 +12,19 @@ import {
   searchRegistries,
 } from "@/src/registry/search"
 import { validateRegistryConfigForItems } from "@/src/registry/validator"
-import { rawConfigSchema } from "@/src/schema"
 import { loadEnvFiles } from "@/src/utils/env-loader"
-import { createConfig, getConfig } from "@/src/utils/get-config"
+import {
+  createConfig,
+  getConfig,
+  readPartialComponentsJson,
+} from "@/src/utils/get-config"
 import {
   CleanExit,
   CommandError,
   handleError,
 } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
+import { printEnvelope } from "@/src/utils/json-output"
 import { logger } from "@/src/utils/logger"
 import { setJsonMode } from "@/src/utils/output-mode"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
@@ -115,8 +120,12 @@ export const search = new Command()
       const componentsJsonPath = path.resolve(options.cwd, "components.json")
       const hasComponentsJson = fsExtra.existsSync(componentsJsonPath)
       if (hasComponentsJson) {
-        const existingConfig = await fsExtra.readJson(componentsJsonPath)
-        const partialConfig = rawConfigSchema.partial().parse(existingConfig)
+        // An invalid or unreadable components.json is a CONFIG failure, not a
+        // reason to fall back to the shadow config: `search` used to read and
+        // parse the file inline, so a hand-edited one threw fs-extra's
+        // SyntaxError — absolute project path and all — and the error handler
+        // could only report UNKNOWN_ERROR with the GitHub boilerplate.
+        const partialConfig = await readPartialComponentsJson(options.cwd)
         shadowConfig = configWithDefaults({
           ...defaultConfig,
           ...partialConfig,
@@ -244,7 +253,9 @@ export const search = new Command()
         results.errors?.length === registriesToSearch.length
 
       if (opts.json) {
-        console.log(JSON.stringify(results, null, 2))
+        // One envelope for every `--json` payload (see json-output.ts), printed
+        // by the one helper that owns JSON output.
+        printEnvelope("marko-ui/search", buildSearchData(results))
       } else {
         printSearchResults(results, {
           query: options.query,

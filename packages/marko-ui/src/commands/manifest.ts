@@ -4,6 +4,7 @@ import {
   ERROR_ENVELOPE_VERSION,
 } from "@/src/utils/error-contract"
 import { CommandError, handleError } from "@/src/utils/handle-error"
+import { printJson } from "@/src/utils/json-output"
 import { highlighter } from "@/src/utils/highlighter"
 import { Command } from "commander"
 
@@ -28,7 +29,7 @@ export const manifest = new Command()
   .action((commandName: string | undefined, _opts, command: Command) => {
     try {
       const program = command.parent as Command
-      console.log(JSON.stringify(buildManifest(program, commandName), null, 2))
+      printJson(buildManifest(program, commandName))
     } catch (error) {
       handleError(error)
     }

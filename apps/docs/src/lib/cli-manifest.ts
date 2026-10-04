@@ -191,7 +191,7 @@ export const CLI_MANIFEST: CliManifest = {
         },
         {
           "flags": "--json",
-          "description": "output as JSON (with --list).",
+          "description": "output as JSON (with --list, or the markdown itself).",
           "defaultValue": false
         }
       ]
@@ -224,6 +224,11 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "flags": "--deps",
           "description": "only list npm and registry dependencies.",
+          "defaultValue": false
+        },
+        {
+          "flags": "--json",
+          "description": "no-op: show always prints JSON.",
           "defaultValue": false
         }
       ]
@@ -467,7 +472,7 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "name": "validate",
           "aliases": [],
-          "description": "validate a registry against the shadcn registry schema",
+          "description": "validate a registry against the registry item schema",
           "arguments": [
             {
               "name": "registry",

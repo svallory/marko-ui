@@ -3,7 +3,7 @@ import {
   bootstrap,
   cli,
   exists,
-  jsonOut,
+  jsonData,
   makeWorkspace,
   markoApp,
   plain,
@@ -77,7 +77,9 @@ describe("distribution: copy, import, eject", () => {
     expect(eject.code, tail(eject.out)).toBe(0)
     expect(readJson(ws, "components.json").distribution).toBe("copy")
     expect(exists(ws, "src/components/ui/button/button.marko")).toBe(true)
-    const status = jsonOut((await cli(ws, ["status", "--json"])).out)
+    const status = jsonData<{ components: string[] }>(
+      (await cli(ws, ["status", "--json"])).out
+    )
     expect(status.components).toContain("button")
   })
 

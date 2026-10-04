@@ -687,6 +687,11 @@ flows:
   # correct answer on this distribution is an empty list. Asserting `[]` is
   # stronger than the old `'"button"'` substring, not weaker: it fails if
   # anything at all is copied into the project.
+  #
+  # The pointer is `/data/components`, not `/components`: every JSON document
+  # the CLI prints is the `{ $type, version, ok, data }` envelope
+  # (`packages/marko-ui/src/utils/json-output.ts`), and `status` is no longer
+  # the one command that returned a bare result object.
   verify-clean-no-components:
     - name: status runs clean, and nothing was copied into the project
       command: status
@@ -695,7 +700,7 @@ flows:
         exit: 0
         jsonPath:
           - source: stdout
-            pointer: /components
+            pointer: /data/components
             equals: []
     - name: doctor passes
       command: doctor

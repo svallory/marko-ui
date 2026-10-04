@@ -71,25 +71,21 @@ describe("searchRegistries", () => {
       items: [
         {
           name: "button",
-          title: "Button",
-          type: "registry:ui",
+          type: "ui",
           description: "A button component",
           registry: "@marko-ui",
-          addCommandArgument: "@marko-ui/button",
         },
         {
           name: "card",
-          type: "registry:ui",
+          type: "ui",
           description: "A card component",
           registry: "@marko-ui",
-          addCommandArgument: "@marko-ui/card",
         },
         {
           name: "header",
-          type: "registry:component",
+          type: "component",
           description: "A header component",
           registry: "@custom",
-          addCommandArgument: "@custom/header",
         },
       ],
       pagination: {
@@ -103,7 +99,10 @@ describe("searchRegistries", () => {
     mockGetRegistry.mockRestore()
   })
 
-  it("includes titles in the SDK output and searches them", async () => {
+  // The `title` is the ONLY thing that makes this item match "settings" (its
+  // name is "account-menu"), and it is not in the result: ranking sees the
+  // title, the output does not carry it.
+  it("searches titles but does not return them", async () => {
     const mockGetRegistry = vi.mocked(getRegistry)
 
     mockGetRegistry.mockResolvedValue({
@@ -129,11 +128,9 @@ describe("searchRegistries", () => {
     expect(results.items).toEqual([
       {
         name: "account-menu",
-        title: "User Settings",
-        type: "registry:ui",
+        type: "ui",
         description: "An account menu",
         registry: "@test",
-        addCommandArgument: "@test/account-menu",
       },
     ])
 
@@ -175,7 +172,8 @@ describe("searchRegistries", () => {
     expect(results.items).toHaveLength(1)
     expect(results.items[0].name).toBe("button")
     expect(results.items[0].registry).toBe("@marko-ui")
-    expect(results.items[0].addCommandArgument).toBe("@marko-ui/button")
+    expect(results.items[0]).not.toHaveProperty("addCommandArgument")
+    expect(results.items[0]).not.toHaveProperty("title")
     expect(results.pagination).toEqual({
       total: 1,
       offset: 0,
@@ -876,13 +874,11 @@ describe("printSearchResults", () => {
             type: "registry:ui",
             description: "A button component",
             registry: "@marko-ui",
-            addCommandArgument: "@marko-ui/button",
           },
           {
             name: "card",
             type: "registry:ui",
             registry: "@marko-ui",
-            addCommandArgument: "@marko-ui/card",
           },
         ],
       },
@@ -918,7 +914,6 @@ describe("printSearchResults", () => {
             name: "button",
             type: "registry:ui",
             registry: "@marko-ui",
-            addCommandArgument: "@marko-ui/button",
           },
         ],
       },
@@ -953,7 +948,6 @@ describe("printSearchResults", () => {
             type: "registry:component",
             description: "A header component",
             registry: "@custom",
-            addCommandArgument: "@custom/header",
           },
         ],
       },
@@ -989,7 +983,6 @@ describe("printSearchResults", () => {
             name: "button",
             type: "registry:ui",
             registry: "@ok",
-            addCommandArgument: "@ok/button",
           },
         ],
         errors: [{ registry: "@broken", message: "Not found" }],
@@ -1180,10 +1173,9 @@ describe("searchRegistries with dynamic registries", () => {
       items: [
         {
           name: "unrelated-item",
-          type: "registry:ui",
+          type: "ui",
           description: "Does not mention the query.",
           registry: "@acme",
-          addCommandArgument: "@acme/unrelated-item",
         },
       ],
       pagination: {
@@ -1250,17 +1242,15 @@ describe("searchRegistries with dynamic registries", () => {
     expect(results.items).toEqual([
       {
         name: "button",
-        type: "registry:ui",
+        type: "ui",
         description: "A server-filtered button.",
         registry: "@dynamic",
-        addCommandArgument: "@dynamic/button",
       },
       {
         name: "button-group",
-        type: "registry:ui",
+        type: "ui",
         description: "A button group.",
         registry: "@static",
-        addCommandArgument: "@static/button-group",
       },
     ])
 
@@ -1818,7 +1808,6 @@ describe("printSearchResults description length", () => {
         type: "registry:block",
         description: LONG_DESCRIPTION,
         registry: "@marko-ui",
-        addCommandArgument: "@marko-ui/dashboard",
       },
     ],
   }
@@ -1885,7 +1874,6 @@ describe("printSearchResults description length", () => {
               type: "registry:block",
               description: "A   dashboard\nwith charts.",
               registry: "@marko-ui",
-              addCommandArgument: "@marko-ui/dashboard",
             },
           ],
         },

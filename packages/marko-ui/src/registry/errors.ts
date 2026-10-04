@@ -17,6 +17,17 @@ export const RegistryErrorCode = {
   INVALID_CONFIG: "INVALID_CONFIG",
   MISSING_ENV_VARS: "MISSING_ENV_VARS",
 
+  /**
+   * The TLS handshake failed on the CERTIFICATE (expired, self-signed,
+   * hostname mismatch).
+   *
+   * Deliberately NOT NETWORK_ERROR. Exit 4 is documented as "retry it", and a
+   * bad certificate is never fixed by retrying — an agent told to retry a
+   * private registry with an untrusted cert retries forever. This is exit 1
+   * with a suggestion naming the three real causes.
+   */
+  TLS_ERROR: "TLS_ERROR",
+
   // File system errors
   LOCAL_FILE_ERROR: "LOCAL_FILE_ERROR",
 

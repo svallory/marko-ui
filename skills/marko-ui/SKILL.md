@@ -24,14 +24,24 @@ No `components.json` means marko-ui is not set up: run `marko-ui init` (add `--a
 ## Workflow
 
 1. `marko-ui search -q <query>` — find a component (`--json` for machine output). It matches whole words against each item's name, title and description; each extra word narrows the ranking, and items matching none of your words are left out. Every item costs context, so search before guessing a name. The installed ones are listed in the project's `AGENTS.md`.
-2. `marko-ui docs <name>` — usage, props, keyboard contract, and examples as markdown. **Read this before writing markup for a component you have not used in this session.** `marko-ui docs --list` prints the index. The markdown is written for you to read: demo sources come through with maintainer comments stripped, and the prop table's `Default` column is filled wherever the default is knowable — a cva `defaultVariants` value, a Zag prop's documented `@default`, or `fixed: X` for a prop the component sets itself, whose value you cannot override. An em dash means "not recorded", not "no default".
-3. `marko-ui show <name>` — the registry item as JSON; `--files` lists what would be written, `--deps` lists npm and registry dependencies.
+2. `marko-ui docs <name>` — usage, props, keyboard contract, and examples as markdown. **Read this before writing markup for a component you have not used in this session.** `marko-ui docs --list` prints the index; `marko-ui docs <name> --json` returns the same markdown wrapped in the envelope below. The markdown is written for you to read: demo sources come through with maintainer comments stripped, and the prop table's `Default` column is filled wherever the default is knowable — a cva `defaultVariants` value, a Zag prop's documented `@default`, or `fixed: X` for a prop the component sets itself, whose value you cannot override. An em dash means "not recorded", not "no default".
+3. `marko-ui show <name>` — the registry item as JSON; `--files` lists what would be written, `--deps` lists npm and registry dependencies. `show` is a JSON command in EVERY mode, so `--json` is accepted and changes nothing, **and a `show` failure is the `marko-ui/error` envelope on stdout even in a terminal** — the same document a pipe would get, not prose. Parse stdout either way.
 4. `marko-ui add <name> -y` — install (copy distribution). `--dry-run` previews the file changes; `--overwrite` replaces local files.
 5. `marko-ui diff <name>` — compare local edits against the registry version.
 6. `marko-ui doctor --json` — health checks; exit code 3 means something is broken and each failed check carries a `fix` field with the command (or one-line action) that fixes it. Run it after `init`/`add` and before reporting the work done.
 7. `marko-ui agents sync` — refresh the component list in `AGENTS.md` after adding or removing components.
 
 `marko-ui manifest` prints every command, flag, exit code, and error code as JSON when you need the exact surface; `marko-ui manifest <command>` prints just that one command (name or alias) plus the exit codes — cheaper when you are checking a single flag. An unknown name is a usage error (exit 2).
+
+## Reading JSON
+
+Every `--json` payload is one document: `{ "$type", "version", "ok", "data" }`. Branch on `$type` before reading `data` — `$type` is `marko-ui/search`, `marko-ui/status`, `marko-ui/show`, `marko-ui/docs`, `marko-ui/docs.list`, `marko-ui/doctor`, `marko-ui/registry.list` or `marko-ui/manifest`. It is printed MINIFIED on one line (a pipe or a program) and pretty-printed only when stdout is a terminal, because the reader of this output is usually a program and indentation is tokens you pay for. There is no `--pretty` flag.
+
+`search` items carry `name`, short `type` (`"ui"`, `"block"`), `description` and `registry` — nothing derivable. To install a result from a registry other than the default, pass `<registry>/<name>`; `addArgument` in `data` states that rule once, and only when a non-default registry is in the results.
+
+`status` reports `config.distribution`, `config.visualStyle` and `config.iconLibrary`; `config.resolvedPaths` gives `cwd` (absolute, once) and every other path RELATIVE to it.
+
+A failure is the `marko-ui/error` envelope described under [Reading errors](#reading-errors) — never prose. The one command where that holds in EVERY mode, terminal included, is `show`: it is a JSON command in every mode, so its failures are documents on stdout too.
 
 ## Reading errors
 

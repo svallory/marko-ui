@@ -5,6 +5,7 @@ import { RegistryErrorCode } from "@/src/registry/errors"
 import { asNetworkError } from "@/src/utils/error-contract"
 import { CommandError, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
+import { printEnvelope } from "@/src/utils/json-output"
 import { logger } from "@/src/utils/logger"
 import { setJsonMode } from "@/src/utils/output-mode"
 import { closestNames } from "@/src/utils/suggest"
@@ -28,7 +29,7 @@ export const docs = new Command()
   .description("print component documentation as markdown")
   .argument("[components...]", "component names (e.g. button dialog)")
   .option("-l, --list", "list documented components.", false)
-  .option("--json", "output as JSON (with --list).", false)
+  .option("--json", "output as JSON (with --list, or the markdown itself).", false)
   .action(async (components: string[], opts) => {
     try {
       // Recorded before anything can fail so a failure takes the JSON error
@@ -46,23 +47,12 @@ export const docs = new Command()
           (item) => item.type === "registry:ui"
         )
         if (options.json) {
-          console.log(
-            JSON.stringify(
-              {
-                $type: "marko-ui/docs.list",
-                version: 1,
-                ok: true,
-                data: {
-                  components: items.map((item) => ({
-                    name: item.name,
-                    description: item.description,
-                  })),
-                },
-              },
-              null,
-              2
-            )
-          )
+          printEnvelope("marko-ui/docs.list", {
+            components: items.map((item) => ({
+              name: item.name,
+              description: item.description,
+            })),
+          })
           return
         }
 
@@ -95,6 +85,14 @@ export const docs = new Command()
         candidates: number
       }[] = []
 
+      // With --json the markdown is COLLECTED instead of written, so the whole
+      // answer is one envelope. `docs <name> --json` used to accept the flag
+      // and print markdown anyway, because the flag was documented as applying
+      // to `--list` only — so an agent asking for the JSON of one component got
+      // something it had to re-parse, and the guard could not tell the two
+      // apart.
+      const documents: { name: string; markdown: string }[] = []
+
       for (const name of components) {
         // Standard convention: append .md to the page URL. Older deployments
         // only served the /md alias, so fall back on 404.
@@ -117,8 +115,13 @@ export const docs = new Command()
             throw asNetworkError(error, { url, context: { component: name } })
           }
           if (response.ok) {
-            process.stdout.write(await response.text())
-            process.stdout.write("\n")
+            const markdown = await response.text()
+            if (options.json) {
+              documents.push({ name, markdown })
+            } else {
+              process.stdout.write(markdown)
+              process.stdout.write("\n")
+            }
             served = true
             break
           }
@@ -171,9 +174,22 @@ export const docs = new Command()
               ...(first.suggestions.length
                 ? { suggestions: first.suggestions }
                 : {}),
+              // A partial answer must not lose the part that worked. On the
+              // markdown path every found page has already been printed; under
+              // --json the collected pages ride along in the one envelope
+              // stdout is allowed to carry, rather than a second document.
+              ...(options.json && documents.length
+                ? { components: documents }
+                : {}),
             },
           }
         )
+      }
+
+      // Every requested name resolved. In --json mode nothing has been written
+      // yet (the loop above collected), so this is where the envelope goes.
+      if (options.json) {
+        printEnvelope("marko-ui/docs", { components: documents })
       }
     } catch (error) {
       handleError(error)

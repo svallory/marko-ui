@@ -7,6 +7,7 @@ import {
   workspaceConfigSchema,
 } from "@/src/schema"
 import { CommandError } from "@/src/utils/handle-error"
+import { asComponentsJsonError } from "@/src/utils/error-contract"
 import { hasMarkoDependency } from "@/src/utils/get-project-info"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
@@ -39,6 +40,9 @@ export const DEFAULT_TAILWIND_BASE_COLOR = "slate"
 export const explorer = cosmiconfig("components", {
   searchPlaces: ["components.json"],
 })
+
+/** `components.json` with every field optional — see readPartialComponentsJson. */
+const partialRawConfigSchema = rawConfigSchema.partial()
 
 export type Config = z.infer<typeof configSchema>
 
@@ -314,16 +318,50 @@ export async function getRawConfig(
 
     return config
   } catch (error) {
-    const componentPath = `${cwd}/components.json`
     if (error instanceof CommandError) {
       throw error
     }
     if (error instanceof Error && error.message.includes("reserved registry")) {
       throw error
     }
-    throw new Error(
-      `Invalid configuration found in ${highlighter.info(componentPath)}.`
-    )
+    // One answer for a broken components.json in EVERY command: INVALID_CONFIG,
+    // exit 1, no "open an issue" boilerplate, and the path relative to the cwd
+    // the caller already passed. It used to be a bare `Error`, which the error
+    // handler classified as an unexpected CLI bug, and its message carried the
+    // absolute project path into stdout, stderr and every log that captured
+    // either. The underlying reason (the JSON parser's own message) is kept in
+    // `cause` so `doctor` and a debugging run can still say what is wrong.
+    throw asComponentsJsonError(error, { cwd })
+  }
+}
+
+/**
+ * Read and partially-validate `components.json` for the commands that tolerate
+ * an incomplete one (`search`, `show`): a project mid-`init` still has a
+ * usable registries section, and refusing to answer would be wrong.
+ * Every failure — unreadable, unparseable, or invalid against the schema —
+ * is classified as INVALID_CONFIG by {@link asComponentsJsonError} with the
+ * path relative to the cwd. It used to be inline `readJson` + `parse`, whose
+ * SyntaxError (absolute path and all) reached the error handler as an
+ * unclassified bug: UNKNOWN_ERROR, exit 1, and the "open an issue on GitHub"
+ * boilerplate for what is a hand-edited config file.
+ */
+export async function readPartialComponentsJson(
+  cwd: string
+): Promise<z.infer<typeof partialRawConfigSchema>> {
+  const file = path.resolve(cwd, "components.json")
+
+  let raw: unknown
+  try {
+    raw = await fsExtra.readJson(file)
+  } catch (error) {
+    throw asComponentsJsonError(error, { cwd })
+  }
+
+  try {
+    return partialRawConfigSchema.parse(raw)
+  } catch (error) {
+    throw asComponentsJsonError(error, { cwd })
   }
 }
 

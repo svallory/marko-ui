@@ -326,11 +326,27 @@ export const registryResolvedItemsTreeSchema = registryItemCommonSchema
 
 export const searchResultItemSchema = z.object({
   name: z.string(),
-  title: z.string().optional(),
+  // Short form ("ui", "block"), not the wire form ("registry:ui"). The
+  // prefix is an implementation detail of the registry protocol; a reader of
+  // `search --json` types items by what they are, and the CLI already accepts
+  // both spellings on `--type`.
   type: z.string().optional(),
   description: z.string().optional(),
   registry: z.string(),
-  addCommandArgument: z.string(),
+})
+
+/**
+ * The item as it flows through search's LOCAL pipeline, before the final
+ * `searchResultsSchema.parse` strips it back to the public shape.
+ *
+ * `title` is kept here because ranking weighs a title match almost as heavily
+ * as a name match; it is not kept in the OUTPUT because it is derivable from
+ * `name` and every item carried it. zod's object parse drops unknown keys, so
+ * the one `searchResultsSchema.parse` at the end is what actually removes it —
+ * there is no second, hand-written projection to keep in sync.
+ */
+export const searchableResultItemSchema = searchResultItemSchema.extend({
+  title: z.string().optional(),
 })
 
 export const searchResultErrorSchema = z.object({

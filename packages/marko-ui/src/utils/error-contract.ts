@@ -1,5 +1,6 @@
 import { RegistryError, RegistryErrorCode } from "@/src/registry/errors"
 import path from "node:path"
+import { z } from "zod"
 
 /**
  * The CLI's error contract.
@@ -69,7 +70,10 @@ export type CliErrorInput = {
  * when absent rather than emitted as null/undefined, so a consumer can test
  * presence with `in`.
  */
-export function buildErrorEnvelope(input: CliErrorInput): CliErrorEnvelope {
+export function buildErrorEnvelope(
+  input: CliErrorInput,
+  cwd: string = process.cwd()
+): CliErrorEnvelope {
   const envelope: CliErrorEnvelope = {
     $type: ERROR_ENVELOPE_TYPE,
     version: ERROR_ENVELOPE_VERSION,
@@ -79,7 +83,13 @@ export function buildErrorEnvelope(input: CliErrorInput): CliErrorEnvelope {
       // The message reaches BOTH the human stderr block and stdout, so it is
       // scrubbed here — at the one choke point — rather than trusted to have
       // been cleaned by each caller.
-      message: scrubUrlsInText(input.message),
+      //
+      // URLs AND absolute paths. A message is prose, and prose quotes the
+      // offending thing: a JSON parse failure reads "/Users/someone/app/
+      // components.json: Expected property name", which puts the user's home
+      // directory into every log this reaches and costs ~40 characters to say
+      // what "components.json: Expected property name" already says.
+      message: scrubPathsInText(scrubUrlsInText(input.message), cwd),
     },
   }
   if (input.suggestion) {
@@ -239,12 +249,119 @@ export function asConfigError(
 
   return new RegistryError(message, {
     code: RegistryErrorCode.INVALID_CONFIG,
-    cause: error,
+    // A scrubbed COPY, not the original error. The original undici
+    // TypeError's message IS the credential-bearing URL
+    // ("Request cannot be constructed from a URL that includes credentials:
+    // https://user:pass@host/r?token=sk-…"), so keeping it as `cause` meant
+    // the CLI's rendered output was clean while `error.cause` — reachable by
+    // any consumer of this module, and by anything that logs the error — was
+    // not. The class is kept for debugging; the secret is not.
+    cause: new Error(reason),
     context: { ...(url ? { url } : {}), ...(options.entry ? { entry: options.entry } : {}) },
     suggestion: `Check the "${
       options.entry ?? "registries"
     }" entry in components.json: the URL must be an absolute http(s) URL, and credentials belong in headers, not in the URL.`,
   })
+}
+
+/**
+ * A TLS handshake that fails because the certificate is wrong.
+ *
+ * Its own code, and NOT NETWORK_ERROR / exit 4. Exit 4 is documented as "retry
+ * it" and every network fact the CLI can name is the user retrying or fixing
+ * something; an expired, self-signed or hostname-mismatched certificate is
+ * never fixed by retrying, so an agent told to retry on a private registry
+ * with a bad cert retries forever. Exit 1 says "this is your configuration",
+ * and the suggestion names the three real causes.
+ */
+export function looksLikeTlsFailure(error: unknown, depth = 0): boolean {
+  if (depth > 5 || !(error instanceof Error)) return false
+
+  const code = (error as Error & { code?: unknown }).code
+  if (
+    typeof code === "string" &&
+    (code.startsWith("ERR_TLS_CERT") ||
+      code.startsWith("CERT_") ||
+      code === "DEPTH_ZERO_SELF_SIGNED_CERT" ||
+      code === "SELF_SIGNED_CERT_IN_CHAIN")
+  ) {
+    return true
+  }
+  if (
+    /self[- ]signed|unable to verify the first certificate|certificate has expired|cert(ificate)? not yet valid|hostname.*(mismatch|does not match)|altname/i.test(
+      error.message
+    )
+  ) {
+    return true
+  }
+  if (error.cause !== undefined && error.cause !== null) {
+    return looksLikeTlsFailure(error.cause, depth + 1)
+  }
+  return false
+}
+
+/** Build a TLS_ERROR `RegistryError` (exit 1) from a handshake failure. */
+export function asTlsError(
+  error: unknown,
+  options: { url?: string } = {}
+): RegistryError {
+  const url = options.url ? redactUrl(options.url) : undefined
+  const reason = scrubUrlsInText(
+    error instanceof Error ? error.message : String(error)
+  )
+  const message = url
+    ? `The TLS certificate for ${url} was rejected${reason ? `: ${reason}` : "."}`
+    : `The TLS certificate was rejected${reason ? `: ${reason}` : "."}`
+
+  return new RegistryError(message, {
+    code: RegistryErrorCode.TLS_ERROR,
+    // Same reasoning as asConfigError: never keep the raw error as `cause`.
+    cause: new Error(reason),
+    context: url ? { url } : {},
+    suggestion:
+      "The certificate is expired, self-signed, or does not match the hostname. Retrying will not help: use a CA the machine trusts (NODE_EXTRA_CA_CERTS), a valid certificate, or point the registry at http:// for a trusted network.",
+  })
+}
+
+/**
+ * A `components.json` that could not be read, parsed or validated.
+ *
+ * Every command funnels its config load through here (or through a command's
+ * own partial read, which calls this), so a hand-edited broken config is one
+ * answer everywhere: INVALID_CONFIG, exit 1, no "open an issue" boilerplate,
+ * and a path RELATIVE to the cwd the caller already passed — the message used
+ * to carry the absolute path, which put the user's home directory into stdout,
+ * stderr and every log that captured it.
+ */
+export function asComponentsJsonError(
+  error: unknown,
+  options: { cwd?: string; file?: string } = {}
+): RegistryError {
+  const file = options.file ?? "components.json"
+  const reason = scrubPathsInText(
+    scrubUrlsInText(
+      error instanceof z.ZodError
+        ? error.issues
+            .map(
+              (issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`
+            )
+            .join("; ")
+        : error instanceof Error
+          ? error.message
+          : String(error)
+    ),
+    options.cwd ?? process.cwd()
+  )
+
+  return new RegistryError(
+    `${file} is not valid: ${reason}`,
+    {
+      code: RegistryErrorCode.INVALID_CONFIG,
+      cause: error instanceof z.ZodError ? undefined : new Error(reason),
+      context: { file },
+      suggestion: `Fix the JSON in ${file} (the message above names what is wrong), or re-run "marko-ui init" to rewrite it.`,
+    }
+  )
 }
 
 /** The syscall-level reason behind a fetch failure, e.g. `ECONNREFUSED`. */
@@ -308,6 +425,32 @@ export function scrubUrlsInText(value: string): string {
   return value.replace(
     /[a-z][a-z0-9+.-]*:\/\/[^\s"'<>)\]}]+/gi,
     (match) => redactUrl(match)
+  )
+}
+
+/**
+ * Rewrite every absolute path embedded in a sentence the way {@link
+ * sanitizePath} rewrites a path that IS the whole string.
+ *
+ * `sanitizeDetails` only handles a `details` value that is itself a path. But
+ * a message is prose: "Invalid configuration found in /Users/x/app/
+ * components.json" carries the path in the middle, and that message goes to
+ * BOTH stderr and stdout, is routinely logged and pasted into issues, and
+ * costs the reader the whole path to learn something they already know (they
+ * are standing in that directory — it is the cwd the command was given).
+ *
+ * Matches a run of non-space, non-punctuation characters that STARTS with "/",
+ * which is what a POSIX absolute path looks like in running text. It cannot
+ * match prose like "and/or" or a protocol-relative "/api" fragment is the one
+ * false positive, and it is harmless there: a relative-looking fragment is
+ * returned unchanged by `sanitizePath` unless it is really absolute.
+ */
+export function scrubPathsInText(
+  value: string,
+  cwd: string = process.cwd()
+): string {
+  return value.replace(/(?<=^|[\s("'`])\/[^\s"'<>)\]}]+/g, (match) =>
+    sanitizePath(match, cwd)
   )
 }
 

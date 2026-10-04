@@ -330,19 +330,36 @@ static const JSON_ERROR_ENVELOPE = `{
   <h3>JSON output envelopes</h3>
 
   <p>
-    <code>docs --list --json</code>, <code>doctor --json</code>, and
-    <code>registry list --json</code> return typed success envelopes with
-    <code>$type</code>, <code>version</code>, <code>ok</code>, and
-    <code>data</code>. For example, an empty documentation list looks like:
+    Every command that prints JSON prints the same envelope:
+    <code>docs --list</code>, <code>docs &lt;name&gt;</code>,
+    <code>doctor</code>, <code>registry list</code>, <code>search</code>,
+    <code>status</code> and <code>show</code>. Branch on <code>$type</code>
+    before reading <code>data</code> — it is <code>marko-ui/docs.list</code>,
+    <code>marko-ui/docs</code>, <code>marko-ui/doctor</code>,
+    <code>marko-ui/registry.list</code>, <code>marko-ui/search</code>,
+    <code>marko-ui/status</code> or <code>marko-ui/show</code>. For example, an
+    empty documentation list looks like:
   </p>
 
   <code-block language="json" code=JSON_ENVELOPE/>
 
   <p>
-    <code>info --json</code> (alias of <code>status --json</code>) and
-    <code>search --json</code> also provide structured output, but currently return
-    plain result objects without this envelope. <code>docs &lt;component&gt;</code>
-    returns markdown; its JSON option applies to listing components.
+    The document is printed <strong>minified on a single line</strong> unless
+    stdout is a terminal, where it is pretty-printed for a human. There is no
+    <code>--pretty</code> flag: the reader of this output is usually a program,
+    and indentation is tokens you pay for.
+  </p>
+
+  <p>
+    <code>search --json</code> items carry <code>name</code>, a short
+    <code>type</code> (<code>"ui"</code>, <code>"block"</code>),
+    <code>description</code> and <code>registry</code> — nothing derivable from
+    another field. <code>status --json</code> reports
+    <code>config.distribution</code>, <code>config.visualStyle</code> and
+    <code>config.iconLibrary</code>, and gives
+    <code>config.resolvedPaths.cwd</code> once with every other path relative
+    to it. <code>show</code> is always machine output, so
+    <code>show &lt;item&gt; --json</code> is accepted and changes nothing.
   </p>
 
   <h3>Errors and streams</h3>
