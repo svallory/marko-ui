@@ -207,7 +207,7 @@
               "required": false,
               "kind": "machine",
               "description": "Whether to close the dialog when the escape key is pressed",
-              "default": "true"
+              "default": "false"
             },
             {
               "name": "closeOnInteractOutside",
@@ -215,7 +215,7 @@
               "required": false,
               "kind": "machine",
               "description": "Whether to close the dialog when the outside is clicked",
-              "default": "true"
+              "default": "false"
             },
             {
               "name": "defaultOpen",
@@ -378,7 +378,7 @@
               "required": false,
               "kind": "machine",
               "description": "The dialog's role",
-              "default": "dialog"
+              "default": "alertdialog"
             },
             {
               "name": "size",
@@ -3567,7 +3567,7 @@
               "required": false,
               "kind": "machine",
               "description": "Defines the auto-completion behavior of the combobox.\n\n- `autohighlight`: The first focused item is highlighted as the user types\n- `autocomplete`: Navigating the listbox with the arrow keys selects the item and the input is updated",
-              "default": "none"
+              "default": "autohighlight"
             },
             {
               "name": "invalid",
@@ -3666,7 +3666,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The controlled open state of the combobox"
+              "description": "The controlled open state of the combobox",
+              "default": "true"
             },
             {
               "name": "openOnChange",
@@ -3733,7 +3734,7 @@
               "required": false,
               "kind": "machine",
               "description": "The behavior of the combobox input when an item is selected\n\n- `replace`: The selected item string is set as the input value\n- `clear`: The input value is cleared\n- `preserve`: The input value is preserved",
-              "default": "replace"
+              "default": "clear"
             },
             {
               "name": "translations",

@@ -160,3 +160,53 @@ describe("extract-api: default values", () => {
     },
   );
 });
+
+// A Zag `@default` is the machine's default, not this component's: a
+// component that passes its own value on `<zag>` has a different one. Reading
+// Zag's tag regardless made `alert-dialog` document `closeOnEscape` as `true`
+// while the component hard-codes `false` — contradicting the page's own prose,
+// on the page whose job is to be right about defaults.
+describe("extract-api: a component's own <zag> props win over Zag's @default", () => {
+  it(
+    "records what the component fixes, and nothing when it passes an expression",
+    { timeout: 60_000 },
+    async () => {
+      const env = { ...process.env };
+      delete env.AI_AGENT;
+      execFileSync("bun", ["tooling/extract-api.ts"], { cwd: REPO_ROOT, env });
+
+      const components = await readApiReference();
+      const propOf = (componentName: string, prop: string): PropertyEntry | undefined => {
+        const component = components.find((c) => c.name === componentName);
+        if (!component) throw new Error(`no ${componentName} in api-reference.json`);
+        return component.parts
+          .flatMap((part) => part.properties)
+          .find((p) => p.name === prop);
+      };
+
+      // alert-dialog.marko:41-44 passes all three, overriding the dialog
+      // machine's `dialog` / `true` / `true`.
+      expect(propOf("alert-dialog", "role")?.default).toBe("alertdialog");
+      expect(propOf("alert-dialog", "closeOnEscape")?.default).toBe("false");
+      expect(propOf("alert-dialog", "closeOnInteractOutside")?.default).toBe("false");
+
+      // command.marko:91-93 does the same over the command machine.
+      expect(propOf("command", "open")?.default).toBe("true");
+      expect(propOf("command", "inputBehavior")?.default).toBe("autohighlight");
+      expect(propOf("command", "selectionBehavior")?.default).toBe("clear");
+
+      // dialog/sheet fix `role="dialog"` — the same value Zag documents, so
+      // the default survives rather than being suppressed.
+      expect(propOf("dialog", "role")?.default).toBe("dialog");
+      expect(propOf("dialog", "closeOnEscape")?.default).toBe("true");
+
+      // Nothing anywhere claims a machine default for a prop the component
+      // passes as an expression: resizable passes
+      // `orientation=input.orientation ?? "horizontal"`, which is not a value
+      // a table cell can state.
+      expect(propOf("resizable", "orientation")?.default).toBeUndefined();
+      expect(propOf("input-otp", "count")?.default).toBeUndefined();
+      expect(propOf("tabs", "defaultValue")?.default).toBeUndefined();
+    },
+  );
+});

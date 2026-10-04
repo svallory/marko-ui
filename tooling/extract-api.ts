@@ -39,6 +39,7 @@
 import ts from "typescript";
 import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
+import { readMachineTagProps, type MachineTagProp } from "./machine-tag-props.ts";
 import { join, dirname, basename, relative } from "node:path";
 
 const ROOT = new URL("../packages/shadcn/", import.meta.url).pathname;
@@ -179,11 +180,19 @@ function resolveInputType(
   );
   const declaration = inputSymbol.declarations?.[0];
   if (declaration && ts.isTypeAliasDeclaration(declaration)) {
+    // SAFETY: `getTypeAliasInstantiation` and `createTypeReference` are
+    // internal TypeScript APIs (used by the checker itself, not published on
+    // the public `TypeChecker` interface) with no public equivalent for
+    // instantiating a generic alias by hand. Both are optional here precisely
+    // because they are not guaranteed: on a typescript version that lacks one,
+    // the call is skipped and the uninstantiated type — the pre-existing
+    // fallback — is returned instead.
     const instantiated = (checker as unknown as {
       getTypeAliasInstantiation?: (symbol: ts.Symbol, args: readonly ts.Type[]) => ts.Type;
     }).getTypeAliasInstantiation?.(inputSymbol, typeArguments);
     if (instantiated) return instantiated;
   }
+  // SAFETY: same internal-API caveat as the call above.
   const reference = (checker as unknown as {
     createTypeReference?: (target: ts.GenericType, args: readonly ts.Type[]) => ts.Type;
   }).createTypeReference?.(declaredType as ts.GenericType, typeArguments);
@@ -415,6 +424,10 @@ async function main() {
   // 139 times; a per-file program takes minutes, this takes seconds.
   const virtualFiles = new Map<string, string>();
   const sourceRegions = new Map<string, string>();
+  // The props each component fixes on its own `<zag>`/`<zag-machine>` tag.
+  // Read from the FULL `.marko` source — the tag lives below the TypeScript
+  // region that `sourceRegions` keeps.
+  const machineTagProps = new Map<string, Map<string, MachineTagProp>>();
   const componentFiles = new Map<string, string[]>();
 
   for (const componentName of componentNames) {
@@ -426,10 +439,12 @@ async function main() {
     componentFiles.set(componentName, entries);
     for (const fileName of entries) {
       const markoPath = join(componentDir, fileName);
-      const region = extractTypeScriptRegion(await readFile(markoPath, "utf8"));
+      const source = await readFile(markoPath, "utf8");
+      const region = extractTypeScriptRegion(source);
       const virtualPath = virtualPathFor(markoPath);
       virtualFiles.set(virtualPath, region);
       sourceRegions.set(virtualPath, region);
+      machineTagProps.set(virtualPath, readMachineTagProps(source));
     }
   }
 
@@ -451,6 +466,7 @@ async function main() {
       const virtualPath = virtualPathFor(join(componentDir, fileName));
       const sourceFile = program.getSourceFile(virtualPath);
       const region = sourceRegions.get(virtualPath) ?? "";
+      const tagProps = machineTagProps.get(virtualPath) ?? new Map<string, MachineTagProp>();
       if (!sourceFile) continue;
 
       const inputType = resolveInputType(checker, sourceFile);
@@ -512,25 +528,36 @@ async function main() {
           kind,
         };
         if (documentation) entry.description = documentation;
+        // Resolved into a local first, because what the component fixes on its
+        // own `<zag>` tag can also UNSET a default: a prop passed as a
+        // non-literal expression (`count=input.count ?? input.length`) has no
+        // statically knowable value at all, and must not fall back to the
+        // machine's.
+        let defaultValue: string | undefined;
         const variant = variantMetadata.get(property.getName());
         if (kind === "variant" && variant) {
           if (variant.options.length > 0) entry.options = variant.options;
-          if (variant.default !== undefined) entry.default = variant.default;
+          defaultValue = variant.default;
         }
         // A Zag machine prop's default lives only in its `@default` JSDoc tag
         // (see declarationDefault). Union-branch props have no single
         // authoritative declaration, so every classifying one is consulted and
         // the first tag found wins.
-        if (kind === "machine" && entry.default === undefined) {
+        if (kind === "machine" && defaultValue === undefined) {
           const candidates = authoritative ? [authoritative] : classifying;
           for (const candidate of candidates) {
-            const declaredDefault = declarationDefault(candidate);
-            if (declaredDefault !== undefined) {
-              entry.default = declaredDefault;
-              break;
-            }
+            defaultValue = declarationDefault(candidate);
+            if (defaultValue !== undefined) break;
           }
         }
+
+        // What the component itself fixes on its `<zag>` tag wins over Zag's
+        // `@default` — it is the value the machine really receives.
+        // `alert-dialog` passes `closeOnEscape=false`, so documenting the
+        // machine's `true` would contradict the page's own prose.
+        const fixedByComponent = tagProps.get(property.getName());
+        if (fixedByComponent !== undefined) defaultValue = fixedByComponent ?? undefined;
+        if (defaultValue !== undefined) entry.default = defaultValue;
         properties.push(entry);
       }
 
