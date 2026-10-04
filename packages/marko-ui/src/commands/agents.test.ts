@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs"
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs"
 import { tmpdir } from "os"
 import path from "path"
 import { afterEach, describe, expect, it, vi } from "vitest"
@@ -519,5 +519,59 @@ describe("agents sync --check when the registry index cannot be fetched", () => 
 
     mockIndex.mockRejectedValue(new Error("ECONNREFUSED"))
     expect(await check(cwd)).toBe(3)
+  })
+})
+
+describe("agents sync when listing components fails locally", () => {
+  const dirs: string[] = []
+  afterEach(() => {
+    vi.restoreAllMocks()
+    mockIndex.mockReset()
+    for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true })
+  })
+
+  it("fails loudly instead of writing an empty component list", async () => {
+    // The ui path is a FILE, so readdir throws ENOTDIR — a purely local
+    // failure that reaches the listing itself (an unbacked alias does not:
+    // getConfig throws for that one before the listing runs). The first
+    // version of the names-only section swallowed this into `[]`, which
+    // rewrote a real project's AGENTS.md to "Installed: none" and exited 0.
+    const cwd = mkdtempSync(path.join(tmpdir(), "marko-ui-agents-broken-"))
+    dirs.push(cwd)
+    writeFileSync(path.join(cwd, "package.json"), JSON.stringify({ name: "a", dependencies: { marko: "^6" } }))
+    writeFileSync(path.join(cwd, "tsconfig.json"), JSON.stringify({ compilerOptions: { paths: { "@/*": ["./src/*"] } } }))
+    writeFileSync(
+      path.join(cwd, "components.json"),
+      JSON.stringify({
+        style: "default", rsc: false, tsx: true, distribution: "copy", visualStyle: "vega",
+        tailwind: { config: "", css: "src/styles/globals.css", baseColor: "neutral", cssVariables: true, prefix: "" },
+        aliases: { components: "@/components", utils: "@/lib/utils", ui: "@/components/ui", lib: "@/lib", hooks: "@/hooks" },
+      })
+    )
+    mkdirSync(path.join(cwd, "src/components"), { recursive: true })
+    // A file where the ui directory should be: existsSync() says yes, the
+    // listing then throws ENOTDIR.
+    writeFileSync(path.join(cwd, "src/components/ui"), "not a directory")
+
+    const exit = vi.spyOn(process, "exit").mockImplementation(((code?: number) => {
+      throw new Error(`exit ${code}`)
+    }) as never)
+    vi.spyOn(logger, "log").mockImplementation(() => {})
+    const error = vi.spyOn(logger, "error").mockImplementation(() => {})
+
+    let code: number | undefined
+    try {
+      await agents.parseAsync(["node", "agents", "sync", "--no-skill", "--cwd", cwd])
+    } catch (thrown) {
+      code = Number(/exit (\d+)/.exec(String((thrown as Error).message))?.[1])
+    } finally {
+      exit.mockRestore()
+    }
+
+    expect(code, "sync must not exit 0 when it cannot list components").not.toBe(0)
+    // Nothing was written: the file never existed, so there is no
+    // "Installed: none" for an agent to believe.
+    expect(existsSync(path.join(cwd, "AGENTS.md"))).toBe(false)
+    expect(error.mock.calls.flat().join("\n")).not.toContain("Installed")
   })
 })
