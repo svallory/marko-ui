@@ -3,6 +3,7 @@
 // ComponentPageData the HTML page uses, so the two cannot disagree.
 import type { ComponentPageData } from "./component-page-data.ts";
 import type { ApiPart } from "../tags/docs/api-table.marko";
+import { stripMarkoComments } from "./strip-marko-comments.ts";
 
 /** Pipes and newlines would break out of a markdown table cell. */
 function escapeTableCell(value: string): string {
@@ -107,7 +108,9 @@ export function renderComponentMarkdown(page: ComponentPageData): string {
     for (const example of page.examples) {
       sections.push(`### ${example.title}`, "");
       if (example.description) sections.push(example.description, "");
-      sections.push("```marko", example.source, "```", "");
+      // Comments are for the maintainers of the demo file; this reader is an
+      // assistant. The docs site itself still shows the commented source.
+      sections.push("```marko", stripMarkoComments(example.source), "```", "");
     }
   }
 
