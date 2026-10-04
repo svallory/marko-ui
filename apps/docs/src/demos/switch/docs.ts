@@ -32,6 +32,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "switch-choice-card",
+      essential: true,
       title: "Choice Card",
       description: "Style the switch's own root label as a clickable card, with the title/description in its `content` body.",
     },
@@ -48,6 +49,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "switch-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `checked` prop without a change handler never moves. Pair it with `checkedChange`, or use Marko's bind shorthand `checked:=state`.",

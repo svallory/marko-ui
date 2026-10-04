@@ -34,6 +34,7 @@ import { toast } from "@/components/ui/toast/store.ts";`,
     },
     {
       name: "toast-promise",
+      essential: true,
       title: "Promise",
       description:
         "`toast.promise` shows a loading toast, then swaps it for the success or error toast once the promise settles.",

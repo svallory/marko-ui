@@ -35,6 +35,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "input-field",
+      essential: true,
       title: "Field",
       description: "Use `Field`, `FieldLabel`, and `FieldDescription` to create an input with a label and description.",
     },

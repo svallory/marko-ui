@@ -80,6 +80,7 @@ Combobox (items= groups=)
     },
     {
       name: "combobox-multiple",
+      essential: true,
       title: "Multiple",
       description:
         "Pass `multiple` for multi-select with chips. Pair with `inputBehavior=\"autohighlight\"` to highlight the first match while typing.",
@@ -137,6 +138,7 @@ Combobox (items= groups=)
     },
     {
       name: "combobox-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`.",

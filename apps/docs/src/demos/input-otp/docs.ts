@@ -45,6 +45,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "input-otp-pattern",
+      essential: true,
       title: "Pattern",
       description:
         "Constrain accepted characters with `pattern`, a regular-expression source string. Upstream imports the `REGEXP_ONLY_DIGITS`/`REGEXP_ONLY_DIGITS_AND_CHARS` constants from the `input-otp` package; this port inlines the equivalent regex source directly since that package isn't a dependency here.",
@@ -82,6 +83,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "input-otp-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, which receives the array of per-slot characters.",

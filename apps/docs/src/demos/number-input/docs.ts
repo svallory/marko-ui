@@ -33,6 +33,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "number-input-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`.",

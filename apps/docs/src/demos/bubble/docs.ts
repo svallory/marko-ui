@@ -89,6 +89,7 @@ shows the pattern).`,
     },
     {
       name: "bubble-collapsible",
+      essential: true,
       title: "Show More / Collapsible",
       description:
         "Compose long bubble content with `Collapsible` for a show more / show less interaction.",

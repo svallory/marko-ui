@@ -90,12 +90,14 @@ they may be mixed across an app but not within a single Accordion instance
     },
     {
       name: "accordion-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`.",
     },
     {
       name: "accordion-compound",
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@item>` attribute tags instead of `items=` to compose each item's title and content directly in markup.",

@@ -32,6 +32,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "color-picker-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, or use Marko's bind shorthand `value:=state`.",

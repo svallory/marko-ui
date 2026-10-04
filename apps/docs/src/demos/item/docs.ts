@@ -79,6 +79,7 @@ import ItemActions from "@/components/ui/item/actions.marko";`,
     },
     {
       name: "item-dropdown",
+      essential: true,
       title: "Dropdown",
       description: "Compose `Item` with `DropdownMenu` to render a rich list of selectable people or options.",
     },

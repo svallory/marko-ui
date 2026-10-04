@@ -40,7 +40,8 @@ import { dirname, join, relative, basename } from "node:path";
 import { VISUAL_STYLES as VISUAL_STYLE_DEFINITIONS } from "../packages/marko-ui/src/registry/constants";
 import { createStyleMap, type StyleMap } from "./style-map";
 import { transformComponent } from "./transform-component";
-import type { RegistryItem } from "@/src/registry/schema";
+import type { RegistryItem } from "@/src/registry/schema"
+import { buildAllApiDocModels } from "./build-api-doc-model";
 import directory from "../apps/docs/src/data/directory.json";
 
 const ROOT = new URL("../packages/shadcn/", import.meta.url).pathname;
@@ -413,10 +414,16 @@ async function emitThemeVariants(): Promise<Emission[]> {
 // (`@marko-ui/shadcn`) and debugging want.
 async function emitComponents(components: string[]): Promise<Emission[]> {
   const emissions: Emission[] = [];
+  // The structured docs model, built once for all components from the files on
+  // disk (docs.ts, the demo .marko files and api-reference.json). Reading those
+  // directly is what keeps this out of a cycle with build:demos: the demos
+  // manifest is generated FROM the registry this function writes.
+  const docModels = await buildAllApiDocModels();
   for (const name of components) {
     const dir = join(UI_DIR, name);
     const meta = await readMeta(dir);
     const files = await fileEntries(dir, `~/src/components/ui/${name}`, `ui/${name}`);
+    const componentDocs = docModels.get(name);
     emissions.push({
       item: {
         $schema: ITEM_SCHEMA,
@@ -428,6 +435,7 @@ async function emitComponents(components: string[]): Promise<Emission[]> {
         devDependencies: meta.devDependencies,
         registryDependencies: (meta.registryDependencies ?? ["utils"]).map((dep) => selfRef(dep, "")),
         files,
+        ...(componentDocs ? { componentDocs } : {}),
       },
     });
   }

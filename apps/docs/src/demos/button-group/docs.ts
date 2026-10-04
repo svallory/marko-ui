@@ -54,11 +54,13 @@ export const docs: ComponentDocs = {
     },
     {
       name: "button-group-input-group",
+      essential: true,
       title: "Input Group",
       description: "Wrap an `InputGroup` to create complex input layouts.",
     },
     {
       name: "button-group-dropdown",
+      essential: true,
       title: "Dropdown Menu",
       description: "Create a split button group with a `DropdownMenu`.",
     },

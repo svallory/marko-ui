@@ -41,6 +41,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "command-shortcuts",
+      essential: true,
       title: "Shortcuts",
       description: "Items with a `shortcut` render it right-aligned. Upstream also shows a leading icon per item; our `CommandItem` type carries only `value`/`label`/`shortcut` and has no icon slot, so this demo omits them rather than faking them.",
     },
@@ -61,6 +62,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "command-controlled",
+      essential: true,
       title: "Controlled",
       description: "Pass `valueChange` to observe the selected item's value as the user navigates and picks from the list.",
     },

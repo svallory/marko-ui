@@ -76,6 +76,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "alert-dialog-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: an `open` prop without a change handler never moves. Pair it with `openChange`, or use Marko's bind shorthand `open:=state`.",

@@ -46,6 +46,7 @@ import BarChart from "@/components/ui/chart/bar.marko";`,
     },
     {
       name: "chart-example",
+      essential: true,
       title: "Your First Chart",
       description:
         "The minimal composition: `<Chart>` wrapping a `<BarChart>` with two `@series`, grid and tooltip both off.",

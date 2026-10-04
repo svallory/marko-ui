@@ -51,7 +51,7 @@ Installed: ${
     }`
 
   const commands = [
-    "- `marko-ui docs <name>` — usage, props and examples as markdown. Read it first.",
+    "- `marko-ui docs <name>` — parts, props, events, essential examples. Read first; `--examples` for all.",
     "- `marko-ui search -q <query>` — find a component",
     isImport
       ? null

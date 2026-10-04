@@ -43,12 +43,14 @@ Upstream expresses this as \`ToggleGroup\` > \`ToggleGroupItem\` children; our p
     },
     {
       name: "toggle-group-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, or use Marko's bind shorthand `value:=state`.",
     },
     {
       name: "toggle-group-compound",
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@item>` attribute tags instead of `items=` to compose each option directly in markup.",

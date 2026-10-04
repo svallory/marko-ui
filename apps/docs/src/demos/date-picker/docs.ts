@@ -61,12 +61,14 @@ export const docs: ComponentDocs = {
     },
     {
       name: "date-picker-range",
+      essential: true,
       title: "Range Picker",
       description:
         "`Calendar selectionMode=\"range\"` with `numOfMonths={2}` for selecting a date range across two visible months.",
     },
     {
       name: "date-picker-dob",
+      essential: true,
       title: "Date of Birth",
       description:
         "`Calendar captionLayout=\"dropdown\"` swaps the month/year label for native `<select>`s, and the popover closes itself once a date is picked.",

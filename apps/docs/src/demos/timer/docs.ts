@@ -32,6 +32,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "timer-controlled",
+      essential: true,
       title: "Controlled parts",
       description: "Swap the `parts` array at runtime to change the displayed segments live.",
     },

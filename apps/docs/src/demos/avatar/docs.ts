@@ -40,6 +40,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "avatar-controlled",
+      essential: true,
       title: "Controlled",
       description: "Listen for `statusChange` to react to `loading`, `loaded`, or `error` as `src` changes.",
     },

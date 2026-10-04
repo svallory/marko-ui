@@ -36,6 +36,7 @@ import NativeSelectOption from "@/components/ui/native-select/native-select-opti
     },
     {
       name: "native-select-invalid",
+      essential: true,
       title: "Invalid",
       description: "Pass `aria-invalid` to show a validation error state.",
     },

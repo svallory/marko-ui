@@ -66,6 +66,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "drawer-swipe-handle",
+      essential: true,
       title: "Swipe handle",
       description:
         "Our drawer always renders a drag grabber unless `hideGrabber` is set — there's no separate `showSwipeHandle` toggle to opt into, since the grabber is the default rather than an add-on.",
@@ -90,6 +91,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "drawer-dialog",
+      essential: true,
       title: "Responsive dialog",
       description:
         "Combine `Dialog` and `Drawer` to render a dialog on desktop and a drawer on mobile, switching on a `matchMedia` breakpoint check.",

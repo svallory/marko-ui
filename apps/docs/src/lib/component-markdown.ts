@@ -1,167 +1,77 @@
-// Renders a component page as plain markdown — the payload behind Copy Page,
-// the `.md` endpoint, and (later) llms.txt. Built from the same
-// ComponentPageData the HTML page uses, so the two cannot disagree.
+// Assembles the structured ComponentDocs model for one component and renders it.
+//
+// This is the ONLY markdown assembler for component docs. It builds the model
+// (from `docs.ts`, the demo sources and api-reference.json) and hands it to the
+// renderer in packages/marko-ui/src/docs — the same renderer `marko-ui docs`
+// runs on the model it reads from the registry item, so the two cannot drift.
+//
+// The inputs are passed in rather than imported: the registry build calls this
+// with demo sources read from disk, while the docs site passes the ones already
+// inlined in the demos manifest. That keeps the demos manifest out of the
+// registry build's dependency graph (it is generated FROM the registry).
+import {
+  renderComponentDocs,
+  type ComponentDocs as ComponentDocsModel,
+  type ExampleSelection,
+  type PropDoc,
+} from "../../../../packages/marko-ui/src/docs/index.ts";
+import {
+  buildComponentDocs,
+  type ComponentDocsInput,
+} from "../../../../packages/marko-ui/src/docs/build";
 import type { ComponentPageData } from "./component-page-data.ts";
 import type { ApiPart } from "../tags/docs/api-table.marko";
-import { stripMarkoComments } from "./strip-marko-comments.ts";
+import { stripMarkoComments } from "../../../../packages/marko-ui/src/docs/strip-comments";
 
-/** Pipes and newlines would break out of a markdown table cell. */
-function escapeTableCell(value: string): string {
-  return value.replace(/\|/g, "\\|").replace(/\s*\n\s*/g, " ");
+export { defaultCell } from "./default-cell.ts";
+
+/** What the builder needs about one component, from wherever it is assembled. */
+/** The pure builder lives in the CLI package; the docs site only adds the
+ * comment stripping, which is a property of the demo sources, not of the
+ * model. */
+export { stripMarkoComments } from "../../../../packages/marko-ui/src/docs/strip-comments";
+export type { ComponentDocsInput } from "../../../../packages/marko-ui/src/docs/build";
+
+/** Builds the model from the docs site's inputs, with comments stripped. */
+export function buildComponentDocs(input: ComponentDocsInput): ComponentDocsModel {
+  return buildModel(input);
 }
-
-/** Explains the `fixed:` cells when a part has any; `null` when it has none. */
-const FIXED_LEGEND =
-  "`fixed: X` — the component sets this value itself; a value you pass is ignored. `fixed` — same, but the value is computed.";
 
 /**
- * The Default cell: a real default, or the marker for a prop the component
- * FIXES on its own `<zag>` tag. marko-zag merges those attributes last
- * (`buildMachineProps`), so the caller's value is silently ignored — showing
- * "Default `false`" there would tell a reader they can change it.
+ * The builder's input, from the page model the docs site already assembles.
+ * Its `examples` carry the resolved demo sources, so no second lookup — and no
+ * dependency on the demos manifest, which is generated from the registry.
  */
-export function defaultCell(property: { default?: string; fixed?: string | true }): string {
-  if (property.fixed !== undefined) {
-    return property.fixed === true ? "`fixed`" : `\`fixed: ${property.fixed}\``;
-  }
-  return property.default ? `\`${property.default}\`` : "—";
+export function componentDocsInputFromPage(page: ComponentPageData): ComponentDocsInput {
+  const demos: ComponentDocsInput["demos"] = {};
+  for (const example of page.examples) demos[example.name] = { source: example.source };
+  return {
+    name: page.name,
+    title: page.title,
+    registryDescription: page.registry.description,
+    docs: page.docs,
+    demos,
+    parts: page.parts,
+    installCommand: page.installCommand,
+  };
 }
 
-function renderPartTable(part: ApiPart, includeHeading: boolean): string {
-  const lines: string[] = [];
-  if (includeHeading) lines.push(`### ${part.name}`, "");
-
-  if (part.properties.length === 0) {
-    lines.push(
-      part.nativeAttributes
-        ? `No props of its own. Accepts every \`<${part.nativeAttributes}>\` attribute, plus \`class\`.`
-        : "No props of its own.",
-      "",
-    );
-    return lines.join("\n");
-  }
-
-  // Above the table, never between the header row and the body: prose in that
-  // gap ends the table in most markdown renderers.
-  if (part.properties.some((property: { fixed?: string | true }) => property.fixed !== undefined)) {
-    lines.push(FIXED_LEGEND, "");
-  }
-  lines.push("| Prop | Type | Default | Description |", "| --- | --- | --- | --- |");
-  for (const property of part.properties) {
-    const name = property.required ? `\`${property.name}\` (required)` : `\`${property.name}\``;
-    lines.push(
-      `| ${name} | \`${escapeTableCell(property.type)}\` | ${defaultCell(property)} | ${escapeTableCell(property.description ?? "")} |`,
-    );
-  }
-  lines.push("");
-
-  if (part.nativeAttributes) {
-    lines.push(`Also accepts every \`<${part.nativeAttributes}>\` attribute.`, "");
-  }
-  return lines.join("\n");
+/** Builds and renders in one step. */
+export function renderComponentDocsFrom(
+  input: ComponentDocsInput,
+  selection: ExampleSelection = "essential",
+): string {
+  return renderComponentDocs(buildComponentDocs(input), selection);
 }
 
-/** `header` in `card` → `CardHeader`. */
-function pascalCase(value: string): string {
-  return value
-    .split(/[^A-Za-z0-9]+/)
-    .filter(Boolean)
-    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-    .join("");
-}
-
-export function renderComponentMarkdown(page: ComponentPageData): string {
-  const sections: string[] = [];
-
-  sections.push(`# ${page.title}`, "", page.description, "");
-
-  sections.push("## Installation", "", "```bash", page.installCommand, "```", "");
-
-  if (page.registry.dependencies.length !== 0) {
-    sections.push(
-      "Dependencies installed alongside the component:",
-      "",
-      ...page.registry.dependencies.map((dependency) => `- \`${dependency}\``),
-      "",
-    );
-  }
-
-  sections.push(
-    "## Usage",
-    "",
-    `Tags are registered automatically — ${page.docs.usageTags} needs no import.`,
-    "",
-    "```marko",
-    page.docs.usageSnippet,
-    "```",
-    "",
-    "Prefer explicit imports (or need to override a tag)? Import the file directly:",
-    "",
-    "```marko",
-    page.docs.importSnippet,
-    "```",
-    "",
-  );
-
-  if (page.docs.concepts) {
-    sections.push("## Concepts", "", page.docs.concepts, "");
-  }
-
-  if (page.isCompound) {
-    const rootTag = pascalCase(page.name);
-    const children = page.parts.filter((part) => part.name !== page.name);
-    sections.push("## Composition", "", "```text", `<${rootTag}>`);
-    children.forEach((part, index) => {
-      const branch = index === children.length - 1 ? "└──" : "├──";
-      // A part named with the component's own prefix (e.g. toast's
-      // "toast-item") would double up as <ToastToastItem/> — strip it.
-      const partName = part.name.startsWith(`${page.name}-`)
-        ? part.name.slice(page.name.length + 1)
-        : part.name;
-      sections.push(`${branch} <${rootTag}${pascalCase(partName)} />`);
-    });
-    sections.push("```", "");
-  }
-
-  if (page.examples.length !== 0) {
-    sections.push("## Examples", "");
-    for (const example of page.examples) {
-      sections.push(`### ${example.title}`, "");
-      if (example.description) sections.push(example.description, "");
-      // Comments are for the maintainers of the demo file; this reader is an
-      // assistant. The docs site itself still shows the commented source.
-      sections.push("```marko", stripMarkoComments(example.source), "```", "");
-    }
-  }
-
-  const hasAccessibility =
-    (page.docs.accessibilityKeyboard && page.docs.accessibilityKeyboard.length !== 0) ||
-    (page.docs.accessibilityNotes && page.docs.accessibilityNotes.length !== 0);
-  if (hasAccessibility) {
-    sections.push("## Accessibility", "");
-    if (page.docs.accessibilityKeyboard && page.docs.accessibilityKeyboard.length !== 0) {
-      sections.push("| Key | Description |", "| --- | --- |");
-      for (const entry of page.docs.accessibilityKeyboard) {
-        sections.push(`| \`${entry.keys}\` | ${escapeTableCell(entry.description)} |`);
-      }
-      sections.push("");
-    }
-    if (page.docs.accessibilityNotes && page.docs.accessibilityNotes.length !== 0) {
-      for (const note of page.docs.accessibilityNotes) {
-        sections.push(`- ${note}`);
-      }
-      sections.push("");
-    }
-  }
-
-  if (page.parts.length !== 0) {
-    sections.push("## API Reference", "");
-    const includeHeadings = page.parts.length > 1;
-    for (const part of page.parts) {
-      sections.push(renderPartTable(part, includeHeadings));
-    }
-  }
-
-  // Collapse the runs of blank lines the section joins leave behind.
-  return sections.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd() + "\n";
+/**
+ * What the docs site's `/docs/components/<name>.md` serves: the same renderer
+ * the CLI runs, with EVERY example (a human reading the page can see them all;
+ * the CLI's default is the lean slice).
+ */
+export function renderComponentMarkdown(
+  page: ComponentPageData,
+  selection: ExampleSelection = "all",
+): string {
+  return renderComponentDocsFrom(componentDocsInputFromPage(page), selection);
 }

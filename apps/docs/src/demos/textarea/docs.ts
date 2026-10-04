@@ -20,6 +20,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "textarea-field",
+      essential: true,
       title: "With label",
       description: "Pair a textarea with a `Label` via a shared id.",
     },

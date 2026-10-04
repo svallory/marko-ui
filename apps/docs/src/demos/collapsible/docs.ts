@@ -60,6 +60,7 @@ in the machine's \`getContentProps()\` internally.`,
     },
     {
       name: "collapsible-file-tree",
+      essential: true,
       title: "File Tree",
       description:
         "Use nested collapsibles to build a file tree. Each folder recurses into its own Collapsible; files render as plain link-styled buttons.",
@@ -77,6 +78,7 @@ in the machine's \`getContentProps()\` internally.`,
     },
     {
       name: "collapsible-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: an `open` prop without a change handler never moves. Pair it with `openChange`.",

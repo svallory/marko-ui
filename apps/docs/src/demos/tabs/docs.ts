@@ -81,12 +81,14 @@ items=-derived panels — see the Hybrid example below.`,
     },
     {
       name: "tabs-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, or use Marko's bind shorthand `value:=state`.",
     },
     {
       name: "tabs-compound",
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@trigger>` and `<@panel>` attribute tags instead of `items=` to compose each tab's label and panel content directly in markup.",

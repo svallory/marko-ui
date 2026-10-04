@@ -36,6 +36,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "label-in-field",
+      essential: true,
       title: "Label in Field",
       description:
         "For form fields, use the `Field` component, which includes built-in `FieldLabel`, `FieldDescription`, and `FieldError` parts.",

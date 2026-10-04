@@ -29,12 +29,14 @@ import MenubarMenu from "@/components/ui/menubar/menu.marko";`,
     },
     {
       name: "menubar-checkbox",
+      essential: true,
       title: "Checkbox",
       description:
         "Use `<@item type=\"checkbox\">` (or an `items` entry with `type: \"checkbox\"`) for toggleable options; drive `checked` from your own state and update it in `checkedChange`.",
     },
     {
       name: "menubar-radio",
+      essential: true,
       title: "Radio",
       description:
         "Group `<@item type=\"radio\">` entries with a shared `radioGroup` name for single-select options; `radioChange` fires with the group name and the newly selected value.",

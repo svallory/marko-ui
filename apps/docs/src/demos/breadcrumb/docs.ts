@@ -48,6 +48,7 @@ import BreadcrumbSeparator from "@/components/ui/breadcrumb/separator.marko";`,
     },
     {
       name: "breadcrumb-dropdown",
+      essential: true,
       title: "Dropdown",
       description: "Compose `BreadcrumbItem` with `DropdownMenu` to create a dropdown in the breadcrumb.",
     },

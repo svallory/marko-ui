@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { stripMarkoComments } from "../strip-marko-comments.ts";
+import { stripMarkoComments } from "./strip-comments";
 
 // The markdown payload (`/docs/components/<name>.md`, i.e. what
 // `marko-ui docs <name>` prints) must not carry maintainer comments, while the
@@ -86,7 +86,11 @@ describe("stripMarkoComments: text content is content", () => {
 // must still contain every line of code it started with, byte for byte. Only
 // comment lines may go missing, and only whitespace may be invented.
 describe("stripMarkoComments: the whole demo corpus", () => {
-  const DEMOS_DIR = fileURLToPath(new URL("../../demos", import.meta.url));
+  // The repo's demo sources. The stripper moved into this package (the
+// registry model strips too), but its input is still the docs site's demos.
+const DEMOS_DIR = fileURLToPath(
+  new URL("../../../../apps/docs/src/demos", import.meta.url),
+);
 
   function* demoFiles(dir: string): Generator<string> {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {

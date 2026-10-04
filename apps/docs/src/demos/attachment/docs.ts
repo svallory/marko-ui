@@ -64,6 +64,7 @@ import AttachmentAction from "@/components/ui/attachment/action.marko";`,
     },
     {
       name: "attachment-trigger",
+      essential: true,
       title: "Trigger",
       description:
         "Add an `AttachmentTrigger` to make the whole card open a link or dialog — it fills the card behind the actions, so the actions stay clickable.",

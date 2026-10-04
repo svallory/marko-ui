@@ -32,11 +32,13 @@ export const docs: ComponentDocs = {
     },
     {
       name: "password-input-invalid",
+      essential: true,
       title: "Invalid",
       description: "Pass `invalid` to mark the field as failing validation.",
     },
     {
       name: "password-input-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `visible` prop without a change handler never moves. Pair it with `visibleChange`, or use Marko's bind shorthand `visible:=state`.",

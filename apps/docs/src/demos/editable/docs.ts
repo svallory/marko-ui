@@ -41,11 +41,13 @@ export const docs: ComponentDocs = {
     },
     {
       name: "editable-custom-trigger",
+      essential: true,
       title: "Custom trigger",
       description: "Replace the default edit-trigger button with the `@trigger` tag parameter.",
     },
     {
       name: "editable-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, and use `valueCommit` to react only when the value is submitted.",

@@ -31,6 +31,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "dropdown-menu-submenu",
+      essential: true,
       title: "Submenu",
       description:
         "A `type: \"sub\"` entry with its own `subEntries` nests a secondary menu. Our submenu wiring supports one level of nesting: a `type: \"sub\"` entry inside a submenu's own `subEntries` is not wired, so upstream's second-level 'More options' items (Calendly, Slack, Webhook) are flattened directly into the 'Invite users' submenu instead of sitting behind their own nested trigger.",
@@ -57,6 +58,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "dropdown-menu-selection",
+      essential: true,
       title: "Selection",
       description: "Handle `select(value)` on the menu to react to whichever item was chosen.",
     },

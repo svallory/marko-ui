@@ -31,6 +31,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "tree-view-controlled-selection",
+      essential: true,
       title: "Controlled selection",
       description:
         "Zag machines are controlled: a `selectedValue` prop without a change handler never moves. Pair it with `selectedValueChange`, or use Marko's bind shorthand `selectedValue:=state`.",

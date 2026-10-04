@@ -64,6 +64,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "resizable-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Listen for `resizeChange` to read the live size (in percent) of every panel as the handle is dragged.",

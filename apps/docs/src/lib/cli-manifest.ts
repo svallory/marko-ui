@@ -212,6 +212,15 @@ export const CLI_MANIFEST: CliManifest = {
           "flags": "--json",
           "description": "output as JSON (with --list, or the markdown itself).",
           "defaultValue": false
+        },
+        {
+          "flags": "--examples",
+          "description": "print every example instead of the essential ones.",
+          "defaultValue": false
+        },
+        {
+          "flags": "--example <id...>",
+          "description": "print only the named examples (ids are listed by --list and in the \"More examples\" list)."
         }
       ]
     },

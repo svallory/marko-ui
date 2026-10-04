@@ -33,6 +33,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "image-cropper-controlled",
+      essential: true,
       title: "Controlled zoom and rotation",
       description:
         "Zag machines are controlled: `zoom` and `rotation` props without change handlers never move. Pair them with `zoomChange` and `rotationChange`, or use Marko's bind shorthand `zoom:=state`.",

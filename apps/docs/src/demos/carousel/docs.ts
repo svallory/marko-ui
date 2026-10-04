@@ -56,6 +56,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "carousel-plugin",
+      essential: true,
       title: "Autoplay",
       description:
         "Our carousel is backed by `@zag-js/carousel`, which has autoplay built in — pass `autoplay={ delay }` instead of an Embla plugin, and call `api().pause()` / `api().play()` to stop on hover.",
@@ -79,6 +80,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "carousel-compound",
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@slide>` attribute tags instead of `items=` to compose each slide's markup directly.",

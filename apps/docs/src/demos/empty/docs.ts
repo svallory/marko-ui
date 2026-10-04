@@ -56,6 +56,7 @@ import EmptyContent from "@/components/ui/empty/content.marko";`,
     },
     {
       name: "empty-input-group",
+      essential: true,
       title: "Input group",
       description: "You can add an `InputGroup` component to the `EmptyContent` component.",
     },

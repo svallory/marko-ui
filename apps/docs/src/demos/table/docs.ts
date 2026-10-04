@@ -48,6 +48,7 @@ import TableCaption from "@/components/ui/table/caption.marko";`,
     },
     {
       name: "table-actions",
+      essential: true,
       title: "Actions",
       description:
         "A table showing per-row actions using a `DropdownMenu` in the last cell.",
