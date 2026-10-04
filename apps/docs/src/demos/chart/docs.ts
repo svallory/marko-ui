@@ -132,7 +132,7 @@ import BarChart from "@/components/ui/chart/bar.marko";`,
       name: "chart-rtl",
       title: "RTL",
       description:
-        "Static Arabic labels under a `dir=\"rtl\"` wrapper. **Deviation from upstream:** shadcn's RTL demo also mirrors the plot itself (grid orientation, axis direction); our `BarChart` has no `orientation`/`reversed` props yet, so only the labels/legend/tooltip flip — the plot geometry stays left-to-right. See the in-file comment in `chart-rtl.marko`.",
+        "Static Arabic labels under a `dir=\"rtl\"` wrapper. **Deviation from upstream:** shadcn's RTL demo also mirrors the plot itself (grid orientation, axis direction); our `BarChart` has no `orientation`/`reversed` props yet, so only the labels/legend/tooltip flip — the plot geometry stays left-to-right. Upstream's RTL demo also drives a live language switcher; this one is static Arabic content (locale `ar`).",
     },
   ],
   accessibilityNotes: [

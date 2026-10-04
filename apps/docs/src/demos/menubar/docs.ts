@@ -55,7 +55,7 @@ import MenubarMenu from "@/components/ui/menubar/menu.marko";`,
       name: "menubar-rtl",
       title: "RTL",
       description:
-        "Wrap the menubar in a `dir=\"rtl\"` container for right-to-left layout and text; see the note in the demo source for the one behavioral gap versus upstream's floating-ui RTL placement flip.",
+        "Wrap the menubar in a `dir=\"rtl\"` container for right-to-left layout and text. The one behavioral gap versus upstream: `DropdownMenu`'s `Input` type never re-exposes the machine's `dir` prop, so passing `dir=\"rtl\"` to it is a type error and floating-ui's own RTL placement flip is unreachable — only text direction and logical-property layout flip.",
     },
     {
       name: "menubar-danger",

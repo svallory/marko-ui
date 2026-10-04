@@ -47,8 +47,8 @@ BubbleGroup
 prop (Radix \`Slot.Root\`) to turn the content into a link or button by
 merging its props onto an arbitrary child element. Marko 6 has no
 \`asChild\`/\`Slot.Root\` equivalent, and this port's other components (e.g.
-\`button.marko\`) already drop \`asChild\` for the same reason — see the
-deviation comment in \`bubble-content.marko\`. \`BubbleContent\` here always
+\`button.marko\`) already drop \`asChild\` for the same reason.
+\`BubbleContent\` here always
 renders a \`<div>\`; put a real \`<button>\` or \`<a>\` inside the content body
 when you need an interactive bubble (the \`Links and Buttons\` example below
 shows the pattern).`,
@@ -108,7 +108,7 @@ shows the pattern).`,
     "`Bubble` renders the presentational message surface only. Keep conversation-level semantics (roles, list structure) on the surrounding container.",
     'Reactions render as a row of emoji read one glyph at a time by screen readers, with counters like "+8" announced as "plus eight". Group the row as a single image with a descriptive `aria-label` (e.g. `aria-label="Reactions: thumbs up, fire, and 8 more"`) so it announces once — `role="img"` also hides the individual emoji from assistive tech, so no `aria-hidden` is needed.',
     "When reactions are interactive, render real buttons instead of `role=\"img\"` spans, and give icon-only buttons an `aria-label`.",
-    "When a bubble is clickable, render a real `<button>` or `<a>` inside `BubbleContent` (see the deviation note in Composition above) so it is focusable and exposes the correct role — `BubbleContent` ships a visible focus ring for interactive descendants, and the accessible name comes from the bubble text.",
+    "When a bubble is clickable, render a real `<button>` or `<a>` inside `BubbleContent` (see the `Links and Buttons` example below) so it is focusable and exposes the correct role — `BubbleContent` ships a visible focus ring for interactive descendants, and the accessible name comes from the bubble text.",
     "Bubble variants signal role and tone with color alone. Pair them with text, alignment, or icons — for a `destructive` bubble, keep the error context in the message text rather than relying on color.",
   ],
 };

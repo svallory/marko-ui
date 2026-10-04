@@ -49,7 +49,7 @@ markup (see the Compound example below).`,
       name: "select-align-item",
       title: "Align item with trigger",
       description:
-        "Upstream toggles a real item-aligned positioning mode; @zag-js/select has no such concept, so this demo wires the switch to the closest analog — a `positioning.placement` change — see the in-file comment for the full deviation.",
+        "Upstream toggles a real item-aligned positioning mode; @zag-js/select has no such concept, so this demo wires the switch to the closest analog — a `positioning.placement` change, which swaps edge anchoring from bottom to top but never makes the selected item overlap the trigger the way upstream's mode does.",
     },
     {
       name: "select-groups",

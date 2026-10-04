@@ -78,7 +78,7 @@ export const docs: ComponentDocs = {
       name: "context-menu-rtl",
       title: "RTL",
       description:
-        "Wrap the trigger in a `dir=\"rtl\"` container for RTL text direction and logical-property layout. See the in-file comment for a real deviation from upstream: our `Input` type doesn't re-expose the machine's own `dir` prop, so the floating-ui positioner itself doesn't auto-flip placement under RTL the way upstream's demo does.",
+        "Wrap the trigger in a `dir=\"rtl\"` container for RTL text direction and logical-property layout. Real deviation from upstream: our `Input` type doesn't re-expose the machine's own `dir` prop, so the floating-ui positioner itself doesn't auto-flip placement under RTL the way upstream's demo does.",
     },
     {
       name: "context-menu-simple",

@@ -33,7 +33,7 @@ export const docs: ComponentDocs = {
       name: "dropdown-menu-submenu",
       title: "Submenu",
       description:
-        "A `type: \"sub\"` entry with its own `subEntries` nests a secondary menu. Our submenu wiring supports one level of nesting — see the in-file comment for the upstream second-level flattening.",
+        "A `type: \"sub\"` entry with its own `subEntries` nests a secondary menu. Our submenu wiring supports one level of nesting: a `type: \"sub\"` entry inside a submenu's own `subEntries` is not wired, so upstream's second-level 'More options' items (Calendly, Slack, Webhook) are flattened directly into the 'Invite users' submenu instead of sitting behind their own nested trigger.",
     },
     {
       name: "dropdown-menu-shortcuts",
@@ -95,7 +95,7 @@ export const docs: ComponentDocs = {
       name: "dropdown-menu-complex",
       title: "Complex",
       description:
-        "A richer menu combining groups, icons, checkboxes, a radio group, and submenus. See the in-file comment for two technically-forced omissions (submenu nesting depth, icons inside submenus).",
+        "A richer menu combining groups, icons, checkboxes, a radio group, and submenus. Two technically-forced omissions: nesting is one level deep (upstream nests a third level in two places — 'Open Recent' > 'More Projects', 'Settings' > 'Notifications' — so each nested submenu's items are flattened into its parent, in order, with a separator marking the old nesting point), and icons cannot appear inside a submenu or on a `type: 'sub'` trigger (`subEntries` is plain `DropdownMenuItem[]`, and the sub branch renders its trigger as a plain string with no body slot) — which is why 'New File', 'Save' and 'Profile' keep their icons while 'Open Recent', 'Theme' and 'Settings' do not.",
     },
     {
       name: "dropdown-menu-compound",
@@ -107,7 +107,7 @@ export const docs: ComponentDocs = {
       name: "dropdown-menu-rtl",
       title: "RTL",
       description:
-        "A `dir=\"rtl\"` wrapper with Arabic content, matching the precedent set by button/avatar/input's RTL demos. See the in-file comment: the underlying Zag menu machine does accept a `dir` prop for floating-ui placement flipping, but our `Input` type doesn't re-expose it yet (component-source change, out of scope here).",
+        "A `dir=\"rtl\"` wrapper with Arabic content, matching the precedent set by button/avatar/input's RTL demos. The underlying Zag menu machine does accept a `dir` prop for floating-ui placement flipping, but our `Input` type doesn't re-expose it yet (component-source change, out of scope here).",
     },
   ],
   accessibilityKeyboard: [

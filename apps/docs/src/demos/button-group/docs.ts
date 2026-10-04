@@ -66,7 +66,7 @@ export const docs: ComponentDocs = {
       name: "button-group-select",
       title: "Select",
       description:
-        "Pair with a `Select`. Our `Select` trigger always renders the selected item's `label` (there is no custom-trigger-content slot like upstream's, which shows the bare currency symbol) — see the in-file note in `button-group-select.marko`.",
+        "Pair with a `Select`. Upstream's `SelectTrigger` accepts arbitrary children and renders the bare currency symbol via a `font-mono` class; ours always shows the selected item's `label` (`valueAsString || placeholder`) with no custom-content slot, so the trigger reads 'US Dollar' rather than a bare '$'.",
     },
     {
       name: "button-group-popover",
@@ -77,7 +77,7 @@ export const docs: ComponentDocs = {
       name: "button-group-rtl",
       title: "RTL",
       description:
-        "Set `dir=\"rtl\"` on a wrapping element for RTL text and logical-property layout. `DropdownMenu` doesn't expose the underlying Zag menu's `dir` prop, so this doesn't drive floating-ui's own RTL placement flip — see the in-file note in `button-group-rtl.marko`.",
+        "Set `dir=\"rtl\"` on a wrapping element for RTL text and logical-property layout. `DropdownMenu` doesn't expose the underlying Zag menu's `dir` prop, so this doesn't drive floating-ui's own RTL placement flip. Upstream's RTL demo also drives a live language switcher (English/Arabic/Hebrew); this one is static Arabic content, like every other RTL example on this site.",
     },
     {
       name: "button-group-text",
