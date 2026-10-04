@@ -60,7 +60,7 @@ import MarkerContent from "@/components/ui/marker/content.marko";`,
       name: "marker-link-button",
       title: "Links and Buttons",
       description:
-        "Upstream turns a marker into a link or button via a `render` prop. Our `Marker` accepts `asChild`/`render` for API parity but always renders its own wrapping `<div>` (Marko has no runtime slot-merge primitive for it), so this demo wraps the marker markup in a real `<a>`/`<button>` directly for the same focusable, correctly-rendered result.",
+        "Upstream turns a marker into a link or button via a `render` prop. Our `Marker` has no `render` prop and accepts `asChild` for API parity only — Marko has no runtime slot-merge primitive, so the prop is a no-op and `Marker` always renders its own wrapping `<div>`. This demo wraps the marker markup in a real `<a>`/`<button>` directly for the same focusable, correctly-rendered result.",
     },
   ],
   accessibilityNotes: [

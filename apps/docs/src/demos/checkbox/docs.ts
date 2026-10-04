@@ -30,7 +30,8 @@ export const docs: ComponentDocs = {
     {
       name: "checkbox-invalid",
       title: "Invalid",
-      description: 'Set `aria-invalid="true"` on the checkbox and `invalid` on the wrapping `Field` to show the invalid styles.',
+      description:
+        'Set `aria-invalid="true"` on the checkbox and `invalid` on the wrapping `Field` to show the invalid styles. Note the label is the checkbox\'s own `content` body, not a `FieldLabel` wrapper: `Checkbox` already renders a root `<label>` around its hidden input, so nesting a second `<label>` would be invalid HTML (upstream pairs a bare checkbox with an external label instead).',
     },
     {
       name: "checkbox-basic",

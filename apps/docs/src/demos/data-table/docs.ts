@@ -41,7 +41,7 @@ export const docs: ComponentDocs = {
       name: "data-table-rtl",
       title: "RTL",
       description:
-        "The table works unchanged under `dir=\"rtl\"`; wrap it (or an ancestor) in `dir=\"rtl\"` and text alignment, sort-icon placement, and cell order follow the writing direction. See the [RTL guide](/docs/rtl) for site-wide setup.",
+        "The table works unchanged under `dir=\"rtl\"`; wrap it (or an ancestor) in `dir=\"rtl\"` and text alignment, sort-icon placement, and cell order follow the writing direction. Every RTL example on this site does it the same way: a `dir=\"rtl\"` wrapper plus Arabic labels.",
     },
   ],
 };

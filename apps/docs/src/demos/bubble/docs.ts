@@ -79,7 +79,7 @@ shows the pattern).`,
       name: "bubble-link-button",
       title: "Links and Buttons",
       description:
-        "Turn a bubble into an interactive control by placing a real `<button>` or `<a>` inside `BubbleContent`.",
+        "Turn a bubble into an interactive control by placing a real `<button>` or `<a>` inside `BubbleContent`. `BubbleContent` has no `render`/`asChild` prop — it always renders a `<div>` (Marko has no runtime slot-merge primitive), so the interactive element is a child rather than the bubble root.",
     },
     {
       name: "bubble-reactions",

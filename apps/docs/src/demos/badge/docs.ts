@@ -49,7 +49,7 @@ export const docs: ComponentDocs = {
       name: "badge-link",
       title: "Link",
       description:
-        "Our Badge has no `render`/asChild prop, so a link badge nests an `<a>` inside the badge instead of rendering the badge itself as the anchor — the badge's `[a]:hover:` styles already target a child link.",
+        "Pass `href` and the badge renders as a real `<a>` with the same styling — the Marko equivalent of shadcn's `asChild`. Nesting an `<a>` inside the badge, as this demo does, also works, and the badge's `[a]:hover:` styles already target a child link.",
     },
     {
       name: "badge-numeric",
