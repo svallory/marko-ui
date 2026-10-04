@@ -308,6 +308,63 @@ describe("search command", () => {
     exit.mockRestore()
   })
 
+  it("exits 0 and says so when nothing matches", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {})
+    const exit = mockProcessExit()
+
+    vi.mocked(searchRegistries).mockReturnValueOnce({
+      pagination: { total: 0, offset: 0, limit: 100, hasMore: false },
+      items: [],
+    } as never)
+
+    await expect(
+      search.parseAsync(
+        ["@marko-ui", "-q", "cryptocurrency", "--cwd", "/tmp/test-project"],
+        { from: "user" }
+      )
+    ).rejects.toThrow("process.exit:0")
+
+    const output = log.mock.calls.map((call) => stripAnsi(String(call[0])))
+    expect(output).toContainEqual(
+      expect.stringContaining(
+        'No items found matching "cryptocurrency" in @marko-ui'
+      )
+    )
+
+    log.mockRestore()
+    exit.mockRestore()
+  })
+
+  it("prints an empty items array in JSON when nothing matches", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {})
+    const exit = mockProcessExit()
+
+    const empty = {
+      pagination: { total: 0, offset: 0, limit: 100, hasMore: false },
+      items: [],
+    }
+    vi.mocked(searchRegistries).mockReturnValueOnce(empty as never)
+
+    await expect(
+      search.parseAsync(
+        [
+          "@marko-ui",
+          "-q",
+          "cryptocurrency",
+          "--cwd",
+          "/tmp/test-project",
+          "--json",
+        ],
+        { from: "user" }
+      )
+    ).rejects.toThrow("process.exit:0")
+
+    expect(log).toHaveBeenCalledWith(JSON.stringify(empty, null, 2))
+
+    log.mockRestore()
+    exit.mockRestore()
+  })
+
   it("exits non-zero when every registry fails in search-all", async () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {})
     const exit = mockProcessExit()
@@ -348,6 +405,10 @@ function mockProcessExit() {
   return vi.spyOn(process, "exit").mockImplementation((code) => {
     throw new Error(`process.exit:${code}`)
   })
+}
+
+function stripAnsi(value: string) {
+  return value.replace(/\[[0-9;]*m/g, "")
 }
 
 describe("React components.json refusal (re-throw from the shadow-config catch)", () => {

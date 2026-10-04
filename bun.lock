@@ -128,9 +128,9 @@
     },
     "packages/marko-ui": {
       "name": "marko-ui",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "bin": {
-        "marko-ui": "./dist/index.js",
+        "marko-ui": "dist/index.js",
       },
       "dependencies": {
         "@clack/prompts": "^0.11.0",
@@ -142,7 +142,6 @@
         "execa": "^9.6.0",
         "fast-glob": "^3.3.3",
         "fs-extra": "^11.3.1",
-        "fuzzysort": "^3.1.0",
         "kleur": "^4.1.5",
         "ora": "^8.2.0",
         "postcss": "^8.5.26",
@@ -165,7 +164,7 @@
     },
     "packages/shadcn": {
       "name": "@marko-ui/shadcn",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "dependencies": {
         "@hugeicons/core-free-icons": "^4.3.0",
         "@internationalized/date": "3.12.3",
@@ -1150,8 +1149,6 @@
     "fs-extra": ["fs-extra@11.4.0", "", { "dependencies": { "graceful-fs": "^4.2.0", "jsonfile": "^6.0.1", "universalify": "^2.0.0" } }, "sha512-EQsFzMUJkCKGr1ePqlYADkIUmHW1s3ZXr5Yqy6wbGrfUCphpl2maM/kyOIRA2HpP3AaFQTZXD4ldjek+nccddA=="],
 
     "fsevents": ["fsevents@2.3.2", "", { "os": "darwin" }, "sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA=="],
-
-    "fuzzysort": ["fuzzysort@3.1.0", "", {}, "sha512-sR9BNCjBg6LNgwvxlBd0sBABvQitkLzoVY9MYYROQVX/FvfJ4Mai9LsGhDgd8qYdds0bY77VzYd5iuB+v5rwQQ=="],
 
     "get-caller-file": ["get-caller-file@2.0.5", "", {}, "sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg=="],
 

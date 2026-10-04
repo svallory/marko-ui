@@ -8,7 +8,6 @@ import {
 import { Config } from "@/src/utils/get-config"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
-import fuzzysort from "fuzzysort"
 import { z } from "zod"
 
 import { resolveGitHubRegistrySource } from "./address"
@@ -213,7 +212,6 @@ async function searchRegistriesWithContext(
     localItems = searchItems(localItems, {
       query,
       limit: localItems.length,
-      keys: ["name", "title", "description"],
     }) as z.infer<typeof searchResultItemSchema>[]
   }
 
@@ -275,7 +273,225 @@ const searchableItemSchema = z
 
 type SearchableItem = z.infer<typeof searchableItemSchema>
 
-function searchItems<
+// How much a match in each field counts toward an item's score. `name` is the
+// item's identifier, so a match there is the strongest signal; `title` is
+// nearly as strong; `description` is prose, where a match is far more likely
+// to be incidental than intended, so it counts for much less.
+const SEARCH_FIELD_WEIGHTS = {
+  name: 1,
+  title: 0.9,
+  description: 0.55,
+} as const
+
+type SearchField = keyof typeof SEARCH_FIELD_WEIGHTS
+
+const SEARCH_FIELDS = Object.keys(SEARCH_FIELD_WEIGHTS) as SearchField[]
+
+// Scores by match kind. An exact word match is a full hit, a prefix match is
+// slightly discounted in proportion to how much of the word it leaves
+// unmatched, and a typo-level match is discounted harder because it is the
+// weakest evidence that the item is what the caller meant.
+const EXACT_MATCH_SCORE = 1
+const PREFIX_MATCH_SCORE = 0.85
+const TYPO_MATCH_SCORE = 0.6
+
+// Splits a query into comparable words: lowercased, split on every
+// non-alphanumeric character, so `Date Picker`, `date-picker` and
+// `date picker` all become ["date", "picker"].
+//
+// Note this does NOT split camelCase. A query is prose someone typed, so
+// `CaLeNdAr` is one word mistyped, not four — splitting it would match it
+// against unrelated items. camelCase is split on the item side only (see
+// searchTokens), where it is a real naming convention.
+export function tokenizeSearchText(value: string) {
+  return value
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+}
+
+// Words to compare a query word against for one field. Besides the field's
+// plain words this includes its camelCase words (`useMobile` yields `use` and
+// `mobile`) and each pair of adjacent words joined without a separator, so a
+// single-word query still finds a multi-word name (`datepicker` finds
+// `date-picker`).
+function searchTokens(value: string) {
+  const words = tokenizeSearchText(value)
+  const camelWords = tokenizeSearchText(
+    value.replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+  )
+  const joined: string[] = []
+
+  for (const sequence of [words, camelWords]) {
+    for (let index = 0; index + 1 < sequence.length; index++) {
+      joined.push(sequence[index] + sequence[index + 1])
+    }
+  }
+
+  return Array.from(new Set(words.concat(camelWords, joined)))
+}
+
+// How many typos a word of a given length may contain and still count as the
+// same word. Words shorter than 5 characters are left exact: at that length an
+// edit-distance match is more likely to be a different word than a typo
+// (`date` is one transposition away from `data`), and a shortened word is
+// already found by the prefix match.
+export function allowedSearchEdits(length: number) {
+  if (length < 5) {
+    return 0
+  }
+
+  return length >= 7 ? 2 : 1
+}
+
+// Optimal string alignment distance (Damerau-Levenshtein restricted to
+// adjacent transpositions, so `calender` is one edit from `calendar`).
+// Bails out as soon as the distance provably exceeds `limit`, returning
+// `limit + 1` in that case — the only thing callers do with the result is
+// compare it against `limit`.
+function searchEditDistance(a: string, b: string, limit: number) {
+  if (a === b) {
+    return 0
+  }
+
+  if (Math.abs(a.length - b.length) > limit) {
+    return limit + 1
+  }
+
+  // Three rolling rows: previous, current, and the row before previous (the
+  // transposition case reads one diagonally behind the current cell).
+  let twoBack: number[] = []
+  let previous = new Array<number>(b.length + 1)
+  let current = new Array<number>(b.length + 1)
+
+  for (let j = 0; j <= b.length; j++) {
+    previous[j] = j
+  }
+
+  for (let i = 1; i <= a.length; i++) {
+    current[0] = i
+    let rowMinimum = current[0]
+
+    for (let j = 1; j <= b.length; j++) {
+      const substitution = previous[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+      const deletion = previous[j] + 1
+      const insertion = current[j - 1] + 1
+      let distance = Math.min(substitution, deletion, insertion)
+
+      if (
+        i > 1 &&
+        j > 1 &&
+        a[i - 1] === b[j - 2] &&
+        a[i - 2] === b[j - 1]
+      ) {
+        distance = Math.min(distance, twoBack[j - 2] + 1)
+      }
+
+      current[j] = distance
+      rowMinimum = Math.min(rowMinimum, distance)
+    }
+
+    if (rowMinimum > limit) {
+      return limit + 1
+    }
+
+    twoBack = previous
+    previous = current
+    current = new Array<number>(b.length + 1)
+  }
+
+  return previous[b.length]
+}
+
+// Scores one query word against one word of an item. Returns 0 when they do
+// not match at all.
+function scoreSearchWord(
+  word: string,
+  token: string,
+  options: { allowTypos: boolean }
+) {
+  if (token === word) {
+    return EXACT_MATCH_SCORE
+  }
+
+  if (token.startsWith(word)) {
+    return (
+      PREFIX_MATCH_SCORE +
+      (1 - PREFIX_MATCH_SCORE) * (word.length / token.length)
+    )
+  }
+
+  if (!options.allowTypos) {
+    return 0
+  }
+
+  const edits = allowedSearchEdits(word.length)
+  if (edits === 0 || Math.abs(token.length - word.length) > edits) {
+    return 0
+  }
+
+  const distance = searchEditDistance(word, token, edits)
+  if (distance > edits) {
+    return 0
+  }
+
+  const length = Math.max(word.length, token.length)
+
+  return TYPO_MATCH_SCORE * (1 - distance / length)
+}
+
+type ScoredItem<T> = {
+  item: T
+  // How many of the query's words the item matched. Ranked ahead of the score
+  // itself so that, for a multi-word query, an item matching every word comes
+  // before one that matches only a subset of them.
+  matchedWords: number
+  // Sum of the best weighted score for each query word.
+  score: number
+}
+
+// Scores one item against every word of the query. `tokensByField` holds the
+// item's precomputed words so they are built once per item, not once per
+// query word. Returns null when the item matches no word at all.
+function scoreSearchItem<T extends SearchableItem>(
+  item: T,
+  words: string[],
+  tokensByField: Record<SearchField, string[]>
+): ScoredItem<T> | null {
+  let matchedWords = 0
+  let score = 0
+
+  for (const word of words) {
+    let best = 0
+
+    for (const field of SEARCH_FIELDS) {
+      const value = item[field]
+      if (!value) {
+        continue
+      }
+
+      const weight = SEARCH_FIELD_WEIGHTS[field]
+      // Typo tolerance is limited to the curated identifier fields. In free
+      // prose a near-miss word is almost always a different word than the one
+      // that was searched for, so a typo match there is noise, not a find.
+      const allowTypos = field !== "description"
+
+      for (const token of tokensByField[field]) {
+        const tokenScore = scoreSearchWord(word, token, { allowTypos })
+        best = Math.max(best, weight * tokenScore)
+      }
+    }
+
+    if (best > 0) {
+      matchedWords++
+    }
+    score += best
+  }
+
+  return matchedWords > 0 ? { item, score, matchedWords } : null
+}
+
+export function searchItems<
   T extends {
     name: string
     title?: string
@@ -284,27 +500,43 @@ function searchItems<
     addCommandArgument?: string
     [key: string]: any
   } = SearchableItem,
->(
-  items: T[],
-  options: {
-    query: string
-  } & Pick<Parameters<typeof fuzzysort.go>[2], "keys" | "threshold" | "limit">
-) {
-  options = {
-    limit: 100,
-    threshold: -10000,
-    ...options,
+>(items: T[], options: { query: string; limit?: number }) {
+  const limit = options.limit ?? 100
+  // Every word of the query must be a plausible spelling of a word in the
+  // item. An item matching all of them outranks one that matches a subset, and
+  // an item matching none of them is not a result at all.
+  const words = tokenizeSearchText(options.query)
+
+  if (words.length === 0) {
+    return z.array(searchableItemSchema).parse(items.slice(0, limit))
   }
 
-  const searchResults = fuzzysort.go(options.query, items, {
-    keys: options.keys,
-    threshold: options.threshold,
-    limit: options.limit,
-  })
+  const scored: ScoredItem<T>[] = []
 
-  const results = searchResults.map((result) => result.obj)
+  for (const item of items) {
+    const tokensByField = SEARCH_FIELDS.reduce(
+      (tokens, field) => {
+        const value = item[field]
+        tokens[field] = value ? searchTokens(value) : []
+        return tokens
+      },
+      {} as Record<SearchField, string[]>
+    )
 
-  return z.array(searchableItemSchema).parse(results)
+    const scoredItem = scoreSearchItem(item, words, tokensByField)
+    if (scoredItem) {
+      scored.push(scoredItem)
+    }
+  }
+
+  // Stable sort, so equally scored items keep their registry order.
+  scored.sort(
+    (a, b) => b.matchedWords - a.matchedWords || b.score - a.score
+  )
+
+  return z
+    .array(searchableItemSchema)
+    .parse(scored.slice(0, limit).map((result) => result.item))
 }
 
 function isUrl(string: string): boolean {
@@ -382,7 +614,15 @@ export function buildRegistryItemNameFromRegistry(
   return hostPart + updatedPath + updatedQuery
 }
 
+// Long descriptions are shortened for a person reading a terminal, where a
+// truncated one-liner is easier to scan than a paragraph. When stdout is not a
+// TTY the output is being read by a program or an agent, which is the audience
+// that wants the whole description, so it is printed in full.
 export const SEARCH_RESULT_DESCRIPTION_MAX_LENGTH = 80
+
+function isStdoutTTY() {
+  return Boolean(process.stdout.isTTY)
+}
 
 export function formatSearchResultType(type?: string) {
   if (!type) {
@@ -444,8 +684,11 @@ function formatSearchResultItem(
   const typeSuffix = type ? ` (${type})` : ""
   const registrySuffix =
     options.showRegistry && item.registry ? ` · ${item.registry}` : ""
+  const maxLength = isStdoutTTY()
+    ? SEARCH_RESULT_DESCRIPTION_MAX_LENGTH
+    : Number.POSITIVE_INFINITY
   const descriptionSuffix = item.description
-    ? ` — ${formatSearchResultDescription(item.description)}`
+    ? ` — ${formatSearchResultDescription(item.description, maxLength)}`
     : ""
 
   return `- ${highlighter.info(name)}${typeSuffix}${registrySuffix}${descriptionSuffix}`

@@ -2,16 +2,19 @@ import { describe, expect, it, vi } from "vitest"
 
 import { getRegistry } from "./api"
 import {
+  allowedSearchEdits,
   buildRegistryItemNameFromRegistry,
   findUnknownSearchTypes,
   formatSearchResultDescription,
   formatSearchResultType,
   printSearchResults,
   resolveSearchRegistries,
+  searchItems,
   SEARCH_CONCURRENCY,
   SEARCH_RESULT_DESCRIPTION_MAX_LENGTH,
   SEARCHABLE_TYPES,
   searchRegistries,
+  tokenizeSearchText,
 } from "./search"
 
 // Mocked once at module scope so every `vi.mocked(getRegistry).mockImplementation`
@@ -1367,3 +1370,480 @@ describe("searchRegistries with dynamic registries", () => {
     mockGetRegistry.mockRestore()
   })
 })
+
+// A realistic slice of the @marko-ui registry, with the names, titles and
+// descriptions the registry actually ships (packages/shadcn/ui/*/registry.meta.json).
+// The relevance tests below run against this rather than toy one-word items:
+// the bugs they guard (a subsequence match spread across unrelated words, a
+// description-only match outranking a name match) are invisible on fixtures
+// like { name: "a" }.
+const REGISTRY_FIXTURE = [
+  {
+    name: "button",
+    title: "Button",
+    type: "registry:ui",
+    description: "Displays a button or a component that looks like a button.",
+  },
+  {
+    name: "calendar",
+    title: "Calendar",
+    type: "registry:ui",
+    description:
+      "An inline, always-open date field component that allows users to select a date.",
+  },
+  {
+    name: "date-input",
+    title: "Date Input",
+    type: "registry:ui",
+    description:
+      "A segmented date input with keyboard editing and locale-aware formatting.",
+  },
+  {
+    name: "date-picker",
+    title: "Date Picker",
+    type: "registry:ui",
+    description:
+      "A popover-style date field that combines a text input and a calendar for selecting a date.",
+  },
+  {
+    name: "data-table",
+    title: "Data Table",
+    type: "registry:ui",
+    description: "Powerful table and datagrids built using TanStack Table.",
+  },
+  {
+    name: "select",
+    title: "Select",
+    type: "registry:ui",
+    description:
+      "Displays a list of options for the user to pick from, triggered by a button.",
+  },
+  {
+    name: "aspect-ratio",
+    title: "Aspect Ratio",
+    type: "registry:ui",
+    description: "Displays content within a desired ratio.",
+  },
+  {
+    name: "textarea",
+    title: "Textarea",
+    type: "registry:ui",
+    description:
+      "Displays a form textarea or a component that looks like a textarea.",
+  },
+  {
+    name: "kbd",
+    title: "Kbd",
+    type: "registry:ui",
+    description: "Used to display textual user input from keyboard.",
+  },
+  {
+    name: "spinner",
+    title: "Spinner",
+    type: "registry:ui",
+    description: "An indicator that can be used to show a loading state.",
+  },
+  {
+    name: "tooltip",
+    title: "Tooltip",
+    type: "registry:ui",
+    description:
+      "A popup that displays information related to an element when it receives keyboard focus or the mouse hovers over it.",
+  },
+  {
+    name: "color-picker",
+    title: "Color Picker",
+    type: "registry:ui",
+    description:
+      "A color picker with a saturation area, channel sliders, channel inputs, an eyedropper and preset swatches.",
+  },
+  {
+    name: "file-upload",
+    title: "File Upload",
+    type: "registry:block",
+    description:
+      "A dropzone and file picker for uploading files, with drag-and-drop and a list of accepted files.",
+  },
+  {
+    name: "dropdown-menu",
+    title: "Dropdown Menu",
+    type: "registry:ui",
+    description:
+      "Displays a menu to the user — such as a set of actions or functions — triggered by a button.",
+  },
+  {
+    name: "use-mobile",
+    title: "use mobile",
+    type: "registry:hook",
+    description: "A hook that tracks whether the viewport is a mobile device.",
+  },
+]
+
+const names = (items: { name: string }[]) => items.map((item) => item.name)
+
+const searchFixture = (query: string, limit?: number) =>
+  searchItems(REGISTRY_FIXTURE, {
+    query,
+    limit: limit ?? REGISTRY_FIXTURE.length,
+  })
+
+describe("tokenizeSearchText", () => {
+  it("splits on separators, case insensitively", () => {
+    expect(tokenizeSearchText("Date Picker")).toEqual(["date", "picker"])
+    expect(tokenizeSearchText("date-picker")).toEqual(["date", "picker"])
+    expect(tokenizeSearchText("use_mobile")).toEqual(["use", "mobile"])
+  })
+
+  it("keeps a camelCase query as one word", () => {
+    // A query is prose someone typed, so mixed case is not a word boundary:
+    // splitting it would match it against unrelated items.
+    expect(tokenizeSearchText("CaLeNdAr")).toEqual(["calendar"])
+    expect(tokenizeSearchText("datePicker")).toEqual(["datepicker"])
+  })
+
+  it("drops empty tokens and normalizes punctuation", () => {
+    expect(tokenizeSearchText("  a — b  ")).toEqual(["a", "b"])
+    expect(tokenizeSearchText("")).toEqual([])
+    expect(tokenizeSearchText("   ")).toEqual([])
+  })
+})
+
+describe("allowedSearchEdits", () => {
+  it("allows no edits for words too short to be told apart by one", () => {
+    expect(allowedSearchEdits(1)).toBe(0)
+    expect(allowedSearchEdits(4)).toBe(0)
+  })
+
+  it("allows one edit for a medium word and two for a long one", () => {
+    expect(allowedSearchEdits(5)).toBe(1)
+    expect(allowedSearchEdits(6)).toBe(1)
+    expect(allowedSearchEdits(7)).toBe(2)
+    expect(allowedSearchEdits(12)).toBe(2)
+  })
+})
+
+describe("search relevance", () => {
+  it("returns only items that actually match the query", () => {
+    expect(names(searchFixture("date"))).toEqual([
+      "date-input",
+      "date-picker",
+      "calendar",
+    ])
+  })
+
+  it("does not return items that merely contain the query as a subsequence", () => {
+    const results = names(searchFixture("date"))
+
+    // Every one of these used to come back: "date" is a subsequence spread
+    // across their name or description.
+    expect(results).not.toContain("textarea")
+    expect(results).not.toContain("kbd")
+    expect(results).not.toContain("spinner")
+    expect(results).not.toContain("aspect-ratio")
+    expect(results).not.toContain("tooltip")
+  })
+
+  it("does not treat a different word within typo distance as a match", () => {
+    // "data" is one transposition away from "date", but it is a different
+    // word: the query is too short for that to be a plausible typo.
+    expect(names(searchFixture("date"))).not.toContain("data-table")
+  })
+
+  it("ranks name and title matches above description-only matches", () => {
+    const results = names(searchFixture("date"))
+
+    // calendar matches only through its description.
+    expect(results.indexOf("calendar")).toBeGreaterThan(
+      results.indexOf("date-picker")
+    )
+  })
+
+  it("matches a word anywhere in the name, not only at the start", () => {
+    // "picker" is the second word of "color-picker".
+    expect(names(searchFixture("picker"))).toContain("color-picker")
+  })
+
+  it("matches a single word across two joined words", () => {
+    expect(names(searchFixture("datepicker"))).toContain("date-picker")
+  })
+
+  it("matches a camelCase name", () => {
+    const items = [{ name: "useMobile" }, { name: "useTooltip" }]
+
+    expect(names(searchItems(items, { query: "mobile" }))).toEqual([
+      "useMobile",
+    ])
+  })
+
+  it("still tolerates a truncated word", () => {
+    const results = names(searchFixture("butto"))
+
+    expect(results[0]).toBe("button")
+    // Description-only matches remain, ranked below the name match.
+    expect(results).toContain("dropdown-menu")
+  })
+
+  it("tolerates a typo in a name", () => {
+    expect(names(searchFixture("buton"))[0]).toBe("button")
+    expect(names(searchFixture("calender"))).toEqual(["calendar"])
+    expect(names(searchFixture("selct"))).toEqual(["select"])
+  })
+
+  it("does not apply typo tolerance inside a description", () => {
+    // "keybord" is a typo of "keyboard", which only appears in a description.
+    expect(names(searchFixture("keybord"))).toEqual([])
+  })
+
+  it("is case insensitive", () => {
+    // calendar matches on its own name; date-picker only mentions a calendar
+    // in its description, so it ranks below.
+    expect(names(searchFixture("CALENDAR"))).toEqual([
+      "calendar",
+      "date-picker",
+    ])
+    expect(names(searchFixture("CaLeNdAr"))).toEqual([
+      "calendar",
+      "date-picker",
+    ])
+    expect(names(searchFixture("DATE PICKER"))[0]).toBe("date-picker")
+  })
+
+  it("ranks the item matching every word of a multi-word query first", () => {
+    const results = names(searchFixture("date picker"))
+
+    expect(results[0]).toBe("date-picker")
+    // Items matching one of the two words are kept, ranked below.
+    expect(results).toContain("date-input")
+    expect(results).toContain("color-picker")
+  })
+
+  it("never returns an item matching none of the query's words", () => {
+    const results = names(searchFixture("date picker"))
+
+    expect(results).not.toContain("tooltip")
+    expect(results).not.toContain("button")
+    expect(results).not.toContain("spinner")
+    for (const item of searchFixture("date picker")) {
+      const haystack = `${item.name} ${item.title ?? ""} ${
+        item.description ?? ""
+      }`.toLowerCase()
+      expect(haystack).toMatch(/date|picker/)
+    }
+  })
+
+  it("returns nothing when no item matches", () => {
+    expect(searchFixture("cryptocurrency")).toEqual([])
+  })
+
+  it("returns every item for an empty or whitespace-only query", () => {
+    expect(names(searchFixture(""))).toEqual(names(REGISTRY_FIXTURE))
+    expect(names(searchFixture("   "))).toEqual(names(REGISTRY_FIXTURE))
+  })
+
+  it("applies the limit after ranking", () => {
+    expect(names(searchFixture("date", 2))).toEqual([
+      "date-input",
+      "date-picker",
+    ])
+  })
+
+  it("keeps registry order for equally scored items", () => {
+    const items = [
+      { name: "card", title: "Card" },
+      { name: "cart", title: "Cart" },
+    ]
+
+    expect(names(searchItems(items, { query: "car" }))).toEqual([
+      "card",
+      "cart",
+    ])
+  })
+
+  it("handles items with no title and no description", () => {
+    const items = [{ name: "button" }, { name: "card" }]
+
+    expect(names(searchItems(items, { query: "card" }))).toEqual(["card"])
+  })
+})
+
+describe("searchRegistries filtering, ordering and pagination", () => {
+  const mockFixtureRegistry = async () => {
+    const mockGetRegistry = vi.mocked(getRegistry)
+
+    mockGetRegistry.mockResolvedValue({
+      name: "@marko-ui",
+      homepage: "https://marko-ui.saulo.tech",
+      items: REGISTRY_FIXTURE as never,
+    })
+
+    return mockGetRegistry
+  }
+
+  it("paginates the filtered results, not the registry", async () => {
+    const mockGetRegistry = await mockFixtureRegistry()
+
+    const results = await searchRegistries(["@marko-ui"], {
+      query: "date",
+      limit: 2,
+    })
+
+    expect(names(results.items)).toEqual(["date-input", "date-picker"])
+    expect(results.pagination).toEqual({
+      total: 3,
+      offset: 0,
+      limit: 2,
+      hasMore: true,
+    })
+
+    const nextPage = await searchRegistries(["@marko-ui"], {
+      query: "date",
+      limit: 2,
+      offset: 2,
+    })
+
+    expect(names(nextPage.items)).toEqual(["calendar"])
+
+    mockGetRegistry.mockRestore()
+  })
+
+  it("applies the type filter before the query", async () => {
+    const mockGetRegistry = await mockFixtureRegistry()
+
+    const results = await searchRegistries(["@marko-ui"], {
+      query: "picker",
+      types: ["block"],
+    })
+
+    // color-picker is a ui item; file-upload is the only block whose
+    // description mentions a picker.
+    expect(names(results.items)).toEqual(["file-upload"])
+
+    mockGetRegistry.mockRestore()
+  })
+
+  it("returns an empty result set when nothing matches", async () => {
+    const mockGetRegistry = await mockFixtureRegistry()
+
+    const results = await searchRegistries(["@marko-ui"], {
+      query: "cryptocurrency",
+      limit: 100,
+    })
+
+    expect(results.items).toEqual([])
+    expect(results.pagination).toEqual({
+      total: 0,
+      offset: 0,
+      limit: 100,
+      hasMore: false,
+    })
+
+    mockGetRegistry.mockRestore()
+  })
+
+  it("returns every item when no query is given", async () => {
+    const mockGetRegistry = await mockFixtureRegistry()
+
+    const results = await searchRegistries(["@marko-ui"], { limit: 100 })
+
+    expect(results.items).toHaveLength(REGISTRY_FIXTURE.length)
+
+    mockGetRegistry.mockRestore()
+  })
+})
+
+describe("printSearchResults description length", () => {
+  const LONG_DESCRIPTION =
+    "A dashboard with sidebar, charts, data table, filters, and many other widgets for managing your application."
+
+  const resultsWithOneItem = {
+    pagination: { total: 1, offset: 0, limit: 100, hasMore: false },
+    items: [
+      {
+        name: "dashboard",
+        type: "registry:block",
+        description: LONG_DESCRIPTION,
+        registry: "@marko-ui",
+        addCommandArgument: "@marko-ui/dashboard",
+      },
+    ],
+  }
+
+  const printedOutput = (log: { mock: { calls: unknown[][] } }) =>
+    log.mock.calls.map((call) => stripAnsi(String(call[0]))).join("\n")
+
+  const withStdoutTTY = (isTTY: boolean, run: () => void) => {
+    const original = process.stdout.isTTY
+    process.stdout.isTTY = isTTY
+    try {
+      run()
+    } finally {
+      process.stdout.isTTY = original
+    }
+  }
+
+  it("truncates long descriptions on a terminal", () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {})
+    log.mockClear()
+
+    withStdoutTTY(true, () =>
+      printSearchResults(resultsWithOneItem, { registries: ["@marko-ui"] })
+    )
+
+    const output = printedOutput(log)
+    expect(output).toContain("...")
+    expect(output).not.toContain(LONG_DESCRIPTION)
+    // The item line itself is capped, not the whole block of output.
+    const itemLine = output
+      .split("\n")
+      .find((line) => line.includes("@marko-ui/dashboard"))
+    expect(itemLine?.length).toBeLessThan(LONG_DESCRIPTION.length)
+
+    log.mockRestore()
+  })
+
+  it("prints the whole description when stdout is not a terminal", () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {})
+    log.mockClear()
+
+    withStdoutTTY(false, () =>
+      printSearchResults(resultsWithOneItem, { registries: ["@marko-ui"] })
+    )
+
+    const output = printedOutput(log)
+    expect(output).toContain(LONG_DESCRIPTION)
+    expect(output).not.toContain("...")
+
+    log.mockRestore()
+  })
+
+  it("normalizes whitespace in a description either way", () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {})
+    log.mockClear()
+
+    withStdoutTTY(false, () =>
+      printSearchResults(
+        {
+          pagination: { total: 1, offset: 0, limit: 100, hasMore: false },
+          items: [
+            {
+              name: "dashboard",
+              type: "registry:block",
+              description: "A   dashboard\nwith charts.",
+              registry: "@marko-ui",
+              addCommandArgument: "@marko-ui/dashboard",
+            },
+          ],
+        },
+        { registries: ["@marko-ui"] }
+      )
+    )
+
+    expect(printedOutput(log)).toContain("A dashboard with charts.")
+
+    log.mockRestore()
+  })
+})
+
+function stripAnsi(value: string) {
+  return value.replace(/\[[0-9;]*m/g, "")
+}
