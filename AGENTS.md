@@ -289,16 +289,58 @@ Registry components express this via marko-zag's `<zag>` tag (`packages/shadcn`'
 ## Agent-facing CLI documentation
 
 Verify JSON shape in the command implementation before documenting a shared envelope.
-`docs --list --json`, `doctor --json`, and `registry list --json` use
-`$type`/`version`/`ok`/`data`; `info --json` (alias of `status --json`) and
-`search --json` currently return plain result objects. `docs <component>`
-prints markdown, even with `--json`. The generated AGENTS.md section is in
+**EVERY JSON document the CLI prints goes through `packages/marko-ui/src/utils/json-output.ts`**
+(`printJson` / `printEnvelope`), and no command calls `JSON.stringify` for output itself.
+Two facts to know before changing anything here:
+- **Minified unless stdout is a TTY.** `jsonIndent(stream)` returns 2 for a terminal and 0
+  otherwise, because the reader is usually an AI agent and pretty-printed JSON costs 28-43%
+  more tokens for the same data. There is deliberately **no `--pretty` flag** — a TTY is the
+  human case, and a flag that only undoes the default is a flag every agent has to know about.
+- **One envelope everywhere**: `{ $type, version, ok, data }`. `$type` is `marko-ui/search`,
+  `marko-ui/status`, `marko-ui/show`, `marko-ui/docs`, `marko-ui/docs.list`, `marko-ui/doctor`,
+  `marko-ui/registry.list` or `marko-ui/manifest`. `doctor` is the one command whose `ok` is
+  `false` for a non-error result (a check failed; exit 3) — pass `{ ok }` to `printEnvelope`.
+  `show` is always machine output, so its `--json` is an accepted no-op and it calls
+  `setJsonMode(true)`. Search items carry `name`, a SHORT `type` (`"ui"`, `"block"`),
+  `description` and `registry` only; the dropped `title` and `addCommandArgument` are derivable,
+  and `buildSearchData` states the add-argument rule once as `data.addArgument`, only when a
+  non-default registry is present.
+
+The generated AGENTS.md section is in
 `packages/marko-ui/src/agents/content.ts`; the agent skills are not generated
 but installed from `skills/` by the `skills` package
 (`packages/marko-ui/src/agents/skills.ts`). `agents sync --check` checks
 freshness, not correctness of every recipe. `show` has no `--props` flag.
 Use the live manifest for supported flags and the generated docs manifest
 for reference tables.
+
+**A configured URL is classified where it is READ, and the same rule applies everywhere.**
+`fetchWithProxy` rejects a non-`http:`/`https:` scheme BEFORE any socket is opened (an
+`ftp://` registry parses fine, so it used to reach `fetch`, whose `TypeError: fetch failed` the
+message-based classifier then read as NETWORK_ERROR / exit 4 — "retry" for a typo in
+components.json), and `registry/api.ts`'s `appendSearchParamsToUrl` uses `parseUrl` +
+`asConfigError` rather than a bare `new URL()`, because `search` builds its request URL OUTSIDE
+the fetcher and used to answer UNKNOWN_ERROR where `show` answered INVALID_CONFIG for the
+identical misconfiguration. A malformed `components.json` is `asComponentsJsonError`
+(INVALID_CONFIG, exit 1, path relative to cwd) from all three of its read paths —
+`getRawConfig`, and `search`/`show` via `readPartialComponentsJson`. Note that
+`buildErrorEnvelope` scrubs absolute paths out of `message` as well as URLs, because a message
+is prose and quotes the offending path: scrubbing only `details` moved nothing, the path still
+reached stdout, stderr and every log that captured either.
+
+**The spinner has three modes, and which one you get is decided by the stream, not by a flag**
+(`packages/marko-ui/src/utils/spinner.ts`): real ora only when stderr is a TTY *with* a width; a
+`LineSpinner` otherwise, which writes each step EXACTLY once at its final state (ora's
+`isEnabled: false` still wrote `- text` at `start()` and `✔ text` at `succeed()`, so every step
+of `add` appeared twice in a log); and a `SilentSpinner` under `--json` or `--silent`, which
+writes nothing. The width check is load-bearing twice over — on a 0x0 pty ora's own line-counting
+maths never terminates.
+
+**`TLS_ERROR` is deliberately NOT `NETWORK_ERROR`.** Exit 4 is documented as "retry it", and a
+bad certificate (expired, self-signed, hostname mismatch) is never fixed by retrying, so an
+agent told to retry a private registry with an untrusted cert retries forever. It is its own
+code with exit 1 and a suggestion naming the real causes; `looksLikeTlsFailure` is checked
+BEFORE the network classifier, and `NETWORK_ERROR_CODES` is what maps a code to exit 4.
 
 **The generated AGENTS.md section has a token budget, because it is loaded on every agent task, and a test enforces the surface it names.** It lists installed component NAMES only (descriptions cost ~25 tokens each and duplicate `docs <name>`) — for 3 components the section is ~960 characters, ceiling ~250 estimated tokens (chars/4). `buildAgentsSection` takes `string[]` for that reason; nothing in it needs the network. Every `marko-ui <command> [flags]` mention in the section AND in `skills/marko-ui/SKILL.md` is validated against `buildManifest(buildProgram())` by `packages/marko-ui/src/commands/agents.test.ts`, which reports file and LINE and has a negative fixture — so agent-facing prose here is checked by the same guard, not by review. `DoctorCheck.fix` makes the skill's "each failed check names its fix" true; a test asserts every non-pass check carries one.
 
