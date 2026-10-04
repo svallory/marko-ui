@@ -218,6 +218,46 @@ describe("runDoctorChecks", () => {
     expect(dependencies?.status).toBe("warn")
     expect(dependencies?.message).toContain("Skipped")
   })
+
+  // A malformed components.json is reported as a FAILED CHECK (exit 3), not a
+  // dead command. Two text defects came out of that path: the framework check
+  // printed "Marko framework detected (undefined)", and the config check
+  // printed its message with a second copy of its own prefix.
+  it("reports a malformed components.json as a failed check, with no doubled prefix or (undefined)", async () => {
+    const dir = scaffoldMarkoApp()
+    writeFileSync(path.join(dir, "components.json"), "{ not json")
+
+    const checks = await runDoctorChecks(dir)
+    const config = checks.find((check) => check.id === "config")
+    const framework = checks.find((check) => check.id === "framework")
+
+    expect(config?.status).toBe("fail")
+    expect(config?.message).toContain("components.json")
+    expect(config?.fix).toBeTruthy()
+    // One prefix, not two.
+    expect(config?.message).not.toMatch(
+      /components\.json is invalid:.*components\.json is invalid/
+    )
+    // Skipped, not "detected" — and never with an empty paren pair.
+    expect(framework?.status).toBe("warn")
+    expect(framework?.label).not.toContain("undefined")
+    expect(framework?.label).not.toContain("()")
+  })
+
+  it("never prints (undefined) in any check label", async () => {
+    const dir = scaffoldMarkoApp()
+    writeFileSync(path.join(dir, "components.json"), "{ not json")
+    writeFileSync(
+      path.join(dir, "package.json"),
+      JSON.stringify({ name: "no-marko-app" })
+    )
+
+    const checks = await runDoctorChecks(dir)
+    for (const check of checks) {
+      expect(check.label, check.id).not.toContain("undefined")
+      expect(check.label, check.id).not.toContain("()")
+    }
+  })
 })
 
 describe("the fix field", () => {

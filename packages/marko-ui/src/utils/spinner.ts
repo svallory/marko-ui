@@ -44,7 +44,11 @@ class LineSpinner {
     this.text = text
   }
 
-  start() {
+  /** `start(text?)` accepts a new text, like ora's. Nothing is written. */
+  start(text?: string) {
+    if (text !== undefined) {
+      this.text = text
+    }
     return this
   }
 
@@ -74,8 +78,18 @@ class LineSpinner {
     return this
   }
 
+  /**
+   * Writes NOTHING, on purpose.
+   *
+   * ora animates over the line, so its `stop()` erases what it drew and
+   * leaves the terminal as it found it. This spinner drew nothing to erase,
+   * so persisting "- <text>" here would INVENT a line that was never
+   * displayed — and it would be a start-state line ("- Resolving items.")
+   * where criterion 6 asks for the final state only. A step that neither
+   * succeeds nor fails is a step that did not happen; saying nothing is the
+   * truthful output.
+   */
   stop() {
-    this.#persist("-", this.text)
     return this
   }
 

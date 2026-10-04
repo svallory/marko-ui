@@ -252,11 +252,16 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
 
   // 2. Marko framework.
   const projectInfo = configError ? null : await getProjectInfo(cwd)
-  const isMarko = projectInfo?.framework.name !== "manual"
+  // `Boolean(projectInfo)` is load-bearing: `projectInfo?.framework.name !==
+  // "manual"` is TRUE when projectInfo is null (undefined !== "manual"), which
+  // made a skipped check claim "Marko framework detected (undefined)" and then
+  // print the parens with nothing in them.
+  const isMarko =
+    Boolean(projectInfo) && projectInfo?.framework.name !== "manual"
   checks.push({
     id: "framework",
     label: `Marko framework detected${
-      isMarko ? ` (${projectInfo?.framework.label})` : ""
+      isMarko && projectInfo ? ` (${projectInfo.framework.label})` : ""
     }`,
     status: configError ? "warn" : isMarko ? "pass" : "fail",
     message: configError
@@ -308,10 +313,14 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
     id: "config",
     label: "components.json valid",
     status: config ? "pass" : configError ? "fail" : "warn",
+    // The classifier already says which file and what is wrong with it
+    // ("components.json is not valid: …"), so it is used verbatim. Prefixing
+    // it again read "components.json is invalid: components.json is not
+    // valid: …" — two prefixes saying one thing.
     message: config
       ? undefined
       : configError
-        ? `components.json is invalid: ${configError}`
+        ? configError
         : "No components.json found.",
     fix: config
       ? undefined

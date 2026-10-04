@@ -234,12 +234,14 @@ export function printInfo(data: Awaited<ReturnType<typeof collectInfo>>) {
     })
 
     // Resolved paths. `cwd` is the base every other path here is relative to,
-    // so it is shown first and labelled as such rather than being repeated
-    // inside all seven entries.
+    // so it is the first row and labelled as such — but the whole block is
+    // printed in ONE pass so every row shares one column width. Splitting it
+    // (to emphasise `cwd`) padded each group to its own longest key, which
+    // left `cwd` and `tailwindConfig` in visibly different columns.
     logger.break()
     logger.log(highlighter.info("Resolved Paths"))
-    printEntries({ cwd: data.config.resolvedPaths.cwd })
     printEntries({
+      cwd: data.config.resolvedPaths.cwd,
       tailwindConfig: data.config.resolvedPaths.tailwindConfig ?? "-",
       tailwindCss: data.config.resolvedPaths.tailwindCss ?? "-",
       utils: data.config.resolvedPaths.utils ?? "-",

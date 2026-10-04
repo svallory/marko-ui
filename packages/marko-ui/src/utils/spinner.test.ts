@@ -115,6 +115,22 @@ describe("spinner on a non-TTY stream", () => {
     expect(stream.text).toBe("✔ Updating files.\n")
   })
 
+  test("stop() writes nothing — ora's stop() ERASES its line, so persisting one would invent it", () => {
+    const stream = recordingStream()
+    const s = spinner("Resolving items.", { stream })
+    s.start()
+    s.stop()
+    expect(stream.text).toBe("")
+  })
+
+  test("start(text) accepts a new text, like ora's", () => {
+    const stream = recordingStream()
+    const s = spinner("Updating files.", { stream })
+    s.start("Writing button.marko.")
+    s.succeed()
+    expect(stream.text).toBe("✔ Writing button.marko.\n")
+  })
+
   test("prints the final text given to succeed()", () => {
     const stream = recordingStream()
     spinner("Adding component.", { stream })
@@ -127,12 +143,6 @@ describe("spinner on a non-TTY stream", () => {
     const stream = recordingStream()
     spinner("Installing.", { stream }).start().fail()
     expect(stream.text).toBe("✖ Installing.\n")
-  })
-
-  test("stop() prints one line, with the neutral glyph", () => {
-    const stream = recordingStream()
-    spinner("No files updated.", { stream }).start().stop()
-    expect(stream.text).toBe("- No files updated.\n")
   })
 
   test("writes nothing at all in --json mode", () => {
