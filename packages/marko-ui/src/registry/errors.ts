@@ -343,8 +343,11 @@ export class RegistryItemNotFoundError extends RegistryError {
     public readonly itemName: string,
     options: { suggestions?: string[] } = {}
   ) {
+    // The candidates go in `suggestion` and `context.suggestions` ONLY.
+    // They used to be in the message too, which made `show buton` print
+    // "button" three times (message, "Similar registry items", Suggestion).
     const didYouMean = formatDidYouMean(options.suggestions ?? [])
-    super(`Registry item "${itemName}" was not found.${didYouMean ? ` ${didYouMean}` : ""}`, {
+    super(`Registry item "${itemName}" was not found.`, {
       code: RegistryErrorCode.NOT_FOUND,
       statusCode: 404,
       context: {

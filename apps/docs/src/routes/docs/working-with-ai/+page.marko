@@ -369,6 +369,19 @@ static const JSON_ERROR_ENVELOPE = `{
     for genuinely unexpected exceptions.
   </p>
 
+  <p>
+    A connection failure — refused port, DNS failure, timeout — is
+    <code>NETWORK_ERROR</code> with exit code 4 on every registry-backed
+    command; a host that answered with an error status is
+    <code>FETCH_ERROR</code> with exit code 1.
+    <code>details</code> never carries a stack trace, an absolute path under
+    your home directory, or a credential-bearing registry URL: paths are
+    shortened and URLs have their query string and credentials stripped. A
+    stack reaches stderr only under <code>MARKO_UI_DEBUG</code>. One name can
+    fail while the others succeed — <code>marko-ui docs nope button</code> prints
+    button's markdown on stdout, reports <code>nope</code> on stderr, and exits 1.
+  </p>
+
   <h3>Non-interactive flags</h3>
 
   <p>

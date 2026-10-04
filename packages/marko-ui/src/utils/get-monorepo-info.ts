@@ -116,7 +116,7 @@ export function formatMonorepoMessage(
 ) {
   const cwdFlag = options?.cwdFlag ?? "-c"
 
-  logger.break()
+  logger.errorBreak()
   logger.error(
     `It looks like you are running ${highlighter.info(
       command
@@ -127,13 +127,13 @@ export function formatMonorepoMessage(
       cwdFlag
     )} flag:`
   )
-  logger.break()
+  logger.errorBreak()
 
   for (const target of targets) {
     logger.error(`  marko-ui ${command} ${cwdFlag} ${target.name}`)
   }
 
-  logger.break()
+  logger.errorBreak()
 }
 
 export async function getWorkspacePatterns(cwd: string) {

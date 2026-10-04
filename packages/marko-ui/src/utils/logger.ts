@@ -9,11 +9,14 @@ import { highlighter } from "@/src/utils/highlighter"
  *
  * - `log` / `info` / `success` / `debug` -> stdout. They are results.
  * - `error` / `warn` -> stderr. They are diagnostics about the run.
- * - `break` -> stderr. A blank line is spacing, never payload; putting it on
- *   stdout meant a redirected `marko-ui doctor > out.txt` carried blank
- *   lines that no parser asked for, and — worse — meant the blank lines that
- *   surround an error block landed on stdout even when the error itself was
- *   the JSON envelope.
+ * - `break` -> stdout. Spacing belongs to the stream of the text it spaces:
+ *   the blank lines between `status`'s sections or `doctor`'s check list are
+ *   part of that output, and moving them to stderr meant a plain
+ *   `marko-ui status > out.txt` produced one run-together block on stdout plus
+ *   a column of stray newlines on stderr.
+ * - `errorBreak` -> stderr, for the same reason in reverse: the blank lines
+ *   framing an error block belong with the error, not with the result. This
+ *   is what keeps `--json` output free of leading/trailing blank lines.
  *
  * Nothing writes to both streams for one message: `logger.error` in a command
  * whose failure is also rendered by `handleError` is a bug (the error path
@@ -54,6 +57,10 @@ export const logger = {
     console.log(args.join(" "))
   },
   break() {
+    console.log("")
+  },
+  /** A blank line on stderr, for spacing around error output. */
+  errorBreak() {
     console.error("")
   },
 }

@@ -1,4 +1,5 @@
 import { RegistryError, RegistryErrorCode } from "@/src/registry/errors"
+import path from "node:path"
 
 /**
  * The CLI's error contract.
@@ -75,7 +76,10 @@ export function buildErrorEnvelope(input: CliErrorInput): CliErrorEnvelope {
     ok: false,
     error: {
       code: input.code,
-      message: input.message,
+      // The message reaches BOTH the human stderr block and stdout, so it is
+      // scrubbed here — at the one choke point — rather than trusted to have
+      // been cleaned by each caller.
+      message: scrubUrlsInText(input.message),
     },
   }
   if (input.suggestion) {
@@ -107,34 +111,257 @@ export const NETWORK_ERROR_CODES: readonly string[] = [
 ]
 
 /**
+ * True when `error` is a connection failure rather than a bug.
+ *
+ * Native `fetch` reports "cannot reach the host" as a generic `TypeError:
+ * fetch failed` with the real reason (ECONNREFUSED, ENOTFOUND, ETIMEDOUT,
+ * an AggregateError of per-address failures) buried in `cause`. Without this,
+ * an unreachable registry reached a path that only knew `error instanceof
+ * Error` and was classified UNKNOWN_ERROR with the "open an issue on GitHub"
+ * boilerplate — telling the user to file a bug about their own network.
+ *
+ * Deliberately narrow: a TypeError that is not fetch's, and a message with no
+ * network marker in it, are left alone so a genuine bug is still reported as
+ * one.
+ */
+export function looksLikeNetworkFailure(error: unknown, depth = 0): boolean {
+  if (depth > 5) return false
+
+  if (error instanceof TypeError) {
+    // undici/Node's two wordings for the same condition.
+    if (/fetch failed|failed to fetch|network|socket|connection/i.test(error.message)) {
+      return true
+    }
+    return looksLikeNetworkFailure(
+      (error as TypeError & { cause?: unknown }).cause,
+      depth + 1
+    )
+  }
+
+  if (error instanceof AggregateError) {
+    return error.errors.some((entry) => looksLikeNetworkFailure(entry, depth + 1))
+  }
+
+  if (error instanceof Error) {
+    const code = (error as Error & { code?: unknown }).code
+    if (typeof code === "string" && NETWORK_SYSCALL_CODES.has(code)) return true
+    if (/ECONNREFUSED|ENOTFOUND|EAI_AGAIN|ETIMEDOUT|ECONNRESET|EHOSTUNREACH|ENETUNREACH|EAI_AGAIN|UND_ERR_SOCKET/i.test(error.message)) {
+      return true
+    }
+    if ("errors" in error) {
+      const nested = (error as Error & { errors?: unknown }).errors
+      if (Array.isArray(nested)) {
+        return nested.some((entry) => looksLikeNetworkFailure(entry, depth + 1))
+      }
+    }
+    return looksLikeNetworkFailure(
+      (error as Error & { cause?: unknown }).cause,
+      depth + 1
+    )
+  }
+
+  return false
+}
+
+const NETWORK_SYSCALL_CODES = new Set([
+  "ECONNREFUSED",
+  "ECONNRESET",
+  "EHOSTUNREACH",
+  "ENETUNREACH",
+  "ENOTFOUND",
+  "EAI_AGAIN",
+  "ETIMEDOUT",
+  "EPIPE",
+  "UND_ERR_SOCKET",
+  "UND_ERR_CONNECT_TIMEOUT",
+])
+
+/**
+ * Build a NETWORK_ERROR `RegistryError` from a raw fetch/proxy failure.
+ *
+ * The message names the URL so the user knows WHICH registry is unreachable,
+ * and the syscall reason goes in `cause` (surfaced as `details.cause`), which
+ * is what tells them whether to retry or fix DNS.
+ */
+export function asNetworkError(
+  error: unknown,
+  options: { url?: string; context?: Record<string, unknown> } = {}
+): RegistryError {
+  const reason = networkFailureReason(error)
+  const url = options.url
+  const message = url
+    ? `Could not reach the registry at ${url}${reason ? ` (${reason})` : ""}.`
+    : `Could not reach the network${reason ? `: ${reason}` : "."}`
+
+  return new RegistryError(message, {
+    code: RegistryErrorCode.NETWORK_ERROR,
+    cause: error,
+    context: {
+      ...options.context,
+      ...(url ? { url: redactUrl(url) } : {}),
+      ...(reason ? { reason } : {}),
+    },
+    suggestion:
+      "Check the registry URL in components.json, your network connection, and any proxy or firewall in between, then retry.",
+  })
+}
+
+/** The syscall-level reason behind a fetch failure, e.g. `ECONNREFUSED`. */
+export function networkFailureReason(error: unknown, depth = 0): string | undefined {
+  if (depth > 5 || !(error instanceof Error)) return undefined
+  const code = (error as Error & { code?: unknown }).code
+  if (typeof code === "string") return code
+  const match = /\b(E[A-Z]{3,})\b/.exec(error.message)
+  if (match) return match[1]
+  const nested = (error as Error & { errors?: unknown }).errors
+  if (Array.isArray(nested) && nested.length) {
+    return networkFailureReason(nested[0], depth + 1)
+  }
+  return networkFailureReason(
+    (error as Error & { cause?: unknown }).cause,
+    depth + 1
+  )
+}
+
+/**
+ * Strip credentials and the query string from a URL before it reaches
+ * `details`.
+ *
+ * A registry is configured as `https://user:pass@host/r?token=${TOKEN}`, and
+ * `registry/builder.ts` expands env vars into the real URL. That value is
+ * fine in a human message the user is already looking at, but `details` is a
+ * field built for logs: putting a live token in it is how a CI log page
+ * becomes a credential leak. The host and path — what actually identifies
+ * which registry failed — survive; only the secrets go.
+ */
+export function redactUrl(url: string): string {
+  try {
+    const parsed = new URL(url)
+    parsed.username = ""
+    parsed.password = ""
+    parsed.search = ""
+    parsed.hash = ""
+    return parsed.toString()
+  } catch {
+    // Not a parseable URL: strip anything after a '?' and drop userinfo
+    // textually rather than passing it through unexamined.
+    return url.replace(/\/\/[^/@]*@/, "//").replace(/\?.*$/, "")
+  }
+}
+
+/**
+ * Redact credentials from URLs embedded in free text.
+ *
+ * `redactUrl` only catches a value that IS a URL. But the strings that carry
+ * a secret most often quote one inside a sentence: undici's
+ * "Request cannot be constructed from a URL that includes credentials:
+ * https://user:pass@host/r?token=..." is `details.cause`, and the proxy's own
+ * message names the URL. Without this pass, redacting `details.url` while
+ * leaving `details.cause` and the human message would have moved the token
+ * rather than removed it.
+ *
+ * Stops at whitespace and at the closing punctuation that ends a sentence,
+ * so the surrounding prose survives intact.
+ */
+export function scrubUrlsInText(value: string): string {
+  return value.replace(
+    /[a-z][a-z0-9+.-]*:\/\/[^\s"'<>)\]}]+/gi,
+    (match) => redactUrl(match)
+  )
+}
+
+/**
+ * Make a `details` object safe to log: no absolute paths under the user's
+ * home directory, no credential-bearing URLs.
+ *
+ * `details` is machine-read, not machine-trusted: it is routinely piped into
+ * a log file or pasted into an issue. A path like `/Users/someone/...` names
+ * the person whose machine produced it, so paths are rewritten relative to
+ * the cwd when they are inside it and replaced with just the basename
+ * otherwise.
+ */
+export function sanitizeDetails(
+  details: Record<string, unknown>,
+  cwd: string = process.cwd()
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(details)) {
+    if (key === "stack") continue // never: see renderHumanError's debug path
+    out[key] = sanitizeValue(value, cwd)
+  }
+  return out
+}
+
+const HOME = (() => {
+  const home = process.env.HOME ?? process.env.USERPROFILE
+  return home && home.length > 1 ? home.replace(/\/+$/, "") : undefined
+})()
+
+/** A `details` value that is safe to log: JSON-shaped, paths and URLs redacted. */
+export type Sanitizable =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Date
+  | Error
+  | Sanitizable[]
+  | { [key: string]: Sanitizable }
+
+function sanitizeValue(value: unknown, cwd: string): Sanitizable {
+  if (typeof value === "string") {
+    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(value)) return redactUrl(value)
+    return sanitizePath(scrubUrlsInText(value), cwd)
+  }
+  if (typeof value === "number" || typeof value === "boolean") return value
+  if (value === null || value === undefined) return value
+  if (Array.isArray(value)) {
+    return value.map((entry) => sanitizeValue(entry, cwd))
+  }
+  // Only a PLAIN object is a container we should recurse into. A Date, an
+  // Error or a class instance carries no path or URL to redact, and walking
+  // it as a record would flatten a Date to `{}` — jsonSafe already knows how
+  // to serialize each of these, so hand them over untouched.
+  if (isPlainObject(value)) {
+    return sanitizeDetails(value as Record<string, unknown>, cwd) as {
+      [key: string]: Sanitizable
+    }
+  }
+  if (value instanceof Date || value instanceof Error) return value
+  // A function, symbol or bigint is not loggable: a function's SOURCE can
+  // embed absolute paths, and JSON.stringify would drop it anyway. Return
+  // undefined so the key disappears from the serialized details.
+  if (typeof value === "function" || typeof value === "symbol") return undefined
+  if (typeof value === "bigint") return value.toString()
+  return String(value)
+}
+
+function isPlainObject(value: unknown): boolean {
+  if (typeof value !== "object" || value === null) return false
+  const proto = Object.getPrototypeOf(value)
+  return proto === Object.prototype || proto === null
+}
+
+function sanitizePath(value: string, cwd: string): string {
+  if (!value.startsWith("/")) return value
+
+  const relative = path.isAbsolute(value) ? path.relative(cwd, value) : value
+  if (relative && !relative.startsWith("..") && !path.isAbsolute(relative)) {
+    return relative === "" ? "." : relative
+  }
+  // Outside the cwd: keep only the last segment, and never a home path.
+  if (HOME && value.startsWith(`${HOME}/`)) {
+    return `~/${path.basename(value)}`
+  }
+  return path.basename(value)
+}
+
+/**
  * Reduce an unknown thrown value to `{ code, message, details }`. Registry
  * errors carry their own `context` (url, itemName, ...); everything else gets
  * an empty object.
  */
-function fromRegistryError(error: RegistryError): CliErrorInput {
-  return {
-    code: error.code,
-    message: error.message,
-    suggestion: error.suggestion,
-    details: {
-      ...error.context,
-      // The server-supplied detail string is the one piece of `cause` that
-      // reaches a user, and losing it is how "why did this 404?" became
-      // unanswerable. A non-string cause (an Error, an object) is reduced to
-      // its message; anything else is dropped rather than stringified into
-      // something meaningless.
-      ...(error.cause !== undefined && error.cause !== null
-        ? { cause: stringifyCause(error.cause) }
-        : {}),
-    },
-  }
-}
-
-function stringifyCause(cause: unknown): string | undefined {
-  if (typeof cause === "string") return cause
-  if (cause instanceof Error) return cause.message
-  return undefined
-}
 
 /**
  * Serialize whatever the process is about to exit with into a value that is

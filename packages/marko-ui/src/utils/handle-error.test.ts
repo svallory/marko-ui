@@ -1,11 +1,13 @@
 import {
   ConfigMissingError,
+  RegistryError,
   RegistryErrorCode,
   RegistryFetchError,
   RegistryItemNotFoundError,
   RegistryNotFoundError,
   RegistryValidationError,
 } from "@/src/registry/errors"
+import { jsonSafe } from "@/src/utils/error-contract"
 import {
   CleanExit,
   CommandError,
@@ -74,6 +76,31 @@ function run(error: unknown) {
   const result = { stdout: streams.stdout, stderr: streams.stderr, exitCode }
   streams.restore()
   return result
+}
+
+/**
+ * A real request to a port nothing is listening on — the exact shape of
+ * "user's registry is down" that used to arrive as an unexpected bug.
+ */
+async function realNetworkFailure() {
+  const net = await import("node:net")
+  const server = net.createServer()
+  const port: number = await new Promise((resolve) => {
+    server.listen(0, "127.0.0.1", () => {
+      const address = server.address()
+      resolve(typeof address === "object" && address ? address.port : 0)
+    })
+  })
+  await new Promise((resolve) => server.close(resolve))
+
+  let thrown: unknown
+  try {
+    await fetch(`http://127.0.0.1:${port}/r/button.json`)
+  } catch (error) {
+    thrown = error
+  }
+  expect(thrown, "the closed-port fetch should reject").toBeDefined()
+  return run(thrown)
 }
 
 describe("handleError", () => {
@@ -171,6 +198,68 @@ describe("handleError", () => {
       expect(result.exitCode).toBe(1)
       expect(result.stderr).toContain("something went sideways")
     })
+
+    it("classifies an unreachable registry as NETWORK_ERROR, not a bug", async () => {
+      // A refused port is an expected condition (exit 4), not something to
+      // tell the user to file an issue about.
+      const { exitCode } = await realNetworkFailure()
+      expect(exitCode).toBe(4)
+    })
+  })
+
+  describe("network failures", () => {
+    beforeEach(() => {
+      setJsonMode(true)
+    })
+
+    it("reports NETWORK_ERROR / exit 4 with no boilerplate", async () => {
+      const result = await realNetworkFailure()
+      const parsed = JSON.parse(result.stdout)
+
+      expect(result.exitCode).toBe(4)
+      expect(parsed.error.code).toBe(RegistryErrorCode.NETWORK_ERROR)
+      expect(result.stderr).toBe("")
+      expect(result.stdout).not.toContain("Something went wrong")
+    })
+
+    it("recognizes a TypeError whose cause is the syscall reason", () => {
+      const cause = Object.assign(new Error("connect ECONNREFUSED"), {
+        code: "ECONNREFUSED",
+      })
+      const error = new TypeError("fetch failed", { cause })
+
+      const { envelope, exitCode, unexpected } = normalizeError(error)
+      expect(envelope.error.code).toBe(RegistryErrorCode.NETWORK_ERROR)
+      expect(exitCode).toBe(4)
+      expect(unexpected).toBe(false)
+    })
+
+    it("recognizes an AggregateError of per-address failures", () => {
+      const inner = Object.assign(new Error("connect ECONNREFUSED"), {
+        code: "ECONNREFUSED",
+      })
+      const error = new TypeError("fetch failed", {
+        cause: new AggregateError([inner], ""),
+      })
+
+      expect(normalizeError(error).exitCode).toBe(4)
+    })
+
+    it("does not treat an unrelated TypeError as a network failure", () => {
+      const error = new TypeError("x is not a function")
+      expect(normalizeError(error).unexpected).toBe(true)
+    })
+
+    it("keeps the syscall reason in details.cause", () => {
+      const error = new TypeError("fetch failed", {
+        cause: Object.assign(new Error("connect ECONNREFUSED"), {
+          code: "ECONNREFUSED",
+        }),
+      })
+      const { envelope } = normalizeError(error)
+
+      expect(JSON.stringify(envelope.error.details)).toContain("ECONNREFUSED")
+    })
   })
 
   describe("--json mode", () => {
@@ -246,6 +335,15 @@ describe("handleError", () => {
       expect(result.stdout).not.toContain("Something went wrong")
     })
 
+    it("omits the stack from an unexpected error", () => {
+      const result = run(new Error("boom"))
+      const parsed = JSON.parse(result.stdout)
+
+      // `details` is omitted entirely, so there is no stack key to find.
+      expect(parsed.error.details?.stack).toBeUndefined()
+      expect(result.stdout).not.toContain("at ")
+    })
+
     it("puts monorepo targets in details", () => {
       const result = run(
         new CommandError("Run status from a workspace.", {
@@ -257,7 +355,8 @@ describe("handleError", () => {
 
       expect(parsed.error.code).toBe(RegistryErrorCode.MONOREPO_ROOT)
       expect(parsed.error.details.targets).toEqual(["apps/web"])
-      expect(parsed.error.details.cwd).toBe("/repo")
+      // The cwd is sanitized on the way in, so it is relative/basename-only.
+      expect(parsed.error.details.cwd).not.toBe("/repo")
     })
 
     it("never emits a non-serializable details value", () => {
@@ -314,14 +413,27 @@ describe("handleError", () => {
   })
 
   describe("formatted (the caller already printed a human block)", () => {
-    it("prints nothing at all on the human path", () => {
+    it("adds the code line the bespoke block cannot know", () => {
+      // Criterion 3 says every human failure prints the code. A caller that
+      // printed its own multi-line prose (monorepo guidance, a search hint)
+      // does not know its code, so handleError still supplies it.
       const result = run(
-        new CommandError("Already printed above.", { formatted: true })
+        new CommandError("Already printed above.", {
+          formatted: true,
+          code: RegistryErrorCode.MONOREPO_ROOT,
+        })
       )
 
       expect(result.stdout).toBe("")
-      expect(result.stderr).toBe("")
+      expect(result.stderr).toContain(`Error [${RegistryErrorCode.MONOREPO_ROOT}]`)
+      expect(result.stderr).toContain("Already printed above.")
       expect(result.exitCode).toBe(1)
+    })
+
+    it("does not repeat the boilerplate", () => {
+      const result = run(new CommandError("Already printed above.", { formatted: true }))
+      expect(result.stderr).not.toContain("Something went wrong")
+      expect(result.stderr).not.toContain("open an issue on GitHub")
     })
   })
 })
@@ -338,7 +450,7 @@ describe("normalizeError", () => {
       new CommandError("x", {
         code: RegistryErrorCode.PROJECT_NOT_FOUND,
         suggestion: "Run init.",
-        details: { cwd: "/tmp" },
+        details: { hasPackageJson: false, kind: "empty" },
       })
     )
 
@@ -346,8 +458,21 @@ describe("normalizeError", () => {
       code: "PROJECT_NOT_FOUND",
       message: "x",
       suggestion: "Run init.",
-      details: { cwd: "/tmp" },
+      details: { hasPackageJson: false, kind: "empty" },
     })
+  })
+
+  it("rewrites an absolute path in details to something loggable", () => {
+    const { envelope } = normalizeError(
+      new CommandError("x", {
+        code: RegistryErrorCode.NOT_CONFIGURED,
+        details: { cwd: "/tmp/some/project" },
+      })
+    )
+
+    // Not the absolute path: `details` gets logged and pasted into issues.
+    expect(envelope.error.details?.cwd).not.toBe("/tmp/some/project")
+    expect(String(envelope.error.details?.cwd)).toContain("project")
   })
 
   it("maps a ZodError to VALIDATION_ERROR with per-field details", () => {
@@ -384,5 +509,71 @@ describe("normalizeError", () => {
     const { envelope, exitCode } = normalizeError({ weird: true })
     expect(envelope.error.code).toBe(RegistryErrorCode.UNKNOWN_ERROR)
     expect(exitCode).toBe(1)
+  })
+})
+
+/**
+ * The leak scan. `details` is routinely piped into a log file or pasted into
+ * an issue, so it must never carry a stack, an absolute path under the
+ * user's home directory, or a credential-expanded registry URL. Every error
+ * class is built here, serialized exactly as `handleError` would serialize
+ * it, and searched for the three things that must not appear.
+ */
+describe("the JSON envelope never leaks", () => {
+  const HOME = process.env.HOME ?? process.env.USERPROFILE ?? "/Users/someone"
+  const TOKEN = "sk-planted-token-value-zzz"
+
+  const urlWithSecret = `https://user:pass@registry.example.com/r/button.json?token=${TOKEN}`
+
+  const cases: [string, unknown][] = [
+    ["registry not found", new RegistryNotFoundError("https://registry.example.com/r/nope.json")],
+    [
+      "registry fetch error",
+      new RegistryFetchError("https://registry.example.com/r/a.json", 500, "boom"),
+    ],
+    ["config missing", new ConfigMissingError(`${HOME}/projects/app`)],
+    ["validation", new RegistryValidationError("bad registry.json")],
+    ["item not found", new RegistryItemNotFoundError("buton", { suggestions: ["button"] })],
+    [
+      "network",
+      new RegistryError("Could not reach the registry.", {
+        code: RegistryErrorCode.NETWORK_ERROR,
+        context: { url: urlWithSecret },
+      }),
+    ],
+    [
+      "command error",
+      new CommandError("Run status from a workspace.", {
+        code: RegistryErrorCode.MONOREPO_ROOT,
+        details: { cwd: `${HOME}/projects/app`, url: urlWithSecret },
+      }),
+    ],
+    ["unexpected", new Error(`boom from ${HOME}/x.js`)],
+    ["thrown string", `plain string from ${HOME}`],
+  ]
+
+  it.each(cases)("%s", (_label, error) => {
+    const payload = jsonSafe(normalizeError(error).envelope)
+    const details = JSON.stringify(
+      (payload as { error?: { details?: unknown } }).error?.details ?? {}
+    )
+
+    // `details` is the field the ruling covers: it is routinely piped into a
+    // log file or pasted into an issue. (`message` is exempt on purpose —
+    // it is prose the user reads about their OWN machine, and "no
+    // components.json found in /Users/you/app" is the useful part of it.)
+    //
+    // The home directory must not appear, neither absolute nor as a bare
+    // "/Users/..." prefix recovered from a partially-redacted path.
+    expect(details).not.toContain(HOME)
+    expect(details).not.toContain("/Users/")
+    expect(details).not.toContain("/home/")
+
+    // A credential in a registry URL must be gone: query string stripped.
+    expect(details).not.toContain(TOKEN)
+    expect(details).not.toContain("pass@")
+
+    // No stack frames anywhere in the envelope.
+    expect(JSON.stringify(payload)).not.toContain("at Object.")
   })
 })

@@ -311,7 +311,9 @@ describe("search command", () => {
   })
 
   it("exits 0 and says so when nothing matches", async () => {
-    const log = vi.spyOn(console, "log").mockImplementation(() => {})
+    // "No items found" is a warning, not a result: it goes to stderr so a
+    // caller reading stdout gets the (empty) result and nothing else.
+    const warn = vi.spyOn(console, "error").mockImplementation(() => {})
     const exit = mockProcessExit()
 
     vi.mocked(searchRegistries).mockReturnValueOnce({
@@ -326,14 +328,14 @@ describe("search command", () => {
       )
     ).rejects.toThrow("process.exit:0")
 
-    const output = log.mock.calls.map((call) => stripAnsi(String(call[0])))
+    const output = warn.mock.calls.map((call) => stripAnsi(String(call[0])))
     expect(output).toContainEqual(
       expect.stringContaining(
         'No items found matching "cryptocurrency" in @marko-ui'
       )
     )
 
-    log.mockRestore()
+    warn.mockRestore()
     exit.mockRestore()
   })
 

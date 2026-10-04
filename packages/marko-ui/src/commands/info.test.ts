@@ -116,7 +116,9 @@ describe("status --json at a monorepo root", () => {
     const parsed = JSON.parse(stdout)
 
     expect(parsed.error.details.targets).toEqual(["apps/web", "apps/docs"])
-    expect(parsed.error.details.cwd).toBe("/repo")
+    // The cwd is sanitized before it reaches details, so it is never the
+    // absolute path it started as.
+    expect(parsed.error.details.cwd).not.toBe("/repo")
     // The old shape put these at the top level.
     expect(parsed.targets).toBeUndefined()
     expect(parsed.message).toBeUndefined()

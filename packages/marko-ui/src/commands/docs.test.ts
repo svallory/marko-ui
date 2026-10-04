@@ -149,7 +149,7 @@ describe("docs command: unknown component", () => {
     expect(parsed.error.code).toBe(RegistryErrorCode.NOT_FOUND)
     expect(parsed.error.message).toContain("buton")
     expect(parsed.error.details.status).toBe(404)
-    expect(parsed.error.details.component).toBe("buton")
+    expect(parsed.error.details.missing).toEqual(["buton"])
     expect(parsed.error.details.suggestions).toContain("button")
   })
 
@@ -171,7 +171,9 @@ describe("docs command: unknown component", () => {
     expect(vi.mocked(fetch).mock.calls.length).toBe(2)
   })
 
-  it("reports a non-404 as a network failure with exit 4", async () => {
+  it("reports a non-404 status as a fetch error and still exits 1", async () => {
+    // An HTTP error status from a REACHABLE server keeps the exit code docs
+    // had before the error contract (1); only a connection failure is 4.
     stubDocs({
       "https://marko-ui.saulo.tech/docs/components/dialog.md": { status: 503 },
       "https://marko-ui.saulo.tech/docs/components/dialog/md": {
@@ -182,9 +184,51 @@ describe("docs command: unknown component", () => {
     const { stdout, exitCode } = await runFailing(["dialog", "--json"])
     const parsed = JSON.parse(stdout)
 
-    expect(exitCode).toBe(4)
+    expect(exitCode).toBe(1)
     expect(parsed.error.code).toBe(RegistryErrorCode.FETCH_ERROR)
     expect(parsed.error.details.status).toBe(503)
+  })
+
+  it("maps a thrown fetch to NETWORK_ERROR with exit 4", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new TypeError("fetch failed")
+      })
+    )
+
+    const { stdout, exitCode } = await runFailing(["dialog", "--json"])
+    const parsed = JSON.parse(stdout)
+
+    expect(exitCode).toBe(4)
+    expect(parsed.error.code).toBe(RegistryErrorCode.NETWORK_ERROR)
+    expect(parsed.error.message).toContain("Could not reach")
+  })
+
+  it("still prints the pages that resolved when another name misses", async () => {
+    // A partial failure must not suppress the results that succeeded.
+    stubDocs({
+      "https://marko-ui.saulo.tech/docs/components/button.md": {
+        status: 200,
+        body: "# Button",
+      },
+    })
+
+    const streams = capture()
+    let rejected: Error | undefined
+    try {
+      await docs.parseAsync(["nope", "button", "--json"], { from: "user" })
+    } catch (error) {
+      rejected = error as Error
+    }
+    const { stdout } = streams
+    streams.restore()
+
+    expect(rejected?.message).toBe("process.exit:1")
+    // button's markdown was served: it is on stdout before the envelope.
+    expect(stdout).toContain("# Button")
+    const parsed = JSON.parse(stdout.slice(stdout.indexOf("{")))
+    expect(parsed.error.details.missing).toEqual(["nope"])
   })
 
   it("does not turn a suggestion lookup failure into a different error", async () => {

@@ -1,6 +1,9 @@
 import { SocksClient, type SocksProxy } from "socks"
 import { Agent, Dispatcher, EnvHttpProxyAgent } from "undici"
 
+import { RegistryError, RegistryErrorCode } from "@/src/registry/errors"
+import { parseUrl } from "@/src/registry/utils"
+
 const HTTP_PROXY_ENV_VARS = [
   "HTTPS_PROXY",
   "https_proxy",
@@ -91,9 +94,21 @@ const MAX_REDIRECTS = 5
 const SAFE_HEADER_NAMES = new Set(["accept", "user-agent"])
 
 export async function fetchWithProxy(url: string | URL, init?: RequestInit) {
-  const originalOrigin = new URL(url).origin
+  // Parsed once, and total: a malformed configured URL used to throw a bare
+  // TypeError out of here, which the error handler could not tell from a
+  // connection failure and reported as an unexpected bug.
+  const parsed = url instanceof URL ? url : parseUrl(url)
+  if (!parsed) {
+    throw new RegistryError(`Invalid registry URL: ${String(url)}`, {
+      code: RegistryErrorCode.INVALID_CONFIG,
+      context: { url: String(url) },
+      suggestion:
+        'Check the registry URL in components.json (or the registry entry that produced it).',
+    })
+  }
+  const originalOrigin = parsed.origin
   const originalHeaders = new Headers(init?.headers)
-  let currentUrl = new URL(url).toString()
+  let currentUrl = parsed.toString()
   let headers = originalHeaders
 
   for (let i = 0; i <= MAX_REDIRECTS; i++) {
@@ -155,20 +170,30 @@ async function fetchOnce(
     // Native fetch reports network failures as a generic "fetch failed"
     // TypeError with the actual reason buried in `cause`. The casts are
     // needed because the configured TS lib predates Error.cause.
+    //
+    // This used to re-wrap the cause in a plain `Error`, which left the error
+    // handler nothing to classify: an unreachable registry became an
+    // unexpected bug — UNKNOWN_ERROR, exit 1, "please open an issue on
+    // GitHub". A refused port is not a bug, it is the documented exit-4
+    // condition, so this throws a real RegistryError and keeps the syscall
+    // reason in `cause` (which surfaces as `details.cause`).
     const cause =
       error instanceof TypeError
         ? (error as TypeError & { cause?: unknown }).cause
         : undefined
 
-    if (cause) {
-      const enriched = new Error(
-        `Request to ${url} failed, reason: ${getFailureReason(cause)}`
-      ) as Error & { cause?: unknown }
-      enriched.cause = cause
-      throw enriched
-    }
+    const reason = cause ? getFailureReason(cause) : getFailureReason(error)
 
-    throw error
+    throw new RegistryError(
+      `Could not reach the registry at ${url}${reason ? ` (${reason})` : ""}.`,
+      {
+        code: RegistryErrorCode.NETWORK_ERROR,
+        cause: error,
+        context: { url },
+        suggestion:
+          "Check the registry URL in components.json, your network connection, and any proxy or firewall in between, then retry.",
+      }
+    )
   }
 }
 

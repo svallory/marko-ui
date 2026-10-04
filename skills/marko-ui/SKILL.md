@@ -53,9 +53,15 @@ With `--json`, a failure is **one** JSON object on stdout and nothing else, in t
 }
 ```
 
-Branch on `error.code`, never on the message text. Every code is listed in `marko-ui manifest` under `errorCodes` — the common ones are `NOT_FOUND` (unknown item), `NOT_CONFIGURED` (no `components.json`, or a registry that isn't configured), `INVALID_CONFIG`, `NETWORK_ERROR`/`FETCH_ERROR` (registry unreachable), `MISSING_ENV_VARS`, `MONOREPO_ROOT` (run from a workspace, not the repo root), `USAGE_ERROR` (bad invocation), `CHECK_FAILED` (a `doctor`/`validate`/`agents --check` found problems), and `PROJECT_NOT_FOUND` (no Marko project at that directory).
+Branch on `error.code`, never on the message text. Every code is listed in `marko-ui manifest` under `errorCodes` — the common ones are `NOT_FOUND` (unknown item), `NOT_CONFIGURED` (no `components.json`, or a registry that isn't configured), `INVALID_CONFIG`, `NETWORK_ERROR` (registry/docs host unreachable — exit 4), `FETCH_ERROR` (the host answered with an error status — exit 1), `MISSING_ENV_VARS`, `MONOREPO_ROOT` (run from a workspace, not the repo root), `USAGE_ERROR` (bad invocation, including an unknown command or flag), `CHECK_FAILED` (a `doctor`/`validate`/`agents --check` found problems), and `PROJECT_NOT_FOUND` (no Marko project at that directory).
+
+A connection failure (refused port, DNS failure, timeout) is `NETWORK_ERROR` with exit 4 on every registry-backed command — that is distinct from a server that answered with a 4xx/5xx, which is `FETCH_ERROR` with exit 1.
 
 `details.suggestions` carries "did you mean" candidates when the registry index was reachable, so you can retry without parsing prose. An unknown item name in `docs`, `show`, `add` or `diff` is the common case.
+
+`details` never carries a stack trace, an absolute path under your home directory, or a credential-bearing URL — paths are shortened and registry URLs have their query string and credentials stripped. A stack is on stderr only under `MARKO_UI_DEBUG`.
+
+One name can fail while the others succeed: `marko-ui docs nope button` prints button's markdown on stdout, reports `nope` on stderr, and exits 1.
 
 Exit codes are unchanged: `0` ok · `1` operational failure · `2` usage error · `3` a check found problems · `4` network or registry unreachable.
 

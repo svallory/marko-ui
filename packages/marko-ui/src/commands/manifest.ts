@@ -126,7 +126,12 @@ export function buildManifest(program: Command, commandName?: string) {
       `Unknown command ${highlighter.info(commandName)}. Known commands: ${commands
         .map((cmd) => cmd.name())
         .join(", ")}.`,
-      { exitCode: 2 }
+      {
+        exitCode: 2,
+        code: RegistryErrorCode.USAGE_ERROR,
+        suggestion: `Run "marko-ui manifest" for every command, or "marko-ui manifest <command>" for one.`,
+        details: { requested: commandName, known: commands.map((cmd) => cmd.name()) },
+      }
     )
   }
 

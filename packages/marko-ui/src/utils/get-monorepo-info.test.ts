@@ -295,14 +295,15 @@ describe("formatMonorepoMessage", () => {
   // stdout must carry only the command's result.
   it("should log the monorepo message with targets on stderr", () => {
     const errorSpy = vi.spyOn(logger, "error")
-    const breakSpy = vi.spyOn(logger, "break")
+    // The spacing goes with the error, not with stdout (defect-4 ruling).
+    const errorBreakSpy = vi.spyOn(logger, "errorBreak")
 
     formatMonorepoMessage("init", [
       { name: "apps/web", hasConfig: false },
       { name: "apps/docs", hasConfig: true },
     ])
 
-    expect(breakSpy).toHaveBeenCalled()
+    expect(errorBreakSpy).toHaveBeenCalled()
     const allLogCalls = errorSpy.mock.calls.map((c) => c[0] as string)
 
     // Should mention monorepo root.
@@ -318,7 +319,7 @@ describe("formatMonorepoMessage", () => {
     ).toBe(true)
 
     errorSpy.mockRestore()
-    breakSpy.mockRestore()
+    errorBreakSpy.mockRestore()
   })
 
   it("should use the correct command name", () => {

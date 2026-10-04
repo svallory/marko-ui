@@ -1,11 +1,14 @@
 import { RegistryError } from "@/src/registry/errors"
 import {
+  asNetworkError,
   buildErrorEnvelope,
   type CliErrorEnvelope,
   jsonSafe,
+  looksLikeNetworkFailure,
   NETWORK_ERROR_CODES,
   type NormalizedCliError,
   RegistryErrorCode,
+  sanitizeDetails,
 } from "@/src/utils/error-contract"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
@@ -134,7 +137,7 @@ export function normalizeError(error: unknown): NormalizedCliError {
         code: error.code,
         message: error.message,
         suggestion: error.suggestion,
-        details: error.details,
+        details: sanitizeDetails(error.details ?? {}),
       }),
       exitCode: error.exitCode,
       unexpected: false,
@@ -147,12 +150,12 @@ export function normalizeError(error: unknown): NormalizedCliError {
         code: error.code,
         message: error.message,
         suggestion: error.suggestion,
-        details: {
+        details: sanitizeDetails({
           ...error.context,
           ...(error.cause !== undefined && error.cause !== null
             ? { cause: serializeCause(error.cause) }
             : {}),
-        },
+        }),
       }),
       exitCode: NETWORK_ERROR_CODES.includes(error.code) ? 4 : 1,
       unexpected: false,
@@ -165,9 +168,37 @@ export function normalizeError(error: unknown): NormalizedCliError {
       envelope: buildErrorEnvelope({
         code: RegistryErrorCode.VALIDATION_ERROR,
         message,
-        details,
+        details: sanitizeDetails(details),
       }),
       exitCode: 1,
+      unexpected: false,
+    }
+  }
+
+  // An unreachable registry is an expected, actionable condition, not a bug
+  // in the CLI. Classify it here as the backstop for any path that reaches
+  // the error handler with a raw fetch failure (the proxy wraps one, but a
+  // hand-rolled `fetch` anywhere else would not), so it is NETWORK_ERROR /
+  // exit 4 with no "open an issue" boilerplate.
+  if (looksLikeNetworkFailure(error)) {
+    const network = asNetworkError(error)
+    // `fetch failed` is the message Node prints for every connection
+    // failure; the syscall reason (ECONNREFUSED, ENOTFOUND, ETIMEDOUT) is
+    // what tells the user whether to retry or go fix DNS, so that is what
+    // `details.cause` carries.
+    const reason =
+      network.context?.reason ?? serializeCause(network.cause)
+    return {
+      envelope: buildErrorEnvelope({
+        code: network.code,
+        message: network.message,
+        suggestion: network.suggestion,
+        details: sanitizeDetails({
+          ...(network.context ?? {}),
+          ...(reason !== undefined ? { cause: reason } : {}),
+        }),
+      }),
+      exitCode: 4,
       unexpected: false,
     }
   }
@@ -183,10 +214,11 @@ export function normalizeError(error: unknown): NormalizedCliError {
     envelope: buildErrorEnvelope({
       code: RegistryErrorCode.UNKNOWN_ERROR,
       message,
-      details:
-        error instanceof Error && error.stack
-          ? { stack: error.stack }
-          : undefined,
+      // No stack: `details` is routinely logged, and a stack is a wall of
+      // absolute build paths (including the user's home directory) that adds
+      // nothing a reader of a log can act on. MARKO_UI_DEBUG puts it on
+      // stderr instead, where it stays opt-in.
+      details: undefined,
     }),
     exitCode: 1,
     // Anything that is not one of the deliberate error types is a bug in the
@@ -221,29 +253,38 @@ export function renderHumanError(
   { unexpected = false }: { unexpected?: boolean } = {}
 ) {
   if (unexpected) {
-    logger.break()
+    logger.errorBreak()
     logger.error(
       `Something went wrong. Please check the error below for more details.`
     )
     logger.error(`If the problem persists, please open an issue on GitHub.`)
-    logger.break()
+    logger.errorBreak()
   }
 
-  const { code, message, suggestion, details } = envelope.error
-  logger.break()
+  const { code, message, suggestion } = envelope.error
+  logger.errorBreak()
   logger.error(`${highlighter.error("Error")} [${code}]: ${message}`)
 
-  const suggestions = details?.suggestions
-  if (Array.isArray(suggestions) && suggestions.length > 0) {
-    logger.error(
-      `Similar registry items: ${suggestions.map((name) => `"${String(name)}"`).join(", ")}`
-    )
+  // The candidates live in `suggestion` and `details.suggestions`. They were
+  // also printed as their own "Similar registry items" line, which made
+  // `show buton` say "button" three times; the suggestion line already names
+  // them, so only print this when the suggestion is NOT the did-you-mean one
+  // (a caller that supplied its own advice still gets the list).
+  if (suggestion && !/^Did you mean\b/.test(suggestion)) {
+    const suggestions = envelope.error.details?.suggestions
+    if (Array.isArray(suggestions) && suggestions.length > 0) {
+      logger.error(
+        `Similar registry items: ${suggestions
+          .map((name) => `"${String(name)}"`)
+          .join(", ")}`
+      )
+    }
   }
 
   if (suggestion) {
     logger.error(`${highlighter.info("Suggestion:")} ${suggestion}`)
   }
-  logger.break()
+  logger.errorBreak()
 }
 
 /**
@@ -256,13 +297,20 @@ export function handleError(error: unknown) {
     process.exit(error.exitCode)
   }
 
-  // The caller printed its own multi-line human block and says so. In
-  // `--json` mode that prose is not a result, so the envelope still goes out.
+  const normalized = normalizeError(error)
+
+  // A `formatted` CommandError's caller already printed its own bespoke
+  // human block. In `--json` mode that prose is not a result, so the
+  // envelope still goes out. On the human path we still print the one line
+  // the bespoke block cannot know: the code. Without it a monorepo-root or
+  // search failure was prose with nothing a program could branch on, which
+  // is exactly what criterion 3 exists to prevent.
   if (error instanceof CommandError && error.formatted && !isJsonMode()) {
+    logger.error(
+      `${highlighter.error("Error")} [${normalized.envelope.error.code}]: ${error.message}`
+    )
     process.exit(error.exitCode)
   }
-
-  const normalized = normalizeError(error)
 
   if (isJsonMode()) {
     const payload = jsonSafe(normalized.envelope)

@@ -70,7 +70,12 @@ describe("buildManifest", () => {
 
   it("documents the JSON error envelope and the stream contract", () => {
     const manifest = buildManifest(new Command().name("marko-ui"))
+    // buildManifest returns a narrowed shape too (manifest <command>), so the
+    // whole-CLI-only fields are optional on the union.
     const output = manifest.data.errorOutput
+    expect(output).toBeDefined()
+    if (!output) return
+
     expect(output.jsonEnvelope.$type).toBe("marko-ui/error")
     expect(output.jsonEnvelope.version).toBe(1)
     expect(output.jsonEnvelope.ok).toBe(false)
