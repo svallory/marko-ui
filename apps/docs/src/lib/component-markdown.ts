@@ -3,10 +3,28 @@
 // ComponentPageData the HTML page uses, so the two cannot disagree.
 import type { ComponentPageData } from "./component-page-data.ts";
 import type { ApiPart } from "../tags/docs/api-table.marko";
+import { stripMarkoComments } from "./strip-marko-comments.ts";
 
 /** Pipes and newlines would break out of a markdown table cell. */
 function escapeTableCell(value: string): string {
   return value.replace(/\|/g, "\\|").replace(/\s*\n\s*/g, " ");
+}
+
+/** Explains the `fixed:` cells when a part has any; `null` when it has none. */
+const FIXED_LEGEND =
+  "`fixed: X` — the component sets this value itself; a value you pass is ignored. `fixed` — same, but the value is computed.";
+
+/**
+ * The Default cell: a real default, or the marker for a prop the component
+ * FIXES on its own `<zag>` tag. marko-zag merges those attributes last
+ * (`buildMachineProps`), so the caller's value is silently ignored — showing
+ * "Default `false`" there would tell a reader they can change it.
+ */
+export function defaultCell(property: { default?: string; fixed?: string | true }): string {
+  if (property.fixed !== undefined) {
+    return property.fixed === true ? "`fixed`" : `\`fixed: ${property.fixed}\``;
+  }
+  return property.default ? `\`${property.default}\`` : "—";
 }
 
 function renderPartTable(part: ApiPart, includeHeading: boolean): string {
@@ -23,13 +41,16 @@ function renderPartTable(part: ApiPart, includeHeading: boolean): string {
     return lines.join("\n");
   }
 
+  // Above the table, never between the header row and the body: prose in that
+  // gap ends the table in most markdown renderers.
+  if (part.properties.some((property: { fixed?: string | true }) => property.fixed !== undefined)) {
+    lines.push(FIXED_LEGEND, "");
+  }
   lines.push("| Prop | Type | Default | Description |", "| --- | --- | --- | --- |");
   for (const property of part.properties) {
     const name = property.required ? `\`${property.name}\` (required)` : `\`${property.name}\``;
     lines.push(
-      `| ${name} | \`${escapeTableCell(property.type)}\` | ${
-        property.default ? `\`${property.default}\`` : "—"
-      } | ${escapeTableCell(property.description ?? "")} |`,
+      `| ${name} | \`${escapeTableCell(property.type)}\` | ${defaultCell(property)} | ${escapeTableCell(property.description ?? "")} |`,
     );
   }
   lines.push("");
@@ -107,7 +128,9 @@ export function renderComponentMarkdown(page: ComponentPageData): string {
     for (const example of page.examples) {
       sections.push(`### ${example.title}`, "");
       if (example.description) sections.push(example.description, "");
-      sections.push("```marko", example.source, "```", "");
+      // Comments are for the maintainers of the demo file; this reader is an
+      // assistant. The docs site itself still shows the commented source.
+      sections.push("```marko", stripMarkoComments(example.source), "```", "");
     }
   }
 

@@ -76,7 +76,7 @@ Feed entries as data with \`items=[{ type: "menu" | "link", ... }]\`, or compose
       name: "navigation-menu-rtl",
       title: "RTL",
       description:
-        "Pass `dir=\"rtl\"` (with `align=\"end\"` to mirror the viewport) for right-to-left layout. Unlike dropdown-menu/menubar's static-wrapper RTL demos, `dir` here is a real @zag-js/navigation-menu machine prop our Input type re-exposes, so this drives the machine's own RTL positioning — see the in-file comment for why the demo uses a static Arabic locale instead of upstream's live language switcher.",
+        "Pass `dir=\"rtl\"` (with `align=\"end\"` to mirror the viewport) for right-to-left layout. Unlike dropdown-menu/menubar's static-wrapper RTL demos, `dir` here is a real @zag-js/navigation-menu machine prop our Input type re-exposes, so this drives the machine's own RTL positioning. The content is static Arabic rather than upstream's live language switcher (English/Arabic/Hebrew), which has no equivalent on this site.",
     },
   ],
 };

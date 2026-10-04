@@ -25,7 +25,7 @@ export const docs: ComponentDocs = {
       name: "calendar-hijri",
       title: "Persian / Hijri / Jalali Calendar",
       description:
-        "Pass `locale` and `createCalendar` (re-exported from `@internationalized/date`, the same helper upstream's own MDX points to) to switch the calendar system — no react-day-picker locale swap needed. A controlled initial `value` is intentionally omitted here: `calendar.marko`'s `toDateValue()` always builds a Gregorian `CalendarDate`, so a hardcoded non-Gregorian `{ year, month, day }` would be silently misinterpreted.",
+        "Pass `locale` and `createCalendar` (re-exported from `@internationalized/date`, the same helper upstream's own MDX points to) to switch the calendar system — no react-day-picker locale swap needed (upstream swaps in a persian build of the library and loads the Vazirmatn webfont for Arabic-script glyphs; here the font is your app's business). A controlled initial `value` is intentionally omitted here: `calendar.marko`'s `toDateValue()` always builds a Gregorian `CalendarDate`, so a hardcoded non-Gregorian `{ year, month, day }` would be silently misinterpreted.",
     },
     {
       name: "calendar-basic",

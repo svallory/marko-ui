@@ -135,7 +135,7 @@ import FieldDescription from "@/components/ui/field/field-description.marko";`,
       name: "field-choice-card",
       title: "Choice card",
       description:
-        "Render rich title/description content inside a `RadioGroup` item's `content` slot to build a selectable card group.",
+        "Render rich title/description content inside a `RadioGroup` item's `content` slot to build a selectable card group. Each item is one root row in a fixed order — indicator, hidden input, then that `content` — so the indicator cannot be moved to trail the text the way upstream's `FieldLegend`/`Field` wrapper arrangement does it.",
     },
     {
       name: "field-group",

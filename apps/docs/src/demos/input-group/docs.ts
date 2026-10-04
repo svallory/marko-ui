@@ -101,7 +101,7 @@ import InputGroupAddon from "@/components/ui/input-group/addon.marko";`,
       name: "input-group-rtl",
       title: "RTL",
       description:
-        "InputGroup's parts use Tailwind logical properties, so they restyle correctly under `dir=\"rtl\"` with no component changes. See the [RTL configuration guide](/docs/rtl).",
+        "InputGroup's parts use Tailwind logical properties, so they restyle correctly under `dir=\"rtl\"` with no component changes — put `dir=\"rtl\"` on the group (or an ancestor) and every part follows.",
     },
   ],
 };

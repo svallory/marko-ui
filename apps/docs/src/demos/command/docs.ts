@@ -42,7 +42,7 @@ export const docs: ComponentDocs = {
     {
       name: "command-shortcuts",
       title: "Shortcuts",
-      description: "Items with a `shortcut` render it right-aligned. Upstream also shows a leading icon per item; our `CommandItem` type has no icon slot, so this demo omits it (see the in-file comment).",
+      description: "Items with a `shortcut` render it right-aligned. Upstream also shows a leading icon per item; our `CommandItem` type carries only `value`/`label`/`shortcut` and has no icon slot, so this demo omits them rather than faking them.",
     },
     {
       name: "command-groups",
