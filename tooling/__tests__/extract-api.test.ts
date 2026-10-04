@@ -22,6 +22,8 @@ interface PropertyEntry {
   kind: string;
   description?: string;
   default?: string;
+  /** Present when the component fixes the value on its own `<zag>` tag. */
+  fixed?: string | true;
   options?: string[];
 }
 interface PartEntry {
@@ -161,14 +163,17 @@ describe("extract-api: default values", () => {
   );
 });
 
-// A Zag `@default` is the machine's default, not this component's: a
-// component that passes its own value on `<zag>` has a different one. Reading
-// Zag's tag regardless made `alert-dialog` document `closeOnEscape` as `true`
-// while the component hard-codes `false` — contradicting the page's own prose,
-// on the page whose job is to be right about defaults.
-describe("extract-api: a component's own <zag> props win over Zag's @default", () => {
+// What a component writes on its own `<zag>` tag is not a default: marko-zag
+// merges those attributes LAST (`buildMachineProps`: `{ id, ...picked, ...overrides }`),
+// so the caller's value is silently ignored. Documenting them as "Default
+// `false`" tells the reader they can change something they cannot — and
+// recording Zag's own `@default` instead contradicts the component outright
+// (`alert-dialog` hard-codes `closeOnEscape=false`; Zag documents `true`).
+// So: `fixed` with the value when it is a literal, `fixed: true` when it is an
+// expression, and nothing stated at all for a passthrough off `input`.
+describe("extract-api: props the component fixes on its own <zag> tag", () => {
   it(
-    "records what the component fixes, and nothing when it passes an expression",
+    "records them as fixed, never as a default",
     { timeout: 60_000 },
     async () => {
       const env = { ...process.env };
@@ -184,29 +189,48 @@ describe("extract-api: a component's own <zag> props win over Zag's @default", (
           .find((p) => p.name === prop);
       };
 
-      // alert-dialog.marko:41-44 passes all three, overriding the dialog
-      // machine's `dialog` / `true` / `true`.
-      expect(propOf("alert-dialog", "role")?.default).toBe("alertdialog");
-      expect(propOf("alert-dialog", "closeOnEscape")?.default).toBe("false");
-      expect(propOf("alert-dialog", "closeOnInteractOutside")?.default).toBe("false");
+      // alert-dialog.marko:41-44 writes all three on the tag.
+      for (const [name, value] of [
+        ["role", "alertdialog"],
+        ["closeOnEscape", "false"],
+        ["closeOnInteractOutside", "false"],
+      ] as const) {
+        expect(propOf("alert-dialog", name)?.fixed, name).toBe(value);
+        // And NOT a default: that is the claim this test exists to prevent.
+        expect(propOf("alert-dialog", name)?.default, name).toBeUndefined();
+      }
 
       // command.marko:91-93 does the same over the command machine.
-      expect(propOf("command", "open")?.default).toBe("true");
-      expect(propOf("command", "inputBehavior")?.default).toBe("autohighlight");
-      expect(propOf("command", "selectionBehavior")?.default).toBe("clear");
+      expect(propOf("command", "open")?.fixed).toBe("true");
+      expect(propOf("command", "inputBehavior")?.fixed).toBe("autohighlight");
+      expect(propOf("command", "selectionBehavior")?.fixed).toBe("clear");
 
-      // dialog/sheet fix `role="dialog"` — the same value Zag documents, so
-      // the default survives rather than being suppressed.
-      expect(propOf("dialog", "role")?.default).toBe("dialog");
+      // dialog/sheet fix `role="dialog"`, so it is fixed even though the value
+      // happens to match Zag's own default.
+      expect(propOf("dialog", "role")?.fixed).toBe("dialog");
+      expect(propOf("sheet", "role")?.fixed).toBe("dialog");
+
+      // A prop the component passes THROUGH from its input is neither fixed
+      // nor default: the caller still controls it, and the fallback
+      // (`?? "horizontal"`) is not statically evaluable.
+      for (const [component, prop] of [
+        ["resizable", "orientation"],
+        ["input-otp", "count"],
+        ["tabs", "defaultValue"],
+      ] as const) {
+        expect(propOf(component, prop)?.fixed, prop).toBeUndefined();
+        expect(propOf(component, prop)?.default, prop).toBeUndefined();
+      }
+
+      // An untouched machine prop keeps Zag's `@default`.
+      expect(propOf("dialog", "closeOnEscape")?.fixed).toBeUndefined();
       expect(propOf("dialog", "closeOnEscape")?.default).toBe("true");
 
-      // Nothing anywhere claims a machine default for a prop the component
-      // passes as an expression: resizable passes
-      // `orientation=input.orientation ?? "horizontal"`, which is not a value
-      // a table cell can state.
-      expect(propOf("resizable", "orientation")?.default).toBeUndefined();
-      expect(propOf("input-otp", "count")?.default).toBeUndefined();
-      expect(propOf("tabs", "defaultValue")?.default).toBeUndefined();
+      // No prop in the registry is both.
+      const both = allProperties(components).filter(
+        (p) => p.default !== undefined && p.fixed !== undefined,
+      );
+      expect(both).toEqual([]);
     },
   );
 });

@@ -10,6 +10,12 @@ export interface ApiProperty {
   kind?: string;
   description?: string;
   default?: string;
+  /**
+   * A value the component writes on its own `<zag>` tag. marko-zag merges
+   * those attributes last (`buildMachineProps`), so a caller's value is
+   * ignored — shown as "fixed", never as a default the reader could change.
+   */
+  fixed?: string | true;
   options?: string[];
 }
 
@@ -77,9 +83,14 @@ static function partLabel(part: ApiPart) {
                     <code class="font-mono text-[0.8em] break-words text-muted-foreground">${property.type}</code>
                   </td>
                   <td class="px-3 py-2 whitespace-nowrap">
-                    <if=property.default>
-                      <code class="font-mono text-[0.85em] text-foreground">${property.default}</code>
+                    <if=property.fixed !== undefined>
+                      <code class="font-mono text-[0.85em] text-foreground">
+                        fixed<if=property.fixed !== true>: ${property.fixed}</if>
+                      </code>
                     </if>
+                    <else-if=property.default>
+                      <code class="font-mono text-[0.85em] text-foreground">${property.default}</code>
+                    </else-if>
                     <else>
                       <span class="text-muted-foreground">—</span>
                     </else>

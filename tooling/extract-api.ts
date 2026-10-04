@@ -64,6 +64,15 @@ interface PropertyEntry {
    * "not recorded", never "there is no default".
    */
   default?: string;
+  /**
+   * A value the component writes on its own `<zag>` tag. marko-zag merges the
+   * tag's attributes LAST (`buildMachineProps`: `{ id, ...picked, ...overrides }`),
+   * so the caller's value is silently ignored — this prop is FIXED, not
+   * defaultable. The string is the literal when it is knowable
+   * (`"alertdialog"`), `true` when the component passes a non-literal
+   * expression instead (`slideCount=slides.length`).
+   */
+  fixed?: string | true;
 }
 
 interface PartEntry {
@@ -551,13 +560,20 @@ async function main() {
           }
         }
 
-        // What the component itself fixes on its `<zag>` tag wins over Zag's
-        // `@default` — it is the value the machine really receives.
-        // `alert-dialog` passes `closeOnEscape=false`, so documenting the
-        // machine's `true` would contradict the page's own prose.
-        const fixedByComponent = tagProps.get(property.getName());
-        if (fixedByComponent !== undefined) defaultValue = fixedByComponent ?? undefined;
-        if (defaultValue !== undefined) entry.default = defaultValue;
+        // What the component writes on its own `<zag>` tag is not a default at
+        // all. marko-zag merges those attributes LAST (`buildMachineProps`:
+        // `{ id, ...picked, ...overrides }`), so `<AlertDialog closeOnEscape
+        // =true>` is silently ignored — recording it as `default` would tell
+        // the reader they can change it. A passthrough expression
+        // (`count=input.count ?? input.length`) is neither: the caller's value
+        // still wins, and the fallback cannot be evaluated statically, so no
+        // default is stated.
+        const onTag = tagProps.get(property.getName());
+        if (onTag?.kind === "fixed") {
+          entry.fixed = onTag.value ?? true;
+        } else if (onTag?.kind !== "passthrough" && defaultValue !== undefined) {
+          entry.default = defaultValue;
+        }
         properties.push(entry);
       }
 

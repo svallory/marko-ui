@@ -10,6 +10,19 @@ function escapeTableCell(value: string): string {
   return value.replace(/\|/g, "\\|").replace(/\s*\n\s*/g, " ");
 }
 
+/**
+ * The Default cell: a real default, or the marker for a prop the component
+ * FIXES on its own `<zag>` tag. marko-zag merges those attributes last
+ * (`buildMachineProps`), so the caller's value is silently ignored — showing
+ * "Default `false`" there would tell a reader they can change it.
+ */
+export function defaultCell(property: { default?: string; fixed?: string | true }): string {
+  if (property.fixed !== undefined) {
+    return property.fixed === true ? "`fixed`" : `\`fixed: ${property.fixed}\``;
+  }
+  return property.default ? `\`${property.default}\`` : "—";
+}
+
 function renderPartTable(part: ApiPart, includeHeading: boolean): string {
   const lines: string[] = [];
   if (includeHeading) lines.push(`### ${part.name}`, "");
@@ -28,9 +41,7 @@ function renderPartTable(part: ApiPart, includeHeading: boolean): string {
   for (const property of part.properties) {
     const name = property.required ? `\`${property.name}\` (required)` : `\`${property.name}\``;
     lines.push(
-      `| ${name} | \`${escapeTableCell(property.type)}\` | ${
-        property.default ? `\`${property.default}\`` : "—"
-      } | ${escapeTableCell(property.description ?? "")} |`,
+      `| ${name} | \`${escapeTableCell(property.type)}\` | ${defaultCell(property)} | ${escapeTableCell(property.description ?? "")} |`,
     );
   }
   lines.push("");
