@@ -155,20 +155,18 @@ async function prepareAgentDocs(cwd: string) {
 }
 
 /**
- * The installed component NAMES, sorted. Nothing else: the section lists
- * names only, so this needs no registry fetch of its own — the listing falls
- * back to "a directory holding a .marko file" when the index is
- * unreachable, which sync relies on to work offline.
+ * The installed component NAMES, sorted. Nothing else.
+ *
+ * `null` for the registry index on purpose: the section lists names, so the
+ * index only ever served the descriptions that are gone, and a names-from-
+ * disk listing (a directory holding a `.marko` file) is both offline and one
+ * network round trip cheaper. Anything that does go wrong here is LOCAL (an
+ * unresolvable alias, a readdir failure) and must reach the user through
+ * handleError: swallowed into `[]` it would rewrite a project's AGENTS.md to
+ * "Installed: none" and exit 0.
  */
 async function collectInstalledComponents(cwd: string) {
-  const names = await getProjectComponents(cwd).catch((error) => {
-    logger.debug(
-      `installed components unavailable: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    )
-    return [] as string[]
-  })
+  const names = await getProjectComponents(cwd, null)
   return names.sort()
 }
 
