@@ -33,6 +33,8 @@ cd apps/docs && bun run dev    # docs site, default port 3000
 NODE_OPTIONS="--max-old-space-size=8192" marko-type-check -p . -d condensed
 ```
 
+**The pi-lens `lens_diagnostics` LSP reports `Cannot find module '…/*.marko'` on every `.ts` file that imports a type from a `.marko` file (e.g. `apps/docs/src/lib/component-markdown.ts`'s `import type { ApiPart } from "../tags/docs/api-table.marko"`, `component-page-data.ts` line 9) — that is an artifact of its plain-TypeScript language server, not a defect.** It has no Marko plugin, so every such import is unresolvable to it, including ones that have been in the tree for months and that `marko-type-check` resolves fine. Check whether your diff actually touched the import before you go looking for a cause; when in doubt, `git diff` the file and confirm the import is untouched, and settle it with the real gate (`bun run --filter docs check`) rather than by editing the import.
+
 **The repo runs on `typescript` ^6.0.3, the classic JS compiler API** (`ts.createProgram`, `ts.CompilerHost`, `ts.SyntaxKind`/`ts.SymbolFlags`, etc. — all present, unlike TS 7's native `tsgo`, which ships none of it). `tooling/extract-api.ts` builds a virtual `ts.CompilerHost` over in-memory `.ts` twins carved out of each `.marko` file's TypeScript region and hands the whole set to one `ts.createProgram` — no disk writes, no generated tsconfig, no Node/Bun re-exec shim needed; `bun tooling/extract-api.ts` runs directly. Read that file before writing new compiler-API tooling.
 
 **`@marko/type-check` bundles its own typescript (6.0.3), matching the root now** — `marko-type-check` behaviour and error counts have always been independent of the root `typescript` version, and now the majors agree too.
