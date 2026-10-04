@@ -54,6 +54,31 @@ describe("buildManifest", () => {
     expect(manifest.data.errorCodes).toContain("NOT_CONFIGURED")
   })
 
+  it("advertises the command-level error codes too", () => {
+    // These are not registry failures — they used to reach a program as bare
+    // prose with no code, so they had nothing to appear in this list.
+    const manifest = buildManifest(new Command().name("marko-ui"))
+    for (const code of [
+      "USAGE_ERROR",
+      "MONOREPO_ROOT",
+      "CHECK_FAILED",
+      "PROJECT_NOT_FOUND",
+    ]) {
+      expect(manifest.data.errorCodes).toContain(code)
+    }
+  })
+
+  it("documents the JSON error envelope and the stream contract", () => {
+    const manifest = buildManifest(new Command().name("marko-ui"))
+    const output = manifest.data.errorOutput
+    expect(output.jsonEnvelope.$type).toBe("marko-ui/error")
+    expect(output.jsonEnvelope.version).toBe(1)
+    expect(output.jsonEnvelope.ok).toBe(false)
+    expect(Object.keys(output.jsonEnvelope.error)).toContain("code")
+    expect(output.streams.stdout).toContain("result")
+    expect(output.streams.stderr).toContain("errors")
+  })
+
   it("every agent-workflow step survives validation against the LIVE program", () => {
     // Guards against advertising commands/flags that do not exist (the
     // doctor-class bug: prose restating a contract instead of consuming it).

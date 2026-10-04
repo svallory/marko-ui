@@ -56,6 +56,18 @@ static const JSON_ENVELOPE = `{
   "data": { "components": [] }
 }`;
 
+static const JSON_ERROR_ENVELOPE = `{
+  "$type": "marko-ui/error",
+  "version": 1,
+  "ok": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Registry item \\"buton\\" was not found. Did you mean \\"button\\"?",
+    "suggestion": "Did you mean \\"button\\"?",
+    "details": { "itemName": "buton", "suggestions": ["button"] }
+  }
+}`;
+
 <docs-article
   title="Working with AI"
   description="One command gives your coding agent the marko-ui CLI workflow, your installed component list, and the Marko 6 rules it gets wrong by default."
@@ -331,6 +343,30 @@ static const JSON_ENVELOPE = `{
     <code>search --json</code> also provide structured output, but currently return
     plain result objects without this envelope. <code>docs &lt;component&gt;</code>
     returns markdown; its JSON option applies to listing components.
+  </p>
+
+  <h3>Errors and streams</h3>
+
+  <p>
+    <strong>stdout carries the result; stderr carries every problem.</strong>
+    Human-readable errors and warnings go to stderr, so a program that captures
+    stdout gets the command's payload and nothing else — no log line, no
+    warning, no failure text. With <code>--json</code>, a failure prints exactly
+    one JSON object on stdout and nothing else:
+  </p>
+
+  <code-block language="json" code=JSON_ERROR_ENVELOPE/>
+
+  <p>
+    Branch on <code>error.code</code>, never on the message text. Every code is
+    listed by <code>marko-ui manifest</code> under <code>errorCodes</code>. When
+    the registry index is reachable, an unknown item name in
+    <code>docs</code>, <code>show</code>, <code>add</code> or <code>diff</code>
+    comes back with "did you mean" candidates in
+    <code>error.details.suggestions</code>, so a typo is a retry rather than a
+    dead end. Human-mode failures print the code, the message and the
+    suggestion on stderr; the "open an issue on GitHub" boilerplate is reserved
+    for genuinely unexpected exceptions.
   </p>
 
   <h3>Non-interactive flags</h3>

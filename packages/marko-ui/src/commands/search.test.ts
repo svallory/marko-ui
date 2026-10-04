@@ -203,7 +203,8 @@ describe("search command", () => {
   })
 
   it("requires a registry when no components.json is present", async () => {
-    const log = vi.spyOn(console, "log").mockImplementation(() => {})
+    // The error text is a diagnostic: stderr, so stdout stays clean.
+    const error = vi.spyOn(console, "error").mockImplementation(() => {})
     const exit = mockProcessExit()
 
     // fs-extra.existsSync is mocked to return false (no components.json).
@@ -215,12 +216,12 @@ describe("search command", () => {
       })
     ).rejects.toThrow("process.exit:1")
 
-    expect(log).toHaveBeenCalledWith(
+    expect(error).toHaveBeenCalledWith(
       expect.stringContaining("Provide a registry or namespace to search")
     )
     expect(searchRegistries).not.toHaveBeenCalled()
 
-    log.mockRestore()
+    error.mockRestore()
     exit.mockRestore()
   })
 
@@ -250,7 +251,8 @@ describe("search command", () => {
   })
 
   it("errors on an unknown --type", async () => {
-    const log = vi.spyOn(console, "log").mockImplementation(() => {})
+    // The error text is a diagnostic: stderr, so stdout stays clean.
+    const error = vi.spyOn(console, "error").mockImplementation(() => {})
     const exit = mockProcessExit()
 
     await expect(
@@ -262,10 +264,10 @@ describe("search command", () => {
       )
     ).rejects.toThrow("process.exit:1")
 
-    expect(log).toHaveBeenCalledWith(expect.stringContaining("Unknown type"))
+    expect(error).toHaveBeenCalledWith(expect.stringContaining("Unknown type"))
     expect(searchRegistries).not.toHaveBeenCalled()
 
-    log.mockRestore()
+    error.mockRestore()
     exit.mockRestore()
   })
 

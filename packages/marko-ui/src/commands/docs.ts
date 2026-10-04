@@ -1,8 +1,12 @@
+import path from "path"
 import { getShadcnRegistryIndex } from "@/src/registry/api"
 import { MARKO_UI_URL } from "@/src/registry/constants"
-import { handleError } from "@/src/utils/handle-error"
+import { RegistryErrorCode } from "@/src/registry/errors"
+import { CommandError, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
+import { setJsonMode } from "@/src/utils/output-mode"
+import { closestNames } from "@/src/utils/suggest"
 import { Command } from "commander"
 import { z } from "zod"
 
@@ -26,6 +30,10 @@ export const docs = new Command()
   .option("--json", "output as JSON (with --list).", false)
   .action(async (components: string[], opts) => {
     try {
+      // Recorded before anything can fail so a failure takes the JSON error
+      // path, not the human one.
+      setJsonMode(Boolean(opts.json))
+
       const options = docsOptionsSchema.parse({
         list: opts.list,
         json: opts.json,
@@ -94,15 +102,45 @@ export const docs = new Command()
         }
 
         if (!served) {
-          logger.error(
-            `No documentation for ${highlighter.info(
-              name
-            )} (${lastStatus} from ${urls[0]}).`
+          // A typo is the overwhelmingly common reason for this. The index
+          // may be unreachable (in which case there is nothing to suggest
+          // and the failure is a network one instead), so suggestions are
+          // best-effort and never change the error class.
+          const candidates = await documentedComponentNames().catch(
+            () => [] as string[]
           )
-          process.exitCode = 1
+          const suggestions = closestNames(name, candidates)
+          throw new CommandError(
+            `No documentation for "${name}" (${lastStatus} from ${urls[0]}).`,
+            {
+              code: lastStatus === 404 ? RegistryErrorCode.NOT_FOUND : RegistryErrorCode.FETCH_ERROR,
+              exitCode: lastStatus === 404 ? 1 : 4,
+              suggestion: suggestions.length
+                ? `Run "marko-ui docs ${suggestions[0]}" instead, or "marko-ui docs --list" for every documented component.`
+                : `Run "marko-ui docs --list" to see the ${candidates.length || "available"} documented components.`,
+              details: {
+                component: name,
+                status: lastStatus,
+                urls,
+                ...(suggestions.length ? { suggestions } : {}),
+              },
+            }
+          )
         }
       }
     } catch (error) {
       handleError(error)
     }
   })
+
+/**
+ * Every documented component name, or an empty list when the registry index
+ * is unreachable. Used only to answer "did you mean" — a failure to fetch it
+ * must never turn a 404 about one component into a different failure.
+ */
+async function documentedComponentNames(): Promise<string[]> {
+  const index = await getShadcnRegistryIndex()
+  return (index ?? [])
+    .filter((item) => item.type === "registry:ui")
+    .map((item) => item.name)
+}

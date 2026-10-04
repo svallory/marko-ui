@@ -10,6 +10,7 @@ import {
   getWantedSkills,
   installAgentSkills,
 } from "@/src/agents/skills"
+import { RegistryErrorCode } from "@/src/registry/errors"
 import { getConfig } from "@/src/utils/get-config"
 import { getProjectComponents } from "@/src/utils/get-project-info"
 import { CommandError, handleError } from "@/src/utils/handle-error"
@@ -98,7 +99,11 @@ agents
             `Agent setup is out of date: ${problems.join(
               "; "
             )}. Run ${highlighter.info("marko-ui agents sync")}.`,
-            { exitCode: 3 }
+            {
+              exitCode: 3,
+              code: RegistryErrorCode.CHECK_FAILED,
+              details: { problems, cwd: options.cwd },
+            }
           )
         }
         if (!options.silent) {

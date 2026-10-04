@@ -290,8 +290,11 @@ describe("getMonorepoTargets", () => {
 })
 
 describe("formatMonorepoMessage", () => {
-  it("should log the monorepo message with targets", () => {
-    const logSpy = vi.spyOn(logger, "log")
+  // This message is a diagnostic about a command that cannot run, so it is
+  // written through logger.error (stderr) rather than logger.log (stdout):
+  // stdout must carry only the command's result.
+  it("should log the monorepo message with targets on stderr", () => {
+    const errorSpy = vi.spyOn(logger, "error")
     const breakSpy = vi.spyOn(logger, "break")
 
     formatMonorepoMessage("init", [
@@ -300,38 +303,49 @@ describe("formatMonorepoMessage", () => {
     ])
 
     expect(breakSpy).toHaveBeenCalled()
-    const allLogCalls = logSpy.mock.calls.map((c) => c[0] as string)
+    const allLogCalls = errorSpy.mock.calls.map((c) => c[0] as string)
 
     // Should mention monorepo root.
     expect(allLogCalls.some((msg) => msg.includes("monorepo root"))).toBe(true)
     // Should mention -c flag.
     expect(allLogCalls.some((msg) => msg.includes("-c"))).toBe(true)
-    // Should list both targets.
+    // Should list both targets, under this CLI's own name.
     expect(
-      allLogCalls.some((msg) => msg.includes("shadcn init -c apps/web"))
+      allLogCalls.some((msg) => msg.includes("marko-ui init -c apps/web"))
     ).toBe(true)
     expect(
-      allLogCalls.some((msg) => msg.includes("shadcn init -c apps/docs"))
+      allLogCalls.some((msg) => msg.includes("marko-ui init -c apps/docs"))
     ).toBe(true)
 
-    logSpy.mockRestore()
+    errorSpy.mockRestore()
     breakSpy.mockRestore()
   })
 
   it("should use the correct command name", () => {
-    const logSpy = vi.spyOn(logger, "log")
+    const errorSpy = vi.spyOn(logger, "error")
 
     formatMonorepoMessage("add [component]", [
       { name: "apps/web", hasConfig: false },
     ])
 
-    const allLogCalls = logSpy.mock.calls.map((c) => c[0] as string)
+    const allLogCalls = errorSpy.mock.calls.map((c) => c[0] as string)
     expect(
       allLogCalls.some((msg) =>
-        msg.includes("shadcn add [component] -c apps/web")
+        msg.includes("marko-ui add [component] -c apps/web")
       )
     ).toBe(true)
 
-    logSpy.mockRestore()
+    errorSpy.mockRestore()
+  })
+
+  it("never advertises another CLI", () => {
+    const errorSpy = vi.spyOn(logger, "error")
+
+    formatMonorepoMessage("diff", [{ name: "apps/web", hasConfig: false }])
+
+    const allLogCalls = errorSpy.mock.calls.map((c) => c[0] as string)
+    expect(allLogCalls.join("\n")).not.toContain("shadcn")
+
+    errorSpy.mockRestore()
   })
 })

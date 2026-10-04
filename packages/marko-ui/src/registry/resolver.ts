@@ -10,6 +10,7 @@ import {
 } from "@/src/registry/builder"
 import { setRegistryHeaders } from "@/src/registry/context"
 import {
+  RegistryItemNotFoundError,
   RegistryNotConfiguredError,
   RegistryNotFoundError,
   RegistryParseError,
@@ -22,6 +23,7 @@ import {
   isLocalFile,
   isUniversalRegistryItem,
   isUrl,
+  parseUrl,
 } from "@/src/registry/utils"
 import {
   RegistryFontItem,
@@ -32,8 +34,7 @@ import {
   registryResolvedItemsTreeSchema,
 } from "@/src/schema"
 import { Config } from "@/src/utils/get-config"
-import { getProjectTailwindVersionFromConfig } from "@/src/utils/get-project-info"
-import { buildTailwindThemeColorsFromCssVars } from "@/src/utils/updaters/update-tailwind-config"
+import { closestNames } from "@/src/utils/suggest"
 import deepmerge from "deepmerge"
 import { z } from "zod"
 
@@ -172,11 +173,43 @@ async function fetchBareRegistryItem(
     }
   }
 
-  const [result] = await fetchRegistry([flatPath], options)
+  const [result] = await fetchRegistry([flatPath], options).catch(
+    async (error: unknown) => {
+      // A bare name that 404s is almost always a typo, and every command
+      // that resolves items (`add`, `show`, `diff`) goes through here — this
+      // is the one place where a "did you mean" can be attached to all of
+      // them. The index lookup is best-effort: if it fails, the original
+      // NOT_FOUND stands unchanged (and a network failure to reach the index
+      // must not mask the fact that the item itself is missing).
+      if (
+        !(error instanceof RegistryNotFoundError) ||
+        item.includes("/") ||
+        item.startsWith("@")
+      ) {
+        throw error
+      }
+      throw new RegistryItemNotFoundError(item, {
+        suggestions: await closestRegistryNames(item),
+      })
+    }
+  )
   try {
     return registryItemSchema.parse(result)
   } catch (error) {
     throw new RegistryParseError(item, error)
+  }
+}
+
+/** The closest registry item names to `name`, or [] when the index is unreachable. */
+async function closestRegistryNames(name: string): Promise<string[]> {
+  try {
+    const index = await getShadcnRegistryIndex()
+    return closestNames(
+      name,
+      (index ?? []).map((entry) => entry.name)
+    )
+  } catch {
+    return []
   }
 }
 
@@ -653,7 +686,7 @@ async function resolveDependenciesRecursively(
             items.push(...nested.items)
             registryNames.push(...nested.registryNames)
           }
-        } catch (error) {
+        } catch {
           // If we can't fetch the registry item, that's okay - we'll still
           // include the name.
         }
@@ -712,8 +745,8 @@ function extractItemIdentifierFromDependency(dependency: string) {
     }
   }
 
-  if (isUrl(dependency)) {
-    const url = new URL(dependency)
+  const url = parseUrl(dependency)
+  if (url) {
     const pathname = url.pathname
     const match = pathname.match(/\/([^/]+)\.json$/)
     const name = match ? match[1] : path.basename(pathname, ".json")

@@ -2,6 +2,7 @@ import path from "path"
 import { configWithDefaults } from "@/src/registry/config"
 import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
 import { clearRegistryContext } from "@/src/registry/context"
+import { RegistryErrorCode } from "@/src/registry/errors"
 import {
   findUnknownSearchTypes,
   printSearchResults,
@@ -20,6 +21,7 @@ import {
 } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
+import { setJsonMode } from "@/src/utils/output-mode"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
 import { Command } from "commander"
 import fsExtra from "fs-extra"
@@ -59,6 +61,8 @@ export const search = new Command()
   .option("--json", "output as JSON.", false)
   .action(async (registries: string[], opts) => {
     try {
+      setJsonMode(Boolean(opts.json))
+
       const options = searchOptionsSchema.parse({
         cwd: path.resolve(opts.cwd),
         query: opts.query,
@@ -86,7 +90,12 @@ export const search = new Command()
           logger.error(`Valid types: ${SEARCHABLE_TYPES.join(", ")}.`)
           logger.break()
           // Multi-line message already printed above.
-          throw new CommandError(`Unknown search type.`, { formatted: true })
+          throw new CommandError(`Unknown search type.`, {
+            formatted: true,
+            code: RegistryErrorCode.USAGE_ERROR,
+            suggestion: `Pass one of the searchable types, e.g. --type ui.`,
+            details: { unknownTypes, validTypes: SEARCHABLE_TYPES },
+          })
         }
       }
 
@@ -151,6 +160,9 @@ export const search = new Command()
         logger.break()
         throw new CommandError("A registry or namespace is required.", {
           formatted: true,
+          code: RegistryErrorCode.USAGE_ERROR,
+          suggestion:
+            "Name a registry or namespace, e.g. marko-ui search @marko-ui.",
         })
       }
 
@@ -198,6 +210,10 @@ export const search = new Command()
         logger.break()
         throw new CommandError("No registries are configured.", {
           formatted: true,
+          code: RegistryErrorCode.NOT_CONFIGURED,
+          suggestion:
+            'Add a "registries" entry to components.json, or pass a registry or namespace explicitly.',
+          details: { cwd: options.cwd },
         })
       }
 

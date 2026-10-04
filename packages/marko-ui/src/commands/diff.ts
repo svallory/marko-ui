@@ -1,6 +1,7 @@
 import { existsSync } from "fs"
 import path from "path"
 import { clearRegistryContext } from "@/src/registry/context"
+import { RegistryErrorCode } from "@/src/registry/errors"
 import { dryRunComponents } from "@/src/utils/dry-run"
 import { getConfig } from "@/src/utils/get-config"
 import {
@@ -54,7 +55,8 @@ export const diff = new Command()
 
       if (!existsSync(options.cwd)) {
         throw new CommandError(
-          `The path ${options.cwd} does not exist. Please try again.`
+          `The path ${options.cwd} does not exist. Please try again.`,
+          { code: RegistryErrorCode.USAGE_ERROR, details: { cwd: options.cwd } }
         )
       }
 
@@ -64,16 +66,29 @@ export const diff = new Command()
           const targets = await getMonorepoTargets(options.cwd)
           if (targets.length > 0) {
             formatMonorepoMessage("diff [component]", targets)
-            throw new CommandError("Run diff from a workspace, not the monorepo root.", {
-              formatted: true,
-            })
+            throw new CommandError(
+              "You are running diff from a monorepo root. Use the -c flag to specify a workspace.",
+              {
+                code: RegistryErrorCode.MONOREPO_ROOT,
+                formatted: true,
+                suggestion: `Run diff with -c <workspace>, e.g. marko-ui diff -c ${targets[0].name}.`,
+                details: {
+                  cwd: options.cwd,
+                  targets: targets.map((target) => target.name),
+                },
+              }
+            )
           }
         }
 
         throw new CommandError(
           `Configuration is missing. Please run ${highlighter.success(
             `init`
-          )} to create a components.json file.`
+          )} to create a components.json file.`,
+          {
+            code: RegistryErrorCode.NOT_CONFIGURED,
+            details: { cwd: options.cwd },
+          }
         )
       }
 

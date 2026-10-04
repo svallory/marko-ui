@@ -24,6 +24,7 @@ import {
 import { CleanExit, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
+import { setJsonMode } from "@/src/utils/output-mode"
 import { Command } from "commander"
 import { z } from "zod"
 
@@ -110,6 +111,8 @@ export const doctor = new Command()
   .option("--json", "output as JSON.", false)
   .action(async (opts) => {
     try {
+      setJsonMode(Boolean(opts.json))
+
       const options = doctorOptionsSchema.parse({
         cwd: path.resolve(opts.cwd),
         json: opts.json,

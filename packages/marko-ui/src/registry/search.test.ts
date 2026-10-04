@@ -972,7 +972,9 @@ describe("printSearchResults", () => {
   })
 
   it("prints a warning for each skipped registry", async () => {
-    const log = vi.spyOn(console, "log").mockImplementation(() => {})
+    // Warnings are diagnostics, not results: they go to stderr so a caller
+    // reading stdout gets the result and nothing else.
+    const warn = vi.spyOn(console, "error").mockImplementation(() => {})
 
     printSearchResults(
       {
@@ -997,15 +999,15 @@ describe("printSearchResults", () => {
       }
     )
 
-    expect(log).toHaveBeenCalledWith(
+    expect(warn).toHaveBeenCalledWith(
       expect.stringContaining("Skipped @broken: Not found")
     )
 
-    log.mockRestore()
+    warn.mockRestore()
   })
 
   it("prints a warning when no items are found", async () => {
-    const log = vi.spyOn(console, "log").mockImplementation(() => {})
+    const warn = vi.spyOn(console, "error").mockImplementation(() => {})
 
     printSearchResults(
       {
@@ -1023,11 +1025,11 @@ describe("printSearchResults", () => {
       }
     )
 
-    expect(log).toHaveBeenCalledWith(
+    expect(warn).toHaveBeenCalledWith(
       expect.stringContaining('No items found matching "missing" in @marko-ui')
     )
 
-    log.mockRestore()
+    warn.mockRestore()
   })
 })
 

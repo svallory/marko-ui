@@ -33,6 +33,32 @@ No `components.json` means marko-ui is not set up: run `marko-ui init` (add `--a
 
 `marko-ui manifest` prints every command, flag, exit code, and error code as JSON when you need the exact surface; `marko-ui manifest <command>` prints just that one command (name or alias) plus the exit codes — cheaper when you are checking a single flag. An unknown name is a usage error (exit 2).
 
+## Reading errors
+
+**stdout carries the result; stderr carries every problem.** If you run the CLI with a pipe or capture stdout, you get the command's payload and nothing else — no log line, no warning, no failure text. Never parse stderr as data.
+
+With `--json`, a failure is **one** JSON object on stdout and nothing else, in this shape:
+
+```json
+{
+  "$type": "marko-ui/error",
+  "version": 1,
+  "ok": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Registry item \"buton\" was not found. Did you mean \"button\"?",
+    "suggestion": "Did you mean \"button\"?",
+    "details": { "itemName": "buton", "suggestions": ["button"] }
+  }
+}
+```
+
+Branch on `error.code`, never on the message text. Every code is listed in `marko-ui manifest` under `errorCodes` — the common ones are `NOT_FOUND` (unknown item), `NOT_CONFIGURED` (no `components.json`, or a registry that isn't configured), `INVALID_CONFIG`, `NETWORK_ERROR`/`FETCH_ERROR` (registry unreachable), `MISSING_ENV_VARS`, `MONOREPO_ROOT` (run from a workspace, not the repo root), `USAGE_ERROR` (bad invocation), `CHECK_FAILED` (a `doctor`/`validate`/`agents --check` found problems), and `PROJECT_NOT_FOUND` (no Marko project at that directory).
+
+`details.suggestions` carries "did you mean" candidates when the registry index was reachable, so you can retry without parsing prose. An unknown item name in `docs`, `show`, `add` or `diff` is the common case.
+
+Exit codes are unchanged: `0` ok · `1` operational failure · `2` usage error · `3` a check found problems · `4` network or registry unreachable.
+
 ## Using components
 
 ```marko
