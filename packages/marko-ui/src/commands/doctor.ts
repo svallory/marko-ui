@@ -9,6 +9,10 @@ import {
 import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
 import { getConfig, isAliasBacked } from "@/src/utils/get-config"
 import {
+  getPackageManager,
+  type PackageManager,
+} from "@/src/utils/get-package-manager"
+import {
   getSourceRoot,
   resolveConventionalAlias,
 } from "@/src/utils/source-root"
@@ -35,7 +39,61 @@ export type DoctorCheck = {
   label: string
   status: CheckStatus
   message?: string
+  /**
+   * The concrete command (or one-line action) that makes this check pass.
+   * Set on every check that CAN fail and has one — an agent reads doctor's
+   * output and acts on it, so "what do I type" belongs next to the failure
+   * instead of being re-derived from prose. Every failing check in the table
+   * below has one; `runDoctorChecks`' test asserts that.
+   */
+  fix?: string
 }
+
+/**
+ * The project's real install command: `bun add`, `npm install`, `yarn add`…
+ * `fix` values are plain text (an agent runs them out of `--json`, where
+ * markdown backticks are noise), so this returns a bare command.
+ *
+ * Deno needs the `npm:` specifier or it resolves against jsr, and it has no
+ * `create` subcommand at all — callers get null from `scaffoldCommand` and
+ * fall back to a sentence rather than a command that does not exist.
+ */
+function installCommand(
+  packageManager: PackageManager,
+  packages: string,
+  dev = false
+) {
+  const names = packages
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((name) => (packageManager === "deno" ? `npm:${name}` : name))
+  if (packageManager === "deno") {
+    return ["deno", "add", dev ? "--dev" : "", ...names].filter(Boolean).join(" ")
+  }
+  const verb = packageManager === "npm" ? "install" : "add"
+  return [packageManager, verb, dev ? "-D" : "", packages]
+    .filter(Boolean)
+    .join(" ")
+}
+
+/** `<pm> create marko`, or null where the package manager has no `create`. */
+function scaffoldCommand(packageManager: PackageManager) {
+  return packageManager === "deno" ? null : `${packageManager} create marko`
+}
+
+/** Every check `runDoctorChecks` can emit, in the order it emits them. */
+export const DOCTOR_CHECK_IDS = [
+  "project",
+  "framework",
+  "typescript",
+  "config",
+  "tailwind",
+  "css",
+  "aliases",
+  "registry",
+  "dependencies",
+  "registries",
+] as const
 
 /**
  * Health checks for a marko-ui project. Exit codes are a CI contract:
@@ -88,6 +146,9 @@ export const doctor = new Command()
           if (check.message) {
             logger.log(`  ${check.message}`)
           }
+          if (check.fix) {
+            logger.log(`  ${highlighter.info("fix:")} ${check.fix}`)
+          }
         }
         logger.break()
         if (failed.length) {
@@ -127,6 +188,11 @@ function parseLeadingMajorMinorPatch(range: string | undefined): string | undefi
 
 export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
   const checks: DoctorCheck[] = []
+  // The project's real package manager: every `fix` below is a command a
+  // human or agent will paste, and `npm install` is wrong advice in a bun
+  // project (and vice versa).
+  const pm = await getPackageManager(cwd)
+  const scaffold = scaffoldCommand(pm)
 
   // 1. Project exists.
   const hasPackageJson = existsSync(path.resolve(cwd, "package.json"))
@@ -134,9 +200,12 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
     id: "project",
     label: "package.json found",
     status: hasPackageJson ? "pass" : "fail",
-    message: hasPackageJson
+    message: hasPackageJson ? undefined : `No package.json at ${cwd}.`,
+    fix: hasPackageJson
       ? undefined
-      : `No package.json at ${cwd}. Create a Marko app first.`,
+      : scaffold
+        ? `${scaffold} (in ${cwd})`
+        : "Scaffold a Marko app in this directory, then re-run doctor.",
   })
   if (!hasPackageJson) {
     return checks
@@ -160,6 +229,11 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
     message: isMarko
       ? undefined
       : "No marko/@marko/run dependency found. marko-ui components require a Marko project.",
+    fix: isMarko
+      ? undefined
+      : scaffold
+        ? `${installCommand(pm, "marko @marko/run")} — or scaffold a new project with ${scaffold}`
+        : installCommand(pm, "marko @marko/run"),
   })
 
   // 2b. TypeScript version. TS 7 (the native `tsgo` compiler) ships no
@@ -184,7 +258,11 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
       status: typescriptMajor !== undefined && typescriptMajor >= 7 ? "fail" : "pass",
       message:
         typescriptMajor !== undefined && typescriptMajor >= 7
-          ? "TypeScript 7 (tsgo) is not supported — it ships no in-process compiler API. Downgrade to typescript ^5 or ^6."
+          ? "TypeScript 7 (tsgo) is not supported — it ships no in-process compiler API."
+          : undefined,
+      fix:
+        typescriptMajor !== undefined && typescriptMajor >= 7
+          ? installCommand(pm, "typescript@^6", true)
           : undefined,
     })
   }
@@ -209,7 +287,12 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
       ? undefined
       : configError
         ? `components.json is invalid: ${configError}`
-        : "No components.json found. Run `marko-ui init`.",
+        : "No components.json found.",
+    fix: config
+      ? undefined
+      : configError
+        ? "Fix the components.json error named in this message, or re-run marko-ui init to rewrite the file"
+        : "marko-ui init (add --agents to write the agent docs too)",
   })
 
   // 4. Tailwind v4.
@@ -225,6 +308,12 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
         : tailwindVersion
           ? `Tailwind ${tailwindVersion} detected — marko-ui targets v4 (CSS-first).`
           : "tailwindcss is not installed.",
+    fix:
+      tailwindVersion === "v4"
+        ? undefined
+        : tailwindVersion
+          ? `${installCommand(pm, "tailwindcss@^4 @tailwindcss/vite@^4", true)}, then migrate the stylesheet to v4 (https://marko-ui.saulo.tech/docs/theming)`
+          : `${installCommand(pm, "tailwindcss@^4 @tailwindcss/vite@^4", true)} and register @tailwindcss/vite in the Vite config`,
   })
 
   // 5. CSS entry file.
@@ -247,6 +336,12 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
           ? undefined
           : `${config.tailwind.css} does not import tailwindcss.`
         : `${config.tailwind.css} does not exist.`,
+      fix:
+        cssExists && hasTailwindImport
+          ? undefined
+          : cssExists
+            ? `Add @import "tailwindcss"; to ${config.tailwind.css}`
+            : `Create ${config.tailwind.css} with @import "tailwindcss"; and import it from the root layout`,
     })
 
     // 6. Aliases resolve. An alias nothing backs (no tsconfig paths, package
@@ -271,6 +366,9 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
     message: Array.isArray(index)
       ? undefined
       : registryError ?? "Could not fetch index.",
+    fix: Array.isArray(index)
+      ? undefined
+      : "Check the network, then the registry URL (REGISTRY_URL, or registries in components.json)",
   })
 
   // 8. Component npm dependencies. The registry index declares each
@@ -303,11 +401,10 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
       message: missing.size
         ? `Installed components declare dependencies missing from package.json: ${[
             ...missing,
-          ]
-            .sort()
-            .join(", ")}. Install them (e.g. \`bun add ${[...missing]
-            .sort()
-            .join(" ")}\`).`
+          ].sort().join(", ")}`
+        : undefined,
+      fix: missing.size
+        ? installCommand(pm, [...missing].sort().join(" "))
         : undefined,
     })
   } else {
@@ -316,6 +413,7 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
       label: "Component npm dependencies",
       status: "warn",
       message: "Skipped: registry index unreachable.",
+      fix: "marko-ui show <name> --deps lists what an installed component needs, once the registry check above passes",
     })
   }
 
@@ -348,6 +446,9 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
               .map(([name]) => name)
               .join(", ")}.`
           : undefined,
+      fix: nonMarko.length
+        ? `Remove ${nonMarko.map(([name]) => name).join(", ")} from registries in components.json (they ship non-Marko source)`
+        : undefined,
     })
   }
 
@@ -374,6 +475,7 @@ export async function checkAliases(config: NonNullable<Awaited<ReturnType<typeof
     id: "aliases",
     label,
     status: "fail",
-    message: `${alias} is not backed by tsconfig paths, package.json imports or a workspace export. Add one, or change aliases.components in components.json.`,
+    message: `${alias} is not backed by tsconfig paths, package.json imports or a workspace export.`,
+    fix: `Add "${alias}": ["./${sourceRoot}/*"] to compilerOptions.paths in tsconfig.json, or point aliases.components at an alias you already resolve`,
   }
 }

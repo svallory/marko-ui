@@ -28,10 +28,10 @@ No `components.json` means marko-ui is not set up: run `marko-ui init` (add `--a
 3. `marko-ui show <name>` — the registry item as JSON; `--files` lists what would be written, `--deps` lists npm and registry dependencies.
 4. `marko-ui add <name> -y` — install (copy distribution). `--dry-run` previews the file changes; `--overwrite` replaces local files.
 5. `marko-ui diff <name>` — compare local edits against the registry version.
-6. `marko-ui doctor --json` — health checks; exit code 3 means something is broken and each failed check names its fix. Run it after `init`/`add` and before reporting the work done.
+6. `marko-ui doctor --json` — health checks; exit code 3 means something is broken and each failed check carries a `fix` field with the command (or one-line action) that fixes it. Run it after `init`/`add` and before reporting the work done.
 7. `marko-ui agents sync` — refresh the component list in `AGENTS.md` after adding or removing components.
 
-`marko-ui manifest` prints every command, flag, exit code, and error code as JSON when you need the exact surface.
+`marko-ui manifest` prints every command, flag, exit code, and error code as JSON when you need the exact surface; `marko-ui manifest <command>` prints just that one command (name or alias) plus the exit codes — cheaper when you are checking a single flag. An unknown name is a usage error (exit 2).
 
 ## Using components
 

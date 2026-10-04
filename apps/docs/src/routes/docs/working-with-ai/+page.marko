@@ -148,7 +148,7 @@ static const JSON_ENVELOPE = `{
 
   <ul>
     <li>the distribution (<code>copy</code> or <code>import</code>) and what that means for editing components;</li>
-    <li>the installed components with their descriptions (copy distribution);</li>
+    <li>the installed component names (copy distribution) — names only: a description per component costs tokens on every task and duplicates <code>marko-ui docs &lt;name&gt;</code>;</li>
     <li>the CLI commands the agent should use — <code>docs</code>, <code>search</code>, <code>add</code>, <code>show</code>, <code>doctor</code>, <code>agents sync</code>. <code>add</code> and <code>agents sync</code> appear in the section on the copy distribution; the import distribution lists <code>agents sync</code> only;</li>
     <li>an instruction to load the <code>marko-ui</code> and <code>marko6</code> skills before writing component code.</li>
   </ul>
@@ -287,6 +287,13 @@ static const JSON_ENVELOPE = `{
     the exit-code and error-code contracts. An agent can call it once to learn the full
     surface in a single step. The <a href="/docs/cli">CLI page</a> is generated from
     this same manifest.
+  </p>
+
+  <p>
+    <code>marko-ui manifest &lt;command&gt;</code> narrows that to a single command
+    (by name or alias, subcommands included) plus the exit codes — most of the cost
+    avoided when the only question is "does this flag exist?". An unknown name is a
+    usage error (exit 2).
   </p>
 
   <h3>Exit codes</h3>
