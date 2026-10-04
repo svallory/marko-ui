@@ -295,40 +295,82 @@ const EXACT_MATCH_SCORE = 1
 const PREFIX_MATCH_SCORE = 0.85
 const TYPO_MATCH_SCORE = 0.6
 
+// Which kinds of match a query word is allowed to make in each field.
+//
+// `name` and `title` are curated identifiers, so all three kinds are allowed
+// there (subject to the word's length). A `description` is prose, where only
+// a whole word counts: a prefix match in prose is how `-q butto` came to
+// return every item whose description happens to contain the word "button",
+// and a near-miss word in prose is a different word far more often than a
+// typo.
+type MatchRules = { exact: boolean; prefix: boolean; typo: boolean }
+
+// A whole word is only evidence in a description if it is longer than one
+// character: "a" opens most descriptions in the registry.
+const MIN_DESCRIPTION_MATCH_LENGTH = 2
+
+// A one-character prefix matches almost every name (`a` opens accordion,
+// alert, aspect-ratio, avatar), so it needs at least two characters before it
+// counts as evidence.
+const MIN_PREFIX_MATCH_LENGTH = 2
+
+const identifierMatchRules = (word: string, exactOnly: boolean): MatchRules =>
+  exactOnly
+    ? { exact: true, prefix: false, typo: false }
+    : {
+        exact: true,
+        prefix: word.length >= MIN_PREFIX_MATCH_LENGTH,
+        typo: allowedSearchEdits(word.length) > 0,
+      }
+
+const descriptionMatchRules = (word: string, exactOnly: boolean): MatchRules => ({
+  exact: !exactOnly && word.length >= MIN_DESCRIPTION_MATCH_LENGTH,
+  prefix: false,
+  typo: false,
+})
+
+// Words dropped from a query before matching. They carry no signal in a
+// registry search, and matching them actively hurts: every item whose
+// description contains "a" or "the" would count a matched word, which both
+// inflates its ranking and puts it in the results at all.
+export const SEARCH_STOPWORDS = new Set([
+  "a",
+  "an",
+  "and",
+  "are",
+  "as",
+  "at",
+  "be",
+  "by",
+  "for",
+  "from",
+  "in",
+  "is",
+  "it",
+  "of",
+  "on",
+  "or",
+  "the",
+  "to",
+  "up",
+  "was",
+  "with",
+])
+
 // Splits a query into comparable words: lowercased, split on every
 // non-alphanumeric character, so `Date Picker`, `date-picker` and
-// `date picker` all become ["date", "picker"].
+// `date picker` all become ["date", "picker"]. The same split is applied to an
+// item's fields, so a query word and an item word are always comparable.
 //
 // Note this does NOT split camelCase. A query is prose someone typed, so
 // `CaLeNdAr` is one word mistyped, not four — splitting it would match it
-// against unrelated items. camelCase is split on the item side only (see
-// searchTokens), where it is a real naming convention.
+// against unrelated items. Registry names and titles are kebab-case or
+// space-separated, so the item side gains nothing from splitting them either.
 export function tokenizeSearchText(value: string) {
   return value
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .filter(Boolean)
-}
-
-// Words to compare a query word against for one field. Besides the field's
-// plain words this includes its camelCase words (`useMobile` yields `use` and
-// `mobile`) and each pair of adjacent words joined without a separator, so a
-// single-word query still finds a multi-word name (`datepicker` finds
-// `date-picker`).
-function searchTokens(value: string) {
-  const words = tokenizeSearchText(value)
-  const camelWords = tokenizeSearchText(
-    value.replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-  )
-  const joined: string[] = []
-
-  for (const sequence of [words, camelWords]) {
-    for (let index = 0; index + 1 < sequence.length; index++) {
-      joined.push(sequence[index] + sequence[index + 1])
-    }
-  }
-
-  return Array.from(new Set(words.concat(camelWords, joined)))
 }
 
 // How many typos a word of a given length may contain and still count as the
@@ -404,24 +446,20 @@ function searchEditDistance(a: string, b: string, limit: number) {
 }
 
 // Scores one query word against one word of an item. Returns 0 when they do
-// not match at all.
-function scoreSearchWord(
-  word: string,
-  token: string,
-  options: { allowTypos: boolean }
-) {
+// not match at all, or when the match kind is not allowed for this field.
+function scoreSearchWord(word: string, token: string, rules: MatchRules) {
   if (token === word) {
-    return EXACT_MATCH_SCORE
+    return rules.exact ? EXACT_MATCH_SCORE : 0
   }
 
-  if (token.startsWith(word)) {
+  if (rules.prefix && token.startsWith(word)) {
     return (
       PREFIX_MATCH_SCORE +
       (1 - PREFIX_MATCH_SCORE) * (word.length / token.length)
     )
   }
 
-  if (!options.allowTypos) {
+  if (!rules.typo) {
     return 0
   }
 
@@ -456,7 +494,8 @@ type ScoredItem<T> = {
 function scoreSearchItem<T extends SearchableItem>(
   item: T,
   words: string[],
-  tokensByField: Record<SearchField, string[]>
+  tokensByField: Record<SearchField, string[]>,
+  options: { exactOnly: boolean }
 ): ScoredItem<T> | null {
   let matchedWords = 0
   let score = 0
@@ -471,13 +510,13 @@ function scoreSearchItem<T extends SearchableItem>(
       }
 
       const weight = SEARCH_FIELD_WEIGHTS[field]
-      // Typo tolerance is limited to the curated identifier fields. In free
-      // prose a near-miss word is almost always a different word than the one
-      // that was searched for, so a typo match there is noise, not a find.
-      const allowTypos = field !== "description"
+      const rules =
+        field === "description"
+          ? descriptionMatchRules(word, options.exactOnly)
+          : identifierMatchRules(word, options.exactOnly)
 
       for (const token of tokensByField[field]) {
-        const tokenScore = scoreSearchWord(word, token, { allowTypos })
+        const tokenScore = scoreSearchWord(word, token, rules)
         best = Math.max(best, weight * tokenScore)
       }
     }
@@ -502,13 +541,26 @@ export function searchItems<
   } = SearchableItem,
 >(items: T[], options: { query: string; limit?: number }) {
   const limit = options.limit ?? 100
-  // Every word of the query must be a plausible spelling of a word in the
-  // item. An item matching all of them outranks one that matches a subset, and
-  // an item matching none of them is not a result at all.
-  const words = tokenizeSearchText(options.query)
+  const queryWords = tokenizeSearchText(options.query)
 
-  if (words.length === 0) {
+  // An empty query is not a filter at all.
+  if (queryWords.length === 0) {
     return z.array(searchableItemSchema).parse(items.slice(0, limit))
+  }
+
+  // Stopwords are dropped rather than matched. Counting one as a matched word
+  // would inflate an item's ranking, and matching it at all would put back
+  // every item whose description happens to contain "a" or "the".
+  let words = queryWords.filter((word) => !SEARCH_STOPWORDS.has(word))
+
+  // A query of nothing but stopwords (`a`, `of the`) carries no signal, but
+  // it is not an empty query either: it falls back to the strictest rule that
+  // can still find something — an item whose name or title IS that word. In a
+  // registry of `button` and `calendar` that finds nothing, which is the
+  // right answer for `-q a`.
+  const exactOnly = words.length === 0
+  if (exactOnly) {
+    words = queryWords
   }
 
   const scored: ScoredItem<T>[] = []
@@ -517,13 +569,13 @@ export function searchItems<
     const tokensByField = SEARCH_FIELDS.reduce(
       (tokens, field) => {
         const value = item[field]
-        tokens[field] = value ? searchTokens(value) : []
+        tokens[field] = value ? tokenizeSearchText(value) : []
         return tokens
       },
       {} as Record<SearchField, string[]>
     )
 
-    const scoredItem = scoreSearchItem(item, words, tokensByField)
+    const scoredItem = scoreSearchItem(item, words, tokensByField, { exactOnly })
     if (scoredItem) {
       scored.push(scoredItem)
     }

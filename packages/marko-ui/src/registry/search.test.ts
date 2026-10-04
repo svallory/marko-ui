@@ -12,6 +12,7 @@ import {
   searchItems,
   SEARCH_CONCURRENCY,
   SEARCH_RESULT_DESCRIPTION_MAX_LENGTH,
+  SEARCH_STOPWORDS,
   SEARCHABLE_TYPES,
   searchRegistries,
   tokenizeSearchText,
@@ -1385,6 +1386,13 @@ const REGISTRY_FIXTURE = [
     description: "Displays a button or a component that looks like a button.",
   },
   {
+    name: "button-group",
+    title: "Button Group",
+    type: "registry:ui",
+    description:
+      "A container that groups related buttons together, merging their borders and corners.",
+  },
+  {
     name: "calendar",
     title: "Calendar",
     type: "registry:ui",
@@ -1563,24 +1571,73 @@ describe("search relevance", () => {
     expect(names(searchFixture("picker"))).toContain("color-picker")
   })
 
-  it("matches a single word across two joined words", () => {
-    expect(names(searchFixture("datepicker"))).toContain("date-picker")
-  })
-
-  it("matches a camelCase name", () => {
-    const items = [{ name: "useMobile" }, { name: "useTooltip" }]
-
-    expect(names(searchItems(items, { query: "mobile" }))).toEqual([
-      "useMobile",
-    ])
-  })
-
-  it("still tolerates a truncated word", () => {
+  it("still tolerates a truncated word in a name", () => {
     const results = names(searchFixture("butto"))
 
-    expect(results[0]).toBe("button")
-    // Description-only matches remain, ranked below the name match.
-    expect(results).toContain("dropdown-menu")
+    expect(results).toEqual(["button", "button-group"])
+  })
+
+  it("does not prefix-match inside a description", () => {
+    // "button" opens the description of dropdown-menu, select and others.
+    // Those are whole-word matches, not prefix matches, so `butto` — a
+    // prefix of "button" — must not reach them.
+    const results = names(searchFixture("butto"))
+
+    expect(results).not.toContain("dropdown-menu")
+    expect(results).not.toContain("select")
+
+    // The whole word still matches them.
+    expect(names(searchFixture("button"))).toContain("dropdown-menu")
+  })
+
+  it("matches nothing for a one-character query", () => {
+    // "a" opens nearly every description and prefixes half the names.
+    expect(searchFixture("a")).toEqual([])
+    expect(searchFixture("x")).toEqual([])
+  })
+
+  it("only lets a one-character query match a name that IS that character", () => {
+    const items = [
+      { name: "a", title: "A", description: "Nothing to see." },
+      { name: "ab", title: "AB", description: "Nothing to see." },
+      { name: "ba", title: "BA", description: "Nothing to see." },
+    ]
+
+    expect(names(searchItems(items, { query: "a" }))).toEqual(["a"])
+  })
+
+  it("drops stopwords instead of matching them", () => {
+    // Every one of these appears in descriptions across the fixture; as a
+    // query word they must not pull those items in or count as a match.
+    for (const word of SEARCH_STOPWORDS) {
+      expect(searchFixture(word)).toEqual([])
+    }
+  })
+
+  it("ignores stopwords inside a longer query", () => {
+    // Same ranking as the query without them, and neither adds noise.
+    expect(names(searchFixture("date a picker"))).toEqual(
+      names(searchFixture("date picker"))
+    )
+    expect(names(searchFixture("picker with a date"))).toEqual(
+      names(searchFixture("picker date"))
+    )
+    expect(names(searchFixture("date of the picker"))).toEqual(
+      names(searchFixture("date picker"))
+    )
+  })
+
+  it("still matches a stopword-shaped word that is part of a real name", () => {
+    // "use-mobile" is a real item: `use` is not a stopword, and searching it
+    // must still find the hook.
+    expect(names(searchFixture("use"))).toContain("use-mobile")
+  })
+
+  it("matches a camelCase query as the single word it is", () => {
+    expect(names(searchFixture("CaLeNdAr"))).toEqual([
+      "calendar",
+      "date-picker",
+    ])
   })
 
   it("tolerates a typo in a name", () => {
@@ -1598,10 +1655,6 @@ describe("search relevance", () => {
     // calendar matches on its own name; date-picker only mentions a calendar
     // in its description, so it ranks below.
     expect(names(searchFixture("CALENDAR"))).toEqual([
-      "calendar",
-      "date-picker",
-    ])
-    expect(names(searchFixture("CaLeNdAr"))).toEqual([
       "calendar",
       "date-picker",
     ])

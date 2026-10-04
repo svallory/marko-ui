@@ -23,7 +23,7 @@ No `components.json` means marko-ui is not set up: run `marko-ui init` (add `--a
 
 ## Workflow
 
-1. `marko-ui search -q <query>` — find a component (`--json` for machine output). It matches whole words against each item's name, title and description, so extra words are matched better and items matching none of your words are left out. Every item costs context, so search before guessing a name. The installed ones are listed in the project's `AGENTS.md`.
+1. `marko-ui search -q <query>` — find a component (`--json` for machine output). It matches whole words against each item's name, title and description; each extra word narrows the ranking, and items matching none of your words are left out. Every item costs context, so search before guessing a name. The installed ones are listed in the project's `AGENTS.md`.
 2. `marko-ui docs <name>` — usage, props, keyboard contract, and examples as markdown. **Read this before writing markup for a component you have not used in this session.** `marko-ui docs --list` prints the index.
 3. `marko-ui show <name>` — the registry item as JSON; `--files` lists what would be written, `--deps` lists npm and registry dependencies.
 4. `marko-ui add <name> -y` — install (copy distribution). `--dry-run` previews the file changes; `--overwrite` replaces local files.
