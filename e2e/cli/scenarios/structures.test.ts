@@ -2,7 +2,7 @@ import { describe, expect } from "vitest"
 import {
   cli,
   exists,
-  jsonOut,
+  jsonData,
   link,
   makeWorkspace,
   markoApp,
@@ -37,7 +37,9 @@ describe("project structures — the stock scaffold (D2)", () => {
     expect(exists(ws, BUTTON)).toBe(true)
     expect(sync.code, tail(sync.out)).toBe(0)
     expect(read(ws, "AGENTS.md")).toContain("- `button`")
-    const status = jsonOut((await cli(ws, ["status", "--json"])).out)
+    const status = jsonData<{ components: string[] }>(
+      (await cli(ws, ["status", "--json"])).out
+    )
     expect(status.components).toContain("button")
   })
 
@@ -45,8 +47,17 @@ describe("project structures — the stock scaffold (D2)", () => {
     const ws = makeWorkspace()
     markoApp(ws)
     await fullFlow(ws)
-    const ui = jsonOut((await cli(ws, ["status", "--json"])).out).config.resolvedPaths.ui as string
-    expect(ui).toBe(`${ws}/src/components/ui`)
+    const status = jsonData<{
+      config: {
+        resolvedPaths: { cwd: string; ui: string | null }
+      }
+    }>((await cli(ws, ["status", "--json"])).out)
+    // resolvedPaths are relative to resolvedPaths.cwd, which states the
+    // absolute base once — so joining the two is what a consumer does.
+    expect(status.config.resolvedPaths.ui).toBe("src/components/ui")
+    expect(
+      `${status.config.resolvedPaths.cwd}/${status.config.resolvedPaths.ui}`
+    ).toBe(`${ws}/src/components/ui`)
   })
 
   scenario("S01c", "stock create-marko app: diff sees an unmodified installed component", async () => {
@@ -76,7 +87,9 @@ describe("project structures — tsconfig / alias variants", () => {
     expect(exists(ws, BUTTON)).toBe(true)
     expect(sync.code).toBe(0)
     expect(read(ws, "AGENTS.md")).toContain("- `button`")
-    const status = jsonOut((await cli(ws, ["status", "--json"])).out)
+    const status = jsonData<{ components: string[] }>(
+      (await cli(ws, ["status", "--json"])).out
+    )
     expect(status.components).toContain("button")
   })
 
@@ -117,7 +130,11 @@ describe("project structures — tsconfig / alias variants", () => {
     markoApp(ws, { tsconfig: "none" })
     await fullFlow(ws)
     expect(read(ws, "AGENTS.md")).toContain("- `button`")
-    expect(jsonOut((await cli(ws, ["status", "--json"])).out).components).toContain("button")
+    expect(
+      jsonData<{ components: string[] }>(
+        (await cli(ws, ["status", "--json"])).out
+      ).components
+    ).toContain("button")
   })
 
   scenario("S05b", "no tsconfig, components.json already present: agents sync succeeds", async () => {
@@ -154,7 +171,9 @@ describe("project structures — tsconfig / alias variants", () => {
     const ws = makeWorkspace()
     markoApp(ws, { srcDir: false, framework: "marko-vite", viteConfig: true })
     await fullFlow(ws)
-    const status = jsonOut((await cli(ws, ["status", "--json"])).out)
+    const status = jsonData<{ components: string[] }>(
+      (await cli(ws, ["status", "--json"])).out
+    )
     expect(status.components).toContain("button")
   })
 })
@@ -304,7 +323,7 @@ describe("project structures — monorepos", () => {
     expect(add.code, tail(add.out)).toBe(0)
     expect(exists(app, BUTTON)).toBe(true)
 
-    const status = jsonOut(
+    const status = jsonData<{ components: string[] }>(
       (await cli(ws, ["status", "--json", "--cwd", "apps/web"])).out
     )
     expect(status.components).toContain("button")

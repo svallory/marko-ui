@@ -15,6 +15,7 @@ import { search } from "@/src/commands/search"
 import { view } from "@/src/commands/view"
 import { RegistryErrorCode } from "@/src/registry/errors"
 import { normalizeError, CommandError } from "@/src/utils/handle-error"
+import { printJson } from "@/src/utils/json-output"
 import { isJsonMode } from "@/src/utils/output-mode"
 import { Command } from "commander"
 
@@ -81,7 +82,7 @@ function applyUsageErrorExitCode(command: Command) {
               "Run `marko-ui manifest` for the full command, flag and argument surface.",
           })
         )
-        process.stdout.write(`${JSON.stringify(envelope.envelope, null, 2)}\n`)
+        printJson(envelope.envelope)
         process.exit(2)
       }
       process.exit(2)

@@ -28,7 +28,10 @@ function colorAction(action: DryRunFile["action"] | "update") {
 
 // Format the shared header line.
 function formatHeader(componentNames: string[]) {
-  return `${bold("┌")} ${bold(`shadcn add ${componentNames.join(", ")}`)} ${dim(
+  // `marko-ui`, not `shadcn`: this header is the one line that tells a user
+  // which tool they are running and which command they are in, and it used to
+  // name the upstream tool instead.
+  return `${bold("┌")} ${bold(`marko-ui add ${componentNames.join(", ")}`)} ${dim(
     "(dry run)"
   )}`
 }

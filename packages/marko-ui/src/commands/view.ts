@@ -3,10 +3,14 @@ import { getRegistryItems } from "@/src/registry/api"
 import { configWithDefaults } from "@/src/registry/config"
 import { clearRegistryContext } from "@/src/registry/context"
 import { validateRegistryConfigForItems } from "@/src/registry/validator"
-import { rawConfigSchema } from "@/src/schema"
 import { loadEnvFiles } from "@/src/utils/env-loader"
-import { getConfig } from "@/src/utils/get-config"
+import {
+  getConfig,
+  readPartialComponentsJson,
+} from "@/src/utils/get-config"
 import { CleanExit, CommandError, handleError } from "@/src/utils/handle-error"
+import { printEnvelope } from "@/src/utils/json-output"
+import { setJsonMode } from "@/src/utils/output-mode"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
 import { Command } from "commander"
 import fsExtra from "fs-extra"
@@ -30,8 +34,16 @@ export const view = new Command()
   )
   .option("--files", "only list file paths.", false)
   .option("--deps", "only list npm and registry dependencies.", false)
+  // Accepted for symmetry with every other command that prints JSON. `show` has
+  // no human format — it is always JSON — so the flag changes nothing; before
+  // it, `marko-ui show x --json` was a usage error (exit 2) even though that is
+  // exactly what an agent typed to ask for machine output.
+  .option("--json", "no-op: show always prints JSON.", false)
   .action(async (items: string[], opts) => {
     try {
+      // Recorded first, because `show` is ALWAYS machine output: a failure
+      // takes the JSON error path whether or not --json was passed.
+      setJsonMode(true)
       const options = viewOptionsSchema.parse({
         cwd: path.resolve(opts.cwd),
         files: opts.files,
@@ -46,9 +58,13 @@ export const view = new Command()
       // Check if there's a components.json file (partial or complete).
       const componentsJsonPath = path.resolve(options.cwd, "components.json")
       if (fsExtra.existsSync(componentsJsonPath)) {
-        const existingConfig = await fsExtra.readJson(componentsJsonPath)
-        const partialConfig = rawConfigSchema.partial().parse(existingConfig)
-        shadowConfig = configWithDefaults(partialConfig)
+        // Read and validated through the shared classifier, NOT inline: a
+        // hand-edited broken file used to throw fs-extra's SyntaxError from
+        // here — absolute project path and all — which the error handler could
+        // only report as UNKNOWN_ERROR plus the GitHub boilerplate.
+        shadowConfig = configWithDefaults(
+          await readPartialComponentsJson(options.cwd)
+        )
       }
 
       // Try to get the full config, but fall back to shadow config if it fails.
@@ -80,36 +96,30 @@ export const view = new Command()
       const payload = await getRegistryItems(items, { config })
 
       if (options.files) {
-        console.log(
-          JSON.stringify(
-            payload.map((item) => ({
-              name: item?.name,
-              files: item?.files?.map((file) => file.target || file.path),
-            })),
-            null,
-            2
-          )
+        printEnvelope(
+          "marko-ui/show",
+          payload.map((item) => ({
+            name: item?.name,
+            files: item?.files?.map((file) => file.target || file.path),
+          }))
         )
         throw new CleanExit(0)
       }
 
       if (options.deps) {
-        console.log(
-          JSON.stringify(
-            payload.map((item) => ({
-              name: item?.name,
-              dependencies: item?.dependencies ?? [],
-              devDependencies: item?.devDependencies ?? [],
-              registryDependencies: item?.registryDependencies ?? [],
-            })),
-            null,
-            2
-          )
+        printEnvelope(
+          "marko-ui/show",
+          payload.map((item) => ({
+            name: item?.name,
+            dependencies: item?.dependencies ?? [],
+            devDependencies: item?.devDependencies ?? [],
+            registryDependencies: item?.registryDependencies ?? [],
+          }))
         )
         throw new CleanExit(0)
       }
 
-      console.log(JSON.stringify(payload, null, 2))
+      printEnvelope("marko-ui/show", payload)
       throw new CleanExit(0)
     } catch (error) {
       handleError(error)

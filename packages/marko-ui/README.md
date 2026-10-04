@@ -24,8 +24,8 @@ in-process compiler API, which the component build depends on. `marko-ui doctor`
 | `init [items...]` | Scaffold components.json, install the base theme, optionally install items; `--agents` also writes the AGENTS.md section and installs agent skills (on an initialized project it only does the agent setup) |
 | `add [items...]` | Install items — bare names (`button`), namespaced (`@acme/button`), URLs, or local paths |
 | `diff [item]` | Diff local files against their registry versions |
-| `docs [components...]` | Print component documentation as markdown (`--list` for the index) |
-| `show <items...>` (alias `view`) | Inspect items: full JSON, `--files`, `--deps` |
+| `docs [components...]` | Print component documentation as markdown (`--list` for the index; `--json` returns the markdown in the envelope) |
+| `show <items...>` (alias `view`) | Inspect items: full JSON, `--files`, `--deps` (always machine output; `--json` is accepted and changes nothing) |
 | `search [registries...]` (alias `list`) | Search items across configured registries |
 | `status` (alias `info`) | Project info: config, aliases, framework |
 | `doctor` | 9 health checks; exit code 3 when any fail. Every failing check carries a `fix` field (JSON) / a `fix:` line (human) with the command that fixes it |
@@ -35,6 +35,26 @@ in-process compiler API, which the component build depends on. `marko-ui doctor`
 
 Run `marko-ui manifest` for the complete, always-current surface, or
 `marko-ui manifest <command>` when you only need one command's flags.
+
+## JSON output
+
+Every `--json` payload is one document, `{ "$type", "version", "ok", "data" }`
+(`$type` is `marko-ui/search`, `marko-ui/status`, `marko-ui/show`,
+`marko-ui/docs`, `marko-ui/docs.list`, `marko-ui/doctor`,
+`marko-ui/registry.list` or `marko-ui/manifest`), printed **minified on one
+line unless stdout is a terminal** — the reader is usually a program, and
+indentation is tokens you pay for. `doctor`'s `ok` is false when a check
+failed (exit 3); a failure is the sibling `marko-ui/error` envelope on stdout,
+never prose.
+
+`search --json` items carry `name`, a short `type` (`"ui"`, `"block"`),
+`description` and `registry` — nothing derivable. To install an item from a
+registry other than the default, pass `<registry>/<name>`; `addArgument` in
+`data` states that rule once, and only when a non-default registry is present.
+
+`status --json` reports `config.distribution`, `config.visualStyle` and
+`config.iconLibrary`, and `config.resolvedPaths` gives `cwd` (absolute, once)
+with every other path relative to it.
 
 ## Registry model
 

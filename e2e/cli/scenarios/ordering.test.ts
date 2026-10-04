@@ -6,7 +6,7 @@ import {
   bootstrap,
   cli,
   exists,
-  jsonOut,
+  jsonData,
   makeWorkspace,
   markoApp,
   plain,
@@ -166,7 +166,9 @@ describe("command ordering", () => {
     const ws = app()
     const { shim } = await bootstrap(ws)
     const status = await cli(ws, ["status", "--json"], { shim })
-    expect(jsonOut(status.out).components).toContain("button")
+    expect(jsonData<{ components: string[] }>(status.out).components).toContain(
+      "button"
+    )
     const diff = await cli(ws, ["diff"], { shim })
     expect(diff.code, tail(diff.out)).toBe(0)
     expect(diff.out).not.toContain("No installed components found")
