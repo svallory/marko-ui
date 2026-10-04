@@ -1,22 +1,44 @@
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "fs"
 import { tmpdir } from "os"
 import path from "path"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+
+// Registry-backed checks are network-driven, and a unit test must not depend
+// on the network: mock both the item index and the registry discovery index.
+// Default: reachable, empty, nothing declared.
+const { mockIndex, mockRegistries } = vi.hoisted(() => ({
+  mockIndex: vi.fn(async (): Promise<any[]> => []),
+  mockRegistries: vi.fn(async (): Promise<any[]> => []),
+}))
+vi.mock("@/src/registry/api", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/src/registry/api")>()),
+  getShadcnRegistryIndex: mockIndex,
+  getRegistries: mockRegistries,
+}))
 
 import { logger } from "@/src/utils/logger"
 
-import { doctor, runDoctorChecks } from "./doctor"
+import { doctor, DOCTOR_CHECK_IDS, runDoctorChecks } from "./doctor"
 
-function scaffoldMarkoApp(
-  overrides: { skipCss?: boolean; aliases?: Record<string, string> } = {}
-) {
+type ScaffoldOverrides = {
+  skipCss?: boolean
+  skipConfig?: boolean
+  aliases?: Record<string, string>
+  dependencies?: Record<string, string>
+  registries?: Record<string, string>
+  uiComponent?: string
+  /** Defaults to "" (a v4 project, per getTailwindVersion). */
+  tailwindConfig?: string
+}
+
+function scaffoldMarkoApp(overrides: ScaffoldOverrides = {}) {
   const dir = mkdtempSync(path.join(tmpdir(), "marko-ui-doctor-"))
   writeFileSync(
     path.join(dir, "package.json"),
     JSON.stringify({
       name: "doctor-app",
       type: "module",
-      dependencies: {
+      dependencies: overrides.dependencies ?? {
         marko: "^6.3.34",
         "@marko/run": "^0.7.0",
         tailwindcss: "^4.0.0",
@@ -28,27 +50,39 @@ function scaffoldMarkoApp(
     path.join(dir, "tsconfig.json"),
     JSON.stringify({ compilerOptions: { paths: { "@/*": ["./src/*"] } } })
   )
-  writeFileSync(
-    path.join(dir, "components.json"),
-    JSON.stringify({
-      style: "default",
-      tailwind: {
-        config: "",
-        css: "src/styles/globals.css",
-        baseColor: "neutral",
-        cssVariables: true,
-      },
-      aliases: overrides.aliases ?? {
-        components: "@/components",
-        utils: "@/lib/utils",
-      },
-    })
-  )
+  if (!overrides.skipConfig) {
+    writeFileSync(
+      path.join(dir, "components.json"),
+      JSON.stringify({
+        style: "default",
+        tailwind: {
+          config: overrides.tailwindConfig ?? "",
+          css: "src/styles/globals.css",
+          baseColor: "neutral",
+          cssVariables: true,
+        },
+        aliases: overrides.aliases ?? {
+          components: "@/components",
+          utils: "@/lib/utils",
+        },
+        ...(overrides.registries ? { registries: overrides.registries } : {}),
+      })
+    )
+  }
   mkdirSync(path.join(dir, "src/styles"), { recursive: true })
   if (!overrides.skipCss) {
     writeFileSync(
       path.join(dir, "src/styles/globals.css"),
       '@import "tailwindcss";\n'
+    )
+  }
+  if (overrides.uiComponent) {
+    mkdirSync(path.join(dir, `src/components/ui/${overrides.uiComponent}`), {
+      recursive: true,
+    })
+    writeFileSync(
+      path.join(dir, `src/components/ui/${overrides.uiComponent}/${overrides.uiComponent}.marko`),
+      "<button/>"
     )
   }
   return dir
@@ -172,37 +206,150 @@ describe("runDoctorChecks", () => {
   })
 
   it("reports the dependencies check as a warn-skip when the registry is unreachable", async () => {
-    // Scaffolded apps have no reachable registry in unit tests, so the
-    // registry-driven dependency check must degrade to an explicit skip
-    // instead of passing silently.
+    // With the index unreachable the dependency check must degrade to an
+    // explicit skip instead of passing silently.
+    mockIndex.mockRejectedValueOnce(new Error("ECONNREFUSED"))
     const dir = scaffoldMarkoApp()
     const checks = await runDoctorChecks(dir)
     const dependencies = checks.find((check) => check.id === "dependencies")
     const registry = checks.find((check) => check.id === "registry")
 
-    if (registry?.status === "fail") {
-      expect(dependencies?.status).toBe("warn")
-      expect(dependencies?.message).toContain("Skipped")
-    } else {
-      // Network available (index fetched): the check ran for real.
-      expect(dependencies?.status).toMatch(/pass|warn/)
-    }
+    expect(registry?.status).toBe("fail")
+    expect(dependencies?.status).toBe("warn")
+    expect(dependencies?.message).toContain("Skipped")
   })
 })
 
 describe("the fix field", () => {
-  // The marko-ui skill promises "each failed check names its fix". That is a
-  // promise about DATA, not prose: a check without a `fix` makes the
-  // sentence false the first time it fails.
-  it("every failing or warning check carries a fix", async () => {
-    const dir = scaffoldMarkoApp({ skipCss: true, aliases: { components: "#components", utils: "#lib/utils" } })
-    const checks = await runDoctorChecks(dir)
-    const unhappy = checks.filter((check) => check.status !== "pass")
+  beforeEach(() => {
+    mockIndex.mockReset().mockResolvedValue([])
+    mockRegistries.mockReset().mockResolvedValue([])
+  })
+  afterEach(() => {
+    mockIndex.mockReset().mockResolvedValue([])
+    mockRegistries.mockReset().mockResolvedValue([])
+  })
 
-    expect(unhappy.length).toBeGreaterThan(1)
-    for (const check of unhappy) {
-      expect(check.fix, `check "${check.id}" has no fix`).toBeTruthy()
-    }
+  // The marko-ui skill promises "each failed check names its fix". That is a
+  // promise about DATA, not prose, so it is checked per check id: each fixture
+  // below makes exactly one check fail or warn, and the ids they cover must
+  // together equal every id `runDoctorChecks` can emit. A new check added to
+  // DOCTOR_CHECK_IDS without a fixture here fails the suite.
+  const scenarios: {
+    id: string
+    status: "fail" | "warn"
+    build: () => Promise<string> | string
+    setup?: () => void | Promise<void>
+  }[] = [
+    {
+      id: "project",
+      status: "fail",
+      build: () => mkdtempSync(path.join(tmpdir(), "marko-ui-doctor-empty-")),
+    },
+    {
+      id: "framework",
+      status: "fail",
+      build: () =>
+        scaffoldMarkoApp({ dependencies: { react: "^19.0.0" }, skipConfig: true }),
+    },
+    {
+      id: "typescript",
+      status: "fail",
+      build: async () => {
+        const dir = scaffoldMarkoApp()
+        mkdirSync(path.join(dir, "node_modules/typescript"), { recursive: true })
+        writeFileSync(
+          path.join(dir, "node_modules/typescript/package.json"),
+          JSON.stringify({ name: "typescript", version: "7.0.2" })
+        )
+        return dir
+      },
+    },
+    {
+      id: "config",
+      status: "warn",
+      build: () => scaffoldMarkoApp({ skipConfig: true }),
+    },
+    {
+      // A tailwind.config file is what makes the version read from the
+      // dependency; with `config: ""` getTailwindVersion assumes v4.
+      id: "tailwind",
+      status: "warn",
+      build: () =>
+        scaffoldMarkoApp({
+          tailwindConfig: "tailwind.config.js",
+          dependencies: { marko: "^6.3.34", "@marko/run": "^0.7.0" },
+        }),
+    },
+    {
+      id: "tailwind",
+      status: "fail",
+      build: () =>
+        scaffoldMarkoApp({
+          tailwindConfig: "tailwind.config.js",
+          dependencies: {
+            marko: "^6.3.34",
+            "@marko/run": "^0.7.0",
+            tailwindcss: "^3.4.0",
+          },
+        }),
+    },
+    { id: "css", status: "fail", build: () => scaffoldMarkoApp({ skipCss: true }) },
+    {
+      id: "aliases",
+      status: "fail",
+      build: () =>
+        scaffoldMarkoApp({ aliases: { components: "#components", utils: "#lib/utils" } }),
+    },
+    {
+      id: "registry",
+      status: "fail",
+      build: () => scaffoldMarkoApp(),
+      setup: () => {
+        mockIndex.mockRejectedValue(new Error("ECONNREFUSED"))
+      },
+    },
+    {
+      id: "dependencies",
+      status: "warn",
+      build: () => scaffoldMarkoApp({ uiComponent: "button" }),
+      setup: () => {
+        mockIndex.mockResolvedValue([
+          { name: "button", dependencies: ["@zag-js/checkbox"], type: "registry:ui" },
+        ])
+      },
+    },
+    {
+      id: "registries",
+      status: "fail",
+      build: () =>
+        scaffoldMarkoApp({
+          registries: { "@acme": "https://acme.test/r/{name}.json" },
+        }),
+      setup: () => {
+        mockRegistries.mockResolvedValue([
+          { name: "@acme", url: "https://acme.test/r/{name}.json", target: "react" },
+        ])
+      },
+    },
+  ]
+
+  it.each(scenarios)("$id can be $status, and names a fix", async ({ id, status, build, setup }) => {
+    await setup?.()
+    const dir = await build()
+    const checks = await runDoctorChecks(dir)
+    const check = checks.find((entry) => entry.id === id)
+
+    expect(check, `no ${id} check was emitted`).toBeDefined()
+    expect(check?.status, `${id} status`).toBe(status)
+    expect(check?.fix, `${id} has no fix`).toBeTruthy()
+    // Plain text: an agent runs this out of --json, where markdown is noise.
+    expect(check?.fix, `${id} fix is markdown`).not.toContain("`")
+  })
+
+  it("covers every check runDoctorChecks can emit", () => {
+    const covered = new Set(scenarios.map((scenario) => scenario.id))
+    expect([...covered].sort()).toEqual([...DOCTOR_CHECK_IDS].sort())
   })
 
   it("a failing check states the command to run", async () => {
