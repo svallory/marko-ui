@@ -56,6 +56,14 @@ static function partLabel(part: ApiPart) {
         </p>
       </if>
       <else>
+        <if=part.properties.some((property) => property.fixed !== undefined)>
+          <p class="text-xs text-muted-foreground">
+            <code class="font-mono text-[0.85em] text-foreground">fixed: X</code> — the component
+            sets this value itself; a value you pass is ignored.
+            <code class="font-mono text-[0.85em] text-foreground">fixed</code> — same, but the value
+            is computed.
+          </p>
+        </if>
         <div class="overflow-x-auto rounded-lg border border-border">
           <table class="w-full border-collapse text-sm">
             <thead>

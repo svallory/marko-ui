@@ -55,7 +55,7 @@ import MenubarMenu from "@/components/ui/menubar/menu.marko";`,
       name: "menubar-rtl",
       title: "RTL",
       description:
-        "Wrap the menubar in a `dir=\"rtl\"` container for right-to-left layout and text. The one behavioral gap versus upstream: `DropdownMenu`'s `Input` type never re-exposes the machine's `dir` prop, so passing `dir=\"rtl\"` to it is a type error and floating-ui's own RTL placement flip is unreachable — only text direction and logical-property layout flip.",
+        "Wrap the menubar in a `dir=\"rtl\"` container for right-to-left layout and text. One gap versus upstream: `MenubarMenu`'s `Input` type does not declare the menu machine's `dir` prop, so passing `dir` to it is a type error — even though `<zag-machine from=input/>` would forward it to the machine (`MenuProps` extends `DirectionProperty`). Until the type declares it, only the static `dir=\"rtl\"` wrapper flips this demo: text direction and logical-property layout, not floating-ui's own RTL placement flip.",
     },
     {
       name: "menubar-danger",

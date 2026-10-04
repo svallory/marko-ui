@@ -10,6 +10,10 @@ function escapeTableCell(value: string): string {
   return value.replace(/\|/g, "\\|").replace(/\s*\n\s*/g, " ");
 }
 
+/** Explains the `fixed:` cells when a part has any; `null` when it has none. */
+const FIXED_LEGEND =
+  "`fixed: X` — the component sets this value itself; a value you pass is ignored. `fixed` — same, but the value is computed.";
+
 /**
  * The Default cell: a real default, or the marker for a prop the component
  * FIXES on its own `<zag>` tag. marko-zag merges those attributes last
@@ -37,6 +41,11 @@ function renderPartTable(part: ApiPart, includeHeading: boolean): string {
     return lines.join("\n");
   }
 
+  // Above the table, never between the header row and the body: prose in that
+  // gap ends the table in most markdown renderers.
+  if (part.properties.some((property: { fixed?: string | true }) => property.fixed !== undefined)) {
+    lines.push(FIXED_LEGEND, "");
+  }
   lines.push("| Prop | Type | Default | Description |", "| --- | --- | --- | --- |");
   for (const property of part.properties) {
     const name = property.required ? `\`${property.name}\` (required)` : `\`${property.name}\``;
