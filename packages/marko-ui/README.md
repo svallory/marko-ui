@@ -11,6 +11,7 @@ bunx marko-ui init          # scaffold components.json + base theme
 bunx marko-ui add button    # install a component (source, not a package)
 bunx marko-ui doctor        # health checks (exit 3 on failure — CI-friendly)
 bunx marko-ui manifest      # machine-readable description of the whole CLI
+bunx marko-ui manifest add  # …or just one command
 ```
 
 **Requirements:** TypeScript ^5 or ^6. TypeScript 7 (`tsgo`) is not supported — it ships no
@@ -27,12 +28,13 @@ in-process compiler API, which the component build depends on. `marko-ui doctor`
 | `show <items...>` (alias `view`) | Inspect items: full JSON, `--files`, `--deps` |
 | `search [registries...]` (alias `list`) | Search items across configured registries |
 | `status` (alias `info`) | Project info: config, aliases, framework |
-| `doctor` | 9 health checks; exit code 3 when any fail |
-| `manifest` | Self-description: commands, flags, exit codes, agent workflow |
+| `doctor` | 9 health checks; exit code 3 when any fail. Every failing check carries a `fix` field (JSON) / a `fix:` line (human) with the command that fixes it |
+| `manifest [command]` | Self-description: commands, flags, exit codes, agent workflow. With a command name or alias, only that command (subcommands included) plus the exit codes; an unknown name exits 2 |
 | `agents sync` | Refresh the AGENTS.md section and install the agent skills through the `skills` package (`--check` exits 3 when stale or missing; `--no-skill` writes AGENTS.md only) |
 | `registry list/add/remove/validate` | Manage registries in components.json |
 
-Run `marko-ui manifest` for the complete, always-current surface.
+Run `marko-ui manifest` for the complete, always-current surface, or
+`marko-ui manifest <command>` when you only need one command's flags.
 
 ## Registry model
 
