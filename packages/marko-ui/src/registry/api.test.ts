@@ -8,6 +8,7 @@ import {
   RegistryFetchError,
   RegistryForbiddenError,
   RegistryInvalidNamespaceError,
+  RegistryItemNotFoundError,
   RegistryLocalFileError,
   RegistryNotConfiguredError,
   RegistryNotFoundError,
@@ -431,24 +432,32 @@ describe("getRegistryItem", () => {
     }
   })
 
-  it("should include error code in RegistryNotFoundError", async () => {
+  it("should include error code in a not-found registry item", async () => {
     server.use(
       http.get(`${REGISTRY_URL}/non-existent.json`, () => {
         return HttpResponse.json({ error: "Not found" }, { status: 404 })
       })
     )
 
-    try {
-      await getRegistryItems(["non-existent"])
-    } catch (error) {
-      expect(error).toBeInstanceOf(RegistryNotFoundError)
-      if (error instanceof RegistryNotFoundError) {
-        expect(error.code).toBe(RegistryErrorCode.NOT_FOUND)
-        expect(error.statusCode).toBe(404)
-        expect(error.suggestion).toContain("Check if the item name is correct")
-        expect(error.url).toContain("non-existent.json")
+    // A bare name that 404s is re-raised by the resolver as
+    // RegistryItemNotFoundError rather than the raw URL-level
+    // RegistryNotFoundError: it is the same code (NOT_FOUND) and the same
+    // 404, but it names the item the caller asked for and can carry
+    // "did you mean" candidates. The URL-level class is still what a direct
+    // URL fetch throws (see the fetcher's 404 branch).
+    await expect(getRegistryItems(["non-existent"])).rejects.toSatisfy(
+      (error: unknown) => {
+        expect(error).toBeInstanceOf(RegistryItemNotFoundError)
+        const registryError = error as InstanceType<
+          typeof RegistryItemNotFoundError
+        >
+        expect(registryError.code).toBe(RegistryErrorCode.NOT_FOUND)
+        expect(registryError.statusCode).toBe(404)
+        expect(registryError.itemName).toBe("non-existent")
+        expect(registryError.context?.itemName).toBe("non-existent")
+        return true
       }
-    }
+    )
   })
 
   it("should include error code in RegistryUnauthorizedError", async () => {

@@ -1,3 +1,4 @@
+import { RegistryError, RegistryErrorCode } from "@/src/registry/errors"
 import { Agent, EnvHttpProxyAgent } from "undici"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
@@ -6,6 +7,67 @@ import { createProxyDispatcher, fetchWithProxy } from "./proxy"
 afterEach(() => {
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
+})
+
+describe("fetchWithProxy failure classification", () => {
+  /**
+   * A failure that never reached the host is a configuration mistake, not an
+   * unreachable registry. Telling an agent "check your network and retry"
+   * (exit 4) for a credentials-in-URL config makes it retry forever.
+   */
+  it("reports a URL carrying credentials as INVALID_CONFIG, not NETWORK_ERROR", async () => {
+    let thrown: unknown
+    try {
+      await fetchWithProxy(
+        "https://user:pass@registry.example.invalid/r/button.json"
+      )
+    } catch (error) {
+      thrown = error
+    }
+
+    expect(thrown).toBeInstanceOf(RegistryError)
+    const error = thrown as RegistryError
+    expect(error.code).toBe(RegistryErrorCode.INVALID_CONFIG)
+    expect(error.code).not.toBe(RegistryErrorCode.NETWORK_ERROR)
+    expect(error.suggestion).toContain("headers")
+  })
+
+  it("reports a refused connection as NETWORK_ERROR", async () => {
+    // Bind then immediately release a port so nothing is listening on it.
+    const net = await import("node:net")
+    const server = net.createServer()
+    const port: number = await new Promise((resolve) => {
+      server.listen(0, "127.0.0.1", () => {
+        const address = server.address()
+        resolve(typeof address === "object" && address ? address.port : 0)
+      })
+    })
+    await new Promise((resolve) => server.close(resolve))
+
+    let thrown: unknown
+    try {
+      await fetchWithProxy(`http://127.0.0.1:${port}/r/button.json`)
+    } catch (error) {
+      thrown = error
+    }
+
+    expect(thrown).toBeInstanceOf(RegistryError)
+    expect((thrown as RegistryError).code).toBe(RegistryErrorCode.NETWORK_ERROR)
+  })
+
+  it("never puts the credential in the message or the details", async () => {
+    let thrown: unknown
+    try {
+      await fetchWithProxy("https://user:pass@registry.example.invalid/r/x.json")
+    } catch (error) {
+      thrown = error
+    }
+
+    const error = thrown as RegistryError
+    const text = `${error.message}${error.suggestion}${JSON.stringify(error.context)}`
+    expect(text).not.toContain("pass@")
+    expect(text).not.toContain("user:")
+  })
 })
 
 describe("createProxyDispatcher", () => {

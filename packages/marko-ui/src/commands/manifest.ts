@@ -1,4 +1,8 @@
 import { RegistryErrorCode } from "@/src/registry/errors"
+import {
+  ERROR_ENVELOPE_TYPE,
+  ERROR_ENVELOPE_VERSION,
+} from "@/src/utils/error-contract"
 import { CommandError, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { Command } from "commander"
@@ -86,6 +90,29 @@ export function buildManifest(program: Command, commandName?: string) {
         // Stable machine-readable error codes carried by registry errors
         // (RegistryError.code in error output and thrown errors).
         errorCodes: Object.values(RegistryErrorCode),
+        // How a failure reaches a machine. Stated here so a caller can rely
+        // on it without reading the CLI's source: stdout carries only the
+        // result, and with --json a failure is exactly one envelope of this
+        // shape. A whole-CLI fact, like errorCodes, so it is left to this
+        // unnarrowed form (same as agentWorkflow below).
+        errorOutput: {
+          streams: {
+            stdout:
+              "the command's result (and, with --json, the result or one error envelope)",
+            stderr: "human-readable errors and warnings",
+          },
+          jsonEnvelope: {
+            $type: ERROR_ENVELOPE_TYPE,
+            version: ERROR_ENVELOPE_VERSION,
+            ok: false,
+            error: {
+              code: "<one of errorCodes>",
+              message: "string",
+              suggestion: "string (optional)",
+              details: "object (optional)",
+            },
+          },
+        },
         agentWorkflow: buildAgentWorkflow(program),
       },
     }
@@ -99,7 +126,12 @@ export function buildManifest(program: Command, commandName?: string) {
       `Unknown command ${highlighter.info(commandName)}. Known commands: ${commands
         .map((cmd) => cmd.name())
         .join(", ")}.`,
-      { exitCode: 2 }
+      {
+        exitCode: 2,
+        code: RegistryErrorCode.USAGE_ERROR,
+        suggestion: `Run "marko-ui manifest" for every command, or "marko-ui manifest <command>" for one.`,
+        details: { requested: commandName, known: commands.map((cmd) => cmd.name()) },
+      }
     )
   }
 
@@ -113,7 +145,7 @@ export function buildManifest(program: Command, commandName?: string) {
     data: {
       name: "marko-ui",
       cliVersion: packageJson.version,
-      commands: [describeCommand(found)],
+commands: [describeCommand(found)],
       exitCodes: EXIT_CODES,
     },
   }

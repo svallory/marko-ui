@@ -24,6 +24,7 @@ import {
 import { CleanExit, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
+import { setJsonMode } from "@/src/utils/output-mode"
 import { Command } from "commander"
 import { z } from "zod"
 
@@ -110,6 +111,8 @@ export const doctor = new Command()
   .option("--json", "output as JSON.", false)
   .action(async (opts) => {
     try {
+      setJsonMode(Boolean(opts.json))
+
       const options = doctorOptionsSchema.parse({
         cwd: path.resolve(opts.cwd),
         json: opts.json,
@@ -152,7 +155,11 @@ export const doctor = new Command()
         }
         logger.break()
         if (failed.length) {
-          logger.error(
+          // The report is the RESULT, including this line: it says what
+          // doctor found, and the exit code (3) is what says it was bad.
+          // Writing it to stderr moved it off stdout, away from the check
+          // list it summarizes. Only the exit code marks the run as failed.
+          logger.log(
             `${failed.length} ${failed.length === 1 ? "check" : "checks"} failed.`
           )
         } else {

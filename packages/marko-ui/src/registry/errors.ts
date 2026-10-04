@@ -1,4 +1,5 @@
 import { MARKO_UI_URL } from "@/src/registry/constants"
+import { formatDidYouMean } from "@/src/utils/suggest"
 import { z } from "zod"
 
 // Error codes for programmatic error handling
@@ -22,6 +23,22 @@ export const RegistryErrorCode = {
   // Parsing errors
   PARSE_ERROR: "PARSE_ERROR",
   VALIDATION_ERROR: "VALIDATION_ERROR",
+
+  // Command-level failures that are not registry failures. These used to
+  // reach the user as bare prose with no code at all, so a program reading
+  // the CLI could not branch on them; they are part of the same contract and
+  // are advertised by `marko-ui manifest` (errorCodes) like every other code.
+  // A missing components.json is NOT listed here: NOT_CONFIGURED already
+  // names it (ConfigMissingError), and a second code for the same condition
+  // would be worse than none.
+  /** The invocation itself is wrong: unknown type filter, no argument, ... */
+  USAGE_ERROR: "USAGE_ERROR",
+  /** Run from a workspace root instead of the monorepo root. */
+  MONOREPO_ROOT: "MONOREPO_ROOT",
+  /** doctor / validate / agents --check found problems (exit code 3). */
+  CHECK_FAILED: "CHECK_FAILED",
+  /** No Marko project (no package.json) at the requested directory. */
+  PROJECT_NOT_FOUND: "PROJECT_NOT_FOUND",
 
   // Generic errors
   UNKNOWN_ERROR: "UNKNOWN_ERROR",
@@ -322,13 +339,27 @@ export class RegistryValidationError extends RegistryError {
 }
 
 export class RegistryItemNotFoundError extends RegistryError {
-  constructor(public readonly itemName: string) {
+  constructor(
+    public readonly itemName: string,
+    options: { suggestions?: string[] } = {}
+  ) {
+    // The candidates go in `suggestion` and `context.suggestions` ONLY.
+    // They used to be in the message too, which made `show buton` print
+    // "button" three times (message, "Similar registry items", Suggestion).
+    const didYouMean = formatDidYouMean(options.suggestions ?? [])
     super(`Registry item "${itemName}" was not found.`, {
       code: RegistryErrorCode.NOT_FOUND,
       statusCode: 404,
-      context: { itemName },
+      context: {
+        itemName,
+        // Also on `details.suggestions` in the JSON error envelope, so a
+        // program can act on the candidates without parsing prose.
+        ...(options.suggestions?.length
+          ? { suggestions: options.suggestions }
+          : {}),
+      },
       suggestion:
-        "Check that the item name exists in the resolved registry catalog.",
+        didYouMean ?? "Check that the item name exists in the resolved registry catalog.",
     })
     this.name = "RegistryItemNotFoundError"
   }

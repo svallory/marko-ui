@@ -33,6 +33,38 @@ No `components.json` means marko-ui is not set up: run `marko-ui init` (add `--a
 
 `marko-ui manifest` prints every command, flag, exit code, and error code as JSON when you need the exact surface; `marko-ui manifest <command>` prints just that one command (name or alias) plus the exit codes — cheaper when you are checking a single flag. An unknown name is a usage error (exit 2).
 
+## Reading errors
+
+**stdout carries the result; stderr carries every problem.** If you run the CLI with a pipe or capture stdout, you get the command's payload and nothing else — no log line, no warning, no failure text. Never parse stderr as data.
+
+With `--json`, a failure is **one** JSON object on stdout and nothing else, in this shape:
+
+```json
+{
+  "$type": "marko-ui/error",
+  "version": 1,
+  "ok": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Registry item \"buton\" was not found. Did you mean \"button\"?",
+    "suggestion": "Did you mean \"button\"?",
+    "details": { "itemName": "buton", "suggestions": ["button"] }
+  }
+}
+```
+
+Branch on `error.code`, never on the message text. Every code is listed in `marko-ui manifest` under `errorCodes` — the common ones are `NOT_FOUND` (unknown item), `NOT_CONFIGURED` (no `components.json`, or a registry that isn't configured), `INVALID_CONFIG`, `NETWORK_ERROR` (registry/docs host unreachable — exit 4), `FETCH_ERROR` (the host answered with an error status — exit 1), `MISSING_ENV_VARS`, `MONOREPO_ROOT` (run from a workspace, not the repo root), `USAGE_ERROR` (bad invocation, including an unknown command or flag), `CHECK_FAILED` (a `doctor`/`validate`/`agents --check` found problems), and `PROJECT_NOT_FOUND` (no Marko project at that directory).
+
+A connection failure (refused port, DNS failure, timeout) is `NETWORK_ERROR` with exit 4 on every registry-backed command — that is distinct from a server that answered with a 4xx/5xx, which is `FETCH_ERROR` with exit 1.
+
+`details.suggestions` carries "did you mean" candidates when the registry index was reachable, so you can retry without parsing prose. An unknown item name in `docs`, `show`, `add` or `diff` is the common case.
+
+`details` never carries a stack trace, an absolute path under your home directory, or a credential-bearing URL — paths are shortened and registry URLs have their query string and credentials stripped. A stack is on stderr only under `MARKO_UI_DEBUG`.
+
+One name can fail while the others succeed: `marko-ui docs nope button` prints button's markdown on stdout, reports `nope` on stderr, and exits 1.
+
+Exit codes are unchanged: `0` ok · `1` operational failure · `2` usage error · `3` a check found problems · `4` network or registry unreachable.
+
 ## Using components
 
 ```marko

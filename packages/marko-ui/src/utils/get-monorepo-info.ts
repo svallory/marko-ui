@@ -99,6 +99,14 @@ export async function getMonorepoTargets(cwd: string) {
 }
 
 // Formats and logs the monorepo detection message.
+/**
+ * Formats and logs the monorepo detection message.
+ *
+ * Written to stderr: this is a diagnostic about a command that cannot run,
+ * not the command's result. It used to go through logger.log, which put a
+ * multi-line human error block on stdout — the one place a program reading
+ * the CLI must never find text.
+ */
 export function formatMonorepoMessage(
   command: string,
   targets: { name: string; hasConfig: boolean }[],
@@ -108,24 +116,24 @@ export function formatMonorepoMessage(
 ) {
   const cwdFlag = options?.cwdFlag ?? "-c"
 
-  logger.break()
-  logger.log(
+  logger.errorBreak()
+  logger.error(
     `It looks like you are running ${highlighter.info(
       command
     )} from a monorepo root.`
   )
-  logger.log(
-    `To use shadcn in a specific workspace, use the ${highlighter.info(
+  logger.error(
+    `To use marko-ui in a specific workspace, use the ${highlighter.info(
       cwdFlag
     )} flag:`
   )
-  logger.break()
+  logger.errorBreak()
 
   for (const target of targets) {
-    logger.log(`  shadcn ${command} ${cwdFlag} ${target.name}`)
+    logger.error(`  marko-ui ${command} ${cwdFlag} ${target.name}`)
   }
 
-  logger.break()
+  logger.errorBreak()
 }
 
 export async function getWorkspacePatterns(cwd: string) {

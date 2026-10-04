@@ -203,6 +203,8 @@ describe("search command", () => {
   })
 
   it("requires a registry when no components.json is present", async () => {
+    // The error text is a diagnostic: stderr, so stdout stays clean.
+    const error = vi.spyOn(console, "error").mockImplementation(() => {})
     const log = vi.spyOn(console, "log").mockImplementation(() => {})
     const exit = mockProcessExit()
 
@@ -215,12 +217,17 @@ describe("search command", () => {
       })
     ).rejects.toThrow("process.exit:1")
 
-    expect(log).toHaveBeenCalledWith(
+    expect(error).toHaveBeenCalledWith(
       expect.stringContaining("Provide a registry or namespace to search")
     )
     expect(searchRegistries).not.toHaveBeenCalled()
+    // stdout carries only the result; a human-mode failure writes NOTHING to
+    // it. Asserting on the log spy rather than on text catches the stray
+    // blank line that this path used to emit (defect D).
+    expect(log).not.toHaveBeenCalled()
 
     log.mockRestore()
+    error.mockRestore()
     exit.mockRestore()
   })
 
@@ -250,6 +257,8 @@ describe("search command", () => {
   })
 
   it("errors on an unknown --type", async () => {
+    // The error text is a diagnostic: stderr, so stdout stays clean.
+    const error = vi.spyOn(console, "error").mockImplementation(() => {})
     const log = vi.spyOn(console, "log").mockImplementation(() => {})
     const exit = mockProcessExit()
 
@@ -262,10 +271,14 @@ describe("search command", () => {
       )
     ).rejects.toThrow("process.exit:1")
 
-    expect(log).toHaveBeenCalledWith(expect.stringContaining("Unknown type"))
+    expect(error).toHaveBeenCalledWith(expect.stringContaining("Unknown type"))
     expect(searchRegistries).not.toHaveBeenCalled()
+    // Zero bytes on stdout: the breaks around this prose are errorBreak, not
+    // break, so no blank line leaks onto the result stream.
+    expect(log).not.toHaveBeenCalled()
 
     log.mockRestore()
+    error.mockRestore()
     exit.mockRestore()
   })
 
@@ -309,7 +322,9 @@ describe("search command", () => {
   })
 
   it("exits 0 and says so when nothing matches", async () => {
-    const log = vi.spyOn(console, "log").mockImplementation(() => {})
+    // "No items found" is a warning, not a result: it goes to stderr so a
+    // caller reading stdout gets the (empty) result and nothing else.
+    const warn = vi.spyOn(console, "error").mockImplementation(() => {})
     const exit = mockProcessExit()
 
     vi.mocked(searchRegistries).mockReturnValueOnce({
@@ -324,14 +339,14 @@ describe("search command", () => {
       )
     ).rejects.toThrow("process.exit:0")
 
-    const output = log.mock.calls.map((call) => stripAnsi(String(call[0])))
+    const output = warn.mock.calls.map((call) => stripAnsi(String(call[0])))
     expect(output).toContainEqual(
       expect.stringContaining(
         'No items found matching "cryptocurrency" in @marko-ui'
       )
     )
 
-    log.mockRestore()
+    warn.mockRestore()
     exit.mockRestore()
   })
 
