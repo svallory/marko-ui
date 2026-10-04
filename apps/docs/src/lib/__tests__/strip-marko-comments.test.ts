@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { stripMarkoComments } from "../strip-marko-comments.ts";
 
 // The markdown payload (`/docs/components/<name>.md`, i.e. what
@@ -8,6 +11,129 @@ import { stripMarkoComments } from "../strip-marko-comments.ts";
 // demo — inline `xmlns="http://www.w3.org/2000/svg"`, `https://…` srcs,
 // `//cdn.example.com` protocol-relative URLs — and a regex-based stripper eats
 // them.
+// The regression cases first: the build before Round 2 stripped `//` and
+// block-comment openers anywhere outside a string, which ate real CONTENT.
+// In `apps/docs/src/demos/input/input-input-group.marko:13`,
+// `<InputGroupText>https://</InputGroupText>` came out as
+// `<InputGroupText>https:` — the closing tag gone, so the example an agent
+// copies did not compile.
+describe("stripMarkoComments: text content is content", () => {
+  it("keeps a URL written as text between tags (the input-input-group case)", () => {
+    const source = "<InputGroupText>https://</InputGroupText>";
+
+    expect(stripMarkoComments(source)).toBe(source);
+  });
+
+  it("keeps a `//` in a sentence of text content", () => {
+    const source = "<p>Visit https://example.com</p>";
+
+    expect(stripMarkoComments(source)).toBe(source);
+  });
+
+  it("keeps a `//` in text content on a line of its own", () => {
+    // Only whitespace precedes it, which is exactly the shape of a comment
+    // line — the price of the line-start rule. A demo whose text starts a
+    // line with `//` would be stripped; none in the corpus does.
+    const source = ["<p>", "  //example.com/docs", "</p>"].join("\n");
+
+    expect(stripMarkoComments(source)).toBe("<p>\n\n</p>");
+  });
+
+  it("keeps a `/*` in text content without eating the rest of the file", () => {
+    const source = ["<span>a/*b</span>", "<div>c</div>"].join("\n");
+
+    expect(stripMarkoComments(source)).toBe(source);
+  });
+
+  it("keeps a regex literal", () => {
+    const source = "const re = /\\/\\//g;";
+
+    expect(stripMarkoComments(source)).toBe(source);
+  });
+
+  it("still strips a comment line that sits between two text nodes", () => {
+    const source = ["<div>", "  // maintainer note", "  <span>text</span>", "</div>"].join("\n");
+
+    expect(stripMarkoComments(source)).toBe("<div>\n\n  <span>text</span>\n</div>");
+  });
+});
+
+// The corpus guard. Per-case tests only cover the shapes someone thought of,
+// and the shape that actually broke in Round 2 — `//` in TEXT content — was
+// only visible across the whole corpus. So: every demo on the site, stripped,
+// must still contain every line of code it started with, byte for byte. Only
+// comment lines may go missing, and only whitespace may be invented.
+describe("stripMarkoComments: the whole demo corpus", () => {
+  const DEMOS_DIR = fileURLToPath(new URL("../../demos", import.meta.url));
+
+  function* demoFiles(dir: string): Generator<string> {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) yield* demoFiles(path);
+      else if (entry.name.endsWith(".marko")) yield path;
+    }
+  }
+
+  /** True for a line that is comment text, tracking block/HTML comment state. */
+  function codeLines(source: string): string[] {
+    const code: string[] = [];
+    let inBlock = false;
+    let inHtml = false;
+    for (const line of source.split("\n")) {
+      const trimmed = line.trim();
+      const isComment = inBlock || inHtml || trimmed.startsWith("//") || trimmed.startsWith("/*") || trimmed.startsWith("<!--") || trimmed.startsWith("*");
+      if (!inHtml && trimmed.startsWith("<!--")) inHtml = true;
+      if (inHtml && trimmed.endsWith("-->")) inHtml = false;
+      if (inBlock && trimmed.endsWith("*/")) inBlock = false;
+      if (trimmed.startsWith("/*") && !trimmed.endsWith("*/")) inBlock = true;
+      if (isComment) continue;
+      if (trimmed === "") continue;
+      code.push(line);
+    }
+    return code;
+  }
+
+  it("removes only comment lines: every line of code survives verbatim", () => {
+    const files = [...demoFiles(DEMOS_DIR)];
+    expect(files.length).toBeGreaterThan(600);
+
+    const lostCode: string[] = [];
+    const invented: string[] = [];
+    let filesChanged = 0;
+    let sourceLines = 0;
+    let strippedLineCount = 0;
+
+    for (const file of files) {
+      const source = readFileSync(file, "utf8");
+      const stripped = stripMarkoComments(source);
+      const lines = stripped.split("\n");
+      sourceLines += source.split("\n").length;
+      strippedLineCount += lines.length;
+      if (source !== stripped) filesChanged += 1;
+
+      const strippedSet = new Set(lines.map((line) => line.replace(/[ \t]+$/, "")));
+      const sourceSet = new Set(source.split("\n").map((line) => line.replace(/[ \t]+$/, "")));
+      for (const line of codeLines(source)) {
+        if (!strippedSet.has(line)) lostCode.push(`${file.slice(DEMOS_DIR.length + 1)}: ${line.trim()}`);
+      }
+      for (const line of lines) {
+        if (line.trim() === "") continue;
+        if (!sourceSet.has(line.replace(/[ \t]+$/, ""))) {
+          invented.push(`${file.slice(DEMOS_DIR.length + 1)}: ${line.trim()}`);
+        }
+      }
+    }
+
+    // Reported so a future change that removes more has a number to compare.
+    console.log(
+      `corpus: ${files.length} demos, ${filesChanged} changed, ` +
+        `${sourceLines - strippedLineCount} lines removed by stripping`,
+    );
+    expect(lostCode.slice(0, 20)).toEqual([]);
+    expect(invented.slice(0, 20)).toEqual([]);
+  });
+});
+
 describe("stripMarkoComments", () => {
   it("removes a leading comment block above the markup", () => {
     const source = [
@@ -46,27 +172,39 @@ describe("stripMarkoComments", () => {
     expect(stripMarkoComments(source)).toBe(source);
   });
 
-  it("strips a comment that follows code on the same line", () => {
+  it("keeps a trailing `//` after markup, which cannot be told from text", () => {
+    // Only comment LINES go. A `//` sharing a line with markup or text could
+    // be part of the content (`<a href="https://…">` followed by prose), and
+    // the previous build ate it — losing real content to gain nothing.
     const source = '<Button type="button">Send</Button> // the submit action';
 
-    expect(stripMarkoComments(source)).toBe('<Button type="button">Send</Button>');
+    expect(stripMarkoComments(source)).toBe(source);
   });
 
-  it("strips a mid-line block comment without moving the code around it", () => {
-    const source = "const a = 1; /* note */ const b = 2;";
-
-    const stripped = stripMarkoComments(source);
-
-    expect(stripped).toBe("const a = 1;  const b = 2;");
-    expect(stripped.split("\n")).toHaveLength(source.split("\n").length);
+  it("keeps a mid-line block comment outside a JS context", () => {
+    expect(stripMarkoComments("const a = 1; /* note */ const b = 2;")).toBe(
+      "const a = 1; /* note */ const b = 2;",
+    );
   });
 
-  it("turns a block comment's spanned lines into blank ones, keeping line count", () => {
-    // A two-line block comment becomes two blank lines, so a reader comparing
-    // the markdown against the demo file still finds the code on its own line.
-    const source = ['const a = 1; /* note', "still the note */ const b = 2;"].join("\n");
+  it("strips a mid-line comment inside a `{…}` expression", () => {
+    const source = '<div class={cn("a", /* base */ value)}/>';
 
-    expect(stripMarkoComments(source)).toBe("const a = 1;\n const b = 2;");
+    expect(stripMarkoComments(source)).toBe('<div class={cn("a",  value)}/>');
+  });
+
+  it("strips a mid-line comment inside a <script> body", () => {
+    const source = ["<script>", "  const a = 1; // note", "  a;", "</script>"].join("\n");
+
+    expect(stripMarkoComments(source)).toBe(["<script>", "  const a = 1;", "  a;", "</script>"].join("\n"));
+  });
+
+  it("turns a block comment's spanned lines into blank ones, keeping the code's own lines", () => {
+    // The comment's lines become blank ones, and the leading blank run is
+    // trimmed — so what a reader sees is the code, where it was.
+    const source = ["/* note", "still the note */", "const a = 1;", "const b = 2;"].join("\n");
+
+    expect(stripMarkoComments(source)).toBe("const a = 1;\nconst b = 2;");
   });
 
   it("collapses a standalone multi-line block comment's leftover blank lines away", () => {
