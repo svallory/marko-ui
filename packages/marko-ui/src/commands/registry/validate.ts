@@ -19,7 +19,12 @@ type RegistryValidationReport = Awaited<ReturnType<typeof validateRegistry>>
 
 export const validate = new Command()
   .name("validate")
-  .description("validate a registry against the shadcn registry schema")
+  .description(
+    // "the registry item schema", not "the shadcn registry schema": this
+    // command validates against marko-ui's own schema, and the old wording
+    // read as a pointer to a different tool's subcommand.
+    "validate a registry against the registry item schema"
+  )
   .argument(
     "[registry]",
     "registry address to validate. Supports registry.json paths and GitHub sources.",

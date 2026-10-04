@@ -23,7 +23,7 @@ import {
   fetchRegistryItems,
   resolveRegistryTree,
 } from "@/src/registry/resolver"
-import { isUrl } from "@/src/registry/utils"
+import { isUrl, parseUrl } from "@/src/registry/utils"
 import {
   configJsonSchema,
   registriesIndexSchema,
@@ -34,6 +34,7 @@ import {
   registrySchema,
 } from "@/src/schema"
 import { Config, explorer } from "@/src/utils/get-config"
+import { asConfigError } from "@/src/utils/error-contract"
 import { logger } from "@/src/utils/logger"
 import { cosmiconfig } from "cosmiconfig"
 import { z } from "zod"
@@ -74,7 +75,16 @@ function appendSearchParamsToUrl(
     return url
   }
 
-  const parsedUrl = new URL(url)
+  // Classified through the SAME helper the fetcher uses, never left as a bare
+  // `TypeError: Invalid URL`. It used to reach the error handler as an
+  // unclassified bug: UNKNOWN_ERROR, exit 1 and the "open an issue on GitHub"
+  // boilerplate, while `show` reported the identical misconfiguration as
+  // INVALID_CONFIG. A configured URL that cannot be parsed is a config
+  // failure everywhere it is read, not a bug in one command.
+  const parsedUrl = parseUrl(url)
+  if (!parsedUrl) {
+    throw asConfigError(new Error("invalid URL"), { url })
+  }
 
   if (searchParams.query) {
     parsedUrl.searchParams.set("q", searchParams.query)

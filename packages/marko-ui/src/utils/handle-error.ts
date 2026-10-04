@@ -1,10 +1,12 @@
 import { RegistryError } from "@/src/registry/errors"
 import {
   asNetworkError,
+  asTlsError,
   buildErrorEnvelope,
   type CliErrorEnvelope,
   jsonSafe,
   looksLikeNetworkFailure,
+  looksLikeTlsFailure,
   NETWORK_ERROR_CODES,
   type NormalizedCliError,
   RegistryErrorCode,
@@ -12,6 +14,7 @@ import {
 } from "@/src/utils/error-contract"
 import { highlighter } from "@/src/utils/highlighter"
 import { isDebugEnabled, logger } from "@/src/utils/logger"
+import { printJson } from "@/src/utils/json-output"
 import { isJsonMode } from "@/src/utils/output-mode"
 import { z } from "zod"
 
@@ -169,6 +172,23 @@ export function normalizeError(error: unknown): NormalizedCliError {
         code: RegistryErrorCode.VALIDATION_ERROR,
         message,
         details: sanitizeDetails(details),
+      }),
+      exitCode: 1,
+      unexpected: false,
+    }
+  }
+
+  // A bad certificate is checked BEFORE the generic network classification,
+  // because undici reports it as a connection failure like any other: it is
+  // the user's configuration, not their network, and exit 4 would tell an
+  // agent to retry something retrying cannot fix.
+  if (looksLikeTlsFailure(error)) {
+    const tls = asTlsError(error)
+    return {
+      envelope: buildErrorEnvelope({
+        code: tls.code,
+        message: tls.message,
+        suggestion: tls.suggestion,
       }),
       exitCode: 1,
       unexpected: false,
@@ -337,8 +357,10 @@ export function handleError(error: unknown) {
   }
 
   if (isJsonMode()) {
-    const payload = jsonSafe(normalized.envelope)
-    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`)
+    // One helper owns JSON output (see json-output.ts): minified when stdout
+    // is a pipe, pretty when a human is watching. An error envelope is JSON
+    // like any other document the CLI prints.
+    printJson(jsonSafe(normalized.envelope))
   } else {
     renderHumanError(normalized.envelope, {
       unexpected: normalized.unexpected,

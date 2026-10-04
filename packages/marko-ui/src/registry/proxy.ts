@@ -6,8 +6,10 @@ import { parseUrl } from "@/src/registry/utils"
 import {
   asConfigError,
   asNetworkError,
+  asTlsError,
   looksLikeConfigFailure,
   looksLikeNetworkFailure,
+  looksLikeTlsFailure,
 } from "@/src/utils/error-contract"
 
 const HTTP_PROXY_ENV_VARS = [
@@ -112,6 +114,21 @@ export async function fetchWithProxy(url: string | URL, init?: RequestInit) {
         'Check the registry URL in components.json (or the registry entry that produced it).',
     })
   }
+  // Scheme check BEFORE any socket is opened.
+  //
+  // `ftp://example.com/r` parses fine, so it used to reach `fetch`, which
+  // reported it as `TypeError: fetch failed` with an unhelpful cause — and the
+  // message-based classifier in `fetchOnce` then called it a NETWORK_ERROR
+  // (exit 4, "retry"), which sends an agent to retry a typo in components.json
+  // forever. The scheme is knowable here, so it is decided here.
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw asConfigError(
+      new Error(
+        `unsupported protocol "${parsed.protocol}" — only http: and https: are supported`
+      ),
+      { url: parsed.toString() }
+    )
+  }
   const originalOrigin = parsed.origin
   const originalHeaders = new Headers(init?.headers)
   let currentUrl = parsed.toString()
@@ -173,19 +190,25 @@ async function fetchOnce(
       dispatcher: proxyDispatcher,
     } as RequestInit)
   } catch (error) {
-    // Three classes, because the exit code and the advice differ:
+    // Four classes, because the exit code and the advice differ:
     //
     // - The request could not be BUILT (credentials in the URL, unsupported
     //   scheme, unparseable). Nothing was sent, so "check your network and
     //   retry" is wrong advice and exit 4 would make an agent retry a
     //   misconfiguration forever. INVALID_CONFIG, exit 1.
-    // - The host could not be REACHED (refused, DNS, timeout, reset, TLS).
+    // - The CERTIFICATE is wrong (expired, self-signed, hostname mismatch).
+    //   TLS_ERROR, exit 1 — its own class, because it is the failure retrying
+    //   does not fix.
+    // - The host could not be REACHED (refused, DNS, timeout, reset).
     //   NETWORK_ERROR, exit 4 — the documented "retry" case.
     // - Anything else is not ours to classify. Rethrowing the ORIGINAL
     //   error lets the error handler report it as the unexpected bug it
     //   probably is, rather than dressing it up as a network problem.
     if (looksLikeConfigFailure(error)) {
       throw asConfigError(error, { url })
+    }
+    if (looksLikeTlsFailure(error)) {
+      throw asTlsError(error, { url })
     }
     if (looksLikeNetworkFailure(error)) {
       throw asNetworkError(error, { url, context: { url } })

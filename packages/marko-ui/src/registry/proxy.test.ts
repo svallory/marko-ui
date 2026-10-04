@@ -68,6 +68,74 @@ describe("fetchWithProxy failure classification", () => {
     expect(text).not.toContain("pass@")
     expect(text).not.toContain("user:")
   })
+
+  // The rendered output was clean while the THROWN error still held the
+  // credential in `cause`: undici's own TypeError quotes the URL verbatim.
+  // Anything consuming this module, or logging `error.cause`, got the token.
+  it("never puts the credential in the CAUSE either", async () => {
+    let thrown: unknown
+    try {
+      await fetchWithProxy(
+        "https://user:pass@registry.example.invalid/r/x.json?token=sk-PLANTED"
+      )
+    } catch (error) {
+      thrown = error
+    }
+
+    const error = thrown as RegistryError
+    expect(error.cause).toBeDefined()
+    const causeText =
+      error.cause instanceof Error
+        ? error.cause.message
+        : String(error.cause)
+    expect(causeText).not.toContain("pass@")
+    expect(causeText).not.toContain("sk-PLANTED")
+  })
+
+  /**
+   * An unsupported scheme parses fine, so it used to reach `fetch`, which
+   * reports it as `TypeError: fetch failed` — and the network classifier then
+   * called it NETWORK_ERROR, i.e. exit 4, the documented "retry" code, for a
+   * typo in components.json.
+   */
+  it("reports an unsupported scheme as INVALID_CONFIG, not NETWORK_ERROR", async () => {
+    for (const url of ["ftp://example.com/r.json", "file:///etc/passwd"]) {
+      let thrown: unknown
+      try {
+        await fetchWithProxy(url)
+      } catch (error) {
+        thrown = error
+      }
+
+      expect(thrown, url).toBeInstanceOf(RegistryError)
+      const error = thrown as RegistryError
+      expect(error.code, url).toBe(RegistryErrorCode.INVALID_CONFIG)
+      expect(error.code, url).not.toBe(RegistryErrorCode.NETWORK_ERROR)
+    }
+  })
+
+  it("still fetches http and https", async () => {
+    // A refused port, not a real request: this is about the scheme gate not
+    // being over-eager. Classifying as NETWORK_ERROR proves the check let it
+    // through to the socket.
+    const net = await import("node:net")
+    const server = net.createServer()
+    const port: number = await new Promise((resolve) => {
+      server.listen(0, "127.0.0.1", () => {
+        const address = server.address()
+        resolve(typeof address === "object" && address ? address.port : 0)
+      })
+    })
+    await new Promise((resolve) => server.close(resolve))
+
+    let thrown: unknown
+    try {
+      await fetchWithProxy(`http://127.0.0.1:${port}/r/button.json`)
+    } catch (error) {
+      thrown = error
+    }
+    expect((thrown as RegistryError).code).toBe(RegistryErrorCode.NETWORK_ERROR)
+  })
 })
 
 describe("createProxyDispatcher", () => {
