@@ -4,14 +4,12 @@ import {
   AGENTS_END_MARKER,
   AGENTS_START_MARKER,
   buildAgentsSection,
-  type InstalledComponent,
 } from "@/src/agents/content"
 import {
   getMissingSkills,
   getWantedSkills,
   installAgentSkills,
 } from "@/src/agents/skills"
-import { getShadcnRegistryIndex } from "@/src/registry/api"
 import { getConfig } from "@/src/utils/get-config"
 import { getProjectComponents } from "@/src/utils/get-project-info"
 import { CommandError, handleError } from "@/src/utils/handle-error"
@@ -73,14 +71,13 @@ agents
       }
 
       if (options.check) {
-        const { agentsPath, nextAgents, indexAvailable } =
-          await prepareAgentDocs(options.cwd)
+        const { agentsPath, nextAgents } = await prepareAgentDocs(options.cwd)
         const problems: string[] = []
 
         const currentAgents = existsSync(agentsPath)
           ? await fs.readFile(agentsPath, "utf8")
           : null
-        if (!agentsDocsAreCurrent(currentAgents, nextAgents, indexAvailable)) {
+        if (!agentsDocsAreCurrent(currentAgents, nextAgents)) {
           problems.push("AGENTS.md is stale")
         }
 
@@ -146,7 +143,7 @@ export async function runAgentsSync(
 
 async function prepareAgentDocs(cwd: string) {
   const config = await getConfig(cwd)
-  const { components, indexAvailable } = await collectInstalledComponents(cwd)
+  const components = await collectInstalledComponents(cwd)
   const agentsPath = path.resolve(cwd, "AGENTS.md")
 
   const nextAgents = mergeAgentsFile(
@@ -154,62 +151,31 @@ async function prepareAgentDocs(cwd: string) {
     buildAgentsSection(components, { distribution: config?.distribution })
   )
 
-  return { agentsPath, nextAgents, indexAvailable }
-}
-
-async function collectInstalledComponents(
-  cwd: string
-): Promise<{ components: InstalledComponent[]; indexAvailable: boolean }> {
-  // One registry fetch per sync, shared with the on-disk listing. It is
-  // best-effort so sync also works offline (names only, no descriptions).
-  let index: Awaited<ReturnType<typeof getShadcnRegistryIndex>> | null = null
-  try {
-    index = await getShadcnRegistryIndex()
-  } catch (error) {
-    logger.debug(
-      `registry index unavailable: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    )
-  }
-
-  const names = await getProjectComponents(cwd, index)
-  const descriptions = new Map(
-    (index ?? [])
-      .filter((item) => item.description)
-      .map((item) => [item.name, item.description!])
-  )
-
-  return {
-    components: names.sort().map((name) => ({
-      name,
-      description: descriptions.get(name),
-    })),
-    indexAvailable: index !== null,
-  }
-}
-
-/** Drops the ` — description` tail from `- \`name\` — ...` component lines. */
-export function stripComponentDescriptions(text: string) {
-  return text.replace(/^(- `[^`\s]+`) — .*$/gm, "$1")
+  return { agentsPath, nextAgents }
 }
 
 /**
- * Whether the AGENTS.md on disk matches the one sync would write.
- *
- * Component descriptions come from the registry index. When the index could
- * not be fetched the expected section has none, so comparing them would turn
- * every offline `--check` (a CI job that lost network) red for a file that is
- * not stale: compare without descriptions on both sides instead.
+ * The installed component NAMES, sorted. Nothing else: the section lists
+ * names only, so this needs no registry fetch of its own — the listing falls
+ * back to "a directory holding a .marko file" when the index is
+ * unreachable, which sync relies on to work offline.
  */
-export function agentsDocsAreCurrent(
-  current: string | null,
-  next: string,
-  indexAvailable: boolean
-) {
+async function collectInstalledComponents(cwd: string) {
+  const names = await getProjectComponents(cwd).catch((error) => {
+    logger.debug(
+      `installed components unavailable: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    )
+    return [] as string[]
+  })
+  return names.sort()
+}
+
+/** Whether the AGENTS.md on disk matches the one sync would write. */
+export function agentsDocsAreCurrent(current: string | null, next: string) {
   if (current === null) return false
-  if (indexAvailable) return current === next
-  return stripComponentDescriptions(current) === stripComponentDescriptions(next)
+  return current === next
 }
 
 /**

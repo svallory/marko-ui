@@ -1,7 +1,6 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs"
 import { tmpdir } from "os"
 import path from "path"
-import { Command } from "commander"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 const { mockIndex } = vi.hoisted(() => ({ mockIndex: vi.fn() }))
@@ -16,76 +15,121 @@ import {
   buildAgentsSection,
 } from "@/src/agents/content"
 import { buildProgram } from "@/src/index"
-import {
-  agentsDocsAreCurrent,
-  agents,
-  mergeAgentsFile,
-  stripComponentDescriptions,
-} from "./agents"
+import { agentsDocsAreCurrent, agents, mergeAgentsFile } from "./agents"
+import { buildManifest } from "./manifest"
 import { logger } from "@/src/utils/logger"
 
-const SECTION = buildAgentsSection([
-  { name: "button", description: "A button." },
-  { name: "card" },
-])
+const SECTION = buildAgentsSection(["button", "card"])
 
-/**
- * Every `marko-ui <command> [flags]` written in backticks, checked against
- * the LIVE program. Agent-facing text is followed literally, so a command
- * that does not exist is a bug in the text, not a typo: the generated
- * section shipped `show <name> --props` for weeks, a flag the CLI never had.
- */
-function findUnknownCommands(text: string) {
-  const program = buildProgram()
-  const problems: string[] = []
+type SurfaceNode = { flags: Set<string>; children: Map<string, SurfaceNode> }
 
-  for (const match of text.matchAll(/`(?:bunx |npx |pnpm dlx )?marko-ui ([^`]+)`/g)) {
-    const tokens = match[1]!.split(/\s+/)
-    let command: Command | undefined = program
-    let consumed = 0
-
-    for (const token of tokens) {
-      const next: Command | undefined = command!.commands.find(
-        (cmd) => cmd.name() === token || cmd.aliases().includes(token)
-      )
-      if (!next) break
-      command = next
-      consumed++
-    }
-
-    if (consumed === 0) {
-      problems.push(`${match[0]}: unknown command "${tokens[0]}"`)
-      continue
-    }
-
-    for (const flag of tokens.filter((token) => token.startsWith("-"))) {
-      const known = command!.options.some(
-        (option) => option.long === flag || option.short === flag
-      )
-      if (!known) {
-        problems.push(`${match[0]}: unknown flag "${flag}"`)
+function indexSurface(nodes: any[]): Map<string, SurfaceNode> {
+  const map = new Map<string, SurfaceNode>()
+  for (const node of nodes) {
+    const flags = new Set<string>()
+    for (const option of node.options ?? []) {
+      for (const token of option.flags.split(/[\s,]+/)) {
+        if (token.startsWith("-")) flags.add(token)
       }
     }
+    map.set(node.name, { flags, children: indexSurface(node.subcommands ?? []) })
+    for (const alias of node.aliases ?? []) map.set(alias, map.get(node.name)!)
   }
+  return map
+}
+
+function surface() {
+  return indexSurface(buildManifest(buildProgram()).data.commands as any[])
+}
+
+type MentionProblem = { file: string; line: number; token: string; mention: string }
+
+/**
+ * Every `marko-ui <command> [flags]` mention in agent-facing text, checked
+ * against the surface `marko-ui manifest` publishes. Agent-facing text is
+ * followed literally, so a command that does not exist is a bug in the text,
+ * not a typo: the generated section shipped `show <name> --props` for weeks,
+ * a flag the CLI never had. Problems carry the file and LINE so a failing
+ * assertion points at the sentence to edit.
+ */
+function findUnknownCommands(text: string, file: string): MentionProblem[] {
+  const commands = surface()
+  const problems: MentionProblem[] = []
+
+  text.split("\n").forEach((lineText, index) => {
+    for (const match of lineText.matchAll(
+      /`(?:bunx |npx |pnpm dlx )?marko-ui ([^`]+)`/g
+    )) {
+      const tokens = match[1]!.split(/\s+/)
+      let node: SurfaceNode | undefined
+      let resolved = 0
+
+      for (const token of tokens) {
+        const next = node ? node.children.get(token) : commands.get(token)
+        if (!next) break
+        node = next
+        resolved++
+      }
+
+      if (resolved === 0) {
+        problems.push({
+          file,
+          line: index + 1,
+          token: tokens[0]!,
+          mention: match[0],
+        })
+        continue
+      }
+
+      for (const flag of tokens.filter((token) => token.startsWith("-"))) {
+        if (!node!.flags.has(flag)) {
+          problems.push({ file, line: index + 1, token: flag, mention: match[0] })
+        }
+      }
+    }
+  })
 
   return problems
 }
 
+const SKILL_PATH = "../../../../skills/marko-ui/SKILL.md"
+const skill = readFileSync(path.resolve(__dirname, SKILL_PATH), "utf8")
+
 describe("buildAgentsSection", () => {
-  it("lists installed components with descriptions", () => {
-    expect(SECTION).toContain("- `button` — A button.")
-    expect(SECTION).toContain("- `card`")
+  it("lists installed component names, without descriptions", () => {
+    // Descriptions cost ~25 tokens per component on EVERY agent task and
+    // duplicate what `marko-ui docs <name>` answers on demand.
+    expect(SECTION).toContain("Installed: `button`, `card`")
+    expect(SECTION).not.toContain("— A button.")
     expect(SECTION.startsWith(AGENTS_START_MARKER)).toBe(true)
     expect(SECTION.endsWith(AGENTS_END_MARKER)).toBe(true)
   })
 
+  it("stays inside the token budget with 3 components", () => {
+    const section = buildAgentsSection(["button", "card", "switch"])
+    // ~4 chars/token is the usual English approximation; the brief's ceiling
+    // is ~250 tokens for 3 components.
+    expect(section.length / 4).toBeLessThanOrEqual(250)
+  })
+
   it("handles an empty project", () => {
-    expect(buildAgentsSection([])).toContain("none installed yet")
+    expect(buildAgentsSection([])).toContain("none — run `marko-ui add <name> -y`")
+  })
+
+  it("handles many components on few lines", () => {
+    const names = Array.from({ length: 40 }, (_, i) => `component-${i}`)
+    const section = buildAgentsSection(names)
+    const listLine = section.split("\n").find((line) => line.startsWith("Installed:"))!
+
+    expect(listLine.startsWith("Installed: `component-0`, ")).toBe(true)
+    expect(listLine).toContain("`component-39`")
+    // One line, not 40 — the whole point of names-only.
+    expect(section.split("\n").filter((line) => line.startsWith("- `component-"))).toHaveLength(0)
   })
 
   it("treats a missing distribution as copy", () => {
-    expect(buildAgentsSection([{ name: "button" }])).toBe(
-      buildAgentsSection([{ name: "button" }], { distribution: "copy" })
+    expect(buildAgentsSection(["button"])).toBe(
+      buildAgentsSection(["button"], { distribution: "copy" })
     )
   })
 
@@ -97,17 +141,14 @@ describe("buildAgentsSection", () => {
 
     expect(section).toContain("@marko-ui/shadcn/ui/button/button.marko")
     expect(section).toContain("mu-*")
-    expect(section).not.toContain("none installed yet")
+    expect(section).not.toContain("none — run `marko-ui add <name> -y`")
     expect(section).not.toContain("marko-ui add")
-    expect(section).not.toContain("Installed components:")
+    expect(section).not.toContain("Installed:")
   })
 
-  it("keeps agents sync in the import command list, without the add/remove wording", () => {
-    // The closing paragraph tells the agent to run it, so the list must name it.
+  it("keeps agents sync in the import command list", () => {
     const section = buildAgentsSection([], { distribution: "import" })
-    expect(section).toContain("`marko-ui agents sync` — refresh this section and install the agent skills")
-    expect(section).not.toContain("after adding or removing components")
-    expect(SECTION).toContain("after adding or removing components")
+    expect(section).toContain("- `marko-ui agents sync` — refresh this section and install the agent skills")
   })
 
   it("points at the skills by name, not at one agent's directory", () => {
@@ -119,46 +160,64 @@ describe("buildAgentsSection", () => {
   it.each(["copy", "import"] as const)(
     "only names commands and flags the CLI has (%s)",
     (distribution) => {
-      const section = buildAgentsSection([{ name: "button" }], { distribution })
-      expect(findUnknownCommands(section)).toEqual([])
+      const section = buildAgentsSection(["button"], { distribution })
+      expect(findUnknownCommands(section, "AGENTS.md")).toEqual([])
     }
   )
 })
 
 describe("findUnknownCommands", () => {
-  it("catches a flag the CLI does not have", () => {
-    expect(findUnknownCommands("run `marko-ui show button --props`")).toEqual([
-      '`marko-ui show button --props`: unknown flag "--props"',
+  it("catches a flag the CLI does not have, naming the file and line", () => {
+    // Negative fixture: the historical `show --props` defect. Without this,
+    // the guard could pass by extracting nothing at all.
+    const problems = findUnknownCommands(
+      "# Notes\n\nrun `marko-ui show button --props`\n",
+      "fixtures/SKILL.md"
+    )
+
+    expect(problems).toEqual([
+      {
+        file: "fixtures/SKILL.md",
+        line: 3,
+        token: "--props",
+        mention: "`marko-ui show button --props`",
+      },
     ])
   })
 
   it("catches a command the CLI does not have", () => {
-    expect(findUnknownCommands("run `bunx marko-ui upgrade`")).toEqual([
-      '`bunx marko-ui upgrade`: unknown command "upgrade"',
+    expect(findUnknownCommands("run `bunx marko-ui upgrade`", "SKILL.md")).toEqual([
+      {
+        file: "SKILL.md",
+        line: 1,
+        token: "upgrade",
+        mention: "`bunx marko-ui upgrade`",
+      },
     ])
   })
 
-  it("resolves subcommands and aliases", () => {
+  it("resolves subcommands, aliases and short flags", () => {
     expect(
       findUnknownCommands(
-        "`marko-ui agents sync --check` `marko-ui info --json` `marko-ui registry list --json`"
+        "`marko-ui agents sync --check` `marko-ui info --json` `marko-ui registry list --json` `marko-ui add button -y`",
+        "SKILL.md"
       )
     ).toEqual([])
+  })
+
+  it("checks flags against the subcommand that owns them", () => {
+    // --check belongs to `agents sync`, not to `agents`.
+    expect(findUnknownCommands("`marko-ui agents --check`", "SKILL.md")).toHaveLength(1)
   })
 })
 
 describe("the distributed marko-ui skill", () => {
-  const skill = readFileSync(
-    path.resolve(__dirname, "../../../../skills/marko-ui/SKILL.md"),
-    "utf8"
-  )
-
   it("has the frontmatter the skills CLI discovers it by", () => {
     expect(skill.startsWith("---\nname: marko-ui\ndescription: ")).toBe(true)
   })
 
   it("only names commands and flags the CLI has", () => {
-    expect(findUnknownCommands(skill)).toEqual([])
+    expect(findUnknownCommands(skill, SKILL_PATH)).toEqual([])
   })
 
   it("actually names commands (the check above is not vacuous)", () => {
@@ -173,13 +232,13 @@ describe("mergeAgentsFile", () => {
 
   it("replaces only the marked section, preserving user content", () => {
     const existing = `# My project\n\nuser intro\n\n${buildAgentsSection([
-      { name: "old" },
+      "old",
     ])}\nuser outro\n`
     const merged = mergeAgentsFile(existing, SECTION)
 
     expect(merged).toContain("user intro")
     expect(merged).toContain("user outro")
-    expect(merged).toContain("- `button` — A button.")
+    expect(merged).toContain("Installed: `button`, `card`")
     expect(merged).not.toContain("`old`")
     // Exactly one generated section.
     expect(merged.split(AGENTS_START_MARKER)).toHaveLength(2)
@@ -277,31 +336,11 @@ describe("mergeAgentsFile", () => {
   })
 })
 
-describe("stripComponentDescriptions", () => {
-  it("drops the description of component lines only", () => {
-    const out = stripComponentDescriptions(SECTION)
-    expect(out).toContain("- `button`\n")
-    expect(out).not.toContain("A button.")
-    // command lines (backticks with spaces) keep their text
-    expect(out).toContain("— usage, props, and examples as markdown")
-  })
-})
-
 describe("agentsDocsAreCurrent", () => {
-  const withDescriptions = SECTION
-  const without = buildAgentsSection([{ name: "button" }, { name: "card" }])
-
-  it("needs an exact match when the index is available", () => {
-    expect(agentsDocsAreCurrent(withDescriptions, withDescriptions, true)).toBe(true)
-    expect(agentsDocsAreCurrent(withDescriptions, without, true)).toBe(false)
-  })
-  it("ignores descriptions when the index is unavailable", () => {
-    expect(agentsDocsAreCurrent(withDescriptions, without, false)).toBe(true)
-  })
-  it("still catches a real difference offline", () => {
-    const other = buildAgentsSection([{ name: "button" }])
-    expect(agentsDocsAreCurrent(withDescriptions, other, false)).toBe(false)
-    expect(agentsDocsAreCurrent(null, without, false)).toBe(false)
+  it("is an exact comparison (names only — nothing depends on the network now)", () => {
+    expect(agentsDocsAreCurrent(SECTION, SECTION)).toBe(true)
+    expect(agentsDocsAreCurrent(SECTION, buildAgentsSection(["button"]))).toBe(false)
+    expect(agentsDocsAreCurrent(null, SECTION)).toBe(false)
   })
 })
 
@@ -346,14 +385,24 @@ describe("agents sync --check when the registry index cannot be fetched", () => 
     }
   }
 
-  it("is up to date when only the descriptions are missing", async () => {
+  it("is up to date even offline (the section is names-only, so nothing depends on the index)", async () => {
     const cwd = project()
     mockIndex.mockResolvedValue([{ name: "button", type: "registry:ui", description: "A button." }])
     await agents.parseAsync(["node", "agents", "sync", "--no-skill", "--cwd", cwd])
-    expect(readFileSync(path.join(cwd, "AGENTS.md"), "utf8")).toContain("A button.")
+    expect(readFileSync(path.join(cwd, "AGENTS.md"), "utf8")).toContain("Installed: `button`")
 
     mockIndex.mockRejectedValue(new Error("ECONNREFUSED"))
     expect(await check(cwd)).toBe(0)
+  })
+
+  it("writes the names-only section when the index is down", async () => {
+    const cwd = project()
+    mockIndex.mockRejectedValue(new Error("ECONNREFUSED"))
+    await agents.parseAsync(["node", "agents", "sync", "--no-skill", "--cwd", cwd])
+    const written = readFileSync(path.join(cwd, "AGENTS.md"), "utf8")
+
+    expect(written).toContain("Installed: `button`")
+    expect(written).not.toContain("A button.")
   })
 
   it("still exits 3 offline when a component was added since the last sync", async () => {
