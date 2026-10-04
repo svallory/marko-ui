@@ -1,9 +1,11 @@
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "fs"
 import { tmpdir } from "os"
 import path from "path"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
-import { runDoctorChecks } from "./doctor"
+import { logger } from "@/src/utils/logger"
+
+import { doctor, runDoctorChecks } from "./doctor"
 
 function scaffoldMarkoApp(
   overrides: { skipCss?: boolean; aliases?: Record<string, string> } = {}
@@ -185,5 +187,75 @@ describe("runDoctorChecks", () => {
       // Network available (index fetched): the check ran for real.
       expect(dependencies?.status).toMatch(/pass|warn/)
     }
+  })
+})
+
+describe("the fix field", () => {
+  // The marko-ui skill promises "each failed check names its fix". That is a
+  // promise about DATA, not prose: a check without a `fix` makes the
+  // sentence false the first time it fails.
+  it("every failing or warning check carries a fix", async () => {
+    const dir = scaffoldMarkoApp({ skipCss: true, aliases: { components: "#components", utils: "#lib/utils" } })
+    const checks = await runDoctorChecks(dir)
+    const unhappy = checks.filter((check) => check.status !== "pass")
+
+    expect(unhappy.length).toBeGreaterThan(1)
+    for (const check of unhappy) {
+      expect(check.fix, `check "${check.id}" has no fix`).toBeTruthy()
+    }
+  })
+
+  it("a failing check states the command to run", async () => {
+    const dir = scaffoldMarkoApp({ skipCss: true })
+    const checks = await runDoctorChecks(dir)
+    const css = checks.find((check) => check.id === "css")
+
+    expect(css?.status).toBe("fail")
+    expect(css?.fix).toContain("src/styles/globals.css")
+    expect(css?.fix).toContain("@import \"tailwindcss\"")
+  })
+
+  it("names the project's own package manager, not a hardcoded bun", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "marko-ui-doctor-pm-"))
+    writeFileSync(path.join(dir, "package.json"), JSON.stringify({ name: "react-app", dependencies: { react: "^19" } }))
+    writeFileSync(path.join(dir, "package-lock.json"), "{}")
+
+    const framework = (await runDoctorChecks(dir)).find((check) => check.id === "framework")
+
+    expect(framework?.fix).toContain("npm install")
+    expect(framework?.fix).not.toContain("bun add")
+  })
+
+  it("a healthy project reports no fixes at all", async () => {
+    const dir = scaffoldMarkoApp()
+    const checks = await runDoctorChecks(dir)
+
+    for (const check of checks.filter((c) => c.status === "pass")) {
+      expect(check.fix).toBeUndefined()
+    }
+  })
+
+  it("the human output prints the fix under a failing check", async () => {
+    const dir = scaffoldMarkoApp({ skipCss: true })
+    const lines: string[] = []
+    const log = vi.spyOn(logger, "log").mockImplementation((line: unknown) => {
+      lines.push(String(line))
+    })
+    const exit = vi.spyOn(process, "exit").mockImplementation(((code?: number) => {
+      throw new Error(`exit ${code}`)
+    }) as never)
+
+    try {
+      await doctor.parseAsync(["node", "doctor", "--cwd", dir])
+    } catch {
+      // exit 3 — expected, a check failed.
+    } finally {
+      log.mockRestore()
+      exit.mockRestore()
+    }
+
+    const cssLine = lines.findIndex((line) => line.includes("CSS entry"))
+    expect(cssLine).toBeGreaterThan(-1)
+    expect(lines.slice(cssLine, cssLine + 3).join("\n")).toContain("fix:")
   })
 })

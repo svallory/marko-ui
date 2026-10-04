@@ -582,7 +582,9 @@ describe("doctor alias check", () => {
     })
     expect(check.status).toBe("fail")
     expect(check.message).toMatch(/tsconfig paths, package\.json imports or a workspace export/)
-    expect(check.message).toMatch(/aliases\.components/)
+    // The actionable half moved to `fix`: what the user types, not prose.
+    expect(check.fix).toMatch(/tsconfig/)
+    expect(check.fix).toMatch(/aliases\.components/)
   })
 })
 
