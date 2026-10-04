@@ -3,10 +3,81 @@ import {
   ERROR_ENVELOPE_TYPE,
   ERROR_ENVELOPE_VERSION,
   jsonSafe,
+  looksLikeConfigFailure,
+  looksLikeNetworkFailure,
   redactUrl,
   scrubUrlsInText,
 } from "@/src/utils/error-contract"
 import { describe, expect, it } from "vitest"
+
+describe("looksLikeConfigFailure", () => {
+  it("recognizes undici refusing a URL that carries credentials", () => {
+    // Measured against the real undici error: the request is never built,
+    // so this is a configuration mistake, not an unreachable host.
+    const error = new TypeError(
+      "Request cannot be constructed from a URL that includes credentials: https://user:pass@h/r"
+    )
+    expect(looksLikeConfigFailure(error)).toBe(true)
+    expect(looksLikeNetworkFailure(error)).toBe(false)
+  })
+
+  it("recognizes an unsupported scheme and an invalid URL", () => {
+    expect(
+      looksLikeConfigFailure(new TypeError("URL scheme must be a http(s) scheme"))
+    ).toBe(true)
+    expect(looksLikeConfigFailure(new TypeError("Invalid URL"))).toBe(true)
+  })
+
+  it("looks through cause and AggregateError entries", () => {
+    const inner = new TypeError("Invalid URL")
+    expect(looksLikeConfigFailure(new TypeError("wrap", { cause: inner }))).toBe(
+      true
+    )
+    expect(looksLikeConfigFailure(new AggregateError([inner], ""))).toBe(true)
+  })
+
+  it("does not claim a connection failure", () => {
+    const error = new TypeError("fetch failed", {
+      cause: Object.assign(new Error("connect ECONNREFUSED"), {
+        code: "ECONNREFUSED",
+      }),
+    })
+    expect(looksLikeConfigFailure(error)).toBe(false)
+    expect(looksLikeNetworkFailure(error)).toBe(true)
+  })
+})
+
+describe("looksLikeNetworkFailure", () => {
+  it("recognizes the syscall codes", () => {
+    for (const code of [
+      "ECONNREFUSED",
+      "ENOTFOUND",
+      "EAI_AGAIN",
+      "ETIMEDOUT",
+      "ECONNRESET",
+      "EHOSTUNREACH",
+      "UND_ERR_SOCKET",
+      "UND_ERR_CONNECT_TIMEOUT",
+    ]) {
+      const error = new TypeError("fetch failed", {
+        cause: Object.assign(new Error("x"), { code }),
+      })
+      expect(looksLikeNetworkFailure(error), code).toBe(true)
+    }
+  })
+
+  it("ignores an unrelated TypeError", () => {
+    expect(looksLikeNetworkFailure(new TypeError("x is not a function"))).toBe(
+      false
+    )
+  })
+
+  it("terminates on a self-referential cause chain", () => {
+    const error = new TypeError("boom")
+    ;(error as TypeError & { cause?: unknown }).cause = error
+    expect(looksLikeNetworkFailure(error)).toBe(false)
+  })
+})
 
 describe("redactUrl", () => {
   it("drops userinfo and the query string", () => {

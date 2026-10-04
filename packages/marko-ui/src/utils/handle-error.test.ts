@@ -192,6 +192,68 @@ describe("handleError", () => {
       expect(result.stderr).toContain("boom")
     })
 
+    it("tells the user how to see the stack when debug is off", () => {
+      const result = run(new Error("boom"))
+      expect(result.stderr).toContain("MARKO_UI_DEBUG=1")
+    })
+
+    it("prints the stack on stderr with MARKO_UI_DEBUG set", () => {
+      const previous = process.env.MARKO_UI_DEBUG
+      process.env.MARKO_UI_DEBUG = "1"
+      try {
+        const result = run(new Error("boom"))
+        expect(result.stderr).toMatch(/^\s+at /m)
+        expect(result.stderr).toContain("handle-error.test")
+      } finally {
+        if (previous === undefined) delete process.env.MARKO_UI_DEBUG
+        else process.env.MARKO_UI_DEBUG = previous
+      }
+    })
+
+    it("keeps the stack out of stdout even with debug on", () => {
+      const previous = process.env.MARKO_UI_DEBUG
+      process.env.MARKO_UI_DEBUG = "1"
+      try {
+        setJsonMode(false)
+        const result = run(new Error("boom"))
+        // The human path writes nothing to stdout on failure.
+        expect(result.stdout).toBe("")
+        expect(result.stderr).toMatch(/^\s+at /m)
+      } finally {
+        if (previous === undefined) delete process.env.MARKO_UI_DEBUG
+        else process.env.MARKO_UI_DEBUG = previous
+      }
+    })
+
+    it("honors MARKO_UI_DEBUG=0 and =false as off", () => {
+      for (const value of ["0", "false"]) {
+        const previous = process.env.MARKO_UI_DEBUG
+        process.env.MARKO_UI_DEBUG = value
+        try {
+          expect(run(new Error("boom")).stderr).not.toMatch(/^\s+at /m)
+        } finally {
+          if (previous === undefined) delete process.env.MARKO_UI_DEBUG
+          else process.env.MARKO_UI_DEBUG = previous
+        }
+      }
+    })
+
+    it("does not print a stack for an EXPECTED failure, even with debug on", () => {
+      const previous = process.env.MARKO_UI_DEBUG
+      process.env.MARKO_UI_DEBUG = "1"
+      try {
+        const result = run(new RegistryNotFoundError("http://x/r/a.json"))
+        // A stack FRAME is whitespace then `at ` at the start of a line.
+        // Asserting on a bare "at " would false-positive on prose like
+        // "The item at http://…".
+        expect(result.stderr).not.toMatch(/^\s+at /m)
+        expect(result.stderr).not.toContain("MARKO_UI_DEBUG=1")
+      } finally {
+        if (previous === undefined) delete process.env.MARKO_UI_DEBUG
+        else process.env.MARKO_UI_DEBUG = previous
+      }
+    })
+
     it("still reports a thrown string as an unexpected failure", () => {
       const result = run("something went sideways")
 
@@ -341,7 +403,20 @@ describe("handleError", () => {
 
       // `details` is omitted entirely, so there is no stack key to find.
       expect(parsed.error.details?.stack).toBeUndefined()
-      expect(result.stdout).not.toContain("at ")
+      expect(result.stdout).not.toMatch(/^\s+at /m)
+    })
+
+    it("keeps the stack out of the envelope even with debug on", () => {
+      const previous = process.env.MARKO_UI_DEBUG
+      process.env.MARKO_UI_DEBUG = "1"
+      try {
+        const result = run(new Error("boom"))
+        expect(result.stdout).not.toMatch(/^\s+at /m)
+        expect(result.stderr).toBe("")
+      } finally {
+        if (previous === undefined) delete process.env.MARKO_UI_DEBUG
+        else process.env.MARKO_UI_DEBUG = previous
+      }
     })
 
     it("puts monorepo targets in details", () => {

@@ -281,7 +281,8 @@ export const add = new Command()
       }
 
     } catch (error) {
-      logger.break()
+      // No break here: handleError frames its own block, on stderr. A break
+      // before it put a bare newline on stdout for every `add` failure.
       handleError(error)
     } finally {
       clearRegistryContext()
@@ -422,7 +423,7 @@ async function promptForRegistryComponents(
 ) {
   const registryIndex = await getShadcnRegistryIndex()
   if (!registryIndex) {
-    logger.break()
+    logger.errorBreak()
     handleError(new Error("Failed to fetch registry index."))
     return []
   }

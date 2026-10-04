@@ -25,12 +25,22 @@ import { highlighter } from "@/src/utils/highlighter"
  */
 
 /**
- * Diagnostic output for failures the CLI deliberately continues past (stale
- * backup files, best-effort cleanup). Off unless MARKO_UI_DEBUG is set, so
- * normal runs stay quiet, but the trail exists when someone goes looking —
- * previously these were swallowed with no record at all.
+ * CLI environment variables, and what each one is for.
+ *
+ * - `MARKO_UI_DEBUG` — set to any non-empty value other than `0`/`false` to
+ *   get the detail the normal output deliberately omits. Today that is the
+ *   stack trace of an UNEXPECTED exception: a stack is never in the JSON
+ *   envelope and never in `details`, because those get logged and pasted into
+ *   issues, so with debug off an unexpected failure shows only its message.
+ *   The human form says how to turn this on when it matters.
+ * - `CI`, `CLAUDECODE`, `AI_AGENT`, `CURSOR_AGENT`, `REPL_ID` — non-interactive
+ *   detection, see interactive.ts (they suppress prompts, they do not affect
+ *   diagnostics).
+ * - `REGISTRY_URL`, `REGISTRY_BASE_URL`, `MARKO_UI_URL` — endpoint overrides,
+ *   see registry/constants.ts.
+ * - `NO_COLOR` — honoured by kueler, not by us; see CLAUDE.md.
  */
-function isDebugEnabled() {
+export function isDebugEnabled() {
   const value = process.env.MARKO_UI_DEBUG
   return Boolean(value) && value !== "0" && value !== "false"
 }
@@ -38,6 +48,8 @@ function isDebugEnabled() {
 export const logger = {
   debug(...args: unknown[]) {
     if (isDebugEnabled()) {
+      // stderr, not stdout: a debug trail is a diagnostic, and a `--json`
+      // run's stdout must stay exactly one document.
       console.error(highlighter.info(`[debug] ${args.join(" ")}`))
     }
   },

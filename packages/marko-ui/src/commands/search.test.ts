@@ -205,6 +205,7 @@ describe("search command", () => {
   it("requires a registry when no components.json is present", async () => {
     // The error text is a diagnostic: stderr, so stdout stays clean.
     const error = vi.spyOn(console, "error").mockImplementation(() => {})
+    const log = vi.spyOn(console, "log").mockImplementation(() => {})
     const exit = mockProcessExit()
 
     // fs-extra.existsSync is mocked to return false (no components.json).
@@ -220,7 +221,12 @@ describe("search command", () => {
       expect.stringContaining("Provide a registry or namespace to search")
     )
     expect(searchRegistries).not.toHaveBeenCalled()
+    // stdout carries only the result; a human-mode failure writes NOTHING to
+    // it. Asserting on the log spy rather than on text catches the stray
+    // blank line that this path used to emit (defect D).
+    expect(log).not.toHaveBeenCalled()
 
+    log.mockRestore()
     error.mockRestore()
     exit.mockRestore()
   })
@@ -253,6 +259,7 @@ describe("search command", () => {
   it("errors on an unknown --type", async () => {
     // The error text is a diagnostic: stderr, so stdout stays clean.
     const error = vi.spyOn(console, "error").mockImplementation(() => {})
+    const log = vi.spyOn(console, "log").mockImplementation(() => {})
     const exit = mockProcessExit()
 
     await expect(
@@ -266,7 +273,11 @@ describe("search command", () => {
 
     expect(error).toHaveBeenCalledWith(expect.stringContaining("Unknown type"))
     expect(searchRegistries).not.toHaveBeenCalled()
+    // Zero bytes on stdout: the breaks around this prose are errorBreak, not
+    // break, so no blank line leaks onto the result stream.
+    expect(log).not.toHaveBeenCalled()
 
+    log.mockRestore()
     error.mockRestore()
     exit.mockRestore()
   })

@@ -11,7 +11,7 @@ import {
   sanitizeDetails,
 } from "@/src/utils/error-contract"
 import { highlighter } from "@/src/utils/highlighter"
-import { logger } from "@/src/utils/logger"
+import { isDebugEnabled, logger } from "@/src/utils/logger"
 import { isJsonMode } from "@/src/utils/output-mode"
 import { z } from "zod"
 
@@ -225,6 +225,7 @@ export function normalizeError(error: unknown): NormalizedCliError {
     // CLI, not a condition the user can fix. This is the ONLY path that
     // prints the "open an issue on GitHub" boilerplate.
     unexpected: true,
+    raw: error,
   }
 }
 
@@ -250,7 +251,10 @@ function serializeCause(cause: unknown): string | undefined {
  */
 export function renderHumanError(
   envelope: CliErrorEnvelope,
-  { unexpected = false }: { unexpected?: boolean } = {}
+  {
+    unexpected = false,
+    raw,
+  }: { unexpected?: boolean; raw?: unknown } = {}
 ) {
   if (unexpected) {
     logger.errorBreak()
@@ -285,6 +289,26 @@ export function renderHumanError(
     logger.error(`${highlighter.info("Suggestion:")} ${suggestion}`)
   }
   logger.errorBreak()
+
+  // The stack is the one thing an unexpected failure needs that the envelope
+  // deliberately cannot carry. It was removed from `details` because a stack
+  // is a wall of absolute build paths that gets logged and pasted into
+  // issues, which is exactly where a home directory must not appear — so
+  // without this path, "please open an issue" had nothing to attach to it.
+  //
+  // stderr only, always: under --json stdout must stay exactly one document,
+  // and this runs on the human path only, where stdout carries no result.
+  if (unexpected && raw instanceof Error && raw.stack) {
+    if (isDebugEnabled()) {
+      logger.error(raw.stack)
+    } else {
+      logger.error(
+        `${highlighter.info("hint:")} re-run with ${highlighter.info(
+          "MARKO_UI_DEBUG=1"
+        )} to print the stack trace.`
+      )
+    }
+  }
 }
 
 /**
@@ -318,6 +342,7 @@ export function handleError(error: unknown) {
   } else {
     renderHumanError(normalized.envelope, {
       unexpected: normalized.unexpected,
+      raw: normalized.raw,
     })
   }
 

@@ -68,7 +68,7 @@ export async function preFlightAdd(options: z.infer<typeof addOptionsSchema>) {
       config: config!,
     }
   } catch (error) {
-    logger.break()
+    logger.errorBreak()
     logger.error(
       `An invalid ${highlighter.info(
         "components.json"
@@ -81,7 +81,7 @@ export async function preFlightAdd(options: z.infer<typeof addOptionsSchema>) {
     logger.error(
       `Learn more at ${highlighter.info(`${MARKO_UI_URL}/docs/components-json`)}.`
     )
-    logger.break()
+    logger.errorBreak()
     throw new CommandError(
       `Invalid components.json at ${options.cwd}.`,
       {

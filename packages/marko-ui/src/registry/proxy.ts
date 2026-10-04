@@ -3,6 +3,12 @@ import { Agent, Dispatcher, EnvHttpProxyAgent } from "undici"
 
 import { RegistryError, RegistryErrorCode } from "@/src/registry/errors"
 import { parseUrl } from "@/src/registry/utils"
+import {
+  asConfigError,
+  asNetworkError,
+  looksLikeConfigFailure,
+  looksLikeNetworkFailure,
+} from "@/src/utils/error-contract"
 
 const HTTP_PROXY_ENV_VARS = [
   "HTTPS_PROXY",
@@ -167,51 +173,23 @@ async function fetchOnce(
       dispatcher: proxyDispatcher,
     } as RequestInit)
   } catch (error) {
-    // Native fetch reports network failures as a generic "fetch failed"
-    // TypeError with the actual reason buried in `cause`. The casts are
-    // needed because the configured TS lib predates Error.cause.
+    // Three classes, because the exit code and the advice differ:
     //
-    // This used to re-wrap the cause in a plain `Error`, which left the error
-    // handler nothing to classify: an unreachable registry became an
-    // unexpected bug — UNKNOWN_ERROR, exit 1, "please open an issue on
-    // GitHub". A refused port is not a bug, it is the documented exit-4
-    // condition, so this throws a real RegistryError and keeps the syscall
-    // reason in `cause` (which surfaces as `details.cause`).
-    const cause =
-      error instanceof TypeError
-        ? (error as TypeError & { cause?: unknown }).cause
-        : undefined
-
-    const reason = cause ? getFailureReason(cause) : getFailureReason(error)
-
-    throw new RegistryError(
-      `Could not reach the registry at ${url}${reason ? ` (${reason})` : ""}.`,
-      {
-        code: RegistryErrorCode.NETWORK_ERROR,
-        cause: error,
-        context: { url },
-        suggestion:
-          "Check the registry URL in components.json, your network connection, and any proxy or firewall in between, then retry.",
-      }
-    )
-  }
-}
-
-function getFailureReason(cause: unknown): string {
-  // Connection failures surface as an AggregateError with an empty message
-  // and the per-address errors (e.g. ECONNREFUSED) in `errors`.
-  if (cause instanceof Error && "errors" in cause) {
-    const errors = (cause as Error & { errors: unknown }).errors
-    if (Array.isArray(errors) && errors.length) {
-      return getFailureReason(errors[0])
+    // - The request could not be BUILT (credentials in the URL, unsupported
+    //   scheme, unparseable). Nothing was sent, so "check your network and
+    //   retry" is wrong advice and exit 4 would make an agent retry a
+    //   misconfiguration forever. INVALID_CONFIG, exit 1.
+    // - The host could not be REACHED (refused, DNS, timeout, reset, TLS).
+    //   NETWORK_ERROR, exit 4 — the documented "retry" case.
+    // - Anything else is not ours to classify. Rethrowing the ORIGINAL
+    //   error lets the error handler report it as the unexpected bug it
+    //   probably is, rather than dressing it up as a network problem.
+    if (looksLikeConfigFailure(error)) {
+      throw asConfigError(error, { url })
     }
+    if (looksLikeNetworkFailure(error)) {
+      throw asNetworkError(error, { url, context: { url } })
+    }
+    throw error
   }
-
-  if (cause instanceof Error) {
-    return (
-      cause.message || (cause as NodeJS.ErrnoException).code || "unknown error"
-    )
-  }
-
-  return String(cause)
 }

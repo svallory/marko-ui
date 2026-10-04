@@ -102,6 +102,12 @@ export type NormalizedCliError = {
   envelope: CliErrorEnvelope
   exitCode: number
   unexpected: boolean
+  /**
+   * The original thrown value, kept so the debug path can print a real stack.
+   * Never serialized into the envelope: `details` is a field that gets logged
+   * and pasted into issues, and a stack is a wall of absolute build paths.
+   */
+  raw?: unknown
 }
 
 /** Registry codes that mean "the network or the registry host failed". */
@@ -190,7 +196,7 @@ export function asNetworkError(
   const reason = networkFailureReason(error)
   const url = options.url
   const message = url
-    ? `Could not reach the registry at ${url}${reason ? ` (${reason})` : ""}.`
+    ? `Could not reach the registry at ${redactUrl(url)}${reason ? ` (${reason})` : ""}.`
     : `Could not reach the network${reason ? `: ${reason}` : "."}`
 
   return new RegistryError(message, {
@@ -203,6 +209,41 @@ export function asNetworkError(
     },
     suggestion:
       "Check the registry URL in components.json, your network connection, and any proxy or firewall in between, then retry.",
+  })
+}
+
+/**
+ * Build an INVALID_CONFIG `RegistryError` for a registry URL that cannot be
+ * turned into a request at all.
+ *
+ * `entry` names the offending registry so the suggestion points at the one
+ * line to edit rather than making the user audit every configured URL.
+ */
+export function asConfigError(
+  error: unknown,
+  options: { url?: string; entry?: string } = {}
+): RegistryError {
+  const url = options.url ? redactUrl(options.url) : undefined
+  const subject = options.entry
+    ? `Registry "${options.entry}"`
+    : url
+      ? `The registry at ${url}`
+      : "The registry"
+  // undici's own message quotes the offending URL verbatim — credentials
+  // included. Scrubbed here so the thrown error never HOLDS the secret, not
+  // merely so the renderer happens to hide it.
+  const reason = scrubUrlsInText(
+    error instanceof Error ? error.message : String(error)
+  )
+  const message = `${subject} could not be turned into a request: ${reason}`
+
+  return new RegistryError(message, {
+    code: RegistryErrorCode.INVALID_CONFIG,
+    cause: error,
+    context: { ...(url ? { url } : {}), ...(options.entry ? { entry: options.entry } : {}) },
+    suggestion: `Check the "${
+      options.entry ?? "registries"
+    }" entry in components.json: the URL must be an absolute http(s) URL, and credentials belong in headers, not in the URL.`,
   })
 }
 
@@ -296,6 +337,38 @@ const HOME = (() => {
   const home = process.env.HOME ?? process.env.USERPROFILE
   return home && home.length > 1 ? home.replace(/\/+$/, "") : undefined
 })()
+
+/**
+ * True when the request could never be SENT because of how it was built, as
+ * opposed to the host being unreachable.
+ *
+ * undici refuses up front to construct a request from a URL carrying
+ * credentials, and rejects an unsupported scheme, before any socket is
+ * opened. Both surface as a plain `TypeError`, so the only way to tell them
+ * from a connection failure is the message. Misclassifying them as network
+ * failures is not cosmetic: the exit code is 4, so an agent told
+ * "NETWORK_ERROR, retry" retries a misconfiguration forever.
+ */
+export function looksLikeConfigFailure(error: unknown, depth = 0): boolean {
+  if (depth > 3 || !(error instanceof Error)) return false
+
+  if (
+    /includes credentials|invalid url|failed to parse url|unsupported protocol|unsupported scheme|protocol.*not supported|only http|only https|must be an absolute url|scheme must be/i.test(
+      error.message
+    )
+  ) {
+    return true
+  }
+
+  if (error.cause !== undefined && error.cause !== null) {
+    return looksLikeConfigFailure(error.cause, depth + 1)
+  }
+  const nested = (error as Error & { errors?: unknown }).errors
+  if (Array.isArray(nested)) {
+    return nested.some((entry) => looksLikeConfigFailure(entry, depth + 1))
+  }
+  return false
+}
 
 /** A `details` value that is safe to log: JSON-shaped, paths and URLs redacted. */
 export type Sanitizable =

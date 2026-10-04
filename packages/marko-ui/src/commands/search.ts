@@ -81,14 +81,14 @@ export const search = new Command()
       if (options.types?.length) {
         const unknownTypes = findUnknownSearchTypes(options.types)
         if (unknownTypes.length > 0) {
-          logger.break()
+          logger.errorBreak()
           logger.error(
             `Unknown ${unknownTypes.length === 1 ? "type" : "types"}: ${unknownTypes
               .map((type) => highlighter.info(type))
               .join(", ")}.`
           )
           logger.error(`Valid types: ${SEARCHABLE_TYPES.join(", ")}.`)
-          logger.break()
+          logger.errorBreak()
           // Multi-line message already printed above.
           throw new CommandError(`Unknown search type.`, {
             formatted: true,
@@ -143,13 +143,13 @@ export const search = new Command()
       // for an explicit registry/namespace argument.
       const searchAllConfigured = registries.length === 0
       if (searchAllConfigured && !hasComponentsJson) {
-        logger.break()
+        logger.errorBreak()
         logger.error(
           `Provide a registry or namespace to search, e.g. ${highlighter.info(
             "marko-ui search @marko-ui"
           )}.`
         )
-        logger.break()
+        logger.errorBreak()
         logger.error(
           `If you have a ${highlighter.info(
             "components.json"
@@ -157,7 +157,7 @@ export const search = new Command()
             "marko-ui search"
           )} with no arguments to search all of them.`
         )
-        logger.break()
+        logger.errorBreak()
         throw new CommandError("A registry or namespace is required.", {
           formatted: true,
           code: RegistryErrorCode.USAGE_ERROR,
@@ -196,7 +196,7 @@ export const search = new Command()
       const registriesToSearch = resolveSearchRegistries(registries, config)
 
       if (searchAllConfigured && registriesToSearch.length === 0) {
-        logger.break()
+        logger.errorBreak()
         logger.error(
           `No registries are configured in ${highlighter.info(
             "components.json"
@@ -207,7 +207,7 @@ export const search = new Command()
             "marko-ui search @marko-ui"
           )}.`
         )
-        logger.break()
+        logger.errorBreak()
         throw new CommandError("No registries are configured.", {
           formatted: true,
           code: RegistryErrorCode.NOT_CONFIGURED,

@@ -155,7 +155,11 @@ export const doctor = new Command()
         }
         logger.break()
         if (failed.length) {
-          logger.error(
+          // The report is the RESULT, including this line: it says what
+          // doctor found, and the exit code (3) is what says it was bad.
+          // Writing it to stderr moved it off stdout, away from the check
+          // list it summarizes. Only the exit code marks the run as failed.
+          logger.log(
             `${failed.length} ${failed.length === 1 ? "check" : "checks"} failed.`
           )
         } else {
