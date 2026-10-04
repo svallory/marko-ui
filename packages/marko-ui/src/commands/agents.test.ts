@@ -44,6 +44,15 @@ function surface() {
 
 type MentionProblem = { file: string; line: number; token: string; mention: string }
 
+/** A `marko-ui <command> [flags]` mention, and the command it resolved to. */
+type Mention = {
+  text: string
+  node?: SurfaceNode
+  firstToken: string
+  flags: string[]
+  at: number
+}
+
 /**
  * Every `marko-ui <command> [flags]` mention in agent-facing text, checked
  * against the surface `marko-ui manifest` publishes. Agent-facing text is
@@ -51,12 +60,22 @@ type MentionProblem = { file: string; line: number; token: string; mention: stri
  * not a typo: the generated section shipped `show <name> --props` for weeks,
  * a flag the CLI never had. Problems carry the file and LINE so a failing
  * assertion points at the sentence to edit.
+ *
+ * Flags written in their OWN backtick span next to a command count too:
+ * "`marko-ui show <name>` — the item as JSON; `--files` lists what would be
+ * written" documents `--files` just as much as an inline one does, and SKILL.md
+ * writes six flags that way. A standalone backticked flag is attributed to the
+ * NEAREST command mention before it on the same line (prose is line-oriented:
+ * a markdown list item is one line), and checked against that command's flags.
+ * A standalone flag with no command mention on its line is not checked —
+ * there is nothing to attribute it to.
  */
 function findUnknownCommands(text: string, file: string): MentionProblem[] {
   const commands = surface()
   const problems: MentionProblem[] = []
 
   text.split("\n").forEach((lineText, index) => {
+    const mentions: Mention[] = []
     for (const match of lineText.matchAll(
       /`(?:bunx |npx |pnpm dlx )?marko-ui ([^`]+)`/g
     )) {
@@ -71,20 +90,51 @@ function findUnknownCommands(text: string, file: string): MentionProblem[] {
         resolved++
       }
 
-      if (resolved === 0) {
+      mentions.push({
+        text: match[0],
+        at: match.index,
+        node: resolved === 0 ? undefined : node,
+        firstToken: tokens[0]!,
+        flags: tokens.filter((token) => token.startsWith("-")),
+      })
+    }
+
+    for (const mention of mentions) {
+      if (!mention.node) {
         problems.push({
           file,
           line: index + 1,
-          token: tokens[0]!,
-          mention: match[0],
+          token: mention.firstToken,
+          mention: mention.text,
         })
         continue
       }
-
-      for (const flag of tokens.filter((token) => token.startsWith("-"))) {
-        if (!node!.flags.has(flag)) {
-          problems.push({ file, line: index + 1, token: flag, mention: match[0] })
+      for (const flag of mention.flags) {
+        if (!mention.node.flags.has(flag)) {
+          problems.push({
+            file,
+            line: index + 1,
+            token: flag,
+            mention: mention.text,
+          })
         }
+      }
+    }
+
+    // Standalone `--flag` spans, attributed to the nearest command mention
+    // before them on the line. A mention that did not resolve is skipped:
+    // the command itself is already reported, and its flags would be noise.
+    for (const flagMatch of lineText.matchAll(/`(--?[a-zA-Z][\w-]*)`/g)) {
+      const nearest = [...mentions]
+        .reverse()
+        .find((mention) => mention.node && mention.at < flagMatch.index)
+      if (nearest && !nearest.node!.flags.has(flagMatch[1]!)) {
+        problems.push({
+          file,
+          line: index + 1,
+          token: flagMatch[1]!,
+          mention: nearest?.text ?? flagMatch[0]!,
+        })
       }
     }
   })
@@ -146,9 +196,24 @@ describe("buildAgentsSection", () => {
     expect(section).not.toContain("Installed:")
   })
 
-  it("keeps agents sync in the import command list", () => {
+  it("keeps agents sync in the import command list, without the copy-only lines", () => {
     const section = buildAgentsSection([], { distribution: "import" })
     expect(section).toContain("- `marko-ui agents sync` — refresh this section and install the agent skills")
+    // Import has no `add`, so nothing in that workflow acts on a dependency
+    // listing; keeping it cost the section its token budget.
+    expect(section).not.toContain("marko-ui show")
+    expect(section).not.toContain("marko-ui add")
+  })
+
+  it("stays inside the token budget for every distribution and size", () => {
+    // The ceiling is for a normal project; the list itself is the only part
+    // that grows, so it is checked at a few realistic sizes.
+    for (const components of [[], ["button"], ["button", "card", "switch"], ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]]) {
+      for (const distribution of ["copy", "import"] as const) {
+        const section = buildAgentsSection(components, { distribution })
+        expect(section.length / 4, `${distribution}, ${components.length} components`).toBeLessThanOrEqual(250)
+      }
+    }
   })
 
   it("points at the skills by name, not at one agent's directory", () => {
@@ -183,6 +248,46 @@ describe("findUnknownCommands", () => {
         mention: "`marko-ui show button --props`",
       },
     ])
+  })
+
+  it("catches a standalone backticked flag next to its command", () => {
+    // SKILL.md writes six flags this way; the first version of this guard
+    // never looked at them, so `add --overwave` would have stayed green.
+    const problems = findUnknownCommands(
+      "4. `marko-ui add <name> -y` — install. `--bogus` previews the changes.\n",
+      "fixtures/SKILL.md"
+    )
+
+    expect(problems).toEqual([
+      {
+        file: "fixtures/SKILL.md",
+        line: 1,
+        token: "--bogus",
+        mention: "`marko-ui add <name> -y`",
+      },
+    ])
+  })
+
+  it("accepts the standalone flags SKILL.md actually writes", () => {
+    expect(
+      findUnknownCommands(
+        [
+          "No components.json: run `marko-ui init` (add `--agents` for the agent docs).",
+          "3. `marko-ui show <name>` — the item as JSON; `--files` lists what would be written, `--deps` lists dependencies.",
+          "4. `marko-ui add <name> -y` — install. `--dry-run` previews, `--overwrite` replaces.",
+          "6. `marko-ui doctor --json` — health checks; exit 3 means broken.",
+        ].join("\n"),
+        "fixtures/SKILL.md"
+      )
+    ).toEqual([])
+  })
+
+  it("leaves a standalone flag with no command on its line alone", () => {
+    // Nothing to attribute it to — attributing it to a command from another
+    // line would invent a constraint the text does not make.
+    expect(
+      findUnknownCommands("Vite's `--inspect` has nothing to do with marko-ui.\n", "f.md")
+    ).toEqual([])
   })
 
   it("catches a command the CLI does not have", () => {
