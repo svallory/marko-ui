@@ -19,7 +19,7 @@ import packageJson from "../../package.json"
  */
 export const manifest = new Command()
   .name("manifest")
-  .description("print a machine-readable description of the entire CLI")
+  .description("describe the CLI, or one command, as machine-readable JSON")
   .argument("[command]", "describe only this command (name or alias)")
   .action((commandName: string | undefined, _opts, command: Command) => {
     try {

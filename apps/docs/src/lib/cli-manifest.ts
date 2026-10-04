@@ -337,8 +337,15 @@ export const CLI_MANIFEST: CliManifest = {
     {
       "name": "manifest",
       "aliases": [],
-      "description": "print a machine-readable description of the entire CLI",
-      "arguments": [],
+      "description": "describe the CLI, or one command, as machine-readable JSON",
+      "arguments": [
+        {
+          "name": "command",
+          "required": false,
+          "variadic": false,
+          "description": "describe only this command (name or alias)"
+        }
+      ],
       "options": []
     },
     {
