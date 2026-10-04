@@ -57,7 +57,11 @@ interface PropertyEntry {
   description?: string;
   /** Variant props only: the literal option names (e.g. ["default","sm","lg"]). */
   options?: string[];
-  /** Variant props only: the cva `defaultVariants` entry, when present. */
+  /**
+   * Statically knowable default: the cva `defaultVariants` entry for a variant
+   * prop, or the Zag machine prop's own `@default` JSDoc tag. Absent means
+   * "not recorded", never "there is no default".
+   */
   default?: string;
 }
 
@@ -268,6 +272,29 @@ function classifyingDeclarations(
   return (property.declarations ?? []).filter((declaration) => test(declaration.getSourceFile().fileName));
 }
 
+/**
+ * The `@default` JSDoc tag of one declaration, normalized for a table cell.
+ *
+ * Zag's published `.d.ts` files document their props' defaults this way
+ * (`@default false`, `@default "vertical"`, `@default 50`), which is the only
+ * record of a machine prop's default that survives type erasure. Quotes are
+ * stripped (`"vertical"` → `vertical`) so the markdown renders it as code
+ * rather than as quoted text, and an expression — `@default 10 * step` — is
+ * dropped rather than half-documented, since a table cell cannot evaluate it.
+ */
+function declarationDefault(declaration: ts.Declaration): string | undefined {
+  for (const tag of ts.getJSDocTags(declaration)) {
+    if (tag.tagName.text !== "default") continue;
+    const text = typeof tag.comment === "string" ? tag.comment : undefined;
+    if (!text) continue;
+    const value = text.trim();
+    if (value.length === 0 || /\s/.test(value)) continue;
+    const unquoted = /^"([^"]*)"$/.exec(value);
+    return unquoted ? unquoted[1] : value;
+  }
+  return undefined;
+}
+
 /** The plain-text JSDoc body attached directly to one declaration. */
 function declarationDocumentation(declaration: ts.Declaration): string {
   const comments = ts
@@ -325,6 +352,27 @@ async function readVariantMetadata(
       if (config && ts.isObjectLiteralExpression(config)) {
         const variants = objectLiteralProperty(config, "variants");
         const defaults = objectLiteralProperty(config, "defaultVariants");
+// `defaultVariants` first, and independently of the `variants` block:
+        // every component in this registry keeps its variant MAP in classes.ts
+        // (`variants: { variant: button.variant }`), so requiring an inline
+        // object literal here used to skip the whole cva config and record no
+        // default for any component at all.
+        if (defaults && ts.isObjectLiteralExpression(defaults)) {
+          for (const entry of defaults.properties) {
+            if (!ts.isPropertyAssignment(entry)) continue;
+            const groupName = ts.isIdentifier(entry.name)
+              ? entry.name.text
+              : ts.isStringLiteral(entry.name)
+                ? entry.name.text
+                : undefined;
+            if (!groupName || !ts.isStringLiteral(entry.initializer)) continue;
+            const existing = metadata.get(groupName);
+            metadata.set(groupName, {
+              options: existing?.options ?? [],
+              default: entry.initializer.text,
+            });
+          }
+        }
         if (variants && ts.isObjectLiteralExpression(variants)) {
           for (const group of variants.properties) {
             if (!ts.isPropertyAssignment(group)) continue;
@@ -341,12 +389,10 @@ async function readVariantMetadata(
               }
               return [];
             });
-            let defaultOption: string | undefined;
-            if (defaults && ts.isObjectLiteralExpression(defaults)) {
-              const value = objectLiteralProperty(defaults, groupName);
-              if (value && ts.isStringLiteral(value)) defaultOption = value.text;
-            }
-            metadata.set(groupName, { options, default: defaultOption });
+            metadata.set(groupName, {
+              options,
+              default: metadata.get(groupName)?.default,
+            });
           }
         }
       }
@@ -468,8 +514,22 @@ async function main() {
         if (documentation) entry.description = documentation;
         const variant = variantMetadata.get(property.getName());
         if (kind === "variant" && variant) {
-          entry.options = variant.options;
+          if (variant.options.length > 0) entry.options = variant.options;
           if (variant.default !== undefined) entry.default = variant.default;
+        }
+        // A Zag machine prop's default lives only in its `@default` JSDoc tag
+        // (see declarationDefault). Union-branch props have no single
+        // authoritative declaration, so every classifying one is consulted and
+        // the first tag found wins.
+        if (kind === "machine" && entry.default === undefined) {
+          const candidates = authoritative ? [authoritative] : classifying;
+          for (const candidate of candidates) {
+            const declaredDefault = declarationDefault(candidate);
+            if (declaredDefault !== undefined) {
+              entry.default = declaredDefault;
+              break;
+            }
+          }
         }
         properties.push(entry);
       }

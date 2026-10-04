@@ -21,6 +21,8 @@ interface PropertyEntry {
   required: boolean;
   kind: string;
   description?: string;
+  default?: string;
+  options?: string[];
 }
 interface PartEntry {
   name: string;
@@ -46,6 +48,12 @@ function findHref(components: ComponentEntry[], componentName: string): Property
   const href = part.properties.find((p) => p.name === "href");
   if (!href) throw new Error(`no href property on ${componentName}`);
   return href;
+}
+
+function allProperties(components: ComponentEntry[]): PropertyEntry[] {
+  return components.flatMap((component) =>
+    component.parts.flatMap((part) => part.properties),
+  );
 }
 
 describe("extract-api: union Input types", () => {
@@ -78,4 +86,77 @@ describe("extract-api: union Input types", () => {
       expect(part.properties.filter((p) => p.kind === "native")).toHaveLength(0);
     }
   });
+});
+
+// The API tables render a `default` column, and before defaults were
+// extracted it was an em dash on every single row: the docs told a reader
+// "this prop has no default" for all 1491 props, which is a different claim
+// from "we don't know". Two statically knowable sources exist — a cva
+// `defaultVariants` entry and a Zag machine prop's own `@default` JSDoc tag —
+// and both are asserted here against the real registry.
+//
+// The `variant` case is the regression: every component keeps its variant MAP
+// in classes.ts (`variants: { variant: button.variant }`), so the extractor
+// used to skip the whole cva config and record nothing for ANY component.
+describe("extract-api: default values", () => {
+  it(
+    "records cva defaultVariants and Zag @default tags, and nothing malformed",
+    { timeout: 60_000 },
+    async () => {
+      const env = { ...process.env };
+      delete env.AI_AGENT;
+      execFileSync("bun", ["tooling/extract-api.ts"], { cwd: REPO_ROOT, env });
+
+      const components = await readApiReference();
+      const properties = allProperties(components);
+
+      // cva `defaultVariants`. The variant map lives in classes.ts in every
+      // one of these, so this only passes if defaultVariants is read
+      // independently of the `variants` block.
+      const variantDefault = (componentName: string, prop: string): string | undefined => {
+        const component = components.find((c) => c.name === componentName);
+        if (!component) throw new Error(`no ${componentName} in api-reference.json`);
+        return component.parts
+          .flatMap((part) => part.properties)
+          .find((p) => p.name === prop && p.kind === "variant")?.default;
+      };
+      expect(
+        components
+          .find((c) => c.name === "button")!
+          .parts.find((p) => p.name === "button")!
+          .properties.filter((p) => p.kind === "variant")
+          .map((p) => [p.name, p.default]),
+      ).toEqual([
+        ["size", "default"],
+        ["variant", "default"],
+      ]);
+      expect(variantDefault("field", "orientation")).toBe("vertical");
+      expect(variantDefault("badge", "variant")).toBe("default");
+
+      // Zag `@default` JSDoc on machine props (accordion.types.d.ts documents
+      // `multiple` as `@default false`).
+      const accordion = components.find((c) => c.name === "accordion")!;
+      const accordionRoot = accordion.parts.find((p) => p.name === "accordion")!;
+      const multiple = accordionRoot.properties.find((p) => p.name === "multiple");
+      expect(multiple?.kind).toBe("machine");
+      expect(multiple?.default).toBe("false");
+
+      // Normalized for a table cell: no expression text, no leftover quotes.
+      const withDefault = properties.filter((p) => p.default !== undefined);
+      expect(withDefault.length).toBeGreaterThan(100);
+      for (const property of withDefault) {
+        expect(property.default, `${property.name} default`).not.toMatch(/\s/);
+        expect(property.default, `${property.name} default`).not.toContain('"');
+        expect(property.default, `${property.name} default`).not.toContain("`");
+      }
+
+      // Sanity: the props whose default ISN'T statically knowable are still
+      // recorded as unknown (the field absent), not as a fabricated value.
+      const direction = components
+        .find((c) => c.name === "button")!
+        .parts.find((p) => p.name === "button")!
+        .properties.find((p) => p.name === "class");
+      expect(direction?.default).toBeUndefined();
+    },
+  );
 });
