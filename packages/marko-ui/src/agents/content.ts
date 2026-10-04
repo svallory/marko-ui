@@ -56,7 +56,9 @@ Installed: ${
     isImport
       ? null
       : "- `marko-ui add <name> -y` — install one",
-    "- `marko-ui show <name> --deps` — a component's dependencies",
+    // Import has no `add`, so nothing in that workflow acts on a dependency
+    // listing: the npm package brings its own. It belongs to the copy flow.
+    isImport ? null : "- `marko-ui show <name> --deps` — a component's dependencies",
     "- `marko-ui doctor --json` — project health (exit 3 = a check failed)",
     "- `marko-ui agents sync` — refresh this section and install the agent skills",
   ]
@@ -75,7 +77,6 @@ ships (\`bunx marko-ui\`):
 
 ${commands}
 
-Load the \`marko-ui\` skill before writing component code (\`marko6\` covers Marko
-syntax); \`marko-ui agents sync\` installs it.
+Load the \`marko-ui\` skill before writing component code; \`marko6\` covers Marko syntax.
 ${AGENTS_END_MARKER}`
 }
