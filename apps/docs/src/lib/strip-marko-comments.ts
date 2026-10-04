@@ -48,8 +48,17 @@ export function stripMarkoComments(source: string): string {
 
   /** Nothing but whitespace seen since the last newline. */
   let atLineStart = true;
-  /** Inside a `{…}` expression — a Marko attribute expression or a text one. */
+  /**
+   * Inside a `{…}` expression — a Marko attribute expression, or a text
+   * expression. Opened only where one can actually be: in a tag head
+   * (attribute position), or in body text where the brace closes on the same
+   * line. A bare `{` in body text that never closes is literal text, and
+   * treating it as an expression would swallow the rest of the line as a
+   * comment — `text { not expr // here</p>` would lose its closing tag.
+   */
   let braceDepth = 0;
+  /** Inside a `<…>` head, where `{` really does start an attribute value. */
+  let inTag = false;
   /** Inside a `<script>` body, where a comment can follow code on a line. */
   let inScript = false;
 
@@ -83,6 +92,9 @@ export function stripMarkoComments(source: string): string {
     if (char === "<") {
       if (!inScript && source.startsWith("<script", index)) inScript = true;
       else if (inScript && source.startsWith("</script", index)) inScript = false;
+      else if (!inScript && !inTag && !source.startsWith("<!--", index)) inTag = true;
+    } else if (char === ">" && inTag && braceDepth === 0) {
+      inTag = false;
     }
 
     const commentAllowed = atLineStart || braceDepth > 0 || inScript;
@@ -115,8 +127,11 @@ export function stripMarkoComments(source: string): string {
       continue;
     }
 
-    if (char === "{") braceDepth += 1;
-    else if (char === "}" && braceDepth > 0) braceDepth -= 1;
+    if (char === "{" && (inTag || closesOnItsLine(source, index))) {
+      braceDepth += 1;
+    } else if (char === "}" && braceDepth > 0) {
+      braceDepth -= 1;
+    }
 
     out.push(char);
     if (char !== " " && char !== "\t" && char !== "\r") atLineStart = false;
@@ -124,6 +139,39 @@ export function stripMarkoComments(source: string): string {
   }
 
   return tidy(out.join(""));
+}
+
+/**
+ * True when the `{` at `start` has a matching `}` before the end of its line.
+ *
+ * A body-text expression is short — `{count}`, `{item.label}` — so requiring
+ * the close on the same line is what separates one from a literal brace. It
+ * cannot be perfect: a multi-line text expression is not recognized, and its
+ * contents are then left alone rather than stripped, which is the safe
+ * direction (a comment that survives is noise; code that is deleted is a
+ * broken example).
+ */
+function closesOnItsLine(source: string, start: number): boolean {
+  let depth = 0;
+  let quote = "";
+  for (let index = start; index < source.length; index += 1) {
+    const char = source[index];
+    if (char === "\n") return false;
+    if (quote) {
+      if (char === quote) quote = "";
+      continue;
+    }
+    if (char === '"' || char === "'" || char === "`") {
+      quote = char;
+      continue;
+    }
+    if (char === "{") depth += 1;
+    else if (char === "}") {
+      depth -= 1;
+      if (depth === 0) return true;
+    }
+  }
+  return false;
 }
 
 /** Index just past the closing `quote` of the string starting at `start`. */

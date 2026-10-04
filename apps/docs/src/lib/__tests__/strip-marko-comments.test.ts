@@ -45,6 +45,28 @@ describe("stripMarkoComments: text content is content", () => {
     expect(stripMarkoComments(source)).toBe(source);
   });
 
+  it("keeps a literal `{` in text content, and the tag that follows it", () => {
+    // The round-2 stripper treated any `{` as an expression, so the `//` in
+    // the text swallowed the rest of the line — closing tag included. A body
+    // expression is short and closes on its line; a brace that does not is
+    // literal text.
+    const source = ["<p>text { not expr // here</p>", "<b>keep</b>"].join("\n");
+
+    expect(stripMarkoComments(source)).toBe(source);
+  });
+
+  it("still reads a same-line body expression as an expression", () => {
+    const source = "<p>{count /* how many */} items</p>";
+
+    expect(stripMarkoComments(source)).toBe("<p>{count } items</p>");
+  });
+
+  it("keeps an unclosed `{` at the end of a line in text content", () => {
+    const source = ["<p>{ unclosed", "// a real comment line", "</p>"].join("\n");
+
+    expect(stripMarkoComments(source)).toBe(["<p>{ unclosed", "", "</p>"].join("\n"));
+  });
+
   it("keeps a regex literal", () => {
     const source = "const re = /\\/\\//g;";
 
