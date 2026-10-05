@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { logger } from "@/src/utils/logger"
+
 /**
  * The result objects the mutating commands report.
  *
@@ -35,8 +37,6 @@ import { z } from "zod"
  * a failure.
  */
 export const WarningCode = {
-  /** `init`: the CSS entry is written but no layout imports it. */
-  CSS_NOT_IMPORTED: "CSS_NOT_IMPORTED",
   /** `init`: `tsconfig.json` cannot set `allowImportingTsExtensions`. */
   TS_ALLOW_IMPORTING_EXTENSIONS: "TS_ALLOW_IMPORTING_EXTENSIONS",
   /** `init`: the `+layout.marko` that would import the CSS entry was not found. */
@@ -45,10 +45,12 @@ export const WarningCode = {
   DEPENDENCY_INSTALL_FAILED: "DEPENDENCY_INSTALL_FAILED",
   /** `add`: a registry item carries docs the caller should read. */
   ITEM_HAS_DOCS: "ITEM_HAS_DOCS",
-  /** `agents sync`: the agent skills could not be installed. */
-  SKILL_INSTALL_FAILED: "SKILL_INSTALL_FAILED",
   /** `eject`: manual steps remain that the CLI deliberately does not do. */
   MANUAL_STEPS_REMAIN: "MANUAL_STEPS_REMAIN",
+  /** `add --dry-run`: the project has no components.json, so a real run would init first. */
+  PROJECT_NOT_INITIALIZED: "PROJECT_NOT_INITIALIZED",
+  /** `add --dry-run`: stale icon maps would be deleted by a real run. */
+  STALE_FILES_REMOVED: "STALE_FILES_REMOVED",
 } as const
 
 export type WarningCode = (typeof WarningCode)[keyof typeof WarningCode]
@@ -112,17 +114,19 @@ export const fileChangeSchema = z.object({
 export type DependencyChange = {
   name: string
   /**
-   * `installed` — the package manager was asked to add it.
+   * `installed` — the package manager was asked to add it, and was.
    * `present` — already declared in package.json, left exactly as it was
    *   (re-resolving a bare name would rewrite its range).
    * `failed` — the install did not succeed; the files were still written.
+   * `would-install` — DRY RUN ONLY: not declared, and would be installed.
+   *   A dry run must not say `installed` for anything; nothing ran.
    */
-  status: "installed" | "present" | "failed"
+  status: "installed" | "present" | "failed" | "would-install"
 }
 
 export const dependencyChangeSchema = z.object({
   name: z.string(),
-  status: z.enum(["installed", "present", "failed"]),
+  status: z.enum(["installed", "present", "failed", "would-install"]),
 })
 
 /**
@@ -140,6 +144,7 @@ export function toFileChanges(groups: {
   filesCreated?: string[]
   filesUpdated?: string[]
   filesSkipped?: string[]
+  filesUnchanged?: string[]
   filesRemoved?: string[]
 }): FileChange[] {
   const entries: FileChange[] = []
@@ -151,6 +156,9 @@ export function toFileChanges(groups: {
   }
   for (const file of groups.filesSkipped ?? []) {
     entries.push({ path: file, status: "skipped" })
+  }
+  for (const file of groups.filesUnchanged ?? []) {
+    entries.push({ path: file, status: "unchanged" })
   }
   for (const file of groups.filesRemoved ?? []) {
     entries.push({ path: file, status: "removed" })
@@ -180,4 +188,45 @@ export function plannedToFileChanges(
 /** `data.next` — the commands worth running next, as literal strings. */
 export function nextSteps(commands: string[]): string[] {
   return Array.from(new Set(commands.filter(Boolean)))
+}
+/**
+ * Print a warning for a human: the `message`, then the `fix`.
+ *
+ * The brief's rule is "warnings go to stderr with the SAME text as the JSON
+ * `message` and `fix`", and the failure mode is subtle: the JSON carried a
+ * `fix` the human never saw, and the two `message`s drifted apart by quoting
+ * (one colored and unquoted, one quoted) because each rendering formatted its
+ * own copy. Printing the STRUCTURED warning — the same object `--json`
+ * serializes — is what makes drift impossible rather than merely unlikely.
+ *
+ * stderr, because a warning is a diagnostic and stdout is carrying the result
+ * (or, under `--json`, the one document).
+ */
+export function formatWarningText(warning: CommandWarning): string {
+  return warning.fix
+    ? `${warning.message}\n  fix: ${warning.fix}`
+    : warning.message
+}
+
+/**
+ * Collect a warning and print it in one call.
+ *
+ * `push` and `print` are separate parameters rather than a single object so
+ * the collector can stay optional (`options.warnings?.push` at call sites that
+ * do not care) while the human text is never skipped by accident — the two
+ * halves are the same fact, and a code path that collects without printing is
+ * exactly the drift this replaced.
+ */
+export function recordWarning(
+  warnings: CommandWarning[] | undefined,
+  warning: CommandWarning,
+  options: { silent?: boolean } = {}
+): void {
+  warnings?.push(warning)
+  if (!options.silent) {
+    // A plain import: `logger` depends on `output-mode`, not on this module, so
+    // there is no cycle to dodge — and `require()` does not resolve the `@/`
+    // alias under vitest or ESM anyway.
+    logger.warn(formatWarningText(warning))
+  }
 }

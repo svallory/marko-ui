@@ -96,14 +96,14 @@ describe("the schemas", () => {
   it("keeps fix optional but carries it when present", () => {
     expect(
       commandWarningSchema.parse({
-        code: WarningCode.CSS_NOT_IMPORTED,
+        code: WarningCode.LAYOUT_NOT_FOUND,
         message: "m",
         fix: "bun x",
       })
     ).toMatchObject({ fix: "bun x" })
     expect(
       commandWarningSchema.parse({
-        code: WarningCode.CSS_NOT_IMPORTED,
+        code: WarningCode.LAYOUT_NOT_FOUND,
         message: "m",
       })
     ).not.toHaveProperty("fix")

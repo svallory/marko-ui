@@ -318,6 +318,13 @@ exactly what `add --dry-run --json` did ("This project is not initialized…") u
 was moved into the logger. The stderr writers (`error`, `warn`, `debug`) are NOT suppressed: a
 real warning still belongs on stderr in `--json` mode. Never "fix" a `--json` command by
 adding a `logger.info`; the answer is the envelope.
+**`isJsonMode()` reads ONLY the recorded mode — it does not fall back to argv.** The old
+fallback misfired on a command with no `--json` flag: `registry add -- --json` parses
+`--json` as a positional, and the CLI answered with a JSON error envelope and swallowed that
+command's `logger.info` output. The one caller that legitimately runs before any action exists
+— `index.ts`'s commander hook — uses `isJsonModeForErrors()`, which reads argv but STOPS at
+the `--` separator so a post-`--` positional is not mistaken for the flag. `handleError` uses
+the recorded mode: it runs from a command's own catch, after the action recorded the flag.
 Two facts to know before changing anything here:
 - **Minified unless stdout is a TTY.** `jsonIndent(stream)` returns 2 for a terminal and 0
   otherwise, because the reader is usually an AI agent and pretty-printed JSON costs 28-43%

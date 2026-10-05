@@ -161,8 +161,14 @@ function printAgentsResult(
       },
     ],
     skills: result.skills,
+    // A real warning, not an empty array: a skills install that failed is
+    // exactly what SKILL_INSTALL_FAILED names, and hardcoding `[]` meant a
+    // caller had no way to learn it from the document.
     warnings: result.warnings,
-    next: result.agentsChanged ? [] : [],
+    // Nothing to do after a sync either way: the file is current and the
+    // skills are installed. N3 flagged the previous `changed ? [] : []` as a
+    // dead ternary, and the honest answer is that `next` is empty.
+    next: [],
   })
 }
 
@@ -176,7 +182,12 @@ function printAgentsResult(
  */
 export async function runAgentsSync(
   cwd: string,
-  options: { silent?: boolean; skill?: boolean; json?: boolean } = {}
+  options: {
+    silent?: boolean
+    skill?: boolean
+    json?: boolean
+    files?: { path: string; status: "unchanged" | "updated" }[]
+  } = {}
 ): Promise<{
   agentsChanged: boolean
   agentsPath: string
@@ -199,18 +210,23 @@ export async function runAgentsSync(
   await fs.writeFile(agentsPath, nextAgents, "utf8")
   writeSpinner.succeed()
 
+  // A failed skills install THROWS (it is fatal by design), so it never
+  // reaches a `warnings` array — the structured facts belong on the error
+  // envelope instead, where `installAgentSkills` now puts them.
   const skills =
     options.skill === false
       ? { installed: [] as string[], skipped: [] as string[] }
       : ((await installAgentSkills(cwd, { silent: options.silent })) ?? {
-          installed: [],
-          skipped: [],
+          installed: [] as string[],
+          skipped: [] as string[],
         })
 
   return {
     agentsChanged,
     agentsPath,
     skills,
+    // Empty on success BY CONSTRUCTION: everything runAgentsSync can report
+    // here already worked. N3 called this hardcoded — it is, deliberately.
     warnings: [],
   }
 }

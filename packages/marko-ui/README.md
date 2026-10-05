@@ -61,11 +61,15 @@ with every other path relative to it.
 `add`, `init`, `eject`, `diff` and `agents sync` also take `--json`, and
 return the same three shapes so one parser covers all of them:
 
-- `files`: `{ path, status }`, relative to `cwd` (given once). `created` /
-  `updated` / `skipped` / `unchanged` / `removed` for `add` and `init`;
-  `unchanged` / `modified` / `missing` for `diff`. `skipped` and `unchanged`
-  are different facts: `skipped` means the file exists and differs but was left
-  alone, `unchanged` means it already matched.
+- `files`: `{ path, status }`, relative to `cwd` (given once).
+  `created` (wrote a new file) / `updated` (replaced one) / `unchanged`
+  (already matched) / `skipped` (exists, **differs**, left alone) / `removed`
+  (a stale icon map deleted), plus `missing` for `diff` (registry has it,
+  project does not). `skipped` and `unchanged` are different facts: a re-run
+  of an unchanged component reports `unchanged`; `skipped` means the file had
+  drifted and nothing replaced it.
+- `dependencies` on `add`: `installed` / `present` (already declared, left
+  exactly as it was) / `failed`, and on a dry run `would-install`.
 - `warnings`: `{ code, message, fix }`. A warning is **not** a failure — `ok`
   stays `true` and the warning says what is left to do. The codes are listed in
   `marko-ui manifest` under `warningCodes`, next to `errorCodes`.

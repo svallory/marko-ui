@@ -50,6 +50,8 @@ export const RegistryErrorCode = {
   CHECK_FAILED: "CHECK_FAILED",
   /** No Marko project (no package.json) at the requested directory. */
   PROJECT_NOT_FOUND: "PROJECT_NOT_FOUND",
+  /** The agent skills could not be installed. Fatal, so it is an ERROR, not a warning. */
+  SKILL_INSTALL_FAILED: "SKILL_INSTALL_FAILED",
 
   // Generic errors
   UNKNOWN_ERROR: "UNKNOWN_ERROR",

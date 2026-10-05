@@ -4,6 +4,7 @@ import {
   getPackageManager,
   getPackageRunnerCommand,
 } from "@/src/utils/get-package-manager"
+import { RegistryErrorCode } from "@/src/registry/errors"
 import { getProjectInfo } from "@/src/utils/get-project-info"
 import { CommandError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
@@ -164,10 +165,21 @@ export async function installAgentSkills(
       error instanceof Error
         ? (error.message.split("\n").find((line) => line.trim()) ?? "")
         : String(error)
+    // The structured facts go on the ERROR envelope's `details`, not on a
+    // `warnings` array: this throws, so there is no successful result to warn
+    // inside. That is also why SKILL_INSTALL_FAILED is not a WarningCode — the
+    // failure is an error (`MISSING_ENV_VARS`-shaped, exit 1), and a code that
+    // could never appear in a `warnings` array was advertising a path the
+    // shape does not have.
     throw new CommandError(
       `Could not install the agent skills (${reason}).\nInstall them manually with:\n  ${highlighter.info(
         formatted
-      )}\nor pass ${highlighter.info("--no-skill")} to skip them.`
+      )}\nor pass ${highlighter.info("--no-skill")} to skip them.`,
+      {
+        code: RegistryErrorCode.SKILL_INSTALL_FAILED,
+        suggestion: formatted,
+        details: { wanted, command: formatted, reason },
+      }
     )
   }
 }

@@ -22,7 +22,31 @@ export function resetJsonMode() {
   recorded = undefined
 }
 
+/**
+ * The recorded mode, or FALSE when nothing was recorded.
+ *
+ * Deliberately no argv fallback here. There was one, to cover the window
+ * before a command's action runs, and it misfired: `registry add -- --json`
+ * — a command with no `--json` flag, where `--json` is a POSITIONAL — was
+ * treated as JSON mode, answered with a JSON error envelope and had its
+ * `logger.info` output swallowed. Every command that takes the flag records
+ * it as its first statement; a command that does not take it must not go
+ * looking for it in argv. Use {@link isJsonModeForErrors} where the pre-action
+ * window genuinely has to be covered.
+ */
 export function isJsonMode(): boolean {
-  if (recorded !== undefined) return recorded
-  return process.argv.includes("--json")
+  return recorded === true
+}
+
+/**
+ * For `handleError` only, which can run before any action has recorded a mode
+ * (commander's own option parsing rejects `--json` before the action fires).
+ *
+ * Narrow on purpose: it inspects the option TOKENS, so a `--json` that comes
+ * after `--` — i.e. is a positional — is not counted.
+ */
+export function isJsonModeForErrors(argv: string[] = process.argv): boolean {
+  const separator = argv.indexOf("--")
+  const tokens = separator === -1 ? argv : argv.slice(0, separator)
+  return tokens.includes("--json")
 }

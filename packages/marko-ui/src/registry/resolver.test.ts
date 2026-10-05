@@ -1237,6 +1237,7 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
         "css": {},
         "cssVars": {},
         "dependencies": [],
+        "dependencyItems": [],
         "devDependencies": [],
         "docs": "",
         "files": [
@@ -1257,6 +1258,10 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
+        "items": [
+          "button-variant-a",
+          "button-variant-b",
+        ],
         "tailwind": {},
       }
     `)
@@ -1274,6 +1279,7 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
         "css": {},
         "cssVars": {},
         "dependencies": [],
+        "dependencyItems": [],
         "devDependencies": [],
         "docs": "",
         "files": [
@@ -1294,6 +1300,10 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
+        "items": [
+          "button-variant-b",
+          "button-variant-a",
+        ],
         "tailwind": {},
       }
     `)
@@ -1313,6 +1323,7 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
         "css": {},
         "cssVars": {},
         "dependencies": [],
+        "dependencyItems": [],
         "devDependencies": [],
         "docs": "",
         "files": [
@@ -1334,6 +1345,10 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
+        "items": [
+          "button-variant-a",
+          "component-with-explicit-target",
+        ],
         "tailwind": {},
       }
     `)
@@ -1350,6 +1365,9 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
         "css": {},
         "cssVars": {},
         "dependencies": [],
+        "dependencyItems": [
+          "lib-utils",
+        ],
         "devDependencies": [],
         "docs": "",
         "files": [
@@ -1365,6 +1383,10 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
+        "items": [
+          "lib-utils",
+          "lib-and-ui-conflict",
+        ],
         "tailwind": {},
       }
     `)
@@ -1427,6 +1449,7 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
         "css": {},
         "cssVars": {},
         "dependencies": [],
+        "dependencyItems": [],
         "devDependencies": [],
         "docs": "",
         "files": [
@@ -1447,6 +1470,10 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
+        "items": [
+          "nested-a",
+          "nested-b",
+        ],
         "tailwind": {},
       }
     `)
@@ -1508,6 +1535,7 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
         "css": {},
         "cssVars": {},
         "dependencies": [],
+        "dependencyItems": [],
         "devDependencies": [],
         "docs": "",
         "files": [
@@ -1523,6 +1551,10 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
+        "items": [
+          "utils-set-a",
+          "utils-set-b",
+        ],
         "tailwind": {},
       }
     `)
@@ -1573,6 +1605,9 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
         "css": {},
         "cssVars": {},
         "dependencies": [],
+        "dependencyItems": [
+          "base-button",
+        ],
         "devDependencies": [],
         "docs": "",
         "files": [
@@ -1583,6 +1618,10 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
+        "items": [
+          "base-button",
+          "extended-button",
+        ],
         "tailwind": {},
       }
     `)
@@ -1750,6 +1789,9 @@ describe("resolveRegistryTree - cross-registry dependencies", async () => {
         "css": {},
         "cssVars": {},
         "dependencies": [],
+        "dependencyItems": [
+          "login-02",
+        ],
         "devDependencies": [],
         "docs": "",
         "files": [
@@ -1770,6 +1812,11 @@ describe("resolveRegistryTree - cross-registry dependencies", async () => {
           },
         ],
         "fonts": undefined,
+        "items": [
+          "login-01",
+          "login-02",
+          "block-02",
+        ],
         "tailwind": {},
       }
     `)
@@ -1816,6 +1863,9 @@ describe("resolveRegistryTree - cross-registry dependencies", async () => {
         "css": {},
         "cssVars": {},
         "dependencies": [],
+        "dependencyItems": [
+          "login-02",
+        ],
         "devDependencies": [],
         "docs": "",
         "files": [
@@ -1826,6 +1876,11 @@ describe("resolveRegistryTree - cross-registry dependencies", async () => {
           },
         ],
         "fonts": undefined,
+        "items": [
+          "login-01",
+          "login-02",
+          "app-01",
+        ],
         "tailwind": {},
       }
     `)
@@ -2075,6 +2130,11 @@ describe("resolveRegistryTree - comprehensive cross-registry tests", async () =>
           "recharts",
           "lucide-react",
         ],
+        "dependencyItems": [
+          "theme-provider",
+          "chart-utils",
+          "dialog",
+        ],
         "devDependencies": [
           "@types/node",
           "@types/recharts",
@@ -2124,6 +2184,12 @@ describe("resolveRegistryTree - comprehensive cross-registry tests", async () =>
           },
         ],
         "fonts": undefined,
+        "items": [
+          "theme-provider",
+          "chart-utils",
+          "dialog",
+          "dashboard-01",
+        ],
         "tailwind": {
           "config": {
             "plugins": [
@@ -2213,6 +2279,10 @@ describe("resolveRegistryTree - comprehensive cross-registry tests", async () =>
           "@radix-ui/react-dialog",
           "axios",
         ],
+        "dependencyItems": [
+          "theme-provider",
+          "chart-utils",
+        ],
         "devDependencies": [
           "@types/node",
           "@types/axios",
@@ -2254,6 +2324,12 @@ describe("resolveRegistryTree - comprehensive cross-registry tests", async () =>
           },
         ],
         "fonts": undefined,
+        "items": [
+          "theme-provider",
+          "chart-utils",
+          "dialog",
+          "api-client",
+        ],
         "tailwind": {
           "config": {
             "plugins": [

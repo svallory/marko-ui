@@ -558,13 +558,13 @@ export const CLI_MANIFEST: CliManifest = {
     "4": "network error or registry unreachable (registry-backed commands)"
   },
   "warningCodes": [
-    "CSS_NOT_IMPORTED",
     "TS_ALLOW_IMPORTING_EXTENSIONS",
     "LAYOUT_NOT_FOUND",
     "DEPENDENCY_INSTALL_FAILED",
     "ITEM_HAS_DOCS",
-    "SKILL_INSTALL_FAILED",
-    "MANUAL_STEPS_REMAIN"
+    "MANUAL_STEPS_REMAIN",
+    "PROJECT_NOT_INITIALIZED",
+    "STALE_FILES_REMOVED"
   ],
   "agentWorkflow": [
     "marko-ui search -q <query> — find items across configured registries",

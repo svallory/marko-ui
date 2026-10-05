@@ -33,6 +33,7 @@ import { confirm, exitIfEmptySelection, multiselect } from "@/src/utils/clack"
 import { spinner } from "@/src/utils/spinner"
 import { writeProjectTaglib } from "@/src/utils/taglib"
 import { Command } from "commander"
+import { getPackageInfo } from "@/src/utils/get-package-info"
 import { z } from "zod"
 
 export const addOptionsSchema = z.object({
@@ -203,7 +204,13 @@ export const add = new Command()
         )
         previewSpinner.stop()
         if (options.json) {
-          printDryRunResult(options.cwd, options.components, previewResult)
+          // N7: the prose that used to announce "add would run init first" is
+          // silenced under --json, and nothing replaced it — so the document
+          // described a plan against a project that does not exist yet. Both
+          // surfaces now say it.
+          printDryRunResult(options.cwd, options.components, previewResult, {
+            wouldInitialize: true,
+          })
           return
         }
         logger.log(formatDryRunResult(previewResult, options.components, {}))
@@ -354,7 +361,10 @@ function printAddResult(
   printEnvelope("marko-ui/add", {
     cwd,
     dryRun: false,
-    items: { requested, resolved: requested },
+    // `resolved` is what the CLI actually installed, NOT a copy of
+    // `requested`: `add button dialog` also installs `icon`, and a caller told
+    // two components landed when three did is worse than no report.
+    items: { requested, resolved: result.resolved },
     files: result.files,
     dependencies: result.dependencies,
     registryDependencies: result.registryDependencies,
@@ -362,6 +372,23 @@ function printAddResult(
     next,
     ...(options.initialized ? { initialized: true } : {}),
   })
+}
+
+/**
+ * Whether a dry run would actually install this package, read from the
+ * project's own package.json — the same declared set `updateDependencies`
+ * skips. A package already declared is reported `present`, NOT
+ * "installed": re-resolving a bare name would rewrite its range, so the
+ * install would never have happened.
+ */
+function plannedDependency(
+  name: string,
+  cwd: string
+): { name: string; status: "present" | "would-install" } {
+  return {
+    name,
+    status: isDeclaredInPackageJson(cwd, name) ? "present" : "would-install",
+  }
 }
 
 /**
@@ -375,7 +402,8 @@ function printAddResult(
 function printDryRunResult(
   cwd: string,
   requested: string[],
-  result: DryRunResult
+  result: DryRunResult,
+  options: { wouldInitialize?: boolean } = {}
 ) {
   printEnvelope("marko-ui/add", {
     cwd,
@@ -393,24 +421,37 @@ function printDryRunResult(
           ]
         : []),
     ].sort((a, b) => a.path.localeCompare(b.path)),
+    // F7: the dry run never installs anything, so "installed" was a lie for
+    // every package already in package.json — including on a project where
+    // the real run reports them all `present`. The same `declared` check the
+    // real installer uses decides `present` vs `would-install` here.
     dependencies: [
-      ...result.dependencies.map((name) => ({ name, status: "installed" as const })),
-      ...result.devDependencies.map((name) => ({
-        name,
-        status: "installed" as const,
-      })),
+      ...result.dependencies.map((name) => plannedDependency(name, cwd)),
+      ...result.devDependencies.map((name) => plannedDependency(name, cwd)),
     ],
     registryDependencies: [],
-    warnings: result.removals?.length
-      ? [
-          {
-            code: WarningCode.MANUAL_STEPS_REMAIN,
-            message: `Would remove ${result.removals.length} stale icon map(s): ${result.removals.join(", ")}.`,
-            fix: "marko-ui add <name> --dry-run",
-          },
-        ]
-      : [],
-    next: [],
+    warnings: [
+      ...(options.wouldInitialize
+        ? [
+            {
+              code: WarningCode.PROJECT_NOT_INITIALIZED,
+              message:
+                "This project has no components.json. A real run would run marko-ui init with the defaults first, then add the requested items. Nothing was written.",
+              fix: "marko-ui init",
+            },
+          ]
+        : []),
+      ...(result.removals?.length
+        ? [
+            {
+              code: WarningCode.STALE_FILES_REMOVED,
+              message: `Would remove ${result.removals.length} stale icon map(s): ${result.removals.join(", ")}.`,
+              fix: "marko-ui add <name> --overwrite",
+            },
+          ]
+        : []),
+    ],
+    next: options.wouldInitialize ? ["marko-ui init"] : [],
   })
 }
 
@@ -581,3 +622,19 @@ async function promptForRegistryComponents(
 
 
 
+
+/**
+ * Is `name` already declared in the project's package.json (any of
+ * dependencies / devDependencies / optional / peer)? The same set
+ * `normalizeDependencyRequests` skips, read the same way, so the dry run and
+ * the real run cannot disagree about whether a package is already there.
+ */
+export function isDeclaredInPackageJson(cwd: string, name: string): boolean {
+  const packageInfo = getPackageInfo(cwd, false)
+  return [
+    ...Object.keys(packageInfo?.dependencies ?? {}),
+    ...Object.keys(packageInfo?.devDependencies ?? {}),
+    ...Object.keys(packageInfo?.optionalDependencies ?? {}),
+    ...Object.keys(packageInfo?.peerDependencies ?? {}),
+  ].includes(name)
+}

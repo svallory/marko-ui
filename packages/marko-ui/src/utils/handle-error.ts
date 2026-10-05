@@ -349,6 +349,8 @@ export function handleError(error: unknown) {
   // the bespoke block cannot know: the code. Without it a monorepo-root or
   // search failure was prose with nothing a program could branch on, which
   // is exactly what criterion 3 exists to prevent.
+  // `isJsonMode()` (the RECORDED mode), not the argv fallback: by this point
+  // an action has run, or never will.
   if (error instanceof CommandError && error.formatted && !isJsonMode()) {
     logger.error(
       `${highlighter.error("Error")} [${normalized.envelope.error.code}]: ${error.message}`
@@ -356,6 +358,13 @@ export function handleError(error: unknown) {
     process.exit(error.exitCode)
   }
 
+  // `isJsonMode()` — the RECORDED mode. handleError is reached from a
+  // command's own catch, i.e. AFTER its action recorded the flag it parsed, so
+  // the recorded value is authoritative and argv is a stale guess. The argv
+  // fallback belongs to the ONE caller that runs before any action exists:
+  // `index.ts`'s commander hook (isJsonModeForErrors there). Reading argv
+  // here instead made a `--json` failure print prose on stderr while the
+  // success path printed JSON.
   if (isJsonMode()) {
     // One helper owns JSON output (see json-output.ts): minified when stdout
     // is a pipe, pretty when a human is watching. An error envelope is JSON

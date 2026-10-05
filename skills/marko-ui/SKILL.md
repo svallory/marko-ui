@@ -51,16 +51,33 @@ shapes, so one parser covers all of them:
 - `files`: `{ path, status }`, **relative to `cwd`** (given once at the top).
 - `warnings`: `{ code, message, fix }`. A warning is NOT a failure — the
   command did its job, `ok` stays `true`, and the warning says what is left.
-  Codes are listed in `marko-ui manifest` under `warningCodes`.
+  Codes are listed in `marko-ui manifest` under `warningCodes`. The human path
+  prints the SAME `message` and `fix`, so what you read and what you parse
+  cannot disagree.
 - `next`: commands worth running next. Act on it rather than re-deriving it.
 
 `status` values are a closed vocabulary, not prose:
-`created` / `updated` / `skipped` / `unchanged` / `removed` for `add` and
-`init`; `unchanged` / `modified` / `missing` for `diff`. **`skipped` and
-`unchanged` are different facts**: `skipped` means the file exists and differs
-but was left alone (`--overwrite` would have replaced it), `unchanged` means it
-already matched. A second `add` of the same component reports `skipped`, not
-`created` — check the status before telling a user something was installed.
+
+| status | means |
+|---|---|
+| `created` | this run wrote a file that did not exist |
+| `updated` | this run replaced an existing file |
+| `unchanged` | the file already matched the registry byte for byte |
+| `skipped` | the file exists, **differs**, and was left alone (`--overwrite` would have replaced it) |
+| `removed` | a stale icon map this run deleted |
+| `missing` | (`diff` only) the registry has it, the project does not |
+
+**`skipped` and `unchanged` are different facts.** Re-running `add` on an
+unchanged component reports `unchanged`, not `skipped`; `skipped` means the
+file had drifted and nothing replaced it. Read the status before telling a user
+something was installed — `created` is the only status that means "this run
+wrote it".
+
+For `add`, also check `items.resolved` (what was ACTUALLY installed, which
+includes registry dependencies pulled in beyond what you asked for — `add
+button` can resolve `utils` too), `dependencies` (`installed` / `present` /
+`failed`), and `dryRun: true` on a preview, where the statuses are PLANNED,
+not observed.
 
 ## Reading errors
 

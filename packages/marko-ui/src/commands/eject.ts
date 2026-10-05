@@ -11,6 +11,7 @@ import {
   WarningCode,
 } from "@/src/utils/command-result"
 import { getConfig } from "@/src/utils/get-config"
+import { getPackageManager } from "@/src/utils/get-package-manager"
 import {
   CleanExit,
   CommandError,
@@ -46,10 +47,13 @@ function printEjectResult(
   components: string[],
   ejected: AddResult,
   taglib: { tags?: number } | null,
-  options: { manualStepsRemaining: boolean }
+  options: { manualStepsRemaining: boolean; packageManager: string }
 ) {
+  const { packageManager } = options
   const warnings: CommandWarning[] = [...(ejected?.warnings ?? [])]
   if (options.manualStepsRemaining) {
+    // The ONE case that is a warning: something the CLI could not do, on a
+    // file the project already had.
     warnings.push({
       code: WarningCode.MANUAL_STEPS_REMAIN,
       message:
@@ -57,12 +61,6 @@ function printEjectResult(
       fix: "Merge marko.json by hand, or delete it and re-run marko-ui eject",
     })
   }
-  warnings.push({
-    code: WarningCode.MANUAL_STEPS_REMAIN,
-    message:
-      "components.json now has distribution: copy, but @marko-ui/shadcn and the import-distribution CSS block are still there.",
-    fix: "bun remove @marko-ui/shadcn, then remove the marko-ui:import-distribution block from your CSS entry",
-  })
 
   printEnvelope("marko-ui/eject", {
     cwd,
@@ -77,9 +75,15 @@ function printEjectResult(
     ].sort((a, b) => a.path.localeCompare(b.path)),
     tags: taglib?.tags ?? 0,
     warnings,
+    // Lead's ruling: the always-true "remove the dependency / the CSS block"
+    // to-do is NOT a warning. A warning means something went wrong or needs
+    // attention THIS time; this fires on every eject, which made
+    // `warnings.length > 0` meaningless for the command and trained callers to
+    // ignore the field. It is a next step, which is what it always was.
+    // The package manager is derived, not hardcoded to bun.
     next: nextSteps([
-      "bun remove @marko-ui/shadcn",
-      "marko-ui add style",
+      `${packageManager} remove @marko-ui/shadcn`,
+      "Remove the marko-ui:import-distribution block from your CSS entry",
     ]),
   })
 }
@@ -219,6 +223,10 @@ export const eject = new Command()
       if (options.json) {
         printEjectResult(options.cwd, installedComponents, ejected, taglib, {
           manualStepsRemaining: taglib === null,
+          // N5: the runner is derived from the lockfile, not hardcoded to bun.
+          packageManager: await getPackageManager(options.cwd, {
+            withFallback: true,
+          }),
         })
         return
       }

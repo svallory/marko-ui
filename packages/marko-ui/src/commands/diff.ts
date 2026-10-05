@@ -248,18 +248,18 @@ function printDiffResult(
   )
   printEnvelope("marko-ui/diff", {
     cwd,
-    items: { requested: items, changed: changed.map((file) => file.path) },
+    // N9: `changedFiles`, not `changed` — the sibling key held FILE PATHS, not
+    // items, and `items.changed` implied items. The count is `changed`.
+    items: { requested: items },
+    changedFiles: changed.map((file) => file.path),
     files,
     changed: changed.length,
-    warnings: changed.length
-      ? [
-          {
-            code: WarningCode.ITEM_HAS_DOCS,
-            message: `${changed.length} file(s) differ from the registry.`,
-            fix: "marko-ui add <name> --overwrite",
-          },
-        ]
-      : [],
+    // F6: NO warning. "N files differ" is the ANSWER to the question diff was
+    // asked, not something that needs attention — and it was filed under
+    // ITEM_HAS_DOCS, a code documented as "a registry item carries docs", so a
+    // caller branching on that stable code got the wrong meaning. `files`,
+    // `changed` and `next` already carry it, all three truthfully.
+    warnings: [],
     next: changed.length ? ["marko-ui add <name> --overwrite"] : [],
   })
 }

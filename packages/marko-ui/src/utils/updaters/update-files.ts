@@ -34,7 +34,7 @@ import {
   mergeThemeIntoStylesheet,
 } from "@/src/utils/updaters/update-theme-stylesheet"
 import { isTargetAliasKey } from "@/src/utils/target-aliases"
-import { green, red, yellow } from "kleur/colors"
+import { dim, green, red, yellow } from "kleur/colors"
 import { loadConfig, type ConfigLoaderSuccessResult } from "tsconfig-paths"
 import { z } from "zod"
 
@@ -73,6 +73,7 @@ export async function updateFiles(
       filesCreated: [],
       filesUpdated: [],
       filesSkipped: [],
+      filesUnchanged: [],
       filesRemoved: [] as string[],
     }
   }
@@ -108,6 +109,12 @@ export async function updateFiles(
   let filesCreated: string[] = []
   let filesUpdated: string[] = []
   let filesSkipped: string[] = []
+  // Files already byte-for-byte what the registry ships. SEPARATE from
+  // `filesSkipped`, which means "exists and DIFFERS, and was left alone".
+  // Both used to land in the same array, so a re-run that changed nothing and
+  // a re-run that refused to overwrite everything were indistinguishable in
+  // the result — and `unchanged` was documented but never emitted.
+  let filesUnchanged: string[] = []
   let filesRemoved: string[] = []
   let envVarsAdded: string[] = []
   let envFile: string | null = null
@@ -206,7 +213,7 @@ export async function updateFiles(
           ignoreImports: options.isWorkspace,
         })
       ) {
-        filesSkipped.push(path.relative(config.resolvedPaths.cwd, filePath))
+        filesUnchanged.push(path.relative(config.resolvedPaths.cwd, filePath))
         continue
       }
     }
@@ -255,7 +262,7 @@ export async function updateFiles(
       envFile = path.relative(config.resolvedPaths.cwd, filePath)
 
       if (!envVarsAdded.length) {
-        filesSkipped.push(path.relative(config.resolvedPaths.cwd, filePath))
+        filesUnchanged.push(path.relative(config.resolvedPaths.cwd, filePath))
         continue
       }
 
@@ -368,6 +375,20 @@ export async function updateFiles(
     }
   }
 
+  if (filesUnchanged.length) {
+    spinner(
+      `Unchanged ${filesUnchanged.length} ${
+        filesUnchanged.length === 1 ? "file" : "files"
+      }:`,
+      { silent: options.silent }
+    )?.info()
+    if (!options.silent) {
+      for (const file of filesUnchanged) {
+        logger.log(`  ${dim("unchanged")} ${file}`)
+      }
+    }
+  }
+
   if (filesRemoved.length) {
     spinner(
       `Removed ${filesRemoved.length} stale icon ${
@@ -397,6 +418,7 @@ export async function updateFiles(
     filesCreated,
     filesUpdated,
     filesSkipped,
+    filesUnchanged,
     filesRemoved,
   }
 }
