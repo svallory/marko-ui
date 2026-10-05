@@ -203,47 +203,123 @@ export function parsePnpmWorkspacePackages(content: string) {
 
 
 /**
- * The workspace root that CONTAINS `cwd` (or IS `cwd`), or null when `cwd` is
- * not inside any workspace.
+ * A workspace root's declared member globs, split into the ones that include
+ * packages and the negated ones (`!apps/legacy`) that remove them.
  *
- * This is the root the CLI already detects for lockfile and workspace lookup
- * (a `pnpm-workspace.yaml` or a package.json with `workspaces`). It is exported
- * rather than re-implemented so the write guard and the package manager can
- * never disagree about where "the project" ends.
+ * Reads the same two sources as {@link getWorkspacePatterns} — `package.json`
+ * `workspaces` (array form or `{ packages }` object form) and
+ * `pnpm-workspace.yaml` `packages` — but keeps the negations, because
+ * "is this directory a member" cannot be answered without them. Synchronous:
+ * the write guard is.
+ *
+ * A `workspaces` key that is not a list (`true`, an object without `packages`)
+ * declares no members.
+ */
+export function readWorkspaceGlobs(root: string): {
+  include: string[]
+  exclude: string[]
+} {
+  const all: string[] = []
+
+  try {
+    const yaml = readFileSync(path.join(root, "pnpm-workspace.yaml"), "utf8")
+    all.push(...parsePnpmWorkspacePackages(yaml))
+  } catch {
+    // No pnpm-workspace.yaml (or unreadable): not a pnpm root.
+  }
+
+  try {
+    const pkg = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"))
+    const workspaces = Array.isArray(pkg?.workspaces)
+      ? pkg.workspaces
+      : pkg?.workspaces?.packages
+    if (Array.isArray(workspaces)) {
+      all.push(...workspaces.filter((w: unknown): w is string => typeof w === "string"))
+    }
+  } catch {
+    // No package.json, or not valid JSON: contributes nothing.
+  }
+
+  const normalize = (glob: string) =>
+    glob.replace(/^\.\//, "").replace(/\/+$/, "")
+  const include: string[] = []
+  const exclude: string[] = []
+  for (const glob of all) {
+    if (glob.startsWith("!")) exclude.push(normalize(glob.slice(1)))
+    else include.push(normalize(glob))
+  }
+  return { include, exclude }
+}
+
+/**
+ * True when `dir` is `root` itself or a workspace member of `root`, i.e. its
+ * path relative to `root` — or one of that path's ancestors, so a directory
+ * deep inside a member counts — matches the root's include globs and no
+ * negated glob.
+ */
+export function isWorkspaceMember(root: string, dir: string): boolean {
+  const relative = path.relative(root, dir)
+  if (relative === "") return true
+  if (relative.startsWith("..") || path.isAbsolute(relative)) return false
+
+  const { include, exclude } = readWorkspaceGlobs(root)
+  if (!include.length) return false
+
+  const members = new Set(
+    fg
+      .sync(include, {
+        cwd: root,
+        onlyDirectories: true,
+        ignore: ["**/node_modules/**", ...exclude],
+        suppressErrors: true,
+      })
+      .map((member) => path.normalize(member))
+  )
+
+  // The member may be `dir` or any directory between it and `root`.
+  const segments = relative.split(path.sep)
+  for (let length = segments.length; length > 0; length--) {
+    if (members.has(segments.slice(0, length).join(path.sep))) return true
+  }
+  return false
+}
+
+/**
+ * The workspace root that CONTAINS `cwd` (or IS `cwd`), or null when `cwd` is
+ * not a member of any workspace.
+ *
+ * This is the root the write guard allows, so it is the NEAREST ancestor whose
+ * workspace globs actually include `cwd` (see {@link isWorkspaceMember}) — not
+ * merely the nearest or outermost ancestor that declares workspaces. An
+ * ancestor that declares workspaces without including the project grants
+ * nothing: an unrelated `package.json` with `workspaces` above a non-member
+ * project used to widen the allowed roots to everything under it, which let an
+ * alias reaching into a sibling checkout write there.
  *
  * Climbs from the real path of `cwd` (a cwd reached through a symlink must not
- * make the walk escape into the symlink's own parents) and returns the
- * OUTERMOST ancestor that is a workspace root, so nested workspaces resolve to
- * the repo the user means. `apps/web` inside a monorepo therefore returns the
- * monorepo root even though `apps/web` is not itself a root: that is what lets
- * `add` write into a sibling `packages/ui`.
+ * make the walk escape into the symlink's own parents). `apps/web` inside a
+ * monorepo whose globs include `apps/*` returns the monorepo root even though
+ * `apps/web` is not itself a root: that is what lets `add` write into a
+ * sibling `packages/ui`. Nested workspaces resolve to the nearest including
+ * root.
  */
 export function findWorkspaceRoot(cwd: string): string | null {
-  let dir: string
+  let start: string
   try {
-    dir = realpathSync(cwd)
+    start = realpathSync(cwd)
   } catch {
-    dir = path.resolve(cwd)
+    start = path.resolve(cwd)
   }
 
-  const isRoot = (candidate: string) => {
-    if (existsSync(path.join(candidate, "pnpm-workspace.yaml"))) return true
-    try {
-      const pkg = JSON.parse(
-        readFileSync(path.join(candidate, "package.json"), "utf8")
-      )
-      return Boolean(pkg?.workspaces)
-    } catch {
-      return false
-    }
-  }
-
-  let outer: string | null = null
+  let dir = start
   for (;;) {
-    if (isRoot(dir)) outer = dir
+    // A root must declare member globs at all; one that declares none (a plain
+    // package.json) is skipped before the glob expansion.
+    if (readWorkspaceGlobs(dir).include.length && isWorkspaceMember(dir, start)) {
+      return dir
+    }
     const parent = path.dirname(dir)
-    if (parent === dir) break
+    if (parent === dir) return null
     dir = parent
   }
-  return outer
 }
