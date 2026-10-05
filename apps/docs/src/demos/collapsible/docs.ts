@@ -46,7 +46,6 @@ in the machine's \`getContentProps()\` internally.`,
       title: "Basic",
       description:
         "A trigger toggles the panel's open state; the chevron icon rotates to reflect it.",
-      essential: true,
     },
     {
       name: "collapsible-basic",

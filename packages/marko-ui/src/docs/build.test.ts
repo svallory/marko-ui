@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildComponentDocs, readInterfaceFields, type ApiProp } from "./build";
+import {
+  buildComponentDocs,
+  importedComponents,
+  readInterfaceFields,
+  resolveTypeShapes,
+  type ApiProp,
+} from "./build";
 import type { DocsEntry } from "./build";
 
 // The builder is what turns API data into something an agent can act on, and
@@ -259,5 +265,168 @@ describe("buildComponentDocs: examples", () => {
     });
 
     expect(model.examples[0]?.source).toBe("<Button/>");
+  });
+});
+describe("resolveTypeShapes", () => {
+  const NAV = [
+    "export interface LinkAttrs {",
+    "  /** Discriminant. */",
+    '  type?: "link";',
+    "  href: string;",
+    "}",
+    "export interface MenuAttrs {",
+    '  type: "menu";',
+    "  content?: Marko.Body;",
+    "  links?: PanelLink[];",
+    "}",
+    "export type EntryAttrs = LinkAttrs | MenuAttrs;",
+    "export type Own = {",
+    "  align?: string;",
+    "  nested?: {",
+    "    inner: string;",
+    "  };",
+    "};",
+    'export type Variant = "a" | "b";',
+  ].join("\n");
+
+  it("expands a union alias into one shape per member", () => {
+    const shapes = resolveTypeShapes(NAV, "EntryAttrs");
+    expect(shapes.map((shape) => shape.name)).toEqual(["LinkAttrs", "MenuAttrs"]);
+    expect(shapes[0]?.fields[0]).toEqual({
+      name: "type",
+      type: '"link"',
+      required: false,
+      description: "Discriminant.",
+    });
+  });
+
+  it("reads an object alias, skipping the fields of a nested literal", () => {
+    expect(resolveTypeShapes(NAV, "Own")[0]?.fields.map((field) => field.name)).toEqual([
+      "align",
+      "nested",
+    ]);
+  });
+
+  it("resolves a string-literal union to nothing", () => {
+    expect(resolveTypeShapes(NAV, "Variant")).toEqual([]);
+  });
+
+  it("follows extends into source passed alongside (an imported component)", () => {
+    const own = "export interface MenubarItemAttrs extends DropdownMenuItem {\n  inset?: boolean;\n}";
+    const imported = "export interface DropdownMenuItem {\n  value?: string;\n  label?: string;\n}";
+    expect(readInterfaceFields(own, "MenubarItemAttrs").map((field) => field.name)).toEqual(["inset"]);
+    expect(
+      readInterfaceFields(`${own}\n${imported}`, "MenubarItemAttrs").map((field) => field.name),
+    ).toEqual(["value", "label", "inset"]);
+  });
+});
+
+describe("importedComponents", () => {
+  it("names each sibling component directory once, sorted", () => {
+    const source = [
+      'import Icon from "../icon/icon.marko";',
+      'import type { DropdownMenuItem } from "../dropdown-menu/dropdown-menu.marko";',
+      'import Submenu from "./submenu.marko";',
+      'import { cn } from "#lib/utils.ts";',
+      'import type { X } from "../dropdown-menu/types.ts";',
+    ].join("\n");
+    expect(importedComponents(source)).toEqual(["dropdown-menu", "icon"]);
+  });
+});
+
+describe("buildComponentDocs: imported and union types", () => {
+  const MENU = [
+    'import type { DropdownMenuItem } from "../dropdown-menu/dropdown-menu.marko";',
+    "export interface MenubarItemAttrs extends DropdownMenuItem {",
+    "  content?: Marko.Body;",
+    "  inset?: boolean;",
+    "}",
+  ].join("\n");
+  const DROPDOWN = "export interface DropdownMenuItem {\n  value?: string;\n  label?: string;\n}";
+
+  it("gives a part the attributes it inherits from an imported interface", () => {
+    const docs = buildComponentDocs({
+      name: "menubar",
+      docs: { examples: [] },
+      demos: {},
+      installCommand: "",
+      componentSource: MENU,
+      relatedSource: DROPDOWN,
+      parts: [
+        {
+          name: "menubar",
+          properties: [
+            { name: "item", type: "Marko.AttrTag<MenubarItemAttrs> | undefined", required: false },
+            { name: "items", type: "DropdownMenuItem[] | undefined", required: false },
+          ],
+        },
+      ],
+    });
+    expect(docs.parts[0]?.attributes?.map((field) => field.name)).toEqual(["value", "label", "inset"]);
+    expect(docs.itemTypes?.[0]).toMatchObject({ prop: "items", typeName: "DropdownMenuItem" });
+  });
+
+  it("splits a union attr-tag into variants and expands union items and their array fields", () => {
+    const source = [
+      "export interface LinkAttrs { ",
+      "  href: string;",
+      "}",
+      "export interface MenuAttrs {",
+      '  type: "menu";',
+      "}",
+      "export type EntryAttrs = LinkAttrs | MenuAttrs;",
+      "export interface LinkItem {",
+      "  href: string;",
+      "}",
+      "export interface MenuItem {",
+      '  type: "menu";',
+      "  links?: PanelLink[];",
+      "}",
+      "export interface PanelLink {",
+      "  title: string;",
+      "}",
+      "export type NavItem = LinkItem | MenuItem;",
+    ].join("\n");
+    const docs = buildComponentDocs({
+      name: "nav",
+      docs: { examples: [] },
+      demos: {},
+      installCommand: "",
+      componentSource: source,
+      parts: [
+        {
+          name: "nav",
+          properties: [
+            { name: "entry", type: "Marko.AttrTag<EntryAttrs> | undefined", required: false },
+            { name: "items", type: "NavItem[] | undefined", required: false },
+          ],
+        },
+      ],
+    });
+    expect(docs.parts[0]?.attributes).toBeUndefined();
+    expect(docs.parts[0]?.variants?.map((variant) => variant.typeName)).toEqual(["LinkAttrs", "MenuAttrs"]);
+    expect(docs.itemTypes?.map((item) => [item.prop, item.typeName, item.unionOf])).toEqual([
+      ["items", "LinkItem", "NavItem"],
+      ["items", "MenuItem", "NavItem"],
+      ["MenuItem.links", "PanelLink", undefined],
+    ]);
+  });
+
+  it("keeps a part file the component renders itself public when a demo imports it", () => {
+    const source = 'import Link from "./link.marko";\n<Link/>';
+    const build = (demoSource: string) =>
+      buildComponentDocs({
+        name: "pagination",
+        docs: { examples: [] },
+        demos: { "pagination-demo": { source: demoSource } },
+        installCommand: "",
+        componentSource: source,
+        partFiles: ["link", "pagination"],
+        parts: [],
+      });
+    expect(build("<div/>").tags).toEqual(["Pagination"]);
+    expect(
+      build('import PaginationLink from "@marko-ui/shadcn/ui/pagination/link.marko";').tags,
+    ).toEqual(["Pagination", "PaginationLink"]);
   });
 });

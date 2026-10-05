@@ -18,9 +18,11 @@ import {
 } from "../../../../packages/marko-ui/src/docs/index.ts";
 import {
   buildComponentDocs,
+  importedComponents,
   type ComponentDocsInput,
 } from "../../../../packages/marko-ui/src/docs/build.ts";
 import type { ComponentPageData } from "./component-page-data.ts";
+import { DEMOS } from "../demos/demos-manifest.ts";
 import { stripMarkoComments } from "../../../../packages/marko-ui/src/docs/strip-comments.ts";
 
 export { defaultCell } from "./default-cell.ts";
@@ -47,9 +49,27 @@ export { buildComponentDocs };
  * carries: whether an attr-tag is iterated (repeatable) and what an
  * `Marko.AttrTag<T>` type declares (the part's own attributes).
  */
+/** A registry snapshot's authored `.marko` sources, concatenated in file order. */
+function markoSource(files: { path: string; content: string }[]): string {
+  return files
+    .filter((file) => file.path.endsWith(".marko"))
+    .map((file) => file.content)
+    .join("\n");
+}
+
 export function componentDocsInputFromPage(page: ComponentPageData): ComponentDocsInput {
   const demos: ComponentDocsInput["demos"] = {};
   for (const example of page.examples) demos[example.name] = { source: example.source };
+  const componentSource = markoSource(page.registry.files);
+  // The components this one imports types from, out of their own registry
+  // snapshots — the same text the registry build reads off disk.
+  const relatedSource = importedComponents(componentSource)
+    .map((name) => {
+      const entry = DEMOS[name];
+      return entry ? markoSource(entry.registry.files) : "";
+    })
+    .filter(Boolean)
+    .join("\n");
   return {
     name: page.name,
     title: page.title,
@@ -58,10 +78,8 @@ export function componentDocsInputFromPage(page: ComponentPageData): ComponentDo
     demos,
     parts: page.parts,
     installCommand: page.installCommand,
-    componentSource: page.registry.files
-      .filter((file) => file.path.endsWith(".marko"))
-      .map((file) => file.content)
-      .join("\n"),
+    componentSource,
+    relatedSource,
     // Same list the registry build reads off disk: the file names under
     // `ui/<name>/`, which is what the taglib names are derived from.
     // `path` is the file's name in the CONSUMER's project

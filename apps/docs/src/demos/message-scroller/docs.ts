@@ -49,7 +49,12 @@ import MessageScrollerViewport from "@/components/ui/message-scroller/viewport.m
 import MessageScrollerContent from "@/components/ui/message-scroller/content.marko";
 import MessageScrollerItem from "@/components/ui/message-scroller/item.marko";
 import MessageScrollerButton from "@/components/ui/message-scroller/button.marko";`,
-  usageSnippet: `<MessageScrollerProvider|controller|>
+  usageSnippet: `<let/messages=[
+  { id: "1", role: "user", text: "Hi!" },
+  { id: "2", role: "assistant", text: "Hello — how can I help?" },
+]/>
+
+<MessageScrollerProvider|controller|>
   <MessageScroller controller=controller>
     <MessageScrollerViewport controller=controller>
       <MessageScrollerContent controller=controller>
@@ -91,7 +96,6 @@ import MessageScrollerButton from "@/components/ui/message-scroller/button.marko
       name: "message-scroller-previous-context",
       title: "Keeping Context Visible",
       description: "Adjust scrollPreviousItemPeek to control how much of the previous turn stays visible above a newly anchored row.",
-      essential: true,
     },
     {
       name: "message-scroller-streaming",
@@ -102,7 +106,6 @@ import MessageScrollerButton from "@/components/ui/message-scroller/button.marko
       name: "message-scroller-opening-position",
       title: "Opening Saved Threads",
       description: "Switch defaultScrollPosition between start, end, and last-anchor to see where a reopened transcript lands.",
-      essential: true,
     },
     {
       name: "message-scroller-load-history",
@@ -116,6 +119,7 @@ import MessageScrollerButton from "@/components/ui/message-scroller/button.marko
     },
     {
       name: "message-scroller-commands",
+      essential: true,
       title: "Jumping to Messages",
       description: "A dropdown menu drives the transcript from outside MessageScroller's own markup, using the controller getter's scrollToMessage command.",
     },

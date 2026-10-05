@@ -19,6 +19,8 @@ import TextInput from "@/components/ui/input/input.marko";`,
   // reserved props-type name (CLAUDE.md), and `field`'s own examples already
   // use TextInput. It is also a different registry component, so the snippet
   // imports it explicitly rather than pretending `add field` brought it.
+  // The Usage snippet uses these; `add` does not install them.
+  requires: ["input"],
   usageSnippet: `<Field>
   <FieldLabel for="name">Full name</FieldLabel>
   <TextInput id="name" autocomplete="off" placeholder="Evil Rabbit"/>

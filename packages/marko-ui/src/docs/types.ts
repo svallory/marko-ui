@@ -47,6 +47,13 @@ export interface PartDoc {
    * part printed as a bare `<@trigger>` tells an agent nothing about that.
    */
   attributes?: PropDoc[];
+  /**
+   * Set instead of `attributes` when the part's type is a UNION of shapes
+   * (`navigation-menu`'s `<@entry>` is a link OR a menu, discriminated by
+   * `type`). Merging the members into one flat list would hide which fields
+   * belong to which kind, so each member is printed on its own.
+   */
+  variants?: { typeName: string; attributes: PropDoc[] }[];
   description?: string;
 }
 
@@ -74,8 +81,14 @@ export interface EventDoc {
  * `items: DropdownMenuItem[]` alone documents nothing an agent can act on.
  */
 export interface ItemTypeDoc {
+  /**
+   * Where the array is taken: a prop (`items`) or a field of another item
+   * shape (`NavigationMenuMenuItem.links`).
+   */
   prop: string;
   typeName: string;
+  /** The union this shape is one member of, e.g. `NavigationMenuItem`. */
+  unionOf?: string;
   fields: PropDoc[];
 }
 
@@ -88,6 +101,8 @@ export interface SubcomponentDoc {
   parts?: PartDoc[];
   /** The sub-part's own default body, if it declares one. */
   body?: BodyDoc;
+  /** The sub-part's own change handlers (menubar's `<MenubarMenu radioChange>`). */
+  events?: EventDoc[];
   nativeAttributes?: string;
 }
 

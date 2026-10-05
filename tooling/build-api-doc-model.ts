@@ -27,6 +27,7 @@ import { join } from "node:path";
 import type { ComponentDocs as ComponentDocsModel } from "../packages/marko-ui/src/docs/index";
 import {
   buildComponentDocs,
+  importedComponents,
   type ComponentDocsInput,
   type DocsEntry,
 } from "../packages/marko-ui/src/docs/build";
@@ -106,6 +107,21 @@ export async function readComponentSource(componentName: string): Promise<string
 }
 
 /**
+ * The sources of the other components this one imports from, concatenated in
+ * name order — the builder resolves imported types (`extends DropdownMenuItem`)
+ * out of them. The docs site assembles the same string from its registry
+ * snapshots, which `docs-parity.test.ts` holds equal.
+ */
+export async function readRelatedSource(componentSource: string): Promise<string> {
+  const sources: string[] = [];
+  for (const name of importedComponents(componentSource)) {
+    const text = await readComponentSource(name);
+    if (text) sources.push(text);
+  }
+  return sources.join("\n");
+}
+
+/**
  * The EVALUATED `docs.ts` export, or `undefined` when the component has none
  * — a component can be in the registry before its page is written, and the
  * registry item is still valid without a docs model.
@@ -165,6 +181,7 @@ export async function buildApiDocModel(
 ): Promise<ComponentDocsModel | undefined> {
   const docs = await importDocsEntry(source.name);
   if (!docs) return undefined;
+  const componentSource = await readComponentSource(source.name);
   const input: ComponentDocsInput = {
     name: source.name,
     title: source.title,
@@ -177,7 +194,8 @@ export async function buildApiDocModel(
     // (assertAddableDistribution), so that project's install line is the
     // dependency itself — see packages/shadcn/README.md for the full wiring.
     importInstallCommand: "bun add @marko-ui/shadcn marko-zag",
-    componentSource: await readComponentSource(source.name),
+    componentSource,
+    relatedSource: await readRelatedSource(componentSource),
     partFiles: await readPartFiles(source.name),
   };
   return buildComponentDocs(input);

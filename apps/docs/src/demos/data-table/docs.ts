@@ -12,7 +12,16 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<DataTable>`,
   importSnippet: `import DataTable from "@/components/ui/data-table/data-table.marko";`,
-  usageSnippet: `<DataTable columns=columns data=data/>`,
+  usageSnippet: `static const columns = [
+  { accessorKey: "email", header: "Email" },
+  { accessorKey: "amount", header: "Amount" },
+];
+static const data = [
+  { email: "ken99@example.com", amount: 316 },
+  { email: "abe45@example.com", amount: 242 },
+];
+
+<DataTable columns=columns data=data/>`,
   examples: [
     {
       name: "data-table-demo",

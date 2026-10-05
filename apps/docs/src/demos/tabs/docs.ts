@@ -13,7 +13,7 @@ export const docs: ComponentDocs = {
   usageTags: `<Tabs>`,
   importSnippet: `import Tabs from "@/components/ui/tabs/tabs.marko";`,
   usageSnippet: `<Tabs|value| items=[{ value: "account", label: "Account" }, { value: "password", label: "Password" }]>
-  <p>Showing the ${"${value}"} panel.</p>
+  <p>Content of the ${"${value}"} panel.</p>
 </Tabs>`,
   // Tabs is a SINGLE .marko file (one registry part, so isCompound is false
   // and the auto-generated composition-tree never renders — see
@@ -33,7 +33,7 @@ Tabs (items=)
 ├── list
 │   ├── item 1 { value, label, disabled? }
 │   └── item 2 { value, label, disabled? }
-└── content(value) — one shared render function keyed by the active value
+└── content(value) — rendered once per panel, with that panel's value
 \`\`\`
 
 \`\`\`text
@@ -52,7 +52,7 @@ items=-derived panels — see the Hybrid example below.`,
     {
       name: "tabs-demo",
       title: "Default",
-      description: "Pass `items` and read the active `value` from the tag's default parameter.",
+      description: "Pass `items` and branch on the body's parameter, each panel's own `value`; Zag shows the active panel.",
     },
     {
       name: "tabs-line",
@@ -88,6 +88,7 @@ items=-derived panels — see the Hybrid example below.`,
     },
     {
       name: "tabs-compound",
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@trigger>` and `<@panel>` attribute tags instead of `items=` to compose each tab's label and panel content directly in markup.",

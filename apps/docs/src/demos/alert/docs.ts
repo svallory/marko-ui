@@ -12,7 +12,8 @@ export const docs: ComponentDocs = {
   usageTags: `<Alert>, <AlertTitle>, <AlertDescription>`,
   importSnippet: `import Alert from "@/components/ui/alert/alert.marko";
 import AlertTitle from "@/components/ui/alert/title.marko";
-import AlertDescription from "@/components/ui/alert/description.marko";`,
+import AlertDescription from "@/components/ui/alert/description.marko";
+import AlertAction from "@/components/ui/alert/action.marko";`,
   usageSnippet: `<Alert>
   <Icon name="Info"/>
   <AlertTitle>Heads up!</AlertTitle>

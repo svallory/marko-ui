@@ -24,6 +24,11 @@ import MarkerContent from "@/components/ui/marker/content.marko";`,
   requires: ["icon"],
   examples: [
     {
+      name: "marker-icon",
+      title: "With Icon",
+      description: "Use `MarkerIcon` to render an icon alongside the content. Add `flex-col` to stack the icon above the content.",
+    },
+    {
       name: "marker-demo",
       title: "Basic",
       description: "A marker with an icon, a status marker with a spinner and shimmering text, and a labeled separator.",
@@ -52,11 +57,6 @@ import MarkerContent from "@/components/ui/marker/content.marko";`,
       name: "marker-border",
       title: "Border",
       description: 'Use the `"border"` variant for status rows that should keep the default marker alignment while separating the next row.',
-    },
-    {
-      name: "marker-icon",
-      title: "With Icon",
-      description: "Use `MarkerIcon` to render an icon alongside the content. Add `flex-col` to stack the icon above the content.",
     },
     {
       name: "marker-link-button",

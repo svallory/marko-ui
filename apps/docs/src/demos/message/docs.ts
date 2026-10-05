@@ -22,6 +22,8 @@ import BubbleContent from "@/components/ui/bubble/bubble-content.marko";
 import Message from "@/components/ui/message/message.marko";
 import MessageAvatar from "@/components/ui/message/avatar.marko";
 import MessageContent from "@/components/ui/message/content.marko";`,
+  // The Usage snippet uses these; `add` does not install them.
+  requires: ["avatar", "bubble"],
   usageSnippet: `<Message>
   <MessageAvatar>
     <Avatar src="https://github.com/shadcn.png" alt="@shadcn" fallback="CN"/>

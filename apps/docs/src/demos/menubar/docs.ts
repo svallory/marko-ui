@@ -13,7 +13,13 @@ export const docs: ComponentDocs = {
   usageTags: `<Menubar>, <MenubarMenu>`,
   importSnippet: `import Menubar from "@/components/ui/menubar/menubar.marko";
 import MenubarMenu from "@/components/ui/menubar/menu.marko";`,
-  usageSnippet: `<Menubar>
+  usageSnippet: `static const fileItems = [
+  { value: "new", label: "New Tab", shortcut: "⌘T" },
+  { type: "separator" },
+  { value: "print", label: "Print…" },
+];
+
+<Menubar>
   <MenubarMenu items=fileItems select(value) { /* ... */ }>
     <@trigger|triggerProps|>
       <button ...triggerProps>File</button>
@@ -76,6 +82,7 @@ import MenubarMenu from "@/components/ui/menubar/menu.marko";`,
     },
     {
       name: "menubar-compound",
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@item>` attribute tags on `MenubarMenu` instead of `items=` to compose the menu directly in markup — pass `type=\"separator\"` for a divider or `type=\"label\"` for a group label. Entries render in the order they are written. An item's text can come from either a `label=` attribute or a markup body, whichever you prefer.",

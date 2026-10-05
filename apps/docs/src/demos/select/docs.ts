@@ -11,7 +11,12 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Select>`,
   importSnippet: `import Select from "@/components/ui/select/select.marko";`,
-  usageSnippet: `<Select items=fruits placeholder="Select a fruit"/>`,
+  usageSnippet: `static const fruits = [
+  { value: "apple", label: "Apple" },
+  { value: "banana", label: "Banana" },
+];
+
+<Select items=fruits placeholder="Select a fruit"/>`,
   composition: `\
 Select is a single unsplit component — it has no separate trigger/content/item
 parts to compose. Its anatomy (all internal, rendered from \`items=\` or
@@ -70,7 +75,6 @@ markup (see the Compound example below).`,
       name: "select-invalid",
       title: "Invalid",
       description: "Set `invalid` on `Field` and `aria-invalid` on `Select` to show an error state.",
-      essential: true,
     },
     {
       name: "select-rtl",
@@ -101,6 +105,7 @@ markup (see the Compound example below).`,
     },
     {
       name: "select-compound",
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@option>` attribute tags instead of `items=` to compose each option directly in markup.",

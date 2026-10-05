@@ -69,7 +69,6 @@ export const docs: ComponentDocs = {
       title: "Custom Cell Size",
       description:
         "Customize cell size with the `--cell-size` CSS variable, responsively via breakpoint-specific arbitrary values. Upstream's per-day weekend/weekday price labels are omitted — our day button has no content-render slot to inject them.",
-      essential: true,
     },
     {
       name: "calendar-demo",

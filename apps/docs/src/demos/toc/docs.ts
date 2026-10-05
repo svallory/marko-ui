@@ -12,7 +12,16 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Toc>`,
   importSnippet: `import Toc from "@/components/ui/toc/toc.marko";`,
-  usageSnippet: `<Toc items=items scrollEl=() => scrollContainer()/>`,
+  usageSnippet: `static const items = [
+  { value: "introduction", depth: 2, label: "Introduction" },
+  { value: "usage", depth: 2, label: "Usage" },
+];
+
+<div/scrollContainer class="h-72 overflow-y-auto">
+  <h2 id="introduction">Introduction</h2>
+  <h2 id="usage">Usage</h2>
+</div>
+<Toc items=items scrollEl=() => scrollContainer()/>`,
   examples: [
     {
       name: "toc-demo",

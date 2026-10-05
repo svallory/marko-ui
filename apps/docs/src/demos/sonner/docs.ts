@@ -12,7 +12,9 @@ export const docs: ComponentDocs = {
   usageTags: `<Sonner>`,
   importSnippet: `import Sonner from "@/components/ui/sonner/sonner.marko";
 import { toast } from "@/components/ui/toast/store.ts";`,
-  usageSnippet: `toast.message({ title: "Event has been created" });
+  usageSnippet: `<button type="button" onClick() { toast.message({ title: "Event has been created" }); }>
+  Show toast
+</button>
 
 <Sonner/>`,
   examples: [

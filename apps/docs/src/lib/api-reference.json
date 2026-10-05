@@ -7739,7 +7739,7 @@
               "type": "number",
               "required": false,
               "kind": "own",
-              "description": "Extra top margin for a newly anchored row, added to scrollMargin. Defaults to 64."
+              "description": "Extra top margin for a newly anchored row, added to scrollMargin. Defaults to 64. Read once, when the controller is created: a later change has no effect until the provider remounts."
             }
           ]
         },
@@ -10892,7 +10892,8 @@
               "name": "content",
               "type": "Marko.Body<[string], void>",
               "required": false,
-              "kind": "own"
+              "kind": "own",
+              "description": "The fallback panel content: for every panel without its own `<@panel>`\nbody, it is rendered once with THAT panel's `value` as its parameter\n(`<Tabs|value|>…</Tabs>`), and Zag shows only the active panel, so branch\non the parameter to render each panel's content. It is not the currently\nactive value."
             },
             {
               "name": "defaultValue",

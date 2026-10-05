@@ -15,7 +15,14 @@ export const docs: ComponentDocs = {
   // install it, so the snippet imports it and the requirement is stated.
   importSnippet: `import DropdownMenu from "@/components/ui/dropdown-menu/dropdown-menu.marko";
 import Button from "@/components/ui/button/button.marko";`,
-  usageSnippet: `const ITEMS = [{ label: "Profile" }, { label: "Settings" }, { type: "separator" }, { label: "Log out" }];
+  // The Usage snippet uses these; `add` does not install them.
+  requires: ["button"],
+  usageSnippet: `static const ITEMS = [
+  { value: "profile", label: "Profile" },
+  { value: "settings", label: "Settings" },
+  { type: "separator" },
+  { value: "logout", label: "Log out" },
+];
 
 <DropdownMenu items=ITEMS select(value) { /* ... */ }>
   <@trigger|triggerProps|>
@@ -104,6 +111,7 @@ import Button from "@/components/ui/button/button.marko";`,
     },
     {
       name: "dropdown-menu-compound",
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@item>` attribute tags instead of `items=` to compose the menu directly in markup — pass `type=\"separator\"` for a divider or `type=\"label\"` for a group label. Entries render in the order they are written. An item's text can come from either a `label=` attribute or a markup body, whichever you prefer.",

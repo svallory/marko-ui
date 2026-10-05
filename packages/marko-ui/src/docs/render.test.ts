@@ -199,7 +199,7 @@ describe("renderComponentDocs: parts", () => {
 
   it("documents the default body as the tag's body, never as an attr-tag", () => {
     const md = renderComponentDocs(
-      model({ title: "Dialog", body: { param: "string" } }),
+      model({ name: "dialog", title: "Dialog", body: { param: "string" } }),
     );
 
     expect(md).toContain("The tag's body: `<Dialog|string|>…</Dialog>`");
@@ -380,5 +380,119 @@ describe("renderComponentDocs: examples", () => {
     expect(md).toContain("### Chart 4");
     expect(md).not.toContain("### Chart 0");
     expect(md).not.toContain("### Chart 1");
+  });
+});
+describe("renderComponentDocs: the body line names the TAG, never the title", () => {
+  it("PascalCases a multi-word name instead of printing the title with a space", () => {
+    const md = renderComponentDocs(
+      model({ name: "context-menu", title: "Context Menu", body: { param: "string" } }),
+    );
+    expect(md).toContain("The tag's body: `<ContextMenu|string|>…</ContextMenu>`");
+    expect(md).not.toContain("<Context Menu");
+  });
+});
+
+describe("renderComponentDocs: usage per import style", () => {
+  const alert = model({
+    name: "alert",
+    title: "Alert",
+    importSnippet: 'import Alert from "@/components/ui/alert/alert.marko";',
+    usageSnippet: '<Alert>\n  <Icon name="Info"/>\n  <Button>Go</Button>\n</Alert>',
+    requires: ["button", "icon"],
+    tags: ["Alert", "AlertAction"],
+  });
+
+  it("copy: lists the registered tags and names the extra add for requirements", () => {
+    const md = renderComponentDocs(alert, "essential", {
+      importStyle: { kind: "copy", uiAlias: "@/components/ui" },
+    });
+    expect(md).toContain("Registered tags: <Alert>, <AlertAction>");
+    expect(md).toContain("bunx marko-ui add button icon -y");
+    expect(md).toContain("the import lines are the optional explicit form");
+  });
+
+  it("import: never prints a registration line, and imports every required component it uses", () => {
+    const md = renderComponentDocs(alert, "essential", { importStyle: { kind: "import" } });
+    expect(md).not.toContain("Registered tags");
+    expect(md).not.toContain("marko-ui add");
+    expect(md).toContain('import Button from "@marko-ui/shadcn/ui/button/button.marko";');
+    expect(md).toContain('import Icon from "@marko-ui/shadcn/ui/icon/icon.marko";');
+  });
+
+  it("does not import a requirement twice, or one the snippet never uses", () => {
+    const md = renderComponentDocs(
+      model({
+        importSnippet: 'import Button from "@/components/ui/button/button.marko";',
+        usageSnippet: "<Button>Go</Button>",
+        requires: ["button", "badge"],
+      }),
+      "essential",
+      { importStyle: { kind: "import" } },
+    );
+    expect(md.match(/import Button /g)).toHaveLength(1);
+    expect(md).not.toContain("import Badge");
+  });
+
+  it("copy: keeps the imports when a binding is not the registered name", () => {
+    // `field-label.marko` registers as `FieldFieldLabel`; `input.marko` as
+    // `Input`. A snippet written with `<FieldLabel>`/`<TextInput>` only works
+    // through its imports, so they are not optional.
+    const md = renderComponentDocs(
+      model({
+        name: "field",
+        importSnippet: [
+          'import Field from "@/components/ui/field/field.marko";',
+          'import FieldLabel from "@/components/ui/field/field-label.marko";',
+          'import TextInput from "@/components/ui/input/input.marko";',
+        ].join("\n"),
+        usageSnippet: "<Field><FieldLabel>Name</FieldLabel><TextInput/></Field>",
+      }),
+    );
+    expect(md).not.toContain("optional explicit form");
+    expect(md).toContain(
+      "Keep the import lines: `<FieldLabel>`, `<TextInput>` are import bindings, not registered tag names.",
+    );
+  });
+});
+
+describe("renderComponentDocs: union shapes", () => {
+  it("prints each member of a union part on its own line", () => {
+    const md = renderComponentDocs(
+      model({
+        parts: [
+          {
+            name: "entry",
+            repeatable: true,
+            variants: [
+              { typeName: "LinkAttrs", attributes: [{ name: "href", type: "string", required: true }] },
+              { typeName: "MenuAttrs", attributes: [{ name: "type", type: '"menu"', required: true }] },
+            ],
+          },
+        ],
+      }),
+    );
+    expect(md).toContain("- <@entry> — repeatable; one of\n  - `LinkAttrs` — attributes: `href` (required): string\n  - `MenuAttrs` — attributes: `type` (required): \"menu\"");
+  });
+
+  it("labels a union member and a nested array field by where they are taken", () => {
+    const md = renderComponentDocs(
+      model({
+        itemTypes: [
+          { prop: "items", typeName: "LinkItem", unionOf: "NavItem", fields: [{ name: "href", type: "string", required: true }] },
+          { prop: "MenuItem.links", typeName: "PanelLink", fields: [{ name: "title", type: "string", required: true }] },
+        ],
+      }),
+    );
+    expect(md).toContain("### `LinkItem` (`items=`, one kind of `NavItem`)");
+    expect(md).toContain("### `PanelLink` (`MenuItem.links`)");
+  });
+
+  it("prints a sub-part's own events", () => {
+    const md = renderComponentDocs(
+      model({
+        subcomponents: [{ name: "menu", props: [], events: [{ name: "radioChange", arg: "string, value: string" }] }],
+      }),
+    );
+    expect(md).toContain("#### `menu`\n\n- radioChange(string, value: string)");
   });
 });

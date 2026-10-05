@@ -12,7 +12,7 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Accordion>`,
   importSnippet: `import Accordion from "@/components/ui/accordion/accordion.marko";`,
-  usageSnippet: `const items = [
+  usageSnippet: `static const items = [
   { value: "item-1", title: "Is it accessible?", content: "Yes." },
   { value: "item-2", title: "Is it styled?", content: "Yes." },
 ];

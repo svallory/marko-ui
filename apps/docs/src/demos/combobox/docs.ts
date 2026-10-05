@@ -12,7 +12,12 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Combobox>`,
   importSnippet: `import Combobox from "@/components/ui/combobox/combobox.marko";`,
-  usageSnippet: `<Combobox items=frameworks placeholder="Select framework..."/>`,
+  usageSnippet: `static const frameworks = [
+  { value: "marko", label: "Marko" },
+  { value: "svelte", label: "Svelte" },
+];
+
+<Combobox items=frameworks placeholder="Select framework..."/>`,
   // Upstream (base-ui) is a full compound-component tree (Combobox,
   // ComboboxInput, ComboboxContent, ComboboxItem, ComboboxChips, ...). Our
   // port is a single `<Combobox items=/groups=/.../>` tag driven entirely by

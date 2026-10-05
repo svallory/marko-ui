@@ -22,24 +22,14 @@ const HARD_CEILING = 14000;
 /**
  * Components whose API surface cannot fit under the ceiling.
  *
- * EMPTY, and that is the point: chart (14,344) and message-scroller (15,075)
- * were both named exceptions through round 2. They no longer need one —
- * chart is 10,371 after its hero became the plain "Your First Chart" instead of
- * a 103-line interactive showcase, and message-scroller is 12,691 because the
- * examples an agent needs are no longer suppressed by a hero larger than the
- * example budget. A ceiling nothing has to be excused from is a ceiling that
- * still means something.
+ * EMPTY, and that is the point: chart (14,344) and message-scroller (19,272)
+ * were both named exceptions at some point. Chart fits since its hero became
+ * the plain "Your First Chart"; message-scroller fits since its essential is
+ * the one example showing API the props list cannot (the `controller()`
+ * commands), instead of two demos of props it already lists. A ceiling
+ * nothing has to be excused from is a ceiling that still means something.
  */
-const ABOVE_CEILING_WITH_REASON: Record<string, string> = {
-  // The one component left. Its prose (6k) plus its TWO essential examples
-  // (130+ lines each, and the essentials are mandatory — the point of the
-  // flag) is 19,272. The reviewer's own analysis says the same lever applies
-  // here as it did to chart ("whose hero alone exceeds the example budget"):
-  // every one of its examples is 117+ lines, because the component's minimal
-  // usage is a provider + viewport + content + item + bubble. Reported rather
-  // than cut, and the reason is asserted below so it cannot rot into a stub.
-  "message-scroller": "prose 6k + two mandatory 130-line essentials; every message-scroller example is 117+ lines",
-};
+const ABOVE_CEILING_WITH_REASON: Record<string, string> = {};
 
 describe("the default docs output stays inside its budget", () => {
   it("renders every component's model without throwing", async () => {

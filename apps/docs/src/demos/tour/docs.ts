@@ -12,7 +12,12 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Tour>`,
   importSnippet: `import Tour from "@/components/ui/tour/tour.marko";`,
-  usageSnippet: `<Tour items=steps>
+  usageSnippet: `static const steps = [
+  { id: "welcome", type: "dialog", title: "Welcome", actions: [{ label: "Start", action: "next" }] },
+  { id: "search", target: "#search", title: "Search", actions: [{ label: "Done", action: "dismiss" }] },
+];
+
+<Tour items=steps>
   <@trigger|props|>
     <Button ...props>Start tour</Button>
   </@trigger>

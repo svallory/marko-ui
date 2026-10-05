@@ -19,8 +19,15 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Checkbox>`,
   importSnippet: `import Checkbox from "@/components/ui/checkbox/checkbox.marko";`,
-  usageSnippet: `<Checkbox checked:=accepted>\n  <span>Accept terms and conditions</span>\n</Checkbox>`,
+  usageSnippet: `<let/accepted=false/>
+
+<Checkbox checked:=accepted>\n  <span>Accept terms and conditions</span>\n</Checkbox>`,
   examples: [
+    {
+      name: "checkbox-basic",
+      title: "Basic (label content)",
+      description: "A checkbox paired with a label as its content.",
+    },
     {
       name: "checkbox-demo",
       title: "Basic",
@@ -33,11 +40,6 @@ export const docs: ComponentDocs = {
       title: "Invalid",
       description:
         'Set `aria-invalid="true"` on the checkbox and `invalid` on the wrapping `Field` to show the invalid styles. Note the label is the checkbox\'s own `content` body, not a `FieldLabel` wrapper: `Checkbox` already renders a root `<label>` around its hidden input, so nesting a second `<label>` would be invalid HTML (upstream pairs a bare checkbox with an external label instead).',
-    },
-    {
-      name: "checkbox-basic",
-      title: "Basic (label content)",
-      description: "A checkbox paired with a label as its content.",
     },
     {
       name: "checkbox-checked",

@@ -13,6 +13,7 @@
 import type {
   BodyDoc,
   ComponentDocs,
+  ItemTypeDoc,
   PartDoc,
   PropDoc,
   SubcomponentDoc,
@@ -87,25 +88,21 @@ export interface ComponentDocsInput {
    * composable by a caller).
    */
   componentSource?: string;
+  /**
+   * The `.marko` sources of OTHER components this one imports a type from
+   * (see `importedComponents`), concatenated. Used ONLY to resolve type
+   * declarations: `menubar`'s `MenubarItemAttrs extends DropdownMenuItem`,
+   * where `DropdownMenuItem` lives in `dropdown-menu.marko`. Kept apart from
+   * `componentSource` because the other facts read from the source (which
+   * attr-tags are iterated, which part files are rendered internally) are
+   * about THIS component only.
+   */
+  relatedSource?: string;
   /** Part file names, without extension (e.g. `["trigger", "submenu"]`). */
   partFiles?: string[];
 }
 
-/**
- * An object shape a caller has to BUILD to use a prop, e.g. `items=`.
- *
- * Without it, `items: DropdownMenuItem[]` documents nothing an agent can act
- * on: the fields that make a checkbox item a checkbox item (`type`,
- * `checked`, `radioGroup`) live in an interface, not on the prop line.
- */
-export interface ItemTypeDoc {
-  /** The prop that takes it, e.g. `items`. */
-  prop: string;
-  /** The interface name as declared, e.g. `DropdownMenuItem`. */
-  typeName: string;
-  /** Its fields, in declaration order. */
-  fields: PropDoc[];
-}
+export type { ItemTypeDoc } from "./types";
 
 /** `alert-dialog` → `Alert Dialog`. */
 function titleize(name: string): string {
@@ -159,9 +156,16 @@ function partParam(type: string): string | undefined {
 
 /** The inner type of `Marko.AttrTag<T>`: an interface name, or an inline object. */
 function attrTagInnerType(type: string): string | undefined {
-  const match = /AttrTag<\s*([\s\S]*?)\s*>\s*$/.exec(type.trim());
+  const cleaned = type.replace(/\s*\|\s*undefined\b/g, "").trim();
+  const match = /AttrTag<\s*([\s\S]*?)\s*>\s*$/.exec(cleaned);
   const inner = match?.[1]?.trim();
   return inner && inner.length > 0 ? inner : undefined;
+}
+
+/** `Foo[]`, `readonly Foo[]` (optionally `| undefined`) → `Foo`. */
+function arrayElementType(type: string): string | undefined {
+  const cleaned = type.replace(/\s*\|\s*undefined\b/g, "").trim();
+  return /^(?:readonly\s+)?([A-Z][\w$]*)\[\]$/.exec(cleaned)?.[1];
 }
 
 /** A callback prop's argument type, or undefined when it is not a callback. */
@@ -199,60 +203,169 @@ function isEventName(name: string): boolean {
 // Reading the component's own source
 // ---------------------------------------------------------------------------
 
-/**
- * Fields of `interface T { … }` / `export interface T { … }` in the component
- * source, as `{ name, type, required }`.
- *
- * Deliberately a brace-matched block scan and not a TS parser: this resolves
- * one hand-written shape (one declaration per line, no nested objects) whose
- * only job is to name a part's attributes in the output. A field the scan
- * cannot read is simply absent, and the part prints without it.
- */
-export function readInterfaceFields(
-  source: string,
-  interfaceName: string,
-  seen: Set<string> = new Set(),
-): { name: string; type: string; required: boolean }[] {
-  if (seen.has(interfaceName)) return [];
-  seen.add(interfaceName);
-  const declaration = new RegExp(
-    `(?:^|\\n)\\s*(?:export\\s+)?interface\\s+${interfaceName}\\s*(?:extends\\s+([^{]+?))?\\s*\\{`,
-  ).exec(source);
-  if (!declaration) return [];
-  // `extends` comes FIRST in TypeScript, so a derived interface's own fields
-  // do not exist without them: `DropdownMenuItemAttrs extends DropdownMenuItem`
-  // is where `<@item>`'s `type`/`checked`/`radioGroup` actually live, and
-  // reading only the derived body printed an attribute-less part.
-  const inherited = (declaration[1] ?? "")
-    .split(",")
-    .map((name) => name.trim())
-    .filter((name) => /^[A-Za-z_$][\w$]*$/.test(name))
-    .flatMap((name) => readInterfaceFields(source, name, seen));
-  const start = declaration.index + declaration[0].length;
+/** One field of a declared object type. */
+export interface TypeField {
+  name: string;
+  type: string;
+  required: boolean;
+  description?: string;
+}
+
+/** A named object shape: an interface, or one member of a union alias. */
+export interface TypeShape {
+  name: string;
+  fields: TypeField[];
+}
+
+/** `{ … }` starting at `open` (the index of `{`): its inner text. */
+function braceBody(source: string, open: number): string {
   let depth = 1;
-  let end = start;
+  let end = open + 1;
   while (end < source.length && depth > 0) {
     const char = source[end];
     if (char === "{") depth += 1;
     else if (char === "}") depth -= 1;
     end += 1;
   }
-  const body = source.slice(start, end - 1);
+  return source.slice(open + 1, end - 1);
+}
 
-  const fields: { name: string; type: string; required: boolean }[] = [];
+/**
+ * The fields of one object-type body. One declaration per line, which is how
+ * every component here writes them; a `/** … *\/` comment directly above a
+ * field becomes its description. Nested object literals are skipped (their
+ * lines are at depth > 0), so a field the scan cannot read is simply absent.
+ */
+function parseFields(body: string): TypeField[] {
+  const fields: TypeField[] = [];
+  let depth = 0;
+  let doc: string[] | undefined;
+  let pending: string | undefined;
   for (const rawLine of body.split("\n")) {
-    const line = rawLine.replace(/\/\/.*$/, "").trim();
+    const trimmed = rawLine.trim();
+    if (doc) {
+      const close = trimmed.indexOf("*/");
+      doc.push(trimmed.slice(0, close === -1 ? undefined : close).replace(/^\*\s?/, ""));
+      if (close !== -1) {
+        pending = doc.join(" ").replace(/\s+/g, " ").trim() || undefined;
+        doc = undefined;
+      }
+      continue;
+    }
+    if (depth === 0 && trimmed.startsWith("/**")) {
+      const inner = trimmed.slice(3);
+      const close = inner.indexOf("*/");
+      if (close !== -1) {
+        pending = inner.slice(0, close).trim() || undefined;
+      } else {
+        doc = [inner.trim()];
+      }
+      continue;
+    }
+    const line = trimmed.replace(/\/\/.*$/, "").trim();
     if (!line || line.startsWith("*") || line.startsWith("/*")) continue;
-    const field = /^([A-Za-z_$][\w$]*|\[[^\]]+\])\s*(\?)?\s*:\s*(.+)$/.exec(line);
-    if (!field) continue;
-    fields.push({
-      name: field[1] as string,
-      type: (field[3] as string).replace(/;\s*$/, "").trim(),
-      required: !field[2],
-    });
+    if (depth === 0) {
+      const field = /^(?:readonly\s+)?([A-Za-z_$][\w$]*|\[[^\]]+\])\s*(\?)?\s*:\s*(.+)$/.exec(line);
+      if (field) {
+        const entry: TypeField = {
+          name: field[1] as string,
+          type: (field[3] as string).replace(/;\s*$/, "").trim(),
+          required: !field[2],
+        };
+        if (pending) entry.description = pending;
+        fields.push(entry);
+      }
+    }
+    pending = undefined;
+    for (const char of line) {
+      if (char === "{") depth += 1;
+      else if (char === "}") depth -= 1;
+    }
+    if (depth < 0) depth = 0;
   }
-  const own = new Set(fields.map((field) => field.name));
-  return [...inherited.filter((field) => !own.has(field.name)), ...fields];
+  return fields;
+}
+
+const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
+
+/**
+ * Resolves a declared type name to the object shape(s) a caller writes.
+ *
+ * - `interface T extends A, B { … }`: one shape, with A's and B's fields first
+ *   (`extends` comes first in TypeScript), followed ACROSS IMPORTS when the
+ *   caller passes the imported component's source along — menubar's
+ *   `MenubarItemAttrs extends DropdownMenuItem` printed without `type`,
+ *   `value`, `label`, … until this followed the import.
+ * - `type T = A | B`: one shape PER MEMBER, so a discriminated union
+ *   (navigation-menu's link | menu entry) keeps each kind's own fields.
+ * - `type T = { … }`: one shape.
+ *
+ * Anything else (string-literal unions, mapped types, generics) resolves to
+ * nothing, and the caller prints the type name alone.
+ *
+ * Deliberately a brace-matched scan and not a TS parser: it resolves the
+ * hand-written shapes in this repo's component sources, one declaration per
+ * line.
+ */
+export function resolveTypeShapes(
+  source: string,
+  typeName: string,
+  seen: Set<string> = new Set(),
+): TypeShape[] {
+  if (seen.has(typeName)) return [];
+  seen.add(typeName);
+  const iface = new RegExp(
+    `(?:^|\\n)\\s*(?:export\\s+)?interface\\s+${typeName}\\s*(?:extends\\s+([^{]+?))?\\s*\\{`,
+  ).exec(source);
+  if (iface) {
+    const inherited = (iface[1] ?? "")
+      .split(",")
+      .map((name) => name.trim())
+      .filter((name) => IDENTIFIER.test(name))
+      .flatMap((name) => resolveTypeShapes(source, name, seen).flatMap((shape) => shape.fields));
+    const own = parseFields(braceBody(source, iface.index + iface[0].length - 1));
+    const ownNames = new Set(own.map((field) => field.name));
+    return [
+      { name: typeName, fields: [...inherited.filter((field) => !ownNames.has(field.name)), ...own] },
+    ];
+  }
+  const alias = new RegExp(
+    `(?:^|\\n)\\s*(?:export\\s+)?type\\s+${typeName}\\s*=\\s*`,
+  ).exec(source);
+  if (!alias) return [];
+  const rest = source.slice(alias.index + alias[0].length);
+  if (rest.startsWith("{")) {
+    return [{ name: typeName, fields: parseFields(braceBody(rest, 0)) }];
+  }
+  const members = (/^([^;\n]+)/.exec(rest)?.[1] ?? "")
+    .split("|")
+    .map((member) => member.trim())
+    .filter(Boolean);
+  if (members.length < 2 || !members.every((member) => IDENTIFIER.test(member))) return [];
+  return members.flatMap((member) => resolveTypeShapes(source, member, new Set(seen)));
+}
+
+/**
+ * Fields of `interface T` (with everything it `extends`), or of the single
+ * shape `type T = { … }` declares. A union resolves to `[]` here — use
+ * `resolveTypeShapes` to see its members.
+ */
+export function readInterfaceFields(source: string, interfaceName: string): TypeField[] {
+  const shapes = resolveTypeShapes(source, interfaceName);
+  return shapes.length === 1 ? (shapes[0] as TypeShape).fields : [];
+}
+
+/**
+ * The other components a component imports from (`../dropdown-menu/…`), by
+ * directory name, sorted. Both callers of the builder use it to assemble
+ * `relatedSource` from their own copy of those components' sources.
+ */
+export function importedComponents(source: string): string[] {
+  const names = new Set<string>();
+  for (const match of source.matchAll(/from\s+["']\.\.\/([a-z0-9-]+)\/[^"']+["']/g)) {
+    names.add(match[1] as string);
+  }
+  return [...names].sort();
 }
 
 /**
@@ -295,25 +408,28 @@ function iteratesAttrTag(source: string, attrTagName: string): boolean {
   ).test(source);
 }
 
-/** A part's own attributes, or `undefined` when its type declares none. */
-function partAttributes(
-  innerType: string | undefined,
-  source: string,
-): PropDoc[] | undefined {
-  if (!innerType) return undefined;
+/** A shape's fields as PropDocs, minus the part's own body (`content`). */
+function shapeAttributes(fields: TypeField[]): PropDoc[] {
+  return fields
+    // `content` on an AttrTag IS the part's body, already covered by `param`.
+    .filter((field) => !isBodyType(field.type))
+    .map((field) => {
+      const prop: PropDoc = { name: field.name, type: field.type, required: field.required };
+      if (field.description) prop.description = field.description;
+      return prop;
+    });
+}
+
+/** Sets a part's `attributes` (one shape) or `variants` (a union of shapes). */
+function applyPartShape(part: PartDoc, innerType: string | undefined, typeSource: string): void {
   // `Marko.AttrTag<{ content: Marko.Body<…> }>` — the single-invocation form,
   // which declares no attributes of its own.
-  if (!/^[A-Za-z_$][\w$]*$/.test(innerType)) return undefined;
-  const fields = readInterfaceFields(source, innerType).filter(
-    // `content` on an AttrTag IS the part's body, already covered by `param`.
-    (field) => !isBodyType(field.type),
-  );
-  if (fields.length === 0) return undefined;
-  return fields.map((field) => ({
-    name: field.name,
-    type: field.type,
-    required: field.required,
-  }));
+  if (!innerType || !IDENTIFIER.test(innerType)) return;
+  const shapes = resolveTypeShapes(typeSource, innerType)
+    .map((shape) => ({ typeName: shape.name, attributes: shapeAttributes(shape.fields) }))
+    .filter((shape) => shape.attributes.length > 0);
+  if (shapes.length === 1) part.attributes = (shapes[0] as { attributes: PropDoc[] }).attributes;
+  else if (shapes.length > 1) part.variants = shapes;
 }
 
 function toPropDoc(property: ApiProp): PropDoc {
@@ -336,7 +452,7 @@ interface Partitioned {
   events: ComponentDocs["events"];
 }
 
-function partition(properties: ApiProp[], source: string): Partitioned {
+function partition(properties: ApiProp[], source: string, typeSource: string): Partitioned {
   const result: Partitioned = { parts: [], props: [], events: [] };
   for (const property of properties) {
     const type = property.type ?? "";
@@ -353,8 +469,7 @@ function partition(properties: ApiProp[], source: string): Partitioned {
       const part: PartDoc = { name: property.name };
       const param = partParam(type);
       if (param) part.param = param;
-      const attributes = partAttributes(attrTagInnerType(type), source);
-      if (attributes) part.attributes = attributes;
+      applyPartShape(part, attrTagInnerType(type), typeSource);
       if (iteratesAttrTag(source, property.name)) part.repeatable = true;
       if (property.description) part.description = property.description;
       result.parts.push(part);
@@ -386,47 +501,64 @@ export function buildComponentDocs(input: ComponentDocsInput): ComponentDocs {
   const { name, docs, demos, parts } = input;
   const root = parts.find((part) => part.name === name) ?? parts[0];
   const source = input.componentSource ?? "";
+  // Type declarations may live in an imported component; everything else read
+  // from source is about this component alone.
+  const typeSource = input.relatedSource ? `${source}\n${input.relatedSource}` : source;
 
-  const split = partition(root?.properties ?? [], source);
+  const split = partition(root?.properties ?? [], source, typeSource);
+
+  // A part file the component renders itself is internal (dropdown-menu's
+  // `submenu.marko`, wired with machine plumbing) — UNLESS a demo imports it,
+  // which proves callers compose it too: pagination's `next.marko` renders
+  // `link.marko`, and `<PaginationLink>` is still the tag every page number
+  // is written with.
+  const demoSources = Object.values(demos).map((demo) => demo.source);
+  const isInternal = (file: string): boolean =>
+    rendersPartItself(source, file) &&
+    !demoSources.some((demo) =>
+      new RegExp(`from\\s+["'][^"']*/${name}/${file}\\.marko["']`).test(demo),
+    );
 
   const subcomponents: SubcomponentDoc[] = parts
     .filter((part) => part.name !== root?.name)
-    .filter((part) => part.name !== name && !rendersPartItself(source, part.name))
+    .filter((part) => part.name !== name && !isInternal(part.name))
     .map((part) => {
-      const nested = partition(part.properties, source);
+      const nested = partition(part.properties, source, typeSource);
       const sub: SubcomponentDoc = { name: part.name, props: nested.props };
       if (nested.parts.length > 0) sub.parts = nested.parts;
       if (nested.body) sub.body = nested.body;
+      if (nested.events.length > 0) sub.events = nested.events;
       if (part.nativeAttributes) sub.nativeAttributes = part.nativeAttributes;
       return sub;
     });
 
   // `items: DropdownMenuItem[]` documents nothing an agent can build. Every
-  // prop whose type is an array of a locally-declared interface gets that
-  // interface's fields, so `items=` shows the entry shape.
+  // prop whose type is an array of a declared object type gets that type's
+  // fields; a union gets one entry per member; and an array-typed FIELD of
+  // such a shape (`NavigationMenuMenuItem.links`) is expanded the same way, so
+  // every object a caller has to build is described.
   const itemTypes: ItemTypeDoc[] = [];
-  for (const group of [split.props, ...subcomponents.map((sub) => sub.props)]) {
-    for (const prop of group) {
-      const match = /^([A-Z][\w$]*(?:Item|Entry|Group|Data|Option|Data)?)\[\]$/.exec(
-        (prop.type ?? "").replace(/\s*\|\s*undefined\b/g, "").trim(),
-      );
-      const typeName = match?.[1];
-      if (!typeName) continue;
-      if (itemTypes.some((item) => item.prop === prop.name)) continue;
-      const fields = readInterfaceFields(source, typeName).filter(
-        (field) => !isBodyType(field.type),
-      );
+  const described = new Set<string>();
+  const describe = (where: string, arrayType: string): void => {
+    const typeName = arrayElementType(arrayType);
+    if (!typeName || described.has(typeName)) return;
+    described.add(typeName);
+    const shapes = resolveTypeShapes(typeSource, typeName);
+    const union = shapes.length > 1 || (shapes[0] && shapes[0].name !== typeName);
+    for (const shape of shapes) {
+      const fields = shapeAttributes(shape.fields);
       if (fields.length === 0) continue;
-      itemTypes.push({
-        prop: prop.name,
-        typeName,
-        fields: fields.map((field) => ({
-          name: field.name,
-          type: field.type,
-          required: field.required,
-        })),
-      });
+      described.add(shape.name);
+      const item: ItemTypeDoc = { prop: where, typeName: shape.name, fields };
+      if (union) item.unionOf = typeName;
+      itemTypes.push(item);
     }
+    for (const shape of shapes) {
+      for (const field of shape.fields) describe(`${shape.name}.${field.name}`, field.type);
+    }
+  };
+  for (const group of [split.props, ...subcomponents.map((sub) => sub.props)]) {
+    for (const prop of group) describe(prop.name, prop.type ?? "");
   }
 
   const examples = docs.examples
@@ -483,7 +615,7 @@ export function buildComponentDocs(input: ComponentDocsInput): ComponentDocs {
     // The ROOT file is never "internal" — and it must be excluded from the
     // check, because `select`'s own source contains `<select>` elements and
     // would otherwise be mistaken for a self-rendered part.
-    (file) => file === name || !rendersPartItself(source, file),
+    (file) => file === name || !isInternal(file),
   );
   // The SAME rule `collectProjectTags` applies: a file named after its own
   // directory IS the root tag (`dropdown-menu/dropdown-menu.marko` →

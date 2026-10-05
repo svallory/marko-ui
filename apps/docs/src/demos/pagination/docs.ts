@@ -10,15 +10,13 @@ export const docs: ComponentDocs = {
   // init`), so no import is required. The explicit-import form is
   // documented as the override/escape hatch.
   usageTags: `<Pagination>`,
-  importSnippet: `import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";`,
+  importSnippet: `import Pagination from "@/components/ui/pagination/pagination.marko";
+import PaginationContent from "@/components/ui/pagination/content.marko";
+import PaginationItem from "@/components/ui/pagination/item.marko";
+import PaginationLink from "@/components/ui/pagination/link.marko";
+import PaginationPrevious from "@/components/ui/pagination/previous.marko";
+import PaginationNext from "@/components/ui/pagination/next.marko";
+import PaginationEllipsis from "@/components/ui/pagination/ellipsis.marko";`,
   usageSnippet: `<Pagination>
   <PaginationContent>
     <PaginationItem>

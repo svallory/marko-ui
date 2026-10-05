@@ -12,7 +12,9 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<RadioGroup>`,
   importSnippet: `import RadioGroup from "@/components/ui/radio-group/radio-group.marko";`,
-  usageSnippet: `<RadioGroup items=[{ value: "option-one", label: "Option One" }, { value: "option-two", label: "Option Two" }] value:=selected/>`,
+  usageSnippet: `<let/selected="option-one"/>
+
+<RadioGroup items=[{ value: "option-one", label: "Option One" }, { value: "option-two", label: "Option Two" }] value:=selected/>`,
   // See notes/docs-canonical-structure.md's "Anatomy" section: RadioGroup
   // is a single-file, non-compound component (api-reference.json sees one
   // part, so `isCompound` is false and the auto composition-tree never
@@ -53,6 +55,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "radio-group-compound",
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@item>` attribute tags instead of `items=` to compose each option directly in markup.",

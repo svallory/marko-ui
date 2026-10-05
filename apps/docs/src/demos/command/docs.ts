@@ -11,7 +11,17 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Command>`,
   importSnippet: `import Command from "@/components/ui/command/command.marko";`,
-  usageSnippet: `<Command groups=groups placeholder="Type a command or search..."/>`,
+  usageSnippet: `static const groups = [
+  {
+    label: "Suggestions",
+    items: [
+      { value: "calendar", label: "Calendar" },
+      { value: "settings", label: "Settings", shortcut: "⌘S" },
+    ],
+  },
+];
+
+<Command groups=groups placeholder="Type a command or search..."/>`,
   // Command has no separate CommandDialog wrapper (see command.marko's top
   // comment): consumers compose Dialog + Command themselves. Documented
   // here rather than as a Composition tree since it's prose about
