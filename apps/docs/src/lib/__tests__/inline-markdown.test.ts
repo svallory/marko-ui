@@ -60,6 +60,24 @@ describe("parseInline", () => {
     ]);
   });
 
+  it("does not let a ** inside a code span close or open bold", () => {
+    expect(parseInline("**a `x**` b**")).toEqual([
+      {
+        type: "strong",
+        children: [
+          { type: "text", value: "a " },
+          { type: "code", value: "x**" },
+          { type: "text", value: " b" },
+        ],
+      },
+    ]);
+    expect(parseInline("**open `x**` never closed")).toEqual([
+      { type: "text", value: "**open " },
+      { type: "code", value: "x**" },
+      { type: "text", value: " never closed" },
+    ]);
+  });
+
   it("degrades unclosed markers to literal text", () => {
     expect(parseInline("a `b and **c and [d](#e")).toEqual([
       { type: "text", value: "a `b and **c and [d](#e" },
@@ -73,6 +91,9 @@ describe("parseInline", () => {
   it("refuses unsafe link targets and keeps the label as text", () => {
     for (const href of ["javascript:alert(1)", "//evil.example", "data:text/html,x", "mailto:a@b.c"]) {
       expect(parseInline(`[x](${href})`)).toEqual([{ type: "text", value: `[x](${href})` }]);
+    }
+    for (const href of ["/\\evil.com", "/\\\\evil.com", "/", "/a\\b", "https://a.example\\@b.example", "\\evil.com", "#a b"]) {
+      expect(isSafeHref(href), href).toBe(false);
     }
     expect(isSafeHref("#groups")).toBe(true);
     expect(isSafeHref("/docs/components/message")).toBe(true);

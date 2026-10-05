@@ -22,9 +22,13 @@ export type Block =
   | { type: "list"; items: Inline[][] }
   | { type: "pre"; value: string };
 
-/** In-page anchors, root-relative paths and http(s) only: never `javascript:`. */
+/**
+ * In-page anchors, root-relative paths (one slash, then a character that is
+ * neither `/` nor `\` — browsers read `/\host` as `//host`) and http(s) only:
+ * never `javascript:`.
+ */
 export function isSafeHref(href: string): boolean {
-  return /^(#[\w-]+|\/(?!\/)[^\s]*|https?:\/\/[^\s]+)$/.test(href);
+  return /^(#[\w-]+|\/[^\s/\\][^\s\\]*|https?:\/\/[^\s\\]+)$/.test(href);
 }
 
 function parseLeaves(src: string): Leaf[] {
@@ -70,7 +74,7 @@ export function parseInline(src: string): Inline[] {
         continue;
       }
     } else if (ch === "*" && src[i + 1] === "*") {
-      const end = src.indexOf("**", i + 2);
+      const end = findBoldEnd(src, i + 2);
       if (end > i + 2) {
         flush();
         out.push({ type: "strong", children: parseLeaves(src.slice(i + 2, end)) });
@@ -97,6 +101,17 @@ export function parseInline(src: string): Inline[] {
   }
   flush();
   return out;
+}
+
+/** Index of the `**` closing a bold run that starts at `from`, skipping code spans. */
+function findBoldEnd(src: string, from: number): number {
+  for (let i = from; i < src.length; i++) {
+    if (src[i] === "`") {
+      const end = src.indexOf("`", i + 1);
+      if (end > i + 1) i = end;
+    } else if (src[i] === "*" && src[i + 1] === "*") return i;
+  }
+  return -1;
 }
 
 /** Index of the `]` closing the label that opens at `open`, skipping code spans. */

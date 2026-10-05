@@ -40,6 +40,6 @@ static function childTagSuffix(componentName: string, partName: string) {
 }
 
 <div class=`my-4 overflow-x-auto rounded-lg border border-border bg-muted/40 p-4 ${input.class ?? ""}` data-slot="composition-tree">
-  <pre class="font-mono text-[0.8125rem] leading-6"><code>${"<"}${rootTag}${">"}
+  <pre tabindex="0" class="font-mono text-[0.8125rem] leading-6"><code>${"<"}${rootTag}${">"}
 <for|part, index| of=childParts by=(part) => part.file>${index === childParts.length - 1 ? "└── " : "├── "}${"<"}${rootTag}${pascalCase(childTagSuffix(input.componentName, part.name))}${" />"}${index === childParts.length - 1 ? "" : "\n"}</for></code></pre>
 </div>
