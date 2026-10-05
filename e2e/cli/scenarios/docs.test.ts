@@ -102,28 +102,39 @@ describe("docs — rendered locally from the registry item", () => {
 const DEAD_REGISTRY = { REGISTRY_URL: "http://127.0.0.1:9/r" }
 
 /** init + add button in a project that has a node_modules, as any installed project does. */
-async function installedCopyProject() {
+async function installedCopyProject(initArgs: string[] = []) {
   const ws = makeWorkspace()
   markoApp(ws, { tsconfig: "paths" })
   // The shims stand in for the package manager, so nothing creates
   // node_modules; a real install always has one, and the cache lives in it.
   mkdirSync(join(ws, "node_modules"))
-  const { add } = await bootstrap(ws)
+  const { init, add } = await bootstrap(ws, withShims(makeWorkspace("shim")), initArgs)
+  expect(init.code, tail(init.out)).toBe(0)
   expect(add.code, tail(add.out)).toBe(0)
   return ws
 }
 
 describe("docs — the installed version, without the network", () => {
-  scenario("D04", "add then docs with the registry unreachable: served from the cache, no install line", async () => {
-    const ws = await installedCopyProject()
-    expect(exists(ws, "node_modules/.cache/marko-ui/docs/button.json"), "add wrote no cache entry").toBe(true)
+  // A copy project fetches the PER-STYLE item for its visualStyle, for `add`
+  // and `docs` alike — the field that was missing from every per-style item
+  // once. Run with init's default style AND a second one, so a regression in
+  // one style's emission cannot hide behind the default.
+  for (const [id, args] of [
+    ["D04", []],
+    ["D04b", ["--visual-style", "luma"]],
+  ] as const) {
+    scenario(id, `add then docs with the registry unreachable: served from the cache, no install line (${args.length ? args.join(" ") : "init's default style"})`, async () => {
+      const ws = await installedCopyProject([...args])
+      if (args.length) expect(JSON.parse(read(ws, "components.json")).visualStyle).toBe("luma")
+      expect(exists(ws, "node_modules/.cache/marko-ui/docs/button.json"), "add wrote no cache entry").toBe(true)
 
-    const r = await cli(ws, ["docs", "button"], { env: DEAD_REGISTRY })
-    expect(r.code, tail(r.out)).toBe(0)
-    expect(plain(r.stdout)).toMatch(/^# Button/m)
-    expect(plain(r.stdout)).not.toContain("## Install")
-    expect(plain(r.stderr).trim()).toBe("source: installed (cache)")
-  })
+      const r = await cli(ws, ["docs", "button"], { env: DEAD_REGISTRY })
+      expect(r.code, tail(r.out)).toBe(0)
+      expect(plain(r.stdout)).toMatch(/^# Button/m)
+      expect(plain(r.stdout)).not.toContain("## Install")
+      expect(plain(r.stderr).trim()).toBe("source: installed (cache)")
+    })
+  }
 
   scenario("D05", "a removed component is not served from its leftover cache entry", async () => {
     const ws = await installedCopyProject()
