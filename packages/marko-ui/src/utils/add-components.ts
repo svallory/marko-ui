@@ -17,12 +17,20 @@ import {
 import { getProjectTailwindVersionFromConfig } from "@/src/utils/get-project-info"
 import { isInteractive } from "@/src/utils/interactive"
 import { isSafeTarget } from "@/src/utils/is-safe-target"
+import { highlighter } from "@/src/utils/highlighter"
+import { green, yellow } from "kleur/colors"
 import { logger } from "@/src/utils/logger"
 import { spinner } from "@/src/utils/spinner"
 import {
   getTargetAliasKey,
   type TargetAliasKey,
 } from "@/src/utils/target-aliases"
+import type {
+  CommandWarning,
+  DependencyChange,
+  FileChange,
+} from "@/src/utils/command-result"
+import { WarningCode, toFileChanges } from "@/src/utils/command-result"
 import { updateCss } from "@/src/utils/updaters/update-css"
 import { updateDependencies } from "@/src/utils/updaters/update-dependencies"
 import { updateEnvVars } from "@/src/utils/updaters/update-env-vars"
@@ -49,11 +57,27 @@ export interface AddComponentsOptions {
 
 type AddWorkspaceComponentsOptions = AddComponentsOptions
 
+/**
+ * What an `add` (or `eject`, which reuses this engine) actually did.
+ *
+ * Returned rather than only printed: the caller is either a human (the
+ * existing spinner + list output, unchanged) or a program reading
+ * `--json`, and the two must never be computed from different sources.
+ */
+export type AddResult = {
+  /** cwd-relative, status-tagged, sorted. */
+  files: FileChange[]
+  dependencies: DependencyChange[]
+  warnings: CommandWarning[]
+  /** Items the registry pulled in beyond what was asked for. */
+  registryDependencies: string[]
+}
+
 export async function addComponents(
   components: string[],
   config: Config,
   options: AddComponentsOptions
-) {
+): Promise<AddResult> {
   options = {
     overwrite: false,
     silent: false,
@@ -87,30 +111,32 @@ async function addProjectComponents(
   components: string[],
   config: z.infer<typeof configSchema>,
   options: AddComponentsOptions
-) {
+): Promise<AddResult> {
   if (!components.length) {
-    return
+    return emptyAddResult()
   }
 
   let tree = await resolveAndValidateRegistryTree(components, config, options)
 
   const tailwindVersion = await getProjectTailwindVersionFromConfig(config)
 
-  await updateDependencies(tree.dependencies, tree.devDependencies, config, {
-    silent: options.silent,
-    interactive: options.interactive,
-  })
+  const dependencies =
+    (await updateDependencies(tree.dependencies, tree.devDependencies, config, {
+      silent: options.silent,
+      interactive: options.interactive,
+    })) ?? []
 
   await updateEnvVars(tree.envVars, config, {
     silent: options.silent,
   })
 
-  await updateFiles(tree.files, config, {
-    overwrite: options.overwrite,
+  const written =
+    (await updateFiles(tree.files, config, {
+      overwrite: options.overwrite,
     silent: options.silent,
     interactive: options.interactive,
-    path: options.path,
-  })
+      path: options.path,
+    })) ?? { filesCreated: [], filesUpdated: [], filesSkipped: [], filesRemoved: [] }
 
   // Write CSS last so the file watcher triggers a rebuild
   // after all component files and dependencies are in place.
@@ -120,7 +146,7 @@ async function addProjectComponents(
     config,
     options.overwriteCssVars
   )
-  await updateCss(tree.css, config, {
+  const cssPath = await updateCss(tree.css, config, {
     silent: options.silent,
     cssVars: tree.cssVars,
     overwriteCssVars,
@@ -131,6 +157,64 @@ async function addProjectComponents(
   if (tree.docs) {
     logger.info(tree.docs)
   }
+
+  return {
+    files: withCssFile(toFileChanges(written), cssPath, config.resolvedPaths.cwd),
+    dependencies,
+    warnings: collectWarnings(dependencies, tree.docs),
+    registryDependencies: [],
+  }
+}
+
+/** An `add` that changed nothing, in the same shape as one that changed a lot. */
+export function emptyAddResult(): AddResult {
+  return { files: [], dependencies: [], warnings: [], registryDependencies: [] }
+}
+
+/**
+ * The CSS entry is a file the command touched like any other, so it belongs
+ * in `files` — it used to be invisible to a program entirely, which made
+ * "did `add` write my stylesheet?" unanswerable without reading stderr.
+ */
+function withCssFile(
+  files: FileChange[],
+  cssPath: string | undefined,
+  cwd: string
+): FileChange[] {
+  if (!cssPath) return files
+  const relative = path.relative(cwd, cssPath)
+  if (files.some((file) => file.path === relative)) return files
+  const added: FileChange = { path: relative, status: "updated" }
+  return [...files, added].sort((a, b) => a.path.localeCompare(b.path))
+}
+
+/**
+ * Warnings, in the one shape both renderings use: a stable `code`, the human
+ * `message`, and the command that fixes it. The text here is the SAME text
+ * the human path prints, so what a person reads and what a program parses
+ * cannot drift.
+ */
+function collectWarnings(
+  dependencies: DependencyChange[],
+  docs: string | null | undefined
+): CommandWarning[] {
+  const warnings: CommandWarning[] = []
+  const failed = dependencies.filter((dep) => dep.status === "failed")
+  if (failed.length) {
+    warnings.push({
+      code: WarningCode.DEPENDENCY_INSTALL_FAILED,
+      message: `Could not install ${failed.map((dep) => dep.name).join(", ")}. Component files were still written.`,
+      fix: `Install them with your package manager, e.g. bun add ${failed.map((dep) => dep.name).join(" ")}`,
+    })
+  }
+  if (docs) {
+    warnings.push({
+      code: WarningCode.ITEM_HAS_DOCS,
+      message: docs,
+      fix: "marko-ui docs <name>",
+    })
+  }
+  return warnings
 }
 
 async function addWorkspaceComponents(
@@ -138,9 +222,9 @@ async function addWorkspaceComponents(
   config: z.infer<typeof configSchema>,
   workspaceConfig: z.infer<typeof workspaceConfigSchema>,
   options: AddWorkspaceComponentsOptions
-) {
+): Promise<AddResult> {
   if (!components.length) {
-    return
+    return emptyAddResult()
   }
 
   let tree = await resolveAndValidateRegistryTree(components, config, options)
@@ -162,15 +246,16 @@ async function addWorkspaceComponents(
   )
 
   // 1. Update dependencies.
-  await updateDependencies(
-    tree.dependencies,
-    tree.devDependencies,
-    mainTargetConfig,
-    {
-      silent: true,
-      interactive: options.interactive,
-    }
-  )
+  const workspaceDependencies =
+    (await updateDependencies(
+      tree.dependencies,
+      tree.devDependencies,
+      mainTargetConfig,
+      {
+        silent: true,
+        interactive: options.interactive,
+      }
+    )) ?? []
 
   // 3. Update environment variables.
   if (tree.envVars) {
@@ -234,15 +319,16 @@ async function addWorkspaceComponents(
       )) ?? targetConfig.resolvedPaths.cwd
 
     // Update files for this target config.
-    const files = await updateFiles(targetFiles, targetConfig, {
-      overwrite: options.overwrite,
-      silent: true,
-      interactive: options.interactive,
+    const files =
+      (await updateFiles(targetFiles, targetConfig, {
+        overwrite: options.overwrite,
+        silent: true,
+        interactive: options.interactive,
       rootSpinner,
-      isWorkspace: true,
-      path: options.path,
-      plannedFiles,
-    })
+        isWorkspace: true,
+        path: options.path,
+        plannedFiles,
+      })) ?? { filesCreated: [], filesUpdated: [], filesSkipped: [], filesRemoved: [] }
 
     filesCreated.push(
       ...files.filesCreated.map((file) =>
@@ -291,6 +377,14 @@ async function addWorkspaceComponents(
   ).sort()
   const dedupedSkipped = Array.from(new Set(filesSkipped)).sort()
 
+  // Collected BEFORE the human printing below, and from the same arrays, so
+  // the two renderings cannot disagree about what happened.
+  const resultFiles = toFileChanges({
+    filesCreated: dedupedCreated,
+    filesUpdated: dedupedUpdated,
+    filesSkipped: dedupedSkipped,
+  })
+
   const hasUpdatedFiles = dedupedCreated.length || dedupedUpdated.length
   if (!hasUpdatedFiles && !dedupedSkipped.length) {
     spinner(`No files updated.`, {
@@ -298,6 +392,11 @@ async function addWorkspaceComponents(
     })?.info()
   }
 
+  // The file list on stdout carries its status PER LINE, not just in the
+  // spinner headers on stderr. That is the whole point: stdout alone used to
+  // be a bare list of paths, so a fresh install and a re-run that skipped
+  // everything printed the same thing, and only stderr (a spinner frame) said
+  // which happened.
   if (dedupedCreated.length) {
     spinner(
       `Created ${dedupedCreated.length} ${
@@ -308,7 +407,7 @@ async function addWorkspaceComponents(
       }
     )?.succeed()
     for (const file of dedupedCreated) {
-      logger.log(`  - ${file}`)
+      logger.log(`  ${green("created")} ${file}`)
     }
   }
 
@@ -322,7 +421,7 @@ async function addWorkspaceComponents(
       }
     )?.info()
     for (const file of dedupedUpdated) {
-      logger.log(`  - ${file}`)
+      logger.log(`  ${yellow("updated")} ${file}`)
     }
   }
 
@@ -336,12 +435,19 @@ async function addWorkspaceComponents(
       }
     )?.info()
     for (const file of dedupedSkipped) {
-      logger.log(`  - ${file}`)
+      logger.log(`  ${yellow("skipped")} ${file}`)
     }
   }
 
   if (tree.docs) {
     logger.info(tree.docs)
+  }
+
+  return {
+    files: resultFiles,
+    dependencies: workspaceDependencies,
+    warnings: collectWarnings(workspaceDependencies, tree.docs),
+    registryDependencies: [],
   }
 }
 

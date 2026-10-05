@@ -6,8 +6,8 @@ import { clearRegistryContext } from "@/src/registry/context"
 import { RegistryErrorCode } from "@/src/registry/errors"
 import { registryItemTypeSchema } from "@/src/registry/schema"
 import { isUniversalRegistryItem } from "@/src/registry/utils"
-import { addComponents } from "@/src/utils/add-components"
-import { dryRunComponents } from "@/src/utils/dry-run"
+import { addComponents, type AddResult } from "@/src/utils/add-components"
+import { dryRunComponents, type DryRunResult } from "@/src/utils/dry-run"
 import { formatDryRunResult } from "@/src/utils/dry-run-formatter"
 import { loadEnvFiles } from "@/src/utils/env-loader"
 import * as ERRORS from "@/src/utils/errors"
@@ -20,6 +20,14 @@ import {
 import { highlighter } from "@/src/utils/highlighter"
 import { isInteractive } from "@/src/utils/interactive"
 import { logger } from "@/src/utils/logger"
+import {
+  type CommandWarning,
+  nextSteps,
+  plannedToFileChanges,
+  WarningCode,
+} from "@/src/utils/command-result"
+import { printEnvelope } from "@/src/utils/json-output"
+import { setJsonMode } from "@/src/utils/output-mode"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
 import { confirm, exitIfEmptySelection, multiselect } from "@/src/utils/clack"
 import { spinner } from "@/src/utils/spinner"
@@ -36,6 +44,7 @@ export const addOptionsSchema = z.object({
   path: z.string().optional(),
   silent: z.boolean(),
   dryRun: z.boolean(),
+  json: z.boolean(),
 })
 
 export const add = new Command()
@@ -53,8 +62,13 @@ export const add = new Command()
   .option("-p, --path <path>", "the path to add the component to.")
   .option("-s, --silent", "mute output.", false)
   .option("--dry-run", "preview changes without writing files.", false)
+  .option("--json", "output as JSON (what was written, and any warnings).", false)
   .action(async (components, opts) => {
     try {
+      // Recorded first so a failure takes the JSON error path, and so the
+      // spinner and the human lists go quiet for the whole run — stdout must
+      // end up carrying exactly one document.
+      setJsonMode(Boolean(opts.json))
       const options = addOptionsSchema.parse({
         components,
         ...opts,
@@ -112,10 +126,13 @@ export const add = new Command()
           itemType !== "registry:base"
 
         if (isUniversalRegistryItem(registryItem) && !isDryRun) {
-          await addComponents(components, initialConfig, {
+          const universal = await addComponents(components, initialConfig, {
             ...options,
             interactive: shouldPrompt(options),
           })
+          if (options.json) {
+            printAddResult(options.cwd, components, universal, [])
+          }
           return
         }
         if (
@@ -185,6 +202,10 @@ export const add = new Command()
           { overwrite: options.overwrite }
         )
         previewSpinner.stop()
+        if (options.json) {
+          printDryRunResult(options.cwd, options.components, previewResult)
+          return
+        }
         logger.log(formatDryRunResult(previewResult, options.components, {}))
         return
       }
@@ -264,17 +285,30 @@ export const add = new Command()
         )
         dryRunSpinner.stop()
 
+        if (options.json) {
+          printDryRunResult(options.cwd, options.components, dryRunResult)
+          return
+        }
+
         logger.log(formatDryRunResult(dryRunResult, options.components, {}))
         return
       }
 
       if (!initHasRun) {
-        await addComponents(options.components, config, {
+        const added = await addComponents(options.components, config, {
           ...options,
           // Threaded, not defaulted: the file writer asks before overwriting a
           // file that differs, and `-y` means "don't ask me anything".
           interactive: shouldPrompt(options),
         })
+
+        if (options.json) {
+          printAddResult(options.cwd, options.components, added, [], {
+            initialized: initHasRun,
+          })
+          return
+        }
+
         // Keep the project taglib (zero-import <Badge>/<badge> tags) in
         // sync with what is installed. No-op unless marko.json is ours.
         await writeProjectTaglib(config)
@@ -288,6 +322,97 @@ export const add = new Command()
       clearRegistryContext()
     }
   })
+
+/**
+ * The `marko-ui/add` payload.
+ *
+ * `ok` stays TRUE even when the install could not finish cleanly: the files
+ * were written, and the unmet part is reported as a `warnings` entry with its
+ * own code and fix. A command that changed the project and could not install
+ * one npm package did not fail — it succeeded with something left to do, and
+ * saying otherwise would make `add --json` useless for the exact case it
+ * exists to report.
+ */
+function printAddResult(
+  cwd: string,
+  requested: string[],
+  result: AddResult,
+  warnings: CommandWarning[],
+  options: { initialized?: boolean } = {}
+) {
+  const next = nextSteps([
+    // The single most useful thing an agent can do next: read what it just
+    // installed. Free of context cost to name, expensive to forget.
+    requested.length === 1
+      ? `marko-ui docs ${requested[0]}`
+      : "marko-ui docs --list",
+    result.dependencies.some((dep) => dep.status === "failed")
+      ? "bun add"
+      : "",
+  ])
+
+  printEnvelope("marko-ui/add", {
+    cwd,
+    dryRun: false,
+    items: { requested, resolved: requested },
+    files: result.files,
+    dependencies: result.dependencies,
+    registryDependencies: result.registryDependencies,
+    warnings: [...warnings, ...result.warnings],
+    next,
+    ...(options.initialized ? { initialized: true } : {}),
+  })
+}
+
+/**
+ * The `marko-ui/add` payload for a dry run: the SAME shape as a real add,
+ * plus `dryRun: true`, and the planned statuses instead of observed ones.
+ *
+ * "Would be created" and "was created" are different claims, and mixing them
+ * is how an agent ends up telling a user a file is on disk when nothing ran.
+ * The flag is on the document, not inferred from the statuses.
+ */
+function printDryRunResult(
+  cwd: string,
+  requested: string[],
+  result: DryRunResult
+) {
+  printEnvelope("marko-ui/add", {
+    cwd,
+    dryRun: true,
+    items: { requested, resolved: requested },
+    files: [
+      ...plannedToFileChanges(result.files),
+      ...(result.css
+        ? [
+            {
+              path: result.css.path,
+              status:
+                result.css.action === "create" ? ("created" as const) : ("updated" as const),
+            },
+          ]
+        : []),
+    ].sort((a, b) => a.path.localeCompare(b.path)),
+    dependencies: [
+      ...result.dependencies.map((name) => ({ name, status: "installed" as const })),
+      ...result.devDependencies.map((name) => ({
+        name,
+        status: "installed" as const,
+      })),
+    ],
+    registryDependencies: [],
+    warnings: result.removals?.length
+      ? [
+          {
+            code: WarningCode.MANUAL_STEPS_REMAIN,
+            message: `Would remove ${result.removals.length} stale icon map(s): ${result.removals.join(", ")}.`,
+            fix: "marko-ui add <name> --dry-run",
+          },
+        ]
+      : [],
+    next: [],
+  })
+}
 
 /**
  * Whether `add` should ask before overwriting CSS with a style/theme item.

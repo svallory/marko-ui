@@ -34,6 +34,7 @@ import {
   mergeThemeIntoStylesheet,
 } from "@/src/utils/updaters/update-theme-stylesheet"
 import { isTargetAliasKey } from "@/src/utils/target-aliases"
+import { green, red, yellow } from "kleur/colors"
 import { loadConfig, type ConfigLoaderSuccessResult } from "tsconfig-paths"
 import { z } from "zod"
 
@@ -328,7 +329,7 @@ export async function updateFiles(
     )
     if (!options.silent) {
       for (const file of filesCreated) {
-        logger.log(`  - ${file}`)
+        logger.log(`  ${green("created")} ${file}`)
       }
     }
   } else {
@@ -346,7 +347,7 @@ export async function updateFiles(
     )?.info()
     if (!options.silent) {
       for (const file of filesUpdated) {
-        logger.log(`  - ${file}`)
+        logger.log(`  ${yellow("updated")} ${file}`)
       }
     }
   }
@@ -362,7 +363,7 @@ export async function updateFiles(
     )?.info()
     if (!options.silent) {
       for (const file of filesSkipped) {
-        logger.log(`  - ${file}`)
+        logger.log(`  ${yellow("skipped")} ${file}`)
       }
     }
   }
@@ -376,7 +377,7 @@ export async function updateFiles(
     )?.info()
     if (!options.silent) {
       for (const file of filesRemoved) {
-        logger.log(`  - ${file}`)
+        logger.log(`  ${red("removed")} ${file}`)
       }
     }
   }

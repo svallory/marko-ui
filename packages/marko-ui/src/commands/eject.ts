@@ -4,7 +4,12 @@ import { getShadcnRegistryIndex } from "@/src/registry/api"
 import { clearRegistryContext } from "@/src/registry/context"
 import { confirm } from "@/src/utils/clack"
 import { isInteractive } from "@/src/utils/interactive"
-import { addComponents } from "@/src/utils/add-components"
+import { addComponents, type AddResult } from "@/src/utils/add-components"
+import {
+  type CommandWarning,
+  nextSteps,
+  WarningCode,
+} from "@/src/utils/command-result"
 import { getConfig } from "@/src/utils/get-config"
 import {
   CleanExit,
@@ -13,6 +18,8 @@ import {
 } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
+import { printEnvelope } from "@/src/utils/json-output"
+import { setJsonMode } from "@/src/utils/output-mode"
 import { spinner } from "@/src/utils/spinner"
 import { writeProjectTaglib } from "@/src/utils/taglib"
 import { Command } from "commander"
@@ -22,7 +29,60 @@ const ejectOptionsSchema = z.object({
   cwd: z.string(),
   yes: z.boolean(),
   silent: z.boolean(),
+  json: z.boolean().optional(),
 })
+
+/**
+ * The `marko-ui/eject` payload.
+ *
+ * The manual steps are a WARNING with a code, not prose printed after the
+ * fact: eject deliberately leaves the user two things to do by hand (remove
+ * the npm dependency, remove the import-distribution CSS block), and a
+ * program driving eject needs to know that work is outstanding rather than
+ * discovering it from a sentence.
+ */
+function printEjectResult(
+  cwd: string,
+  components: string[],
+  ejected: AddResult,
+  taglib: { tags?: number } | null,
+  options: { manualStepsRemaining: boolean }
+) {
+  const warnings: CommandWarning[] = [...(ejected?.warnings ?? [])]
+  if (options.manualStepsRemaining) {
+    warnings.push({
+      code: WarningCode.MANUAL_STEPS_REMAIN,
+      message:
+        "marko.json exists and is not marko-ui-generated, so tags were NOT registered. Component source was written; the taglib was not.",
+      fix: "Merge marko.json by hand, or delete it and re-run marko-ui eject",
+    })
+  }
+  warnings.push({
+    code: WarningCode.MANUAL_STEPS_REMAIN,
+    message:
+      "components.json now has distribution: copy, but @marko-ui/shadcn and the import-distribution CSS block are still there.",
+    fix: "bun remove @marko-ui/shadcn, then remove the marko-ui:import-distribution block from your CSS entry",
+  })
+
+  printEnvelope("marko-ui/eject", {
+    cwd,
+    items: {
+      requested: components,
+      resolved: components,
+    },
+    files: [
+      ...(ejected?.files ?? []),
+      { path: "components.json", status: "updated" },
+      ...(taglib ? [{ path: "marko.json", status: "updated" }] : []),
+    ].sort((a, b) => a.path.localeCompare(b.path)),
+    tags: taglib?.tags ?? 0,
+    warnings,
+    next: nextSteps([
+      "bun remove @marko-ui/shadcn",
+      "marko-ui add style",
+    ]),
+  })
+}
 
 /**
  * Switches a project from the `import` distribution to `copy` (see
@@ -67,12 +127,15 @@ export const eject = new Command()
   )
   .option("-y, --yes", "skip confirmation prompt.", false)
   .option("-s, --silent", "mute output.", false)
+  .option("--json", "output as JSON (files written, and any manual steps left).", false)
   .action(async (opts) => {
     try {
+      setJsonMode(Boolean(opts.json))
       const options = ejectOptionsSchema.parse({
         cwd: path.resolve(opts.cwd),
         yes: opts.yes,
         silent: opts.silent,
+        json: Boolean(opts.json),
       })
 
       const config = await getConfig(options.cwd)
@@ -140,7 +203,7 @@ export const eject = new Command()
       // unstyled import-form item (imports ./classes.ts), which `diff` then
       // reports as drift against everything `add` writes.
       const copyConfig = ejectTargetConfig(config)
-      await addComponents(installedComponents, copyConfig, {
+      const ejected = await addComponents(installedComponents, copyConfig, {
         overwrite: true,
         silent: true,
         interactive: false,
@@ -152,6 +215,13 @@ export const eject = new Command()
       await setDistribution(options.cwd, "copy")
 
       ejectSpinner.succeed()
+
+      if (options.json) {
+        printEjectResult(options.cwd, installedComponents, ejected, taglib, {
+          manualStepsRemaining: taglib === null,
+        })
+        return
+      }
 
       if (!options.silent) {
         logger.log(

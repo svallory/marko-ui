@@ -3,6 +3,10 @@ import path from "path"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { spinner } from "@/src/utils/spinner"
+import {
+  type CommandWarning,
+  WarningCode,
+} from "@/src/utils/command-result"
 import type { Config } from "@/src/utils/get-config"
 
 /**
@@ -120,7 +124,7 @@ function stripJsoncComments(source: string): string {
  */
 export async function updateTsConfig(
   config: Config,
-  options: { silent?: boolean } = {}
+  options: { silent?: boolean; warnings?: CommandWarning[] } = {}
 ) {
   const tsconfigPath = path.resolve(config.resolvedPaths.cwd, "tsconfig.json")
 
@@ -136,6 +140,14 @@ export async function updateTsConfig(
   // TS5096 and break typecheck outright. Name the manual step instead of
   // silently making things worse, or silently doing nothing.
   if (!allowsTsExtensionImports(content)) {
+    // The SAME text in both renderings: what a human reads on stderr and what
+    // a program gets as `warnings[].message` cannot be two different strings.
+    options.warnings?.push({
+      code: WarningCode.TS_ALLOW_IMPORTING_EXTENSIONS,
+      message:
+        'tsconfig.json emits output, so "allowImportingTsExtensions" cannot be set (TS5096). Components import with explicit .ts extensions, so add "noEmit": true (apps), "emitDeclarationOnly": true, or "rewriteRelativeImportExtensions": true (TS 5.7+), then re-run marko-ui init.',
+      fix: 'Add "noEmit": true to compilerOptions in tsconfig.json',
+    })
     if (!options.silent) {
       logger.warn(
         `tsconfig.json emits output, so ${highlighter.info(
@@ -160,6 +172,12 @@ export async function updateTsConfig(
     // there is no compilerOptions block to extend — which needs saying, since
     // the components will not typecheck without it.
     if (!options.silent && !/"compilerOptions"\s*:\s*\{/.test(content)) {
+      options.warnings?.push({
+        code: WarningCode.TS_ALLOW_IMPORTING_EXTENSIONS,
+        message:
+          'tsconfig.json has no "compilerOptions" block. Add "allowImportingTsExtensions": true to it, or components will not typecheck.',
+        fix: 'Add "compilerOptions": { "allowImportingTsExtensions": true } to tsconfig.json',
+      })
       logger.warn(
         `tsconfig.json has no ${highlighter.info(
           "compilerOptions"
