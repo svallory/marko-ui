@@ -12,7 +12,12 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Accordion>`,
   importSnippet: `import Accordion from "@/components/ui/accordion/accordion.marko";`,
-  usageSnippet: `<Accordion items=items collapsible/>`,
+  usageSnippet: `const items = [
+  { value: "item-1", title: "Is it accessible?", content: "Yes." },
+  { value: "item-2", title: "Is it styled?", content: "Yes." },
+];
+
+<Accordion items=items collapsible/>`,
   // Upstream's Composition section documents a static
   // Accordion/AccordionItem/AccordionTrigger/AccordionContent tree (four
   // separate components). Our Accordion is a SINGLE .marko file (one
@@ -97,11 +102,12 @@ they may be mixed across an app but not within a single Accordion instance
     },
     {
       name: "accordion-compound",
+      // Round 3: attr-tag composition: `<@item value title>`.
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@item>` attribute tags instead of `items=` to compose each item's title and content directly in markup.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "Full keyboard navigation is supported, adhering to the WAI-ARIA Accordion design pattern.",
     "Each trigger is a real `<button>` inside an `<h3>`, so it participates in the page's heading outline.",

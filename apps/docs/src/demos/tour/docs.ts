@@ -17,6 +17,8 @@ export const docs: ComponentDocs = {
     <Button ...props>Start tour</Button>
   </@trigger>
 </Tour>`,
+
+  requires: ["button"],
   examples: [
     {
       name: "tour-demo",
@@ -35,6 +37,5 @@ export const docs: ComponentDocs = {
       title: "Controlled",
       description:
         "Pair `stepId` with `stepIdChange` (or Marko's bind shorthand `stepId:=state`) to drive the current step from parent state, and `statusChange` to observe the tour's lifecycle.",
-    },
-  ],
+    },],
 };

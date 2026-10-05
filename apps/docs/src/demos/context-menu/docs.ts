@@ -59,15 +59,6 @@ export const docs: ComponentDocs = {
       title: "Destructive",
       description: "Set `variant: \"destructive\"` on an item to style it as a destructive action.",
     },
-    // Upstream's "Sides" demo (side="top"/"right"/"bottom"/"left" on
-    // ContextMenuContent) is SKIPPED: our context-menu.marko's `Input`
-    // interface exposes only `content`, `items`, `item`, `select`, `class`
-    // — there is no `positioning`/`side` prop, so the underlying
-    // @zag-js/menu machine's positioning options are never reachable from
-    // the component's public API. This needs a component-source change
-    // (adding a `positioning`/`side` input and threading it into
-    // `<zag>`), which is out of scope for this docs repair (file
-    // territory) — reported as blocked-needs-component-change.
     {
       name: "context-menu-demo",
       title: "Demo",
@@ -92,6 +83,8 @@ export const docs: ComponentDocs = {
     },
     {
       name: "context-menu-controlled",
+      // Round 3: the only place the `select(value)` handler and the `type:"separator"` entry appear.
+      essential: true,
       title: "Controlled",
       description: "Pass a `select` handler to react to the chosen item's `value`.",
     },
@@ -100,8 +93,7 @@ export const docs: ComponentDocs = {
       title: "Compound (attr tags)",
       description:
         "Use `<@item>` attribute tags instead of `items=` to compose the menu directly in markup — pass `type=\"separator\"` for a divider or `type=\"label\"` for a group label. Entries render in the order they are written. An item's text can come from either a `label=` attribute or a markup body, whichever you prefer.",
-    },
-  ],
+    },],
   accessibilityKeyboard: [
     { keys: "Right click / long press", description: "Opens the menu at the pointer position, anchored to the trigger region." },
     { keys: "ArrowDown / ArrowUp", description: "Moves the highlight to the next / previous item, wrapping at the ends." },

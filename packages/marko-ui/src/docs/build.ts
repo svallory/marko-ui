@@ -53,6 +53,7 @@ export interface DocsEntry {
   usageSnippet?: string;
   concepts?: string;
   composition?: string;
+  requires?: string[];
   accessibilityKeyboard?: { keys: string; description: string }[];
   accessibilityNotes?: string[];
   examples: ExampleEntry[];
@@ -73,18 +74,37 @@ export interface ComponentDocsInput {
   parts: ApiPartLike[];
   /** The install line the reader should run. */
   installCommand: string;
+  /** The install line an `import`-distribution project needs instead of `add`. */
+  importInstallCommand?: string;
   /**
    * The component's own `.marko` sources, concatenated.
    *
-   * Needed for two facts no other input carries: whether an attr-tag is
-   * iterated (`[...(input.item ?? [])]` / `<for|…| of=input.item>` makes a
-   * part repeatable) and what an attr-tag's declared attributes are
-   * (`Marko.AttrTag<TabsPanelAttrs>` names an interface in this source).
-   * Both the registry build and the docs site read the same text — the
-   * registry item inlines the authored source verbatim — so the two answers
-   * cannot drift.
+   * Needed for facts no other input carries: whether an attr-tag is iterated
+   * (`[...(input.item ?? [])]` / `<for|…| of=input.item>` makes a part
+   * repeatable), what an `Marko.AttrTag<T>` type declares (the part's own
+   * attributes), the shape of the item/entry interfaces an `items=` prop
+   * takes, and which part files the component renders ITSELF (internal, not
+   * composable by a caller).
    */
   componentSource?: string;
+  /** Part file names, without extension (e.g. `["trigger", "submenu"]`). */
+  partFiles?: string[];
+}
+
+/**
+ * An object shape a caller has to BUILD to use a prop, e.g. `items=`.
+ *
+ * Without it, `items: DropdownMenuItem[]` documents nothing an agent can act
+ * on: the fields that make a checkbox item a checkbox item (`type`,
+ * `checked`, `radioGroup`) live in an interface, not on the prop line.
+ */
+export interface ItemTypeDoc {
+  /** The prop that takes it, e.g. `items`. */
+  prop: string;
+  /** The interface name as declared, e.g. `DropdownMenuItem`. */
+  typeName: string;
+  /** Its fields, in declaration order. */
+  fields: PropDoc[];
 }
 
 /** `alert-dialog` → `Alert Dialog`. */
@@ -93,6 +113,14 @@ function titleize(name: string): string {
     .split("-")
     .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
     .join(" ");
+}
+
+/** `chart-bar` → `ChartBar`; the same rule `collectProjectTags` uses. */
+export function pascalCase(name: string): string {
+  return name
+    .split(/[-_]/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join("");
 }
 
 /** `button-rtl` → `button-rtl`; stable ids are the `--example` selector. */
@@ -183,11 +211,23 @@ function isEventName(name: string): boolean {
 export function readInterfaceFields(
   source: string,
   interfaceName: string,
+  seen: Set<string> = new Set(),
 ): { name: string; type: string; required: boolean }[] {
+  if (seen.has(interfaceName)) return [];
+  seen.add(interfaceName);
   const declaration = new RegExp(
-    `(?:^|\\n)\\s*(?:export\\s+)?interface\\s+${interfaceName}\\s*(?:extends[^{]*)?\\{`,
+    `(?:^|\\n)\\s*(?:export\\s+)?interface\\s+${interfaceName}\\s*(?:extends\\s+([^{]+?))?\\s*\\{`,
   ).exec(source);
   if (!declaration) return [];
+  // `extends` comes FIRST in TypeScript, so a derived interface's own fields
+  // do not exist without them: `DropdownMenuItemAttrs extends DropdownMenuItem`
+  // is where `<@item>`'s `type`/`checked`/`radioGroup` actually live, and
+  // reading only the derived body printed an attribute-less part.
+  const inherited = (declaration[1] ?? "")
+    .split(",")
+    .map((name) => name.trim())
+    .filter((name) => /^[A-Za-z_$][\w$]*$/.test(name))
+    .flatMap((name) => readInterfaceFields(source, name, seen));
   const start = declaration.index + declaration[0].length;
   let depth = 1;
   let end = start;
@@ -211,7 +251,29 @@ export function readInterfaceFields(
       required: !field[2],
     });
   }
-  return fields;
+  const own = new Set(fields.map((field) => field.name));
+  return [...inherited.filter((field) => !own.has(field.name)), ...fields];
+}
+
+/**
+ * True when the ROOT component renders this part file itself.
+ *
+ * `dropdown-menu.marko` renders `<${submenu} parent=… parentApi=…/>` for a
+ * `type: "sub"` entry. Those props are machine plumbing a caller cannot
+ * supply, so documenting `submenu.marko` as a usable part teaches markup that
+ * does not compile: an internal part is not part of the public API.
+ */
+function rendersPartItself(source: string, partFileName: string): boolean {
+  // BOTH halves are required. The import tells us the component depends on the
+  // part file and under which binding; the render tells us it uses that binding
+  // itself. Matching on the tag name alone is not enough — `chart`'s sources
+  // contain inline-SVG `<line>` elements, which would hide `chart/line.marko`
+  // (`<ChartLine>`) if the file name alone were matched.
+  const imported = new RegExp(
+    `import\\s+([A-Z][\\w$]*)\\s+from\\s+["'][^"']*/${partFileName}\\.marko["']`,
+  ).exec(source);
+  if (!imported) return false;
+  return new RegExp(`<${imported[1]}[\\s/>]`).test(source);
 }
 
 /**
@@ -329,6 +391,7 @@ export function buildComponentDocs(input: ComponentDocsInput): ComponentDocs {
 
   const subcomponents: SubcomponentDoc[] = parts
     .filter((part) => part.name !== root?.name)
+    .filter((part) => part.name !== name && !rendersPartItself(source, part.name))
     .map((part) => {
       const nested = partition(part.properties, source);
       const sub: SubcomponentDoc = { name: part.name, props: nested.props };
@@ -337,6 +400,34 @@ export function buildComponentDocs(input: ComponentDocsInput): ComponentDocs {
       if (part.nativeAttributes) sub.nativeAttributes = part.nativeAttributes;
       return sub;
     });
+
+  // `items: DropdownMenuItem[]` documents nothing an agent can build. Every
+  // prop whose type is an array of a locally-declared interface gets that
+  // interface's fields, so `items=` shows the entry shape.
+  const itemTypes: ItemTypeDoc[] = [];
+  for (const group of [split.props, ...subcomponents.map((sub) => sub.props)]) {
+    for (const prop of group) {
+      const match = /^([A-Z][\w$]*(?:Item|Entry|Group|Data|Option|Data)?)\[\]$/.exec(
+        (prop.type ?? "").replace(/\s*\|\s*undefined\b/g, "").trim(),
+      );
+      const typeName = match?.[1];
+      if (!typeName) continue;
+      if (itemTypes.some((item) => item.prop === prop.name)) continue;
+      const fields = readInterfaceFields(source, typeName).filter(
+        (field) => !isBodyType(field.type),
+      );
+      if (fields.length === 0) continue;
+      itemTypes.push({
+        prop: prop.name,
+        typeName,
+        fields: fields.map((field) => ({
+          name: field.name,
+          type: field.type,
+          required: field.required,
+        })),
+      });
+    }
+  }
 
   const examples = docs.examples
     .map((example) => {
@@ -367,6 +458,9 @@ export function buildComponentDocs(input: ComponentDocsInput): ComponentDocs {
     usageTags: docs.usageTags ?? "",
     importSnippet: docs.importSnippet ?? "",
     usageSnippet: docs.usageSnippet ?? "",
+    // Filled below from the component's part files; declared here so the
+    // literal satisfies the model even for a component with no parts.
+    tags: [],
     parts: split.parts,
     props: split.props,
     events: split.events,
@@ -374,9 +468,33 @@ export function buildComponentDocs(input: ComponentDocsInput): ComponentDocs {
     accessibilityNotes: docs.accessibilityNotes ?? [],
     examples,
   };
+  if (input.importInstallCommand) model.importInstallCommand = input.importInstallCommand;
+  if (docs.requires?.length) model.requires = [...docs.requires];
   if (split.body) model.body = split.body;
   if (root?.nativeAttributes) model.nativeAttributes = root.nativeAttributes;
   if (subcomponents.length > 0) model.subcomponents = subcomponents;
+  if (itemTypes.length > 0) model.itemTypes = itemTypes;
+  // The taglib names `add` registers for this component: the root plus every
+  // PUBLIC part file, PascalCased from `<dir>[-<file>]` exactly as
+  // `collectProjectTags` does (`chart/bar.marko` → `ChartBar`, NOT the
+  // import binding `BarChart`).
+  const partFiles = input.partFiles ?? parts.map((part) => part.name);
+  const tagFiles = partFiles.filter(
+    // The ROOT file is never "internal" — and it must be excluded from the
+    // check, because `select`'s own source contains `<select>` elements and
+    // would otherwise be mistaken for a self-rendered part.
+    (file) => file === name || !rendersPartItself(source, file),
+  );
+  // The SAME rule `collectProjectTags` applies: a file named after its own
+  // directory IS the root tag (`dropdown-menu/dropdown-menu.marko` →
+  // `DropdownMenu`), not `<dir>-<file>`. Root first, then parts in name order.
+  model.tags = [
+    ...(tagFiles.includes(name) ? [pascalCase(name)] : []),
+    ...tagFiles
+      .filter((file) => file !== name)
+      .sort()
+      .map((file) => pascalCase(`${name}-${file}`)),
+  ];
   if (docs.concepts) model.concepts = docs.concepts;
   if (docs.composition) model.composition = docs.composition;
   return model;

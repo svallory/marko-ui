@@ -24,7 +24,7 @@ in-process compiler API, which the component build depends on. `marko-ui doctor`
 | `init [items...]` | Scaffold components.json, install the base theme, optionally install items; `--agents` also writes the AGENTS.md section and installs agent skills (on an initialized project it only does the agent setup) |
 | `add [items...]` | Install items — bare names (`button`), namespaced (`@acme/button`), URLs, or local paths. `--json` reports every file with a status, plus dependencies and warnings; `--dry-run --json` previews the same shape |
 | `diff [item]` | Diff local files against their registry versions (`--json` for per-file status and plain-text diffs) |
-| `docs [components...]` | Print component documentation as markdown (`--list` for the index; `--json` returns the markdown in the envelope) |
+| `docs [components...]` | Print component documentation as markdown: parts, props, events and the essential examples, read from the registry item and rendered locally for the PROJECT's own import paths (`--examples` for every example, `--example <id…>` for named ones, `--list` for the index; `--json` returns the markdown and the model it was rendered from in the envelope) |
 | `show <items...>` (alias `view`) | Inspect items: full JSON, `--files`, `--deps` (always machine output; `--json` is accepted and changes nothing) |
 | `search [registries...]` (alias `list`) | Search items across configured registries |
 | `status` (alias `info`) | Project info: config, aliases, framework |

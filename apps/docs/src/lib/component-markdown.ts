@@ -62,6 +62,17 @@ export function componentDocsInputFromPage(page: ComponentPageData): ComponentDo
       .filter((file) => file.path.endsWith(".marko"))
       .map((file) => file.content)
       .join("\n"),
+    // Same list the registry build reads off disk: the file names under
+    // `ui/<name>/`, which is what the taglib names are derived from.
+    // `path` is the file's name in the CONSUMER's project
+    // (`src/components/ui/badge/badge.marko`), and part files are flat under
+    // the component directory, so the basename IS the part name.
+    partFiles: page.registry.files
+      .map((file) => file.path.split("/").pop() ?? "")
+      .filter((file) => file.endsWith(".marko") && !file.endsWith(".d.marko"))
+      .map((file) => file.slice(0, -".marko".length))
+      .sort(),
+    importInstallCommand: "bun add @marko-ui/shadcn marko-zag",
   };
 }
 

@@ -42,8 +42,7 @@ export const docs: ComponentDocs = {
       name: "kbd-rtl",
       title: "RTL",
       description: "Pass `dir=\"rtl\"` to a wrapping element to mirror `Kbd`/`KbdGroup` layout for right-to-left languages.",
-    },
-  ],
+    },],
   composition:
     "`Kbd` and `KbdGroup` are both plain, single-file elements (`<kbd>` and a styled wrapper `<div>` — no Zag machine, no sub-parts to import): `KbdGroup` renders `Kbd` children directly (`<KbdGroup><Kbd>...</Kbd><Kbd>...</Kbd></KbdGroup>`) — there is no separate `KbdKey` or similar sub-tag.",
   accessibilityNotes: [

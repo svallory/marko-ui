@@ -128,8 +128,7 @@ import MessageScrollerButton from "@/components/ui/message-scroller/button.marko
       name: "message-scroller-scrollable",
       title: "Reading Scroll State",
       description: "A footer reports which edges are still scrollable, driven by the controller's scroll-state store.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "MessageScrollerViewport is a labelled, keyboard-focusable scroll region by default: it uses role=\"region\", aria-label=\"Messages\", and tabindex=\"0\", so keyboard users can focus the transcript and scroll it directly.",
     "MessageScrollerContent marks the transcript as a live region with role=\"log\" and aria-relevant=\"additions\". New rows can be announced, but streamed text mutations do not have to be announced token by token — pass aria-busy while a turn is still arriving if announcements should wait for the completed row.",

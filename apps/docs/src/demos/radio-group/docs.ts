@@ -28,23 +28,6 @@ export const docs: ComponentDocs = {
       description:
         "Pass an `items: { value, label, disabled? }[]` array and the component renders every item internally — or compose options in markup with `<@item>` attribute tags (see the Compound example).",
     },
-    // radio-group-description: SKIPPED — upstream wraps a standalone
-    // `<RadioGroupItem>` in `<Field>`/`<FieldContent>`/`<FieldLabel>`/
-    // `<FieldDescription>` to pair each option with description text. Our
-    // `<RadioGroup>` has no standalone `RadioGroupItem` tag — every item's
-    // label+control markup (label > control span + hidden input + text
-    // span) is rendered internally by radio-group.marko, and its `content`
-    // slot only replaces the text span's inner content, not the whole item
-    // wrapper, so a Field-based per-item description can't be composed.
-    // Closing this requires a component-source change (out of scope here);
-    // reported as blocked-needs-component-change.
-    // radio-group-choice-card: SKIPPED — same constraint as
-    // radio-group-description, and worse: upstream also relocates the
-    // control to the END of the row and wraps the whole `<Field>` in a
-    // clickable `<FieldLabel>` card. Our fixed item wrapper (control first,
-    // text second, always inside our own `<label>`) has no slot to
-    // restructure or relocate. Closing this requires a component-source
-    // change (out of scope here); reported as blocked-needs-component-change.
     {
       name: "radio-group-fieldset",
       title: "Fieldset",
@@ -61,15 +44,6 @@ export const docs: ComponentDocs = {
       title: "Disabled",
       description: "Pass `disabled` on `RadioGroup` itself to disable every item in the group.",
     },
-    // radio-group-invalid: SKIPPED — upstream sets `aria-invalid` on
-    // individual `RadioGroupItem`s and `data-invalid` on their wrapping
-    // `<Field>`s to show per-item validation state. Our `<RadioGroup>`
-    // items accept no `invalid`/`aria-invalid` field (see
-    // `RadioGroupItem`/`RadioGroupItemAttrs` in radio-group.marko) and
-    // `getItemProps`/`getItemControlProps` are called internally, so
-    // there's no way for a demo to inject that attribute per item. Closing
-    // this requires a component-source change (out of scope here);
-    // reported as blocked-needs-component-change.
     {
       name: "radio-group-controlled",
       essential: true,
@@ -88,6 +62,5 @@ export const docs: ComponentDocs = {
       title: "RTL",
       description:
         "`dir` isn't a @zag-js/radio-group machine prop, so it passes through as a native attribute on the root — pair it with logical-property CSS for full mirroring.",
-    },
-  ],
+    },],
 };

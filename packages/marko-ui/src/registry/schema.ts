@@ -209,6 +209,12 @@ const componentDocsPartSchema = z.object({
   description: z.string().optional(),
 })
 
+const componentDocsItemTypeSchema = z.object({
+  prop: z.string(),
+  typeName: z.string(),
+  fields: z.array(componentDocsPropSchema),
+})
+
 const componentDocsBodySchema = z.object({
   param: z.string().optional(),
   description: z.string().optional(),
@@ -225,12 +231,16 @@ export const componentDocsSchema = z.object({
   title: z.string(),
   description: z.string(),
   installCommand: z.string(),
+  importInstallCommand: z.string().optional(),
   usageTags: z.string(),
   importSnippet: z.string(),
   usageSnippet: z.string(),
+  requires: z.array(z.string()).optional(),
   parts: z.array(componentDocsPartSchema),
   props: z.array(componentDocsPropSchema),
   events: z.array(componentDocsEventSchema),
+  tags: z.array(z.string()).optional(),
+  itemTypes: z.array(componentDocsItemTypeSchema).optional(),
   body: componentDocsBodySchema.optional(),
   nativeAttributes: z.string().optional(),
   subcomponents: z

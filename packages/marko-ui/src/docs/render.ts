@@ -154,20 +154,39 @@ function selectExamples(
     return { shown: chosen, hidden: rest };
   }
   if (selection === "all") return { shown: docs.examples, hidden: [] };
-  // "essential": the first example is the page's hero and is always shown,
-  // then essentials until the limit OR the character budget runs out.
+  // "essential": ESSENTIALS ARE MANDATORY. The previous branch walked the
+  // examples in order, took the hero first, and `break`-ed on the character
+  // budget — so a hero larger than the budget (message-scroller's is 7,516
+  // against 7,000) pushed BOTH essentials out and the `break` also discarded
+  // any later, smaller one. The hero is now the one that yields.
+  // ESSENTIALS FIRST, and they are what the budget is spent on. The hero used
+  // to be taken unconditionally with the essentials appended under it, so a
+  // hero that consumed the whole budget (message-scroller's 170-line demo)
+  // pushed BOTH of its essentials out — the default answer had none of the
+  // examples worth reading. The hero still prints whenever an essential leaves
+  // room for it, which is the normal case.
   const hero = docs.examples[0];
-  const shown = hero ? [hero] : [];
-  let chars = hero ? hero.source.length : 0;
-  for (const example of docs.examples.slice(1)) {
-    if (shown.length >= limit) break;
-    if (!example.essential) continue;
-    if (chars + example.source.length > charBudget) break;
+  const shown: ComponentDocs["examples"] = [];
+  let chars = 0;
+  // The budget does NOT apply to an essential. An essential is a demo someone
+  // decided an agent cannot do without; a budget that can drop one makes the
+  // flag a lie. The budget governs the HERO and nothing else.
+  for (const example of docs.examples) {
+    if (!example.essential || shown.length >= limit) continue;
     shown.push(example);
     chars += example.source.length;
   }
-  const shownIds = new Set(shown.map((example) => example.id));
-  return { shown, hidden: docs.examples.filter((example) => !shownIds.has(example.id)) };
+  if (hero && !shown.includes(hero) && shown.length < limit) {
+    if (chars + hero.source.length <= charBudget) {
+      shown.push(hero);
+      chars += hero.source.length;
+    }
+  }
+  // Back into page order so the reader meets the component's own entry point
+  // first, which is also what a page's hero does.
+  const chosen = docs.examples.filter((example) => shown.includes(example));
+  const shownIds = new Set(chosen.map((example) => example.id));
+  return { shown: chosen, hidden: docs.examples.filter((example) => !shownIds.has(example.id)) };
 }
 
 /**
@@ -193,16 +212,34 @@ export function renderComponentDocs(
     .map((value) => applyImportStyle(value.trim(), style))
     .join("\n\n");
 
+  const isCopy = style.kind === "copy";
+  // The install line has to match the project: `marko-ui add` REFUSES to run
+  // under the `import` distribution (assertAddableDistribution), so telling
+  // such a project to `add` is an instruction that fails.
+  const installCommand = isCopy
+    ? docs.installCommand
+    : (docs.importInstallCommand ?? `bun add @marko-ui/shadcn`);
+
   sections.push(
     "## Install",
     "",
     "```bash",
-    docs.installCommand,
+    installCommand,
     "```",
     "",
     "## Usage",
     "",
-    "Tags are auto-registered; these imports are the optional explicit form.",
+    // The sentence is the whole difference between the two styles, and it has
+    // to be TRUE in each:
+    // - copy: `add`/`init` writes a `marko.json` registering the component's
+    //   tags, so the import is optional AND the registered name is the one to
+    //   write (chart registers `ChartBar`, not the demo's `BarChart` binding).
+    // - import: NOTHING is registered (`packages/shadcn/marko.json` declares
+    //   no tags and `add` does not run), so every tag is imported and the
+    //   import is required.
+    isCopy
+      ? "This project registers the tags below automatically — the import lines are the optional explicit form."
+      : "Nothing is auto-registered in an `import` project: import every tag you use.",
     "",
     "```marko",
     // One well-formed fenced block: every import first, then a blank line,
@@ -214,24 +251,29 @@ export function renderComponentDocs(
     "",
   );
 
-  if (docs.usageTags) {
-    sections.push(`Available tags: ${docs.usageTags}`, "");
+  // A snippet that uses ANOTHER component says so, with the exact command.
+  // `add item` does not bring `button` with it, and a snippet that silently
+  // depends on something the reader has not installed is the fastest way to
+  // an unresolved tag.
+  if (isCopy && docs.requires?.length) {
+    sections.push(
+      `The snippet above also uses \`bunx marko-ui add ${docs.requires.join(" ")} -y\`.`,
+      "",
+    );
+  }
+
+  // `?.` because a registry item built before this field existed has none;
+  // the CLI must still render it rather than throw.
+  if (docs.tags?.length) {
+    sections.push(
+      `Registered tags: ${docs.tags.map((tag) => `<${tag}>`).join(", ")}`,
+      "",
+    );
   }
 
   if (docs.concepts) sections.push("## Concepts", "", docs.concepts, "");
 
   if (docs.composition) sections.push("## Composition", "", docs.composition, "");
-
-  if (docs.subcomponents?.length) {
-    sections.push(
-      "## Part files",
-      "",
-      "Each of these is its own file, with its own props:",
-      "",
-      ...docs.subcomponents.map((sub) => `\`${sub.name}.marko\``),
-      "",
-    );
-  }
 
   if (docs.body || docs.parts.length > 0) {
     sections.push("## Parts", "");
@@ -252,6 +294,15 @@ export function renderComponentDocs(
     if (docs.nativeAttributes) {
       sections.push("", `Also accepts every \`<${docs.nativeAttributes}>\` attribute.`);
     }
+    sections.push("");
+  }
+
+  // `items=`-style props take an object the caller has to BUILD; the prop line
+  // names the type but not its fields, which is the difference between a type
+  // an agent can read and one it cannot.
+  for (const item of docs.itemTypes ?? []) {
+    sections.push(`### \`${item.typeName}\` (\`${item.prop}=\`)`, "");
+    for (const field of item.fields) sections.push(`- ${propLine(field)}`);
     sections.push("");
   }
 

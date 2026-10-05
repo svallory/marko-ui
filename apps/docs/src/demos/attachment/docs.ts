@@ -32,6 +32,8 @@ import AttachmentAction from "@/components/ui/attachment/action.marko";`,
     </AttachmentAction>
   </AttachmentActions>
 </Attachment>`,
+
+  requires: ["button", "icon"],
   examples: [
     {
       name: "attachment-demo",
@@ -67,8 +69,7 @@ import AttachmentAction from "@/components/ui/attachment/action.marko";`,
       title: "Trigger",
       description:
         "Add an `AttachmentTrigger` to make the whole card open a link or dialog — it fills the card behind the actions, so the actions stay clickable.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "`AttachmentAction` is usually icon-only, so give each one an `aria-label` describing the action and its target, e.g. `<AttachmentAction aria-label=\"Remove sales-dashboard.pdf\">`.",
     "`AttachmentTrigger` covers the card with no text of its own, so give it an `aria-label` describing what activating it does. It renders a real `<button>` (`packages/shadcn/ui/attachment/trigger.marko`) positioned `absolute inset-0` behind `AttachmentActions` in the stacking order, so the trigger and any action stay separately focusable and clickable — neither traps the other.",

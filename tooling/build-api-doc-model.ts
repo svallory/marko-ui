@@ -128,6 +128,16 @@ export async function demoComponentNames(): Promise<string[]> {
     .sort();
 }
 
+/** The component's part files, without extension (e.g. `["trigger"]`). */
+export async function readPartFiles(componentName: string): Promise<string[]> {
+  const dir = join(UI_DIR, componentName);
+  if (!existsSync(dir)) return [];
+  return (await readdir(dir))
+    .filter((file) => file.endsWith(".marko") && !file.endsWith(".d.marko"))
+    .map((file) => file.slice(0, -".marko".length))
+    .sort();
+}
+
 /** `alert-dialog` → `Alert Dialog`, for components whose meta has no title. */
 export function titleize(name: string): string {
   return name
@@ -163,7 +173,12 @@ export async function buildApiDocModel(
     demos: await readDemoSources(source.name),
     parts: apiParts,
     installCommand: `bunx marko-ui add ${source.name} -y`,
+    // `add` refuses to run under the `import` distribution
+    // (assertAddableDistribution), so that project's install line is the
+    // dependency itself — see packages/shadcn/README.md for the full wiring.
+    importInstallCommand: "bun add @marko-ui/shadcn marko-zag",
     componentSource: await readComponentSource(source.name),
+    partFiles: await readPartFiles(source.name),
   };
   return buildComponentDocs(input);
 }

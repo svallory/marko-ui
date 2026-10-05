@@ -104,14 +104,5 @@ export const docs: ComponentDocs = {
       title: "RTL",
       description:
         "Pass `dir=\"rtl\"` and a BCP-47 `locale` string (the Zag machine's own locale shape, rather than upstream's `react-day-picker/locale` object) for right-to-left rendering.",
-    },
-    // calendar-week-numbers: SKIPPED. Upstream's `showWeekNumber` sets
-    // the Zag machine's `showWeekNumbers` prop (forwardable through our
-    // Input), but calendar.marko's markup never calls
-    // `getWeekNumberHeaderCellProps`/`getWeekNumberCellProps` — there is
-    // no week-number column in the rendered table at all, regardless of
-    // the prop. Porting this demo faithfully requires adding that column
-    // to packages/shadcn/ui/calendar/calendar.marko, which is out of
-    // scope for a demos-only repair (component-source change needed).
-  ],
+    },],
 };

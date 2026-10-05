@@ -13,10 +13,15 @@ export const docs: ComponentDocs = {
   usageTags: `<Field>, <FieldLabel>, <FieldDescription>`,
   importSnippet: `import Field from "@/components/ui/field/field.marko";
 import FieldLabel from "@/components/ui/field/field-label.marko";
-import FieldDescription from "@/components/ui/field/field-description.marko";`,
+import FieldDescription from "@/components/ui/field/field-description.marko";
+import TextInput from "@/components/ui/input/input.marko";`,
+  // `TextInput`, never `<Input>`: the import binding `Input` shadows Marko's
+  // reserved props-type name (CLAUDE.md), and `field`'s own examples already
+  // use TextInput. It is also a different registry component, so the snippet
+  // imports it explicitly rather than pretending `add field` brought it.
   usageSnippet: `<Field>
   <FieldLabel for="name">Full name</FieldLabel>
-  <Input id="name" autocomplete="off" placeholder="Evil Rabbit"/>
+  <TextInput id="name" autocomplete="off" placeholder="Evil Rabbit"/>
   <FieldDescription>This appears on invoices and emails.</FieldDescription>
 </Field>`,
   // `field` is compound (10 parts in api-reference.json), so `isCompound` is
@@ -160,8 +165,7 @@ import FieldDescription from "@/components/ui/field/field-description.marko";`,
       title: "Responsive layout",
       description:
         "Set `orientation=\"responsive\"` to stack vertically on narrow containers and switch to a horizontal row once the `FieldGroup`'s `@container` query matches — apply `@md/field-group:` classes on `FieldGroup` to tune the breakpoint.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "`FieldSet` and `FieldLegend` keep related controls grouped for keyboard and assistive-technology users.",
     "`Field` renders `role=\"group\"` so nested controls inherit labeling from `FieldLabel` and `FieldLegend` when combined.",

@@ -103,6 +103,5 @@ items=-derived panels — see the Hybrid example below.`,
       title: "Hybrid",
       description:
         "`<@trigger>` and `<@panel>` normalize independently: mixing `<@trigger>` tags with `items=` (and no `<@panel>` tags) pairs attr-tag triggers with items=-derived panels. Supply both tag names (or neither) to stay on one source.",
-    },
-  ],
+    },],
 };

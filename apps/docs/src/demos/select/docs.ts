@@ -104,8 +104,7 @@ markup (see the Compound example below).`,
       title: "Compound (attr tags)",
       description:
         "Use `<@option>` attribute tags instead of `items=` to compose each option directly in markup.",
-    },
-  ],
+    },],
   accessibilityKeyboard: [
     { keys: "Space / Enter", description: "Opens the listbox. When open, selects the highlighted item." },
     { keys: "ArrowDown / ArrowUp", description: "Opens the listbox, or moves the highlight to the next/previous item." },

@@ -51,8 +51,7 @@ Pass \`horizontal\` to render the horizontal scrollbar and thumb alongside the v
       name: "scroll-area-rtl",
       title: "RTL",
       description: "ScrollArea restyles correctly under `dir=\"rtl\"` with no component changes.",
-    },
-  ],
+    },],
   // Deviates from upstream, which links out to Base UI's accessibility
   // docs with no keyboard table. Documented here from our actual markup
   // (packages/shadcn/ui/scroll-area/scroll-area.marko): the viewport

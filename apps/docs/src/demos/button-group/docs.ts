@@ -15,6 +15,8 @@ export const docs: ComponentDocs = {
   <Button>Button 1</Button>
   <Button>Button 2</Button>
 </ButtonGroup>`,
+
+  requires: ["button"],
   examples: [
     {
       name: "button-group-demo",
@@ -84,8 +86,7 @@ export const docs: ComponentDocs = {
       name: "button-group-text",
       title: "With Text",
       description: "`ButtonGroupText` renders a non-interactive label inside the group.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "The `ButtonGroup` root renders `role=\"group\"` so assistive tech announces the buttons as one related set.",
     "Use `aria-label` or `aria-labelledby` on `ButtonGroup` to give the group an accessible name, especially when it has no visible heading.",

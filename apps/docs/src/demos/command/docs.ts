@@ -36,6 +36,8 @@ export const docs: ComponentDocs = {
     },
     {
       name: "command-basic",
+      // Round 3: composes two registry components (Dialog + Command) with no attr-tag of its own — no mechanical rule here reads that.
+      essential: true,
       title: "Command Dialog",
       description: "A command menu opened from a button trigger, composed from `Dialog` and `Command` (see Composition above).",
       // Hand-flagged: the automated rule reads the demo's own signals and this
@@ -73,8 +75,7 @@ export const docs: ComponentDocs = {
       name: "command-rtl",
       title: "RTL",
       description: "Pass `dir=\"rtl\"` — it forwards straight through to the root element and search input, no extra wiring required.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "Built on `@zag-js/combobox`: the search input owns `role=\"combobox\"` with `aria-expanded`/`aria-controls`, and the list is `role=\"listbox\"` with items as `role=\"option\"`.",
     "The currently highlighted item is announced via `aria-activedescendant` on the input, so screen reader users always know which item arrow-key navigation lands on.",

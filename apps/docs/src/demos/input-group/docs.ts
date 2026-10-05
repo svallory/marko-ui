@@ -16,9 +16,10 @@ import InputGroupAddon from "@/components/ui/input-group/addon.marko";`,
   usageSnippet: `<InputGroup>
   <InputGroupInput placeholder="Search..." />
   <InputGroupAddon>
-    <SearchIcon />
+    <Icon name="Search"/>
   </InputGroupAddon>
 </InputGroup>`,
+  requires: ["icon"],
   examples: [
     {
       name: "input-group-demo",
@@ -103,6 +104,5 @@ import InputGroupAddon from "@/components/ui/input-group/addon.marko";`,
       title: "RTL",
       description:
         "InputGroup's parts use Tailwind logical properties, so they restyle correctly under `dir=\"rtl\"` with no component changes — put `dir=\"rtl\"` on the group (or an ancestor) and every part follows.",
-    },
-  ],
+    },],
 };

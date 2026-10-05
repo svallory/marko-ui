@@ -35,6 +35,5 @@ export const docs: ComponentDocs = {
       title: "Controlled",
       description:
         "Listen for `activeIdsChange` (or `onActiveChange` for the full details) to read the active headings without taking over control of the list.",
-    },
-  ],
+    },],
 };

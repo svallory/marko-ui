@@ -69,6 +69,16 @@ export interface EventDoc {
   description?: string;
 }
 
+/**
+ * An object shape a caller has to BUILD to use a prop, e.g. `items=`.
+ * `items: DropdownMenuItem[]` alone documents nothing an agent can act on.
+ */
+export interface ItemTypeDoc {
+  prop: string;
+  typeName: string;
+  fields: PropDoc[];
+}
+
 /** A part with its own file and its own props. */
 export interface SubcomponentDoc {
   /** File name without extension, e.g. `trigger`. */
@@ -103,17 +113,38 @@ export interface ComponentDocs {
   description: string;
   /** `bunx marko-ui add <name> -y`. */
   installCommand: string;
+  /**
+   * What an `import`-distribution project runs instead. `add` REFUSES to run
+   * under that distribution (`assertAddableDistribution`), so telling such a
+   * project to `add` is an instruction that fails.
+   */
+  importInstallCommand?: string;
   /** Tag names usable without an import once the taglib is registered. */
   usageTags: string;
   /** The explicit-import form. */
   importSnippet: string;
   /** A minimal usage snippet, WITHOUT any import line. */
   usageSnippet: string;
+  /**
+   * Other registry components the Usage snippet needs. Copy distribution only:
+   * the renderer prints the `add` command, and never under `import` where the
+   * dependency is the package rather than a per-component install.
+   */
+  requires?: string[];
   /** The tag's default body, when the component declares one. */
   body?: BodyDoc;
   parts: PartDoc[];
   props: PropDoc[];
   events: EventDoc[];
+  /**
+   * The taglib names this component registers in a COPY project, PascalCased
+   * from `<dir>[-<file>]` exactly as `collectProjectTags` does. `chart`
+   * registers `Chart`, `ChartBar`, `ChartArea`, … — NOT the import bindings
+   * `Chart`, `BarChart`, `AreaChart` the demos happen to use.
+   */
+  tags?: string[];
+  /** Object shapes a caller must build to use `items=`-style props. */
+  itemTypes?: ItemTypeDoc[];
   /** Tag whose native attributes the root also accepts, e.g. `div`. */
   nativeAttributes?: string;
   /**

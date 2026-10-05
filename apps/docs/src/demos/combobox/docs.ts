@@ -94,12 +94,6 @@ Combobox (items= groups=)
       title: "Groups",
       description: "Pass `groups` alongside `items` to render a separated, labeled grouping of the same values.",
     },
-    // combobox-custom: SKIPPED — upstream renders a caller-supplied
-    // component per item (`<ComboboxItem>{(item) => <Item .../>}</ComboboxItem>`).
-    // Our `<Combobox>` has no item-content slot/render-prop — item display
-    // text is hard-coded to `item.label` in combobox.marko. Closing this
-    // requires a component-source change (out of scope here); reported as
-    // blocked-needs-component-change.
     {
       name: "combobox-invalid",
       title: "Invalid",
@@ -117,19 +111,6 @@ Combobox (items= groups=)
       description:
         "Pass `inputBehavior=\"autohighlight\"` to automatically highlight the first matching item while filtering.",
     },
-    // combobox-popup: SKIPPED — upstream triggers the combobox from an
-    // arbitrary button via `<ComboboxTrigger render={<Button/>}>` and moves
-    // the search input inside the popover content. Our port has no
-    // trigger-render-prop / alternate-anchor mode: the input, trigger
-    // button, and floating list are all fixed parts of the one root tag.
-    // Closing this requires a component-source change (out of scope here);
-    // reported as blocked-needs-component-change.
-    // combobox-input-group: SKIPPED — upstream nests `<ComboboxInput>`
-    // inside an `<InputGroupAddon>` to prefix an icon. Our input is a plain
-    // `<input>` inside a fixed `.mu-combobox-input` control div with no
-    // addon slot; the `input-group` package component isn't composable
-    // with `<Combobox>`. Closing this requires a component-source change
-    // (out of scope here); reported as blocked-needs-component-change.
     {
       name: "combobox-rtl",
       title: "RTL",
@@ -142,8 +123,7 @@ Combobox (items= groups=)
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "Built on `@zag-js/combobox`, which implements the [ARIA combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/) (`role=\"combobox\"` on the input, `role=\"listbox\"` on the list, `aria-activedescendant` tracking the highlighted item).",
     "`invalid` sets `aria-invalid` on the input and `data-invalid` throughout the part tree, so both assistive tech and the `has-aria-invalid:` styling hooks pick it up from one prop.",

@@ -302,16 +302,24 @@ describe("renderComponentDocs: examples", () => {
       }),
     });
 
-  it("prints the hero plus the essential ones, up to the limit", () => {
+  it("prints the essential ones first, up to the limit", () => {
     const md = renderComponentDocs(
       many(10, ["chart-1", "chart-4", "chart-7"]),
     );
 
-    expect(md).toContain("### Chart 0");
+    // Essentials are what the answer is for; the hero is what fills the gap
+    // they leave. With three essentials and a limit of three, the hero yields.
     expect(md).toContain("### Chart 1");
     expect(md).toContain("### Chart 4");
-    // The limit is 3 in total: hero + 2 essentials.
-    expect(md).not.toContain("### Chart 7");
+    expect(md).toContain("### Chart 7");
+    expect(md).not.toContain("### Chart 0");
+  });
+
+  it("fills the remaining slots with the hero when there is room", () => {
+    const md = renderComponentDocs(many(10, ["chart-4"]));
+
+    expect(md).toContain("### Chart 0");
+    expect(md).toContain("### Chart 4");
   });
 
   it("keeps the hero first even when it is not marked essential", () => {

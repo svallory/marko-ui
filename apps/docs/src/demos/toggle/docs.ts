@@ -27,6 +27,8 @@ export const docs: ComponentDocs = {
     },
     {
       name: "toggle-controlled",
+      // Round 3: `pressed` + `pressedChange` — the controlled state.
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `pressed` prop without a change handler never moves. Pair it with `pressedChange`, or use Marko's bind shorthand `pressed:=state`.",
@@ -56,8 +58,7 @@ export const docs: ComponentDocs = {
       title: "RTL",
       description:
         'Toggle restyles correctly under `dir="rtl"`. Unlike our Zag-machine components, Toggle is a plain native `<button>` with local state, so `dir="rtl"` on the element (or an ancestor) is a complete port with no machine-level RTL gap.',
-    },
-  ],
+    },],
   accessibilityNotes: [
     'Toggle renders as a native `<button type="button">` with `aria-pressed` reflecting its toggled state, so assistive tech announces the control and its state without extra ARIA wiring — always pass `aria-label` (or wrap it with a visible label) since Toggle has no built-in accessible name of its own.',
     "Disabling a toggle removes it from the tab order and blocks pointer input.",

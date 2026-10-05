@@ -19,6 +19,8 @@ export const docs: ComponentDocs = {
   <@title>Layers</@title>
   Panel content
 </FloatingPanel>`,
+
+  requires: ["button"],
   examples: [
     {
       name: "floating-panel-demo",
@@ -42,6 +44,5 @@ export const docs: ComponentDocs = {
       title: "Controlled",
       description:
         "Zag machines are controlled: an `open` prop without a change handler never moves. Pair it with `openChange`, or use Marko's bind shorthand `open:=state`.",
-    },
-  ],
+    },],
 };

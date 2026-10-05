@@ -31,6 +31,12 @@ export interface ComponentDocs {
   /** A minimal usage snippet shown under "Usage". */
   usageSnippet: string;
   /**
+   * Other registry components the Usage snippet uses. `add <name>` does not
+   * bring them along, so the rendered docs say so and print the exact command
+   * (copy distribution only — under `import` they come from the package).
+   */
+  requires?: string[];
+  /**
    * Examples in page order, rendered as `###` subsections under one parent
    * "Examples" heading (canonical docs hierarchy). The first one is also the
    * hero preview.

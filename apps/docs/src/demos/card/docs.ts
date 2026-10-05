@@ -84,6 +84,5 @@ import CardFooter from "@/components/ui/card/footer.marko";`,
       name: "card-content-only",
       title: "Content only",
       description: "A minimal card with only `CardContent`, no header or footer.",
-    },
-  ],
+    },],
 };

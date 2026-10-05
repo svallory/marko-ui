@@ -49,6 +49,12 @@ export const docs: ComponentDocs = {
   // than fabricating a section.
   examples: [
     {
+      name: "drawer-basic",
+      title: "Basic",
+      description:
+        "The default drawer: a trigger, a title, the tag's body and a footer with the actions.",
+    },
+    {
       name: "drawer-demo",
       title: "Default",
       description: "A drawer for editing profile details.",
@@ -91,10 +97,8 @@ export const docs: ComponentDocs = {
     },
     {
       name: "drawer-dialog",
-      essential: true,
       title: "Responsive dialog",
       description:
         "Combine `Dialog` and `Drawer` to render a dialog on desktop and a drawer on mobile, switching on a `matchMedia` breakpoint check.",
-    },
-  ],
+    },],
 };

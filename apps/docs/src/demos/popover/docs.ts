@@ -67,6 +67,5 @@ Upstream's \`PopoverHeader\`, \`PopoverTitle\`, and \`PopoverDescription\` have 
       name: "popover-rtl",
       title: "RTL",
       description: "Set `dir=\"rtl\"` on the `Popover` (matching the surrounding document direction) so the positioner flips placement automatically.",
-    },
-  ],
+    },],
 };

@@ -11,8 +11,13 @@ export const docs: ComponentDocs = {
   // init`), so no import is required. The explicit-import form is
   // documented as the override/escape hatch.
   usageTags: `<DropdownMenu>`,
-  importSnippet: `import DropdownMenu from "@/components/ui/dropdown-menu/dropdown-menu.marko";`,
-  usageSnippet: `<DropdownMenu items=ITEMS select(value) { /* ... */ }>
+  // `<Button>` is a different registry component: `add dropdown-menu` does not
+  // install it, so the snippet imports it and the requirement is stated.
+  importSnippet: `import DropdownMenu from "@/components/ui/dropdown-menu/dropdown-menu.marko";
+import Button from "@/components/ui/button/button.marko";`,
+  usageSnippet: `const ITEMS = [{ label: "Profile" }, { label: "Settings" }, { type: "separator" }, { label: "Log out" }];
+
+<DropdownMenu items=ITEMS select(value) { /* ... */ }>
   <@trigger|triggerProps|>
     <Button variant="outline" ...triggerProps>Open</Button>
   </@trigger>
@@ -108,8 +113,7 @@ export const docs: ComponentDocs = {
       title: "RTL",
       description:
         "A `dir=\"rtl\"` wrapper with Arabic content, matching the precedent set by button/avatar/input's RTL demos. The underlying Zag menu machine does accept a `dir` prop for floating-ui placement flipping, but our `Input` type doesn't re-expose it yet (component-source change, out of scope here).",
-    },
-  ],
+    },],
   accessibilityKeyboard: [
     { keys: "Enter / Space", description: "Opens the menu when focused on the trigger; activates the highlighted item when the menu is open." },
     { keys: "ArrowDown / ArrowUp", description: "Moves the highlight to the next / previous item, wrapping at the ends." },

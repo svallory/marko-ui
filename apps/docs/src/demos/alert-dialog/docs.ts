@@ -21,6 +21,8 @@ export const docs: ComponentDocs = {
     This action cannot be undone.
   </@description>
 </AlertDialog>`,
+
+  requires: ["button"],
   // Upstream ("## Composition") documents AlertDialog as a tree of
   // AlertDialogTrigger/AlertDialogContent/AlertDialogHeader/
   // AlertDialogMedia/AlertDialogTitle/AlertDialogDescription/
@@ -80,8 +82,7 @@ export const docs: ComponentDocs = {
       title: "Controlled",
       description:
         "Zag machines are controlled: an `open` prop without a change handler never moves. Pair it with `openChange`, or use Marko's bind shorthand `open:=state`.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "Rendered with `role=\"alertdialog\"` (not `\"dialog\"`) so assistive technology announces it as requiring an explicit response, per the [WAI-ARIA Alert and Message Dialogs Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/alertdialog/).",
     "Focus moves into the dialog on open and is trapped there until it closes; it's restored to the trigger element on close.",

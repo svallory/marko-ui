@@ -17,6 +17,8 @@ export const docs: ComponentDocs = {
     <Button ...props variant="outline">Hover me</Button>
   </@trigger>
 </Tooltip>`,
+
+  requires: ["button"],
   // Upstream's tooltip.mdx documents Tooltip/TooltipTrigger/TooltipContent
   // as three separate composed components. Our port is one .marko file
   // (packages/shadcn/ui/tooltip/tooltip.marko) exposing the same anatomy
@@ -64,8 +66,7 @@ export const docs: ComponentDocs = {
       name: "tooltip-rtl",
       title: "RTL",
       description: "Set `dir=\"rtl\"` on the `Tooltip` (matching the surrounding document direction) so the positioner flips placement automatically.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "The trigger's `aria-describedby` points at the tooltip content only while it's open, so assistive tech announces the description without adding permanent DOM noise.",
     "The content renders `role=\"tooltip\"` unless the trigger already carries an `aria-label`, in which case the label is the accessible name and the role is omitted to avoid redundant announcements.",

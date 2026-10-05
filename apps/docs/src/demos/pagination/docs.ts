@@ -61,8 +61,7 @@ export const docs: ComponentDocs = {
       name: "pagination-rtl",
       title: "RTL",
       description: "Pass `dir=\"rtl\"` on `Pagination` — the previous/next chevrons carry `mu-rtl-flip` and mirror automatically. Pair with the `text` prop on `PaginationPrevious`/`PaginationNext` to translate the labels.",
-    },
-  ],
+    },],
   composition: `\`\`\`text
 Pagination
 └── PaginationContent

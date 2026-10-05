@@ -83,8 +83,7 @@ MessageGroup
       name: "message-attachment",
       title: "Attachment",
       description: "Pair `Message` with [`Attachment`](/docs/components/attachment) to show images and files alongside a bubble.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "`Message` is a presentational layout wrapper. Accessibility comes from the content you place inside it.",
     "Action buttons in `MessageFooter` are usually icon-only, so give each one an `aria-label` (see the Actions example).",

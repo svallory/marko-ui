@@ -80,8 +80,7 @@ export const docs: ComponentDocs = {
       name: "checkbox-rtl",
       title: "RTL",
       description: 'Checkboxes restyle correctly under `dir="rtl"` — logical Tailwind properties, not physical ones, drive layout and text alignment.',
-    },
-  ],
+    },],
   accessibilityNotes: [
     'Renders a native hidden `<input type="checkbox">` under a styled root `<label>`, so it participates in native form submission and inherits the platform\'s checkbox semantics.',
     "Always pair the checkbox with visible label text: either as the checkbox's own `content` body (its root element is already a `<label>`), or an external `FieldLabel`/`Label` with `for` matching the checkbox's `id` — never wrap a `Checkbox` in a second `<label>`, since that nests two label elements around the same control.",

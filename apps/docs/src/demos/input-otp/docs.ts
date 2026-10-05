@@ -91,13 +91,11 @@ export const docs: ComponentDocs = {
       name: "input-otp-form",
       title: "Form",
       description: "A full verification-code form built from `Card`, `Field`, and `InputOTP`.",
-      essential: true,
     },
     {
       name: "input-otp-rtl",
       title: "RTL",
       description:
         "The machine's own `dir` prop drives right-to-left slot layout and arrow-key navigation directly, with no separate RTL configuration step.",
-    },
-  ],
+    },],
 };

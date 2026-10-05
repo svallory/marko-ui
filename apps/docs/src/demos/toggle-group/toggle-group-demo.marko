@@ -6,4 +6,7 @@ static const ALIGNMENT = [
   { value: "right", label: "Right" },
 ];
 
-<ToggleGroup items=ALIGNMENT value=["center"]/>
+// `defaultValue`, not `value`: `value` is the CONTROLLED prop, so a value with
+// no change handler is a group that can never be clicked. See the same fix in
+// radio-group-demo.marko.
+<ToggleGroup items=ALIGNMENT defaultValue=["center"]/>

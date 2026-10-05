@@ -75,8 +75,7 @@ export const docs: ComponentDocs = {
       title: "Controlled",
       description:
         "Zag machines are controlled: an `open` prop without a change handler never moves. Pair it with `openChange`.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     'Rendered with `role="dialog"` per the [WAI-ARIA Dialog (Modal) Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/); the title and description are linked to the content via `aria-labelledby`/`aria-describedby`, generated automatically from `@title`/`@description`.',
     "Focus moves into the dialog on open and is trapped there until it closes; it's restored to the trigger element on close.",

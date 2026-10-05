@@ -84,6 +84,5 @@ export const docs: ComponentDocs = {
       name: "avatar-rtl",
       title: "RTL",
       description: "Avatar, badge, and group markup mirror correctly under `dir=\"rtl\"`.",
-    },
-  ],
+    },],
 };

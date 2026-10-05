@@ -78,8 +78,7 @@ import BreadcrumbSeparator from "@/components/ui/breadcrumb/separator.marko";`,
       title: "Responsive",
       description:
         "Hide middle items below the `md` breakpoint and swap in `BreadcrumbEllipsis` with Tailwind's responsive classes.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "The root `<nav>` carries `aria-label=\"breadcrumb\"` so assistive technology announces the trail as a landmark distinct from other navigation.",
     "`BreadcrumbPage` renders `aria-current=\"page\"` and `aria-disabled=\"true\"` on a non-interactive `<span>`, marking the current location without an actionable (and redundant) link.",
