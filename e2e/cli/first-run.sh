@@ -258,7 +258,7 @@ agents_rc=$?
 grep -q '<!-- marko-ui:start -->' "$APP/AGENTS.md" 2>/dev/null \
   && ok "AGENTS.md has the marko-ui section" || bad "AGENTS.md has no marko-ui section"
 for comp in button card; do
-  grep -qi "$comp" "$APP/AGENTS.md" 2>/dev/null \
+  grep -E '^Installed: ' "$APP/AGENTS.md" 2>/dev/null | grep -q "\`$comp\`" \
     && ok "AGENTS.md lists $comp" || bad "AGENTS.md does not list $comp"
 done
 for skill in marko-ui marko6; do

@@ -390,6 +390,23 @@ export function jsonData<T = unknown>(out: string): T {
   return envelope.data as T
 }
 
+/**
+ * The component names the generated AGENTS.md section lists, from its single
+ * "Installed: `a`, `b`" line (names only, no descriptions — see
+ * `packages/marko-ui/src/agents/content.ts`). `[]` for "none — run …". Throws
+ * when the line is absent so a changed format fails loudly instead of
+ * reading as "nothing installed".
+ */
+export function installedComponents(agentsMd: string): string[] {
+  const line = agentsMd.split("\n").find((l) => l.startsWith("Installed: "))
+  if (line === undefined) {
+    throw new Error(`AGENTS.md has no "Installed:" line:\n${agentsMd.slice(0, 600)}`)
+  }
+  return [...line.matchAll(/`([^`]+)`/g)]
+    .map((m) => m[1]!)
+    .filter((name) => !name.startsWith("marko-ui "))
+}
+
 /** Init + add button through shims: the common "installed one component" starting state. */
 export async function bootstrap(ws: string, shim = withShims(makeWorkspace("shim")), args: string[] = []) {
   const init = await cli(ws, ["init", ...args], { shim })
