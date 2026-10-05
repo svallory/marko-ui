@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs"
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "fs"
 import { tmpdir } from "os"
 import path from "path"
 import { afterEach, describe, expect, it, vi } from "vitest"
@@ -142,6 +142,13 @@ function findUnknownCommands(text: string, file: string): MentionProblem[] {
   return problems
 }
 
+// Loaded by path at runtime, not imported: apps/docs is outside this package's
+// tsconfig project, so a static import fails the typecheck (TS6307) even though
+// the file is a dependency-free string module.
+const { LLMS_GUIDANCE } = (await import(
+  path.resolve(__dirname, "../../../../apps/docs/src/lib/llms-guidance.ts")
+)) as { LLMS_GUIDANCE: string }
+
 const SKILL_PATH = "../../../../skills/marko-ui/SKILL.md"
 const skill = readFileSync(path.resolve(__dirname, SKILL_PATH), "utf8")
 
@@ -229,6 +236,45 @@ describe("buildAgentsSection", () => {
       expect(findUnknownCommands(section, "AGENTS.md")).toEqual([])
     }
   )
+})
+
+// The docs site's /llms.txt tells agents which commands to run. Its guidance
+// section is pure text in apps/docs/src/lib/llms-guidance.ts precisely so this
+// guard can read it: a command or flag named there that the CLI does not have
+// is a bug in the text.
+describe("llms.txt guidance", () => {
+  it("only names commands and flags the CLI has", () => {
+    expect(findUnknownCommands(LLMS_GUIDANCE, "apps/docs/src/lib/llms-guidance.ts")).toEqual([])
+  })
+
+  it("actually names commands (the guard is not passing on an empty match)", () => {
+    const mentions = LLMS_GUIDANCE.match(/`marko-ui [a-z]+/g) ?? []
+    expect(mentions.length).toBeGreaterThanOrEqual(8)
+  })
+
+  it("names only skills the repository ships", () => {
+    const shipped = new Set(readdirSync(path.resolve(__dirname, "../../../../skills")))
+    for (const skill of ["marko-ui", "marko6", "marko-run"]) {
+      expect(LLMS_GUIDANCE, skill).toContain(`\`${skill}\``)
+      expect(shipped.has(skill), `skills/${skill}`).toBe(true)
+    }
+  })
+
+  it("carries the three SKILL.md pitfalls it summarises", () => {
+    // These are SKILL.md's pitfalls 1-3; if SKILL.md renames one, this fails
+    // and the llms.txt wording gets revisited instead of silently diverging.
+    expect(skill).toContain("Controlled props pin the machine")
+    expect(skill).toContain("Boolean `aria-*` / `data-*` attributes serialize wrong")
+    expect(skill).toContain("Nothing from Zag crosses a tag boundary")
+    expect(LLMS_GUIDANCE).toContain("openChange")
+    expect(LLMS_GUIDANCE).toContain("String(...)")
+    expect(LLMS_GUIDANCE).toContain("parentApi=() => api()")
+  })
+
+  it("is caught by the guard when it names a command that does not exist", () => {
+    const problems = findUnknownCommands(`${LLMS_GUIDANCE}\nRun \`marko-ui upgrade\`.\n`, "llms-guidance.ts")
+    expect(problems.map((p) => p.token)).toEqual(["upgrade"])
+  })
 })
 
 describe("findUnknownCommands", () => {

@@ -66,6 +66,15 @@
   Cache-Control: public, max-age=0, must-revalidate
 
 # ---------------------------------------------------------------------------
+# /llms.txt, written by scripts/prerender-handlers.ts. `.txt` is a known
+# extension, so the type would be inferred as text/plain anyway; this pins the
+# charset (agents read it as UTF-8, and it carries a non-ASCII ellipsis) and
+# the same revalidate-on-every-deploy cacheability as the pages it indexes.
+/llms.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=0, must-revalidate
+
+# ---------------------------------------------------------------------------
 # HTML pages: always revalidate, so a deploy is visible immediately.
 # This matches the Cloudflare default, stated explicitly so it survives any
 # future change to that default.
