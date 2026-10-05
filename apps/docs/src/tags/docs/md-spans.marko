@@ -1,0 +1,34 @@
+// The spans of one parsed prose run: text, `code`, **bold**, links. Split from
+// <md-prose> because both its block and inline modes need the same rendering.
+// All text goes through Marko's escaping.
+import type { Inline } from "../../lib/inline-markdown.ts";
+
+export interface Input {
+  nodes: Inline[];
+}
+
+static const CODE =
+  "rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em] text-foreground";
+static const LINK =
+  "font-medium text-foreground underline underline-offset-4 hover:no-underline";
+
+<for|node| of=input.nodes>
+  <if=node.type === "text">${node.value}</if>
+  <else if=node.type === "code"><code class=CODE>${node.value}</code></else>
+  <else if=node.type === "strong">
+    <strong class="font-semibold text-foreground">
+      <for|leaf| of=node.children>
+        <if=leaf.type === "code"><code class=CODE>${leaf.value}</code></if>
+        <else>${leaf.value}</else>
+      </for>
+    </strong>
+  </else>
+  <else>
+    <a href=node.href class=LINK rel=(node.href.startsWith("http") ? "noreferrer" : undefined)>
+      <for|leaf| of=node.children>
+        <if=leaf.type === "code"><code class=CODE>${leaf.value}</code></if>
+        <else>${leaf.value}</else>
+      </for>
+    </a>
+  </else>
+</for>

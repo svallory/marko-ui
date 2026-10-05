@@ -1,0 +1,44 @@
+// Renders a docs.ts prose string (a markdown subset, see lib/inline-markdown.ts)
+// as markup. Every string reaches the page through Marko's escaping — the
+// parser yields a node tree, never HTML — so authored text cannot inject
+// elements.
+//
+// Block mode (default) emits <p>/<ul>/<pre> and is for a section body.
+// `inline` emits only the spans, for use INSIDE an element the caller already
+// owns (a description <p>, an <li>, a table cell).
+import { parseBlocks, parseInline } from "../../lib/inline-markdown.ts";
+
+export interface Input {
+  text: string;
+  inline?: boolean;
+  /** Classes for each paragraph (block mode). */
+  paragraphClass?: string;
+}
+
+<if=input.inline>
+  <md-spans nodes=parseInline(input.text)/>
+</if>
+<else>
+  <for|block| of=parseBlocks(input.text)>
+    <if=block.type === "paragraph">
+      <p class=(input.paragraphClass ?? "mt-4 text-sm leading-7 text-muted-foreground")>
+        <md-spans nodes=block.children/>
+      </p>
+    </if>
+    <else if=block.type === "list">
+      <ul class="mt-4 list-disc space-y-2 pl-5 text-sm leading-7 text-muted-foreground">
+        <for|item| of=block.items>
+          <li><md-spans nodes=item/></li>
+        </for>
+      </ul>
+    </else>
+    <else>
+      // tabindex="0": scrolls horizontally and has no focusable content, so a
+      // keyboard user could not otherwise reach the clipped text (axe
+      // `scrollable-region-focusable`). Same contract as <code-block>.
+      <div class="my-4 overflow-hidden rounded-lg border border-border bg-muted/40" data-slot="prose-pre">
+        <pre tabindex="0" class="overflow-x-auto p-4 font-mono text-[0.8125rem] leading-6"><code>${block.value}</code></pre>
+      </div>
+    </else>
+  </for>
+</else>
