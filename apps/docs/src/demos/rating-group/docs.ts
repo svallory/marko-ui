@@ -12,7 +12,9 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<RatingGroup>`,
   importSnippet: `import RatingGroup from "@/components/ui/rating-group/rating-group.marko";`,
-  usageSnippet: `<RatingGroup label="Rate this" value:=rating/>`,
+  usageSnippet: `<let/rating=3/>
+
+<RatingGroup label="Rate this" value:=rating/>`,
   examples: [
     {
       name: "rating-group-demo",
@@ -41,6 +43,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "rating-group-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, or use Marko's bind shorthand `value:=state`.",

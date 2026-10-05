@@ -204,6 +204,11 @@ export const CLI_MANIFEST: CliManifest = {
       ],
       "options": [
         {
+          "flags": "-c, --cwd <cwd>",
+          "description": "the working directory. defaults to the current directory.",
+          "defaultValue": "current working directory"
+        },
+        {
           "flags": "-l, --list",
           "description": "list documented components.",
           "defaultValue": false
@@ -212,6 +217,15 @@ export const CLI_MANIFEST: CliManifest = {
           "flags": "--json",
           "description": "output as JSON (with --list, or the markdown itself).",
           "defaultValue": false
+        },
+        {
+          "flags": "--examples",
+          "description": "print every example instead of the essential ones.",
+          "defaultValue": false
+        },
+        {
+          "flags": "--example <id...>",
+          "description": "print only the named examples. Every id is listed in the \"More examples\" section of the default output."
         }
       ]
     },

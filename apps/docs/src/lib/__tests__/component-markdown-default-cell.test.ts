@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultCell } from "../component-markdown.ts";
+import { defaultCell } from "../default-cell.ts";
 
 // The markdown payload is the reader's only view of the API, and it renders
 // the Default column straight from api-reference.json. A prop the component

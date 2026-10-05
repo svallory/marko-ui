@@ -43,6 +43,7 @@ export const docs: ComponentDocs = {
       name: "textarea-invalid",
       title: "Invalid",
       description: "Set `aria-invalid` to mark the textarea as invalid.",
+      essential: true,
     },
     {
       name: "textarea-button",

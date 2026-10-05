@@ -20,7 +20,14 @@ import MarkerContent from "@/components/ui/marker/content.marko";`,
   </MarkerIcon>
   <MarkerContent>Explored 4 files</MarkerContent>
 </Marker>`,
+
+  requires: ["icon"],
   examples: [
+    {
+      name: "marker-icon",
+      title: "With Icon",
+      description: "Use `MarkerIcon` to render an icon alongside the content. Add `flex-col` to stack the icon above the content.",
+    },
     {
       name: "marker-demo",
       title: "Basic",
@@ -52,17 +59,11 @@ import MarkerContent from "@/components/ui/marker/content.marko";`,
       description: 'Use the `"border"` variant for status rows that should keep the default marker alignment while separating the next row.',
     },
     {
-      name: "marker-icon",
-      title: "With Icon",
-      description: "Use `MarkerIcon` to render an icon alongside the content. Add `flex-col` to stack the icon above the content.",
-    },
-    {
       name: "marker-link-button",
       title: "Links and Buttons",
       description:
         "Upstream turns a marker into a link or button via a `render` prop. Our `Marker` has no `render` prop and accepts `asChild` for API parity only — Marko has no runtime slot-merge primitive, so the prop is a no-op and `Marker` always renders its own wrapping `<div>`. This demo wraps the marker markup in a real `<a>`/`<button>` directly for the same focusable, correctly-rendered result.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "`Marker` is presentational by default — the correct role depends on how you use it, so choose based on intent rather than a single default.",
     'For streaming or progress markers (e.g. "Thinking...", a running tool), set `role="status"` so assistive tech announces the update as it appears. `Marker` forwards `role` to the underlying element.',

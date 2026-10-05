@@ -24,7 +24,27 @@ vi.mock("@/src/utils/env-loader", () => ({
 
 vi.mock("@/src/registry/api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/src/registry/api")>()),
-  getRegistryItems: vi.fn(() => [{ name: "button", files: [] }]),
+  getRegistryItems: vi.fn(() => [
+    {
+      name: "button",
+      files: [],
+      componentDocs: {
+        name: "button",
+        title: "Button",
+        description: "A button.",
+        installCommand: "bunx marko-ui add button -y",
+        usageTags: "<Button>",
+        importSnippet: 'import Button from "@/components/ui/button/button.marko";',
+        usageSnippet: "<Button />",
+        parts: [],
+        props: [],
+        events: [],
+        keyboard: [],
+        accessibilityNotes: [],
+        examples: [{ id: "demo", title: "Demo", source: "<Button />" }],
+      },
+    },
+  ]),
   getShadcnRegistryIndex: vi.fn(() => []),
 }))
 
@@ -239,44 +259,34 @@ describe("status --json", () => {
 describe("docs <name> --json", () => {
   it("returns the markdown in the envelope instead of ignoring the flag", async () => {
     const stdout = captureStdout()
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        status: 200,
-        text: async () => "# Button\n\nA button.",
-      }))
-    )
 
     await docs.parseAsync(["button", "--json"], { from: "user" })
 
     const envelope = stdout.envelope()
     expectEnvelope(envelope)
     expect(envelope.$type).toBe("marko-ui/docs")
+    // Rendered locally from the registry item's model — no fetch of the docs
+    // site, so the version is the one the project installed.
     expect(envelope.data).toEqual({
-      components: [{ name: "button", markdown: "# Button\n\nA button." }],
+      components: [
+        {
+          name: "button",
+          markdown: expect.stringContaining("# Button"),
+          // The model the markdown was rendered from rides along, so a caller
+          // wanting parts/props/events as data need not parse markdown.
+          docs: expect.objectContaining({ name: "button", props: [] }),
+        },
+      ],
     })
-
-    vi.unstubAllGlobals()
   })
 
   it("still prints markdown without --json", async () => {
     const stdout = captureStdout()
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        status: 200,
-        text: async () => "# Button",
-      }))
-    )
 
     await docs.parseAsync(["button"], { from: "user" })
 
-    expect(stdout.text).toBe("# Button\n")
-    expect(stdout.text).not.toContain("$type")
-
-    vi.unstubAllGlobals()
+    expect(stdout.text).toContain("# Button")
+    expect(stdout.text).not.toContain('"$type"')
   })
 })
 

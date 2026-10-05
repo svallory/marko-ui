@@ -32,6 +32,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "password-input-invalid",
+      essential: true,
       title: "Invalid",
       description: "Pass `invalid` to mark the field as failing validation.",
     },

@@ -36,6 +36,7 @@ import NativeSelectOption from "@/components/ui/native-select/native-select-opti
     },
     {
       name: "native-select-invalid",
+      essential: true,
       title: "Invalid",
       description: "Pass `aria-invalid` to show a validation error state.",
     },
@@ -44,8 +45,7 @@ import NativeSelectOption from "@/components/ui/native-select/native-select-opti
       title: "RTL",
       description:
         "Pass `dir=\"rtl\"` — a plain native HTML attribute here, since native-select wraps a `<select>` with no Zag machine — to get the browser's own RTL rendering and keyboard handling.",
-    },
-  ],
+    },],
   // native-select has 3 parts (native-select, native-select-option,
   // native-select-optgroup), so `isCompound` is true on the page and the
   // auto-generated <composition-tree> renders from api-reference.json —

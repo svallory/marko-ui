@@ -67,8 +67,7 @@ export const docs: ComponentDocs = {
       title: "Controlled",
       description:
         "Listen for `resizeChange` to read the live size (in percent) of every panel as the handle is dragged.",
-    },
-  ],
+    },],
   // Upstream also documents a "Changelog" section describing
   // react-resizable-panels' v3→v4 API migration (PanelGroup → Group,
   // direction → orientation, defaultSize={50} → defaultSize="50%", etc.).

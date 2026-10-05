@@ -10,6 +10,7 @@
     "src/**/*.marko",
     ".marko-run/routes.d.ts",
     "../../packages/shadcn/ui/marko-attributes.d.ts",
-    "../../packages/shadcn/lib/**/*.ts"
+    "../../packages/shadcn/lib/**/*.ts",
+    "../../packages/marko-ui/src/docs/**/*.ts"
   ]
 }

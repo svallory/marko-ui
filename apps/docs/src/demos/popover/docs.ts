@@ -58,6 +58,7 @@ Upstream's \`PopoverHeader\`, \`PopoverTitle\`, and \`PopoverDescription\` have 
     },
     {
       name: "popover-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: an `open` prop without a change handler never moves. Pair it with `openChange`, or use Marko's bind shorthand `open:=state`.",
@@ -66,6 +67,5 @@ Upstream's \`PopoverHeader\`, \`PopoverTitle\`, and \`PopoverDescription\` have 
       name: "popover-rtl",
       title: "RTL",
       description: "Set `dir=\"rtl\"` on the `Popover` (matching the surrounding document direction) so the positioner flips placement automatically.",
-    },
-  ],
+    },],
 };

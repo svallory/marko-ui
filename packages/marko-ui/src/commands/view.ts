@@ -119,7 +119,18 @@ export const view = new Command()
         throw new CleanExit(0)
       }
 
-      printEnvelope("marko-ui/show", payload)
+      // `componentDocs` is stripped from `data`: it is the model
+      // `marko-ui docs` renders, with every example's source inlined — a few
+      // hundred KB per component. `show` answers "what would this install
+      // write", which is files and dependencies.
+      printEnvelope(
+        "marko-ui/show",
+        payload.map((item) => {
+          if (!item) return item
+          const { componentDocs: _docs, ...rest } = item
+          return rest
+        })
+      )
       throw new CleanExit(0)
     } catch (error) {
       handleError(error)

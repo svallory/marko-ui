@@ -49,7 +49,12 @@ import MessageScrollerViewport from "@/components/ui/message-scroller/viewport.m
 import MessageScrollerContent from "@/components/ui/message-scroller/content.marko";
 import MessageScrollerItem from "@/components/ui/message-scroller/item.marko";
 import MessageScrollerButton from "@/components/ui/message-scroller/button.marko";`,
-  usageSnippet: `<MessageScrollerProvider|controller|>
+  usageSnippet: `<let/messages=[
+  { id: "1", role: "user", text: "Hi!" },
+  { id: "2", role: "assistant", text: "Hello — how can I help?" },
+]/>
+
+<MessageScrollerProvider|controller|>
   <MessageScroller controller=controller>
     <MessageScrollerViewport controller=controller>
       <MessageScrollerContent controller=controller>
@@ -114,6 +119,7 @@ import MessageScrollerButton from "@/components/ui/message-scroller/button.marko
     },
     {
       name: "message-scroller-commands",
+      essential: true,
       title: "Jumping to Messages",
       description: "A dropdown menu drives the transcript from outside MessageScroller's own markup, using the controller getter's scrollToMessage command.",
     },
@@ -126,8 +132,7 @@ import MessageScrollerButton from "@/components/ui/message-scroller/button.marko
       name: "message-scroller-scrollable",
       title: "Reading Scroll State",
       description: "A footer reports which edges are still scrollable, driven by the controller's scroll-state store.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "MessageScrollerViewport is a labelled, keyboard-focusable scroll region by default: it uses role=\"region\", aria-label=\"Messages\", and tabindex=\"0\", so keyboard users can focus the transcript and scroll it directly.",
     "MessageScrollerContent marks the transcript as a live region with role=\"log\" and aria-relevant=\"additions\". New rows can be announced, but streamed text mutations do not have to be announced token by token — pass aria-busy while a turn is still arriving if announcements should wait for the completed row.",

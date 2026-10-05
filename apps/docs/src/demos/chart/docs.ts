@@ -10,13 +10,23 @@ export const docs: ComponentDocs = {
   // Tags are registered by the taglib (package install or `marko-ui
   // init`), so no import is required. The explicit-import form is
   // documented as the override/escape hatch.
-  usageTags: `<Chart>, <BarChart>`,
+  usageTags: `<Chart>, <ChartBar>`,
   importSnippet: `import Chart from "@/components/ui/chart/chart.marko";
-import BarChart from "@/components/ui/chart/bar.marko";`,
-  usageSnippet: `<Chart config=chartConfig>
-  <BarChart data=chartData config=chartConfig xKey="month">
+import ChartBar from "@/components/ui/chart/bar.marko";`,
+  // The taglib name is `ChartBar` (`<dir>/<file>` PascalCased, exactly what
+  // `collectProjectTags` registers), NOT the `BarChart` binding the demos
+  // happen to use. Declaring the data inline keeps the snippet pasteable:
+  // a reader who copies it must not have to invent `chartConfig`/`chartData`.
+  usageSnippet: `static const chartData = [
+  { month: "Jan", desktop: 186 },
+  { month: "Feb", desktop: 305 },
+];
+static const chartConfig = { desktop: { label: "Desktop", color: "var(--chart-1)" } };
+
+<Chart config=chartConfig>
+  <ChartBar data=chartData config=chartConfig xKey="month">
     <@series dataKey="desktop" radius=4/>
-  </BarChart>
+  </ChartBar>
 </Chart>`,
   // BLOCKED (parity — missingMappedTargets: "Theming", "CSS Variables"):
   // upstream's "Theming" + "CSS Variables" sections (base/chart.mdx) are
@@ -37,18 +47,18 @@ import BarChart from "@/components/ui/chart/bar.marko";`,
   // presence check can't see it.
   concepts:
     "Every chart takes the same `config` object twice: once on `<Chart>` (which emits a scoped `<style>` resolving `--color-<key>` per theme) and again on the chart tag itself (Marko has no context/provider primitive, so the config can't be read implicitly by descendants). Each config entry's `color` can be a literal (`\"#2563eb\"`), an `hsl()`/`oklch()` string, or a `var(--chart-1)` reference into the 5 `--chart-1`..`--chart-5` custom properties a shadcn theme defines for light and dark — swap the theme and every chart restyles with zero code changes. Reference a resolved color from series data or Tailwind with `var(--color-<key>)`, e.g. `fill=\"var(--color-desktop)\"` or a `fill-(--color-desktop)` utility class.",
-  examples: [
+  examples: [    {
+      name: "chart-example",
+      title: "Your First Chart",
+      description:
+        "The minimal composition: `<Chart>` wrapping a `<BarChart>` with two `@series`, grid and tooltip both off.",
+    },
+
     {
       name: "chart-demo",
       title: "Bar Chart - Interactive",
       description:
         "The hero interactive demo: a series-toggle header swaps which `@series` the chart renders, backed by plain demo-file `<let>` state — no primitive changes needed.",
-    },
-    {
-      name: "chart-example",
-      title: "Your First Chart",
-      description:
-        "The minimal composition: `<Chart>` wrapping a `<BarChart>` with two `@series`, grid and tooltip both off.",
     },
     {
       name: "chart-example-grid",
@@ -133,8 +143,7 @@ import BarChart from "@/components/ui/chart/bar.marko";`,
       title: "RTL",
       description:
         "Static Arabic labels under a `dir=\"rtl\"` wrapper. **Deviation from upstream:** shadcn's RTL demo also mirrors the plot itself (grid orientation, axis direction); our `BarChart` has no `orientation`/`reversed` props yet, so only the labels/legend/tooltip flip — the plot geometry stays left-to-right. Upstream's RTL demo also drives a live language switcher; this one is static Arabic content (locale `ar`).",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "Charts are pure SSR SVG plus one small client hydration for hover tooltips — there is no keyboard navigation or `accessibilityLayer`-equivalent focus ring today (upstream's Recharts `accessibilityLayer` prop, which adds keyboard access and screen-reader summaries, has no port here — a component-source gap, not a docs gap).",
     "Chart color is never the only signal in a well-built chart: pair every series color with a label in the legend or tooltip (`ChartConfig.label`) rather than color alone.",

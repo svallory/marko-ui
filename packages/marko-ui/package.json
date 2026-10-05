@@ -1,7 +1,7 @@
 {
   "name": "marko-ui",
   "version": "0.6.0",
-  "description": "The marko-ui CLI — install and manage Marko UI components from shadcn-format registries.",
+  "description": "The marko-ui CLI \u2014 install and manage Marko UI components from shadcn-format registries.",
   "publishConfig": {
     "access": "public"
   },
@@ -43,6 +43,11 @@
       "types": "./dist/registry/index.d.ts",
       "import": "./dist/registry/index.js",
       "default": "./dist/registry/index.js"
+    },
+    "./docs": {
+      "types": "./dist/docs/index.d.ts",
+      "import": "./dist/docs/index.js",
+      "default": "./dist/docs/index.js"
     },
     "./schema": {
       "types": "./dist/schema/index.d.ts",

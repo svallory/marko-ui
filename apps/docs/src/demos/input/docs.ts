@@ -15,8 +15,8 @@ export const docs: ComponentDocs = {
   // init`), so no import is required. The explicit-import form is
   // documented as the override/escape hatch.
   usageTags: `<Input>`,
-  importSnippet: `import Input from "@/components/ui/input/input.marko";`,
-  usageSnippet: `<Input type="email" placeholder="Email"/>`,
+  importSnippet: `import TextInput from "@/components/ui/input/input.marko";`,
+  usageSnippet: `<TextInput type="email" placeholder="Email"/>`,
   examples: [
     {
       name: "input-demo",
@@ -52,6 +52,7 @@ export const docs: ComponentDocs = {
       name: "input-invalid",
       title: "Invalid",
       description: "Set `aria-invalid=\"true\"` to style the input for a failed validation state. To style the invalid state, add the `data-invalid` attribute to the `Field` component.",
+      essential: true,
     },
     {
       name: "input-value",
@@ -107,6 +108,7 @@ export const docs: ComponentDocs = {
       name: "input-form",
       title: "Form",
       description: "A full form example with multiple inputs, a select, and a button.",
+      essential: true,
     },
     {
       name: "input-rtl",

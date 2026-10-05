@@ -45,6 +45,5 @@ export const docs: ComponentDocs = {
       title: "Semantic (non-decorative)",
       description:
         "Pass `decorative=false` when the separator conveys real document structure, so it renders with `role=\"separator\"` for assistive technology instead of being hidden from it.",
-    },
-  ],
+    },],
 };

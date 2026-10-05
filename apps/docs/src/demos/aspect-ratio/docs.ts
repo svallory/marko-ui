@@ -50,6 +50,5 @@ export const docs: ComponentDocs = {
       name: "aspect-ratio-ultrawide-banner",
       title: "Ultrawide banner",
       description: "A `21 / 9` ratio for wide banner layouts.",
-    },
-  ],
+    },],
 };

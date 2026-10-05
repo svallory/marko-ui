@@ -19,7 +19,7 @@ import EmptyContent from "@/components/ui/empty/content.marko";`,
   usageSnippet: `<Empty>
   <EmptyHeader>
     <EmptyMedia variant="icon">
-      <Icon/>
+      <Icon name="InboxIcon"/>
     </EmptyMedia>
     <EmptyTitle>No data</EmptyTitle>
     <EmptyDescription>No data found</EmptyDescription>
@@ -28,6 +28,8 @@ import EmptyContent from "@/components/ui/empty/content.marko";`,
     <Button>Add data</Button>
   </EmptyContent>
 </Empty>`,
+
+  requires: ["button", "icon"],
   examples: [
     {
       name: "empty-demo",
@@ -68,6 +70,5 @@ import EmptyContent from "@/components/ui/empty/content.marko";`,
       name: "empty-rtl",
       title: "RTL",
       description: "Empty and its parts restyle correctly for right-to-left layouts via `dir=\"rtl\"`.",
-    },
-  ],
+    },],
 };

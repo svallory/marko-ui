@@ -9,16 +9,16 @@ export const docs: ComponentDocs = {
   usageTags: `<Button>`,
   importSnippet: `import Button from "@/components/ui/button/button.marko";`,
   usageSnippet: `<Button variant="outline">Button</Button>`,
-  examples: [
+  examples: [    {
+      name: "button-default",
+      title: "Basic",
+      description: "The default button.",
+    },
+
     {
       name: "button-demo",
       title: "Demo",
       description: "The default button, plus an icon-only variant.",
-    },
-    {
-      name: "button-default",
-      title: "Basic",
-      description: "The default button.",
     },
     {
       name: "button-variants",
@@ -101,8 +101,7 @@ export const docs: ComponentDocs = {
       title: "RTL",
       description:
         "Wrap the components in `dir=\"rtl\"` to render right-to-left. Arabic labels throughout, with the directional icon flipped via `rtl:rotate-180` — the same `dir`-wrapper pattern every RTL example on this site uses.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "Renders a native `<button>` by default, or a native `<a>` when `href` is passed (see `packages/shadcn/ui/button/button.marko`) — either way the element is a real interactive element, so it is keyboard-activatable with `Enter` and `Space` (`<a>`: `Enter` only, following the link) and reachable by `Tab` for free — no custom key handling or ARIA role is added.",
     "`disabled` is the native `<button>` attribute, passed straight through via `...rest` — it removes the button from the tab order and blocks pointer and keyboard activation, matching every other native form control. The `variants.ts` styles (`disabled:pointer-events-none disabled:opacity-50`) key off that same native state rather than a separate `data-disabled` flag.",

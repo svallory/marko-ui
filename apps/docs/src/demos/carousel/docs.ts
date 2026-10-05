@@ -12,6 +12,7 @@ export const docs: ComponentDocs = {
   usageTags: `<Carousel>`,
   importSnippet: `import Carousel from "@/components/ui/carousel/carousel.marko";`,
   usageSnippet:
+    'static const slides = ["Slide 1", "Slide 2", "Slide 3"];\n\n' +
     "<Carousel|item| items=slides>\n" +
     "  <div>${item}</div>\n" +
     "</Carousel>",
@@ -76,9 +77,11 @@ export const docs: ComponentDocs = {
       title: "Controlled",
       description:
         "The carousel is controlled: a `page` prop without `pageChange` never moves. Pair the two to drive the current page from your own state.",
+      essential: true,
     },
     {
       name: "carousel-compound",
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@slide>` attribute tags instead of `items=` to compose each slide's markup directly.",

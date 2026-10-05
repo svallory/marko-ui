@@ -12,9 +12,10 @@ export const docs: ComponentDocs = {
   usageTags: `<Alert>, <AlertTitle>, <AlertDescription>`,
   importSnippet: `import Alert from "@/components/ui/alert/alert.marko";
 import AlertTitle from "@/components/ui/alert/title.marko";
-import AlertDescription from "@/components/ui/alert/description.marko";`,
+import AlertDescription from "@/components/ui/alert/description.marko";
+import AlertAction from "@/components/ui/alert/action.marko";`,
   usageSnippet: `<Alert>
-  <InfoIcon/>
+  <Icon name="InfoIcon"/>
   <AlertTitle>Heads up!</AlertTitle>
   <AlertDescription>
     You can add components and dependencies to your app using the CLI.
@@ -23,6 +24,8 @@ import AlertDescription from "@/components/ui/alert/description.marko";`,
     <Button variant="outline">Enable</Button>
   </AlertAction>
 </Alert>`,
+
+  requires: ["button", "icon"],
   composition: `<Alert> lays out its content in a CSS grid: an optional leading icon
 column (any element passed as a direct child that isn't \`AlertTitle\`/
 \`AlertDescription\`/\`AlertAction\` — typically an \`<svg>\`), title and
@@ -72,8 +75,7 @@ Alert
       name: "alert-rtl",
       title: "RTL",
       description: "Alert has no directional logic of its own — icon placement and text flow follow the ambient `dir` attribute.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "`Alert` renders with `role=\"alert\"`, so assistive technology announces its content as soon as it mounts — reserve it for messages the user genuinely needs to know about immediately, not routine or decorative content.",
     "`role=\"alert\"` implies an assertive live region: screen readers interrupt their current announcement to read it. For less urgent, non-interrupting updates use a `role=\"status\"` region instead of `Alert`.",

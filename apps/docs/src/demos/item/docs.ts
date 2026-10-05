@@ -19,7 +19,7 @@ import ItemDescription from "@/components/ui/item/description.marko";
 import ItemActions from "@/components/ui/item/actions.marko";`,
   usageSnippet: `<Item>
   <ItemMedia variant="icon">
-    <Icon/>
+    <Icon name="InfoIcon"/>
   </ItemMedia>
   <ItemContent>
     <ItemTitle>Title</ItemTitle>
@@ -29,6 +29,8 @@ import ItemActions from "@/components/ui/item/actions.marko";`,
     <Button>Action</Button>
   </ItemActions>
 </Item>`,
+
+  requires: ["button", "icon"],
   examples: [
     {
       name: "item-demo",
@@ -86,8 +88,7 @@ import ItemActions from "@/components/ui/item/actions.marko";`,
       name: "item-rtl",
       title: "RTL",
       description: "Item's flex layout uses logical properties, so it restyles correctly under `dir=\"rtl\"` with no extra markup.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "Item is a plain flex container with no ARIA role of its own — accessibility semantics come from its content (a heading in `ItemTitle`, an interactive control in `ItemActions`, etc.).",
     "Upstream renders a clickable item as an anchor via a `render` prop (`<Item render={<a href=\"/dashboard\" />}>`); our `Item` has no `render` prop, so the equivalent pattern wraps the `<Item>` in a plain `<a>` element instead (see the \"As link\" and \"RTL\" examples).",

@@ -12,7 +12,12 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<TreeView>`,
   importSnippet: `import TreeView from "@/components/ui/tree-view/tree-view.marko";`,
-  usageSnippet: `<TreeView items=FILE_TREE/>`,
+  usageSnippet: `static const FILE_TREE = [
+  { id: "src", label: "src", children: [{ id: "src/index.ts", label: "index.ts" }] },
+  { id: "package.json", label: "package.json" },
+];
+
+<TreeView items=FILE_TREE/>`,
   examples: [
     {
       name: "tree-view-demo",

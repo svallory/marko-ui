@@ -12,7 +12,9 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Steps>`,
   importSnippet: `import Steps from "@/components/ui/steps/steps.marko";`,
-  usageSnippet: `<Steps|index| items=steps>
+  usageSnippet: `static const steps = [{ title: "Account" }, { title: "Profile" }, { title: "Review" }];
+
+<Steps|index| items=steps>
   Content for step ${"${index + 1}"}
   <@completedContent>All steps complete.</@completedContent>
 </Steps>`,

@@ -89,6 +89,7 @@ shows the pattern).`,
     },
     {
       name: "bubble-collapsible",
+      essential: true,
       title: "Show More / Collapsible",
       description:
         "Compose long bubble content with `Collapsible` for a show more / show less interaction.",
@@ -97,13 +98,13 @@ shows the pattern).`,
       name: "bubble-tooltip",
       title: "Tooltip",
       description: "Wrap a bubble control in `Tooltip` to reveal metadata on hover, such as when a message was read.",
+      essential: true,
     },
     {
       name: "bubble-popover",
       title: "Popover",
       description: "Pair a bubble with `Popover` to surface more information on demand, such as a failed action's error message.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "`Bubble` renders the presentational message surface only. Keep conversation-level semantics (roles, list structure) on the surrounding container.",
     'Reactions render as a row of emoji read one glyph at a time by screen readers, with counters like "+8" announced as "plus eight". Group the row as a single image with a descriptive `aria-label` (e.g. `aria-label="Reactions: thumbs up, fire, and 8 more"`) so it announces once — `role="img"` also hides the individual emoji from assistive tech, so no `aria-hidden` is needed.',

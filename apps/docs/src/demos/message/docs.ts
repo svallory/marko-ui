@@ -22,6 +22,8 @@ import BubbleContent from "@/components/ui/bubble/bubble-content.marko";
 import Message from "@/components/ui/message/message.marko";
 import MessageAvatar from "@/components/ui/message/avatar.marko";
 import MessageContent from "@/components/ui/message/content.marko";`,
+  // The Usage snippet uses these; `add` does not install them.
+  requires: ["avatar", "bubble"],
   usageSnippet: `<Message>
   <MessageAvatar>
     <Avatar src="https://github.com/shadcn.png" alt="@shadcn" fallback="CN"/>
@@ -83,8 +85,7 @@ MessageGroup
       name: "message-attachment",
       title: "Attachment",
       description: "Pair `Message` with [`Attachment`](/docs/components/attachment) to show images and files alongside a bubble.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "`Message` is a presentational layout wrapper. Accessibility comes from the content you place inside it.",
     "Action buttons in `MessageFooter` are usually icon-only, so give each one an `aria-label` (see the Actions example).",

@@ -1,3 +1,5 @@
 import Clipboard from "@marko-ui/shadcn/ui/clipboard/clipboard.marko";
 
-<Clipboard label="Link" value="https://example.com" class="w-[400px]"/>
+// `defaultValue`, not `value`: `value` is the CONTROLLED prop, so a value
+// with no change handler can never be changed.
+<Clipboard label="Link" defaultValue="https://example.com" class="w-[400px]"/>

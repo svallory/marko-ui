@@ -12,7 +12,8 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<SidebarProvider>, <Sidebar>`,
   importSnippet: `import SidebarProvider from "@/components/ui/sidebar/provider.marko";
-import Sidebar from "@/components/ui/sidebar/sidebar.marko";`,
+import Sidebar from "@/components/ui/sidebar/sidebar.marko";
+import SidebarTrigger from "@/components/ui/sidebar/trigger.marko";`,
   usageSnippet: `<SidebarProvider>
   <@sidebar|{ open, toggle }|>
     <Sidebar open=open>...</Sidebar>

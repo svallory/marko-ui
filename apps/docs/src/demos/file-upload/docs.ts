@@ -12,7 +12,7 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<FileUpload>`,
   importSnippet: `import FileUpload from "@/components/ui/file-upload/file-upload.marko";`,
-  usageSnippet: `<FileUpload filesChange(files) { ... }/>`,
+  usageSnippet: `<FileUpload filesChange(files) { /* ... */ }/>`,
   examples: [
     {
       name: "file-upload-demo",
@@ -31,6 +31,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "file-upload-controlled",
+      essential: true,
       title: "Change callback",
       description: "Use `filesChange` to read the accepted files whenever the selection changes.",
     },

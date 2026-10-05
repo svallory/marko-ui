@@ -18,7 +18,9 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Switch>`,
   importSnippet: `import Switch from "@/components/ui/switch/switch.marko";`,
-  usageSnippet: `<Switch checked:=airplaneMode/>`,
+  usageSnippet: `<let/airplaneMode=false/>
+
+<Switch checked:=airplaneMode/>`,
   examples: [
     {
       name: "switch-demo",
@@ -33,7 +35,7 @@ export const docs: ComponentDocs = {
     {
       name: "switch-choice-card",
       title: "Choice Card",
-      description: "Style the switch's own root label as a clickable card, with the title/description in its `content` body.",
+      description: "A card is a plain wrapping `<div>` with the title/description and the Switch side by side inside it, labelled through `id`/`for`. Card classes passed to Switch's own `class` land on the small pill, not on its root label, so style the wrapper instead.",
     },
     {
       name: "switch-disabled",
@@ -48,6 +50,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "switch-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `checked` prop without a change handler never moves. Pair it with `checkedChange`, or use Marko's bind shorthand `checked:=state`.",

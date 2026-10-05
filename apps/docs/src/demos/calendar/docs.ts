@@ -22,15 +22,19 @@ export const docs: ComponentDocs = {
   // real content to port, only React-library history.
   examples: [
     {
+      // The FIRST example is the hero: the plain default usage, never a locale
+      // or variant demo. Hijri was the hero until this reorder; an agent
+      // meeting a Persian calendar before it has met `<Calendar>` is the wrong
+      // first impression of the component.
+      name: "calendar-basic",
+      title: "Basic",
+      description: "An uncontrolled calendar with no date selected initially.",
+    },
+    {
       name: "calendar-hijri",
       title: "Persian / Hijri / Jalali Calendar",
       description:
         "Pass `locale` and `createCalendar` (re-exported from `@internationalized/date`, the same helper upstream's own MDX points to) to switch the calendar system — no react-day-picker locale swap needed (upstream swaps in a persian build of the library and loads the Vazirmatn webfont for Arabic-script glyphs; here the font is your app's business). A controlled initial `value` is intentionally omitted here: `calendar.marko`'s `toDateValue()` always builds a Gregorian `CalendarDate`, so a hardcoded non-Gregorian `{ year, month, day }` would be silently misinterpreted.",
-    },
-    {
-      name: "calendar-basic",
-      title: "Basic",
-      description: "An uncontrolled calendar with no date selected initially.",
     },
     {
       name: "calendar-range",
@@ -77,6 +81,7 @@ export const docs: ComponentDocs = {
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, or use Marko's bind shorthand `value:=state`.",
+      essential: true,
     },
     {
       name: "calendar-multiple",
@@ -98,14 +103,5 @@ export const docs: ComponentDocs = {
       title: "RTL",
       description:
         "Pass `dir=\"rtl\"` and a BCP-47 `locale` string (the Zag machine's own locale shape, rather than upstream's `react-day-picker/locale` object) for right-to-left rendering.",
-    },
-    // calendar-week-numbers: SKIPPED. Upstream's `showWeekNumber` sets
-    // the Zag machine's `showWeekNumbers` prop (forwardable through our
-    // Input), but calendar.marko's markup never calls
-    // `getWeekNumberHeaderCellProps`/`getWeekNumberCellProps` — there is
-    // no week-number column in the rendered table at all, regardless of
-    // the prop. Porting this demo faithfully requires adding that column
-    // to packages/shadcn/ui/calendar/calendar.marko, which is out of
-    // scope for a demos-only repair (component-source change needed).
-  ],
+    },],
 };
