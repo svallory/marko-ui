@@ -83,7 +83,7 @@ static function partLabel(part: ApiPart) {
                     </if>
                     <if=property.description>
                       <p class="mt-1 max-w-prose text-xs leading-5 whitespace-pre-line text-muted-foreground">
-                        ${property.description}
+                        <md-prose text=property.description inline/>
                       </p>
                     </if>
                   </td>

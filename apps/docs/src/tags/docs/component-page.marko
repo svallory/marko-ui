@@ -187,7 +187,7 @@ export interface Input {
                      (see below), so without this the tests' usual entry point
                      would vanish. -->
                 <div>
-                  <h3 class="sr-only">${page.examples[0].title}</h3>
+                  <h3 id=page.examples[0].id class="sr-only scroll-mt-20">${page.examples[0].title}</h3>
                   <component-preview
                     demo=input.demo
                     demoId=page.examples[0].demoId
@@ -230,7 +230,7 @@ export interface Input {
                 <h2 id="concepts" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
                   Concepts
                 </h2>
-                <p class="mt-4 text-sm leading-7 text-muted-foreground">${page.docs.concepts}</p>
+                <md-prose text=page.docs.concepts/>
               </section>
             </if>
 
@@ -253,7 +253,7 @@ export interface Input {
                 <h2 id="composition" class="scroll-mt-20 border-b border-border pb-2 text-xl font-semibold tracking-tight">
                   Composition
                 </h2>
-                <p class="mt-4 text-sm leading-7 text-muted-foreground">${page.docs.composition}</p>
+                <md-prose text=page.docs.composition/>
               </section>
             </else>
 
@@ -274,7 +274,7 @@ export interface Input {
                       ${example.title}
                     </h3>
                     <if=example.description>
-                      <p class="mt-2 text-sm leading-7 text-muted-foreground">${example.description}</p>
+                      <p class="mt-2 text-sm leading-7 text-muted-foreground"><md-prose text=example.description inline/></p>
                     </if>
                     <component-preview demo=input.demo demoId=example.demoId source=example.source previewClass=previewClassFor(example.demoId) class=outerClassFor(example.demoId)/>
                   </div>
@@ -303,7 +303,7 @@ export interface Input {
                             <td class="py-2 pr-4 align-top">
                               <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">${entry.keys}</code>
                             </td>
-                            <td class="py-2 align-top text-muted-foreground">${entry.description}</td>
+                            <td class="py-2 align-top text-muted-foreground"><md-prose text=entry.description inline/></td>
                           </tr>
                         </for>
                       </tbody>
@@ -313,7 +313,7 @@ export interface Input {
                 <if=(page.docs.accessibilityNotes && page.docs.accessibilityNotes.length !== 0)>
                   <ul class="mt-4 list-disc space-y-2 pl-5 text-sm leading-7 text-muted-foreground">
                     <for|note| of=page.docs.accessibilityNotes by=(note) => note>
-                      <li>${note}</li>
+                      <li><md-prose text=note inline/></li>
                     </for>
                   </ul>
                 </if>
