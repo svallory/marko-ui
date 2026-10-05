@@ -27,6 +27,10 @@ export type CliManifest = {
   cliVersion: string;
   commands: CliCommand[];
   exitCodes: Record<string, string>;
+  /** Stable machine-readable warning codes, next to the error codes in the
+   *  CLI's own manifest. Carried here so the docs page can list one
+   *  vocabulary for both outcomes. */
+  warningCodes?: string[];
   agentWorkflow: string[];
 };
 
@@ -94,6 +98,11 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "flags": "--visual-style <name>",
           "description": "the visual style to use (rhea, nova, vega, lyra, maia, mira, luma, sera, new-york). selects the generated source for copy, and the precompiled CSS layer for import."
+        },
+        {
+          "flags": "--json",
+          "description": "output as JSON (the choices made, the files written, and any warnings).",
+          "defaultValue": false
         }
       ]
     },
@@ -143,6 +152,11 @@ export const CLI_MANIFEST: CliManifest = {
           "flags": "--dry-run",
           "description": "preview changes without writing files.",
           "defaultValue": false
+        },
+        {
+          "flags": "--json",
+          "description": "output as JSON (what was written, and any warnings).",
+          "defaultValue": false
         }
       ]
     },
@@ -167,6 +181,11 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "flags": "--name-only",
           "description": "only list files that differ.",
+          "defaultValue": false
+        },
+        {
+          "flags": "--json",
+          "description": "output as JSON (per file status, and diffs for changed ones).",
           "defaultValue": false
         }
       ]
@@ -336,6 +355,11 @@ export const CLI_MANIFEST: CliManifest = {
           "flags": "-s, --silent",
           "description": "mute output.",
           "defaultValue": false
+        },
+        {
+          "flags": "--json",
+          "description": "output as JSON (files written, and any manual steps left).",
+          "defaultValue": false
         }
       ]
     },
@@ -383,6 +407,11 @@ export const CLI_MANIFEST: CliManifest = {
             {
               "flags": "-s, --silent",
               "description": "mute output.",
+              "defaultValue": false
+            },
+            {
+              "flags": "--json",
+              "description": "output as JSON (whether AGENTS.md changed, and which skills were installed).",
               "defaultValue": false
             }
           ]
@@ -528,6 +557,15 @@ export const CLI_MANIFEST: CliManifest = {
     "3": "doctor/validate/agents-check found problems",
     "4": "network error or registry unreachable (registry-backed commands)"
   },
+  "warningCodes": [
+    "CSS_NOT_IMPORTED",
+    "TS_ALLOW_IMPORTING_EXTENSIONS",
+    "LAYOUT_NOT_FOUND",
+    "DEPENDENCY_INSTALL_FAILED",
+    "ITEM_HAS_DOCS",
+    "SKILL_INSTALL_FAILED",
+    "MANUAL_STEPS_REMAIN"
+  ],
   "agentWorkflow": [
     "marko-ui search -q <query> — find items across configured registries",
     "marko-ui show <item> — inspect an item (add --files or --deps to narrow)",

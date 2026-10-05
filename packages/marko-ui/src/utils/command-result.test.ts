@@ -146,16 +146,18 @@ describe("logger under --json", () => {
   function capture() {
     const out: string[] = []
     const err: string[] = []
-    vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => {
-      out.push(String(chunk))
-      return true
+    // console.log/error, NOT process.stdout.write: Node's console holds its
+    // own reference to the stream, so spying on the write method does not
+    // intercept it.
+    vi.spyOn(console, "log").mockImplementation((...args) => {
+      out.push(args.join(" "))
     })
     vi.spyOn(console, "error").mockImplementation((...args) => {
       err.push(args.join(" "))
     })
     return {
       get out() {
-        return out.join("")
+        return out.join("\n")
       },
       get err() {
         return err.join("\n")
