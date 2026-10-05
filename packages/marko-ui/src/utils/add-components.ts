@@ -19,6 +19,7 @@ import { isInteractive } from "@/src/utils/interactive"
 import { isSafeTarget } from "@/src/utils/is-safe-target"
 import { RegistryError, RegistryErrorCode } from "@/src/registry/errors"
 import { CommandError } from "@/src/utils/handle-error"
+import { rootsFor } from "@/src/utils/path-guard"
 import { highlighter } from "@/src/utils/highlighter"
 import { green, yellow } from "kleur/colors"
 import { logger } from "@/src/utils/logger"
@@ -493,9 +494,9 @@ async function addWorkspaceComponents(
         plannedFiles,
         // B2, workspace path: same per-file accumulation.
         written: alreadyWritten,
-        // A workspace install writes into the TARGET package, which is not
-        // the package we were called from; it is still the project.
-        writeRoots: [targetConfig.resolvedPaths.cwd],
+        // Roots for the TARGET package: the guard's workspace root is what
+        // makes a sibling `packages/ui` a legal destination (B1).
+        roots: rootsFor(targetConfig.resolvedPaths.cwd),
       })) ?? {
       filesCreated: [],
       filesUpdated: [],

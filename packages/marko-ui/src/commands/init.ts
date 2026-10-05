@@ -28,6 +28,7 @@ import { isMonorepoRoot } from "@/src/utils/get-monorepo-info"
 import { getProjectConfig, getProjectInfo } from "@/src/utils/get-project-info"
 import { CommandError, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
+import { rootsFor, writeGuarded } from "@/src/utils/path-guard"
 import { logger } from "@/src/utils/logger"
 import {
   type CommandWarning,
@@ -382,7 +383,10 @@ export async function runInit(
     // patch it. A `create-marko` scaffold ships no stylesheet at all, which is
     // what made `init` die with ENOENT on the (previously Next.js-shaped)
     // default path.
-    await ensureCssEntry(fullConfig, { silent: options.silent })
+    await ensureCssEntry(fullConfig, {
+      silent: options.silent,
+      cwd: options.cwd,
+    })
     addedFiles.push({
       path: path.relative(options.cwd, fullConfig.resolvedPaths.tailwindCss),
       status: "created",
@@ -663,7 +667,7 @@ export async function rollbackComponentsJson(
  */
 async function ensureCssEntry(
   config: Config,
-  options: { silent?: boolean } = {}
+  options: { silent?: boolean; cwd?: string } = {}
 ) {
   const cssPath = config.resolvedPaths.tailwindCss
   if (!cssPath) {
@@ -678,8 +682,13 @@ async function ensureCssEntry(
     // Falls through to creation.
   }
 
-  await fs.mkdir(path.dirname(cssPath), { recursive: true })
-  await fs.writeFile(cssPath, `@import "tailwindcss";\n`, "utf8")
+  // B2: `cssPath` is components.json's `tailwind.css`. A config pointing it
+  // outside the project (or into node_modules) made init create a file there.
+  await writeGuarded(
+    cssPath,
+    `@import "tailwindcss";\n`,
+    rootsFor(options.cwd ?? config.resolvedPaths.cwd)
+  )
 
   if (!options.silent) {
     const relative = path.relative(config.resolvedPaths.cwd, cssPath)

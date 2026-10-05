@@ -1,3 +1,4 @@
+import { existsSync, readFileSync, realpathSync } from "fs"
 import path from "path"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
@@ -198,4 +199,67 @@ export function parsePnpmWorkspacePackages(content: string) {
   }
 
   return patterns
+}
+
+
+/**
+ * The workspace root that CONTAINS `cwd`, or null when `cwd` is its own root.
+ *
+ * This is the root the CLI already detects for lockfile and workspace lookup
+ * (`getPackageManager` walks up to the nearest lockfile, ending at the first
+ * `isWorkspaceRoot`). It is exported rather than re-implemented so the write
+ * guard and the package manager can never disagree about where "the project"
+ * ends — the alternative was a second, subtly different detector.
+ *
+ * Walks up from the real path of `cwd` (a cwd reached through a symlink must
+ * not make the walk escape into the symlink's own parents) and returns the
+ * OUTERMOST directory that is still a workspace root, so nested workspaces
+ * resolve to the repo the user means.
+ */
+export function findWorkspaceRoot(cwd: string): string | null {
+  let dir: string
+  try {
+    dir = realpathSync(cwd)
+  } catch {
+    dir = path.resolve(cwd)
+  }
+
+  const stopAt = () => existsSync(path.join(dir, "pnpm-workspace.yaml"))
+  const isRoot = () => {
+    if (stopAt()) return true
+    try {
+      const pkg = JSON.parse(
+        readFileSync(path.join(dir, "package.json"), "utf8")
+      )
+      return Boolean(pkg?.workspaces)
+    } catch {
+      return false
+    }
+  }
+
+  if (!isRoot()) {
+    return null
+  }
+
+  // Climb while the parent is itself a workspace root (nested workspaces).
+  let outer = dir
+  for (;;) {
+    const parent = path.dirname(dir)
+    if (parent === dir) break
+    let candidate = parent
+    try {
+      candidate = realpathSync(parent)
+    } catch {
+      // Keep the literal path if it cannot be resolved.
+    }
+    const previous = dir
+    dir = candidate
+    if (!isRoot()) {
+      dir = previous
+      break
+    }
+    outer = candidate
+  }
+
+  return outer
 }

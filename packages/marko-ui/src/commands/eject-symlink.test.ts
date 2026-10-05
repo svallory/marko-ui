@@ -92,14 +92,13 @@ describe("realpathOfTarget", () => {
 })
 
 describe("isInsideNodeModules", () => {
-  it("is true for a path inside node_modules however it is reached", () => {
-    expect(isInsideNodeModules("/p/node_modules/@marko-ui/shadcn/ui/x.ts")).toBe(true)
-    // A link that resolves INTO node_modules is caught even though the
-    // literal path does not mention it.
-    expect(
-      isInsideNodeModules("/elsewhere/pkg/node_modules/.bin/x")
-    ).toBe(true)
-    expect(isInsideNodeModules("/p/src/components/ui/x.ts")).toBe(false)
+  it("is true for node_modules BELOW the root", () => {
+    expect(isInsideNodeModules("/p/node_modules/dep/x.ts", "/p")).toBe(true)
+    expect(isInsideNodeModules("/p/src/components/ui/x.ts", "/p")).toBe(false)
+    // N1: an ANCESTOR above the project does not count. A project unpacked
+    // inside some node_modules is still a project and must still be writable.
+    expect(isInsideNodeModules("/a/node_modules/b/project/src/x.ts", "/a/node_modules/b/project")).toBe(false)
+    expect(isInsideNodeModules("/a/node_modules/b/project/src/x.ts", "/a")).toBe(true)
   })
 })
 
@@ -108,17 +107,24 @@ describe("assertWritable", () => {
     expect(() =>
       assertWritable(path.join(project, "src", "components", "ui", "a.ts"), {
         projectRoot: project,
+        workspaceRoot: null,
       })
     ).not.toThrow()
   })
 
-  it("allows an extra workspace root", () => {
-    const pkg = path.join(root, "packages", "ui")
-    mkdirSync(pkg, { recursive: true })
+  it("allows a workspace root that contains the project", () => {
+    const repo = path.join(root, "repo")
+    mkdirSync(path.join(repo, "apps", "web"), { recursive: true })
+    mkdirSync(path.join(repo, "packages", "ui"), { recursive: true })
+    writeFileSync(
+      path.join(repo, "package.json"),
+      JSON.stringify({ name: "root", workspaces: ["apps/*", "packages/*"] })
+    )
+    const app = path.join(repo, "apps", "web")
     expect(() =>
-      assertWritable(path.join(pkg, "button.marko"), {
-        projectRoot: project,
-        extraRoots: [pkg],
+      assertWritable(path.join(repo, "packages/ui/button.marko"), {
+        projectRoot: app,
+        workspaceRoot: repo,
       })
     ).not.toThrow()
   })
@@ -128,6 +134,7 @@ describe("assertWritable", () => {
     expect(() =>
       assertWritable(path.join(project, "..", "outside", "evil.ts"), {
         projectRoot: project,
+        workspaceRoot: null,
       })
     ).toThrow(/Refusing to write/)
   })
@@ -138,6 +145,7 @@ describe("assertWritable", () => {
     expect(() =>
       assertWritable(path.join(linked, "button", "button.marko"), {
         projectRoot: project,
+        workspaceRoot: null,
       })
     ).toThrow(/Refusing to write/)
   })
@@ -146,7 +154,10 @@ describe("assertWritable", () => {
     const nm = path.join(project, "node_modules", "pkg")
     mkdirSync(nm, { recursive: true })
     expect(() =>
-      assertWritable(path.join(nm, "index.ts"), { projectRoot: project })
+      assertWritable(path.join(nm, "index.ts"), {
+        projectRoot: project,
+        workspaceRoot: null,
+      })
     ).toThrow(/node_modules/)
   })
 
@@ -154,12 +165,16 @@ describe("assertWritable", () => {
     const nm = path.join(project, "node_modules", "pkg")
     mkdirSync(nm, { recursive: true })
     try {
-      assertWritable(path.join(nm, "index.ts"), { projectRoot: project })
+      assertWritable(path.join(nm, "index.ts"), {
+        projectRoot: project,
+        workspaceRoot: null,
+      })
       expect.unreachable()
     } catch (error) {
       const err = error as { code?: string; message?: string; suggestion?: string }
       expect(err.code).toBe(RegistryErrorCode.UNSAFE_WRITE_TARGET)
-      expect(err.message).toContain(path.join(nm, "index.ts"))
+      // N2: root-relative, because the envelope scrubs absolute paths.
+      expect(err.message).toContain(path.join("node_modules", "pkg", "index.ts"))
       expect(err.suggestion).toBeTruthy()
     }
   })

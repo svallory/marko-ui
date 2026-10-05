@@ -35,7 +35,11 @@ import {
 } from "@/src/utils/updaters/update-theme-stylesheet"
 import { isTargetAliasKey } from "@/src/utils/target-aliases"
 import type { FileChange } from "@/src/utils/command-result"
-import { assertWritable, rootsFor } from "@/src/utils/path-guard"
+import {
+  assertWritable,
+  rootsFor,
+  type WriteRoots,
+} from "@/src/utils/path-guard"
 import { dim, green, red, yellow } from "kleur/colors"
 import { loadConfig, type ConfigLoaderSuccessResult } from "tsconfig-paths"
 import { z } from "zod"
@@ -65,10 +69,11 @@ export async function updateFiles(
      */
     written?: FileChange[]
     /**
-     * Extra roots this particular call may write into — the workspace
-     * package being installed into, when it is not the config's own root.
+     * The roots this call may write into (see path-guard). Computed once by
+     * the command and threaded down, so the workspace root is not re-detected
+     * per file.
      */
-    writeRoots?: string[]
+    roots?: WriteRoots
   }
 ) {
   // Keep only the configured iconLibrary's icon map (see icon-library.ts).
@@ -205,7 +210,7 @@ export async function updateFiles(
     // called from.
     assertWritable(
       filePath,
-      rootsFor(config.resolvedPaths.cwd, options.writeRoots),
+      options.roots ?? rootsFor(config.resolvedPaths.cwd),
       "write"
     )
 
@@ -314,7 +319,7 @@ export async function updateFiles(
         // registry, so nothing upstream vouched for these paths.
         assertWritable(
           file,
-          rootsFor(config.resolvedPaths.cwd, options.writeRoots),
+          options.roots ?? rootsFor(config.resolvedPaths.cwd),
           "delete"
         )
         await fs.rm(file)
