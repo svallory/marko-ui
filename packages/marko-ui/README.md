@@ -29,7 +29,7 @@ in-process compiler API, which the component build depends on. `marko-ui doctor`
 | `search [registries...]` (alias `list`) | Search items across configured registries |
 | `status` (alias `info`) | Project info: config, aliases, framework |
 | `doctor` | 9 health checks; exit code 3 when any fail. Every failing check carries a `fix` field (JSON) / a `fix:` line (human) with the command that fixes it |
-| `manifest [command]` | Self-description: commands, flags, exit codes, agent workflow. With a command name or alias, only that command (subcommands included) plus the exit codes; an unknown name exits 2 |
+| `manifest [command]` | Self-description: commands, flags, exit codes (2 usage error, 3 failed check, 4 registry unreachable or failing: connection, 5xx, 429), error codes, agent workflow. With a command name or alias, only that command (subcommands included) plus the exit codes; an unknown name exits 2 |
 | `agents sync` | Refresh the AGENTS.md section and install the agent skills through the `skills` package (`--json` reports whether AGENTS.md changed and which skills were installed; `--check` exits 3 when stale or missing; `--no-skill` writes AGENTS.md only) |
 | `registry list/add/remove/validate` | Manage registries in components.json |
 
