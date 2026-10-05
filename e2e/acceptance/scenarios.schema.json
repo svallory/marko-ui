@@ -461,6 +461,18 @@
             { "type": "array", "items": { "type": "string" } }
           ]
         },
+        "stderrNotContains": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } }
+          ]
+        },
+        "stderrMatches": {
+          "description": "Regex sources matched against stderr with ANSI escapes stripped. Human errors and warnings are on stderr; stdout carries only a command's result.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "format": "regex" }
+        },
         "filesExist": {
           "description": "Paths (relative to the step's cwd) that must exist. A trailing `/**` matches recursively.",
           "type": "array",

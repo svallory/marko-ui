@@ -8,6 +8,7 @@ suite at a glance, replay one scenario, and add a scenario without touching the 
 bun run check:acceptance            # validate the YAML against the schema
 ACCEPTANCE_SCENARIOS=core.init-defaults-copy bun run test:acceptance
 ACCEPTANCE_TAGS=pm:npm,speed:fast   bun run test:acceptance
+ACCEPTANCE_TARGET=tarball ACCEPTANCE_SCENARIOS=core.init-twice-refuses bun run test:acceptance   # the packed CLI, as the release gate runs it
 ```
 
 ## What "acceptance" means here
@@ -28,6 +29,13 @@ That is the difference from [`e2e/cli/scenarios/`](../cli/scenarios/), which dri
 manager. Those 80 scenarios are fast and hermetic and answer "does this code path behave";
 these answer "does a person get a working project". Neither subsumes the other, and the
 CLI's own `notes/cli-test-plan.md` is the design document for the former.
+
+## Which stream an expectation reads
+
+`stdoutContains` / `stdoutMatches` / `stdoutNotContains` read stdout; `stderrContains` /
+`stderrMatches` / `stderrNotContains` read stderr. Human errors and warnings (a refusal's
+wording, an install warning) are on **stderr**; stdout carries only the command's result, and
+under `--json` the result or one error envelope. Assert a refusal's text on stderr.
 
 ## The shape of a scenario
 

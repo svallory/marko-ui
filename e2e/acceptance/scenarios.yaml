@@ -662,7 +662,10 @@ flows:
       args: ["--json"]
       expect:
         exit: 0
-        stdoutContains: '"style"'
+        # No component is installed here, so `status` has none to list. What it
+        # does report is the project's style configuration, as the status
+        # envelope (`config.style` was removed: it was always "default").
+        stdoutContains: ['"$type":"marko-ui/status"', '"visualStyle"']
     - name: doctor passes
       command: doctor
       expect:
@@ -1080,7 +1083,7 @@ scenarios:
         args: ["--check"]
         expect:
           exit: 3
-          stdoutContains: "stale"
+          stderrContains: "stale"
       - use: agents-sync-and-check
       - name: AGENTS.md now lists the component
         command: status
@@ -1199,7 +1202,7 @@ scenarios:
         args: ["definitely-not-a-component", "-y"]
         expect:
           exit: [1, 4]
-          stdoutMatches: ["(?i)definitely-not-a-component"]
+          stderrMatches: ["(?i)definitely-not-a-component"]
           filesAbsent: ["src/components/ui/definitely-not-a-component"]
 
   - id: core.eject-on-copy-refuses
@@ -1220,7 +1223,7 @@ scenarios:
         args: ["-y"]
         expect:
           exit: 1
-          stdoutMatches: ["(?i)copy distribution|already.*copy"]
+          stderrMatches: ["(?i)copy distribution|already.*copy"]
           jsonPath:
             - path: components.json
               pointer: /distribution
@@ -1243,8 +1246,8 @@ scenarios:
         command: init
         expect:
           exit: 1
-          stdoutMatches: ["(?i)already initialized"]
-          stdoutContains: ["marko-ui add", "marko-ui agents sync", "--force"]
+          stderrMatches: ["(?i)already initialized"]
+          stderrContains: ["marko-ui add", "marko-ui agents sync", "--force"]
           jsonPath:
             - path: components.json
               pointer: /distribution
@@ -1374,8 +1377,8 @@ scenarios:
         args: ["--yes"]
         expect:
           exit: 1
-          stdoutMatches: ["(?i)marko-ui requires marko 6"]
-          stdoutContains: "--force"
+          stderrMatches: ["(?i)marko-ui requires marko 6"]
+          stderrContains: "--force"
           filesAbsent: ["components.json", "AGENTS.md"]
       - name: the preflight wrote nothing into the Marko 5 project
         command: "@helper"
@@ -1483,8 +1486,8 @@ scenarios:
         args: ["--defaults"]
         expect:
           exit: 1
-          stdoutMatches: ["(?i)does not look like a Marko project"]
-          stdoutContains: "--force"
+          stderrMatches: ["(?i)does not look like a Marko project"]
+          stderrContains: "--force"
           filesAbsent: ["components.json"]
           # create-astro@latest ships its OWN AGENTS.md and CLAUDE.md, so
           # filesAbsent can never hold for AGENTS.md; what this scenario means
@@ -1498,7 +1501,7 @@ scenarios:
         sub: ["sync"]
         expect:
           exit: 1
-          stdoutContains: "init --agents"
+          stderrContains: "init --agents"
 
   - id: kind.astro-with-marko-added
     title: "the same project once Marko is in package.json: init proceeds with no prompt about Marko"
@@ -1542,7 +1545,7 @@ scenarios:
         args: ["--defaults"]
         expect:
           exit: 1
-          stdoutMatches: ["(?i)does not look like a Marko project"]
+          stderrMatches: ["(?i)does not look like a Marko project"]
           filesAbsent: ["components.json"]
 
   - id: kind.empty-dir-refuses
@@ -1561,7 +1564,7 @@ scenarios:
         args: ["--defaults"]
         expect:
           exit: 1
-          stdoutContains: "No project found"
+          stderrContains: "No project found"
           filesAbsent: ["components.json", "AGENTS.md"]
       - name: add refuses too
         command: add
@@ -1651,8 +1654,8 @@ scenarios:
         args: ["--yes"]
         expect:
           exit: 1
-          stdoutMatches: ["(?i)tailwind v4"]
-          stdoutContains: ["@tailwindcss/upgrade", "--force"]
+          stderrMatches: ["(?i)tailwind v4"]
+          stderrContains: ["@tailwindcss/upgrade", "--force"]
           filesAbsent: ["components.json"]
       - name: the project's own config files are left alone
         command: "@helper"
@@ -1806,8 +1809,8 @@ scenarios:
         args: ["--force", "--defaults"]
         expect:
           exit: 1
-          stdoutMatches: ["(?i)shadcn/ui"]
-          stdoutContains: "--cwd"
+          stderrMatches: ["(?i)shadcn/ui"]
+          stderrContains: "--cwd"
       - name: the user's own React config is not rewritten
         command: "@helper"
         helper: count-markers
@@ -1819,23 +1822,23 @@ scenarios:
         command: status
         expect:
           exit: 1
-          stdoutMatches: ["(?i)shadcn/ui"]
+          stderrMatches: ["(?i)shadcn/ui"]
       - name: doctor refuses too
         command: doctor
         expect:
           exit: [1, 3]
-          stdoutMatches: ["(?i)shadcn/ui"]
+          stderrMatches: ["(?i)shadcn/ui"]
       - name: diff refuses too
         command: diff
         expect:
           exit: 1
-          stdoutMatches: ["(?i)shadcn/ui"]
+          stderrMatches: ["(?i)shadcn/ui"]
       - name: agents sync refuses too
         command: agents
         sub: ["sync"]
         expect:
           exit: 1
-          stdoutMatches: ["(?i)shadcn/ui"]
+          stderrMatches: ["(?i)shadcn/ui"]
           filesAbsent: ["AGENTS.md"]
 
   - id: existing.dirty-git-tree
@@ -2417,7 +2420,7 @@ scenarios:
         cwd: .
         expect:
           exit: 1
-          stdoutContains: "--cwd"
+          stderrContains: "--cwd"
           filesAbsent: ["components.json"]
 
   - id: mono.pnpm-shared-ui
@@ -2711,7 +2714,7 @@ scenarios:
         args: ["button", "-y"]
         expect:
           exit: 1
-          stdoutContains: "@marko-ui/shadcn"
+          stderrContains: "@marko-ui/shadcn"
           filesAbsent: ["src/components/ui/button/button.marko"]
       - name: the app still builds on the import path
         command: "@app-build"
@@ -3122,7 +3125,7 @@ scenarios:
         expect:
           exit: 1
           filesExist: ["AGENTS.md"]
-          stdoutContains: "skills@1.7.0 add"
+          stderrContains: "skills@1.7.0 add"
       - name: --no-skill recovers
         command: agents
         sub: ["sync"]
@@ -3150,7 +3153,7 @@ scenarios:
         expect:
           exit: 1
           filesExist: ["AGENTS.md"]
-          stdoutContains:
+          stderrContains:
             ["Install them manually", "svallory/this-repo-does-not-exist-9ce"]
 
   # =========================================================================

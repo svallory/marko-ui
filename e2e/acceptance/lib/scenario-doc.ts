@@ -144,6 +144,8 @@ export interface Expectations {
   stdoutNotContains?: string | string[]
   stdoutMatches?: string[]
   stderrContains?: string | string[]
+  stderrNotContains?: string | string[]
+  stderrMatches?: string[]
   filesExist?: string[]
   filesAbsent?: string[]
   fileContains?: FileContainsAssertion[]
