@@ -30,7 +30,7 @@ upstream expresses as nested parts (\`ComboboxInput\`, \`ComboboxContent\`,
 \`ComboboxItem\`, \`ComboboxChips\`...) is a prop or a rendered slot here,
 driven by one \`@zag-js/combobox\` machine.
 
-**Simple** (see [Default](#combobox-demo)): pass \`items\`. The tag renders its
+**Simple** (see [Default](#default)): pass \`items\`. The tag renders its
 own input, trigger button, and a floating list — no assembly required.
 
 \`\`\`text
@@ -42,7 +42,7 @@ Combobox (items=)
         └── item    (data-slot="combobox-item", one per entry)
 \`\`\`
 
-**With chips** (see [Multiple Selection](#combobox-multiple)): pass
+**With chips** (see [Multiple](#multiple)): pass
 \`multiple\`. The single input is swapped for a chip row with an inline text
 input — selected items render as \`data-slot="combobox-chip"\` pills, each
 with its own remove button.
@@ -55,7 +55,7 @@ Combobox (items= multiple)
 └── positioner → list → item  (same as Simple)
 \`\`\`
 
-**With groups** (see [Groups](#combobox-groups)): pass \`groups\` alongside
+**With groups** (see [Groups](#groups)): pass \`groups\` alongside
 the flat \`items\` (items still drives the filterable collection; groups is a
 display-only regrouping of the same values). Each group renders a label and
 its own item block, separated visually.
