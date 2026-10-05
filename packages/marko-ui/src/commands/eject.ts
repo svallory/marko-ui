@@ -225,13 +225,17 @@ export const eject = new Command()
 
       ejectSpinner.succeed()
 
+      // Resolved ONCE, for both renderings — the JSON `next` and the human
+      // "Remaining manual steps" must not be able to disagree about the
+      // package manager, which is exactly what hardcoding one of them did.
+      const packageManager = await getPackageManager(options.cwd, {
+        withFallback: true,
+      })
+
       if (options.json) {
         printEjectResult(options.cwd, installedComponents, ejected, taglib, {
           manualStepsRemaining: taglib === null,
-          // N5: the runner is derived from the lockfile, not hardcoded to bun.
-          packageManager: await getPackageManager(options.cwd, {
-            withFallback: true,
-          }),
+          packageManager,
         })
         return
       }
@@ -248,9 +252,11 @@ export const eject = new Command()
           )}.`
         )
         logger.log(`Remaining manual steps:`)
+        // Criterion 5: derived, exactly like the JSON `next` — hardcoding bun
+        // told an npm/pnpm user to run a command they do not have.
         logger.log(
           `  1. Remove the dependency: ${highlighter.info(
-            "bun remove @marko-ui/shadcn"
+            `${packageManager} remove @marko-ui/shadcn`
           )}`
         )
         logger.log(

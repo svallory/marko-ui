@@ -244,6 +244,37 @@ describe("runDoctorChecks", () => {
     expect(framework?.label).not.toContain("()")
   })
 
+  // The config catch exists so an unbacked alias or a malformed file becomes a
+  // failed CHECK (exit 3). A shadcn/ui-for-React config is a different thing:
+  // not unreadable, not ours — every other command refuses it with exit 1, and
+  // doctor swallowing the refusal into a check was a regression (e2e G04).
+  it("refuses a shadcn/ui-for-React components.json instead of reporting a failed check", async () => {
+    const dir = scaffoldMarkoApp({
+      dependencies: { react: "^19.0.0", next: "^15.0.0" },
+    })
+
+    await expect(runDoctorChecks(dir)).rejects.toThrow(
+      /belongs to shadcn\/ui for React/
+    )
+  })
+
+  it("still reports a malformed components.json as a failed check, not a refusal", async () => {
+    const dir = scaffoldMarkoApp()
+    writeFileSync(path.join(dir, "components.json"), "{ not json")
+
+    const checks = await runDoctorChecks(dir)
+    expect(statusOf(checks).config).toBe("fail")
+  })
+
+  it("does not mistake a Marko project that also depends on react for a React one", async () => {
+    const dir = scaffoldMarkoApp({
+      dependencies: { marko: "^6.3.34", react: "^19.0.0", tailwindcss: "^4.0.0" },
+    })
+
+    const checks = await runDoctorChecks(dir)
+    expect(statusOf(checks).config).toBe("pass")
+  })
+
   it("never prints (undefined) in any check label", async () => {
     const dir = scaffoldMarkoApp()
     writeFileSync(path.join(dir, "components.json"), "{ not json")

@@ -12,6 +12,7 @@ import postcss from "postcss"
 import AtRule from "postcss/lib/at-rule"
 import Root from "postcss/lib/root"
 import Rule from "postcss/lib/rule"
+import { rootsFor, writeGuarded, type WriteRoots } from "@/src/utils/path-guard"
 import { z } from "zod"
 
 export async function updateCssVars(
@@ -22,6 +23,8 @@ export async function updateCssVars(
     silent?: boolean
     tailwindVersion?: TailwindVersion
     tailwindConfig?: z.infer<typeof registryItemTailwindSchema>["config"]
+    /** Allowed write roots; computed once by the command. */
+    roots?: WriteRoots
   }
 ) {
   if (!config.resolvedPaths.tailwindCss || !Object.keys(cssVars ?? {}).length) {
@@ -51,7 +54,13 @@ export async function updateCssVars(
     tailwindConfig: options.tailwindConfig,
     overwriteCssVars: options.overwriteCssVars,
   })
-  await fs.writeFile(cssFilepath, output, "utf8")
+  // B2: same guard as every other config-driven writer — the path is
+  // components.json's `tailwind.css`.
+  await writeGuarded(
+    cssFilepath,
+    output,
+    options.roots ?? rootsFor(config.resolvedPaths.cwd)
+  )
   cssVarsSpinner.succeed()
 }
 

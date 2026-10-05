@@ -2036,7 +2036,7 @@ scenarios:
           filesExist: ["AGENTS.md"]
           fileContains:
             - path: AGENTS.md
-              contains: "button"
+              contains: "Installed: `button`"
 
   - id: config.tsconfig-extends-base
     title: "a tsconfig that extends a base package still resolves the alias"

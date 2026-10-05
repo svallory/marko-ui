@@ -52,6 +52,13 @@ export const RegistryErrorCode = {
   PROJECT_NOT_FOUND: "PROJECT_NOT_FOUND",
   /** The agent skills could not be installed. Fatal, so it is an ERROR, not a warning. */
   SKILL_INSTALL_FAILED: "SKILL_INSTALL_FAILED",
+  /**
+   * A path the CLI was about to write or delete resolves outside the project
+   * (or inside node_modules) — typically because an alias resolves through a
+   * SYMLINKED package, so installing into a project would edit its own
+   * dependency. Raised before any write; see utils/path-guard.ts.
+   */
+  UNSAFE_WRITE_TARGET: "UNSAFE_WRITE_TARGET",
 
   // Generic errors
   UNKNOWN_ERROR: "UNKNOWN_ERROR",

@@ -284,7 +284,11 @@ export interface RunOptions {
 export interface RunResult {
   code: number | null
   timedOut: boolean
+  /** stdout and stderr interleaved, as a terminal shows them. */
   out: string
+  /** The two streams separately, for scenarios asserting WHICH one carried something. */
+  stdout: string
+  stderr: string
 }
 
 /** Env vars that would leak the host's context into a scenario. */
@@ -325,9 +329,17 @@ export function cli(cwd: string, args: string[], o: RunOptions = {}): Promise<Ru
       detached: true,
     })
     let out = ""
+    let stdout = ""
+    let stderr = ""
     let timedOut = false
-    child.stdout!.on("data", (d) => (out += d))
-    child.stderr!.on("data", (d) => (out += d))
+    child.stdout!.on("data", (d) => {
+      out += d
+      stdout += d
+    })
+    child.stderr!.on("data", (d) => {
+      out += d
+      stderr += d
+    })
     const timer = setTimeout(() => {
       timedOut = true
       try {
@@ -338,7 +350,7 @@ export function cli(cwd: string, args: string[], o: RunOptions = {}): Promise<Ru
     }, o.timeoutMs ?? 60_000)
     child.on("close", (code) => {
       clearTimeout(timer)
-      resolvePromise({ code, timedOut, out })
+      resolvePromise({ code, timedOut, out, stdout, stderr })
     })
   })
 }
@@ -388,6 +400,23 @@ export function jsonData<T = unknown>(out: string): T {
     )
   }
   return envelope.data as T
+}
+
+/**
+ * The component names the generated AGENTS.md section lists, from its single
+ * "Installed: `a`, `b`" line (names only, no descriptions — see
+ * `packages/marko-ui/src/agents/content.ts`). `[]` for "none — run …". Throws
+ * when the line is absent so a changed format fails loudly instead of
+ * reading as "nothing installed".
+ */
+export function installedComponents(agentsMd: string): string[] {
+  const line = agentsMd.split("\n").find((l) => l.startsWith("Installed: "))
+  if (line === undefined) {
+    throw new Error(`AGENTS.md has no "Installed:" line:\n${agentsMd.slice(0, 600)}`)
+  }
+  return [...line.matchAll(/`([^`]+)`/g)]
+    .map((m) => m[1]!)
+    .filter((name) => !name.startsWith("marko-ui "))
 }
 
 /** Init + add button through shims: the common "installed one component" starting state. */

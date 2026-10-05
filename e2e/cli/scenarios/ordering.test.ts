@@ -6,6 +6,7 @@ import {
   bootstrap,
   cli,
   exists,
+  installedComponents,
   jsonData,
   makeWorkspace,
   markoApp,
@@ -133,7 +134,7 @@ describe("command ordering", () => {
     const check = await cli(ws, ["agents", "sync", "--check", "--no-skill"], { shim })
     expect(check.code, tail(check.out)).toBe(0)
     expect(plain(check.out)).toContain("Agent setup is up to date")
-    expect(read(ws, "AGENTS.md")).toContain("- `button`")
+    expect(installedComponents(read(ws, "AGENTS.md"))).toEqual(["button"])
   })
 
   scenario("O09", "add after a sync, then --check without syncing: stale, exit 3", async () => {
@@ -154,12 +155,11 @@ describe("command ordering", () => {
     await cli(ws, ["init"], { shim })
     await cli(ws, ["add", "button", "badge"], { shim })
     await cli(ws, ["agents", "sync", "--no-skill"], { shim })
-    expect(read(ws, "AGENTS.md")).toContain("- `button`")
+    expect(installedComponents(read(ws, "AGENTS.md"))).toEqual(["badge", "button"])
     rmSync(`${ws}/src/components/ui/button`, { recursive: true })
     const sync = await cli(ws, ["agents", "sync", "--no-skill"], { shim })
     expect(sync.code, tail(sync.out)).toBe(0)
-    expect(read(ws, "AGENTS.md")).not.toContain("- `button`")
-    expect(read(ws, "AGENTS.md")).toContain("- `badge`")
+    expect(installedComponents(read(ws, "AGENTS.md"))).toEqual(["badge"])
   })
 
   scenario("O11", "status / diff / doctor after add see the installed component", async () => {

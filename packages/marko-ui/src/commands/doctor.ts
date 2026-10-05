@@ -7,7 +7,11 @@ import {
   getShadcnRegistryIndex,
 } from "@/src/registry/api"
 import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
-import { getConfig, isAliasBacked } from "@/src/utils/get-config"
+import {
+  getConfig,
+  isAliasBacked,
+  ReactComponentsJsonError,
+} from "@/src/utils/get-config"
 import {
   getPackageManager,
   type PackageManager,
@@ -229,7 +233,8 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
   // doctor's jobs (`checkAliases`, below), and the strict loader refused to
   // hand back a config at all in exactly that case — so the command died with
   // "Something went wrong" (exit 1) instead of naming the alias and exiting 3.
-  // Every other command still refuses.
+  // Every other command still refuses (and so does doctor, for a shadcn/ui-for-React
+  // config — see the catch below).
   //
   // It is also loaded before `getProjectInfo`, which reads the same file
   // (for the Tailwind version). A malformed components.json used to throw out
@@ -241,6 +246,9 @@ export async function runDoctorChecks(cwd: string): Promise<DoctorCheck[]> {
   try {
     config = await getConfig(cwd, { allowUnresolvedAliases: true })
   } catch (error) {
+    // A React project's config is not "unreadable", it is not ours: refuse it
+    // like every other command (exit 1) instead of reporting a failed check.
+    if (error instanceof ReactComponentsJsonError) throw error
     configError = error instanceof Error ? error.message : String(error)
   }
 
