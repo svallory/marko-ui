@@ -455,6 +455,8 @@ remove the mark, never weaken the assertion. `SCENARIOS_SHOW_FAILURES=1` shows
 the real failure behind each mark. Prefer a scenario here for orderings,
 structures and environments.
 
+`e2e/cli/scenarios/eject-safety.test.ts` (W01-W08) pins the write guard against the incident where a live `eject` deleted `packages/shadcn/ui/*` through a symlinked `node_modules/@marko-ui/shadcn`. Its one fixture builder is `lib/eject-fixture.ts` (`ejectFixture`, `monorepoFixture`, `snapshotTree`); the package in a fixture is always a `cp -R` of `packages/shadcn` into a temp dir, and `assertOutsideRepo` refuses any fixture path inside the repo — never point a fixture at the repo, even read-only. A monorepo fixture needs a `components.json` in BOTH `apps/web` and the sibling `packages/ui` (`add` loads the latter as the workspace config). Assert the AGENTS.md component list with `installedComponents()` (it reads the single `Installed:` line), not a substring.
+
 Three facts when a scenario flakes on the relay (`--agents`), i.e. the two files
 whose `relay()` helper shims `bun, npm, npx, pnpm, yarn` and leaves `bunx` real
 (`ordering.test.ts`, `agents-md.test.ts`; every other scenario uses
