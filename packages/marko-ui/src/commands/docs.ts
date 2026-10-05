@@ -36,12 +36,7 @@ export const docs = new Command()
   .description("print component documentation as markdown")
   .argument("[components...]", "component names (e.g. button dialog)")
   .option("-l, --list", "list documented components.", false)
-<<<<<<< HEAD
   .option("--json", "output as JSON (with --list, or the markdown itself).", false)
-||||||| parent of d3345893 (feat(docs): one structured docs model, one renderer, lean default)
-  .option("--json", "output as JSON (with --list).", false)
-=======
-  .option("--json", "output as JSON (with --list).", false)
   .option(
     "--examples",
     "print every example instead of the essential ones.",
@@ -51,7 +46,6 @@ export const docs = new Command()
     "--example <id...>",
     "print only the named examples (ids are listed by --list and in the \"More examples\" list).",
   )
->>>>>>> d3345893 (feat(docs): one structured docs model, one renderer, lean default)
   .action(async (components: string[], opts) => {
     try {
       // Recorded before anything can fail so a failure takes the JSON error
@@ -110,90 +104,15 @@ export const docs = new Command()
       // to `--list` only — so an agent asking for the JSON of one component got
       // something it had to re-parse, and the guard could not tell the two
       // apart.
-      const documents: { name: string; markdown: string }[] = []
+      const documents: { name: string; markdown: string; docs: ComponentDocs }[] = []
 
       for (const name of components) {
-<<<<<<< HEAD
-        // Standard convention: append .md to the page URL. Older deployments
-        // only served the /md alias, so fall back on 404.
-        const urls = [
-          `${MARKO_UI_URL}/docs/components/${name}.md`,
-          `${MARKO_UI_URL}/docs/components/${name}/md`,
-        ]
-
-        let served = false
-        let lastStatus = 0
-        for (const url of urls) {
-          // Raw fetch, not the registry fetcher: the docs site is not a
-          // registry. It still has to classify a connection failure, or an
-          // unreachable docs host reads as "fetch failed" + the
-          // open-an-issue boilerplate.
-          let response: Response
-          try {
-            response = await fetch(url)
-          } catch (error) {
-            throw asNetworkError(error, { url, context: { component: name } })
-          }
-          if (response.ok) {
-            const markdown = await response.text()
-            if (options.json) {
-              documents.push({ name, markdown })
-            } else {
-              process.stdout.write(markdown)
-              process.stdout.write("\n")
-            }
-            served = true
-            break
-          }
-          lastStatus = response.status
-        }
-
-        if (!served) {
-          // A typo is the overwhelmingly common reason for this. The index
-          // may be unreachable (in which case there is nothing to suggest),
-          // so suggestions are best-effort and never change the error class.
-||||||| parent of d3345893 (feat(docs): one structured docs model, one renderer, lean default)
-        // Standard convention: append .md to the page URL. Older deployments
-        // only served the /md alias, so fall back on 404.
-        const urls = [
-          `${MARKO_UI_URL}/docs/components/${name}.md`,
-          `${MARKO_UI_URL}/docs/components/${name}/md`,
-        ]
-
-        let served = false
-        let lastStatus = 0
-        for (const url of urls) {
-          // Raw fetch, not the registry fetcher: the docs site is not a
-          // registry. It still has to classify a connection failure, or an
-          // unreachable docs host reads as "fetch failed" + the
-          // open-an-issue boilerplate.
-          let response: Response
-          try {
-            response = await fetch(url)
-          } catch (error) {
-            throw asNetworkError(error, { url, context: { component: name } })
-          }
-          if (response.ok) {
-            process.stdout.write(await response.text())
-            process.stdout.write("\n")
-            served = true
-            break
-          }
-          lastStatus = response.status
-        }
-
-        if (!served) {
-          // A typo is the overwhelmingly common reason for this. The index
-          // may be unreachable (in which case there is nothing to suggest),
-          // so suggestions are best-effort and never change the error class.
-=======
         const [item] = await getRegistryItems([name], {})
         const model = item?.componentDocs
         if (!model) {
           // A typo is the overwhelmingly common reason. The index may be
           // unreachable (in which case there is nothing to suggest), so
           // suggestions are best-effort and never change the error class.
->>>>>>> d3345893 (feat(docs): one structured docs model, one renderer, lean default)
           const candidates = await documentedComponentNames().catch(
             () => [] as string[]
           )
@@ -205,8 +124,18 @@ export const docs = new Command()
           continue
         }
 
+        // With --json the markdown is COLLECTED instead of written, so the
+        // whole answer is one envelope — and the structured model it was
+        // rendered from rides along under the same component entry, so a
+        // caller that wants parts/props/events as data does not have to parse
+        // the markdown back out.
         const selection = selectExamples(model, options.example, options.examples)
-        process.stdout.write(renderComponentDocs(model, selection))
+        const markdown = renderComponentDocs(model, selection)
+        if (options.json) {
+          documents.push({ name, markdown, docs: model })
+        } else {
+          process.stdout.write(markdown)
+        }
       }
 
       if (misses.length) {

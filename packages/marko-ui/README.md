@@ -26,13 +26,6 @@ in-process compiler API, which the component build depends on. `marko-ui doctor`
 | `diff [item]` | Diff local files against their registry versions (`--json` for per-file status and plain-text diffs) |
 | `docs [components...]` | Print component documentation as markdown (`--list` for the index; `--json` returns the markdown in the envelope) |
 | `show <items...>` (alias `view`) | Inspect items: full JSON, `--files`, `--deps` (always machine output; `--json` is accepted and changes nothing) |
-||||||| parent of d3345893 (feat(docs): one structured docs model, one renderer, lean default)
-| `docs [components...]` | Print component documentation as markdown (`--list` for the index) |
-| `show <items...>` (alias `view`) | Inspect items: full JSON, `--files`, `--deps` |
-=======
-| `docs [components...]` | Print component documentation as markdown: parts, props, events and the essential examples, read from the registry item and rendered locally (`--examples` for every example, `--example <id…>` for named ones, `--list` for the index) |
-| `show <items...>` (alias `view`) | Inspect items: full JSON, `--files`, `--deps` |
->>>>>>> d3345893 (feat(docs): one structured docs model, one renderer, lean default)
 | `search [registries...]` (alias `list`) | Search items across configured registries |
 | `status` (alias `info`) | Project info: config, aliases, framework |
 | `doctor` | 9 health checks; exit code 3 when any fail. Every failing check carries a `fix` field (JSON) / a `fix:` line (human) with the command that fixes it |

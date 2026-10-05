@@ -93,24 +93,32 @@ function mockProcessExit() {
 describe("view command: the embedded docs model", () => {
   // `componentDocs` is the model `marko-ui docs` renders — every example's
   // source inlined, a few hundred KB per component. `show` answers "what
-  // would this install write", so printing it there would bury the files and
-  // dependencies under documentation the caller did not ask for.
+  // would this install write", so it strips the key from the envelope's data
+  // rather than burying files and dependencies under documentation nobody
+  // asked for.
   it("prints the item without componentDocs", async () => {
     const exit = mockProcessExit()
-    const log = vi.spyOn(console, "log").mockImplementation(() => {})
+    // `printEnvelope` writes to stdout, not console.log.
+    const chunks: string[] = []
+    const out = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => {
+      chunks.push(String(chunk))
+      return true
+    })
     let rejected: unknown
     try {
       await view.parseAsync(["node", "view", "button"], { from: "user" })
     } catch (error) {
       rejected = error
     }
-    const printed = log.mock.calls.map((call) => JSON.parse(String(call[0])))
-    log.mockRestore()
+    const printed = chunks.join("").trim().split("\n").map((line) => JSON.parse(line))
+    out.mockRestore()
     exit.mockRestore()
 
     expect(String((rejected as Error)?.message)).toMatch(/process\.exit:/)
-    expect(printed[0][0]).toMatchObject({ name: "button", files: [] })
-    expect(printed[0][0]).not.toHaveProperty("componentDocs")
+    // `show` prints one envelope, so the item is at `data[0]`.
+    expect(printed[0].$type).toBe("marko-ui/show")
+    expect(printed[0].data[0]).toMatchObject({ name: "button", files: [] })
+    expect(printed[0].data[0]).not.toHaveProperty("componentDocs")
   })
 })
 
