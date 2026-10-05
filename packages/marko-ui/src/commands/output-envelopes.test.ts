@@ -28,23 +28,32 @@ vi.mock("@/src/registry/api", async (importOriginal) => ({
     {
       name: "button",
       files: [],
-      componentDocs: {
-        name: "button",
-        title: "Button",
-        description: "A button.",
-        installCommand: "bunx marko-ui add button -y",
-        usageTags: "<Button>",
-        importSnippet: 'import Button from "@/components/ui/button/button.marko";',
-        usageSnippet: "<Button />",
-        parts: [],
-        props: [],
-        events: [],
-        keyboard: [],
-        accessibilityNotes: [],
-        examples: [{ id: "demo", title: "Demo", source: "<Button />" }],
-      },
+      // What a real item carries: a reference to the docs file, never the model.
+      componentDocsRef: "https://registry.test/r/docs/button.json",
     },
   ]),
+  getRegistryItemDocs: vi.fn(async () => ({
+    item: {
+      name: "button",
+      files: [],
+      componentDocsRef: "https://registry.test/r/docs/button.json",
+    },
+    model: {
+      name: "button",
+      title: "Button",
+      description: "A button.",
+      installCommand: "bunx marko-ui add button -y",
+      usageTags: "<Button>",
+      importSnippet: 'import Button from "@/components/ui/button/button.marko";',
+      usageSnippet: "<Button />",
+      parts: [],
+      props: [],
+      events: [],
+      keyboard: [],
+      accessibilityNotes: [],
+      examples: [{ id: "demo", title: "Demo", source: "<Button />" }],
+    },
+  })),
   getShadcnRegistryIndex: vi.fn(() => []),
 }))
 
@@ -127,7 +136,13 @@ describe("show --json", () => {
     const envelope = stdout.envelope()
     expectEnvelope(envelope)
     expect(envelope.$type).toBe("marko-ui/show")
-    expect(envelope.data).toEqual([{ name: "button", files: [] }])
+    expect(envelope.data).toEqual([
+      {
+        name: "button",
+        files: [],
+        componentDocsRef: "https://registry.test/r/docs/button.json",
+      },
+    ])
   })
 
   it("accepts --json without a usage error (it changes nothing: show is always JSON)", async () => {
@@ -265,7 +280,7 @@ describe("docs <name> --json", () => {
     const envelope = stdout.envelope()
     expectEnvelope(envelope)
     expect(envelope.$type).toBe("marko-ui/docs")
-    // Rendered locally from the registry item's model — no fetch of the docs
+    // Rendered locally from the model the item's docs reference points at — no fetch of the docs
     // site.
     expect(envelope.data).toEqual({
       components: [

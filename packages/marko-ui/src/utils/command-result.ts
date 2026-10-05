@@ -45,6 +45,8 @@ export const WarningCode = {
   DEPENDENCY_INSTALL_FAILED: "DEPENDENCY_INSTALL_FAILED",
   /** `add`: a registry item carries docs the caller should read. */
   ITEM_HAS_DOCS: "ITEM_HAS_DOCS",
+  /** `add`: an installed component's docs file could not be fetched; `docs` reads the registry instead. */
+  DOCS_CACHE_FAILED: "DOCS_CACHE_FAILED",
   /** `eject`: manual steps remain that the CLI deliberately does not do. */
   MANUAL_STEPS_REMAIN: "MANUAL_STEPS_REMAIN",
   /** `add --dry-run`: the project has no components.json, so a real run would init first. */

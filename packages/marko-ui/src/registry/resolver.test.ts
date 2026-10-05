@@ -1258,7 +1258,6 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
-        "itemDocs": [],
         "items": [
           "button-variant-a",
           "button-variant-b",
@@ -1301,7 +1300,6 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
-        "itemDocs": [],
         "items": [
           "button-variant-b",
           "button-variant-a",
@@ -1347,7 +1345,6 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
-        "itemDocs": [],
         "items": [
           "button-variant-a",
           "component-with-explicit-target",
@@ -1386,7 +1383,6 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
-        "itemDocs": [],
         "items": [
           "lib-utils",
           "lib-and-ui-conflict",
@@ -1474,7 +1470,6 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
-        "itemDocs": [],
         "items": [
           "nested-a",
           "nested-b",
@@ -1556,7 +1551,6 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
-        "itemDocs": [],
         "items": [
           "utils-set-a",
           "utils-set-b",
@@ -1624,7 +1618,6 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
-        "itemDocs": [],
         "items": [
           "base-button",
           "extended-button",
@@ -1819,7 +1812,6 @@ describe("resolveRegistryTree - cross-registry dependencies", async () => {
           },
         ],
         "fonts": undefined,
-        "itemDocs": [],
         "items": [
           "login-01",
           "login-02",
@@ -1884,7 +1876,6 @@ describe("resolveRegistryTree - cross-registry dependencies", async () => {
           },
         ],
         "fonts": undefined,
-        "itemDocs": [],
         "items": [
           "login-01",
           "login-02",
@@ -2193,7 +2184,6 @@ describe("resolveRegistryTree - comprehensive cross-registry tests", async () =>
           },
         ],
         "fonts": undefined,
-        "itemDocs": [],
         "items": [
           "theme-provider",
           "chart-utils",
@@ -2334,7 +2324,6 @@ describe("resolveRegistryTree - comprehensive cross-registry tests", async () =>
           },
         ],
         "fonts": undefined,
-        "itemDocs": [],
         "items": [
           "theme-provider",
           "chart-utils",

@@ -119,10 +119,11 @@ export const view = new Command()
         throw new CleanExit(0)
       }
 
-      // `componentDocs` is stripped from `data`: it is the model
-      // `marko-ui docs` renders, with every example's source inlined — a few
-      // hundred KB per component. `show` answers "what would this install
-      // write", which is files and dependencies.
+      // Docs are a `componentDocsRef` (a URL), not the model, so an item from
+      // this repo's registry is already the size of the files and dependencies
+      // it describes. A legacy item that still EMBEDS the model (a few hundred
+      // KB with every example's source) has it stripped here: `show` answers
+      // "what would this install write". `marko-ui docs` follows the reference.
       printEnvelope(
         "marko-ui/show",
         payload.map((item) => {
