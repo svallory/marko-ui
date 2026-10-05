@@ -203,18 +203,20 @@ export function parsePnpmWorkspacePackages(content: string) {
 
 
 /**
- * The workspace root that CONTAINS `cwd`, or null when `cwd` is its own root.
+ * The workspace root that CONTAINS `cwd` (or IS `cwd`), or null when `cwd` is
+ * not inside any workspace.
  *
  * This is the root the CLI already detects for lockfile and workspace lookup
- * (`getPackageManager` walks up to the nearest lockfile, ending at the first
- * `isWorkspaceRoot`). It is exported rather than re-implemented so the write
- * guard and the package manager can never disagree about where "the project"
- * ends — the alternative was a second, subtly different detector.
+ * (a `pnpm-workspace.yaml` or a package.json with `workspaces`). It is exported
+ * rather than re-implemented so the write guard and the package manager can
+ * never disagree about where "the project" ends.
  *
- * Walks up from the real path of `cwd` (a cwd reached through a symlink must
- * not make the walk escape into the symlink's own parents) and returns the
- * OUTERMOST directory that is still a workspace root, so nested workspaces
- * resolve to the repo the user means.
+ * Climbs from the real path of `cwd` (a cwd reached through a symlink must not
+ * make the walk escape into the symlink's own parents) and returns the
+ * OUTERMOST ancestor that is a workspace root, so nested workspaces resolve to
+ * the repo the user means. `apps/web` inside a monorepo therefore returns the
+ * monorepo root even though `apps/web` is not itself a root: that is what lets
+ * `add` write into a sibling `packages/ui`.
  */
 export function findWorkspaceRoot(cwd: string): string | null {
   let dir: string
@@ -224,12 +226,11 @@ export function findWorkspaceRoot(cwd: string): string | null {
     dir = path.resolve(cwd)
   }
 
-  const stopAt = () => existsSync(path.join(dir, "pnpm-workspace.yaml"))
-  const isRoot = () => {
-    if (stopAt()) return true
+  const isRoot = (candidate: string) => {
+    if (existsSync(path.join(candidate, "pnpm-workspace.yaml"))) return true
     try {
       const pkg = JSON.parse(
-        readFileSync(path.join(dir, "package.json"), "utf8")
+        readFileSync(path.join(candidate, "package.json"), "utf8")
       )
       return Boolean(pkg?.workspaces)
     } catch {
@@ -237,29 +238,12 @@ export function findWorkspaceRoot(cwd: string): string | null {
     }
   }
 
-  if (!isRoot()) {
-    return null
-  }
-
-  // Climb while the parent is itself a workspace root (nested workspaces).
-  let outer = dir
+  let outer: string | null = null
   for (;;) {
+    if (isRoot(dir)) outer = dir
     const parent = path.dirname(dir)
     if (parent === dir) break
-    let candidate = parent
-    try {
-      candidate = realpathSync(parent)
-    } catch {
-      // Keep the literal path if it cannot be resolved.
-    }
-    const previous = dir
-    dir = candidate
-    if (!isRoot()) {
-      dir = previous
-      break
-    }
-    outer = candidate
+    dir = parent
   }
-
   return outer
 }
