@@ -99,9 +99,9 @@ With `--json`, a failure is **one** JSON object on stdout and nothing else, in t
 }
 ```
 
-Branch on `error.code`, never on the message text. Every code is listed in `marko-ui manifest` under `errorCodes` — the common ones are `NOT_FOUND` (unknown item), `NOT_CONFIGURED` (no `components.json`, or a registry that isn't configured), `INVALID_CONFIG`, `NETWORK_ERROR` (registry/docs host unreachable — exit 4), `FETCH_ERROR` (the host answered with an error status — exit 1), `MISSING_ENV_VARS`, `MONOREPO_ROOT` (run from a workspace, not the repo root), `USAGE_ERROR` (bad invocation, including an unknown command or flag), `CHECK_FAILED` (a `doctor`/`validate`/`agents --check` found problems), and `PROJECT_NOT_FOUND` (no Marko project at that directory).
+Branch on `error.code`, never on the message text. Every code is listed in `marko-ui manifest` under `errorCodes` — the common ones are `NOT_FOUND` (unknown item), `NOT_CONFIGURED` (no `components.json`, or a registry that isn't configured), `INVALID_CONFIG`, `NETWORK_ERROR` (registry/docs host unreachable — exit 4), `FETCH_ERROR` (the host answered with an error status — exit 4, like `NETWORK_ERROR`), `MISSING_ENV_VARS`, `MONOREPO_ROOT` (run from a workspace, not the repo root), `USAGE_ERROR` (bad invocation, including an unknown command or flag), `CHECK_FAILED` (a `doctor`/`validate`/`agents --check` found problems), and `PROJECT_NOT_FOUND` (no Marko project at that directory).
 
-A connection failure (refused port, DNS failure, timeout) is `NETWORK_ERROR` with exit 4 on every registry-backed command — that is distinct from a server that answered with a 4xx/5xx, which is `FETCH_ERROR` with exit 1.
+A connection failure (refused port, DNS failure, timeout) is `NETWORK_ERROR` with exit 4 on every registry-backed command. A server that answered with an unexpected error status is `FETCH_ERROR`, also exit 4 (a 404 is `NOT_FOUND`, a 401/403/410 their own codes, all exit 1) — branch on `error.code`, not the exit code, to tell them apart.
 
 `details.suggestions` carries "did you mean" candidates when the registry index was reachable, so you can retry without parsing prose. An unknown item name in `docs`, `show`, `add` or `diff` is the common case.
 
