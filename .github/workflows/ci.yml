@@ -82,6 +82,12 @@ jobs:
       #     fire registry-drift. Re-trace when a generator gains an import.
       #     (`docs` already covers all of them via apps/docs/** and
       #     packages/marko-ui/**.)
+      #   - build:cli-manifest (the sixth drift-checked generator, ygc.15) —
+      #     imports buildManifest/buildProgram from the CLI SOURCE, so its
+      #     input is all of packages/marko-ui/src/** plus
+      #     packages/marko-ui/package.json (the manifest records `cliVersion`,
+      #     so a version bump must regenerate it). Its output,
+      #     apps/docs/src/lib/cli-manifest.ts, is committed and diffed.
       # Pinned to the v4.0.3 tag's commit SHA (not a tag ref) per repo policy
       # on third-party actions.
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
@@ -113,6 +119,11 @@ jobs:
             registry:
               - 'packages/shadcn/**'
               - 'packages/marko-ui/src/registry/**'
+              # build:cli-manifest renders the whole command surface, so any
+              # CLI source change (or a version bump) can change
+              # apps/docs/src/lib/cli-manifest.ts.
+              - 'packages/marko-ui/src/**'
+              - 'packages/marko-ui/package.json'
               - 'apps/docs/src/data/directory.json'
               # Demo sources feed build:demos (demos-manifest.ts, the
               # per-component static routes under src/routes/docs/components/,
@@ -268,6 +279,11 @@ jobs:
           bun run build:blocks-manifest
           git diff --exit-code -- apps/docs/src/lib/blocks-manifest.ts || {
             echo "::error::Generated blocks manifest is stale — run 'bun run build:blocks-manifest' and commit the regenerated apps/docs/src/lib/blocks-manifest.ts"
+            exit 1
+          }
+          bun run build:cli-manifest
+          git diff --exit-code -- apps/docs/src/lib/cli-manifest.ts || {
+            echo "::error::Generated CLI manifest is stale — run 'bun run build:cli-manifest' and commit the regenerated apps/docs/src/lib/cli-manifest.ts"
             exit 1
           }
           bun run extract:api
