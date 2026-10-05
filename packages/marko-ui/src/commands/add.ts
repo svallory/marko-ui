@@ -408,7 +408,13 @@ function printDryRunResult(
   printEnvelope("marko-ui/add", {
     cwd,
     dryRun: true,
-    items: { requested, resolved: requested },
+    // B1: the plan's real item resolution, not a copy of what was typed. Same
+    // source as a real add, so `add x --dry-run --json` and `add x --json`
+    // agree about what a request resolves to.
+    items: {
+      requested,
+      resolved: result.items ?? requested,
+    },
     files: [
       ...plannedToFileChanges(result.files),
       ...(result.css
@@ -429,7 +435,7 @@ function printDryRunResult(
       ...result.dependencies.map((name) => plannedDependency(name, cwd)),
       ...result.devDependencies.map((name) => plannedDependency(name, cwd)),
     ],
-    registryDependencies: [],
+    registryDependencies: result.dependencyItems ?? [],
     warnings: [
       ...(options.wouldInitialize
         ? [

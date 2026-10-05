@@ -74,15 +74,20 @@ export const commandWarningSchema = z.object({
 /**
  * What happened to one file.
  *
- * `created` / `updated` / `skipped` / `unchanged` are `add`'s four (plus
- * `removed`, for stale icon maps it deletes). `modified` / `missing` /
- * `added` are `diff`'s three — a DIFFERENT question ("does the project still
- * match the registry?"), and reusing `add`'s words would make the two
- * indistinguishable in a log.
+ * `created` / `updated` / `skipped` / `unchanged` / `removed` are `add`'s (and
+ * `init`'s); `modified` / `missing` are `diff`'s — a DIFFERENT question ("does
+ * the project still match the registry?"), and reusing `add`'s words would
+ * make the two indistinguishable in a log.
  *
  * `skipped` vs `unchanged` is the distinction the whole task turns on:
- * `skipped` means the file exists and differs but was left alone (`--overwrite`
- * would have replaced it); `unchanged` means it already matched.
+ * `skipped` means the file exists and DIFFERS but was left alone
+ * (`--overwrite` would have replaced it); `unchanged` means it already matched.
+ *
+ * There is deliberately NO `added`. It was in this list through two rounds and
+ * nothing could produce it: a file the registry has and the project lacks is
+ * `missing`, and a file this run created is `created` — every reachable state
+ * was already covered by another status, so keeping it meant the schema and
+ * the docs advertised a value that never appeared in any output.
  */
 export const FILE_CHANGE_STATUSES = [
   "created",
@@ -92,7 +97,6 @@ export const FILE_CHANGE_STATUSES = [
   "removed",
   "modified",
   "missing",
-  "added",
 ] as const
 
 export type FileChangeStatus = (typeof FILE_CHANGE_STATUSES)[number]

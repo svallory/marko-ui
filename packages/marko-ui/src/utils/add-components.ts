@@ -17,7 +17,7 @@ import {
 import { getProjectTailwindVersionFromConfig } from "@/src/utils/get-project-info"
 import { isInteractive } from "@/src/utils/interactive"
 import { isSafeTarget } from "@/src/utils/is-safe-target"
-import { RegistryError } from "@/src/registry/errors"
+import { RegistryError, RegistryErrorCode } from "@/src/registry/errors"
 import { CommandError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { green, yellow } from "kleur/colors"
@@ -107,19 +107,56 @@ export async function addComponents(
     return await addComponentsInner(components, config, options, alreadyWritten)
   } catch (error) {
     if (alreadyWritten.length) {
+      // The original class's code is preserved when it is one we know:
+      // a partial write is still the failure it was (NETWORK_ERROR exit 4
+      // stays exit 4). A raw filesystem error is NOT left to the handler as
+      // UNKNOWN_ERROR with a bare `ENOTDIR` — that told the caller nothing
+      // they could act on and carried no advice at all.
+      const known = error instanceof RegistryError
       throw new CommandError(
         error instanceof Error ? error.message : String(error),
         {
-          // Preserve the original class's code and exit code: a partial write
-          // is still the failure it was (NETWORK_ERROR exit 4 stays exit 4).
-          code: error instanceof RegistryError ? error.code : undefined,
+          code: known
+            ? error.code
+            : isFileWriteFailure(error)
+              ? RegistryErrorCode.LOCAL_FILE_ERROR
+              : undefined,
           exitCode: error instanceof CommandError ? error.exitCode : undefined,
+          suggestion: isFileWriteFailure(error)
+            ? "Check that the path is a directory, not a file, and that you can write to it. Files listed in details.written are on disk; remove them or re-run with --overwrite."
+            : undefined,
           details: { written: dedupeFiles(alreadyWritten) },
+        }
+      )
+    }
+    // Nothing was written, so there is no partial state to report — but the
+    // same classification applies.
+    if (isFileWriteFailure(error)) {
+      throw new CommandError(
+        error instanceof Error ? error.message : String(error),
+        {
+          code: RegistryErrorCode.LOCAL_FILE_ERROR,
+          suggestion:
+            "Check that the path is a directory, not a file, and that you can write to it.",
         }
       )
     }
     throw error
   }
+}
+
+/**
+ * `filesRemoved` entries the per-file accumulation could not have seen: a
+ * stale icon map is deleted by a separate step, not by the main write loop.
+ */
+function removalsNotYetReported(
+  groups: { filesRemoved?: string[] },
+  already: FileChange[]
+): FileChange[] {
+  const seen = new Set(already.map((file) => file.path))
+  return (groups.filesRemoved ?? [])
+    .filter((file) => !seen.has(file))
+    .map((file) => ({ path: file, status: "removed" as const }))
 }
 
 /** Last write wins per path, so a path is never listed twice. */
@@ -205,6 +242,9 @@ async function addProjectComponents(
       silent: options.silent,
       interactive: options.interactive,
       path: options.path,
+      // Reported file-by-file, so a write failing INSIDE the loop still tells
+      // the caller what already landed (B2).
+      written: alreadyWritten,
     })) ?? {
       filesCreated: [],
       filesUpdated: [],
@@ -213,9 +253,10 @@ async function addProjectComponents(
       filesRemoved: [],
     }
 
-  // Accumulated HERE, before the CSS step: a failure in updateCss is exactly
-  // the mid-way case the partial-write report exists for.
-  alreadyWritten.push(...toFileChanges(writtenGroups))
+  // `written: alreadyWritten` above already accumulated these; this covers the
+  // files the writer reports but did not write one-by-one (the icon-map
+  // removals), so the partial-write list matches the real one.
+  alreadyWritten.push(...removalsNotYetReported(writtenGroups, alreadyWritten))
 
   // Write CSS last so the file watcher triggers a rebuild
   // after all component files and dependencies are in place.
@@ -443,6 +484,8 @@ async function addWorkspaceComponents(
         isWorkspace: true,
         path: options.path,
         plannedFiles,
+        // B2, workspace path: same per-file accumulation.
+        written: alreadyWritten,
       })) ?? {
       filesCreated: [],
       filesUpdated: [],
@@ -657,4 +700,26 @@ export function validateFilesTarget(
       )
     }
   }
+}
+
+
+/**
+ * A failure to write a file, as opposed to anything else that can go wrong in
+ * an add.
+ *
+ * The errno is the tell: ENOTDIR (a path component is a regular file),
+ * EACCES/EPERM (no permission), ENOSPC (disk full), EROFS (read-only mount).
+ * These used to reach the error handler as `UNKNOWN_ERROR` with the bare errno
+ * as the message — the one class of failure where the CLI genuinely CAN tell
+ * the user what to do, reported as if it could not.
+ */
+export function isFileWriteFailure(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) return false
+  const code = (error as { code?: unknown }).code
+  return (
+    typeof code === "string" &&
+    ["ENOTDIR", "EACCES", "EPERM", "ENOSPC", "EROFS", "EISDIR", "EMFILE"].includes(
+      code
+    )
+  )
 }

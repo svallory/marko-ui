@@ -64,10 +64,15 @@ function printEjectResult(
 
   printEnvelope("marko-ui/eject", {
     cwd,
+    // N2: NOT a copy of `requested`. eject re-adds every installed component
+    // through `addComponents`, and that resolution pulls in the same registry
+    // dependencies a real add would — so the honest answer is the tree's, and
+    // the two now cannot disagree.
     items: {
       requested: components,
-      resolved: components,
+      resolved: ejected?.resolved ?? components,
     },
+    registryDependencies: ejected?.registryDependencies ?? [],
     files: [
       ...(ejected?.files ?? []),
       { path: "components.json", status: "updated" },

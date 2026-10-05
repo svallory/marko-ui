@@ -34,6 +34,7 @@ import {
   mergeThemeIntoStylesheet,
 } from "@/src/utils/updaters/update-theme-stylesheet"
 import { isTargetAliasKey } from "@/src/utils/target-aliases"
+import type { FileChange } from "@/src/utils/command-result"
 import { dim, green, red, yellow } from "kleur/colors"
 import { loadConfig, type ConfigLoaderSuccessResult } from "tsconfig-paths"
 import { z } from "zod"
@@ -54,6 +55,14 @@ export async function updateFiles(
     path?: string
     plannedFiles?: RegistryItem["files"]
     supportedFontMarkers?: string[]
+    /**
+     * Collects each file as it is written, for a caller that must report a
+     * PARTIAL run. The returned arrays cannot do this job: they are only
+     * returned on success, and a write failing INSIDE the loop (ENOTDIR, EACCES,
+     * a full disk) throws past them — so the caller saw no `written` list at
+     * all while half the component sat on disk.
+     */
+    written?: FileChange[]
   }
 ) {
   // Keep only the configured iconLibrary's icon map (see icon-library.ts).
@@ -297,6 +306,11 @@ export async function updateFiles(
     // Handle file creation logging
     if (!existingFile) {
       filesCreated.push(path.relative(config.resolvedPaths.cwd, filePath))
+      // Reported the moment the file is on disk, not when the loop ends.
+      options.written?.push({
+        path: path.relative(config.resolvedPaths.cwd, filePath),
+        status: "created",
+      })
 
       if (isEnvFile(filePath)) {
         envVarsAdded = Object.keys(parseEnvContent(content))
@@ -304,6 +318,10 @@ export async function updateFiles(
       }
     } else {
       filesUpdated.push(path.relative(config.resolvedPaths.cwd, filePath))
+      options.written?.push({
+        path: path.relative(config.resolvedPaths.cwd, filePath),
+        status: "updated",
+      })
     }
   }
 

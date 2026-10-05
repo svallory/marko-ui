@@ -1,4 +1,12 @@
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "fs"
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "fs"
 import { tmpdir } from "os"
 import path from "path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -48,8 +56,31 @@ import { resetJsonMode, setJsonMode } from "@/src/utils/output-mode"
 const BUTTON_MARKO = `<button class="mu-button">\${content}</button>\n`
 const VARIANTS = `export const variants = {}\n`
 const UTILS = `export function cn(...x: unknown[]) { return x }\n`
+const DIALOG_MARKO = `<dialog class="mu-dialog">\${content}</dialog>\n`
 
 let dir: string
+
+/** Files the FIXTURE creates, which no add run wrote. */
+const FIXTURE_FILES = [
+  "package.json",
+  "components.json",
+  "tsconfig.json",
+  "src/app.css",
+]
+
+/** Every file under `root`, as cwd-relative POSIX-ish paths. */
+function listFiles(root: string, base = root): string[] {
+  const out: string[] = []
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    const full = path.join(root, entry.name)
+    if (entry.isDirectory()) {
+      out.push(...listFiles(full, base))
+    } else {
+      out.push(path.relative(base, full))
+    }
+  }
+  return out
+}
 
 function writeFile(rel: string, content: string) {
   const target = path.join(dir, rel)
@@ -378,6 +409,35 @@ describe("add --json, end to end on a fixture project", () => {
     expect(read("package.json")).toBe(before)
   })
 
+  // B1: a dry run that reports fewer items than the real add, while listing
+  // that item's dependencies' FILES, understates its own plan. Same request,
+  // same resolution, on both paths.
+  it("reports the same resolved set as the real add for the same request", async () => {
+    const preview = await run(add, [
+      "button",
+      "--dry-run",
+      "--json",
+      "--cwd",
+      dir,
+    ])
+    const real = await run(add, ["button", "-y", "--json", "--cwd", dir])
+
+    const previewData = preview.json<{
+      data: { items: { resolved: string[] }; registryDependencies: string[] }
+    }>().data
+    const realData = real.json<{
+      data: { items: { resolved: string[] }; registryDependencies: string[] }
+    }>().data
+
+    expect(previewData.items.resolved).toEqual(realData.items.resolved)
+    expect(previewData.registryDependencies).toEqual(
+      realData.registryDependencies
+    )
+    // And it is not just the requested name echoed back.
+    expect(previewData.items.resolved.length).toBeGreaterThan(1)
+    expect(previewData.registryDependencies.length).toBeGreaterThan(0)
+  })
+
   it("emits exactly one JSON document on stdout and nothing else", async () => {
     const result = await run(add, ["button", "-y", "--json", "--cwd", dir])
     expect(result.stdout.trimEnd().split("\n")).toHaveLength(1)
@@ -388,6 +448,95 @@ describe("add --json, end to end on a fixture project", () => {
     const result = await run(add, ["button", "-y", "--json", "--cwd", dir])
     // eslint-disable-next-line no-control-regex
     expect(result.stdout).not.toMatch(/\[/)
+  })
+})
+
+describe("add failing INSIDE the write loop (B2)", () => {
+  // The reviewer's exact repro: a REGULAR FILE where a component directory
+  // should be. The write for dialog fails with ENOTDIR — but button, icon and
+  // the shared lib files are already on disk, and the earlier round reported
+  // nothing, because the returned arrays only exist on success.
+  it("reports the files actually on disk, with a real code and a fix", async () => {
+    // The tree has to contain a DIALOG file, or nothing collides with the
+    // regular file planted above and the add simply succeeds.
+    resolveRegistryTree.mockResolvedValue({
+      ...buttonTree(),
+      files: [
+        ...buttonTree().files,
+        {
+          path: "dialog.marko",
+          type: "registry:ui",
+          target: "ui/dialog/dialog.marko",
+          content: DIALOG_MARKO,
+        },
+      ],
+      items: ["button", "dialog", "utils"],
+      dependencyItems: ["utils"],
+    })
+
+    // Learn where the resolver ACTUALLY puts component files, instead of
+    // guessing: run `button` once, read the path it reported, then derive
+    // `dialog`'s directory from it. The resolver maps `target` through the
+    // project's aliases, and hardcoding the layout here made this test pass
+    // without ever colliding with anything.
+    const probe = await run(add, ["button", "-y", "--json", "--cwd", dir])
+    const buttonPath = fileNamed(
+      probe.json<{ data: { files: { path: string }[] } }>().data.files,
+      "button/button.marko"
+    )!.path
+    const dialogDir = path.dirname(buttonPath).replace(/button$/, "dialog")
+
+    // Back to a clean slate so this run genuinely writes the button files.
+    rmSync(path.join(dir, path.dirname(buttonPath)), {
+      recursive: true,
+      force: true,
+    })
+    // The blocker: a REGULAR FILE where the dialog directory must go. The
+    // writer pre-creates directories for planned paths, so the probe run's
+    // leftover is removed first — otherwise there is nothing to collide with.
+    rmSync(path.join(dir, dialogDir), { recursive: true, force: true })
+    writeFile(dialogDir, "not a directory\n")
+
+    // Snapshot BEFORE the failing run: "what did THIS run put on disk" is the
+    // difference, not everything present (the probe run above left files).
+    const before = new Set(listFiles(dir))
+    const result = await run(add, [
+      "button",
+      "dialog",
+      "-y",
+      "--json",
+      "--cwd",
+      dir,
+    ])
+
+    const envelope = result.json<{
+      ok: boolean
+      error: {
+        code: string
+        suggestion?: string
+        details?: { written: { path: string; status: string }[] }
+      }
+    }>()
+    expect(envelope.ok).toBe(false)
+    // A bare errno with UNKNOWN_ERROR told the caller nothing they could act
+    // on, and carried no advice at all.
+    expect(envelope.error.code).toBe("LOCAL_FILE_ERROR")
+    expect(envelope.error.suggestion).toBeTruthy()
+
+    const written = envelope.error.details?.written ?? []
+    expect(written.length).toBeGreaterThan(0)
+
+    // THE assertion that matters: every reported path exists, and every file
+    // this run put on disk is reported. No more, no less.
+    const reported = new Set(written.map((f) => f.path))
+    for (const file of written) {
+      expect(existsSync(path.join(dir, file.path)), file.path).toBe(true)
+    }
+    const thisRun = listFiles(dir).filter((rel) => !before.has(rel))
+    expect(thisRun.length).toBeGreaterThan(0)
+    for (const rel of thisRun) {
+      expect(reported.has(rel), `not reported: ${rel}`).toBe(true)
+    }
   })
 })
 
