@@ -564,13 +564,43 @@ export async function resolveRegistryTree(
     dependencyItems: payload
       .filter((item) => !requested.has(item.name))
       .map((item) => item.name),
+    // The docs model of every ui item the tree installs, with where it came
+    // from and a hash of the exact item — `add` caches these so `docs` can
+    // describe the version on disk without the network. The resolved-tree
+    // schema merges items into one file list, so this is the only place the
+    // per-item model is still attached to its name.
+    itemDocs: payload
+      .filter((item) => item.type === "registry:ui" && item.componentDocs)
+      .map((item) => ({
+        name: item.name,
+        source: item._source ?? item.name,
+        contentHash: registryItemContentHash(item),
+        componentDocs: item.componentDocs!,
+      })),
   }) as typeof parsed & ResolvedTreeNames
+}
+
+/** One installed ui item's docs model, as the resolved tree carries it. */
+export type ResolvedItemDocs = {
+  name: string
+  /** The address it was requested by (`button`, `@acme/x`, a URL). */
+  source: string
+  /** sha256 of the item as fetched, minus the resolver's own `_source`. */
+  contentHash: string
+  componentDocs: NonNullable<z.infer<typeof registryItemSchema>["componentDocs"]>
 }
 
 /** The item names a resolved tree carries, beyond its schema fields. */
 export type ResolvedTreeNames = {
   items: string[]
   dependencyItems: string[]
+  itemDocs?: ResolvedItemDocs[]
+}
+
+/** sha256 of a registry item's content, independent of how it was requested. */
+export function registryItemContentHash(item: object): string {
+  const { _source: _ignored, ...content } = item as { _source?: unknown }
+  return createHash("sha256").update(JSON.stringify(content)).digest("hex")
 }
 
 async function resolveDependenciesRecursively(

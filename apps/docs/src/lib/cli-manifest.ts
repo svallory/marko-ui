@@ -226,6 +226,11 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "flags": "--example <id...>",
           "description": "print only the named examples. Every id is listed in the \"More examples\" section of the default output."
+        },
+        {
+          "flags": "--remote",
+          "description": "read the docs from the registry even for an installed component (default: the installed version's docs).",
+          "defaultValue": false
         }
       ]
     },

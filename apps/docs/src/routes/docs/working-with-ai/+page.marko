@@ -471,7 +471,12 @@ static const JSON_ERROR_ENVELOPE = `{
     documentation straight into the agent's context — usage, props, keyboard
     contracts, and examples. The CLI renders it locally from the docs model the
     registry item already carries, so it works against the registry you
-    configured and needs no request to this site.
+    configured and needs no request to this site. For a component the
+    project has installed, the docs describe the installed version and need no
+    network at all: <code>add</code> keeps a copy of each component's docs in
+    <code>node_modules/.cache/marko-ui</code> (copy distribution), and an
+    import project reads the docs shipped inside <code>@marko-ui/shadcn</code>.
+    Pass <code>--remote</code> to read the registry instead.
   </p>
 
   // /llms.txt is written by scripts/prerender-handlers.ts after the crawl, so it

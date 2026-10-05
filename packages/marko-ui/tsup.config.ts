@@ -8,6 +8,8 @@ export default defineConfig((options) => ({
   dts: true,
   entry: [
     "src/index.ts",
+    // `./docs` in package.json's exports: the docs model + renderer.
+    "src/docs/index.ts",
     "src/registry/index.ts",
     "src/schema/index.ts",
     "src/utils/index.ts",

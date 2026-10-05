@@ -52,6 +52,13 @@ export interface RenderOptions {
    * copy path with the default alias. Defaults to copy + `@/components/ui`.
    */
   importStyle?: ImportStyle;
+  /**
+   * The component is installed in the project the output is for (copy: its
+   * files are on disk; import: the package that carries it is installed), so
+   * the Install section is omitted. A component that is NOT installed keeps
+   * the exact install command.
+   */
+  installed?: boolean;
 }
 
 /** Collapse to one line. Pipes are left alone: nothing here is a table cell. */
@@ -298,14 +305,19 @@ export function renderComponentDocs(
     ? docs.installCommand
     : (docs.importInstallCommand ?? `bun add @marko-ui/shadcn`);
 
-  sections.push(
-    "## Install",
-    "",
-    "```bash",
-    installCommand,
-    "```",
-    "",
-  );
+  // An INSTALLED component needs no install line: telling an agent to add
+  // what is already on disk is noise at best and an `--overwrite` at worst.
+  // Under `import` the Usage block's import lines are the whole story.
+  if (!options.installed) {
+    sections.push(
+      "## Install",
+      "",
+      "```bash",
+      installCommand,
+      "```",
+      "",
+    );
+  }
 
   // A snippet that uses ANOTHER component says so, with the exact command.
   // `add item` does not bring `button` with it, and a snippet that silently
