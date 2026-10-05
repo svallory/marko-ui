@@ -284,7 +284,11 @@ export interface RunOptions {
 export interface RunResult {
   code: number | null
   timedOut: boolean
+  /** stdout and stderr interleaved, as a terminal shows them. */
   out: string
+  /** The two streams separately, for scenarios asserting WHICH one carried something. */
+  stdout: string
+  stderr: string
 }
 
 /** Env vars that would leak the host's context into a scenario. */
@@ -325,9 +329,17 @@ export function cli(cwd: string, args: string[], o: RunOptions = {}): Promise<Ru
       detached: true,
     })
     let out = ""
+    let stdout = ""
+    let stderr = ""
     let timedOut = false
-    child.stdout!.on("data", (d) => (out += d))
-    child.stderr!.on("data", (d) => (out += d))
+    child.stdout!.on("data", (d) => {
+      out += d
+      stdout += d
+    })
+    child.stderr!.on("data", (d) => {
+      out += d
+      stderr += d
+    })
     const timer = setTimeout(() => {
       timedOut = true
       try {
@@ -338,7 +350,7 @@ export function cli(cwd: string, args: string[], o: RunOptions = {}): Promise<Ru
     }, o.timeoutMs ?? 60_000)
     child.on("close", (code) => {
       clearTimeout(timer)
-      resolvePromise({ code, timedOut, out })
+      resolvePromise({ code, timedOut, out, stdout, stderr })
     })
   })
 }

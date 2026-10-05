@@ -96,6 +96,23 @@ describe("add — where a component may be written", () => {
     expect(data.files.some((f) => f.path.includes("packages/ui") && f.status === "created")).toBe(true)
   })
 
+  // The STANDARD shadcn monorepo: the app keeps `components` local and points
+  // only ui/utils/lib/hooks (and the stylesheet) at the sibling package. From
+  // apps/web the sibling is outside the project root, so the guard must allow
+  // the workspace root that contains it — W04's all-five-aliases layout
+  // passed while this one was refused (UNSAFE_WRITE_TARGET, "Allowed roots: .").
+  scenario("W04b", "monorepo, standard layout (only ui/utils/lib/hooks in the sibling): add button succeeds into packages/ui", async () => {
+    const fx = monorepoFixture({
+      componentsAlias: "@/components",
+      css: "../../packages/ui/src/styles/globals.css",
+    })
+    const r = await cli(fx.app, ["add", "button", "-y", "--json"], { shim: withShims(makeWorkspace("shim")) })
+    expect(r.code, tail(r.out)).toBe(0)
+
+    expect(exists(fx.ui, "src/components/ui/button/button.marko")).toBe(true)
+    expect(exists(fx.app, "src/components/ui"), "the app got its own copy of the ui component").toBe(false)
+  })
+
   scenario("W05", "ui alias resolving through a symlink out of the workspace: UNSAFE_WRITE_TARGET, nothing written", async () => {
     const outside = makeWorkspace("outside")
     const fx = monorepoFixture({ uiAliasPath: "./linked" })
@@ -123,6 +140,33 @@ describe("add — where a component may be written", () => {
   })
 })
 
+describe("add — the stylesheet path from components.json is guarded too", () => {
+  // `tailwind.css` is read straight out of components.json, so a hand-edited
+  // value must not make the CSS writers write outside the project or into a
+  // dependency. `add style` is the item that writes the theme INTO that
+  // stylesheet (a plain component item never touches it).
+  for (const [id, label, css] of [
+    ["W09", "outside the workspace (through a symlink)", "outside/globals.css"],
+    ["W10", "under node_modules", "node_modules/dep/globals.css"],
+  ] as const) {
+    scenario(id, `tailwind.css ${label}: add style is refused with UNSAFE_WRITE_TARGET, nothing written`, async () => {
+      const outside = makeWorkspace("outside")
+      const fx = ejectFixture({ distribution: "copy", pkg: "none", css })
+      if (id === "W09") symlinkSync(outside, `${fx.app}/outside`, "dir")
+      else mkdirSync(`${fx.app}/node_modules/dep`, { recursive: true })
+      const wsBefore = snapshotTree(fx.ws)
+      const outsideBefore = snapshotTree(outside)
+
+      const r = await cli(fx.app, ["add", "style", "-y", "--json"], { shim: withShims(makeWorkspace("shim")) })
+      expect(r.code, tail(r.out)).not.toBe(0)
+      expect(errorOf(r.out).code).toBe("UNSAFE_WRITE_TARGET")
+
+      expect(snapshotTree(outside), "the stylesheet landed outside the workspace").toEqual(outsideBefore)
+      expect(snapshotTree(fx.ws), "a refused add changed the project").toEqual(wsBefore)
+    })
+  }
+})
+
 describe("add — a write failure says what landed and what to do", () => {
   // `add button` writes src/lib/{native-attrs,utils}.ts before the component
   // files, so blocking BOTH src/lib and src/components (as regular files) makes
@@ -145,8 +189,9 @@ describe("add — a write failure says what landed and what to do", () => {
     expect(snapshotTree(fx.ws), "a failed add changed the project").toEqual(wsBefore)
   })
 
-  scenario("W08", "a failure after some writes: LOCAL_FILE_ERROR, details.written lists exactly what landed and the advice says so", async () => {
+  scenario("W08", "a failure after some writes: LOCAL_FILE_ERROR, details.written is EXACTLY the set of files that landed", async () => {
     const fx = ejectFixture({ distribution: "copy", pkg: "none", extra: { "src/components": "not a directory\n" } })
+    const filesBefore = new Set(Object.entries(snapshotTree(fx.ws)).filter(([, v]) => v !== "dir").map(([k]) => k))
 
     const r = await cli(fx.app, ["add", "button", "-y", "--json"], { shim: withShims(makeWorkspace("shim")) })
     expect(r.code, tail(r.out)).not.toBe(0)
@@ -156,12 +201,17 @@ describe("add — a write failure says what landed and what to do", () => {
     expect(error.suggestion).toContain("details.written")
 
     const written = (error.details?.written ?? []) as { path: string; status: string }[]
-    expect(written.length).toBeGreaterThan(0)
-    for (const file of written) {
-      expect(file.status).toBe("created")
-      expect(exists(fx.app, file.path), `${file.path} is reported written but is not on disk`).toBe(true)
-    }
-    expect(written.map((f) => f.path)).toContain("src/lib/utils.ts")
+    // What actually landed, from the tree: a file on disk that the error does
+    // not report (or the reverse) is a lie the caller would act on.
+    const landed = Object.entries(snapshotTree(fx.ws))
+      .filter(([, v]) => v !== "dir")
+      .map(([k]) => k)
+      .filter((k) => !filesBefore.has(k))
+      .sort()
+    expect(landed.length).toBeGreaterThan(0)
+    expect(written.map((f) => f.path).sort()).toEqual(landed)
+    for (const file of written) expect(file.status).toBe("created")
+    expect(landed).toContain("src/lib/utils.ts")
     expect(exists(fx.app, BUTTON)).toBe(false)
   })
 })

@@ -73,6 +73,8 @@ export interface EjectFixtureOptions {
   pkg?: PackageShape
   /** The components.json `ui` alias. Default: the stock `@/components/ui`. */
   uiAlias?: string
+  /** components.json `tailwind.css`. Default: `src/styles/globals.css`. */
+  css?: string
   /** Extra tsconfig `paths` (e.g. `{ "@pkg/*": ["./node_modules/@marko-ui/shadcn/*"] }`) that back the alias. */
   tsPaths?: Record<string, string[]>
   /** Extra files, written last. */
@@ -102,6 +104,7 @@ export function ejectFixture(o: EjectFixtureOptions = {}): EjectFixture {
     extra: {
       "components.json": componentsJson({
         distribution: o.distribution ?? "import",
+        ...(o.css ? { css: o.css } : {}),
         aliases: { ui: o.uiAlias ?? "@/components/ui" },
       }),
       "src/styles/globals.css": '@import "tailwindcss";\n',
@@ -137,7 +140,19 @@ function addTsPaths(dir: string, paths: Record<string, string[]>) {
  * relative to apps/web — the sibling by default.
  */
 export function monorepoFixture(
-  o: { uiAliasPath?: string; extra?: Tree; rootExtra?: Tree } = {}
+  o: {
+    uiAliasPath?: string
+    /**
+     * The app's `components` alias. The standard shadcn layout keeps it LOCAL
+     * (`@/components`) and points only ui/utils/lib/hooks at the sibling;
+     * the default aims all five at the sibling.
+     */
+    componentsAlias?: string
+    /** components.json `tailwind.css`, relative to apps/web. */
+    css?: string
+    extra?: Tree
+    rootExtra?: Tree
+  } = {}
 ) {
   const ws = makeWorkspace("mono")
   assertOutsideRepo(ws)
@@ -175,8 +190,9 @@ export function monorepoFixture(
     extra: {
       "components.json": componentsJson({
         distribution: "copy",
+        ...(o.css ? { css: o.css } : {}),
         aliases: {
-          components: "@ui/components",
+          components: o.componentsAlias ?? "@ui/components",
           ui: "@ui/components/ui",
           utils: "@ui/lib/utils",
           lib: "@ui/lib",
