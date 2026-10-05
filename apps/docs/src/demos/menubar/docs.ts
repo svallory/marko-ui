@@ -12,12 +12,13 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Menubar>, <MenubarMenu>`,
   importSnippet: `import Menubar from "@/components/ui/menubar/menubar.marko";
-import MenubarMenu from "@/components/ui/menubar/menu.marko";`,
+import MenubarMenu from "@/components/ui/menubar/menu.marko";
+import type { DropdownMenuItem } from "@/components/ui/dropdown-menu/dropdown-menu.marko";`,
   usageSnippet: `static const fileItems = [
   { value: "new", label: "New Tab", shortcut: "⌘T" },
   { type: "separator" },
   { value: "print", label: "Print…" },
-];
+] satisfies DropdownMenuItem[];
 
 <Menubar>
   <MenubarMenu items=fileItems select(value) { /* ... */ }>

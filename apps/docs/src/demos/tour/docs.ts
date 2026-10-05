@@ -11,11 +11,12 @@ export const docs: ComponentDocs = {
   // init`), so no import is required. The explicit-import form is
   // documented as the override/escape hatch.
   usageTags: `<Tour>`,
-  importSnippet: `import Tour from "@/components/ui/tour/tour.marko";`,
+  importSnippet: `import Tour from "@/components/ui/tour/tour.marko";
+import type { TourStep } from "@/components/ui/tour/tour.marko";`,
   usageSnippet: `static const steps = [
-  { id: "welcome", type: "dialog", title: "Welcome", actions: [{ label: "Start", action: "next" }] },
-  { id: "search", target: "#search", title: "Search", actions: [{ label: "Done", action: "dismiss" }] },
-];
+  { id: "welcome", type: "dialog", title: "Welcome", description: "A quick look around.", actions: [{ label: "Start", action: "next" }] },
+  { id: "search", target: "#search", title: "Search", description: "Find anything here.", actions: [{ label: "Done", action: "dismiss" }] },
+] satisfies TourStep[];
 
 <Tour items=steps>
   <@trigger|props|>

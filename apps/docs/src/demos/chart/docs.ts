@@ -17,12 +17,14 @@ import ChartBar from "@/components/ui/chart/bar.marko";`,
   // `collectProjectTags` registers), NOT the `BarChart` binding the demos
   // happen to use. Declaring the data inline keeps the snippet pasteable:
   // a reader who copies it must not have to invent `chartConfig`/`chartData`.
-  usageSnippet: `<Chart config={ { desktop: { label: "Desktop", color: "var(--chart-1)" } } }>
-  <ChartBar
-    data=[{ month: "Jan", desktop: 186 }, { month: "Feb", desktop: 305 }]
-    config={ { desktop: { label: "Desktop", color: "var(--chart-1)" } } }
-    xKey="month"
-  >
+  usageSnippet: `static const chartData = [
+  { month: "Jan", desktop: 186 },
+  { month: "Feb", desktop: 305 },
+];
+static const chartConfig = { desktop: { label: "Desktop", color: "var(--chart-1)" } };
+
+<Chart config=chartConfig>
+  <ChartBar data=chartData config=chartConfig xKey="month">
     <@series dataKey="desktop" radius=4/>
   </ChartBar>
 </Chart>`,

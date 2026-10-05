@@ -13,7 +13,7 @@
     },
     {
       "path": "alert.json",
-      "sha256": "206e303f233c25fe8e0fae6325a244ecb43c5a56e19fb07d4e18f55d74b5fc4b"
+      "sha256": "8cbdd654046d4f09d98786a960f0936e38785a66d918775f71d56c26653baaa7"
     },
     {
       "path": "angle-slider.json",
@@ -33,7 +33,7 @@
     },
     {
       "path": "badge.json",
-      "sha256": "d7f7cd9d89701f25bd73b735270bfd63e1794b2ded7c5c3ca97db09470cb8943"
+      "sha256": "97d233bdb541f385718ac7a0fcd2aaa7a59704de2a892a00592f1739ae8081c2"
     },
     {
       "path": "breadcrumb.json",
@@ -73,11 +73,11 @@
     },
     {
       "path": "chart.json",
-      "sha256": "ceb816027e8c2b59b1896ab5d759c2576867e67f58ddf934b37a9ea897e2cee8"
+      "sha256": "5ca5cbf9bf8b8618ee4afa842b9ee1ae449966beb204312f1a054d96ea575be8"
     },
     {
       "path": "checkbox.json",
-      "sha256": "6b3c988e1318005762184568968dbe6f5919771281c4cf135aff1b3c852f8b81"
+      "sha256": "93c7904999ee5f90b8c8b0ad29719794be19612e5536c8bfd03f9aa536e84236"
     },
     {
       "path": "clipboard.json",
@@ -101,7 +101,7 @@
     },
     {
       "path": "context-menu.json",
-      "sha256": "4ae0c34424842e87a456a7a4f78c2ec68a7fe54aa3f294df5a067bce0694ea7b"
+      "sha256": "4b8b6c9d3a766f2b599410017260d34d1bf32d07f39e409292093e7dbfa6448d"
     },
     {
       "path": "dashboard-01.json",
@@ -117,7 +117,7 @@
     },
     {
       "path": "date-picker.json",
-      "sha256": "2430a0180fd6687a703518161bb8ac9d1340b8bbb9b750054367874570ffa32c"
+      "sha256": "ed09550969ee8703da953482536be39efc15741c23dee3fecc20511a09783673"
     },
     {
       "path": "dialog.json",
@@ -133,7 +133,7 @@
     },
     {
       "path": "dropdown-menu.json",
-      "sha256": "da8fbedff79a59737ee8b0b1a3c2b15b7ecb71bfd47cd83bd9c2741a852e2135"
+      "sha256": "d2819dae357f350f685a427684a8d7299959ffde1884c7ecba35636758438f6d"
     },
     {
       "path": "editable.json",
@@ -141,7 +141,7 @@
     },
     {
       "path": "empty.json",
-      "sha256": "795a92ccc024ba521f9f29033639b0277e691821aadaa068e940ce6980f55bbe"
+      "sha256": "84e073bedb1b75bb5776c1c88337d03412042ceda76f058462cfb84e96f4fcc2"
     },
     {
       "path": "field.json",
@@ -149,7 +149,7 @@
     },
     {
       "path": "file-upload.json",
-      "sha256": "7d04ca5dba6abd5029bfb99cf5f18c7ded519cfc46d35f8a378ef6e951e52d3c"
+      "sha256": "42ab2e9592e00de885806db50b67ab891a2c8dfedfd40a8624aa77dd284a7f74"
     },
     {
       "path": "floating-panel.json",
@@ -181,11 +181,11 @@
     },
     {
       "path": "input.json",
-      "sha256": "3838dd3cb318098138946883181fdcd2001915413af055f6322fbc768751df28"
+      "sha256": "3c245b8bba7e99917a1a53abfc9964612ad5b503c3968c8e43e047e785fcb88d"
     },
     {
       "path": "item.json",
-      "sha256": "6be16a6ba52ac3356f32f073a351882ed79d4b4662fcf3219b50e3bb9a9fd966"
+      "sha256": "c6ff72895e54e409ac0f411dda9b510f571fba449a181a3436cc67f85c3835e3"
     },
     {
       "path": "kbd.json",
@@ -229,7 +229,7 @@
     },
     {
       "path": "menubar.json",
-      "sha256": "590c74fbf4c3b53f298e77a6aaa23d79a0d2cf3acfa95011c1e0bec50de2133f"
+      "sha256": "f147c6ba1654526a4e2c7eba3a41d00c85b6d158e3dfeede6df1000bfd7e7796"
     },
     {
       "path": "message-scroller.json",
@@ -273,7 +273,7 @@
     },
     {
       "path": "radio-group.json",
-      "sha256": "3e1b334d40d62e5fb26baf8ddb035d0c10dcde0704faad264ac1b3ab08b5e9db"
+      "sha256": "3eb1f9b23c84c935e18b9311d9052cfdb275a65fdd72abfc0e29e65ce028c76c"
     },
     {
       "path": "rating-group.json",
@@ -3581,7 +3581,7 @@
     },
     {
       "path": "tour.json",
-      "sha256": "0835b9114ed8d62d3e7dfb93adb08aa42d2bab9131559214718560ff25328d64"
+      "sha256": "1d57c0bde1fff204f1942264292963fb3bb7ed589f0047235bf763facc8121d2"
     },
     {
       "path": "tree-view.json",

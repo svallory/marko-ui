@@ -11,7 +11,7 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Badge>`,
   importSnippet: `import Badge from "@/components/ui/badge/badge.marko";`,
-  usageSnippet: `<Badge variant="default | secondary | destructive | outline | ghost | link">Badge</Badge>`,
+  usageSnippet: `<Badge variant="secondary">Badge</Badge>`,
   examples: [
     {
       name: "badge-default",

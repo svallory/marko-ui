@@ -15,8 +15,8 @@ export const docs: ComponentDocs = {
   // init`), so no import is required. The explicit-import form is
   // documented as the override/escape hatch.
   usageTags: `<Input>`,
-  importSnippet: `import Input from "@/components/ui/input/input.marko";`,
-  usageSnippet: `<Input type="email" placeholder="Email"/>`,
+  importSnippet: `import TextInput from "@/components/ui/input/input.marko";`,
+  usageSnippet: `<TextInput type="email" placeholder="Email"/>`,
   examples: [
     {
       name: "input-demo",

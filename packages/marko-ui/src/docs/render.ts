@@ -199,7 +199,7 @@ function usesTag(markup: string, tag: string): boolean {
  * an import line is an unknown tag; under `copy` the line is the explicit form
  * of what `add button` registers.
  */
-function resolveUsage(
+export function resolveUsage(
   docs: ComponentDocs,
   style: ImportStyle,
 ): { block: string; importsOptional: boolean; unregistered: string[] } {

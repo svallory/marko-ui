@@ -19,7 +19,7 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Checkbox>`,
   importSnippet: `import Checkbox from "@/components/ui/checkbox/checkbox.marko";`,
-  usageSnippet: `<let/accepted=false/>
+  usageSnippet: `<let/accepted=(false as boolean | "indeterminate")/>
 
 <Checkbox checked:=accepted>\n  <span>Accept terms and conditions</span>\n</Checkbox>`,
   examples: [

@@ -12,7 +12,9 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<DatePicker>`,
   importSnippet: `import DatePicker from "@/components/ui/date-picker/date-picker.marko";`,
-  usageSnippet: `<DatePicker valueChange=(date) => setDate(date)/>`,
+  usageSnippet: `<let/date=(undefined as string | undefined)/>
+
+<DatePicker value:=date/>`,
   // Upstream (base style) has no `DatePicker` root component at all — its
   // "date picker" is a hand-composed `Popover` + `Calendar` pairing, and
   // its Composition section documents exactly that tree:

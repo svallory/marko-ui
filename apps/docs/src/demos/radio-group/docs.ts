@@ -12,7 +12,7 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<RadioGroup>`,
   importSnippet: `import RadioGroup from "@/components/ui/radio-group/radio-group.marko";`,
-  usageSnippet: `<let/selected="option-one"/>
+  usageSnippet: `<let/selected=("option-one" as string | null)/>
 
 <RadioGroup items=[{ value: "option-one", label: "Option One" }, { value: "option-two", label: "Option Two" }] value:=selected/>`,
   // See notes/docs-canonical-structure.md's "Anatomy" section: RadioGroup

@@ -19,7 +19,7 @@ import EmptyContent from "@/components/ui/empty/content.marko";`,
   usageSnippet: `<Empty>
   <EmptyHeader>
     <EmptyMedia variant="icon">
-      <Icon/>
+      <Icon name="InboxIcon"/>
     </EmptyMedia>
     <EmptyTitle>No data</EmptyTitle>
     <EmptyDescription>No data found</EmptyDescription>

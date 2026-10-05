@@ -14,6 +14,7 @@ export const docs: ComponentDocs = {
   // `<Button>` is a different registry component: `add dropdown-menu` does not
   // install it, so the snippet imports it and the requirement is stated.
   importSnippet: `import DropdownMenu from "@/components/ui/dropdown-menu/dropdown-menu.marko";
+import type { DropdownMenuItem } from "@/components/ui/dropdown-menu/dropdown-menu.marko";
 import Button from "@/components/ui/button/button.marko";`,
   // The Usage snippet uses these; `add` does not install them.
   requires: ["button"],
@@ -22,7 +23,7 @@ import Button from "@/components/ui/button/button.marko";`,
   { value: "settings", label: "Settings" },
   { type: "separator" },
   { value: "logout", label: "Log out" },
-];
+] satisfies DropdownMenuItem[];
 
 <DropdownMenu items=ITEMS select(value) { /* ... */ }>
   <@trigger|triggerProps|>

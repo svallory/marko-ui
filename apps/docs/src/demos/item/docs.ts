@@ -19,7 +19,7 @@ import ItemDescription from "@/components/ui/item/description.marko";
 import ItemActions from "@/components/ui/item/actions.marko";`,
   usageSnippet: `<Item>
   <ItemMedia variant="icon">
-    <Icon/>
+    <Icon name="InfoIcon"/>
   </ItemMedia>
   <ItemContent>
     <ItemTitle>Title</ItemTitle>
