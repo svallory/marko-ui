@@ -18,7 +18,7 @@ import {
   type ExampleSelection,
   type ImportStyle,
 } from "@/src/docs/index"
-import { CommandError, handleError } from "@/src/utils/handle-error"
+import { CommandError, handleError, parseOptions } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { printEnvelope } from "@/src/utils/json-output"
 import { logger } from "@/src/utils/logger"
@@ -85,7 +85,7 @@ export const docs = new Command()
       // path, not the human one.
       setJsonMode(Boolean(opts.json))
 
-      const options = docsOptionsSchema.parse({
+      const options = parseOptions(docsOptionsSchema, {
         // `...opts` first and the resolved cwd LAST: the reverse order lets a
         // relative `--cwd` survive into the Config, which is what
         // findWorkspaceConfig/findPackageRoot compares against (same bug, same
@@ -302,7 +302,6 @@ export const docs = new Command()
                 .join(", ")}.`,
           {
             code: RegistryErrorCode.NOT_FOUND,
-            exitCode: 1,
             suggestion: first.itemFound
               ? `This registry publishes no docs data for "${first.name}". Run "marko-ui show ${first.name}" for the files it installs.`
               : first.suggestions.length
@@ -408,7 +407,6 @@ function selectExamples(
       `Unknown example ${unknown.map((id) => `"${id}"`).join(", ")} for "${model.name}".`,
       {
         code: RegistryErrorCode.USAGE_ERROR,
-        exitCode: 2,
         suggestion: `Valid example ids: ${model.examples
           .map((example) => `"${example.id}"`)
           .join(", ")}.`,

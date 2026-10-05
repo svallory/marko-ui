@@ -669,7 +669,8 @@ describe("getRegistryItem", () => {
     } catch (error) {
       expect(error).toBeInstanceOf(RegistryFetchError)
       if (error instanceof RegistryFetchError) {
-        expect(error.code).toBe(RegistryErrorCode.FETCH_ERROR)
+        // 400 is not retryable: REQUEST_REJECTED (exit 1), not FETCH_ERROR (exit 4).
+        expect(error.code).toBe(RegistryErrorCode.REQUEST_REJECTED)
         expect(error.statusCode).toBe(400)
         expect(error.suggestion).toContain("client error")
         // Response body should be available as context

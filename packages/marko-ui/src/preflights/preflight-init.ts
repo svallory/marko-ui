@@ -1,3 +1,4 @@
+import { RegistryErrorCode } from "@/src/registry/errors"
 import path from "path"
 import { initOptionsSchema, mayPromptForInit } from "@/src/commands/init"
 import { select } from "@/src/utils/clack"
@@ -357,8 +358,8 @@ export async function installMarko(
           : ""
       }Install it manually, then run ${highlighter.info(
         "marko-ui init"
-      )} again:\n${manual}`
-    )
+      )} again:\n${manual}`, { code: RegistryErrorCode.DEPENDENCY_INSTALL_FAILED }
+)
   }
 }
 
@@ -398,8 +399,8 @@ export async function preFlightInit(
         "marko-ui add <name>"
       )}. To set up AI agents, run ${highlighter.info(
         "marko-ui agents sync"
-      )}.\nTo start over, run ${highlighter.info("marko-ui init --force")}.`
-    )
+      )}.\nTo start over, run ${highlighter.info("marko-ui init --force")}.`, { code: RegistryErrorCode.ALREADY_INITIALIZED }
+)
   }
 
   // `--force` skips the check: it is the escape hatch for a project this
@@ -459,8 +460,8 @@ export async function preFlightInit(
           MARKO_6_UPGRADE_URL
         )}), then run ${highlighter.info(
           "marko-ui init"
-        )} again. To skip this check, pass ${highlighter.info("--force")}.`
-      )
+        )} again. To skip this check, pass ${highlighter.info("--force")}.`, { code: RegistryErrorCode.UNSUPPORTED_PROJECT }
+)
     }
 
     const tailwindV3 = await tailwindProjectBelowFour(options.cwd)
@@ -481,8 +482,8 @@ export async function preFlightInit(
           "https://tailwindcss.com/docs/upgrade-guide"
         )}), then run ${highlighter.info(
           "marko-ui init"
-        )} again. To skip this check, pass ${highlighter.info("--force")}.`
-      )
+        )} again. To skip this check, pass ${highlighter.info("--force")}.`, { code: RegistryErrorCode.UNSUPPORTED_PROJECT }
+)
     }
   }
 

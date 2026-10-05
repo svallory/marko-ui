@@ -8,7 +8,7 @@ import {
   getConfig,
   readPartialComponentsJson,
 } from "@/src/utils/get-config"
-import { CleanExit, CommandError, handleError } from "@/src/utils/handle-error"
+import { CleanExit, CommandError, handleError, parseOptions } from "@/src/utils/handle-error"
 import { printEnvelope } from "@/src/utils/json-output"
 import { setJsonMode } from "@/src/utils/output-mode"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
@@ -44,7 +44,7 @@ export const view = new Command()
       // Recorded first, because `show` is ALWAYS machine output: a failure
       // takes the JSON error path whether or not --json was passed.
       setJsonMode(true)
-      const options = viewOptionsSchema.parse({
+      const options = parseOptions(viewOptionsSchema, {
         cwd: path.resolve(opts.cwd),
         files: opts.files,
         deps: opts.deps,

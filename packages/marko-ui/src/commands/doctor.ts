@@ -25,7 +25,7 @@ import {
   getProjectComponents,
   getProjectInfo,
 } from "@/src/utils/get-project-info"
-import { CleanExit, handleError } from "@/src/utils/handle-error"
+import { CleanExit, handleError, parseOptions } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { printEnvelope } from "@/src/utils/json-output"
 import { logger } from "@/src/utils/logger"
@@ -130,7 +130,7 @@ export const doctor = new Command()
     try {
       setJsonMode(Boolean(opts.json))
 
-      const options = doctorOptionsSchema.parse({
+      const options = parseOptions(doctorOptionsSchema, {
         cwd: path.resolve(opts.cwd),
         json: opts.json,
       })
