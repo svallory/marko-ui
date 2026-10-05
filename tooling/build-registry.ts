@@ -105,6 +105,15 @@ const selfRef = (dep: string, style: string) => {
   return `${BASE_URL}/styles/${style}/${dep}.json`;
 };
 
+// Where a component's docs model is served: ONE file per component, next to the
+// items (`<registry>/docs/<name>.json`), not a copy inside each of the nine
+// items that describe it. Absolute, like `registryDependencies`: an item URL is
+// a template for third-party registries, so a path derived from it would not
+// hold. Items carry only this string; base and per-style items carry the SAME one.
+const docsFileRel = (name: string) => `docs/${name}.json`;
+const docsRef = (name: string, models: Map<string, ComponentDocsModel>) =>
+  models.has(name) ? { componentDocsRef: `${BASE_URL}/${docsFileRel(name)}` } : {};
+
 interface Meta {
   title?: string;
   description?: string;
@@ -427,7 +436,6 @@ async function emitComponents(
     const dir = join(UI_DIR, name);
     const meta = await readMeta(dir);
     const files = await fileEntries(dir, `~/src/components/ui/${name}`, `ui/${name}`);
-    const componentDocs = docModels.get(name);
     emissions.push({
       item: {
         $schema: ITEM_SCHEMA,
@@ -439,7 +447,7 @@ async function emitComponents(
         devDependencies: meta.devDependencies,
         registryDependencies: (meta.registryDependencies ?? ["utils"]).map((dep) => selfRef(dep, "")),
         files,
-        ...(componentDocs ? { componentDocs } : {}),
+        ...docsRef(name, docModels),
       },
     });
   }
@@ -491,11 +499,11 @@ async function emitPerStyleComponents(
             selfRef(dep, style)
           ),
           files,
-          // The SAME model as the base item: a copy project with a
+          // The SAME reference as the base item: a copy project with a
           // visualStyle fetches THIS item (`add`, `docs`), so without it every
           // initialized project got no docs and `add` cached none. Snippets are
-          // style-agnostic, so one model serves every style.
-          ...(docModels.has(name) ? { componentDocs: docModels.get(name) } : {}),
+          // style-agnostic, so one docs file serves every style.
+          ...docsRef(name, docModels),
         },
         outName: `styles/${style}/${name}`,
         indexed: false,
@@ -612,8 +620,9 @@ async function main() {
     .map((e) => e.name)
     .sort();
 
-  // The docs model of every component, built ONCE and embedded in the base
-  // AND per-style items, and written into the package for the import path.
+  // The docs model of every component, built ONCE: written as one registry
+  // file per component (items reference it) and into the package for the
+  // import path.
   // The structured docs model, built once for all components from the files on
   // disk (the imported docs.ts module, the demo .marko files, the component's
   // own source and api-reference.json). Reading those directly is what keeps
@@ -646,6 +655,11 @@ async function main() {
   ];
 
   for (const emission of emissions) await writeItem(emission);
+  // The docs files the items reference. Minified: the only reader is
+  // `marko-ui docs` / `add`, one file per call.
+  for (const name of [...docModels.keys()].sort()) {
+    await writeOutput(docsFileRel(name), JSON.stringify(docModels.get(name)));
+  }
 
   // `index` backs registry.json/index.json: the public component identity
   // list the CLI's interactive picker, `diff`, and installed-component

@@ -95,20 +95,26 @@ describe("the default docs output stays inside its budget", () => {
     }
   }, 120_000);
 
-  it("reads the same example ids from the registry item the docs site uses", async () => {
+  it("reads the same example ids from the docs file the registry item references", async () => {
     // The registry is the CLI's source and the manifest is the site's; a flag
     // that reached one and not the other would print different defaults.
     const models = await buildAllApiDocModels(await registryDocSources());
-    const registry = JSON.parse(
-      await readFile(registryItemPath("accordion"), "utf8"),
-    ) as { componentDocs?: { examples: { id: string; essential?: boolean }[] } };
+    const item = JSON.parse(await readFile(registryItemPath("accordion"), "utf8")) as {
+      componentDocsRef?: string;
+      componentDocs?: unknown;
+    };
 
-    expect(registry.componentDocs).toBeDefined();
-    expect(registry.componentDocs!.examples.map((e) => e.id)).toEqual(
+    expect(item.componentDocs).toBeUndefined();
+    expect(item.componentDocsRef).toMatch(/\/docs\/accordion\.json$/);
+    const registry = JSON.parse(
+      await readFile(registryItemPath("docs/accordion"), "utf8"),
+    ) as { examples: { id: string; essential?: boolean }[] };
+
+    expect(registry.examples.map((e) => e.id)).toEqual(
       models.get("accordion")!.examples.map((e) => e.id),
     );
-    expect(registry.componentDocs!.examples.filter((e: { essential?: boolean }) => e.essential)).toEqual(
-      models.get("accordion")!.examples.filter((e: { essential?: boolean }) => e.essential),
+    expect(registry.examples.filter((e) => e.essential)).toEqual(
+      models.get("accordion")!.examples.filter((e) => e.essential),
     );
   }, 120_000);
 });
