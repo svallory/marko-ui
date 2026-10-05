@@ -28,11 +28,20 @@
  *
  * `/docs/components/<name>.md` — the canonical markdown URL — needs none of
  * this: it has an extension, so the crawler writes it directly.
+ *
+ * `/llms.txt` is the odd one out: it is not a handler output at all. A route
+ * cannot serve it (@marko/run reads a period in a directory name as a path
+ * separator, so no `llms.txt` route can be declared), so it is built here from
+ * `src/lib/llms-txt.ts` — the same component list, docs navigation, SITE_URL
+ * and registry URL the pages read — and written to the literal path. It has
+ * an extension, so Cloudflare infers `text/plain`; `public/_headers` pins the
+ * charset and caching.
  */
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { DOCUMENTED_COMPONENTS } from "../src/lib/component-page-data.ts";
+import { buildLlmsTxt } from "../src/lib/llms-txt.ts";
 
 /** Where `marko-run build` put the static output. */
 const OUT_DIR = path.resolve(import.meta.dirname, "../dist/public");
@@ -80,10 +89,21 @@ async function main(): Promise<void> {
     }
   }
 
+  // /llms.txt — the machine entry point (see the header comment).
+  {
+    const body = buildLlmsTxt();
+    written.push(
+      await write(
+        "/llms.txt",
+        new Response(body, { headers: { "content-type": "text/plain; charset=utf-8" } }),
+      ),
+    );
+  }
+
   const bytes = written.reduce((total, entry) => total + entry.bytes, 0);
   console.log(
     `prerender-handlers: wrote ${written.length} files ` +
-      `(${(bytes / 1024).toFixed(1)} kB) for the extensionless GET handlers`,
+      `(${(bytes / 1024).toFixed(1)} kB) for the extensionless GET handlers and /llms.txt`,
   );
 }
 

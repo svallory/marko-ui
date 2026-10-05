@@ -13,7 +13,7 @@ import type { ApiPart } from "../tags/docs/api-table.marko";
 // install). NOT read from process.env: this module is imported by the page,
 // so it is bundled for the browser too, and touching `process` there throws
 // "process is not defined" and takes down hydration for the whole page.
-const REGISTRY_BASE_URL = "https://marko-ui.saulo.tech/r";
+export const REGISTRY_BASE_URL = "https://marko-ui.saulo.tech/r";
 
 interface ApiComponent {
   name: string;

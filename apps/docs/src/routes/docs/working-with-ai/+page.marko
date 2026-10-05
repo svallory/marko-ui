@@ -469,7 +469,22 @@ static const JSON_ERROR_ENVELOPE = `{
   <p>
     In an agent session, <code>marko-ui docs &lt;component&gt;</code> pulls the
     documentation straight into the agent's context — usage, props, keyboard
-    contracts, and examples. The CLI fetches the markdown endpoint for the agent.
+    contracts, and examples. The CLI renders it locally from the docs model the
+    registry item already carries, so it works against the registry you
+    configured and needs no request to this site.
+  </p>
+
+  // /llms.txt is written by scripts/prerender-handlers.ts after the crawl, so it
+  // exists only in the built site: `marko-run dev` answers 404 for this link, and
+  // the crawl logs one extra "not found" for it (harmless: the file is written
+  // right after). See AGENTS.md, "/llms.txt".
+  <p>
+    An agent that has no shell can start from
+    <a href="/llms.txt"><code>/llms.txt</code></a>: a plain-text index in the
+    <a href="https://llmstxt.org">llms.txt</a> format that says how to work with
+    marko-ui (which command answers which question, how to read the JSON
+    output, which skills to load, and the mistakes agents make most) and links
+    every component's markdown page and the registry.
   </p>
 
   <h2 id="check-your-setup">Check Your Setup</h2>

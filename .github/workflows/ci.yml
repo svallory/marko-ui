@@ -73,15 +73,21 @@ jobs:
       #     (the registry/style build scripts themselves); `cli` doesn't run
       #     any tooling script, so it's correctly absent there.
       #   - The generators' import closure (`registry` only) — traced
-      #     statically from the five generators registry-drift runs
-      #     (build-registry, build-demos-manifest, build-usage-snippets,
-      #     build-blocks-manifest, extract-api): packages/marko-ui/src/docs/**,
+      #     statically from the five generators registry-drift ran before
+      #     build-cli-manifest joined (build-registry, build-demos-manifest,
+      #     build-usage-snippets, build-blocks-manifest, extract-api): packages/marko-ui/src/docs/**,
       #     apps/docs/scripts/**, and apps/docs/src/lib/{component-*.ts,
       #     components-list.ts, default-cell.ts, api-reference.json}. A PR
       #     touching only one of them changes generated output, so it must
       #     fire registry-drift. Re-trace when a generator gains an import.
       #     (`docs` already covers all of them via apps/docs/** and
       #     packages/marko-ui/**.)
+      #   - build:cli-manifest (the sixth generator script registry-drift runs, ygc.15) —
+      #     imports buildManifest/buildProgram from the CLI SOURCE, so its
+      #     input is all of packages/marko-ui/src/** plus
+      #     packages/marko-ui/package.json (the manifest records `cliVersion`,
+      #     so a version bump must regenerate it). Its output,
+      #     apps/docs/src/lib/cli-manifest.ts, is committed and diffed.
       # Pinned to the v4.0.3 tag's commit SHA (not a tag ref) per repo policy
       # on third-party actions.
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
@@ -113,6 +119,11 @@ jobs:
             registry:
               - 'packages/shadcn/**'
               - 'packages/marko-ui/src/registry/**'
+              # build:cli-manifest renders the whole command surface, so any
+              # CLI source change (or a version bump) can change
+              # apps/docs/src/lib/cli-manifest.ts.
+              - 'packages/marko-ui/src/**'
+              - 'packages/marko-ui/package.json'
               - 'apps/docs/src/data/directory.json'
               # Demo sources feed build:demos (demos-manifest.ts, the
               # per-component static routes under src/routes/docs/components/,
@@ -232,7 +243,7 @@ jobs:
       #     registry output AND src/lib/blocks-list.ts.
       #   - api-reference.json (extract:api): fresh against the .marko
       #     sources under packages/shadcn/ui/**.
-      # All four generators were verified deterministic (two consecutive runs
+      # All six generators were verified deterministic (two consecutive runs
       # produce byte-identical output on an untouched tree), so `git diff
       # --exit-code` cannot flake on generator nondeterminism.
       - name: Build registry and check manifest for drift
@@ -268,6 +279,11 @@ jobs:
           bun run build:blocks-manifest
           git diff --exit-code -- apps/docs/src/lib/blocks-manifest.ts || {
             echo "::error::Generated blocks manifest is stale — run 'bun run build:blocks-manifest' and commit the regenerated apps/docs/src/lib/blocks-manifest.ts"
+            exit 1
+          }
+          bun run build:cli-manifest
+          git diff --exit-code -- apps/docs/src/lib/cli-manifest.ts || {
+            echo "::error::Generated CLI manifest is stale — run 'bun run build:cli-manifest' and commit the regenerated apps/docs/src/lib/cli-manifest.ts"
             exit 1
           }
           bun run extract:api
