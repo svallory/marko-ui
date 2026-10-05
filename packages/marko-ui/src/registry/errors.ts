@@ -10,7 +10,16 @@ export const RegistryErrorCode = {
   GONE: "GONE",
   UNAUTHORIZED: "UNAUTHORIZED",
   FORBIDDEN: "FORBIDDEN",
+  /**
+   * The registry answered with a RETRYABLE server-side failure: any 5xx, or 429.
+   * Exit 4: the same command may succeed later.
+   */
   FETCH_ERROR: "FETCH_ERROR",
+  /**
+   * The registry answered with an unexpected status that retrying will not
+   * change (400, 418, ...). Exit 1. 401/403/404/410 have their own codes.
+   */
+  REQUEST_REJECTED: "REQUEST_REJECTED",
 
   // Configuration errors
   NOT_CONFIGURED: "NOT_CONFIGURED",
@@ -50,6 +59,18 @@ export const RegistryErrorCode = {
   CHECK_FAILED: "CHECK_FAILED",
   /** No Marko project (no package.json) at the requested directory. */
   PROJECT_NOT_FOUND: "PROJECT_NOT_FOUND",
+  /** The directory exists but is not a Marko project (no marko dependency). */
+  NOT_A_MARKO_PROJECT: "NOT_A_MARKO_PROJECT",
+  /** The project cannot be supported: Marko below 6, Tailwind v3, a shadcn/ui-for-React components.json. */
+  UNSUPPORTED_PROJECT: "UNSUPPORTED_PROJECT",
+  /** `init` on a project that already has a components.json. */
+  ALREADY_INITIALIZED: "ALREADY_INITIALIZED",
+  /** The command does not apply to this project's distribution (`eject` on copy, `add` on import). */
+  WRONG_DISTRIBUTION: "WRONG_DISTRIBUTION",
+  /** `@marko-ui/shadcn` is not installed where the command needs it. */
+  PACKAGE_NOT_INSTALLED: "PACKAGE_NOT_INSTALLED",
+  /** A required dependency (Marko) could not be installed. */
+  DEPENDENCY_INSTALL_FAILED: "DEPENDENCY_INSTALL_FAILED",
   /** The agent skills could not be installed. Fatal, so it is an ERROR, not a warning. */
   SKILL_INSTALL_FAILED: "SKILL_INSTALL_FAILED",
   /**
@@ -210,14 +231,22 @@ export class RegistryFetchError extends RegistryError {
     if (statusCode === 404) {
       suggestion =
         "The requested resource was not found. Check the URL or item name."
-    } else if (statusCode === 500) {
+    } else if (statusCode === 429) {
+      suggestion = "The registry is rate limiting requests. Wait and try again."
+    } else if (statusCode && statusCode >= 500) {
       suggestion = "The registry server encountered an error. Try again later."
     } else if (statusCode && statusCode >= 400 && statusCode < 500) {
       suggestion = "There was a client error. Check your request parameters."
     }
 
+    // Retryable (5xx, 429, or no status at all) is FETCH_ERROR and exits 4;
+    // any other status is one retrying cannot change, and exits 1.
+    const retryable =
+      statusCode === undefined || statusCode >= 500 || statusCode === 429
     super(message, {
-      code: RegistryErrorCode.FETCH_ERROR,
+      code: retryable
+        ? RegistryErrorCode.FETCH_ERROR
+        : RegistryErrorCode.REQUEST_REJECTED,
       statusCode,
       cause,
       context: { url, responseBody },

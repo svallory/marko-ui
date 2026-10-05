@@ -1,3 +1,4 @@
+import { RegistryErrorCode } from "@/src/registry/errors"
 import { searchRegistries } from "@/src/registry/search"
 import { getConfig } from "@/src/utils/get-config"
 import { CommandError } from "@/src/utils/handle-error"
@@ -262,12 +263,12 @@ describe("search command", () => {
 
     // fs-extra.existsSync is mocked to return false (no components.json).
     // This is a usage error: the message is printed inline and a
-    // pre-formatted CommandError carries exit 1 through handleError.
+    // pre-formatted USAGE_ERROR carries exit 2 through handleError.
     await expect(
       search.parseAsync(["--cwd", "/tmp/test-project"], {
         from: "user",
       })
-    ).rejects.toThrow("process.exit:1")
+    ).rejects.toThrow("process.exit:2")
 
     expect(error).toHaveBeenCalledWith(
       expect.stringContaining("Provide a registry or namespace to search")
@@ -321,7 +322,7 @@ describe("search command", () => {
           from: "user",
         }
       )
-    ).rejects.toThrow("process.exit:1")
+    ).rejects.toThrow("process.exit:2")
 
     expect(error).toHaveBeenCalledWith(expect.stringContaining("Unknown type"))
     expect(searchRegistries).not.toHaveBeenCalled()
@@ -487,7 +488,8 @@ describe("React components.json refusal (re-throw from the shadow-config catch)"
     const exit = mockProcessExit()
     vi.mocked(getConfig).mockRejectedValueOnce(
       new CommandError(
-        "The components.json belongs to shadcn/ui for React."
+        "The components.json belongs to shadcn/ui for React.",
+        { code: RegistryErrorCode.UNSUPPORTED_PROJECT }
       )
     )
 

@@ -20,7 +20,8 @@ import {
 import { scenario } from "./lib/scenario"
 
 /*
- * `docs` renders from the docs model the REGISTRY ITEM carries (the locally
+ * `docs` renders from the docs model the REGISTRY ITEM points at (a
+ * `componentDocsRef` to one file per component, next to the items — the locally
  * served registry here), never from the docs site. The preload below wraps
  * `fetch` and appends every requested URL to a log, so "no request to the docs
  * site" is observed, not assumed.
@@ -46,6 +47,17 @@ globalThis.fetch = (input, init) => {
 }
 
 describe("docs — rendered locally from the registry item", () => {
+  scenario("D09", "show button --json carries the docs reference, not the model", async () => {
+    const ws = makeWorkspace()
+    markoApp(ws)
+
+    const r = await cli(ws, ["show", "button", "--json"], { shim: withShims(makeWorkspace("shim")) })
+    expect(r.code, tail(r.out)).toBe(0)
+    const [item] = jsonData<Record<string, unknown>[]>(r.stdout)
+    expect(item).not.toHaveProperty("componentDocs")
+    expect(item!.componentDocsRef).toMatch(/\/docs\/button\.json$/)
+  })
+
   scenario("D01", "docs button prints the lean default from the local registry and never requests the docs site", async () => {
     const ws = makeWorkspace()
     markoApp(ws)
@@ -67,6 +79,10 @@ describe("docs — rendered locally from the registry item", () => {
     const hosts = new Set(urls.map((u) => new URL(u).host))
     expect([...hosts], `requests: ${urls.join(", ")}`).toEqual([new URL(process.env.REGISTRY_URL!).host])
     expect(urls.some((u) => u.includes("/docs/components/")), "docs site endpoint requested").toBe(false)
+    // The item, then exactly one extra fetch: the docs file the item references.
+    const docsFiles = urls.filter((u) => /\/r\/docs\/[^/]+\.json$/.test(u))
+    expect(docsFiles, `requests: ${urls.join(", ")}`).toHaveLength(1)
+    expect(docsFiles[0]).toMatch(/\/r\/docs\/button\.json$/)
   })
 
   scenario("D02", "docs nope button: prints button on stdout, reports nope on stderr, exits 1", async () => {
@@ -190,5 +206,101 @@ describe("docs — the installed version, without the network", () => {
     expect(r.code, tail(r.out)).toBe(0)
     expect(plain(r.stdout)).toMatch(/^# Button/m)
     expect(plain(r.stderr)).toContain("@marko-ui/shadcn 0.6.0 ships no docs data; reading the registry instead.")
+  })
+})
+
+/*
+ * A local-file registry: the item and its docs file are plain files, the
+ * reference is a path RELATIVE to the item (no URL to derive anything from).
+ */
+function localWidget(ws: string, o: { docs: boolean }) {
+  const docsModel = {
+    name: "widget",
+    title: "Widget",
+    description: "A local widget.",
+    installCommand: "bunx marko-ui add ./registry/widget.json -y",
+    usageTags: "<Widget>",
+    importSnippet: 'import Widget from "@/components/ui/widget/widget.marko";',
+    usageSnippet: "<Widget />",
+    parts: [],
+    props: [],
+    events: [],
+    keyboard: [],
+    accessibilityNotes: [],
+    examples: [{ id: "demo", title: "Demo", source: "<Widget />" }],
+  }
+  writeTree(ws, {
+    "registry/widget.json": {
+      name: "widget",
+      type: "registry:ui",
+      title: "Widget",
+      files: [
+        {
+          path: "ui/widget/widget.marko",
+          type: "registry:ui",
+          target: "~/src/components/ui/widget/widget.marko",
+          content: "<div>widget</div>\n",
+        },
+      ],
+      componentDocsRef: "docs/widget.json",
+    },
+    ...(o.docs ? { "registry/docs/widget.json": docsModel } : {}),
+  })
+}
+
+describe("docs — the reference in a local-file registry", () => {
+  scenario("D10", "add of a local item whose docs file is missing: succeeds, warns DOCS_CACHE_FAILED, writes no cache entry", async () => {
+    const ws = makeWorkspace()
+    markoApp(ws, { tsconfig: "paths" })
+    mkdirSync(join(ws, "node_modules"))
+    writeTree(ws, { "components.json": componentsJson() })
+    localWidget(ws, { docs: false })
+
+    const r = await cli(ws, ["add", "./registry/widget.json", "-y", "--json"], { shim: withShims(makeWorkspace("shim")) })
+    expect(r.code, tail(r.out)).toBe(0)
+    const data = jsonData<{ warnings: { code: string; message: string; fix?: string }[] }>(r.stdout)
+    const warning = data.warnings.find((w) => w.code === "DOCS_CACHE_FAILED")
+    expect(warning, JSON.stringify(data.warnings)).toBeTruthy()
+    expect(warning!.message).toContain("widget")
+    expect(warning!.fix).toBe("marko-ui docs widget")
+    expect(exists(ws, "src/components/ui/widget/widget.marko"), "the install itself did not happen").toBe(true)
+    expect(exists(ws, "node_modules/.cache/marko-ui/docs/widget.json")).toBe(false)
+  })
+
+  scenario("D11", "add of a local item with a relative docs reference caches it; docs then works with the registry unreachable", async () => {
+    const ws = makeWorkspace()
+    markoApp(ws, { tsconfig: "paths" })
+    mkdirSync(join(ws, "node_modules"))
+    writeTree(ws, { "components.json": componentsJson() })
+    localWidget(ws, { docs: true })
+
+    const add = await cli(ws, ["add", "./registry/widget.json", "-y", "--json"], { shim: withShims(makeWorkspace("shim")) })
+    expect(add.code, tail(add.out)).toBe(0)
+    expect(jsonData<{ warnings: unknown[] }>(add.stdout).warnings).toEqual([])
+    expect(exists(ws, "node_modules/.cache/marko-ui/docs/widget.json")).toBe(true)
+
+    const r = await cli(ws, ["docs", "widget"], { env: DEAD_REGISTRY })
+    expect(r.code, tail(r.out)).toBe(0)
+    expect(plain(r.stdout)).toMatch(/^# Widget/m)
+    expect(plain(r.stderr).trim()).toBe("source: installed (cache)")
+  })
+
+  scenario("D12", "an item with no docs reference gives the no-documentation error with a show suggestion", async () => {
+    const ws = makeWorkspace()
+    markoApp(ws, { tsconfig: "paths" })
+    writeTree(ws, {
+      "components.json": componentsJson(),
+      "registry/bare.json": {
+        name: "bare",
+        type: "registry:ui",
+        files: [{ path: "ui/bare/bare.marko", type: "registry:ui", target: "~/src/components/ui/bare/bare.marko", content: "<div/>\n" }],
+      },
+    })
+
+    const r = await cli(ws, ["docs", "./registry/bare.json", "--json"], { shim: withShims(makeWorkspace("shim")) })
+    expect(r.code, tail(r.out)).toBe(1)
+    const err = (jsonOut(r.stdout) as { error: { code: string; suggestion?: string } }).error
+    expect(err.code).toBe("NOT_FOUND")
+    expect(err.suggestion).toContain("publishes no docs data")
   })
 })

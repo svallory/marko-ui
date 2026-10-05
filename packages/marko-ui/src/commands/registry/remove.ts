@@ -1,7 +1,7 @@
 import path from "path"
 import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
 import { assertNotReactComponentsJson } from "@/src/utils/get-config"
-import { handleError } from "@/src/utils/handle-error"
+import { handleError, parseOptions } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { spinner } from "@/src/utils/spinner"
@@ -26,7 +26,7 @@ export const remove = new Command()
   .option("-s, --silent", "mute output.", false)
   .action(async (registries: string[], opts) => {
     try {
-      const options = removeOptionsSchema.parse({
+      const options = parseOptions(removeOptionsSchema, {
         cwd: path.resolve(opts.cwd),
         silent: opts.silent,
       })

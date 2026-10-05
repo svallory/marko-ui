@@ -33,12 +33,22 @@ import {
  */
 const REGISTRY_DIR = new URL("../../../public/r/", import.meta.url);
 
-/** The `componentDocs` model the built registry item for `name` carries. */
+/**
+ * The docs model the built registry item for `name` points at: the item's
+ * `componentDocsRef` names the docs file (`r/docs/<name>.json`), which is read
+ * the way the CLI follows it. Undefined when the item references none.
+ */
 async function builtItemDocs(name: string): Promise<ComponentDocs | undefined> {
-  const item = JSON.parse(
-    await readFile(new URL(`${name}.json`, REGISTRY_DIR), "utf8"),
-  ) as { componentDocs?: ComponentDocs };
-  return item.componentDocs;
+  const item = JSON.parse(await readFile(new URL(`${name}.json`, REGISTRY_DIR), "utf8")) as {
+    componentDocsRef?: string;
+    componentDocs?: unknown;
+  };
+  if (item.componentDocs) throw new Error(`${name}: the item still embeds componentDocs`);
+  if (!item.componentDocsRef) return undefined;
+  // The reference is absolute (built from REGISTRY_BASE_URL); its file is the
+  // same path under the local registry directory.
+  const rel = item.componentDocsRef.replace(/^.*\/r\//, "");
+  return JSON.parse(await readFile(new URL(rel, REGISTRY_DIR), "utf8")) as ComponentDocs;
 }
 
 /** Every built registry item's model, straight from disk. */
@@ -84,7 +94,7 @@ describe("the registry's docs model is the docs site's docs model", () => {
         const siteModel = buildComponentDocsForPage(componentDocsInputFromPage(page));
         const built = await builtItemDocs(name);
         if (!built) {
-          mismatched.push(`${name}: registry item carries no componentDocs`);
+          mismatched.push(`${name}: registry item references no docs file`);
           continue;
         }
         if (JSON.stringify(built) !== JSON.stringify(siteModel)) {

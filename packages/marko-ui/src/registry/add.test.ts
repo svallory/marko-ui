@@ -100,7 +100,7 @@ describe("addRegistryItems", () => {
     expect(mockResolveRegistryTree).toHaveBeenCalledWith(
       ["@acme/button"],
       projectConfig,
-      { requireUniversal: false, useCache: true }
+      { fetchDocs: true, requireUniversal: false, useCache: true }
     )
     expect(mockAddComponents).toHaveBeenCalledWith(
       ["@acme/button"],
@@ -155,7 +155,7 @@ describe("addRegistryItems", () => {
     expect(mockResolveRegistryTree).toHaveBeenCalledWith(
       ["@acme/agent"],
       universalConfig,
-      { requireUniversal: true, useCache: true }
+      { fetchDocs: true, requireUniversal: true, useCache: true }
     )
     expect(mockAddComponents).toHaveBeenCalledWith(
       ["@acme/agent"],
@@ -198,7 +198,7 @@ describe("addRegistryItems", () => {
     expect(mockResolveRegistryTree).toHaveBeenCalledWith(
       ["https://example.com/agent.json"],
       universalConfig,
-      { requireUniversal: true, useCache: true }
+      { fetchDocs: true, requireUniversal: true, useCache: true }
     )
     expect(mockAddComponents).toHaveBeenCalledWith(
       ["https://example.com/agent.json"],

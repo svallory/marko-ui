@@ -388,11 +388,100 @@ describe("findWorkspaceRoot", () => {
     expect(findWorkspaceRoot(path.join(base, "apps/web"))).toBe(base)
   })
 
-  it("returns the OUTERMOST root for nested workspaces", async () => {
+  it("returns the NEAREST including root for nested workspaces", async () => {
+    // outer includes `inner` only; inner includes `pkg`. `inner/pkg` is a
+    // member of inner, not of outer, so outer grants nothing for it.
     await write("package.json", { name: "outer", workspaces: ["inner"] })
     await write("inner/package.json", { name: "inner", workspaces: ["pkg"] })
     await write("inner/pkg/package.json", { name: "pkg" })
-    expect(findWorkspaceRoot(path.join(base, "inner/pkg"))).toBe(base)
+    expect(findWorkspaceRoot(path.join(base, "inner/pkg"))).toBe(path.join(base, "inner"))
+    // inner itself is a member of outer.
+    expect(findWorkspaceRoot(path.join(base, "inner"))).toBe(path.join(base, "inner"))
+  })
+
+  it("nested workspaces: the outer root wins when it includes the project and the inner does not", async () => {
+    await write("package.json", { name: "outer", workspaces: ["inner", "inner/other"] })
+    await write("inner/package.json", { name: "inner", workspaces: ["pkg"] })
+    await write("inner/other/package.json", { name: "other" })
+    expect(findWorkspaceRoot(path.join(base, "inner/other"))).toBe(base)
+  })
+
+  it("a non-member under an unrelated `workspaces` ancestor grants nothing", async () => {
+    await write("package.json", { name: "unrelated", workspaces: ["apps/*", "packages/*"] })
+    await write("apps/web/package.json", { name: "web" })
+    await write("elsewhere/project/package.json", { name: "project" })
+    await fs.ensureDir(path.join(base, "other-project"))
+
+    expect(findWorkspaceRoot(path.join(base, "elsewhere/project"))).toBeNull()
+    expect(findWorkspaceRoot(path.join(base, "other-project"))).toBeNull()
+    // The real member still resolves.
+    expect(findWorkspaceRoot(path.join(base, "apps/web"))).toBe(base)
+  })
+
+  it("a directory deep inside a member resolves through the member", async () => {
+    await write("package.json", { name: "mono", workspaces: ["apps/*"] })
+    await write("apps/web/package.json", { name: "web" })
+    await fs.ensureDir(path.join(base, "apps/web/src/deep"))
+    expect(findWorkspaceRoot(path.join(base, "apps/web/src/deep"))).toBe(base)
+    // ...but a deep directory outside every member does not.
+    await fs.ensureDir(path.join(base, "tools/x/y"))
+    expect(findWorkspaceRoot(path.join(base, "tools/x/y"))).toBeNull()
+  })
+
+  it("pnpm-workspace.yaml: members are included, others are not", async () => {
+    await write("pnpm-workspace.yaml", "packages:\n  - 'apps/*'\n  - packages/ui\n")
+    await write("package.json", { name: "mono" })
+    await write("apps/web/package.json", { name: "web" })
+    await write("packages/ui/package.json", { name: "ui" })
+    await write("packages/other/package.json", { name: "other" })
+    expect(findWorkspaceRoot(path.join(base, "apps/web"))).toBe(base)
+    expect(findWorkspaceRoot(path.join(base, "packages/ui"))).toBe(base)
+    expect(findWorkspaceRoot(path.join(base, "packages/other"))).toBeNull()
+  })
+
+  it("pnpm-workspace.yaml: a negated glob removes a member", async () => {
+    await write("pnpm-workspace.yaml", "packages:\n  - 'apps/*'\n  - '!apps/legacy'\n")
+    await write("apps/web/package.json", { name: "web" })
+    await write("apps/legacy/package.json", { name: "legacy" })
+    expect(findWorkspaceRoot(path.join(base, "apps/web"))).toBe(base)
+    expect(findWorkspaceRoot(path.join(base, "apps/legacy"))).toBeNull()
+  })
+
+  it("object-form workspaces ({ packages }) is honoured", async () => {
+    await write("package.json", {
+      name: "mono",
+      workspaces: { packages: ["apps/*"], nohoist: ["**/react"] },
+    })
+    await write("apps/web/package.json", { name: "web" })
+    await write("libs/x/package.json", { name: "x" })
+    expect(findWorkspaceRoot(path.join(base, "apps/web"))).toBe(base)
+    expect(findWorkspaceRoot(path.join(base, "libs/x"))).toBeNull()
+  })
+
+  it("package.json negated glob removes a member", async () => {
+    await write("package.json", { name: "mono", workspaces: ["apps/*", "!apps/legacy"] })
+    await write("apps/web/package.json", { name: "web" })
+    await write("apps/legacy/package.json", { name: "legacy" })
+    expect(findWorkspaceRoot(path.join(base, "apps/web"))).toBe(base)
+    expect(findWorkspaceRoot(path.join(base, "apps/legacy"))).toBeNull()
+  })
+
+  it("`workspaces` that is not a list declares no members", async () => {
+    await write("package.json", { name: "odd", workspaces: true })
+    await write("apps/web/package.json", { name: "web" })
+    expect(findWorkspaceRoot(path.join(base, "apps/web"))).toBeNull()
+  })
+
+  it("a `./`-prefixed or trailing-slash glob still matches", async () => {
+    await write("package.json", { name: "mono", workspaces: ["./apps/*/"] })
+    await write("apps/web/package.json", { name: "web" })
+    expect(findWorkspaceRoot(path.join(base, "apps/web"))).toBe(base)
+  })
+
+  it("does not treat a member inside node_modules as a member", async () => {
+    await write("package.json", { name: "mono", workspaces: ["**"] })
+    await write("node_modules/dep/package.json", { name: "dep" })
+    expect(findWorkspaceRoot(path.join(base, "node_modules/dep"))).toBeNull()
   })
 
   it("returns null outside any workspace (a package.json without `workspaces` is not a root)", async () => {

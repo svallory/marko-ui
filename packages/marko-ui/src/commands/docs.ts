@@ -1,8 +1,8 @@
 import path from "path"
-import { getRegistryItems, getShadcnRegistryIndex } from "@/src/registry/api"
+import { getRegistryItemDocs, getShadcnRegistryIndex } from "@/src/registry/api"
 import { configWithDefaults } from "@/src/registry/config"
 import { clearRegistryContext } from "@/src/registry/context"
-import { RegistryErrorCode, RegistryItemNotFoundError } from "@/src/registry/errors"
+import { RegistryErrorCode } from "@/src/registry/errors"
 import type { RegistryItem } from "@/src/registry/schema"
 import { validateRegistryConfigForItems } from "@/src/registry/validator"
 import { loadEnvFiles } from "@/src/utils/env-loader"
@@ -18,7 +18,7 @@ import {
   type ExampleSelection,
   type ImportStyle,
 } from "@/src/docs/index"
-import { CommandError, handleError } from "@/src/utils/handle-error"
+import { CommandError, handleError, parseOptions } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { printEnvelope } from "@/src/utils/json-output"
 import { logger } from "@/src/utils/logger"
@@ -85,7 +85,7 @@ export const docs = new Command()
       // path, not the human one.
       setJsonMode(Boolean(opts.json))
 
-      const options = docsOptionsSchema.parse({
+      const options = parseOptions(docsOptionsSchema, {
         // `...opts` first and the resolved cwd LAST: the reverse order lets a
         // relative `--cwd` survive into the Config, which is what
         // findWorkspaceConfig/findPackageRoot compares against (same bug, same
@@ -138,6 +138,8 @@ export const docs = new Command()
         name: string
         suggestions: string[]
         candidates: number
+        /** The item exists but references no docs file. */
+        itemFound: boolean
       }[] = []
 
       // Resolution is `show`'s, not a bare `{}`: REGISTRY_URL, a project's
@@ -201,21 +203,20 @@ export const docs = new Command()
         }
 
         let model: ComponentDocs | undefined = local?.model
+        let itemFound = false
         let source: DocsSource = local?.source ?? { kind: "registry" }
         if (!model) {
-          // 2. The registry. A 404 for one name is a MISS, not a thrown error:
-          // `docs nope button` must still print button. `getRegistryItems`
-          // throws for an item that is not there, which used to abort the
-          // whole loop and lose the pages that DID resolve.
-          let item: RegistryItem | undefined
-          try {
-            const found = await getRegistryItems([name], { config })
-            item = found[0]
-          } catch (error) {
-            if (!(error instanceof RegistryItemNotFoundError)) throw error
-            item = undefined
-          }
-          model = item?.componentDocs as ComponentDocs | undefined
+          // 2. The registry: the item, then the docs file it references (one
+          // extra fetch, only on this path). A 404 for one name is a MISS, not
+          // a thrown error: `docs nope button` must still print button.
+          // `getRegistryItemDocs` returns no item for a name that is not there,
+          // and a docs file that cannot be fetched for an item that is reachable
+          // throws its registry error (NETWORK_ERROR / FETCH_ERROR), because
+          // that is not a "no documentation" answer.
+          const found = await getRegistryItemDocs(name, { config })
+          const item = found.item
+          model = found.model as ComponentDocs | undefined
+          itemFound = Boolean(item)
           // An installed copy component with no cache entry (installed before
           // the cache existed, or the cache was cleared): store it now, so the
           // next call is local.
@@ -230,7 +231,7 @@ export const docs = new Command()
                 name,
                 source: name,
                 contentHash: registryItemContentHash(item),
-                componentDocs: item.componentDocs!,
+                componentDocs: found.model!,
               },
             ])
           }
@@ -240,13 +241,15 @@ export const docs = new Command()
           // A typo is the overwhelmingly common reason. The index may be
           // unreachable (in which case there is nothing to suggest), so
           // suggestions are best-effort and never change the error class.
-          const candidates = await documentedComponentNames().catch(
-            () => [] as string[]
-          )
+          // An item that EXISTS but has no docs is not a typo: no candidates.
+          const candidates = itemFound
+            ? []
+            : await documentedComponentNames().catch(() => [] as string[])
           misses.push({
             name,
             suggestions: closestNames(name, candidates),
             candidates: candidates.length,
+            itemFound,
           })
           continue
         }
@@ -299,8 +302,9 @@ export const docs = new Command()
                 .join(", ")}.`,
           {
             code: RegistryErrorCode.NOT_FOUND,
-            exitCode: 1,
-            suggestion: first.suggestions.length
+            suggestion: first.itemFound
+              ? `This registry publishes no docs data for "${first.name}". Run "marko-ui show ${first.name}" for the files it installs.`
+              : first.suggestions.length
               ? `Run "marko-ui docs ${first.suggestions[0]}" instead, or "marko-ui docs --list" for every documented component.`
               : `Run "marko-ui docs --list" to see the ${
                   first.candidates || "available"
@@ -403,7 +407,6 @@ function selectExamples(
       `Unknown example ${unknown.map((id) => `"${id}"`).join(", ")} for "${model.name}".`,
       {
         code: RegistryErrorCode.USAGE_ERROR,
-        exitCode: 2,
         suggestion: `Valid example ids: ${model.examples
           .map((example) => `"${example.id}"`)
           .join(", ")}.`,

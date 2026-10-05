@@ -1,3 +1,4 @@
+import { RegistryErrorCode } from "@/src/registry/errors"
 import path from "path"
 import { BUILTIN_REGISTRIES, DEFAULT_VISUAL_STYLE } from "@/src/registry/constants"
 import {
@@ -366,7 +367,11 @@ export async function readPartialComponentsJson(
 }
 
 /** Thrown for a shadcn/ui-for-React components.json; doctor tells it apart from an unreadable one. */
-export class ReactComponentsJsonError extends CommandError {}
+export class ReactComponentsJsonError extends CommandError {
+  constructor(message: string) {
+    super(message, { code: RegistryErrorCode.UNSUPPORTED_PROJECT })
+  }
+}
 
 /**
  * Refuses a shadcn/ui-for-React components.json. One parse is not enough to

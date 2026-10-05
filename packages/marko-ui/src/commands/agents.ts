@@ -14,7 +14,7 @@ import { RegistryErrorCode } from "@/src/registry/errors"
 import type { CommandWarning } from "@/src/utils/command-result"
 import { getConfig } from "@/src/utils/get-config"
 import { getProjectComponents } from "@/src/utils/get-project-info"
-import { CommandError, handleError } from "@/src/utils/handle-error"
+import { CommandError, handleError, parseOptions } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { printEnvelope } from "@/src/utils/json-output"
@@ -63,7 +63,7 @@ agents
   .action(async (opts) => {
     try {
       setJsonMode(Boolean(opts.json))
-      const options = syncOptionsSchema.parse({
+      const options = parseOptions(syncOptionsSchema, {
         cwd: path.resolve(opts.cwd),
         check: opts.check,
         skill: opts.skill,
@@ -78,8 +78,8 @@ agents
             "components.json"
           )} found. Run ${highlighter.info(
             "marko-ui init --agents"
-          )} to set up the project and the agent docs in one step.`
-        )
+          )} to set up the project and the agent docs in one step.`, { code: RegistryErrorCode.NOT_CONFIGURED }
+)
       }
 
       if (options.check) {
@@ -111,7 +111,6 @@ agents
               "; "
             )}. Run ${highlighter.info("marko-ui agents sync")}.`,
             {
-              exitCode: 3,
               code: RegistryErrorCode.CHECK_FAILED,
               details: { problems, cwd: options.cwd },
             }

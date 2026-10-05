@@ -152,12 +152,20 @@ export function monorepoFixture(
     css?: string
     extra?: Tree
     rootExtra?: Tree
+    /** The root package.json `workspaces` globs. Default `["apps/*", "packages/*"]`. */
+    workspaces?: string[]
+    /**
+     * The project's directory under the root. Default `apps/web`, a member of
+     * the default globs; a directory the globs do not cover makes the project
+     * a NON-member of a root that still declares workspaces.
+     */
+    appDir?: string
   } = {}
 ) {
   const ws = makeWorkspace("mono")
   assertOutsideRepo(ws)
   writeTree(ws, {
-    "package.json": { name: "mono", private: true, workspaces: ["apps/*", "packages/*"] },
+    "package.json": { name: "mono", private: true, workspaces: o.workspaces ?? ["apps/*", "packages/*"] },
     "bun.lock": "",
     "packages/ui/package.json": { name: "@mono/ui", version: "0.0.0" },
     "packages/ui/src/components/ui": null,
@@ -183,7 +191,7 @@ export function monorepoFixture(
     "packages/ui/src/styles/globals.css": '@import "tailwindcss";\n',
     ...o.rootExtra,
   })
-  const app = join(ws, "apps/web")
+  const app = join(ws, o.appDir ?? "apps/web")
   markoApp(app, {
     lock: "none",
     tsconfig: "paths",
@@ -203,8 +211,14 @@ export function monorepoFixture(
       ...o.extra,
     },
   })
-  addTsPaths(app, { "@ui/*": [`${o.uiAliasPath ?? "../../packages/ui/src"}/*`] })
+  addTsPaths(app, { "@ui/*": [`${o.uiAliasPath ?? defaultUiAliasPath(o.appDir ?? "apps/web")}/*`] })
   return { ws, app, ui: join(ws, "packages/ui") }
+}
+
+/** `packages/ui/src` relative to the project, however deep the project sits. */
+function defaultUiAliasPath(appDir: string) {
+  const up = appDir.split("/").map(() => "..").join("/")
+  return `${up}/packages/ui/src`
 }
 
 /** path → sha256 (or `-> target` for a symlink) for every entry under `dir`, sorted. */

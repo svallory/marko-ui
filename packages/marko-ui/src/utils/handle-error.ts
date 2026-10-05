@@ -7,7 +7,7 @@ import {
   jsonSafe,
   looksLikeNetworkFailure,
   looksLikeTlsFailure,
-  NETWORK_ERROR_CODES,
+  exitCodeForCode,
   type NormalizedCliError,
   RegistryErrorCode,
   sanitizeDetails,
@@ -62,7 +62,8 @@ import { z } from "zod"
  * why a command must never print its JSON to stdout itself — see info.ts).
  */
 export class CommandError extends Error {
-  exitCode: number
+  /** Derived from `code` (exitCodeForCode); never set independently. */
+  readonly exitCode: number
   formatted: boolean
   code: RegistryErrorCode
   suggestion?: string
@@ -71,21 +72,38 @@ export class CommandError extends Error {
   constructor(
     message: string,
     options: {
-      exitCode?: number
       formatted?: boolean
-      code?: RegistryErrorCode
+      /** Required: nothing defaults to USAGE_ERROR. */
+      code: RegistryErrorCode
       suggestion?: string
       details?: Record<string, unknown>
-    } = {}
+    }
   ) {
     super(message)
     this.name = "CommandError"
-    this.exitCode = options.exitCode ?? 1
+    this.code = options.code
+    this.exitCode = exitCodeForCode(options.code)
     this.formatted = options.formatted ?? false
-    this.code = options.code ?? RegistryErrorCode.USAGE_ERROR
     this.suggestion = options.suggestion
     this.details = options.details
   }
+}
+
+/**
+ * Parses a command's OPTIONS. A value that does not satisfy the schema (an
+ * unknown `--distribution`, a bad `--limit`) is the caller's invocation being
+ * wrong: USAGE_ERROR, exit 2 — not VALIDATION_ERROR, which is for data (a
+ * config file, a registry item) that is malformed.
+ */
+export function parseOptions<S extends z.ZodTypeAny>(schema: S, input: unknown): z.infer<S> {
+  const result = schema.safeParse(input)
+  if (result.success) return result.data
+  const { message, details } = fromZodError(result.error)
+  throw new CommandError(message, {
+    code: RegistryErrorCode.USAGE_ERROR,
+    suggestion: "Run `marko-ui manifest <command>` for the accepted flags and values.",
+    details,
+  })
 }
 
 /**
@@ -160,7 +178,7 @@ export function normalizeError(error: unknown): NormalizedCliError {
             : {}),
         }),
       }),
-      exitCode: NETWORK_ERROR_CODES.includes(error.code) ? 4 : 1,
+      exitCode: exitCodeForCode(error.code),
       unexpected: false,
     }
   }

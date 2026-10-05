@@ -137,19 +137,19 @@ describe("every documented component", () => {
       // message-scroller's hero is larger than the 7,000-character example
       // budget and once pushed every essential out of the default answer.
       // The budget now applies to the hero only.
-      const item = JSON.parse(
-        await readFile(new URL("../../../public/r/message-scroller.json", import.meta.url), "utf8"),
-      ) as { componentDocs: ComponentDocs };
-      const markdown = renderComponentDocs(item.componentDocs);
+      const docs = JSON.parse(
+        await readFile(new URL("../../../public/r/docs/message-scroller.json", import.meta.url), "utf8"),
+      ) as ComponentDocs;
+      const markdown = renderComponentDocs(docs);
 
-      const essentials = item.componentDocs.examples.filter((e) => e.essential);
+      const essentials = docs.examples.filter((e) => e.essential);
       expect(essentials.length).toBeGreaterThan(0);
       for (const example of essentials) {
         expect(markdown, example.id).toContain(`### ${example.title}`);
       }
       // The hero (8.5k of source) is over the budget, so it is the one that
       // yields — listed under "More examples", not printed.
-      const hero = item.componentDocs.examples[0]!;
+      const hero = docs.examples[0]!;
       expect(hero.essential).toBeFalsy();
       expect(markdown).toContain(`- \`${hero.id}\` — ${hero.title}`);
       const printed = [...markdown.matchAll(/^### /gm)].length;

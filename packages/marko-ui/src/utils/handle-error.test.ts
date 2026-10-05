@@ -7,7 +7,7 @@ import {
   RegistryNotFoundError,
   RegistryValidationError,
 } from "@/src/registry/errors"
-import { jsonSafe } from "@/src/utils/error-contract"
+import { exitCodeForCode, jsonSafe } from "@/src/utils/error-contract"
 import {
   CleanExit,
   CommandError,
@@ -167,7 +167,6 @@ describe("handleError", () => {
         "check failed",
         () =>
           new CommandError("3 checks failed.", {
-            exitCode: 3,
             code: RegistryErrorCode.CHECK_FAILED,
           }),
         RegistryErrorCode.CHECK_FAILED,
@@ -389,7 +388,10 @@ describe("handleError", () => {
       // The caller printed human prose; that prose is not a machine result,
       // so the envelope still has to go out on stdout.
       const result = run(
-        new CommandError("Already printed above.", { formatted: true })
+        new CommandError("Already printed above.", {
+          formatted: true,
+          code: RegistryErrorCode.INVALID_CONFIG,
+        })
       )
       const parsed = JSON.parse(result.stdout)
 
@@ -464,14 +466,13 @@ describe("handleError", () => {
         4,
         () => new RegistryFetchError("http://x/r/a.json", 503),
       ],
-      ["fetch error", 4, () => new RegistryFetchError("http://x/r/a.json")],
-      ["command error", 1, () => new CommandError("No project found here.")],
+      ["fetch error", 4, () => new RegistryFetchError("http://x/r/a.json", 503)],
+      ["command error", 1, () => new CommandError("No project found here.", { code: RegistryErrorCode.PROJECT_NOT_FOUND })],
       [
         "check failed",
         3,
         () =>
           new CommandError("Stale.", {
-            exitCode: 3,
             code: RegistryErrorCode.CHECK_FAILED,
           }),
       ],
@@ -506,7 +507,10 @@ describe("handleError", () => {
     })
 
     it("does not repeat the boilerplate", () => {
-      const result = run(new CommandError("Already printed above.", { formatted: true }))
+      const result = run(new CommandError("Already printed above.", {
+          formatted: true,
+          code: RegistryErrorCode.INVALID_CONFIG,
+        }))
       expect(result.stderr).not.toContain("Something went wrong")
       expect(result.stderr).not.toContain("open an issue on GitHub")
     })
@@ -514,10 +518,10 @@ describe("handleError", () => {
 })
 
 describe("normalizeError", () => {
-  it("defaults an un-coded CommandError to USAGE_ERROR", () => {
-    expect(normalizeError(new CommandError("x")).envelope.error.code).toBe(
-      RegistryErrorCode.USAGE_ERROR
-    )
+  it("takes its exit code from its code, never separately", () => {
+    for (const code of Object.values(RegistryErrorCode)) {
+      expect(new CommandError("x", { code }).exitCode).toBe(exitCodeForCode(code))
+    }
   })
 
   it("preserves an explicit code, suggestion and details", () => {
@@ -565,7 +569,7 @@ describe("normalizeError", () => {
   it("reduces a RegistryError cause to a string detail", () => {
     const error = new RegistryFetchError(
       "http://x/r/a.json",
-      404,
+      503,
       "no such item",
       "server said no"
     )

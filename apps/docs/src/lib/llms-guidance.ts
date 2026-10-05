@@ -21,7 +21,7 @@ If you can run commands, use the CLI (\`bunx marko-ui\`, or the project's runner
 - Install (copy distribution): \`marko-ui add <name> -y --json\`. In \`files[].status\`, \`created\` and \`updated\` mean this run wrote the file; \`unchanged\` and \`skipped\` mean it wrote nothing (\`skipped\`: the file differs and was left alone).
 - Dependencies and files: \`marko-ui show <name> --deps\`, \`marko-ui show <name> --files\`.
 - Project state: \`marko-ui status --json\`. After changes run \`marko-ui doctor --json\`: exit 3 means broken, and each failed check carries a \`fix\`.
-- Exact flags: \`marko-ui manifest <command>\`.
+- Exact flags: \`marko-ui manifest <command>\`. Exit codes: 2 is a usage error (\`USAGE_ERROR\`, only), 3 a failed check, 4 the registry is unreachable or failing (connection, 5xx, 429; retry later), 1 everything else; branch on \`error.code\`.
 - No shell: fetch \`/docs/components/<name>.md\` (every example), never the HTML page.
 
 Pass \`--json\` and parse stdout: one minified document \`{ "$type", "version", "ok", "data" }\`. Branch on \`$type\`. A failure is \`{ "$type": "marko-ui/error", "ok": false, "error": { "code", "message", "suggestion", "details" } }\`: branch on \`error.code\`, never the message. stderr carries problems, never data.

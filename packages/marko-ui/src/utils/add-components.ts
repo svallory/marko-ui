@@ -1,7 +1,10 @@
 import path from "path"
 import { getRegistryItems } from "@/src/registry/api"
 import { configWithDefaults } from "@/src/registry/config"
-import { resolveRegistryTree } from "@/src/registry/resolver"
+import {
+  resolveRegistryTree,
+  type ResolvedDocsFailure,
+} from "@/src/registry/resolver"
 import {
   configSchema,
   registryItemFileSchema,
@@ -34,10 +37,10 @@ import type {
   FileChange,
 } from "@/src/utils/command-result"
 import { WarningCode, toFileChanges } from "@/src/utils/command-result"
-import { updateCss } from "@/src/utils/updaters/update-css"
+import { assertCssWritable, updateCss } from "@/src/utils/updaters/update-css"
 import { updateDependencies } from "@/src/utils/updaters/update-dependencies"
 import { updateEnvVars } from "@/src/utils/updaters/update-env-vars"
-import { updateFiles } from "@/src/utils/updaters/update-files"
+import { assertFilesWritable, updateFiles } from "@/src/utils/updaters/update-files"
 import { writeDocsCacheEntries } from "@/src/utils/docs-cache"
 import { z } from "zod"
 
@@ -118,12 +121,14 @@ export async function addComponents(
       throw new CommandError(
         error instanceof Error ? error.message : String(error),
         {
-          code: known
-            ? error.code
-            : isFileWriteFailure(error)
-              ? RegistryErrorCode.LOCAL_FILE_ERROR
-              : undefined,
-          exitCode: error instanceof CommandError ? error.exitCode : undefined,
+          code:
+            error instanceof CommandError
+              ? error.code
+              : known
+                ? error.code
+                : isFileWriteFailure(error)
+                  ? RegistryErrorCode.LOCAL_FILE_ERROR
+                  : RegistryErrorCode.UNKNOWN_ERROR,
           suggestion: isFileWriteFailure(error)
             ? isPathCollision(error)
               ? "Check that the path is a directory, not a file, and that you can write to it. Files listed in details.written are already on disk and are correct; remove the blocking file or directory by hand, then re-run."
@@ -235,6 +240,13 @@ async function addProjectComponents(
 
   const tailwindVersion = await getProjectTailwindVersionFromConfig(config)
 
+  // Every write target is judged BEFORE the first side effect. The per-file
+  // guard in updateFiles would still refuse, but only after the dependencies
+  // below were installed: a refused add must leave package.json and the
+  // lockfile as it found them.
+  await assertFilesWritable(tree.files, config, { path: options.path })
+  assertCssWritable(tree.css, config, { cssVars: tree.cssVars })
+
   const dependencies =
     (await updateDependencies(tree.dependencies, tree.devDependencies, config, {
       silent: options.silent,
@@ -295,7 +307,7 @@ async function addProjectComponents(
   return {
     files: withCssFile(toFileChanges(writtenGroups), cssPath, config.resolvedPaths.cwd),
     dependencies,
-    warnings: collectWarnings(dependencies, tree.docs),
+    warnings: collectWarnings(dependencies, tree.docs, tree.docsFailures),
     resolved: names.resolved,
     registryDependencies: names.registryDependencies,
   }
@@ -363,7 +375,8 @@ function withCssFile(
  */
 function collectWarnings(
   dependencies: DependencyChange[],
-  docs: string | null | undefined
+  docs: string | null | undefined,
+  docsFailures: ResolvedDocsFailure[] = []
 ): CommandWarning[] {
   const warnings: CommandWarning[] = []
   const failed = dependencies.filter((dep) => dep.status === "failed")
@@ -372,6 +385,13 @@ function collectWarnings(
       code: WarningCode.DEPENDENCY_INSTALL_FAILED,
       message: `Could not install ${failed.map((dep) => dep.name).join(", ")}. Component files were still written.`,
       fix: `Install them with your package manager, e.g. bun add ${failed.map((dep) => dep.name).join(" ")}`,
+    })
+  }
+  if (docsFailures.length) {
+    warnings.push({
+      code: WarningCode.DOCS_CACHE_FAILED,
+      message: `Could not fetch the docs for ${docsFailures.map((failure) => failure.name).join(", ")} (${docsFailures[0]!.message}). The components were installed; \`docs\` will read the registry instead.`,
+      fix: `marko-ui docs ${docsFailures[0]!.name}`,
     })
   }
   if (docs) {
@@ -404,6 +424,13 @@ async function addWorkspaceComponents(
 
   const rootSpinner = spinner(`Installing components.`)?.start()
 
+  // The allowed roots are the INVOKING project's, never the target package's:
+  // a target that is a member of some workspace would otherwise widen the
+  // guard to that whole workspace for a project that is not a member of it.
+  // For a project inside the workspace (the standard layout) both are the same
+  // root, so a sibling `packages/ui` stays a legal destination.
+  const roots = rootsFor(config.resolvedPaths.cwd)
+
   // Process global updates for the main target.
   // These should typically go to the UI package in a workspace.
   const mainTargetConfig = workspaceConfig.ui
@@ -414,26 +441,9 @@ async function addWorkspaceComponents(
     mainTargetConfig.resolvedPaths.ui
   )
 
-  // 1. Update dependencies.
-  const workspaceDependencies =
-    (await updateDependencies(
-      tree.dependencies,
-      tree.devDependencies,
-      mainTargetConfig,
-      {
-        silent: true,
-        interactive: options.interactive,
-      }
-    )) ?? []
-
-  // 3. Update environment variables.
-  if (tree.envVars) {
-    await updateEnvVars(tree.envVars, mainTargetConfig, {
-      silent: true,
-    })
-  }
-
-  // 5. Group files by their target config and update files.
+  // Group files by their target config first: every target is judged BEFORE
+  // the first side effect (see the preflight below), and the grouping is what
+  // says which package each file lands in.
   const filesByTarget = new Map<TargetAliasKey, typeof tree.files>()
   const FILE_TYPE_TO_CONFIG_KEY: Record<string, TargetAliasKey> = {
     "registry:ui": "ui",
@@ -461,6 +471,38 @@ async function addWorkspaceComponents(
       filesByTarget.set(targetKey, [])
     }
     filesByTarget.get(targetKey)!.push(file)
+  }
+
+  // Pre-flight: refuse an unsafe target before dependencies are installed, so
+  // a refused add leaves package.json and the lockfile untouched. Each group
+  // is judged against the roots of the package it lands in.
+  for (const targetKey of Array.from(filesByTarget.keys())) {
+    const targetConfig = getTargetConfigForKey(targetKey)
+    const targetFiles = filesByTarget.get(targetKey)!
+    await assertFilesWritable(targetFiles, targetConfig, {
+      path: options.path,
+      roots,
+    })
+  }
+  assertCssWritable(tree.css, mainTargetConfig, { cssVars: tree.cssVars, roots })
+
+  // 1. Update dependencies.
+  const workspaceDependencies =
+    (await updateDependencies(
+      tree.dependencies,
+      tree.devDependencies,
+      mainTargetConfig,
+      {
+        silent: true,
+        interactive: options.interactive,
+      }
+    )) ?? []
+
+  // 3. Update environment variables.
+  if (tree.envVars) {
+    await updateEnvVars(tree.envVars, mainTargetConfig, {
+      silent: true,
+    })
   }
 
   // Process each target config with its appropriate workspace config.
@@ -499,9 +541,9 @@ async function addWorkspaceComponents(
         plannedFiles,
         // B2, workspace path: same per-file accumulation.
         written: alreadyWritten,
-        // Roots for the TARGET package: the guard's workspace root is what
-        // makes a sibling `packages/ui` a legal destination (B1).
-        roots: rootsFor(targetConfig.resolvedPaths.cwd),
+        // The invoking project's roots: its workspace root is what makes a
+        // sibling `packages/ui` a legal destination (B1).
+        roots,
       })) ?? {
       filesCreated: [],
       filesUpdated: [],
@@ -541,6 +583,7 @@ async function addWorkspaceComponents(
     options.overwriteCssVars
   )
   await updateCss(tree.css, mainTargetConfig, {
+    roots,
     silent: true,
     cssVars: tree.cssVars,
     overwriteCssVars,
@@ -637,7 +680,7 @@ async function addWorkspaceComponents(
   return {
     files: resultFiles,
     dependencies: workspaceDependencies,
-    warnings: collectWarnings(workspaceDependencies, tree.docs),
+    warnings: collectWarnings(workspaceDependencies, tree.docs, tree.docsFailures),
     resolved: names.resolved,
     registryDependencies: names.registryDependencies,
   }
@@ -653,7 +696,9 @@ async function resolveAndValidateRegistryTree(
   })?.start()
   const tree =
     options.resolvedTree ??
-    (await resolveRegistryTree(components, configWithDefaults(config)))
+    (await resolveRegistryTree(components, configWithDefaults(config), {
+      fetchDocs: true,
+    }))
 
   if (!tree) {
     registrySpinner?.fail()

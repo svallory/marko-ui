@@ -8,7 +8,7 @@ import {
   getConfig,
   readPartialComponentsJson,
 } from "@/src/utils/get-config"
-import { CleanExit, CommandError, handleError } from "@/src/utils/handle-error"
+import { CleanExit, CommandError, handleError, parseOptions } from "@/src/utils/handle-error"
 import { printEnvelope } from "@/src/utils/json-output"
 import { setJsonMode } from "@/src/utils/output-mode"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
@@ -44,7 +44,7 @@ export const view = new Command()
       // Recorded first, because `show` is ALWAYS machine output: a failure
       // takes the JSON error path whether or not --json was passed.
       setJsonMode(true)
-      const options = viewOptionsSchema.parse({
+      const options = parseOptions(viewOptionsSchema, {
         cwd: path.resolve(opts.cwd),
         files: opts.files,
         deps: opts.deps,
@@ -119,10 +119,11 @@ export const view = new Command()
         throw new CleanExit(0)
       }
 
-      // `componentDocs` is stripped from `data`: it is the model
-      // `marko-ui docs` renders, with every example's source inlined — a few
-      // hundred KB per component. `show` answers "what would this install
-      // write", which is files and dependencies.
+      // Docs are a `componentDocsRef` (a URL), not the model, so an item from
+      // this repo's registry is already the size of the files and dependencies
+      // it describes. A legacy item that still EMBEDS the model (a few hundred
+      // KB with every example's source) has it stripped here: `show` answers
+      // "what would this install write". `marko-ui docs` follows the reference.
       printEnvelope(
         "marko-ui/show",
         payload.map((item) => {

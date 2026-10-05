@@ -1,5 +1,5 @@
-import { getRegistryItems, getShadcnRegistryIndex } from "@/src/registry/api"
-import { RegistryError, RegistryErrorCode, RegistryItemNotFoundError } from "@/src/registry/errors"
+import { getRegistryItemDocs, getShadcnRegistryIndex } from "@/src/registry/api"
+import { RegistryError, RegistryErrorCode } from "@/src/registry/errors"
 import { resetJsonMode } from "@/src/utils/output-mode"
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
@@ -10,7 +10,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vites
 import { docs } from "./docs"
 
 vi.mock("@/src/registry/api", () => ({
-  getRegistryItems: vi.fn(),
+  getRegistryItemDocs: vi.fn(),
   getShadcnRegistryIndex: vi.fn(),
 }))
 
@@ -23,7 +23,7 @@ vi.mock("@/src/registry/api", () => ({
  * `--remote` always takes the registry; no components.json → the registry.
  *
  * Every fixture is a real directory tree; the registry is the only stub, so
- * "no network" is asserted as "getRegistryItems was never called".
+ * "no network" is asserted as "getRegistryItemDocs was never called".
  */
 const exitSpy = vi.spyOn(process, "exit").mockImplementation((code) => {
   throw new Error(`process.exit:${code}`)
@@ -59,15 +59,31 @@ function registryItem(name: string, marker = "registry") {
   }
 }
 
+/**
+ * Adapts a hand-written fixture item (which carries its model under
+ * `componentDocs`, the shape these cases are written in) to what
+ * `getRegistryItemDocs` returns: the item with only a `componentDocsRef`, and
+ * the model the reference resolved to.
+ */
+function asItemDocs(item: unknown) {
+  if (!item) return { item: undefined, model: undefined }
+  const { componentDocs, ...rest } = item as { name: string; componentDocs?: unknown }
+  return {
+    item: componentDocs
+      ? { ...rest, componentDocsRef: `https://registry.test/r/docs/${rest.name}.json` }
+      : rest,
+    model: componentDocs,
+  }
+}
+
 function stubRegistry(items: Record<string, unknown>) {
-  vi.mocked(getRegistryItems).mockImplementation(async (names: string[]) => {
-    for (const name of names) if (!items[name]) throw new RegistryItemNotFoundError(name)
-    return names.map((name) => items[name]) as never
-  })
+  vi.mocked(getRegistryItemDocs).mockImplementation(async (name: string) =>
+    asItemDocs(items[name]) as never
+  )
 }
 
 function offline() {
-  vi.mocked(getRegistryItems).mockRejectedValue(
+  vi.mocked(getRegistryItemDocs).mockRejectedValue(
     new RegistryError("fetch failed", { code: RegistryErrorCode.NETWORK_ERROR })
   )
 }
@@ -193,7 +209,7 @@ describe("docs: copy distribution", () => {
 
     const r = await run(["button", "--cwd", root])
     expect(r.exitCode).toBeUndefined()
-    expect(getRegistryItems).not.toHaveBeenCalled()
+    expect(getRegistryItemDocs).not.toHaveBeenCalled()
     expect(r.stdout).toContain("cached description.")
     expect(r.stdout).not.toContain("## Install")
     expect(r.stdout).not.toContain("marko-ui add button")
@@ -204,16 +220,16 @@ describe("docs: copy distribution", () => {
     const root = project({ installed: ["button"] })
 
     const first = await run(["button", "--cwd", root])
-    expect(getRegistryItems).toHaveBeenCalledTimes(1)
+    expect(getRegistryItemDocs).toHaveBeenCalledTimes(1)
     expect(first.stdout).toContain("registry description.")
     expect(first.stdout).not.toContain("## Install")
     expect(first.stderr).toBe("")
     const entry = JSON.parse(readFileSync(cacheFile(root, "button"), "utf8"))
     expect(entry.contentHash).toMatch(/^[0-9a-f]{64}$/)
 
-    vi.mocked(getRegistryItems).mockClear()
+    vi.mocked(getRegistryItemDocs).mockClear()
     const second = await run(["button", "--cwd", root])
-    expect(getRegistryItems).not.toHaveBeenCalled()
+    expect(getRegistryItemDocs).not.toHaveBeenCalled()
     expect(second.stderr).toBe("source: installed (cache)\n")
   })
 
@@ -221,7 +237,7 @@ describe("docs: copy distribution", () => {
     const root = project()
 
     const r = await run(["button", "--cwd", root])
-    expect(getRegistryItems).toHaveBeenCalledTimes(1)
+    expect(getRegistryItemDocs).toHaveBeenCalledTimes(1)
     expect(r.stdout).toContain("## Install")
     expect(r.stdout).toContain("bunx marko-ui add button -y")
     expect(r.stderr).toBe("")
@@ -234,7 +250,7 @@ describe("docs: copy distribution", () => {
     rmSync(join(root, "src/components/ui/button"), { recursive: true })
 
     const r = await run(["button", "--cwd", root])
-    expect(getRegistryItems).toHaveBeenCalledTimes(1)
+    expect(getRegistryItemDocs).toHaveBeenCalledTimes(1)
     expect(r.stdout).toContain("registry description.")
     expect(r.stdout).toContain("bunx marko-ui add button -y")
   })
@@ -244,7 +260,7 @@ describe("docs: copy distribution", () => {
     writeCache(root, "button")
 
     const r = await run(["button", "--cwd", root, "--remote"])
-    expect(getRegistryItems).toHaveBeenCalledTimes(1)
+    expect(getRegistryItemDocs).toHaveBeenCalledTimes(1)
     expect(r.stdout).toContain("registry description.")
     // Still installed, so still no install line.
     expect(r.stdout).not.toContain("## Install")
@@ -289,7 +305,7 @@ describe("docs: copy distribution", () => {
     dirs.push(root)
 
     const r = await run(["button", "--cwd", root])
-    expect(getRegistryItems).toHaveBeenCalledTimes(1)
+    expect(getRegistryItemDocs).toHaveBeenCalledTimes(1)
     expect(r.stdout).toContain("bunx marko-ui add button -y")
   })
 })
@@ -300,7 +316,7 @@ describe("docs: import distribution", () => {
     installPackage(root, { version: "0.7.0", docs: true, components: ["button"] })
 
     const r = await run(["button", "--cwd", root])
-    expect(getRegistryItems).not.toHaveBeenCalled()
+    expect(getRegistryItemDocs).not.toHaveBeenCalled()
     expect(r.stdout).toContain("packaged description.")
     expect(r.stdout).not.toContain("## Install")
     expect(r.stdout).toContain('import Button from "@marko-ui/shadcn/ui/button/button.marko";')
@@ -312,7 +328,7 @@ describe("docs: import distribution", () => {
     installPackage(root, { version: "0.6.0", docs: false, components: ["button"] })
 
     const r = await run(["button", "--cwd", root])
-    expect(getRegistryItems).toHaveBeenCalledTimes(1)
+    expect(getRegistryItemDocs).toHaveBeenCalledTimes(1)
     expect(r.stdout).toContain("registry description.")
     expect(r.stderr).toContain("@marko-ui/shadcn 0.6.0 ships no docs data; reading the registry instead.")
     expect(r.stderr.trim().split("\n")).toHaveLength(1)
@@ -322,7 +338,7 @@ describe("docs: import distribution", () => {
     const root = project({ distribution: "import" })
 
     const r = await run(["button", "--cwd", root])
-    expect(getRegistryItems).toHaveBeenCalledTimes(1)
+    expect(getRegistryItemDocs).toHaveBeenCalledTimes(1)
     expect(r.stdout).toContain("## Install")
     expect(r.stdout).not.toContain("marko-ui add")
   })

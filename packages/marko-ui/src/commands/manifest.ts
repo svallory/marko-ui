@@ -137,7 +137,6 @@ export function buildManifest(program: Command, commandName?: string) {
         .map((cmd) => cmd.name())
         .join(", ")}.`,
       {
-        exitCode: 2,
         code: RegistryErrorCode.USAGE_ERROR,
         suggestion: `Run "marko-ui manifest" for every command, or "marko-ui manifest <command>" for one.`,
         details: { requested: commandName, known: commands.map((cmd) => cmd.name()) },
@@ -164,9 +163,9 @@ commands: [describeCommand(found)],
 const EXIT_CODES = {
   "0": "success",
   "1": "operational failure",
-  "2": "usage error (unknown command/option, bad arguments)",
+  "2": "usage error: the invocation is wrong (unknown command or option, a missing or invalid argument or flag value). The code USAGE_ERROR and exit 2 always go together",
   "3": "doctor/validate/agents-check found problems",
-  "4": "network error or registry unreachable (registry-backed commands)",
+  "4": "network error or registry failure: the registry could not be reached or is failing; the same command may succeed later (connection failure, HTTP 5xx or 429). Every other HTTP status exits 1 with its own code: 401 UNAUTHORIZED, 403 FORBIDDEN, 404 NOT_FOUND, 410 GONE, REQUEST_REJECTED for an unexpected 4xx",
 }
 
 /** The top-level commands a user can name (commander's implicit `help`). */

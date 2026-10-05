@@ -1,3 +1,4 @@
+import { RegistryErrorCode } from "@/src/registry/errors"
 import { getRegistryItems } from "@/src/registry/api"
 import { getConfig } from "@/src/utils/get-config"
 import { CommandError } from "@/src/utils/handle-error"
@@ -27,22 +28,11 @@ vi.mock("@/src/registry/api", () => ({
     {
       name: "button",
       files: [],
-      // Present on a real item: `show` must not print it.
-      componentDocs: {
-        name: "button",
-        title: "Button",
-        description: "Displays a button.",
-        installCommand: "bunx marko-ui add button -y",
-        usageTags: "<Button>",
-        importSnippet: "",
-        usageSnippet: "<Button />",
-        parts: [],
-        props: [],
-        events: [],
-        keyboard: [],
-        accessibilityNotes: [],
-        examples: [{ id: "demo", title: "Demo", source: "<Button />" }],
-      },
+      // What a real item carries: a reference to the docs file, never the model.
+      componentDocsRef: "https://registry.test/r/docs/button.json",
+      // A registry built before the sidecar still embeds the model: `show`
+      // strips it (a few hundred KB) and keeps the reference.
+      componentDocs: { name: "button" },
     },
   ]),
 }))
@@ -90,13 +80,12 @@ function mockProcessExit() {
   })
 }
 
-describe("view command: the embedded docs model", () => {
-  // `componentDocs` is the model `marko-ui docs` renders — every example's
-  // source inlined, a few hundred KB per component. `show` answers "what
-  // would this install write", so it strips the key from the envelope's data
-  // rather than burying files and dependencies under documentation nobody
-  // asked for.
-  it("prints the item without componentDocs", async () => {
+describe("view command: the docs reference", () => {
+  // The docs model is its own registry file, with every example's source
+  // inlined (a few hundred KB per component). `show` answers "what would this
+  // install write", so its item carries only the `componentDocsRef` URL that
+  // `marko-ui docs` follows, never the model itself.
+  it("prints the item with the docs reference and no embedded model", async () => {
     const exit = mockProcessExit()
     // `printEnvelope` writes to stdout, not console.log.
     const chunks: string[] = []
@@ -118,6 +107,10 @@ describe("view command: the embedded docs model", () => {
     // `show` prints one envelope, so the item is at `data[0]`.
     expect(printed[0].$type).toBe("marko-ui/show")
     expect(printed[0].data[0]).toMatchObject({ name: "button", files: [] })
+    expect(printed[0].data[0]).toHaveProperty(
+      "componentDocsRef",
+      "https://registry.test/r/docs/button.json",
+    )
     expect(printed[0].data[0]).not.toHaveProperty("componentDocs")
   })
 })
@@ -131,7 +124,9 @@ describe("view command", () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {})
     const exit = mockProcessExit()
     vi.mocked(getConfig).mockRejectedValueOnce(
-      new CommandError("The components.json belongs to shadcn/ui for React.")
+      new CommandError("The components.json belongs to shadcn/ui for React.", {
+        code: RegistryErrorCode.UNSUPPORTED_PROJECT,
+      })
     )
 
     await expect(

@@ -1,3 +1,4 @@
+import { RegistryErrorCode } from "@/src/registry/errors"
 import path from "path"
 import { getRegistries } from "@/src/registry/api"
 import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
@@ -5,7 +6,7 @@ import {
   assertNotReactComponentsJson,
   writeConfigRegistries,
 } from "@/src/utils/get-config"
-import { CommandError, handleError } from "@/src/utils/handle-error"
+import { CommandError, handleError, parseOptions } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { isInteractive } from "@/src/utils/interactive"
 import { logger } from "@/src/utils/logger"
@@ -35,7 +36,7 @@ export const add = new Command()
   .option("-s, --silent", "mute output.", false)
   .action(async (registries: string[], opts) => {
     try {
-      const options = addOptionsSchema.parse({
+      const options = parseOptions(addOptionsSchema, {
         cwd: path.resolve(opts.cwd),
         silent: opts.silent,
       })
@@ -82,7 +83,7 @@ export function assertHasRegistries(
     )} (the URL must include the ${highlighter.info("{name}")} placeholder). Run ${highlighter.info(
       "marko-ui registry list"
     )} to see what is available.`,
-    { exitCode: 2 }
+    { code: RegistryErrorCode.USAGE_ERROR }
   )
 }
 
