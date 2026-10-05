@@ -19,8 +19,7 @@ import { getProjectComponents } from "@/src/utils/get-project-info"
 import {
   CleanExit,
   CommandError,
-  handleError,
-} from "@/src/utils/handle-error"
+  handleError, parseOptions } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { printEnvelope } from "@/src/utils/json-output"
@@ -66,7 +65,7 @@ export const diff = new Command()
   .action(async (components: string[], opts) => {
     try {
       setJsonMode(Boolean(opts.json))
-      const options = diffOptionsSchema.parse({
+      const options = parseOptions(diffOptionsSchema, {
         components,
         cwd: path.resolve(opts.cwd),
         nameOnly: opts.nameOnly,
@@ -76,7 +75,7 @@ export const diff = new Command()
       if (!existsSync(options.cwd)) {
         throw new CommandError(
           `The path ${options.cwd} does not exist. Please try again.`,
-          { code: RegistryErrorCode.USAGE_ERROR, details: { cwd: options.cwd } }
+          { code: RegistryErrorCode.PROJECT_NOT_FOUND, details: { cwd: options.cwd } }
         )
       }
 

@@ -76,7 +76,6 @@ function applyUsageErrorExitCode(command: Command) {
       if (isJsonModeForErrors()) {
         const envelope = normalizeError(
           new CommandError(error.message.replace(/^error:\s*/, ""), {
-            exitCode: 2,
             code: RegistryErrorCode.USAGE_ERROR,
             suggestion:
               "Run `marko-ui manifest` for the full command, flag and argument surface.",

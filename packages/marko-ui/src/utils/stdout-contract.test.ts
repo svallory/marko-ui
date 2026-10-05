@@ -117,17 +117,16 @@ const classes: [string, unknown, number][] = [
     new CommandError("Name a component.", {
       code: RegistryErrorCode.USAGE_ERROR,
     }),
-    1,
+    2,
   ],
   [
     "formatted (caller already printed)",
-    new CommandError("Already printed.", { formatted: true }),
+    new CommandError("Already printed.", { formatted: true, code: RegistryErrorCode.INVALID_CONFIG }),
     1,
   ],
   [
     "check failed",
     new CommandError("3 checks failed.", {
-      exitCode: 3,
       code: RegistryErrorCode.CHECK_FAILED,
     }),
     3,

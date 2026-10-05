@@ -128,7 +128,7 @@
     },
     "packages/marko-ui": {
       "name": "marko-ui",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "bin": {
         "marko-ui": "dist/index.js",
       },
@@ -164,7 +164,7 @@
     },
     "packages/shadcn": {
       "name": "@marko-ui/shadcn",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "dependencies": {
         "@hugeicons/core-free-icons": "^4.3.0",
         "@internationalized/date": "3.12.3",

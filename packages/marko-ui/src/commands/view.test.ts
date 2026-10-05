@@ -1,3 +1,4 @@
+import { RegistryErrorCode } from "@/src/registry/errors"
 import { getRegistryItems } from "@/src/registry/api"
 import { getConfig } from "@/src/utils/get-config"
 import { CommandError } from "@/src/utils/handle-error"
@@ -123,7 +124,9 @@ describe("view command", () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {})
     const exit = mockProcessExit()
     vi.mocked(getConfig).mockRejectedValueOnce(
-      new CommandError("The components.json belongs to shadcn/ui for React.")
+      new CommandError("The components.json belongs to shadcn/ui for React.", {
+        code: RegistryErrorCode.UNSUPPORTED_PROJECT,
+      })
     )
 
     await expect(

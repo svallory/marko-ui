@@ -3,7 +3,7 @@ import * as path from "path"
 import { resolveGitHubRegistrySource } from "@/src/registry/address"
 import { validateGitHubRegistrySource } from "@/src/registry/github"
 import { validateRegistry } from "@/src/registry/validate"
-import { handleError } from "@/src/utils/handle-error"
+import { handleError, parseOptions } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { spinner } from "@/src/utils/spinner"
@@ -39,7 +39,7 @@ export const validate = new Command()
     let validationSpinner: ReturnType<typeof spinner> | undefined
 
     try {
-      const options = validateOptionsSchema.parse({
+      const options = parseOptions(validateOptionsSchema, {
         cwd: path.resolve(opts.cwd),
         registryFile,
       })

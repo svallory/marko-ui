@@ -15,8 +15,7 @@ import { createConfig, getConfig, type Config } from "@/src/utils/get-config"
 import {
   CleanExit,
   CommandError,
-  handleError,
-} from "@/src/utils/handle-error"
+  handleError, parseOptions } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { isInteractive } from "@/src/utils/interactive"
 import { logger } from "@/src/utils/logger"
@@ -70,7 +69,7 @@ export const add = new Command()
       // spinner and the human lists go quiet for the whole run — stdout must
       // end up carrying exactly one document.
       setJsonMode(Boolean(opts.json))
-      const options = addOptionsSchema.parse({
+      const options = parseOptions(addOptionsSchema, {
         components,
         ...opts,
         cwd: path.resolve(opts.cwd),
@@ -172,7 +171,8 @@ export const add = new Command()
         // A preview must not initialize anything: resolve against the config
         // init would write and say so.
         if (!options.components?.length) {
-          throw new CommandError("Name a component to preview.")
+          throw new CommandError("Name a component to preview.", { code: RegistryErrorCode.USAGE_ERROR }
+)
         }
         const defaults = await buildDefaultConfig(options.cwd)
         const previewConfig = (
@@ -501,7 +501,7 @@ export function assertHasComponents(
     )} (or ${highlighter.info("marko-ui add --all")}). Run ${highlighter.info(
       "marko-ui search"
     )} to list what is available.`,
-    { exitCode: 2 }
+    { code: RegistryErrorCode.USAGE_ERROR }
   )
 }
 
@@ -572,8 +572,8 @@ export function assertAddableDistribution(
           )}.\n`) +
       `To copy component source into the project instead, run ${highlighter.info(
         "marko-ui eject"
-      )}.`
-  )
+      )}.`, { code: RegistryErrorCode.WRONG_DISTRIBUTION }
+)
 }
 
 /** Names of the registry's ui components, or undefined when the index is unreachable. */

@@ -124,7 +124,7 @@ describe("distribution: copy, import, eject", () => {
     const ws = makeWorkspace()
     markoApp(ws)
     const init = await cli(ws, ["init", "--distribution", "bogus"])
-    expect([1, 2]).toContain(init.code)
+    expect(init.code).toBe(2)
     expect(exists(ws, "components.json")).toBe(false)
   })
 })

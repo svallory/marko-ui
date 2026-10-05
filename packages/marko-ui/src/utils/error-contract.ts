@@ -120,6 +120,22 @@ export type NormalizedCliError = {
   raw?: unknown
 }
 
+/**
+ * The ONE place a code becomes an exit code, so the manifest's exit-code table
+ * cannot disagree with what a command does:
+ *  - USAGE_ERROR -> 2 (and nothing else is 2)
+ *  - CHECK_FAILED -> 3
+ *  - NETWORK_ERROR, FETCH_ERROR -> 4: the registry could not be reached or is
+ *    failing (connection failure, 5xx, 429); the same command may succeed later
+ *  - everything else -> 1
+ */
+export function exitCodeForCode(code: string): number {
+  if (code === RegistryErrorCode.USAGE_ERROR) return 2
+  if (code === RegistryErrorCode.CHECK_FAILED) return 3
+  if (NETWORK_ERROR_CODES.includes(code)) return 4
+  return 1
+}
+
 /** Registry codes that mean "the network or the registry host failed". */
 export const NETWORK_ERROR_CODES: readonly string[] = [
   RegistryErrorCode.NETWORK_ERROR,

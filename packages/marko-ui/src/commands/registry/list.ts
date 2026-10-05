@@ -2,7 +2,7 @@ import path from "path"
 import { getRegistries, getRegistriesConfig } from "@/src/registry/api"
 import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
 import { assertNotReactComponentsJson } from "@/src/utils/get-config"
-import { handleError } from "@/src/utils/handle-error"
+import { handleError, parseOptions } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { printEnvelope } from "@/src/utils/json-output"
 import { logger } from "@/src/utils/logger"
@@ -40,7 +40,7 @@ export const list = new Command()
     try {
       setJsonMode(Boolean(opts.json))
 
-      const options = listOptionsSchema.parse({
+      const options = parseOptions(listOptionsSchema, {
         cwd: path.resolve(opts.cwd),
         json: opts.json,
         indexOnly: opts.indexOnly,

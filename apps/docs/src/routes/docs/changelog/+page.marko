@@ -9,6 +9,7 @@ import { COMPONENTS } from "../../../lib/components-list.ts";
 
 static const TOC = [
   { id: "unreleased", label: "Unreleased" },
+  { id: "0.7.0", label: "0.7.0" },
   { id: "0.6.0", label: "0.6.0" },
   { id: "0.5.0", label: "0.5.0" },
   { id: "0.4.1", label: "0.4.1" },
@@ -29,6 +30,35 @@ export interface ChangelogEntry {
 }
 
 static const ENTRIES: ChangelogEntry[] = [
+  {
+    version: "0.7.0",
+    date: "2026-10-05",
+    title: "An agent-readable CLI: envelopes, error codes, local docs, a write guard",
+    summary:
+      "The CLI's output is now meant to be parsed. Every JSON document shares one envelope and is minified when piped, failures are a coded error on stderr (or one error document under `--json`), `add`, `init`, `eject`, `diff` and `agents sync` report exactly what they changed, and `docs` renders locally from the installed version instead of fetching the docs site. Breaking for anything that parsed 0.6.0 output; nothing about the components themselves changed.",
+    changes: [
+      "Breaking: `search --json`, `status --json` and `show` return an envelope, `{ $type, version, ok, data }`, instead of a bare object or array. `search --json` used to be `{ pagination, items }`, now `data` holds `{ pagination, items }`; `show` used to be a bare array of items, now `data` is that array. Branch on `$type` (`marko-ui/search`, `marko-ui/status`, `marko-ui/show`, `marko-ui/docs`, `marko-ui/docs.list`, `marko-ui/doctor`, `marko-ui/registry.list`, `marko-ui/manifest`).",
+      "Breaking: JSON is minified on one line when stdout is not a terminal (it was always indented by 2); a terminal still gets indented output. There is no `--pretty` flag. Parse it, do not diff it as text.",
+      "Breaking: `search` items carry only `name`, `type`, `description` and `registry`. `title` and `addCommandArgument` are gone; `type` is `ui` or `block` instead of `registry:ui`. `data.addArgument` states once how to install a result from a non-default registry (`<registry>/<name>`), and only appears when one is in the results.",
+      "Breaking: `search` ranks by whole-word relevance in name, title and description instead of fuzzysort subsequence matching with a threshold of -10000, which printed 95 results for `search @marko-ui -q date` (now 3). Stopwords are dropped, a query made only of stopwords falls back to an exact name or title match, and typos are tolerated on names and titles only (none under 5 characters, one edit at 5-6, two at 7 or more). Piped output prints full descriptions; only a terminal shortens them to 80 characters.",
+      "Breaking: `status --json` drops `config.style` (always `default`), adds `config.distribution`, `config.visualStyle` and `config.iconLibrary`, and reports every path in `config.resolvedPaths` relative to `cwd`, which is given once, absolute. Running it at a monorepo root is a `MONOREPO_ROOT` error, not a `{ error: \"monorepo_root\" }` object.",
+      "Breaking: errors go to stderr. Every logger used to write to stdout, so a failing command polluted the output a script was capturing; now stdout carries only the result and stderr carries errors and warnings. A human error reads `Error [CODE]: message` plus a `Suggestion:` line, and the \"open an issue on GitHub\" text appears only for a genuinely unexpected throw (set `MARKO_UI_DEBUG=1` for its stack, on stderr).",
+      "New: under `--json`, a failure is exactly one document on stdout, `{ \"$type\": \"marko-ui/error\", \"version\": 1, \"ok\": false, \"error\": { \"code\", \"message\", \"suggestion\"?, \"details\"? } }`, including usage errors. `show` prints this in every mode, terminal included. Messages and details never carry a stack, a home-directory path or a URL with credentials or a query string.",
+      "New error codes, listed with the rest under `errorCodes` in `marko-ui manifest`: `TLS_ERROR` (exit 1: retrying a bad certificate cannot help), `USAGE_ERROR`, `MONOREPO_ROOT`, `CHECK_FAILED` (exit 3), `PROJECT_NOT_FOUND`, `SKILL_INSTALL_FAILED`, `UNSAFE_WRITE_TARGET`, and codes that name the state a command cannot run in instead of a generic failure: `NOT_A_MARKO_PROJECT`, `UNSUPPORTED_PROJECT` (Marko below 6, Tailwind v3, a shadcn/ui-for-React `components.json`), `ALREADY_INITIALIZED`, `WRONG_DISTRIBUTION` (`eject` on a copy project, `add` on an import project), `PACKAGE_NOT_INSTALLED`, `DEPENDENCY_INSTALL_FAILED` and `REQUEST_REJECTED`. A registry URL that is not http or https, or a malformed `components.json`, is `INVALID_CONFIG` (exit 1) instead of an uncaught exception.",
+      "Breaking: exit codes now follow error codes, in one place. `2` is `USAGE_ERROR` and nothing else is `2`: a wrong or missing argument or flag value (`search` with no registry, `search --type nope`, `init --base-color nope`) exits 2, where several of these exited 1 while printing USAGE_ERROR. `3` is `CHECK_FAILED`. `4` means the registry could not be reached or is failing and the same command may succeed later: a refused connection, DNS failure or timeout (`NETWORK_ERROR`, which used to surface as `UNKNOWN_ERROR` plus the issue-tracker text), any HTTP 5xx, or 429 (`FETCH_ERROR`). Every other HTTP status exits 1 with its own code: 401 `UNAUTHORIZED`, 403 `FORBIDDEN`, 404 `NOT_FOUND`, 410 `GONE`, and `REQUEST_REJECTED` for an unexpected 4xx such as 400. Everything else exits 1. Script authors: branch on `error.code`, and read `exitCodes` and `errorCodes` from `marko-ui manifest` rather than from this page.",
+      "New: an unknown item name is `NOT_FOUND` with up to three \"did you mean\" candidates in `error.suggestion` and `details.suggestions`.",
+      "New: `--json` on `add`, `init`, `eject`, `diff` and `agents sync`, all returning one result shape: `files` (`{ path, status }`, relative to the `cwd` given once), `warnings` (`{ code, message, fix }`) and `next`. A warning does not make `ok` false. `status` is `created`, `updated`, `unchanged`, `skipped` (exists, differs, left alone; `--overwrite` would replace it) or `removed`, and for `diff` `unchanged`, `modified` or `missing`. `add` also reports `items.resolved` (what was actually installed, dependencies included) and per-dependency `installed`, `present` or `failed`. `add --dry-run --json` returns the same shape with `dryRun: true` and planned statuses (files `created`, `updated` and so on as they would be; dependencies `present` or `would-install`). Warning codes are listed under `warningCodes` in the manifest.",
+      "Changed: the human output of `add` lists each file with its status (it was a bare list), a write that fails part-way reports what had already been written in `details.written`, and the progress spinner prints one line per step when stderr is not a terminal (it printed every step twice) and nothing under `--json` or `--silent`.",
+      "New: `docs <name>` renders locally from a structured docs model instead of fetching the docs site, so it honours `REGISTRY_URL` and configured registries, accepts `@namespace/name`, and describes the VERSION YOU INSTALLED with no network: `add` caches each installed component's docs under `node_modules/.cache/marko-ui/docs`, and an import-distribution project reads the docs shipped inside `@marko-ui/shadcn`. Output is lean by default (parts, props, events, the first example and the ones flagged essential, with a list of the rest); `--examples` prints all, `--example <id>` named ones, `--remote` forces the registry, `--list` lists components, and `--json` returns the markdown plus the model. Import paths in the snippets follow your `components.json`. stderr says `source: installed (...)` when it did not use the registry.",
+      "Breaking: registry items no longer embed the docs model; they carry `componentDocsRef`, a URL to one file per component at `r/docs/<name>.json`, the same in every style. The registry shrank from about 25.7 MB to 14.4 MB and an item such as `button` from 16.8 KB to 4.1 KB. `show` prints the reference, not the model. `add` fetches the referenced files (at most 8 at once); if one cannot be fetched the install still succeeds with a `DOCS_CACHE_FAILED` warning and `docs` reads the registry later. An item from a registry built before this that still embeds its model is read as before.",
+      "New: `marko-ui manifest <command>` prints one command (name or alias) and the exit codes, which is cheaper than the whole manifest. The full manifest gained `warningCodes` and `errorOutput`. `doctor` gives every failing check a `fix` (a command or one-line action, using the project's package manager) and exits 3 when one fails; a broken `components.json` is a failed check, not a crash.",
+      "Changed: the generated `AGENTS.md` section lists installed component names only (under 1,000 characters for three components, within a token budget a test enforces), and `agents sync` no longer needs the network. `agents sync --check` exits 3 with `CHECK_FAILED` when the section or the skills are stale. A test validates every `marko-ui` command and flag named in that section and in the shipped skill against the live CLI.",
+      "New: a write guard. No file is written or deleted through a symlink into `node_modules` or outside the project and the nearest workspace root that includes it (`UNSAFE_WRITE_TARGET`); a live `eject` once deleted a package's source through a symlinked `@marko-ui/shadcn`. `add` checks every target before installing dependencies or writing anything, so a refusal leaves the project untouched. The docs cache is the one allowed path under `node_modules`.",
+      "New: the docs site serves `/llms.txt`, generated at build time: every component and docs page, the registry URL and how to work with marko-ui from an agent. Component pages render their prose, composition notes and API table as markdown instead of raw text.",
+      "Fixed: component markdown no longer carries maintainer comments, dangling \"see the in-file comment\" references or wrong prop defaults, shows the `-y` install line, and marks props a component pins itself as fixed. `docs` on a name that does not exist prints the pages that do, reports the miss on stderr and exits 1.",
+      "Testing: a scenario suite drives the built CLI through project shapes, orderings and environments, including the eject safety cases; the docs usage snippets are type-checked; `apps/docs/src/lib/cli-manifest.ts` is generated from the CLI source and drift-checked in CI.",
+    ],
+  },
   {
     version: "0.6.0",
     date: "2026-10-01",
@@ -183,8 +213,8 @@ static const ENTRIES: ChangelogEntry[] = [
   <h2 id="unreleased">Unreleased</h2>
 
   <p>
-    Nothing yet: everything merged to <code>main</code> since <code>0.5.0</code>
-    is in the <a href="#0.6.0"><code>0.6.0</code></a> entry below.
+    Nothing yet: everything merged to <code>main</code> since <code>0.6.0</code>
+    is in the <a href="#0.7.0"><code>0.7.0</code></a> entry below.
   </p>
 
   <p>

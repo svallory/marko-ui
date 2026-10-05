@@ -121,12 +121,14 @@ export async function addComponents(
       throw new CommandError(
         error instanceof Error ? error.message : String(error),
         {
-          code: known
-            ? error.code
-            : isFileWriteFailure(error)
-              ? RegistryErrorCode.LOCAL_FILE_ERROR
-              : undefined,
-          exitCode: error instanceof CommandError ? error.exitCode : undefined,
+          code:
+            error instanceof CommandError
+              ? error.code
+              : known
+                ? error.code
+                : isFileWriteFailure(error)
+                  ? RegistryErrorCode.LOCAL_FILE_ERROR
+                  : RegistryErrorCode.UNKNOWN_ERROR,
           suggestion: isFileWriteFailure(error)
             ? isPathCollision(error)
               ? "Check that the path is a directory, not a file, and that you can write to it. Files listed in details.written are already on disk and are correct; remove the blocking file or directory by hand, then re-run."

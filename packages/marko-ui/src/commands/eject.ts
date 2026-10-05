@@ -1,3 +1,4 @@
+import { RegistryErrorCode } from "@/src/registry/errors"
 import { existsSync, promises as fs } from "fs"
 import path from "path"
 import { getShadcnRegistryIndex } from "@/src/registry/api"
@@ -15,8 +16,7 @@ import { getPackageManager } from "@/src/utils/get-package-manager"
 import {
   CleanExit,
   CommandError,
-  handleError,
-} from "@/src/utils/handle-error"
+  handleError, parseOptions } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { printEnvelope } from "@/src/utils/json-output"
@@ -140,7 +140,7 @@ export const eject = new Command()
   .action(async (opts) => {
     try {
       setJsonMode(Boolean(opts.json))
-      const options = ejectOptionsSchema.parse({
+      const options = parseOptions(ejectOptionsSchema, {
         cwd: path.resolve(opts.cwd),
         yes: opts.yes,
         silent: opts.silent,
@@ -152,8 +152,8 @@ export const eject = new Command()
         throw new CommandError(
           `No ${highlighter.info(
             "components.json"
-          )} found. Run ${highlighter.info("marko-ui init")} first.`
-        )
+          )} found. Run ${highlighter.info("marko-ui init")} first.`, { code: RegistryErrorCode.NOT_CONFIGURED }
+)
       }
 
       if (config.distribution !== "import") {
@@ -168,8 +168,8 @@ export const eject = new Command()
             "eject"
           )} only switches ${highlighter.info("import")} projects to ${highlighter.info(
             "copy"
-          )}.`
-        )
+          )}.`, { code: RegistryErrorCode.WRONG_DISTRIBUTION }
+)
       }
 
       const installedComponents = await findImportedComponents(options.cwd)
@@ -177,8 +177,8 @@ export const eject = new Command()
         throw new CommandError(
           `No installed components found under ${highlighter.info(
             "node_modules/@marko-ui/shadcn/ui"
-          )}. Is ${highlighter.info("@marko-ui/shadcn")} installed?`
-        )
+          )}. Is ${highlighter.info("@marko-ui/shadcn")} installed?`, { code: RegistryErrorCode.PACKAGE_NOT_INSTALLED }
+)
       }
 
       // Taken as yes without a terminal: nothing could answer, and the command

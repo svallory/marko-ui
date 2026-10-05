@@ -1,3 +1,4 @@
+import { RegistryErrorCode } from "@/src/registry/errors"
 import { existsSync, promises as fs } from "fs"
 import path from "path"
 import { runAgentsSync } from "@/src/commands/agents"
@@ -26,7 +27,7 @@ import {
 } from "@/src/utils/get-config"
 import { isMonorepoRoot } from "@/src/utils/get-monorepo-info"
 import { getProjectConfig, getProjectInfo } from "@/src/utils/get-project-info"
-import { CommandError, handleError } from "@/src/utils/handle-error"
+import { CommandError, handleError, parseOptions } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { rootsFor, writeGuarded } from "@/src/utils/path-guard"
 import { logger } from "@/src/utils/logger"
@@ -140,7 +141,7 @@ export const init = new Command()
       // workspace-root refusal tells the user to do used to fail. Every other
       // command in this CLI (add, diff, doctor, agents, …) already lists its
       // fields after the spread; keep it that way.
-      const options = initOptionsSchema.parse({
+      const options = parseOptions(initOptionsSchema, {
         ...opts,
         cwd: path.resolve(opts.cwd),
         components,
@@ -284,7 +285,8 @@ export async function runInit(
           options.cwd
         )}. Create a Marko app first (e.g. ${highlighter.info(
           "bun create marko@latest"
-        )}), then run ${highlighter.info("marko-ui init")} inside it.`
+        )}), then run ${highlighter.info("marko-ui init")} inside it.`,
+        { code: RegistryErrorCode.PROJECT_NOT_FOUND, details: { cwd: options.cwd } }
       )
     }
 
@@ -319,8 +321,8 @@ export async function runInit(
                     )} without -y/--defaults/--silent to be offered the Marko install.`
                   : ` Or run ${highlighter.info(
                       "marko-ui init"
-                    )} in a terminal to be offered the Marko install.`))
-      )
+                    )} in a terminal to be offered the Marko install.`)), { code: RegistryErrorCode.NOT_A_MARKO_PROJECT }
+)
     }
   }
 
@@ -914,7 +916,8 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
     throw new CommandError(
       `Invalid base color ${highlighter.info(
         baseColor
-      )}. Expected one of: ${BASE_COLORS.map((item) => item.name).join(", ")}.`
+      )}. Expected one of: ${BASE_COLORS.map((item) => item.name).join(", ")}.`,
+      { code: RegistryErrorCode.USAGE_ERROR }
     )
   }
 
@@ -946,7 +949,8 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
     throw new CommandError(
       `Invalid distribution ${highlighter.info(
         distribution
-      )}. Expected one of: copy, import.`
+      )}. Expected one of: copy, import.`,
+      { code: RegistryErrorCode.USAGE_ERROR }
     )
   }
 
@@ -977,7 +981,8 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
     throw new CommandError(
       `Invalid visual style ${highlighter.info(
         visualStyle
-      )}. Expected one of: ${VISUAL_STYLES.map((item) => item.name).join(", ")}.`
+      )}. Expected one of: ${VISUAL_STYLES.map((item) => item.name).join(", ")}.`,
+      { code: RegistryErrorCode.USAGE_ERROR }
     )
   }
 

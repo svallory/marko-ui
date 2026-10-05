@@ -21,8 +21,7 @@ import {
 import {
   CleanExit,
   CommandError,
-  handleError,
-} from "@/src/utils/handle-error"
+  handleError, parseOptions } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { printEnvelope } from "@/src/utils/json-output"
 import { logger } from "@/src/utils/logger"
@@ -68,7 +67,7 @@ export const search = new Command()
     try {
       setJsonMode(Boolean(opts.json))
 
-      const options = searchOptionsSchema.parse({
+      const options = parseOptions(searchOptionsSchema, {
         cwd: path.resolve(opts.cwd),
         query: opts.query,
         types: opts.type

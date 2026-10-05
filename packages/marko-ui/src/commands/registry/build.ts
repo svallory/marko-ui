@@ -9,7 +9,7 @@ import {
 import { recursivelyResolveFileImports } from "@/src/registry/utils"
 import { getConfig } from "@/src/utils/get-config"
 import { getProjectInfo, ProjectInfo } from "@/src/utils/get-project-info"
-import { handleError } from "@/src/utils/handle-error"
+import { handleError, parseOptions } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { spinner } from "@/src/utils/spinner"
@@ -59,7 +59,7 @@ export async function buildRegistry(
   opts: z.infer<typeof buildOptionsSchema>
 ) {
   try {
-    const options = buildOptionsSchema.parse(opts)
+    const options = parseOptions(buildOptionsSchema, opts)
 
     // Preflight (inlined; the fork has no preflight-registry): the import
     // resolver needs components.json aliases + project info to classify
