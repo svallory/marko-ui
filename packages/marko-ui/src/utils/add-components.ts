@@ -123,7 +123,9 @@ export async function addComponents(
               : undefined,
           exitCode: error instanceof CommandError ? error.exitCode : undefined,
           suggestion: isFileWriteFailure(error)
-            ? "Check that the path is a directory, not a file, and that you can write to it. Files listed in details.written are on disk; remove them or re-run with --overwrite."
+            ? isPathCollision(error)
+              ? "Check that the path is a directory, not a file, and that you can write to it. Files listed in details.written are already on disk and are correct; remove the blocking file or directory by hand, then re-run."
+              : "Check that you can write to the project, and that the disk has space. Files listed in details.written are already on disk; re-run to finish the rest."
             : undefined,
           details: { written: dedupeFiles(alreadyWritten) },
         }
@@ -138,6 +140,11 @@ export async function addComponents(
           code: RegistryErrorCode.LOCAL_FILE_ERROR,
           suggestion:
             "Check that the path is a directory, not a file, and that you can write to it.",
+          // Accepted nit: `written` is present and EMPTY rather than absent.
+          // A caller reading `details.written.length` should not have to
+          // distinguish "wrote nothing" from "an older CLI that never
+          // reported it".
+          details: { written: [] },
         }
       )
     }
@@ -486,6 +493,9 @@ async function addWorkspaceComponents(
         plannedFiles,
         // B2, workspace path: same per-file accumulation.
         written: alreadyWritten,
+        // A workspace install writes into the TARGET package, which is not
+        // the package we were called from; it is still the project.
+        writeRoots: [targetConfig.resolvedPaths.cwd],
       })) ?? {
       filesCreated: [],
       filesUpdated: [],
@@ -722,4 +732,17 @@ export function isFileWriteFailure(error: unknown): boolean {
       code
     )
   )
+}
+
+
+/**
+ * ENOTDIR/EISDIR specifically: a path COMPONENT is a file where a directory
+ * must go. `--overwrite` cannot help — it only replaces file CONTENT, and the
+ * failure happens before any file is opened — so offering it was advice that
+ * could not work. Permission and space failures get the re-run advice instead,
+ * which can.
+ */
+export function isPathCollision(error: unknown): boolean {
+  const code = (error as { code?: unknown } | null)?.code
+  return code === "ENOTDIR" || code === "EISDIR"
 }

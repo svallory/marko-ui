@@ -35,6 +35,7 @@ import {
 } from "@/src/utils/updaters/update-theme-stylesheet"
 import { isTargetAliasKey } from "@/src/utils/target-aliases"
 import type { FileChange } from "@/src/utils/command-result"
+import { assertWritable, rootsFor } from "@/src/utils/path-guard"
 import { dim, green, red, yellow } from "kleur/colors"
 import { loadConfig, type ConfigLoaderSuccessResult } from "tsconfig-paths"
 import { z } from "zod"
@@ -63,6 +64,11 @@ export async function updateFiles(
      * all while half the component sat on disk.
      */
     written?: FileChange[]
+    /**
+     * Extra roots this particular call may write into — the workspace
+     * package being installed into, when it is not the config's own root.
+     */
+    writeRoots?: string[]
   }
 ) {
   // Keep only the configured iconLibrary's icon map (see icon-library.ts).
@@ -188,6 +194,21 @@ export async function updateFiles(
       }
     }
 
+    // THE choke point. Every write and every delete below goes through a
+    // `filePath` computed here, so this one check covers them all: mkdir,
+    // writeFile (three sites) and the stale-icon-map `fs.rm`. Raised before
+    // anything is touched, so a rejected target leaves nothing half-done.
+    //
+    // Roots: the project (config.resolvedPaths.cwd) plus the workspace
+    // packages this writer may legitimately install into, which for a
+    // workspace write is the TARGET package rather than the one we were
+    // called from.
+    assertWritable(
+      filePath,
+      rootsFor(config.resolvedPaths.cwd, options.writeRoots),
+      "write"
+    )
+
     const existingFile = existsSync(filePath)
 
     // Check if the path exists and is a directory - we can't write to directories.
@@ -288,6 +309,14 @@ export async function updateFiles(
     if (isIconResolverPath(file.path) && isIconLibraryName(config.iconLibrary)) {
       const stale = findStaleIconMaps(targetDir, config.iconLibrary)
       for (const file of stale.deletable) {
+        // A delete is the more dangerous half of this function, so it is
+        // checked by name: the list comes from a DIRECTORY SCAN, not from the
+        // registry, so nothing upstream vouched for these paths.
+        assertWritable(
+          file,
+          rootsFor(config.resolvedPaths.cwd, options.writeRoots),
+          "delete"
+        )
         await fs.rm(file)
         filesRemoved.push(path.relative(config.resolvedPaths.cwd, file))
       }
