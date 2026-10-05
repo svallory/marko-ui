@@ -3548,7 +3548,8 @@ scenarios:
       Docs are one file per component (docs/<name>.json), not a copy inside the
       base item and each of the eight styled items. A registry that still embeds
       `componentDocs`, or that dropped docs/, breaks `marko-ui docs` and the
-      docs cache `add` writes.
+      docs cache `add` writes. Both items must point at the SAME file
+      (docs/button.json) and neither may embed the model.
     steps:
       - name: the item carries a reference, not the model
         command: "@http"
@@ -3556,12 +3557,16 @@ scenarios:
         expect:
           exit: 0
           stdoutContains: '"componentDocsRef"'
+          stdoutMatches: ['/r/docs/button\.json"']
+          stdoutNotContains: '"componentDocs"'
       - name: the styled item carries the same reference
         command: "@http"
         args: ["$REGISTRY_URL/styles/vega/button.json"]
         expect:
           exit: 0
           stdoutContains: '"componentDocsRef"'
+          stdoutMatches: ['/r/docs/button\.json"']
+          stdoutNotContains: '"componentDocs"'
       - name: the referenced docs file is served
         command: "@http"
         args: ["$REGISTRY_URL/docs/button.json"]

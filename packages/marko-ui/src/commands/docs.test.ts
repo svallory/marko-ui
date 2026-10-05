@@ -308,6 +308,10 @@ describe("docs command: unknown component", () => {
     // The item exists, so the suggestion is not the typo one.
     expect(stderr).toContain("publishes no docs data")
     expect(stderr).toContain("marko-ui show button")
+    // A typo hint belongs to an unknown name only: button exists, and
+    // "Similar registry items: button-group" next to it is noise.
+    expect(stderr).not.toContain("Similar registry items")
+    expect(stderr).not.toContain("button-group")
   })
 
   it("still prints the components that resolved when another name misses", async () => {

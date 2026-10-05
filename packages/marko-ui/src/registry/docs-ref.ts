@@ -6,7 +6,10 @@ import {
   setRegistryHeaders,
 } from "@/src/registry/context"
 import {
+  RegistryError,
+  RegistryErrorCode,
   RegistryLocalFileError,
+  RegistryNotFoundError,
   RegistryParseError,
 } from "@/src/registry/errors"
 import { fetchRegistry } from "@/src/registry/fetcher"
@@ -80,15 +83,53 @@ function carryHeaders(itemUrl: string, docsUrl: string): void {
 }
 
 /**
+ * An item references a docs file that the registry does not serve. The item
+ * itself WAS found, so this is a registry defect (a half-deployed or broken
+ * registry), not an unknown name: it names the item and the URL, and carries the
+ * code a 404 already has (NOT_FOUND) so the classification does not change.
+ */
+export class RegistryDocsFileMissingError extends RegistryError {
+  constructor(
+    public readonly item: string,
+    public readonly ref: string,
+    cause?: unknown
+  ) {
+    // Credentials in a query string never reach a message.
+    const shown = ref.split("?")[0] ?? ref
+    super(
+      `The docs file for "${item}" is missing from the registry: ${shown}. The item references it, so the registry is incomplete.`,
+      {
+        code: RegistryErrorCode.NOT_FOUND,
+        statusCode: 404,
+        cause,
+        context: { item, url: shown },
+        suggestion: `Report it to the registry's owner. "marko-ui show ${item}" still prints the item, and "marko-ui add ${item}" still installs it.`,
+      }
+    )
+    this.name = "RegistryDocsFileMissingError"
+  }
+}
+
+/**
  * Fetches and validates the docs model a reference points at. Network and HTTP
  * failures propagate as the registry errors they already are (so they classify
  * as NETWORK_ERROR / FETCH_ERROR like any other registry read); a body that is
  * not a docs model is a parse error naming the reference.
  */
-export async function fetchComponentDocs(ref: string): Promise<ComponentDocsModel> {
+export async function fetchComponentDocs(
+  ref: string,
+  item?: string
+): Promise<ComponentDocsModel> {
   let raw: unknown
   if (isUrl(ref)) {
-    ;[raw] = await fetchRegistry([ref], { useCache: false })
+    try {
+      ;[raw] = await fetchRegistry([ref], { useCache: false })
+    } catch (error) {
+      if (error instanceof RegistryNotFoundError) {
+        throw new RegistryDocsFileMissingError(item ?? "this item", ref, error)
+      }
+      throw error
+    }
   } else {
     try {
       raw = JSON.parse(await fs.readFile(path.resolve(expandHome(ref)), "utf8"))

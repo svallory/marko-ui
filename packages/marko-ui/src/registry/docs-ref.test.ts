@@ -11,9 +11,13 @@ import {
   setRegistryHeaders,
   withRegistryContext,
 } from "./context"
-import { absolutizeDocsRef, fetchComponentDocs } from "./docs-ref"
+import {
+  absolutizeDocsRef,
+  fetchComponentDocs,
+  RegistryDocsFileMissingError,
+} from "./docs-ref"
 import { RegistryErrorCode } from "./errors"
-import { resolveRegistryTree } from "./resolver"
+import { DOCS_FETCH_CONCURRENCY, resolveRegistryTree } from "./resolver"
 
 /** A minimal docs model that satisfies componentDocsSchema. */
 function model(name: string, marker = "docs") {
@@ -223,6 +227,19 @@ describe("fetchComponentDocs", () => {
     })
   })
 
+  it("names the item and the URL (query scrubbed) when the docs file of a found item is missing", async () => {
+    server.use(http.get(`${HOST}/r/docs/gone.json`, () => new HttpResponse(null, { status: 404 })))
+    const error = await fetchComponentDocs(`${HOST}/r/docs/gone.json?token=secret`, "gone").catch((e) => e)
+    expect(error).toBeInstanceOf(RegistryDocsFileMissingError)
+    expect(error.code).toBe(RegistryErrorCode.NOT_FOUND)
+    expect(error.message).toContain('"gone"')
+    expect(error.message).toContain(`${HOST}/r/docs/gone.json`)
+    expect(error.message).not.toContain("secret")
+    expect(JSON.stringify(error.context)).not.toContain("secret")
+    // Not the "no such item" wording an unknown name gets.
+    expect(error.message).not.toContain("may not exist at the registry")
+  })
+
   it("propagates an unreachable host as NETWORK_ERROR", async () => {
     server.use(http.get(`${HOST}/r/docs/down.json`, () => HttpResponse.error()))
     await expect(fetchComponentDocs(`${HOST}/r/docs/down.json`)).rejects.toMatchObject({
@@ -377,5 +394,114 @@ describe("getRegistryItemDocs", () => {
     })
     expect(found.model?.name).toBe("private")
     expect(seenHeaders["docs/private"]).toBe("secret")
+  })
+})
+
+describe("docs files: concurrency and legacy embedded models", () => {
+  const config = { resolvedPaths: { cwd: "/p" } } as never
+
+  it("never has more than DOCS_FETCH_CONCURRENCY docs files in flight", async () => {
+    const count = DOCS_FETCH_CONCURRENCY * 3
+    let inFlight = 0
+    let peak = 0
+    const names = Array.from({ length: count }, (_, i) => `many-${i}`)
+    server.use(
+      ...names.flatMap((name) => [
+        http.get(`${HOST}/r/${name}.json`, () =>
+          HttpResponse.json(uiItem(name, { componentDocsRef: `${HOST}/r/docs/${name}.json` }))
+        ),
+        http.get(`${HOST}/r/docs/${name}.json`, async () => {
+          inFlight++
+          peak = Math.max(peak, inFlight)
+          await new Promise((resolve) => setTimeout(resolve, 15))
+          inFlight--
+          return HttpResponse.json(model(name))
+        }),
+      ])
+    )
+    const tree = await resolveRegistryTree(
+      names.map((name) => `${HOST}/r/${name}.json`),
+      config,
+      { useCache: false, fetchDocs: true }
+    )
+    expect(tree?.itemDocs).toHaveLength(count)
+    expect(peak).toBeGreaterThan(1)
+    expect(peak).toBeLessThanOrEqual(DOCS_FETCH_CONCURRENCY)
+  })
+
+  it("a missing docs file is a non-fatal warning entry naming the item, not a failed resolve", async () => {
+    server.use(
+      http.get(`${HOST}/r/half.json`, () =>
+        HttpResponse.json(uiItem("half", { componentDocsRef: `${HOST}/r/docs/half.json?t=secret` }))
+      ),
+      http.get(`${HOST}/r/docs/half.json`, () => new HttpResponse(null, { status: 404 }))
+    )
+    const tree = await resolveRegistryTree([`${HOST}/r/half.json`], config, {
+      useCache: false,
+      fetchDocs: true,
+    })
+    expect(tree?.itemDocs).toEqual([])
+    expect(tree?.docsFailures).toHaveLength(1)
+    expect(tree?.docsFailures?.[0]?.name).toBe("half")
+    expect(tree?.docsFailures?.[0]?.message).toContain("missing from the registry")
+    expect(JSON.stringify(tree?.docsFailures)).not.toContain("secret")
+  })
+
+  describe("an item that still embeds componentDocs (a registry built before the sidecar)", () => {
+    const embedded = model("legacy", "embedded")
+    const referenced = model("legacy", "referenced")
+    const legacyItem = (extra: Record<string, unknown> = {}) =>
+      uiItem("legacy", { componentDocs: embedded, ...extra })
+
+    it("getRegistryItemDocs reads the embedded model when there is no reference", async () => {
+      server.use(http.get(`${HOST}/r/legacy.json`, () => HttpResponse.json(legacyItem())))
+      const found = await getRegistryItemDocs(`${HOST}/r/legacy.json`, { config })
+      expect(found.model?.description).toBe("embedded.")
+      expect(hits).toEqual([])
+    })
+
+    it("getRegistryItemDocs: the reference wins when both exist", async () => {
+      server.use(
+        http.get(`${HOST}/r/legacy.json`, () =>
+          HttpResponse.json(legacyItem({ componentDocsRef: `${HOST}/r/docs/legacy.json` }))
+        ),
+        http.get(`${HOST}/r/docs/legacy.json`, () => HttpResponse.json(referenced))
+      )
+      const found = await getRegistryItemDocs(`${HOST}/r/legacy.json`, { config })
+      expect(found.model?.description).toBe("referenced.")
+    })
+
+    it("add's docs resolution uses the embedded model with no reference, and the reference when both exist", async () => {
+      server.use(http.get(`${HOST}/r/legacy.json`, () => HttpResponse.json(legacyItem())))
+      const only = await resolveRegistryTree([`${HOST}/r/legacy.json`], config, {
+        useCache: false,
+        fetchDocs: true,
+      })
+      expect(only?.itemDocs?.[0]?.componentDocs.description).toBe("embedded.")
+      expect(only?.docsFailures).toEqual([])
+
+      server.use(
+        http.get(`${HOST}/r/legacy.json`, () =>
+          HttpResponse.json(legacyItem({ componentDocsRef: `${HOST}/r/docs/legacy.json` }))
+        ),
+        http.get(`${HOST}/r/docs/legacy.json`, () => HttpResponse.json(referenced))
+      )
+      const both = await resolveRegistryTree([`${HOST}/r/legacy.json`], config, {
+        useCache: false,
+        fetchDocs: true,
+      })
+      expect(both?.itemDocs?.[0]?.componentDocs.description).toBe("referenced.")
+    })
+
+    it("a malformed embedded model is ignored, not a parse failure of the item", async () => {
+      server.use(
+        http.get(`${HOST}/r/legacy.json`, () =>
+          HttpResponse.json(uiItem("legacy", { componentDocs: { nope: true } }))
+        )
+      )
+      const found = await getRegistryItemDocs(`${HOST}/r/legacy.json`, { config })
+      expect(found.item?.name).toBe("legacy")
+      expect(found.model).toBeUndefined()
+    })
   })
 })

@@ -595,24 +595,64 @@ export async function resolveRegistryTree(
 }
 
 /**
- * Fetches the docs file of every ui item that references one, in parallel. A
- * failure NEVER fails the caller: the docs cache is an optimisation, so a docs
- * file that cannot be read becomes a `docsFailures` entry (which `add` reports
- * as a warning) and `docs` reads the registry later.
+ * How many docs files are in flight at once. `add --all` installs ~86 ui items,
+ * and the item fetcher itself has no bound, so an unbounded fan-out here would
+ * be the one place that opens that many sockets at the same time.
+ */
+export const DOCS_FETCH_CONCURRENCY = 8
+
+/** `Promise.allSettled` over `items`, with at most `limit` calls in flight. */
+async function settleLimited<T, R>(
+  items: T[],
+  limit: number,
+  run: (item: T) => Promise<R>
+): Promise<PromiseSettledResult<R>[]> {
+  const results = new Array<PromiseSettledResult<R>>(items.length)
+  let next = 0
+  const worker = async () => {
+    while (next < items.length) {
+      const index = next++
+      try {
+        results[index] = { status: "fulfilled", value: await run(items[index]!) }
+      } catch (reason) {
+        results[index] = { status: "rejected", reason }
+      }
+    }
+  }
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, worker)
+  )
+  return results
+}
+
+/**
+ * The docs model of every ui item that has one: fetched from the file its
+ * `componentDocsRef` names (bounded parallelism), or — for an item from a
+ * registry built before the sidecar, which still EMBEDS `componentDocs` and has
+ * no reference — read straight from the item. The reference wins when both
+ * exist. A failure NEVER fails the caller: the docs cache is an optimisation, so
+ * a docs file that cannot be read becomes a `docsFailures` entry (which `add`
+ * reports as a warning) and `docs` reads the registry later.
  */
 async function fetchItemDocs(
   payload: RegistryItemWithSource[]
 ): Promise<{ itemDocs: ResolvedItemDocs[]; docsFailures: ResolvedDocsFailure[] }> {
-  const withRef = payload.filter(
-    (item) => item.type === "registry:ui" && item.componentDocsRef
+  const documented = payload.filter(
+    (item) =>
+      item.type === "registry:ui" && (item.componentDocsRef || item.componentDocs)
   )
-  const settled = await Promise.allSettled(
-    withRef.map((item) => fetchComponentDocs(item.componentDocsRef!))
+  const settled = await settleLimited(
+    documented,
+    DOCS_FETCH_CONCURRENCY,
+    async (item) =>
+      item.componentDocsRef
+        ? fetchComponentDocs(item.componentDocsRef, item.name)
+        : item.componentDocs!
   )
   const itemDocs: ResolvedItemDocs[] = []
   const docsFailures: ResolvedDocsFailure[] = []
   settled.forEach((result, index) => {
-    const item = withRef[index]!
+    const item = documented[index]!
     if (result.status === "fulfilled") {
       itemDocs.push({
         name: item.name,
@@ -623,7 +663,7 @@ async function fetchItemDocs(
     } else {
       docsFailures.push({
         name: item.name,
-        ref: item.componentDocsRef!,
+        ref: (item.componentDocsRef ?? "").split("?")[0]!,
         message:
           result.reason instanceof Error
             ? result.reason.message.split("\n")[0]!

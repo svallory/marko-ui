@@ -233,7 +233,15 @@ export async function getRegistryItemDocs(
       if (!(error instanceof RegistryItemNotFoundError)) throw error
     }
     const ref = item?.componentDocsRef
-    return { item, model: ref ? await fetchComponentDocs(ref) : undefined }
+    // The reference wins. An item from a registry built before the sidecar
+    // still EMBEDS its model and has no reference; read that rather than
+    // calling it undocumented.
+    return {
+      item,
+      model: ref
+        ? await fetchComponentDocs(ref, item!.name)
+        : item?.componentDocs,
+    }
   })
 }
 

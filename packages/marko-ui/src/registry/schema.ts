@@ -296,6 +296,13 @@ export const registryItemCommonSchema = z.object({
    * publishes no docs data.
    */
   componentDocsRef: z.string().optional(),
+  /**
+   * LEGACY: the model embedded in the item, as registries built before the
+   * sidecar served it. Read only when there is no `componentDocsRef` (the
+   * reference wins); never written by this repo's build. `.catch(undefined)`:
+   * docs are additive, a malformed model must not fail the whole item.
+   */
+  componentDocs: componentDocsSchema.optional().catch(undefined),
   categories: z.array(z.string()).optional(),
 })
 

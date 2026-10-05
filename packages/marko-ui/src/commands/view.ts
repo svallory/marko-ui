@@ -119,10 +119,19 @@ export const view = new Command()
         throw new CleanExit(0)
       }
 
-      // The item is printed as fetched: its docs are a `componentDocsRef`
-      // (a URL), not the model, so this stays the size of the files and
-      // dependencies it describes. `marko-ui docs` follows the reference.
-      printEnvelope("marko-ui/show", payload)
+      // Docs are a `componentDocsRef` (a URL), not the model, so an item from
+      // this repo's registry is already the size of the files and dependencies
+      // it describes. A legacy item that still EMBEDS the model (a few hundred
+      // KB with every example's source) has it stripped here: `show` answers
+      // "what would this install write". `marko-ui docs` follows the reference.
+      printEnvelope(
+        "marko-ui/show",
+        payload.map((item) => {
+          if (!item) return item
+          const { componentDocs: _docs, ...rest } = item
+          return rest
+        })
+      )
       throw new CleanExit(0)
     } catch (error) {
       handleError(error)

@@ -29,6 +29,9 @@ vi.mock("@/src/registry/api", () => ({
       files: [],
       // What a real item carries: a reference to the docs file, never the model.
       componentDocsRef: "https://registry.test/r/docs/button.json",
+      // A registry built before the sidecar still embeds the model: `show`
+      // strips it (a few hundred KB) and keeps the reference.
+      componentDocs: { name: "button" },
     },
   ]),
 }))

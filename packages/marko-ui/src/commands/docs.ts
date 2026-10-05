@@ -241,9 +241,10 @@ export const docs = new Command()
           // A typo is the overwhelmingly common reason. The index may be
           // unreachable (in which case there is nothing to suggest), so
           // suggestions are best-effort and never change the error class.
-          const candidates = await documentedComponentNames().catch(
-            () => [] as string[]
-          )
+          // An item that EXISTS but has no docs is not a typo: no candidates.
+          const candidates = itemFound
+            ? []
+            : await documentedComponentNames().catch(() => [] as string[])
           misses.push({
             name,
             suggestions: closestNames(name, candidates),
